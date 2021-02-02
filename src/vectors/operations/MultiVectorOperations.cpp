@@ -532,9 +532,9 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
 }
 
 void MultiVectorOperations::resetVectorOperations(
-    std::vector<std::shared_ptr<VectorOperations>> &ops )
+    std::vector<std::shared_ptr<VectorOperations>> ops )
 {
-    d_operations = ops;
+    d_operations = std::move( ops );
 }
 
 

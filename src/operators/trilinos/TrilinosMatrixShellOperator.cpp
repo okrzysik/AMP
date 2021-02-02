@@ -13,8 +13,8 @@ TrilinosMatrixShellOperator::TrilinosMatrixShellOperator(
 }
 
 
-void TrilinosMatrixShellOperator::setGetRow( void ( *func )(
-    void *object, int row, std::vector<size_t> &cols, std::vector<double> &values ) )
+void TrilinosMatrixShellOperator::setGetRow(
+    std::function<void( void *, int, std::vector<size_t> &, std::vector<double> & )> func )
 {
     d_getRow = func;
 }
@@ -72,15 +72,15 @@ int TrilinosMatrixShellOperator::matVec(
     AMP_ASSERT( in_length == out_length );
     AMP_ASSERT( (int) op->d_nodalDofMap->numLocalDOF() == out_length );
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec =
-        AMP::LinearAlgebra::createVector( ( op->d_nodalDofMap ), ( op->getInputVariable() ), true );
-    AMP::LinearAlgebra::Vector::shared_ptr outVec = AMP::LinearAlgebra::createVector(
-        ( op->d_nodalDofMap ), ( op->getOutputVariable() ), true );
+    auto inVec =
+        AMP::LinearAlgebra::createVector( op->d_nodalDofMap, op->getInputVariable(), true );
+    auto outVec =
+        AMP::LinearAlgebra::createVector( op->d_nodalDofMap, op->getOutputVariable(), true );
 
     inVec->putRawData( in );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    ( op->d_operator )->apply( inVec, outVec );
+    op->d_operator->apply( inVec, outVec );
 
     outVec->copyOutRawData( out );
 
@@ -97,17 +97,16 @@ int TrilinosMatrixShellOperator::getRow( ML_Operator *data,
                                          int row_lengths[] )
 {
     auto *op = reinterpret_cast<TrilinosMatrixShellOperator *>( ML_Get_MyGetrowData( data ) );
+    auto fun = op->d_getRow;
 
     int spaceRequired = 0;
     int cnt           = 0;
+    std::vector<size_t> cols;
+    std::vector<double> vals;
     for ( int i = 0; i < N_requested_rows; i++ ) {
         int row = requested_rows[i];
-        std::vector<size_t> cols;
-        std::vector<double> vals;
-
-        ( *( op->d_getRow ) )( op->d_operator.get(), row, cols, vals );
+        fun( op->d_operator.get(), row, cols, vals );
         spaceRequired += cols.size();
-
         if ( allocated_space >= spaceRequired ) {
             for ( size_t j = 0; j < cols.size(); j++ ) {
                 columns[cnt] = cols[j];

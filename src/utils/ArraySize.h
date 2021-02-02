@@ -71,7 +71,10 @@ public:
      * @param j_            Ending value
      * @param k_            Increment value
      */
-    CONSTEXPR Range( TYPE i_, TYPE j_, TYPE k_ = 1 ) : i( i_ ), j( j_ ), k( k_ ) {}
+    CONSTEXPR Range( const TYPE &i_, const TYPE &j_, const TYPE &k_ = 1 )
+        : i( i_ ), j( j_ ), k( k_ )
+    {
+    }
 
     //! Get the number of values in the range
     CONSTEXPR size_t size() const
@@ -345,7 +348,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR size_t index( const std::array<size_t, 5> i ) const
+    CONSTEXPR size_t index( const std::array<size_t, 5> &i ) const
     {
         size_t j = 0;
         for ( size_t m = 0, N = 1; m < 5; m++ ) {

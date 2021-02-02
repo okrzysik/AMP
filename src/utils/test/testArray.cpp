@@ -180,19 +180,19 @@ void testArraySize( UnitTest &ut )
     double t1 = Utilities::time();
     // ArraySize s( 223, 991, 569 );
     ArraySize s( 223, 91, 59 );
-    for ( size_t k = 0, ijk = 0; k < s[2]; k++ ) {
+    for ( size_t k = 0, index = 0; k < s[2]; k++ ) {
         for ( size_t j = 0; j < s[1]; j++ ) {
-            for ( size_t i = 0; i < s[0]; i++, ijk++ ) {
-                pass = pass && ijk == s.index( i, j, k );
+            for ( size_t i = 0; i < s[0]; i++, index++ ) {
+                pass = pass && index == s.index( i, j, k );
             }
         }
     }
     double t2 = Utilities::time();
-    for ( size_t k = 0, ijk = 0; k < s[2]; k++ ) {
+    for ( size_t k = 0; k < s[2]; k++ ) {
         for ( size_t j = 0; j < s[1]; j++ ) {
-            for ( size_t i = 0; i < s[0]; i++, ijk++ ) {
-                auto ijk = s.ijk( s.index( i, j, k ) );
-                pass     = pass && ijk[0] == i && ijk[1] == j && ijk[2] == k;
+            for ( size_t i = 0; i < s[0]; i++ ) {
+                ijk  = s.ijk( s.index( i, j, k ) );
+                pass = pass && ijk[0] == i && ijk[1] == j && ijk[2] == k;
             }
         }
     }

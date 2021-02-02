@@ -101,6 +101,7 @@ INCLUDE( CTest )
 # Configure AMP (all external libraries must be configured first)
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake" )
 CONFIGURE_AMP()
+CONFIGURE_LINE_COVERAGE()
 
 
 # Create the target for documentation

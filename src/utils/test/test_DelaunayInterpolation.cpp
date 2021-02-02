@@ -243,44 +243,46 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, int ndim, const std::vect
 
     // Copy the tessellation
     PROFILE_START( "Copy tessellation", 1 );
-    int N2, N_tri2;
-    auto x2  = new TYPE[N * ndim];
-    auto tri = new int[N_tri * ( ndim + 1 )];
-    data->copy_tessellation( &N2, x2, 0, &N_tri2, tri );
-    bool error = static_cast<size_t>( N2 ) != N || static_cast<size_t>( N_tri2 ) != N_tri;
-    if ( error == 0 ) {
-        for ( size_t i = 0; i < ndim * N; i++ ) {
-            if ( x[i] != x2[i] )
-                error = true;
+    {
+        int N2, N_tri2;
+        auto x2  = new TYPE[N * ndim];
+        auto tri = new int[N_tri * ( ndim + 1 )];
+        data->copy_tessellation( &N2, x2, 0, &N_tri2, tri );
+        bool error = static_cast<size_t>( N2 ) != N || static_cast<size_t>( N_tri2 ) != N_tri;
+        if ( error == 0 ) {
+            for ( size_t i = 0; i < ndim * N; i++ ) {
+                if ( x[i] != x2[i] )
+                    error = true;
+            }
+            for ( size_t i = 0; i < ( ndim + 1 ) * N_tri; i++ ) {
+                if ( tri[i] < 0 || tri[i] >= N2 )
+                    error = true;
+            }
         }
-        for ( size_t i = 0; i < ( ndim + 1 ) * N_tri; i++ ) {
-            if ( tri[i] < 0 || tri[i] >= N2 )
-                error = true;
-        }
+        AMP::DelaunayInterpolation<TYPE> data2( ndim );
+        data2.create_tessellation( (int) N, &x[0], 0, (int) N_tri, tri );
+        if ( data2.get_N_tri() != N_tri )
+            error = true;
+        if ( bytes1 != data2.memory_usage( 1 ) || bytes2 != data2.memory_usage( 2 ) ||
+             bytes3 != data2.memory_usage( 3 ) || bytes4 != data2.memory_usage( 4 ) )
+            error = true;
+        delete[] x2;
+        delete[] tri;
+        data2.create_tessellation( 0, nullptr, 0, 0, nullptr );
+        if ( data2.memory_usage() != sizeof( AMP::DelaunayInterpolation<TYPE> ) )
+            error = true;
+        if ( !error )
+            ut->passes( "Copy of tessellation " + msg );
+        else
+            ut->failure( "Copy of tessellation " + msg );
     }
-    AMP::DelaunayInterpolation<TYPE> data2( ndim );
-    data2.create_tessellation( (int) N, &x[0], 0, (int) N_tri, tri );
-    if ( data2.get_N_tri() != N_tri )
-        error = true;
-    if ( bytes1 != data2.memory_usage( 1 ) || bytes2 != data2.memory_usage( 2 ) ||
-         bytes3 != data2.memory_usage( 3 ) || bytes4 != data2.memory_usage( 4 ) )
-        error = true;
-    delete[] x2;
-    delete[] tri;
-    data2.create_tessellation( 0, nullptr, 0, 0, nullptr );
-    if ( data2.memory_usage() != sizeof( AMP::DelaunayInterpolation<TYPE> ) )
-        error = true;
-    if ( !error )
-        ut->passes( "Copy of tessellation " + msg );
-    else
-        ut->failure( "Copy of tessellation " + msg );
     PROFILE_STOP( "Copy tessellation", 1 );
 
     // Check the behavior of get_circumsphere and test_in_circumsphere
     PROFILE_START( "Check circumsphere", 1 );
     {
-        bool pass = true;
-        int *tri  = data->get_tri( 0 );
+        pass     = true;
+        int *tri = data->get_tri( 0 );
         TYPE x1[NDIM_MAX * ( NDIM_MAX + 1 )];
         double R, c[NDIM_MAX], xi[NDIM_MAX], x2[NDIM_MAX * ( NDIM_MAX + 1 )];
         for ( size_t i = 0; i < N_tri; i++ ) {

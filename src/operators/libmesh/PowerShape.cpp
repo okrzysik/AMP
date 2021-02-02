@@ -343,13 +343,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Power Vector" );
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL PowerWithShape Vector" );
 
-    const double PI = 4.0 * atan( 1.0 );
-    double x, y, z;
+    constexpr double PI = 3.14159265359;
     double newval, val;
     int countGP = 0;
-
-    double xmin, ymin, zmin, centerx, centery;
-    double xmax, ymax, zmax, rmax;
 
     // quick exit if the answer is obvious.
     if ( ( u->max() < 1e-14 ) && ( u->min() > -1e-14 ) ) {
@@ -359,15 +355,15 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     auto min_max_pos = d_Mesh->getBoundingBox();
 
-    xmin    = min_max_pos[0];
-    xmax    = min_max_pos[1];
-    ymin    = min_max_pos[2];
-    ymax    = min_max_pos[3];
-    zmin    = d_radialBoundingBox[4];
-    zmax    = d_radialBoundingBox[5];
-    rmax    = d_radialBoundingBox[3];
-    centerx = d_radialBoundingBox[0];
-    centery = d_radialBoundingBox[1];
+    double xmin    = min_max_pos[0];
+    double xmax    = min_max_pos[1];
+    double ymin    = min_max_pos[2];
+    double ymax    = min_max_pos[3];
+    double zmin    = d_radialBoundingBox[4];
+    double zmax    = d_radialBoundingBox[5];
+    double rmax    = d_radialBoundingBox[3];
+    double centerx = d_radialBoundingBox[0];
+    double centery = d_radialBoundingBox[1];
 
     // Create a DOF manager for a gauss point vector
     int DOFsPerElement = 8;
@@ -399,13 +395,13 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                 // Loop over all gauss-points on the element.
                 for ( int i = 0; i < DOFsPerElement; i++ ) {
-                    x = d_fe->get_xyz()[i]( 0 );
-                    y = d_fe->get_xyz()[i]( 1 );
-                    z = d_fe->get_xyz()[i]( 2 );
+                    double x = d_fe->get_xyz()[i]( 0 );
+                    double y = d_fe->get_xyz()[i]( 1 );
+                    double z = d_fe->get_xyz()[i]( 2 );
 
                     // X moments
                     x = ( 2 * x - ( xmax + xmin ) ) /
-                        ( xmax - xmin ); // mapping x coordinate to (-1 to 1)
+                        ( xmax - xmin ); // map x coordinate to (-1 to 1)
                     newval = 1.;
                     for ( unsigned int m = 0; m < d_numXmoments; m++ ) {
                         newval += d_Xmoments[m] * evalLegendre( m + 1, x );
@@ -414,7 +410,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                     // Y moments
                     y = ( 2 * y - ( ymax + ymin ) ) /
-                        ( ymax - ymin ); // mapping y coordinate to (-1 to 1)
+                        ( ymax - ymin ); // map y coordinate to (-1 to 1)
                     newval = 1.;
                     for ( unsigned int m = 0; m < d_numYmoments; m++ ) {
                         newval += d_Ymoments[m] * evalLegendre( m + 1, y );
@@ -423,7 +419,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                     // Z moments
                     z = ( 2 * z - ( zmax + zmin ) ) /
-                        ( zmax - zmin ); // mapping z coordinate to (-1 to 1)
+                        ( zmax - zmin ); // map z coordinate to (-1 to 1)
                     newval = 1.;
                     for ( unsigned int m = 0; m < d_numZmoments; m++ ) {
                         newval += d_Zmoments[m] * evalLegendre( m + 1, z );
@@ -460,9 +456,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                 // Loop over all gauss-points on the element.
                 for ( int i = 0; i < DOFsPerElement; i++ ) {
-                    x = d_fe->get_xyz()[i]( 0 );
-                    y = d_fe->get_xyz()[i]( 1 );
-                    z = d_fe->get_xyz()[i]( 2 );
+                    double x = d_fe->get_xyz()[i]( 0 );
+                    double y = d_fe->get_xyz()[i]( 1 );
+                    double z = d_fe->get_xyz()[i]( 2 );
 
                     // 2D Gaussian (Normal) distribution.
                     newval = ( xmax - xmin ) * ( ymax - ymin ) * getGaussianF( x, y );
@@ -527,9 +523,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                 // Loop over all gauss-points on the element.
                 for ( int i = 0; i < DOFsPerElement; i++ ) {
-                    x = d_fe->get_xyz()[i]( 0 ) - centerx;
-                    y = d_fe->get_xyz()[i]( 1 ) - centery;
-                    z = d_fe->get_xyz()[i]( 2 );
+                    double x = d_fe->get_xyz()[i]( 0 ) - centerx;
+                    double y = d_fe->get_xyz()[i]( 1 ) - centery;
+                    double z = d_fe->get_xyz()[i]( 2 );
 
                     // r based on Frapcon.
                     double radius = sqrt( x * x + y * y );
@@ -582,9 +578,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                 // Loop over all gauss-points on the element.
                 for ( int i = 0; i < DOFsPerElement; i++ ) {
-                    x = d_fe->get_xyz()[i]( 0 ) - centerx;
-                    y = d_fe->get_xyz()[i]( 1 ) - centery;
-                    z = d_fe->get_xyz()[i]( 2 );
+                    double x = d_fe->get_xyz()[i]( 0 ) - centerx;
+                    double y = d_fe->get_xyz()[i]( 1 ) - centery;
                     // r based on Frapcon.
                     double relativeRadius = sqrt( x * x + y * y ) / rmax;
                     double besArg         = 2.405 * relativeRadius;
@@ -675,9 +670,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                 // Loop over all gauss-points on the element.
                 for ( int i = 0; i < DOFsPerElement; i++ ) {
-                    x = d_fe->get_xyz()[i]( 0 ) - centerx;
-                    y = d_fe->get_xyz()[i]( 1 ) - centery;
-                    z = d_fe->get_xyz()[i]( 2 );
+                    double x = d_fe->get_xyz()[i]( 0 ) - centerx;
+                    double y = d_fe->get_xyz()[i]( 1 ) - centery;
+                    double z = d_fe->get_xyz()[i]( 2 );
 
                     // r based on Frapcon.
                     double relativeRadius = sqrt( x * x + y * y ) / rmax;
@@ -729,9 +724,9 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
                 // Loop over all gauss-points on the element.
                 for ( int i = 0; i < DOFsPerElement; i++ ) {
-                    x = d_fe->get_xyz()[i]( 0 ) - centerx;
-                    y = d_fe->get_xyz()[i]( 1 ) - centery;
-                    z = d_fe->get_xyz()[i]( 2 );
+                    double x = d_fe->get_xyz()[i]( 0 ) - centerx;
+                    double y = d_fe->get_xyz()[i]( 1 ) - centery;
+                    double z = d_fe->get_xyz()[i]( 2 );
 
                     // r based on Frapcon.
                     double relativeRadius = sqrt( x * x + y * y ) / rmax;
@@ -829,15 +824,11 @@ double PowerShape::evalLegendre( const int n, const double x )
  */
 double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
 {
-    double integralFr = 0;
-    double numerator  = 0;
-
-    double x, y, radius;
-
+    double integralFr            = 0;
+    double numerator             = 0;
     int ghostWidth               = 0;
     AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
-
     for ( ; elem != end_elems; ++elem ) {
         d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
         createCurrentLibMeshElement();
@@ -848,12 +839,10 @@ double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
         // Loop over all gauss-points on the element.
         int DOFsPerElement = 8;
         for ( int i = 0; i < DOFsPerElement; i++ ) {
-            x      = d_fe->get_xyz()[i]( 0 ) - cx;
-            y      = d_fe->get_xyz()[i]( 1 ) - cy;
-            radius = sqrt( x * x + y * y );
-
+            double x      = d_fe->get_xyz()[i]( 0 ) - cx;
+            double y      = d_fe->get_xyz()[i]( 1 ) - cy;
+            double radius = sqrt( x * x + y * y );
             elemSum += getFrapconFr( radius, rmax );
-
         } // end for gauss-points
         integralFr += ( elemSum / 8.0 ) * elemVolume;
         numerator += elemVolume;

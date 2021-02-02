@@ -153,7 +153,7 @@ void draw_lines_on_face( unsigned int f, hex8_element_t *volume_element )
 {
     double local_coordinates_on_face[2], local_coordinates[3];
     unsigned int n = 6, m = 6;
-    std::vector<double> global_coordinates;
+    double global_coordinates[21] = { 0 };
     global_coordinates.resize( 3 * ( m + 1 ) );
     for ( unsigned int i = 0; i <= n; ++i ) {
         local_coordinates_on_face[0] =
@@ -162,12 +162,10 @@ void draw_lines_on_face( unsigned int f, hex8_element_t *volume_element )
             local_coordinates_on_face[1] =
                 -1.0 + 2.0 * static_cast<double>( j ) / static_cast<double>( m );
             volume_element->map_face_to_local( f, local_coordinates_on_face, local_coordinates );
-            volume_element->map_local_to_global( local_coordinates,
-                                                 &( global_coordinates[3 * j] ) );
+            volume_element->map_local_to_global( local_coordinates, &global_coordinates[3 * j] );
         } // end for j
-        draw_line( m + 1, &( global_coordinates[0] ), "black, dashed" );
+        draw_line( m + 1, global_coordinates, "black, dashed" );
     } // end for i
-    global_coordinates.resize( 3 * ( n + 1 ) );
     for ( unsigned int j = 0; j <= m; ++j ) {
         local_coordinates_on_face[1] =
             -1.0 + 2.0 * static_cast<double>( j ) / static_cast<double>( m );
@@ -175,10 +173,9 @@ void draw_lines_on_face( unsigned int f, hex8_element_t *volume_element )
             local_coordinates_on_face[0] =
                 -1.0 + 2.0 * static_cast<double>( i ) / static_cast<double>( n );
             volume_element->map_face_to_local( f, local_coordinates_on_face, local_coordinates );
-            volume_element->map_local_to_global( local_coordinates,
-                                                 &( global_coordinates[3 * i] ) );
+            volume_element->map_local_to_global( local_coordinates, &global_coordinates[3 * i] );
         } // end for j
-        draw_line( n + 1, &( global_coordinates[0] ), "black, dashed" );
+        draw_line( n + 1, global_coordinates, "black, dashed" );
     } // end for j
 }
 

@@ -121,12 +121,11 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
     // Search for the local points
     PROFILE_START( "search_local" );
     bool error = false;
-    size_t j;
     double dist, xs[100], pos[100];
     for ( size_t i = 0; i < Nx; i++ ) {
         for ( int d = 0; d < DIM; d++ )
             xs[d] = points[d][i];
-        j = tree.find_nearest( xs, &dist, pos );
+        size_t j = tree.find_nearest( xs, &dist, pos );
         if ( j != i || dist != 0.0 )
             error = true;
         for ( int d = 0; d < DIM; d++ )

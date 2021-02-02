@@ -11,18 +11,13 @@ namespace Operator {
 
 ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
     const std::shared_ptr<MechanicsMaterialModelParameters> &params )
-    : MechanicsMaterialModel( params )
+    : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
     d_Is_Source = ( params->d_db )->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
-
-    for ( auto &elem : d_constitutiveMatrix ) {
-        for ( double &j : elem )
-            j = 0.;
-    }
 
     if ( d_useMaterialsLibrary == false ) {
         // IsotropicElasticModel C_Elastic(params);

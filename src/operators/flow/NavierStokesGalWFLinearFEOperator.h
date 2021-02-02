@@ -24,13 +24,13 @@ public:
 
     std::string type() const override { return "NavierStokesGalWFLinearFEOperator"; }
 
-    void preAssembly( const std::shared_ptr<OperatorParameters> &params );
+    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
 
-    void postAssembly();
+    void postAssembly() override;
 
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
-    void postElementOperation();
+    void postElementOperation() override;
 
     unsigned int numberOfDOFMaps() { return 1; }
 

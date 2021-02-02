@@ -23,13 +23,13 @@ public:
 
     std::string type() const override { return "NavierStokesLSWFLinearFEOperator"; }
 
-    void preAssembly( const std::shared_ptr<OperatorParameters> &params );
+    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
 
-    void postAssembly();
+    void postAssembly() override;
 
-    void preElementOperation( const AMP::Mesh::MeshElement & );
+    void preElementOperation( const AMP::Mesh::MeshElement & ) override;
 
-    void postElementOperation();
+    void postElementOperation() override;
 
 protected:
     void getDofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );

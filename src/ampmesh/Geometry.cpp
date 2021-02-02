@@ -87,8 +87,8 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
         auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
         if ( multimesh ) {
             std::vector<Geometry::shared_ptr> geoms;
-            for ( const auto &mesh : multimesh->getMeshes() )
-                geoms.push_back( std::make_shared<MeshGeometry>( mesh ) );
+            for ( const auto &mesh2 : multimesh->getMeshes() )
+                geoms.push_back( std::make_shared<MeshGeometry>( mesh2 ) );
             geom = std::make_shared<MultiGeometry>( geoms );
         } else {
             geom = std::make_shared<MeshGeometry>( mesh );

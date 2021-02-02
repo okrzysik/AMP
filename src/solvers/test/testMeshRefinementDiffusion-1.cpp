@@ -140,7 +140,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
 
 void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
-                    AMP::AMP_MPI globalComm,
+                    const AMP::AMP_MPI &globalComm,
                     AMP::LinearAlgebra::Vector::shared_ptr TemperatureVec,
                     double *discretizationErrorNorm2 )
 {

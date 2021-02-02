@@ -90,13 +90,13 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // set shift, scale for applyTests
     double shift = 0., scale = 1.;
-    std::vector<double> range( 2 );
     auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
     auto mat = transportModel->getMaterial();
     if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
-            range = ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
+            auto range =
+                ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
             scale = range[1] - range[0];
             shift = range[0] + 0.001 * scale;
             scale *= 0.999;
@@ -104,7 +104,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     }
     if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
         if ( ( mat->property( property ) )->is_argument( "concentration" ) ) {
-            range =
+            auto range =
                 ( mat->property( property ) )->get_arg_range( "concentration" ); // Compile error
             scale = range[1] - range[0];
             shift = range[0] + 0.001 * scale;

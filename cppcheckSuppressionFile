@@ -4,9 +4,10 @@ operatorEq:*
 // Suppress all useStlAlgorithm (too aggressive)
 useStlAlgorithm:*
 
-// Suppress all operatorEq (too many false positives)
+// Suppress all shadow variables/functions (too many false positives)
 shadowFunction:*
 shadowVar:*
+shadowVariable:*
 
 // Suppress all returnDanglingLifetime (false positives with std::tie)
 returnDanglingLifetime:*
@@ -37,6 +38,9 @@ virtualCallInConstructor:*
 invalidscanf:*
 invalidscanf_libc:*
 
+// Suppress known condition (too many false positives"
+knownConditionTrueFalse:*
+
 
 // Suppress common test warnings (example: x==x)
 duplicateExpression:*/test/test*
@@ -60,6 +64,7 @@ noExplicitConstructor:*/ampmesh/MeshID.h
 noExplicitConstructor:*/ampmesh/MeshPoint.h
 noExplicitConstructor:*/ampmesh/MeshGeometry.h
 noExplicitConstructor:*/ampmesh/MeshElement.h
+noExplicitConstructor:*/AMP/ampmesh/MeshUtilities.h
 knownConditionTrueFalse:*/ampmesh/testHelpers/meshTestLoop.cpp
 postfixOperator:*/ampmesh/testHelpers/meshTests.cpp
 oppositeInnerCondition:*/src/ampmesh/MultiMesh.cpp
@@ -69,10 +74,14 @@ oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cpp
 duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cpp
 useInitializationList:*/ampmesh/structured/BoxMesh.cpp
 useInitializationList:*/ampmesh/structured/StructuredGeometryMesh.cpp
+redundantCondition:*/ampmesh/triangle/TriangleMeshElement.cpp
+shadowVariable:*/ampmesh/STKmesh/STKMesh.cpp
+invalidLifetime:*/ampmesh/libmesh/libmeshMesh.cpp
 
 
 // Suppress warnings for discretization
 duplicateExpression:*/discretization/test/DOFManager_tests.h
+redundantCondition:*/discretization/test/test_Discretization.h
 
 
 // Suppress warnings for graphics
@@ -87,6 +96,7 @@ nullPointer:*/materials/Property.h
 // Suppress warnings for matrices
 exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
 uninitMemberVar:*/src/matrices/petsc/NativePetscMatrix.cpp
+constParameter:*/AMP/matrices/Matrix.inline.h
 
 // Supress warnings for operators
 uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
@@ -104,7 +114,7 @@ passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator-2.cpp
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cpp
 useInitializationList:*/src/operators/VectorCopyOperator.cpp
 useInitializationList:*/src/operators/map/AsyncMapOperator.cpp
-knownConditionTrueFalse:*/src/operators/libmesh/PowerShape.cpp
+useInitializationList:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
 *:*/operators/test/dendro/*
 
 
@@ -119,6 +129,7 @@ noExplicitConstructor:*/AMP/vectors/Vector.h
 noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
 noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
 autovarInvalidDeallocation:*/src/vectors/petsc/PetscHelpers.cpp
+constParameter:*/AMP/vectors/Vector.inline.h
 
 // Suppress warnings for solvers
 duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cpp
@@ -145,6 +156,7 @@ noExplicitConstructor:*/AMP/utils/string_view.h
 noExplicitConstructor:*/AMP/utils/kdtree.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cpp
 passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
+operatorEqRetRefThis:*/utils/threadpool/ThreadPoolId.hpp
 memleak:*/utils/test/test_AMPManager.cpp
 invalidPointerCast:*/utils/threadpool/atomic_helpers.cpp
 duplicateAssignExpression:*/src/utils/test/test_MathExpr.cpp
@@ -155,8 +167,10 @@ knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 useInitializationList:*/src/utils/AMP_MPI.cpp
 nullPointer:*/src/utils/Scanner.cpp
 nullPointerRedundantCheck:*/src/utils/Scanner.cpp
+duplicateExpression:*/utils/Database.hpp
 duplicateExpression:*/utils/Array.hpp
 nullPointer:*/utils/Array.hpp
+nullPointer:*/utils/ArraySize.h
 unreadVariable:*/utils/ReadTestMesh.cpp
 resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
@@ -170,5 +184,8 @@ unreadVariable:*/src/utils/DelaunayTessellation.cpp
 uninitvar:*/src/utils/DelaunayInterpolation.cpp
 uninitvar:*/src/utils/DelaunayTessellation.cpp
 redundantAssignment:*/src/utils/kdtree.cpp
+templateRecursion:*/AMP/utils/AMP_MPI.I
+shadowVariable:*/utils/DelaunayTessellation.cpp
+
 
 

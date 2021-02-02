@@ -800,12 +800,12 @@ static void removeTriangles( std::vector<std::array<int, NDIM + 1>> &tri,
         if ( !remove[i] ) {
             tri[map[i]] = tri[i];
             for ( int d = 0; d <= NDIM; d++ ) {
-                if ( tri_nab[i][d] == -1 )
-                    tri_nab[i][d] = -1;
-                else if ( remove[tri_nab[i][d]] )
-                    tri_nab[i][d] = -1;
-                else
-                    tri_nab[i][d] = map[tri_nab[i][d]];
+                if ( tri_nab[i][d] != -1 ) {
+                    if ( remove[tri_nab[i][d]] )
+                        tri_nab[i][d] = -1;
+                    else
+                        tri_nab[i][d] = map[tri_nab[i][d]];
+                }
             }
             tri_nab[map[i]] = tri_nab[i];
         }

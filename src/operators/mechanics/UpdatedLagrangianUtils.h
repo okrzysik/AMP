@@ -49,7 +49,7 @@ void vecScale( double c, std::vector<double> &vec );
 
 double vecDot( double a[3], double b[3] );
 
-double vecDot( std::vector<double> &a, std::vector<double> &b );
+double vecDot( const std::vector<double> &a, const std::vector<double> &b );
 
 void quadraticRoots( double a, double b, double c, double &r1, double &r2 );
 

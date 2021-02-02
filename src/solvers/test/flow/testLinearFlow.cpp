@@ -145,11 +145,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     DInvMat->zero();
     DInvMat->setDiagonal( diagonalInvVec );
 
-    auto schurMat = zeroMat->cloneMatrix();
-
     auto DInvBtMat = AMP::LinearAlgebra::Matrix::matMultiply( DInvMat, BtMat );
 
-    schurMat = AMP::LinearAlgebra::Matrix::matMultiply( BtMat, DInvBtMat );
+    auto schurMat = AMP::LinearAlgebra::Matrix::matMultiply( BtMat, DInvBtMat );
 
     auto dummyParams3 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
     dummyParams3->d_Matrix =

@@ -511,7 +511,8 @@ void AMPManager::setHandlers()
     // Set atexit function
     std::atexit( exitFun );
 #ifdef USE_LINUX
-    std::at_quick_exit( exitFun );
+    int err = std::at_quick_exit( exitFun );
+    AMP_ASSERT( err == 0 );
 #endif
 }
 void AMPManager::clearHandlers()

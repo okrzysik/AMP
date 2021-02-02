@@ -53,7 +53,7 @@ extern template class Array<float, FunctionTable>;
     template void Array<TYPE,FunctionTable>::reshape(ArraySize const&);                     \
     template std::unique_ptr<const Array<TYPE,FunctionTable>> Array<TYPE,FunctionTable>::constView(ArraySize const&, std::shared_ptr<TYPE const> const&); \
     template void Array<TYPE,FunctionTable>::viewRaw( ArraySize const&, TYPE*, bool, bool ); \
-    template void Array<TYPE,FunctionTable>::view2(ArraySize const&, std::shared_ptr<TYPE> const&); \
+    template void Array<TYPE,FunctionTable>::view2(ArraySize const&, std::shared_ptr<TYPE> ); \
     template Array<TYPE,FunctionTable> &Array<TYPE,FunctionTable>::operator=( const Array<TYPE,FunctionTable> & ); \
     template Array<TYPE,FunctionTable> &Array<TYPE,FunctionTable>::operator=( Array<TYPE,FunctionTable> && );
 // clang-format on
@@ -240,10 +240,10 @@ Array<TYPE, FUN, Allocator>::Array( Array &&rhs )
     : d_isCopyable( rhs.d_isCopyable ),
       d_isFixedSize( rhs.d_isFixedSize ),
       d_size( rhs.d_size ),
-      d_data( rhs.d_data )
+      d_data( rhs.d_data ),
+      d_ptr( std::move( rhs.d_ptr ) )
 {
     rhs.d_data = nullptr;
-    d_ptr      = std::move( rhs.d_ptr );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const Array &rhs )
@@ -570,7 +570,7 @@ bool Array<TYPE, FUN, Allocator>::operator==( const Array &rhs ) const
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
 std::unique_ptr<Array<TYPE, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::view( const ArraySize &N, std::shared_ptr<TYPE> &data )
+Array<TYPE, FUN, Allocator>::view( const ArraySize &N, std::shared_ptr<TYPE> data )
 {
     auto array    = std::make_unique<Array<TYPE, FUN, Allocator>>();
     array->d_size = N;
@@ -596,7 +596,7 @@ void Array<TYPE, FUN, Allocator>::view2( Array<TYPE, FUN, Allocator> &src )
     d_data = src.d_data;
 }
 template<class TYPE, class FUN, class Allocator>
-void Array<TYPE, FUN, Allocator>::view2( const ArraySize &N, std::shared_ptr<TYPE> const &data )
+void Array<TYPE, FUN, Allocator>::view2( const ArraySize &N, std::shared_ptr<TYPE> data )
 {
     d_size = N;
     d_ptr  = data;

@@ -21,6 +21,12 @@ IF ( USE_MPI )
 ENDIF()
 
 
+# Install executables
+#SET( CMAKE_SKIP_BUILD_RPATH TRUE )
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+ADD_AMP_EXECUTABLE( run_system_tpool )
+
+
 # Add affinity tests
 COPY_TEST_FILE( input_print_affinity_1 )
 ADD_AMP_TEST( print_thread_affinities input_print_affinity_1 )

@@ -82,14 +82,14 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
                 Units u2( unit.substr( i + 2, j - i - 3 ) );
                 s = 1.0 / u2.d_scale;
                 u = u2.d_SI;
-                for ( size_t i = 0; i < u.size(); i++ )
-                    u[i] = -u[i];
+                for ( size_t m = 0; m < u.size(); m++ )
+                    u[m] = -u[m];
             } else {
                 j             = findSpace( i );
                 auto [u2, s2] = read( unit.substr( i + 1, j - i - 1 ) );
                 s             = 1.0 / s2;
-                for ( size_t i = 0; i < u.size(); i++ )
-                    u[i] = -u2[i];
+                for ( size_t m = 0; m < u.size(); m++ )
+                    u[m] = -u2[m];
             }
         } else {
             j             = findSpace( i );
@@ -134,8 +134,8 @@ constexpr std::tuple<Units::SI_type, double> Units::read( const AMP::string_view
         double s0 = s;
         for ( int j = 1; j < p; j++ )
             s *= s0;
-        for ( size_t i = 0; i < u.size(); i++ )
-            u[i] *= p;
+        for ( size_t j = 0; j < u.size(); j++ )
+            u[j] *= p;
         return std::tie( u, s );
     }
 }

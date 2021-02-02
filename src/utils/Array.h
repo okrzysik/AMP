@@ -148,7 +148,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static std::unique_ptr<Array> view( const ArraySize &N, std::shared_ptr<TYPE> &data );
+    static std::unique_ptr<Array> view( const ArraySize &N, std::shared_ptr<TYPE> data );
 
 
     /*!
@@ -171,7 +171,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    void view2( const ArraySize &N, std::shared_ptr<TYPE> const &data );
+    void view2( const ArraySize &N, std::shared_ptr<TYPE> data );
 
     /*!
      * Make this object a view of the raw data (expert use only).

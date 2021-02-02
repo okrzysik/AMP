@@ -264,7 +264,6 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     auto matZero   = d_factory->getMatrix();
     auto matIdent  = d_factory->getMatrix();
     auto matLaplac = d_factory->getMatrix();
-    auto matSol    = d_factory->getMatrix();
     auto vector1   = matZero->getRightVector();
     auto vector2   = matZero->getRightVector();
     auto vector3   = matZero->getRightVector();
@@ -285,7 +284,7 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     double ans1, ans2, ans3;
 
     // Verify matMultiply with 0 matrix
-    matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
+    auto matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
     if ( matSol->L1Norm() == 0.0 )
         utils->passes( "matMultiply with 0 matrix" );
     else
