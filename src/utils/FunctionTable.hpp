@@ -19,30 +19,30 @@ namespace AMP {
 /********************************************************
  *  Random number initialization                         *
  ********************************************************/
-template<class TYPE>
-static inline typename std::enable_if<std::is_integral<TYPE>::value>::type genRand( size_t N,
-                                                                                    TYPE *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_int_distribution<TYPE> dis;
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
-}
-template<class TYPE>
-static inline typename std::enable_if<std::is_floating_point<TYPE>::value>::type genRand( size_t N,
-                                                                                          TYPE *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_real_distribution<TYPE> dis( 0, 1 );
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
-}
 template<class TYPE, class FUN>
 inline void FunctionTable::rand( Array<TYPE, FUN> &x )
 {
-    genRand<TYPE>( x.length(), x.data() );
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    if constexpr ( std::is_integral<TYPE>::value ) {
+        std::uniform_int_distribution<TYPE> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = dis( gen );
+    } else if constexpr ( std::is_floating_point<TYPE>::value ) {
+        std::uniform_real_distribution<TYPE> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = dis( gen );
+    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+        std::uniform_real_distribution<float> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = std::complex<float>( dis( gen ), dis( gen ) );
+    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+        std::uniform_real_distribution<double> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = std::complex<double>( dis( gen ), dis( gen ) );
+    } else {
+        AMP_ERROR( "rand not implimented" );
+    }
 }
 
 

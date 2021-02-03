@@ -281,9 +281,9 @@ public: // Views/copies/subset
      * Copy and convert data from this array to a new array
      */
     template<class TYPE2>
-    Array<TYPE2, FUN, Allocator> inline cloneTo() const
+    Array<TYPE2, FUN, std::allocator<TYPE2>> inline cloneTo() const
     {
-        Array<TYPE2, FUN, Allocator> dst( this->size() );
+        Array<TYPE2, FUN, std::allocator<TYPE2>> dst( this->size() );
         copyTo( dst.data() );
         return dst;
     }
