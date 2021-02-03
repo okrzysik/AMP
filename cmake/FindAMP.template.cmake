@@ -68,6 +68,14 @@ FOREACH( tmp ${TPL_LIST} )
 ENDFOREACH()
 
 
+# Load a dummy timer if one was not include
+IF ( NOT DEFINED TIMER_INCLUDE )
+    INCLUDE( "${TPL_DIRECTORY}/cmake/FindTimer.cmake" )
+    CONFIGURE_TIMER( FALSE "${${PROJ}_INSTALL_DIR}/include" TRUE )
+    SET( TPL_INCLUDE_DIRS ${TPL_INCLUDE_DIRS} ${TIMER_INCLUDE} )
+ENDIF()
+
+
 # Set the maximum number of processors for a test
 IF ( NOT TEST_MAX_PROCS )
     SET( TEST_MAX_PROCS @TEST_MAX_PROCS@ )

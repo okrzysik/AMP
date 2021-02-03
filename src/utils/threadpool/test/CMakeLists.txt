@@ -1,3 +1,8 @@
+# Install executables
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+ADD_AMP_EXECUTABLE( run_system_tpool )
+
+
 # Add thread pool tests
 FILE( COPY "${CMAKE_CURRENT_SOURCE_DIR}/data/commands.txt" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 ADD_AMP_TEST( test_atomic )
@@ -19,12 +24,6 @@ IF ( USE_MPI )
         SET_TESTS_PROPERTIES( test_thread_pool_4procs_4threads PROPERTIES  FAIL_REGULAR_EXPRESSION "${TEST_FAIL_REGULAR_EXPRESSION}"  PROCESSORS 16  RUN_SERIAL 1  COST -400 )
     ENDIF()
 ENDIF()
-
-
-# Install executables
-#SET( CMAKE_SKIP_BUILD_RPATH TRUE )
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-ADD_AMP_EXECUTABLE( run_system_tpool )
 
 
 # Add affinity tests

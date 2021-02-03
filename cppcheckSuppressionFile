@@ -38,7 +38,7 @@ virtualCallInConstructor:*
 invalidscanf:*
 invalidscanf_libc:*
 
-// Suppress known condition (too many false positives"
+// Suppress known condition (too many false positives)
 knownConditionTrueFalse:*
 
 
