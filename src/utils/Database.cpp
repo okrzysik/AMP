@@ -405,6 +405,12 @@ std::string Database::print( const AMP::string_view &indent ) const
  ********************************************************************/
 std::shared_ptr<Database> Database::parseInputFile( const std::string &filename )
 {
+    auto db = std::make_unique<Database>( filename );
+    db->readDatabase( filename );
+    return db;
+}
+void Database::readDatabase( const std::string &filename )
+{
     // Read the input file into memory
     FILE *fid = fopen( filename.data(), "rb" );
     DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
@@ -417,14 +423,12 @@ std::shared_ptr<Database> Database::parseInputFile( const std::string &filename 
     DATABASE_INSIST( result == bytes, "Error reading file %s", filename.data() );
     buffer[bytes] = 0;
     // Create the database entries
-    auto db = std::make_unique<Database>( filename );
     try {
-        db->loadDatabase( buffer.data(), *db );
+        loadDatabase( buffer.data(), *this );
     } catch ( std::exception &err ) {
         throw std::logic_error( "Error loading database from file \"" + filename + "\"\n" +
                                 err.what() );
     }
-    return db;
 }
 std::unique_ptr<Database> Database::createFromString( const AMP::string_view &data )
 {

@@ -126,6 +126,13 @@ public:
     //! Destructor
     virtual ~Database() = default;
 
+    /**
+     * Open an database file
+     * @param filename       Name of input file to open
+     */
+    void readDatabase( const std::string &filename );
+
+
     //! Copy the data
     std::unique_ptr<KeyData> clone() const override;
 
