@@ -310,6 +310,10 @@ double trilinear( const std::vector<double> &x,
 constexpr unsigned int hash_char( const char * );
 
 
+// Function to demangle a string (e.g. from typeid)
+std::string demangle( const std::string &name );
+
+
 //! Get the type name (does not match typeid, does not work for all compilers)
 template<typename T>
 constexpr AMP::string_view type_name();

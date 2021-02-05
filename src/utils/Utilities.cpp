@@ -421,6 +421,28 @@ double Utilities::trilinear( const std::vector<double> &x,
 void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
 
+// Function to demangle a string (e.g. from typeid)
+#ifdef __GNUC__
+#define USE_ABI
+#include <cxxabi.h>
+#endif
+std::string Utilities::demangle( const std::string &name )
+{
+    std::string out;
+#if defined( _GNU_SOURCE ) || defined( USE_MAC )
+#if defined( USE_ABI )
+    int status;
+    char *demangled = abi::__cxa_demangle( name.data(), nullptr, nullptr, &status );
+    if ( status == 0 && demangled != nullptr )
+        out = demangled;
+    free( demangled );
+#endif
+#endif
+    if ( out.empty() )
+        out = name;
+    return out;
+}
+
 // Print a database to an output stream
 template<class TYPE>
 static void printVar( const std::string &name,
