@@ -72,6 +72,8 @@ template void Array<std::string,FunctionTable>::resize( ArraySize const& );
 template void Array<std::string,FunctionTable>::clear();
 template Array<std::string, FunctionTable> &Array<std::string, FunctionTable>::
 operator=( const std::vector<std::string> & );
+template bool AMP::Array<std::string>::operator==(AMP::Array<std::string> const&) const;
+
 
 #if defined( USING_ICC )
 ENABLE_WARNINGS
