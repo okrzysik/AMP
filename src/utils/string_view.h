@@ -20,6 +20,8 @@ public:
     constexpr string_view( const string_view & ) noexcept = default;
     constexpr string_view( const char *s ) : d_data( s ), d_size( 0 )
     {
+        if ( s != nullptr )
+            return;
         while ( s[d_size] )
             d_size++;
     }

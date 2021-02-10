@@ -130,24 +130,26 @@ void VectorData::getGhostAddValuesByGlobalID( int numVals, size_t *ndx, double *
  ****************************************************************/
 void VectorData::makeConsistent( ScatterType t )
 {
-    if ( t == ScatterType::CONSISTENT_ADD ) {
-        AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
-        std::vector<double> send_vec_add( d_CommList->getVectorReceiveBufferSize() );
-        std::vector<double> recv_vec_add( d_CommList->getVectorSendBufferSize() );
-        d_CommList->packReceiveBuffer( send_vec_add, *this );
-        d_CommList->scatter_add( send_vec_add, recv_vec_add );
-        d_CommList->unpackSendBufferAdd( recv_vec_add, *this );
-        for ( auto &elem : *d_AddBuffer ) {
-            elem = 0.0;
+    if ( d_CommList ) {
+        if ( t == ScatterType::CONSISTENT_ADD ) {
+            AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
+            std::vector<double> send_vec_add( d_CommList->getVectorReceiveBufferSize() );
+            std::vector<double> recv_vec_add( d_CommList->getVectorSendBufferSize() );
+            d_CommList->packReceiveBuffer( send_vec_add, *this );
+            d_CommList->scatter_add( send_vec_add, recv_vec_add );
+            d_CommList->unpackSendBufferAdd( recv_vec_add, *this );
+            for ( auto &elem : *d_AddBuffer ) {
+                elem = 0.0;
+            }
         }
+        *d_UpdateState = UpdateState::SETTING;
+        std::vector<double> send_vec( d_CommList->getVectorSendBufferSize() );
+        std::vector<double> recv_vec( d_CommList->getVectorReceiveBufferSize() );
+        d_CommList->packSendBuffer( send_vec, *this );
+        d_CommList->scatter_set( send_vec, recv_vec );
+        d_CommList->unpackReceiveBufferSet( recv_vec, *this );
+        *d_UpdateState = UpdateState::UNCHANGED;
     }
-    *d_UpdateState = UpdateState::SETTING;
-    std::vector<double> send_vec( d_CommList->getVectorSendBufferSize() );
-    std::vector<double> recv_vec( d_CommList->getVectorReceiveBufferSize() );
-    d_CommList->packSendBuffer( send_vec, *this );
-    d_CommList->scatter_set( send_vec, recv_vec );
-    d_CommList->unpackReceiveBufferSet( recv_vec, *this );
-    *d_UpdateState = UpdateState::UNCHANGED;
     this->setUpdateStatus( UpdateState::UNCHANGED );
 }
 

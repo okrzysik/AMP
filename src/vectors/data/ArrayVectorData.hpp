@@ -13,65 +13,52 @@ namespace LinearAlgebra {
  * Constructors                                                  *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-ArrayVectorData<T, FUN, Allocator>::ArrayVectorData() : VectorData(), d_globalSize( 0 )
-{
-}
-
-template<typename T, typename FUN, typename Allocator>
 std::shared_ptr<ArrayVectorData<T, FUN, Allocator>>
 ArrayVectorData<T, FUN, Allocator>::create( const ArraySize &localSize )
 {
-    size_t N = localSize.length();
-    AMP_MPI comm( AMP_COMM_SELF );
-    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
-        new ArrayVectorData<T, FUN, Allocator>() );
-    retVal->resize( localSize );
-    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
-    retVal->d_globalSize = N;
-    retVal->d_comm       = comm;
-    return retVal;
+    return create( localSize, { 0, 0, 0 }, AMP_COMM_SELF );
 }
-
-template<typename T, typename FUN, typename Allocator>
-std::shared_ptr<ArrayVectorData<T, FUN, Allocator>>
-ArrayVectorData<T, FUN, Allocator>::create( const ArraySize &localSize, AMP_MPI comm )
-{
-    size_t N = localSize.length();
-    std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
-        new ArrayVectorData<T, FUN, Allocator>() );
-    retVal->resize( localSize );
-    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( DOFs->numLocalDOF(), comm ) );
-    retVal->d_comm       = comm;
-    retVal->d_globalSize = comm.sumReduce( N );
-    return retVal;
-}
-
 template<typename T, typename FUN, typename Allocator>
 std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allocator>::create(
-    AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
+    const ArraySize &localSize, const ArraySize &blockIndex, AMP_MPI comm )
 {
+    size_t N_blocks[3];
+    for ( int d = 0; d < 3; d++ ) {
+        N_blocks[d] = comm.maxReduce( blockIndex[d] + 1 );
+        AMP_ASSERT( comm.maxReduce( localSize[d] ) == localSize[d] );
+    }
+    AMP_ASSERT( N_blocks[0] * N_blocks[1] * N_blocks[2] == (size_t) comm.getSize() );
+    size_t blockOffset =
+        blockIndex[0] + N_blocks[0] * ( blockIndex[1] + blockIndex[2] * N_blocks[1] );
     std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
         new ArrayVectorData<T, FUN, Allocator>() );
-    retVal->setCommunicationList( commlist );
-    retVal->d_comm = commlist->getComm();
-    AMP_ERROR( "This routine is not complete" );
+    retVal->d_array.resize( localSize );
+    retVal->d_comm       = comm;
+    retVal->d_blockIndex = blockIndex;
+    retVal->d_globalSize = { localSize[0] * N_blocks[0],
+                             localSize[1] * N_blocks[1],
+                             localSize[2] * N_blocks[2] };
+    retVal->d_offset     = blockOffset * localSize.length();
+    retVal->setCommunicationList(
+        AMP::LinearAlgebra::CommunicationList::createEmpty( localSize.length(), comm ) );
     return retVal;
 }
 
+
+/****************************************************************
+ * Clone/Swap data                                               *
+ ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-inline std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::cloneData( void ) const
+inline std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::cloneData() const
 {
-    const auto &array = this->getArray();
-    std::vector<size_t> size( array.size().begin(), array.size().end() );
-    auto retVal = create( size, this->getComm() );
+    auto retVal          = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
+    retVal->d_array      = d_array;
+    retVal->d_comm       = d_comm;
+    retVal->d_blockIndex = d_blockIndex;
+    retVal->d_globalSize = d_globalSize;
     retVal->setCommunicationList( getCommunicationList() );
     return retVal;
 }
-
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::swapData( VectorData &rhs )
 {
@@ -82,26 +69,81 @@ void ArrayVectorData<T, FUN, Allocator>::swapData( VectorData &rhs )
     internalArray.swap( otherArray );
 }
 
+
+/****************************************************************
+ * Resize data                                                   *
+ ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::resize( const ArraySize &localDims )
 {
+    AMP_ASSERT( getComm().getSize() == 1 );
     d_array.resize( localDims );
+    d_globalSize = localDims;
 }
 
 
+/****************************************************************
+ * Get/Set raw data                                              *
+ ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::putRawData( const double *buf )
 {
     auto &array = this->getArray();
     array.copy( buf );
 }
-
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::copyOutRawData( double *buf ) const
 {
     auto &array = this->getArray();
     array.copyTo( buf );
 }
+
+
+/****************************************************************
+ * Get/Set values                                                *
+ ****************************************************************/
+template<typename T, typename FUN, typename Allocator>
+void ArrayVectorData<T, FUN, Allocator>::setValuesByLocalID( int num,
+                                                             size_t *indices,
+                                                             const double *vals )
+{
+    for ( int i = 0; i < num; i++ )
+        d_array( indices[i] ) = vals[i];
+}
+template<typename T, typename FUN, typename Allocator>
+void ArrayVectorData<T, FUN, Allocator>::addValuesByLocalID( int num,
+                                                             size_t *indices,
+                                                             const double *vals )
+{
+    for ( int i = 0; i < num; i++ )
+        d_array( indices[i] ) += vals[i];
+}
+template<typename T, typename FUN, typename Allocator>
+void ArrayVectorData<T, FUN, Allocator>::getLocalValuesByGlobalID( int num,
+                                                                   size_t *indices,
+                                                                   double *vals ) const
+{
+    for ( int i = 0; i < num; i++ )
+        vals[i] = d_array( indices[i] - d_offset );
+}
+template<typename T, typename FUN, typename Allocator>
+void ArrayVectorData<T, FUN, Allocator>::setLocalValuesByGlobalID( int num,
+                                                                   size_t *indices,
+                                                                   const double *vals )
+{
+    for ( int i = 0; i < num; i++ )
+        d_array( indices[i] - d_offset ) = vals[i];
+}
+template<typename T, typename FUN, typename Allocator>
+void ArrayVectorData<T, FUN, Allocator>::addLocalValuesByGlobalID( int num,
+                                                                   size_t *indices,
+                                                                   const double *vals )
+{
+    for ( int i = 0; i < num; i++ )
+        d_array( indices[i] - d_offset ) += vals[i];
+}
+
+
 } // namespace LinearAlgebra
 } // namespace AMP
 #endif

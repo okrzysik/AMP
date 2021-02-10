@@ -91,7 +91,6 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
     auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
     auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
 
-
     // Create the vectors
     auto rank_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "rank" );
     auto position_var = std::make_shared<AMP::LinearAlgebra::Variable>( "position" );
