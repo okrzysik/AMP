@@ -83,7 +83,7 @@ public:
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "array" );
         if ( GLOBAL ) {
             AMP_MPI comm( AMP_COMM_WORLD );
-            ArraySize index( comm.getSize(), 0, 0 );
+            ArraySize index( comm.getRank(), 0, 0 );
             vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, index, comm, var );
         } else {
             vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, var );
