@@ -43,7 +43,7 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
         if ( k >= (int) d_unit.size() )
             throw std::logic_error( "Unit size" );
     }
-    AMP::string_view unit( d_unit.data() );
+    AMP::string_view unit( d_unit.data(), k );
     // Convert the string to SI units
     k                    = 0;
     d_scale              = 1.0;
