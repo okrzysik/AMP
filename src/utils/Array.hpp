@@ -1,10 +1,10 @@
-#ifndef included_ArrayClass_hpp
-#define included_ArrayClass_hpp
+#ifndef included_AMP_ArrayClass_hpp
+#define included_AMP_ArrayClass_hpp
 
 #include "AMP/utils/Array.h"
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/FunctionTable.hpp"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <algorithm>
 #include <cmath>
@@ -20,42 +20,43 @@ namespace AMP {
 /********************************************************
  *  External instantiations                              *
  ********************************************************/
-extern template class Array<char, FunctionTable>;
-extern template class Array<uint8_t, FunctionTable>;
-extern template class Array<uint16_t, FunctionTable>;
-extern template class Array<uint32_t, FunctionTable>;
-extern template class Array<uint64_t, FunctionTable>;
-extern template class Array<int8_t, FunctionTable>;
-extern template class Array<int16_t, FunctionTable>;
-extern template class Array<int32_t, FunctionTable>;
-extern template class Array<int64_t, FunctionTable>;
-extern template class Array<double, FunctionTable>;
-extern template class Array<float, FunctionTable>;
+extern template class Array<char>;
+extern template class Array<uint8_t>;
+extern template class Array<uint16_t>;
+extern template class Array<uint32_t>;
+extern template class Array<uint64_t>;
+extern template class Array<int8_t>;
+extern template class Array<int16_t>;
+extern template class Array<int32_t>;
+extern template class Array<int64_t>;
+extern template class Array<double>;
+extern template class Array<float>;
 
 
 /********************************************************
  *  Macros to help instantiate functions                 *
  ********************************************************/
 // clang-format off
-#define instantiateArrayConstructors( TYPE )                                                \
-    template Array<TYPE,FunctionTable>::Array();                                            \
-    template Array<TYPE,FunctionTable>::~Array();                                           \
-    template Array<TYPE,FunctionTable>::Array( const ArraySize & );                         \
-    template Array<TYPE,FunctionTable>::Array( size_t );                                    \
-    template Array<TYPE,FunctionTable>::Array( size_t, size_t );                            \
-    template Array<TYPE,FunctionTable>::Array( size_t, size_t, size_t );                    \
-    template Array<TYPE,FunctionTable>::Array( size_t, size_t, size_t, size_t );            \
-    template Array<TYPE,FunctionTable>::Array( size_t, size_t, size_t, size_t, size_t );    \
-    template Array<TYPE,FunctionTable>::Array( const std::vector<size_t> &, const TYPE * ); \
-    template Array<TYPE,FunctionTable>::Array( std::initializer_list<TYPE> );               \
-    template Array<TYPE,FunctionTable>::Array( const Array<TYPE,FunctionTable> & );         \
-    template Array<TYPE,FunctionTable>::Array( Array<TYPE,FunctionTable> && );              \
-    template void Array<TYPE,FunctionTable>::reshape(ArraySize const&);                     \
-    template std::unique_ptr<const Array<TYPE,FunctionTable>> Array<TYPE,FunctionTable>::constView(ArraySize const&, std::shared_ptr<TYPE const> const&); \
-    template void Array<TYPE,FunctionTable>::viewRaw( ArraySize const&, TYPE*, bool, bool ); \
-    template void Array<TYPE,FunctionTable>::view2(ArraySize const&, std::shared_ptr<TYPE> const&); \
-    template Array<TYPE,FunctionTable> &Array<TYPE,FunctionTable>::operator=( const Array<TYPE,FunctionTable> & ); \
-    template Array<TYPE,FunctionTable> &Array<TYPE,FunctionTable>::operator=( Array<TYPE,FunctionTable> && );
+#define instantiateArrayConstructors( TYPE )                                       \
+    template AMP::Array<TYPE>::Array();                                            \
+    template AMP::Array<TYPE>::~Array();                                           \
+    template AMP::Array<TYPE>::Array( const AMP::ArraySize & );                    \
+    template AMP::Array<TYPE>::Array( size_t );                                    \
+    template AMP::Array<TYPE>::Array( size_t, size_t );                            \
+    template AMP::Array<TYPE>::Array( size_t, size_t, size_t );                    \
+    template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t );            \
+    template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t, size_t );    \
+    template AMP::Array<TYPE>::Array( const std::vector<size_t> &, const TYPE * ); \
+    template AMP::Array<TYPE>::Array( std::initializer_list<TYPE> );               \
+    template AMP::Array<TYPE>::Array( const AMP::Array<TYPE> & );                  \
+    template AMP::Array<TYPE>::Array( AMP::Array<TYPE> && );                       \
+    template void AMP::Array<TYPE>::reshape( AMP::ArraySize const& );              \
+    template std::unique_ptr<const AMP::Array<TYPE>>                               \
+        AMP::Array<TYPE>::constView(ArraySize const&, std::shared_ptr<TYPE const> const&); \
+    template void AMP::Array<TYPE>::viewRaw( ArraySize const&, TYPE*, bool, bool ); \
+    template void AMP::Array<TYPE>::view2(ArraySize const&, std::shared_ptr<TYPE> ); \
+    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( const AMP::Array<TYPE> & ); \
+    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && );
 // clang-format on
 
 
@@ -240,10 +241,10 @@ Array<TYPE, FUN, Allocator>::Array( Array &&rhs )
     : d_isCopyable( rhs.d_isCopyable ),
       d_isFixedSize( rhs.d_isFixedSize ),
       d_size( rhs.d_size ),
-      d_data( rhs.d_data )
+      d_data( rhs.d_data ),
+      d_ptr( std::move( rhs.d_ptr ) )
 {
     rhs.d_data = nullptr;
-    d_ptr      = std::move( rhs.d_ptr );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const Array &rhs )
@@ -570,7 +571,7 @@ bool Array<TYPE, FUN, Allocator>::operator==( const Array &rhs ) const
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
 std::unique_ptr<Array<TYPE, FUN, Allocator>>
-Array<TYPE, FUN, Allocator>::view( const ArraySize &N, std::shared_ptr<TYPE> &data )
+Array<TYPE, FUN, Allocator>::view( const ArraySize &N, std::shared_ptr<TYPE> data )
 {
     auto array    = std::make_unique<Array<TYPE, FUN, Allocator>>();
     array->d_size = N;
@@ -596,7 +597,7 @@ void Array<TYPE, FUN, Allocator>::view2( Array<TYPE, FUN, Allocator> &src )
     d_data = src.d_data;
 }
 template<class TYPE, class FUN, class Allocator>
-void Array<TYPE, FUN, Allocator>::view2( const ArraySize &N, std::shared_ptr<TYPE> const &data )
+void Array<TYPE, FUN, Allocator>::view2( const ArraySize &N, std::shared_ptr<TYPE> data )
 {
     d_size = N;
     d_ptr  = data;

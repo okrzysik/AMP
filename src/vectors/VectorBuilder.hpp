@@ -59,20 +59,17 @@ Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
 template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize, Variable::shared_ptr var )
 {
-    size_t N = localSize.length();
-    AMP_MPI comm( AMP_COMM_SELF );
-    auto ops  = std::make_shared<VectorOperationsDefault<T>>();
-    auto data = ArrayVectorData<T, FUN, Allocator>::create( localSize, comm );
-    auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
-    return std::make_shared<Vector>( data, ops, var, DOFs );
+    return createArrayVector<T, FUN, Allocator>( localSize, { 0, 0, 0 }, AMP_COMM_SELF, var );
 }
 template<typename T, typename FUN, typename Allocator>
-Vector::shared_ptr
-createArrayVector( const ArraySize &localSize, Variable::shared_ptr var, AMP_MPI comm )
+Vector::shared_ptr createArrayVector( const ArraySize &localSize,
+                                      const ArraySize &blockIndex,
+                                      const AMP_MPI &comm,
+                                      Variable::shared_ptr var )
 {
     size_t N  = localSize.length();
     auto ops  = std::make_shared<VectorOperationsDefault<T>>();
-    auto data = ArrayVectorData<T, FUN, Allocator>::create( localSize, comm );
+    auto data = ArrayVectorData<T, FUN, Allocator>::create( localSize, blockIndex, comm );
     auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }

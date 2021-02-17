@@ -39,7 +39,7 @@ public:
         d_LocalBurnup        = localBurn;
     }
 
-    void apply();
+    void apply() override;
 
 protected:
     std::vector<std::vector<double>> *d_elementMassMatrix;

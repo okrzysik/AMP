@@ -216,6 +216,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
 
     ut->passes( exeName );
+
+    NULL_USE( libmeshInit );
 }
 
 int testCook_Plastic( int argc, char *argv[] )

@@ -510,6 +510,9 @@ int main( int argc, char *argv[] )
             ut.failure( "Caught unknown exception type" );
         }
 
+        // Test printing a warning
+        AMP_WARNING( "Testing warning" );
+
         // Finished testing, report the results
         ut.report();
         num_failed = ut.NumFailGlobal();

@@ -1203,7 +1203,7 @@ void testCommDup( UnitTest *ut )
 int main( int argc, char *argv[] )
 {
     // Start MPI
-    AMP::AMP_MPI::start_MPI( argc, argv );
+    AMP::AMPManager::startup( argc, argv );
 
     // Create the unit test
     UnitTest ut;
@@ -1526,18 +1526,14 @@ int main( int argc, char *argv[] )
 
     // Finished testing, report the results
     PROFILE_START( "Report" );
-    double start_time = time();
     ut.report();
-    int num_failed  = ut.NumFailGlobal();
-    double end_time = time();
-    if ( MPI_CLASS( AMP_COMM_WORLD ).getRank() == 0 )
-        std::cout << "Time to report: " << end_time - start_time << std::endl << std::endl;
+    int num_failed = ut.NumFailGlobal();
     PROFILE_STOP( "Report" );
     PROFILE_STOP( "Main" );
 
     // Shutdown
     PROFILE_SAVE( "test_AMP_MPI" );
     ut.reset();
-    AMP::AMP_MPI::stop_MPI();
+    AMP::AMPManager::shutdown();
     return num_failed;
 }

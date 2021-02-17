@@ -241,7 +241,7 @@ Scalar NativePetscVectorOperations::localL1Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
-    double ans;
+    double ans = 0;
     PetscErrorCode ierr;
     ierr = ( *x->ops->norm_local )( x, NORM_1, &ans );
     CHKERRQ( ierr );
@@ -252,7 +252,7 @@ Scalar NativePetscVectorOperations::localL2Norm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
-    double ans;
+    double ans = 0;
     PetscErrorCode ierr;
 
     ierr = ( *x->ops->norm_local )( x, NORM_2, &ans );
@@ -264,7 +264,7 @@ Scalar NativePetscVectorOperations::localMaxNorm( const VectorData &vx ) const
 {
     Vec x = getPetscVec( vx );
 
-    double ans;
+    double ans = 0;
     PetscErrorCode ierr;
 
     ierr = ( *x->ops->norm_local )( x, NORM_INFINITY, &ans );

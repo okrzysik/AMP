@@ -1,5 +1,5 @@
-#ifndef included_Mutex
-#define included_Mutex
+#ifndef included_AMP_Mutex
+#define included_AMP_Mutex
 
 #include <atomic>
 #include <memory>

@@ -320,21 +320,15 @@ void GMRESSolver::computeGivensRotation( const int k )
     auto f = d_dHessenberg( k, k );
     auto g = d_dHessenberg( k + 1, k );
 
-    auto c = f;
-    auto s = c;
-    auto r = c;
-    NULL_USE( r );
-
+    decltype( f ) c, s;
     if ( g == 0.0 ) {
-
         c = 1.0;
         s = 0.0;
     } else if ( f == 0.0 ) {
-
         c = 0.0;
         s = ( g < 0.0 ) ? -1.0 : 1.0;
     } else {
-
+        decltype( f ) r;
         r = std::sqrt( f * f + g * g );
         r = 1.0 / r;
         c = std::fabs( f ) * r;

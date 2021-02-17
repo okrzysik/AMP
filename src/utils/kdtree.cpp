@@ -54,6 +54,10 @@ kdtree::kdtree( const int N_dim, const size_t N, const double *const *x )
         d_tree = createTree<2>( N, x );
     else if ( d_dim == 3 )
         d_tree = createTree<3>( N, x );
+    else if ( d_dim == 4 )
+        d_tree = createTree<4>( N, x );
+    else if ( d_dim == 5 )
+        d_tree = createTree<5>( N, x );
     else
         AMP_ERROR( "Not finished" );
 }
@@ -77,6 +81,10 @@ kdtree::kdtree( const std::vector<AMP::Mesh::MeshPoint<double>> &x )
         d_tree = createTree<2>( d_N, x2 );
     else if ( d_dim == 3 )
         d_tree = createTree<3>( d_N, x2 );
+    else if ( d_dim == 4 )
+        d_tree = createTree<4>( d_N, x2 );
+    else if ( d_dim == 5 )
+        d_tree = createTree<5>( d_N, x2 );
     else
         AMP_ERROR( "Not finished" );
     for ( int d = 0; d < d_dim; d++ )
@@ -113,6 +121,10 @@ kdtree::~kdtree()
         delete reinterpret_cast<kdtree2<2, int> *>( d_tree );
     else if ( d_dim == 3 )
         delete reinterpret_cast<kdtree2<3, int> *>( d_tree );
+    else if ( d_dim == 4 )
+        delete reinterpret_cast<kdtree2<4, int> *>( d_tree );
+    else if ( d_dim == 5 )
+        delete reinterpret_cast<kdtree2<5, int> *>( d_tree );
     else
         AMP_ERROR( "Not finished" );
     d_tree = nullptr;
@@ -162,6 +174,14 @@ std::vector<double> kdtree::box() const
         auto ptr = reinterpret_cast<kdtree2<3, int> *>( d_tree );
         auto box = ptr->box();
         return std::vector<double>( box.begin(), box.end() );
+    } else if ( d_dim == 4 ) {
+        auto ptr = reinterpret_cast<kdtree2<4, int> *>( d_tree );
+        auto box = ptr->box();
+        return std::vector<double>( box.begin(), box.end() );
+    } else if ( d_dim == 5 ) {
+        auto ptr = reinterpret_cast<kdtree2<5, int> *>( d_tree );
+        auto box = ptr->box();
+        return std::vector<double>( box.begin(), box.end() );
     } else {
         AMP_ERROR( "Not finished" );
     }
@@ -181,6 +201,10 @@ size_t kdtree::memory_usage() const
         bytes += reinterpret_cast<kdtree2<2, int> *>( d_tree )->memory_usage();
     } else if ( d_dim == 3 ) {
         bytes += reinterpret_cast<kdtree2<3, int> *>( d_tree )->memory_usage();
+    } else if ( d_dim == 4 ) {
+        bytes += reinterpret_cast<kdtree2<4, int> *>( d_tree )->memory_usage();
+    } else if ( d_dim == 5 ) {
+        bytes += reinterpret_cast<kdtree2<5, int> *>( d_tree )->memory_usage();
     } else {
         AMP_ERROR( "Not finished" );
     }
@@ -199,6 +223,10 @@ void kdtree::add( const double *x )
         reinterpret_cast<kdtree2<2, int> *>( d_tree )->add( { x[0], x[1] }, d_N );
     } else if ( d_dim == 3 ) {
         reinterpret_cast<kdtree2<3, int> *>( d_tree )->add( { x[0], x[1], x[2] }, d_N );
+    } else if ( d_dim == 4 ) {
+        reinterpret_cast<kdtree2<4, int> *>( d_tree )->add( { x[0], x[1], x[2], x[3] }, d_N );
+    } else if ( d_dim == 5 ) {
+        reinterpret_cast<kdtree2<5, int> *>( d_tree )->add( { x[0], x[1], x[2], x[3], x[4] }, d_N );
     } else {
         AMP_ERROR( "Not finished" );
     }
@@ -263,6 +291,18 @@ size_t kdtree::find_nearest2( const double *x, double &dist, double *pos ) const
         std::array<double, 3> x0 = { x[0], x[1], x[2] };
         auto [p, i]              = reinterpret_cast<kdtree2<3, int> *>( d_tree )->findNearest( x0 );
         dist                     = calcDist<3>( p, x0 );
+        memcpy( pos, p.data(), sizeof( p ) );
+        index = i;
+    } else if ( d_dim == 4 ) {
+        std::array<double, 4> x0 = { x[0], x[1], x[2], x[3] };
+        auto [p, i]              = reinterpret_cast<kdtree2<4, int> *>( d_tree )->findNearest( x0 );
+        dist                     = calcDist<4>( p, x0 );
+        memcpy( pos, p.data(), sizeof( p ) );
+        index = i;
+    } else if ( d_dim == 5 ) {
+        std::array<double, 5> x0 = { x[0], x[1], x[2], x[3], x[4] };
+        auto [p, i]              = reinterpret_cast<kdtree2<5, int> *>( d_tree )->findNearest( x0 );
+        dist                     = calcDist<5>( p, x0 );
         memcpy( pos, p.data(), sizeof( p ) );
         index = i;
     } else {

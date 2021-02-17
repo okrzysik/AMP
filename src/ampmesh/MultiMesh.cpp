@@ -1135,8 +1135,7 @@ MultiMesh::independentGroups1( int N_procs,
         all_match = all_match && size[i] == size[0];
     if ( all_match ) {
         std::vector<comm_groups> groups( N_meshes );
-        int N_procs2  = N_procs;
-        auto N_meshes = static_cast<int>( size.size() );
+        int N_procs2 = N_procs;
         for ( size_t i = 0; i < size.size(); i++ ) {
             int N             = ( N_procs2 + N_meshes - 1 ) / N_meshes;
             groups[i].N_procs = N;

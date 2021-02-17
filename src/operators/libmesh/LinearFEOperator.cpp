@@ -13,11 +13,12 @@ namespace Operator {
 
 
 LinearFEOperator::LinearFEOperator( const std::shared_ptr<LinearFEOperatorParameters> &params )
-    : LinearOperator( params ), d_currElemPtr( nullptr )
+    : LinearOperator( params ),
+      d_currElemPtr( nullptr ),
+      d_elemOp( params->d_elemOp ),
+      d_inDofMap( params->d_inDofMap ),
+      d_outDofMap( params->d_outDofMap )
 {
-    d_elemOp    = ( params->d_elemOp );
-    d_inDofMap  = ( params->d_inDofMap );
-    d_outDofMap = ( params->d_outDofMap );
     if ( d_inDofMap == nullptr ) {
         d_inDofMap = d_outDofMap;
     }

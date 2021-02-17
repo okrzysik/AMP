@@ -3,7 +3,7 @@
 #ifndef included_AMP_MPI_I
 #define included_AMP_MPI_I
 
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <typeinfo>
 

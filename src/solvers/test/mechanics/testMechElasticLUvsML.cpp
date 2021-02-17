@@ -187,6 +187,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     } // end for meshId
 
     ut->passes( exeName );
+
+    NULL_USE( libmeshInit );
 }
 
 int testMechElasticLUvsML( int argc, char *argv[] )

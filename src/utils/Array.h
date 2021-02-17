@@ -1,5 +1,5 @@
-#ifndef included_ArrayClass
-#define included_ArrayClass
+#ifndef included_AMP_ArrayClass
+#define included_AMP_ArrayClass
 
 #include "AMP/utils/ArraySize.h"
 
@@ -148,7 +148,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static std::unique_ptr<Array> view( const ArraySize &N, std::shared_ptr<TYPE> &data );
+    static std::unique_ptr<Array> view( const ArraySize &N, std::shared_ptr<TYPE> data );
 
 
     /*!
@@ -171,7 +171,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    void view2( const ArraySize &N, std::shared_ptr<TYPE> const &data );
+    void view2( const ArraySize &N, std::shared_ptr<TYPE> data );
 
     /*!
      * Make this object a view of the raw data (expert use only).
@@ -255,8 +255,8 @@ public: // Views/copies/subset
      * Copy and convert data from another array to this array
      * @param array         Source array
      */
-    template<class TYPE2>
-    void inline copy( const Array<TYPE2, FUN, Allocator> &array )
+    template<class TYPE2, class FUN2, class Allocator2>
+    void inline copy( const Array<TYPE2, FUN2, Allocator2> &array )
     {
         resize( array.size() );
         copy( array.data() );
@@ -281,9 +281,9 @@ public: // Views/copies/subset
      * Copy and convert data from this array to a new array
      */
     template<class TYPE2>
-    Array<TYPE2, FUN, Allocator> inline cloneTo() const
+    Array<TYPE2, FUN, std::allocator<TYPE2>> inline cloneTo() const
     {
-        Array<TYPE2, FUN> dst( this->size() );
+        Array<TYPE2, FUN, std::allocator<TYPE2>> dst( this->size() );
         copyTo( dst.data() );
         return dst;
     }
@@ -852,7 +852,7 @@ template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
 inline void AMP::Array<TYPE, FUN, Allocator>::copy( const TYPE2 *data )
 {
-    if constexpr ( std::is_same<TYPE, TYPE2>::value ) {
+    if ( std::is_same<TYPE, TYPE2>::value ) {
         std::copy( data, data + d_size.length(), d_data );
     } else {
         for ( size_t i = 0; i < d_size.length(); i++ )
@@ -863,7 +863,7 @@ template<class TYPE, class FUN, class Allocator>
 template<class TYPE2>
 inline void AMP::Array<TYPE, FUN, Allocator>::copyTo( TYPE2 *data ) const
 {
-    if constexpr ( std::is_same<TYPE, TYPE2>::value ) {
+    if ( std::is_same<TYPE, TYPE2>::value ) {
         std::copy( d_data, d_data + d_size.length(), data );
     } else {
         for ( size_t i = 0; i < d_size.length(); i++ )

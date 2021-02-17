@@ -2,11 +2,22 @@
 #define included_AMP_GeometryHelpers
 
 
-#include "AMP/ampmesh/MeshPoint.h"
+#include <array>
 #include <set>
+#include <vector>
 
+
+namespace AMP::Mesh {
+template<class TYPE>
+class MeshPoint;
+using Point = class AMP::Mesh::MeshPoint<double>;
+} // namespace AMP::Mesh
 
 namespace AMP::Geometry::GeometryHelpers {
+
+
+using Point2D = std::array<double, 2>;
+using Point3D = std::array<double, 3>;
 
 
 /**
@@ -50,6 +61,43 @@ std::pair<double, double> map_circle_logical( double R, int method, double x, do
 
 
 /**
+ * \brief   Map logical coordinates to a regular polygon
+ * \details  This function will map logical coordinates in [0,1] to (x,y) coordinates
+ *   in a regular polygon.
+ * \param[in] N         Number of faces
+ * \param[in] R         Radius of circumcircle
+ * \param[in] x         Logical x coordinate
+ * \param[in] y         Logical y coordinate
+ * @return              Returns a pair with the (x,y) value
+ */
+std::pair<double, double> map_logical_poly( int N, double R, double x, double y );
+
+
+/**
+ * \brief   Map physical coordinates to the logical coordinates
+ * \details  This function will map physical coordinates (x,y) coordinates
+ *   in a regular polygon to [0,1] logical coordinates.
+ * \param[in] N         Number of faces
+ * \param[in] R         Radius of circumcircle
+ * \param[in] x         Physical x coordinate
+ * \param[in] y         Physical y coordinate
+ * @return              Returns a pair with the logical (x,y) value
+ */
+std::pair<double, double> map_poly_logical( int N, double R, double x, double y );
+
+
+/**
+ * \brief   Get the verticies of a regular polygon
+ * \details  This function will return the verticies of a N-sided polygon
+ *    that is compatible with the functions map_logical_poly and map_poly_logical.
+ * \param[in] N         Number of faces
+ * \param[in] R         Radius of circumcircle
+ * @return              Returns the verticies clockwise (physical coordinates)
+ */
+std::vector<Point2D> get_poly_verticies( int N, double R );
+
+
+/**
  * \brief   Map logical coordinates to a sphere
  * \details  This function will map logical coordinates in [0,1] to (x,y,z) coordinates
  *   in a sphere.  It uses the mapping by:
@@ -62,7 +110,7 @@ std::pair<double, double> map_circle_logical( double R, int method, double x, do
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Mesh::Point map_logical_sphere( double R, double x, double y, double z );
+Point3D map_logical_sphere( double R, double x, double y, double z );
 
 
 /**
@@ -78,7 +126,7 @@ AMP::Mesh::Point map_logical_sphere( double R, double x, double y, double z );
  * \param[in] z         Physical z coordinate
  * @return              Returns the logical point
  */
-AMP::Mesh::Point map_sphere_logical( double R, double x, double y, double z );
+Point3D map_sphere_logical( double R, double x, double y, double z );
 
 
 /**
@@ -93,7 +141,7 @@ AMP::Mesh::Point map_sphere_logical( double R, double x, double y, double z );
  * \param[in] y         Logical y coordinate
  * @return              Returns the physical point
  */
-AMP::Mesh::Point map_logical_sphere_surface( double R, double x, double y );
+Point3D map_logical_sphere_surface( double R, double x, double y );
 
 /**
  * \brief   Map coordinates from the surface of a sphere to logical
@@ -125,7 +173,7 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Mesh::Point map_logical_shell( double r1, double r2, double x, double y, double z );
+Point3D map_logical_shell( double r1, double r2, double x, double y, double z );
 
 
 /**
@@ -142,7 +190,21 @@ AMP::Mesh::Point map_logical_shell( double r1, double r2, double x, double y, do
  * \param[in] z         Logical z coordinate
  * @return              Returns the physical point
  */
-AMP::Mesh::Point map_shell_logical( double r1, double r2, double x, double y, double z );
+Point3D map_shell_logical( double r1, double r2, double x, double y, double z );
+
+
+/**
+ * \brief   Compute the intersection of a ray and a line segment
+ * \details  This function will compute the intersection of a ray with a line segment.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * \param[in] v1        First vertex
+ * \param[in] v2        Second vertex
+ * @return              Returns the distance
+ */
+double
+distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &v1, const Point2D &v2 );
 
 
 /**
@@ -154,9 +216,7 @@ AMP::Mesh::Point map_shell_logical( double r1, double r2, double x, double y, do
  * \param[in] box       Box coordinates (x_min,x_max,y_min,y_max,z_min,z_max)
  * @return              Returns the distance
  */
-double distanceToBox( const AMP::Mesh::Point &pos,
-                      const AMP::Mesh::Point &ang,
-                      const std::array<double, 6> &box );
+double distanceToBox( const Point3D &pos, const Point3D &ang, const std::array<double, 6> &box );
 
 
 /**
@@ -170,10 +230,8 @@ double distanceToBox( const AMP::Mesh::Point &pos,
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
  */
-double distanceToPlane( const AMP::Mesh::Point &n,
-                        const AMP::Mesh::Point &p0,
-                        const AMP::Mesh::Point &pos,
-                        const AMP::Mesh::Point &ang );
+double
+distanceToPlane( const Point3D &n, const Point3D &p0, const Point3D &pos, const Point3D &ang );
 
 
 /**
@@ -187,7 +245,7 @@ double distanceToPlane( const AMP::Mesh::Point &n,
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
  */
-double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+double distanceToCircle( double r, const Point2D &pos, const Point2D &ang );
 
 
 /**
@@ -202,8 +260,7 @@ double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh:
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
  */
-double
-distanceToCylinder( double r, double h, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+double distanceToCylinder( double r, double h, const Point3D &pos, const Point3D &ang );
 
 
 /**
@@ -220,8 +277,7 @@ distanceToCylinder( double r, double h, const AMP::Mesh::Point &pos, const AMP::
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
  */
-double distanceToTube(
-    double r1, double r2, double h, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+double distanceToTube( double r1, double r2, double h, const Point3D &pos, const Point3D &ang );
 
 
 /**
@@ -235,7 +291,7 @@ double distanceToTube(
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
  */
-double distanceToSphere( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang );
+double distanceToSphere( double r, const Point3D &pos, const Point3D &ang );
 
 
 /**
@@ -250,10 +306,7 @@ double distanceToSphere( double r, const AMP::Mesh::Point &pos, const AMP::Mesh:
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
  */
-double distanceToCone( const AMP::Mesh::Point &V,
-                       double theta,
-                       const AMP::Mesh::Point &pos,
-                       const AMP::Mesh::Point &ang );
+double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const Point3D &ang );
 
 
 /**
@@ -279,9 +332,18 @@ std::array<double, N1> barycentric( const std::array<double, N2> ( &x )[N1],
  * \param[in] v3        Third vertex
  * @return              Returns the normal
  */
-std::array<double, 3> normal( const std::array<double, 3> &v1,
-                              const std::array<double, 3> &v2,
-                              const std::array<double, 3> &v3 );
+Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 );
+
+
+/**
+ * \brief   Find the nearest point to a line segment
+ * \details  This function will compute the nearest point to a line segment in 2D.
+ * \param[in] v1        First vertex
+ * \param[in] v2        Second vertex
+ * \param[in] p         Point of interest
+ * @return              Returns the normal
+ */
+Point2D nearest( const Point2D &v1, const Point2D &v2, const Point2D &p );
 
 
 /**
@@ -292,9 +354,7 @@ std::array<double, 3> normal( const std::array<double, 3> &v1,
  * \param[in] p         Point of interest
  * @return              Returns the normal
  */
-std::array<double, 3> nearest( const std::array<double, 3> &v1,
-                               const std::array<double, 3> &v2,
-                               const std::array<double, 3> &p );
+Point3D nearest( const Point3D &v1, const Point3D &v2, const Point3D &p );
 
 
 /**
@@ -305,8 +365,7 @@ std::array<double, 3> nearest( const std::array<double, 3> &v1,
  * \param[in] p         Point of interest
  * @return              Returns the normal
  */
-std::array<double, 3> nearest( const std::array<double, 3> ( &v )[3],
-                               const std::array<double, 3> &p );
+Point3D nearest( const Point3D ( &v )[3], const Point3D &p );
 
 
 /**
@@ -321,8 +380,7 @@ std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &
 
 
 //! Compute the normal to the plane formed by 3 points
-AMP::Mesh::Point
-normal( const AMP::Mesh::Point &a, const AMP::Mesh::Point &b, const AMP::Mesh::Point &c );
+Point3D normal( const Point3D &a, const Point3D &b, const Point3D &c );
 
 
 } // namespace AMP::Geometry::GeometryHelpers

@@ -15,7 +15,7 @@ void NavierStokesGalWFElement::apply()
 
     const std::vector<std::vector<libMesh::Real>> &phi = *d_phi;
 
-    std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
+    const auto &elementInputVectors = d_elementInputVectors;
 
     std::vector<double> &elementOutputVector = ( *d_elementOutputVector );
 

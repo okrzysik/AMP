@@ -1,8 +1,9 @@
-#ifndef included_stringView
-#define included_stringView
+#ifndef included_AMP_stringView
+#define included_AMP_stringView
 
 #include <cstring>
 #include <ostream>
+
 
 namespace AMP {
 
@@ -17,7 +18,13 @@ public:
     constexpr string_view() noexcept : d_data( nullptr ), d_size( 0 ) {}
     constexpr string_view( string_view && ) noexcept      = default;
     constexpr string_view( const string_view & ) noexcept = default;
-    constexpr string_view( const char *s ) : d_data( s ), d_size( s ? strlen( s ) : 0 ) {}
+    constexpr string_view( const char *s ) : d_data( s ), d_size( 0 )
+    {
+        if ( s == nullptr )
+            return;
+        while ( s[d_size] )
+            d_size++;
+    }
     constexpr string_view( const char *s, size_t count ) : d_data( s ), d_size( count ) {}
     inline string_view( const std::string &s ) : d_data( s.data() ), d_size( s.size() ) {}
 
@@ -40,25 +47,25 @@ public:
     constexpr const char &operator[]( size_t pos ) const
     {
         if ( pos >= d_size )
-            throw std::out_of_range( "string_view[]" );
+            throw std::logic_error( "string_view[]" );
         return d_data[pos];
     }
     constexpr const char &at( size_t pos ) const
     {
         if ( pos >= d_size )
-            throw std::out_of_range( "string_view::at()" );
+            throw std::logic_error( "string_view::at()" );
         return d_data[pos];
     }
     constexpr const char &front() const
     {
         if ( d_size == 0 )
-            throw std::out_of_range( "front()" );
+            throw std::logic_error( "front()" );
         return d_data[0];
     }
     constexpr const char &back() const
     {
         if ( d_size == 0 )
-            throw std::out_of_range( "back()" );
+            throw std::logic_error( "back()" );
         return d_data[size() - 1];
     }
     constexpr const char *data() const noexcept { return d_data; }
@@ -74,7 +81,7 @@ public:
     size_t copy( char *dest, size_t n, size_t pos = 0 ) const
     {
         if ( pos > size() )
-            throw std::out_of_range( "string_view::copy()" );
+            throw std::logic_error( "string_view::copy()" );
         const size_t rlen = std::min( n, size() - pos );
         memcpy( dest, data() + pos, rlen );
         return rlen;
@@ -82,7 +89,7 @@ public:
     constexpr string_view substr( size_t pos = 0, size_t n = npos ) const
     {
         if ( pos > size() )
-            throw std::out_of_range( "string_view::substr()" );
+            throw std::logic_error( "string_view::substr()" );
         return string_view( data() + pos, std::min( n, size() - pos ) );
     }
 
@@ -107,6 +114,30 @@ public:
                 return i;
             i++;
         }
+        return std::string::npos;
+    }
+    constexpr size_t rfind( char ch, size_t pos = 0 ) const noexcept
+    {
+        for ( int64_t i = d_size - 1; i >= (int64_t) pos; i-- )
+            if ( d_data[i] == ch )
+                return i;
+        return std::string::npos;
+    }
+
+    // find_first_of
+    size_t find_first_of( const AMP::string_view &v, size_t pos = 0 ) const noexcept
+    {
+        for ( size_t i = pos; i < d_size; i++ )
+            for ( size_t j = 0; j < v.d_size; j++ )
+                if ( d_data[i] == v[j] )
+                    return i;
+        return std::string::npos;
+    }
+    size_t find_first_of( char ch, size_t pos = 0 ) const noexcept
+    {
+        for ( size_t i = pos; i < d_size; i++ )
+            if ( d_data[i] == ch )
+                return i;
         return std::string::npos;
     }
 

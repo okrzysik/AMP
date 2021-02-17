@@ -10,9 +10,8 @@ namespace Operator {
 
 
 NonlinearFEOperator::NonlinearFEOperator( const std::shared_ptr<FEOperatorParameters> &params )
-    : Operator( params )
+    : Operator( params ), d_elemOp( params->d_elemOp )
 {
-    d_elemOp = ( params->d_elemOp );
     createLibMeshElementList();
     d_currElemIdx = static_cast<unsigned int>( -1 );
 }

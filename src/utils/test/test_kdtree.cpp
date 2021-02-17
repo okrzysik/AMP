@@ -121,12 +121,11 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
     // Search for the local points
     PROFILE_START( "search_local" );
     bool error = false;
-    size_t j;
     double dist, xs[100], pos[100];
     for ( size_t i = 0; i < Nx; i++ ) {
         for ( int d = 0; d < DIM; d++ )
             xs[d] = points[d][i];
-        j = tree.find_nearest( xs, &dist, pos );
+        size_t j = tree.find_nearest( xs, &dist, pos );
         if ( j != i || dist != 0.0 )
             error = true;
         for ( int d = 0; d < DIM; d++ )
@@ -194,17 +193,17 @@ int main( int argc, char *argv[] )
     error += run_kdtree_test( 3, 100000, 100000 );
     PROFILE_STOP( "3D kdtree" );
 
-    /*    // Run a 5D test
-        PROFILE_START( "5D kdtree" );
-        error += run_kdtree_test( 5, 10, 10 );
-        error += run_kdtree_test( 5, 10000, 2000 );
-        PROFILE_STOP( "5D kdtree" );
+    // Run a 5D test
+    PROFILE_START( "5D kdtree" );
+    error += run_kdtree_test( 5, 10, 10 );
+    error += run_kdtree_test( 5, 10000, 2000 );
+    PROFILE_STOP( "5D kdtree" );
 
-        // Run a 10D test
-        PROFILE_START( "10D kdtree" );
-        error += run_kdtree_test( 10, 10, 10 );
-        error += run_kdtree_test( 10, 10000, 2000 );
-        PROFILE_STOP( "10D kdtree" );*/
+    // Run a 10D test
+    //    PROFILE_START( "10D kdtree" );
+    //    error += run_kdtree_test( 10, 10, 10 );
+    //    error += run_kdtree_test( 10, 10000, 2000 );
+    //    PROFILE_STOP( "10D kdtree" );
 
     // Save the results
     PROFILE_SAVE( "test_kdtree" );

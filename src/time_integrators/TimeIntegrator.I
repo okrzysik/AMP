@@ -1,5 +1,5 @@
-#ifndef included_TimeIntegrator_INLINE
-#define included_TimeIntegrator_INLINE
+#ifndef included_AMP_TimeIntegrator_INLINE
+#define included_AMP_TimeIntegrator_INLINE
 
 #include "TimeIntegrator.h"
 

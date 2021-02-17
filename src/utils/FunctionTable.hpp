@@ -2,7 +2,7 @@
 #define included_AMP_FunctionTable_hpp
 
 #include "AMP/utils/FunctionTable.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 // External includes
 #include "LapackWrappers.h"
@@ -19,30 +19,30 @@ namespace AMP {
 /********************************************************
  *  Random number initialization                         *
  ********************************************************/
-template<class TYPE>
-static inline typename std::enable_if<std::is_integral<TYPE>::value>::type genRand( size_t N,
-                                                                                    TYPE *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_int_distribution<TYPE> dis;
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
-}
-template<class TYPE>
-static inline typename std::enable_if<std::is_floating_point<TYPE>::value>::type genRand( size_t N,
-                                                                                          TYPE *x )
-{
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_real_distribution<TYPE> dis( 0, 1 );
-    for ( size_t i = 0; i < N; i++ )
-        x[i] = dis( gen );
-}
 template<class TYPE, class FUN>
 inline void FunctionTable::rand( Array<TYPE, FUN> &x )
 {
-    genRand<TYPE>( x.length(), x.data() );
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    if constexpr ( std::is_integral<TYPE>::value ) {
+        std::uniform_int_distribution<TYPE> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = dis( gen );
+    } else if constexpr ( std::is_floating_point<TYPE>::value ) {
+        std::uniform_real_distribution<TYPE> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = dis( gen );
+    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+        std::uniform_real_distribution<float> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = std::complex<float>( dis( gen ), dis( gen ) );
+    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+        std::uniform_real_distribution<double> dis;
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = std::complex<double>( dis( gen ), dis( gen ) );
+    } else {
+        AMP_ERROR( "rand not implimented" );
+    }
 }
 
 
@@ -105,25 +105,116 @@ inline void FunctionTable::transform( LAMBDA &fun,
 
 
 /********************************************************
+ *  axpy                                                 *
+ ********************************************************/
+template<class TYPE>
+void call_axpy( size_t N, const TYPE alpha, const TYPE *x, TYPE *y );
+template<>
+void call_axpy<float>( size_t N, const float alpha, const float *x, float *y );
+template<>
+void call_axpy<double>( size_t N, const double alpha, const double *x, double *y );
+template<class TYPE>
+void call_axpy( size_t N, const TYPE alpha, const TYPE *x, TYPE *y )
+{
+    for ( size_t i = 0; i < N; i++ )
+        y[i] += alpha * x[i];
+}
+template<class TYPE, class FUN>
+void FunctionTable::axpy( const TYPE alpha, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y )
+{
+    if ( x.size() != y.size() )
+        throw std::logic_error( "Array sizes do not match" );
+    call_axpy( x.length(), alpha, x.data(), y.data() );
+}
+
+
+/********************************************************
  *  Multiply two arrays                                  *
  ********************************************************/
+template<class TYPE>
+void call_gemv( size_t M, size_t N, TYPE alpha, TYPE beta, const TYPE *A, const TYPE *x, TYPE *y );
+template<>
+void call_gemv<double>(
+    size_t M, size_t N, double alpha, double beta, const double *A, const double *x, double *y );
+template<>
+void call_gemv<float>(
+    size_t M, size_t N, float alpha, float beta, const float *A, const float *x, float *y );
+template<class TYPE>
+void call_gemv( size_t M, size_t N, TYPE alpha, TYPE beta, const TYPE *A, const TYPE *x, TYPE *y )
+{
+    for ( size_t i = 0; i < M; i++ )
+        y[i] = beta * y[i];
+    for ( size_t j = 0; j < N; j++ ) {
+        for ( size_t i = 0; i < M; i++ )
+            y[i] += alpha * A[i + j * M] * x[j];
+    }
+}
+template<class TYPE>
+void call_gemm(
+    size_t M, size_t N, size_t K, TYPE alpha, TYPE beta, const TYPE *A, const TYPE *B, TYPE *C );
+template<>
+void call_gemm<double>( size_t M,
+                        size_t N,
+                        size_t K,
+                        double alpha,
+                        double beta,
+                        const double *A,
+                        const double *B,
+                        double *C );
+template<>
+void call_gemm<float>( size_t M,
+                       size_t N,
+                       size_t K,
+                       float alpha,
+                       float beta,
+                       const float *A,
+                       const float *B,
+                       float *C );
+template<class TYPE>
+void call_gemm(
+    size_t M, size_t N, size_t K, TYPE alpha, TYPE beta, const TYPE *A, const TYPE *B, TYPE *C )
+{
+    for ( size_t i = 0; i < K * M; i++ )
+        C[i] = beta * C[i];
+    for ( size_t k = 0; k < K; k++ ) {
+        for ( size_t j = 0; j < N; j++ ) {
+            for ( size_t i = 0; i < M; i++ )
+                C[i + k * M] += alpha * A[i + j * M] * B[j + k * N];
+        }
+    }
+}
+template<class TYPE, class FUN>
+void FunctionTable::gemm( const TYPE alpha,
+                          const Array<TYPE, FUN> &a,
+                          const Array<TYPE, FUN> &b,
+                          const TYPE beta,
+                          Array<TYPE, FUN> &c )
+{
+    if ( a.size( 1 ) != b.size( 0 ) )
+        throw std::logic_error( "Inner dimensions must match" );
+    if ( a.ndim() == 2 && b.ndim() == 1 ) {
+        call_gemv<TYPE>( a.size( 0 ), a.size( 1 ), alpha, beta, a.data(), b.data(), c.data() );
+    } else if ( a.ndim() <= 2 && b.ndim() <= 2 ) {
+        call_gemm<TYPE>(
+            a.size( 0 ), a.size( 1 ), b.size( 1 ), alpha, beta, a.data(), b.data(), c.data() );
+    } else {
+        throw std::logic_error( "Not finished yet" );
+    }
+}
 template<class TYPE, class FUN>
 void FunctionTable::multiply( const Array<TYPE, FUN> &a,
                               const Array<TYPE, FUN> &b,
                               Array<TYPE, FUN> &c )
 {
-    if ( a.ndim() <= 2 && b.ndim() <= 2 ) {
-        if ( a.size( 1 ) != b.size( 0 ) )
-            throw std::logic_error( "Inner dimensions must match" );
+    if ( a.size( 1 ) != b.size( 0 ) )
+        throw std::logic_error( "Inner dimensions must match" );
+    if ( a.ndim() == 2 && b.ndim() == 1 ) {
+        c.resize( a.size( 0 ) );
+        call_gemv<TYPE>( a.size( 0 ), a.size( 1 ), 1, 0, a.data(), b.data(), c.data() );
+    } else if ( a.ndim() <= 2 && b.ndim() <= 2 ) {
         c.resize( a.size( 0 ), b.size( 1 ) );
-        c.fill( 0 );
-        for ( size_t k = 0; k < b.size( 1 ); k++ ) {
-            for ( size_t j = 0; j < a.size( 1 ); j++ ) {
-                for ( size_t i = 0; i < a.size( 0 ); i++ ) {
-                    c( i, k ) += a( i, j ) * b( j, k );
-                }
-            }
-        }
+        call_gemm<TYPE>(
+            a.size( 0 ), a.size( 1 ), b.size( 1 ), 1, 0, a.data(), b.data(), c.data() );
     } else {
         throw std::logic_error( "Not finished yet" );
     }

@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/utils/UtilityMacros.h"
 
 
 namespace AMP {

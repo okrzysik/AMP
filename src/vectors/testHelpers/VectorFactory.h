@@ -81,11 +81,13 @@ public:
     {
         AMP::LinearAlgebra::Vector::shared_ptr vec;
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "array" );
-        if ( GLOBAL )
-            vec = AMP::LinearAlgebra::createArrayVector<TYPE>(
-                { D, I }, var, AMP_MPI( AMP_COMM_WORLD ) );
-        else
+        if ( GLOBAL ) {
+            AMP_MPI comm( AMP_COMM_WORLD );
+            ArraySize index( comm.getRank(), 0, 0 );
+            vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, index, comm, var );
+        } else {
             vec = AMP::LinearAlgebra::createArrayVector<TYPE>( { D, I }, var );
+        }
         return vec;
     }
     std::string name() const override { return "ArrayVectorFactory"; }

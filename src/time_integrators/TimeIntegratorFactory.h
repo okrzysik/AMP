@@ -58,4 +58,4 @@ private:
 } // namespace TimeIntegrator
 } // namespace AMP
 
-#endif // included_TimeIntegratorFactory
+#endif

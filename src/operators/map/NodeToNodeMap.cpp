@@ -2,7 +2,9 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/map/NodeToNodeMapParameters.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
+
 #include "ProfilerApp.h"
 
 #include <set>

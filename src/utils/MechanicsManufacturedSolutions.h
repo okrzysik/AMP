@@ -1,7 +1,7 @@
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
+#include "AMP/utils/UtilityMacros.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 

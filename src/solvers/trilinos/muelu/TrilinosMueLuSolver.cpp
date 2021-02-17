@@ -35,9 +35,9 @@ namespace Solver {
 /****************************************************************
  * Constructors / Destructor                                     *
  ****************************************************************/
-TrilinosMueLuSolver::TrilinosMueLuSolver() { d_bCreationPhase = true; }
+TrilinosMueLuSolver::TrilinosMueLuSolver() : d_bCreationPhase( true ), d_maxLevels( 0 ) {}
 TrilinosMueLuSolver::TrilinosMueLuSolver( std::shared_ptr<SolverStrategyParameters> parameters )
-    : SolverStrategy( parameters )
+    : SolverStrategy( parameters ), d_maxLevels( 0 )
 {
     AMP_ASSERT( parameters.get() != nullptr );
     initialize( parameters );

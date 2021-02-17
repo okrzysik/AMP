@@ -60,6 +60,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
                                      const size_t N_ghost,
                                      const AMP::Mesh::GeomType type )
 {
+    auto name = mesh->getName();
     // For each mesh, get a mapping of it's processor id's to the comm of the mesh
     auto proc_map = createRankMap( mesh );
     // Check that we can get the begin and end iterator
@@ -67,48 +68,50 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     auto end_it   = iterator.end();
     if ( N_local + N_ghost == 0 ) {
         if ( begin_it == end_it )
-            ut->passes( "trival iterator begin and end returned" );
+            ut->passes( name + "-trival iterator begin and end returned" );
         else
-            ut->failure( "trival iterator begin and end returned" );
+            ut->failure( name + "-trival iterator begin and end returned" );
         return;
     }
     if ( begin_it != end_it )
-        ut->passes( "iterator begin and end returned" );
+        ut->passes( name + "-iterator begin and end returned" );
     else
-        ut->failure( "iterator begin and end returned" );
+        ut->failure( name + "-iterator begin and end returned" );
 
     // Check that the iterator iterates through the proper number of elements
     if ( iterator.size() == N_local + N_ghost )
-        ut->passes( "regular iterator size()" );
+        ut->passes( name + "-regular iterator size()" );
     else
-        ut->failure( "regular iterator size()" );
+        ut->failure( name + "-regular iterator size()" );
     size_t number_of_local_elements = 0;
     size_t number_of_ghost_elements = 0;
     std::set<AMP::Mesh::MeshElementID> id_set;
-    auto it            = iterator.begin();
     bool pass_position = true;
-    for ( size_t i = 0; i < iterator.size(); i++, ++it ) {
-        if ( it.position() != i )
-            pass_position = false;
-        AMP::Mesh::MeshElementID id = it->globalID();
-        id_set.insert( id );
-        if ( id.is_local() )
-            number_of_local_elements++;
-        else
-            number_of_ghost_elements++;
+    {
+        auto it = iterator.begin();
+        for ( size_t i = 0; i < iterator.size(); i++, ++it ) {
+            if ( it.position() != i )
+                pass_position = false;
+            AMP::Mesh::MeshElementID id = it->globalID();
+            id_set.insert( id );
+            if ( id.is_local() )
+                number_of_local_elements++;
+            else
+                number_of_ghost_elements++;
+        }
     }
     if ( pass_position )
-        ut->passes( "iterator.position()" );
+        ut->passes( name + "-iterator.position()" );
     else
-        ut->failure( "iterator.position()" );
+        ut->failure( name + "-iterator.position()" );
     if ( number_of_local_elements == N_local && number_of_ghost_elements == N_ghost )
-        ut->passes( "regular iterator count" );
+        ut->passes( name + "-regular iterator count" );
     else
-        ut->failure( "regular iterator count" );
+        ut->failure( name + "-regular iterator count" );
     if ( id_set.size() == N_local + N_ghost )
-        ut->passes( "regular iterator uniqueness" );
+        ut->passes( name + "-regular iterator uniqueness" );
     else
-        ut->failure( "regular iterator uniqueness" );
+        ut->failure( name + "-regular iterator uniqueness" );
 
     // Check that we can increment and decrement properly
     if ( iterator.size() >= 2 ) {
@@ -133,9 +136,9 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
         if ( it1!=iterator.begin() || it2!=iterator.begin() || it3!=iterator.begin() )
             pass = false;*/
         if ( pass )
-            ut->passes( "regular iterator increments/decrements" );
+            ut->passes( name + "-regular iterator increments/decrements" );
         else
-            ut->failure( "regular iterator increments/decrements" );
+            ut->failure( name + "-regular iterator increments/decrements" );
     }
 
     // Run element tests
@@ -144,8 +147,6 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     bool volume_pass   = true;
     bool coord_pass    = true;
     bool centroid_pass = true;
-    bool nearest_pass  = false;
-    bool distance_pass = false;
     bool elements_pass = true;
     bool block_pass    = true;
     int neighbor_pass  = 1;
@@ -155,13 +156,11 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     auto blockIds      = mesh->getBlockIDs();
     std::vector<AMP::Mesh::MeshElementID> ids;
     ids.reserve( iterator.size() );
-    it = iterator.begin();
-    for ( size_t i = 0; i < iterator.size(); i++, ++it ) {
-        ids.push_back( it->globalID() );
-        auto element = *it;
+    for ( const auto &element : iterator ) {
         // Get the current id
         auto id = element.globalID();
-        if ( id != it->globalID() )
+        ids.push_back( id );
+        if ( id != element.globalID() )
             id_pass = false;
         // Get the owner rank
         auto meshID         = id.meshID();
@@ -230,48 +229,83 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
                 id_pass = false;
         }
     }
-
     if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass == 1 &&
-         block_pass && nearest_pass && distance_pass ) {
-        ut->passes( "elements passed" );
+         block_pass ) {
+        ut->passes( name + "-elements passed" );
     } else {
         if ( !id_pass )
-            ut->failure( "elements failed id test" );
+            ut->failure( name + "-elements failed id test" );
         if ( !type_pass )
-            ut->failure( "elements failed type test" );
+            ut->failure( name + "-elements failed type test" );
         if ( !volume_pass )
-            ut->failure( "elements failed volume test" );
+            ut->failure( name + "-elements failed volume test" );
         if ( !coord_pass )
-            ut->failure( "elements failed coord test" );
-        if ( !nearest_pass )
-            ut->expected_failure( "element nearest test not implimented yet" );
-        if ( !distance_pass )
-            ut->expected_failure( "element distance test not implimented yet" );
+            ut->failure( name + "-elements failed coord test" );
         if ( !centroid_pass )
-            ut->failure( "elements failed centroid test" );
+            ut->failure( name + "-elements failed centroid test" );
         if ( !elements_pass )
-            ut->failure( "elements failed getElements test" );
+            ut->failure( name + "-elements failed getElements test" );
         if ( neighbor_pass == 0 )
-            ut->failure( "elements failed getNeighbors test" );
+            ut->failure( name + "-elements failed getNeighbors test" );
         else if ( neighbor_pass == 2 )
-            ut->expected_failure( "elements failed getNeighbors test" );
+            ut->expected_failure( name + "-elements failed getNeighbors test" );
         if ( !block_pass )
-            ut->failure( "Element is not in a block" );
+            ut->failure( name + "-Element is not in a block" );
     }
     // Check that we can get the element from the global id for all elements
-    it                = iterator.begin();
     bool getElem_pass = true;
-    for ( size_t i = 0; i < it.size(); i++, ++it ) {
-        auto id1  = it->globalID();
+    for ( const auto &element : iterator ) {
+        auto id1  = element.globalID();
         auto elem = mesh->getElement( id1 );
         auto id2  = elem.globalID();
         if ( id1 != id2 )
             getElem_pass = false;
     }
     if ( getElem_pass )
-        ut->passes( "Got elements from element ids" );
+        ut->passes( name + "-Got elements from element ids" );
     else
-        ut->failure( "Got elements from element ids" );
+        ut->failure( name + "-Got elements from element ids" );
+    // Check nearest
+    try {
+        bool pass = true;
+        for ( const auto &element : iterator ) {
+            auto centroid = element.centroid();
+            pass          = pass && element.nearest( centroid ) == centroid;
+        }
+        if ( pass )
+            ut->passes( name + "-elements nearest passed" );
+        else
+            ut->passes( name + "-elements nearest failed" );
+    } catch ( const StackTrace::abort_error &e ) {
+        auto pos = e.message.find( "nearest is not implimented" );
+        if ( pos != std::string::npos )
+            ut->expected_failure( name + "-elements " + e.message );
+        else
+            ut->failure( name + "-elements nearest exception: " + e.message );
+    } catch ( ... ) {
+        ut->failure( name + "-nearest distance unknown exception" );
+    }
+    // Check distance
+    try {
+        ut->expected_failure( name + "-elements distance test not implimented yet" );
+        /*bool pass  = true;
+        for ( const auto &element : iterator ) {
+            auto centroid = element.centroid();
+            pass = pass && element.nearest( centroid ) == centroid;
+        }
+        if ( pass )
+            ut->passes( name + "-elements distance passed" );
+        else
+            ut->passes( name + "-elements distance failed" );*/
+    } catch ( const StackTrace::abort_error &e ) {
+        auto pos = e.message.find( "distance is not implimented" );
+        if ( pos != std::string::npos )
+            ut->passes( name + "-elements " + e.message );
+        else
+            ut->failure( name + "-elements distance exception: " + e.message );
+    } catch ( ... ) {
+        ut->failure( name + "-elements distance unknown exception" );
+    }
 }
 
 

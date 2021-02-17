@@ -73,9 +73,7 @@ static void linearTest( AMP::UnitTest *ut,
         std::make_shared<AMP::Operator::DiffusionLinearFEOperatorParameters>( diffFEOp_db );
 
     // set up defaults for materials arguments and create transport model
-    std::shared_ptr<AMP::Database> transportModel_db;
-    if ( input_db->keyExists( "DiffusionTransportModel" ) )
-        transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
+    auto transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
     double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
     double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
     double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );

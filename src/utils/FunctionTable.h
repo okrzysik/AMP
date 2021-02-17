@@ -89,6 +89,30 @@ public:
     multiply( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, Array<TYPE, FUN> &c );
 
     /*!
+     * Perform dgemv/dgemm equavalent operation ( C = alpha*A*B + beta*C )
+     * @param[in] alpha         The scalar value alpha
+     * @param[in] A             The first array
+     * @param[in] B             The second array
+     * @param[in] beta          The scalar value alpha
+     * @param[in,out] C         The output array C
+     */
+    template<class TYPE, class FUN>
+    static void gemm( const TYPE alpha,
+                      const Array<TYPE, FUN> &A,
+                      const Array<TYPE, FUN> &B,
+                      const TYPE beta,
+                      Array<TYPE, FUN> &C );
+
+    /*!
+     * Perform axpy equavalent operation ( y = alpha*x + y )
+     * @param[in] alpha         The scalar value alpha
+     * @param[in] x             The input array x
+     * @param[in,out] y         The output array y
+     */
+    template<class TYPE, class FUN>
+    static void axpy( const TYPE alpha, const Array<TYPE, FUN> &x, Array<TYPE, FUN> &y );
+
+    /*!
      * Check if two arrays are approximately equal
      * @param[in] A             The first array
      * @param[in] B             The second array

@@ -75,9 +75,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 
     // set up defaults for materials arguments and create transport model
-    std::shared_ptr<AMP::Database> transportModel_db;
-    if ( input_db->keyExists( "DiffusionTransportModel" ) )
-        transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
+    auto transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
     auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     auto transportModel =
@@ -124,12 +122,12 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // set principal variable vector and shift for applyTests
     double shift = 0., scale = 1.;
-    std::vector<double> range( 2 );
     auto mat = transportModel->getMaterial();
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         diffOpParams->d_FrozenTemperature = tVec;
         if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
-            range = ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
+            auto range =
+                ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
             scale = range[1] - range[0];
             shift = range[0] + 0.001 * scale;
             scale *= 0.999;
@@ -138,7 +136,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
         diffOpParams->d_FrozenConcentration = cVec;
         if ( ( mat->property( property ) )->is_argument( "concentration" ) ) {
-            range =
+            auto range =
                 ( mat->property( property ) )->get_arg_range( "concentration" ); // Compile error
             scale = range[1] - range[0];
             shift = range[0] + 0.001 * scale;

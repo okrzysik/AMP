@@ -10,15 +10,25 @@ namespace AMP {
 namespace Mesh {
 
 
-// BoxMesh::Box
+/****************************************************************
+ * Box                                                           *
+ ****************************************************************/
 constexpr BoxMesh::Box::Box() : first{ 0, 0, 0 }, last{ 0, 0, 0 } {}
 constexpr BoxMesh::Box::Box( int ifirst, int ilast, int jfirst, int jlast, int kfirst, int klast )
     : first{ ifirst, jfirst, kfirst }, last{ ilast, jlast, klast }
 {
 }
+constexpr ArraySize BoxMesh::Box::size() const
+{
+    return { (size_t) last[0] - first[0] + 1,
+             (size_t) last[1] - first[1] + 1,
+             (size_t) last[2] - first[2] + 1 };
+}
 
 
-// BoxMesh::MeshElementIndex
+/****************************************************************
+ * MeshElementIndex                                              *
+ ****************************************************************/
 constexpr BoxMesh::MeshElementIndex::MeshElementIndex()
     : d_type( 0 ), d_side( 255 ), d_index{ 0, 0, 0 }
 {
@@ -91,7 +101,9 @@ constexpr size_t BoxMesh::MeshElementIndex::numElements( const MeshElementIndex 
 }
 
 
-// getGlobalBox, getLocalBox
+/****************************************************************
+ * getGlobalBox, getLocalBox                                     *
+ ****************************************************************/
 inline std::vector<bool> BoxMesh::periodic() const
 {
     std::vector<bool> per( static_cast<int>( GeomDim ) );

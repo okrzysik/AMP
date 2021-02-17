@@ -5,6 +5,8 @@
 
 #include "ml_include.h"
 
+#include <functional>
+
 
 namespace AMP {
 namespace Operator {
@@ -50,8 +52,9 @@ public:
                        double values[],
                        int row_lengths[] );
 
-    void setGetRow( void ( *func )(
-        void *object, int row, std::vector<size_t> &cols, std::vector<double> &values ) );
+    void setGetRow(
+        std::function<void(
+            void *object, int row, std::vector<size_t> &cols, std::vector<double> &values )> );
 
     void getColumn( int column, std::vector<size_t> &rows, std::vector<double> &values );
 
@@ -62,10 +65,7 @@ private:
 
     std::shared_ptr<Operator> d_operator;
 
-    void ( *d_getRow )( void *object,
-                        int row,
-                        std::vector<size_t> &cols,
-                        std::vector<double> &values );
+    std::function<void( void *, int, std::vector<size_t> &, std::vector<double> & )> d_getRow;
 };
 } // namespace Operator
 } // namespace AMP

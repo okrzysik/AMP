@@ -714,8 +714,8 @@ static inline std::vector<Point> getSurfacePoints( const AMP::Geometry::Geometry
             double x = ( 0.5 + i ) / (double) n;
             for ( int j = 0; j < n; j++ ) {
                 double y = ( 0.5 + j ) / (double) n;
-                auto dir = normalize(
-                    AMP::Geometry::GeometryHelpers::map_logical_sphere_surface( r, x, y ) );
+                Point s  = AMP::Geometry::GeometryHelpers::map_logical_sphere_surface( r, x, y );
+                auto dir = normalize( s );
                 double d = geom.distance( x0, dir );
                 AMP_ASSERT( d < 0 );
                 points.push_back( x0 - d * dir );
@@ -800,12 +800,12 @@ static void removeTriangles( std::vector<std::array<int, NDIM + 1>> &tri,
         if ( !remove[i] ) {
             tri[map[i]] = tri[i];
             for ( int d = 0; d <= NDIM; d++ ) {
-                if ( tri_nab[i][d] == -1 )
-                    tri_nab[i][d] = -1;
-                else if ( remove[tri_nab[i][d]] )
-                    tri_nab[i][d] = -1;
-                else
-                    tri_nab[i][d] = map[tri_nab[i][d]];
+                if ( tri_nab[i][d] != -1 ) {
+                    if ( remove[tri_nab[i][d]] )
+                        tri_nab[i][d] = -1;
+                    else
+                        tri_nab[i][d] = map[tri_nab[i][d]];
+                }
             }
             tri_nab[map[i]] = tri_nab[i];
         }

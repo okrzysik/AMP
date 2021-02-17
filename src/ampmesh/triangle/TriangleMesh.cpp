@@ -407,8 +407,7 @@ std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
                     AMP_WARNING( "Geometry is not closed" );
             }
         } else {
-            auto triangles2 = TriangleHelpers::splitDomains<NG>( triangles );
-
+            // auto triangles2 = TriangleHelpers::splitDomains<NG>( triangles );
             AMP_WARNING(
                 "Duplicate triangles detected, no connectivity information will be stored" );
             neighbors.resize( triangles.size(), make_array<int64_t, NG + 1>( -1 ) );

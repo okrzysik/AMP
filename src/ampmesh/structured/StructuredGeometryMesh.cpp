@@ -21,7 +21,11 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<MeshParameters> 
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     AMP_INSIST( d_db.get(), "Database must exist" );
     // Construct the geometry
-    d_geometry  = AMP::Geometry::Geometry::buildGeometry( d_db );
+    auto db2 = d_db->cloneDatabase();
+    db2->erase( "x_offset", false );
+    db2->erase( "y_offset", false );
+    db2->erase( "z_offset", false );
+    d_geometry  = AMP::Geometry::Geometry::buildGeometry( std::move( db2 ) );
     d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
     AMP_ASSERT( d_geometry2 );
     // Fill basic mesh information

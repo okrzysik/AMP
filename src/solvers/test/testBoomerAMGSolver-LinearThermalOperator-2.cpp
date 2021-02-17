@@ -107,15 +107,12 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     auto ResidualVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
     RightHandSideVec->setToScalar( 0.0 );
-    double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
 
     //   Add the boundary conditions corrections //
     RightHandSideVec->copyVector( PowerInWattsVec );
     diffusionOperator->modifyRHSvector( RightHandSideVec );
-    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = static_cast<double>( PowerInWattsVec->L2Norm() );
-    std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
+    std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
 
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
@@ -124,8 +121,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
-    std::shared_ptr<AMP::Solver::SolverStrategyParameters> mlSolverParams(
-        new AMP::Solver::SolverStrategyParameters( mlSolver_db ) );
+    auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
     mlSolverParams->d_pOperator = diffusionOperator;
@@ -134,11 +130,8 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-
-    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
+    std::cout << "Initial Solution Norm: " << TemperatureInKelvinVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Create the ML Solver
     auto mlSolver = std::make_shared<AMP::Solver::BoomerAMGSolver>( mlSolverParams );

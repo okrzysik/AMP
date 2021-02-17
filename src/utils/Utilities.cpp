@@ -3,7 +3,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Logger.h"
 #include "AMP/utils/PIO.h"
 
 #include "StackTrace/StackTrace.h"
@@ -160,7 +159,17 @@ void Utilities::deleteFile( const std::string &filename )
         AMP_INSIST( error == 0, "Error deleting file" );
     }
 }
-
+size_t Utilities::fileSize( const std::string &filename )
+{
+    AMP_ASSERT( !filename.empty() );
+    if ( !fileExists( filename ) )
+        return 0;
+    auto f = fopen( filename.data(), "rb" );
+    fseek( f, 0, SEEK_END );
+    size_t bytes = ftell( f );
+    fclose( f );
+    return bytes;
+}
 std::string Utilities::getSuffix( const std::string &filename )
 {
     size_t pos = filename.rfind( '.' );
@@ -420,6 +429,28 @@ double Utilities::trilinear( const std::vector<double> &x,
 // Dummy function to prevent compiler from optimizing away variable
 void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
+
+// Function to demangle a string (e.g. from typeid)
+#ifdef __GNUC__
+#define USE_ABI
+#include <cxxabi.h>
+#endif
+std::string Utilities::demangle( const std::string &name )
+{
+    std::string out;
+#if defined( _GNU_SOURCE ) || defined( USE_MAC )
+#if defined( USE_ABI )
+    int status;
+    char *demangled = abi::__cxa_demangle( name.data(), nullptr, nullptr, &status );
+    if ( status == 0 && demangled != nullptr )
+        out = demangled;
+    free( demangled );
+#endif
+#endif
+    if ( out.empty() )
+        out = name;
+    return out;
+}
 
 // Print a database to an output stream
 template<class TYPE>

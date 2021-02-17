@@ -50,4 +50,4 @@ private:
 } // namespace Solver
 } // namespace AMP
 
-#endif //  included_SolverStrategyParameters
+#endif

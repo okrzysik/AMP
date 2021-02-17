@@ -1,7 +1,7 @@
 #ifndef included_AMP_Property
 #define included_AMP_Property
 
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <algorithm>
 #include <limits>

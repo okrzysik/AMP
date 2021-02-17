@@ -2,10 +2,11 @@
 #define included_AMP_MeshPoint
 
 
-#include "AMP/utils/Utilities.h"
-
+#include <array>
 #include <cstddef>
 #include <initializer_list>
+#include <math.h>
+#include <ostream>
 #include <stdexcept>
 
 
@@ -32,10 +33,12 @@ public:
     // Constructors
     constexpr MeshPoint( std::initializer_list<TYPE> x ) : d_ndim( x.size() )
     {
-        if ( d_ndim > 3 )
+        if ( d_ndim > 3 || d_ndim == 0 )
             throw std::logic_error( "Invalid Dimension" );
         auto it   = x.begin();
         d_data[0] = *it;
+        d_data[1] = 0;
+        d_data[2] = 0;
         for ( size_t d = 1; d < d_ndim; d++ )
             d_data[d] = *( ++it );
     }
@@ -92,6 +95,11 @@ public:
         for ( size_t d = 0; d < NDIM; d++ )
             d_data[d] = x[d];
     }
+
+    // Typecast operators
+    constexpr operator std::array<TYPE, 2>() const { return { d_data[0], d_data[1] }; }
+    constexpr operator std::array<TYPE, 3>() const { return { d_data[0], d_data[1], d_data[2] }; }
+
 
     // Copy/assigment operators
     constexpr MeshPoint( MeshPoint && ) noexcept      = default;
