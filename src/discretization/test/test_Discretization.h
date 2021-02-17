@@ -6,6 +6,7 @@
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 
 #include "DOFManager_tests.h"
 

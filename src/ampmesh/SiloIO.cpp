@@ -1,5 +1,7 @@
 #include "AMP/ampmesh/SiloIO.h"
 #include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/utils/Utilities.h"
+
 #include "ProfilerApp.h"
 
 #include <chrono>

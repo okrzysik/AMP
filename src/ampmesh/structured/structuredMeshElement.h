@@ -2,7 +2,10 @@
 #define included_AMP_structuredMeshElement
 
 #include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/utils/Utilities.h"
+
 #include <vector>
+
 
 namespace AMP {
 namespace Mesh {

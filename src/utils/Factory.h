@@ -8,15 +8,13 @@
  */
 
 
+#include "AMP/utils/Singleton.h"
+#include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/getkeys.h"
+
 #include <map>
-#include <string>
-
-#include "Singleton.h"
-
-#include "getkeys.h"
-
-#include "AMP/utils/Utilities.h"
 #include <memory>
+#include <string>
 
 
 namespace AMP {

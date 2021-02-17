@@ -4,7 +4,7 @@
 #include "AMP/utils/Array.h"
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/FunctionTable.hpp"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <algorithm>
 #include <cmath>
