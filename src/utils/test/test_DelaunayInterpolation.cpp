@@ -1100,8 +1100,7 @@ int main( int argc, char *argv[] )
             &ut, d, createRandomPoints<int>( d, d + 1 ) );                    // minimum # of points
         testInterpolation<int>( &ut, d, createRandomPoints<int>( d, 10 ) );   // small # of points
         testInterpolation<int>( &ut, d, createRandomPoints<int>( d, 1000 ) ); // medium # of points
-        // testInterpolation<int>( &ut, d, createRandomPoints<int>(d,10000) );         // large # of
-        // points
+        // testInterpolation<int>( &ut, d, createRandomPoints<int>(d,10000) ); // large # of points
     }
 
     // Run some predefined tests

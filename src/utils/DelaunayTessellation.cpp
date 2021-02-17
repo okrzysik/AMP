@@ -127,7 +127,6 @@ inline double dot<int>( int N, const int *x, const int *y )
         ans += int64_t( x[i] ) * int64_t( y[i] );
     return get_double( ans );
 }
-#ifndef DISABLE_EXTENDED
 template<>
 inline double dot<int64_t>( int N, const int64_t *x, const int64_t *y )
 {
@@ -152,36 +151,6 @@ inline double dot<int256_t>( int N, const int256_t *x, const int256_t *y )
         ans += int512_t( x[i] ) * int512_t( y[i] );
     return get_double( ans );
 }
-#else
-// Exact precision dot product when no extended precision class is availible
-inline void split64bit( int64_t x, int64_t &a, int64_t &b )
-{
-    uint64_t tmp = std::abs( x );
-    int64_t s    = ( x < 0 ) ? -1 : 1;
-    a            = s * static_cast<int64_t>( tmp >> 31 );
-    b            = s * static_cast<int64_t>( tmp & 0x7FFFFFFF );
-}
-template<>
-inline double dot<int64_t>( int N, const int64_t *x, const int64_t *y )
-{
-    AMP_ASSERT( N <= 4 );
-    int64_t a, b, c, d, e, f, v62 = 0, v31 = 0, v0 = 0;
-    for ( int i = 0; i < N; i++ ) {
-        split64bit( x[i], a, b );
-        split64bit( y[i], c, d );
-        v62 += a * c;
-        v31 += a * d + b * c;
-        v0 += b * d;
-    }
-    split64bit( v62, a, b );
-    split64bit( v31, c, d );
-    split64bit( v0, e, f );
-    const long double tmp = 2147483648; // 2^31
-    long double ans       = tmp * tmp * tmp * ( a + ( b + c + ( d + e + f / tmp ) / tmp ) / tmp );
-    auto ans2             = static_cast<double>( ans );
-    return ans2;
-}
-#endif
 
 
 /********************************************************************
@@ -1190,11 +1159,11 @@ std::array<double, NDIM + 1> compute_Barycentric( const std::array<TYPE, NDIM> *
     ETYPE T[NDIM * NDIM];
     for ( int i = 0; i < NDIM; i++ ) {
         for ( int j = 0; j < NDIM; j++ )
-            T[j + i * NDIM] = x[i][j] - x[NDIM][j];
+            T[j + i * NDIM] = ETYPE( x[i][j] - x[NDIM][j] );
     }
     ETYPE r[NDIM];
     for ( int i = 0; i < NDIM; i++ )
-        r[i] = xi[i] - x[NDIM][i];
+        r[i] = ETYPE( xi[i] - x[NDIM][i] );
     ETYPE L2[NDIM + 1], det( 0 );
     DelaunayHelpers<NDIM>::solve_system( T, r, L2, det );
     L2[NDIM] = det;
@@ -2411,11 +2380,7 @@ create_tessellation( const std::vector<std::array<int, NDIM>> &x )
         if ( x_max < 1048576 ) {
             return create_tessellation<3, int, int64_t>( x );
         } else {
-#ifdef DISABLE_EXTENDED
-            throw std::logic_error( "create_tessellation is disabled for large ints" );
-#else
             return create_tessellation<3, int, int128_t>( x );
-#endif
         }
     }
 }
@@ -2463,11 +2428,7 @@ int create_tessellation( const int ndim, const int N, const int x[], int *tri[],
         } else if ( x_max < 1048576 ) {
             N_tri = create_tessellation<3, int, int64_t>( N, x, tri, tri_nab );
         } else {
-#ifdef DISABLE_EXTENDED
-            throw std::logic_error( "create_tessellation (int) is disabled for large ints" );
-#else
             N_tri = create_tessellation<3, int, int128_t>( N, x, tri, tri_nab );
-#endif
         }
     }
     return N_tri;
@@ -2481,17 +2442,11 @@ int create_tessellation(
     if ( x_max >= XMAX )
         throw std::logic_error( "To be stable, all vaues of x must < 2^62 for type int" );
     int N_tri = -1;
-#ifdef DISABLE_EXTENDED
-    NULL_USE( tri );
-    NULL_USE( tri_nab );
-    throw std::logic_error( "create_tessellation (int64_t) is disabled" );
-#else
     if ( ndim == 2 ) {
         N_tri = create_tessellation<2, int64_t, int128_t>( N, x, tri, tri_nab );
     } else if ( ndim == 3 ) {
         N_tri = create_tessellation<3, int64_t, int256_t>( N, x, tri, tri_nab );
     }
-#endif
     return N_tri;
 }
 template<std::size_t NDIM, class TYPE>
@@ -2561,11 +2516,7 @@ int test_in_circumsphere( int ndim, const int x[], const int xi[], const double 
         } else if ( x_max < 1048576 ) {
             test = test_in_circumsphere2<3, int, int64_t>( x, xi, TOL_VOL );
         } else {
-#ifdef DISABLE_EXTENDED
-            AMP_ERROR( "create_tessellation (int) is disabled for large ints" );
-#else
             test = test_in_circumsphere2<3, int, int128_t>( x, xi, TOL_VOL );
-#endif
         }
     } else {
         throw std::logic_error( "Unsupported dimension" );

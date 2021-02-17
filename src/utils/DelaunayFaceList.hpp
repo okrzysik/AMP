@@ -4,6 +4,7 @@
 #include "AMP/utils/DelaunayFaceList.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/extended_int.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -52,29 +53,16 @@
 //    where N is the index range and D is the dimension.
 //    Note: I have not determined the small constant, but is is likely ~4
 //    Note: Some routines use higher precisision internally (test_in_circumsphere)
+typedef AMP::extended::int128_t int128_t;
+typedef AMP::extended::int256_t int256_t;
+typedef AMP::extended::int512_t int512_t;
 static inline double get_double( const int &x ) { return static_cast<double>( x ); }
 static inline double get_double( const int64_t &x ) { return static_cast<double>( x ); }
 static inline double get_double( const double &x ) { return static_cast<double>( x ); }
 static inline double get_double( const long double &x ) { return static_cast<double>( x ); }
-#if 0
-#include "samrutils/utilities/extended_int.h"
-    typedef extended::int128_t int128_t;
-    typedef extended::int256_t int256_t;
-    typedef extended::int512_t int512_t;
-    static inline double get_double(const int128_t& x) { return x.get_double(); }
-    static inline double get_double(const int256_t& x) { return x.get_double(); }
-    static inline double get_double(const int512_t& x) { return x.get_double(); }
-#elif 0 // USE_BOOST
-#include "boost/multiprecision/cpp_int.hpp"
-typedef boost::multiprecision::int128_t int128_t;
-typedef boost::multiprecision::int256_t int256_t;
-typedef boost::multiprecision::int512_t int512_t;
-static inline double get_double( const int128_t &x ) { return x.convert_to<double>(); }
-static inline double get_double( const int256_t &x ) { return x.convert_to<double>(); }
-static inline double get_double( const int512_t &x ) { return x.convert_to<double>(); }
-#else
-#define DISABLE_EXTENDED
-#endif
+static inline double get_double( const int128_t &x ) { return x.get_double(); }
+static inline double get_double( const int256_t &x ) { return x.get_double(); }
+static inline double get_double( const int512_t &x ) { return x.get_double(); }
 
 
 namespace AMP::DelaunayTessellation {
