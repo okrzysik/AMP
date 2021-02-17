@@ -1,5 +1,5 @@
+#include "AMP/utils/UtilityMacros.h"
 
-#include "AMP/utils/Utilities.h"
 
 namespace AMP {
 

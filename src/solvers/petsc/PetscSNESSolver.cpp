@@ -140,10 +140,10 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
         if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
             d_pKrylovSolver.reset( new PetscKrylovSolver() );
             d_pKrylovSolver->setKrylovSolver( &kspSolver );
-            auto params = std::make_shared<PetscKrylovSolverParameters>(
+            auto params2 = std::make_shared<PetscKrylovSolverParameters>(
                 nonlinearSolverDb->getDatabase( "LinearSolver" ) );
-            params->d_comm = d_comm;
-            d_pKrylovSolver->initialize( params );
+            params2->d_comm = d_comm;
+            d_pKrylovSolver->initialize( params2 );
         } else {
             AMP_INSIST( d_pKrylovSolver,
                         "ERROR: The nonlinear solver database must "

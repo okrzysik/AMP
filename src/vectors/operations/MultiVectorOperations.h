@@ -75,7 +75,7 @@ public:
                       const VectorData &y,
                       const Scalar &tol = 1e-6 ) const override;
 
-    void resetVectorOperations( std::vector<std::shared_ptr<VectorOperations>> &ops );
+    void resetVectorOperations( std::vector<std::shared_ptr<VectorOperations>> ops );
 
 protected:
     // Internal data

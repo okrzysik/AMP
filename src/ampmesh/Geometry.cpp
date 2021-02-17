@@ -9,6 +9,7 @@
 #include "AMP/ampmesh/shapes/CircleFrustum.h"
 #include "AMP/ampmesh/shapes/Cylinder.h"
 #include "AMP/ampmesh/shapes/Parallelepiped.h"
+#include "AMP/ampmesh/shapes/RegularPolygon.h"
 #include "AMP/ampmesh/shapes/Shell.h"
 #include "AMP/ampmesh/shapes/Sphere.h"
 #include "AMP/ampmesh/shapes/SphereSurface.h"
@@ -71,6 +72,12 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
         geom.reset( new CircleFrustum( db ) );
     } else if ( generator.compare( "parallelepiped" ) == 0 ) {
         geom.reset( new Parallelepiped( db ) );
+    } else if ( generator.compare( "regular_polygon" ) == 0 ) {
+        geom.reset( new RegularPolygon( db ) );
+    } else if ( generator.compare( "pentagon" ) == 0 ) {
+        auto db2 = db->cloneDatabase();
+        db2->putScalar( "N", 5 );
+        geom.reset( new RegularPolygon( std::move( db2 ) ) );
     } else if ( generator.compare( "Mesh" ) == 0 ) {
         // Generate a mesh geometry
         auto mesh_db = db->getDatabase( "Mesh" );
@@ -80,14 +87,14 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
         auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
         if ( multimesh ) {
             std::vector<Geometry::shared_ptr> geoms;
-            for ( const auto &mesh : multimesh->getMeshes() )
-                geoms.push_back( std::make_shared<MeshGeometry>( mesh ) );
+            for ( const auto &mesh2 : multimesh->getMeshes() )
+                geoms.push_back( std::make_shared<MeshGeometry>( mesh2 ) );
             geom = std::make_shared<MultiGeometry>( geoms );
         } else {
             geom = std::make_shared<MeshGeometry>( mesh );
         }
     } else {
-        AMP_ERROR( "Unknown generator" );
+        AMP_ERROR( "Unknown generator: " + generator );
     }
     // Displace the geometry
     double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),

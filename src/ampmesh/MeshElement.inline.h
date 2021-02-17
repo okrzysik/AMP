@@ -1,7 +1,7 @@
 #ifndef included_AMP_MeshElement_inline
 #define included_AMP_MeshElement_inline
 
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 namespace AMP {
 namespace Mesh {
@@ -12,22 +12,22 @@ namespace Mesh {
  ********************************************************/
 MeshElement::MeshElement()
 {
-    typeID  = getTypeID();
+    typeID  = MeshElementTypeID;
     element = nullptr;
 }
-MeshElement::MeshElement( const MeshElement &rhs ) : typeID( getTypeID() ), element( nullptr )
+MeshElement::MeshElement( const MeshElement &rhs ) : typeID( MeshElementTypeID ), element( nullptr )
 {
-    if ( rhs.element == nullptr && rhs.typeID == getTypeID() ) {
+    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
         element = nullptr;
-    } else if ( rhs.typeID != getTypeID() ) {
+    } else if ( rhs.typeID != MeshElementTypeID ) {
         element = rhs.clone();
     } else {
         element = rhs.element->clone();
     }
 }
-MeshElement::MeshElement( MeshElement &&rhs ) : typeID( getTypeID() ), element( rhs.element )
+MeshElement::MeshElement( MeshElement &&rhs ) : typeID( MeshElementTypeID ), element( rhs.element )
 {
-    if ( rhs.typeID != getTypeID() )
+    if ( rhs.typeID != MeshElementTypeID )
         element = rhs.clone();
     rhs.element = nullptr;
 }
@@ -40,10 +40,10 @@ MeshElement &MeshElement::operator=( const MeshElement &rhs )
         delete element;
         element = nullptr;
     }
-    typeID = getTypeID();
-    if ( rhs.element == nullptr && rhs.typeID == getTypeID() ) {
+    typeID = MeshElementTypeID;
+    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
         element = nullptr;
-    } else if ( rhs.typeID != getTypeID() ) {
+    } else if ( rhs.typeID != MeshElementTypeID ) {
         element = rhs.clone();
     } else {
         element = rhs.element->clone();
@@ -59,13 +59,13 @@ MeshElement &MeshElement::operator=( MeshElement &&rhs )
         delete element;
         element = nullptr;
     }
-    typeID = getTypeID();
+    typeID = MeshElementTypeID;
     std::swap( element, rhs.element );
-    if ( rhs.typeID != getTypeID() )
+    if ( rhs.typeID != MeshElementTypeID )
         element = rhs.clone();
     return *this;
 }
-MeshElement::MeshElement( MeshElement *rhs ) : typeID( getTypeID() ), element( nullptr )
+MeshElement::MeshElement( MeshElement *rhs ) : typeID( MeshElementTypeID ), element( nullptr )
 {
     if ( rhs->element ) {
         std::swap( element, rhs->element );
@@ -90,7 +90,7 @@ MeshElement::~MeshElement()
 /********************************************************
  * Is the element null                                   *
  ********************************************************/
-bool MeshElement::isNull() const { return typeID == getTypeID() && element == nullptr; }
+bool MeshElement::isNull() const { return typeID == MeshElementTypeID && element == nullptr; }
 
 
 /********************************************************

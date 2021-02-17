@@ -1,9 +1,11 @@
 // This file contains useful macros including AMP_ERROR, AMP_WARNING, AMP_INSIST, AMP_ASSERT, etc.
-// clang-format off
 #ifndef included_AMP_UtilityMacros
 #define included_AMP_UtilityMacros
 
 #include <sstream>
+
+#include "AMP/utils/PIO.h"
+#include "StackTrace/Utilities.h"
 
 
 /*! \defgroup Macros Set of utility macro functions used in AMP
@@ -36,11 +38,11 @@
  *     line number of the abort are also printed.
  *  \param MSG  Error message to print
  */
-#define AMP_ERROR( MSG )                                           \
-    do {                                                           \
-        std::ostringstream stream;                                 \
-        stream << MSG;                                             \
-        AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
+#define AMP_ERROR( MSG )                                                  \
+    do {                                                                  \
+        std::ostringstream stream;                                        \
+        stream << MSG;                                                    \
+        StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
     } while ( 0 )
 
 
@@ -49,13 +51,13 @@
  *  \details Print a warning without exit.  Print file and line number of the warning.
  *  \param MSG  Warning message to print
  */
-#define AMP_WARNING( MSG )                                                          \
-    do {                                                                            \
-        std::ostringstream stream;                                                  \
-        stream << MSG << std::ends;                                                 \
-        printf( "WARNING: %s\n   Warning called in %s on line %i\n",                \
-            stream.str().c_str(), __FILE__, __LINE__ );                             \
-        AMP::Logger::getInstance()->logWarning( stream.str(), __FILE__, __LINE__ ); \
+#define AMP_WARNING( MSG )                                                                        \
+    do {                                                                                          \
+        AMP::pout << "WARNING: " << MSG << std::ends;                                             \
+        AMP::plog << "WARNING: " << MSG << std::ends;                                             \
+        AMP::pout << "   Warning called in " << __FILE__ << " on line " << __LINE__ << std::ends; \
+        AMP::plog << "   Warning called in " << __FILE__ << " on line " << __LINE__ << std::ends; \
+        AMP::plog << std::flush;                                                                  \
     } while ( 0 )
 
 
@@ -67,13 +69,13 @@
  *     The file and line number of the abort are printed along with the stack trace (if availible).
  *  \param EXP  Expression to evaluate
  */
-#define AMP_ASSERT( EXP )                                              \
-    do {                                                               \
-        if ( !( EXP ) ) {                                              \
-            std::ostringstream stream;                                 \
-            stream << "Failed assertion: " << #EXP;                    \
-            AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-        }                                                              \
+#define AMP_ASSERT( EXP )                                                     \
+    do {                                                                      \
+        if ( !( EXP ) ) {                                                     \
+            std::ostringstream stream;                                        \
+            stream << "Failed assertion: " << #EXP;                           \
+            StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
+        }                                                                     \
     } while ( 0 )
 
 
@@ -86,14 +88,14 @@
  *  \param EXP  Expression to evaluate
  *  \param MSG  Debug message to print
  */
-#define AMP_INSIST( EXP, MSG )                                         \
-    do {                                                               \
-        if ( !( EXP ) ) {                                              \
-            std::ostringstream stream;                                 \
-            stream << "Failed insist: " << #EXP << std::endl;          \
-            stream << "Message: " << MSG << std::ends;                 \
-            AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-        }                                                              \
+#define AMP_INSIST( EXP, MSG )                                                \
+    do {                                                                      \
+        if ( !( EXP ) ) {                                                     \
+            std::ostringstream stream;                                        \
+            stream << "Failed insist: " << #EXP << std::endl;                 \
+            stream << "Message: " << MSG << std::ends;                        \
+            StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
+        }                                                                     \
     } while ( 0 )
 
 
@@ -109,18 +111,20 @@
  *  \param EXP  Expression to evaluate
  */
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-    #define AMP_CHECK_ASSERT( EXP )                                        \
-        do {                                                               \
-            if ( !( EXP ) ) {                                              \
-                std::ostringstream stream;                                 \
-                stream << "Failed assertion: " << #EXP;                    \
-                AMP::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-            }                                                              \
-        } while ( 0 )
+#define AMP_CHECK_ASSERT( EXP )                                               \
+    do {                                                                      \
+        if ( !( EXP ) ) {                                                     \
+            std::ostringstream stream;                                        \
+            stream << "Failed assertion: " << #EXP;                           \
+            StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
+        }                                                                     \
+    } while ( 0 )
 #else
-    #define AMP_CHECK_ASSERT( EXP )
+#define AMP_CHECK_ASSERT( EXP )
 #endif
 
+
+// clang-format off
 
 /*! \def DISABLE_WARNINGS
  *  \brief Reenable warnings
@@ -132,61 +136,56 @@
  *      Be sure to follow with ENABLE_WARNINGS
  */
 #ifndef DISABLE_WARNINGS
-#if defined( USING_MSVC )
-    #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
-    #define ENABLE_WARNINGS __pragma( warning( pop ) )
-#elif defined( USING_CLANG )
-    #define DISABLE_WARNINGS                                                      \
-        _Pragma( "clang diagnostic push" )                                        \
-        _Pragma( "clang diagnostic ignored \"-Wall\"" )                           \
-        _Pragma( "clang diagnostic ignored \"-Wextra\"" )                         \
-        _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )          \
-        _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )       \
-        _Pragma( "clang diagnostic ignored \"-Winteger-overflow\"" )              \
-	_Pragma( "clang diagnostic ignored \"-Winconsistent-missing-override\"" ) \
-	_Pragma( "clang diagnostic ignored \"-Wimplicit-int-float-conversion\"" )
-    #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
-#elif defined( USING_GCC )
-    #define DISABLE_WARNINGS                                                \
-        _Pragma( "GCC diagnostic push" )                                    \
-        _Pragma( "GCC diagnostic ignored \"-Wpragmas\"" )                   \
-        _Pragma( "GCC diagnostic ignored \"-Wall\"" )                       \
-        _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                     \
-        _Pragma( "GCC diagnostic ignored \"-Wpedantic\"" )                  \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )     \
-        _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )        \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )          \
-        _Pragma( "GCC diagnostic ignored \"-Wdeprecated-copy\"" )           \
-        _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )   \
-        _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )       \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )           \
-        _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )                  \
-        _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )           \
-        _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )        \
-        _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )              \
-        _Pragma( "GCC diagnostic ignored \"-Wsign-compare\"" )              \
-        _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
-        _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )
-    #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
-#elif defined( USING_ICC )
-    #define DISABLE_WARNINGS              \
-        _Pragma( "warning (push)" )       \
-        _Pragma( "warning disable 1011" ) \
-        _Pragma( "warning disable 61" )   \
-        _Pragma( "warning disable 1478" )   
-    #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
-#else
-    #define DISABLE_WARNINGS
-    #define ENABLE_WARNINGS
+    #if defined( USING_MSVC )
+        #define DISABLE_WARNINGS __pragma( warning( push, 0 ) )
+        #define ENABLE_WARNINGS __pragma( warning( pop ) )
+    #elif defined( USING_CLANG )
+        #define DISABLE_WARNINGS                                                      \
+            _Pragma( "clang diagnostic push" )                                        \
+            _Pragma( "clang diagnostic ignored \"-Wall\"" )                           \
+            _Pragma( "clang diagnostic ignored \"-Wextra\"" )                         \
+            _Pragma( "clang diagnostic ignored \"-Wunused-private-field\"" )          \
+            _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" )       \
+            _Pragma( "clang diagnostic ignored \"-Winteger-overflow\"" )              \
+            _Pragma( "clang diagnostic ignored \"-Winconsistent-missing-override\"" ) \
+            _Pragma( "clang diagnostic ignored \"-Wimplicit-int-float-conversion\"" )
+        #define ENABLE_WARNINGS _Pragma( "clang diagnostic pop" )
+    #elif defined( USING_GCC )
+        #define DISABLE_WARNINGS                                                \
+            _Pragma( "GCC diagnostic push" )                                    \
+            _Pragma( "GCC diagnostic ignored \"-Wpragmas\"" )                   \
+            _Pragma( "GCC diagnostic ignored \"-Wall\"" )                       \
+            _Pragma( "GCC diagnostic ignored \"-Wextra\"" )                     \
+            _Pragma( "GCC diagnostic ignored \"-Wpedantic\"" )                  \
+            _Pragma( "GCC diagnostic ignored \"-Wunused-local-typedefs\"" )     \
+            _Pragma( "GCC diagnostic ignored \"-Woverloaded-virtual\"" )        \
+            _Pragma( "GCC diagnostic ignored \"-Wunused-parameter\"" )          \
+            _Pragma( "GCC diagnostic ignored \"-Wdeprecated-copy\"" )           \
+            _Pragma( "GCC diagnostic ignored \"-Wdeprecated-declarations\"" )   \
+            _Pragma( "GCC diagnostic ignored \"-Wvirtual-move-assign\"" )       \
+            _Pragma( "GCC diagnostic ignored \"-Wunused-function\"" )           \
+            _Pragma( "GCC diagnostic ignored \"-Woverflow\"" )                  \
+            _Pragma( "GCC diagnostic ignored \"-Wunused-variable\"" )           \
+            _Pragma( "GCC diagnostic ignored \"-Wignored-qualifiers\"" )        \
+            _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )              \
+            _Pragma( "GCC diagnostic ignored \"-Wsign-compare\"" )              \
+            _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
+            _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )
+        #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
+    #elif defined( USING_ICC )
+        #define DISABLE_WARNINGS                \
+            _Pragma( "warning (push)" )         \
+            _Pragma( "warning disable 1011" )   \
+            _Pragma( "warning disable 61" )     \
+            _Pragma( "warning disable 1478" )
+        #define ENABLE_WARNINGS _Pragma( "warning(pop)" )
+    #else
+        #define DISABLE_WARNINGS
+        #define ENABLE_WARNINGS
+    #endif
 #endif
-#endif
-
+// clang-format on
 
 /*! @} */
 
-
-#include "AMP/utils/Logger.h"
-#include "AMP/utils/Utilities.h"
-
-// clang-format on
 #endif

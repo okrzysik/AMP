@@ -334,9 +334,9 @@ DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::FaceList( const int Nx_in,
         for ( int j2 = 0; j2 <= NDIM; j2++ ) {
             if ( j2 == i )
                 continue;
-            int k             = tri0[j2];
-            data[i].index[j1] = k;
-            data[i].x[j1]     = x0[k];
+            int m             = tri0[j2];
+            data[i].index[j1] = m;
+            data[i].x[j1]     = x0[m];
             j1++;
         }
         N_face++;

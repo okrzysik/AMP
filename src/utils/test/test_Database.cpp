@@ -125,9 +125,23 @@ void runBasicTests( UnitTest &ut )
         "diam   = 30 um          // Beam diameter\n"
         "length = 0.4 cm         // Beam length\n"
         "lambda = 0.8 um         // Wavelength of laser\n"
-        "angle  = 0 degrees      // Angle of beam with repect to normal\n";
+        "angle  = 0 degrees      // Angle of beam with repect to normal\n"
+        "array  = [ [ [ 1, 2, 3, 4 ], [5,6,7,8],[9,10,11,12]],\n"
+        "         [[0,1,2,3],[4,5,6,7],[8,9,10,11]]] m   // Multi-dimentional array\n"
+        "empty  = []             // Empty array\n"
+        "end  = \"end\"\n";
     auto beam = Database::createFromString( beamDatabaseText );
     db.putDatabase( "beam", std::move( beam ) );
+
+    // Check the arrays
+    auto empty = db.getDatabase( "beam" )->getData( "empty" );
+    if ( !empty )
+        ut.failure( "empty array (1)" );
+    else if ( empty->arraySize().length() != 0 )
+        ut.failure( "empty array (2)" );
+    auto array = db.getDatabase( "beam" )->getArray<int>( "array", "m" );
+    if ( array.size() != ArraySize( 4, 3, 2 ) )
+        ut.failure( "array size" );
 
     // Write the database to a file
     std::ofstream inputfile;
@@ -196,14 +210,68 @@ void runBasicTests( UnitTest &ut )
     std::vector<double> v4   = { 1.5, 0.2 };
     std::array<double, 3> v5 = { 2.4, 3.7, 5.6 };
     std::set<double> v6      = { 1.2, 1.3, 1.4 };
-    auto db7 = AMP::Database::create( "v1", v1, "v2", v2, "v3", v3, "v4", v4, "v5", v5, "v6", v6 );
+    auto db7                 = Database::create(
+        "v1", v1, "v2", v2, "v3", v3, "v4", v4, "v5", v5, "v6", v6, "v7", "test" );
     if ( db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2" ) == v2 &&
          db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4" ) == v4 &&
          db7->getVector<double>( "v5" ) == std::vector<double>( v5.begin(), v5.end() ) &&
-         db7->getVector<double>( "v6" ) == std::vector<double>( v6.begin(), v6.end() ) )
-        ut.passes( "AMP::Database::create" );
+         db7->getVector<double>( "v6" ) == std::vector<double>( v6.begin(), v6.end() ) &&
+         db7->getString( "v7" ) == "test" )
+        ut.passes( "Database::create" );
     else
-        ut.failure( "AMP::Database::create" );
+        ut.failure( "Database::create" );
+
+    // Test creating a database from key/value/unit triplets
+    db7 = Database::createWithUnits( "v1",
+                                     v1,
+                                     "",
+                                     "v2",
+                                     v2,
+                                     "cm",
+                                     "v3",
+                                     v3,
+                                     "",
+                                     "v4",
+                                     v4,
+                                     "m",
+                                     "v5",
+                                     v5,
+                                     "kg",
+                                     "v6",
+                                     v6,
+                                     "J",
+                                     "v7",
+                                     "test",
+                                     "" );
+    if ( db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2", "m" ) == 1e-2 * v2 &&
+         db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4", "m" ) == v4 &&
+         db7->getVector<double>( "v5", "kg" ) == std::vector<double>( v5.begin(), v5.end() ) &&
+         db7->getVector<double>( "v6", "J" ) == std::vector<double>( v6.begin(), v6.end() ) &&
+         db7->getString( "v7" ) == "test" )
+        ut.passes( "Database::create" );
+    else
+        ut.failure( "Database::create" );
+
+    // Test getting some values in different units
+    Database db8;
+    db8.putScalar<double>( "I1", 2.3, "W/cm^2" );
+    db8.putScalar<double>( "I2", 2.3e4, "J/(s*m^2)" );
+    db8.putScalar<double>( "I3", 2.3e7, "ergs/(s*cm^2)" );
+    double I1 = db8.getScalar<double>( "I1", "W/cm^2" );
+    double I2 = db8.getScalar<double>( "I2", "W/cm^2" );
+    double I3 = db8.getScalar<double>( "I3", "W/cm^2" );
+    if ( equal( I1, 2.3 ) && equal( I2, 2.3 ) && equal( I3, 2.3 ) )
+        ut.passes( "Database::units" );
+    else
+        ut.failure( "Database::units" );
+
+    // Run some extra Units tests
+    pass = Units( Units( "W/m^2" ).str() ) == Units( "uW/mm^2" );
+    pass = pass && Units( ( Units( "V" ) * Units( "A" ) ).str() ) == Units( "W" );
+    if ( pass )
+        ut.passes( "Units" );
+    else
+        ut.failure( "Units" );
 }
 
 

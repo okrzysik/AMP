@@ -28,9 +28,9 @@ public:
     virtual ~ManufacturedDiffusionTransportModel() {}
 
 
-    virtual void getTransport( std::vector<double> &result,
-                               std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
-                               const std::vector<libMesh::Point> &Coordinates )
+    void getTransport( std::vector<double> &result,
+                       std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
+                       const std::vector<libMesh::Point> &Coordinates ) override
     {
         AMP_ASSERT( ( Coordinates.size() == result.size() ) );
         auto it = args.find( "temperature" );

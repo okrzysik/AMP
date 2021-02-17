@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
 #include <iostream>
 #include <random>
 #include <stdexcept>
@@ -176,6 +175,32 @@ void testArraySize( UnitTest &ut )
         ut.passes( "ArraySize tests" );
     else
         ut.failure( "ArraySize tests" );
+    // Test performance of index and ijk
+    pass      = true;
+    double t1 = Utilities::time();
+    // ArraySize s( 223, 991, 569 );
+    ArraySize s( 223, 91, 59 );
+    for ( size_t k = 0, index = 0; k < s[2]; k++ ) {
+        for ( size_t j = 0; j < s[1]; j++ ) {
+            for ( size_t i = 0; i < s[0]; i++, index++ ) {
+                pass = pass && index == s.index( i, j, k );
+            }
+        }
+    }
+    double t2 = Utilities::time();
+    for ( size_t k = 0; k < s[2]; k++ ) {
+        for ( size_t j = 0; j < s[1]; j++ ) {
+            for ( size_t i = 0; i < s[0]; i++ ) {
+                ijk  = s.ijk( s.index( i, j, k ) );
+                pass = pass && ijk[0] == i && ijk[1] == j && ijk[2] == k;
+            }
+        }
+    }
+    double t3 = Utilities::time();
+    printf( "Time to compute index: %0.2f ns\n", 1e9 * ( t2 - t1 ) / s.length() );
+    printf( "Time to compute ijk: %0.2f ns\n", 1e9 * ( t3 - t2 ) / s.length() );
+    if ( !pass )
+        ut.passes( "ArraySize times" );
 }
 
 
@@ -327,7 +352,7 @@ void testArray( UnitTest &ut )
         ut.passes( "view" );
     else
         ut.failure( "view" );
-    pout << "Time to create view: " << ( t2 - t1 ) * 1e9 / 100000 << " ns\n";
+    printf( "Time to create view: %0.2f ns\n", ( t2 - t1 ) * 1e9 / 100000 );
     // Test time to access elements
     {
         Array<double> x( 100000 );
@@ -338,7 +363,7 @@ void testArray( UnitTest &ut )
             s += x( i );
         t2 = Utilities::time();
         AMP_ASSERT( s > 0 );
-        pout << "Time to access: " << ( t2 - t1 ) * 1e9 / x.length() << " ns\n";
+        printf( "Time to access: %0.2f ns\n", ( t2 - t1 ) * 1e9 / x.length() );
     }
     // Simple tests of +/-
     M2 = M1;
@@ -420,8 +445,8 @@ int main( int argc, char *argv[] )
             ut.passes( "sum" );
         else
             ut.failure( "sum" );
-        pout << "Time to perform sum (sum()): " << ( t2 - t1 ) * 1e9 / N << " ns\n";
-        pout << "Time to perform sum (raw): " << ( t3 - t2 ) * 1e9 / N << " ns\n";
+        printf( "Time to perform sum (sum()): %0.2f ns\n", ( t2 - t1 ) * 1e9 / N );
+        printf( "Time to perform sum (raw): %0.2f ns\n", ( t3 - t2 ) * 1e9 / N );
     }
 
     // Test the allocation of a non-trivial type
@@ -496,16 +521,16 @@ int main( int argc, char *argv[] )
     {
         Array<uint16_t> M1( 3, 4 );
         M1.rand();
-        pout << std::endl;
-        M1.print( pout, "M1" );
-        pout << std::endl;
+        std::cout << std::endl;
+        M1.print( std::cout, "M1" );
+        std::cout << std::endl;
     }
 
     // Finished
     ut.report( 1 );
     auto num_failed = static_cast<int>( ut.NumFailGlobal() );
     if ( num_failed == 0 )
-        pout << "All tests passed\n";
+        std::cout << "All tests passed\n";
     ut.reset();
     AMPManager::shutdown();
     return num_failed;

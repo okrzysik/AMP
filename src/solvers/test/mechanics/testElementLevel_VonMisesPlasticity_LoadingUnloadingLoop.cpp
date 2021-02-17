@@ -63,10 +63,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "cook" );
     //--------------------------------------------------
 
-    AMP_INSIST( input_db->keyExists( "NumberOfLoadingSteps" ),
-                "Key ''NumberOfLoadingSteps'' is missing!" );
-    int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
-
     bool ExtractData = input_db->getWithDefault( "ExtractStressStrainData", false );
     FILE *fout123;
     std::string ss_file = exeName + "_UniaxialStressStrain.txt";
@@ -176,10 +172,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-    int NumberOfLoops     = 2;
-    int TotalLoadingSteps = 4;
-    NumberOfLoadingSteps  = NumberOfLoops * ( 4 * TotalLoadingSteps );
-    double AngleIncrement = ( 11.0 / 7.0 ) * ( 1.0 / ( (double) TotalLoadingSteps ) );
+    int NumberOfLoops        = 2;
+    int TotalLoadingSteps    = 4;
+    int NumberOfLoadingSteps = NumberOfLoops * ( 4 * TotalLoadingSteps );
+    double AngleIncrement    = ( 11.0 / 7.0 ) * ( 1.0 / ( (double) TotalLoadingSteps ) );
 
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;

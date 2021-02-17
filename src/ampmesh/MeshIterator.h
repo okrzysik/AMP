@@ -225,7 +225,7 @@ protected:
     MeshElement *d_element;
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "MeshIterator" ); }
+    static const uint32_t MeshIteratorTypeID;
 };
 
 

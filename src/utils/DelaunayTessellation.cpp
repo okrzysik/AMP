@@ -335,8 +335,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     // Compute the square of the radius
     PROFILE_START( "create-order", 3 );
     std::vector<ETYPE> R2( N );
-    int i1 = index_pair.first;
-    for ( int i = 0; i < N; i++ ) {
+    for ( int i = 0, i1 = index_pair.first; i < N; i++ ) {
         R2[i] = ETYPE( 0 );
         for ( int d = 0; d < NDIM; d++ ) {
             ETYPE tmp( x[i][d] - x[i1][d] );
@@ -356,7 +355,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     int ik = 2;
     for ( int i = 2; i <= NDIM; i++ ) {
         switch ( i ) {
-        case 2:
+        case 2: {
             // Find the first point that is not collinear with the first 2 points in I
             Point x2[3];
             x2[0] = x[I[0]];
@@ -373,6 +372,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
                 }
             }
             break;
+        }
         case 3:
             if constexpr ( NDIM == 3 ) {
                 // Find the first point that is not coplanar with the first 3 points in I

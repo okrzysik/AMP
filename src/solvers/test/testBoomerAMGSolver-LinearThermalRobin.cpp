@@ -99,7 +99,6 @@ void linearThermalTest( AMP::UnitTest *ut )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "DiffusionBVPOperator", input_db, transportModel ) );
 
-
     auto TemperatureInKelvinVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
     auto RightHandSideVec =
@@ -108,7 +107,6 @@ void linearThermalTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
     RightHandSideVec->setToScalar( 0.0 );
-    double rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
 
     //   Add the boundary conditions corrections //
     auto boundaryOpCorrectionVec =
@@ -121,15 +119,10 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
-    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm after BC Correction " << rhsNorm << std::endl;
-
-    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm 1: " << rhsNorm << std::endl;
-    rhsNorm = static_cast<double>( PowerInWattsVec->L2Norm() );
-    std::cout << "RHS Norm 2: " << rhsNorm << std::endl;
-    rhsNorm = static_cast<double>( boundaryOpCorrectionVec->L2Norm() );
-    std::cout << "RHS Norm 3: " << rhsNorm << std::endl;
+    std::cout << "RHS Norm after BC Correction " << RightHandSideVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 1: " << RightHandSideVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 2: " << PowerInWattsVec->L2Norm() << std::endl;
+    std::cout << "RHS Norm 3: " << boundaryOpCorrectionVec->L2Norm() << std::endl;
 
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
@@ -149,9 +142,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
     std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
-
-    rhsNorm = static_cast<double>( RightHandSideVec->L2Norm() );
-    std::cout << "RHS Norm: " << rhsNorm << std::endl;
+    std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Create the ML Solver
     auto mlSolver = std::make_shared<AMP::Solver::BoomerAMGSolver>( mlSolverParams );

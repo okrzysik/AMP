@@ -476,16 +476,15 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         int DOFsPerFace[3] = { 1, 1, 3 };
         subchannelDOFManager =
             AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
-    }
-
-    // check number of DOFs
-    if ( subchannelDOFManager->numGlobalDOF() == num_dofs_AMP )
-        ut->passes( exeName + ": number of DOFs" );
-    else {
-        ut->failure( exeName + ": number of DOFs" );
-        std::cout << "number of DOFs in DOF Manager: " << subchannelDOFManager->numGlobalDOF()
-                  << std::endl;
-        std::cout << "expected number of DOFs: " << num_dofs_AMP << std::endl;
+        // check number of DOFs
+        if ( subchannelDOFManager->numGlobalDOF() == num_dofs_AMP )
+            ut->passes( exeName + ": number of DOFs" );
+        else {
+            ut->failure( exeName + ": number of DOFs" );
+            std::cout << "number of DOFs in DOF Manager: " << subchannelDOFManager->numGlobalDOF()
+                      << std::endl;
+            std::cout << "expected number of DOFs: " << num_dofs_AMP << std::endl;
+        }
     }
 
     // get input and output variables

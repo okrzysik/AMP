@@ -123,17 +123,17 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     // set up the shift and scale parameters
     double shift[2];
     double scale[2];
-    shift[0] = 0.;
-    shift[1] = 0.;
-    scale[0] = 1.;
-    scale[1] = 1.;
-    std::vector<double> range( 2 );
+    shift[0]  = 0.;
+    shift[1]  = 0.;
+    scale[0]  = 1.;
+    scale[1]  = 1.;
     auto matt = thermalTransportModel->getMaterial();
     auto mato = oxyModel->getMaterial();
     if ( volumeOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         std::string property = "ThermalConductivity";
         if ( ( matt->property( property ) )->is_argument( "temperature" ) ) {
-            range = ( matt->property( property ) )->get_arg_range( "temperature" ); // Compile error
+            auto range =
+                ( matt->property( property ) )->get_arg_range( "temperature" ); // Compile error
             scale[0] = range[1] - range[0];
             shift[0] = range[0] + 0.001 * scale[0];
             scale[0] *= 0.999;
@@ -143,7 +143,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     if ( fickOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
         std::string property = "FickCoefficient";
         if ( ( mato->property( property ) )->is_argument( "concentration" ) ) {
-            range =
+            auto range =
                 ( mato->property( property ) )->get_arg_range( "concentration" ); // Compile error
             scale[1] = range[1] - range[0];
             shift[1] = range[0] + 0.001 * scale[1];

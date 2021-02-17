@@ -146,16 +146,19 @@ Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize, Variable::shared_ptr var );
 
+
 /** \brief    Create a ArrayVector
  * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
  * to be used in the code
  * \param    localSize  The number of elements in the vector on this processor
  * \param    var The variable associated with the new vector
- * \param    comm The variable associated with the new vector
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
-Vector::shared_ptr
-createArrayVector( const ArraySize &localSize, Variable::shared_ptr var, AMP_MPI comm );
+Vector::shared_ptr createArrayVector( const ArraySize &localSize,
+                                      const ArraySize &blockIndex,
+                                      const AMP_MPI &comm,
+                                      Variable::shared_ptr var );
+
 
 /** \brief    Create a ArrayVector
  * \details  This is the factory method for the ArrayVector.  It returns the shared pointer

@@ -1,8 +1,8 @@
 // Copyright © 2004 Mark Berrill. All Rights Reserved. This work is distributed with permission,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 // PARTICULAR PURPOSE.
-#ifndef included_AMPThreadPoolAtomicHelpers
-#define included_AMPThreadPoolAtomicHelpers
+#ifndef included_AMP_ThreadPoolAtomicHelpers
+#define included_AMP_ThreadPoolAtomicHelpers
 
 #include <stdexcept>
 #include <stdint.h>

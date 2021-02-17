@@ -1,5 +1,5 @@
-#ifndef included_ImplicitTimeIntegrator_INLINE
-#define included_ImplicitTimeIntegrator_INLINE
+#ifndef included_AMP_ImplicitTimeIntegrator_INLINE
+#define included_AMP_ImplicitTimeIntegrator_INLINE
 
 #include "ImplicitTimeIntegrator.h"
 

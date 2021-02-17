@@ -1,3 +1,8 @@
+# Install executables
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+ADD_AMP_EXECUTABLE( run_system_tpool )
+
+
 # Add thread pool tests
 FILE( COPY "${CMAKE_CURRENT_SOURCE_DIR}/data/commands.txt" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 ADD_AMP_TEST( test_atomic )

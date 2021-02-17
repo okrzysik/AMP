@@ -1,6 +1,6 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
-
 
 DISABLE_WARNINGS
 #include "RTOpPack_RTOpT_decl.hpp"

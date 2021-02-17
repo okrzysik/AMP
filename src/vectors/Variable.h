@@ -1,8 +1,8 @@
 #ifndef included_AMP_Variable_h
 #define included_AMP_Variable_h
 
-#include "AMP/utils/Utilities.h"
 #include "AMP/utils/enable_shared_from_this.h"
+
 #include <memory>
 
 

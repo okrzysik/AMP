@@ -6,82 +6,69 @@
 #include <cmath>
 
 
+namespace AMP::Geometry::GeometryHelpers {
+
+
+// Output array
+std::ostream &operator<<( std::ostream &out, const Point2D &x )
+{
+    out << "(" << x[0] << "," << x[1] << ")";
+    return out;
+}
+std::ostream &operator<<( std::ostream &out, const Point3D &x )
+{
+    out << "(" << x[0] << "," << x[1] << "," << x[2] << ")";
+    return out;
+}
+
+
 /****************************************************************
- * Overload basic array operations                               *
+ * Vector operations                                             *
  ****************************************************************/
-template<size_t N>
-static inline std::array<double, N> operator*( double x, const std::array<double, N> &y )
+static inline Point2D operator+( const Point2D &x, const Point2D &y )
 {
-    if constexpr ( N == 1 )
-        return { x * y[0] };
-    else if constexpr ( N == 2 )
-        return { x * y[0], x * y[1] };
-    else if constexpr ( N == 3 )
-        return { x * y[0], x * y[1], x * y[2] };
+    return { x[0] + y[0], x[1] + y[1] };
 }
-template<size_t N>
-static inline std::array<double, N> operator+( const std::array<double, N> &x,
-                                               const std::array<double, N> &y )
+static inline Point3D operator+( const Point3D &x, const Point3D &y )
 {
-    if constexpr ( N == 1 )
-        return { x[0] + y[0] };
-    else if constexpr ( N == 2 )
-        return { x[0] + y[0], x[1] + y[1] };
-    else if constexpr ( N == 3 )
-        return { x[0] + y[0], x[1] + y[1], x[2] + y[2] };
+    return { x[0] + y[0], x[1] + y[1], x[2] + y[2] };
 }
-template<size_t N>
-static inline std::array<double, N> operator-( const std::array<double, N> &x,
-                                               const std::array<double, N> &y )
+static inline Point2D operator-( const Point2D &x, const Point2D &y )
 {
-    if constexpr ( N == 1 )
-        return { x[0] - y[0] };
-    else if constexpr ( N == 2 )
-        return { x[0] - y[0], x[1] - y[1] };
-    else if constexpr ( N == 3 )
-        return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
+    return { x[0] - y[0], x[1] - y[1] };
 }
-template<size_t N>
-static inline double abs( const std::array<double, N> &x )
+static inline Point3D operator-( const Point3D &x, const Point3D &y )
 {
-    if constexpr ( N == 1 )
-        return std::abs( x[0] );
-    else if constexpr ( N == 2 )
-        return sqrt( x[0] * x[0] + x[1] * x[1] );
-    else if constexpr ( N == 3 )
-        return sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+    return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
 }
-template<size_t N>
-static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
+static inline Point2D operator*( double x, const Point2D &y ) { return { x * y[0], x * y[1] }; }
+static inline Point3D operator*( double x, const Point3D &y )
 {
-    if constexpr ( N == 1 )
-        return x[0] * y[0];
-    else if constexpr ( N == 2 )
-        return x[0] * y[0] + x[1] * y[1];
-    else if constexpr ( N == 3 )
-        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+    return { x * y[0], x * y[1], x * y[2] };
 }
-static inline std::array<double, 3> cross( const std::array<double, 3> &x,
-                                           const std::array<double, 3> &y )
+static inline double dot( const Point2D &x, const Point2D &y ) { return x[0] * y[0] + x[1] * y[1]; }
+static inline double dot( const Point3D &x, const Point3D &y )
+{
+    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+static inline double cross( const Point2D &x, const Point2D &y )
+{
+    return x[0] * y[1] - x[1] * y[0];
+}
+static inline Point3D cross( const Point3D &x, const Point3D &y )
 {
     return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
 }
-template<size_t N>
-static inline std::array<double, N> normalize( const std::array<double, N> &x )
+static inline Point2D normalize( const Point2D &x )
 {
-    if constexpr ( N == 1 ) {
-        return { 1.0 };
-    } else if constexpr ( N == 2 ) {
-        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
-        return { tmp * x[0], tmp * x[1] };
-    } else if constexpr ( N == 3 ) {
-        double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
-        return { tmp * x[0], tmp * x[1], tmp * x[2] };
-    }
+    double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
+    return { tmp * x[0], tmp * x[1] };
 }
-
-
-namespace AMP::Geometry::GeometryHelpers {
+static inline Point3D normalize( const Point3D &x )
+{
+    double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+    return { tmp * x[0], tmp * x[1], tmp * x[2] };
+}
 
 
 /****************************************************************
@@ -200,10 +187,85 @@ std::pair<double, double> map_circle_logical( double r, int method, double x, do
 
 
 /****************************************************************
+ * Map between logical and physical coordinates in a polygon     *
+ ****************************************************************/
+static double inline get_m( int N )
+{
+    if ( N < 8 ) {
+        const double m[] = { 0.577350269189626, 1.0,
+                             1.376381920471173, 1.732050807568877,
+                             2.076521396572336, 2.414213562373095 };
+        return m[N - 3];
+    }
+    constexpr double pi = 3.141592653589793;
+    return tan( pi * ( N - 2 ) / ( 2 * N ) );
+}
+std::pair<double, double> map_poly_logical( int N, double R, double x, double y )
+{
+    constexpr double pi = 3.141592653589793;
+    // Map the coordinates from a polygon to a circle
+    double a = atan( y / x );
+    if ( x > 0 ) {
+        a += pi;
+    } else if ( x == 0 ) {
+        a = pi / 2;
+        if ( y > 0 )
+            a = 1.5 * pi;
+    }
+    a            = fmod( a + 2.5 * pi, 2 * pi / N );
+    a            = fabs( a - pi / N );
+    double m     = get_m( N );
+    double tan_a = tan( a );
+    double r     = m * sqrt( 1.0 + tan_a * tan_a ) / ( m + tan_a );
+    double x2    = x / r;
+    double y2    = y / r;
+    // Map the coordinates to a circle
+    return map_circle_logical( R, 2, x2, y2 );
+}
+std::pair<double, double> map_logical_poly( int N, double R, double x, double y )
+{
+    constexpr double pi = 3.141592653589793;
+    // Map the coordinates to a circle
+    auto [x2, y2] = map_logical_circle( R, 2, x, y );
+    // Map the coordinates from a circle to the polygon
+    double a = atan( y2 / x2 );
+    if ( x2 > 0 ) {
+        a += pi;
+    } else if ( x2 == 0 ) {
+        a = pi / 2;
+        if ( y2 > 0 )
+            a = 1.5 * pi;
+    }
+    a            = fmod( a + 2.5 * pi, 2 * pi / N );
+    a            = fabs( a - pi / N );
+    double m     = get_m( N );
+    double tan_a = tan( a );
+    double r     = m * sqrt( 1.0 + tan_a * tan_a ) / ( m + tan_a );
+    x2 *= r;
+    y2 *= r;
+    return { x2, y2 };
+}
+std::vector<Point2D> get_poly_verticies( int N, double R )
+{
+    // Get the starting angle
+    constexpr double pi = 3.141592653589793;
+    double theta        = 0.5 * pi - pi / N;
+    double d_theta      = 2.0 * pi / N;
+    // Create the verticies
+    std::vector<Point2D> verticies( N );
+    for ( int i = 0; i < N; i++ ) {
+        verticies[0] = { R * cos( theta ), R * sin( theta ) };
+        theta -= d_theta;
+    }
+    return verticies;
+}
+
+
+/****************************************************************
  * Helper function to map x,y,z logical coordinates in [0,1]     *
  * to x,y,z coordinates in a sphere with radius r                *
  ****************************************************************/
-AMP::Geometry::Point map_logical_sphere( double r, double x, double y, double z )
+Point3D map_logical_sphere( double r, double x, double y, double z )
 {
     constexpr double sqrt3 = 1.732050807568877; // sqrt(3)
     // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
@@ -223,7 +285,7 @@ AMP::Geometry::Point map_logical_sphere( double r, double x, double y, double z 
     double z2 = c * zc;
     return { x2, y2, z2 };
 }
-AMP::Geometry::Point map_sphere_logical( double r, double x2, double y2, double z2 )
+Point3D map_sphere_logical( double r, double x2, double y2, double z2 )
 {
     constexpr double sqrt1_3 = 0.577350269189626; // 1/sqrt(3)
     // This maps from a physical coordinates to logical coordinates using the mapping by:
@@ -261,7 +323,7 @@ AMP::Geometry::Point map_sphere_logical( double r, double x2, double y2, double 
  * Helper function to map x,y logical coordinates in [0,1]       *
  * to x,y,z coordinates on the surface of a sphere               *
  ****************************************************************/
-AMP::Geometry::Point map_logical_sphere_surface( double R, double x, double y )
+Point3D map_logical_sphere_surface( double R, double x, double y )
 {
     // This maps from a a logically rectangular 3D mesh to the surface of a sphere using:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
@@ -279,7 +341,7 @@ AMP::Geometry::Point map_logical_sphere_surface( double R, double x, double y )
     xp *= R;
     yp *= R;
     zp *= R;
-    return AMP::Geometry::Point( xp, yp, zp );
+    return { xp, yp, zp };
 }
 std::pair<double, double> map_sphere_surface_logical( double R, double x, double y, double z )
 {
@@ -295,7 +357,7 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * Helper function to map x,y,z logical coordinates in [0,1]     *
  * to x,y,z coordinates in a shell with r1 <= r <= r2            *
  ****************************************************************/
-AMP::Geometry::Point map_logical_shell( double r1, double r2, double x, double y, double z )
+Point3D map_logical_shell( double r1, double r2, double x, double y, double z )
 {
     // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
@@ -304,7 +366,7 @@ AMP::Geometry::Point map_logical_shell( double r1, double r2, double x, double y
     double Rz = r1 + z * ( r2 - r1 ); // radius based on z[0,1]
     return map_logical_sphere_surface( Rz, x, y );
 }
-AMP::Geometry::Point map_shell_logical( double r1, double r2, double x0, double y0, double z0 )
+Point3D map_shell_logical( double r1, double r2, double x0, double y0, double z0 )
 {
     // This maps from a a logically rectangular 3D mesh to a shell mesh using the mapping by:
     // Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids and
@@ -318,12 +380,30 @@ AMP::Geometry::Point map_shell_logical( double r1, double r2, double x0, double 
 
 
 /****************************************************************
+ * Compute the distance to the line segment                      *
+ ****************************************************************/
+double
+distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &p1, const Point2D &p2 )
+{
+    Point2D v1 = pos - p1;
+    Point2D v2 = p2 - p1;
+    Point2D v3 = { -ang[1], ang[0] };
+    double d23 = dot( v2, v3 );
+    if ( fabs( d23 ) < 1e-12 )
+        return std::numeric_limits<double>::infinity();
+    double t1 = cross( v2, v1 ) / d23;
+    double t2 = dot( v1, v3 ) / d23;
+    if ( t1 >= 0.0 && t2 >= -1e-10 && t2 <= 1.0 + 1e-10 )
+        return t1;
+    return std::numeric_limits<double>::infinity();
+}
+
+
+/****************************************************************
  * Compute the distance to the surface of a plane                *
  ****************************************************************/
-double distanceToPlane( const AMP::Mesh::Point &n,
-                        const AMP::Mesh::Point &p0,
-                        const AMP::Mesh::Point &pos,
-                        const AMP::Mesh::Point &ang )
+double
+distanceToPlane( const Point3D &n, const Point3D &p0, const Point3D &pos, const Point3D &ang )
 {
     double d = dot( n, ang );
     if ( fabs( d ) > 1e-6 ) {
@@ -339,18 +419,16 @@ double distanceToPlane( const AMP::Mesh::Point &n,
 /****************************************************************
  * Compute the distance to a box                                 *
  ****************************************************************/
-double distanceToBox( const AMP::Mesh::Point &pos,
-                      const AMP::Mesh::Point &ang,
-                      const std::array<double, 6> &range )
+double distanceToBox( const Point3D &pos, const Point3D &ang, const std::array<double, 6> &range )
 {
     constexpr double tol = 1e-12;
     // Compute the distance to each surface
-    double d1 = ( range[0] - pos.x() ) / ang.x();
-    double d2 = ( range[1] - pos.x() ) / ang.x();
-    double d3 = ( range[2] - pos.y() ) / ang.y();
-    double d4 = ( range[3] - pos.y() ) / ang.y();
-    double d5 = ( range[4] - pos.z() ) / ang.z();
-    double d6 = ( range[5] - pos.z() ) / ang.z();
+    double d1 = ( range[0] - pos[0] ) / ang[0];
+    double d2 = ( range[1] - pos[0] ) / ang[0];
+    double d3 = ( range[2] - pos[1] ) / ang[1];
+    double d4 = ( range[3] - pos[1] ) / ang[1];
+    double d5 = ( range[4] - pos[2] ) / ang[2];
+    double d6 = ( range[5] - pos[2] ) / ang[2];
     if ( d1 < 0 )
         d1 = std::numeric_limits<double>::infinity();
     if ( d2 < 0 )
@@ -371,9 +449,9 @@ double distanceToBox( const AMP::Mesh::Point &pos,
     auto p5     = pos + d5 * ang;
     auto p6     = pos + d6 * ang;
     auto inside = [range]( const Point &p ) {
-        return ( ( p.x() >= range[0] - tol ) && ( p.x() <= range[1] + tol ) ) &&
-               ( ( p.y() >= range[2] - tol ) && ( p.y() <= range[3] + tol ) ) &&
-               ( ( p.z() >= range[4] - tol ) && ( p.z() <= range[5] + tol ) );
+        return ( ( p[0] >= range[0] - tol ) && ( p[0] <= range[1] + tol ) ) &&
+               ( ( p[1] >= range[2] - tol ) && ( p[1] <= range[3] + tol ) ) &&
+               ( ( p[2] >= range[4] - tol ) && ( p[2] <= range[5] + tol ) );
     };
     if ( !inside( p1 ) )
         d1 = std::numeric_limits<double>::infinity();
@@ -398,31 +476,31 @@ double distanceToBox( const AMP::Mesh::Point &pos,
 /****************************************************************
  * Compute the distance to a circle                              *
  ****************************************************************/
-double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh::Point &ang )
+double distanceToCircle( double r, const Point2D &pos, const Point2D &ang )
 {
-    double r2   = pos.x() * pos.x() + pos.y() * pos.y();
+    double r2   = pos[0] * pos[0] + pos[1] * pos[1];
     bool inside = r2 < r * r;
-    double dx   = ang.x();
-    double dy   = ang.y();
+    double dx   = ang[0];
+    double dy   = ang[1];
     double dr   = sqrt( dx * dx + dy * dy );
-    double D    = pos.x() * ( pos.y() + ang.y() ) - ( pos.x() + ang.x() ) * pos.y();
+    double D    = pos[0] * ( pos[1] + ang[1] ) - ( pos[0] + ang[0] ) * pos[1];
     double t    = r * r * dr * dr - D * D;
     if ( t < 0 )
         return std::numeric_limits<double>::infinity();
     t = sqrt( t );
     double x1, x2, d1, d2;
-    if ( ang.x() != 0.0 ) {
+    if ( ang[0] != 0.0 ) {
         double s = dy < 0 ? -1 : 1;
         x1       = ( D * dy + s * dx * t ) / ( dr * dr );
         x2       = ( D * dy - s * dx * t ) / ( dr * dr );
-        d1       = ( x1 - pos.x() ) / ang.x();
-        d2       = ( x2 - pos.x() ) / ang.x();
+        d1       = ( x1 - pos[0] ) / ang[0];
+        d2       = ( x2 - pos[0] ) / ang[0];
     } else {
         double s = dx < 0 ? -1 : 1;
         x1       = ( D * dx + s * dy * t ) / ( dr * dr );
         x2       = ( D * dx - s * dy * t ) / ( dr * dr );
-        d1       = ( x1 - pos.y() ) / ang.y();
-        d2       = ( x2 - pos.y() ) / ang.y();
+        d1       = ( x1 - pos[1] ) / ang[1];
+        d2       = ( x2 - pos[1] ) / ang[1];
     }
     if ( d1 < 0 )
         d1 = std::numeric_limits<double>::infinity();
@@ -436,28 +514,28 @@ double distanceToCircle( double r, const AMP::Mesh::Point &pos, const AMP::Mesh:
 /****************************************************************
  * Compute the distance to the surface of a cylinder             *
  ****************************************************************/
-double distanceToCylinder( double r, double h, const Point &pos, const Point &ang )
+double distanceToCylinder( double r, double h, const Point3D &pos, const Point3D &ang )
 {
     // Check if the point is inside the cylinder
-    double r2   = pos.x() * pos.x() + pos.y() * pos.y();
-    bool inside = std::abs( pos.z() ) <= 0.5 * h && r2 <= r * r;
+    double r2   = pos[0] * pos[0] + pos[1] * pos[1];
+    bool inside = std::abs( pos[2] ) <= 0.5 * h && r2 <= r * r;
     // First check the distance to the faces
-    double d1 = ( 0.5 * h - pos.z() ) / ang.z();
-    double d2 = ( -0.5 * h - pos.z() ) / ang.z();
-    if ( d1 <= 0 || ang.z() == 0 )
+    double d1 = ( 0.5 * h - pos[2] ) / ang[2];
+    double d2 = ( -0.5 * h - pos[2] ) / ang[2];
+    if ( d1 <= 0 || ang[2] == 0 )
         d1 = std::numeric_limits<double>::infinity();
-    if ( d2 <= 0 || ang.z() == 0 )
+    if ( d2 <= 0 || ang[2] == 0 )
         d2 = std::numeric_limits<double>::infinity();
     auto pos2 = pos + std::min( d1, d2 ) * ang;
-    r2        = pos2.x() * pos2.x() + pos2.y() * pos2.y();
+    r2        = pos2[0] * pos2[0] + pos2[1] * pos2[1];
     if ( r2 > r * r ) {
         d1 = std::numeric_limits<double>::infinity();
         d2 = std::numeric_limits<double>::infinity();
     }
     // Compute the intersection of a line with the circle of the cylinder
-    double d3 = std::abs( distanceToCircle( r, pos, ang ) );
+    double d3 = std::abs( distanceToCircle( r, { pos[0], pos[1] }, { ang[0], ang[1] } ) );
     // Check that the z-point is within the cylinder
-    double z = pos.z() + d3 * ang.z();
+    double z = pos[2] + d3 * ang[2];
     if ( fabs( z ) > 0.5 * h )
         d3 = std::numeric_limits<double>::infinity();
     // Return the closest surface
@@ -471,39 +549,40 @@ double distanceToCylinder( double r, double h, const Point &pos, const Point &an
 /****************************************************************
  * Compute the distance to the surface of a cylinder             *
  ****************************************************************/
-double distanceToTube( double r_min, double r_max, double h, const Point &pos, const Point &ang )
+double
+distanceToTube( double r_min, double r_max, double h, const Point3D &pos, const Point3D &ang )
 {
     double r_min2 = r_min * r_min;
     double r_max2 = r_max * r_max;
     // Check if the point is inside the tube
-    double r2   = pos.x() * pos.x() + pos.y() * pos.y();
-    bool inside = std::abs( pos.z() ) <= 0.5 * h && r2 >= r_min2 && r2 <= r_max2;
+    double r2   = pos[0] * pos[0] + pos[1] * pos[1];
+    bool inside = std::abs( pos[2] ) <= 0.5 * h && r2 >= r_min2 && r2 <= r_max2;
     // Check the distance to the faces
-    double d1 = ( 0.5 * h - pos.z() ) / ang.z();
-    double d2 = ( -0.5 * h - pos.z() ) / ang.z();
-    if ( d1 <= 0 || ang.z() == 0 )
+    double d1 = ( 0.5 * h - pos[2] ) / ang[2];
+    double d2 = ( -0.5 * h - pos[2] ) / ang[2];
+    if ( d1 <= 0 || ang[2] == 0 )
         d1 = std::numeric_limits<double>::infinity();
-    if ( d2 <= 0 || ang.z() == 0 )
+    if ( d2 <= 0 || ang[2] == 0 )
         d2 = std::numeric_limits<double>::infinity();
     auto pos2 = pos + std::min( d1, d2 ) * ang;
-    r2        = pos2.x() * pos2.x() + pos2.y() * pos2.y();
+    r2        = pos2[0] * pos2[0] + pos2[1] * pos2[1];
     if ( r2 < r_min2 || r2 > r_max2 ) {
         d1 = std::numeric_limits<double>::infinity();
         d2 = std::numeric_limits<double>::infinity();
     }
     // Check the intersection of a line with the circles of the tube
     auto checkCircle = [pos, ang, h]( double r ) {
-        if ( ang.x() == 0 && ang.y() == 0 )
+        if ( ang[0] == 0 && ang[1] == 0 )
             return std::numeric_limits<double>::infinity();
-        double d = std::abs( distanceToCircle( r, pos, ang ) );
-        double z = pos.z() + d * ang.z();
+        double d = std::abs( distanceToCircle( r, { pos[0], pos[1] }, { ang[0], ang[1] } ) );
+        double z = pos[2] + d * ang[2];
         // We did not intersect with the surface, check for a second intersection
         if ( fabs( z ) > 0.5 * h ) {
             d += 1e-8;
             auto pos2 = pos + d * ang;
-            double d2 = std::abs( distanceToCircle( r, pos2, ang ) );
+            double d2 = std::abs( distanceToCircle( r, { pos2[0], pos2[1] }, { ang[0], ang[1] } ) );
             d += d2;
-            z = pos.z() + d * ang.z();
+            z = pos[2] + d * ang[2];
             if ( fabs( z ) > 0.5 * h )
                 d = std::numeric_limits<double>::infinity();
         }
@@ -523,11 +602,11 @@ double distanceToTube( double r_min, double r_max, double h, const Point &pos, c
  * Compute the distance to the surface of a sphere               *
  *    http://paulbourke.net/geometry/circlesphere                *
  ****************************************************************/
-double distanceToSphere( double r, const Point &pos, const Point &ang )
+double distanceToSphere( double r, const Point3D &pos, const Point3D &ang )
 {
-    double a = ang.x() * ang.x() + ang.y() * ang.y() + ang.z() * ang.z();
-    double b = 2 * ( ang.x() * pos.x() + ang.y() * pos.y() + ang.z() * pos.z() );
-    double c = pos.x() * pos.x() + pos.y() * pos.y() + pos.z() * pos.z() - r * r;
+    double a = ang[0] * ang[0] + ang[1] * ang[1] + ang[2] * ang[2];
+    double b = 2 * ( ang[0] * pos[0] + ang[1] * pos[1] + ang[2] * pos[2] );
+    double c = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] - r * r;
     double t = b * b - 4 * a * c;
     if ( t < 0 )
         return std::numeric_limits<double>::infinity();
@@ -539,7 +618,7 @@ double distanceToSphere( double r, const Point &pos, const Point &ang )
     if ( d2 < 0 )
         d2 = std::numeric_limits<double>::infinity();
     double d    = std::min( d1, d2 );
-    double r2   = pos.x() * pos.x() + pos.y() * pos.y() + pos.z() * pos.z();
+    double r2   = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
     bool inside = r2 < r * r;
     return ( inside ? -1 : 1 ) * d;
 }
@@ -549,10 +628,7 @@ double distanceToSphere( double r, const Point &pos, const Point &ang )
  * Compute the distance to the surface of a cone                *
  * http://lousodrome.net/blog/light/2017/01/03/intersection-of-a-ray-and-a-cone
  ****************************************************************/
-double distanceToCone( const AMP::Mesh::Point &V,
-                       double theta,
-                       const AMP::Mesh::Point &pos,
-                       const AMP::Mesh::Point &ang )
+double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const Point3D &ang )
 {
     double DV  = dot( ang, V );
     double CV  = dot( pos, V );
@@ -582,9 +658,7 @@ double distanceToCone( const AMP::Mesh::Point &V,
 /****************************************************************
  * Compute the normal to a plane                                 *
  ****************************************************************/
-std::array<double, 3> normal( const std::array<double, 3> &v1,
-                              const std::array<double, 3> &v2,
-                              const std::array<double, 3> &v3 )
+Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 )
 {
     return normalize( cross( v1 - v2, v1 - v3 ) );
 }
@@ -595,8 +669,7 @@ std::array<double, 3> normal( const std::array<double, 3> &v1,
  *   respect to triangle (a, b, c)                              *
  ***************************************************************/
 template<>
-std::array<double, 3> barycentric<3, 3>( const std::array<double, 3> ( &x )[3],
-                                         const std::array<double, 3> &p )
+Point3D barycentric<3, 3>( const Point3D ( &x )[3], const Point3D &p )
 {
     auto v0  = x[1] - x[0];
     auto v1  = x[2] - x[0];
@@ -617,9 +690,15 @@ std::array<double, 3> barycentric<3, 3>( const std::array<double, 3> ( &x )[3],
 /****************************************************************
  * Compute the nearest point to a line segment                   *
  ****************************************************************/
-std::array<double, 3> nearest( const std::array<double, 3> &A,
-                               const std::array<double, 3> &B,
-                               const std::array<double, 3> &P )
+Point2D nearest( const Point2D &A, const Point2D &B, const Point2D &P )
+{
+    auto v = B - A;
+    auto u = A - P;
+    auto t = -dot( v, u ) / dot( v, v );
+    t      = std::min( std::max( t, 0.0 ), 1.0 );
+    return ( 1.0 - t ) * A + t * B;
+}
+Point3D nearest( const Point3D &A, const Point3D &B, const Point3D &P )
 {
     auto v = B - A;
     auto u = A - P;
@@ -632,8 +711,7 @@ std::array<double, 3> nearest( const std::array<double, 3> &A,
 /****************************************************************
  * Compute the nearest point to a triangle                       *
  ****************************************************************/
-std::array<double, 3> nearest( const std::array<double, 3> ( &v )[3],
-                               const std::array<double, 3> &p0 )
+Point3D nearest( const Point3D ( &v )[3], const Point3D &p0 )
 {
     constexpr double TOL = 1e-8;
     // Get the normal and a point on the plane containing the triangle
@@ -705,16 +783,6 @@ std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &
             s1.push_back( p );
     }
     return s1;
-}
-
-
-/****************************************************************
- * Compute the normal to the plane formed by 3 points            *
- ****************************************************************/
-AMP::Mesh::Point
-normal( const AMP::Mesh::Point &a, const AMP::Mesh::Point &b, const AMP::Mesh::Point &c )
-{
-    return normalize( cross( b - a, c - a ) );
 }
 
 

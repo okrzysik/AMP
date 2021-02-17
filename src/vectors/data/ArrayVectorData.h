@@ -21,17 +21,15 @@ class ArrayVectorData : public VectorData
 private:
     AMP::Array<T, FUN, Allocator> d_array;
     AMP_MPI d_comm;
-    size_t d_globalSize;
-
-    ArrayVectorData();
-    ArrayVectorData( const ArrayVectorData & );
+    size_t d_offset;
+    ArraySize d_blockIndex;
+    ArraySize d_globalSize;
 
 public:
     /** \brief    Create a ArrayVector
      * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
      * to be used in the code
      * \param    localSize  The number of elements in the vector on this processor
-     * \param    var The variable associated with the new vector
      */
     static std::shared_ptr<ArrayVectorData> create( const ArraySize &localSize );
 
@@ -39,25 +37,20 @@ public:
      * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
      * to be used in the code
      * \param    localSize  The number of elements in the vector on this processor
-     * \param    var The variable associated with the new vector
+     * \param    blockIndex  The global number of elements in the vector on this processor
      * \param    comm The variable associated with the new vector
      */
-    static std::shared_ptr<ArrayVectorData> create( const ArraySize &localSize, AMP_MPI comm );
-
-    /** \brief    Create a ArrayVector
-     * \details  This is the factory method for the ArrayVector.  It returns the shared pointer
-     * to be used in the code that spans a comm and contains ghost values.
-     * \param    var The variable associated with the new vector
-     * \param    DOFs The DOFManager
-     * \param    commlist The communication list
-     */
     static std::shared_ptr<ArrayVectorData>
-    create( AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
+    create( const ArraySize &localSize, const ArraySize &blockIndex, AMP_MPI comm );
 
-    /** \brief  Destructor
-     */
+    //! Empty constructor
+    ArrayVectorData() = default;
+
+    //! Destructor
     virtual ~ArrayVectorData() {}
 
+    //! Copy constructor
+    ArrayVectorData( const ArrayVectorData & ) = delete;
 
     /** \brief  Return the communicator this Vector spans
      */
@@ -111,7 +104,7 @@ public:
     /**\brief Number of total entries in this vector across all cores
      *\return Number of entries stored across all cores in this
      */
-    size_t getGlobalSize() const override { return d_globalSize; }
+    size_t getGlobalSize() const override { return d_globalSize.length(); }
 
     /**
      * \brief Set values in the vector by their local offset
@@ -122,13 +115,7 @@ public:
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override
-    {
-        NULL_USE( num );
-        NULL_USE( indices );
-        NULL_USE( vals );
-        AMP_ERROR( "Not implemented" );
-    }
+    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
 
     /**
      * \brief Set owned values using global identifier
@@ -138,13 +125,7 @@ public:
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override
-    {
-        NULL_USE( num );
-        NULL_USE( indices );
-        NULL_USE( vals );
-        AMP_ERROR( "Not implemented" );
-    }
+    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
 
     /**
      * \brief Add values to vector entities by their local offset
@@ -156,13 +137,7 @@ public:
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override
-    {
-        NULL_USE( num );
-        NULL_USE( indices );
-        NULL_USE( vals );
-        AMP_ERROR( "Not implemented" );
-    }
+    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
 
     /**
      * \brief Add owned values using global identifier
@@ -173,13 +148,7 @@ public:
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override
-    {
-        NULL_USE( num );
-        NULL_USE( indices );
-        NULL_USE( vals );
-        AMP_ERROR( "Not implemented" );
-    }
+    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
 
     /**
      * \brief Get local values in the vector by their global offset
@@ -188,13 +157,7 @@ public:
      * \param[out] vals the values to place in the vector
      * \details This will get any value owned by this core.
      */
-    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override
-    {
-        NULL_USE( num );
-        NULL_USE( indices );
-        NULL_USE( vals );
-        AMP_ERROR( "Not implemented" );
-    }
+    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
 
     /**\brief  A unique id for the underlying data allocation
      *\details This is a unique id that is associated with the data

@@ -154,6 +154,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
     } else {
         ut->passes( exeName );
     }
+
+    NULL_USE( libmeshInit );
 }
 
 int testCook( int argc, char *argv[] )

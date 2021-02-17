@@ -36,7 +36,7 @@ double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 {
     NULL_USE( pos );
     NULL_USE( dir );
-    AMP_ERROR( "Not finished" );
+    AMP_ERROR( "distance is not implimented" );
     return 0;
 }
 bool MeshGeometry::inside( const Point &pos ) const

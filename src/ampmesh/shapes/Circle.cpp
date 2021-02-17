@@ -86,7 +86,7 @@ Point Circle::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Circle::physical( const Point &pos ) const
 {
-    auto tmp = GeometryHelpers::map_logical_circle( d_R, 2, pos[0], pos[1] );
+    auto tmp = GeometryHelpers::map_logical_circle( d_R, 2, pos.x(), pos.y() );
     double x = tmp.first + d_offset[0];
     double y = tmp.second + d_offset[1];
     return { x, y };

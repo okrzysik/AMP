@@ -1,5 +1,5 @@
-#ifndef included_ArraySizeClass
-#define included_ArraySizeClass
+#ifndef included_AMP_ArraySizeClass
+#define included_AMP_ArraySizeClass
 
 
 #include <array>
@@ -18,9 +18,11 @@
 #define HOST_DEVICE
 #endif
 #if defined( __NVCC__ )
-#define CONSTEXPR
+#define CONSTEXPR inline
+#define CONSTEXPR_IF
 #else
 #define CONSTEXPR constexpr
+#define CONSTEXPR_IF constexpr
 #endif
 #if defined( USING_GCC ) || defined( USING_CLANG )
 #define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
@@ -69,26 +71,29 @@ public:
      * @param j_            Ending value
      * @param k_            Increment value
      */
-    CONSTEXPR Range( TYPE i_, TYPE j_, TYPE k_ = 1 ) : i( i_ ), j( j_ ), k( k_ ) {}
+    CONSTEXPR Range( const TYPE &i_, const TYPE &j_, const TYPE &k_ = 1 )
+        : i( i_ ), j( j_ ), k( k_ )
+    {
+    }
 
     //! Get the number of values in the range
     CONSTEXPR size_t size() const
     {
         if
-            CONSTEXPR( std::is_integral<TYPE>::value )
+            CONSTEXPR_IF( std::is_integral<TYPE>::value )
             {
                 return ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
                        static_cast<int64_t>( k );
             }
         else if
-            CONSTEXPR( std::is_floating_point<TYPE>::value )
+            CONSTEXPR_IF( std::is_floating_point<TYPE>::value )
             {
                 double tmp = static_cast<double>( ( j - i ) ) / static_cast<double>( k );
                 return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
             }
         else if
-            CONSTEXPR( std::is_same<TYPE, std::complex<float>>::value ||
-                       std::is_same<TYPE, std::complex<double>>::value )
+            CONSTEXPR_IF( std::is_same<TYPE, std::complex<float>>::value ||
+                          std::is_same<TYPE, std::complex<double>>::value )
             {
                 double tmp = std::real( ( j - i ) / ( k ) );
                 return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
@@ -102,12 +107,12 @@ public:
     CONSTEXPR TYPE get( size_t index ) const
     {
         if
-            CONSTEXPR( std::is_integral<TYPE>::value ) { return i + index * k; }
+            CONSTEXPR_IF( std::is_integral<TYPE>::value ) { return i + index * k; }
         else if
-            CONSTEXPR( std::is_floating_point<TYPE>::value ) { return k * ( i / k + index ); }
+            CONSTEXPR_IF( std::is_floating_point<TYPE>::value ) { return k * ( i / k + index ); }
         else if
-            CONSTEXPR( std::is_same<TYPE, std::complex<float>>::value ||
-                       std::is_same<TYPE, std::complex<double>>::value )
+            CONSTEXPR_IF( std::is_same<TYPE, std::complex<float>>::value ||
+                          std::is_same<TYPE, std::complex<double>>::value )
             {
                 return k * ( i / k + static_cast<TYPE>( index ) );
             }
@@ -184,9 +189,11 @@ public:
      * Create from initializer list
      * @param N             Size of the array
      */
-    CONSTEXPR ArraySize( std::initializer_list<size_t> N )
+    CONSTEXPR ArraySize( std::initializer_list<size_t> N, int ndim = -1 )
         : d_ndim( N.size() ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
+        if ( ndim >= 0 )
+            d_ndim = ndim;
         if ( d_ndim > maxDim() )
             throw std::out_of_range( "Maximum number of dimensions exceeded" );
         auto it = N.begin();
@@ -341,7 +348,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR size_t index( const std::array<size_t, 5> i ) const
+    CONSTEXPR size_t index( const std::array<size_t, 5> &i ) const
     {
         size_t j = 0;
         for ( size_t m = 0, N = 1; m < 5; m++ ) {
@@ -365,25 +372,33 @@ public:
     }
 
     //! Convert the index to ijk values
-    inline std::array<size_t, 5> ijk( size_t index ) const
+    CONSTEXPR std::array<size_t, 5> ijk( size_t index ) const
     {
-        std::array<size_t, 5> x = { 0, 0, 0, 0, 0 };
-        for ( int i = 0; i < 4; i++ ) {
-            x[i]  = index % d_N[i];
-            index = index / d_N[i];
-        }
-        x[4] = index;
-        return x;
+        CHECK_ARRAY_LENGTH( index, d_length );
+        size_t i0 = index % d_N[0];
+        index     = index / d_N[0];
+        size_t i1 = index % d_N[1];
+        index     = index / d_N[1];
+        size_t i2 = index % d_N[2];
+        index     = index / d_N[2];
+        size_t i3 = index % d_N[3];
+        index     = index / d_N[3];
+        return { i0, i1, i2, i3, index };
     }
 
     //! Convert the index to ijk values
     CONSTEXPR void ijk( size_t index, size_t *x ) const
     {
-        for ( int i = 0; i < 4; i++ ) {
-            x[i]  = index % d_N[i];
-            index = index / d_N[i];
-        }
-        x[4] = index;
+        CHECK_ARRAY_LENGTH( index, d_length );
+        x[0]  = index % d_N[0];
+        index = index / d_N[0];
+        x[1]  = index % d_N[1];
+        index = index / d_N[1];
+        x[2]  = index % d_N[2];
+        index = index / d_N[2];
+        x[3]  = index % d_N[3];
+        index = index / d_N[3];
+        x[4]  = index;
     }
 
 private:

@@ -577,7 +577,7 @@ double vecDot( double a[3], double b[3] )
     return dot;
 }
 
-double vecDot( std::vector<double> &a, std::vector<double> &b )
+double vecDot( const std::vector<double> &a, const std::vector<double> &b )
 {
     double dot = 0;
     for ( int i = 0; i < 3; i++ ) {

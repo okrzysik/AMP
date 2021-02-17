@@ -32,10 +32,7 @@ public:
       class must provide an implementation that is appropriate for use within its respective FE
       operator.
       */
-    virtual void apply()
-    {
-        // Implemented in derived classes.
-    }
+    virtual void apply() = 0;
 
 protected:
 private:

@@ -1,4 +1,5 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
 
 #include "petsc.h"

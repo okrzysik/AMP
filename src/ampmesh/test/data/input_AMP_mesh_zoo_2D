@@ -12,7 +12,7 @@ Mesh{
 		Generator = "cube"
 		Size = 30, 30
 		Range = -1, 1, -1, 1
-		x_offset = 2
+		x_offset = 0
 		y_offset = 0
         static = TRUE
 	}
@@ -23,8 +23,8 @@ Mesh{
 		Generator = "cube"
 		Size = 30, 30
 		Range = -1, 1, -1, 1
-		x_offset = 2
-		y_offset = 4
+		x_offset = 0
+		y_offset = 3
         static = FALSE
 	}
 	
@@ -35,7 +35,7 @@ Mesh{
 		Generator = "circle"
 		Size = 20
 		Range = 1
-		x_offset = 6
+		x_offset = 3
 		y_offset = 0
         static = TRUE
 	}
@@ -46,9 +46,54 @@ Mesh{
 		Generator = "circle"
 		Size = 20
 		Range = 1
-		x_offset = 6
-		y_offset = 4
+		x_offset = 3
+		y_offset = 3
         static = FALSE
+	}
+
+	
+	Mesh_5 {
+		MeshName = "pentagon"
+		MeshType = "AMP"
+		Generator = "pentagon"
+		Size = 20
+		R = 1.2
+		x_offset = 6
+		y_offset = 0
+        static = TRUE
+	}
+	Mesh_6 {
+		MeshName = "hexagon"
+		MeshType = "AMP"
+		Generator = "regular_polygon"
+		Size = 20
+        N = 6
+		R = 1.1
+		x_offset = 6
+		y_offset = 3
+        static = TRUE
+	}
+	Mesh_7 {
+		MeshName = "octa"
+		MeshType = "AMP"
+		Generator = "regular_polygon"
+		Size = 20
+        N = 8
+		R = 1.2
+		x_offset = 9
+		y_offset = 0
+        static = TRUE
+	}
+	Mesh_8 {
+		MeshName = "triskaideca"
+		MeshType = "AMP"
+		Generator = "regular_polygon"
+		Size = 20
+        N = 13
+		R = 1.1
+		x_offset = 9
+		y_offset = 3
+        static = TRUE
 	}
 	
 }

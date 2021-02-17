@@ -130,10 +130,9 @@ libmeshMesh::libmeshMesh( const std::shared_ptr<MeshParameters> &params_in )
     PROFILE_STOP( "constructor" );
 }
 libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string &name )
-    : d_pos_hash( 0 )
+    : d_pos_hash( 0 ), d_libMesh( mesh )
 {
     // Set the base properties
-    d_libMesh = mesh;
 #ifdef USE_EXT_MPI
     this->d_comm = AMP_MPI( mesh->comm().get() );
     AMP_ASSERT( !d_comm.isNull() );

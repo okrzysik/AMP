@@ -169,9 +169,9 @@ void MechanicsLinearUpdatedLagrangianElement::apply_Reduced()
     // AMP_INSIST((d_useJaumannRate == true), "Reduced integration has only been implemented for
     // Jaumann rate.");
 
-    std::vector<std::vector<double>> &elementStiffnessMatrix = ( *d_elementStiffnessMatrix );
+    auto &elementStiffnessMatrix = ( *d_elementStiffnessMatrix );
 
-    std::vector<std::vector<double>> &elementInputVectors = d_elementInputVectors;
+    const auto &elementInputVectors = d_elementInputVectors;
 
     std::vector<libMesh::Point> xyz, xyz_np1;
 

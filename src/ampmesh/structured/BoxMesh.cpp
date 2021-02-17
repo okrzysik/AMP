@@ -8,9 +8,12 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/data/ArrayVectorData.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 #endif
 
 #include "ProfilerApp.h"
@@ -750,6 +753,28 @@ bool BoxMesh::isOnBoundary( const MeshElementIndex &index, int id ) const
     }
     return test;
 }
+
+
+/****************************************************************
+ * Create an ArrayVector over the mesh                           *
+ ****************************************************************/
+#ifdef USE_AMP_VECTORS
+std::shared_ptr<AMP::LinearAlgebra::Vector> BoxMesh::createVector( const std::string &name,
+                                                                   int gcw )
+{
+    AMP_ASSERT( getComm().getSize() == 1 );
+    auto mesh = shared_from_this();
+    auto size = getLocalBox().size();
+    auto type = GeomDim;
+    auto var  = std::make_shared<AMP::LinearAlgebra::Variable>( name );
+    auto DOFs = AMP::Discretization::simpleDOFManager::create( mesh, type, gcw, 1, true );
+    auto ops  = std::make_shared<AMP::LinearAlgebra::VectorOperationsDefault<double>>();
+    auto data = AMP::LinearAlgebra::ArrayVectorData<double>::create( size );
+    auto vec  = std::make_shared<AMP::LinearAlgebra::Vector>( data, ops, var, DOFs );
+    AMP_ASSERT( vec->getLocalSize() == getIterator( type ).size() );
+    return vec;
+}
+#endif
 
 
 /****************************************************************

@@ -2,8 +2,11 @@
 #define included_AMP_MultiVectorIterator
 
 #include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/utils/Utilities.h"
+
 #include <iterator>
 #include <memory>
+
 
 namespace AMP {
 namespace Mesh {

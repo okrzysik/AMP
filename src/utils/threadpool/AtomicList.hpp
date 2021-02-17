@@ -28,7 +28,7 @@ AtomicList<TYPE, COMPARE>::AtomicList( size_t capacity,
       d_N_remove( 0 )
 {
     d_next[0] = -1;
-    for ( size_t i = 0; i < d_capacity; i++ ) {
+    for ( int i = 0; i < (int) d_capacity; i++ ) {
         d_next[i + 1] = -5 - i;
         d_objects[i]  = d_default;
     }

@@ -5,6 +5,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/utils/ArraySize.h"
 
 #ifdef USE_AMP_VECTORS
 namespace AMP {
@@ -93,9 +94,10 @@ public:
          */
         constexpr explicit Box(
             int ifirst, int ilast, int jfirst = 0, int jlast = 0, int kfirst = 0, int klast = 0 );
-        constexpr Box(); //!< Empty constructor
-        int first[3];    //!< Starting element
-        int last[3];     //!< Ending element
+        constexpr Box();                  //!< Empty constructor
+        constexpr ArraySize size() const; //!< Return the size of the box
+        int first[3];                     //!< Starting element
+        int last[3];                      //!< Ending element
     private:
     };
 
@@ -387,6 +389,14 @@ public: // BoxMesh specific functionality
 
     //! Convert the MeshElementID to the MeshElementIndex
     inline MeshElementIndex convert( const MeshElementID &id ) const;
+
+
+#ifdef USE_AMP_VECTORS
+    //! Create an ArrayVector over the mesh
+    std::shared_ptr<AMP::LinearAlgebra::Vector> createVector( const std::string &name,
+                                                              int gcw = 0 );
+#endif
+
 
 protected: // Convenience typedef
     typedef std::vector<std::pair<MeshElementIndex, MeshElementIndex>> ElementBlocks;
