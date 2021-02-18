@@ -221,26 +221,6 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, int ndim, const std::vect
         return nullptr;
     }
 
-    // Check the current memory usage
-    PROFILE_START( "Check memory usage", 1 );
-    size_t bytes  = data->memory_usage();
-    size_t bytes1 = data->memory_usage( 1 );
-    size_t bytes2 = data->memory_usage( 2 );
-    size_t bytes3 = data->memory_usage( 3 );
-    size_t bytes4 = data->memory_usage( 4 );
-    if ( bytes1 !=
-         sizeof( AMP::DelaunayInterpolation<TYPE> ) + ( ndim + 1 ) * N_tri * sizeof( int ) )
-        ut->failure( "memory_usage(1) fails " + msg );
-    if ( bytes2 != bytes1 + ndim * N * sizeof( TYPE ) )
-        ut->failure( "memory_usage(2) fails " + msg );
-    if ( bytes3 <= bytes1 || bytes3 > 10 * bytes1 )
-        ut->failure( "memory_usage(3) fails " + msg );
-    if ( bytes4 != bytes3 + bytes2 - bytes1 )
-        ut->failure( "memory_usage(4) fails " + msg );
-    if ( bytes < bytes1 || bytes > 1.1 * bytes4 )
-        ut->failure( "memory_usage() fails " + msg );
-    PROFILE_STOP( "Check memory usage", 1 );
-
     // Copy the tessellation
     PROFILE_START( "Copy tessellation", 1 );
     {

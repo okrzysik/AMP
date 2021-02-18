@@ -144,77 +144,6 @@ DelaunayInterpolation<TYPE>::~DelaunayInterpolation()
 
 
 /********************************************************************
- * Function to set the storage level                                 *
- ********************************************************************/
-template<class TYPE>
-void DelaunayInterpolation<TYPE>::set_storage_level( const int level_new )
-{
-    PROFILE_START( "set_storage_level", PROFILE_LEVEL );
-    bool copy_x           = false;
-    bool delete_x         = false;
-    bool delete_neighbors = false;
-    switch ( level_new ) {
-    case 1:
-        // Store only the tesselation
-        delete_x         = true;
-        delete_neighbors = true;
-        break;
-    case 2:
-        // Store the tesselation and the coordinates
-        if ( d_level == 1 || d_level == 3 )
-            copy_x = true;
-        delete_neighbors = true;
-        break;
-    case 3:
-        // Store the tesselation and the node and triangle neighbors
-        delete_x = true;
-        break;
-    case 4:
-        // Store all data
-        if ( d_level == 1 || d_level == 3 )
-            copy_x = true;
-        break;
-    default:
-        // Unknown storage
-        throw std::logic_error( "Unknown storage" );
-    }
-    if ( d_level == 1 || d_level == 3 )
-        delete_x = false;
-    if ( d_x != nullptr && delete_x ) {
-        delete[] d_x;
-        d_x = nullptr;
-    }
-    if ( d_x != nullptr && copy_x ) {
-        TYPE *tmp = d_x;
-        d_x       = new TYPE[d_ndim * d_N];
-        for ( size_t i = 0; i < d_ndim * d_N; i++ )
-            d_x[i] = tmp[i];
-    }
-    if ( d_N_node != nullptr && delete_neighbors ) {
-        delete[] d_N_node;
-        delete[] d_node_list[0];
-        delete[] d_node_list;
-        d_N_node    = nullptr;
-        d_node_list = nullptr;
-    }
-    if ( d_tri_nab != nullptr && delete_neighbors ) {
-        delete[] d_tri_nab;
-        d_tri_nab = nullptr;
-    }
-    if ( d_node_tri != nullptr && delete_neighbors ) {
-        delete[] d_node_tri;
-        d_node_tri = nullptr;
-    }
-    if ( d_tree != nullptr && delete_neighbors ) {
-        delete[] d_tri_nab;
-        d_tree = nullptr;
-    }
-    d_level = level_new;
-    PROFILE_STOP( "set_storage_level", PROFILE_LEVEL );
-}
-
-
-/********************************************************************
  * Function to return the triangles                                  *
  ********************************************************************/
 template<class TYPE>
@@ -240,7 +169,6 @@ int *DelaunayInterpolation<TYPE>::get_tri_nab( int base ) const
     auto tri_nab = new int[d_N_tri * ( d_ndim + 1 )];
     for ( size_t i = 0; i < ( d_ndim + 1 ) * d_N_tri; i++ )
         tri_nab[i] = static_cast<int>( d_tri_nab[i] ) + base;
-    memory_usage( d_level );
     PROFILE_STOP( "get_tri_nab", PROFILE_LEVEL );
     return tri_nab;
 }
@@ -270,66 +198,6 @@ void DelaunayInterpolation<TYPE>::copy_tessellation(
         }
     }
     PROFILE_STOP( "copy_tessellation", PROFILE_LEVEL );
-}
-
-
-/********************************************************************
- * Function to return the memory usage                               *
- ********************************************************************/
-template<class TYPE>
-size_t DelaunayInterpolation<TYPE>::memory_usage( const int mem_level ) const
-{
-    PROFILE_START( "memory_usage", PROFILE_LEVEL );
-    // int level2 = mem_level;
-    size_t bytes = sizeof( DelaunayInterpolation );
-    if ( mem_level == 0 ) {
-        // Return the current memory usage
-        bytes += ( d_ndim + 1 ) * d_N_tri * sizeof( unsigned int );
-        if ( d_x != nullptr && ( d_level == 2 || d_level == 4 ) )
-            bytes += d_ndim * d_N * sizeof( TYPE );
-        if ( d_N_node != nullptr ) {
-            bytes += d_N * sizeof( int );
-            bytes += d_N * sizeof( unsigned int * );
-            bytes += d_N_node_sum * sizeof( unsigned int );
-        }
-        if ( d_tri_nab != nullptr )
-            bytes += ( d_ndim + 1 ) * d_N_tri * sizeof( int );
-        if ( d_tree != nullptr )
-            bytes += d_tree->memory_usage();
-    } else {
-        bytes += ( d_ndim + 1 ) * d_N_tri *
-                 sizeof( unsigned int ); // The storage required for the triangles
-        if ( mem_level == 2 || mem_level == 4 ) {
-            // Store the coordinates
-            bytes += d_ndim * d_N * sizeof( TYPE );
-        }
-        if ( mem_level == 3 || mem_level == 4 ) {
-            // Store the node and triangle neighbors
-            bytes += d_N * sizeof( int );            // d_N_node
-            bytes += d_N * sizeof( unsigned int * ); // d_node_list
-            if ( d_N_node_sum > 0 ) {
-                // We know how much storage we will need for the node lists
-                bytes += d_N_node_sum * sizeof( unsigned int );
-            } else {
-                // Estimate the memory needed for the node lists
-                bytes += 2 * d_ndim * d_N_tri * sizeof( unsigned int );
-            }
-            bytes += d_N_tri * ( d_ndim ) * sizeof( int ); // d_tri_nab
-            bytes += d_N * sizeof( int );                  // d_node_tri
-            if ( d_tree != nullptr ) {
-                // We know the memory used for the kdtree
-                bytes += d_tree->memory_usage();
-            } else {
-                // Estimate the memory needed for the kdtree
-                bytes += d_ndim * d_N * sizeof( TYPE );  // The tree will store the coordinates
-                bytes += d_N * sizeof( int );            // The tree will store the indicies
-                size_t N_leaves = 2 * log2ceil( d_N );   // An estimate of the number of leaves
-                bytes += N_leaves * ( 48 + 8 * d_ndim ); // An estimate of the memory for the leaves
-            }
-        }
-    }
-    PROFILE_STOP( "memory_usage", PROFILE_LEVEL );
-    return bytes;
 }
 
 
@@ -507,23 +375,6 @@ void DelaunayInterpolation<TYPE>::create_tessellation(
 }
 
 
-/********************************************************************
- * Function to update the coordinates                                *
- ********************************************************************/
-template<class TYPE>
-void DelaunayInterpolation<TYPE>::update_coordinates( const TYPE x_in[] )
-{
-    AMP_ASSERT( x_in != nullptr );
-    if ( d_level == 2 || d_level == 4 ) {
-        d_x = const_cast<TYPE *>( x_in );
-    } else {
-        d_x = new TYPE[d_ndim * d_N];
-        for ( size_t i = 0; i < d_ndim * d_N; i++ )
-            d_x[i] = x_in[i];
-    }
-}
-
-
 /************************************************************************
  * This function creates the kdtree                                      *
  ************************************************************************/
@@ -555,7 +406,7 @@ template<class TYPE2>
 void DelaunayInterpolation<TYPE>::find_nearest( const unsigned int Ni,
                                                 const TYPE2 xi[],
                                                 const int base,
-                                                unsigned int *index )
+                                                unsigned int *index ) const
 {
     if ( Ni == 0 )
         return;
@@ -586,7 +437,7 @@ void DelaunayInterpolation<TYPE>::find_nearest( const unsigned int Ni,
 template<class TYPE>
 template<class TYPE2>
 void DelaunayInterpolation<TYPE>::find_tri(
-    const unsigned int Ni, const TYPE2 xi[], const int base, int index[], bool extrap )
+    const unsigned int Ni, const TYPE2 xi[], const int base, int index[], bool extrap ) const
 {
     if ( Ni == 0 )
         return;
@@ -721,7 +572,7 @@ template<class TYPE>
 void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                                                       const int method,
                                                       double *grad,
-                                                      const int n_it )
+                                                      const int n_it ) const
 {
     PROFILE_START( "calc_node_gradient", PROFILE_LEVEL );
     // First we need to get a list of the nodes that link to every other node
@@ -924,8 +775,6 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         // Unkown method
         AMP::perr << "Unknown method\n";
     }
-    // Update the internal storage using set_storage_level
-    set_storage_level( d_level );
     PROFILE_STOP( "calc_node_gradient", PROFILE_LEVEL );
 }
 
@@ -939,7 +788,7 @@ void DelaunayInterpolation<TYPE>::interp_nearest( const double f[],
                                                   const unsigned int Ni,
                                                   const TYPE2 xi[],
                                                   const unsigned int nearest[],
-                                                  double *fi )
+                                                  double *fi ) const
 {
     PROFILE_START( "interp_nearest", PROFILE_LEVEL );
     AMP_ASSERT( f != nullptr );
@@ -962,7 +811,7 @@ void DelaunayInterpolation<TYPE>::interp_linear( const double f[],
                                                  const int index[],
                                                  double *fi,
                                                  double *gi,
-                                                 bool extrap )
+                                                 bool extrap ) const
 {
     PROFILE_START( "interp_linear", PROFILE_LEVEL );
     AMP_ASSERT( d_x != nullptr );
@@ -1025,7 +874,7 @@ void DelaunayInterpolation<TYPE>::interp_cubic( const double f[],
                                                 const int index[],
                                                 double *fi,
                                                 double *gi_out,
-                                                int extrap )
+                                                int extrap ) const
 {
     PROFILE_START( "interp_cubic", PROFILE_LEVEL );
     AMP_ASSERT( d_x != nullptr );
@@ -1052,7 +901,7 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
                                                        const int index,
                                                        double &fi,
                                                        double *gi,
-                                                       int extrap )
+                                                       int extrap ) const
 {
     const bool check_collinear = true; // Do we want to perform checks that points are collinear
     double x2[NDIM_MAX * ( NDIM_MAX + 1 )], f2[NDIM_MAX + 1];
@@ -2316,65 +2165,27 @@ static int intersect_sorted( const int N_lists,
 
 
 // Explicit instantiations
+// clang-format off
 template class DelaunayInterpolation<int>;
 template class DelaunayInterpolation<double>;
 
-template void DelaunayInterpolation<int>::find_nearest<int>( const unsigned int,
-                                                             const int[],
-                                                             const int,
-                                                             unsigned int * );
-template void DelaunayInterpolation<int>::find_tri<int>(
-    const unsigned int, const int[], const int, int *, bool );
-template void DelaunayInterpolation<int>::interp_nearest<int>(
-    const double[], const unsigned int, const int[], const unsigned int[], double * );
-template void DelaunayInterpolation<int>::interp_linear<int>(
-    const double[], const unsigned int, const int[], const int[], double *, double *, bool );
-template void DelaunayInterpolation<int>::interp_cubic<int>( const double[],
-                                                             const double[],
-                                                             const unsigned int,
-                                                             const int[],
-                                                             const int[],
-                                                             double *,
-                                                             double *,
-                                                             int );
+template void DelaunayInterpolation<int>::find_nearest<int>( const unsigned int, const int[], const int, unsigned int* ) const;
+template void DelaunayInterpolation<int>::find_tri<int>( const unsigned int, const int[], const int, int*, bool ) const;
+template void DelaunayInterpolation<int>::interp_nearest<int>( const double[], const unsigned int, const int[], const unsigned int[], double* ) const;
+template void DelaunayInterpolation<int>::interp_linear<int>( const double[], const unsigned int, const int[], const int[], double*, double*, bool ) const;
+template void DelaunayInterpolation<int>::interp_cubic<int>( const double[], const double[], const unsigned int, const int[], const int[], double*,  double*, int ) const;
 
-template void DelaunayInterpolation<int>::find_nearest<double>( const unsigned int,
-                                                                const double[],
-                                                                const int,
-                                                                unsigned int * );
-template void DelaunayInterpolation<int>::find_tri<double>(
-    const unsigned int, const double[], const int, int *, bool );
-template void DelaunayInterpolation<int>::interp_nearest<double>(
-    const double[], const unsigned int, const double[], const unsigned int[], double * );
-template void DelaunayInterpolation<int>::interp_linear<double>(
-    const double[], const unsigned int, const double[], const int[], double *, double *, bool );
-template void DelaunayInterpolation<int>::interp_cubic<double>( const double[],
-                                                                const double[],
-                                                                const unsigned int,
-                                                                const double[],
-                                                                const int[],
-                                                                double *,
-                                                                double *,
-                                                                int );
+template void DelaunayInterpolation<int>::find_nearest<double>( const unsigned int, const double[], const int, unsigned int* ) const;
+template void DelaunayInterpolation<int>::find_tri<double>( const unsigned int, const double[], const int, int*, bool ) const;
+template void DelaunayInterpolation<int>::interp_nearest<double>( const double[], const unsigned int, const double[], const unsigned int[], double* ) const;
+template void DelaunayInterpolation<int>::interp_linear<double>( const double[], const unsigned int, const double[], const int[], double*, double*, bool ) const;
+template void DelaunayInterpolation<int>::interp_cubic<double>( const double[], const double[], const unsigned int, const double[], const int[], double*, double*, int ) const;
 
-template void DelaunayInterpolation<double>::find_nearest<double>( const unsigned int,
-                                                                   const double[],
-                                                                   const int,
-                                                                   unsigned int * );
-template void DelaunayInterpolation<double>::find_tri<double>(
-    const unsigned int, const double[], const int, int *, bool );
-template void DelaunayInterpolation<double>::interp_nearest<double>(
-    const double[], const unsigned int, const double[], const unsigned int[], double * );
-template void DelaunayInterpolation<double>::interp_linear<double>(
-    const double[], const unsigned int, const double[], const int[], double *, double *, bool );
-template void DelaunayInterpolation<double>::interp_cubic<double>( const double[],
-                                                                   const double[],
-                                                                   const unsigned int,
-                                                                   const double[],
-                                                                   const int[],
-                                                                   double *,
-                                                                   double *,
-                                                                   int );
+template void DelaunayInterpolation<double>::find_nearest<double>( const unsigned int, const double[], const int, unsigned int* ) const;
+template void DelaunayInterpolation<double>::find_tri<double>( const unsigned int, const double[], const int, int*, bool  const) const;
+template void DelaunayInterpolation<double>::interp_nearest<double>( const double[], const unsigned int, const double[], const unsigned int[], double* ) const;
+template void DelaunayInterpolation<double>::interp_linear<double>( const double[], const unsigned int, const double[], const int[], double*, double*, bool ) const;
+template void DelaunayInterpolation<double>::interp_cubic<double>( const double[], const double[], const unsigned int, const double[], const int[], double*, double*, int ) const;
 
 
 } // namespace AMP
