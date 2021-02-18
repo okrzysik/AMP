@@ -1,10 +1,11 @@
 #ifndef included_extended_int
 #define included_extended_int
 
+#include <array>
 #include <limits>
 #include <stdint.h>
 #include <stdlib.h>
-#include <vector>
+#include <string>
 
 
 namespace AMP::extended {
@@ -14,8 +15,8 @@ namespace AMP::extended {
  *
  * This class provides an arbitrary precision integer
  */
-template<unsigned char N>
-class int64N
+template<uint8_t N>
+class alignas( 8 ) int64N
 {
 public:
     //! Empty constructor
@@ -40,23 +41,26 @@ public:
     explicit constexpr int64N( const int64_t & );
 
     //! Create from int64N<N>
-    template<unsigned char N2>
+    template<uint8_t N2>
     explicit constexpr int64N( const int64N<N2> & );
 
     //! Create from string
     explicit constexpr int64N( const char * );
 
-    //! Conversion to int64
-    constexpr int64_t get_int64() const;
-
     //! Conversion to int
-    constexpr int get_int() const;
+    constexpr operator int() const;
+
+    //! Conversion to int64
+    constexpr operator int64_t() const;
 
     //! Conversion to double
-    constexpr double get_double() const;
+    constexpr operator double() const;
 
-    //! Get the string
-    std::string get_hex() const;
+    //! Get the hexadecimal number as a char array
+    constexpr std::array<char, 16 * N + 3> hex( bool fixedWidth = true ) const;
+
+    //! Get the string value as a hexadecimal number
+    inline operator std::string() const { return hex().data(); }
 
     //! Overload arimetic operators
     constexpr int64N operator!() const;
@@ -88,16 +92,13 @@ public:
     constexpr void compliment();
 
     //! Bitshift operators
-    constexpr int64N &operator<<=( int );
-    constexpr int64N &operator>>=( int );
+    constexpr int64N &operator<<=( unsigned );
+    constexpr int64N &operator>>=( unsigned );
 
 protected:
-    union {
-        uint64_t u64[N];
-        uint32_t u32[2 * N];
-    } data;
+    uint64_t data[N];
 
-    template<unsigned char N2>
+    template<uint8_t N2>
     friend class int64N;
 };
 
@@ -111,29 +112,29 @@ typedef int64N<32> int2048_t;
 
 
 // Arithmetic operator overloading
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator+( const int64N<N> &x, const int64N<N> &y );
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator-( const int64N<N> &x, const int64N<N> &y );
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator*( const int64N<N> &x, const int64N<N> &y );
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator/( const int64N<N> &x, const int64N<N> &y );
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator-( const int64N<N> &x );
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator-( const int64_t &x, const int64N<N> &y );
 
 
 // ostream
-template<unsigned char N>
+template<uint8_t N>
 std::ostream &operator<<( std::ostream &out, const int64N<N> &x );
 
 
 // bitshift operators
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator<<( const int64N<N> &, const int );
-template<unsigned char N>
+template<uint8_t N>
 constexpr int64N<N> operator>>( const int64N<N> &, const int );
 } // namespace AMP::extended
 

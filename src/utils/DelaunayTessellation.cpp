@@ -116,7 +116,7 @@ inline double dot<long double>( int N, const long double *x, const long double *
         if ( z[i] != 0 )
             ans += z[i];
     }
-    return get_double( ans );
+    return static_cast<double>( ans );
 }
 // Integer based dot products
 template<>
@@ -125,7 +125,7 @@ inline double dot<int>( int N, const int *x, const int *y )
     int64_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int64_t( x[i] ) * int64_t( y[i] );
-    return get_double( ans );
+    return static_cast<double>( ans );
 }
 template<>
 inline double dot<int64_t>( int N, const int64_t *x, const int64_t *y )
@@ -133,7 +133,7 @@ inline double dot<int64_t>( int N, const int64_t *x, const int64_t *y )
     int128_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int128_t( x[i] ) * int128_t( y[i] );
-    return get_double( ans );
+    return static_cast<double>( ans );
 }
 template<>
 inline double dot<int128_t>( int N, const int128_t *x, const int128_t *y )
@@ -141,7 +141,7 @@ inline double dot<int128_t>( int N, const int128_t *x, const int128_t *y )
     int256_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int256_t( x[i] ) * int256_t( y[i] );
-    return get_double( ans );
+    return static_cast<double>( ans );
 }
 template<>
 inline double dot<int256_t>( int N, const int256_t *x, const int256_t *y )
@@ -149,7 +149,7 @@ inline double dot<int256_t>( int N, const int256_t *x, const int256_t *y )
     int512_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int512_t( x[i] ) * int512_t( y[i] );
-    return get_double( ans );
+    return static_cast<double>( ans );
 }
 
 
@@ -212,7 +212,7 @@ static inline bool coplanar( const std::array<TYPE, NDIM> *x, TYPE tol )
             const ETYPE &sign = ( ( NDIM + d ) % 2 == 0 ) ? one : neg;
             det += sign * DelaunayHelpers<NDIM>::det( M );
         }
-        is_coplanar = fabs( get_double( det ) ) <= tol;
+        is_coplanar = fabs( static_cast<double>( det ) ) <= tol;
     } else {
         AMP_ERROR( "Not programmed for dimensions != 3" );
     }
@@ -1058,7 +1058,7 @@ int test_in_circumsphere( const std::array<TYPE, NDIM> x[],
                 A2[i - 1 + j * NDIM] = ETYPE( x[i][j] - xi[j] );
         }
         R[d] = sum;
-        R2 += get_double( R[d] );
+        R2 += static_cast<double>( R[d] );
         const ETYPE &sign = ( ( NDIM + d ) % 2 == 0 ) ? one : neg;
         det2[d]           = sign * DelaunayHelpers<NDIM>::det( A2 );
     }
@@ -1116,13 +1116,13 @@ void get_circumsphere( const std::array<TYPE, NDIM> x0[], double &R, double *cen
     long double x[NDIM * NDIM];
     for ( int i = 0; i < NDIM; i++ ) {
         for ( int j = 0; j < NDIM; j++ )
-            x[j + i * NDIM] = get_double( x0[i + 1][j] - x0[0][j] );
+            x[j + i * NDIM] = static_cast<double>( x0[i + 1][j] - x0[0][j] );
     }
     long double A[NDIM * NDIM], D[NDIM][NDIM * NDIM];
     for ( int i = 0; i < NDIM; i++ ) {
         long double tmp( 0 );
         for ( int j = 0; j < NDIM; j++ ) {
-            long double x2 = get_double( x[j + i * NDIM] );
+            long double x2 = static_cast<double>( x[j + i * NDIM] );
             tmp += x2 * x2;
             A[i + j * NDIM] = x2;
             for ( int k = j + 1; k < NDIM; k++ )
@@ -1133,11 +1133,11 @@ void get_circumsphere( const std::array<TYPE, NDIM> x0[], double &R, double *cen
         for ( auto &elem : D )
             elem[i] = tmp;
     }
-    long double a = get_double( DelaunayHelpers<NDIM>::det( A ) );
+    long double a = static_cast<double>( DelaunayHelpers<NDIM>::det( A ) );
     R             = 0.0;
     for ( int i = 0; i < NDIM; i++ ) {
         long double d =
-            ( ( i % 2 == 0 ) ? 1 : -1 ) * get_double( DelaunayHelpers<NDIM>::det( D[i] ) );
+            ( ( i % 2 == 0 ) ? 1 : -1 ) * static_cast<double>( DelaunayHelpers<NDIM>::det( D[i] ) );
         center[i] = static_cast<double>( d / ( 2 * a ) + static_cast<long double>( x0[0][i] ) );
         R += d * d;
     }
@@ -1170,10 +1170,10 @@ std::array<double, NDIM + 1> compute_Barycentric( const std::array<TYPE, NDIM> *
     for ( int i = 0; i < NDIM; i++ )
         L2[NDIM] -= L2[i];
     // Perform the normalization (will require inexact math)
-    double scale = 1.0 / get_double( det );
+    double scale = 1.0 / static_cast<double>( det );
     std::array<double, NDIM + 1> L;
     for ( int i = 0; i < NDIM + 1; i++ )
-        L[i] = get_double( L2[i] ) * scale;
+        L[i] = static_cast<double>( L2[i] ) * scale;
     return L;
 }
 
