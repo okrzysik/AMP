@@ -814,46 +814,64 @@ static void removeTriangles( std::vector<std::array<int, NDIM + 1>> &tri,
     tri_nab.resize( N );
 }
 template<uint8_t NDIM>
-static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
-                                                  const std::vector<Point> &points,
-                                                  const AMP_MPI &comm )
+static std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
+createTessellation( const Point &lb, const Point &ub, const std::vector<Point> &points )
 {
-    // Tessellate
-    auto [lb, ub] = geom->box();
-    auto dx       = ub - lb;
-    int N         = points.size();
-    std::vector<std::array<double, NDIM>> x1( points.size() );
-    std::vector<std::array<int, NDIM>> x2( points.size() );
+    // Convert coordinates
+    auto dx = ub - lb;
+    int N   = points.size();
+    AMP::Array<double> x1( NDIM, points.size() );
+    AMP::Array<double> x2( NDIM, points.size() );
     for ( int i = 0; i < N; i++ ) {
         for ( int d = 0; d < NDIM; d++ ) {
             double x   = points[i][d];
             double tmp = 2.0 * ( x - lb[d] ) / dx[d] - 1.0;
             int xi     = round( 1000000 * tmp );
-            x1[i][d]   = x;
-            x2[i][d]   = xi;
+            x1( d, i ) = x;
+            x2( d, i ) = xi;
         }
     }
     NULL_USE( x2 );
-    std::vector<std::array<int, NDIM + 1>> tri, tri_nab;
+    // Tessellate
+    AMP::Array<int> tri, nab;
     try {
         // Try to tessellate with the acutal points
-        std::tie( tri, tri_nab ) = DelaunayTessellation::create_tessellation<NDIM>( x1 );
+        std::tie( tri, nab ) = DelaunayTessellation::create_tessellation( x1 );
     } catch ( ... ) {
         try {
             // Try to tessellate with the integer points
-            std::tie( tri, tri_nab ) = DelaunayTessellation::create_tessellation<NDIM>( x2 );
+            std::tie( tri, nab ) = DelaunayTessellation::create_tessellation( x2 );
         } catch ( ... ) {
             // Failed to tessellate
             auto fid = fopen( "failed_points.csv", "wb" );
-            for ( const auto &p : x1 ) {
-                for ( const auto &v : p )
-                    fprintf( fid, "%0.12f ", v );
+            for ( size_t i = 0; i < x1.size( 1 ); i++ ) {
+                for ( size_t d = 0; d < NDIM; d++ )
+                    fprintf( fid, "%0.12f ", x1( d, i ) );
                 fprintf( fid, "\n" );
             }
             fclose( fid );
             AMP_ERROR( "Failed to tessellate" );
         }
     }
+    // Convert to output format
+    std::vector<std::array<int, NDIM + 1>> tri2( tri.size( 1 ) );
+    std::vector<std::array<int, NDIM + 1>> nab2( tri.size( 1 ) );
+    for ( size_t i = 0; i < tri2.size(); i++ ) {
+        for ( size_t d = 0; d < NDIM; d++ ) {
+            tri2[i][d] = tri( d, i );
+            nab2[i][d] = nab( d, i );
+        }
+    }
+    return std::tie( tri2, nab2 );
+}
+template<uint8_t NDIM>
+static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry::Geometry> geom,
+                                                  const std::vector<Point> &points,
+                                                  const AMP_MPI &comm )
+{
+    // Tessellate
+    auto [lb, ub]       = geom->box();
+    auto [tri, tri_nab] = createTessellation<NDIM>( lb, ub, points );
     AMP_ASSERT( !tri.empty() );
     // Delete triangles that have duplicate neighbors
     {
@@ -922,6 +940,12 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
             tri2[i][d]     = tri[i][d];
             tri_nab2[i][d] = tri_nab[i][d];
         }
+    }
+    // Generate the mesh
+    std::vector<std::array<double, NDIM>> x1( points.size() );
+    for ( size_t i = 0; i < points.size(); i++ ) {
+        for ( int d = 0; d < NDIM; d++ )
+            x1[i][d] = points[i][d];
     }
     return TriangleMesh<NDIM, NDIM>::generate(
         std::move( x1 ), std::move( tri2 ), std::move( tri_nab2 ), comm, std::move( geom ) );

@@ -220,29 +220,7 @@ void DelaunayInterpolation<TYPE>::create_tessellation( const AMP::Array<TYPE> &x
         delete[] i_tmp;
         create_tri_neighbors();
     } else if ( ndim == 2 || ndim == 3 ) {
-        int *tri     = nullptr;
-        int *tri_nab = nullptr;
-        int N_tri = DelaunayTessellation::create_tessellation( ndim, N, x.data(), &tri, &tri_nab );
-        if ( N_tri < (int) ( N - ndim ) ) {
-            // Write a debug file with the failed points
-            auto msg    = AMP::Utilities::stringf( "Error creating tessellation (%i)", N_tri );
-            FILE *pFile = fopen( "DelaunayTessellation_failed_points", "wb" );
-            write_failed_points<TYPE>( ndim, N, x.data(), pFile );
-            fclose( pFile );
-            AMP::perr << msg << std::endl;
-            AMP::perr << "  Failed points written to DelaunayTessellation_failed_points\n";
-            throw std::logic_error( msg );
-        }
-        d_tri.resize( ndim + 1, N_tri );
-        d_tri_nab.resize( ndim + 1, N_tri );
-        for ( int i = 0; i < N_tri; i++ ) {
-            for ( size_t d = 0; d <= ndim; d++ ) {
-                d_tri( d, i )     = tri[d + i * ( ndim + 1 )];
-                d_tri_nab( d, i ) = tri_nab[d + i * ( ndim + 1 )];
-            }
-        }
-        delete[] tri;
-        delete[] tri_nab;
+        std::tie( d_tri, d_tri_nab ) = DelaunayTessellation::create_tessellation( x );
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }

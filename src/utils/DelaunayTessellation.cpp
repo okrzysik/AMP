@@ -828,36 +828,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     tri_nab.resize( N_tri );
     return std::tie( tri, tri_nab );
 }
-template<int NDIM, class TYPE, class ETYPE>
-int create_tessellation( const int N, const TYPE x_in[], int *tri_out[], int *tri_nab_out[] )
-{
-    // Copy inputs
-    std::vector<std::array<TYPE, NDIM>> x( N );
-    for ( int i = 0; i < N; i++ )
-        for ( size_t d = 0; d < NDIM; d++ )
-            x[i][d] = x_in[d + i * NDIM];
-
-    // Create the tessellation
-    auto [tri, tri_nab] = create_tessellation<NDIM, TYPE, ETYPE>( x );
-    int N_tri           = tri.size();
-
-    // Copy the results and delete the structures
-    // printf("# of triangles at exit = %i\n",(int)N_tri);
-    // printf("# of faces on convex hull at exit = %i\n",face_list.get_N_face());
-    *tri_out = new int[( NDIM + 1 ) * N_tri];
-    for ( int i = 0; i < N_tri; i++ )
-        for ( int d = 0; d <= NDIM; d++ )
-            ( *tri_out )[d + i * ( NDIM + 1 )] = tri[i][d];
-    if ( tri_nab_out != nullptr ) {
-        *tri_nab_out = new int[( NDIM + 1 ) * N_tri];
-        for ( int i = 0; i < N_tri; i++ )
-            for ( int d = 0; d <= NDIM; d++ )
-                ( *tri_nab_out )[d + i * ( NDIM + 1 )] = tri_nab[i][d];
-    }
-
-    // Finished
-    return N_tri;
-}
 
 
 /********************************************************************
@@ -1190,7 +1160,7 @@ constexpr double getFlipTOL()
 {
     if constexpr ( std::is_integral<TYPE>::value ) {
         return 0;
-    } else if constexpr ( std::is_same<TYPE, double>::value ||
+    } else if constexpr ( std::is_same<TYPE, float>::value || std::is_same<TYPE, double>::value ||
                           std::is_same<TYPE, long double>::value ) {
         return 1e-12;
     } else {
@@ -2335,120 +2305,92 @@ bool find_flip( const std::array<TYPE, NDIM> *x,
 
 
 /********************************************************************
+ * Helper interface to create_tessellation                           *
+ ********************************************************************/
+template<class TYPE, std::size_t NDIM>
+AMP::Array<TYPE> convert( const std::vector<std::array<TYPE, NDIM>> &x )
+{
+    AMP::Array<TYPE> y( NDIM, x.size() );
+    for ( size_t i = 0; i < x.size(); i++ ) {
+        for ( size_t d = 0; d < NDIM; d++ )
+            y( d, i ) = x[i][d];
+    }
+    return y;
+}
+template<class TYPE, std::size_t NDIM>
+std::vector<std::array<TYPE, NDIM>> convert( const AMP::Array<TYPE> &x )
+{
+    AMP_ASSERT( x.size( 0 ) == NDIM );
+    std::vector<std::array<TYPE, NDIM>> y( x.size( 1 ) );
+    for ( size_t i = 0; i < y.size(); i++ ) {
+        for ( size_t d = 0; d < NDIM; d++ )
+            y[i][d] = x( d, i );
+    }
+    return y;
+}
+template<class TYPE, class ETYPE>
+std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation( const AMP::Array<TYPE> &x )
+{
+    int NDIM = x.size( 0 );
+    AMP::Array<int> tri, nab;
+    if ( NDIM == 2 ) {
+        auto x2           = convert<TYPE, 2>( x );
+        auto [tri2, nab2] = create_tessellation<2, TYPE, ETYPE>( x2 );
+        tri               = convert<int, 3>( tri2 );
+        nab               = convert<int, 3>( nab2 );
+    } else if ( NDIM == 3 ) {
+        auto x2           = convert<TYPE, 3>( x );
+        auto [tri2, nab2] = create_tessellation<3, TYPE, ETYPE>( x2 );
+        tri               = convert<int, 4>( tri2 );
+        nab               = convert<int, 4>( nab2 );
+    } else {
+        throw std::logic_error( "Unsupported dimension" );
+    }
+    return std::tie( tri, nab );
+}
+
+
+/********************************************************************
  * Primary interfaces                                                *
  ********************************************************************/
 template<class TYPE>
-uint64_t maxabs( const int N, const TYPE *x )
+static inline int digits( size_t NDIM, size_t N, const TYPE *x )
 {
     uint64_t x_max = 0;
-    for ( int i = 0; i < N; i++ ) {
+    for ( size_t i = 0; i < N; i++ ) {
         TYPE x2 = x[i] >= 0 ? x[i] : -x[i];
         x_max   = std::max<uint64_t>( static_cast<uint64_t>( x2 ), x_max );
     }
-    return x_max;
+    return NDIM * ceil( log2( x_max ) );
 }
-template<std::size_t NDIM, class TYPE>
-uint64_t maxabs( const std::vector<std::array<TYPE, NDIM>> &x )
+template<class TYPE>
+static inline uint64_t digits( const Array<TYPE> &x )
 {
-    uint64_t x_max = 0;
-    for ( const auto &y : x ) {
-        for ( auto z : y ) {
-            TYPE x2 = z >= 0 ? z : -z;
-            x_max   = std::max<uint64_t>( static_cast<uint64_t>( x2 ), x_max );
-        }
-    }
-    return x_max;
+    return digits( x.size( 0 ), x.length(), x.data() );
 }
-template<uint8_t NDIM>
-std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
-create_tessellation( const std::vector<std::array<double, NDIM>> &x )
+template<class TYPE>
+std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation( const Array<TYPE> &x )
 {
-    return create_tessellation<NDIM, double, long double>( x );
-}
-template<uint8_t NDIM>
-std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
-create_tessellation( const std::vector<std::array<int, NDIM>> &x )
-{
-    // Check that all values of x are < 2^30
-    const uint64_t x_max = maxabs( x );
-    const uint64_t XMAX  = ( (uint64_t) 1 ) << 30;
-    if ( x_max >= XMAX )
-        throw std::logic_error( "To be stable, all vaues of x must < 2^30 for type int" );
-    if constexpr ( NDIM == 2 ) {
-        return create_tessellation<2, int, int64_t>( x );
-    } else if constexpr ( NDIM == 3 ) {
-        if ( x_max < 1048576 ) {
-            return create_tessellation<3, int, int64_t>( x );
+    if constexpr ( std::is_integral<TYPE>::value ) {
+        int d = digits( x );
+        if ( d <= 31 ) {
+            return create_tessellation<TYPE, int>( x );
+        } else if ( d <= 63 ) {
+            return create_tessellation<TYPE, int64_t>( x );
+        } else if ( d <= 127 ) {
+            return create_tessellation<TYPE, int128_t>( x );
         } else {
-            return create_tessellation<3, int, int128_t>( x );
+            return create_tessellation<TYPE, int256_t>( x );
         }
+    } else {
+        return create_tessellation<TYPE, long double>( x );
     }
 }
-int create_tessellation( const int ndim, const int N, const double x[], int *tri[], int *tri_nab[] )
-{
-    int N_tri = -1;
-    if ( ndim == 2 )
-        N_tri = create_tessellation<2, double, long double>( N, x, tri, tri_nab );
-    else if ( ndim == 3 )
-        N_tri = create_tessellation<3, double, long double>( N, x, tri, tri_nab );
-    return N_tri;
-}
-int create_tessellation(
-    const int ndim, const int N, const short int x[], int *tri[], int *tri_nab[] )
-{
-    auto y = new int[N * ndim];
-    for ( int i = 0; i < ndim * N; i++ )
-        y[i] = x[i];
-    int N_tri = -1;
-    if ( ndim == 2 ) {
-        N_tri = create_tessellation<2, int, int>( N, y, tri, tri_nab );
-    } else if ( ndim == 3 ) {
-        N_tri = create_tessellation<3, int, int64_t>( N, y, tri, tri_nab );
-    }
-    delete[] y;
-    return N_tri;
-}
-int create_tessellation( const int ndim, const int N, const int x[], int *tri[], int *tri_nab[] )
-{
-    // Check that all values of x are < 2^30
-    const uint64_t x_max = maxabs( ndim * N, x );
-    const uint64_t XMAX  = ( (uint64_t) 1 ) << 30;
-    if ( x_max >= XMAX )
-        throw std::logic_error( "To be stable, all vaues of x must < 2^30 for type int" );
-    int N_tri = -1;
-    if ( ndim == 2 ) {
-        if ( x_max < 32768 ) {
-            N_tri = create_tessellation<2, int, int>( N, x, tri, tri_nab );
-        } else {
-            N_tri = create_tessellation<2, int, int64_t>( N, x, tri, tri_nab );
-        }
-    } else if ( ndim == 3 ) {
-        if ( x_max < 768 ) {
-            N_tri = create_tessellation<3, int, int>( N, x, tri, tri_nab );
-        } else if ( x_max < 1048576 ) {
-            N_tri = create_tessellation<3, int, int64_t>( N, x, tri, tri_nab );
-        } else {
-            N_tri = create_tessellation<3, int, int128_t>( N, x, tri, tri_nab );
-        }
-    }
-    return N_tri;
-}
-int create_tessellation(
-    const int ndim, const int N, const int64_t x[], int *tri[], int *tri_nab[] )
-{
-    // Check that all values of x are < 2^62
-    const uint64_t x_max = maxabs( ndim * N, x );
-    const uint64_t XMAX  = ( (uint64_t) 1 ) << 62;
-    if ( x_max >= XMAX )
-        throw std::logic_error( "To be stable, all vaues of x must < 2^62 for type int" );
-    int N_tri = -1;
-    if ( ndim == 2 ) {
-        N_tri = create_tessellation<2, int64_t, int128_t>( N, x, tri, tri_nab );
-    } else if ( ndim == 3 ) {
-        N_tri = create_tessellation<3, int64_t, int256_t>( N, x, tri, tri_nab );
-    }
-    return N_tri;
-}
+
+
+/********************************************************************
+ * Primary interfaces                                                *
+ ********************************************************************/
 template<std::size_t NDIM, class TYPE>
 static inline void copy_x2( const TYPE *x, std::array<TYPE, NDIM> x2[] )
 {
@@ -2510,10 +2452,12 @@ int test_in_circumsphere( int ndim, const int x[], const int xi[], const double 
     } else if ( ndim == 2 ) {
         test = test_in_circumsphere2<2, int, int64_t>( x, xi, TOL_VOL );
     } else if ( ndim == 3 ) {
-        const uint64_t x_max = std::max( maxabs( ndim * ( ndim + 1 ), x ), maxabs( ndim, xi ) );
-        if ( x_max < 768 ) {
+        int d1 = digits( ndim, ndim * ( ndim + 1 ), x );
+        int d2 = digits( ndim, ndim, xi );
+        int d  = std::max( d1, d2 );
+        if ( d < 31 ) {
             test = test_in_circumsphere2<3, int, int>( x, xi, TOL_VOL );
-        } else if ( x_max < 1048576 ) {
+        } else if ( d < 64 ) {
             test = test_in_circumsphere2<3, int, int64_t>( x, xi, TOL_VOL );
         } else {
             test = test_in_circumsphere2<3, int, int128_t>( x, xi, TOL_VOL );
@@ -2559,14 +2503,14 @@ void get_circumsphere( const int ndim, const int x[], double &R, double *center 
 /********************************************************************
  * Explicit instantiations                                           *
  ********************************************************************/
-template std::tuple<std::vector<std::array<int, 3>>, std::vector<std::array<int, 3>>>
-create_tessellation<2>( const std::vector<std::array<double, 2>> & );
-template std::tuple<std::vector<std::array<int, 3>>, std::vector<std::array<int, 3>>>
-create_tessellation<2>( const std::vector<std::array<int, 2>> &x );
-template std::tuple<std::vector<std::array<int, 4>>, std::vector<std::array<int, 4>>>
-create_tessellation<3>( const std::vector<std::array<double, 3>> & );
-template std::tuple<std::vector<std::array<int, 4>>, std::vector<std::array<int, 4>>>
-create_tessellation<3>( const std::vector<std::array<int, 3>> &x );
+// clang-format off
+template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<short>( const Array<short> & );
+template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<int>( const Array<int> & );
+template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<int64_t>( const Array<int64_t> & );
+template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<float>( const Array<float> & );
+template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<double>( const Array<double> & );
+template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<long double>( const Array<long double> & );
+// clang-format on
 
 
 } // namespace DelaunayTessellation
