@@ -83,13 +83,8 @@ public:
     //! Function to copy the tessellation
     /*!
      * This function copies the internal tessellation to a user-provided array.
-     * @param x[out]    The coordinates of the verticies,
-     *                  should be a preallocated of size( ndim x N ).
-     *                  If x==NULL then the coordinates will not be returned
-     * @param tri[out]  The tesselation on input, should be a preallocated of size( ndim+1 x N_tri
-     * ). If tri==NULL then the triangle data will not be returned
      */
-    void copy_tessellation( AMP::Array<TYPE> &x, AMP::Array<int> &tri ) const;
+    std::tuple<AMP::Array<TYPE>, AMP::Array<int>> copy_tessellation() const;
 
 
     //! Subroutine to find the nearest neighbor to a point

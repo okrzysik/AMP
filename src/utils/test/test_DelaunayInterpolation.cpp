@@ -226,12 +226,10 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
     // Copy the tessellation
     PROFILE_START( "Copy tessellation", 1 );
     {
-        AMP::Array<TYPE> x2;
-        AMP::Array<int> tri;
-        data->copy_tessellation( x2, tri );
-        int N2     = x2.size( 1 );
-        int N_tri2 = tri.size( 1 );
-        bool error = static_cast<size_t>( N2 ) != N || static_cast<size_t>( N_tri2 ) != N_tri;
+        auto [x2, tri] = data->copy_tessellation();
+        int N2         = x2.size( 1 );
+        int N_tri2     = tri.size( 1 );
+        bool error     = static_cast<size_t>( N2 ) != N || static_cast<size_t>( N_tri2 ) != N_tri;
         if ( error == 0 ) {
             for ( size_t i = 0; i < x.length(); i++ ) {
                 if ( x( i ) != x2( i ) )

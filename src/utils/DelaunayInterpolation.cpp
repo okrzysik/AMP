@@ -151,11 +151,9 @@ AMP::Array<int> DelaunayInterpolation<TYPE>::get_tri_nab() const
     return d_tri_nab;
 }
 template<class TYPE>
-void DelaunayInterpolation<TYPE>::copy_tessellation( AMP::Array<TYPE> &x,
-                                                     AMP::Array<int> &tri ) const
+std::tuple<AMP::Array<TYPE>, AMP::Array<int>> DelaunayInterpolation<TYPE>::copy_tessellation() const
 {
-    x   = d_x;
-    tri = d_tri;
+    return std::tie( d_x, d_tri );
 }
 
 
