@@ -2,7 +2,9 @@
 #define included_AMP_DelaunayInterpolation
 
 #include <stdlib.h>
+#include <tuple>
 
+#include "AMP/utils/Array.h"
 #include "AMP/utils/kdtree.h"
 
 
@@ -17,20 +19,12 @@ template<class TYPE>
 class DelaunayInterpolation
 {
 public:
-    //! Constructor that specifies the number of dimensions
-    /*!
-     * This is the intended constructor that initializes the class.  It has a single argument
-     * consisting of the number of dimensions.
-     * @param ndim              The number of dimensions
-     */
-    explicit DelaunayInterpolation( int ndim );
-
+    //! Empty constructor
+    DelaunayInterpolation();
 
     // Deleted constructors
-    DelaunayInterpolation()                                = delete;
     DelaunayInterpolation( const DelaunayInterpolation & ) = delete;
     DelaunayInterpolation &operator=( const DelaunayInterpolation & ) = delete;
-
 
     //! Empty destructor.
     ~DelaunayInterpolation();
@@ -44,51 +38,30 @@ public:
 
 
     //! Function to return the triangles in the tessellation
-    /*!
-     * This function returns the triangles in the tessellation.
-     * Note: this function will allocate memory the the user will have to delete
-     * @param base      The base for the indexing of tri
-     *                  ( 0: use 0-based indexing, 1: use 1-based indexing )
-     */
-    int *get_tri( int base ) const;
+    AMP::Array<int> get_tri() const;
 
 
     //! Function to return the triangles neignbors
-    /*!
-     * This function returns the triangles neighbors
-     * Note: this function will allocate memory the the user will have to delete
-     * @param base      The base for the indexing of tri
-     *                  ( 0: use 0-based indexing, 1: use 1-based indexing )
-     */
-    int *get_tri_nab( int base ) const;
+    AMP::Array<int> get_tri_nab() const;
 
 
     //! Function to construct the tessellation
     /*!
      * This function creates the tessellation using the given points.
-     * If sucessful, this routine returns 0.
-     * @param N         The number of verticies
      * @param x         The coordinates of the verticies( ndim x N )
-     *                  Note: The coordinates are either copied or the pointer is copied
-     *                  depending on the storage level.  If the pointer is used,
-     *                  it is the user's responsibility to make sure the memory is not deleted,
-     *                  or to update the coordinate pointers before each call.
-     *                   See update_coordinates for more information.
      */
-    int create_tessellation( const int N, const TYPE x[] );
+    void create_tessellation( const AMP::Array<TYPE> &x );
 
 
     //! Function to construct the tessellation
     /*!
      * This function creates the tessellation using the given points.
-     * If sucessful, this routine returns 0.
-     * Note: this version always copies the points, changing the storage level if necessary
      * @param N         The number of verticies
      * @param x         The coordinates of the x verticies
      * @param y         The coordinates of the y verticies (may be NULL for 1D)
      * @param z         The coordinates of the z verticies (may be NULL for 1D/2D)
      */
-    int create_tessellation( const int N, const TYPE *x, const TYPE *y, const TYPE *z );
+    void create_tessellation( size_t N, const TYPE *x, const TYPE *y, const TYPE *z );
 
 
     //! Function to construct the tessellation using a given tessellation
@@ -99,35 +72,24 @@ public:
      * If sucessful, this routine returns 0.
      * @param N         The number of verticies
      * @param x         The coordinates of the verticies( ndim x N )
-     *                  Note: The coordinates are either copied or the pointer is copied
-     *                  depending on the storage level.  If the pointer is used, it is the
-     *                  user's responsibility to make sure the memory is not deleted,
      *                  or to update the coordinate pointers before each call.
      *                  See update_coordinates for more information.
-     * @param base      The base for the indexing of tri
-     *                  ( 0: use 0-based indexing, 1: use 1-based indexing )
      * @param N_tri     The number of simplexes (triangles in 2D)
      * @param tri       The tesselation( ndim+1 x N_tri )
      */
-    void create_tessellation(
-        const int N, const TYPE x[], const int base, const int N_tri, const int tri[] );
+    void create_tessellation( const Array<TYPE> &x, const Array<int> &tri );
 
 
     //! Function to copy the tessellation
     /*!
      * This function copies the internal tessellation to a user-provided array.
-     * @param N         Output: The number of verticies
-     * @param x         Output: The coordinates of the verticies,
+     * @param x[out]    The coordinates of the verticies,
      *                  should be a preallocated of size( ndim x N ).
      *                  If x==NULL then the coordinates will not be returned
-     * @param base      The base for the indexing of tri
-     *                  ( 0: use 0-based indexing, 1: use 1-based indexing )
-     * @param N_tri     Output: The number of simplexes (triangles in 2D)
-     * @param tri       Output: The tesselation on input, should be a preallocated of size( ndim+1 x
-     * N_tri ).
-     *                  If tri==NULL then the triangle data will not be returned
+     * @param tri[out]  The tesselation on input, should be a preallocated of size( ndim+1 x N_tri
+     * ). If tri==NULL then the triangle data will not be returned
      */
-    void copy_tessellation( int *N, TYPE *x, const int base, int *N_tri, int *tri ) const;
+    void copy_tessellation( AMP::Array<TYPE> &x, AMP::Array<int> &tri ) const;
 
 
     //! Subroutine to find the nearest neighbor to a point
@@ -137,40 +99,27 @@ public:
      * Note: this function requires the calculate of the node lists if they are not stored (see
      * set_storage_level)
      * @param Ni        The number of points in xi and yi
-     * @param xi        Coordinates of the query points( ndim x Ni )
-     * @param base      The base for the indexing of tri
-     *                  ( 0: use 0-based indexing, 1: use 1-based indexing )
-     * @param nearest   Ouput index of the nearest neighbor
+     * @param xi        Coordinates of the query points ( ndim x Ni )
+     * @return          Return the index of the nearest neighbor (N)
      */
     template<class TYPE2>
-    void find_nearest( const unsigned int Ni,
-                       const TYPE2 xi[],
-                       const int base,
-                       unsigned int *nearest ) const;
+    Array<size_t> find_nearest( const Array<TYPE2> &xi ) const;
 
 
     //! Subroutine to find the triangle that contains the point
     /*!
-     * This function finds the triangle that contains the given points.  This uses a simple search
-     * method,
-     * which may not be the most efficient.  It is O(N*Ni).
-     * Note: this function requires the calculate of the node lists and triangle neighbor lists if
-     * they are not stored (see set_storage_level)
-     * @param Ni        The number of points in xi
-     * @param xi        Coordinates of the query points( ndim x Ni )
-     * @param base      The base for the indexing of tri
-     *                  ( 0: use 0-based indexing, 1: use 1-based indexing )
-     * @param index     Ouput index of triangle containing the point
+     * This function finds the triangle that contains the given points.
+     * This uses a simple search method, which may not be the most efficient.  It is O(N*Ni).
+     * Note: this function requires the calculate of the node lists and triangle neighbor
+     * lists if they have not been calculated
+     * @param xi        Coordinates of the query points ( ndim x Ni )
+     * @param extrap    If the point is outside the convex hull,
+     *                  return the nearest triangle instead of -1
+     * @return          Ouput index of triangle containing the point
      *                  ( -1: Point is outside convex hull, -2: Search failed )
-     * @param extrap    If the point is outside the convex hull, return the nearest triangle instead
-     * of -1
      */
     template<class TYPE2>
-    void find_tri( const unsigned int Ni,
-                   const TYPE2 xi[],
-                   const int base,
-                   int *index,
-                   bool extrap = false ) const;
+    Array<int> find_tri( const Array<TYPE2> &xi, bool extrap = false ) const;
 
 
     //! Subroutine to calculate the gradient at each node
@@ -218,14 +167,12 @@ public:
      * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param nearest   The nearest-neighbor points (see find_nearest)( 1 x Ni)
-     * @param fi        (Output) The interpolated function values at xi( 1 x Ni)
+     * @return          Return the interpolated function values at xi( 1 x Ni)
      */
     template<class TYPE2>
-    void interp_nearest( const double f[],
-                         const unsigned int Ni,
-                         const TYPE2 xi[],
-                         const unsigned int nearest[],
-                         double *fi ) const;
+    Array<double> interp_nearest( const Array<double> &f,
+                                  const Array<TYPE2> &xi,
+                                  const Array<size_t> &nearest ) const;
 
 
     //! Subroutine to perform linear interpoaltion
@@ -237,20 +184,18 @@ public:
      * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param index     The index of the triangle containing the point (see find_tri)
-     * @param fi        (Output) The interpolated function values at xi( 1 x Ni)
-     * @param gi        (Optional Output) The interpolated gradient at xi( ndim x Ni )
      * @param extrap    Do we want to extrapolate from the current triangle
-     *                  Note: extrapolating can incure large error if sliver triangles on the
-     * boundary are present
+     *                  Note: extrapolating can incure large error if sliver triangles
+     *                  on the boundary are present
+     * @return          Return the interpolated function values and gradient at xi <fi,gi>
+     *                  fi - The interpolated function values ( Ni )
+     *                  gi - The interpolated gradient ( ndim x Ni )
      */
     template<class TYPE2>
-    void interp_linear( const double f[],
-                        const unsigned int Ni,
-                        const TYPE2 xi[],
-                        const int index[],
-                        double *fi,
-                        double *gi  = nullptr,
-                        bool extrap = false ) const;
+    std::tuple<AMP::Array<double>, AMP::Array<double>> interp_linear( const AMP::Array<double> &f,
+                                                                      const AMP::Array<TYPE2> &xi,
+                                                                      const AMP::Array<int> &index,
+                                                                      bool extrap = false ) const;
 
 
     //! Subroutine to perform cubic interpoaltion
@@ -263,24 +208,22 @@ public:
      * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param index     The index of the triangle containing the point (see find_tri)
-     * @param fi        (Output) The interpolated function values at xi( 1 x Ni )
-     * @param gi        (Optional Output) The interpolated gradient at xi( ndim x Ni )
      * @param extrap    Do we want to extrapolate from the current triangle
      *                  0: Do not extrapolate (NaNs will be used for points outside the domain)
      *                  1: Extrapolate using linear interpolation
      *                     (using the nearest point and it's gradient)
      *                  2: Extrapolate using quadratic interpolation
      *                     (using linear extrapolation for the gradient)
+     * @return          Return the interpolated function values and gradient at xi <fi,gi>
+     *                  fi - The interpolated function values ( Ni )
+     *                  gi - The interpolated gradient ( ndim x Ni )
      */
     template<class TYPE2>
-    void interp_cubic( const double f[],
-                       const double g[],
-                       const unsigned int Ni,
-                       const TYPE2 xi[],
-                       const int index[],
-                       double *fi,
-                       double *gi = nullptr,
-                       int extrap = 0 ) const;
+    std::tuple<AMP::Array<double>, AMP::Array<double>> interp_cubic( const AMP::Array<double> &f,
+                                                                     const AMP::Array<double> &g,
+                                                                     const AMP::Array<TYPE2> &xi,
+                                                                     const AMP::Array<int> &index,
+                                                                     int extrap = 0 ) const;
 
 
     //! Subroutine to compute the Barycentric coordinates
@@ -293,6 +236,10 @@ public:
      * @param L     (output) The Barycentric coordinates of the point( ndim+1 x 1 )
      */
     static void compute_Barycentric( const int ndim, const double *x, const double *xi, double *L );
+
+
+    //! Clear the data
+    void clear();
 
 
 private:
@@ -318,18 +265,14 @@ private:
                               int extrap ) const;
 
 
-    // Internal Data
-    unsigned char d_ndim;           // The number of dimensions
-    int d_level;                    // The storage level
-    unsigned d_N;                   // The number of verticies
-    unsigned d_N_tri;               // The number of triangles
-    int *d_tri;                     // The triangles (ndim+1 x N_tri)
-    TYPE *d_x;                      // Pointer to the coordinates (ndim+1 x N)
+private:                            // Internal Data
+    Array<TYPE> d_x;                // Pointer to the coordinates (ndim x N)
+    Array<int> d_tri;               // Pointer to the coordinates (ndim+1 x N_tri)
+    mutable Array<int> d_tri_nab;   // List of neighbor triangles ( ndim+1 x N_tri )
     mutable size_t d_N_node_sum;    // The sum of the number of node neighbors
     mutable unsigned *d_N_node;     // The number of neighbor nodes for each node (1xN)
     mutable unsigned **d_node_list; // The list of neighbor nodes for each node (1xN)
                                     // Note: The first element points to an array of size N_node_sum
-    mutable int *d_tri_nab;         // List of neighbor triangles ( ndim+1 x N_tri )
     mutable int *d_node_tri;        // For each node, a triangle that contains that node
     mutable kdtree *d_tree;         // Nearest neighbor search tree
 };

@@ -90,21 +90,11 @@ static constexpr double TRI_TOL = 1e-10;
  * Primary constructor                                               *
  ********************************************************************/
 template<class TYPE>
-DelaunayInterpolation<TYPE>::DelaunayInterpolation( const int ndim )
+DelaunayInterpolation<TYPE>::DelaunayInterpolation()
 {
-    AMP_ASSERT( ndim >= 1 );
-    AMP_ASSERT( ndim <= NDIM_MAX );
-    // Initialize the class data
-    d_ndim       = ndim;
-    d_level      = 4;
-    d_N          = 0;
-    d_N_tri      = 0;
-    d_tri        = nullptr;
-    d_x          = nullptr;
     d_N_node_sum = 0;
     d_N_node     = nullptr;
     d_node_list  = nullptr;
-    d_tri_nab    = nullptr;
     d_node_tri   = nullptr;
     d_tree       = nullptr;
 }
@@ -116,26 +106,22 @@ DelaunayInterpolation<TYPE>::DelaunayInterpolation( const int ndim )
 template<class TYPE>
 DelaunayInterpolation<TYPE>::~DelaunayInterpolation()
 {
-    // Delete all data
-    d_ndim = 0;
-    d_N    = 0;
-    if ( d_x != nullptr ) {
-        if ( d_level == 2 || d_level == 4 )
-            delete[] d_x;
-        d_x = nullptr;
-    }
-    d_N_tri = 0;
-    delete[] d_tri;
-    d_tri = nullptr;
-    delete[] d_N_node;
-    d_N_node = nullptr;
-    if ( d_node_list != nullptr ) {
+    clear();
+}
+template<class TYPE>
+void DelaunayInterpolation<TYPE>::clear()
+{
+    d_x.clear();
+    d_tri.clear();
+    d_tri_nab.clear();
+    if ( d_N_node != nullptr ) {
+        delete[] d_N_node;
         delete[] d_node_list[0];
+        delete[] d_node_list;
+        d_N_node_sum = 0;
+        d_N_node     = nullptr;
+        d_node_list  = nullptr;
     }
-    delete[] d_node_list;
-    d_node_list = nullptr;
-    delete[] d_tri_nab;
-    d_tri_nab = nullptr;
     delete[] d_node_tri;
     d_node_tri = nullptr;
     delete d_tree;
@@ -149,55 +135,27 @@ DelaunayInterpolation<TYPE>::~DelaunayInterpolation()
 template<class TYPE>
 size_t DelaunayInterpolation<TYPE>::get_N_tri() const
 {
-    return static_cast<size_t>( d_N_tri );
+    if ( d_tri.empty() )
+        return 0;
+    return d_tri.size( 1 );
 }
 template<class TYPE>
-int *DelaunayInterpolation<TYPE>::get_tri( int base ) const
+AMP::Array<int> DelaunayInterpolation<TYPE>::get_tri() const
 {
-    PROFILE_START( "get_tri", PROFILE_LEVEL );
-    auto tri = new int[d_N_tri * ( d_ndim + 1 )];
-    for ( size_t i = 0; i < ( d_ndim + 1 ) * d_N_tri; i++ )
-        tri[i] = d_tri[i] + base;
-    PROFILE_STOP( "get_tri", PROFILE_LEVEL );
-    return tri;
+    return d_tri;
 }
 template<class TYPE>
-int *DelaunayInterpolation<TYPE>::get_tri_nab( int base ) const
+AMP::Array<int> DelaunayInterpolation<TYPE>::get_tri_nab() const
 {
-    PROFILE_START( "get_tri_nab", PROFILE_LEVEL );
     create_tri_neighbors();
-    auto tri_nab = new int[d_N_tri * ( d_ndim + 1 )];
-    for ( size_t i = 0; i < ( d_ndim + 1 ) * d_N_tri; i++ )
-        tri_nab[i] = static_cast<int>( d_tri_nab[i] ) + base;
-    PROFILE_STOP( "get_tri_nab", PROFILE_LEVEL );
-    return tri_nab;
+    return d_tri_nab;
 }
 template<class TYPE>
-void DelaunayInterpolation<TYPE>::copy_tessellation(
-    int *N_out, TYPE *x_out, const int base, int *N_tri_out, int *tri_out ) const
+void DelaunayInterpolation<TYPE>::copy_tessellation( AMP::Array<TYPE> &x,
+                                                     AMP::Array<int> &tri ) const
 {
-    PROFILE_START( "copy_tessellation", PROFILE_LEVEL );
-    *N_out = d_N;
-    if ( x_out != nullptr ) {
-        if ( d_x == nullptr ) {
-            for ( size_t i = 0; i < d_ndim * d_N; i++ )
-                x_out[i] = 0;
-        } else {
-            for ( size_t i = 0; i < d_ndim * d_N; i++ )
-                x_out[i] = d_x[i];
-        }
-    }
-    *N_tri_out = d_N_tri;
-    if ( tri_out != nullptr ) {
-        if ( d_tri == nullptr ) {
-            for ( size_t i = 0; i < ( d_ndim + 1 ) * d_N_tri; i++ )
-                tri_out[i] = 0;
-        } else {
-            for ( size_t i = 0; i < ( d_ndim + 1 ) * d_N_tri; i++ )
-                tri_out[i] = d_tri[i] + base;
-        }
-    }
-    PROFILE_STOP( "copy_tessellation", PROFILE_LEVEL );
+    x   = d_x;
+    tri = d_tri;
 }
 
 
@@ -219,96 +177,80 @@ void write_failed_points<int>( int ndim, int N, const int *data, FILE *fid )
     fwrite( data, sizeof( int ), N * ndim, fid );
 }
 template<class TYPE>
-int DelaunayInterpolation<TYPE>::create_tessellation( const int N,
-                                                      const TYPE *x,
-                                                      const TYPE *y,
-                                                      const TYPE *z )
+void DelaunayInterpolation<TYPE>::create_tessellation( size_t N,
+                                                       const TYPE *x,
+                                                       const TYPE *y,
+                                                       const TYPE *z )
 {
-    if ( d_level == 1 )
-        d_level = 2;
-    if ( d_level == 3 )
-        d_level = 4;
-    const TYPE *xyz[3] = { x, y, z };
-    auto tmp           = new TYPE[N * d_ndim];
-    for ( int i = 0; i < N; i++ ) {
-        for ( int d = 0; d < d_ndim; d++ )
-            tmp[d + i * d_ndim] = xyz[d][i];
+    AMP::Array<TYPE> xyz( 3, N );
+    for ( size_t i = 0; i < N; i++ ) {
+        xyz( 0, i ) = x[i];
+        xyz( 1, i ) = y[i];
+        xyz( 2, i ) = z[i];
     }
-    int error = create_tessellation( N, tmp );
-    delete[] tmp;
-    return error;
+    create_tessellation( xyz );
 }
 template<class TYPE>
-int DelaunayInterpolation<TYPE>::create_tessellation( const int N_in, const TYPE x_in[] )
+void DelaunayInterpolation<TYPE>::create_tessellation( const AMP::Array<TYPE> &x )
 {
-    PROFILE_START( "create_tessellation", PROFILE_LEVEL );
-    AMP_ASSERT( d_ndim > 0 );
-    AMP_ASSERT( N_in > d_ndim );
-    AMP_ASSERT( x_in != nullptr );
-    d_N        = N_in;
-    int N_tri2 = -1;
-    if ( d_ndim == 1 ) {
+    PROFILE_SCOPED( timer, "create_tessellation", PROFILE_LEVEL );
+    // Delete the existing data
+    clear();
+    if ( x.empty() )
+        return;
+    // Copy the points
+    d_x = x;
+    // Create the tessellation
+    size_t ndim = x.size( 0 );
+    size_t N    = x.size( 1 );
+    if ( x.size( 0 ) == 1 ) {
         // The triangles are just the sorted points (note the duplicate indicies)
-        auto x_tmp = new TYPE[d_N];
-        auto i_tmp = new int[d_N];
-        for ( size_t i = 0; i < d_N; i++ )
-            x_tmp[i] = x_in[i];
-        for ( size_t i = 0; i < d_N; i++ )
+        auto x_tmp = new TYPE[N];
+        auto i_tmp = new int[N];
+        for ( size_t i = 0; i < N; i++ )
+            x_tmp[i] = d_x( i );
+        for ( size_t i = 0; i < N; i++ )
             i_tmp[i] = (int) i;
-        quicksort2( N_in, x_tmp, i_tmp );
-        N_tri2 = N_in - 1;
-        d_tri  = new int[2 * N_tri2];
-        for ( int i = 0; i < N_tri2; i++ ) {
-            d_tri[2 * i + 0] = i_tmp[i + 0];
-            d_tri[2 * i + 1] = i_tmp[i + 1];
+        quicksort2( N, x_tmp, i_tmp );
+        int N_tri = N - 1;
+        d_tri.resize( 2, N_tri );
+        for ( int i = 0; i < N_tri; i++ ) {
+            d_tri( 0, i ) = i_tmp[i + 0];
+            d_tri( 1, i ) = i_tmp[i + 1];
         }
         delete[] x_tmp;
         delete[] i_tmp;
-        if ( d_level == 3 || d_level == 4 ) {
-            d_N_tri = N_tri2;
-            create_tri_neighbors();
+        create_tri_neighbors();
+    } else if ( ndim == 2 || ndim == 3 ) {
+        int *tri     = nullptr;
+        int *tri_nab = nullptr;
+        int N_tri = DelaunayTessellation::create_tessellation( ndim, N, x.data(), &tri, &tri_nab );
+        if ( N_tri < (int) ( N - ndim ) ) {
+            // Write a debug file with the failed points
+            auto msg    = AMP::Utilities::stringf( "Error creating tessellation (%i)", N_tri );
+            FILE *pFile = fopen( "DelaunayTessellation_failed_points", "wb" );
+            write_failed_points<TYPE>( ndim, N, x.data(), pFile );
+            fclose( pFile );
+            AMP::perr << msg << std::endl;
+            AMP::perr << "  Failed points written to DelaunayTessellation_failed_points\n";
+            throw std::logic_error( msg );
         }
-    } else if ( d_ndim == 2 || d_ndim == 3 ) {
-        if ( d_level == 3 || d_level == 4 )
-            N_tri2 =
-                DelaunayTessellation::create_tessellation( d_ndim, N_in, x_in, &d_tri, &d_tri_nab );
-        else
-            N_tri2 =
-                DelaunayTessellation::create_tessellation( d_ndim, N_in, x_in, &d_tri, nullptr );
+        d_tri.resize( ndim + 1, N_tri );
+        d_tri_nab.resize( ndim + 1, N_tri );
+        for ( int i = 0; i < N_tri; i++ ) {
+            for ( size_t d = 0; d <= ndim; d++ ) {
+                d_tri( d, i )     = tri[d + i * ( ndim + 1 )];
+                d_tri_nab( d, i ) = tri_nab[d + i * ( ndim + 1 )];
+            }
+        }
+        delete[] tri;
+        delete[] tri_nab;
     } else {
         throw std::logic_error( "Unsupported dimension" );
     }
-    if ( N_tri2 < N_in - d_ndim ) {
-        AMP::perr << "Error creating tessellation (" << N_tri2 << ")\n";
-        d_N_tri = 0;
-        delete[] d_tri;
-        d_tri = nullptr;
-        if ( d_tri_nab != nullptr )
-            delete[] d_tri_nab;
-        d_tri_nab              = nullptr;
-        std::string debug_file = "DelaunayTessellation_failed_points";
-        if ( !debug_file.empty() ) {
-            // Write a debug file with the failed points
-            FILE *pFile = fopen( debug_file.c_str(), "wb" );
-            write_failed_points<TYPE>( d_ndim, N_in, x_in, pFile );
-            fclose( pFile );
-            AMP::perr << "  Failed points written to " << debug_file << std::endl;
-        }
-        PROFILE_STOP2( "create_tessellation", PROFILE_LEVEL );
-        return N_tri2;
-    }
-    d_N_tri = N_tri2;
-    // Copy the data
+    AMP_ASSERT( !d_tri.empty() );
+    AMP_ASSERT( d_tri.min() >= 0 );
     d_N_node_sum = 0;
-    if ( d_level == 2 || d_level == 4 ) {
-        d_x = new TYPE[d_ndim * d_N];
-        for ( size_t i = 0; i < d_ndim * d_N; i++ )
-            d_x[i] = x_in[i];
-    } else {
-        d_x = const_cast<TYPE *>( x_in );
-    }
-    PROFILE_STOP( "create_tessellation", PROFILE_LEVEL );
-    return 0;
 }
 
 
@@ -316,62 +258,18 @@ int DelaunayInterpolation<TYPE>::create_tessellation( const int N_in, const TYPE
  * Function to construct the tessellation using a given tessellation *
  ********************************************************************/
 template<class TYPE>
-void DelaunayInterpolation<TYPE>::create_tessellation(
-    const int N_in, const TYPE x_in[], const int base, const int N_tri_in, const int tri_in[] )
+void DelaunayInterpolation<TYPE>::create_tessellation( const Array<TYPE> &x, const Array<int> &tri )
 {
     // Delete the existing data
-    if ( d_x != nullptr ) {
-        if ( d_level == 2 || d_level == 4 )
-            delete[] d_x;
-        d_x = nullptr;
-    }
-    if ( d_tri != nullptr ) {
-        delete[] d_tri;
-        d_tri = nullptr;
-    }
-    if ( d_N_node != nullptr ) {
-        delete[] d_N_node;
-        delete[] d_node_list[0];
-        delete[] d_node_list;
-        d_N_node    = nullptr;
-        d_node_list = nullptr;
-    }
-    if ( d_tri_nab != nullptr ) {
-        delete[] d_tri_nab;
-        d_tri_nab = nullptr;
-    }
-    // Special case where we do not want to create the tessellation
-    if ( N_tri_in == 0 ) {
-        d_N          = 0;
-        d_N_tri      = 0;
-        d_tri        = nullptr;
-        d_x          = nullptr;
-        d_N_node_sum = 0;
-        d_N_node     = nullptr;
-        d_node_list  = nullptr;
-        d_tri_nab    = nullptr;
+    clear();
+    if ( tri.empty() )
         return;
-    }
     // Check the inputs
-    AMP_ASSERT( d_ndim > 0 );
-    AMP_ASSERT( N_in > 0 );
-    AMP_ASSERT( x_in != nullptr );
-    AMP_ASSERT( N_tri_in > 0 );
-    AMP_ASSERT( tri_in != nullptr );
+    AMP_ASSERT( x.size( 0 ) <= 3 );
+    AMP_ASSERT( tri.size( 0 ) == x.size( 0 ) + 1 );
     // Copy the data
-    d_N          = N_in;
-    d_N_tri      = N_tri_in;
-    d_N_node_sum = 0;
-    if ( d_level == 2 || d_level == 4 ) {
-        d_x = new TYPE[d_ndim * d_N];
-        for ( size_t i = 0; i < d_ndim * d_N; i++ )
-            d_x[i] = x_in[i];
-    } else {
-        d_x = const_cast<TYPE *>( x_in );
-    }
-    d_tri = new int[( d_ndim + 1 ) * d_N_tri];
-    for ( size_t i = 0; i < ( d_ndim + 1 ) * d_N_tri; i++ )
-        d_tri[i] = tri_in[i] - base;
+    d_x   = x;
+    d_tri = tri;
 }
 
 
@@ -384,14 +282,16 @@ void DelaunayInterpolation<TYPE>::create_kdtree() const
     // Create the kdtree
     if ( d_tree == nullptr ) {
         PROFILE_START( "create_kdtree", PROFILE_LEVEL );
-        double *x[NDIM_MAX];
-        for ( size_t d = 0; d < d_ndim; d++ ) {
-            x[d] = new double[d_N];
-            for ( size_t i = 0; i < d_N; i++ )
-                x[d][i] = d_x[d + i * d_ndim];
+        double *x[NDIM_MAX] = { nullptr };
+        size_t N            = d_x.size( 1 );
+        int ndim            = d_x.size( 0 );
+        for ( int d = 0; d < ndim; d++ ) {
+            x[d] = new double[N];
+            for ( size_t i = 0; i < N; i++ )
+                x[d][i] = d_x( d, i );
         }
-        d_tree = new kdtree( d_ndim, d_N, x );
-        for ( size_t d = 0; d < d_ndim; d++ )
+        d_tree = new kdtree( ndim, N, x );
+        for ( int d = 0; d < ndim; d++ )
             delete[] x[d];
         PROFILE_STOP( "create_kdtree", PROFILE_LEVEL );
     }
@@ -403,27 +303,25 @@ void DelaunayInterpolation<TYPE>::create_kdtree() const
  ************************************************************************/
 template<class TYPE>
 template<class TYPE2>
-void DelaunayInterpolation<TYPE>::find_nearest( const unsigned int Ni,
-                                                const TYPE2 xi[],
-                                                const int base,
-                                                unsigned int *index ) const
+Array<size_t> DelaunayInterpolation<TYPE>::find_nearest( const Array<TYPE2> &xi ) const
 {
-    if ( Ni == 0 )
-        return;
+    if ( xi.empty() )
+        return Array<size_t>();
+    AMP_ASSERT( xi.size( 0 ) == d_x.size( 0 ) );
     PROFILE_START( "find_nearest", PROFILE_LEVEL );
     // Create the kdtree
     create_kdtree();
     // Use the kdtree to perform the nearest neighbor interpolation
-    auto index2 = new size_t[Ni];
-    auto xi2    = new double[Ni * d_ndim];
-    for ( size_t i = 0; i < Ni * d_ndim; i++ )
-        xi2[i] = xi[i];
-    d_tree->find_nearest( Ni, xi2, index2 );
-    delete[] xi2;
-    for ( size_t i = 0; i < Ni; i++ )
-        index[i] = static_cast<unsigned int>( index2[i] + base );
-    delete[] index2;
+    Array<size_t> index( xi.size( 1 ) );
+    if constexpr ( std::is_same<TYPE2, double>::value ) {
+        d_tree->find_nearest( xi.size( 1 ), xi.data(), index.data() );
+    } else {
+        Array<double> xi2;
+        xi2.copy( xi );
+        d_tree->find_nearest( xi2.size( 1 ), xi2.data(), index.data() );
+    }
     PROFILE_STOP( "find_nearest", PROFILE_LEVEL );
+    return index;
 }
 
 
@@ -436,12 +334,13 @@ void DelaunayInterpolation<TYPE>::find_nearest( const unsigned int Ni,
  ************************************************************************/
 template<class TYPE>
 template<class TYPE2>
-void DelaunayInterpolation<TYPE>::find_tri(
-    const unsigned int Ni, const TYPE2 xi[], const int base, int index[], bool extrap ) const
+Array<int> DelaunayInterpolation<TYPE>::find_tri( const Array<TYPE2> &xi, bool extrap ) const
 {
-    if ( Ni == 0 )
-        return;
+    if ( xi.empty() )
+        return Array<int>();
+    AMP_ASSERT( xi.size( 0 ) == d_x.size( 0 ) );
     PROFILE_START( "find_tri", PROFILE_LEVEL );
+    Array<int> index( xi.size( 1 ) );
     // Create the kdtree
     create_kdtree();
     // Create a list of the nodes that link to every other node
@@ -451,31 +350,28 @@ void DelaunayInterpolation<TYPE>::find_tri(
     // For each node, get a starting triangle
     create_node_tri();
     // First choose a starting triangle
-    auto index_node = new unsigned int[Ni];
-    find_nearest( Ni, xi, 0, index_node );
-    for ( unsigned int i = 0; i < Ni; i++ ) {
-        index[i] = d_node_tri[index_node[i]] + base;
-    }
-    delete[] index_node;
-    index_node = nullptr;
+    auto index_node = find_nearest( xi );
+    for ( unsigned int i = 0; i < xi.size( 1 ); i++ )
+        index( i ) = d_node_tri[index_node( i )];
     // Loop through the query points
-    unsigned char Nd = d_ndim + 1;
+    int ndim         = d_x.size( 0 );
+    unsigned char Nd = ndim + 1;
     double x2[NDIM_MAX * ( NDIM_MAX + 1 )], xi2[NDIM_MAX], L[NDIM_MAX + 1];
     bool failed_search = false;
     size_t N_it_tot    = 0;
-    for ( unsigned int i = 0; i < Ni; i++ ) {
-        for ( unsigned int j = 0; j < d_ndim; j++ )
-            xi2[j] = xi[j + i * d_ndim];
-        int current_tri = index[i] - base;
+    for ( unsigned int i = 0; i < xi.size( 1 ); i++ ) {
+        for ( int j = 0; j < ndim; j++ )
+            xi2[j] = xi( j, i );
+        int current_tri = index( i );
         size_t it       = 0;
         while ( true ) {
             // Get the point in Barycentric coordinates
             for ( int j1 = 0; j1 < Nd; j1++ ) {
-                int j = d_tri[j1 + current_tri * Nd];
-                for ( int j2 = 0; j2 < d_ndim; j2++ )
-                    x2[j2 + j1 * d_ndim] = d_x[j2 + j * d_ndim];
+                int j = d_tri( j1, current_tri );
+                for ( int j2 = 0; j2 < ndim; j2++ )
+                    x2[j2 + j1 * ndim] = d_x( j2, j );
             }
-            compute_Barycentric( d_ndim, x2, xi2, L );
+            compute_Barycentric( ndim, x2, xi2, L );
             // We are inside the triangle if all coordinates are in the range [0,1]
             bool in_triangle = true;
             for ( int j = 0; j < Nd; j++ ) {
@@ -486,7 +382,7 @@ void DelaunayInterpolation<TYPE>::find_tri(
             }
             if ( in_triangle ) {
                 // Success, save the index and move on
-                index[i] = current_tri + base;
+                index( i ) = current_tri;
                 break;
             }
             // We are outside an edge of the triangle iff the coordinate for the edge is < 0
@@ -494,26 +390,26 @@ void DelaunayInterpolation<TYPE>::find_tri(
             // convex hull)
             bool outside_hull = false;
             for ( int j = 0; j < Nd; j++ ) {
-                if ( L[j] < -TRI_TOL && d_tri_nab[j + current_tri * Nd] == -1 )
+                if ( L[j] < -TRI_TOL && d_tri_nab( j, current_tri ) == -1 )
                     outside_hull = true;
             }
             if ( outside_hull ) {
                 if ( !extrap ) {
                     // We are outside the convex hull, store the error, and continue
-                    index[i] = -1;
+                    index( i ) = -1;
                     break;
                 }
                 // Zero all values of L for the sides on the convex hull
                 bool finished = true;
                 for ( int j = 0; j < Nd; j++ ) {
-                    if ( d_tri_nab[j + current_tri * Nd] == -1 )
+                    if ( d_tri_nab( j, current_tri ) == -1 )
                         L[j] = 0.0;
                     else if ( L[j] < -TRI_TOL )
                         finished = false;
                 }
                 // If no remaining coordiantes are negitive, this is the nearest triangle
                 if ( finished ) {
-                    index[i] = current_tri + base;
+                    index( i ) = current_tri;
                     break;
                 }
             }
@@ -526,16 +422,17 @@ void DelaunayInterpolation<TYPE>::find_tri(
                     k   = j;
                 }
             }
-            int next_tri = d_tri_nab[k + current_tri * Nd] - base;
-            if ( next_tri < 0 || next_tri > ( (int) d_N_tri ) || next_tri == current_tri )
+            int next_tri = d_tri_nab( k, current_tri );
+            int N_tri    = d_tri.size( 1 );
+            if ( next_tri < 0 || next_tri > N_tri || next_tri == current_tri )
                 throw std::logic_error( "Internal error" );
             current_tri = next_tri;
             it++;
-            if ( it > d_N_tri + 10 ) {
+            if ( it > (size_t) N_tri + 10 ) {
                 // We should never revisit a triangle, so we must have some ended in an infinite
                 // cycle
                 failed_search = true;
-                index[i]      = -2;
+                index( i )    = -2;
                 break;
             }
         }
@@ -544,24 +441,14 @@ void DelaunayInterpolation<TYPE>::find_tri(
     // Check the average number of triangles searched,
     // this should be relatively small since we start with a tirangle that contains the nearest
     // point
-    if ( N_it_tot / Ni > 25 )
+    if ( N_it_tot / xi.size( 1 ) > 25 )
         AMP::perr
             << "Search took longer than it should, there may be a problem with the tessellation\n";
     // Check if the search failed for any values
     if ( failed_search )
         AMP::perr << "Search failed for some points\n";
-    // Remove temporary data that we are not storing (based on the storage level)
-    if ( d_level != 3 && d_level != 4 ) {
-        delete[] d_N_node;
-        delete[] d_node_list[0];
-        delete[] d_node_list;
-        delete[] d_tri_nab;
-        d_N_node_sum = 0;
-        d_N_node     = nullptr;
-        d_node_list  = nullptr;
-        d_tri_nab    = nullptr;
-    }
     PROFILE_STOP( "find_tri", PROFILE_LEVEL );
+    return index;
 }
 
 
@@ -577,12 +464,14 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
     PROFILE_START( "calc_node_gradient", PROFILE_LEVEL );
     // First we need to get a list of the nodes that link to every other node
     create_node_neighbors();
+    size_t N = d_x.size( 1 );
+    int ndim = d_x.size( 0 );
     if ( method == 1 ) {
         // We are performing a local gradient calculation using a least-squares minimization
         // Calculate the derivative for each edge that touches the node, then
         // use a weighted least-squares minimization to get the gradient
         double M[NDIM_MAX * NDIM_MAX], rhs[NDIM_MAX], rh[NDIM_MAX];
-        for ( unsigned int i = 0; i < d_N; i++ ) {
+        for ( unsigned int i = 0; i < N; i++ ) {
             // Initialize M, rhs
             for ( double &j : M )
                 j = 0.0;
@@ -595,27 +484,27 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                 int k = d_node_list[i][j];
                 // Comupute the distance beween the neighbors and the direction vector
                 double r = 0.0;
-                for ( int n = 0; n < d_ndim; n++ ) {
-                    rh[n] = ( d_x[n + k * d_ndim] - d_x[n + i * d_ndim] );
+                for ( int n = 0; n < ndim; n++ ) {
+                    rh[n] = d_x( n, k ) - d_x( n, i );
                     r += rh[n] * rh[n];
                 }
                 r = sqrt( r );
-                for ( int n = 0; n < d_ndim; n++ )
+                for ( int n = 0; n < ndim; n++ )
                     rh[n] /= r;
                 // Compute the derivative of f in the direction of the neighbor
                 double df_dr = ( f[k] - f[i] ) / r;
                 // Get the weights (use the inverse distance)
                 double wi = 1.0 / r;
                 // Construct the linear system
-                for ( int j1 = 0; j1 < d_ndim; j1++ ) {
-                    for ( int j2 = 0; j2 < d_ndim; j2++ ) {
-                        M[j1 + j2 * d_ndim] += 2.0 * wi * rh[j1] * rh[j2];
+                for ( int j1 = 0; j1 < ndim; j1++ ) {
+                    for ( int j2 = 0; j2 < ndim; j2++ ) {
+                        M[j1 + j2 * ndim] += 2.0 * wi * rh[j1] * rh[j2];
                     }
                     rhs[j1] += 2.0 * wi * rh[j1] * df_dr;
                 }
             }
             // Solve the linear system to get the local gradient
-            solve_system( d_ndim, M, rhs, &grad[i * d_ndim] );
+            solve_system( ndim, M, rhs, &grad[i * ndim] );
         }
     } else if ( method == 2 || method == 3 ) {
         /* Both methods 2 and 3 use a higher order approximation for the derivative which
@@ -647,41 +536,40 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
             return;
         }
         // First, allocate storage to store the matrix components
-        auto A   = new double[d_ndim * d_ndim * d_N_node_sum];
-        auto D   = new double[d_ndim * d_ndim * d_N];
-        auto rhs = new double[d_ndim * d_N];
+        auto A   = new double[ndim * ndim * d_N_node_sum];
+        auto D   = new double[ndim * ndim * N];
+        auto rhs = new double[ndim * N];
         // Initialize the matrix elements and rhs to zero
-        memset( A, 0, d_ndim * d_ndim * d_N_node_sum * sizeof( double ) );
-        memset( D, 0, d_ndim * d_ndim * d_N * sizeof( double ) );
-        memset( rhs, 0, d_ndim * d_N * sizeof( double ) );
+        memset( A, 0, ndim * ndim * d_N_node_sum * sizeof( double ) );
+        memset( D, 0, ndim * ndim * N * sizeof( double ) );
+        memset( rhs, 0, ndim * N * sizeof( double ) );
         // Loop through the nodes, constructing the matrix elements
         int m = 0;
-        for ( unsigned int i = 0; i < d_N; i++ ) {
+        for ( unsigned int i = 0; i < N; i++ ) {
             // Loop through the neighbor nodes, contructing the matrix and rhs
             for ( unsigned int j = 0; j < d_N_node[i]; j++ ) {
                 int k = d_node_list[i][j];
                 // Comupute the distance beween the neighbors and the direction vector
                 double r = 0.0;
                 double rh[NDIM_MAX];
-                for ( int n = 0; n < d_ndim; n++ ) {
-                    rh[n] = ( d_x[n + k * d_ndim] - d_x[n + i * d_ndim] );
+                for ( int n = 0; n < ndim; n++ ) {
+                    rh[n] = ( d_x( n, k ) - d_x( n, i ) );
                     r += rh[n] * rh[n];
                 }
                 r = sqrt( r );
-                for ( int n = 0; n < d_ndim; n++ )
+                for ( int n = 0; n < ndim; n++ )
                     rh[n] /= r;
                 // Compute the derivative of f in the direction of the neighbor
                 double df_dr = ( f[k] - f[i] ) / r;
                 // Get the weights (use the inverse distance)
                 double wi = 1.0 / r;
                 // Construct the linear system
-                for ( int j1 = 0; j1 < d_ndim; j1++ ) {
-                    for ( int j2 = 0; j2 < d_ndim; j2++ ) {
-                        A[j1 + j2 * d_ndim + m * d_ndim * d_ndim] = 2.0 * wi * rh[j1] * rh[j2];
-                        D[j1 + j2 * d_ndim + i * d_ndim * d_ndim] +=
-                            A[j1 + j2 * d_ndim + m * d_ndim * d_ndim];
+                for ( int j1 = 0; j1 < ndim; j1++ ) {
+                    for ( int j2 = 0; j2 < ndim; j2++ ) {
+                        A[j1 + j2 * ndim + m * ndim * ndim] = 2.0 * wi * rh[j1] * rh[j2];
+                        D[j1 + j2 * ndim + i * ndim * ndim] += A[j1 + j2 * ndim + m * ndim * ndim];
                     }
-                    rhs[j1 + i * d_ndim] += 2.0 * wi * rh[j1] * 2.0 * df_dr;
+                    rhs[j1 + i * ndim] += 2.0 * wi * rh[j1] * 2.0 * df_dr;
                 }
                 m++;
             }
@@ -696,14 +584,14 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
             // That D(:,:,i) is the same as method 1, and the rhs is a factor of 2 larger
             // than in method 1
             double rhs2[NDIM_MAX];
-            for ( unsigned int i = 0; i < d_N; i++ ) {
-                for ( int j = 0; j < d_ndim; j++ )
-                    rhs2[j] = 0.5 * rhs[j + i * d_ndim];
-                solve_system( d_ndim, &D[i * d_ndim * d_ndim], rhs2, &grad[i * d_ndim] );
+            for ( unsigned int i = 0; i < N; i++ ) {
+                for ( int j = 0; j < ndim; j++ )
+                    rhs2[j] = 0.5 * rhs[j + i * ndim];
+                solve_system( ndim, &D[i * ndim * ndim], rhs2, &grad[i * ndim] );
             }
             // Now we can perform a block Gauss-Seidel iteration to improve the solution
-            Gauss_Seidel( d_ndim,
-                          (unsigned int) d_N,
+            Gauss_Seidel( ndim,
+                          (unsigned int) N,
                           (unsigned int) d_N_node_sum,
                           D,
                           d_N_node,
@@ -732,10 +620,10 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         for ( int it = 0; it < n_it; it++ ) {
             // Loop through the nodes updating x
             //    x(k+1) = aii^-1*(bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i))
-            for ( unsigned int i = 0; i < d_N; i++ ) {
-                for ( int j = 0; j < d_ndim * d_ndim; j++ )
+            for ( unsigned int i = 0; i < N; i++ ) {
+                for ( int j = 0; j < ndim * ndim; j++ )
                     D[j] = 0.0;
-                for ( int j = 0; j < d_ndim; j++ ) {
+                for ( int j = 0; j < ndim; j++ ) {
                     rhs[j] = 0.0;
                     Ax[j]  = 0.0;
                 }
@@ -744,31 +632,31 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                     int k = d_node_list[i][j];
                     // Comupute the distance beween the neighbors and the direction vector
                     double r = 0.0;
-                    for ( int n = 0; n < d_ndim; n++ ) {
-                        rh[n] = ( d_x[n + k * d_ndim] - d_x[n + i * d_ndim] );
+                    for ( int n = 0; n < ndim; n++ ) {
+                        rh[n] = d_x( n, k ) - d_x( n, i );
                         r += rh[n] * rh[n];
                     }
                     r = sqrt( r );
-                    for ( int n = 0; n < d_ndim; n++ )
+                    for ( int n = 0; n < ndim; n++ )
                         rh[n] /= r;
                     // Compute the derivative of f in the direction of the neighbor
                     double df_dr = ( f[k] - f[i] ) / r;
                     // Get the weights (use the inverse distance)
                     double wi = 1.0 / r;
                     // Construct the linear system
-                    for ( int j1 = 0; j1 < d_ndim; j1++ ) {
-                        for ( int j2 = 0; j2 < d_ndim; j2++ ) {
+                    for ( int j1 = 0; j1 < ndim; j1++ ) {
+                        for ( int j2 = 0; j2 < ndim; j2++ ) {
                             double tmp = 2.0 * wi * rh[j1] * rh[j2];
-                            Ax[j1] += tmp * grad[j2 + k * d_ndim];
-                            D[j1 + j2 * d_ndim] += tmp;
+                            Ax[j1] += tmp * grad[j2 + k * ndim];
+                            D[j1 + j2 * ndim] += tmp;
                         }
                         rhs[j1] += 2.0 * wi * rh[j1] * 2.0 * df_dr;
                     }
                 }
                 // Update x
-                for ( int j = 0; j < d_ndim; j++ )
+                for ( int j = 0; j < ndim; j++ )
                     rhs[j] -= Ax[j];
-                solve_system( d_ndim, D, rhs, &grad[i * d_ndim] );
+                solve_system( ndim, D, rhs, &grad[i * ndim] );
             }
         }
     } else {
@@ -784,19 +672,18 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
  ********************************************************************/
 template<class TYPE>
 template<class TYPE2>
-void DelaunayInterpolation<TYPE>::interp_nearest( const double f[],
-                                                  const unsigned int Ni,
-                                                  const TYPE2 xi[],
-                                                  const unsigned int nearest[],
-                                                  double *fi ) const
+Array<double> DelaunayInterpolation<TYPE>::interp_nearest( const Array<double> &f,
+                                                           const Array<TYPE2> &xi,
+                                                           const Array<size_t> &nearest ) const
 {
+    AMP_ASSERT( !xi.empty() );
+    AMP_ASSERT( f.size() == ArraySize( d_x.size( 1 ) ) );
     PROFILE_START( "interp_nearest", PROFILE_LEVEL );
-    AMP_ASSERT( f != nullptr );
-    AMP_ASSERT( xi != nullptr );
-    AMP_ASSERT( fi != nullptr );
-    for ( unsigned int i = 0; i < Ni; i++ )
-        fi[i] = f[nearest[i]];
+    Array<double> fi( xi.size( 1 ) );
+    for ( size_t i = 0; i < fi.length(); i++ )
+        fi( i ) = f( nearest( i ) );
     PROFILE_STOP( "interp_nearest", PROFILE_LEVEL );
+    return f;
 }
 
 
@@ -805,60 +692,66 @@ void DelaunayInterpolation<TYPE>::interp_nearest( const double f[],
  ********************************************************************/
 template<class TYPE>
 template<class TYPE2>
-void DelaunayInterpolation<TYPE>::interp_linear( const double f[],
-                                                 const unsigned int Ni,
-                                                 const TYPE2 xi[],
-                                                 const int index[],
-                                                 double *fi,
-                                                 double *gi,
-                                                 bool extrap ) const
+std::tuple<AMP::Array<double>, AMP::Array<double>>
+DelaunayInterpolation<TYPE>::interp_linear( const AMP::Array<double> &f,
+                                            const AMP::Array<TYPE2> &xi,
+                                            const AMP::Array<int> &index,
+                                            bool extrap ) const
 {
+    int ndim  = d_x.size( 0 );
+    size_t Ni = xi.size( 1 );
+    // Check inputs
+    AMP_ASSERT( !d_x.empty() );
+    AMP_ASSERT( f.size() == ArraySize( d_x.size( 1 ) ) );
+    AMP_ASSERT( !xi.empty() );
+    AMP_ASSERT( xi.size() == ArraySize( ndim, Ni ) );
+    // Allocate data
     PROFILE_START( "interp_linear", PROFILE_LEVEL );
-    AMP_ASSERT( d_x != nullptr );
-    AMP_ASSERT( f != nullptr );
-    AMP_ASSERT( xi != nullptr );
-    AMP_ASSERT( fi != nullptr );
+    AMP::Array<double> fi( Ni );
+    AMP::Array<double> gi( ndim, Ni );
     double x2[NDIM_MAX * ( NDIM_MAX + 1 )], f2[NDIM_MAX + 1], L[NDIM_MAX + 1];
-    const double NaN = std::numeric_limits<double>::quiet_NaN();
-    for ( unsigned int i = 0; i < Ni; i++ ) {
+    constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
+    fi.fill( 0 );
+    gi.fill( 0 );
+    for ( size_t i = 0; i < Ni; i++ ) {
         // Check if the triange index is valid
-        if ( index[i] == -1 && !extrap ) {
-            fi[i] = NaN;
+        if ( index( i ) == -1 && !extrap ) {
+            fi( i ) = NaN;
             continue;
-        } else if ( index[i] < 0 ) {
+        } else if ( index( i ) < 0 ) {
             throw std::logic_error( "Invalid triangle specified" );
         }
         // Compute the Barycentric coordinates
-        for ( int j = 0; j < d_ndim + 1; j++ ) {
-            unsigned int k = d_tri[j + index[i] * ( d_ndim + 1 )];
-            for ( int j2 = 0; j2 < d_ndim; j2++ )
-                x2[j2 + j * d_ndim] = d_x[j2 + k * d_ndim];
-            f2[j] = f[k];
+        for ( int j = 0; j < ndim + 1; j++ ) {
+            unsigned int k = d_tri( j, index( i ) );
+            for ( int j2 = 0; j2 < ndim; j2++ )
+                x2[j2 + j * ndim] = d_x( j2, k );
+            f2[j] = f( k );
         }
         double xi2[NDIM_MAX];
-        for ( int j = 0; j < d_ndim; j++ )
-            xi2[j] = xi[i * d_ndim + j];
-        compute_Barycentric( d_ndim, x2, xi2, L );
+        for ( int d = 0; d < ndim; d++ )
+            xi2[d] = xi( d, i );
+        compute_Barycentric( ndim, x2, xi2, L );
         if ( !extrap ) {
             bool outside = false;
-            for ( int d = 0; d < d_ndim + 1; d++ ) {
+            for ( int d = 0; d < ndim + 1; d++ ) {
                 if ( L[d] < -1e-8 )
                     outside = true;
             }
             if ( outside ) {
-                fi[i] = NaN;
+                fi( i ) = NaN;
                 continue;
             }
         }
         // Perform the linear interpolation
-        fi[i] = 0.0;
-        for ( int j = 0; j < d_ndim + 1; j++ )
-            fi[i] += L[j] * f2[j];
+        fi( i ) = 0.0;
+        for ( int j = 0; j < ndim + 1; j++ )
+            fi( i ) += L[j] * f2[j];
         // Compute the gradient
-        if ( gi != nullptr )
-            compute_gradient( d_ndim, x2, f2, &gi[i * d_ndim] );
+        compute_gradient( ndim, x2, f2, &gi( 0, i ) );
     }
     PROFILE_STOP( "interp_linear", PROFILE_LEVEL );
+    return std::tie( fi, gi );
 }
 
 
@@ -867,32 +760,35 @@ void DelaunayInterpolation<TYPE>::interp_linear( const double f[],
  ****************************************************************/
 template<class TYPE>
 template<class TYPE2>
-void DelaunayInterpolation<TYPE>::interp_cubic( const double f[],
-                                                const double g[],
-                                                const unsigned int Ni,
-                                                const TYPE2 xi[],
-                                                const int index[],
-                                                double *fi,
-                                                double *gi_out,
-                                                int extrap ) const
+std::tuple<AMP::Array<double>, AMP::Array<double>>
+DelaunayInterpolation<TYPE>::interp_cubic( const AMP::Array<double> &f,
+                                           const AMP::Array<double> &g,
+                                           const AMP::Array<TYPE2> &xi,
+                                           const AMP::Array<int> &index,
+                                           int extrap ) const
 {
+    int ndim  = d_x.size( 0 );
+    size_t Ni = xi.size( 1 );
+    // Check inputs
+    AMP_ASSERT( !d_x.empty() );
+    AMP_ASSERT( f.size() == ArraySize( d_x.size( 1 ) ) );
+    AMP_ASSERT( g.size() == ArraySize( ndim, d_x.size( 1 ) ) );
+    AMP_ASSERT( !xi.empty() );
+    AMP_ASSERT( xi.size() == ArraySize( ndim, Ni ) );
+    // Allocate data
     PROFILE_START( "interp_cubic", PROFILE_LEVEL );
-    AMP_ASSERT( d_x != nullptr );
-    AMP_ASSERT( f != nullptr );
-    AMP_ASSERT( g != nullptr );
-    AMP_ASSERT( xi != nullptr );
-    AMP_ASSERT( fi != nullptr );
-    double xi0[NDIM_MAX], gi[NDIM_MAX];
+    AMP::Array<double> fi( Ni );
+    AMP::Array<double> gi( ndim, Ni );
+    fi.fill( 0 );
+    gi.fill( 0 );
+    double xi0[NDIM_MAX];
     for ( unsigned int i = 0; i < Ni; i++ ) {
-        for ( int j = 0; j < d_ndim; j++ )
-            xi0[j] = xi[i * d_ndim + j];
-        interp_cubic_single( f, g, xi0, index[i], fi[i], gi, extrap );
-        if ( gi_out != nullptr ) {
-            for ( int j = 0; j < d_ndim; j++ )
-                gi_out[j + i * d_ndim] = gi[j];
-        }
+        for ( int d = 0; d < ndim; d++ )
+            xi0[d] = xi( d, i );
+        interp_cubic_single( f.data(), g.data(), xi0, index( i ), fi( i ), &gi( 0, i ), extrap );
     }
     PROFILE_STOP( "interp_cubic", PROFILE_LEVEL );
+    return std::tie( fi, gi );
 }
 template<class TYPE>
 void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
@@ -908,9 +804,10 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
     double g2[NDIM_MAX * ( NDIM_MAX + 1 )], L[NDIM_MAX + 1];
     const double nan = std::numeric_limits<double>::quiet_NaN();
     // Check if the triange index is valid
+    int ndim = d_x.size( 0 );
     if ( index == -1 && extrap == 0 ) {
         fi = std::numeric_limits<double>::quiet_NaN();
-        for ( int j = 0; j < d_ndim + 1; j++ )
+        for ( int j = 0; j < ndim + 1; j++ )
             gi[j] = nan;
         return;
     } else if ( index < 0 ) {
@@ -918,103 +815,103 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
         throw std::logic_error( "Invalid triangle specified" );
     }
     // Compute the Barycentric coordinates
-    for ( int j = 0; j < d_ndim + 1; j++ ) {
-        unsigned int k = d_tri[j + index * ( d_ndim + 1 )];
-        for ( int j2 = 0; j2 < d_ndim; j2++ ) {
-            x2[j2 + j * d_ndim] = d_x[j2 + k * d_ndim];
-            g2[j2 + j * d_ndim] = g[j2 + k * d_ndim];
+    for ( int j = 0; j < ndim + 1; j++ ) {
+        unsigned int k = d_tri( j, index );
+        for ( int j2 = 0; j2 < ndim; j2++ ) {
+            x2[j2 + j * ndim] = d_x( j2, k );
+            g2[j2 + j * ndim] = g[j2 + k * ndim];
         }
         f2[j] = f[k];
     }
-    compute_Barycentric( d_ndim, x2, xi, L );
-    for ( int j = 0; j < d_ndim + 1; j++ ) {
+    compute_Barycentric( ndim, x2, xi, L );
+    for ( int j = 0; j < ndim + 1; j++ ) {
         if ( fabs( L[j] ) < TRI_TOL )
             L[j] = 0.0;
     }
     // Count the number of zero-valued and negitive dimensions
     int N_L_zero = 0;
     int N_L_neg  = 0;
-    for ( int j = 0; j < d_ndim + 1; j++ ) {
+    for ( int j = 0; j < ndim + 1; j++ ) {
         N_L_zero += ( L[j] == 0.0 ) ? 1 : 0;
         N_L_neg += ( L[j] < 0.0 ) ? 1 : 0;
     }
-    if ( N_L_zero == d_ndim ) {
+    if ( N_L_zero == ndim ) {
         // We are at a vertex
-        for ( int j = 0; j < d_ndim + 1; j++ ) {
+        for ( int j = 0; j < ndim + 1; j++ ) {
             if ( L[j] != 0.0 ) {
                 fi = f2[j];
-                for ( int j2 = 0; j2 < d_ndim; j2++ )
-                    gi[j2] = g2[j2 + j * d_ndim];
+                for ( int j2 = 0; j2 < ndim; j2++ )
+                    gi[j2] = g2[j2 + j * ndim];
                 break;
             }
         }
     } else if ( N_L_zero == 0 && N_L_neg == 0 ) {
         // No zero-valued or negivie dimensions, begin the interpolation
-        fi = interp_cubic_recursive( d_ndim, d_ndim + 1, x2, f2, g2, xi, L, gi );
+        fi = interp_cubic_recursive( ndim, ndim + 1, x2, f2, g2, xi, L, gi );
     } else {
         // Remove any directions that are 0 (edge, face, etc.)
-        int N = d_ndim + 1 - N_L_zero;
+        int N = ndim + 1 - N_L_zero;
         double x3[NDIM_MAX * ( NDIM_MAX + 1 )], f3[NDIM_MAX + 1], g3[NDIM_MAX * ( NDIM_MAX + 1 )],
             L3[NDIM_MAX + 1];
         int k = 0;
-        for ( int j1 = 0; j1 < d_ndim + 1; j1++ ) {
+        for ( int j1 = 0; j1 < ndim + 1; j1++ ) {
             int k2 = -1;
             if ( L[j1] != 0.0 ) {
                 k2 = k;
                 k++;
             } else {
-                k2 = d_ndim - ( j1 - k );
+                k2 = ndim - ( j1 - k );
             }
             f3[k2] = f2[j1];
             L3[k2] = L[j1];
-            for ( int j2 = 0; j2 < d_ndim; j2++ ) {
-                x3[j2 + k2 * d_ndim] = x2[j2 + j1 * d_ndim];
-                g3[j2 + k2 * d_ndim] = g2[j2 + j1 * d_ndim];
+            for ( int j2 = 0; j2 < ndim; j2++ ) {
+                x3[j2 + k2 * ndim] = x2[j2 + j1 * ndim];
+                g3[j2 + k2 * ndim] = g2[j2 + j1 * ndim];
             }
         }
         if ( N_L_neg == 0 ) {
             // No negitive directions, we are ready to perform the interpolation
-            fi = interp_cubic_recursive( d_ndim, N, x3, f3, g3, xi, L3, gi );
+            fi = interp_cubic_recursive( ndim, N, x3, f3, g3, xi, L3, gi );
         } else {
             // We need to deal with the negitive coordinates
             if ( extrap == 0 ) {
                 fi = std::numeric_limits<double>::quiet_NaN();
-                for ( int d = 0; d < d_ndim; d++ )
+                for ( int d = 0; d < ndim; d++ )
                     gi[d] = std::numeric_limits<double>::quiet_NaN();
             } else if ( extrap == 1 ) {
                 // Use linear interpolation based on the nearest node and it's gradient
                 double dist = 1e100;
                 int index   = 0;
-                for ( int j = 0; j < d_ndim + 1; j++ ) {
+                for ( int j = 0; j < ndim + 1; j++ ) {
                     double dist2 = 0.0;
-                    for ( int d = 0; d < d_ndim; d++ )
-                        dist2 += ( xi[d] - x2[d + j * d_ndim] ) * ( xi[d] - x2[d + j * d_ndim] );
+                    for ( int d = 0; d < ndim; d++ )
+                        dist2 += ( xi[d] - x2[d + j * ndim] ) * ( xi[d] - x2[d + j * ndim] );
                     if ( dist2 < dist ) {
                         index = j;
                         dist  = dist2;
                     }
                 }
                 fi = f2[index];
-                for ( int d = 0; d < d_ndim; d++ ) {
-                    fi += g2[d + index * d_ndim] * ( xi[d] - x2[d + index * d_ndim] );
-                    gi[d] = g2[d + index * d_ndim];
+                for ( int d = 0; d < ndim; d++ ) {
+                    fi += g2[d + index * ndim] * ( xi[d] - x2[d + index * ndim] );
+                    gi[d] = g2[d + index * ndim];
                 }
             } else if ( extrap == 2 ) {
                 // Use quadratic interpolation
                 if ( N == 2 ) {
                     // We can perform interpolation along a line
-                    fi = interp_cubic_recursive( d_ndim, N, x3, f3, g3, xi, L3, gi );
+                    fi = interp_cubic_recursive( ndim, N, x3, f3, g3, xi, L3, gi );
                 } else {
                     // Choose two points within (or on) the triangle
                     double xi1[NDIM_MAX], xi2[NDIM_MAX], fi1, fi2, gi1[NDIM_MAX], gi2[NDIM_MAX];
-                    get_interpolant_points( d_ndim, N, x3, L3, xi, xi1, xi2, check_collinear );
+                    get_interpolant_points( ndim, N, x3, L3, xi, xi1, xi2, check_collinear );
                     // Use cubic interpolation to get f and g for the two points
                     PROFILE_STOP2( "interp_cubic", PROFILE_LEVEL );
                     interp_cubic_single( f, g, xi1, index, fi1, gi1, 0 );
                     interp_cubic_single( f, g, xi2, index, fi2, gi2, 0 );
                     PROFILE_START2( "interp_cubic", PROFILE_LEVEL );
                     // Perform quadratic interpolation using a linear approximation to the gradient
-                    fi = interp_line( d_ndim, xi1, fi1, gi1, xi2, fi2, gi2, xi, gi );
+                    fi = interp_line( ndim, xi1, fi1, gi1, xi2, fi2, gi2, xi, gi );
                 }
             } else {
                 PROFILE_STOP2( "interp_cubic", PROFILE_LEVEL );
@@ -1336,37 +1233,39 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
         return;
     PROFILE_START( "create_node_neighbors", PROFILE_LEVEL );
     // Allocate the data
-    d_N_node           = new unsigned int[d_N];
-    auto node_list_tmp = new unsigned int *[d_N];
-    node_list_tmp[0]   = new unsigned int[2 * d_ndim * ( d_ndim + 1 ) * d_N_tri];
+    size_t N           = d_x.size( 1 );
+    int ndim           = d_x.size( 0 );
+    size_t N_tri       = d_tri.size( 1 );
+    d_N_node           = new unsigned int[N];
+    auto node_list_tmp = new unsigned int *[N];
+    node_list_tmp[0]   = new unsigned int[2 * ndim * ( ndim + 1 ) * N_tri];
     // Count the number of nodes that are connected to any other node
-    const int Nd = d_ndim + 1;
-    for ( unsigned int i = 0; i < d_N; i++ )
+    for ( unsigned int i = 0; i < N; i++ )
         d_N_node[i] = 0;
-    for ( size_t i = 0; i < d_N_tri * ( d_ndim + 1 ); i++ ) {
-        d_N_node[d_tri[i]] += d_ndim;
+    for ( size_t i = 0; i < N_tri * ( ndim + 1 ); i++ ) {
+        d_N_node[d_tri( i )] += ndim;
     }
     // Break the node list array into sub arrays to store the neighbor nodes
-    for ( unsigned int i = 1; i < d_N; i++ )
+    for ( unsigned int i = 1; i < N; i++ )
         node_list_tmp[i] = &node_list_tmp[i - 1][d_N_node[i - 1]];
     // For each triangle, add the neighbor nodes
-    for ( unsigned int i = 0; i < d_N; i++ )
+    for ( unsigned int i = 0; i < N; i++ )
         d_N_node[i] = 0;
-    for ( unsigned int i = 0; i < d_N_tri; i++ ) {
-        for ( int j = 0; j <= d_ndim; j++ ) {
-            int j1 = d_tri[j + i * Nd];
+    for ( unsigned int i = 0; i < N_tri; i++ ) {
+        for ( int j = 0; j <= ndim; j++ ) {
+            int j1 = d_tri( j, i );
             int j2 = d_N_node[j1];
-            for ( int k = 0; k <= d_ndim; k++ ) {
+            for ( int k = 0; k <= ndim; k++ ) {
                 if ( j == k )
                     continue;
-                node_list_tmp[j1][j2] = d_tri[k + i * Nd];
+                node_list_tmp[j1][j2] = d_tri( k, i );
                 j2++;
             }
-            d_N_node[j1] += d_ndim;
+            d_N_node[j1] += ndim;
         }
     }
     // Eliminate duplicate entries in the node list and sort the list
-    for ( unsigned int i = 0; i < d_N; i++ ) {
+    for ( unsigned int i = 0; i < N; i++ ) {
         quicksort1( d_N_node[i], node_list_tmp[i] );
         int k = 0;
         for ( unsigned int j = 1; j < d_N_node[i]; j++ ) {
@@ -1379,15 +1278,15 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
     }
     // Create the final list that contains storage only for the needed values
     d_N_node_sum = 0;
-    for ( unsigned int i = 0; i < d_N; i++ )
+    for ( unsigned int i = 0; i < N; i++ )
         d_N_node_sum += d_N_node[i];
-    d_node_list    = new unsigned int *[d_N];
+    d_node_list    = new unsigned int *[N];
     d_node_list[0] = new unsigned int[d_N_node_sum];
     for ( unsigned int i = 0; i < d_N_node_sum; i++ )
         d_node_list[0][i] = static_cast<unsigned int>( -1 );
-    for ( unsigned int i = 1; i < d_N; i++ )
+    for ( unsigned int i = 1; i < N; i++ )
         d_node_list[i] = &d_node_list[i - 1][d_N_node[i - 1]];
-    for ( unsigned int i = 0; i < d_N; i++ ) {
+    for ( unsigned int i = 0; i < N; i++ ) {
         for ( unsigned int j = 0; j < d_N_node[i]; j++ )
             d_node_list[i][j] = node_list_tmp[i][j];
     }
@@ -1407,28 +1306,30 @@ template<class TYPE>
 void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
 {
     // Check to see if we already created the structure
-    if ( d_tri_nab != nullptr )
+    if ( !d_tri_nab.empty() )
         return;
+    // Create tri_nab
+    d_tri_nab.resize( d_tri.size() );
+    d_tri_nab.fill( -1 );
     // 1D is a special easy case
-    if ( d_ndim == 1 ) {
-        d_tri_nab = new int[2 * d_N_tri];
-        for ( size_t i = 0; i < d_N_tri; i++ ) {
-            d_tri_nab[2 * i + 0] = static_cast<int>( i + 1 );
-            d_tri_nab[2 * i + 1] = static_cast<int>( i - 1 );
+    size_t N     = d_x.size( 1 );
+    int ndim     = d_x.size( 0 );
+    size_t N_tri = d_tri.size( 1 );
+    if ( ndim == 1 ) {
+        for ( size_t i = 0; i < N_tri; i++ ) {
+            d_tri_nab( 0, i ) = static_cast<int>( i + 1 );
+            d_tri_nab( 1, i ) = static_cast<int>( i - 1 );
         }
-        d_tri_nab[1]                   = -1;
-        d_tri_nab[2 * ( d_N_tri - 1 )] = -1;
+        d_tri_nab( 1, 0 )         = -1;
+        d_tri_nab( 0, N_tri - 1 ) = -1;
         return;
     }
     // Allocate memory
-    const unsigned char Nd = d_ndim + 1;
-    auto N_tri_nab         = new unsigned int[d_N];   // Number of triangles connected each node (N)
-    auto tri_list          = new unsigned int *[d_N]; // List of triangles connected each node (N)
-    tri_list[0]            = new unsigned int[( d_ndim + 1 ) * d_N_tri];
-    d_tri_nab              = new int[( d_ndim + 1 ) * d_N_tri];
-    if ( d_N_tri == 1 ) {
-        for ( int i = 0; i <= d_ndim; i++ )
-            d_tri_nab[i] = -1;
+    const unsigned char Nd = ndim + 1;
+    auto N_tri_nab         = new unsigned int[N];   // Number of triangles connected each node (N)
+    auto tri_list          = new unsigned int *[N]; // List of triangles connected each node (N)
+    tri_list[0]            = new unsigned int[( ndim + 1 ) * N_tri];
+    if ( N_tri == 1 ) {
         delete[] N_tri_nab;
         delete[] tri_list[0];
         delete[] tri_list;
@@ -1437,39 +1338,36 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
     PROFILE_START( "create_tri_neighbors", PROFILE_LEVEL );
     // For each node, get a list of the triangles that connect to that node
     // Count the number of triangles connected to each vertex
-    for ( size_t i = 0; i < d_N; i++ )
+    for ( size_t i = 0; i < N; i++ )
         N_tri_nab[i] = 0;
-    for ( size_t i = 0; i < Nd * d_N_tri; i++ )
-        N_tri_nab[d_tri[i]]++;
-    for ( size_t i = 1; i < d_N; i++ )
+    for ( size_t i = 0; i < Nd * N_tri; i++ )
+        N_tri_nab[d_tri( i )]++;
+    for ( size_t i = 1; i < N; i++ )
         tri_list[i] = &tri_list[i - 1][N_tri_nab[i - 1]];
-    for ( size_t i = 0; i < Nd * d_N_tri; i++ )
+    for ( size_t i = 0; i < Nd * N_tri; i++ )
         tri_list[0][i] = static_cast<unsigned int>( -1 );
     // Create a sorted list of all triangles that have each node as a vertex
-    for ( size_t i = 0; i < d_N; i++ )
+    for ( size_t i = 0; i < N; i++ )
         N_tri_nab[i] = 0;
-    for ( size_t i = 0; i < d_N_tri; i++ ) {
+    for ( size_t i = 0; i < N_tri; i++ ) {
         for ( size_t j = 0; j < Nd; j++ ) {
-            int k                     = d_tri[j + i * Nd];
+            int k                     = d_tri( j, i );
             tri_list[k][N_tri_nab[k]] = static_cast<unsigned int>( i );
             N_tri_nab[k]++;
         }
     }
-    for ( size_t i = 0; i < d_N; i++ ) {
+    for ( size_t i = 0; i < N; i++ ) {
         quicksort1( N_tri_nab[i], tri_list[i] );
     }
     unsigned int N_tri_max = 0;
-    for ( size_t i = 0; i < d_N; i++ ) {
+    for ( size_t i = 0; i < N; i++ ) {
         if ( N_tri_nab[i] > N_tri_max )
             N_tri_max = N_tri_nab[i];
     }
-    // Initialize tri_neighbor
-    for ( size_t i = 0; i < Nd * d_N_tri; i++ )
-        d_tri_nab[i] = -1;
     // Note, if a triangle is a neighbor, it will share all but the current node
     int size[NDIM_MAX];
     int error = 0;
-    for ( unsigned int i = 0; i < d_N_tri; i++ ) {
+    for ( unsigned int i = 0; i < N_tri; i++ ) {
         // Loop through the different faces of the triangle
         for ( int j = 0; j < Nd; j++ ) {
             unsigned int *list[NDIM_MAX] = { nullptr };
@@ -1477,7 +1375,7 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
             for ( int k2 = 0; k2 < Nd; k2++ ) {
                 if ( k2 == j )
                     continue;
-                int k    = d_tri[k2 + i * Nd];
+                int k    = d_tri( k2, i );
                 list[k1] = tri_list[k];
                 size[k1] = N_tri_nab[k];
                 k1++;
@@ -1485,10 +1383,10 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
             // Find the intersection of all triangle lists except the current node
             const auto neg_1             = static_cast<unsigned int>( -1 );
             unsigned int intersection[5] = { neg_1, neg_1, neg_1, neg_1, neg_1 };
-            int N_int                    = intersect_sorted( d_ndim, size, list, 5, intersection );
+            int N_int                    = intersect_sorted( ndim, size, list, 5, intersection );
             unsigned int m               = 0;
             if ( N_int == 0 || N_int > 2 ) {
-                // We cannot have less than 1 triangle or more than 2 triangles sharing d_ndim nodes
+                // We cannot have less than 1 triangle or more than 2 triangles sharing ndim nodes
                 error = 1;
                 break;
             } else if ( intersection[0] == i ) {
@@ -1500,16 +1398,16 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
                 error = 1;
                 break;
             }
-            d_tri_nab[j + i * Nd] = m;
+            d_tri_nab( j, i ) = m;
         }
         if ( error != 0 )
             break;
     }
     // Check tri_nab
-    for ( size_t i = 0; i < d_N_tri; i++ ) {
+    for ( size_t i = 0; i < N_tri; i++ ) {
         for ( int d = 0; d < Nd; d++ ) {
-            if ( d_tri_nab[d + i * Nd] < -1 || d_tri_nab[d + i * Nd] >= ( (int) d_N_tri ) ||
-                 d_tri_nab[d + i * Nd] == ( (int) i ) )
+            if ( d_tri_nab( d, i ) < -1 || d_tri_nab( d, i ) >= ( (int) N_tri ) ||
+                 d_tri_nab( d, i ) == ( (int) i ) )
                 error = 2;
         }
     }
@@ -1536,11 +1434,14 @@ void DelaunayInterpolation<TYPE>::create_node_tri() const
     // Check to see if we already created the structure
     if ( d_node_tri != nullptr )
         return;
-    d_node_tri = new int[d_N];
-    memset( d_node_tri, 0, d_N * sizeof( int ) );
-    for ( size_t i = 0; i < d_N_tri; i++ ) {
-        for ( size_t j = 0; j <= d_ndim; j++ )
-            d_node_tri[d_tri[j + i * ( d_ndim + 1 )]] = static_cast<int>( i );
+    size_t N     = d_x.size( 1 );
+    int ndim     = d_x.size( 0 );
+    size_t N_tri = d_tri.size( 1 );
+    d_node_tri   = new int[N];
+    memset( d_node_tri, 0, N * sizeof( int ) );
+    for ( size_t i = 0; i < N_tri; i++ ) {
+        for ( int j = 0; j <= ndim; j++ )
+            d_node_tri[d_tri( j, i )] = static_cast<int>( i );
     }
 }
 
@@ -2166,26 +2067,27 @@ static int intersect_sorted( const int N_lists,
 
 // Explicit instantiations
 // clang-format off
+typedef std::tuple<AMP::Array<double>,AMP::Array<double>> FG;
+
 template class DelaunayInterpolation<int>;
 template class DelaunayInterpolation<double>;
 
-template void DelaunayInterpolation<int>::find_nearest<int>( const unsigned int, const int[], const int, unsigned int* ) const;
-template void DelaunayInterpolation<int>::find_tri<int>( const unsigned int, const int[], const int, int*, bool ) const;
-template void DelaunayInterpolation<int>::interp_nearest<int>( const double[], const unsigned int, const int[], const unsigned int[], double* ) const;
-template void DelaunayInterpolation<int>::interp_linear<int>( const double[], const unsigned int, const int[], const int[], double*, double*, bool ) const;
-template void DelaunayInterpolation<int>::interp_cubic<int>( const double[], const double[], const unsigned int, const int[], const int[], double*,  double*, int ) const;
+template Array<size_t> DelaunayInterpolation<int>::find_nearest<int>( const Array<int>& ) const;
+template Array<int> DelaunayInterpolation<int>::find_tri<int>( const Array<int>&, bool ) const;
+template Array<double> DelaunayInterpolation<int>::interp_nearest<int>( const Array<double>&, const Array<int>&, const Array<size_t>& ) const;
+template FG DelaunayInterpolation<int>::interp_linear<int>( const AMP::Array<double>&, const AMP::Array<int>&, const AMP::Array<int>&, bool ) const;
+template FG DelaunayInterpolation<int>::interp_cubic<int>( const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<int>&, const AMP::Array<int>&, int ) const;
 
-template void DelaunayInterpolation<int>::find_nearest<double>( const unsigned int, const double[], const int, unsigned int* ) const;
-template void DelaunayInterpolation<int>::find_tri<double>( const unsigned int, const double[], const int, int*, bool ) const;
-template void DelaunayInterpolation<int>::interp_nearest<double>( const double[], const unsigned int, const double[], const unsigned int[], double* ) const;
-template void DelaunayInterpolation<int>::interp_linear<double>( const double[], const unsigned int, const double[], const int[], double*, double*, bool ) const;
-template void DelaunayInterpolation<int>::interp_cubic<double>( const double[], const double[], const unsigned int, const double[], const int[], double*, double*, int ) const;
+template Array<size_t> DelaunayInterpolation<int>::find_nearest<double>( const Array<double>& ) const;
+template Array<int> DelaunayInterpolation<int>::find_tri<double>( const Array<double>&, bool ) const;
+template Array<double> DelaunayInterpolation<int>::interp_nearest<double>( const Array<double>&, const Array<double>&, const Array<size_t>& ) const;
+template FG DelaunayInterpolation<int>::interp_linear<double>( const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<int>&, bool ) const;
+template FG DelaunayInterpolation<int>::interp_cubic<double>( const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<int>&, int ) const;
 
-template void DelaunayInterpolation<double>::find_nearest<double>( const unsigned int, const double[], const int, unsigned int* ) const;
-template void DelaunayInterpolation<double>::find_tri<double>( const unsigned int, const double[], const int, int*, bool  const) const;
-template void DelaunayInterpolation<double>::interp_nearest<double>( const double[], const unsigned int, const double[], const unsigned int[], double* ) const;
-template void DelaunayInterpolation<double>::interp_linear<double>( const double[], const unsigned int, const double[], const int[], double*, double*, bool ) const;
-template void DelaunayInterpolation<double>::interp_cubic<double>( const double[], const double[], const unsigned int, const double[], const int[], double*, double*, int ) const;
-
+template Array<size_t> DelaunayInterpolation<double>::find_nearest<double>( const Array<double>& ) const;
+template Array<int> DelaunayInterpolation<double>::find_tri<double>( const Array<double>&, bool ) const;
+template Array<double> DelaunayInterpolation<double>::interp_nearest<double>( const Array<double>&, const Array<double>&, const Array<size_t>& ) const;
+template FG DelaunayInterpolation<double>::interp_linear<double>( const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<int>&, bool ) const;
+template FG DelaunayInterpolation<double>::interp_cubic<double>( const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<double>&, const AMP::Array<int>&, int ) const;
 
 } // namespace AMP

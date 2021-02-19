@@ -11,30 +11,34 @@
 
 
 // Compute the L2 norm of a vector ||x||
-inline double L2norm( size_t N, const double *x, const bool *mask = nullptr )
+inline double L2norm( const AMP::Array<double> &x, const bool *mask = nullptr )
 {
+    size_t N    = x.length();
     double norm = 0;
     if ( mask == nullptr ) {
         for ( size_t i = 0; i < N; i++ )
-            norm += x[i] * x[i];
+            norm += x( i ) * x( i );
     } else {
         for ( size_t i = 0; i < N; i++ )
-            norm += mask[i] ? x[i] * x[i] : 0;
+            norm += mask[i] ? x( i ) * x( i ) : 0;
     }
     return sqrt( norm );
 }
 
 
 // Compute the L2 error norm of a vector ||x1-x2||
-inline double L2errNorm( size_t N, const double *x1, const double *x2, const bool *mask = nullptr )
+inline double
+L2errNorm( const AMP::Array<double> &x1, const AMP::Array<double> &x2, const bool *mask = nullptr )
 {
+    AMP_ASSERT( x1.size() == x2.size() );
+    size_t N    = x1.length();
     double norm = 0;
     if ( mask == nullptr ) {
         for ( size_t i = 0; i < N; i++ )
-            norm += ( x1[i] - x2[i] ) * ( x1[i] - x2[i] );
+            norm += ( x1( i ) - x2( i ) ) * ( x1( i ) - x2( i ) );
     } else {
         for ( size_t i = 0; i < N; i++ )
-            norm += mask[i] ? ( x1[i] - x2[i] ) * ( x1[i] - x2[i] ) : 0;
+            norm += mask[i] ? ( x1( i ) - x2( i ) ) * ( x1( i ) - x2( i ) ) : 0;
     }
     return sqrt( norm );
 }
@@ -121,7 +125,7 @@ struct PointInt {
 // Create a set of random points in a Nd-hypersphere
 // Note: we use a combination of a fixed grid and random points to control the error
 template<class TYPE>
-std::vector<TYPE> createRandomPoints( int ndim, int N );
+AMP::Array<TYPE> createRandomPoints( int ndim, int N );
 template<int NDIM>
 std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
 {
@@ -175,48 +179,48 @@ std::vector<PointInt<NDIM>> createRandomPointsInt( int N )
     PROFILE_STOP( "createRandomPoints", 1 );
     return points;
 }
-std::vector<int> getPointListInt( int ndim, int N )
+AMP::Array<int> getPointListInt( int ndim, int N )
 {
-    std::vector<int> points;
+    AMP::Array<int> points;
     if ( ndim == 1 ) {
-        std::vector<PointInt<1>> points2 = createRandomPointsInt<1>( N );
-        points.resize( ndim * points2.size(), 0 );
+        auto points2 = createRandomPointsInt<1>( N );
+        points.resize( ndim, points2.size() );
         for ( size_t i = 0; i < points2.size(); i++ )
-            points[i] = points2[i].x[0];
+            points( 0, i ) = points2[i].x[0];
     } else if ( ndim == 2 ) {
-        std::vector<PointInt<2>> points2 = createRandomPointsInt<2>( N );
-        points.resize( ndim * points2.size(), 0 );
+        auto points2 = createRandomPointsInt<2>( N );
+        points.resize( ndim, points2.size() );
         for ( size_t i = 0; i < points2.size(); i++ ) {
-            points[2 * i + 0] = points2[i].x[0];
-            points[2 * i + 1] = points2[i].x[1];
+            points( 0, i ) = points2[i].x[0];
+            points( 1, i ) = points2[i].x[1];
         }
     } else if ( ndim == 3 ) {
-        std::vector<PointInt<3>> points2 = createRandomPointsInt<3>( N );
-        points.resize( ndim * points2.size(), 0 );
+        auto points2 = createRandomPointsInt<3>( N );
+        points.resize( ndim, points2.size() );
         for ( size_t i = 0; i < points2.size(); i++ ) {
-            points[3 * i + 0] = points2[i].x[0];
-            points[3 * i + 1] = points2[i].x[1];
-            points[3 * i + 2] = points2[i].x[2];
+            points( 0, i ) = points2[i].x[0];
+            points( 1, i ) = points2[i].x[1];
+            points( 2, i ) = points2[i].x[2];
         }
     } else if ( ndim == 4 ) {
-        std::vector<PointInt<4>> points2 = createRandomPointsInt<4>( N );
-        points.resize( ndim * points2.size(), 0 );
+        auto points2 = createRandomPointsInt<4>( N );
+        points.resize( ndim, points2.size() );
         for ( size_t i = 0; i < points2.size(); i++ ) {
             for ( int d = 0; d < ndim; d++ )
-                points[i * ndim + d] = points2[i].x[d];
+                points( d, i ) = points2[i].x[d];
         }
     } else if ( ndim == 5 ) {
-        std::vector<PointInt<5>> points2 = createRandomPointsInt<5>( N );
-        points.resize( ndim * points2.size(), 0 );
+        auto points2 = createRandomPointsInt<5>( N );
+        points.resize( ndim, points2.size() );
         for ( size_t i = 0; i < points2.size(); i++ ) {
             for ( int d = 0; d < ndim; d++ )
-                points[i * ndim + d] = points2[i].x[d];
+                points( d, i ) = points2[i].x[d];
         }
     }
     return points;
 }
 template<>
-std::vector<int> createRandomPoints<int>( int ndim, int N )
+AMP::Array<int> createRandomPoints<int>( int ndim, int N )
 {
     return getPointListInt( ndim, N );
 }
@@ -234,10 +238,10 @@ std::vector<double> createRandomPoints<double>( int ndim, int N )
     return points2;
 }*/
 template<>
-std::vector<double> createRandomPoints<double>( int ndim, int N )
+AMP::Array<double> createRandomPoints<double>( int ndim, int N )
 {
     PROFILE_START( "createRandomPointsDouble", 1 );
-    std::vector<double> points( N * ndim, 0.0 );
+    AMP::Array<double> points( ndim, N );
     int i = 0;
     // Create a Nd-hypercube on [-1,1] and keep only the points within R<=1
     int Nd = static_cast<int>( floor( pow( N, 1.0 / ndim ) ) );
@@ -253,7 +257,7 @@ std::vector<double> createRandomPoints<double>( int ndim, int N )
         }
         if ( R <= 1.0 ) {
             for ( int d = 0; d < ndim; d++ )
-                points[d + i * ndim] = x[d];
+                points( d, i ) = x[d];
             i++;
         }
     }
@@ -267,7 +271,7 @@ std::vector<double> createRandomPoints<double>( int ndim, int N )
         }
         if ( R <= 1.0 ) {
             for ( int d = 0; d < ndim; d++ )
-                points[d + i * ndim] = x[d];
+                points( d, i ) = x[d];
             i++;
         }
     }
