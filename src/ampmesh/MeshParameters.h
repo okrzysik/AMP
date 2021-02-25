@@ -47,7 +47,7 @@ public:
 
 protected:
     //! A pointer to an AMP database containing the mesh info
-    std::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db = nullptr;
 
     //! The desired communicator
     AMP::AMP_MPI comm;

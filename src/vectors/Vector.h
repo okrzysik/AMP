@@ -612,10 +612,10 @@ public:
     {
         return d_VectorData->sizeOfDataBlock( i );
     }
-    inline void putRawData( const double *buf ) { d_VectorData->putRawData( buf ); }
-    inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData( buf ); }
-    inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
-    inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
+    virtual inline void putRawData( const double *buf ) { d_VectorData->putRawData( buf ); }
+    virtual inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData( buf ); }
+    virtual inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
+    virtual inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
     inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); }
     inline void setValuesByLocalID( int num, size_t *indices, const double *vals )
     {

@@ -4,6 +4,7 @@
 #include "AMP/utils/DelaunayFaceList.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/extended_int.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -52,29 +53,9 @@
 //    where N is the index range and D is the dimension.
 //    Note: I have not determined the small constant, but is is likely ~4
 //    Note: Some routines use higher precisision internally (test_in_circumsphere)
-static inline double get_double( const int &x ) { return static_cast<double>( x ); }
-static inline double get_double( const int64_t &x ) { return static_cast<double>( x ); }
-static inline double get_double( const double &x ) { return static_cast<double>( x ); }
-static inline double get_double( const long double &x ) { return static_cast<double>( x ); }
-#if 0
-#include "samrutils/utilities/extended_int.h"
-    typedef extended::int128_t int128_t;
-    typedef extended::int256_t int256_t;
-    typedef extended::int512_t int512_t;
-    static inline double get_double(const int128_t& x) { return x.get_double(); }
-    static inline double get_double(const int256_t& x) { return x.get_double(); }
-    static inline double get_double(const int512_t& x) { return x.get_double(); }
-#elif 0 // USE_BOOST
-#include "boost/multiprecision/cpp_int.hpp"
-typedef boost::multiprecision::int128_t int128_t;
-typedef boost::multiprecision::int256_t int256_t;
-typedef boost::multiprecision::int512_t int512_t;
-static inline double get_double( const int128_t &x ) { return x.convert_to<double>(); }
-static inline double get_double( const int256_t &x ) { return x.convert_to<double>(); }
-static inline double get_double( const int512_t &x ) { return x.convert_to<double>(); }
-#else
-#define DISABLE_EXTENDED
-#endif
+typedef AMP::extended::int128_t int128_t;
+typedef AMP::extended::int256_t int256_t;
+typedef AMP::extended::int512_t int512_t;
 
 
 namespace AMP::DelaunayTessellation {
@@ -111,7 +92,7 @@ double calc_volume( const std::array<TYPE, NDIM> *x )
             M[d + j * NDIM] = ETYPE( x[j][d] ) - tmp;
     }
     constexpr double C = inv_factorial( NDIM );
-    return C * get_double( DelaunayHelpers<NDIM>::det( M ) );
+    return C * static_cast<double>( DelaunayHelpers<NDIM>::det( M ) );
 }
 
 
@@ -847,13 +828,13 @@ double DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::calc_surface_distance(
     long double dot = 0.0;
     long double tmp = 0.0;
     for ( int i = 0; i < NDIM; i++ ) {
-        long double norm2 = get_double( norm[i] );
+        long double norm2 = static_cast<double>( norm[i] );
         dot += norm2 * ( x[0][i] - xc[i] );
         dist += norm[i] * ETYPE( xi[i] - x[0][i] );
         tmp += norm2 * norm2;
     }
     double sign = ( dot < 0 ) ? -1.0 : 1.0;
-    return sign * get_double( dist ) / sqrt( tmp );
+    return sign * static_cast<double>( dist ) / sqrt( tmp );
 }
 
 
@@ -907,11 +888,11 @@ bool DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::outside_triangle(
     ETYPE dist( 0 );
     long double dot = 0.0;
     for ( int i = 0; i < NDIM; i++ ) {
-        long double norm2 = get_double( norm[i] );
+        long double norm2 = static_cast<double>( norm[i] );
         dot += norm2 * ( x[0][i] - xc[i] );
         dist += norm[i] * ETYPE( xi[i] - x[0][i] );
     }
-    return dot * get_double( dist ) > 0;
+    return dot * static_cast<double>( dist ) > 0;
 }
 
 
