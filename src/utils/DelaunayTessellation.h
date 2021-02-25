@@ -4,7 +4,10 @@
 #include <array>
 #include <stdint.h>
 #include <stdlib.h>
+#include <tuple>
 #include <vector>
+
+#include "AMP/utils/Array.h"
 
 
 namespace AMP {
@@ -44,32 +47,14 @@ namespace DelaunayTessellation {
  * Currently only 2D and 3D are supported.  If successful, it will return the number of
  * triangles, if unsuccessful it will throw a std::exception.  Additionally, there are
  * several optional stuctures.
- * @param ndim      The number of dimensions (currently only 2D and 3D are supported)
- * @param N         The number of verticies
  * @param x         The coordinates of the verticies (ndim x N)
- * @param tri       (output) The returned pointer where the triangles are stored.
- *                  Note: since it is not possible to know how many triangles will be created,
- *                  this function will allocate the memory for the triangles.  The user is
- *                  responsible for deallocating this memory using delete.
- * @param tri_nab  (output) The returned pointer where the triangle neighbors are stored.
- *                  Note: since it is not possible to know how many triangles will be created,
- *                  this function will allocate the memory for the triangles.
- *                  Note: if the triangle neighbors are not needed, this may be NULL.
+ * @return          Returns the triangles and triangle neighbors <tri,tri_nab>
+ *                  tri - The returned pointer where the triangles are stored (ndim+1,N)
+ *                  tri_nab - The returned pointer where the triangle neighbors are stored
+ *                      (ndim+1,N)
  */
-int create_tessellation(
-    const int ndim, const int N, const double x[], int *tri[], int *tri_nab[] );
-int create_tessellation(
-    const int ndim, const int N, const short int x[], int *tri[], int *tri_nab[] );
-int create_tessellation( const int ndim, const int N, const int x[], int *tri[], int *tri_nab[] );
-int create_tessellation(
-    const int ndim, const int N, const int64_t x[], int *tri[], int *tri_nab[] );
-
-template<uint8_t NDIM>
-std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
-create_tessellation( const std::vector<std::array<double, NDIM>> &x );
-template<uint8_t NDIM>
-std::tuple<std::vector<std::array<int, NDIM + 1>>, std::vector<std::array<int, NDIM + 1>>>
-create_tessellation( const std::vector<std::array<int, NDIM>> &x );
+template<class TYPE>
+std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation( const Array<TYPE> &x );
 
 
 //! Function to calculate the volume of a simplex
