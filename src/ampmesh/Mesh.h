@@ -478,10 +478,10 @@ protected:
     Mesh() {}
 
     //! The mesh parameters
-    std::shared_ptr<MeshParameters> d_params;
+    std::shared_ptr<MeshParameters> d_params = nullptr;
 
     //! The geometry parameters
-    std::shared_ptr<Geometry::Geometry> d_geometry;
+    std::shared_ptr<Geometry::Geometry> d_geometry = nullptr;
 
     //! The geometric dimension (equivalent to the highest geometric object that could be
     //! represented)
@@ -490,14 +490,14 @@ protected:
     //! The physical dimension
     uint8_t PhysicalDim;
 
-    //! The physical dimension
+    //! The maximum ghost cell width
     uint8_t d_max_gcw;
 
     //! The communicator over which the mesh is stored
     AMP_MPI d_comm;
 
     //! A pointer to an AMP database containing the mesh info
-    std::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db = nullptr;
 
     //! A unique id for each mesh
     MeshID d_meshID;

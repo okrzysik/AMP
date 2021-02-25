@@ -10,7 +10,7 @@
 
 // Get the time difference in us
 static inline int64_t diff( std::chrono::time_point<std::chrono::system_clock> t1,
-    std::chrono::time_point<std::chrono::system_clock> t2 )
+                            std::chrono::time_point<std::chrono::system_clock> t2 )
 {
     return static_cast<int64_t>( 1e6 * std::chrono::duration<double>( t2 - t1 ).count() );
 }
@@ -125,8 +125,12 @@ int runAll( bool print_all )
             int err2[128];
             double error2[128];
             for ( int j = 0; j < N_threads; j++ )
-                threads[j] = std::thread( run_test<double>, test, N_test, std::ref( time2[j] ),
-                    std::ref( error2[j] ), std::ref( err2[j] ) );
+                threads[j] = std::thread( run_test<double>,
+                                          test,
+                                          N_test,
+                                          std::ref( time2[j] ),
+                                          std::ref( error2[j] ),
+                                          std::ref( err2[j] ) );
             for ( int j = 0; j < N_threads; j++ )
                 threads[j].join();
             auto t2      = std::chrono::system_clock::now();
