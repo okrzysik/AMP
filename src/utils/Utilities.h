@@ -109,6 +109,9 @@ std::string path( const std::string &filename );
 //! Check if a file exists and return true if it does
 bool fileExists( const std::string &filename );
 
+//! Return the file size
+size_t fileSize( const std::string &filename );
+
 
 //! Rename a file from old file name to new file name.
 void renameFile( const std::string &old_filename, const std::string &new_filename );

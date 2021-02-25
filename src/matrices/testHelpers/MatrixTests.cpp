@@ -2,6 +2,7 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/testHelpers/test_MatrixVectorFactory.h"
+#include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
 

@@ -1,8 +1,16 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
+#include "AMP/utils/Utilities.h"
+
 
 namespace AMP {
 namespace Mesh {
+
+
+/********************************************************
+ * Set the base class type id                            *
+ ********************************************************/
+const uint32_t MeshElement::MeshElementTypeID = AMP::Utilities::hash_char( "MeshElement" );
 
 
 /********************************************************

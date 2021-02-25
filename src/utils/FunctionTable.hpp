@@ -2,7 +2,7 @@
 #define included_AMP_FunctionTable_hpp
 
 #include "AMP/utils/FunctionTable.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 // External includes
 #include "LapackWrappers.h"

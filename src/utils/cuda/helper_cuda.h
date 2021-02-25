@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/cuda/helper_string.h"
 
 #include <cuda.h>

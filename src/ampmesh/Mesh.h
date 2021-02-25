@@ -4,6 +4,7 @@
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/enable_shared_from_this.h"
 
 #include <memory>

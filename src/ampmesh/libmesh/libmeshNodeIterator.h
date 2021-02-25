@@ -3,6 +3,7 @@
 
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/utils/Utilities.h"
 
 // libMesh includes
 #include "libmesh/elem.h"

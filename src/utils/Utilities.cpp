@@ -3,7 +3,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Logger.h"
 #include "AMP/utils/PIO.h"
 
 #include "StackTrace/StackTrace.h"
@@ -160,7 +159,17 @@ void Utilities::deleteFile( const std::string &filename )
         AMP_INSIST( error == 0, "Error deleting file" );
     }
 }
-
+size_t Utilities::fileSize( const std::string &filename )
+{
+    AMP_ASSERT( !filename.empty() );
+    if ( !fileExists( filename ) )
+        return 0;
+    auto f = fopen( filename.data(), "rb" );
+    fseek( f, 0, SEEK_END );
+    size_t bytes = ftell( f );
+    fclose( f );
+    return bytes;
+}
 std::string Utilities::getSuffix( const std::string &filename )
 {
     size_t pos = filename.rfind( '.' );

@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/utils/Utilities.h"
 
+
 namespace AMP {
 namespace Mesh {
 
@@ -10,18 +11,32 @@ static MeshElement nullElement;
 
 
 /********************************************************
+ * Set the base class type id                            *
+ ********************************************************/
+const uint32_t MeshIterator::MeshIteratorTypeID = AMP::Utilities::hash_char( "MeshIterator" );
+
+
+/********************************************************
  * Constructors                                          *
  ********************************************************/
 MeshIterator::MeshIterator()
-    : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
+    : d_iterator( nullptr ),
+      d_typeID( MeshIteratorTypeID ),
+      d_size( 0 ),
+      d_pos( 0 ),
+      d_element( nullptr )
 {
 }
 MeshIterator::MeshIterator( MeshIterator &&rhs )
-    : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
+    : d_iterator( nullptr ),
+      d_typeID( MeshIteratorTypeID ),
+      d_size( 0 ),
+      d_pos( 0 ),
+      d_element( nullptr )
 {
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != getTypeID() ) {
+    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator     = rhs.d_iterator;
@@ -29,11 +44,15 @@ MeshIterator::MeshIterator( MeshIterator &&rhs )
     }
 }
 MeshIterator::MeshIterator( const MeshIterator &rhs )
-    : d_iterator( nullptr ), d_typeID( getTypeID() ), d_size( 0 ), d_pos( 0 ), d_element( nullptr )
+    : d_iterator( nullptr ),
+      d_typeID( MeshIteratorTypeID ),
+      d_size( 0 ),
+      d_pos( 0 ),
+      d_element( nullptr )
 {
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != getTypeID() ) {
+    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator = rhs.d_iterator->clone();
@@ -48,13 +67,13 @@ MeshIterator &MeshIterator::operator=( MeshIterator &&rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID  = getTypeID();
+    d_typeID  = MeshIteratorTypeID;
     d_size    = 0;
     d_pos     = 0;
     d_element = nullptr;
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != getTypeID() ) {
+    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator     = rhs.d_iterator;
@@ -71,13 +90,13 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID  = getTypeID();
+    d_typeID  = MeshIteratorTypeID;
     d_size    = 0;
     d_pos     = 0;
     d_element = nullptr;
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == getTypeID() ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != getTypeID() ) {
+    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator = rhs.d_iterator->clone();
@@ -131,8 +150,8 @@ MeshIterator MeshIterator::end() const
  * Functions for incrementing/decrementing               *
  ********************************************************/
 MeshIterator &MeshIterator::operator++() { return d_iterator->operator++(); }
-MeshIterator MeshIterator::operator++( int i ) { return d_iterator->operator++( i ); }
 MeshIterator &MeshIterator::operator--() { return d_iterator->operator--(); }
+MeshIterator MeshIterator::operator++( int i ) { return d_iterator->operator++( i ); }
 MeshIterator MeshIterator::operator--( int i ) { return d_iterator->operator--( i ); }
 
 

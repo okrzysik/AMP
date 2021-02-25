@@ -2,11 +2,11 @@
 #define included_AMP_MeshPoint
 
 
-#include "AMP/utils/Utilities.h"
-
 #include <array>
 #include <cstddef>
 #include <initializer_list>
+#include <math.h>
+#include <ostream>
 #include <stdexcept>
 
 

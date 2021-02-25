@@ -3,7 +3,7 @@
 
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshPoint.h"
-#include "AMP/utils/Utilities.h"
+
 #include <memory>
 #include <vector>
 
@@ -211,7 +211,7 @@ protected:
     virtual inline MeshElement *clone() const;
 
 private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "MeshElement" ); }
+    static const uint32_t MeshElementTypeID;
 };
 
 
