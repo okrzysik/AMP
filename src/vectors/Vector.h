@@ -73,7 +73,7 @@ public: // Constructor/destructors
      * \brief  Create an empty vector with the given name
      * \param[in] name          Name of the vector
      */
-    Vector( const std::string &name );
+    explicit Vector( const std::string &name );
 
     /**
      * \brief  Create an vector

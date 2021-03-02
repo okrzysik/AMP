@@ -74,7 +74,7 @@ public:
     Database() = default;
 
     //! Basic constructor
-    Database( std::string name ) : d_name( std::move( name ) ) {}
+    explicit Database( std::string name ) : d_name( std::move( name ) ) {}
 
     /**
      * Open an database file.
@@ -468,7 +468,7 @@ public:
     DatabaseBox( int dim, const int *lower, const int *upper );
 
     //! Construct from a string of the format "[(0,0,0), (7,7,7)]"
-    DatabaseBox( const AMP::string_view &str );
+    explicit DatabaseBox( const AMP::string_view &str );
 
 #ifdef USE_SAMRAI
     //! Construct a DatabaseBox from a SAMRAI DatabaseBox
