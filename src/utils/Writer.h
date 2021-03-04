@@ -1,29 +1,29 @@
 #ifndef included_AMP_Writer
 #define included_AMP_Writer
 
-#include <map>
-#include <set>
-#include <sstream>
-#include <string.h>
-#include <vector>
-
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
+
+#include <map>
 #include <memory>
-
-#ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#endif
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
-#endif
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 
-namespace AMP {
-namespace Utilities {
+// Declare some classes
+namespace AMP::Mesh {
+class Mesh;
+enum class GeomType : uint8_t;
+} // namespace AMP::Mesh
+namespace AMP::LinearAlgebra {
+class Vector;
+class Matrix;
+} // namespace AMP::LinearAlgebra
+
+
+namespace AMP::Utilities {
 
 
 /**
@@ -43,6 +43,7 @@ public:
      *               "Silo"  - A silo writer will be created if silo is configured,
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
+     *               "HDF5"  - A simple HDF5 writer
      */
     static std::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type );
 
@@ -58,6 +59,9 @@ public:
 
     //!  Default destructor
     virtual ~Writer();
+
+    //! Delete copy constructor
+    Writer( const Writer & ) = delete;
 
     //!  Function to return the file extension
     virtual std::string getExtension() = 0;
@@ -82,7 +86,6 @@ public:
     //!  Function to write a file
     virtual void writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) = 0;
 
-#ifdef USE_AMP_MESH
     /**
      * \brief    Function to register a mesh
      * \details  This function will register a mesh with the writer.
@@ -96,12 +99,10 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                int level               = 1,
-                               const std::string &path = std::string() ) = 0;
-#endif
+                               const std::string &path = std::string() );
 
-#if defined( USE_AMP_VECTORS ) && defined( USE_AMP_MESH )
     /**
      * \brief    Function to register a vector
      * \details  This function will register a vector with the writer and register it with the given
@@ -119,33 +120,32 @@ public:
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                 AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                                 std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                  AMP::Mesh::GeomType type,
-                                 const std::string &name = "" ) = 0;
-#endif
+                                 const std::string &name = "" );
 
-#if defined( USE_AMP_VECTORS )
     /**
      * \brief    Function to register a vector
      * \details  This function will register a vector with the writer.
-     *     This version of registerVector only stores the raw data.  It is not associated with a
-     * mesh.
+     *     This version of registerVector only stores the raw data.
+     *     It is not associated with a mesh.
      * \param vec   The vector we want to write
+     * \param name  Optional name for the vector.
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) = 0;
-#endif
+    virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                                 const std::string &name = "" );
 
-#ifdef USE_AMP_MATRICES
     /**
      * \brief    Function to register a matrix
      * \details  This function will register a matrix with the writer.
-     *     This version of registerMatrix only stores the raw data.  It is not associated with a
-     * mesh.
+     *     This version of registerMatrix only stores the raw data..
+     *     It is not associated with a mesh.
      * \param mat   The matrix we want to write
+     * \param name  Optional name for the vector.
      */
-    virtual void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) = 0;
-#endif
+    virtual void registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
+                                 const std::string &name = "" );
 
 
 protected: // Protected member functions
@@ -160,7 +160,8 @@ protected: // Internal data
     // The decomposition to use
     int d_decomposition;
 };
-} // namespace Utilities
-} // namespace AMP
+
+
+} // namespace AMP::Utilities
 
 #endif

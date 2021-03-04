@@ -1,44 +1,37 @@
-#ifndef included_AMP_AsciiWriter
-#define included_AMP_AsciiWriter
+#ifndef included_AMP_HDF5writer
+#define included_AMP_HDF5writer
 
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string.h>
 #include <vector>
 
+#include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/Writer.h"
 
-#ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#endif
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
-#endif
 
-
-namespace AMP {
-namespace Utilities {
+namespace AMP::Utilities {
 
 
 /**
- * \class AsciiWriter
- * \brief A class used to abstract away reading/writing files.
- * \details  This class provides routines for reading, accessing and writing vectors
- *    and matrices using a simple ASCII format.
- *    Note: this format only supports a decomposition of 1, and will write all data using rank0
+ * \class HDF5writer
+ * \brief A class used to abstract away reading/writing files for visualization
+ * \details  This class provides routines for reading, accessing and writing meshes and vectors
+ * using silo.
  */
-class AsciiWriter : public AMP::Utilities::Writer
+class HDF5writer : public AMP::Utilities::Writer
 {
 public:
     //!  Default constructor
-    AsciiWriter();
+    HDF5writer();
 
     //!  Default destructor
-    virtual ~AsciiWriter();
+    virtual ~HDF5writer();
+
+    //! Delete copy constructor
+    HDF5writer( const HDF5writer & ) = delete;
 
     //!  Function to return the file extension
     std::string getExtension() override;
@@ -47,8 +40,16 @@ public:
     void readFile( const std::string &fname ) override;
 
     //!  Function to write a file
-    virtual void
-    writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) override;
+    /**
+     * \brief    Function to write a file
+     * \details  This function will write a file with all mesh/vector data that
+     *    was registered.  If the filename included a relative or absolute path,
+     *    the directory structure will be created.
+     * \param fname         The filename to use
+     * \param iteration     The iteration number
+     * \param time          The current simulation time
+     */
+    void writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
     /**
      * \brief    Function to register a mesh
@@ -63,29 +64,25 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                int level               = 1,
-                               const std::string &path = std::string() ) override;
+                               const std::string &path = std::string() );
 
     /**
      * \brief    Function to register a vector
-     * \details  This function will register a vector with the writer and register it with the given
-     * mesh.
-     *     This version of registerVector allows the data to be "stored" on the mesh for
-     * visualization
-     *     or mesh-based operations.
+     * \details  This function will register a vector with the silo writer.
      * \param vec   The vector we want to write
      * \param mesh  The mesh we want to write the vector over.
-     *              Note: for many writers the vector must completely cover the mesh.
+     *              Note: the vector must completely cover the mesh (silo limitiation).
      *              Note: mesh does not have to be previously registered with registerMesh.
      * \param type  The entity type we want to save (vertex, face, cell, etc.)
-     *              Note: some writers only supports writing one entity type.  If the vector
+     *              Note: silo only supports writing one entity type.  If the vector
      *              spans multiple entity type (eg cell+vertex) the user should register
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                 AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                                 std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                  AMP::Mesh::GeomType type,
                                  const std::string &name = "" ) override;
 
@@ -111,35 +108,12 @@ public:
     void registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
                          const std::string &name = "" ) override;
 
-    // A typedef for ids
-    typedef std::pair<unsigned int, unsigned int> global_id;
 
 private:
-// List of all vectors that have been registered
-#ifdef USE_AMP_VECTORS
-    std::map<global_id, AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
-#endif
-
-// List of all matrices that have been registered
-#ifdef USE_AMP_MATRICES
-    std::map<global_id, AMP::LinearAlgebra::Matrix::shared_ptr> d_matrices;
-#endif
-
-    // Helper functions
-    static global_id getID( const AMP_MPI &local_comm, const AMP_MPI &global_comm );
-#ifdef USE_AMP_VECTORS
-    static AMP::LinearAlgebra::Vector::const_shared_ptr sendVecToRoot(
-        AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, const AMP_MPI &d_comm );
-#endif
-#ifdef USE_AMP_MATRICES
-    static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
-                               const AMP_MPI &d_comm,
-                               int row,
-                               std::vector<size_t> &col,
-                               std::vector<double> &data );
-#endif
+    std::vector<std::string> d_names;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vecs;
 };
-} // namespace Utilities
-} // namespace AMP
+
+} // namespace AMP::Utilities
 
 #endif
