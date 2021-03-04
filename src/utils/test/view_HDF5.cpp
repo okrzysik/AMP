@@ -20,21 +20,21 @@ int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
 
-    if ( argc != 2 ) {
+    if ( argc == 1 ) {
         std::cerr << "view_HDF5 filename" << std::endl;
         return -1;
     }
 
-    // Open the HDF5 file
-    auto fid = AMP::openHDF5( argv[1], "r" );
+    // Loop through the input files loading and printing the variables
+    for ( int i = 1; i < argc; i++ ) {
+        std::cout << argv[i] << ":\n";
+        auto fid  = AMP::openHDF5( argv[i], "r" );
+        auto data = AMP::readHDF5( fid, "/" );
+        AMP::closeHDF5( fid );
+        data->print( 2, "  " );
+        std::cout << std::endl;
+    }
 
-    // Read the data
-    auto data = AMP::readHDF5( fid, "/" );
-
-    // Print the data
-    data->print( 2, "  " );
-
-    data.reset();
     AMP::AMPManager::shutdown();
     return 0;
 }

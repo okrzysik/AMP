@@ -64,9 +64,9 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                int level               = 1,
-                               const std::string &path = std::string() );
+                               const std::string &path = std::string() ) override;
 
     /**
      * \brief    Function to register a vector
@@ -81,7 +81,7 @@ public:
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+    void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                                  std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                  AMP::Mesh::GeomType type,
                                  const std::string &name = "" ) override;

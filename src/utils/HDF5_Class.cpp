@@ -93,8 +93,8 @@ public:
             printf( ")\n" );
             size_t N_max = N;
             if ( level < 3 )
-                N_max = std::min<size_t>( level, 3 );
-            for ( size_t j = 0; j < std::min( N, N_max ); j++ ) {
+                N_max = std::min<size_t>( N_max, 5 );
+            for ( size_t j = 0; j < N_max; j++ ) {
                 printf( "%s  [%i]\n", prefix.data(), static_cast<int>( j + 1 ) );
                 for ( size_t i = 0; i < d_data.size( 0 ); i++ ) {
                     if ( d_data( i, j ) && level >= 2 )
@@ -135,18 +135,20 @@ public:
     void print( int level, const AMP::string_view &prefix = "" ) const override
     {
         printf( "%s%s (%s)", prefix.data(), d_name.data(), typeid( TYPE ).name() );
-        if ( d_data.length() <= 4 || level >= 4 ) {
+        if ( d_data.empty() ) {
+            printf( " []\n" );
+        } else if ( d_data.length() == 1 ) {
+            AMP::pout << ": " << d_data( 0 ) << std::endl;
+        } else if ( d_data.length() <= 4 || level >= 4 ) {
             AMP::pout << " [";
-            if ( !d_data.empty() ) {
-                if constexpr ( std::is_same<TYPE, unsigned char>::value ) {
-                    AMP::pout << " " << static_cast<int>( d_data( 0 ) );
-                    for ( size_t i = 1; i < d_data.length(); i++ )
-                        AMP::pout << ", " << static_cast<int>( d_data( i ) );
-                } else {
-                    AMP::pout << " " << d_data( 0 );
-                    for ( size_t i = 1; i < d_data.length(); i++ )
-                        AMP::pout << ", " << d_data( i );
-                }
+            if constexpr ( std::is_same<TYPE, unsigned char>::value ) {
+                AMP::pout << " " << static_cast<int>( d_data( 0 ) );
+                for ( size_t i = 1; i < d_data.length(); i++ )
+                    AMP::pout << ", " << static_cast<int>( d_data( i ) );
+            } else {
+                AMP::pout << " " << d_data( 0 );
+                for ( size_t i = 1; i < d_data.length(); i++ )
+                    AMP::pout << ", " << d_data( i );
             }
             AMP::pout << " ]" << std::endl;
         } else {
@@ -320,7 +322,9 @@ HDF5_group::HDF5_group( hid_t fid, const AMP::string_view &name, int type ) : HD
             H5Gget_objname_by_idx( gid, i, name2, sizeof( name2 ) );
             if ( std::string( name2 ) == ".." )
                 continue;
-            data.push_back( readHDF5( gid, name2 ) );
+            auto data2 = readHDF5( gid, name2 );
+            if ( data2 )
+                data.push_back( std::move( data2 ) );
             d_names.emplace_back( name2 );
             AMP_ASSERT( data.back() );
         }
@@ -452,9 +456,9 @@ std::unique_ptr<HDF5data> readHDF5( hid_t fid, const AMP::string_view &name )
     } else if ( object_info.type == H5O_TYPE_DATASET ) {
         data = readDatabase( fid, name );
     } else if ( object_info.type == H5O_TYPE_NAMED_DATATYPE ) {
-        AMP_ERROR( "Read Names dataset not finished" );
+        AMP_WARNING( "Read named datatype not finished: " + std::string( name ) );
     } else if ( object_info.type == H5O_TYPE_UNKNOWN ) {
-        AMP_ERROR( "Read Unknown" );
+        AMP_ERROR( "Read unknown type not supported" + std::string( name ) );
     } else {
         AMP_ERROR( "Read Error" );
     }
