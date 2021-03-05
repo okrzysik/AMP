@@ -53,10 +53,10 @@
  */
 #define AMP_WARNING( MSG )                                                                        \
     do {                                                                                          \
-        AMP::pout << "WARNING: " << MSG << std::ends;                                             \
-        AMP::plog << "WARNING: " << MSG << std::ends;                                             \
-        AMP::pout << "   Warning called in " << __FILE__ << " on line " << __LINE__ << std::ends; \
-        AMP::plog << "   Warning called in " << __FILE__ << " on line " << __LINE__ << std::ends; \
+        AMP::pout << "WARNING: " << MSG << std::endl;                                             \
+        AMP::plog << "WARNING: " << MSG << std::endl;                                             \
+        AMP::pout << "   Warning called in " << __FILE__ << " on line " << __LINE__ << std::endl; \
+        AMP::plog << "   Warning called in " << __FILE__ << " on line " << __LINE__ << std::endl; \
         AMP::plog << std::flush;                                                                  \
     } while ( 0 )
 

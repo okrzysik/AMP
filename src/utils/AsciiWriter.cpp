@@ -1,9 +1,17 @@
 #include "AMP/utils/AsciiWriter.h"
 #include "ProfilerApp.h"
 
+#ifdef USE_AMP_MESH
+#include "AMP/ampmesh/Mesh.h"
+#endif
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/VectorBuilder.h"
 #endif
+#ifdef USE_AMP_MATRICES
+#include "AMP/matrices/Matrix.h"
+#endif
+
+#include <vector>
 
 
 namespace AMP {
@@ -149,18 +157,15 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 /************************************************************
  * Function to register a mesh                               *
  ************************************************************/
-#ifdef USE_AMP_MESH
 void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string & )
 {
     AMP_ERROR( "registerMesh is not implimented yet" );
 }
-#endif
 
 
 /************************************************************
  * Function to register a vector                             *
  ************************************************************/
-#if defined( USE_AMP_MESH ) && defined( USE_AMP_VECTORS )
 void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
                                   AMP::Mesh::Mesh::shared_ptr,
                                   AMP::Mesh::GeomType,
@@ -168,21 +173,26 @@ void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
 {
     AMP_ERROR( "Mesh support is not implimented yet" );
 }
-#endif
-#ifdef USE_AMP_VECTORS
-void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
+void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
+                                  const std::string &name )
 {
+    NULL_USE( vec );
+    NULL_USE( name );
+#ifdef USE_AMP_VECTORS
     global_id id = getID( vec->getComm(), d_comm );
     d_vectors.insert( std::pair<global_id, AMP::LinearAlgebra::Vector::shared_ptr>( id, vec ) );
-}
 #endif
-#ifdef USE_AMP_MATRICES
-void AsciiWriter::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat )
+}
+void AsciiWriter::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat,
+                                  const std::string &name )
 {
+    NULL_USE( mat );
+    NULL_USE( name );
+#ifdef USE_AMP_MATRICES
     global_id id = getID( mat->getLeftVector()->getComm(), d_comm );
     d_matrices.insert( std::pair<global_id, AMP::LinearAlgebra::Matrix::shared_ptr>( id, mat ) );
-}
 #endif
+}
 
 
 /************************************************************

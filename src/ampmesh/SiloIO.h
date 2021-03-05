@@ -74,7 +74,6 @@ public:
                                int level               = 1,
                                const std::string &path = std::string() ) override;
 
-#ifdef USE_AMP_VECTORS
     /**
      * \brief    Function to register a vector
      * \details  This function will register a vector with the silo writer.
@@ -96,23 +95,24 @@ public:
     /**
      * \brief    Function to register a vector
      * \details  This function will register a vector with the writer.
-     *     This version of registerVector only stores the raw data.  It is not associated with a
-     * mesh.
+     *     This version of registerVector only stores the raw data.
+     *     It is not associated with a mesh.
      * \param vec   The vector we want to write
+     * \param name  Optional name for the vector.
      */
-    void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
-#endif
+    void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                         const std::string &name = "" ) override;
 
-#ifdef USE_AMP_MATRICES
     /**
      * \brief    Function to register a matrix
      * \details  This function will register a matrix with the writer.
-     *     This version of registerMatrix only stores the raw data.  It is not associated with a
-     * mesh.
+     *     This version of registerMatrix only stores the raw data..
+     *     It is not associated with a mesh.
      * \param mat   The matrix we want to write
+     * \param name  Optional name for the vector.
      */
-    void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat ) override;
-#endif
+    void registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
+                         const std::string &name = "" ) override;
 
 
 private:

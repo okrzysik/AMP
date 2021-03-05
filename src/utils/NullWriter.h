@@ -26,25 +26,6 @@ public:
     std::string getExtension() override { return ""; }
     void readFile( const std::string & ) override{};
     void writeFile( const std::string &, size_t, double = 0 ) override {}
-#ifdef USE_AMP_MESH
-    void registerMesh( AMP::Mesh::Mesh::shared_ptr,
-                       int                 = 1,
-                       const std::string & = std::string() ) override
-    {
-    }
-#endif
-#ifdef USE_AMP_VECTORS
-    void registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
-                         AMP::Mesh::Mesh::shared_ptr,
-                         AMP::Mesh::GeomType,
-                         const std::string & = "" ) override
-    {
-    }
-    void registerVector( AMP::LinearAlgebra::Vector::shared_ptr ) override {}
-#endif
-#ifdef USE_AMP_MATRICES
-    void registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr ) override {}
-#endif
 };
 } // namespace Utilities
 } // namespace AMP

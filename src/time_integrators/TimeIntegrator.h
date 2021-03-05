@@ -4,11 +4,16 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include <memory>
 
 #include <string>
+
+
+// Declare some classes
+namespace AMP::Utilities {
+class Writer;
+} // namespace AMP::Utilities
 
 
 namespace AMP {
