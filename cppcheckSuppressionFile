@@ -1,48 +1,129 @@
-// Suppress all operatorEq (false positives if we use = default)
+//***********************************************************
+// Suppress all instances of certain warnings               *
+// These are due to too many false postives, etc.           *
+//***********************************************************
 operatorEq:*
-
-// Suppress all useStlAlgorithm (too aggressive)
-useStlAlgorithm:*
-
-// Suppress all shadow variables/functions (too many false positives)
 shadowFunction:*
 shadowVar:*
 shadowVariable:*
-
-// Suppress all returnDanglingLifetime (false positives with std::tie)
-returnDanglingLifetime:*
-
-// Suppress unmatched suppressions
 unmatchedSuppression:*
-
-// Suppress missing include message (we are not checking dependencies)
-missingInclude:*
-
-// Suppress unusedFunction messages (functions may be used by subsequent packages)
-unusedFunction:*
-
-// Suppress redundantAssignment/Copy, they can be better practice in many instances
-redundantAssignment:*
-redundantCopy:*
-
-// Suppress duplicateCondition
 duplicateCondition:*
-
-// Suppress #error messages (they may be valid and will always be caught by compiler if options are exercised)
-preprocessorErrorDirective:*
-
-// Suppress virtualCallInConstructor
 virtualCallInConstructor:*
-
-// Suppress huge input warnings
 invalidscanf:*
 invalidscanf_libc:*
-
-// Suppress known condition (too many false positives)
 knownConditionTrueFalse:*
+useStlAlgorithm:*           // too aggressive
+returnDanglingLifetime:*    // false positives with std::tie
+missingInclude:*            //we are not checking dependencies
+unusedFunction:*            // Suppress unusedFunction messages (functions may be used by subsequent packages)
+redundantAssignment:*       // Suppress redundantAssignment, can be better practice in many instances
+redundantCopy:*             // Suppress redundantAssignment, can be better practice in many instances
+preprocessorErrorDirective:* // Suppress #error messages (may be valid and will be caught by compiler)
 
 
-// Suppress common test warnings (example: x==x)
+//***********************************************************
+// Suppress headers                                         *
+// Keeping these seperate is useful for downstream packages *
+//***********************************************************
+noExplicitConstructor:*/AMP/ampmesh/MeshID.h
+noExplicitConstructor:*/AMP/ampmesh/MeshPoint.h
+noExplicitConstructor:*/AMP/ampmesh/MeshGeometry.h
+noExplicitConstructor:*/AMP/ampmesh/MeshElement.h
+noExplicitConstructor:*/AMP/ampmesh/MeshUtilities.h
+noExplicitConstructor:*/AMP/utils/Array.h
+noExplicitConstructor:*/AMP/utils/ArraySize.h
+noExplicitConstructor:*/AMP/utils/AMP_MPI.h
+noExplicitConstructor:*/AMP/utils/Database.h
+noExplicitConstructor:*/AMP/utils/string_view.h
+noExplicitConstructor:*/AMP/utils/kdtree.h
+noExplicitConstructor:*/AMP/utils/extended_int.h
+noExplicitConstructor:*/AMP/vectors/Scalar.h
+noExplicitConstructor:*/AMP/vectors/Vector.h
+noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
+noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
+duplicateExpression:*/AMP/utils/Array.hpp
+duplicateExpression:*/AMP/utils/Database.hpp
+duplicateExpression:*/AMP/utils/Array.hpp
+syntaxError:*/AMP/ampmesh/*Iterator.h
+unusedPrivateFunction:*/AMP/materials/Property.h
+nullPointer:*/AMP/materials/Property.h
+nullPointer:*/AMP/utils/Array.hpp
+nullPointer:*/AMP/utils/ArraySize.h
+constParameter:*/AMP/matrices/Matrix.inline.h
+constParameter:*/AMP/vectors/Vector.inline.h
+multiCondition:*/AMP/vectors/Scalar.hpp
+noConstructor:*/AMP/utils/RNG.h
+operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
+arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
+templateRecursion:*/AMP/utils/AMP_MPI.I
+
+
+//***********************************************************
+// Suppress cpp files                                       *
+//***********************************************************
+duplicateExpression:*/src/ampmesh/testHelpers/meshTests.cpp
+duplicateExpression:*/src/ampmesh/structured/BoxMesh.cpp
+oppositeInnerCondition:*/src/ampmesh/MultiMesh.cpp
+oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cpp
+duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cpp
+useInitializationList:*/src/ampmesh/structured/BoxMesh.cpp
+useInitializationList:*/src/ampmesh/structured/StructuredGeometryMesh.cpp
+useInitializationList:*/src/operators/VectorCopyOperator.cpp
+useInitializationList:*/src/operators/map/AsyncMapOperator.cpp
+useInitializationList:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
+useInitializationList:*/src/time_integrators/ColumnTimeOperator.cpp
+useInitializationList:*/src/time_integrators/LinearTimeOperator.cpp
+useInitializationList:*/src/time_integrators/TimeOperator.cpp
+useInitializationList:*/src/utils/AMP_MPI.cpp
+knownConditionTrueFalse:*/src/ampmesh/testHelpers/meshTestLoop.cpp
+knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
+knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
+knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+uninitMemberVar:*/src/matrices/petsc/NativePetscMatrix.cpp
+uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
+uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cpp
+uninitMemberVar:*/src/operators/diffusion/DiffusionElement.cpp
+uninitMemberVar:*/src/operators/flow/FlowElement.cpp
+uninitMemberVar:*/src/operators/libmesh/MassElement.cpp
+uninitMemberVar:*/src/operators/libmesh/NodeToGaussPointOperator.cpp
+uninitMemberVar:*/src/operators/libmesh/SourceNonlinearElement.cpp
+uninitMemberVar:*/src/operators/mechanics/MechanicsElement.cpp
+uninitMemberVar:*/src/operators/boundary/libmesh/NeumannVectorCorrection.cpp
+uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
+uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cpp
+uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cpp
+postfixOperator:*/src/ampmesh/testHelpers/meshTests.cpp
+redundantCondition:*/src/ampmesh/triangle/TriangleMeshElement.cpp
+invalidLifetime:*/src/ampmesh/libmesh/libmeshMesh.cpp
+autovarInvalidDeallocation:*/src/vectors/petsc/PetscHelpers.cpp
+exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
+passedByValue:*/src/operators/subchannel/SubchannelHelpers.cpp
+syntaxError:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
+redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
+copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
+invalidPointerCast:*/src/utils/threadpool/atomic_helpers.cpp
+nullPointer:*/src/utils/Scanner.cpp
+nullPointerRedundantCheck:*/src/utils/Scanner.cpp
+arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
+unreadVariable:*/utils/ReadTestMesh.cpp
+unreadVariable:*/src/utils/DelaunayInterpolation.cpp
+unreadVariable:*/src/utils/DelaunayTessellation.cpp
+uninitvar:*/src/utils/DelaunayInterpolation.cpp
+uninitvar:*/src/utils/DelaunayTessellation.cpp
+redundantAssignment:*/src/utils/kdtree.cpp
+shadowVariable:*/src/ampmesh/STKmesh/STKMesh.cpp
+shadowVariable:*/src/utils/DelaunayTessellation.cpp
+shiftTooManyBits:*/src/utils/extended_int.cpp
+*:*/src/utils/tinyexpr/tinyexpr.c
+*:*/src/ampmesh/dendro/*
+*:*/src/ampmesh/hex8_element_t.cpp
+
+
+//***********************************************************
+// Suppress test files                                      *
+//***********************************************************
 duplicateExpression:*/test/test*
 uselessCallsCompare:*/test/test*
 variableScope:*/test/test*
@@ -54,139 +135,26 @@ knownConditionTrueFalse:*/oxide/OxideModel.cpp
 knownConditionTrueFalse:*/ampmesh/test/testDendroSearch.cpp
 constArgument:*/ampmesh/test/testDendroSearch.cpp
 constArgument:*/ampmesh/test/testHex8ElementMapping.cpp
-
-
-// Suppress warnings for ampmesh
-syntaxError:*/AMP/ampmesh/*Iterator.h
-duplicateExpression:*/ampmesh/testHelpers/meshTests.cpp
-duplicateExpression:*/ampmesh/structured/BoxMesh.cpp
-noExplicitConstructor:*/ampmesh/MeshID.h
-noExplicitConstructor:*/ampmesh/MeshPoint.h
-noExplicitConstructor:*/ampmesh/MeshGeometry.h
-noExplicitConstructor:*/ampmesh/MeshElement.h
-noExplicitConstructor:*/AMP/ampmesh/MeshUtilities.h
-knownConditionTrueFalse:*/ampmesh/testHelpers/meshTestLoop.cpp
-postfixOperator:*/ampmesh/testHelpers/meshTests.cpp
-oppositeInnerCondition:*/src/ampmesh/MultiMesh.cpp
-oppositeInnerCondition:*/src/ampmesh/loadBalance/loadBalanceSimulator.cpp
-*:*/ampmesh/dendro/*
-*:*/ampmesh/hex8_element_t.cpp
-duplicateAssignExpression:*/src/ampmesh/testHelpers/meshTests.cpp
-useInitializationList:*/ampmesh/structured/BoxMesh.cpp
-useInitializationList:*/ampmesh/structured/StructuredGeometryMesh.cpp
-redundantCondition:*/ampmesh/triangle/TriangleMeshElement.cpp
-shadowVariable:*/ampmesh/STKmesh/STKMesh.cpp
-invalidLifetime:*/ampmesh/libmesh/libmeshMesh.cpp
-
-
-// Suppress warnings for discretization
-duplicateExpression:*/discretization/test/DOFManager_tests.h
-redundantCondition:*/discretization/test/test_Discretization.h
-
-
-// Suppress warnings for graphics
-*:/*/graphics/ogre/*
-
-
-// Suppress warnings for material
-unusedPrivateFunction:*/materials/Property.h
-nullPointer:*/materials/Property.h
-
-
-// Suppress warnings for matrices
-exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
-uninitMemberVar:*/src/matrices/petsc/NativePetscMatrix.cpp
-constParameter:*/AMP/matrices/Matrix.inline.h
-
-// Supress warnings for operators
-uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
-uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cpp
-uninitMemberVar:*/src/operators/diffusion/DiffusionElement.cpp
-uninitMemberVar:*/src/operators/flow/FlowElement.cpp
-uninitMemberVar:*/src/operators/libmesh/MassElement.cpp
-uninitMemberVar:*/src/operators/libmesh/NodeToGaussPointOperator.cpp
-uninitMemberVar:*/src/operators/libmesh/SourceNonlinearElement.cpp
-uninitMemberVar:*/src/operators/mechanics/MechanicsElement.cpp
-uninitMemberVar:*/src/operators/boundary/libmesh/NeumannVectorCorrection.cpp
-uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
-passedByValue:*/src/operators/subchannel/SubchannelHelpers.cpp
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator-2.cpp
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cpp
-useInitializationList:*/src/operators/VectorCopyOperator.cpp
-useInitializationList:*/src/operators/map/AsyncMapOperator.cpp
-useInitializationList:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
 *:*/operators/test/dendro/*
-
-
-// Suppress warnings for vectors
-syntaxError:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
-redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
-uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cpp
-uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cpp
-multiCondition:*/AMP/vectors/Scalar.hpp
-noExplicitConstructor:*/AMP/vectors/Scalar.h
-noExplicitConstructor:*/AMP/vectors/Vector.h
-noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
-noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
-autovarInvalidDeallocation:*/src/vectors/petsc/PetscHelpers.cpp
-constParameter:*/AMP/vectors/Vector.inline.h
-
-// Suppress warnings for solvers
 duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cpp
 knownConditionTrueFalse:*/src/solvers/test/trilinos/testTrilinosMLSolver_LinearFickOperator_bar.cpp
-
-
-// Suppress warnings for time_integrators
-useInitializationList:*/src/time_integrators/ColumnTimeOperator.cpp
-useInitializationList:*/src/time_integrators/LinearTimeOperator.cpp
-useInitializationList:*/src/time_integrators/TimeOperator.cpp
 knownConditionTrueFalse:*/src/time_integrators/test/testIDA_NonlinearColumnOperator.cpp
-
-
-// Suppress warnings for utils
-noConstructor:*/AMP/utils/RNG.h
-duplicateExpression:*/AMP/utils/Array.hpp
 passedByValue:*/utils/test/test_AMP_MPI.cpp
-copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
-noExplicitConstructor:*/AMP/utils/Array.h
-noExplicitConstructor:*/AMP/utils/ArraySize.h
-noExplicitConstructor:*/AMP/utils/AMP_MPI.h
-noExplicitConstructor:*/AMP/utils/Database.h
-noExplicitConstructor:*/AMP/utils/string_view.h
-noExplicitConstructor:*/AMP/utils/kdtree.h
-noExplicitConstructor:*/AMP/utils/extended_int.h
 noExplicitConstructor:*/utils/test/test_AMP_MPI.cpp
 passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
-operatorEqRetRefThis:*/utils/threadpool/ThreadPoolId.hpp
 memleak:*/utils/test/test_AMPManager.cpp
-invalidPointerCast:*/utils/threadpool/atomic_helpers.cpp
+duplicateExpression:*/discretization/test/DOFManager_tests.h
+redundantCondition:*/discretization/test/test_Discretization.h
 duplicateAssignExpression:*/src/utils/test/test_MathExpr.cpp
 knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cpp
 knownConditionTrueFalse:*/src/utils/test/test_AMP_MPI.cpp
-knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
-*:*/utils/tinyexpr/tinyexpr.c
-useInitializationList:*/src/utils/AMP_MPI.cpp
-nullPointer:*/src/utils/Scanner.cpp
-nullPointerRedundantCheck:*/src/utils/Scanner.cpp
-duplicateExpression:*/utils/Database.hpp
-duplicateExpression:*/utils/Array.hpp
-nullPointer:*/utils/Array.hpp
-nullPointer:*/utils/ArraySize.h
-unreadVariable:*/utils/ReadTestMesh.cpp
 resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
-knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
-knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
-arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
-arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
-containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
-negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
-unreadVariable:*/src/utils/DelaunayInterpolation.cpp
-unreadVariable:*/src/utils/DelaunayTessellation.cpp
-uninitvar:*/src/utils/DelaunayInterpolation.cpp
-uninitvar:*/src/utils/DelaunayTessellation.cpp
-redundantAssignment:*/src/utils/kdtree.cpp
-templateRecursion:*/AMP/utils/AMP_MPI.I
-shadowVariable:*/utils/DelaunayTessellation.cpp
-shiftTooManyBits:*/src/utils/extended_int.cpp
 
+
+//***********************************************************
+// Suppress warnings for graphics (still in development)    *
+//***********************************************************
+*:/*/graphics/ogre/*
 
