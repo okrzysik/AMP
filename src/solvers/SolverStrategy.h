@@ -2,10 +2,16 @@
 #define included_AMP_SolverStrategy
 
 #include "AMP/operators/Operator.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include "SolverStrategyParameters.h"
+
 #include <memory>
+
+
+// Declare some classes
+namespace AMP::Utilities {
+class Writer;
+} // namespace AMP::Utilities
 
 
 namespace AMP {

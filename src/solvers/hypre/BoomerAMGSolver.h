@@ -1,6 +1,7 @@
 #ifndef included_AMP_BoomerAMGSolver
 #define included_AMP_BoomerAMGSolver
 
+#include "AMP/matrices/Matrix.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 

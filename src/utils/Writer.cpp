@@ -2,6 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 #include "AMP/utils/AsciiWriter.h"
+#include "AMP/utils/HDF5writer.h"
 #include "AMP/utils/NullWriter.h"
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/SiloIO.h"
@@ -26,17 +27,19 @@ std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( const std::string &
 #else
         writer.reset( new AMP::Utilities::NullWriter() );
 #endif
+    } else if ( type == "HDF5" || type == "hdf5" ) {
+        writer.reset( new AMP::Utilities::HDF5writer() );
     } else if ( type == "Ascii" || type == "ascii" || type == "ASCII" ) {
         writer.reset( new AMP::Utilities::AsciiWriter() );
     } else {
-        AMP_ERROR( "Unknown writer" );
+        AMP_ERROR( "Unknown writer: " + type );
     }
     return writer;
 }
 std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::shared_ptr<AMP::Database> db )
 {
-    std::string type                               = db->getString( "Name" );
-    std::shared_ptr<AMP::Utilities::Writer> writer = Writer::buildWriter( type );
+    auto type   = db->getString( "Name" );
+    auto writer = Writer::buildWriter( type );
     if ( db->keyExists( "Decomposition" ) )
         writer->setDecomposition( db->getScalar<int>( "Decomposition" ) );
     return writer;
@@ -66,6 +69,20 @@ void Writer::createDirectories( const std::string &filename )
             filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
     d_comm.barrier();
 }
+
+
+/************************************************************
+ * Define default registers                                  *
+ ************************************************************/
+void Writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh>, int, const std::string & ) {}
+void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                             std::shared_ptr<AMP::Mesh::Mesh>,
+                             AMP::Mesh::GeomType,
+                             const std::string & )
+{
+}
+void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>, const std::string & ) {}
+void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix>, const std::string & ) {}
 
 
 } // namespace Utilities
