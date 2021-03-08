@@ -1,7 +1,6 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
-
-
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 
 
@@ -20,6 +19,7 @@ multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
       d_globalSize( managers.size(), 0 )
 {
     d_comm = globalComm;
+    AMP_ASSERT( !d_comm.isNull() );
     // Compute the total begin, end, and global size
     size_t local_size = 0;
     for ( size_t i = 0; i < managers.size(); i++ ) {

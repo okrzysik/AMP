@@ -294,10 +294,10 @@ void AMPManager::shutdown()
     PROFILE_DISABLE();
     // Syncronize all ranks
     comm_world.barrier();
-    // Shudown PETSc
-    double petsc_time = stop_PETSc();
     // Shutdown SAMRAI
     double SAMRAI_time = stop_SAMRAI();
+    // Shudown PETSc
+    double petsc_time = stop_PETSc();
     // Shutdown MPI
     double MPI_start = Utilities::time();
     AMP_MPI::stop_MPI();

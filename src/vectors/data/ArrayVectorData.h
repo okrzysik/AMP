@@ -5,6 +5,7 @@
 
 #include "AMP/utils/Array.h"
 #include "AMP/utils/FunctionTable.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/VectorData.h"
 
 

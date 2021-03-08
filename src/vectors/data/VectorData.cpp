@@ -1,4 +1,5 @@
 #include "AMP/vectors/data/VectorData.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/DataChangeListener.h"
 
 

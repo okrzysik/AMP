@@ -157,6 +157,7 @@ void MultiVector::resetVectorOperations()
 void MultiVector::resetVectorData()
 {
     // Create a new multiDOFManager for the multivector
+    AMP_ASSERT( !getComm().isNull() );
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
         AMP_ASSERT( d_vVectors[i].get() != nullptr );
@@ -336,6 +337,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
 
     // If no vectors were found, check if the variable is actually a multivariable and subset on it
     const AMP_MPI &comm = getComm();
+    AMP_ASSERT( !comm.isNull() );
     if ( comm.sumReduce( subvectors.size() ) == 0 ) {
         auto multivariable = std::dynamic_pointer_cast<const MultiVariable>( name );
         if ( multivariable.get() != nullptr ) {
@@ -369,7 +371,9 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
     } else {
         // Only a subset of processors have a variable
         auto new_comm = comm.split( subvectors.empty() ? -1 : 0, comm.getRank() );
-        retVal        = create( variable, new_comm );
+        if ( new_comm.isNull() )
+            new_comm = AMP_MPI( AMP_COMM_SELF );
+        retVal = create( variable, new_comm );
         retVal->addVector( subvectors );
     }
     return retVal;

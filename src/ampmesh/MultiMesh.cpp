@@ -6,6 +6,7 @@
 #include "AMP/ampmesh/MultiMeshParameters.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/ampmesh/loadBalance/loadBalanceSimulator.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #ifdef USE_AMP_VECTORS

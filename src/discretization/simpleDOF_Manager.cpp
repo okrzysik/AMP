@@ -1,6 +1,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #include <set>
 #include <vector>
@@ -149,7 +150,7 @@ void simpleDOFManager::initialize()
     AMP::Utilities::quicksort( d_remote_id );
     // Get the number of local elements per processor and the global number of DOFs
     size_t N_local = d_local_id.size() * DOFsPerElement;
-    d_comm.sumScan<size_t>( &N_local, &d_end );
+    d_comm.sumScan<size_t>( &N_local, &d_end, 1 );
     d_begin  = d_end - N_local;
     d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );
     // Determine the remote DOFs (assuming 1 DOF per node)

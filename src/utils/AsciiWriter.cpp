@@ -1,4 +1,5 @@
 #include "AMP/utils/AsciiWriter.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "ProfilerApp.h"
 
 #ifdef USE_AMP_MESH

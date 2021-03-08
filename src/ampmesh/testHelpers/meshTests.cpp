@@ -6,7 +6,7 @@
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/SubsetMesh.h"
-#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 

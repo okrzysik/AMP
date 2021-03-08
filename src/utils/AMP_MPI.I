@@ -3,156 +3,154 @@
 #ifndef included_AMP_MPI_I
 #define included_AMP_MPI_I
 
+#include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/UtilityMacros.h"
 
+#include "ProfilerApp.h"
+
+#include <complex>
 #include <typeinfo>
 
 
 #define MPI_CLASS AMP_MPI
-#define MPI_CLASS_ERROR AMP_ERROR
-#define MPI_CLASS_ASSERT AMP_ASSERT
-
-#undef NULL_USE
-#define NULL_USE( variable )                    \
-    do {                                        \
-        if ( 0 ) {                              \
-            auto static t = (char *) &variable; \
-            t++;                                \
-        }                                       \
-    } while ( 0 )
+#define MPI_ERROR AMP_ERROR
+#define MPI_ASSERT AMP_ASSERT
+#define MPI_INSIST AMP_INSIST
+#define MPI_WARNING AMP_WARNING
 
 
 namespace AMP {
 
 
-// Function to test if a type is a std::pair
-template<typename>
-struct is_pair : std::false_type {
-};
-template<typename T, typename U>
-struct is_pair<std::pair<T, U>> : std::true_type {
-};
-
-
 // Function to test if a type can be passed by MPI
 template<typename TYPE>
-constexpr bool is_mpi_copyable()
+struct is_mpi_copyable {
+    template<typename T>
+    static constexpr bool test()
+    {
+        if constexpr ( std::is_trivially_copyable<T>::value )
+            return true;
+        if constexpr ( is_pair<T>::value )
+            return test<typename T::first_type>() && test<typename T::second_type>();
+        return false;
+    }
+    static constexpr bool value = test<TYPE>();
+};
+
+
+/************************************************************************
+ *  getType                                                              *
+ ************************************************************************/
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+template<class TYPE>
+struct TypeIntStruct {
+    TYPE x;
+    int i;
+};
+// clang-format off
+template<typename T> struct TypeIntSelector;
+template<> struct TypeIntSelector<char>     { using type = TypeIntStruct<short>; };
+template<> struct TypeIntSelector<uint8_t>  { using type = TypeIntStruct<short>; };
+template<> struct TypeIntSelector<int8_t>   { using type = TypeIntStruct<short>; };
+template<> struct TypeIntSelector<uint16_t> { using type = TypeIntStruct<int>;   };
+template<> struct TypeIntSelector<int16_t>  { using type = TypeIntStruct<short>; };
+template<> struct TypeIntSelector<uint32_t> { using type = TypeIntStruct<long>;  };
+template<> struct TypeIntSelector<int32_t>  { using type = TypeIntStruct<int>;   };
+template<> struct TypeIntSelector<uint64_t> { using type = TypeIntStruct<long>;  };
+template<> struct TypeIntSelector<int64_t>  { using type = TypeIntStruct<long>;  };
+template<> struct TypeIntSelector<float>    { using type = TypeIntStruct<float>; };
+template<> struct TypeIntSelector<double>   { using type = TypeIntStruct<double>; };
+template<typename T> struct TypeIntSelector { using type = TypeIntStruct<T>;     };
+// clang-format on
+template<class TYPE>
+constexpr MPI_Datatype MPI_getType()
 {
-    if constexpr ( std::is_trivially_copyable<TYPE>::value )
-        return true;
-    if constexpr ( is_pair<TYPE>::value )
-        return is_mpi_copyable<typename TYPE::first_type>() &&
-               is_mpi_copyable<typename TYPE::second_type>();
-    return false;
+    if constexpr ( std::is_same<TYPE, char>::value )
+        return MPI_CHAR;
+    if constexpr ( std::is_same<TYPE, uint8_t>::value )
+        return MPI_UINT8_T;
+    if constexpr ( std::is_same<TYPE, int8_t>::value )
+        return MPI_INT8_T;
+    if constexpr ( std::is_same<TYPE, uint16_t>::value )
+        return MPI_UINT16_T;
+    if constexpr ( std::is_same<TYPE, int16_t>::value )
+        return MPI_INT16_T;
+    if constexpr ( std::is_same<TYPE, uint32_t>::value )
+        return MPI_UINT32_T;
+    if constexpr ( std::is_same<TYPE, int32_t>::value )
+        return MPI_INT32_T;
+    if constexpr ( std::is_same<TYPE, uint64_t>::value )
+        return MPI_UINT64_T;
+    if constexpr ( std::is_same<TYPE, int64_t>::value )
+        return MPI_INT64_T;
+    if constexpr ( std::is_same<TYPE, float>::value )
+        return MPI_FLOAT;
+    if constexpr ( std::is_same<TYPE, double>::value )
+        return MPI_DOUBLE;
+    if constexpr ( std::is_same<TYPE, std::complex<float>>::value )
+        return MPI_C_FLOAT_COMPLEX;
+    if constexpr ( std::is_same<TYPE, std::complex<double>>::value )
+        return MPI_C_DOUBLE_COMPLEX;
+    if constexpr ( std::is_same<TYPE, TypeIntStruct<short>>::value )
+        return MPI_SHORT_INT;
+    if constexpr ( std::is_same<TYPE, TypeIntStruct<int>>::value )
+        return MPI_2INT;
+    if constexpr ( std::is_same<TYPE, TypeIntStruct<long>>::value )
+        return MPI_LONG_INT;
+    if constexpr ( std::is_same<TYPE, TypeIntStruct<float>>::value )
+        return MPI_FLOAT_INT;
+    if constexpr ( std::is_same<TYPE, TypeIntStruct<double>>::value )
+        return MPI_DOUBLE_INT;
+    return MPI_DATATYPE_NULL;
 }
+#endif
 
 
 /************************************************************************
  *  sumReduce                                                            *
  ************************************************************************/
 template<class TYPE>
-inline TYPE MPI_CLASS::sumReduce( const TYPE value ) const
+void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
+{
+    if ( comm_size == 1 ) {
+        for ( int i = 0; i < n; i++ )
+            recv[i] = send[i];
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "sumReduce", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_Allreduce( send, recv, n, type, MPI_SUM, communicator );
+    } else {
+        throw std::logic_error( "sumReduce is not valid for arbitrary types" );
+    }
+    PROFILE_STOP( "sumReduce", profile_level );
+#endif
+}
+template<class TYPE>
+TYPE MPI_CLASS::sumReduce( const TYPE value ) const
 {
     if ( comm_size > 1 ) {
-        TYPE tmp = value;
-        call_sumReduce( &tmp, 1 );
+        TYPE tmp;
+        sumReduce( &value, &tmp, 1 );
         return tmp;
     } else {
         return value;
     }
 }
 template<class TYPE>
-inline void MPI_CLASS::sumReduce( TYPE *x, const int n ) const
-{
-    if ( comm_size > 1 )
-        call_sumReduce( x, n );
-}
-template<class TYPE>
-inline void MPI_CLASS::sumReduce( const TYPE *x, TYPE *y, const int n ) const
+void MPI_CLASS::sumReduce( TYPE *x, int n ) const
 {
     if ( comm_size > 1 ) {
-        call_sumReduce( x, y, n );
-    } else {
+        auto tmp = new TYPE[n];
         for ( int i = 0; i < n; i++ )
-            y[i] = x[i];
+            tmp[i] = x[i];
+        sumReduce( tmp, x, n );
+        delete[] tmp;
     }
-}
-// Define specializations of call_sumReduce(TYPE*, const int)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_sumReduce<unsigned char>( unsigned char *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<char>( char *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<unsigned int>( unsigned int *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<int>( int *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<unsigned long int>( unsigned long int *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<long int>( long int *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<size_t>( size_t *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<float>( float *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<double>( double *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<std::complex<double>>( std::complex<double> *, const int ) const;
-#endif
-// Default instantiations of call_sumReduce(TYPE*, const int)
-template<class TYPE>
-void MPI_CLASS::call_sumReduce( TYPE *, const int ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of sumReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
-}
-// Define specializations of call_sumReduce(const TYPE*, TYPE*, const int)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_sumReduce<unsigned char>( const unsigned char *,
-                                               unsigned char *,
-                                               const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<char>( const char *, char *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<unsigned int>( const unsigned int *,
-                                              unsigned int *,
-                                              const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<int>( const int *, int *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<unsigned long int>( const unsigned long int *,
-                                                   unsigned long int *,
-                                                   const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<long int>( const long int *, long int *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<size_t>( const size_t *, size_t *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<float>( const float *, float *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<double>( const double *, double *, const int ) const;
-template<>
-void MPI_CLASS::call_sumReduce<std::complex<double>>( const std::complex<double> *,
-                                                      std::complex<double> *,
-                                                      const int ) const;
-#endif
-// Default instantiations of call_sumReduce(const TYPE*, TYPE*, const int)
-template<class TYPE>
-void MPI_CLASS::call_sumReduce( const TYPE *x, TYPE *y, const int n ) const
-{
-    NULL_USE( x );
-    NULL_USE( y );
-    NULL_USE( n );
-    char message[200];
-    sprintf( message,
-             "Default instantion of sumReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
 }
 
 
@@ -160,449 +158,383 @@ void MPI_CLASS::call_sumReduce( const TYPE *x, TYPE *y, const int n ) const
  *  minReduce                                                            *
  ************************************************************************/
 template<class TYPE>
-inline TYPE MPI_CLASS::minReduce( const TYPE value ) const
+void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n ) const
+{
+    if ( comm_size == 1 ) {
+        for ( int i = 0; i < n; i++ )
+            recv[i] = send[i];
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "minReduce", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Allreduce( send, recv, n, type, MPI_MIN, communicator );
+    } else {
+        throw std::logic_error( "minReduce is not valid for arbitrary types" );
+    }
+    PROFILE_STOP( "minReduce", profile_level );
+#endif
+}
+template<class TYPE>
+void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) const
+{
+    if ( rank == nullptr )
+        return minReduce( send, recv, n );
+    if ( comm_size == 1 ) {
+        for ( int i = 0; i < n; i++ ) {
+            recv[i] = send[i];
+            rank[i] = 0;
+        }
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    using TYPE2          = typename TypeIntSelector<TYPE>::type;
+    constexpr auto type2 = MPI_getType<TYPE2>();
+    if ( type2 == MPI_DATATYPE_NULL )
+        throw std::logic_error( "minReduce with rank is not supported for arbitrary types" );
+    PROFILE_START( "minReduce", profile_level );
+    auto send2 = new TYPE2[n];
+    auto recv2 = new TYPE2[n];
+    for ( int i = 0; i < n; i++ ) {
+        send2[i].x = send[i];
+        send2[i].i = comm_rank;
+    }
+    MPI_Allreduce( send2, recv2, n, type2, MPI_MINLOC, communicator );
+    for ( int i = 0; i < n; i++ ) {
+        recv[i] = recv2[i].x;
+        rank[i] = recv2[i].i;
+    }
+    delete[] send2;
+    delete[] recv2;
+    PROFILE_STOP( "minReduce", profile_level );
+#endif
+}
+template<class TYPE>
+TYPE MPI_CLASS::minReduce( const TYPE value ) const
 {
     if ( comm_size > 1 ) {
-        TYPE tmp = value;
-        call_minReduce( &tmp, 1, nullptr );
+        TYPE tmp;
+        minReduce( &value, &tmp, 1 );
         return tmp;
     } else {
         return value;
     }
 }
 template<class TYPE>
-inline void MPI_CLASS::minReduce( TYPE *x, const int n, int *rank_of_min ) const
+void MPI_CLASS::minReduce( TYPE *x, int n ) const
 {
     if ( comm_size > 1 ) {
-        call_minReduce( x, n, rank_of_min );
-    } else {
-        if ( rank_of_min != nullptr ) {
-            for ( int i = 0; i < n; i++ )
-                rank_of_min[i] = 0;
-        }
+        auto tmp = new TYPE[n];
+        for ( int i = 0; i < n; i++ )
+            tmp[i] = x[i];
+        minReduce( tmp, x, n );
+        delete[] tmp;
     }
 }
 template<class TYPE>
-inline void MPI_CLASS::minReduce( const TYPE *x, TYPE *y, const int n, int *rank_of_min ) const
+void MPI_CLASS::minReduce( TYPE *x, int n, int *rank ) const
 {
+    if ( rank == nullptr )
+        return minReduce( x, n );
     if ( comm_size > 1 ) {
-        call_minReduce( x, y, n, rank_of_min );
+        auto tmp = new TYPE[n];
+        for ( int i = 0; i < n; i++ )
+            tmp[i] = x[i];
+        minReduce( tmp, x, n, rank );
+        delete[] tmp;
     } else {
-        for ( int i = 0; i < n; i++ ) {
-            y[i] = x[i];
-            if ( rank_of_min != nullptr )
-                rank_of_min[i] = 0;
-        }
+        rank[0] = 0;
     }
-}
-// Define specializations of call_minReduce(TYPE*, const int, int*)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_minReduce<unsigned char>( unsigned char *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<char>( char *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<unsigned int>( unsigned int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<int>( int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<unsigned long int>( unsigned long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<long int>( long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<unsigned long long int>( unsigned long long int *,
-                                                        const int,
-                                                        int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<long long int>( long long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<size_t>( size_t *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<float>( float *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<double>( double *, const int, int * ) const;
-#endif
-// Default instantiations of call_minReduce(TYPE*, const int, int*)
-template<class TYPE>
-void MPI_CLASS::call_minReduce( TYPE *, const int, int * ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of minReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
-}
-// Define specializations of call_minReduce(const TYPE*, TYPE*, const int, int*)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_minReduce<unsigned char>( const unsigned char *,
-                                               unsigned char *,
-                                               const int,
-                                               int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<char>( const char *, char *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<unsigned int>( const unsigned int *,
-                                              unsigned int *,
-                                              const int,
-                                              int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<int>( const int *, int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<unsigned long int>( const unsigned long int *,
-                                                   unsigned long int *,
-                                                   const int,
-                                                   int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<long int>( const long int *, long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<unsigned long long int>( const unsigned long long int *,
-                                                        unsigned long long int *,
-                                                        const int,
-                                                        int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<long long int>( const long long int *,
-                                               long long int *,
-                                               const int,
-                                               int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<size_t>( const size_t *, size_t *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<float>( const float *, float *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_minReduce<double>( const double *, double *, const int, int * ) const;
-#endif
-// Default instantiations of call_minReduce(const TYPE*, TYPE*, const int, int*)
-template<class TYPE>
-void MPI_CLASS::call_minReduce( const TYPE *, TYPE *, const int, int * ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of minReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
 }
 
 
 /************************************************************************
- *  maxReduce                                                         *
+ *  maxReduce                                                            *
  ************************************************************************/
 template<class TYPE>
-inline TYPE MPI_CLASS::maxReduce( const TYPE value ) const
+void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n ) const
+{
+    if ( comm_size == 1 ) {
+        for ( int i = 0; i < n; i++ )
+            recv[i] = send[i];
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "maxReduce", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Allreduce( send, recv, n, type, MPI_MAX, communicator );
+    } else {
+        throw std::logic_error( "maxReduce is not valid for arbitrary types" );
+    }
+    PROFILE_STOP( "maxReduce", profile_level );
+#endif
+}
+template<class TYPE>
+void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) const
+{
+    if ( rank == nullptr )
+        return maxReduce( send, recv, n );
+    if ( comm_size == 1 ) {
+        for ( int i = 0; i < n; i++ ) {
+            recv[i] = send[i];
+            rank[i] = 0;
+        }
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    using TYPE2          = typename TypeIntSelector<TYPE>::type;
+    constexpr auto type2 = MPI_getType<TYPE2>();
+    if ( type2 == MPI_DATATYPE_NULL )
+        throw std::logic_error( "maxReduce with rank is not supported for arbitrary types" );
+    PROFILE_START( "maxReduce", profile_level );
+    auto send2 = new TYPE2[n];
+    auto recv2 = new TYPE2[n];
+    for ( int i = 0; i < n; i++ ) {
+        send2[i].x = send[i];
+        send2[i].i = comm_rank;
+    }
+    MPI_Allreduce( send2, recv2, n, type2, MPI_MAXLOC, communicator );
+    for ( int i = 0; i < n; i++ ) {
+        recv[i] = recv2[i].x;
+        rank[i] = recv2[i].i;
+    }
+    delete[] send2;
+    delete[] recv2;
+    PROFILE_STOP( "maxReduce", profile_level );
+#endif
+}
+template<class TYPE>
+TYPE MPI_CLASS::maxReduce( const TYPE value ) const
 {
     if ( comm_size > 1 ) {
-        TYPE tmp = value;
-        call_maxReduce( &tmp, 1, nullptr );
+        TYPE tmp;
+        maxReduce( &value, &tmp, 1 );
         return tmp;
     } else {
         return value;
     }
 }
 template<class TYPE>
-inline void MPI_CLASS::maxReduce( TYPE *x, const int n, int *rank_of_max ) const
+void MPI_CLASS::maxReduce( TYPE *x, int n ) const
 {
     if ( comm_size > 1 ) {
-        call_maxReduce( x, n, rank_of_max );
-    } else {
-        if ( rank_of_max != nullptr ) {
-            for ( int i = 0; i < n; i++ )
-                rank_of_max[i] = 0;
-        }
+        auto tmp = new TYPE[n];
+        for ( int i = 0; i < n; i++ )
+            tmp[i] = x[i];
+        maxReduce( tmp, x, n );
+        delete[] tmp;
     }
 }
 template<class TYPE>
-inline void MPI_CLASS::maxReduce( const TYPE *x, TYPE *y, const int n, int *rank_of_max ) const
+void MPI_CLASS::maxReduce( TYPE *x, int n, int *rank ) const
 {
+    if ( rank == nullptr )
+        return minReduce( x, n );
     if ( comm_size > 1 ) {
-        call_maxReduce( x, y, n, rank_of_max );
+        auto tmp = new TYPE[n];
+        for ( int i = 0; i < n; i++ )
+            tmp[i] = x[i];
+        maxReduce( tmp, x, n, rank );
+        delete[] tmp;
     } else {
-        for ( int i = 0; i < n; i++ ) {
-            y[i] = x[i];
-            if ( rank_of_max != nullptr )
-                rank_of_max[i] = 0;
-        }
+        rank[0] = 0;
     }
-}
-// Define specializations of call_maxReduce(TYPE*, const int, int*)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_maxReduce<unsigned char>( unsigned char *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<char>( char *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<unsigned int>( unsigned int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<int>( int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long int>( unsigned long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<long int>( long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long long int>( unsigned long long int *,
-                                                        const int,
-                                                        int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<long long int>( long long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<size_t>( size_t *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<float>( float *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<double>( double *, const int, int * ) const;
-#endif
-// Default instantiations of call_maxReduce(TYPE*, const int, int*)
-template<class TYPE>
-void MPI_CLASS::call_maxReduce( TYPE *, const int, int * ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of maxReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
-}
-// Define specializations of call_maxReduce(const TYPE*, TYPE*, const int, int*)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_maxReduce<unsigned char>( const unsigned char *,
-                                               unsigned char *,
-                                               const int,
-                                               int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<char>( const char *, char *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<unsigned int>( const unsigned int *,
-                                              unsigned int *,
-                                              const int,
-                                              int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<int>( const int *, int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long int>( const unsigned long int *,
-                                                   unsigned long int *,
-                                                   const int,
-                                                   int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<long int>( const long int *, long int *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long long int>( const unsigned long long int *,
-                                                        unsigned long long int *,
-                                                        const int,
-                                                        int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<long long int>( const long long int *,
-                                               long long int *,
-                                               const int,
-                                               int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<size_t>( const size_t *, size_t *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<float>( const float *, float *, const int, int * ) const;
-template<>
-void MPI_CLASS::call_maxReduce<double>( const double *, double *, const int, int * ) const;
-#endif
-// Default instantiations of call_maxReduce(const TYPE*, TYPE*, const int, int*)
-template<class TYPE>
-void MPI_CLASS::call_maxReduce( const TYPE *, TYPE *, const int, int * ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of maxReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
 }
 
 
 /************************************************************************
  *  bcast                                                                *
  ************************************************************************/
-// Define specializations of bcast(TYPE*, const int, const int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_bcast<unsigned char>( unsigned char *, const int, const int ) const;
-template<>
-void MPI_CLASS::call_bcast<char>( char *, const int, const int ) const;
-template<>
-void MPI_CLASS::call_bcast<unsigned int>( unsigned int *, const int, const int ) const;
-template<>
-void MPI_CLASS::call_bcast<int>( int *, const int, const int ) const;
-template<>
-void MPI_CLASS::call_bcast<float>( float *, const int, const int ) const;
-template<>
-void MPI_CLASS::call_bcast<double>( double *, const int, const int ) const;
-#else
-template<>
-void MPI_CLASS::call_bcast<char>( char *, const int, const int ) const;
-#endif
-// Default instantiations of bcast(TYPE*, const int, const int)
 template<class TYPE>
-void MPI_CLASS::call_bcast( TYPE *x, const int n, const int root ) const
-{
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    call_bcast<char>( (char *) x, (int) n * sizeof( TYPE ), root );
-}
-// Specialization of bcast for std::string
-template<>
-inline std::string MPI_CLASS::bcast<std::string>( const std::string &value, const int root ) const
+void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
 {
     if ( comm_size == 1 )
-        return value;
-    int length = static_cast<int>( value.size() );
-    call_bcast<int>( &length, 1, root );
-    if ( length == 0 )
-        return std::string();
-    char *str = new char[length + 1];
-    if ( root == comm_rank ) {
-        for ( int i = 0; i < length; i++ )
-            str[i] = value[i];
+        return;
+    if ( root >= comm_size )
+        MPI_ERROR( "root cannot be >= size in bcast" );
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "bcast", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Bcast( x, n, type, root, communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        MPI_Bcast( x, n * sizeof( TYPE ), MPI_BYTE, root, communicator );
+    } else {
+        call_bcast<TYPE>( x, n, root );
     }
-    call_bcast<char>( str, length, root );
-    str[length] = 0;
-    std::string result( str );
-    delete[] str;
-    return result;
+    PROFILE_STOP( "bcast", profile_level );
 }
-template<>
-inline void MPI_CLASS::bcast<std::string>( std::string *, const int, const int ) const
+#else
+template<class TYPE>
+void MPI_CLASS::bcast( TYPE *, int, int ) const
 {
-    MPI_CLASS_ERROR( "Cannot bcast an array of strings" );
 }
+#endif
 // Default implimentation of bcast
 template<class TYPE>
-inline TYPE MPI_CLASS::bcast( const TYPE &value, const int root ) const
+TYPE MPI_CLASS::bcast( const TYPE &x, int root ) const
 {
-    if ( root >= comm_size )
-        MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
-    if ( comm_size > 1 ) {
-        TYPE tmp = value;
-        call_bcast( &tmp, 1, root );
-        return tmp;
+    if ( comm_size == 1 ) {
+        return x;
     } else {
-        return value;
+        TYPE y = x;
+        bcast( &y, 1, root );
+        return y;
     }
-}
-template<class TYPE>
-inline void MPI_CLASS::bcast( TYPE *x, const int n, const int root ) const
-{
-    if ( root >= comm_size )
-        MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
-    if ( comm_size > 1 )
-        call_bcast( x, n, root );
 }
 
 
 /************************************************************************
  *  send                                                                 *
  ************************************************************************/
-// Define specializations of send(const TYPE*, const int, const int, int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::send<char>( const char *, const int, const int, int ) const;
-template<>
-void MPI_CLASS::send<int>( const int *, int, const int, int ) const;
-template<>
-void MPI_CLASS::send<float>( const float *, const int, const int, int ) const;
-template<>
-void MPI_CLASS::send<double>( const double *, const int, const int, int ) const;
-#else
-template<>
-void MPI_CLASS::send<char>( const char *, const int, const int, int ) const;
-#endif
-// Default instantiations of send(const TYPE*, const int, const int, int)
 template<class TYPE>
-inline void
-MPI_CLASS::send( const TYPE *buf, const int length, const int recv_proc_number, int tag ) const
+void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    send<char>( (const char *) buf, length * sizeof( TYPE ), recv_proc_number, tag );
+    // Set the tag to 0 if it is < 0
+    tag = ( tag >= 0 ) ? tag : 0;
+    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    // Send the data
+    PROFILE_START( "send", profile_level );
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Send( buf, length, type, recv_proc, tag, communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t bytes = length * sizeof( TYPE );
+        MPI_Send( buf, bytes, MPI_BYTE, recv_proc, tag, communicator );
+    } else {
+        AMP_ERROR( "Arbitrary types are not supported" );
+    }
+    PROFILE_STOP( "send", profile_level );
 }
+#else
+template<class TYPE>
+void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) const
+{
+    int bytes = length * sizeof( TYPE );
+    sendBytes( buf, bytes, recv_proc, tag );
+}
+#endif
 
 
 /************************************************************************
  *  Isend                                                                *
  ************************************************************************/
-// Define specializations of Isend(const TYPE*, const int, const int, const int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-MPI_Request MPI_CLASS::Isend<char>( const char *, const int, const int, const int ) const;
-template<>
-MPI_Request MPI_CLASS::Isend<int>( const int *, int, const int, const int ) const;
-template<>
-MPI_Request MPI_CLASS::Isend<float>( const float *, const int, const int, const int ) const;
-template<>
-MPI_Request MPI_CLASS::Isend<double>( const double *, const int, const int, const int ) const;
-#else
-template<>
-MPI_Request MPI_CLASS::Isend<char>( const char *, const int, const int, const int ) const;
-#endif
-// Default instantiations of Isend(const TYPE*, const int, const int, const int)
 template<class TYPE>
-inline MPI_Request MPI_CLASS::Isend( const TYPE *buf,
-                                     const int length,
-                                     const int recv_proc_number,
-                                     const int tag ) const
+MPI_Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int tag ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    return Isend<char>( (const char *) buf, length * sizeof( TYPE ), recv_proc_number, tag );
+    // Set the tag to 0 if it is < 0
+    tag = ( tag >= 0 ) ? tag : 0;
+    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    // Send the data
+    PROFILE_START( "isend", profile_level );
+    MPI_Request request;
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Isend( buf, length, type, recv_proc, tag, communicator, &request );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t bytes = length * sizeof( TYPE );
+        MPI_Isend( buf, bytes, MPI_BYTE, recv_proc, tag, communicator, &request );
+    } else {
+        AMP_ERROR( "Arbitrary types are not supported" );
+    }
+    PROFILE_STOP( "isend", profile_level );
+    return request;
 }
+#else
+template<class TYPE>
+MPI_Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int tag ) const
+{
+    int bytes = length * sizeof( TYPE );
+    return IsendBytes( buf, bytes, recv_proc, tag );
+}
+#endif
 
 
 /************************************************************************
  *  recv                                                                 *
  ************************************************************************/
-// Define specializations of recv(TYPE*, int&, const int, const bool, int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::recv<char>( char *, int &, const int, const bool, int ) const;
-template<>
-void MPI_CLASS::recv<int>( int *, int &, const int, const bool, int ) const;
-template<>
-void MPI_CLASS::recv<float>( float *, int &, const int, const bool, int ) const;
-template<>
-void MPI_CLASS::recv<double>( double *, int &, const int, const bool, int ) const;
-#else
-template<>
-void MPI_CLASS::recv<char>( char *, int &, const int, const bool, int ) const;
-#endif
-// Default instantiations of recv(TYPE*, int&, const int, const bool, int)
 template<class TYPE>
-inline void MPI_CLASS::recv(
-    TYPE *buf, int &length, const int send_proc_number, const bool get_length, int tag ) const
+void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, int tag ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    int size = length * sizeof( TYPE );
-    recv<char>( (char *) buf, size, send_proc_number, get_length, tag );
+    // Set the tag to 0 if it is < 0
+    tag = ( tag >= 0 ) ? tag : 0;
+    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    PROFILE_START( "recv", profile_level );
+    // Get the receive length if necessary
     if ( get_length ) {
-        MPI_CLASS_ASSERT( size % sizeof( TYPE ) == 0 );
-        length = size / sizeof( TYPE );
+        int bytes       = this->probe( send_proc, tag );
+        int recv_length = bytes / sizeof( TYPE );
+        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
+        length = recv_length;
     }
+    // Recieve the data
+    MPI_Status status;
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Recv( buf, length, type, send_proc, tag, communicator, &status );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t bytes = length * sizeof( TYPE );
+        MPI_Recv( buf, bytes, MPI_BYTE, send_proc, tag, communicator, &status );
+    } else {
+        AMP_ERROR( "Arbitrary types are not supported" );
+    }
+    PROFILE_STOP( "recv", profile_level );
 }
+#else
+template<class TYPE>
+void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, int tag ) const
+{
+    // Get the receive length if necessary
+    if ( get_length ) {
+        int bytes       = this->probe( send_proc, tag );
+        int recv_length = bytes / sizeof( TYPE );
+        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
+        length = recv_length;
+    }
+    // Recieve the data
+    int bytes = length * sizeof( TYPE );
+    recvBytes( buf, bytes, send_proc, tag );
+}
+#endif
 
 
 /************************************************************************
  *  Irecv                                                                *
  ************************************************************************/
-// Define specializations of recv(TYPE*, int&, const int, const bool, int)
+// Define specializations of recv(TYPE*, int&, int, bool, int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-MPI_Request MPI_CLASS::Irecv<char>( char *, const int, const int, const int ) const;
-template<>
-MPI_Request MPI_CLASS::Irecv<int>( int *, const int, const int, const int ) const;
-template<>
-MPI_Request MPI_CLASS::Irecv<float>( float *, const int, const int, const int ) const;
-template<>
-MPI_Request MPI_CLASS::Irecv<double>( double *, const int, const int, const int ) const;
-#else
-template<>
-MPI_Request MPI_CLASS::Irecv<char>( char *, const int, const int, const int ) const;
-#endif
-// Default instantiations of recv(TYPE*, int&, const int, const bool, int)
 template<class TYPE>
-inline MPI_Request
-MPI_CLASS::Irecv( TYPE *buf, const int length, const int send_proc, const int tag ) const
+MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    return Irecv<char>( (char *) buf, length * sizeof( TYPE ), send_proc, tag );
+    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_Request request;
+    PROFILE_START( "Irecv", profile_level );
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Irecv( buf, length, type, send_proc, tag, communicator, &request );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t bytes = length * sizeof( TYPE );
+        MPI_Irecv( buf, bytes, MPI_BYTE, send_proc, tag, communicator, &request );
+    } else {
+        AMP_ERROR( "Arbitrary types are not supported" );
+    }
+    PROFILE_STOP( "Irecv", profile_level );
+    return request;
 }
+#else
+template<class TYPE>
+MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) const
+{
+    int bytes = length * sizeof( TYPE );
+    return IrecvBytes( buf, bytes, send_proc, tag );
+}
+#endif
 
 
 /************************************************************************
@@ -611,9 +543,6 @@ MPI_CLASS::Irecv( TYPE *buf, const int length, const int send_proc, const int ta
 template<class TYPE>
 std::vector<TYPE> MPI_CLASS::allGather( const TYPE &x ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    if ( getSize() <= 1 )
-        return std::vector<TYPE>( 1, x );
     std::vector<TYPE> data( getSize() );
     allGather( x, data.data() );
     return data;
@@ -621,7 +550,7 @@ std::vector<TYPE> MPI_CLASS::allGather( const TYPE &x ) const
 template<class TYPE>
 std::vector<TYPE> MPI_CLASS::allGather( const std::vector<TYPE> &x ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
+    static_assert( is_mpi_copyable<TYPE>::value, "Object is not trivially copyable" );
     if ( getSize() <= 1 )
         return x;
     std::vector<int> count = allGather<int>( x.size() );
@@ -635,105 +564,62 @@ std::vector<TYPE> MPI_CLASS::allGather( const std::vector<TYPE> &x ) const
     allGather<TYPE>( x.data(), x.size(), data.data(), count.data(), disp.data(), true );
     return data;
 }
-// Specialization of MPI_CLASS::allGather for std::string
-template<>
-inline void MPI_CLASS::allGather<std::string>( const std::string &x_in, std::string *x_out ) const
-{
-    // Get the bytes recvied per processor
-    std::vector<int> recv_cnt( comm_size, 0 );
-    allGather<int>( (int) x_in.size() + 1, &recv_cnt[0] );
-    std::vector<int> recv_disp( comm_size, 0 );
-    for ( int i = 1; i < comm_size; i++ )
-        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    // Call the vector form of allGather for the char arrays
-    char *recv_data = new char[recv_disp[comm_size - 1] + recv_cnt[comm_size - 1]];
-    allGather<char>(
-        x_in.c_str(), (int) x_in.size() + 1, recv_data, &recv_cnt[0], &recv_disp[0], true );
-    for ( int i = 0; i < comm_size; i++ )
-        x_out[i] = std::string( &recv_data[recv_disp[i]] );
-    delete[] recv_data;
-}
 // Default instantiation of MPI_CLASS::allGather
 template<class TYPE>
-inline void MPI_CLASS::allGather( const TYPE &x_in, TYPE *x_out ) const
+void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    if ( comm_size > 1 ) {
-        // We can use the vector form of allGather with a char array to ge the data we want
-        call_allGather( x_in, x_out );
-    } else {
-        // Single processor case
-        x_out[0] = x_in;
+    MPI_ASSERT( y );
+    if ( comm_size == 1 ) {
+        y[0] = x;
+        return;
     }
-}
-// Specialization of MPI_CLASS::allGather for std::string
-template<>
-inline int MPI_CLASS::allGather<std::string>(
-    const std::string *, const int, std::string *, int *, int *, bool ) const
-{
-    MPI_CLASS_ERROR( "Cannot allGather an array of strings" );
-    return 0;
-}
-// Define specializations of call_allGather(const TYPE, TYPE*)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_allGather<unsigned char>( const unsigned char &, unsigned char * ) const;
-template<>
-void MPI_CLASS::call_allGather<char>( const char &, char * ) const;
-template<>
-void MPI_CLASS::call_allGather<unsigned int>( const unsigned int &, unsigned int * ) const;
-template<>
-void MPI_CLASS::call_allGather<int>( const int &, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int &,
-                                                   unsigned long int * ) const;
-template<>
-void MPI_CLASS::call_allGather<long int>( const long int &, long int * ) const;
-template<>
-void MPI_CLASS::call_allGather<float>( const float &, float * ) const;
-template<>
-void MPI_CLASS::call_allGather<double>( const double &, double * ) const;
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "allGather", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Allgather( &x, 1, type, y, 1, type, communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t N = sizeof( TYPE );
+        MPI_Allgather( &x, N, MPI_BYTE, y, N, MPI_BYTE, communicator );
+    } else {
+        call_allGather( x, y );
+    }
+    PROFILE_STOP( "allGather", profile_level );
 #endif
-// Default instantiation of MPI_CLASS::allGather
+}
 template<class TYPE>
 int MPI_CLASS::allGather( const TYPE *send_data,
-                          const int send_cnt,
+                          int send_cnt,
                           TYPE *recv_data,
                           int *recv_cnt,
                           int *recv_disp,
                           bool known_recv ) const
 {
-    // Check the inputs
-    if ( known_recv && ( recv_cnt == nullptr || recv_disp == nullptr ) )
-        MPI_CLASS_ERROR( "Error calling allGather" );
-    // Check if we are dealing with a single processor
     if ( comm_size == 1 ) {
-        if ( send_data == nullptr && send_cnt > 0 ) {
-            MPI_CLASS_ERROR( "send_data is null" );
-        } else if ( !known_recv ) {
-            // We do not know the received sizes
+        if ( !known_recv ) {
             for ( int i = 0; i < send_cnt; i++ )
                 recv_data[i] = send_data[i];
-            if ( recv_cnt != nullptr )
-                recv_cnt[0] = send_cnt;
-            if ( recv_disp != nullptr )
-                recv_disp[0] = 0;
+            if ( recv_cnt )
+                *recv_cnt = send_cnt;
+            if ( recv_disp )
+                *recv_disp = 0;
         } else {
-            // We know the received sizes
             for ( int i = 0; i < send_cnt; i++ )
                 recv_data[i + recv_disp[0]] = send_data[i];
         }
         return send_cnt;
     }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    PROFILE_START( "allGather2", profile_level );
     // Get the sizes of the received data (if necessary)
     int *recv_cnt2  = recv_cnt;
     int *recv_disp2 = recv_disp;
     if ( !known_recv ) {
-        if ( recv_cnt == nullptr )
+        if ( !recv_cnt )
             recv_cnt2 = new int[comm_size];
-        if ( recv_disp == nullptr )
+        if ( !recv_disp )
             recv_disp2 = new int[comm_size];
-        call_allGather( send_cnt, recv_cnt2 );
+        allGather( send_cnt, recv_cnt2 );
         recv_disp2[0] = 0;
         for ( int i = 1; i < comm_size; i++ )
             recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
@@ -742,62 +628,34 @@ int MPI_CLASS::allGather( const TYPE *send_data,
     for ( int i = 0; i < comm_size; i++ )
         N_recv += recv_cnt2[i];
     // Send/recv the data
-    call_allGather( send_data, send_cnt, recv_data, recv_cnt2, recv_disp2 );
-    // Delete any temporary memory
-    if ( recv_cnt == nullptr )
-        delete[] recv_cnt2;
-    if ( recv_disp == nullptr )
-        delete[] recv_disp2;
-    return N_recv;
-}
-// Default instantiations of call_allGather(const TYPE, TYPE*)
-template<class TYPE>
-void MPI_CLASS::call_allGather( const TYPE &x_in, TYPE *x_out ) const
-{
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    allGather<char>( (const char *) &x_in, (int) sizeof( TYPE ), (char *) x_out );
-}
-// Define specializations of call_allGather(const TYPE*, int, TYPE*, int*, int*)
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_allGather<unsigned char>(
-    const unsigned char *, int, unsigned char *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<char>( const char *, int, char *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<unsigned int>(
-    const unsigned int *, int, unsigned int *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<int>( const int *, int, int *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<unsigned long int>(
-    const unsigned long int *, int, unsigned long int *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<long int>( const long int *, int, long int *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<float>( const float *, int, float *, int *, int * ) const;
-template<>
-void MPI_CLASS::call_allGather<double>( const double *, int, double *, int *, int * ) const;
-#else
-template<>
-void MPI_CLASS::call_allGather<char>( const char *, int, char *, int *, int * ) const;
-#endif
-// Default instantiations of int call_allGather(const TYPE*, int, TYPE*, int*)
-template<class TYPE>
-void MPI_CLASS::call_allGather(
-    const TYPE *x_in, int size_in, TYPE *x_out, int *size_out, int *disp_out ) const
-{
-    int *size2 = new int[comm_size];
-    int *disp2 = new int[comm_size];
-    for ( int i = 0; i < comm_size; i++ ) {
-        size2[i] = size_out[i] * sizeof( TYPE );
-        disp2[i] = disp_out[i] * sizeof( TYPE );
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Allgatherv(
+            send_data, send_cnt, type, recv_data, recv_cnt2, recv_disp2, type, communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        auto cnt  = new int[comm_size];
+        auto disp = new int[comm_size];
+        for ( int i = 0; i < comm_size; i++ ) {
+            cnt[i]  = sizeof( TYPE ) * recv_cnt2[i];
+            disp[i] = sizeof( TYPE ) * recv_disp2[i];
+        }
+        int N = send_cnt * sizeof( TYPE );
+        MPI_Allgatherv( send_data, N, MPI_BYTE, recv_data, cnt, disp, MPI_BYTE, communicator );
+        delete[] cnt;
+        delete[] disp;
+    } else {
+        call_allGather( send_data, send_cnt, recv_data, recv_cnt2, recv_disp2 );
     }
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    call_allGather<char>(
-        (const char *) x_in, (int) size_in * sizeof( TYPE ), (char *) x_out, size2, disp2 );
-    delete[] size2;
-    delete[] disp2;
+    // Delete any temporary memory
+    if ( !recv_cnt )
+        delete[] recv_cnt2;
+    if ( !recv_disp )
+        delete[] recv_disp2;
+    PROFILE_STOP( "allGather2", profile_level );
+    return N_recv;
+#else
+    return 0;
+#endif
 }
 
 
@@ -805,7 +663,7 @@ void MPI_CLASS::call_allGather(
  *  setGather                                                            *
  ************************************************************************/
 template<class TYPE>
-inline void MPI_CLASS::setGather( std::set<TYPE> &set ) const
+void MPI_CLASS::setGather( std::set<TYPE> &set ) const
 {
     std::vector<TYPE> send_buf( set.begin(), set.end() );
     std::vector<int> recv_cnt( this->comm_size, 0 );
@@ -824,7 +682,7 @@ inline void MPI_CLASS::setGather( std::set<TYPE> &set ) const
         send_data = &send_buf[0];
     }
     TYPE *recv_data = &recv_buf[0];
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
+    static_assert( is_mpi_copyable<TYPE>::value, "Object is not trivially copyable" );
     this->allGather<TYPE>(
         send_data, (int) send_buf.size(), recv_data, &recv_cnt[0], &recv_disp[0], true );
     for ( size_t i = 0; i < recv_buf.size(); i++ )
@@ -836,7 +694,7 @@ inline void MPI_CLASS::setGather( std::set<TYPE> &set ) const
  *  mapGather                                                            *
  ************************************************************************/
 template<class KEY, class DATA>
-inline void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
+void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
 {
     std::vector<KEY> send_id;
     std::vector<DATA> send_data;
@@ -865,7 +723,7 @@ inline void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
         send_data1 = &send_id[0];
         send_data2 = &send_data[0];
     }
-    static_assert( is_mpi_copyable<DATA>(), "Object is not trivially copyable" );
+    static_assert( is_mpi_copyable<DATA>::value, "Object is not trivially copyable" );
     this->allGather<KEY>( send_data1, send_size, &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
     this->allGather<DATA>(
         send_data2, send_size, &recv_data[0], &recv_cnt[0], &recv_disp[0], true );
@@ -879,51 +737,24 @@ inline void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
  *  sumScan                                                              *
  ************************************************************************/
 template<class TYPE>
-inline void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, const int n ) const
+void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
 {
-    if ( comm_size > 1 ) {
-        call_sumScan( x, y, n );
-    } else {
+    if ( comm_size == 1 ) {
         for ( int i = 0; i < n; i++ )
             y[i] = x[i];
+        return;
     }
-}
-// Define specializations of call_sumScan(const TYPE*, TYPE*, int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_sumScan<unsigned char>( const unsigned char *, unsigned char *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<char>( const char *, char *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<unsigned int>( const unsigned int *, unsigned int *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<int>( const int *, int *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<unsigned long int>( const unsigned long int *,
-                                                 unsigned long int *,
-                                                 int ) const;
-template<>
-void MPI_CLASS::call_sumScan<long int>( const long int *, long int *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<size_t>( const size_t *, size_t *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<float>( const float *, float *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<double>( const double *, double *, int ) const;
-template<>
-void MPI_CLASS::call_sumScan<std::complex<double>>( const std::complex<double> *,
-                                                    std::complex<double> *,
-                                                    int ) const;
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "sumScan", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_Scan( x, y, n, type, MPI_SUM, communicator );
+    } else {
+        throw std::logic_error( "Default instantion of sumScan in parallel is not supported" );
+    }
+    PROFILE_STOP( "sumScan", profile_level );
 #endif
-// Default instantiations of call_sumScan(const TYPE*, TYPE*, int)
-template<class TYPE>
-void MPI_CLASS::call_sumScan( const TYPE *, TYPE *, int ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of sumScan in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
 }
 
 
@@ -931,47 +762,24 @@ void MPI_CLASS::call_sumScan( const TYPE *, TYPE *, int ) const
  *  minScan                                                              *
  ************************************************************************/
 template<class TYPE>
-inline void MPI_CLASS::minScan( const TYPE *x, TYPE *y, const int n ) const
+void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
 {
-    if ( comm_size > 1 ) {
-        call_minScan( x, y, n );
-    } else {
+    if ( comm_size == 1 ) {
         for ( int i = 0; i < n; i++ )
             y[i] = x[i];
+        return;
     }
-}
-// Define specializations of call_minScan(const TYPE*, TYPE*, int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_minScan<unsigned char>( const unsigned char *, unsigned char *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<char>( const char *, char *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<unsigned int>( const unsigned int *, unsigned int *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<int>( const int *, int *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<unsigned long int>( const unsigned long int *,
-                                                 unsigned long int *,
-                                                 int ) const;
-template<>
-void MPI_CLASS::call_minScan<long int>( const long int *, long int *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<size_t>( const size_t *, size_t *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<float>( const float *, float *, int ) const;
-template<>
-void MPI_CLASS::call_minScan<double>( const double *, double *, int ) const;
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "minScan", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_Scan( x, y, n, type, MPI_MIN, communicator );
+    } else {
+        throw std::logic_error( "Default instantion of minScan in parallel is not supported" );
+    }
+    PROFILE_STOP( "minScan", profile_level );
 #endif
-// Default instantiations of call_minScan(const TYPE*, TYPE*, int)
-template<class TYPE>
-void MPI_CLASS::call_minScan( const TYPE *, TYPE *, int ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of minScan in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
 }
 
 
@@ -979,94 +787,50 @@ void MPI_CLASS::call_minScan( const TYPE *, TYPE *, int ) const
  *  maxScan                                                              *
  ************************************************************************/
 template<class TYPE>
-inline void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, const int n ) const
+void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, int n ) const
 {
-    if ( comm_size > 1 ) {
-        call_maxScan( x, y, n );
-    } else {
+    if ( comm_size == 1 ) {
         for ( int i = 0; i < n; i++ )
             y[i] = x[i];
+        return;
     }
-}
-// Define specializations of call_maxScan(const TYPE*, TYPE*, int)
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_maxScan<unsigned char>( const unsigned char *, unsigned char *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<char>( const char *, char *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<unsigned int>( const unsigned int *, unsigned int *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<int>( const int *, int *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<unsigned long int>( const unsigned long int *,
-                                                 unsigned long int *,
-                                                 int ) const;
-template<>
-void MPI_CLASS::call_maxScan<long int>( const long int *, long int *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<size_t>( const size_t *, size_t *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<float>( const float *, float *, int ) const;
-template<>
-void MPI_CLASS::call_maxScan<double>( const double *, double *, int ) const;
+    constexpr auto type = MPI_getType<TYPE>();
+    PROFILE_START( "maxScan", profile_level );
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_Scan( x, y, n, type, MPI_MAX, communicator );
+    } else {
+        throw std::logic_error( "Default instantion of maxScan in parallel is not supported" );
+    }
+    PROFILE_STOP( "maxScan", profile_level );
 #endif
-// Default instantiations of call_maxScan(const TYPE*, TYPE*, int)
-template<class TYPE>
-void MPI_CLASS::call_maxScan( const TYPE *, TYPE *, int ) const
-{
-    char message[200];
-    sprintf( message,
-             "Default instantion of maxReduce in parallel is not supported (%s)",
-             typeid( TYPE ).name() );
-    MPI_CLASS_ERROR( message );
 }
 
 
 /************************************************************************
  *  allToAll                                                             *
  ************************************************************************/
-// Define specializations of allToAll(const int n, const char*, char* )
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::allToAll<unsigned char>( const int n,
-                                         const unsigned char *,
-                                         unsigned char * ) const;
-template<>
-void MPI_CLASS::allToAll<char>( const int n, const char *, char * ) const;
-template<>
-void MPI_CLASS::allToAll<unsigned int>( const int n, const unsigned int *, unsigned int * ) const;
-template<>
-void MPI_CLASS::allToAll<int>( const int n, const int *, int * ) const;
-template<>
-void MPI_CLASS::allToAll<unsigned long int>( const int n,
-                                             const unsigned long int *,
-                                             unsigned long int * ) const;
-template<>
-void MPI_CLASS::allToAll<long int>( const int n, const long int *, long int * ) const;
-template<>
-void MPI_CLASS::allToAll<float>( const int n, const float *, float * ) const;
-template<>
-void MPI_CLASS::allToAll<double>( const int n, const double *, double * ) const;
-#endif
-// Default instantiations of allToAll(const int n, const char*, char* )
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
 template<class TYPE>
-void MPI_CLASS::allToAll( const int n, const TYPE *send_data, TYPE *recv_data ) const
+void MPI_CLASS::allToAll( int n, const TYPE *send, TYPE *recv ) const
 {
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    allToAll<char>( n * sizeof( TYPE ), (char *) send_data, (char *) recv_data );
-}
-#else
-template<class TYPE>
-void MPI_CLASS::allToAll( const int n, const TYPE *send_data, TYPE *recv_data ) const
-{
-    if ( comm_size != 1 )
-        MPI_CLASS_ERROR( "Invalid size for allToAll" );
-    for ( int i = 0; i < n; i++ )
-        recv_data[i] = send_data[i];
-}
+    if ( comm_size == 1 ) {
+        for ( int i = 0; i < n; i++ )
+            recv[i] = send[i];
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Alltoall( send, n, type, recv, n, type, communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        int N = n * sizeof( TYPE );
+        MPI_Alltoall( send, N, MPI_BYTE, recv, N, MPI_BYTE, communicator );
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
 #endif
+}
 
 
 /************************************************************************
@@ -1081,12 +845,11 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
                          int *recv_disp,
                          bool known_recv ) const
 {
-    int N_received = 0;
     if ( comm_size == 1 ) {
         // Special case for single-processor communicators
         if ( known_recv ) {
             if ( recv_cnt[0] != send_cnt[0] && send_cnt[0] > 0 )
-                MPI_CLASS_ERROR( "Single processor send/recv are different sizes" );
+                MPI_ERROR( "Single processor send/recv are different sizes" );
         } else {
             if ( recv_cnt != nullptr )
                 recv_cnt[0] = send_cnt[0];
@@ -1095,106 +858,77 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         }
         for ( int i = 0; i < send_cnt[0]; i++ )
             recv_data[i + recv_disp[0]] = send_data[i + send_disp[0]];
-        N_received = send_cnt[0];
-    } else if ( known_recv ) {
-        // The receive sizes are known
-        MPI_CLASS_ASSERT( recv_cnt != nullptr && recv_disp != nullptr );
-        call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt, recv_disp );
-        for ( int i = 0; i < comm_size; i++ )
-            N_received += recv_cnt[i];
-    } else {
-        // The receive sizes are not known, we need to communicate that information first
-        int *recv_cnt2  = recv_cnt;
-        int *recv_disp2 = recv_disp;
-        if ( recv_cnt == nullptr )
-            recv_cnt2 = new int[comm_size];
-        if ( recv_disp == nullptr )
-            recv_disp2 = new int[comm_size];
+        return send_cnt[0];
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    PROFILE_START( "allToAll", profile_level );
+    // Get the recv sizes if needed
+    int *recv_cnt2  = recv_cnt;
+    int *recv_disp2 = recv_disp;
+    if ( !known_recv ) {
         // Communicate the size we will be recieving from each processor
+        if ( !recv_cnt )
+            recv_cnt2 = new int[comm_size];
+        if ( !recv_disp )
+            recv_disp2 = new int[comm_size];
         allToAll<int>( 1, send_cnt, recv_cnt2 );
         recv_disp2[0] = 0;
         for ( int i = 1; i < comm_size; i++ )
             recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
-        // Send the data
-        call_allToAll( send_data, send_cnt, send_disp, recv_data, recv_cnt2, recv_disp2 );
-        for ( int i = 0; i < comm_size; i++ )
-            N_received += recv_cnt2[i];
-        if ( recv_cnt == nullptr )
-            delete[] recv_cnt2;
-        if ( recv_disp == nullptr )
-            delete[] recv_disp2;
     }
+    // Perform the communication
+    MPI_ASSERT( recv_cnt2 && recv_disp2 );
+    constexpr auto type = MPI_getType<TYPE>();
+    if constexpr ( type != MPI_DATATYPE_NULL ) {
+        MPI_Alltoallv( send_data,
+                       send_cnt,
+                       send_disp,
+                       type,
+                       recv_data,
+                       recv_cnt2,
+                       recv_disp2,
+                       type,
+                       communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        auto send_cnt3  = new int[comm_size];
+        auto send_disp3 = new int[comm_size];
+        auto recv_cnt3  = new int[comm_size];
+        auto recv_disp3 = new int[comm_size];
+        for ( int i = 0; i < comm_size; i++ ) {
+            send_cnt3[i]  = sizeof( TYPE ) * send_cnt[i];
+            send_disp3[i] = sizeof( TYPE ) * send_disp[i];
+            recv_cnt3[i]  = sizeof( TYPE ) * recv_cnt2[i];
+            recv_disp3[i] = sizeof( TYPE ) * recv_disp2[i];
+        }
+        MPI_Alltoallv( send_data,
+                       send_cnt3,
+                       send_disp3,
+                       MPI_BYTE,
+                       recv_data,
+                       recv_cnt3,
+                       recv_disp3,
+                       MPI_BYTE,
+                       communicator );
+        delete[] send_cnt3;
+        delete[] send_disp3;
+        delete[] recv_cnt3;
+        delete[] recv_disp3;
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+    int N_received = 0;
+    for ( int i = 0; i < comm_size; i++ )
+        N_received += recv_cnt2[i];
+    // Delete the temporary memory if needed
+    if ( !recv_cnt )
+        delete[] recv_cnt2;
+    if ( !recv_disp )
+        delete[] recv_disp2;
+    PROFILE_STOP( "allToAll", profile_level );
     return N_received;
-}
-// Define specializations of call_allToAll
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
-template<>
-void MPI_CLASS::call_allToAll<unsigned char>( const unsigned char *,
-                                              const int *,
-                                              const int *,
-                                              unsigned char *,
-                                              const int *,
-                                              const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<char>(
-    const char *, const int *, const int *, char *, const int *, const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<unsigned int>( const unsigned int *,
-                                             const int *,
-                                             const int *,
-                                             unsigned int *,
-                                             const int *,
-                                             const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<int>(
-    const int *, const int *, const int *, int *, const int *, const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<unsigned long int>( const unsigned long int *,
-                                                  const int *,
-                                                  const int *,
-                                                  unsigned long int *,
-                                                  const int *,
-                                                  const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<long int>(
-    const long int *, const int *, const int *, long int *, const int *, const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<float>(
-    const float *, const int *, const int *, float *, const int *, const int * ) const;
-template<>
-void MPI_CLASS::call_allToAll<double>(
-    const double *, const int *, const int *, double *, const int *, const int * ) const;
 #else
-template<>
-void MPI_CLASS::call_allToAll<char>(
-    const char *, const int *, const int *, char *, const int *, const int * ) const;
+    return 0;
 #endif
-// Default instantiations of call_allToAll
-template<class TYPE>
-void MPI_CLASS::call_allToAll( const TYPE *send_data,
-                               const int send_cnt[],
-                               const int send_disp[],
-                               TYPE *recv_data,
-                               const int *recv_cnt,
-                               const int *recv_disp ) const
-{
-    int *send_cnt2  = new int[comm_size];
-    int *recv_cnt2  = new int[comm_size];
-    int *send_disp2 = new int[comm_size];
-    int *recv_disp2 = new int[comm_size];
-    for ( int i = 0; i < comm_size; i++ ) {
-        send_cnt2[i]  = send_cnt[i] * sizeof( TYPE );
-        send_disp2[i] = send_disp[i] * sizeof( TYPE );
-        recv_cnt2[i]  = recv_cnt[i] * sizeof( TYPE );
-        recv_disp2[i] = recv_disp[i] * sizeof( TYPE );
-    }
-    static_assert( is_mpi_copyable<TYPE>(), "Object is not trivially copyable" );
-    call_allToAll<char>(
-        (char *) send_data, send_cnt2, send_disp2, (char *) recv_data, recv_cnt2, recv_disp2 );
-    delete[] send_cnt2;
-    delete[] recv_cnt2;
-    delete[] send_disp2;
-    delete[] recv_disp2;
 }
 
 

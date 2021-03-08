@@ -3,6 +3,7 @@
 #define included_AMP_TypeTraits
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "AMP/utils/ArraySize.h" // Forward declare Array
@@ -26,6 +27,15 @@ struct is_vector : std::false_type {
 };
 template<typename T>
 struct is_vector<std::vector<T>> : std::true_type {
+};
+
+
+// Function to test if a type is a std::pair
+template<typename>
+struct is_pair : std::false_type {
+};
+template<typename T, typename U>
+struct is_pair<std::pair<T, U>> : std::true_type {
 };
 
 
