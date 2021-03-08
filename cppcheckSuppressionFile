@@ -149,6 +149,20 @@ duplicateAssignExpression:*/src/utils/test/test_MathExpr.cpp
 knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cpp
 knownConditionTrueFalse:*/src/utils/test/test_AMP_MPI.cpp
 resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
+knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
+knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
+containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
+unreadVariable:*/src/utils/DelaunayInterpolation.cpp
+unreadVariable:*/src/utils/DelaunayTessellation.cpp
+uninitvar:*/src/utils/DelaunayInterpolation.cpp
+uninitvar:*/src/utils/DelaunayTessellation.cpp
+redundantAssignment:*/src/utils/kdtree.cpp
+templateRecursion:*/AMP/utils/AMP_MPI.I
+shadowVariable:*/utils/DelaunayTessellation.cpp
+shiftTooManyBits:*/src/utils/extended_int.cpp
 
 
 //***********************************************************
