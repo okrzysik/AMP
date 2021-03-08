@@ -64,7 +64,23 @@ template<> struct TypeIntSelector<double>   { using type = TypeIntStruct<double>
 template<typename T> struct TypeIntSelector { using type = TypeIntStruct<T>;     };
 // clang-format on
 template<class TYPE>
-constexpr MPI_Datatype MPI_getType()
+constexpr bool isMPItype()
+{
+    return std::is_same<TYPE, char>::value || std::is_same<TYPE, uint8_t>::value ||
+           std::is_same<TYPE, int8_t>::value || std::is_same<TYPE, uint16_t>::value ||
+           std::is_same<TYPE, int16_t>::value || std::is_same<TYPE, uint32_t>::value ||
+           std::is_same<TYPE, int32_t>::value || std::is_same<TYPE, uint64_t>::value ||
+           std::is_same<TYPE, int64_t>::value || std::is_same<TYPE, float>::value ||
+           std::is_same<TYPE, double>::value || std::is_same<TYPE, std::complex<float>>::value ||
+           std::is_same<TYPE, std::complex<double>>::value ||
+           std::is_same<TYPE, TypeIntStruct<short>>::value ||
+           std::is_same<TYPE, TypeIntStruct<int>>::value ||
+           std::is_same<TYPE, TypeIntStruct<long>>::value ||
+           std::is_same<TYPE, TypeIntStruct<float>>::value ||
+           std::is_same<TYPE, TypeIntStruct<double>>::value;
+}
+template<class TYPE>
+MPI_Datatype MPI_getType()
 {
     if constexpr ( std::is_same<TYPE, char>::value )
         return MPI_CHAR;
@@ -102,6 +118,7 @@ constexpr MPI_Datatype MPI_getType()
         return MPI_FLOAT_INT;
     if constexpr ( std::is_same<TYPE, TypeIntStruct<double>>::value )
         return MPI_DOUBLE_INT;
+    throw std::logic_error( "Invalid MPI type" );
     return MPI_DATATYPE_NULL;
 }
 #endif
@@ -119,9 +136,9 @@ void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "sumReduce", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         AMP_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Allreduce( send, recv, n, type, MPI_SUM, communicator );
     } else {
@@ -166,9 +183,9 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "minReduce", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Allreduce( send, recv, n, type, MPI_MIN, communicator );
     } else {
         throw std::logic_error( "minReduce is not valid for arbitrary types" );
@@ -189,9 +206,8 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    using TYPE2          = typename TypeIntSelector<TYPE>::type;
-    constexpr auto type2 = MPI_getType<TYPE2>();
-    if ( type2 == MPI_DATATYPE_NULL )
+    using TYPE2 = typename TypeIntSelector<TYPE>::type;
+    if constexpr ( !isMPItype<TYPE>() )
         throw std::logic_error( "minReduce with rank is not supported for arbitrary types" );
     PROFILE_START( "minReduce", profile_level );
     auto send2 = new TYPE2[n];
@@ -200,6 +216,7 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
         send2[i].x = send[i];
         send2[i].i = comm_rank;
     }
+    auto type2 = MPI_getType<TYPE2>();
     MPI_Allreduce( send2, recv2, n, type2, MPI_MINLOC, communicator );
     for ( int i = 0; i < n; i++ ) {
         recv[i] = recv2[i].x;
@@ -261,9 +278,9 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "maxReduce", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Allreduce( send, recv, n, type, MPI_MAX, communicator );
     } else {
         throw std::logic_error( "maxReduce is not valid for arbitrary types" );
@@ -284,9 +301,8 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    using TYPE2          = typename TypeIntSelector<TYPE>::type;
-    constexpr auto type2 = MPI_getType<TYPE2>();
-    if ( type2 == MPI_DATATYPE_NULL )
+    using TYPE2 = typename TypeIntSelector<TYPE>::type;
+    if constexpr ( !isMPItype<TYPE>() )
         throw std::logic_error( "maxReduce with rank is not supported for arbitrary types" );
     PROFILE_START( "maxReduce", profile_level );
     auto send2 = new TYPE2[n];
@@ -295,6 +311,7 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
         send2[i].x = send[i];
         send2[i].i = comm_rank;
     }
+    auto type2 = MPI_getType<TYPE2>();
     MPI_Allreduce( send2, recv2, n, type2, MPI_MAXLOC, communicator );
     for ( int i = 0; i < n; i++ ) {
         recv[i] = recv2[i].x;
@@ -355,9 +372,9 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
         return;
     if ( root >= comm_size )
         MPI_ERROR( "root cannot be >= size in bcast" );
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "bcast", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Bcast( x, n, type, root, communicator );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         MPI_Bcast( x, n * sizeof( TYPE ), MPI_BYTE, root, communicator );
@@ -398,8 +415,8 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     // Send the data
     PROFILE_START( "send", profile_level );
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Send( buf, length, type, recv_proc, tag, communicator );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
@@ -432,8 +449,8 @@ MPI_Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int ta
     // Send the data
     PROFILE_START( "isend", profile_level );
     MPI_Request request;
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Isend( buf, length, type, recv_proc, tag, communicator, &request );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
@@ -474,8 +491,8 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     }
     // Recieve the data
     MPI_Status status;
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Recv( buf, length, type, send_proc, tag, communicator, &status );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
@@ -515,8 +532,8 @@ MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) co
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_Request request;
     PROFILE_START( "Irecv", profile_level );
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Irecv( buf, length, type, send_proc, tag, communicator, &request );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
@@ -574,9 +591,9 @@ void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "allGather", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Allgather( &x, 1, type, y, 1, type, communicator );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t N = sizeof( TYPE );
@@ -628,8 +645,8 @@ int MPI_CLASS::allGather( const TYPE *send_data,
     for ( int i = 0; i < comm_size; i++ )
         N_recv += recv_cnt2[i];
     // Send/recv the data
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Allgatherv(
             send_data, send_cnt, type, recv_data, recv_cnt2, recv_disp2, type, communicator );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
@@ -745,9 +762,9 @@ void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "sumScan", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         AMP_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Scan( x, y, n, type, MPI_SUM, communicator );
     } else {
@@ -770,9 +787,9 @@ void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "minScan", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         AMP_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Scan( x, y, n, type, MPI_MIN, communicator );
     } else {
@@ -795,9 +812,9 @@ void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, int n ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
     PROFILE_START( "maxScan", profile_level );
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         AMP_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Scan( x, y, n, type, MPI_MAX, communicator );
     } else {
@@ -820,8 +837,8 @@ void MPI_CLASS::allToAll( int n, const TYPE *send, TYPE *recv ) const
         return;
     }
 #if defined( USE_MPI ) || defined( USE_EXT_MPI )
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Alltoall( send, n, type, recv, n, type, communicator );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         int N = n * sizeof( TYPE );
@@ -878,8 +895,8 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
     }
     // Perform the communication
     MPI_ASSERT( recv_cnt2 && recv_disp2 );
-    constexpr auto type = MPI_getType<TYPE>();
-    if constexpr ( type != MPI_DATATYPE_NULL ) {
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
         MPI_Alltoallv( send_data,
                        send_cnt,
                        send_disp,
