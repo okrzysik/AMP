@@ -2,8 +2,8 @@
 #define included_AMP_CoupledFlowFrapconOperator
 
 #include "AMP/operators/ColumnOperator.h"
-#include "AMP/operators/map/Map1Dto3D.h"
-#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/map/libmesh/Map1Dto3D.h"
+#include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/utils/Utilities.h"

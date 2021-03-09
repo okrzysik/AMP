@@ -1,6 +1,6 @@
 #include "AMP/solvers/libmesh/CoupledFlow1DSolver.h"
-#include "AMP/operators/map/Map1Dto3D.h"
-#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/map/libmesh/Map1Dto3D.h"
+#include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 #include "AMP/utils/Database.h"
