@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-
+#if !defined( __INTEL_COMPILER ) 
 using eint64   = AMP::extended::int64N<1>;
 using eint128  = AMP::extended::int128_t;
 using eint256  = AMP::extended::int256_t;
@@ -198,7 +198,10 @@ static constexpr bool testMult()
     eint2048 x( -100000000 ), x2( 1 );
     double ans = 1.0;
     for ( int i = 0; i < 38; i++ ) {
-        if ( i <= 38 && fabs( ( static_cast<double>( x2 ) - ans ) / ans ) > 1e-12 )
+        double err = ( static_cast<double>( x2 ) - ans ) / ans;
+        if ( err < 0 )
+            err = -err;
+        if ( i <= 38 && err > 1e-12 )
             return false;
         x2 = x2 * x;
         ans *= -1e8;
@@ -208,3 +211,5 @@ static constexpr bool testMult()
     return static_cast<double>( x2 ) == inf;
 }
 static_assert( testMult() );
+#endif
+

@@ -2,6 +2,7 @@
 #include "AMP/ampmesh/triangle_t.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <cmath>
 #include <cstdlib>

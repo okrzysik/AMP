@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/libmesh/initializeLibMesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <cstring>
 

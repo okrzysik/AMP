@@ -5,7 +5,6 @@
 
 #include <array>
 #include <atomic>
-#include <complex>
 #include <map>
 #include <set>
 #include <string>
@@ -21,7 +20,6 @@
     // Building with SAMRAI and PETSc and without MPI is complicated
     #include "petsc/mpiuni/mpi.h"
     #undef MPI_REQUEST_NULL
-    #undef NULL_USE
     #define HAVE_MPI
     #ifndef included_tbox_SAMRAI_MPI
         extern int MPI_REQUEST_NULL;
@@ -94,7 +92,7 @@ namespace AMP {
  * succeed provided that the size of the data type object is a fixed size on
  * all processors.  sizeof(type) must be the same for all elements and processors.
  */
-class AMP_MPI final
+class alignas( 8 ) AMP_MPI final
 {
 public:
     enum class ThreadSupport : int { SINGLE, FUNNELED, SERIALIZED, MULTIPLE };
@@ -125,8 +123,8 @@ public: // Constructors
      * responsible
      *      for free'ing the MPI_Comm when it is no longer used.  This behavior is controlled by the
      *      optional manage argument.
-     * \param comm      Existing MPI communicator
-     * \param manage    Do we want to manage the comm (free the MPI_Comm when this object leaves
+     * \param[in] comm      Existing MPI communicator
+     * \param[in] manage    Do we want to manage the comm (free the MPI_Comm when this object leaves
      * scope)
      */
     AMP_MPI( MPI_Comm comm, bool manage = false );
@@ -136,14 +134,14 @@ public: // Constructors
      * \brief Constructor from existing communicator
      * \details  This constructor creates a new communicator from an existing communicator.
      *   This does not create a new internal MPI_Comm, but uses the existing comm.
-     * \param comm Existing communicator
+     * \param[in] comm Existing communicator
      */
     AMP_MPI( const AMP_MPI &comm );
 
 
     /*!
      * Move constructor
-     * @param rhs           Communicator to copy
+     * @param[in] rhs       Communicator to copy
      */
     AMP_MPI( AMP_MPI &&rhs );
 
@@ -151,14 +149,14 @@ public: // Constructors
     /**
      * \brief Assignment operator
      * \details  This operator overloads the assignment to correctly copy an communicator
-     * \param comm Existing MPI object
+     * \param[in] comm      Existing MPI object
      */
     AMP_MPI &operator=( const AMP_MPI &comm );
 
 
     /*!
      * Move assignment operator
-     * @param rhs           Communicator to copy
+     * @param[in] rhs       Communicator to copy
      */
     AMP_MPI &operator=( AMP_MPI &&rhs );
 
@@ -197,28 +195,30 @@ public: // Member functions
      *    process affinities to achieve the desired load balance.
      *    Note: this is a global operation on the given comm, and it is STRONGLY
      *    recommended to use COMM_WORLD.
-     * \param comm      The communicator to use (Default is COMM_WORLD)
-     * \param method    The desired load balance method to use:
-     *                  1:  Adjust the affinities so all processes share the given processors.
-     *                      This effectively allows the OS to handle the load balancing
-     *                      by migrating the processes as necessary.  This is recommended
-     *                      for most users and use cases. (default)
-     *                  2:  Adjust the affinities so that the fewest number of processes overlap.
-     *                      This will try to give each process a unique set of processors while
-     *                      ensuring that each process has at least N_min processes.
-     * \param procs     An optional list of processors to use.  By default, setting this to an
-     *                  empty vector will use all available processors on the given node.
-     * \param N_min     The minimum number of processors for any process (-1 indicates all available
-     * processors).
-     * \param N_max     The maximum number of processors for any process (-1 indicates all available
-     * processors).
+     * \param[in] comm      The communicator to use (Default is COMM_WORLD)
+     * \param[in] method    The desired load balance method to use:
+     *                      1:  Adjust the affinities so all processes share the given processors.
+     *                          This effectively allows the OS to handle the load balancing
+     *                          by migrating the processes as necessary.  This is recommended
+     *                          for most users and use cases. (default)
+     *                      2:  Adjust the affinities so that the fewest number of processes
+     *                          overlap. This will try to give each process a unique set of
+     *                          processors while ensuring that each process has at least N_min
+     *                          processes.
+     * \param[in] procs     An optional list of processors to use.
+     *                      By default, setting this to an empty vector will use all available
+     *                      processors on the given node. \param[in] N_min
+     *                      The minimum number of processors for any process
+     *                      (-1 indicates all available processors).
+     * \param[in] N_max     The maximum number of processors for any process
+     *                      (-1 indicates all available processors).
      *
      */
     static void balanceProcesses( const AMP_MPI &comm           = AMP_MPI( AMP_COMM_WORLD ),
-                                  const int method              = 1,
+                                  int method                    = 1,
                                   const std::vector<int> &procs = std::vector<int>(),
-                                  const int N_min               = 1,
-                                  const int N_max               = -1 );
+                                  int N_min                     = 1,
+                                  int N_max                     = -1 );
 
 
     //! Query the level of thread support
@@ -238,16 +238,15 @@ public: // Member functions
      *   See MPI_Comm_split for information on how the underlying split will occur.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects.
-     * \param color  Control of subset assignment (nonnegative integer).
-     *               Processes with the same color are in the same new communicator .
-     *               -1: processor will not be a member of any object (NULL object will be returned)
-     * \param key    Control of rank assignment (integer).
-     *               Note that, for a fixed color, the keys need not be unique. The processes will
-     * be sorted
-     *               in ascending order according to this key, then all the processes in a given
-     * color will
-     *               have the relative rank order as they did in their parent group. (See
-     * MPI_Comm_split)
+     * \param[in] color Control of subset assignment (nonnegative integer).
+     *                  Processes with the same color are in the same new communicator.
+     *                  -1: processor will not be a member of any object
+     *                      (NULL object will be returned)
+     * \param[in] key   Control of rank assignment (integer).
+     *                  Note that, for a fixed color, the keys need not be unique.
+     *                  The processes will be sorted in ascending order according to this key,
+     *                  then all the processes in a given color will have the relative rank
+     *                  order as they did in their parent group. (See MPI_Comm_split)
      */
     AMP_MPI split( int color, int key = -1 ) const;
 
@@ -259,13 +258,11 @@ public: // Member functions
      *   Internally this will use MPI_Get_processor_name to identify the nodes.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects)
-     * \param key    Control of rank assignment (integer).
-     *               Note that, for a fixed color, the keys need not be unique. The processes will
-     * be sorted
-     *               in ascending order according to this key, then all the processes in a given
-     * color will
-     *               have the relative rank order as they did in their parent group. (See
-     * MPI_Comm_split)
+     * \param[in] key   Control of rank assignment (integer).
+     *                  Note that, for a fixed color, the keys need not be unique.
+     *                  The processes will be sorted in ascending order according to this key,
+     *                  then all the processes in a given color will have the relative rank
+     *                  order as they did in their parent group. (See MPI_Comm_split)
      */
     AMP_MPI splitByNode( int key = -1 ) const;
 
@@ -298,7 +295,7 @@ public: // Member functions
     /**
      * Check if the current communicator is NULL
      */
-    bool isNull() const { return d_isNull; }
+    inline bool isNull() const { return d_isNull; }
 
 
     /**
@@ -317,7 +314,7 @@ public: // Member functions
      *  user is responsible for checking if the communicator is valid, or keeping a
      *  copy of the communicator that provided the MPI_Communicator.
      */
-    const MPI_Comm &getCommunicator() const { return communicator; }
+    inline const MPI_Comm &getCommunicator() const { return communicator; }
 
 
     /**
@@ -408,19 +405,19 @@ public: // Member functions
      * Return the processor rank (identifier) from 0 through the number of
      * processors minus one.
      */
-    int getRank() const { return comm_rank; }
+    inline int getRank() const { return comm_rank; }
 
 
     /**
      * Return the number of processors.
      */
-    int getSize() const { return comm_size; }
+    inline int getSize() const { return comm_size; }
 
 
     /**
      * Return the maximum tag
      */
-    int maxTag() const { return d_maxTag; }
+    inline int maxTag() const { return d_maxTag; }
 
 
     /**
@@ -455,7 +452,7 @@ public: // Member functions
      * \brief   Boolean all reduce
      * \details This function performs a boolean all reduce across all processors.
      *   It returns true iff all processor are true;
-     * \param value  The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     bool allReduce( const bool value ) const;
 
@@ -464,7 +461,7 @@ public: // Member functions
      * \brief   Boolean any reduce
      * \details This function performs a boolean any reduce across all processors.
      *   It returns true if any processor is true;
-     * \param value  The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     bool anyReduce( const bool value ) const;
 
@@ -473,7 +470,7 @@ public: // Member functions
      * \brief   Boolean all reduce
      * \details This function performs a boolean all reduce across all processors.
      *   It returns true iff all processor are true;
-     * \param value  The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     void allReduce( std::vector<bool> &value ) const;
 
@@ -482,7 +479,7 @@ public: // Member functions
      * \brief   Boolean any reduce
      * \details This function performs a boolean any reduce across all processors.
      *   It returns true if any processor is true;
-     * \param value  The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     void anyReduce( std::vector<bool> &value ) const;
 
@@ -491,7 +488,7 @@ public: // Member functions
      * \brief   Sum Reduce
      * \details This function performs a sum all reduce across all processor.
      *   It returns the sum across all processors;
-     * \param value  The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     template<class type>
     type sumReduce( const type value ) const;
@@ -502,11 +499,11 @@ public: // Member functions
      * \details Perform an array sum Reduce across all nodes.  Each
      * processor contributes an array of values, and the
      * element-wise sum is returned in the same array.
-     * \param x  The input/output array for the reduce
-     * \param n  The number of values in the array (must match on all nodes)
+     * \param[in] x         The input/output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
-    void sumReduce( type *x, const int n = 1 ) const;
+    void sumReduce( type *x, int n = 1 ) const;
 
 
     /**
@@ -514,40 +511,60 @@ public: // Member functions
      * \details Perform an array sum Reduce across all nodes.  Each
      * processor contributes an array of values, and the
      * element-wise sum is returned in the same array.
-     * \param x  The input array for the reduce
-     * \param y  The output array for the reduce
-     * \param n  The number of values in the array (must match on all nodes)
+     * \param[in] x         The input array for the reduce
+     * \param[in] y         The output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
-    void sumReduce( const type *x, type *y, const int n = 1 ) const;
+    void sumReduce( const type *x, type *y, int n = 1 ) const;
 
 
     /**
      * \brief   Min Reduce
      * \details This function performs a min all reduce across all processor.
      *   It returns the minimum value across all processors;
-     * \param value  The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     template<class type>
     type minReduce( const type value ) const;
 
 
     /**
-     * \brief   Sum Reduce
+     * \brief   Min Reduce
      * \details Perform an array min Reduce across all nodes.  Each
      * processor contributes an array of values, and the
      * element-wise minimum is returned in the same array.
-     *
-     * If a 'rank_of_min' argument is provided, it will set the array to the
-     * rank of process holding the minimum value.  Like the double argument,
-     * the size of the supplied 'rank_of_min' array should be n.
-     * \param x         The input/output array for the reduce
-     * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_min  Optional array indicating the rank of the processor containing the
-     * minimum value
+     * \param[in] x         The input/output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
-    void minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
+    void minReduce( type *x, int n ) const;
+
+
+    /**
+     * \brief   Min Reduce
+     * \details Perform an array min Reduce across all nodes.  Each
+     * processor contributes an array of values, and the
+     * element-wise minimum is returned in the same array.
+     * \param[in] x         The input array for the reduce
+     * \param[in] y         The output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     */
+    template<class type>
+    void minReduce( const type *x, type *y, int n ) const;
+
+    /**
+     * \brief   Min Reduce
+     * \details Perform an array min Reduce across all nodes.  Each
+     * processor contributes an array of values, and the
+     * element-wise minimum is returned in the same array.
+     * \param[in] x         The input/output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[out] rank     Output array indicating the rank of the processor containing
+     *                      the minimum value
+     */
+    template<class type>
+    void minReduce( type *x, int n, int *rank ) const;
 
 
     /**
@@ -555,32 +572,28 @@ public: // Member functions
      * \details Perform an array min Reduce across all nodes.  Each
      * processor contributes an array of values, and the
      * element-wise minimum is returned in the same array.
-     *
-     * If a 'rank_of_min' argument is provided, it will set the array to the
-     * rank of process holding the minimum value.  Like the double argument,
-     * the size of the supplied 'rank_of_min' array should be n.
-     * \param x         The input array for the reduce
-     * \param y         The output array for the reduce
-     * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_min  Optional array indicating the rank of the processor containing the
-     * minimum value
+     * \param[in] x         The input array for the reduce
+     * \param[in] y         The output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[out] rank     Output array indicating the rank of the processor containing
+     *                      the minimum value
      */
     template<class type>
-    void minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
+    void minReduce( const type *x, type *y, int n, int *rank ) const;
 
 
     /**
      * \brief   Max Reduce
      * \details This function performs a max all reduce across all processor.
      *   It returns the maximum value across all processors;
-     * \param value     The input value for the all reduce
+     * \param[in] value     The input value for the all reduce
      */
     template<class type>
     type maxReduce( const type value ) const;
 
 
     /**
-     * \brief   Sum Reduce
+     * \brief   Max Reduce
      * \details Perform an array max Reduce across all nodes.  Each
      * processor contributes an array of values, and the
      * element-wise maximum is returned in the same array.
@@ -588,17 +601,17 @@ public: // Member functions
      * If a 'rank_of_min' argument is provided, it will set the array to the
      * rank of process holding the minimum value.  Like the double argument,
      * the size of the supplied 'rank_of_min' array should be n.
-     * \param x         The input/output array for the reduce
-     * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_max  Optional array indicating the rank of the processor containing the
-     * minimum value
+     * \param[in] x         The input/output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[out] rank     Output array indicating the rank of the processor containing
+     *                      the minimum value
      */
     template<class type>
-    void maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
+    void maxReduce( type *x, int n ) const;
 
 
     /**
-     * \brief   Sum Reduce
+     * \brief   Max Reduce
      * \details Perform an array max Reduce across all nodes.  Each
      * processor contributes an array of values, and the
      * element-wise maximum is returned in the same array.
@@ -606,71 +619,107 @@ public: // Member functions
      * If a 'rank_of_min' argument is provided, it will set the array to the
      * rank of process holding the minimum value.  Like the double argument,
      * the size of the supplied 'rank_of_min' array should be n.
-     * \param x         The input array for the reduce
-     * \param y         The output array for the reduce
-     * \param n         The number of values in the array (must match on all nodes)
-     * \param rank_of_max  Optional array indicating the rank of the processor containing the
-     * minimum value
+     * \param[in] x         The input array for the reduce
+     * \param[in] y         The output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[out] rank     Output array indicating the rank of the processor containing
+     *                      the minimum value
      */
     template<class type>
-    void maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
+    void maxReduce( const type *x, type *y, int n ) const;
+
+    /**
+     * \brief   Max Reduce
+     * \details Perform an array max Reduce across all nodes.  Each
+     * processor contributes an array of values, and the
+     * element-wise maximum is returned in the same array.
+     *
+     * If a 'rank_of_min' argument is provided, it will set the array to the
+     * rank of process holding the minimum value.  Like the double argument,
+     * the size of the supplied 'rank_of_min' array should be n.
+     * \param[in] x         The input/output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[out] rank     Output array indicating the rank of the processor containing
+     *                      the minimum value
+     */
+    template<class type>
+    void maxReduce( type *x, int n, int *rank ) const;
+
+
+    /**
+     * \brief   Max Reduce
+     * \details Perform an array max Reduce across all nodes.  Each
+     * processor contributes an array of values, and the
+     * element-wise maximum is returned in the same array.
+     *
+     * If a 'rank_of_min' argument is provided, it will set the array to the
+     * rank of process holding the minimum value.  Like the double argument,
+     * the size of the supplied 'rank_of_min' array should be n.
+     * \param[in] x         The input array for the reduce
+     * \param[in] y         The output array for the reduce
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[out] rank     Output array indicating the rank of the processor containing
+     *                      the minimum value
+     */
+    template<class type>
+    void maxReduce( const type *x, type *y, int n, int *rank ) const;
 
 
     /**
      * \brief    Scan Sum Reduce
      * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
-     * \param x         The input array for the scan
-     * \param y         The output array for the scan
-     * \param n         The number of values in the array (must match on all nodes)
+     * \param[in] x         The input array for the scan
+     * \param[in] y         The output array for the scan
+     * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
-    void sumScan( const type *x, type *y, const int n = 1 ) const;
+    void sumScan( const type *x, type *y, int n ) const;
 
 
     /**
      * \brief    Scan Min Reduce
      * \details  Computes the min scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
-     * \param x         The input array for the scan
-     * \param y         The output array for the scan
-     * \param n         The number of values in the array (must match on all nodes)
+     * \param[in] x         The input array for the scan
+     * \param[in] y         The output array for the scan
+     * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
-    void minScan( const type *x, type *y, const int n = 1 ) const;
+    void minScan( const type *x, type *y, int n ) const;
 
 
     /**
      * \brief    Scan Max Reduce
      * \details  Computes the max scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
-     * \param x         The input array for the scan
-     * \param y         The output array for the scan
-     * \param n     The number of values in the array (must match on all nodes)
+     * \param[in] x         The input array for the scan
+     * \param[in] y         The output array for the scan
+     * \param[in] n     The number of values in the array (must match on all nodes)
      */
     template<class type>
-    void maxScan( const type *x, type *y, const int n = 1 ) const;
+    void maxScan( const type *x, type *y, int n ) const;
 
 
     /**
      * \brief   Broadcast
      * \details This function broadcasts a value from root to all processors
-     * \param value     The input value for the broadcast.
-     * \param root      The processor performing the broadcast
+     * \param[in] value     The input value for the broadcast.
+     * \param[in] root      The processor performing the broadcast
      */
     template<class type>
-    type bcast( const type &value, const int root ) const;
+    type bcast( const type &value, int root ) const;
 
 
     /**
      * \brief   Broadcast
      * \details This function broadcasts an array from root to all processors
-     * \param value     The input/output array for the broadcast
-     * \param n         The number of values in the array (must match on all nodes)
-     * \param root      The processor performing the broadcast
+     * \param[in] value     The input/output array for the broadcast
+     * \param[in] n         The number of values in the array (must match on all nodes)
+     * \param[in] root      The processor performing the broadcast
      */
     template<class type>
-    void bcast( type *value, const int n, const int root ) const;
+    void bcast( type *value, int n, int root ) const;
 
 
     /**
@@ -688,15 +737,15 @@ public: // Member functions
      * then send the data.  This call must be paired with a
      * matching call to recv.
      *
-     * @param buf       Pointer to array buffer with length integers.
-     * @param length    Number of integers in buf that we want to send.
-     * @param recv      Receiving processor number.
-     * @param tag       Optional integer argument specifying an integer tag
-     *                  to be sent with this message.  Default tag is 0.
-     *                  The matching recv must share this tag.
+     * @param[in] buf       Pointer to array buffer with length integers.
+     * @param[in] length    Number of integers in buf that we want to send.
+     * @param[in] recv      Receiving processor number.
+     * @param[in] tag       Optional integer argument specifying an integer tag
+     *                      to be sent with this message.  Default tag is 0.
+     *                      The matching recv must share this tag.
      */
     template<class type>
-    void send( const type *buf, const int length, const int recv, int tag = 0 ) const;
+    void send( const type *buf, int length, int recv, int tag = 0 ) const;
 
 
     /*!
@@ -705,14 +754,14 @@ public: // Member functions
      *
      * This call must be paired with a matching call to recvBytes.
      *
-     * @param buf       Void pointer to an array of number_bytes bytes to send.
-     * @param N_bytes   Integer number of bytes to send.
-     * @param recv      Receiving processor number.
-     * @param tag       Optional integer argument specifying an integer tag
-     *                  to be sent with this message.  Default tag is 0.
-     *                  The matching recv must share this tag.
+     * @param[in] buf       Void pointer to an array of number_bytes bytes to send.
+     * @param[in] N_bytes   Integer number of bytes to send.
+     * @param[in] recv      Receiving processor number.
+     * @param[in] tag       Optional integer argument specifying an integer tag
+     *                      to be sent with this message.  Default tag is 0.
+     *                      The matching recv must share this tag.
      */
-    void sendBytes( const void *buf, const int N_bytes, const int recv, int tag = 0 ) const;
+    void sendBytes( const void *buf, int N_bytes, int recv, int tag = 0 ) const;
 
 
     /*!
@@ -721,15 +770,14 @@ public: // Member functions
      *   The receiving processor must know the length of the array.
      *   This call must be paired  with a matching call to Irecv.
      *
-     * @param buf       Pointer to array buffer with length integers.
-     * @param length    Number of integers in buf that we want to send.
-     * @param recv_proc Receiving processor number.
-     * @param tag       Integer argument specifying an integer tag
-     *                  to be sent with this message.
+     * @param[in] buf       Pointer to array buffer with length integers.
+     * @param[in] length    Number of integers in buf that we want to send.
+     * @param[in] recv_proc Receiving processor number.
+     * @param[in] tag       Integer argument specifying an integer tag
+     *                      to be sent with this message.
      */
     template<class type>
-    MPI_Request
-    Isend( const type *buf, const int length, const int recv_proc, const int tag ) const;
+    MPI_Request Isend( const type *buf, int length, int recv_proc, int tag ) const;
 
 
     /*!
@@ -738,14 +786,13 @@ public: // Member functions
      *   The receiving processor must know the number of bytes to receive.
      *   This call must be paired with a matching call to IrecvBytes.
      *
-     * @param buf       Void pointer to an array of number_bytes bytes to send.
-     * @param N_bytes   Integer number of bytes to send.
-     * @param recv_proc Receiving processor number.
-     * @param tag       Integer argument specifying an integer tag
+     * @param[in] buf       Void pointer to an array of number_bytes bytes to send.
+     * @param[in] N_bytes   Integer number of bytes to send.
+     * @param[in] recv_proc Receiving processor number.
+     * @param[in] tag       Integer argument specifying an integer tag
      *                  to be sent with this message.
      */
-    MPI_Request
-    IsendBytes( const void *buf, const int N_bytes, const int recv_proc, const int tag ) const;
+    MPI_Request IsendBytes( const void *buf, int N_bytes, int recv_proc, int tag ) const;
 
 
     /*!
@@ -756,20 +803,19 @@ public: // Member functions
      * use "get_length = false;" otherwise we will get the return size.
      * This call must be paired with a matching call to send.
      *
-     * @param buf        Pointer to integer array buffer with capacity of length integers.
-     * @param length     If get_length==true: The number of elements to be received, otherwise
-     *                   the maximum number of values that can be stored in buf.
-     *                   On output the number of received elements.
-     * @param send       Processor number of sender.
-     * @param get_length Optional boolean argument specifying if we first
-     *                   need to check the message size to get the size of the array.
-     *                   Default value is false.
-     * @param tag        Optional integer argument specifying a tag which must be matched
-     *                   by the tag of the incoming message. Default tag is 0.
+     * @param[in] buf       Pointer to integer array buffer with capacity of length integers.
+     * @param[in] length    If get_length==true: The number of elements to be received, otherwise
+     *                      the maximum number of values that can be stored in buf.
+     *                      On output the number of received elements.
+     * @param[in] send      Processor number of sender.
+     * @param[in] get_length Optional boolean argument specifying if we first
+     *                      need to check the message size to get the size of the array.
+     *                      Default value is false.
+     * @param[in] tag       Optional integer argument specifying a tag which must be matched
+     *                      by the tag of the incoming message. Default tag is 0.
      */
     template<class type>
-    void recv(
-        type *buf, int &length, const int send, const bool get_length = false, int tag = 0 ) const;
+    void recv( type *buf, int &length, int send, bool get_length = false, int tag = 0 ) const;
 
 
     /*!
@@ -778,28 +824,28 @@ public: // Member functions
      *
      * This call must be paired with a matching call to sendBytes.
      *
-     * @param buf       Void pointer to a buffer of size number_bytes bytes.
-     * @param N_bytes   Integer number specifying size of buf in bytes.
-     * @param send      Integer number specifying size of buf in bytes.
-     * @param tag       Optional integer argument specifying a tag which
+     * @param[in] buf       Void pointer to a buffer of size number_bytes bytes.
+     * @param[in] N_bytes   Integer number specifying size of buf in bytes.
+     * @param[in] send      Integer number specifying size of buf in bytes.
+     * @param[in] tag       Optional integer argument specifying a tag which
      *   must be matched by the tag of the incoming message. Default
      *   tag is 0.
      */
-    void recvBytes( void *buf, int &N_bytes, const int send, int tag = 0 ) const;
+    void recvBytes( void *buf, int N_bytes, int send, int tag = 0 ) const;
 
 
     /*!
      * @brief This function receives an MPI message with a data
      * array from another processor using a non-blocking call.
      *
-     * @param buf        Pointer to integer array buffer with capacity of length integers.
-     * @param length     Maximum number of values that can be stored in buf.
-     * @param send_proc  Processor number of sender.
-     * @param tag        Optional integer argument specifying a tag which must
-     *                   be matched by the tag of the incoming message.
+     * @param[in] buf        Pointer to integer array buffer with capacity of length integers.
+     * @param[in] length     Maximum number of values that can be stored in buf.
+     * @param[in] send_proc  Processor number of sender.
+     * @param[in] tag        Optional integer argument specifying a tag which must
+     *                      be matched by the tag of the incoming message.
      */
     template<class type>
-    MPI_Request Irecv( type *buf, const int length, const int send_proc, const int tag ) const;
+    MPI_Request Irecv( type *buf, int length, int send_proc, int tag ) const;
 
 
     /*!
@@ -808,14 +854,13 @@ public: // Member functions
      *
      * This call must be paired with a matching call to sendBytes.
      *
-     * @param buf       Void pointer to a buffer of size number_bytes bytes.
-     * @param N_bytes   Integer number specifying size of buf in bytes.
-     * @param send_proc Processor number of sender.
-     * @param tag       Integer argument specifying a tag which must
-     *                  be matched by the tag of the incoming message.
+     * @param[in] buf       Void pointer to a buffer of size number_bytes bytes.
+     * @param[in] N_bytes   Integer number specifying size of buf in bytes.
+     * @param[in] send_proc Processor number of sender.
+     * @param[in] tag       Integer argument specifying a tag which must
+     *                      be matched by the tag of the incoming message.
      */
-    MPI_Request
-    IrecvBytes( void *buf, const int N_bytes, const int send_proc, const int tag ) const;
+    MPI_Request IrecvBytes( void *buf, int N_bytes, int send_proc, int tag ) const;
 
 
     /*!
@@ -840,8 +885,8 @@ public: // Member functions
      * Each processor sends every other processor a single value.
      * The x_out array should be preallocated to a length equal
      * to the number of processors.
-     * @param x_in      Input value for allGather
-     * @param x_out     Output array for allGather (must be preallocated to the size of the
+     * @param[in] x_in      Input value for allGather
+     * @param[in] x_out     Output array for allGather (must be preallocated to the size of the
      * communicator)
      */
     template<class type>
@@ -853,29 +898,29 @@ public: // Member functions
      * Each processor receives the values from all processors and gathers them
      * to a single array.  If successful, the total number of received
      * elements will be returned.
-     * @param send_data     Input array
-     * @param send_cnt      The number of values to send
-     * @param recv_data     Output array of received values
-     * @param recv_cnt      The number of values to receive from each processor (N).
-     *                      If known, this should be provided as an input.  Otherwise
-     *                      it is an optional output that will return the number of
-     *                      received values from each processor.
-     * @param recv_disp     The displacement (relative to the start of the array)
-     *                      from which to store the data received from processor i.
-     *                      If known, this should be provided as an input.  Otherwise
-     *                      it is an optional output that will return the starting location
-     *                      (relative to the start of the array) for the received data from
-     * processor i.
-     * @param known_recv    Are the received counts and displacements known.
-     *                      If the received sizes are known, then they must be provided,
-     *                      and an extra communication step is not necessary.  If the received
-     *                      sizes are not known, then an extra communication step will occur
-     * internally
-     *                      and the sizes and displacements will be returned (if desired).
+     * @param[in] send_data     Input array
+     * @param[in] send_cnt      The number of values to send
+     * @param[in] recv_data     Output array of received values
+     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the number of
+     *                          received values from each processor.
+     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     *                          from which to store the data received from processor i.
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the starting location
+     *                          (relative to the start of the array) for the received data from
+     *                          processor i.
+     * @param[in] known_recv    Are the received counts and displacements known.
+     *                          If the received sizes are known, then they must be provided,
+     *                          and an extra communication step is not necessary.  If the received
+     *                          sizes are not known, then an extra communication step will occur
+     *                          internally and the sizes and displacements will be returned (if
+     * desired).
      */
     template<class type>
     int allGather( const type *send_data,
-                   const int send_cnt,
+                   int send_cnt,
                    type *recv_data,
                    int *recv_cnt   = nullptr,
                    int *recv_disp  = nullptr,
@@ -884,7 +929,7 @@ public: // Member functions
 
     /*!
      * This function combines sets from different processors to create a single master set
-     * @param set       Input/Output std::set for the gather.
+     * @param[in] set       Input/Output std::set for the gather.
      */
     template<class type>
     void setGather( std::set<type> &set ) const;
@@ -893,7 +938,7 @@ public: // Member functions
     /*!
      * This function combines std::maps from different processors to create a single master std::map
      * If two or more ranks share the same key, the lowest rank will be used
-     * @param map       Input/Output std::map for the gather.
+     * @param[in] map       Input/Output std::map for the gather.
      */
     template<class KEY, class DATA>
     void mapGather( std::map<KEY, DATA> &map ) const;
@@ -906,12 +951,12 @@ public: // Member functions
      * in the ith block on the receiving processor.  In the variable
      * description, N is the size of the communicator.  Note that this is a
      * blocking global communication.
-     * @param n             The number of elements in each data block to send.
-     * @param send_data     Input array (nxN)
-     * @param recv_data     Output array of received values (nxN)
+     * @param[in] n             The number of elements in each data block to send.
+     * @param[in] send_data     Input array (nxN)
+     * @param[in] recv_data     Output array of received values (nxN)
      */
     template<class type>
-    void allToAll( const int n, const type *send_data, type *recv_data ) const;
+    void allToAll( int n, const type *send_data, type *recv_data ) const;
 
 
     /*!
@@ -920,27 +965,27 @@ public: // Member functions
      * description, N is the size of the communicator.  Note that this is a
      * blocking global communication.  If successful, the total number of received
      * elements will be returned.
-     * @param send_data     Input array
-     * @param send_cnt      The number of values to send to each processor (N)
-     * @param send_disp     The displacement (relative to the start of the array)
-     *                      from which to send to processor i
-     * @param recv_data     Output array of received values
-     * @param recv_cnt      The number of values to receive from each processor (N).
-     *                      If known, this should be provided as an input.  Otherwise
-     *                      it is an optional output that will return the number of
-     *                      received values from each processor.
-     * @param recv_disp     The displacement (relative to the start of the array)
-     *                      from which to send to processor i.
-     *                      If known, this should be provided as an input.  Otherwise
-     *                      it is an optional output that will return the starting location
-     *                      (relative to the start of the array) for the received data from
-     * processor i.
-     * @param known_recv    Are the received counts and displacements known.
-     *                      If the received sizes are known, then they must be provided,
-     *                      and an extra communication step is not necessary.  If the received
-     *                      sizes are not know, then an extra communication step will occur
-     * internally
-     *                      and the sizes and displacements will be returned (if desired).
+     * @param[in] send_data     Input array
+     * @param[in] send_cnt      The number of values to send to each processor (N)
+     * @param[in] send_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i
+     * @param[in] recv_data     Output array of received values
+     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the number of
+     *                          received values from each processor.
+     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i.
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the starting location
+     *                          (relative to the start of the array) for the received data from
+     *                          processor i.
+     * @param[in] known_recv    Are the received counts and displacements known.
+     *                          If the received sizes are known, then they must be provided,
+     *                          and an extra communication step is not necessary.  If the received
+     *                          sizes are not know, then an extra communication step will occur
+     *                          internally and the sizes and displacements will be returned (if
+     * desired).
      */
     template<class type>
     int allToAll( const type *send_data,
@@ -951,7 +996,6 @@ public: // Member functions
                   int *recv_disp  = nullptr,
                   bool known_recv = false ) const;
 
-
     /*!
      * \brief   Send a list of proccesor ids to communicate
      * \details This function communicates a list of proccesors to communicate.
@@ -959,7 +1003,7 @@ public: // Member functions
      *    will communicate that set to the other ranks returning the list of processors
      *    that want to communication with the current rank.
      *    Note: this routine will involved global communication
-     * \param ranks         List of ranks that the current rank wants to communicate with
+     * \param[in] ranks     List of ranks that the current rank wants to communicate with
      * \return              List of ranks that want to communicate with the current processor
      */
     std::vector<int> commRanks( const std::vector<int> &ranks ) const;
@@ -969,7 +1013,7 @@ public: // Member functions
      * \brief   Wait for a communication to finish
      * \details Wait for a communication to finish.
      *    Note: this does not require a communicator.
-     * \param request    Communication request to wait for (returned for Isend or Irecv)
+     * \param[in] request    Communication request to wait for (returned for Isend or Irecv)
      */
     static void wait( MPI_Request request );
 
@@ -979,8 +1023,9 @@ public: // Member functions
      * \details This function waits for any of the given communication requests to finish.
      *    It returns the index of the communication request that finished.
      *    Note: this does not require a communicator.
-     * \param count      Number of communications to check
-     * \param request    Array of communication requests to wait for (returned for Isend or Irecv)
+     * \param[in] count      Number of communications to check
+     * \param[in] request    Array of communication requests to wait for (returned for Isend or
+     * Irecv)
      */
     static int waitAny( int count, MPI_Request *request );
 
@@ -989,8 +1034,9 @@ public: // Member functions
      * \brief   Wait for all communications to finish.
      * \details This function waits for all of the given communication requests to finish.
      *    Note: this does not require a communicator.
-     * \param count      Number of communications to check
-     * \param request    Array of communication requests to wait for (returned for Isend or Irecv)
+     * \param[in] count      Number of communications to check
+     * \param[in] request    Array of communication requests to wait for (returned for Isend or
+     * Irecv)
      */
     static void waitAll( int count, MPI_Request *request );
 
@@ -1000,8 +1046,9 @@ public: // Member functions
      * \details This function waits for one (or more) communications to finish.
      *    It returns an array of the indicies that have finished.
      *    Note: this does not require a communicator.
-     * \param count      Number of communications to check
-     * \param request    Array of communication requests to wait for (returned for Isend or Irecv)
+     * \param[in] count      Number of communications to check
+     * \param[in] request    Array of communication requests to wait for (returned for Isend or
+     * Irecv)
      */
     static std::vector<int> waitSome( int count, MPI_Request *request );
 
@@ -1012,8 +1059,8 @@ public: // Member functions
      *    It will return the number of bytes in the message if a message with
      *    the specified source and tag (on the current communicator) is available.
      *    Otherwise it will return -1.
-     * \param source      source rank (-1: any source)
-     * \param tag         tag (-1: any tag)
+     * \param[in] source      source rank (-1: any source)
+     * \param[in] tag         tag (-1: any tag)
      */
     int Iprobe( int source = -1, int tag = -1 ) const;
 
@@ -1023,8 +1070,8 @@ public: // Member functions
      * \details This function performs a blocking test for a message.
      *    It will return the number of bytes in the message when a message with
      *    the specified source and tag (on the current communicator) is available
-     * \param source      source rank (-1: any source)
-     * \param tag         tag (-1: any tag)
+     * \param[in] source      source rank (-1: any source)
+     * \param[in] tag         tag (-1: any tag)
      */
     int probe( int source = -1, int tag = -1 ) const;
 
@@ -1067,16 +1114,16 @@ public: // Member functions
     /*!
      * \brief   Change the level of the internal timers
      * \details This function changes the level of the timers used to profile MPI
-     * \param level         New level of the timers
+     * \param[in] level         New level of the timers
      */
     static void changeProfileLevel( int level ) { profile_level = level; }
 
 
     //! Return the total number of MPI_Comm objects that have been created
-    static size_t MPI_Comm_created() { return N_MPI_Comm_created; }
+    static inline size_t MPI_Comm_created() { return N_MPI_Comm_created; }
 
     //! Return the total number of MPI_Comm objects that have been destroyed
-    static size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed; }
+    static inline size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed; }
 
     //! Return details about MPI
     static std::string info();
@@ -1094,41 +1141,15 @@ public: // Member functions
     static void stop_MPI();
 
 
-private: // Private helper functions for templated MPI operations;
+private: // Private helper functions for templated MPI operations
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
     template<class type>
-    void call_sumReduce( type *x, const int n = 1 ) const;
+    void call_bcast( type *, int, int ) const;
     template<class type>
-    void call_sumReduce( const type *x, type *y, const int n = 1 ) const;
+    void call_allGather( const type &, type * ) const;
     template<class type>
-    void call_minReduce( type *x, const int n = 1, int *rank_of_min = nullptr ) const;
-    template<class type>
-    void
-    call_minReduce( const type *x, type *y, const int n = 1, int *rank_of_min = nullptr ) const;
-    template<class type>
-    void call_maxReduce( type *x, const int n = 1, int *rank_of_max = nullptr ) const;
-    template<class type>
-    void
-    call_maxReduce( const type *x, type *y, const int n = 1, int *rank_of_max = nullptr ) const;
-    template<class type>
-    void call_bcast( type *x, const int n, const int root ) const;
-    template<class type>
-    void call_allGather( const type &x_in, type *x_out ) const;
-    template<class type>
-    void call_allGather(
-        const type *x_in, int size_in, type *x_out, int *size_out, int *disp_out ) const;
-    template<class type>
-    void call_sumScan( const type *x, type *y, int n = 1 ) const;
-    template<class type>
-    void call_minScan( const type *x, type *y, int n = 1 ) const;
-    template<class type>
-    void call_maxScan( const type *x, type *y, int n = 1 ) const;
-    template<class type>
-    void call_allToAll( const type *send_data,
-                        const int send_cnt[],
-                        const int send_disp[],
-                        type *recv_data,
-                        const int *recv_cnt,
-                        const int *recv_disp ) const;
+    void call_allGather( const type *, int, type *, int *, int * ) const;
+#endif
 
 
 private: // data members
@@ -1144,18 +1165,15 @@ private: // data members
     // Do we want to call MPI_abort instead of exit
     bool d_call_abort;
 
-    // The level for the profiles of MPI
-    static short profile_level;
-
     // The rank and size of the communicator
     int comm_rank, comm_size;
-
-    // The ranks of the comm in the global comm
-    mutable int *volatile d_ranks;
 
     // Some attributes
     int d_maxTag;
     int *volatile d_currentTag;
+
+    // The ranks of the comm in the global comm
+    mutable int *volatile d_ranks;
 
     /* How many objects share the same underlying MPI communicator.
      * When the count goes to 0, the MPI comm will be free'd (assuming it was created
@@ -1165,26 +1183,22 @@ private: // data members
      */
     std::atomic_int *volatile d_count;
 
-    // Add a variable for data alignment (necessary for some Intel builds)
-    double tmp_alignment;
+
+private: // static data members
+    // The level for the profiles of MPI
+    static short profile_level;
 
     /* We want to keep track of how many MPI_Comm objects we have created over time.
      * Like the count, for thread safety this should be blocked, however the most likely error
      * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
      * we do not need to block (recognizing that the value may not be 100% accurate).
      */
-    static volatile unsigned int N_MPI_Comm_created;
-    static volatile unsigned int N_MPI_Comm_destroyed;
+    static volatile uint32_t N_MPI_Comm_created;
+    static volatile uint32_t N_MPI_Comm_destroyed;
 };
 
 
 } // namespace AMP
-
-
-// Include the default instantiations
-// \cond HIDDEN_SYMBOLS
-#include "AMP/utils/AMP_MPI.I"
-// \endcond
 
 
 #endif

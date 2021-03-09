@@ -144,7 +144,7 @@ public:
     constexpr bool operator==( const Units &rhs ) const noexcept;
 
     //! Operator !=
-    constexpr bool operator!=( const Units &rhs ) const noexcept { return !operator!=( rhs ); }
+    constexpr bool operator!=( const Units &rhs ) const noexcept { return !operator==( rhs ); }
 
     //! Operator *=
     constexpr void operator*=( const Units &rhs ) noexcept;
