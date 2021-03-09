@@ -15,15 +15,6 @@ namespace AMP {
 namespace Operator {
 
 
-template<class T>
-static T *getPtr( std::vector<T> &x )
-{
-    if ( x.empty() )
-        return nullptr;
-    return &x[0];
-}
-
-
 /********************************************************
  * Constructor                                           *
  ********************************************************/
@@ -132,7 +123,7 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Get the values to send
     PROFILE_START( "getValues", 1 );
-    curPhysics->getValuesByGlobalID( dofs.size(), getPtr( dofs ), getPtr( d_sendBuffer ) );
+    curPhysics->getValuesByGlobalID( dofs.size(), dofs.data(), d_sendBuffer.data() );
     PROFILE_STOP( "getValues", 1 );
 
     // Start the communication
@@ -181,7 +172,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     waitForAllRequests();
 
     // Store the DOFs
-    d_OutputVector->setLocalValuesByGlobalID( dofs.size(), getPtr( dofs ), getPtr( d_recvBuffer ) );
+    d_OutputVector->setLocalValuesByGlobalID( dofs.size(), dofs.data(), d_recvBuffer.data() );
 
     // Update ghost cells (this should be done on the full output vector)
     if ( d_callMakeConsistentSet )
@@ -285,7 +276,7 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     int N_recv_tot  = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
     auto surfacePts = std::vector<Point>( N_recv_tot );
     d_MapComm.allGather(
-        getPtr( ownedPointsMesh1 ), send_cnt, &surfacePts[0], &recv_cnt[0], &recv_disp[0], true );
+        ownedPointsMesh1.data(), send_cnt, &surfacePts[0], &recv_cnt[0], &recv_disp[0], true );
 
     // Sort the points for fast searching
     AMP::Utilities::quicksort( surfacePts );
@@ -321,7 +312,7 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     N_recv_tot = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
     surfacePts = std::vector<Point>( N_recv_tot );
     d_MapComm.allGather(
-        getPtr( ownedPointsMesh2 ), send_cnt, &surfacePts[0], &recv_cnt[0], &recv_disp[0], true );
+        ownedPointsMesh2.data(), send_cnt, &surfacePts[0], &recv_cnt[0], &recv_disp[0], true );
 
     // Sort the points for fast searching
     AMP::Utilities::quicksort( surfacePts );
