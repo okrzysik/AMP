@@ -53,6 +53,11 @@ std::string Units::printFull() const
 /********************************************************************
  * Run some compile-time tests                                       *
  ********************************************************************/
+static constexpr bool approx_equal( double a, double b )
+{
+    double e = a >= b ? a - b : b - a;
+    return e < 1e-8 * b;
+}
 static_assert( sizeof( Units ) == 48 );
 static_assert( std::is_final<Units>::value );
 static_assert( std::is_trivially_copyable<Units>::value );
@@ -78,7 +83,8 @@ static_assert( Units::convert( Units::getUnitPrefix( "P" ) ) == 1e15 );
 static_assert( Units::convert( Units::getUnitPrefix( "E" ) ) == 1e18 );
 static_assert( Units::convert( Units::getUnitPrefix( "Z" ) ) == 1e21 );
 static_assert( Units::convert( Units::getUnitPrefix( "Y" ) ) == 1e24 );
-static_assert( Units( "ergs/(s*cm^2)" ).convert( Units( "W/(m^2)" ) ) == 1e-3 );
+
+#if !defined( __INTEL_COMPILER ) 
 static_assert( Units( "meter" ).getType() == UnitType::length );
 static_assert( Units( "gram" ).getType() == UnitType::mass );
 static_assert( Units( "second" ).getType() == UnitType::time );
@@ -93,13 +99,14 @@ static_assert( Units( "degree" ).getType() == UnitType::angle );
 static_assert( Units( "radian" ).getType() == UnitType::angle );
 static_assert( Units( "V" ) * Units( "A" ) == Units( "W" ) );
 static_assert( Units( "W/m^2" ) == Units( "uW/mm^2" ) );
-static_assert( static_cast<int>( Units( "eV" ).convert( Units( "K" ) ) ) == 11604 );
-static_assert( Units( "pt" ).convert( Units( "litre" ) ) == 568.26125 );
-static_assert( Units( "qt" ).convert( Units( "pt" ) ) == 2 );
-static_assert( Units( "gal" ).convert( Units( "pt" ) ) == 8 );
-static_assert( Units( "oz" ).convert( Units( "g" ) ) == 28.349523125 );
-static_assert( Units( "lb" ).convert( Units( "oz" ) ) == 16 );
-static_assert( Units( "ton" ).convert( Units( "lb" ) ) == 2240 );
-
+static_assert( approx_equal( Units( "eV" ).convert( Units( "K" ) ), 11604.51996505152 ) );
+static_assert( approx_equal( Units( "qt" ).convert( Units( "pt" ) ), 2 ) );
+static_assert( approx_equal( Units( "gal" ).convert( Units( "pt" ) ), 8 ) );
+static_assert( approx_equal( Units( "lb" ).convert( Units( "oz" ) ), 16 ) );
+static_assert( approx_equal( Units( "ergs/(s*cm^2)" ).convert( Units( "W/(m^2)" ) ), 1e-3 ) );
+static_assert( approx_equal( Units( "pt" ).convert( Units( "litre" ) ), 568.26125 ) );
+static_assert( approx_equal( Units( "oz" ).convert( Units( "g" ) ), 28.349523125 ) );
+static_assert( approx_equal( Units( "ton" ).convert( Units( "lb" ) ), 2240 ) );
+#endif
 
 } // namespace AMP

@@ -2,6 +2,7 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/map/NodeToNodeMapParameters.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 
@@ -32,8 +33,7 @@ NodeToNodeMap::NodeToNodeMap( const std::shared_ptr<AMP::Operator::OperatorParam
     // Cast the params appropriately
     d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr();
     AMP_ASSERT( params );
-    NodeToNodeMapParameters &Params =
-        *( std::dynamic_pointer_cast<NodeToNodeMapParameters>( params ) );
+    auto &Params = *std::dynamic_pointer_cast<NodeToNodeMapParameters>( params );
 
     // Set class members
     dim = -1;
@@ -42,7 +42,7 @@ NodeToNodeMap::NodeToNodeMap( const std::shared_ptr<AMP::Operator::OperatorParam
     dim = d_MapComm.maxReduce( dim );
     AMP_INSIST( dim <= 3, "Node to Node map only works up to 3d (see Point)" );
     DofsPerObj = Params.d_db->getWithDefault( "DOFsPerObject", 1 );
-    AMP::Mesh::GeomType geomType =
+    auto geomType =
         static_cast<AMP::Mesh::GeomType>( Params.d_db->getWithDefault( "GeomType", 0 ) );
     d_commTag               = Params.d_commTag;
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
@@ -110,18 +110,16 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     // Subset the vector for the variable (we only need the local portion of the vector)
     PROFILE_START( "subset", 1 );
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
-    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetVec =
-        u->constSelect( commSelector, u->getVariable()->getName() );
-    AMP::LinearAlgebra::Vector::const_shared_ptr curPhysics =
-        commSubsetVec->constSubsetVectorForVariable( var );
+    auto commSubsetVec = u->constSelect( commSelector, u->getVariable()->getName() );
+    auto curPhysics    = commSubsetVec->constSubsetVectorForVariable( var );
     PROFILE_STOP( "subset", 1 );
     AMP_INSIST( curPhysics, "apply received bogus stuff" );
 
     // Get the DOFs to send
     PROFILE_START( "getDOFs", 1 );
-    std::shared_ptr<AMP::Discretization::DOFManager> DOF = curPhysics->getDOFManager();
+    auto DOF = curPhysics->getDOFManager();
     std::vector<size_t> dofs( DofsPerObj * d_sendList.size() );
     std::vector<size_t> local_dofs( DofsPerObj );
     for ( size_t i = 0; i < d_sendList.size(); i++ ) {
@@ -169,7 +167,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     PROFILE_START( "applyFinish" );
 
     // Get the DOFs to recv
-    std::shared_ptr<AMP::Discretization::DOFManager> DOF = d_OutputVector->getDOFManager();
+    auto DOF = d_OutputVector->getDOFManager();
     std::vector<size_t> dofs( DofsPerObj * d_recvList.size() );
     std::vector<size_t> local_dofs( DofsPerObj );
     for ( size_t i = 0; i < d_recvList.size(); i++ ) {
@@ -270,9 +268,9 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     // For each mesh, get the list of points owned by the current processor
     std::vector<Point> ownedPointsMesh1;
     std::vector<Point> ownedPointsMesh2;
-    if ( d_mesh1.get() != nullptr )
+    if ( !d_mesh1 )
         ownedPointsMesh1 = createOwnedPoints( d_iterator1 );
-    if ( d_mesh2.get() != nullptr )
+    if ( !d_mesh2 )
         ownedPointsMesh2 = createOwnedPoints( d_iterator2 );
 
 
@@ -284,8 +282,8 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     d_MapComm.allGather( send_cnt, &recv_cnt[0] );
     for ( int i = 1; i < commSize; i++ )
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    int N_recv_tot                = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
-    std::vector<Point> surfacePts = std::vector<Point>( N_recv_tot );
+    int N_recv_tot  = recv_disp[commSize - 1] + recv_cnt[commSize - 1];
+    auto surfacePts = std::vector<Point>( N_recv_tot );
     d_MapComm.allGather(
         getPtr( ownedPointsMesh1 ), send_cnt, &surfacePts[0], &recv_cnt[0], &recv_disp[0], true );
 

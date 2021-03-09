@@ -3,6 +3,7 @@
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/triangle/TriangleHelpers.h"
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"

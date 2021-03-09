@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/PIO.h"

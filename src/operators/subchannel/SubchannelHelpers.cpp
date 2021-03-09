@@ -3,6 +3,7 @@
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 

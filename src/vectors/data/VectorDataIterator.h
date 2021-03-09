@@ -1,6 +1,8 @@
 #ifndef included_AMP_VectorIterators
 #define included_AMP_VectorIterators
 
+#include "AMP/utils/UtilityMacros.h"
+
 #include <iterator>
 
 
