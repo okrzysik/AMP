@@ -53,6 +53,7 @@ constParameter:*/AMP/matrices/Matrix.inline.h
 constParameter:*/AMP/vectors/Vector.inline.h
 multiCondition:*/AMP/vectors/Scalar.hpp
 noConstructor:*/AMP/utils/RNG.h
+operatorEqVarError:*/AMP/utils/threadpool/ThreadPoolId.hpp
 operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
 arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
 templateRecursion:*/AMP/utils/AMP_MPI.I
@@ -165,7 +166,12 @@ redundantAssignment:*/src/utils/kdtree.cpp
 templateRecursion:*/AMP/utils/AMP_MPI.I
 shadowVariable:*/utils/DelaunayTessellation.cpp
 shiftTooManyBits:*/src/utils/extended_int.cpp
+operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
 
+//***********************************************************
+// Suppress warnings for graphics (still in development)    *
+//***********************************************************
+*:/*/graphics/ogre/*
 
 //***********************************************************
 // Suppress warnings for graphics (still in development)    *
