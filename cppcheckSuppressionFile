@@ -14,7 +14,7 @@ invalidscanf_libc:*
 knownConditionTrueFalse:*
 useStlAlgorithm:*           // too aggressive
 returnDanglingLifetime:*    // false positives with std::tie
-missingInclude:*            // We are not checking all dependencies
+missingInclude:*            //we are not checking dependencies
 unusedFunction:*            // Suppress unusedFunction messages (functions may be used by subsequent packages)
 redundantAssignment:*       // Suppress redundantAssignment, can be better practice in many instances
 redundantCopy:*             // Suppress redundantAssignment, can be better practice in many instances
@@ -53,6 +53,7 @@ constParameter:*/AMP/matrices/Matrix.inline.h
 constParameter:*/AMP/vectors/Vector.inline.h
 multiCondition:*/AMP/vectors/Scalar.hpp
 noConstructor:*/AMP/utils/RNG.h
+operatorEqVarError:*/AMP/utils/threadpool/ThreadPoolId.hpp
 operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
 arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
 templateRecursion:*/AMP/utils/AMP_MPI.I
