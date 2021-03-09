@@ -14,7 +14,11 @@ invalidscanf_libc:*
 knownConditionTrueFalse:*
 useStlAlgorithm:*           // too aggressive
 returnDanglingLifetime:*    // false positives with std::tie
+<<<<<<< HEAD
 missingInclude:*            // We are not checking all dependencies
+=======
+missingInclude:*            //we are not checking dependencies
+>>>>>>> e7f11af0c321b228ebf5ca814f5f1e1ece247e4b
 unusedFunction:*            // Suppress unusedFunction messages (functions may be used by subsequent packages)
 redundantAssignment:*       // Suppress redundantAssignment, can be better practice in many instances
 redundantCopy:*             // Suppress redundantAssignment, can be better practice in many instances
@@ -43,6 +47,10 @@ noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
 noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
 duplicateExpression:*/AMP/utils/Array.hpp
 duplicateExpression:*/AMP/utils/Database.hpp
+<<<<<<< HEAD
+=======
+duplicateExpression:*/AMP/utils/Array.hpp
+>>>>>>> e7f11af0c321b228ebf5ca814f5f1e1ece247e4b
 syntaxError:*/AMP/ampmesh/*Iterator.h
 unusedPrivateFunction:*/AMP/materials/Property.h
 nullPointer:*/AMP/materials/Property.h
@@ -52,9 +60,15 @@ constParameter:*/AMP/matrices/Matrix.inline.h
 constParameter:*/AMP/vectors/Vector.inline.h
 multiCondition:*/AMP/vectors/Scalar.hpp
 noConstructor:*/AMP/utils/RNG.h
+<<<<<<< HEAD
 operatorEqVarError:*/AMP/utils/threadpool/ThreadPoolId.hpp
 operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
 arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
+=======
+operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
+arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
+templateRecursion:*/AMP/utils/AMP_MPI.I
+>>>>>>> e7f11af0c321b228ebf5ca814f5f1e1ece247e4b
 
 
 //***********************************************************
@@ -73,6 +87,7 @@ useInitializationList:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
 useInitializationList:*/src/time_integrators/ColumnTimeOperator.cpp
 useInitializationList:*/src/time_integrators/LinearTimeOperator.cpp
 useInitializationList:*/src/time_integrators/TimeOperator.cpp
+useInitializationList:*/src/utils/AMP_MPI.cpp
 knownConditionTrueFalse:*/src/ampmesh/testHelpers/meshTestLoop.cpp
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
@@ -98,7 +113,7 @@ exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
 passedByValue:*/src/operators/subchannel/SubchannelHelpers.cpp
 syntaxError:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
 redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
-copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp // Not an error for this case
+copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
 invalidPointerCast:*/src/utils/threadpool/atomic_helpers.cpp
 nullPointer:*/src/utils/Scanner.cpp
 nullPointerRedundantCheck:*/src/utils/Scanner.cpp
