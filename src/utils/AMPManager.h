@@ -48,7 +48,7 @@ public:
      *    2 - Current process, all threads
      *    3 - Global call stack
      */
-    int stack_trace_type;
+    int stack_trace_type = 3;
 
     /*!
      *  MPI communicator to use for AMP_COMM_WORLD.  By default this should be set to
