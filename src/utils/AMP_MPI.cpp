@@ -1794,6 +1794,7 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
     template void MPI_CLASS::setGather<TYPE>( std::set<TYPE>& ) const;                  \
     template void MPI_CLASS::allToAll<TYPE>( int, const TYPE*, TYPE* ) const;           \
     template int MPI_CLASS::allToAll<TYPE>( const TYPE*, const int[], const int[], TYPE*, int*, int*, bool ) const;
+// Instantiate basic types
 INSTANTIATE( char )
 INSTANTIATE( int8_t )
 INSTANTIATE( uint8_t )
@@ -1807,6 +1808,12 @@ INSTANTIATE( float )
 INSTANTIATE( double )
 INSTANTIATE( std::complex<float> )
 INSTANTIATE( std::complex<double> )
+// Instantiate std::string
+template std::string MPI_CLASS::bcast<std::string>( const std::string&, int ) const;
+template void MPI_CLASS::bcast<std::string>( std::string*, int, int ) const;
+template std::vector<std::string> MPI_CLASS::allGather<std::string>( const std::string & ) const;
+template void MPI_CLASS::allGather<std::string>( const std::string&, std::string* ) const;
+template int MPI_CLASS::allGather<std::string>( const std::string*, int, std::string*, int*, int*, bool ) const;
 // clang-format on
 
 
