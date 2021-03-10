@@ -28,17 +28,20 @@ public:
      * caught, but can easily lead to errors where different processors get stuck when
      * a single process encounters an error.  It is strongly recommended to use MPI_Abort.
      */
-    bool use_MPI_Abort;
+    bool use_MPI_Abort = true;
 
     //! Print the time required to initialize or shutdown each package.  Default is false.
-    bool print_times;
-
-    //! The default level for the MPI timers.  Default is 2
-    int profile_MPI_level;
+    bool print_times = false;
 
     //! Print version information upon startup (default is false)
-    bool print_startup;
+    bool print_startup = false;
 
+    //! associate each accelerator with a single MPI rank (default is true)
+    bool bind_process_to_accelerator = true;
+
+    //! The default level for the MPI timers.  Default is 2
+    int profile_MPI_level = 2;
+    
     /*!
      * Stack trace to print on error:
      *    1 - Current process/thread

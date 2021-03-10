@@ -478,6 +478,15 @@ std::vector<char *> AMPManager::getPetscArgs()
 double AMPManager::start_CUDA()
 {
 #ifdef USE_CUDA
+    if ( properties.bind_process_to_accelerator ) {
+        auto nodeComm = comm_world.splitByNode();
+	auto nodeRank = nodeComm.getRank();
+	int deviceCount;
+	cudaGetDeviceCount(&deviceCount);               // How many GPUs?
+	int device_id = nodeRank % deviceCount;
+	cudaSetDevice(device_id);                       // Map MPI-process to a GPU
+    }
+    
     void *tmp;
     cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
     cudaFree( tmp );
@@ -561,12 +570,7 @@ void AMPManager::clearMPIErrorHandler()
  * Empty constructor to setup default AMPManagerProperties                   *
  ****************************************************************************/
 AMPManagerProperties::AMPManagerProperties()
-    : use_MPI_Abort( true ),
-      print_times( false ),
-      profile_MPI_level( 2 ),
-      print_startup( false ),
-      stack_trace_type( 3 ),
-      COMM_WORLD( AMP_COMM_WORLD )
+    : COMM_WORLD( AMP_COMM_WORLD )
 {
 }
 
