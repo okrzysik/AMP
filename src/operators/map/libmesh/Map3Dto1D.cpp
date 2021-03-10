@@ -1,5 +1,5 @@
 
-#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"

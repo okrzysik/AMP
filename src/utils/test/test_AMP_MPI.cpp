@@ -7,10 +7,14 @@
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+
+#include "StackTrace/StackTrace.h"
+
 #include "ProfilerApp.h"
 
 
@@ -166,11 +170,13 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->failure( message );
         if ( flag == 1 && comm.getSize() > 1 )
             ut->failure( message );
-    } catch ( ... ) {
+    } catch ( StackTrace::abort_error &err ) {
         if ( flag == 1 && comm.getSize() > 1 )
             ut->expected_failure( message );
         else
-            ut->failure( message );
+            ut->failure( std::string( message ) + " - " + err.message );
+    } catch ( ... ) {
+        ut->failure( std::string( message ) + " - caught unknown exception" );
     }
     sprintf( message, "minReduce-rank (%s) (x,y)", typeid( type ).name() );
     try {
@@ -181,11 +187,13 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->failure( message );
         if ( flag == 1 && comm.getSize() > 1 )
             ut->failure( message );
-    } catch ( ... ) {
+    } catch ( StackTrace::abort_error &err ) {
         if ( flag == 1 && comm.getSize() > 1 )
             ut->expected_failure( message );
         else
-            ut->failure( message );
+            ut->failure( std::string( message ) + " - " + err.message );
+    } catch ( ... ) {
+        ut->failure( std::string( message ) + " - caught unknown exception" );
     }
     // Test maxReduce with rank
     sprintf( message, "maxReduce-rank (%s)", typeid( type ).name() );
@@ -197,11 +205,13 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->failure( message );
         if ( flag == 1 && comm.getSize() > 1 )
             ut->failure( message );
-    } catch ( ... ) {
+    } catch ( StackTrace::abort_error &err ) {
         if ( flag == 1 && comm.getSize() > 1 )
             ut->expected_failure( message );
         else
-            ut->failure( message );
+            ut->failure( std::string( message ) + " - " + err.message );
+    } catch ( ... ) {
+        ut->failure( std::string( message ) + " - caught unknown exception" );
     }
     sprintf( message, "maxReduce-rank (%s) (x,y)", typeid( type ).name() );
     try {
@@ -212,11 +222,13 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->failure( message );
         if ( flag == 1 && comm.getSize() > 1 )
             ut->failure( message );
-    } catch ( ... ) {
+    } catch ( StackTrace::abort_error &err ) {
         if ( flag == 1 && comm.getSize() > 1 )
             ut->expected_failure( message );
         else
-            ut->failure( message );
+            ut->failure( std::string( message ) + " - " + err.message );
+    } catch ( ... ) {
+        ut->failure( std::string( message ) + " - caught unknown exception" );
     }
     PROFILE_STOP( "testReduce" );
     return 10; // Return the number of tests
@@ -1260,7 +1272,7 @@ int main( int argc, char *argv[] )
         if ( rank_string == "Rank 0" )
             ut.passes( "Bcast std::string" );
         else
-            ut.failure( "Bcast std::string" );
+            ut.failure( "Bcast std::string: " + rank_string );
 
         // Test AMP_COMM_SELF
         MPI_CLASS selfComm = MPI_CLASS( AMP_COMM_SELF );

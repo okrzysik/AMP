@@ -86,7 +86,7 @@ void structuredFaceDOFManager::initialize()
     size_t N_local = 0;
     for ( int d = 0; d < 3; d++ )
         N_local += d_local_ids[d].size() * d_DOFsPerFace[d];
-    d_comm.sumScan<size_t>( &N_local, &d_end );
+    d_comm.sumScan<size_t>( &N_local, &d_end, 1 );
     d_begin  = d_end - N_local;
     d_global = d_comm.bcast( d_end, d_comm.getSize() - 1 );
     // Correct the local dof indicies

@@ -15,7 +15,6 @@ std::iterator::* -- 0
 variant_filter_iterator* -- 0
 std::__norm::_Deque*;std::__norm::deque*;std::__debug::deque* -- 0
 
-
 # Filter basic math and logic
 std::min*;std::max* -- 0
 bool operator==*;bool std::operator==*;bool std::__norm::operator==*;bool __gnu_cxx::operator==* -- 0

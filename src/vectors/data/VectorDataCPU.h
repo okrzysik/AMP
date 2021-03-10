@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorDataCPU
 #define included_AMP_VectorDataCPU
 
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/VectorData.h"
 
 

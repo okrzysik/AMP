@@ -4,6 +4,7 @@
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/SubsetMesh.h"
+#include "AMP/utils/AMP_MPI.I"
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Vector.h"
 #endif

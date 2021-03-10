@@ -448,8 +448,13 @@ HDF5_group::HDF5_group( hid_t fid, const AMP::string_view &name, int type ) : HD
  ************************************************************************/
 std::unique_ptr<HDF5data> readHDF5( hid_t fid, const AMP::string_view &name )
 {
+#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
     H5O_info_t object_info;
     H5Oget_info_by_name( fid, name.data(), &object_info, H5P_DEFAULT );
+#else
+    H5O_info1_t object_info;
+    H5Oget_info_by_name1( fid, name.data(), &object_info, H5P_DEFAULT );
+#endif
     std::unique_ptr<HDF5data> data;
     if ( object_info.type == H5O_TYPE_GROUP ) {
         data.reset( new HDF5_group( fid, name, 1 ) );

@@ -3,6 +3,7 @@
 // Include AMP headers
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -13,12 +14,14 @@
 #include <algorithm>
 #include <chrono>
 #include <climits>
+#include <complex>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
 #include <random>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <typeinfo>
 
@@ -48,10 +51,6 @@
 
 
 // Convience defines
-#define MPI_ERROR AMP_ERROR
-#define MPI_ASSERT AMP_ASSERT
-#define MPI_INSIST AMP_INSIST
-#define MPI_WARNING AMP_WARNING
 #define MPI_CLASS_COMM_NULL AMP_COMM_NULL
 #define MPI_CLASS_COMM_SELF AMP_COMM_SELF
 #define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
@@ -69,38 +68,34 @@ int MPI_ERR_IN_STATUS = 4;
 #endif
 
 
+namespace std {
+template<class TYPE>
+static inline bool operator<( const std::complex<TYPE> &a, const std::complex<TYPE> &b )
+{
+    if ( a.real() < b.real() )
+        return true;
+    if ( a.real() > b.real() )
+        return false;
+    return a.imag() < b.imag();
+}
+} // namespace std
+
+
 namespace AMP {
+
+
+// Check the alignment
+static_assert( sizeof( MPI_CLASS ) % 8 == 0 );
 
 
 // Define the AMPManager comm_world
 AMP_MPI AMPManager::comm_world = AMP::AMP_MPI();
 
 
-// Some special structs to work with MPI
-#ifdef USE_MPI
-struct IntIntStruct {
-    int j;
-    int i;
-};
-struct LongIntStruct {
-    long int j;
-    int i;
-};
-struct FloatIntStruct {
-    float f;
-    int i;
-};
-struct DoubleIntStruct {
-    double d;
-    int i;
-};
-#endif
-
-
 // Initialized the static member variables
-volatile unsigned int MPI_CLASS::N_MPI_Comm_created   = 0;
-volatile unsigned int MPI_CLASS::N_MPI_Comm_destroyed = 0;
-short MPI_CLASS::profile_level                        = 127;
+volatile uint32_t MPI_CLASS::N_MPI_Comm_created   = 0;
+volatile uint32_t MPI_CLASS::N_MPI_Comm_destroyed = 0;
+short MPI_CLASS::profile_level                    = 127;
 
 
 // Define a type for use with size_t
@@ -130,13 +125,19 @@ static MPI_Datatype getSizeTDataType()
 #endif
 
 
+// Default MPI max tag (will be overridden if MPI_TAG_UB attribute is valid)
+static const int mpi_max_tag = 0x3FFFFFFF;
+
+
 // Static data for asyncronous communication without MPI
 // Note: these routines may not be thread-safe yet
 #ifndef USE_MPI
-static const int mpi_max_tag = 0x003FFFFF;
 struct Isendrecv_struct {
-    const char *data; // Pointer to data
+    const void *data; // Pointer to data
+    int bytes;        // Number of bytes in the message
     int status;       // Status: 1-sending, 2-recieving
+    MPI_Comm comm;    // Communicator
+    int tag;          // Tag
 };
 std::map<MPI_Request, Isendrecv_struct> global_isendrecv_list;
 static MPI_Request getRequest( MPI_Comm comm, int tag )
@@ -161,60 +162,6 @@ inline void check_MPI( int error )
         MPI_ERROR( "Error calling MPI routine" );
 }
 #endif
-
-
-/******************************************************************
- * Some helper functions to convert between signed/unsigned types  *
- ******************************************************************/
-DISABLE_WARNINGS
-static inline constexpr unsigned int offset_int()
-{
-    return ~static_cast<unsigned int>( std::numeric_limits<int>::min() ) + 1;
-}
-static inline constexpr unsigned long int offset_long()
-{
-    return ~static_cast<long int>( std::numeric_limits<long int>::min() ) + 1;
-}
-static inline constexpr unsigned long long int offset_long_long()
-{
-    return ~static_cast<long long int>( std::numeric_limits<long long int>::min() ) + 1;
-}
-ENABLE_WARNINGS
-static inline unsigned int signed_to_unsigned( int x )
-{
-    const auto offset = offset_int();
-    return ( x >= 0 ) ? static_cast<unsigned int>( x ) + offset :
-                        offset - static_cast<unsigned int>( -x );
-}
-static inline unsigned long int signed_to_unsigned( long int x )
-{
-    const auto offset = offset_long();
-    return ( x >= 0 ) ? static_cast<unsigned long int>( x ) + offset :
-                        offset - static_cast<unsigned long int>( -x );
-}
-static inline unsigned long long int signed_to_unsigned( long long int x )
-{
-    const auto offset = offset_long_long();
-    return ( x >= 0 ) ? static_cast<unsigned long long int>( x ) + offset :
-                        offset - static_cast<unsigned long long int>( -x );
-}
-static inline int unsigned_to_signed( unsigned int x )
-{
-    const auto offset = offset_int();
-    return ( x >= offset ) ? static_cast<int>( x - offset ) : -static_cast<int>( offset - x );
-}
-static inline long int unsigned_to_signed( unsigned long int x )
-{
-    const auto offset = offset_long();
-    return ( x >= offset ) ? static_cast<long int>( x - offset ) :
-                             -static_cast<long int>( offset - x );
-}
-static inline long long int unsigned_to_signed( unsigned long long int x )
-{
-    const auto offset = offset_long_long();
-    return ( x >= offset ) ? static_cast<long long int>( x - offset ) :
-                             -static_cast<long long int>( offset - x );
-}
 
 
 /************************************************************************
@@ -407,24 +354,17 @@ void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
  *  Empty constructor                                                    *
  ************************************************************************/
 MPI_CLASS::MPI_CLASS()
+    : communicator( MPI_COMM_NULL ),
+      d_isNull( true ),
+      d_manage( false ),
+      d_call_abort( true ),
+      comm_rank( 0 ),
+      comm_size( 1 ),
+      d_maxTag( mpi_max_tag ),
+      d_currentTag( nullptr ),
+      d_ranks( nullptr ),
+      d_count( nullptr )
 {
-// Initialize the data members to a defaul communicator of self
-#ifdef USE_MPI
-    communicator = MPI_COMM_NULL;
-    d_maxTag     = 0x7FFFFFFF;
-#else
-    communicator = MPI_CLASS_COMM_NULL;
-    d_maxTag     = mpi_max_tag;
-#endif
-    d_ranks       = nullptr;
-    d_count       = nullptr;
-    d_manage      = false;
-    comm_rank     = 0;
-    comm_size     = 1;
-    d_isNull      = true;
-    d_currentTag  = nullptr;
-    d_call_abort  = true;
-    tmp_alignment = -1;
 }
 
 
@@ -441,7 +381,7 @@ void MPI_CLASS::reset()
     if ( count == 0 ) {
         // We are holding that last reference to the MPI_Comm object, we need to free it
         if ( d_manage ) {
-#ifdef USE_MPI
+#if defined( USE_MPI ) || defined( USE_PETSC )
             MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
             int err = MPI_Comm_free( &communicator );
             if ( err != MPI_SUCCESS )
@@ -480,11 +420,13 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
     : communicator( comm.communicator ),
       d_isNull( comm.d_isNull ),
       d_manage( comm.d_manage ),
+      d_call_abort( comm.d_call_abort ),
       comm_rank( comm.comm_rank ),
       comm_size( comm.comm_size ),
-      d_ranks( comm.d_ranks ),
       d_maxTag( comm.d_maxTag ),
-      d_currentTag( comm.d_currentTag )
+      d_currentTag( comm.d_currentTag ),
+      d_ranks( comm.d_ranks ),
+      d_count( nullptr )
 {
     // Initialize the data members to the existing comm object
     if ( d_currentTag != nullptr )
@@ -494,7 +436,6 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
     d_count = comm.d_count;
     if ( d_count != nullptr )
         ++( *d_count );
-    tmp_alignment = -1;
 }
 MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
 {
@@ -509,7 +450,6 @@ MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
     std::swap( d_maxTag, rhs.d_maxTag );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
-    std::swap( tmp_alignment, rhs.tmp_alignment );
 }
 
 
@@ -538,7 +478,6 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     this->d_count = comm.d_count;
     if ( this->d_count != nullptr )
         ++( *d_count );
-    this->tmp_alignment = -1;
     return *this;
 }
 MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
@@ -556,7 +495,6 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
     std::swap( d_maxTag, rhs.d_maxTag );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
-    std::swap( tmp_alignment, rhs.tmp_alignment );
     return *this;
 }
 
@@ -574,10 +512,9 @@ std::atomic_int d_global_count_self   = { 1 };
 #endif
 MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 {
-    d_count       = nullptr;
-    d_ranks       = nullptr;
-    d_manage      = false;
-    tmp_alignment = -1;
+    d_count  = nullptr;
+    d_ranks  = nullptr;
+    d_manage = false;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
         communicator = AMP::AMPManager::comm_world.communicator;
@@ -603,7 +540,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         int ierr = MPI_Comm_get_attr( communicator, MPI_TAG_UB, &val, &flag );
         MPI_ASSERT( ierr == MPI_SUCCESS );
         if ( flag == 0 ) {
-            d_maxTag = 0x7FFFFFFF; // The tag is not a valid attribute (set to 2^31-1)
+            d_maxTag = mpi_max_tag; // The tag is not a valid attribute use default value
         } else {
             d_maxTag = *val;
             if ( d_maxTag < 0 ) {
@@ -614,7 +551,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
     } else {
         comm_rank = 1;
         comm_size = 0;
-        d_maxTag  = 0x7FFFFFFF;
+        d_maxTag  = mpi_max_tag;
     }
     d_isNull = communicator == MPI_COMM_NULL;
     if ( manage && communicator != MPI_COMM_NULL && communicator != MPI_COMM_SELF &&
@@ -1276,1261 +1213,6 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 
 
 /************************************************************************
- *  call_sumReduce                                                       *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_sumReduce<unsigned char>( const unsigned char *send,
-                                               unsigned char *recv,
-                                               const int n ) const
-{
-    PROFILE_START( "sumReduce1<unsigned char>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<unsigned char>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<unsigned char>( unsigned char *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<unsigned char>", profile_level );
-    auto send = x;
-    auto recv = new unsigned char[n];
-    MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<unsigned char>", profile_level );
-}
-// char
-template<>
-void MPI_CLASS::call_sumReduce<char>( const char *send, char *recv, const int n ) const
-{
-    PROFILE_START( "sumReduce1<char>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<char>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<char>( char *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<char>", profile_level );
-    auto send = x;
-    auto recv = new char[n];
-    MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<char>", profile_level );
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_sumReduce<unsigned int>( const unsigned int *send,
-                                              unsigned int *recv,
-                                              const int n ) const
-{
-    PROFILE_START( "sumReduce1<unsigned int>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<unsigned int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<unsigned int>( unsigned int *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<unsigned int>", profile_level );
-    auto send = x;
-    auto recv = new unsigned int[n];
-    MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<unsigned int>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_sumReduce<int>( const int *send, int *recv, const int n ) const
-{
-    PROFILE_START( "sumReduce1<int>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_INT, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<int>( int *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<int>", profile_level );
-    auto send = x;
-    auto recv = new int[n];
-    MPI_Allreduce( send, recv, n, MPI_INT, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<int>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_sumReduce<long int>( const long int *send, long int *recv, const int n ) const
-{
-    PROFILE_START( "sumReduce1<long int>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_LONG, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<long int>( long int *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<long int>", profile_level );
-    auto send = x;
-    auto recv = new long int[n];
-    MPI_Allreduce( send, recv, n, MPI_LONG, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<long int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_sumReduce<unsigned long>( const unsigned long *send,
-                                               unsigned long *recv,
-                                               const int n ) const
-{
-    PROFILE_START( "sumReduce1<unsigned long>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<unsigned long>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<unsigned long>( unsigned long *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<unsigned long>", profile_level );
-    auto send = x;
-    auto recv = new unsigned long int[n];
-    MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<unsigned long>", profile_level );
-}
-// size_t
-#ifdef USE_WINDOWS
-template<>
-void MPI_CLASS::call_sumReduce<size_t>( const size_t *send, size_t *recv, const int n ) const
-{
-    MPI_ASSERT( MPI_SIZE_T != 0 );
-    PROFILE_START( "sumReduce1<size_t>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIZE_T, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<size_t>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<size_t>( size_t *x, const int n ) const
-{
-    MPI_ASSERT( MPI_SIZE_T != 0 );
-    PROFILE_START( "sumReduce2<size_t>", profile_level );
-    auto send = x;
-    auto recv = new size_t[n];
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIZE_T, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<size_t>", profile_level );
-}
-#endif
-// float
-template<>
-void MPI_CLASS::call_sumReduce<float>( const float *send, float *recv, const int n ) const
-{
-    PROFILE_START( "sumReduce1<float>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_FLOAT, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<float>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<float>( float *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<float>", profile_level );
-    auto send = x;
-    auto recv = new float[n];
-    MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_sumReduce<double>( const double *send, double *recv, const int n ) const
-{
-    PROFILE_START( "sumReduce1<double>", profile_level );
-    MPI_Allreduce( (void *) send, (void *) recv, n, MPI_DOUBLE, MPI_SUM, communicator );
-    PROFILE_STOP( "sumReduce1<double>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<double>( double *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<double>", profile_level );
-    auto send = x;
-    auto recv = new double[n];
-    MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<double>", profile_level );
-}
-// std::complex<double>
-template<>
-void MPI_CLASS::call_sumReduce<std::complex<double>>( const std::complex<double> *x,
-                                                      std::complex<double> *y,
-                                                      const int n ) const
-{
-    PROFILE_START( "sumReduce1<complex double>", profile_level );
-    auto send = new double[2 * n];
-    auto recv = new double[2 * n];
-    for ( int i = 0; i < n; i++ ) {
-        send[2 * i + 0] = real( x[i] );
-        send[2 * i + 1] = imag( x[i] );
-    }
-    MPI_Allreduce( (void *) send, (void *) recv, 2 * n, MPI_DOUBLE, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        y[i] = std::complex<double>( recv[2 * i + 0], recv[2 * i + 1] );
-    delete[] send;
-    delete[] recv;
-    PROFILE_STOP( "sumReduce1<complex double>", profile_level );
-}
-template<>
-void MPI_CLASS::call_sumReduce<std::complex<double>>( std::complex<double> *x, const int n ) const
-{
-    PROFILE_START( "sumReduce2<complex double>", profile_level );
-    auto send = new double[2 * n];
-    auto recv = new double[2 * n];
-    for ( int i = 0; i < n; i++ ) {
-        send[2 * i + 0] = real( x[i] );
-        send[2 * i + 1] = imag( x[i] );
-    }
-    MPI_Allreduce( send, recv, 2 * n, MPI_DOUBLE, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        x[i] = std::complex<double>( recv[2 * i + 0], recv[2 * i + 1] );
-    delete[] send;
-    delete[] recv;
-    PROFILE_STOP( "sumReduce2<complex double>", profile_level );
-}
-#endif
-
-
-/************************************************************************
- *  call_minReduce                                                       *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_minReduce<unsigned char>( const unsigned char *send,
-                                               unsigned char *recv,
-                                               const int n,
-                                               int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce1<unsigned char>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
-        PROFILE_STOP( "minReduce1<unsigned char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = send[i];
-        call_minReduce<int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = static_cast<unsigned char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_minReduce<unsigned char>( unsigned char *x,
-                                               const int n,
-                                               int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce2<unsigned char>", profile_level );
-        auto send = x;
-        auto recv = new unsigned char[n];
-        MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "minReduce2<unsigned char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = x[i];
-        call_minReduce<int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            x[i] = static_cast<unsigned char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-// char
-template<>
-void MPI_CLASS::call_minReduce<char>( const char *send,
-                                      char *recv,
-                                      const int n,
-                                      int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce1<char>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator );
-        PROFILE_STOP( "minReduce1<char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = send[i];
-        call_minReduce<int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = static_cast<char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_minReduce<char>( char *x, const int n, int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce2<char>", profile_level );
-        auto send = x;
-        auto recv = new char[n];
-        MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "minReduce2<char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = x[i];
-        call_minReduce<int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            x[i] = static_cast<char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_minReduce<unsigned int>( const unsigned int *send,
-                                              unsigned int *recv,
-                                              const int n,
-                                              int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce1<unsigned int>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_MIN, communicator );
-        PROFILE_STOP( "minReduce1<unsigned int>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( send[i] );
-        call_minReduce<int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_minReduce<unsigned int>( unsigned int *x,
-                                              const int n,
-                                              int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce2<unsigned int>", profile_level );
-        auto send = x;
-        auto recv = new unsigned int[n];
-        MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "minReduce2<unsigned int>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( x[i] );
-        call_minReduce<int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            x[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-// int
-template<>
-void MPI_CLASS::call_minReduce<int>( const int *x,
-                                     int *y,
-                                     const int n,
-                                     int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce1<int>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_INT, MPI_MIN, communicator );
-    } else {
-        auto recv = new IntIntStruct[n];
-        auto send = new IntIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_2INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce1<int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_minReduce<int>( int *x, const int n, int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce2<int>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        auto send = x;
-        auto recv = new int[n];
-        MPI_Allreduce( send, recv, n, MPI_INT, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new IntIntStruct[n];
-        auto send = new IntIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_2INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce2<int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_minReduce<unsigned long int>( const unsigned long int *send,
-                                                   unsigned long int *recv,
-                                                   const int n,
-                                                   int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce1<unsigned long>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator );
-        PROFILE_STOP( "minReduce1<unsigned long>", profile_level );
-    } else {
-        auto tmp = new long int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( send[i] );
-        call_minReduce<long int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_minReduce<unsigned long int>( unsigned long int *x,
-                                                   const int n,
-                                                   int *comm_rank_of_min ) const
-{
-    if ( comm_rank_of_min == nullptr ) {
-        PROFILE_START( "minReduce2<unsigned long>", profile_level );
-        auto send = x;
-        auto recv = new unsigned long int[n];
-        MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "minReduce2<unsigned long>", profile_level );
-    } else {
-        auto tmp = new long int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( x[i] );
-        call_minReduce<long int>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            x[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-// long int
-template<>
-void MPI_CLASS::call_minReduce<long int>( const long int *x,
-                                          long int *y,
-                                          const int n,
-                                          int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce1<long int>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG, MPI_MIN, communicator );
-    } else {
-        auto recv = new LongIntStruct[n];
-        auto send = new LongIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_LONG_INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce1<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_minReduce<long int>( long int *x, const int n, int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce2<long int>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        auto send = x;
-        auto recv = new long int[n];
-        MPI_Allreduce( send, recv, n, MPI_LONG, MPI_MIN, communicator );
-        for ( long int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new LongIntStruct[n];
-        auto send = new LongIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_LONG_INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].j;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce2<long int>", profile_level );
-}
-// unsigned long long int
-template<>
-void MPI_CLASS::call_minReduce<unsigned long long int>( const unsigned long long int *send,
-                                                        unsigned long long int *recv,
-                                                        const int n,
-                                                        int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce1<long int>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        auto x = new long long int[n];
-        auto y = new long long int[n];
-        for ( int i = 0; i < n; i++ )
-            x[i] = unsigned_to_signed( send[i] );
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = signed_to_unsigned( y[i] );
-        delete[] x;
-        delete[] y;
-    } else {
-        printf( "minReduce<long long int> will use double\n" );
-        auto tmp = new double[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = static_cast<double>( send[i] );
-        call_minReduce<double>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = static_cast<long long int>( tmp[i] );
-        delete[] tmp;
-    }
-    PROFILE_STOP( "minReduce1<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_minReduce<unsigned long long int>( unsigned long long int *x,
-                                                        const int n,
-                                                        int *comm_rank_of_min ) const
-{
-    auto recv = new unsigned long long int[n];
-    call_minReduce<unsigned long long int>( x, recv, n, comm_rank_of_min );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-}
-// long long int
-template<>
-void MPI_CLASS::call_minReduce<long long int>( const long long int *x,
-                                               long long int *y,
-                                               const int n,
-                                               int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce1<long int>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MIN, communicator );
-    } else {
-        printf( "minReduce<long long int> will use double\n" );
-        auto tmp = new double[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = static_cast<double>( x[i] );
-        call_minReduce<double>( tmp, n, comm_rank_of_min );
-        for ( int i = 0; i < n; i++ )
-            y[i] = static_cast<long long int>( tmp[i] );
-        delete[] tmp;
-    }
-    PROFILE_STOP( "minReduce1<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_minReduce<long long int>( long long int *x,
-                                               const int n,
-                                               int *comm_rank_of_min ) const
-{
-    auto recv = new long long int[n];
-    call_minReduce<long long int>( x, recv, n, comm_rank_of_min );
-    for ( int i = 0; i < n; i++ )
-        x[i] = signed_to_unsigned( recv[i] );
-    delete[] recv;
-}
-// float
-template<>
-void MPI_CLASS::call_minReduce<float>( const float *x,
-                                       float *y,
-                                       const int n,
-                                       int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce1<float>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_INT, MPI_MIN, communicator );
-    } else {
-        auto recv = new FloatIntStruct[n];
-        auto send = new FloatIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].f = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_FLOAT_INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].f;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce1<float>", profile_level );
-}
-template<>
-void MPI_CLASS::call_minReduce<float>( float *x, const int n, int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce2<float>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        auto send = x;
-        auto recv = new float[n];
-        MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new FloatIntStruct[n];
-        auto send = new FloatIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].f = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_FLOAT_INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].f;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce2<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_minReduce<double>( const double *x,
-                                        double *y,
-                                        const int n,
-                                        int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce1<double>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_DOUBLE, MPI_MIN, communicator );
-    } else {
-        auto recv = new DoubleIntStruct[n];
-        auto send = new DoubleIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].d = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_DOUBLE_INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].d;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce1<double>", profile_level );
-}
-template<>
-void MPI_CLASS::call_minReduce<double>( double *x, const int n, int *comm_rank_of_min ) const
-{
-    PROFILE_START( "minReduce2<double>", profile_level );
-    if ( comm_rank_of_min == nullptr ) {
-        auto send = x;
-        auto recv = new double[n];
-        MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_MIN, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new DoubleIntStruct[n];
-        auto send = new DoubleIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].d = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_DOUBLE_INT, MPI_MINLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].d;
-            comm_rank_of_min[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "minReduce2<double>", profile_level );
-}
-#endif
-
-
-/************************************************************************
- *  call_maxReduce                                                    *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_maxReduce<unsigned char>( const unsigned char *send,
-                                               unsigned char *recv,
-                                               const int n,
-                                               int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce1<unsigned char>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
-        PROFILE_STOP( "maxReduce1<unsigned char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = send[i];
-        call_maxReduce<int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = static_cast<unsigned char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_maxReduce<unsigned char>( unsigned char *x,
-                                               const int n,
-                                               int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce2<unsigned char>", profile_level );
-        auto send = x;
-        auto recv = new unsigned char[n];
-        MPI_Allreduce( send, recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "maxReduce2<unsigned char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = x[i];
-        call_maxReduce<int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            x[i] = static_cast<unsigned char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-// char
-template<>
-void MPI_CLASS::call_maxReduce<char>( const char *send,
-                                      char *recv,
-                                      const int n,
-                                      int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce1<char>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator );
-        PROFILE_STOP( "maxReduce1<char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = send[i];
-        call_maxReduce<int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = static_cast<char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_maxReduce<char>( char *x, const int n, int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce2<char>", profile_level );
-        auto send = x;
-        auto recv = new char[n];
-        MPI_Allreduce( send, recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "maxReduce2<char>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = x[i];
-        call_maxReduce<int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            x[i] = static_cast<char>( tmp[i] );
-        delete[] tmp;
-    }
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_maxReduce<unsigned int>( const unsigned int *send,
-                                              unsigned int *recv,
-                                              const int n,
-                                              int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce1<unsigned int>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_MAX, communicator );
-        PROFILE_STOP( "maxReduce1<unsigned int>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( send[i] );
-        call_maxReduce<int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_maxReduce<unsigned int>( unsigned int *x,
-                                              const int n,
-                                              int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce2<unsigned int>", profile_level );
-        auto send = x;
-        auto recv = new unsigned int[n];
-        MPI_Allreduce( send, recv, n, MPI_UNSIGNED, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "maxReduce2<unsigned int>", profile_level );
-    } else {
-        auto tmp = new int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( x[i] );
-        call_maxReduce<int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            x[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-// int
-template<>
-void MPI_CLASS::call_maxReduce<int>( const int *x,
-                                     int *y,
-                                     const int n,
-                                     int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce1<int>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_INT, MPI_MAX, communicator );
-    } else {
-        auto recv = new IntIntStruct[n];
-        auto send = new IntIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_2INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].j;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce1<int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_maxReduce<int>( int *x, const int n, int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce2<int>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        int *send = x;
-        auto recv = new int[n];
-        MPI_Allreduce( send, recv, n, MPI_INT, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new IntIntStruct[n];
-        auto send = new IntIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_2INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].j;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce2<int>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_maxReduce<long int>( const long int *x,
-                                          long int *y,
-                                          const int n,
-                                          int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce1<lond int>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG, MPI_MAX, communicator );
-    } else {
-        auto recv = new LongIntStruct[n];
-        auto send = new LongIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_LONG_INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].j;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce1<lond int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_maxReduce<long int>( long int *x, const int n, int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce2<lond int>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        auto send = x;
-        auto recv = new long int[n];
-        MPI_Allreduce( send, recv, n, MPI_LONG, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new LongIntStruct[n];
-        auto send = new LongIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].j = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_LONG_INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].j;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce2<lond int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long int>( const unsigned long int *send,
-                                                   unsigned long int *recv,
-                                                   const int n,
-                                                   int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce1<unsigned long>", profile_level );
-        MPI_Allreduce( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator );
-        PROFILE_STOP( "maxReduce1<unsigned long>", profile_level );
-    } else {
-        auto tmp = new long int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( send[i] );
-        call_maxReduce<long int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long int>( unsigned long int *x,
-                                                   const int n,
-                                                   int *comm_rank_of_max ) const
-{
-    if ( comm_rank_of_max == nullptr ) {
-        PROFILE_START( "maxReduce2<unsigned long>", profile_level );
-        auto send = x;
-        auto recv = new unsigned long int[n];
-        MPI_Allreduce( send, recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-        PROFILE_STOP( "maxReduce2<unsigned long>", profile_level );
-    } else {
-        auto tmp = new long int[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = unsigned_to_signed( x[i] );
-        call_maxReduce<long int>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            x[i] = signed_to_unsigned( tmp[i] );
-        delete[] tmp;
-    }
-}
-// unsigned long long int
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long long int>( const unsigned long long int *send,
-                                                        unsigned long long int *recv,
-                                                        const int n,
-                                                        int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce1<long int>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        auto x = new long long int[n];
-        auto y = new long long int[n];
-        for ( int i = 0; i < n; i++ )
-            x[i] = unsigned_to_signed( send[i] );
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = signed_to_unsigned( y[i] );
-        delete[] x;
-        delete[] y;
-    } else {
-        printf( "maxReduce<long long int> will use double\n" );
-        auto tmp = new double[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = static_cast<double>( send[i] );
-        call_maxReduce<double>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            recv[i] = static_cast<long long int>( tmp[i] );
-        delete[] tmp;
-    }
-    PROFILE_STOP( "maxReduce1<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_maxReduce<unsigned long long int>( unsigned long long int *x,
-                                                        const int n,
-                                                        int *comm_rank_of_max ) const
-{
-    auto recv = new unsigned long long int[n];
-    call_maxReduce<unsigned long long int>( x, recv, n, comm_rank_of_max );
-    for ( int i = 0; i < n; i++ )
-        x[i] = recv[i];
-    delete[] recv;
-}
-// long long int
-template<>
-void MPI_CLASS::call_maxReduce<long long int>( const long long int *x,
-                                               long long int *y,
-                                               const int n,
-                                               int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce1<long int>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_LONG_LONG_INT, MPI_MAX, communicator );
-    } else {
-        printf( "maxReduce<long long int> will use double\n" );
-        auto tmp = new double[n];
-        for ( int i = 0; i < n; i++ )
-            tmp[i] = static_cast<double>( x[i] );
-        call_maxReduce<double>( tmp, n, comm_rank_of_max );
-        for ( int i = 0; i < n; i++ )
-            y[i] = static_cast<long long int>( tmp[i] );
-        delete[] tmp;
-    }
-    PROFILE_STOP( "maxReduce1<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_maxReduce<long long int>( long long int *x,
-                                               const int n,
-                                               int *comm_rank_of_max ) const
-{
-    auto recv = new long long int[n];
-    call_maxReduce<long long int>( x, recv, n, comm_rank_of_max );
-    for ( int i = 0; i < n; i++ )
-        x[i] = signed_to_unsigned( recv[i] );
-    delete[] recv;
-}
-// float
-template<>
-void MPI_CLASS::call_maxReduce<float>( const float *x,
-                                       float *y,
-                                       const int n,
-                                       int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce1<float>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_FLOAT, MPI_MAX, communicator );
-    } else {
-        auto recv = new FloatIntStruct[n];
-        auto send = new FloatIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].f = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_FLOAT_INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].f;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce1<float>", profile_level );
-}
-template<>
-void MPI_CLASS::call_maxReduce<float>( float *x, const int n, int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce2<float>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        auto send = x;
-        auto recv = new float[n];
-        MPI_Allreduce( send, recv, n, MPI_FLOAT, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new FloatIntStruct[n];
-        auto send = new FloatIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].f = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_FLOAT_INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].f;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce2<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_maxReduce<double>( const double *x,
-                                        double *y,
-                                        const int n,
-                                        int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce1<double>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        MPI_Allreduce( (void *) x, (void *) y, n, MPI_DOUBLE, MPI_MAX, communicator );
-    } else {
-        auto recv = new DoubleIntStruct[n];
-        auto send = new DoubleIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].d = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_DOUBLE_INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            y[i]                = recv[i].d;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce1<double>", profile_level );
-}
-template<>
-void MPI_CLASS::call_maxReduce<double>( double *x, const int n, int *comm_rank_of_max ) const
-{
-    PROFILE_START( "maxReduce2<double>", profile_level );
-    if ( comm_rank_of_max == nullptr ) {
-        auto send = x;
-        auto recv = new double[n];
-        MPI_Allreduce( send, recv, n, MPI_DOUBLE, MPI_MAX, communicator );
-        for ( int i = 0; i < n; i++ )
-            x[i] = recv[i];
-        delete[] recv;
-    } else {
-        auto recv = new DoubleIntStruct[n];
-        auto send = new DoubleIntStruct[n];
-        for ( int i = 0; i < n; ++i ) {
-            send[i].d = x[i];
-            send[i].i = comm_rank;
-        }
-        MPI_Allreduce( send, recv, n, MPI_DOUBLE_INT, MPI_MAXLOC, communicator );
-        for ( int i = 0; i < n; ++i ) {
-            x[i]                = recv[i].d;
-            comm_rank_of_max[i] = recv[i].i;
-        }
-        delete[] recv;
-        delete[] send;
-    }
-    PROFILE_STOP( "maxReduce2<double>", profile_level );
-}
-#endif
-
-
-/************************************************************************
- *  bcast                                                                *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// char
-template<>
-void MPI_CLASS::call_bcast<unsigned char>( unsigned char *x, const int n, const int root ) const
-{
-    PROFILE_START( "bcast<unsigned char>", profile_level );
-    MPI_Bcast( x, n, MPI_UNSIGNED_CHAR, root, communicator );
-    PROFILE_STOP( "bcast<unsigned char>", profile_level );
-}
-template<>
-void MPI_CLASS::call_bcast<char>( char *x, const int n, const int root ) const
-{
-    PROFILE_START( "bcast<char>", profile_level );
-    MPI_Bcast( x, n, MPI_CHAR, root, communicator );
-    PROFILE_STOP( "bcast<char>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_bcast<unsigned int>( unsigned int *x, const int n, const int root ) const
-{
-    PROFILE_START( "bcast<unsigned int>", profile_level );
-    MPI_Bcast( x, n, MPI_UNSIGNED, root, communicator );
-    PROFILE_STOP( "bcast<unsigned int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_bcast<int>( int *x, const int n, const int root ) const
-{
-    PROFILE_START( "bcast<int>", profile_level );
-    MPI_Bcast( x, n, MPI_INT, root, communicator );
-    PROFILE_STOP( "bcast<int>", profile_level );
-}
-// float
-template<>
-void MPI_CLASS::call_bcast<float>( float *x, const int n, const int root ) const
-{
-    PROFILE_START( "bcast<float>", profile_level );
-    MPI_Bcast( x, n, MPI_FLOAT, root, communicator );
-    PROFILE_STOP( "bcast<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_bcast<double>( double *x, const int n, const int root ) const
-{
-    PROFILE_START( "bcast<double>", profile_level );
-    MPI_Bcast( x, n, MPI_DOUBLE, root, communicator );
-    PROFILE_STOP( "bcast<double>", profile_level );
-}
-#else
-// We need a concrete instantiation of bcast<char>(x,n,root);
-template<>
-void MPI_CLASS::call_bcast<char>( char *, const int, const int ) const
-{
-}
-#endif
-
-
-/************************************************************************
  *  Perform a global barrier across all processors.                      *
  ************************************************************************/
 void MPI_CLASS::barrier() const
@@ -2542,303 +1224,43 @@ void MPI_CLASS::barrier() const
 
 
 /************************************************************************
- *  Send data array to another processor.                                *
- *  Note: these specializations are only called when using MPI.          *
+ *  Send/Recv data                                                       *
+ *  We need a concrete instantiation of send for use without MPI         *
  ************************************************************************/
-#ifdef USE_MPI
-// char
-template<>
-void MPI_CLASS::send<char>( const char *buf,
-                            const int length,
-                            const int recv_proc_number,
-                            int tag ) const
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+void MPI_CLASS::sendBytes( const void *buf, int bytes, int recv_proc, int tag ) const
 {
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    // Send the data
-    PROFILE_START( "send<char>", profile_level );
-    MPI_Send( (void *) buf, length, MPI_CHAR, recv_proc_number, tag, communicator );
-    PROFILE_STOP( "send<char>", profile_level );
+    send<char>( (const char *) buf, bytes, recv_proc, tag );
 }
-// int
-template<>
-void MPI_CLASS::send<int>( const int *buf,
-                           const int length,
-                           const int recv_proc_number,
-                           int tag ) const
+void MPI_CLASS::recvBytes( void *buf, int bytes, const int send_proc, int tag ) const
 {
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    // Send the data
-    PROFILE_START( "send<int>", profile_level );
-    MPI_Send( (void *) buf, length, MPI_INT, recv_proc_number, tag, communicator );
-    PROFILE_STOP( "send<int>", profile_level );
+    int bytes2 = bytes;
+    recv<char>( (char *) buf, bytes2, send_proc, false, tag );
 }
-// float
-template<>
-void MPI_CLASS::send<float>( const float *buf,
-                             const int length,
-                             const int recv_proc_number,
-                             int tag ) const
+MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int recv_proc, int tag ) const
 {
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    // Send the data
-    PROFILE_START( "send<float>", profile_level );
-    MPI_Send( (void *) buf, length, MPI_FLOAT, recv_proc_number, tag, communicator );
-    PROFILE_STOP( "send<float>", profile_level );
+    return Isend<char>( (const char *) buf, bytes, recv_proc, tag );
 }
-// double
-template<>
-void MPI_CLASS::send<double>( const double *buf,
-                              const int length,
-                              const int recv_proc_number,
-                              int tag ) const
+MPI_Request MPI_CLASS::IrecvBytes( void *buf, int bytes, int send_proc, const int tag ) const
 {
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    // Send the data
-    PROFILE_START( "send<double>", profile_level );
-    MPI_Send( (void *) buf, length, MPI_DOUBLE, recv_proc_number, tag, communicator );
-    PROFILE_STOP( "send<double>", profile_level );
+    return Irecv<char>( (char *) buf, bytes, send_proc, tag );
 }
 #else
-// We need a concrete instantiation of send for use without MPI
-template<>
-void MPI_CLASS::send<char>( const char *buf, const int length, const int, int tag ) const
+void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    PROFILE_START( "send<char>", profile_level );
+    PROFILE_START( "sendBytes", profile_level );
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_INSIST( it == global_isendrecv_list.end(),
                 "send must be paired with a previous call to irecv in serial" );
     MPI_ASSERT( it->second.status == 2 );
-    memcpy( (char *) it->second.data, buf, length );
+    memcpy( (char *) it->second.data, buf, bytes );
     global_isendrecv_list.erase( it );
-    PROFILE_START( "send<char>", profile_level );
+    PROFILE_STOP( "sendBytes", profile_level );
 }
-#endif
-
-
-/************************************************************************
- *  Non-blocking send data array to another processor.                   *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// char
-template<>
-MPI_Request MPI_CLASS::Isend<char>( const char *buf,
-                                    const int length,
-                                    const int recv_proc,
-                                    const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Isend<char>", profile_level );
-    MPI_Isend( (void *) buf, length, MPI_CHAR, recv_proc, tag, communicator, &request );
-    PROFILE_STOP( "Isend<char>", profile_level );
-    return request;
-}
-// int
-template<>
-MPI_Request
-MPI_CLASS::Isend<int>( const int *buf, const int length, const int recv_proc, const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Isend<int>", profile_level );
-    MPI_Isend( (void *) buf, length, MPI_INT, recv_proc, tag, communicator, &request );
-    PROFILE_STOP( "Isend<int>", profile_level );
-    return request;
-}
-// float
-template<>
-MPI_Request MPI_CLASS::Isend<float>( const float *buf,
-                                     const int length,
-                                     const int recv_proc,
-                                     const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Isend<float>", profile_level );
-    MPI_Isend( (void *) buf, length, MPI_FLOAT, recv_proc, tag, communicator, &request );
-    PROFILE_STOP( "Isend<float>", profile_level );
-    return request;
-}
-// double
-template<>
-MPI_Request MPI_CLASS::Isend<double>( const double *buf,
-                                      const int length,
-                                      const int recv_proc,
-                                      const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Isend<double>", profile_level );
-    MPI_Isend( (void *) buf, length, MPI_DOUBLE, recv_proc, tag, communicator, &request );
-    PROFILE_STOP( "Isend<double>", profile_level );
-    return request;
-}
-#else
-// We need a concrete instantiation of send for use without mpi
-template<>
-MPI_Request
-MPI_CLASS::Isend<char>( const char *buf, const int length, const int, const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    PROFILE_START( "Isend<char>", profile_level );
-    auto id = getRequest( communicator, tag );
-    auto it = global_isendrecv_list.find( id );
-    if ( it == global_isendrecv_list.end() ) {
-        // We are calling isend first
-        Isendrecv_struct data;
-        data.data   = buf;
-        data.status = 1;
-        global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
-    } else {
-        // We called irecv first
-        MPI_ASSERT( it->second.status == 2 );
-        memcpy( (char *) it->second.data, buf, length );
-        global_isendrecv_list.erase( it );
-    }
-    PROFILE_STOP( "Isend<char>", profile_level );
-    return id;
-}
-#endif
-
-
-/************************************************************************
- *  Send byte array to another processor.                                *
- ************************************************************************/
-void MPI_CLASS::sendBytes( const void *buf,
-                           const int number_bytes,
-                           const int recv_proc_number,
-                           int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    send<char>( (const char *) buf, number_bytes, recv_proc_number, tag );
-}
-
-
-/************************************************************************
- *  Non-blocking send byte array to another processor.                   *
- ************************************************************************/
-MPI_Request MPI_CLASS::IsendBytes( const void *buf,
-                                   const int number_bytes,
-                                   const int recv_proc,
-                                   const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    return Isend<char>( (const char *) buf, number_bytes, recv_proc, tag );
-}
-
-
-/************************************************************************
- *  Recieve data array to another processor.                             *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// char
-template<>
-void MPI_CLASS::recv<char>(
-    char *buf, int &length, const int send_proc_number, const bool get_length, int tag ) const
-{
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    PROFILE_START( "recv<char>", profile_level );
-    // Get the receive length if necessary
-    if ( get_length ) {
-        int bytes       = this->probe( send_proc_number, tag );
-        int recv_length = bytes / sizeof( char );
-        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
-        length = recv_length;
-    }
-    // Send the data
-    MPI_Status status;
-    MPI_Recv( (void *) buf, length, MPI_CHAR, send_proc_number, tag, communicator, &status );
-    PROFILE_STOP( "recv<char>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::recv<int>(
-    int *buf, int &length, const int send_proc_number, const bool get_length, int tag ) const
-{
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    PROFILE_START( "recv<int>", profile_level );
-    // Get the receive length if necessary
-    if ( get_length ) {
-        int bytes       = this->probe( send_proc_number, tag );
-        int recv_length = bytes / sizeof( int );
-        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
-        length = recv_length;
-    }
-    // Send the data
-    MPI_Status status;
-    MPI_Recv( (void *) buf, length, MPI_INT, send_proc_number, tag, communicator, &status );
-    PROFILE_STOP( "recv<int>", profile_level );
-}
-// float
-template<>
-void MPI_CLASS::recv<float>(
-    float *buf, int &length, const int send_proc_number, const bool get_length, int tag ) const
-{
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    PROFILE_START( "recv<float>", profile_level );
-    // Get the receive length if necessary
-    if ( get_length ) {
-        int bytes       = this->probe( send_proc_number, tag );
-        int recv_length = bytes / sizeof( float );
-        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
-        length = recv_length;
-    }
-    // Send the data
-    MPI_Status status;
-    MPI_Recv( (void *) buf, length, MPI_FLOAT, send_proc_number, tag, communicator, &status );
-    PROFILE_STOP( "recv<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::recv<double>(
-    double *buf, int &length, const int send_proc_number, const bool get_length, int tag ) const
-{
-    // Set the tag to 0 if it is < 0
-    tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    PROFILE_START( "recv<double>", profile_level );
-    // Get the receive length if necessary
-    if ( get_length ) {
-        int bytes       = this->probe( send_proc_number, tag );
-        int recv_length = bytes / sizeof( double );
-        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
-        length = recv_length;
-    }
-    // Send the data
-    MPI_Status status;
-    MPI_Recv( (void *) buf, length, MPI_DOUBLE, send_proc_number, tag, communicator, &status );
-    PROFILE_STOP( "recv<double>", profile_level );
-}
-#else
-// We need a concrete instantiation of recv for use without mpi
-template<>
-void MPI_CLASS::recv<char>( char *buf, int &length, const int, const bool, int tag ) const
+void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2848,74 +1270,38 @@ void MPI_CLASS::recv<char>( char *buf, int &length, const int, const bool, int t
     MPI_INSIST( it != global_isendrecv_list.end(),
                 "recv must be paired with a previous call to isend in serial" );
     MPI_ASSERT( it->second.status == 1 );
-    memcpy( buf, it->second.data, length );
+    MPI_ASSERT( it->second.bytes == bytes );
+    memcpy( buf, it->second.data, bytes );
     global_isendrecv_list.erase( it );
     PROFILE_STOP( "recv<char>", profile_level );
 }
-#endif
-
-
-/************************************************************************
- *  Non-blocking receive data array to another processor.                *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// char
-template<>
-MPI_Request
-MPI_CLASS::Irecv<char>( char *buf, const int length, const int send_proc, const int tag ) const
+MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Irecv<char>", profile_level );
-    MPI_Irecv( (void *) buf, length, MPI_CHAR, send_proc, tag, communicator, &request );
-    PROFILE_STOP( "Irecv<char>", profile_level );
-    return request;
+    PROFILE_START( "IsendBytes", profile_level );
+    auto id = getRequest( communicator, tag );
+    auto it = global_isendrecv_list.find( id );
+    if ( it == global_isendrecv_list.end() ) {
+        // We are calling isend first
+        Isendrecv_struct data;
+        data.bytes  = bytes;
+        data.data   = buf;
+        data.status = 1;
+        data.comm   = communicator;
+        data.tag    = tag;
+        global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
+    } else {
+        // We called irecv first
+        MPI_ASSERT( it->second.status == 2 );
+        MPI_ASSERT( it->second.bytes == bytes );
+        memcpy( (char *) it->second.data, buf, bytes );
+        global_isendrecv_list.erase( it );
+    }
+    PROFILE_STOP( "IsendBytes", profile_level );
+    return id;
 }
-// int
-template<>
-MPI_Request
-MPI_CLASS::Irecv<int>( int *buf, const int length, const int send_proc, const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Irecv<int>", profile_level );
-    MPI_Irecv( (void *) buf, length, MPI_INT, send_proc, tag, communicator, &request );
-    PROFILE_STOP( "Irecv<int>", profile_level );
-    return request;
-}
-// float
-template<>
-MPI_Request
-MPI_CLASS::Irecv<float>( float *buf, const int length, const int send_proc, const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Irecv<float>", profile_level );
-    MPI_Irecv( (void *) buf, length, MPI_FLOAT, send_proc, tag, communicator, &request );
-    PROFILE_STOP( "Irecv<float>", profile_level );
-    return request;
-}
-// double
-template<>
-MPI_Request
-MPI_CLASS::Irecv<double>( double *buf, const int length, const int send_proc, const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    MPI_Request request;
-    PROFILE_START( "Irecv<double>", profile_level );
-    MPI_Irecv( (void *) buf, length, MPI_DOUBLE, send_proc, tag, communicator, &request );
-    PROFILE_STOP( "Irecv<double>", profile_level );
-    return request;
-}
-#else
-// We need a concrete instantiation of irecv for use without mpi
-template<>
-MPI_Request MPI_CLASS::Irecv<char>( char *buf, const int length, const int, const int tag ) const
+MPI_Request MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) const
 {
     MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_INSIST( tag >= 0, "tag must be >= 0" );
@@ -2925,13 +1311,17 @@ MPI_Request MPI_CLASS::Irecv<char>( char *buf, const int length, const int, cons
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
+        data.bytes  = bytes;
         data.data   = buf;
         data.status = 2;
+        data.comm   = communicator;
+        data.tag    = tag;
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
         MPI_ASSERT( it->second.status == 1 );
-        memcpy( buf, it->second.data, length );
+        MPI_ASSERT( it->second.bytes == bytes );
+        memcpy( buf, it->second.data, bytes );
         global_isendrecv_list.erase( it );
     }
     PROFILE_STOP( "Irecv<char>", profile_level );
@@ -2941,772 +1331,32 @@ MPI_Request MPI_CLASS::Irecv<char>( char *buf, const int length, const int, cons
 
 
 /************************************************************************
- *  Recieve byte array to another processor.                             *
- ************************************************************************/
-void MPI_CLASS::recvBytes( void *buf, int &number_bytes, const int send_proc, int tag ) const
-{
-    recv<char>( (char *) buf, number_bytes, send_proc, false, tag );
-}
-
-
-/************************************************************************
- *  Recieve byte array to another processor.                             *
- ************************************************************************/
-MPI_Request
-MPI_CLASS::IrecvBytes( void *buf, const int number_bytes, const int send_proc, const int tag ) const
-{
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
-    return Irecv<char>( (char *) buf, number_bytes, send_proc, tag );
-}
-
-
-/************************************************************************
- *  allGather                                                            *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_allGather<unsigned char>( const unsigned char &x_in,
-                                               unsigned char *x_out ) const
-{
-    PROFILE_START( "allGather<unsigned char>", profile_level );
-    MPI_Allgather(
-        (void *) &x_in, 1, MPI_UNSIGNED_CHAR, (void *) x_out, 1, MPI_UNSIGNED_CHAR, communicator );
-    PROFILE_STOP( "allGather<unsigned char>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<unsigned char>( const unsigned char *x_in,
-                                               int size_in,
-                                               unsigned char *x_out,
-                                               int *size_out,
-                                               int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<unsigned char>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_CHAR,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_CHAR,
-                    communicator );
-    PROFILE_STOP( "allGatherv<unsigned char>", profile_level );
-}
-// char
-template<>
-void MPI_CLASS::call_allGather<char>( const char &x_in, char *x_out ) const
-{
-    PROFILE_START( "allGather<char>", profile_level );
-    MPI_Allgather( (void *) &x_in, 1, MPI_CHAR, (void *) x_out, 1, MPI_CHAR, communicator );
-    PROFILE_STOP( "allGather<char>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<char>(
-    const char *x_in, int size_in, char *x_out, int *size_out, int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<char>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_CHAR,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_CHAR,
-                    communicator );
-    PROFILE_STOP( "allGatherv<char>", profile_level );
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_allGather<unsigned int>( const unsigned int &x_in, unsigned int *x_out ) const
-{
-    PROFILE_START( "allGather<unsigned int>", profile_level );
-    MPI_Allgather( (void *) &x_in, 1, MPI_UNSIGNED, (void *) x_out, 1, MPI_UNSIGNED, communicator );
-    PROFILE_STOP( "allGather<unsigned int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<unsigned int>(
-    const unsigned int *x_in, int size_in, unsigned int *x_out, int *size_out, int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<unsigned int>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_UNSIGNED,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_UNSIGNED,
-                    communicator );
-    PROFILE_STOP( "allGatherv<unsigned int>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_allGather<int>( const int &x_in, int *x_out ) const
-{
-    PROFILE_START( "allGather<int>", profile_level );
-    MPI_Allgather( (void *) &x_in, 1, MPI_INT, (void *) x_out, 1, MPI_INT, communicator );
-    PROFILE_STOP( "allGather<int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<int>(
-    const int *x_in, int size_in, int *x_out, int *size_out, int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<int>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_INT,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_INT,
-                    communicator );
-    PROFILE_STOP( "allGatherv<int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int &x_in,
-                                                   unsigned long int *x_out ) const
-{
-    PROFILE_START( "allGather<unsigned long>", profile_level );
-    MPI_Allgather(
-        (void *) &x_in, 1, MPI_UNSIGNED_LONG, (void *) x_out, 1, MPI_UNSIGNED_LONG, communicator );
-    PROFILE_STOP( "allGather<unsigned long>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<unsigned long int>( const unsigned long int *x_in,
-                                                   int size_in,
-                                                   unsigned long int *x_out,
-                                                   int *size_out,
-                                                   int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<unsigned long>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_UNSIGNED_LONG,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_UNSIGNED_LONG,
-                    communicator );
-    PROFILE_STOP( "allGatherv<unsigned long>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_allGather<long int>( const long int &x_in, long int *x_out ) const
-{
-    PROFILE_START( "allGather<long int>", profile_level );
-    MPI_Allgather( (void *) &x_in, 1, MPI_LONG, (void *) x_out, 1, MPI_LONG, communicator );
-    PROFILE_STOP( "allGather<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<long int>(
-    const long int *x_in, int size_in, long int *x_out, int *size_out, int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<long int>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_LONG,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_LONG,
-                    communicator );
-    PROFILE_STOP( "allGatherv<long int>", profile_level );
-}
-// float
-template<>
-void MPI_CLASS::call_allGather<float>( const float &x_in, float *x_out ) const
-{
-    PROFILE_START( "allGather<float>", profile_level );
-    MPI_Allgather( (void *) &x_in, 1, MPI_FLOAT, (void *) x_out, 1, MPI_FLOAT, communicator );
-    PROFILE_STOP( "allGather<float>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<float>(
-    const float *x_in, int size_in, float *x_out, int *size_out, int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<float>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_FLOAT,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_FLOAT,
-                    communicator );
-    PROFILE_STOP( "allGatherv<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_allGather<double>( const double &x_in, double *x_out ) const
-{
-    PROFILE_START( "allGather<double>", profile_level );
-    MPI_Allgather( (void *) &x_in, 1, MPI_DOUBLE, (void *) x_out, 1, MPI_DOUBLE, communicator );
-    PROFILE_STOP( "allGather<double>", profile_level );
-}
-template<>
-void MPI_CLASS::call_allGather<double>(
-    const double *x_in, int size_in, double *x_out, int *size_out, int *disp_out ) const
-{
-    PROFILE_START( "allGatherv<double>", profile_level );
-    MPI_Allgatherv( (void *) x_in,
-                    size_in,
-                    MPI_DOUBLE,
-                    (void *) x_out,
-                    size_out,
-                    disp_out,
-                    MPI_DOUBLE,
-                    communicator );
-    PROFILE_STOP( "allGatherv<double>", profile_level );
-}
-#else
-// We need a concrete instantiation of call_allGather<char>(x_in,size_in,x_out,size_out)
-template<>
-void MPI_CLASS::call_allGather<char>( const char *, int, char *, int *, int * ) const
-{
-    MPI_ERROR( "Internal error in communicator (allGather) " );
-}
-#endif
-
-
-/************************************************************************
- *  allToAll                                                             *
+ *  call_allGather                                                       *
  *  Note: these specializations are only called when using MPI.          *
  ************************************************************************/
 #ifdef USE_MPI
 template<>
-void MPI_CLASS::allToAll<unsigned char>( const int n,
-                                         const unsigned char *send,
-                                         unsigned char *recv ) const
+void MPI_CLASS::call_allGather<std::string>( const std::string &x_in, std::string *x_out ) const
 {
-    PROFILE_START( "allToAll<unsigned char>", profile_level );
-    MPI_Alltoall(
-        (void *) send, n, MPI_UNSIGNED_CHAR, (void *) recv, n, MPI_UNSIGNED_CHAR, communicator );
-    PROFILE_STOP( "allToAll<unsigned char>", profile_level );
+    // Get the bytes recvied per processor
+    std::vector<int> recv_cnt( comm_size, 0 );
+    allGather<int>( (int) x_in.size() + 1, &recv_cnt[0] );
+    std::vector<int> recv_disp( comm_size, 0 );
+    for ( int i = 1; i < comm_size; i++ )
+        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
+    // Call the vector form of allGather for the char arrays
+    char *recv_data = new char[recv_disp[comm_size - 1] + recv_cnt[comm_size - 1]];
+    allGather<char>(
+        x_in.c_str(), (int) x_in.size() + 1, recv_data, &recv_cnt[0], &recv_disp[0], true );
+    for ( int i = 0; i < comm_size; i++ )
+        x_out[i] = std::string( &recv_data[recv_disp[i]] );
+    delete[] recv_data;
 }
 template<>
-void MPI_CLASS::allToAll<char>( const int n, const char *send, char *recv ) const
+void MPI_CLASS::call_allGather<std::string>(
+    const std::string *, int, std::string *, int *, int * ) const
 {
-    PROFILE_START( "allToAll<char>", profile_level );
-    MPI_Alltoall( (void *) send, n, MPI_CHAR, (void *) recv, n, MPI_CHAR, communicator );
-    PROFILE_STOP( "allToAll<char>", profile_level );
-}
-template<>
-void MPI_CLASS::allToAll<unsigned int>( const int n,
-                                        const unsigned int *send,
-                                        unsigned int *recv ) const
-{
-    PROFILE_START( "allToAll<unsigned int>", profile_level );
-    MPI_Alltoall( (void *) send, n, MPI_UNSIGNED, (void *) recv, n, MPI_UNSIGNED, communicator );
-    PROFILE_STOP( "allToAll<unsigned int>", profile_level );
-}
-template<>
-void MPI_CLASS::allToAll<int>( const int n, const int *send, int *recv ) const
-{
-    PROFILE_START( "allToAll<int>", profile_level );
-    MPI_Alltoall( (void *) send, n, MPI_INT, (void *) recv, n, MPI_INT, communicator );
-    PROFILE_STOP( "allToAll<int>", profile_level );
-}
-template<>
-void MPI_CLASS::allToAll<unsigned long int>( const int n,
-                                             const unsigned long int *send,
-                                             unsigned long int *recv ) const
-{
-    PROFILE_START( "allToAll<unsigned long>", profile_level );
-    MPI_Alltoall(
-        (void *) send, n, MPI_UNSIGNED_LONG, (void *) recv, n, MPI_UNSIGNED_LONG, communicator );
-    PROFILE_STOP( "allToAll<unsigned long>", profile_level );
-}
-template<>
-void MPI_CLASS::allToAll<long int>( const int n, const long int *send, long int *recv ) const
-{
-    PROFILE_START( "allToAll<long int>", profile_level );
-    MPI_Alltoall( (void *) send, n, MPI_LONG, (void *) recv, n, MPI_LONG, communicator );
-    PROFILE_STOP( "allToAll<long int>", profile_level );
-}
-template<>
-void MPI_CLASS::allToAll<float>( const int n, const float *send, float *recv ) const
-{
-    PROFILE_START( "allToAll<float>", profile_level );
-    MPI_Alltoall( (void *) send, n, MPI_FLOAT, (void *) recv, n, MPI_FLOAT, communicator );
-    PROFILE_STOP( "allToAll<float>", profile_level );
-}
-template<>
-void MPI_CLASS::allToAll<double>( const int n, const double *send, double *recv ) const
-{
-    PROFILE_START( "allToAll<double>", profile_level );
-    MPI_Alltoall( (void *) send, n, MPI_DOUBLE, (void *) recv, n, MPI_DOUBLE, communicator );
-    PROFILE_STOP( "allToAll<double>", profile_level );
-}
-#endif
-
-
-/************************************************************************
- *  call_allToAll                                                        *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_allToAll<unsigned char>( const unsigned char *send_data,
-                                              const int send_cnt[],
-                                              const int send_disp[],
-                                              unsigned char *recv_data,
-                                              const int *recv_cnt,
-                                              const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<unsigned char>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_UNSIGNED_CHAR,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_UNSIGNED_CHAR,
-                   communicator );
-    PROFILE_STOP( "allToAllv<unsigned char>", profile_level );
-}
-// char
-template<>
-void MPI_CLASS::call_allToAll<char>( const char *send_data,
-                                     const int send_cnt[],
-                                     const int send_disp[],
-                                     char *recv_data,
-                                     const int *recv_cnt,
-                                     const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<char>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_CHAR,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_CHAR,
-                   communicator );
-    PROFILE_STOP( "allToAllv<char>", profile_level );
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_allToAll<unsigned int>( const unsigned int *send_data,
-                                             const int send_cnt[],
-                                             const int send_disp[],
-                                             unsigned int *recv_data,
-                                             const int *recv_cnt,
-                                             const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<unsigned int>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_UNSIGNED,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_UNSIGNED,
-                   communicator );
-    PROFILE_STOP( "allToAllv<unsigned int>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_allToAll<int>( const int *send_data,
-                                    const int send_cnt[],
-                                    const int send_disp[],
-                                    int *recv_data,
-                                    const int *recv_cnt,
-                                    const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<int>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_INT,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_INT,
-                   communicator );
-    PROFILE_STOP( "allToAllv<int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_allToAll<unsigned long int>( const unsigned long int *send_data,
-                                                  const int send_cnt[],
-                                                  const int send_disp[],
-                                                  unsigned long int *recv_data,
-                                                  const int *recv_cnt,
-                                                  const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<unsigned long>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_UNSIGNED_LONG,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_UNSIGNED_LONG,
-                   communicator );
-    PROFILE_STOP( "allToAllv<unsigned long>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_allToAll<long int>( const long int *send_data,
-                                         const int send_cnt[],
-                                         const int send_disp[],
-                                         long int *recv_data,
-                                         const int *recv_cnt,
-                                         const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<long int>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_LONG,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_LONG,
-                   communicator );
-    PROFILE_STOP( "allToAllv<long int>", profile_level );
-}
-// float
-template<>
-void MPI_CLASS::call_allToAll<float>( const float *send_data,
-                                      const int send_cnt[],
-                                      const int send_disp[],
-                                      float *recv_data,
-                                      const int *recv_cnt,
-                                      const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<float>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_FLOAT,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_FLOAT,
-                   communicator );
-    PROFILE_STOP( "allToAllv<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_allToAll<double>( const double *send_data,
-                                       const int send_cnt[],
-                                       const int send_disp[],
-                                       double *recv_data,
-                                       const int *recv_cnt,
-                                       const int *recv_disp ) const
-{
-    PROFILE_START( "allToAllv<double>", profile_level );
-    MPI_Alltoallv( (void *) send_data,
-                   (int *) send_cnt,
-                   (int *) send_disp,
-                   MPI_DOUBLE,
-                   (void *) recv_data,
-                   (int *) recv_cnt,
-                   (int *) recv_disp,
-                   MPI_DOUBLE,
-                   communicator );
-    PROFILE_STOP( "allToAllv<double>", profile_level );
-}
-#else
-// Default instatiation of unsigned char
-template<>
-void MPI_CLASS::call_allToAll<char>(
-    const char *, const int[], const int[], char *, const int *, const int * ) const
-{
-    MPI_ERROR( "Should not reach this point" );
-}
-#endif
-
-
-/************************************************************************
- *  call_sumScan                                                         *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_sumScan<unsigned char>( const unsigned char *send,
-                                             unsigned char *recv,
-                                             int n ) const
-{
-    PROFILE_START( "sumScan<unsigned char>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<unsigned char>", profile_level );
-}
-// char
-template<>
-void MPI_CLASS::call_sumScan<char>( const char *send, char *recv, int n ) const
-{
-    PROFILE_START( "sumScan<char>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<char>", profile_level );
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_sumScan<unsigned int>( const unsigned int *send,
-                                            unsigned int *recv,
-                                            int n ) const
-{
-    PROFILE_START( "sumScan<unsigned int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<unsigned int>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_sumScan<int>( const int *send, int *recv, int n ) const
-{
-    PROFILE_START( "sumScan<int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_INT, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<int>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_sumScan<long int>( const long int *send, long int *recv, int n ) const
-{
-    PROFILE_START( "sumScan<long int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_LONG, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<long int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_sumScan<unsigned long>( const unsigned long *send,
-                                             unsigned long *recv,
-                                             int n ) const
-{
-    PROFILE_START( "sumScan<unsigned long>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<unsigned long>", profile_level );
-}
-// size_t
-#ifdef USE_WINDOWS
-template<>
-void MPI_CLASS::call_sumScan<size_t>( const size_t *send, size_t *recv, int n ) const
-{
-    MPI_ASSERT( MPI_SIZE_T != 0 );
-    PROFILE_START( "sumScan<size_t>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_SIZE_T, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<size_t>", profile_level );
-}
-#endif
-// float
-template<>
-void MPI_CLASS::call_sumScan<float>( const float *send, float *recv, int n ) const
-{
-    PROFILE_START( "sumScan<float>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_FLOAT, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_sumScan<double>( const double *send, double *recv, int n ) const
-{
-    PROFILE_START( "sumScan<double>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_DOUBLE, MPI_SUM, communicator );
-    PROFILE_STOP( "sumScan<double>", profile_level );
-}
-// std::complex<double>
-template<>
-void MPI_CLASS::call_sumScan<std::complex<double>>( const std::complex<double> *x,
-                                                    std::complex<double> *y,
-                                                    int n ) const
-{
-    auto send = new double[2 * n];
-    auto recv = new double[2 * n];
-    for ( int i = 0; i < n; i++ ) {
-        send[2 * i + 0] = real( x[i] );
-        send[2 * i + 1] = imag( x[i] );
-    }
-    MPI_Scan( (void *) send, (void *) recv, 2 * n, MPI_DOUBLE, MPI_SUM, communicator );
-    for ( int i = 0; i < n; i++ )
-        y[i] = std::complex<double>( recv[2 * i + 0], recv[2 * i + 1] );
-    delete[] send;
-    delete[] recv;
-}
-#endif
-
-
-/************************************************************************
- *  call_minScan                                                         *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_minScan<unsigned char>( const unsigned char *send,
-                                             unsigned char *recv,
-                                             int n ) const
-{
-    PROFILE_START( "minScan<unsigned char>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<unsigned char>", profile_level );
-}
-// char
-template<>
-void MPI_CLASS::call_minScan<char>( const char *send, char *recv, int n ) const
-{
-    PROFILE_START( "minScan<char>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<char>", profile_level );
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_minScan<unsigned int>( const unsigned int *send,
-                                            unsigned int *recv,
-                                            int n ) const
-{
-    PROFILE_START( "minScan<unsigned int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<unsigned int>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_minScan<int>( const int *send, int *recv, int n ) const
-{
-    PROFILE_START( "minScan<int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_INT, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_minScan<unsigned long int>( const unsigned long int *send,
-                                                 unsigned long int *recv,
-                                                 int n ) const
-{
-    PROFILE_START( "minScan<unsigned long>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<unsigned long>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_minScan<long int>( const long int *send, long int *recv, int n ) const
-{
-    PROFILE_START( "minScan<long int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_LONG, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<long int>", profile_level );
-}
-// size_t
-#ifdef USE_WINDOWS
-template<>
-void MPI_CLASS::call_minScan<size_t>( const size_t *send, size_t *recv, int n ) const
-{
-    MPI_ASSERT( MPI_SIZE_T != 0 );
-    PROFILE_START( "minScan<size_t>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_SIZE_T, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<size_t>", profile_level );
-}
-#endif
-// float
-template<>
-void MPI_CLASS::call_minScan<float>( const float *send, float *recv, int n ) const
-{
-    PROFILE_START( "minScan<float>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_FLOAT, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_minScan<double>( const double *send, double *recv, int n ) const
-{
-    PROFILE_START( "minScan<double>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_DOUBLE, MPI_MIN, communicator );
-    PROFILE_STOP( "minScan<double>", profile_level );
-}
-#endif
-
-
-/************************************************************************
- *  call_maxScan                                                         *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-// unsigned char
-template<>
-void MPI_CLASS::call_maxScan<unsigned char>( const unsigned char *send,
-                                             unsigned char *recv,
-                                             int n ) const
-{
-    PROFILE_START( "maxScan<unsigned char>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<unsigned char>", profile_level );
-}
-// char
-template<>
-void MPI_CLASS::call_maxScan<char>( const char *send, char *recv, int n ) const
-{
-    PROFILE_START( "maxScan<char>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_SIGNED_CHAR, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<char>", profile_level );
-}
-// unsigned int
-template<>
-void MPI_CLASS::call_maxScan<unsigned int>( const unsigned int *send,
-                                            unsigned int *recv,
-                                            int n ) const
-{
-    PROFILE_START( "maxScan<unsigned int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<unsigned int>", profile_level );
-}
-// int
-template<>
-void MPI_CLASS::call_maxScan<int>( const int *send, int *recv, int n ) const
-{
-    PROFILE_START( "maxScan<int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_INT, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<int>", profile_level );
-}
-// long int
-template<>
-void MPI_CLASS::call_maxScan<long int>( const long int *send, long int *recv, int n ) const
-{
-    PROFILE_START( "maxScan<long int>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_LONG, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<long int>", profile_level );
-}
-// unsigned long int
-template<>
-void MPI_CLASS::call_maxScan<unsigned long int>( const unsigned long int *send,
-                                                 unsigned long int *recv,
-                                                 int n ) const
-{
-    PROFILE_START( "maxScan<unsigned long>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_UNSIGNED_LONG, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<unsigned long>", profile_level );
-}
-// size_t
-#ifdef USE_WINDOWS
-template<>
-void MPI_CLASS::call_maxScan<size_t>( const size_t *send, size_t *recv, int n ) const
-{
-    MPI_ASSERT( MPI_SIZE_T != 0 );
-    PROFILE_START( "maxScan<size_t>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_SIZE_T, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<size_t>", profile_level );
-}
-#endif
-// float
-template<>
-void MPI_CLASS::call_maxScan<float>( const float *send, float *recv, int n ) const
-{
-    PROFILE_START( "maxScan<float>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_INT, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<float>", profile_level );
-}
-// double
-template<>
-void MPI_CLASS::call_maxScan<double>( const double *send, double *recv, int n ) const
-{
-    PROFILE_START( "maxScan<double>", profile_level );
-    MPI_Scan( (void *) send, (void *) recv, n, MPI_DOUBLE, MPI_MAX, communicator );
-    PROFILE_STOP( "maxScan<double>", profile_level );
+    throw std::logic_error( "Implimentation of allgatherv for std::string not implimented yet" );
 }
 #endif
 
@@ -3931,15 +1581,21 @@ int MPI_CLASS::probe( int source, int tag ) const
     return count;
 }
 #else
-int MPI_CLASS::Iprobe( int, int ) const
+int MPI_CLASS::Iprobe( int source, int tag ) const
 {
-    MPI_ERROR( "Not implimented for serial codes (Iprobe)" );
-    return 0;
+    AMP_ASSERT( source == 0 || source < -1 );
+    for ( const auto &tmp : global_isendrecv_list ) {
+        const auto &data = tmp.second;
+        if ( data.comm == communicator && ( data.tag == tag || tag == -1 ) && data.status == 1 )
+            return data.bytes;
+    }
+    return -1;
 }
-int MPI_CLASS::probe( int, int ) const
+int MPI_CLASS::probe( int source, int tag ) const
 {
-    MPI_ERROR( "Not implimented for serial codes (probe)" );
-    return 0;
+    int bytes = Iprobe( source, tag );
+    AMP_INSIST( bytes >= 0, "probe called before message started in serial" );
+    return bytes;
 }
 #endif
 
@@ -4041,7 +1697,7 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
         int provided;
         int result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
         if ( result != MPI_SUCCESS )
-            AMP_ERROR( "AMP was unable to initialize MPI" );
+            MPI_ERROR( "AMP was unable to initialize MPI" );
         if ( provided < MPI_THREAD_MULTIPLE )
             AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
         called_MPI_Init        = true;
@@ -4064,6 +1720,101 @@ void MPI_CLASS::stop_MPI()
     }
 #endif
 }
+
+
+/****************************************************************************
+ * call_bcast                                                                *
+ ****************************************************************************/
+#ifdef USE_EXT_MPI
+template<>
+void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) const
+{
+    // Send the length of the strings
+    std::vector<int> length( n, 0 );
+    if ( root == comm_rank ) {
+        for ( int i = 0; i < n; i++ )
+            length[i] = str[i].size();
+    }
+    bcast( length.data(), n, root );
+    // Allocate space for the temporary buffer
+    size_t N = 0;
+    for ( int i = 0; i < n; i++ )
+        N += length[i];
+    auto buffer = new char[N];
+    // Create and send the buffer
+    if ( root == comm_rank ) {
+        for ( int i = 0, j = 0; i < n; i++ ) {
+            memcpy( &buffer[j], str[i].data(), length[i] );
+            j += length[i];
+        }
+    }
+    MPI_Bcast( buffer, N, MPI_CHAR, root, communicator );
+    // Unpack the strings
+    if ( root != comm_rank ) {
+        for ( int i = 0, j = 0; i < n; i++ ) {
+            str[i].resize( length[i] );
+            memcpy( str[i].data(), &buffer[j], length[i] );
+            j += length[i];
+        }
+    }
+    delete[] buffer;
+}
+#endif
+
+
+/****************************************************************************
+ * Explicit instantiation                                                    *
+ ****************************************************************************/
+// clang-format off
+#define INSTANTIATE( TYPE )                                                             \
+    template TYPE MPI_CLASS::sumReduce<TYPE>( const TYPE ) const;                       \
+    template void MPI_CLASS::sumReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::sumReduce<TYPE>( const TYPE*, TYPE*, int ) const;          \
+    template TYPE MPI_CLASS::minReduce<TYPE>( const TYPE ) const;                       \
+    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int, int* ) const;                 \
+    template void MPI_CLASS::minReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
+    template TYPE MPI_CLASS::maxReduce<TYPE>( const TYPE ) const;                       \
+    template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int, int* ) const;                 \
+    template void MPI_CLASS::maxReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
+    template void MPI_CLASS::sumScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
+    template void MPI_CLASS::minScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
+    template void MPI_CLASS::maxScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
+    template TYPE MPI_CLASS::bcast<TYPE>( const TYPE&, int ) const;                     \
+    template void MPI_CLASS::bcast<TYPE>( TYPE*, int, int ) const;                      \
+    template void MPI_CLASS::send<TYPE>( const TYPE*, int, int, int ) const;            \
+    template MPI_Request MPI_CLASS::Isend<TYPE>( const TYPE*, int, int, int ) const;    \
+    template void MPI_CLASS::recv<TYPE>( TYPE*, int&, int, const bool, int ) const;     \
+    template MPI_Request MPI_CLASS::Irecv<TYPE>( TYPE* buf, int, int, int ) const;      \
+    template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const TYPE & ) const;        \
+    template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const std::vector<TYPE>& ) const; \
+    template void MPI_CLASS::allGather<TYPE>( const TYPE&, TYPE* ) const;               \
+    template int MPI_CLASS::allGather<TYPE>( const TYPE*, int, TYPE*, int*, int*, bool ) const; \
+    template void MPI_CLASS::setGather<TYPE>( std::set<TYPE>& ) const;                  \
+    template void MPI_CLASS::allToAll<TYPE>( int, const TYPE*, TYPE* ) const;           \
+    template int MPI_CLASS::allToAll<TYPE>( const TYPE*, const int[], const int[], TYPE*, int*, int*, bool ) const;
+// Instantiate basic types
+INSTANTIATE( char )
+INSTANTIATE( int8_t )
+INSTANTIATE( uint8_t )
+INSTANTIATE( int16_t )
+INSTANTIATE( uint16_t )
+INSTANTIATE( int32_t )
+INSTANTIATE( uint32_t )
+INSTANTIATE( int64_t )
+INSTANTIATE( uint64_t )
+INSTANTIATE( float )
+INSTANTIATE( double )
+INSTANTIATE( std::complex<float> )
+INSTANTIATE( std::complex<double> )
+// Instantiate std::string
+template std::string MPI_CLASS::bcast<std::string>( const std::string&, int ) const;
+template void MPI_CLASS::bcast<std::string>( std::string*, int, int ) const;
+template std::vector<std::string> MPI_CLASS::allGather<std::string>( const std::string & ) const;
+template void MPI_CLASS::allGather<std::string>( const std::string&, std::string* ) const;
+template int MPI_CLASS::allGather<std::string>( const std::string*, int, std::string*, int*, int*, bool ) const;
+// clang-format on
 
 
 } // namespace AMP
