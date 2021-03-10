@@ -324,10 +324,9 @@ readWriteHDF5Scalar( std::complex<double> )
     /******************************************************************
      * Create custom error handler                                     *
      ******************************************************************/
-    herr_t hdf5_error_handler( void * )
+    herr_t hdf5_error_handler( hid_t err_stack, void * )
 {
-    FILE *fid       = tmpfile();
-    hid_t err_stack = H5Eget_current_stack();
+    FILE *fid = tmpfile();
     H5Eprint2( err_stack, fid );
     H5Eclear2( err_stack );
     rewind( fid );
@@ -342,7 +341,7 @@ readWriteHDF5Scalar( std::complex<double> )
 bool set_hdf5_error_handler()
 {
     hid_t error_stack = 0;
-    auto fun          = (H5E_auto2_t) hdf5_error_handler;
+    H5E_auto2_t fun   = hdf5_error_handler;
     H5Eset_auto2( error_stack, fun, nullptr );
     return true;
 }

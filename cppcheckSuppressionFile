@@ -163,7 +163,6 @@ unreadVariable:*/src/utils/DelaunayTessellation.cpp
 uninitvar:*/src/utils/DelaunayInterpolation.cpp
 uninitvar:*/src/utils/DelaunayTessellation.cpp
 redundantAssignment:*/src/utils/kdtree.cpp
-templateRecursion:*/AMP/utils/AMP_MPI.I
 shadowVariable:*/utils/DelaunayTessellation.cpp
 shiftTooManyBits:*/src/utils/extended_int.cpp
 operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
