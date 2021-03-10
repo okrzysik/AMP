@@ -1,4 +1,4 @@
-#include "AMP/operators/map/Map1Dto3D.h"
+#include "AMP/operators/map/libmesh/Map1Dto3D.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -24,19 +24,10 @@ namespace AMP {
 namespace Operator {
 
 
-template<class T>
-static T *getPtr( std::vector<T> &x )
-{
-    if ( x.size() == 0 )
-        return nullptr;
-    return &x[0];
-}
-
-
 // Constructor
 Map1Dto3D::Map1Dto3D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
 {
-    std::shared_ptr<MapOperatorParameters> myparams =
+    auto myparams =
         std::dynamic_pointer_cast<MapOperatorParameters>( params );
     d_MapMesh = myparams->d_MapMesh;
     reset( myparams );
@@ -45,7 +36,7 @@ Map1Dto3D::Map1Dto3D( const std::shared_ptr<OperatorParameters> &params ) : MapO
 
 void Map1Dto3D::reset( const std::shared_ptr<OperatorParameters> &params )
 {
-    std::shared_ptr<MapOperatorParameters> myparams =
+    auto myparams =
         std::dynamic_pointer_cast<MapOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
@@ -116,7 +107,7 @@ void Map1Dto3D::computeZNodeLocations()
     size_t myLen  = t_zLocations.size();
     size_t totLen = d_MapComm.sumReduce( myLen );
     std::vector<double> zLocations( totLen );
-    d_MapComm.allGather( getPtr( t_zLocations ), myLen, getPtr( zLocations ) );
+    d_MapComm.allGather( t_zLocations.data(), myLen, zLocations.data() );
 
     // Add the coordinates (internally this will make sure the values are unique and sort)
     setZLocations( zLocations );
@@ -133,14 +124,14 @@ void Map1Dto3D::computeZGaussLocations()
     std::vector<double> t_zLocations;
     if ( d_MapMesh.get() != nullptr ) {
         // Get an iterator over the nodes on the boundary
-        AMP::Mesh::MeshIterator bnd =
+        auto bnd =
             d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
 
         auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
         auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
 
-        std::shared_ptr<libMesh::FEType> d_feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+        auto d_feType = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
         std::shared_ptr<libMesh::FEBase> d_fe(
             ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
@@ -187,7 +178,7 @@ void Map1Dto3D::computeZGaussLocations()
     size_t myLen  = t_zLocations.size();
     size_t totLen = d_MapComm.sumReduce( myLen );
     std::vector<double> zLocations( totLen );
-    d_MapComm.allGather( getPtr( t_zLocations ), myLen, getPtr( zLocations ) );
+    d_MapComm.allGather( t_zLocations.data(), myLen, zLocations.data() );
 
     // Add the coordinates (internally this will make sure the values are unique and sort)
     setZLocations( zLocations );

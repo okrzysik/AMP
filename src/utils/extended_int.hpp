@@ -127,7 +127,7 @@ constexpr int64N<N>::operator int64_t() const
 template<uint8_t N>
 constexpr int64N<N>::operator int() const
 {
-    return static_cast<int>( data[0] );
+    return static_cast<int>( static_cast<int64_t>( data[0] ) );
 }
 template<uint8_t N>
 constexpr int64N<N>::operator double() const
@@ -189,7 +189,7 @@ constexpr int64N<N> &int64N<N>::operator+=( const int64N<N> &x )
     bool carry = false;
     for ( size_t i = 0; i < N; i++ ) {
         uint64_t data0 = data[i];
-        data[i] += x.data[i] + carry;
+        data[i] += x.data[i] + ( carry ? 1 : 0 );
         carry = ( ( data[i] < data0 ) || ( data[i] < x.data[i] ) );
     }
     return *this;

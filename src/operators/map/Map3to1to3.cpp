@@ -11,15 +11,6 @@ namespace AMP {
 namespace Operator {
 
 
-template<class T>
-static T *getPtr( std::vector<T> &x )
-{
-    if ( x.size() == 0 )
-        return nullptr;
-    return &x[0];
-}
-
-
 /********************************************************
  * Constructor                                           *
  ********************************************************/
@@ -180,8 +171,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             if ( i == myRank )
                 continue; // Don't communicate local data
             if ( d_own_mesh2[i] ) {
-                *curReq =
-                    d_MapComm.Isend( getPtr( d_SendBuf1 ), d_SendBuf1.size(), i, d_commTag + 0 );
+                *curReq = d_MapComm.Isend( d_SendBuf1.data(), d_SendBuf1.size(), i, d_commTag + 0 );
                 ++curReq;
             }
         }
@@ -191,8 +181,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             if ( i == myRank )
                 continue; // Don't communicate local data
             if ( d_own_mesh1[i] ) {
-                *curReq =
-                    d_MapComm.Isend( getPtr( d_SendBuf2 ), d_SendBuf2.size(), i, d_commTag + 1 );
+                *curReq = d_MapComm.Isend( d_SendBuf2.data(), d_SendBuf2.size(), i, d_commTag + 1 );
                 ++curReq;
             }
         }
@@ -227,7 +216,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 // Get the received data
                 int inSize = d_MapComm.probe( i, d_commTag + 1 ) / sizeof( comm_data );
                 recvBuf.resize( inSize );
-                d_MapComm.recv( getPtr( recvBuf ), inSize, i, false, d_commTag + 1 );
+                d_MapComm.recv( recvBuf.data(), inSize, i, false, d_commTag + 1 );
                 // Add it to the map
                 unpackBuffer( recvBuf, map1 );
             }
@@ -245,7 +234,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 // Get the received data
                 int inSize = d_MapComm.probe( i, d_commTag + 0 ) / sizeof( comm_data );
                 recvBuf.resize( inSize );
-                d_MapComm.recv( getPtr( recvBuf ), inSize, i, false, d_commTag + 0 );
+                d_MapComm.recv( recvBuf.data(), inSize, i, false, d_commTag + 0 );
                 // Add it to the map
                 unpackBuffer( recvBuf, map2 );
             }

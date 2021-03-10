@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#if !defined( __INTEL_COMPILER ) 
+#if !defined( __INTEL_COMPILER )
 using eint64   = AMP::extended::int64N<1>;
 using eint128  = AMP::extended::int128_t;
 using eint256  = AMP::extended::int256_t;
@@ -55,7 +55,6 @@ static constexpr bool test_numeric_limits()
     static_assert( std::numeric_limits<TYPE>::min_exponent10 == 0 );
     static_assert( std::numeric_limits<TYPE>::max_exponent == 0 );
     static_assert( std::numeric_limits<TYPE>::max_exponent10 == 0 );
-    static_assert( std::numeric_limits<TYPE>::traps );
     static_assert( !std::numeric_limits<TYPE>::tinyness_before );
     static_assert( std::numeric_limits<TYPE>::min() == std::numeric_limits<TYPE>::lowest() );
     static_assert( std::numeric_limits<TYPE>::max() > zero );
@@ -70,6 +69,7 @@ static_assert( test_numeric_limits<eint128>() );
 static_assert( test_numeric_limits<eint256>() );
 static_assert( test_numeric_limits<eint512>() );
 static_assert( test_numeric_limits<eint1024>() );
+static_assert( std::numeric_limits<eint128>::traps );
 
 
 /************************************************************************
@@ -122,7 +122,8 @@ static constexpr bool run_basic_tests()
         constexpr TYPE tmp7 = tmp6 >> 245;
         static_assert( static_cast<int>( tmp7 ) == 32 );
         constexpr double ans = 1.809251394333066e+75;
-        constexpr double err = std::abs( static_cast<double>( tmp6 ) - ans ) / ans;
+        constexpr double res = static_cast<double>( tmp6 );
+        constexpr double err = res >= ans ? ( res - ans ) / ans : ( ans - res ) / ans;
         static_assert( err <= 1e-14 );
     }
     return true;
@@ -212,4 +213,3 @@ static constexpr bool testMult()
 }
 static_assert( testMult() );
 #endif
-
