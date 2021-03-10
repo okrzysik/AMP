@@ -87,15 +87,15 @@ public:
 
 
 protected:
-    AMP::LinearAlgebra::Vector::shared_ptr outputVec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> outputVec = nullptr;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable = nullptr;
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable = nullptr;
 
     std::vector<double> d_zLocations; /**< std vector to store 1D z locations. */
 
-    bool d_useGaussVec;
+    bool d_useGaussVec = false;
 
 private:
     Discretization::createLibmeshElements libmeshElements;
