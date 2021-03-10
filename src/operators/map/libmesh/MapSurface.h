@@ -3,8 +3,8 @@
 
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/OperatorParameters.h"
-#include "AMP/operators/map/Map1Dto3D.h"
-#include "AMP/operators/map/Map3Dto1D.h"
+#include "AMP/operators/map/libmesh/Map1Dto3D.h"
+#include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 

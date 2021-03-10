@@ -29,7 +29,7 @@
 #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "AMP/operators/libmesh/MassLinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/operators/map/MapSurface.h"
+#include "AMP/operators/map/libmesh/MapSurface.h"
 #include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"

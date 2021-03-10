@@ -4,7 +4,7 @@
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/map/AsyncMapColumnOperator.h"
-#include "AMP/operators/map/ScalarN2GZAxisMap.h"
+#include "AMP/operators/map/libmesh/ScalarN2GZAxisMap.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
