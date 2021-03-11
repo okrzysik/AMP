@@ -1,5 +1,7 @@
 #include "AMP/utils/extended_int.h"
 
+#if !defined(__PPC__)
+
 #include <math.h>
 
 #if !defined( __INTEL_COMPILER )
@@ -212,4 +214,7 @@ static constexpr bool testMult()
     return static_cast<double>( x2 ) == inf;
 }
 static_assert( testMult() );
+
+#endif
+
 #endif
