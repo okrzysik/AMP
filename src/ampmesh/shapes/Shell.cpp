@@ -185,5 +185,17 @@ std::unique_ptr<AMP::Geometry::Geometry> Shell::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool Shell::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Shell *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_r_min == geom->d_r_min && d_r_max == geom->d_r_max && d_offset == geom->d_offset;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

@@ -514,5 +514,25 @@ void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_pt
 #endif
 
 
+/****************************************************************
+ * Check if two meshes are equal                                 *
+ ****************************************************************/
+bool SubsetMesh::operator==( const Mesh &rhs ) const
+{
+    // Check if &rhs == this
+    if ( this == &rhs )
+        return true;
+    // Check if we can cast to a MultiMesh
+    auto mesh = dynamic_cast<const SubsetMesh *>( &rhs );
+    if ( !mesh )
+        return false;
+    // Perform comparison on sub-meshes
+    if ( d_parent_mesh != mesh->d_parent_mesh )
+        return false;
+    AMP_ERROR( "Not finished" );
+    return false;
+}
+
+
 } // namespace Mesh
 } // namespace AMP

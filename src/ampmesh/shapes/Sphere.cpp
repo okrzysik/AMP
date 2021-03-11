@@ -167,5 +167,17 @@ std::unique_ptr<AMP::Geometry::Geometry> Sphere::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool Sphere::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Sphere *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_r == geom->d_r && d_offset == geom->d_offset;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

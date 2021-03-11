@@ -54,6 +54,7 @@ public: // Functions inherited from Geometry
     virtual std::vector<int>
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
+    bool operator==( const Geometry &rhs ) const override final;
 
 protected:              // Internal data
     uint8_t d_dir;      // The direction of the center axis

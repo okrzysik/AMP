@@ -241,5 +241,18 @@ std::unique_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool Cylinder::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Cylinder *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_r == geom->d_r && d_z_min == geom->d_z_min && d_z_max == geom->d_z_max &&
+           d_offset == geom->d_offset;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

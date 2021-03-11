@@ -24,8 +24,7 @@ class Vector;
 #endif
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
@@ -362,6 +361,31 @@ public:
     virtual inline bool isBaseMesh() const { return true; }
 
 
+    //! Check if two meshes are equal
+    virtual bool operator==( const Mesh &mesh ) const = 0;
+
+
+    //! Check if two meshes are not equal
+    inline bool operator!=( const Mesh &mesh ) const { return !operator==( mesh ); }
+
+
+    /**
+     * \brief    Compare two meshes
+     * \details  This function compares two meshes.
+     * \param[in] a     First mesh to compare
+     * \param[in] b     Second mesh to compare
+     * \return          Result of comparison
+     *                  0 - The meshes are different
+     *                  1 - The meshes are equal (a == b)
+     *                  2 - The meshes are equivalent:
+     *                      Nodes match, elements match, block/surface ids match
+     *                  3 - The meshes are similar:
+     *                      Nodes do not match but map the same domain
+     *                      within tolerance, block/surface ids match
+     */
+    static int compare( const Mesh &a, const Mesh &b );
+
+
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function may require global communication depending on the implimentation
@@ -526,7 +550,6 @@ protected:
     Mesh &operator=( const Mesh &old_mesh ) = delete;
 };
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

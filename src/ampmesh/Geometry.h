@@ -154,6 +154,13 @@ public:
     //! Clone the object
     virtual std::unique_ptr<AMP::Geometry::Geometry> clone() const = 0;
 
+    //! Check if two geometries are equal
+    virtual bool operator==( const Geometry &rhs ) const = 0;
+
+    //! Check if two geometries are not equal
+    inline bool operator!=( const Geometry &rhs ) const { return !operator==( rhs ); }
+
+
 public:
     /**
      * \brief   Create a geometry

@@ -131,6 +131,10 @@ public:
     //! Get the mesh
     const AMP::Mesh::Mesh &getMesh() const { return *d_mesh; }
 
+    //! Check if two geometries are equal
+    bool operator==( const Geometry &rhs ) const override;
+
+
 private: // Internal functions
     // Get the nearest element to a point
     std::vector<AMP::Mesh::MeshElement> getNearestElements( const Point &x ) const;

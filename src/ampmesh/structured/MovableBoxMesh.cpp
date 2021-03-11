@@ -35,15 +35,9 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
     AMP::Utilities::quicksort( d_index );
 
     // Generate coordinates
-    d_coord[0].resize( d_index.size(), 0 );
-    d_coord[1].resize( d_index.size(), 0 );
-    d_coord[2].resize( d_index.size(), 0 );
-    for ( size_t i = 0; i < d_index.size(); i++ ) {
-        double pos[3];
-        mesh.coord( d_index[i], pos );
-        for ( int d = 0; d < PhysicalDim; d++ )
-            d_coord[d][i] = pos[d];
-    }
+    d_coord.resize( d_index.size(), { 0, 0, 0 } );
+    for ( size_t i = 0; i < d_index.size(); i++ )
+        mesh.coord( d_index[i], d_coord[i].data() );
 }
 
 
@@ -55,13 +49,15 @@ uint64_t MovableBoxMesh::positionHash() const { return d_pos_hash; }
 void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
-    for ( int i = 0; i < PhysicalDim; i++ ) {
-        for ( size_t j = 0; j < d_coord[i].size(); j++ )
-            d_coord[i][j] += x[i];
-        d_box[2 * i + 0] += x[i];
-        d_box[2 * i + 1] += x[i];
-        d_box_local[2 * i + 0] += x[i];
-        d_box_local[2 * i + 1] += x[i];
+    for ( size_t i = 0; i < d_coord.size(); i++ ) {
+        for ( int d = 0; d < PhysicalDim; d++ )
+            d_coord[i][d] += x[d];
+    }
+    for ( int d = 0; d < PhysicalDim; d++ ) {
+        d_box[2 * d + 0] += x[d];
+        d_box[2 * d + 1] += x[d];
+        d_box_local[2 * d + 0] += x[d];
+        d_box_local[2 * d + 1] += x[d];
     }
     if ( d_geometry != nullptr )
         d_geometry->displace( x.data() );
@@ -71,13 +67,14 @@ void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
 #ifdef USE_AMP_DISCRETIZATION
+    // Clear the geometry if it exists to ensure consistency
+    d_geometry.reset();
     // Create the position vector with the necessary ghost nodes
-    std::shared_ptr<AMP::Discretization::DOFManager> DOFs =
-        AMP::Discretization::simpleDOFManager::create(
-            shared_from_this(),
-            getIterator( AMP::Mesh::GeomType::Vertex, d_max_gcw ),
-            getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
-            PhysicalDim );
+    auto DOFs = AMP::Discretization::simpleDOFManager::create(
+        shared_from_this(),
+        getIterator( AMP::Mesh::GeomType::Vertex, d_max_gcw ),
+        getIterator( AMP::Mesh::GeomType::Vertex, 0 ),
+        PhysicalDim );
     auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "tmp_pos" );
     auto displacement  = AMP::LinearAlgebra::createVector( DOFs, nodalVariable, false );
     std::vector<size_t> dofs1( PhysicalDim );
@@ -98,24 +95,24 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
     // Move all nodes (including the ghost nodes)
     std::vector<size_t> dofs( PhysicalDim );
     std::vector<double> disp( PhysicalDim );
-    for ( size_t i = 0; i < d_coord[0].size(); i++ ) {
+    for ( size_t i = 0; i < d_coord.size(); i++ ) {
         MeshElementID id = structuredMeshElement( d_index[i], this ).globalID();
         DOFs->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == PhysicalDim );
         displacement->getValuesByGlobalID( (int) PhysicalDim, &dofs[0], &disp[0] );
-        for ( int j = 0; j < PhysicalDim; j++ )
-            d_coord[j][i] += disp[j];
+        for ( int d = 0; d < PhysicalDim; d++ )
+            d_coord[i][d] += disp[d];
     }
     // Compute the new bounding box of the mesh
     d_box_local = std::vector<double>( 2 * PhysicalDim );
     for ( int d = 0; d < PhysicalDim; d++ ) {
         d_box_local[2 * d + 0] = 1e100;
         d_box_local[2 * d + 1] = -1e100;
-        for ( size_t i = 0; i < d_coord[d].size(); i++ ) {
-            if ( d_coord[d][i] < d_box_local[2 * d + 0] )
-                d_box_local[2 * d + 0] = d_coord[d][i];
-            if ( d_coord[d][i] > d_box_local[2 * d + 1] )
-                d_box_local[2 * d + 1] = d_coord[d][i];
+    }
+    for ( size_t i = 0; i < d_coord.size(); i++ ) {
+        for ( int d = 0; d < PhysicalDim; d++ ) {
+            d_box_local[2 * d + 0] = std::min( d_box_local[2 * d + 0], d_coord[i][d] );
+            d_box_local[2 * d + 1] = std::max( d_box_local[2 * d + 1], d_coord[i][d] );
         }
     }
     d_box = std::vector<double>( PhysicalDim * 2 );
@@ -149,7 +146,7 @@ void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
     size_t i = AMP::Utilities::findfirst( d_index, index );
     AMP_ASSERT( d_index[i] == index );
     for ( int d = 0; d < PhysicalDim; d++ )
-        pos[d] = d_coord[d][i];
+        pos[d] = d_coord[i][d];
 }
 
 
@@ -160,6 +157,26 @@ AMP::Geometry::Point MovableBoxMesh::physicalToLogical( const AMP::Geometry::Poi
 {
     AMP_ERROR( "physicalToLogical is not supported in MovableBoxMesh" );
     return AMP::Geometry::Point();
+}
+
+
+/****************************************************************
+ * Check if two meshes are equal                                 *
+ ****************************************************************/
+bool MovableBoxMesh::operator==( const Mesh &rhs ) const
+{
+    // Check base class variables
+    if ( !BoxMesh::operator==( rhs ) )
+        return false;
+    // Check if we can cast to a MovableBoxMesh
+    auto mesh = dynamic_cast<const MovableBoxMesh *>( &rhs );
+    if ( !mesh )
+        return false;
+    // Perform final comparisons
+    bool test = d_index == mesh->d_index;
+    test &= d_coord == mesh->d_coord;
+    test &= d_ids == mesh->d_ids;
+    return true;
 }
 
 

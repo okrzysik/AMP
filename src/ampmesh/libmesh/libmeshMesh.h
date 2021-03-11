@@ -110,6 +110,10 @@ public:
     size_t numGhostElements( const GeomType type, const int gcw ) const override;
 
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
+
     /**
      * \brief    Return an MeshIterator over the given geometric objects
      * \details  Return an MeshIterator over the given geometric objects

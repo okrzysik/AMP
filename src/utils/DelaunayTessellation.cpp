@@ -1,4 +1,3 @@
-#if !defined(__PPC__)
 #include "AMP/utils/DelaunayTessellation.h"
 #include "AMP/utils/DelaunayFaceList.h"
 #include "AMP/utils/DelaunayFaceList.hpp"
@@ -2521,5 +2520,4 @@ template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<long d
 
 #if defined( USING_ICC )
 ENABLE_WARNINGS
-#endif
 #endif

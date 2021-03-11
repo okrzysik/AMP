@@ -326,6 +326,10 @@ public:
     inline std::vector<size_t> size() const;
 
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
+
     /**
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.

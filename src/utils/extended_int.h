@@ -1,7 +1,6 @@
 #ifndef included_extended_int
 #define included_extended_int
 
-#if !defined(__PPC__)
 #include <array>
 #include <limits>
 #include <stdint.h>
@@ -191,5 +190,4 @@ public: // Member functions
 
 #include "AMP/utils/extended_int.hpp"
 
-#endif
 #endif

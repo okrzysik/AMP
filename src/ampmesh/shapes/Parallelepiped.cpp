@@ -270,5 +270,19 @@ std::unique_ptr<AMP::Geometry::Geometry> Parallelepiped::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool Parallelepiped::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Parallelepiped *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_a == geom->d_a && d_b == geom->d_b && d_c == geom->d_c && d_offset == geom->d_offset &&
+           d_M_inv == geom->d_M_inv && d_V == geom->d_V && d_n_ab == geom->d_n_ab &&
+           d_n_ac == geom->d_n_ac && d_n_bc == geom->d_n_bc;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

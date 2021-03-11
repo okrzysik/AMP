@@ -174,4 +174,17 @@ bool MeshGeometry::isConvex() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool MeshGeometry::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const MeshGeometry *>( &rhs );
+    if ( !geom )
+        return false;
+    AMP_ERROR( "Not finished" );
+    return false;
+}
+
+
 } // namespace AMP::Geometry

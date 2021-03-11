@@ -51,6 +51,7 @@ public:
     std::vector<bool> getPeriodicDim() const override final;
     std::vector<int> getLogicalSurfaceIds() const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
+    bool operator==( const Geometry &rhs ) const override final;
 
 protected:
     // Internal data

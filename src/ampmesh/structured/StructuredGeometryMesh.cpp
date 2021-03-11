@@ -110,5 +110,22 @@ std::unique_ptr<Mesh> StructuredGeometryMesh::clone() const
 }
 
 
+/****************************************************************
+ * Check if two meshes are equal                                 *
+ ****************************************************************/
+bool StructuredGeometryMesh::operator==( const Mesh &rhs ) const
+{
+    // Check base class variables
+    if ( !BoxMesh::operator==( rhs ) )
+        return false;
+    // Check if we can cast to a MovableBoxMesh
+    auto mesh = dynamic_cast<const StructuredGeometryMesh *>( &rhs );
+    if ( !mesh )
+        return false;
+    // Perform basic comparison
+    return d_geometry2 == mesh->d_geometry2;
+}
+
+
 } // namespace Mesh
 } // namespace AMP

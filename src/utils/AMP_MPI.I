@@ -231,7 +231,7 @@ template<class TYPE>
 TYPE MPI_CLASS::minReduce( const TYPE value ) const
 {
     if ( comm_size > 1 ) {
-        TYPE tmp;
+        TYPE tmp = value;
         minReduce( &value, &tmp, 1 );
         return tmp;
     } else {
@@ -326,7 +326,7 @@ template<class TYPE>
 TYPE MPI_CLASS::maxReduce( const TYPE value ) const
 {
     if ( comm_size > 1 ) {
-        TYPE tmp;
+        TYPE tmp = value;
         maxReduce( &value, &tmp, 1 );
         return tmp;
     } else {

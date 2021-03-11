@@ -1352,6 +1352,25 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
 }
 
 
+/****************************************************************
+ * Check if two meshes are equal                                 *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP>
+bool TriangleMesh<NG, NP>::operator==( const Mesh &rhs ) const
+{
+    // Check if &rhs == this
+    if ( this == &rhs )
+        return true;
+    // Check if we can cast to a MultiMesh
+    auto mesh = dynamic_cast<const TriangleMesh<NG, NP> *>( &rhs );
+    if ( !mesh )
+        return false;
+    // Perform comparison on sub-meshes
+    AMP_ERROR( "Not finished" );
+    return false;
+}
+
+
 /********************************************************
  *  Explicit instantiations of TriangleMesh              *
  ********************************************************/

@@ -107,5 +107,18 @@ std::unique_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool MultiGeometry::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const MultiGeometry *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_geom == geom->d_geom;
+}
+
+
+
 } // namespace Geometry
 } // namespace AMP

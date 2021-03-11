@@ -233,5 +233,18 @@ std::unique_ptr<AMP::Geometry::Geometry> Tube::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool Tube::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Tube *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_r_min == geom->d_r_min && d_r_max == geom->d_r_max && d_z_min == geom->d_z_min &&
+           d_z_max == geom->d_z_max && d_offset[0] == geom->d_offset[0] &&
+           d_offset[1] == geom->d_offset[1] && d_offset[2] == geom->d_offset[2];
+}
+
 } // namespace Geometry
 } // namespace AMP

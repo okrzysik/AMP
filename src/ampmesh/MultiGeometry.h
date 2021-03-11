@@ -48,6 +48,7 @@ public: // Functions inherited from Geometry
     double volume() const override final;
     void displace( const double *x ) override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
+    bool operator==( const Geometry &rhs ) const override final;
 
 private:
     //! Empty constructor for a mesh
