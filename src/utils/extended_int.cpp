@@ -1,8 +1,7 @@
 #include "AMP/utils/extended_int.h"
 
-#if !defined(__PPC__)
-
 #include <math.h>
+
 
 #if !defined( __INTEL_COMPILER )
 using eint64   = AMP::extended::int64N<1>;
@@ -78,6 +77,15 @@ static_assert( std::numeric_limits<eint128>::traps );
  *  Run basic tests                                                      *
  ************************************************************************/
 template<class TYPE>
+static constexpr bool compare( const TYPE &x, double y )
+{
+    double x2  = static_cast<double>( x );
+    double err = ( x2 - y ) / y;
+    if ( err < 0 )
+        err = -err;
+    return err <= 1e-14;
+}
+template<class TYPE>
 static constexpr TYPE createShift( int i0, int shift )
 {
     TYPE tmp( i0 );
@@ -107,6 +115,8 @@ static constexpr bool run_basic_tests()
     static_assert( static_cast<int>( c + c ) == -26 );
     static_assert( static_cast<int>( b - c ) == 25 );
     static_assert( static_cast<int>( c - b ) == -25 );
+    // static_assert( compare( b, 12 ) );
+    // static_assert( compare( c, -13 ) );
 
     // Check some shifts
     constexpr TYPE tmp1 = createShift<TYPE>( 1, 6 );
@@ -124,9 +134,7 @@ static constexpr bool run_basic_tests()
         constexpr TYPE tmp7 = tmp6 >> 245;
         static_assert( static_cast<int>( tmp7 ) == 32 );
         constexpr double ans = 1.809251394333066e+75;
-        constexpr double res = static_cast<double>( tmp6 );
-        constexpr double err = res >= ans ? ( res - ans ) / ans : ( ans - res ) / ans;
-        static_assert( err <= 1e-14 );
+        static_assert( compare( tmp6, ans ) );
     }
     return true;
 }
@@ -137,6 +145,7 @@ static_assert( run_basic_tests<eint256>() );
 static_assert( run_basic_tests<eint512>() );
 static_assert( run_basic_tests<eint1024>() );
 static_assert( run_basic_tests<AMP::extended::int64N<3>>() );
+static_assert( std::numeric_limits<eint256>::digits > 251 );
 
 
 /************************************************************************
@@ -197,24 +206,27 @@ static_assert( testHex() );
  ************************************************************************/
 static constexpr bool testMult()
 {
-    // Test multiple by repeated multiplication of -1e8
-    eint2048 x( -100000000 ), x2( 1 );
-    double ans = 1.0;
-    for ( int i = 0; i < 38; i++ ) {
-        double err = ( static_cast<double>( x2 ) - ans ) / ans;
-        if ( err < 0 )
-            err = -err;
-        if ( i <= 38 && err > 1e-12 )
-            return false;
+    // Test multiply by repeated multiplication of -1e18
+    eint2048 x( -1000000000000000000 ), x2( 1 );
+    double ans[] = { -1e18, 1e36,   -1e54, 1e72,   -1e90, 1e108,  -1e126, 1e144, -1e162,
+                     1e180, -1e198, 1e216, -1e234, 1e252, -1e270, 1e288,  -1e306 };
+    bool test    = true;
+    for ( int i = 0; i < 17; i++ ) {
         x2 = x2 * x;
-        ans *= -1e8;
+        test &&compare( x2, ans[i] );
     }
-    x2                   = x2 * x2;
-    constexpr double inf = std::numeric_limits<double>::infinity();
-    return static_cast<double>( x2 ) == inf;
+    return test;
+}
+static constexpr bool testInf()
+{
+    // Create an integer that cannot be represented by double
+    eint2048 x1( 1 );
+    x1 <<= 1341;
+    auto x2 = -x1;
+    return static_cast<double>( x1 ) == std::numeric_limits<double>::infinity() &&
+           static_cast<double>( x2 ) == -std::numeric_limits<double>::infinity();
 }
 static_assert( testMult() );
-
-#endif
+static_assert( testInf() );
 
 #endif
