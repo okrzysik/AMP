@@ -190,5 +190,4 @@ public: // Member functions
 
 #include "AMP/utils/extended_int.hpp"
 
-
 #endif

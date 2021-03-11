@@ -1,7 +1,9 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
@@ -17,8 +19,7 @@
 #include <cmath>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 static_assert( sizeof( MeshID ) == 8, "unexpected size for MeshID" );
@@ -260,6 +261,82 @@ size_t Mesh::numGhostElements( const GeomType, int ) const
 
 
 /********************************************************
+ * Compare two meshes                                    *
+ ********************************************************/
+static double getTol( const std::vector<double> &box, size_t N )
+{
+    int ndim     = box.size();
+    size_t N2    = pow( N, 1.0 / ndim );
+    double dx[3] = { 0, 0, 0 };
+    for ( int d = 0; d < ndim / 2; d++ )
+        dx[d] = ( box[2 * d + 1] - box[2 * d] ) / N2;
+    return 0.2 * sqrt( dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2] );
+}
+int Mesh::compare( const Mesh &a, const Mesh &b )
+{
+    // Check if the meshes are equal
+    if ( a == b )
+        return 1;
+    // Special case for multimeshes
+    auto a2 = dynamic_cast<const MultiMesh *>( &a );
+    auto b2 = dynamic_cast<const MultiMesh *>( &b );
+    if ( a2 || b2 ) {
+        if ( !a2 || !b2 )
+            return false;
+        auto list1 = a2->getMeshes();
+        auto list2 = b2->getMeshes();
+        if ( list1.size() != list2.size() )
+            return false;
+        int result = 1;
+        for ( size_t i = 0; i < list1.size(); i++ ) {
+            int test = compare( *list1[i], *list2[i] );
+            if ( test == 0 )
+                return 0;
+            result = std::max( result, test );
+        }
+        return result;
+    }
+    // Default comparison
+    // Perform simple comparisons
+    if ( a.GeomDim != b.GeomDim || a.PhysicalDim != b.PhysicalDim ||
+         a.d_comm.compare( b.d_comm ) == 0 )
+        return 0;
+    if ( a.getBoundaryIDs() != b.getBoundaryIDs() || a.getBlockIDs() != b.getBlockIDs() )
+        return 0;
+    // Compare domains
+    size_t N1  = a.numLocalElements( a.GeomDim );
+    size_t N2  = b.numLocalElements( b.GeomDim );
+    auto box1  = a.getBoundingBox();
+    auto box2  = b.getBoundingBox();
+    double tol = getTol( box1, std::min( N1, N2 ) );
+    for ( size_t i = 0; i < box1.size(); i++ ) {
+        if ( fabs( box1[i] - box2[i] ) > tol )
+            return 0;
+    }
+    // Compare the coordinates
+    if ( N1 == N2 ) {
+        AMP_WARNING( "Not finished" );
+    }
+    // Get the geometries
+    auto geom1 = a.getGeometry();
+    auto geom2 = b.getGeometry();
+    if ( !geom1 ) {
+        auto ptr = std::const_pointer_cast<Mesh>( a.shared_from_this() );
+        geom1    = std::make_shared<AMP::Geometry::MeshGeometry>( ptr );
+    }
+    if ( !geom2 ) {
+        auto ptr = std::const_pointer_cast<Mesh>( b.shared_from_this() );
+        geom2    = std::make_shared<AMP::Geometry::MeshGeometry>( ptr );
+    }
+    if ( *geom1 == *geom2 )
+        return 3;
+
+    AMP_WARNING( "Not finished" );
+    return -1;
+}
+
+
+/********************************************************
  * MeshIterator set operations                           *
  ********************************************************/
 MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshIterator &B )
@@ -379,5 +456,26 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
 }
 
 
-} // namespace Mesh
+} // namespace AMP::Mesh
+
+
+/********************************************************
+ * Instantiate communication of MeshElementID            *
+ ********************************************************/
+namespace AMP {
+typedef AMP::Mesh::MeshElementID ID;
+template ID AMP_MPI::bcast<ID>( const ID &, int ) const;
+template void AMP_MPI::bcast<ID>( ID *, int, int ) const;
+template void AMP_MPI::send<ID>( const ID *, int, int, int ) const;
+template MPI_Request AMP_MPI::Isend<ID>( const ID *, int, int, int ) const;
+template void AMP_MPI::recv<ID>( ID *, int &, int, const bool, int ) const;
+template MPI_Request AMP_MPI::Irecv<ID>( ID *buf, int, int, int ) const;
+template std::vector<ID> AMP_MPI::allGather<ID>( const ID & ) const;
+template std::vector<ID> AMP_MPI::allGather<ID>( const std::vector<ID> & ) const;
+template void AMP_MPI::allGather<ID>( const ID &, ID * ) const;
+template int AMP_MPI::allGather<ID>( const ID *, int, ID *, int *, int *, bool ) const;
+template void AMP_MPI::setGather<ID>( std::set<ID> & ) const;
+template void AMP_MPI::allToAll<ID>( int, const ID *, ID * ) const;
+template int
+AMP_MPI::allToAll<ID>( const ID *, const int[], const int[], ID *, int *, int *, bool ) const;
 } // namespace AMP

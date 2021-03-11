@@ -883,6 +883,23 @@ void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
 #endif
 
 
+/****************************************************************
+ * Check if two meshes are equal                                 *
+ ****************************************************************/
+bool MultiMesh::operator==( const Mesh &rhs ) const
+{
+    // Check if &rhs == this
+    if ( this == &rhs )
+        return true;
+    // Check if we can cast to a MultiMesh
+    auto mesh = dynamic_cast<const MultiMesh *>( &rhs );
+    if ( !mesh )
+        return false;
+    // Perform comparison on sub-meshes
+    return d_meshes == mesh->d_meshes;
+}
+
+
 /********************************************************
  * Function to copy a key from database 1 to database 2  *
  * If the key is an array of size N, it will only copy   *

@@ -355,5 +355,19 @@ std::unique_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
     return std::make_unique<CircleFrustum>( *this );
 }
 
+
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool CircleFrustum::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const CircleFrustum *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_dir == geom->d_dir && d_r == geom->d_r && d_h == geom->d_h &&
+           d_offset == geom->d_offset && d_C == geom->d_C && d_theta == geom->d_theta;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

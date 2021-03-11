@@ -1,0 +1,29 @@
+Mesh_1 {
+	MeshName = "cube1"
+	MeshType = "AMP"
+	dim = 3
+	Generator = "cube"
+	Size = 15, 10, 6
+	Range = -1, 1, -0.9, 0.9, -0.8, 0.8
+    static = TRUE
+}
+
+Mesh_2 {
+	MeshName = "cube2"
+	MeshType = "AMP"
+	dim = 3
+	Generator = "cube"
+	Size = 15, 10, 6
+	Range = -1, 1, -0.9, 0.9, -0.8, 0.8
+    static = FALSE
+}
+
+Mesh_3 {
+	MeshName = "cube3"
+	MeshType = "AMP"
+	dim = 3
+	Generator = "cube"
+	Size = 15, 10, 6
+	Range = -1, 1, -0.9, 0.9, -0.8, 0.8
+    static = FALSE
+}

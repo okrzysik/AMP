@@ -513,6 +513,30 @@ std::unique_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
 
 
 /********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+template<std::size_t NDIM>
+bool Box<NDIM>::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Box<NDIM> *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_range == geom->d_range;
+}
+template<std::size_t NDIM>
+bool Grid<NDIM>::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Grid<NDIM> *>( &rhs );
+    if ( !geom )
+        return false;
+    bool test = d_range == geom->d_range;
+    for ( size_t d = 0; d < NDIM; d++ )
+        test = test && d_coord[d] == geom->d_coord[d];
+    return test;
+}
+
+
+/********************************************************
  * Explicit instantiations                               *
  ********************************************************/
 template class Box<1>;

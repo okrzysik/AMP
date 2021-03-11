@@ -106,6 +106,10 @@ public:
                                              const int gcw = 0 ) const override;
 
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
+
     /**
      * \brief    Return the list of all ID sets in the mesh
      * \details  Return the list of all ID sets in the mesh
