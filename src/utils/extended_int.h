@@ -35,10 +35,10 @@ public:
     constexpr int64N<N> &operator=( int64N<N> && ) = default;
 
     //! Create from int
-    explicit constexpr int64N( const int &rhs );
+    explicit constexpr int64N( int rhs );
 
     //! Create from int64
-    explicit constexpr int64N( const int64_t & );
+    explicit constexpr int64N( int64_t );
 
     //! Create from int64N<N>
     template<uint8_t N2>
