@@ -4,6 +4,7 @@
 
 #include "AMP/ampmesh/Geometry.h"
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/MeshPoint.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/kdtree.h"

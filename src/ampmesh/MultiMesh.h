@@ -227,6 +227,10 @@ public:
     inline bool isBaseMesh() const override { return false; }
 
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
+
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
      *  Note: This function will require global communication

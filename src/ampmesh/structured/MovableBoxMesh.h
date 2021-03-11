@@ -36,6 +36,10 @@ public:
     Mesh::Movable isMeshMovable() const override;
 
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
+
     /**
      * \brief    Identify if the position has moved
      * \details  This function will return a hash that can be used to
@@ -103,7 +107,7 @@ private:
 
     // The coordinates of the nodes
     std::vector<MeshElementIndex> d_index;
-    std::vector<double> d_coord[3];
+    std::vector<std::array<double, 3>> d_coord;
 
     // Boundary information
     std::vector<int> d_ids;

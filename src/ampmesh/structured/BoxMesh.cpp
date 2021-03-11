@@ -778,6 +778,27 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> BoxMesh::createVector( const std::st
 
 
 /****************************************************************
+ * Check if two meshes are equal                                 *
+ ****************************************************************/
+bool BoxMesh::operator==( const Mesh &rhs ) const
+{
+    // Check if we are comparing to *this
+    if ( &rhs == this )
+        return true;
+    // Check if we can cast to a BoxMesh
+    auto mesh = dynamic_cast<const BoxMesh *>( &rhs );
+    if ( !mesh )
+        return false;
+    // Perform basic comparison
+    if ( d_isPeriodic != mesh->d_isPeriodic || d_globalSize != mesh->d_globalSize ||
+         d_blockSize != mesh->d_blockSize || d_surfaceId != mesh->d_surfaceId ||
+         *d_geometry != *mesh->d_geometry )
+        return false;
+    return true;
+}
+
+
+/****************************************************************
  * Print the index                                               *
  ****************************************************************/
 std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x )

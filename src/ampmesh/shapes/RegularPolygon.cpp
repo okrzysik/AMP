@@ -218,5 +218,18 @@ std::unique_ptr<AMP::Geometry::Geometry> RegularPolygon::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool RegularPolygon::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const RegularPolygon *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_N == geom->d_N && d_R == geom->d_R && d_offset == geom->d_offset &&
+           d_verticies == geom->d_verticies && d_norm == geom->d_norm;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

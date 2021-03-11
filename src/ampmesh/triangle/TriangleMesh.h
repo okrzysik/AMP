@@ -132,6 +132,10 @@ public:
     std::unique_ptr<Mesh> clone() const override final;
 
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
+
     /**
      * \brief   Estimate the number of elements in the mesh
      * \details  This function will estimate the number of elements in the mesh.

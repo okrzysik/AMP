@@ -352,5 +352,19 @@ std::unique_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool SquareFrustum::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const SquareFrustum *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_dir == geom->d_dir && d_range == geom->d_range &&
+           d_pyramid_size == geom->d_pyramid_size && d_scale_height == geom->d_scale_height &&
+           d_volume == geom->d_volume && d_face == geom->d_face && d_normal[0] == geom->d_normal[0];
+}
+
+
 } // namespace Geometry
 } // namespace AMP

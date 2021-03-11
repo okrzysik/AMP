@@ -163,5 +163,17 @@ std::unique_ptr<AMP::Geometry::Geometry> Circle::clone() const
 }
 
 
+/********************************************************
+ * Compare the geometry                                  *
+ ********************************************************/
+bool Circle::operator==( const Geometry &rhs ) const
+{
+    auto geom = dynamic_cast<const Circle *>( &rhs );
+    if ( !geom )
+        return false;
+    return d_R == geom->d_R && d_offset == geom->d_offset;
+}
+
+
 } // namespace Geometry
 } // namespace AMP

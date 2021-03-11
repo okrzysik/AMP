@@ -31,6 +31,9 @@ public:
     //! Assignment operator
     StructuredGeometryMesh &operator=( const StructuredGeometryMesh & ) = delete;
 
+    //! Check if two meshes are equal
+    bool operator==( const Mesh &mesh ) const override;
+
 public: // Functions derived from BoxMesh
     Mesh::Movable isMeshMovable() const override;
     uint64_t positionHash() const override;
