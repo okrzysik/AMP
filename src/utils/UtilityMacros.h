@@ -170,7 +170,8 @@
             _Pragma( "GCC diagnostic ignored \"-Wenum-compare\"" )              \
             _Pragma( "GCC diagnostic ignored \"-Wsign-compare\"" )              \
             _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
-            _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )
+            _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )      \
+            _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )
         #define DISABLE_WARNINGS                \
