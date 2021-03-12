@@ -110,6 +110,14 @@ public:
     /**
      * \brief   Search the tree for the nearest neighbor point
      * \details  This will return the index of the nearest neighbor in the tree
+     * \param[in] p      The point to search
+     * \return           The nearest point
+     */
+    AMP::Mesh::MeshPoint<double> find_nearest( const AMP::Mesh::MeshPoint<double> &p ) const;
+
+    /**
+     * \brief   Search the tree for the nearest neighbor point
+     * \details  This will return the index of the nearest neighbor in the tree
      * \param[in] x      The coordinates of the point to search (NDIM)
      * \param[out] dist  Optional output array for the distance to the nearest neighbor (1)
      * \param[out] pos   Optional output array for the position of the nearest neighbor (NDIM)

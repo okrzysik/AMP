@@ -56,12 +56,6 @@
 #define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
 
 
-// Global variable to track create new unique comms (dup and split)
-#ifndef USE_MPI
-MPI_Comm uniqueGlobalComm = 11;
-#endif
-
-
 #if defined( USE_SAMRAI ) && defined( USE_PETSC ) && !defined( USE_MPI )
 int MPI_REQUEST_NULL  = 3;
 int MPI_ERR_IN_STATUS = 4;
@@ -96,33 +90,6 @@ AMP_MPI AMPManager::comm_world = AMP::AMP_MPI();
 volatile uint32_t MPI_CLASS::N_MPI_Comm_created   = 0;
 volatile uint32_t MPI_CLASS::N_MPI_Comm_destroyed = 0;
 short MPI_CLASS::profile_level                    = 127;
-
-
-// Define a type for use with size_t
-#ifdef USE_MPI
-static MPI_Datatype MPI_SIZE_T = 0x0;
-static MPI_Datatype getSizeTDataType()
-{
-    int size_int, size_long, size_longlong, size_longlong2;
-    MPI_Type_size( MPI_UNSIGNED, &size_int );
-    MPI_Type_size( MPI_UNSIGNED_LONG, &size_long );
-    MPI_Type_size( MPI_UNSIGNED_LONG_LONG, &size_longlong );
-    MPI_Type_size( MPI_LONG_LONG_INT, &size_longlong2 );
-    if ( sizeof( size_t ) == size_int ) {
-        return MPI_UNSIGNED;
-    } else if ( sizeof( size_t ) == size_long ) {
-        return MPI_UNSIGNED_LONG;
-    } else if ( sizeof( size_t ) == size_longlong ) {
-        return MPI_UNSIGNED_LONG_LONG;
-    } else if ( sizeof( size_t ) == size_longlong2 ) {
-        MPI_WARNING( "Using signed long long datatype for size_t in MPI" );
-        return MPI_LONG_LONG_INT; // Note: this is not unsigned
-    } else {
-        MPI_ERROR( "No suitable datatype found" );
-    }
-    return 0;
-}
-#endif
 
 
 // Default MPI max tag (will be overridden if MPI_TAG_UB attribute is valid)
@@ -528,9 +495,6 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
 #ifdef USE_MPI
     // We are using MPI, use the MPI communicator to initialize the data
     if ( communicator != MPI_COMM_NULL ) {
-        // Set the MPI_SIZE_T datatype if it has not been set
-        if ( MPI_SIZE_T == 0x0 )
-            MPI_SIZE_T = getSizeTDataType();
         // Attach the error handler
         StackTrace::setMPIErrorHandler( communicator );
         // Get the communicator properties
@@ -815,6 +779,7 @@ MPI_CLASS MPI_CLASS::dup() const
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
+    static MPI_Comm uniqueGlobalComm = 11;
     new_MPI_comm = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif

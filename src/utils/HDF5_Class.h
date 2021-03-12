@@ -30,6 +30,9 @@ public:
     //! Virtual destructor
     virtual ~HDF5data() {}
 
+    //! Return a string identifying the class
+    virtual std::string type() const = 0;
+
     //! Number of entries
     virtual size_t size() const = 0;
 

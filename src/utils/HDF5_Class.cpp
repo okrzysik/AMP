@@ -6,7 +6,6 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
 
-#include <complex>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -47,6 +46,7 @@ public:
     {
     }
     ~HDF5_null() override = default;
+    std::string type() const override { return "HDF5_null"; }
     size_t size() const override { return 0; }
     std::shared_ptr<HDF5data> getData( size_t, const AMP::string_view & ) override
     {
@@ -66,6 +66,7 @@ class HDF5_group final : public HDF5data
 public:
     HDF5_group( hid_t fid, const AMP::string_view &name, int type );
     ~HDF5_group() override = default;
+    std::string type() const override { return "HDF5_group"; }
     size_t size() const override { return d_data.length() / d_data.size( 0 ); }
     std::shared_ptr<HDF5data> getData( size_t i, const AMP::string_view &name ) override
     {
@@ -120,6 +121,10 @@ public:
     HDF5_primitive( hid_t fid, const AMP::string_view &name );
     HDF5_primitive( const AMP::string_view &name, const AMP::Array<TYPE> &data );
     ~HDF5_primitive() override = default;
+    std::string type() const override
+    {
+        return AMP::Utilities::stringf( "HDF5_primitive<%f>", typeid( TYPE ).name() );
+    }
     size_t size() const override { return 1; }
     std::shared_ptr<HDF5data> getData( size_t i, const AMP::string_view &name ) override
     {
@@ -197,7 +202,7 @@ void HDF5data::getData( AMP::Array<TYPE> &data ) const
     } else if ( dynamic_cast<const HDF5_primitive<double> *>( this ) != nullptr ) {
         data.copy( dynamic_cast<const HDF5_primitive<double> *>( this )->getData() );
     } else {
-        AMP_ERROR( "Unable to get data" );
+        AMP_ERROR( "Unable to get data: " + type() );
     }
 }
 template void HDF5data::getData<int>( AMP::Array<int> & ) const;
@@ -258,6 +263,8 @@ static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const AMP::string_view
     std::unique_ptr<HDF5data> data;
     if ( classid == H5T_INTEGER || classid == H5T_FLOAT ) {
         data = readPrimitive( fid, name );
+    } else if ( classid == H5T_STRING ) {
+        data.reset( new HDF5_primitive<std::string>( fid, name ) );
     } else if ( classid == H5T_STRING ) {
         data.reset( new HDF5_primitive<std::string>( fid, name ) );
     } else if ( classid == H5T_BITFIELD ) {
