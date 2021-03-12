@@ -3,10 +3,12 @@
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MeshGeometry.h"
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MeshUtilities.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/kdtree.h"
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -272,6 +274,13 @@ static double getTol( const std::vector<double> &box, size_t N )
         dx[d] = ( box[2 * d + 1] - box[2 * d] ) / N2;
     return 0.2 * sqrt( dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2] );
 }
+static inline std::vector<Point> getPoints( MeshIterator it )
+{
+    std::vector<Point> p( it.size() );
+    for ( size_t i = 0; i < p.size(); i++, ++it )
+        p[i] = it->centroid();
+    return p;
+}
 int Mesh::compare( const Mesh &a, const Mesh &b )
 {
     // Check if the meshes are equal
@@ -315,7 +324,23 @@ int Mesh::compare( const Mesh &a, const Mesh &b )
     }
     // Compare the coordinates
     if ( N1 == N2 ) {
-        AMP_WARNING( "Not finished" );
+        bool test    = true;
+        auto nodes_a = getPoints( a.getIterator( GeomType::Vertex ) );
+        auto nodes_b = getPoints( b.getIterator( GeomType::Vertex ) );
+        auto elems_a = getPoints( a.getIterator( a.GeomDim ) );
+        auto elems_b = getPoints( b.getIterator( b.GeomDim ) );
+        kdtree tree_a_node( nodes_a );
+        kdtree tree_a_elem( elems_a );
+        for ( const auto &p : nodes_b ) {
+            auto p2 = tree_a_node.find_nearest( p );
+            test    = test && ( p - p2 ).norm() < tol * tol;
+        }
+        for ( const auto &p : elems_b ) {
+            auto p2 = tree_a_elem.find_nearest( p );
+            test    = test && ( p - p2 ).norm() < tol * tol;
+        }
+        if ( test )
+            return 2;
     }
     // Get the geometries
     auto geom1 = a.getGeometry();

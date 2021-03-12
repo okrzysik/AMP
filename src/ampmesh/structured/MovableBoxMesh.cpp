@@ -176,7 +176,7 @@ bool MovableBoxMesh::operator==( const Mesh &rhs ) const
     bool test = d_index == mesh->d_index;
     test &= d_coord == mesh->d_coord;
     test &= d_ids == mesh->d_ids;
-    return true;
+    return test;
 }
 
 

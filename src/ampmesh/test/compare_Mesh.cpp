@@ -10,7 +10,7 @@
 
 
 // Compare meshes
-void compare( const std::string filename )
+bool compare( const std::string &filename )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
@@ -21,7 +21,7 @@ void compare( const std::string filename )
         auto key = "Mesh_" + std::to_string( i );
         if ( !input_db->keyExists( key ) )
             break;
-        auto db = input_db->getDatabase( key );
+        auto db     = input_db->getDatabase( key );
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( db );
         params->setComm( globalComm );
         meshes.push_back( AMP::Mesh::Mesh::buildMesh( params ) );
@@ -34,7 +34,35 @@ void compare( const std::string filename )
         for ( size_t j = 0; j < meshes.size(); j++ )
             result( i, j ) = AMP::Mesh::Mesh::compare( *meshes[i], *meshes[j] );
     }
-    result.print( std::cout );
+
+    // Print the results
+    if ( globalComm.getRank() == 0 ) {
+        result.print( std::cout, "compare" );
+        std::cout << std::endl;
+    }
+
+    // Check we get the same result on all ranks
+    int error = 0;
+    auto tmp  = result;
+    globalComm.bcast( tmp.data(), tmp.length(), 0 );
+    if ( tmp != result ) {
+        std::cerr << "Results do not match across ranks:\n";
+        std::cerr << "   rank:\n";
+        result.print( std::cerr, "tmp", "   " );
+        error = 1;
+    }
+
+    // Check the answer (if present)
+    if ( !input_db->keyExists( "ans" ) ) {
+        auto ans  = input_db->getArray<int>( "ans" );
+        bool test = ans == result;
+        if ( !test ) {
+            std::cerr << "Answer does not match\n";
+            error = 1;
+        }
+    }
+
+    return globalComm.maxReduce( error );
 }
 
 
@@ -45,11 +73,12 @@ int main( int argc, char **argv )
 
     if ( argc != 2 ) {
         std::cerr << "compare_Mesh input_file\n";
+        AMP::AMPManager::shutdown();
         return 1;
     }
 
-    compare( argv[1] );
+    int result = compare( argv[1] );
 
     AMP::AMPManager::shutdown();
-    return 0;
+    return result;
 }

@@ -209,7 +209,7 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     using TYPE2 = typename TypeIntSelector<TYPE>::type;
     if constexpr ( !isMPItype<TYPE>() )
         throw std::logic_error( "minReduce with rank is not supported for arbitrary types" );
-    PROFILE_START( "minReduce", profile_level );
+    PROFILE_START( "minReduce2", profile_level );
     auto send2 = new TYPE2[n];
     auto recv2 = new TYPE2[n];
     for ( int i = 0; i < n; i++ ) {
@@ -224,7 +224,7 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     }
     delete[] send2;
     delete[] recv2;
-    PROFILE_STOP( "minReduce", profile_level );
+    PROFILE_STOP( "minReduce2", profile_level );
 #endif
 }
 template<class TYPE>
@@ -304,7 +304,7 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     using TYPE2 = typename TypeIntSelector<TYPE>::type;
     if constexpr ( !isMPItype<TYPE>() )
         throw std::logic_error( "maxReduce with rank is not supported for arbitrary types" );
-    PROFILE_START( "maxReduce", profile_level );
+    PROFILE_START( "maxReduce2", profile_level );
     auto send2 = new TYPE2[n];
     auto recv2 = new TYPE2[n];
     for ( int i = 0; i < n; i++ ) {
@@ -319,7 +319,7 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
     }
     delete[] send2;
     delete[] recv2;
-    PROFILE_STOP( "maxReduce", profile_level );
+    PROFILE_STOP( "maxReduce2", profile_level );
 #endif
 }
 template<class TYPE>
