@@ -11,7 +11,7 @@ namespace AMP {
  * Constructors                                                      *
  ********************************************************************/
 constexpr Units::Units() : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0 ) {}
-constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0 )
+constexpr Units::Units( const std::string_view &str ) : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0 )
 {
     // Remove trailing/preceeding whitespace
     int i1 = 0, i2 = str.size() - 1;
@@ -43,7 +43,7 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
         if ( k >= (int) d_unit.size() )
             throw std::logic_error( "Unit size" );
     }
-    AMP::string_view unit( d_unit.data(), k );
+    std::string_view unit( d_unit.data(), k );
     // Convert the string to SI units
     k                    = 0;
     d_scale              = 1.0;
@@ -102,7 +102,7 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
         i    = j;
     }
 }
-constexpr std::tuple<Units::SI_type, double> Units::read( const AMP::string_view &str )
+constexpr std::tuple<Units::SI_type, double> Units::read( const std::string_view &str )
 {
     auto i = str.find( '^' );
     if ( i == std::string::npos ) {
@@ -151,7 +151,7 @@ constexpr Units::SI_type Units::combine( const SI_type &a, const SI_type &b )
 /********************************************************************
  * Get prefix                                                        *
  ********************************************************************/
-constexpr UnitPrefix Units::getUnitPrefix( const AMP::string_view &str ) noexcept
+constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcept
 {
     UnitPrefix value = UnitPrefix::unknown;
     if ( str.empty() ) {
@@ -204,7 +204,7 @@ constexpr UnitPrefix Units::getUnitPrefix( const AMP::string_view &str ) noexcep
 /********************************************************************
  * Get unit value                                                    *
  ********************************************************************/
-constexpr std::tuple<Units::SI_type, double> Units::read2( const AMP::string_view &str )
+constexpr std::tuple<Units::SI_type, double> Units::read2( const std::string_view &str )
 {
     if ( str.size() <= 1 ) {
         auto [u, s] = readUnit( str );
@@ -228,7 +228,7 @@ constexpr std::tuple<Units::SI_type, double> Units::read2( const AMP::string_vie
     double s  = 0.0;
     return std::tie( u, s );
 }
-constexpr std::tuple<Units::SI_type, double> Units::readUnit( const AMP::string_view &str,
+constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_view &str,
                                                               bool throwErr )
 {
     auto create = []( UnitType type, double s = 1.0 ) {

@@ -49,7 +49,7 @@ MLoptions::MLoptions( std::shared_ptr<AMP::Database> db )
 }
 
 template<class TYPE>
-static inline void addEntry( std::shared_ptr<AMP::Database> db, AMP::string_view key, TYPE value )
+static inline void addEntry( std::shared_ptr<AMP::Database> db, std::string_view key, TYPE value )
 {
     if ( !db->keyExists( key ) )
         db->putScalar( key, value );

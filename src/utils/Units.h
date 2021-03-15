@@ -3,9 +3,8 @@
 
 #include <array>
 #include <math.h>
+#include <string_view>
 #include <tuple>
-
-#include "AMP/utils/string_view.h"
 
 
 namespace AMP {
@@ -89,7 +88,7 @@ public:
      *    It can create a unit from a string of the format "W/(m^2)"
      * \param unit      Input string
      */
-    constexpr Units( const char *unit ) : Units( AMP::string_view( unit ) ) {}
+    constexpr Units( const char *unit ) : Units( std::string_view( unit ) ) {}
 
     /**
      * \brief  Construct the units from a const char array
@@ -97,7 +96,7 @@ public:
      *    It can create a unit from a string of the format "W/(m^2)"
      * \param unit      Input string
      */
-    constexpr Units( const AMP::string_view &unit );
+    constexpr Units( const std::string_view &unit );
 
     /**
      * \brief  Get the unit type
@@ -111,7 +110,7 @@ public:
      * \details  This returns an enum representing the given input string
      * \param str       Input string
      */
-    constexpr static UnitPrefix getUnitPrefix( const AMP::string_view &str ) noexcept;
+    constexpr static UnitPrefix getUnitPrefix( const std::string_view &str ) noexcept;
 
     /**
      * \brief  Check if two units are compatible
@@ -161,7 +160,7 @@ public:
     std::string str() const;
 
     //! Get a string representation for the prefix
-    static AMP::string_view getPrefixStr( UnitPrefix ) noexcept;
+    static std::string_view getPrefixStr( UnitPrefix ) noexcept;
 
     //! Get a string representation of the units in SI units (with scaling factor)
     std::string printSI() const;
@@ -181,9 +180,9 @@ protected:
     double d_scale;
 
 protected:
-    static constexpr std::tuple<SI_type, double> read( const AMP::string_view &str );
-    static constexpr std::tuple<SI_type, double> read2( const AMP::string_view &str );
-    static constexpr std::tuple<SI_type, double> readUnit( const AMP::string_view &str,
+    static constexpr std::tuple<SI_type, double> read( const std::string_view &str );
+    static constexpr std::tuple<SI_type, double> read2( const std::string_view &str );
+    static constexpr std::tuple<SI_type, double> readUnit( const std::string_view &str,
                                                            bool throwErr = true );
     static constexpr SI_type combine( const SI_type &a, const SI_type &b );
     static constexpr SI_type getSI( UnitType );

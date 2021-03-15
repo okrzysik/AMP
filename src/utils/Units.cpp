@@ -20,7 +20,7 @@ std::string Units::str() const
     }
 }
 std::string Units::printUnit() const { return std::string( d_unit.data(), 0, d_unit.size() ); }
-AMP::string_view Units::getPrefixStr( UnitPrefix p ) noexcept
+std::string_view Units::getPrefixStr( UnitPrefix p ) noexcept
 {
     static constexpr const char *d_prefixSymbol[] = { "y", "z",  "a",  "f", "p", "n", "u", "m",
                                                       "c", "da", "\0", "d", "h", "k", "M", "G",
