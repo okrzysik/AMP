@@ -265,8 +265,6 @@ static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const AMP::string_view
         data = readPrimitive( fid, name );
     } else if ( classid == H5T_STRING ) {
         data.reset( new HDF5_primitive<std::string>( fid, name ) );
-    } else if ( classid == H5T_STRING ) {
-        data.reset( new HDF5_primitive<std::string>( fid, name ) );
     } else if ( classid == H5T_BITFIELD ) {
         data.reset( new HDF5_null( fid, name, "H5T_BITFIELD" ) );
     } else if ( classid == H5T_OPAQUE ) {

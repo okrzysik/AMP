@@ -14,10 +14,10 @@
 
 
 #define MPI_CLASS AMP_MPI
-#define MPI_ERROR AMP_ERROR
-#define MPI_ASSERT AMP_ASSERT
-#define MPI_INSIST AMP_INSIST
-#define MPI_WARNING AMP_WARNING
+#define MPI_CLASS_ERROR AMP_ERROR
+#define MPI_CLASS_ASSERT AMP_ASSERT
+#define MPI_CLASS_INSIST AMP_INSIST
+#define MPI_CLASS_WARNING AMP_WARNING
 
 
 namespace AMP {
@@ -139,7 +139,7 @@ void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
     PROFILE_START( "sumReduce", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
-        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_CLASS_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Allreduce( send, recv, n, type, MPI_SUM, communicator );
     } else {
         throw std::logic_error( "sumReduce is not valid for arbitrary types" );
@@ -371,7 +371,7 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
     if ( comm_size == 1 )
         return;
     if ( root >= comm_size )
-        MPI_ERROR( "root cannot be >= size in bcast" );
+        MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
     PROFILE_START( "bcast", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
@@ -412,7 +412,7 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
 {
     // Set the tag to 0 if it is < 0
     tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     // Send the data
     PROFILE_START( "send", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
@@ -422,7 +422,7 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
         size_t bytes = length * sizeof( TYPE );
         MPI_Send( buf, bytes, MPI_BYTE, recv_proc, tag, communicator );
     } else {
-        AMP_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "send", profile_level );
 }
@@ -445,7 +445,7 @@ MPI_Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int ta
 {
     // Set the tag to 0 if it is < 0
     tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     // Send the data
     PROFILE_START( "isend", profile_level );
     MPI_Request request;
@@ -456,7 +456,7 @@ MPI_Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int ta
         size_t bytes = length * sizeof( TYPE );
         MPI_Isend( buf, bytes, MPI_BYTE, recv_proc, tag, communicator, &request );
     } else {
-        AMP_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "isend", profile_level );
     return request;
@@ -480,13 +480,13 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
 {
     // Set the tag to 0 if it is < 0
     tag = ( tag >= 0 ) ? tag : 0;
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     PROFILE_START( "recv", profile_level );
     // Get the receive length if necessary
     if ( get_length ) {
         int bytes       = this->probe( send_proc, tag );
         int recv_length = bytes / sizeof( TYPE );
-        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
+        MPI_CLASS_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
         length = recv_length;
     }
     // Recieve the data
@@ -498,7 +498,7 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
         size_t bytes = length * sizeof( TYPE );
         MPI_Recv( buf, bytes, MPI_BYTE, send_proc, tag, communicator, &status );
     } else {
-        AMP_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "recv", profile_level );
 }
@@ -510,7 +510,7 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     if ( get_length ) {
         int bytes       = this->probe( send_proc, tag );
         int recv_length = bytes / sizeof( TYPE );
-        MPI_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
+        MPI_CLASS_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
         length = recv_length;
     }
     // Recieve the data
@@ -528,8 +528,8 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
 template<class TYPE>
 MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_Request request;
     PROFILE_START( "Irecv", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
@@ -539,7 +539,7 @@ MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) co
         size_t bytes = length * sizeof( TYPE );
         MPI_Irecv( buf, bytes, MPI_BYTE, send_proc, tag, communicator, &request );
     } else {
-        AMP_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "Irecv", profile_level );
     return request;
@@ -585,7 +585,7 @@ std::vector<TYPE> MPI_CLASS::allGather( const std::vector<TYPE> &x ) const
 template<class TYPE>
 void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
 {
-    MPI_ASSERT( y );
+    MPI_CLASS_ASSERT( y );
     if ( comm_size == 1 ) {
         y[0] = x;
         return;
@@ -765,7 +765,7 @@ void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
     PROFILE_START( "sumScan", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
-        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_CLASS_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Scan( x, y, n, type, MPI_SUM, communicator );
     } else {
         throw std::logic_error( "Default instantion of sumScan in parallel is not supported" );
@@ -790,7 +790,7 @@ void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
     PROFILE_START( "minScan", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
-        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_CLASS_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Scan( x, y, n, type, MPI_MIN, communicator );
     } else {
         throw std::logic_error( "Default instantion of minScan in parallel is not supported" );
@@ -815,7 +815,7 @@ void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, int n ) const
     PROFILE_START( "maxScan", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
-        AMP_ASSERT( communicator != MPI_COMM_NULL );
+        MPI_CLASS_ASSERT( communicator != MPI_COMM_NULL );
         MPI_Scan( x, y, n, type, MPI_MAX, communicator );
     } else {
         throw std::logic_error( "Default instantion of maxScan in parallel is not supported" );
@@ -844,7 +844,7 @@ void MPI_CLASS::allToAll( int n, const TYPE *send, TYPE *recv ) const
         int N = n * sizeof( TYPE );
         MPI_Alltoall( send, N, MPI_BYTE, recv, N, MPI_BYTE, communicator );
     } else {
-        AMP_ERROR( "Not finished" );
+        MPI_CLASS_ERROR( "Not finished" );
     }
 #endif
 }
@@ -866,7 +866,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         // Special case for single-processor communicators
         if ( known_recv ) {
             if ( recv_cnt[0] != send_cnt[0] && send_cnt[0] > 0 )
-                MPI_ERROR( "Single processor send/recv are different sizes" );
+                MPI_CLASS_ERROR( "Single processor send/recv are different sizes" );
         } else {
             if ( recv_cnt != nullptr )
                 recv_cnt[0] = send_cnt[0];
@@ -894,7 +894,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
             recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
     }
     // Perform the communication
-    MPI_ASSERT( recv_cnt2 && recv_disp2 );
+    MPI_CLASS_ASSERT( recv_cnt2 && recv_disp2 );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Alltoallv( send_data,
@@ -931,7 +931,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         delete[] recv_cnt3;
         delete[] recv_disp3;
     } else {
-        AMP_ERROR( "Not finished" );
+        MPI_CLASS_ERROR( "Not finished" );
     }
     int N_received = 0;
     for ( int i = 0; i < comm_size; i++ )
