@@ -109,7 +109,7 @@ struct Isendrecv_struct {
 std::map<MPI_Request, Isendrecv_struct> global_isendrecv_list;
 static MPI_Request getRequest( MPI_Comm comm, int tag )
 {
-    MPI_ASSERT( tag >= 0 && tag <= mpi_max_tag );
+    MPI_CLASS_ASSERT( tag >= 0 && tag <= mpi_max_tag );
     // Use hashing function: 2^64*0.5*(sqrt(5)-1)
     uint64_t a    = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
     uint64_t b    = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
@@ -126,7 +126,7 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
 inline void check_MPI( int error )
 {
     if ( error != MPI_SUCCESS )
-        MPI_ERROR( "Error calling MPI routine" );
+        MPI_CLASS_ERROR( "Error calling MPI routine" );
 }
 #endif
 
@@ -188,7 +188,7 @@ std::vector<int> MPI_CLASS::getProcessAffinity()
     cpu_set_t mask;
     int error = sched_getaffinity( getpid(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
-        MPI_ERROR( "Error getting process affinity" );
+        MPI_CLASS_ERROR( "Error getting process affinity" );
     for ( int i = 0; i < (int) sizeof( cpu_set_t ) * CHAR_BIT; i++ ) {
         if ( CPU_ISSET( i, &mask ) )
             procs.push_back( i );
@@ -223,7 +223,7 @@ void MPI_CLASS::setProcessAffinity( const std::vector<int> &procs )
         CPU_SET( cpu, &mask );
     int error = sched_setaffinity( getpid(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
-        MPI_ERROR( "Error setting process affinity" );
+        MPI_CLASS_ERROR( "Error setting process affinity" );
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     NULL_USE( procs );
@@ -301,7 +301,7 @@ void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
     if ( N_max == -1 )
         N_max = cpus.size();
     N_max = std::min<int>( N_max, cpus.size() );
-    MPI_ASSERT( N_max >= N_min );
+    MPI_CLASS_ASSERT( N_max >= N_min );
     // Perform the load balance within the node
     if ( method == 2 ) {
         int N_proc = cpus.size() / nodeComm.getSize();
@@ -312,7 +312,7 @@ void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
             cpus2[i] = cpus[( nodeComm.getRank() * N_proc + i ) % cpus.size()];
         setProcessAffinity( cpus2 );
     } else {
-        MPI_ERROR( "Unknown method for load balance" );
+        MPI_CLASS_ERROR( "Unknown method for load balance" );
     }
 }
 
@@ -352,7 +352,7 @@ void MPI_CLASS::reset()
             MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
             int err = MPI_Comm_free( &communicator );
             if ( err != MPI_SUCCESS )
-                MPI_ERROR( "Problem free'ing MPI_Comm object" );
+                MPI_CLASS_ERROR( "Problem free'ing MPI_Comm object" );
             communicator = MPI_CLASS_COMM_NULL;
             ++N_MPI_Comm_destroyed;
 #endif
@@ -502,7 +502,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         MPI_Comm_size( communicator, &comm_size );
         int flag, *val;
         int ierr = MPI_Comm_get_attr( communicator, MPI_TAG_UB, &val, &flag );
-        MPI_ASSERT( ierr == MPI_SUCCESS );
+        MPI_CLASS_ASSERT( ierr == MPI_SUCCESS );
         if ( flag == 0 ) {
             d_maxTag = mpi_max_tag; // The tag is not a valid attribute use default value
         } else {
@@ -510,7 +510,7 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
             if ( d_maxTag < 0 ) {
                 d_maxTag = 0x7FFFFFFF;
             } // The maximum tag is > a signed int (set to 2^31-1)
-            MPI_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
+            MPI_CLASS_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
         }
     } else {
         comm_rank = 1;
@@ -603,7 +603,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
                 d_ranks[i] = i;
         } else {
 
-            MPI_ASSERT( myGlobalRank != -1 );
+            MPI_CLASS_ASSERT( myGlobalRank != -1 );
             this->allGather( myGlobalRank, d_ranks );
         }
     }
@@ -705,7 +705,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 {
     if ( comm1.isNull() || comm2.isNull() )
         return MPI_CLASS( MPI_CLASS_COMM_NULL, false );
-    MPI_ASSERT( comm1.comm_size == 1 && comm2.comm_size == 1 );
+    MPI_CLASS_ASSERT( comm1.comm_size == 1 && comm2.comm_size == 1 );
     return comm1;
 }
 #endif
@@ -831,7 +831,7 @@ bool MPI_CLASS::operator!=( const MPI_CLASS &comm ) const
  ************************************************************************/
 bool MPI_CLASS::operator<( const MPI_CLASS &comm ) const
 {
-    MPI_ASSERT( !this->d_isNull && !comm.d_isNull );
+    MPI_CLASS_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
     if ( this->d_isNull )
@@ -871,7 +871,7 @@ bool MPI_CLASS::operator<( const MPI_CLASS &comm ) const
  ************************************************************************/
 bool MPI_CLASS::operator<=( const MPI_CLASS &comm ) const
 {
-    MPI_ASSERT( !this->d_isNull && !comm.d_isNull );
+    MPI_CLASS_ASSERT( !this->d_isNull && !comm.d_isNull );
     bool flag = true;
     // First check if either communicator is NULL
     if ( this->d_isNull )
@@ -1020,7 +1020,7 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
         return 4;
     else if ( result == MPI_UNEQUAL )
         return 0;
-    MPI_ERROR( "Unknown results from comm compare" );
+    MPI_CLASS_ERROR( "Unknown results from comm compare" );
 #else
     if ( comm.communicator == MPI_COMM_NULL || communicator == MPI_COMM_NULL )
         return 0;
@@ -1068,7 +1068,7 @@ int MPI_CLASS::newTag()
     barrier();
     // Return and increment the tag
     int tag = ( *d_currentTag )++;
-    MPI_INSIST( tag <= d_maxTag, "Maximum number of tags exceeded\n" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum number of tags exceeded\n" );
     return tag;
 #else
     static int globalCurrentTag = 1;
@@ -1103,7 +1103,7 @@ bool MPI_CLASS::allReduce( const bool value ) const
             (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
 #else
         NULL_USE( value );
-        MPI_ERROR( "This shouldn't be possible" );
+        MPI_CLASS_ERROR( "This shouldn't be possible" );
 #endif
     }
     return ret;
@@ -1129,7 +1129,7 @@ void MPI_CLASS::allReduce( std::vector<bool> &x ) const
     delete[] recv;
 #else
     NULL_USE( x );
-    MPI_ERROR( "This shouldn't be possible" );
+    MPI_CLASS_ERROR( "This shouldn't be possible" );
 #endif
 }
 
@@ -1146,7 +1146,7 @@ bool MPI_CLASS::anyReduce( const bool value ) const
             (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
 #else
         NULL_USE( value );
-        MPI_ERROR( "This shouldn't be possible" );
+        MPI_CLASS_ERROR( "This shouldn't be possible" );
 #endif
     }
     return ret;
@@ -1172,7 +1172,7 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
     delete[] recv;
 #else
     NULL_USE( x );
-    MPI_ERROR( "This shouldn't be possible" );
+    MPI_CLASS_ERROR( "This shouldn't be possible" );
 #endif
 }
 
@@ -1213,37 +1213,37 @@ MPI_Request MPI_CLASS::IrecvBytes( void *buf, int bytes, int send_proc, const in
 #else
 void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "sendBytes", profile_level );
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
-    MPI_INSIST( it == global_isendrecv_list.end(),
+    MPI_CLASS_INSIST( it == global_isendrecv_list.end(),
                 "send must be paired with a previous call to irecv in serial" );
-    MPI_ASSERT( it->second.status == 2 );
+    MPI_CLASS_ASSERT( it->second.status == 2 );
     memcpy( (char *) it->second.data, buf, bytes );
     global_isendrecv_list.erase( it );
     PROFILE_STOP( "sendBytes", profile_level );
 }
 void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "recv<char>", profile_level );
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
-    MPI_INSIST( it != global_isendrecv_list.end(),
+    MPI_CLASS_INSIST( it != global_isendrecv_list.end(),
                 "recv must be paired with a previous call to isend in serial" );
-    MPI_ASSERT( it->second.status == 1 );
-    MPI_ASSERT( it->second.bytes == bytes );
+    MPI_CLASS_ASSERT( it->second.status == 1 );
+    MPI_CLASS_ASSERT( it->second.bytes == bytes );
     memcpy( buf, it->second.data, bytes );
     global_isendrecv_list.erase( it );
     PROFILE_STOP( "recv<char>", profile_level );
 }
 MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "IsendBytes", profile_level );
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
@@ -1258,8 +1258,8 @@ MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) co
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
-        MPI_ASSERT( it->second.status == 2 );
-        MPI_ASSERT( it->second.bytes == bytes );
+        MPI_CLASS_ASSERT( it->second.status == 2 );
+        MPI_CLASS_ASSERT( it->second.bytes == bytes );
         memcpy( (char *) it->second.data, buf, bytes );
         global_isendrecv_list.erase( it );
     }
@@ -1268,8 +1268,8 @@ MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) co
 }
 MPI_Request MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "Irecv<char>", profile_level );
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
@@ -1284,8 +1284,8 @@ MPI_Request MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const 
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
-        MPI_ASSERT( it->second.status == 1 );
-        MPI_ASSERT( it->second.bytes == bytes );
+        MPI_CLASS_ASSERT( it->second.status == 1 );
+        MPI_CLASS_ASSERT( it->second.bytes == bytes );
         memcpy( buf, it->second.data, bytes );
         global_isendrecv_list.erase( it );
     }
@@ -1368,7 +1368,7 @@ void MPI_CLASS::wait( MPI_Request request )
     MPI_Status status;
     int flag = 0;
     int err  = MPI_Test( &request, &flag, &status );
-    MPI_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
@@ -1386,14 +1386,14 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
     int flag    = 0;
     auto status = new MPI_Status[count];
     int err     = MPI_Testany( count, request, &index, &flag, status );
-    MPI_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
         // Check if the request has finished
         MPI_Testany( count, request, &index, &flag, status );
     }
-    MPI_ASSERT( index >= 0 ); // Check that the index is valid
+    MPI_CLASS_ASSERT( index >= 0 ); // Check that the index is valid
     delete[] status;
     PROFILE_STOP( "waitAny", profile_level );
     return index;
@@ -1406,7 +1406,7 @@ void MPI_CLASS::waitAll( int count, MPI_Request *request )
     int flag    = 0;
     auto status = new MPI_Status[count];
     int err     = MPI_Testall( count, request, &flag, status );
-    MPI_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
@@ -1425,8 +1425,8 @@ std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
     auto *status = new MPI_Status[count];
     int outcount = 0;
     int err      = MPI_Testsome( count, request, &outcount, &indicies[0], status );
-    MPI_ASSERT( err == MPI_SUCCESS );        // Check that the first call is valid
-    MPI_ASSERT( outcount != MPI_UNDEFINED ); // Check that the first call is valid
+    MPI_CLASS_ASSERT( err == MPI_SUCCESS );        // Check that the first call is valid
+    MPI_CLASS_ASSERT( outcount != MPI_UNDEFINED ); // Check that the first call is valid
     while ( outcount == 0 ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
@@ -1522,8 +1522,8 @@ std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
 #ifdef USE_MPI
 int MPI_CLASS::Iprobe( int source, int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_Status status;
     int flag = 0;
     MPI_Iprobe( source, tag, communicator, &flag, &status );
@@ -1531,18 +1531,18 @@ int MPI_CLASS::Iprobe( int source, int tag ) const
         return -1;
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
-    MPI_ASSERT( count >= 0 );
+    MPI_CLASS_ASSERT( count >= 0 );
     return count;
 }
 int MPI_CLASS::probe( int source, int tag ) const
 {
-    MPI_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
-    MPI_INSIST( tag >= 0, "tag must be >= 0" );
+    MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
+    MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_Status status;
     MPI_Probe( source, tag, communicator, &status );
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
-    MPI_ASSERT( count >= 0 );
+    MPI_CLASS_ASSERT( count >= 0 );
     return count;
 }
 #else
@@ -1662,7 +1662,7 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
         int provided;
         int result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
         if ( result != MPI_SUCCESS )
-            MPI_ERROR( "AMP was unable to initialize MPI" );
+            MPI_CLASS_ERROR( "AMP was unable to initialize MPI" );
         if ( provided < MPI_THREAD_MULTIPLE )
             AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
         called_MPI_Init        = true;
