@@ -34,7 +34,6 @@ noExplicitConstructor:*/AMP/utils/Array.h
 noExplicitConstructor:*/AMP/utils/ArraySize.h
 noExplicitConstructor:*/AMP/utils/AMP_MPI.h
 noExplicitConstructor:*/AMP/utils/Database.h
-noExplicitConstructor:*/AMP/utils/string_view.h
 noExplicitConstructor:*/AMP/utils/kdtree.h
 noExplicitConstructor:*/AMP/utils/extended_int.h
 noExplicitConstructor:*/AMP/vectors/Scalar.h

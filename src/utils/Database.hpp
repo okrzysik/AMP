@@ -32,14 +32,14 @@ namespace AMP {
  * Create database from arguments                                    *
  ********************************************************************/
 template<class TYPE, class... Args>
-inline void Database::addArgs( const AMP::string_view &key, TYPE value, Args... args )
+inline void Database::addArgs( const std::string_view &key, TYPE value, Args... args )
 {
     if constexpr ( is_vector<TYPE>::value ) {
         putVector( key, value );
     } else if constexpr ( is_Array<TYPE>::value ) {
         putArray( key, value );
     } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, AMP::string_view>::value ) {
+                          std::is_same<TYPE, std::string_view>::value ) {
         putScalar( key, value );
     } else if constexpr ( has_size<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
@@ -54,7 +54,7 @@ inline void Database::addArgs( const AMP::string_view &key, TYPE value, Args... 
         addArgs( args... );
 }
 template<class TYPE, class... Args>
-inline void Database::addArgsWithUnits( const AMP::string_view &key,
+inline void Database::addArgsWithUnits( const std::string_view &key,
                                         TYPE value,
                                         const Units &unit,
                                         Args... args )
@@ -64,7 +64,7 @@ inline void Database::addArgsWithUnits( const AMP::string_view &key,
     } else if constexpr ( is_Array<TYPE>::value ) {
         putArray( key, value );
     } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, AMP::string_view>::value ) {
+                          std::is_same<TYPE, std::string_view>::value ) {
         putScalar( key, value, unit );
     } else if constexpr ( has_size<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
@@ -138,11 +138,11 @@ public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
     std::unique_ptr<KeyData> clone() const override { return std::make_unique<EmptyKeyData>(); }
-    void print( std::ostream &os, const AMP::string_view & = "" ) const override
+    void print( std::ostream &os, const std::string_view & = "" ) const override
     {
         os << std::endl;
     }
-    AMP::string_view type() const override { return ""; }
+    std::string_view type() const override { return ""; }
     bool is_floating_point() const override { return true; }
     bool is_integral() const override { return true; }
     ArraySize arraySize() const override { return ArraySize(); }
@@ -164,7 +164,7 @@ public:
     {
         return std::make_unique<KeyDataScalar>( d_data, d_unit );
     }
-    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
+    void print( std::ostream &os, const std::string_view &indent = "" ) const override
     {
         os << indent;
         printValue( os, d_data );
@@ -172,7 +172,7 @@ public:
             os << " " << d_unit.str();
         os << std::endl;
     }
-    AMP::string_view type() const override { return typeid( TYPE ).name(); }
+    std::string_view type() const override { return typeid( TYPE ).name(); }
     bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
     bool is_integral() const override { return std::is_integral<TYPE>(); }
     ArraySize arraySize() const override { return ArraySize( 1 ); }
@@ -199,7 +199,7 @@ public:
     {
         return std::make_unique<KeyDataArray>( d_data, d_unit );
     }
-    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
+    void print( std::ostream &os, const std::string_view &indent = "" ) const override
     {
         os << indent;
         if ( d_data.ndim() == 1 ) {
@@ -238,7 +238,7 @@ public:
             }
         }
     }
-    AMP::string_view type() const override { return typeid( TYPE ).name(); }
+    std::string_view type() const override { return typeid( TYPE ).name(); }
     bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
     bool is_integral() const override { return std::is_integral<TYPE>(); }
     ArraySize arraySize() const override { return d_data.size(); }
@@ -272,14 +272,14 @@ public:
     {
         return std::make_unique<DatabaseVector>( d_data );
     }
-    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override
+    void print( std::ostream &os, const std::string_view &indent = "" ) const override
     {
         std::string indent2 = std::string( indent ) + "   ";
         for ( const auto &data : d_data ) {
             data.print( os, indent2 );
         }
     }
-    AMP::string_view type() const override { return typeid( std::vector<Database> ).name(); }
+    std::string_view type() const override { return typeid( std::vector<Database> ).name(); }
     bool is_floating_point() const override { return false; }
     bool is_integral() const override { return false; }
     ArraySize arraySize() const override { return ArraySize( d_data.size() ); }
@@ -315,7 +315,7 @@ void scaleData( TYPE &data, double factor );
 template<class TYPE>
 Array<TYPE> convertFromDouble( const Array<double> &data );
 template<class TYPE>
-TYPE Database::getScalar( const AMP::string_view &key, Units unit ) const
+TYPE Database::getScalar( const std::string_view &key, Units unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -346,7 +346,7 @@ TYPE Database::getScalar( const AMP::string_view &key, Units unit ) const
     return data;
 }
 template<class TYPE>
-TYPE Database::getWithDefault( const AMP::string_view &key, const TYPE &value, Units unit ) const
+TYPE Database::getWithDefault( const std::string_view &key, const TYPE &value, Units unit ) const
 {
     auto keyData = getData( key );
     if ( !keyData )
@@ -381,7 +381,7 @@ TYPE Database::getWithDefault( const AMP::string_view &key, const TYPE &value, U
     return data;
 }
 template<class TYPE>
-std::vector<TYPE> Database::getVector( const AMP::string_view &key, Units unit ) const
+std::vector<TYPE> Database::getVector( const std::string_view &key, Units unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -414,7 +414,7 @@ std::vector<TYPE> Database::getVector( const AMP::string_view &key, Units unit )
     return data2;
 }
 template<class TYPE>
-Array<TYPE> Database::getArray( const AMP::string_view &key, Units unit ) const
+Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -449,26 +449,26 @@ Array<TYPE> Database::getArray( const AMP::string_view &key, Units unit ) const
  ********************************************************************/
 template<>
 inline void
-Database::putScalar<const char *>( const AMP::string_view &key, const char *value, Units unit )
+Database::putScalar<const char *>( const std::string_view &key, const char *value, Units unit )
 {
     putScalar<std::string>( key, value, unit );
 }
 template<>
-inline void Database::putScalar<AMP::string_view>( const AMP::string_view &key,
-                                                   AMP::string_view value,
+inline void Database::putScalar<std::string_view>( const std::string_view &key,
+                                                   std::string_view value,
                                                    Units unit )
 {
     putScalar<std::string>( key, std::string( value.data(), value.data() ), unit );
 }
 template<class TYPE>
-inline void Database::putScalar( const AMP::string_view &key, TYPE value, Units unit )
+inline void Database::putScalar( const std::string_view &key, TYPE value, Units unit )
 {
     auto keyData = std::make_unique<KeyDataScalar<TYPE>>( std::move( value ), unit );
     putData( key, std::move( keyData ) );
 }
 template<class TYPE>
 inline void
-Database::putVector( const AMP::string_view &key, const std::vector<TYPE> &data, Units unit )
+Database::putVector( const std::string_view &key, const std::vector<TYPE> &data, Units unit )
 {
     Array<TYPE> x;
     x            = data;
@@ -476,7 +476,7 @@ Database::putVector( const AMP::string_view &key, const std::vector<TYPE> &data,
     putData( key, std::move( keyData ) );
 }
 template<class TYPE>
-inline void Database::putArray( const AMP::string_view &key, Array<TYPE> data, Units unit )
+inline void Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit )
 {
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( data ), unit );
     putData( key, std::move( keyData ) );

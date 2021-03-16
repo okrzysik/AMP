@@ -19,7 +19,7 @@ namespace AMP {
  * HDF5 helper routines                                                  *
  ************************************************************************/
 inline const void *H5Ptr( const void *x ) { return x == nullptr ? ( (void *) 1 ) : x; }
-bool H5Gexists( hid_t fid, const AMP::string_view &name )
+bool H5Gexists( hid_t fid, const std::string_view &name )
 {
     H5E_auto2_t func;
     void *client;
@@ -29,7 +29,7 @@ bool H5Gexists( hid_t fid, const AMP::string_view &name )
     H5Eset_auto2( H5E_DEFAULT, func, client );
     return status == 0;
 }
-bool H5Dexists( hid_t fid, const AMP::string_view &name )
+bool H5Dexists( hid_t fid, const std::string_view &name )
 {
     H5E_auto2_t func;
     void *client;
@@ -151,7 +151,7 @@ hid_t getHDF5datatype<char *>()
  ************************************************************************/
 template<>
 void readHDF5<AMP::Array<std::string>>( hid_t fid,
-                                        const AMP::string_view &name,
+                                        const std::string_view &name,
                                         AMP::Array<std::string> &data )
 {
     if ( !H5Dexists( fid, name ) ) {
@@ -187,15 +187,15 @@ void readHDF5<AMP::Array<std::string>>( hid_t fid,
     H5Sclose( dataspace );
 }
 template<>
-void readHDF5<AMP::Array<AMP::string_view>>( hid_t,
-                                             const AMP::string_view &,
-                                             AMP::Array<AMP::string_view> & )
+void readHDF5<AMP::Array<std::string_view>>( hid_t,
+                                             const std::string_view &,
+                                             AMP::Array<std::string_view> & )
 {
     AMP_ERROR( "Reading data to a string view is not supported" );
 }
 template<>
 void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
-                                                 const AMP::string_view &name,
+                                                 const std::string_view &name,
                                                  AMP::Array<std::complex<double>> &data )
 {
     if ( !H5Dexists( fid, name ) ) {
@@ -227,12 +227,12 @@ void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
 // clang-format off
 #define readWriteHDF5Array( TYPE )                                                          \
     template<>                                                                              \
-    void writeHDF5<AMP::Array<TYPE>>( hid_t fid, const AMP::string_view &name, const AMP::Array<TYPE> &data ) \
+    void writeHDF5<AMP::Array<TYPE>>( hid_t fid, const std::string_view &name, const AMP::Array<TYPE> &data ) \
     {                                                                                       \
         writeHDF5ArrayDefault<TYPE>( fid, name, data );                                     \
     }                                                                                       \
     template<>                                                                              \
-    void readHDF5<AMP::Array<TYPE>>( hid_t fid, const AMP::string_view &name, AMP::Array<TYPE> &data ) \
+    void readHDF5<AMP::Array<TYPE>>( hid_t fid, const std::string_view &name, AMP::Array<TYPE> &data ) \
     {                                                                                       \
         readHDF5ArrayDefault<TYPE>( fid, name, data );                                      \
     }
@@ -255,7 +255,7 @@ readWriteHDF5Array( double )
      * Read/write scalar types                                               *
      ************************************************************************/
     template<>
-    void readHDF5<std::string>( hid_t fid, const AMP::string_view &name, std::string &data )
+    void readHDF5<std::string>( hid_t fid, const std::string_view &name, std::string &data )
 {
     hid_t dataset   = H5Dopen2( fid, name.data(), H5P_DEFAULT );
     hid_t datatype  = H5Dget_type( dataset );
@@ -277,7 +277,7 @@ readWriteHDF5Array( double )
     H5Tclose( datatype0 );
 }
 template<>
-void writeHDF5<std::string>( hid_t fid, const AMP::string_view &name, const std::string &data )
+void writeHDF5<std::string>( hid_t fid, const std::string_view &name, const std::string &data )
 {
     AMP::Array<char> tmp;
     tmp.viewRaw( { data.length() }, (char *) data.data() );
@@ -286,7 +286,7 @@ void writeHDF5<std::string>( hid_t fid, const AMP::string_view &name, const std:
 // clang-format off
 #define readWriteHDF5Scalar( TYPE )                                                         \
     template<>                                                                              \
-    void writeHDF5<TYPE>( hid_t fid, const AMP::string_view &name, const TYPE &data )       \
+    void writeHDF5<TYPE>( hid_t fid, const std::string_view &name, const TYPE &data )       \
     {                                                                                       \
         hid_t dataspace = H5Screate( H5S_SCALAR );                                          \
         hid_t datatype  = getHDF5datatype<TYPE>();                                          \
@@ -298,7 +298,7 @@ void writeHDF5<std::string>( hid_t fid, const AMP::string_view &name, const std:
         H5Sclose( dataspace );                                                              \
     }                                                                                       \
     template<>                                                                              \
-    void readHDF5<TYPE>( hid_t fid, const AMP::string_view &name, TYPE &data )              \
+    void readHDF5<TYPE>( hid_t fid, const std::string_view &name, TYPE &data )              \
     {                                                                                       \
         AMP::Array<TYPE> tmp;                                                                    \
         readHDF5( fid, name, tmp );                                                         \
@@ -351,7 +351,7 @@ bool global_is_hdf5_error_handler_set = set_hdf5_error_handler();
 /******************************************************************
  * Open/close HDF5 files                                           *
  ******************************************************************/
-hid_t openHDF5( const AMP::string_view &filename, const char *mode, Compression compress )
+hid_t openHDF5( const std::string_view &filename, const char *mode, Compression compress )
 {
     // Set cache size to 3MBs and instruct the cache to discard the fully read chunk
     auto pid = H5P_DEFAULT;
@@ -472,7 +472,7 @@ hid_t createChunk( const std::vector<hsize_t> &dims, Compression compress )
  ************************************************************************/
 template<>
 void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
-                                                  const AMP::string_view &name,
+                                                  const std::string_view &name,
                                                   const AMP::Array<std::complex<double>> &data )
 {
     hid_t datatype = getHDF5datatype<std::complex<double>>();
@@ -493,7 +493,7 @@ void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
 }
 template<>
 void writeHDF5<AMP::Array<std::string>>( hid_t fid,
-                                         const AMP::string_view &name,
+                                         const std::string_view &name,
                                          const AMP::Array<std::string> &data )
 {
     auto dim        = arraySize( data );
@@ -514,9 +514,9 @@ void writeHDF5<AMP::Array<std::string>>( hid_t fid,
     delete[] tmp;
 }
 template<>
-void writeHDF5<AMP::Array<AMP::string_view>>( hid_t,
-                                              const AMP::string_view &,
-                                              const AMP::Array<AMP::string_view> & )
+void writeHDF5<AMP::Array<std::string_view>>( hid_t,
+                                              const std::string_view &,
+                                              const AMP::Array<std::string_view> & )
 {
     AMP_ERROR( "Writing data from a string_view if not yet supported" );
 }
@@ -526,7 +526,7 @@ void writeHDF5<AMP::Array<AMP::string_view>>( hid_t,
  * Specializations for std::vector                                       *
  ************************************************************************/
 template<>
-void readHDF5<std::vector<bool>>( hid_t fid, const AMP::string_view &name, std::vector<bool> &data )
+void readHDF5<std::vector<bool>>( hid_t fid, const std::string_view &name, std::vector<bool> &data )
 {
     AMP::Array<bool> tmp;
     readHDF5( fid, name, tmp );
@@ -536,7 +536,7 @@ void readHDF5<std::vector<bool>>( hid_t fid, const AMP::string_view &name, std::
 }
 template<>
 void writeHDF5<std::vector<bool>>( hid_t fid,
-                                   const AMP::string_view &name,
+                                   const std::string_view &name,
                                    const std::vector<bool> &x )
 {
     AMP::Array<bool> y( x.size() );
@@ -550,18 +550,18 @@ void writeHDF5<std::vector<bool>>( hid_t fid,
  * Explicit instantiations for readHDF5<vector>                         *
  ***********************************************************************/
 // clang-format off
-template void readHDF5<std::vector<char>>( hid_t, const AMP::string_view &, std::vector<char> & );
-template void readHDF5<std::vector<unsigned char>>( hid_t, const AMP::string_view &, std::vector<unsigned char> & );
-template void readHDF5<std::vector<int>>( hid_t, const AMP::string_view &, std::vector<int> & );
-template void readHDF5<std::vector<unsigned int>>( hid_t, const AMP::string_view &, std::vector<unsigned int> & );
-template void readHDF5<std::vector<int16_t>>( hid_t, const AMP::string_view &, std::vector<int16_t> & );
-template void readHDF5<std::vector<uint16_t>>( hid_t, const AMP::string_view &, std::vector<uint16_t> & );
-template void readHDF5<std::vector<int64_t>>( hid_t, const AMP::string_view &, std::vector<int64_t> & );
-template void readHDF5<std::vector<uint64_t>>( hid_t, const AMP::string_view &, std::vector<uint64_t> & );
-template void readHDF5<std::vector<float>>( hid_t, const AMP::string_view &, std::vector<float> & );
-template void readHDF5<std::vector<double>>( hid_t, const AMP::string_view &, std::vector<double> & );
-template void readHDF5<std::vector<std::vector<double>>>( hid_t, const AMP::string_view &, std::vector<std::vector<double>> & );
-template void readHDF5<std::vector<std::string>>( hid_t, const AMP::string_view &, std::vector<std::string> & );
+template void readHDF5<std::vector<char>>( hid_t, const std::string_view &, std::vector<char> & );
+template void readHDF5<std::vector<unsigned char>>( hid_t, const std::string_view &, std::vector<unsigned char> & );
+template void readHDF5<std::vector<int>>( hid_t, const std::string_view &, std::vector<int> & );
+template void readHDF5<std::vector<unsigned int>>( hid_t, const std::string_view &, std::vector<unsigned int> & );
+template void readHDF5<std::vector<int16_t>>( hid_t, const std::string_view &, std::vector<int16_t> & );
+template void readHDF5<std::vector<uint16_t>>( hid_t, const std::string_view &, std::vector<uint16_t> & );
+template void readHDF5<std::vector<int64_t>>( hid_t, const std::string_view &, std::vector<int64_t> & );
+template void readHDF5<std::vector<uint64_t>>( hid_t, const std::string_view &, std::vector<uint64_t> & );
+template void readHDF5<std::vector<float>>( hid_t, const std::string_view &, std::vector<float> & );
+template void readHDF5<std::vector<double>>( hid_t, const std::string_view &, std::vector<double> & );
+template void readHDF5<std::vector<std::vector<double>>>( hid_t, const std::string_view &, std::vector<std::vector<double>> & );
+template void readHDF5<std::vector<std::string>>( hid_t, const std::string_view &, std::vector<std::string> & );
 // clang-format on
 
 
@@ -569,27 +569,27 @@ template void readHDF5<std::vector<std::string>>( hid_t, const AMP::string_view 
  * Explicit instantiations for writeHDF5<vector>                        *
  ***********************************************************************/
 // clang-format off
-template void writeHDF5<std::vector<char>>( hid_t, const AMP::string_view &, const std::vector<char> & );
-template void writeHDF5<std::vector<unsigned char>>( hid_t, const AMP::string_view &, const std::vector<unsigned char> & );
-template void writeHDF5<std::vector<int>>( hid_t, const AMP::string_view &, const std::vector<int> & );
-template void writeHDF5<std::vector<unsigned int>>( hid_t, const AMP::string_view &, const std::vector<unsigned int> & );
-template void writeHDF5<std::vector<int16_t>>( hid_t, const AMP::string_view &, const std::vector<int16_t> & );
-template void writeHDF5<std::vector<uint16_t>>( hid_t, const AMP::string_view &, const std::vector<uint16_t> & );
-template void writeHDF5<std::vector<int64_t>>( hid_t, const AMP::string_view &, const std::vector<int64_t> & );
-template void writeHDF5<std::vector<uint64_t>>( hid_t, const AMP::string_view &, const std::vector<uint64_t> & );
-template void writeHDF5<std::vector<float>>( hid_t, const AMP::string_view &, const std::vector<float> & );
-template void writeHDF5<std::vector<double>>( hid_t, const AMP::string_view &, const std::vector<double> & );
-template void writeHDF5<std::vector<std::vector<double>>>( hid_t, const AMP::string_view &, const std::vector<std::vector<double>> & );
-template void writeHDF5<std::vector<std::string>>( hid_t, const AMP::string_view &, const std::vector<std::string> & );
+template void writeHDF5<std::vector<char>>( hid_t, const std::string_view &, const std::vector<char> & );
+template void writeHDF5<std::vector<unsigned char>>( hid_t, const std::string_view &, const std::vector<unsigned char> & );
+template void writeHDF5<std::vector<int>>( hid_t, const std::string_view &, const std::vector<int> & );
+template void writeHDF5<std::vector<unsigned int>>( hid_t, const std::string_view &, const std::vector<unsigned int> & );
+template void writeHDF5<std::vector<int16_t>>( hid_t, const std::string_view &, const std::vector<int16_t> & );
+template void writeHDF5<std::vector<uint16_t>>( hid_t, const std::string_view &, const std::vector<uint16_t> & );
+template void writeHDF5<std::vector<int64_t>>( hid_t, const std::string_view &, const std::vector<int64_t> & );
+template void writeHDF5<std::vector<uint64_t>>( hid_t, const std::string_view &, const std::vector<uint64_t> & );
+template void writeHDF5<std::vector<float>>( hid_t, const std::string_view &, const std::vector<float> & );
+template void writeHDF5<std::vector<double>>( hid_t, const std::string_view &, const std::vector<double> & );
+template void writeHDF5<std::vector<std::vector<double>>>( hid_t, const std::string_view &, const std::vector<std::vector<double>> & );
+template void writeHDF5<std::vector<std::string>>( hid_t, const std::string_view &, const std::vector<std::string> & );
 // clang-format on
 
 
 #else // No HDF5
 // Dummy implimentations for no HDF5
-hid_t openHDF5( const AMP::string_view &, const char *, Compression ) { return 0; }
+hid_t openHDF5( const std::string_view &, const char *, Compression ) { return 0; }
 void closeHDF5( hid_t ) {}
-bool H5Gexists( hid_t, const AMP::string_view & ) { return false; }
-bool H5Dexists( hid_t, const AMP::string_view & ) { return false; }
+bool H5Gexists( hid_t, const std::string_view & ) { return false; }
+bool H5Dexists( hid_t, const std::string_view & ) { return false; }
 #endif
 
 } // namespace AMP

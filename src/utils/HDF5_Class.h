@@ -5,9 +5,9 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "AMP/utils/Array.h"
-#include "AMP/utils/string_view.h"
 
 
 namespace AMP {
@@ -37,7 +37,7 @@ public:
     virtual size_t size() const = 0;
 
     //! Get the data ith block and jth child
-    virtual std::shared_ptr<HDF5data> getData( size_t i, const AMP::string_view &name ) = 0;
+    virtual std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) = 0;
 
     //! Get the variable names
     virtual std::vector<std::string> getNames() const = 0;
@@ -47,13 +47,13 @@ public:
     void getData( AMP::Array<TYPE> &data ) const;
 
     //! Print information about the data
-    virtual void print( int level = 1, const AMP::string_view &prefix = "" ) const = 0;
+    virtual void print( int level = 1, const std::string_view &prefix = "" ) const = 0;
 
     //! Return the name of the variable
     inline const std::string &name() const { return d_name; }
 
 protected:
-    HDF5data( hid_t fid, const AMP::string_view &name ) : d_fid( fid ), d_name( name ) {}
+    HDF5data( hid_t fid, const std::string_view &name ) : d_fid( fid ), d_name( name ) {}
 
     hid_t d_fid;
     std::string d_name;
@@ -68,7 +68,7 @@ protected:
  * @param[in] name      The name of the variable
  * @return              The structure to read
  */
-std::unique_ptr<HDF5data> readHDF5( hid_t fid, const AMP::string_view &name );
+std::unique_ptr<HDF5data> readHDF5( hid_t fid, const std::string_view &name );
 
 
 } // namespace AMP

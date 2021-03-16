@@ -283,7 +283,7 @@ DatabaseBox::DatabaseBox( int dim, const int *lower, const int *upper ) : d_dim(
         d_upper[d] = upper[d];
     }
 }
-DatabaseBox::DatabaseBox( const AMP::string_view &str ) : d_dim( 0 )
+DatabaseBox::DatabaseBox( const std::string_view &str ) : d_dim( 0 )
 {
     d_lower.fill( 0 );
     d_upper.fill( 0 );

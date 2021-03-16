@@ -3,9 +3,9 @@
 #define included_AMP_HDF5_h
 
 #include "AMP/utils/ArraySize.h"
-#include "AMP/utils/string_view.h"
 
 #include <cstring>
+#include <string_view>
 
 
 namespace AMP {
@@ -39,7 +39,7 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
  * @param[in] compress  Default compression
  * @return              Return a handle to the file.
  */
-hid_t openHDF5( const AMP::string_view &filename,
+hid_t openHDF5( const std::string_view &filename,
                 const char *mode,
                 Compression compress = Compression::None );
 
@@ -81,7 +81,7 @@ hid_t createChunk( const std::vector<hsize_t> &dims, Compression compress );
  * @param[in] data      The structure to write
  */
 template<class T>
-void writeHDF5( hid_t fid, const AMP::string_view &name, const T &data );
+void writeHDF5( hid_t fid, const std::string_view &name, const T &data );
 
 
 /**
@@ -95,7 +95,7 @@ void writeHDF5( hid_t fid, const AMP::string_view &name, const T &data );
  * @param[out] data     The structure to read
  */
 template<class T>
-void readHDF5( hid_t fid, const AMP::string_view &name, T &data );
+void readHDF5( hid_t fid, const std::string_view &name, T &data );
 
 
 /**
@@ -104,7 +104,7 @@ void readHDF5( hid_t fid, const AMP::string_view &name, T &data );
  * @param[in] fid       ID of group or database to read
  * @param[in] name      The name of the group
  */
-bool H5Gexists( hid_t fid, const AMP::string_view &name );
+bool H5Gexists( hid_t fid, const std::string_view &name );
 
 
 /**
@@ -113,7 +113,7 @@ bool H5Gexists( hid_t fid, const AMP::string_view &name );
  * @param[in] fid       File to open
  * @param[in] name      The name of the dataset
  */
-bool H5Dexists( hid_t fid, const AMP::string_view &name );
+bool H5Dexists( hid_t fid, const std::string_view &name );
 
 
 /**
@@ -127,10 +127,10 @@ hid_t getHDF5datatype();
 // Default no-op implimentations for use without HDF5
 // clang-format off
 #ifndef USE_HDF5
-template<class T> void readHDF5( hid_t, const AMP::string_view&, T& ) {}
-template<class T> void writeHDF5( hid_t, const AMP::string_view&, const T& ) {}
-template<class T> void readHDF5Array( hid_t, const AMP::string_view&, AMP::Array<T>& ) {}
-template<class T> void writeHDF5Array( hid_t, const AMP::string_view&, const AMP::Array<T>& ) {}
+template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
+template<class T> void writeHDF5( hid_t, const std::string_view&, const T& ) {}
+template<class T> void readHDF5Array( hid_t, const std::string_view&, AMP::Array<T>& ) {}
+template<class T> void writeHDF5Array( hid_t, const std::string_view&, const AMP::Array<T>& ) {}
 template<class T> hid_t getHDF5datatype() { return 0; }
 #endif
 // clang-format on

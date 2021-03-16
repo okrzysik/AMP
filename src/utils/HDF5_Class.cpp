@@ -22,7 +22,11 @@ static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
 {
     char *cname = H5Tget_member_name( id, idx );
     std::string name( cname );
+#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
     free( cname );
+#else
+    H5free_memory( cname );
+#endif
     return name;
 }
 
@@ -30,7 +34,7 @@ static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
 /******************************************************************
  * Classes to store HDF5 data                                      *
  ******************************************************************/
-static int find( const std::vector<std::string> &vec, const AMP::string_view &x )
+static int find( const std::vector<std::string> &vec, const std::string_view &x )
 {
     for ( size_t i = 0; i < vec.size(); i++ ) {
         if ( vec[i] == x )
@@ -41,19 +45,19 @@ static int find( const std::vector<std::string> &vec, const AMP::string_view &x 
 class HDF5_null final : public HDF5data
 {
 public:
-    HDF5_null( hid_t fid, const AMP::string_view &name, const AMP::string_view &type )
+    HDF5_null( hid_t fid, const std::string_view &name, const std::string_view &type )
         : HDF5data( fid, name ), d_type( std::move( type ) )
     {
     }
     ~HDF5_null() override = default;
     std::string type() const override { return "HDF5_null"; }
     size_t size() const override { return 0; }
-    std::shared_ptr<HDF5data> getData( size_t, const AMP::string_view & ) override
+    std::shared_ptr<HDF5data> getData( size_t, const std::string_view & ) override
     {
         return nullptr;
     }
     std::vector<std::string> getNames() const override { return std::vector<std::string>(); }
-    void print( int, const AMP::string_view &prefix ) const override
+    void print( int, const std::string_view &prefix ) const override
     {
         printf( "%s%s - Unfinished %s\n", prefix.data(), d_name.data(), d_type.data() );
     }
@@ -64,11 +68,11 @@ private:
 class HDF5_group final : public HDF5data
 {
 public:
-    HDF5_group( hid_t fid, const AMP::string_view &name, int type );
+    HDF5_group( hid_t fid, const std::string_view &name, int type );
     ~HDF5_group() override = default;
     std::string type() const override { return "HDF5_group"; }
     size_t size() const override { return d_data.length() / d_data.size( 0 ); }
-    std::shared_ptr<HDF5data> getData( size_t i, const AMP::string_view &name ) override
+    std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) override
     {
         int j = find( d_names, name );
         if ( j == -1 )
@@ -76,7 +80,7 @@ public:
         return d_data( j, i );
     }
     std::vector<std::string> getNames() const override { return d_names; }
-    void print( int level, const AMP::string_view &prefix = "" ) const override
+    void print( int level, const std::string_view &prefix = "" ) const override
     {
         if ( d_data.empty() )
             return;
@@ -118,15 +122,15 @@ template<class TYPE>
 class HDF5_primitive final : public HDF5data
 {
 public:
-    HDF5_primitive( hid_t fid, const AMP::string_view &name );
-    HDF5_primitive( const AMP::string_view &name, const AMP::Array<TYPE> &data );
+    HDF5_primitive( hid_t fid, const std::string_view &name );
+    HDF5_primitive( const std::string_view &name, const AMP::Array<TYPE> &data );
     ~HDF5_primitive() override = default;
     std::string type() const override
     {
         return AMP::Utilities::stringf( "HDF5_primitive<%f>", typeid( TYPE ).name() );
     }
     size_t size() const override { return 1; }
-    std::shared_ptr<HDF5data> getData( size_t i, const AMP::string_view &name ) override
+    std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) override
     {
         if ( i == 0 && name == d_name )
             return shared_from_this();
@@ -137,7 +141,7 @@ public:
         return std::vector<std::string>( 1, d_name );
     }
     const AMP::Array<TYPE> &getData() const { return d_data; }
-    void print( int level, const AMP::string_view &prefix = "" ) const override
+    void print( int level, const std::string_view &prefix = "" ) const override
     {
         printf( "%s%s (%s)", prefix.data(), d_name.data(), typeid( TYPE ).name() );
         if ( d_data.empty() ) {
@@ -219,17 +223,17 @@ template void HDF5data::getData<unsigned long>( AMP::Array<unsigned long> & ) co
  * Read database entry                                                   *
  ************************************************************************/
 template<class TYPE>
-HDF5_primitive<TYPE>::HDF5_primitive( hid_t fid, const AMP::string_view &name )
+HDF5_primitive<TYPE>::HDF5_primitive( hid_t fid, const std::string_view &name )
     : HDF5data( fid, name )
 {
     readHDF5( fid, name, d_data );
 }
 template<class TYPE>
-HDF5_primitive<TYPE>::HDF5_primitive( const AMP::string_view &name, const AMP::Array<TYPE> &data )
+HDF5_primitive<TYPE>::HDF5_primitive( const std::string_view &name, const AMP::Array<TYPE> &data )
     : HDF5data( 0, name ), d_data( std::move( data ) )
 {
 }
-static std::unique_ptr<HDF5data> readPrimitive( hid_t fid, const AMP::string_view &name )
+static std::unique_ptr<HDF5data> readPrimitive( hid_t fid, const std::string_view &name )
 {
     hid_t id  = H5Dopen( fid, name.data(), H5P_DEFAULT );
     hid_t tid = H5Dget_type( id );
@@ -255,7 +259,7 @@ static std::unique_ptr<HDF5data> readPrimitive( hid_t fid, const AMP::string_vie
     }
     return data;
 }
-static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const AMP::string_view &name )
+static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const std::string_view &name )
 {
     hid_t id            = H5Dopen( fid, name.data(), H5P_DEFAULT );
     hid_t tid           = H5Dget_type( id );
@@ -290,7 +294,7 @@ static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const AMP::string_view
  * Read group / compound data                                            *
  ************************************************************************/
 template<class TYPE>
-static void getGroupData( const AMP::string_view &name,
+static void getGroupData( const std::string_view &name,
                           size_t size,
                           const char *data,
                           size_t N,
@@ -304,7 +308,7 @@ static void getGroupData( const AMP::string_view &name,
         out( varnum, i ).reset( new HDF5_primitive<TYPE>( name, var ) );
     }
 }
-size_t getIndex( const AMP::string_view &name )
+size_t getIndex( const std::string_view &name )
 {
     auto i = name.find_first_of( "0123456789" );
     if ( i == std::string::npos )
@@ -313,7 +317,7 @@ size_t getIndex( const AMP::string_view &name )
     auto index  = std::stoi( substr.data() );
     return index;
 }
-HDF5_group::HDF5_group( hid_t fid, const AMP::string_view &name, int type ) : HDF5data( fid, name )
+HDF5_group::HDF5_group( hid_t fid, const std::string_view &name, int type ) : HDF5data( fid, name )
 {
     if ( type == 1 ) {
         // Read group
@@ -451,7 +455,7 @@ HDF5_group::HDF5_group( hid_t fid, const AMP::string_view &name, int type ) : HD
 /************************************************************************
  * Read arbitrary data                                                   *
  ************************************************************************/
-std::unique_ptr<HDF5data> readHDF5( hid_t fid, const AMP::string_view &name )
+std::unique_ptr<HDF5data> readHDF5( hid_t fid, const std::string_view &name )
 {
 #if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
     H5O_info_t object_info;
