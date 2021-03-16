@@ -22,7 +22,11 @@ static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
 {
     char *cname = H5Tget_member_name( id, idx );
     std::string name( cname );
+#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
     free( cname );
+#else
+    H5free_memory( cname );
+#endif
     return name;
 }
 
