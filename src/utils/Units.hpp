@@ -10,44 +10,63 @@ namespace AMP {
 /********************************************************************
  * Constructors                                                      *
  ********************************************************************/
-constexpr Units::Units() : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0 ) {}
-constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0 )
+constexpr Units::Units() : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 ) {}
+constexpr Units::Units( const char *str ) : Units( compress( str ) ) {}
+constexpr Units::Units( const std::string_view &str ) : Units( compress( str ) ) {}
+constexpr Units::Units( const Units::unit_type &data ) : Units( data, create( data ) ) {}
+constexpr Units::Units( const Units::unit_type &data, const std::pair<SI_type, double> &values )
+    : d_unit( data ), d_SI( std::get<0>( values ) ), d_scale( std::get<1>( values ) )
 {
+}
+constexpr Units::unit_type Units::compress( const std::string_view &str )
+{
+    unit_type unit = { 0 };
+    if ( str.empty() )
+        return unit;
     // Remove trailing/preceeding whitespace
     int i1 = 0, i2 = str.size() - 1;
     for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '"' ); i1++ ) {}
     for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '"' ); i2-- ) {}
     // Copy the unit to internal memory (removed extra spaces)
     if ( i1 > i2 )
-        return;
+        return unit;
     int k     = 0;
     char last = ';';
     for ( int i = i1; i <= i2; i++ ) {
         if ( str[i] == '*' || str[i] == ' ' ) {
             if ( last != '*' && last != '/' && last != '(' && last != ')' ) {
-                d_unit[k] = '*';
+                unit[k] = '*';
                 k++;
             }
         } else if ( str[i] == '/' || str[i] == '(' || str[i] == ')' ) {
             if ( last == '*' ) {
-                d_unit[k - 1] = str[i];
+                unit[k - 1] = str[i];
             } else {
-                d_unit[k] = str[i];
+                unit[k] = str[i];
                 k++;
             }
         } else {
-            d_unit[k] = str[i];
+            unit[k] = str[i];
             k++;
         }
-        last = d_unit[k - 1];
-        if ( k >= (int) d_unit.size() )
+        last = unit[k - 1];
+        if ( k >= (int) unit.size() )
             throw std::logic_error( "Unit size" );
     }
-    AMP::string_view unit( d_unit.data(), k );
-    // Convert the string to SI units
-    k                    = 0;
-    d_scale              = 1.0;
-    auto findMatchingPar = [&unit]( size_t i ) {
+    return unit;
+}
+constexpr std::pair<Units::SI_type, double> Units::create( const unit_type &data )
+{
+    // Helper functions
+    auto createStringView = []( const unit_type &data ) {
+        size_t k = 0;
+        for ( k = 0; k < data.size(); k++ ) {
+            if ( data[k] == 0 )
+                break;
+        }
+        return std::string_view( data.data(), k );
+    };
+    auto findMatchingPar = []( const std::string_view &unit, size_t i ) {
         for ( size_t j = i, count = 1; j < unit.size(); j++ ) {
             if ( unit[j] == '(' )
                 count++;
@@ -58,13 +77,20 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
         }
         return unit.size();
     };
-    auto findSpace = [&unit]( size_t i ) {
+    auto findSpace = []( std::string_view &unit, size_t i ) {
         for ( size_t j = i + 1; j < unit.size(); j++ ) {
             if ( unit[j] == '*' || unit[j] == '/' || unit[j] == '(' )
                 return j;
         }
         return unit.size();
     };
+    // Create the string_view
+    auto unit = createStringView( data );
+    if ( unit.empty() )
+        return std::pair<Units::SI_type, double>( { 0 }, 0.0 );
+    // Convert the string to SI units
+    SI_type SI   = { 0 };
+    double scale = 1.0;
     for ( size_t i = 0; i < unit.size(); ) {
         if ( unit[i] == '*' )
             i++;
@@ -72,42 +98,50 @@ constexpr Units::Units( const AMP::string_view &str ) : d_unit( { 0 } ), d_SI( {
         double s  = 0;
         SI_type u = { 0 };
         if ( unit[i] == '(' ) {
-            j = findMatchingPar( i );
+            j = findMatchingPar( unit, i );
             Units u2( unit.substr( i + 1, j - i - 2 ) );
             s = u2.d_scale;
             u = u2.d_SI;
         } else if ( unit[i] == '/' ) {
             if ( unit[i + 1] == '(' ) {
-                j = findMatchingPar( i + 1 );
+                j = findMatchingPar( unit, i + 1 );
                 Units u2( unit.substr( i + 2, j - i - 3 ) );
                 s = 1.0 / u2.d_scale;
                 u = u2.d_SI;
                 for ( size_t m = 0; m < u.size(); m++ )
                     u[m] = -u[m];
             } else {
-                j             = findSpace( i );
+                j             = findSpace( unit, i );
                 auto [u2, s2] = read( unit.substr( i + 1, j - i - 1 ) );
                 s             = 1.0 / s2;
                 for ( size_t m = 0; m < u.size(); m++ )
                     u[m] = -u2[m];
             }
         } else {
-            j             = findSpace( i );
+            j             = findSpace( unit, i );
             auto [u2, s2] = read( unit.substr( i, j - i ) );
             u             = u2;
             s             = s2;
         }
-        d_scale *= s;
-        d_SI = combine( d_SI, u );
-        i    = j;
+        scale *= s;
+        SI = combine( SI, u );
+        i  = j;
     }
+    return std::make_pair( SI, scale );
 }
-constexpr std::tuple<Units::SI_type, double> Units::read( const AMP::string_view &str )
+constexpr std::tuple<Units::SI_type, double> Units::read( const std::string_view &str )
 {
-    auto i = str.find( '^' );
+    auto find = []( const std::string_view &str, char c ) {
+        for ( size_t i = 0; i < str.size(); i++ ) {
+            if ( str[i] == c )
+                return i;
+        }
+        return std::string::npos;
+    };
+    auto i = find( str, '^' );
     if ( i == std::string::npos ) {
         // Check if the character '-' is present indicating a seperation between the prefix and unit
-        size_t index = str.find( '-' );
+        size_t index = find( str, '-' );
         if ( index != std::string::npos ) {
             auto prefix = getUnitPrefix( str.substr( 0, index ) );
             auto [u, s] = read2( str.substr( index + 1 ) );
@@ -151,7 +185,7 @@ constexpr Units::SI_type Units::combine( const SI_type &a, const SI_type &b )
 /********************************************************************
  * Get prefix                                                        *
  ********************************************************************/
-constexpr UnitPrefix Units::getUnitPrefix( const AMP::string_view &str ) noexcept
+constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcept
 {
     UnitPrefix value = UnitPrefix::unknown;
     if ( str.empty() ) {
@@ -204,7 +238,7 @@ constexpr UnitPrefix Units::getUnitPrefix( const AMP::string_view &str ) noexcep
 /********************************************************************
  * Get unit value                                                    *
  ********************************************************************/
-constexpr std::tuple<Units::SI_type, double> Units::read2( const AMP::string_view &str )
+constexpr std::tuple<Units::SI_type, double> Units::read2( const std::string_view &str )
 {
     if ( str.size() <= 1 ) {
         auto [u, s] = readUnit( str );
@@ -228,7 +262,7 @@ constexpr std::tuple<Units::SI_type, double> Units::read2( const AMP::string_vie
     double s  = 0.0;
     return std::tie( u, s );
 }
-constexpr std::tuple<Units::SI_type, double> Units::readUnit( const AMP::string_view &str,
+constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_view &str,
                                                               bool throwErr )
 {
     auto create = []( UnitType type, double s = 1.0 ) {
@@ -410,27 +444,27 @@ constexpr bool operator==( const std::array<int8_t, 9> &a, const std::array<int8
 }
 constexpr bool Units::compatible( const Units &rhs ) noexcept
 {
-    constexpr SI_type energy     = { -2, 2, 1, 0, 0, 0, 0, 0 };
-    constexpr SI_type tmperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
+    constexpr SI_type energy      = { -2, 2, 1, 0, 0, 0, 0, 0 };
+    constexpr SI_type temperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
     if ( d_SI == rhs.d_SI )
         return true;
-    if ( d_SI == energy && rhs.d_SI == tmperature )
+    if ( d_SI == energy && rhs.d_SI == temperature )
         return true; // Convert from energy to temperature (using boltzmann constant)
-    if ( d_SI == tmperature && rhs.d_SI == energy )
+    if ( d_SI == temperature && rhs.d_SI == energy )
         return true; // Convert from temperature to energy (using boltzmann constant)
     return false;
 }
 constexpr double Units::convert( const Units &rhs ) const
 {
-    constexpr SI_type energy     = { -2, 2, 1, 0, 0, 0, 0, 0 };
-    constexpr SI_type tmperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
+    constexpr SI_type energy      = { -2, 2, 1, 0, 0, 0, 0, 0 };
+    constexpr SI_type temperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
     if ( d_SI == rhs.d_SI ) {
         // The SI units match
         return d_scale / rhs.d_scale;
-    } else if ( d_SI == energy && rhs.d_SI == tmperature ) {
+    } else if ( d_SI == energy && rhs.d_SI == temperature ) {
         // Convert from energy to temperature (using bolztmann constant)
         return 7.242971666663E+22 * d_scale / rhs.d_scale;
-    } else if ( d_SI == tmperature && rhs.d_SI == energy ) {
+    } else if ( d_SI == temperature && rhs.d_SI == energy ) {
         // Convert from temperature to energy (using bolztmann constant)
         return 1.38064878066922E-23 * d_scale / rhs.d_scale;
     } else {

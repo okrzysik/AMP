@@ -3,11 +3,11 @@
 
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Units.h"
-#include "AMP/utils/string_view.h"
 
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 
@@ -33,9 +33,9 @@ public:
     //! Copy the data
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
-    virtual void print( std::ostream &os, const AMP::string_view &indent = "" ) const = 0;
+    virtual void print( std::ostream &os, const std::string_view &indent = "" ) const = 0;
     //! Return the native data type
-    virtual AMP::string_view type() const = 0;
+    virtual std::string_view type() const = 0;
     //! Return true if the type is a floating point type
     virtual bool is_floating_point() const = 0;
     //! Return true if the type is a integer point type
@@ -83,7 +83,7 @@ public:
     static std::shared_ptr<Database> parseInputFile( const std::string &filename );
 
     // Read a YAML database
-    static std::unique_ptr<KeyData> readYAML( const AMP::string_view &filename );
+    static std::unique_ptr<KeyData> readYAML( const std::string_view &filename );
 
     /** \brief Create a database from key/value pairs
      * \details  This function will create a database from a set of key/value pairs
@@ -109,7 +109,7 @@ public:
      * Create database from string
      * @param data       String containing the database data
      */
-    static std::unique_ptr<Database> createFromString( const AMP::string_view &data );
+    static std::unique_ptr<Database> createFromString( const std::string_view &data );
 
     //! Copy constructor
     Database( const Database & ) = delete;
@@ -153,7 +153,7 @@ public:
      *     otherwise.
      * @param[in] key           Key name to lookup.
      */
-    bool keyExists( const AMP::string_view &key ) const;
+    bool keyExists( const std::string_view &key ) const;
 
 
     /**
@@ -187,7 +187,7 @@ public:
      *
      * @param[in] key           Key name in database.
      */
-    inline std::string getString( const AMP::string_view &key ) const
+    inline std::string getString( const std::string_view &key ) const
     {
         return getScalar<std::string>( key );
     }
@@ -203,7 +203,7 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE getScalar( const AMP::string_view &key, Units unit = Units() ) const;
+    TYPE getScalar( const std::string_view &key, Units unit = Units() ) const;
 
 
     /**
@@ -217,7 +217,7 @@ public:
      */
     template<class TYPE>
     TYPE
-    getWithDefault( const AMP::string_view &key, const TYPE &value, Units unit = Units() ) const;
+    getWithDefault( const std::string_view &key, const TYPE &value, Units unit = Units() ) const;
 
 
     /**
@@ -230,7 +230,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    Array<TYPE> getArray( const AMP::string_view &key, Units unit = Units() ) const;
+    Array<TYPE> getArray( const std::string_view &key, Units unit = Units() ) const;
 
 
     /**
@@ -243,7 +243,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    std::vector<TYPE> getVector( const AMP::string_view &key, Units unit = Units() ) const;
+    std::vector<TYPE> getVector( const std::string_view &key, Units unit = Units() ) const;
 
 
     /**
@@ -253,7 +253,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    inline void putScalar( const AMP::string_view &key, TYPE value, Units unit = Units() );
+    inline void putScalar( const std::string_view &key, TYPE value, Units unit = Units() );
 
 
     /**
@@ -267,7 +267,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    inline void putArray( const AMP::string_view &key, Array<TYPE> data, Units unit = Units() );
+    inline void putArray( const std::string_view &key, Array<TYPE> data, Units unit = Units() );
 
 
     /**
@@ -282,7 +282,7 @@ public:
      */
     template<class TYPE>
     inline void
-    putVector( const AMP::string_view &key, const std::vector<TYPE> &data, Units unit = Units() );
+    putVector( const std::string_view &key, const std::vector<TYPE> &data, Units unit = Units() );
 
 
     /**
@@ -291,7 +291,7 @@ public:
      *
      * @param key Key name in database.
      */
-    KeyData *getData( const AMP::string_view &key );
+    KeyData *getData( const std::string_view &key );
 
     /**
      * Get a raw pointer to the data for a key in the database.
@@ -299,7 +299,7 @@ public:
      *
      * @param key Key name in database.
      */
-    const KeyData *getData( const AMP::string_view &key ) const;
+    const KeyData *getData( const std::string_view &key ) const;
 
 
     /**
@@ -309,20 +309,20 @@ public:
      * @param data      Data to store
      * @param check     Check if the key exists and throw an error if does
      */
-    void putData( const AMP::string_view &key, std::unique_ptr<KeyData> data, bool check = false );
+    void putData( const std::string_view &key, std::unique_ptr<KeyData> data, bool check = false );
 
 
     // Check if the key is a database object
-    bool isDatabase( const AMP::string_view &key ) const;
+    bool isDatabase( const std::string_view &key ) const;
 
 
     // Check if the key is a database object
-    bool isString( const AMP::string_view &key ) const;
+    bool isString( const std::string_view &key ) const;
 
 
     // Check if the entry can be stored as the given type
     template<class TYPE>
-    bool isType( const AMP::string_view &key ) const;
+    bool isType( const std::string_view &key ) const;
 
 
     /**
@@ -331,7 +331,7 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<Database> getDatabase( const AMP::string_view &key );
+    std::shared_ptr<Database> getDatabase( const std::string_view &key );
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -339,7 +339,7 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<const Database> getDatabase( const AMP::string_view &key ) const;
+    std::shared_ptr<const Database> getDatabase( const std::string_view &key ) const;
 
 
     /**
@@ -349,7 +349,7 @@ public:
      * @param key       Key name in database.
      * @param db        Database to store
      */
-    inline void putDatabase( const AMP::string_view &key, std::unique_ptr<Database> db )
+    inline void putDatabase( const std::string_view &key, std::unique_ptr<Database> db )
     {
         putData( key, std::move( db ) );
     }
@@ -361,7 +361,7 @@ public:
      *
      * @param key       Key name in database.
      */
-    inline std::shared_ptr<Database> putDatabase( const AMP::string_view &key )
+    inline std::shared_ptr<Database> putDatabase( const std::string_view &key )
     {
         putData( key, std::make_unique<Database>( std::string( key.data(), key.size() ) ) );
         return getDatabase( key );
@@ -375,7 +375,7 @@ public:
      * @param key       Key name in database
      * @param check     Check if the key exists
      */
-    void erase( const AMP::string_view &key, bool check = true );
+    void erase( const std::string_view &key, bool check = true );
 
 
     /**
@@ -383,18 +383,18 @@ public:
      * @param os        Output stream
      * @param indent    Indenting to use before each line
      */
-    void print( std::ostream &os, const AMP::string_view &indent = "" ) const override;
+    void print( std::ostream &os, const std::string_view &indent = "" ) const override;
 
 
     //! Print the type
-    AMP::string_view type() const override { return "database"; }
+    std::string_view type() const override { return "database"; }
 
 
     /**
      * Print the data to a string
      * @return          Output string
      */
-    std::string print( const AMP::string_view &indent = "" ) const;
+    std::string print( const std::string_view &indent = "" ) const;
 
 
 #ifdef USE_SAMRAI
@@ -422,15 +422,15 @@ protected: // Internal data and functions
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
-    void addArgs( const AMP::string_view &key, TYPE value, Args... args );
+    void addArgs( const std::string_view &key, TYPE value, Args... args );
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
     void
-    addArgsWithUnits( const AMP::string_view &key, TYPE value, const Units &unit, Args... args );
+    addArgsWithUnits( const std::string_view &key, TYPE value, const Units &unit, Args... args );
 
     // Hash a string
-    static constexpr uint32_t hashString( const AMP::string_view &s )
+    static constexpr uint32_t hashString( const std::string_view &s )
     {
         uint32_t hash = 5381;
         for ( size_t i = 0; i < s.size(); i++ )
@@ -468,7 +468,7 @@ public:
     DatabaseBox( int dim, const int *lower, const int *upper );
 
     //! Construct from a string of the format "[(0,0,0), (7,7,7)]"
-    explicit DatabaseBox( const AMP::string_view &str );
+    explicit DatabaseBox( const std::string_view &str );
 
 #ifdef USE_SAMRAI
     //! Construct a DatabaseBox from a SAMRAI DatabaseBox

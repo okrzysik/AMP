@@ -17,14 +17,14 @@ namespace AMP {
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
-static constexpr inline AMP::string_view deblank( const AMP::string_view &str )
+static constexpr inline std::string_view deblank( const std::string_view &str )
 {
     int i1 = 0, i2 = str.size() - 1;
     for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '\t' ); i1++ ) {}
     for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '\t' ); i2-- ) {}
-    return i1 <= i2 ? str.substr( i1, i2 - i1 + 1 ) : AMP::string_view();
+    return i1 <= i2 ? str.substr( i1, i2 - i1 + 1 ) : std::string_view();
 }
-static inline bool strcmpi( const AMP::string_view &s1, const AMP::string_view &s2 )
+static inline bool strcmpi( const std::string_view &s1, const std::string_view &s2 )
 {
     if ( s1.size() != s2.size() )
         return false;
@@ -38,9 +38,9 @@ static inline bool strcmpi( const AMP::string_view &s1, const AMP::string_view &
     return equal;
 }
 template<class TYPE>
-static TYPE readValue( const AMP::string_view &str );
+static TYPE readValue( const std::string_view &str );
 template<>
-double readValue<double>( const AMP::string_view &str )
+double readValue<double>( const std::string_view &str )
 {
     double data = 0;
     if ( strcmpi( str, "inf" ) || strcmpi( str, "infinity" ) ) {
@@ -60,7 +60,7 @@ double readValue<double>( const AMP::string_view &str )
     return data;
 }
 template<>
-int readValue<int>( const AMP::string_view &str )
+int readValue<int>( const std::string_view &str )
 {
     char *pos = nullptr;
     int data  = strtol( str.data(), &pos, 10 );
@@ -69,21 +69,21 @@ int readValue<int>( const AMP::string_view &str )
     return data;
 }
 template<>
-std::complex<double> readValue<std::complex<double>>( const AMP::string_view &str )
+std::complex<double> readValue<std::complex<double>>( const std::string_view &str )
 {
     std::complex<double> data = 0;
     if ( str[0] != '(' ) {
         data = readValue<double>( str );
     } else {
         size_t pos = str.find( ',' );
-        AMP::string_view s1( &str[1], pos - 1 );
-        AMP::string_view s2( &str[pos + 1], str.size() - pos - 2 );
+        std::string_view s1( &str[1], pos - 1 );
+        std::string_view s2( &str[pos + 1], str.size() - pos - 2 );
         data = std::complex<double>( readValue<double>( s1 ), readValue<double>( s2 ) );
     }
     return data;
 }
 template<class TYPE>
-static std::tuple<TYPE, Units> readPair( const AMP::string_view &str )
+static std::tuple<TYPE, Units> readPair( const std::string_view &str )
 {
     auto str0    = str;
     auto tmp     = deblank( std::move( str0 ) );
@@ -95,7 +95,7 @@ static std::tuple<TYPE, Units> readPair( const AMP::string_view &str )
         return std::make_tuple( readValue<TYPE>( tmp ), Units() );
     }
 }
-static void strrep( std::string &str, const AMP::string_view &s, const AMP::string_view &r )
+static void strrep( std::string &str, const std::string_view &s, const std::string_view &r )
 {
     size_t pos = str.find( s.data(), 0, s.size() );
     while ( pos != std::string::npos ) {
@@ -192,25 +192,25 @@ bool Database::operator==( const KeyData &rhs ) const
 /********************************************************************
  * Get the data object                                               *
  ********************************************************************/
-bool Database::keyExists( const AMP::string_view &key ) const
+bool Database::keyExists( const std::string_view &key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index != -1;
 }
-KeyData *Database::getData( const AMP::string_view &key )
+KeyData *Database::getData( const std::string_view &key )
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index == -1 ? nullptr : d_data[index].get();
 }
-const KeyData *Database::getData( const AMP::string_view &key ) const
+const KeyData *Database::getData( const std::string_view &key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index == -1 ? nullptr : d_data[index].get();
 }
-bool Database::isDatabase( const AMP::string_view &key ) const
+bool Database::isDatabase( const std::string_view &key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -218,7 +218,7 @@ bool Database::isDatabase( const AMP::string_view &key ) const
     auto ptr2 = dynamic_cast<const Database *>( d_data[index].get() );
     return ptr2 != nullptr;
 }
-std::shared_ptr<Database> Database::getDatabase( const AMP::string_view &key )
+std::shared_ptr<Database> Database::getDatabase( const std::string_view &key )
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -227,7 +227,7 @@ std::shared_ptr<Database> Database::getDatabase( const AMP::string_view &key )
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-std::shared_ptr<const Database> Database::getDatabase( const AMP::string_view &key ) const
+std::shared_ptr<const Database> Database::getDatabase( const std::string_view &key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -242,7 +242,7 @@ std::vector<std::string> Database::getAllKeys() const
     std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( const AMP::string_view &key, std::unique_ptr<KeyData> data, bool check )
+void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, bool check )
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -256,7 +256,7 @@ void Database::putData( const AMP::string_view &key, std::unique_ptr<KeyData> da
         d_data.emplace_back( std::move( data ) );
     }
 }
-void Database::erase( const AMP::string_view &key, bool check )
+void Database::erase( const std::string_view &key, bool check )
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -278,16 +278,16 @@ void Database::erase( const AMP::string_view &key, bool check )
  * Is the data of the given type                                     *
  ********************************************************************/
 template<>
-bool Database::isType<std::string>( const AMP::string_view &key ) const
+bool Database::isType<std::string>( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
     auto type = data->type();
     return type == typeid( std::string ).name();
 }
-bool Database::isString( const AMP::string_view &key ) const { return isType<std::string>( key ); }
+bool Database::isString( const std::string_view &key ) const { return isType<std::string>( key ); }
 template<>
-bool Database::isType<bool>( const AMP::string_view &key ) const
+bool Database::isType<bool>( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
@@ -296,7 +296,7 @@ bool Database::isType<bool>( const AMP::string_view &key ) const
     return type == type2;
 }
 template<>
-bool Database::isType<std::complex<float>>( const AMP::string_view &key ) const
+bool Database::isType<std::complex<float>>( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
@@ -304,7 +304,7 @@ bool Database::isType<std::complex<float>>( const AMP::string_view &key ) const
     return type == typeid( std::complex<float> ).name();
 }
 template<>
-bool Database::isType<std::complex<double>>( const AMP::string_view &key ) const
+bool Database::isType<std::complex<double>>( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
@@ -312,7 +312,7 @@ bool Database::isType<std::complex<double>>( const AMP::string_view &key ) const
     return type == typeid( std::complex<double> ).name();
 }
 template<>
-bool Database::isType<double>( const AMP::string_view &key ) const
+bool Database::isType<double>( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
@@ -324,7 +324,7 @@ bool Database::isType<double>( const AMP::string_view &key ) const
     return is_floating || is_integral;
 }
 template<>
-bool Database::isType<DatabaseBox>( const AMP::string_view &key ) const
+bool Database::isType<DatabaseBox>( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
@@ -332,7 +332,7 @@ bool Database::isType<DatabaseBox>( const AMP::string_view &key ) const
     return type == typeid( DatabaseBox ).name();
 }
 template<class TYPE>
-bool Database::isType( const AMP::string_view &key ) const
+bool Database::isType( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
@@ -355,23 +355,23 @@ bool Database::isType( const AMP::string_view &key ) const
     }
     return false;
 }
-template bool Database::isType<char>( const AMP::string_view & ) const;
-template bool Database::isType<uint8_t>( const AMP::string_view & ) const;
-template bool Database::isType<uint16_t>( const AMP::string_view & ) const;
-template bool Database::isType<uint32_t>( const AMP::string_view & ) const;
-template bool Database::isType<uint64_t>( const AMP::string_view & ) const;
-template bool Database::isType<int8_t>( const AMP::string_view & ) const;
-template bool Database::isType<int16_t>( const AMP::string_view & ) const;
-template bool Database::isType<int32_t>( const AMP::string_view & ) const;
-template bool Database::isType<int64_t>( const AMP::string_view & ) const;
-template bool Database::isType<float>( const AMP::string_view & ) const;
-template bool Database::isType<long double>( const AMP::string_view & ) const;
+template bool Database::isType<char>( const std::string_view & ) const;
+template bool Database::isType<uint8_t>( const std::string_view & ) const;
+template bool Database::isType<uint16_t>( const std::string_view & ) const;
+template bool Database::isType<uint32_t>( const std::string_view & ) const;
+template bool Database::isType<uint64_t>( const std::string_view & ) const;
+template bool Database::isType<int8_t>( const std::string_view & ) const;
+template bool Database::isType<int16_t>( const std::string_view & ) const;
+template bool Database::isType<int32_t>( const std::string_view & ) const;
+template bool Database::isType<int64_t>( const std::string_view & ) const;
+template bool Database::isType<float>( const std::string_view & ) const;
+template bool Database::isType<long double>( const std::string_view & ) const;
 
 
 /********************************************************************
  * Print the database                                                *
  ********************************************************************/
-void Database::print( std::ostream &os, const AMP::string_view &indent ) const
+void Database::print( std::ostream &os, const std::string_view &indent ) const
 {
     auto keys = getAllKeys(); //  We want the keys in sorted order
     for ( const auto &key : keys ) {
@@ -392,7 +392,7 @@ void Database::print( std::ostream &os, const AMP::string_view &indent ) const
         }
     }
 }
-std::string Database::print( const AMP::string_view &indent ) const
+std::string Database::print( const std::string_view &indent ) const
 {
     std::stringstream ss;
     print( ss, indent );
@@ -430,7 +430,7 @@ void Database::readDatabase( const std::string &filename )
                                 err.what() );
     }
 }
-std::unique_ptr<Database> Database::createFromString( const AMP::string_view &data )
+std::unique_ptr<Database> Database::createFromString( const std::string_view &data )
 {
     auto db = std::make_unique<Database>();
     loadDatabase( data.data(), *db );
@@ -513,12 +513,12 @@ static size_t skip_comment( const char *buffer )
 }
 enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, ARRAY, UNKNOWN };
 static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buffer,
-                                                                const AMP::string_view &key )
+                                                                const std::string_view &key )
 {
     // Split the value to an array of values
     size_t pos      = 0;
     token_type type = token_type::end;
-    std::vector<AMP::string_view> values;
+    std::vector<std::string_view> values;
     class_type data_type = class_type::UNKNOWN;
     while ( type != token_type::newline ) {
         while ( buffer[pos] == ' ' || buffer[pos] == '\t' )
@@ -577,10 +577,10 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
                 pos += pos2;
             }
         }
-        AMP::string_view tmp( &buffer[pos0], pos - pos0 - length( type ) );
+        std::string_view tmp( &buffer[pos0], pos - pos0 - length( type ) );
         if ( !tmp.empty() ) {
             if ( tmp.back() == ',' )
-                tmp = AMP::string_view( tmp.data(), tmp.size() - 1 );
+                tmp = std::string_view( tmp.data(), tmp.size() - 1 );
         }
         tmp = deblank( tmp );
         values.push_back( deblank( tmp ) );
@@ -811,7 +811,7 @@ size_t Database::loadDatabase( const char *buffer, Database &db )
         size_t i;
         token_type type;
         std::tie( i, type ) = find_next_token( &buffer[pos] );
-        AMP::string_view tmp( &buffer[pos], i - length( type ) );
+        std::string_view tmp( &buffer[pos], i - length( type ) );
         const auto key = deblank( tmp );
         if ( type == token_type::line_comment || type == token_type::block_start ) {
             // Comment
@@ -868,8 +868,8 @@ bool Database::is_integral() const
 /********************************************************************
  * Read YAML file                                                    *
  ********************************************************************/
-static inline std::tuple<AMP::string_view, AMP::string_view>
-splitYAML( const AMP::string_view &line )
+static inline std::tuple<std::string_view, std::string_view>
+splitYAML( const std::string_view &line )
 {
     size_t pos = line.find_first_not_of( ' ' );
     if ( line[pos] == '-' )
@@ -885,7 +885,7 @@ static inline std::unique_ptr<KeyData> makeKeyData( std::vector<Database> &&data
         return std::make_unique<Database>( std::move( data[0] ) );
     return std::make_unique<DatabaseVector>( std::move( data ) );
 }
-static inline void removeNewline( AMP::string_view &line )
+static inline void removeNewline( std::string_view &line )
 {
     if ( line.find( '\n' ) != std::string::npos )
         line = line.substr( 0, line.find( '\n' ) );
@@ -902,7 +902,7 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
         tmp[0] = 0;
         if ( !fgets( tmp, sizeof( tmp ), fid ) )
             break;
-        AMP::string_view line( tmp );
+        std::string_view line( tmp );
         // Remove newline
         removeNewline( line );
         // Remove the comments
@@ -927,7 +927,7 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
             data.resize( data.size() + 1 );
             indent2 = pos + 1 + line.substr( pos + 1 ).find_first_not_of( ' ' );
         }
-        AMP::string_view key, value;
+        std::string_view key, value;
         std::tie( key, value ) = splitYAML( line );
         std::unique_ptr<KeyData> entry;
         if ( value == "|" ) {
@@ -937,7 +937,7 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
                 char tmp2[4096] = { 0 };
                 if ( !fgets( tmp2, sizeof( tmp2 ), fid ) )
                     break;
-                AMP::string_view line2( tmp2 );
+                std::string_view line2( tmp2 );
                 removeNewline( line2 );
                 size_t pos2 = line2.find_first_not_of( ' ' );
                 if ( pos2 <= indent2 ) {
@@ -981,7 +981,7 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
     }
     return makeKeyData( std::move( data ) );
 }
-std::unique_ptr<KeyData> Database::readYAML( const AMP::string_view &filename )
+std::unique_ptr<KeyData> Database::readYAML( const std::string_view &filename )
 {
     FILE *fid = fopen( filename.data(), "rb" );
     DATABASE_INSIST( fid, "Error opening file %s", filename.data() );

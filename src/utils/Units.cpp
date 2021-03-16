@@ -20,7 +20,7 @@ std::string Units::str() const
     }
 }
 std::string Units::printUnit() const { return std::string( d_unit.data(), 0, d_unit.size() ); }
-AMP::string_view Units::getPrefixStr( UnitPrefix p ) noexcept
+std::string_view Units::getPrefixStr( UnitPrefix p ) noexcept
 {
     static constexpr const char *d_prefixSymbol[] = { "y", "z",  "a",  "f", "p", "n", "u", "m",
                                                       "c", "da", "\0", "d", "h", "k", "M", "G",
@@ -62,6 +62,8 @@ static_assert( sizeof( Units ) == 48 );
 static_assert( std::is_final<Units>::value );
 static_assert( std::is_trivially_copyable<Units>::value );
 static_assert( !std::is_arithmetic<Units>::value );
+static_assert( Units().isNull() );
+static_assert( Units( "" ).isNull() );
 static_assert( Units::convert( Units::getUnitPrefix( "y" ) ) == 1e-24 );
 static_assert( Units::convert( Units::getUnitPrefix( "z" ) ) == 1e-21 );
 static_assert( Units::convert( Units::getUnitPrefix( "a" ) ) == 1e-18 );
@@ -83,8 +85,6 @@ static_assert( Units::convert( Units::getUnitPrefix( "P" ) ) == 1e15 );
 static_assert( Units::convert( Units::getUnitPrefix( "E" ) ) == 1e18 );
 static_assert( Units::convert( Units::getUnitPrefix( "Z" ) ) == 1e21 );
 static_assert( Units::convert( Units::getUnitPrefix( "Y" ) ) == 1e24 );
-
-#if !defined( __INTEL_COMPILER ) 
 static_assert( Units( "meter" ).getType() == UnitType::length );
 static_assert( Units( "gram" ).getType() == UnitType::mass );
 static_assert( Units( "second" ).getType() == UnitType::time );
@@ -107,6 +107,5 @@ static_assert( approx_equal( Units( "ergs/(s*cm^2)" ).convert( Units( "W/(m^2)" 
 static_assert( approx_equal( Units( "pt" ).convert( Units( "litre" ) ), 568.26125 ) );
 static_assert( approx_equal( Units( "oz" ).convert( Units( "g" ) ), 28.349523125 ) );
 static_assert( approx_equal( Units( "ton" ).convert( Units( "lb" ) ), 2240 ) );
-#endif
 
 } // namespace AMP

@@ -24,10 +24,10 @@ constexpr unsigned int AMP::Utilities::hash_char( const char *name )
  * Functions to get type                                                 *
  ************************************************************************/
 template<typename T>
-constexpr AMP::string_view AMP::Utilities::type_name()
+constexpr std::string_view AMP::Utilities::type_name()
 {
-    AMP::string_view name;
-    //    AMP::string_view prefix, suffix;
+    std::string_view name;
+    //    std::string_view prefix, suffix;
 #ifdef __clang__
     name = __PRETTY_FUNCTION__;
     // prefix = "std::string_view type_name() [T = ";
