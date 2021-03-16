@@ -2,6 +2,7 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/UO2_MSRZC_09.h"
@@ -55,86 +56,92 @@ ENABLE_WARNINGS
 
 
 static void
-computeForcingTerms( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
                      std::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
                      std::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
                      AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
                      bool verbose = false )
 {
-    // Create integration point vectors and compute values
-    NULL_USE( meshAdapter );
-    NULL_USE( volumeOp );
-    NULL_USE( manufacturedSolution );
-    NULL_USE( forcingTermsVec );
-    NULL_USE( verbose );
-    AMP_ERROR( "Not converted yet" );
-    /* auto multivariable =
-       std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( volumeOp->getInputVariable() );
-    auto variable = multivariable->getVariable(0);
+    // Create libMesh elements
+    const auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Discretization::createLibmeshElements libMeshElements;
+    libMeshElements.reinit( iterator );
+    // Create DOF managers
+    auto el = libMeshElements.getElement( iterator->globalID() );
+    volumeOp->getSourceElement()->getFEBase()->reinit( el );
+    size_t nQuad = volumeOp->getSourceElement()->getFEBase()->get_xyz().size();
     auto NodalVectorDOF =
-       AMP::Discretization::simpleDOFManager::create(meshAdapter,AMP::Mesh::GeomType::Vertex,1,3);
-
-    auto dummyIntegrationPointVecU = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
-    auto dummyIntegrationPointVecV = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
-    auto dummyIntegrationPointVecW = AMP::LinearAlgebra::createVector(NodalVectorDOF,variable);
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
+    auto QuadPointVectorDOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Volume, 1, nQuad );
+    // Create integration point vectors and compute values
+    auto multivariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
+        volumeOp->getInputVariable() );
+    auto variable = multivariable->getVariable( 0 );
+    auto dummyIntegrationPointVecU =
+        AMP::LinearAlgebra::createVector( QuadPointVectorDOF, variable );
+    auto dummyIntegrationPointVecV =
+        AMP::LinearAlgebra::createVector( QuadPointVectorDOF, variable );
+    auto dummyIntegrationPointVecW =
+        AMP::LinearAlgebra::createVector( QuadPointVectorDOF, variable );
     // Loop over all elements
-    auto el = meshAdapter->getIterator(AMP::Mesh::GeomType::Volume,0);
-    auto end_el = el.end();
-    for( ; el != end_el; ++el) {
-      volumeOp->getSourceElement()->getFEBase()->reinit(&el->getElem());
-      auto quadraturePoints = volumeOp->getSourceElement()->getFEBase()->get_xyz();
-      auto n_quadraturePoints = quadraturePoints.size();
-      std::vector<unsigned int> globalIDs;
-      std::vector<unsigned int> empty;
-      auto gaussPtDofMap = meshAdapter->getDOFMap(volumeOp->getVariableForDOFMap(0));
-      gaussPtDofMap->getDOFs (*el, globalIDs, empty);
-      AMP_ASSERT(globalIDs.size() == n_quadraturePoints);
-      // Loop over all integration points of the element
-      for (unsigned int i = 0; i < n_quadraturePoints; ++i) {
-        double x = quadraturePoints[i](0);
-        double y = quadraturePoints[i](1);
-        double z = quadraturePoints[i](2);
-        dummyIntegrationPointVecU->setLocalValueByGlobalID(globalIDs[i],
-            manufacturedSolution->getForcingTermX(x,y,z));
-        dummyIntegrationPointVecV->setLocalValueByGlobalID(globalIDs[i],
-            manufacturedSolution->getForcingTermY(x,y,z));
-        dummyIntegrationPointVecW->setLocalValueByGlobalID(globalIDs[i],
-            manufacturedSolution->getForcingTermZ(x,y,z));
-      } // end loop over all integration points of the element
+    std::vector<size_t> dofs( nQuad );
+    std::vector<double> U( nQuad ), V( nQuad ), W( nQuad );
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ) ) {
+        auto id = elem.globalID();
+        auto el = libMeshElements.getElement( id );
+        volumeOp->getSourceElement()->getFEBase()->reinit( el );
+        auto quadraturePoints   = volumeOp->getSourceElement()->getFEBase()->get_xyz();
+        auto n_quadraturePoints = quadraturePoints.size();
+        QuadPointVectorDOF->getDOFs( id, dofs );
+        AMP_ASSERT( dofs.size() == nQuad );
+        // Loop over all integration points of the element
+        for ( unsigned int i = 0; i < n_quadraturePoints; ++i ) {
+            double x = quadraturePoints[i]( 0 );
+            double y = quadraturePoints[i]( 1 );
+            double z = quadraturePoints[i]( 2 );
+            U[i]     = manufacturedSolution->getForcingTermX( x, y, z );
+            V[i]     = manufacturedSolution->getForcingTermY( x, y, z );
+            W[i]     = manufacturedSolution->getForcingTermZ( x, y, z );
+        } // end loop over all integration points of the element
+        dummyIntegrationPointVecU->setLocalValuesByGlobalID( dofs.size(), dofs.data(), U.data() );
+        dummyIntegrationPointVecV->setLocalValuesByGlobalID( dofs.size(), dofs.data(), V.data() );
+        dummyIntegrationPointVecW->setLocalValuesByGlobalID( dofs.size(), dofs.data(), W.data() );
     } // end loop over all elements
     // Create nodal vectors pointing to vector containing forcing terms
-    auto dummyNodalVecU = meshAdapter->createVector(volumeOp->getOutputVariable());
-    auto dummyNodalVecV = dummyNodalVecU->cloneVector();
-    auto dummyNodalVecW = dummyNodalVecU->cloneVector();
+    auto dummyNodalVecU =
+        AMP::LinearAlgebra::createVector( NodalVectorDOF, volumeOp->getOutputVariable() );
+    auto dummyNodalVecV =
+        AMP::LinearAlgebra::createVector( NodalVectorDOF, volumeOp->getOutputVariable() );
+    auto dummyNodalVecW =
+        AMP::LinearAlgebra::createVector( NodalVectorDOF, volumeOp->getOutputVariable() );
     // Turn integration point vectors into nodal vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    volumeOp->apply(nullVec, dummyIntegrationPointVecU, dummyNodalVecU, 1.0, 0.0);
-    volumeOp->apply(nullVec, dummyIntegrationPointVecV, dummyNodalVecV, 1.0, 0.0);
-    volumeOp->apply(nullVec, dummyIntegrationPointVecW, dummyNodalVecW, 1.0, 0.0);
+    volumeOp->apply( dummyIntegrationPointVecU, dummyNodalVecU );
+    volumeOp->apply( dummyIntegrationPointVecV, dummyNodalVecV );
+    volumeOp->apply( dummyIntegrationPointVecW, dummyNodalVecW );
     // Fill forcing terms vector
-    auto nodal3DofMap = meshAdapter->getDOFMap(forcingTermsVec->getVariable());
-    auto nodal1DofMap = meshAdapter->getDOFMap(dummyNodalVecU->getVariable());
-    auto nd = meshAdapter->beginOwnedNode();
-    auto end_nd = meshAdapter->endOwnedNode();
+    auto nodal3DofMap = forcingTermsVec->getDOFManager();
+    auto nodal1DofMap = dummyNodalVecU->getDOFManager();
     // Loop over all nodes
-    for( ; nd != end_nd; ++nd) {
-      std::vector<unsigned int> empty, nd3GlobalIds, nd1GlobalIds;
-      nodal3DofMap->getDOFs(*nd, nd3GlobalIds, empty);
-      nodal1DofMap->getDOFs(*nd, nd1GlobalIds, empty);
-      double xVal = dummyNodalVecU->getLocalValueByGlobalID(nd1GlobalIds[0]);
-      double yVal = dummyNodalVecV->getLocalValueByGlobalID(nd1GlobalIds[0]);
-      double zVal = dummyNodalVecW->getLocalValueByGlobalID(nd1GlobalIds[0]);
-      forcingTermsVec->setLocalValueByGlobalID(nd3GlobalIds[0], xVal);
-      forcingTermsVec->setLocalValueByGlobalID(nd3GlobalIds[1], yVal);
-      forcingTermsVec->setLocalValueByGlobalID(nd3GlobalIds[2], zVal);
-    } //end loop over all nodes
-    if (verbose) {
-        AMP::pout<<"------------------------------------------\n"
-               <<"---- forcing term norm = "<<std::setprecision(15)<<forcingTermsVec->L2Norm()<<"\n"
-               <<"------------------------------------------\n"
-               <<std::endl;
+    std::vector<size_t> nd3GlobalIds, nd1GlobalIds;
+    for ( const auto &node : mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ) ) {
+        nodal3DofMap->getDOFs( node.globalID(), nd3GlobalIds );
+        nodal1DofMap->getDOFs( node.globalID(), nd1GlobalIds );
+        AMP_ASSERT( nd1GlobalIds.size() == 1 );
+        AMP_ASSERT( nd3GlobalIds.size() == 2 );
+        double val[3] = { dummyNodalVecU->getLocalValueByGlobalID( nd1GlobalIds[0] ),
+                          dummyNodalVecV->getLocalValueByGlobalID( nd1GlobalIds[0] ),
+                          dummyNodalVecW->getLocalValueByGlobalID( nd1GlobalIds[0] ) };
+        forcingTermsVec->setLocalValuesByGlobalID( nd3GlobalIds.size(), nd3GlobalIds.data(), val );
+    } // end loop over all nodes
+    if ( verbose ) {
+        AMP::pout << "------------------------------------------\n"
+                  << "---- forcing term norm = " << std::setprecision( 15 )
+                  << forcingTermsVec->L2Norm() << "\n"
+                  << "------------------------------------------\n"
+                  << std::endl;
     } // end if verbose
-   */
 }
 
 
@@ -230,18 +237,19 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     auto bvpOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "MechanicsBVPOperator", inputDatabase, elementPhysicsModel ) );
+    AMP_ASSERT( bvpOperator );
+    AMP_ASSERT( elementPhysicsModel );
     // auto var = bvpOperator->getOutputVariable();
 
     // Create a manufactured solution
     auto mmsDatabase = inputDatabase->getDatabase( "ManufacturedSolution" );
+    auto isotropicElasticModel =
+        std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( elementPhysicsModel );
+    AMP_ASSERT( isotropicElasticModel );
     auto manufacturedSolution =
         AMP::MechanicsManufacturedSolution::MMSBuilder::createMMS( mmsDatabase );
-    double nu =
-        std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( elementPhysicsModel )
-            ->getPoissonsRatio();
-    double E =
-        std::dynamic_pointer_cast<AMP::Operator::IsotropicElasticModel>( elementPhysicsModel )
-            ->getYoungsModulus();
+    double nu = isotropicElasticModel->getPoissonsRatio();
+    double E  = isotropicElasticModel->getYoungsModulus();
     manufacturedSolution->setPoissonsRatio( nu );
     manufacturedSolution->setYoungsModulus( E );
 
@@ -294,8 +302,8 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getInputVariable() );
     auto rhsVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getOutputVariable() );
-    // auto resVec =
-    // AMP::LinearAlgebra::createVector(NodalVectorDOF,bvpOperator->getOutputVariable());
+    auto resVec =
+        AMP::LinearAlgebra::createVector( NodalVectorDOF, bvpOperator->getOutputVariable() );
 
     // Create an operator to get manufactured solution and forcing terms
     auto volumeOp = AMP::Operator::OperatorBuilder::createOperator(
@@ -308,109 +316,101 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     computeForcingTerms( meshAdapter, volumeIntegralOp, manufacturedSolution, rhsVec, true );
 
     // Compute Dirichlet values
-    AMP_ERROR( "Not converted yet" );
-    /*
-     auto dirichletMatOp = std::dynamic_pointer_cast<
-       AMP::Operator::DirichletMatrixCorrection>(bvpOperator->getBoundaryOperator());
-     auto dirichletBoundaryIds =  dirichletMatOp->getBoundaryIds();
-     auto dirichletDofIds =  dirichletMatOp->getDofIds();
-     auto dofMap = meshAdapter->getDOFMap(var);
-     for(unsigned int i = 0; i < dirichletBoundaryIds.size(); i++) {
-       AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd =
-     meshAdapter->beginOwnedBoundary(dirichletBoundaryIds[i]);
-       AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd =
-     meshAdapter->endOwnedBoundary(dirichletBoundaryIds[i]);
-       for ( ; bnd != end_bnd; ++bnd) {
-         auto bndVals = manufacturedSolution->getExactSolutions(bnd->x(),bnd->y(),bnd->z());
-         std::vector<unsigned int> bndGlobalIds;
-         dofMap->getDOFs(*bnd, bndGlobalIds, dirichletDofIds[i]);
-         for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-           unsigned int globalID = bndGlobalIds[j];
-           rhsVec->setLocalValueByGlobalID(globalID, bndVals[dirichletDofIds[i][j]]);
-         }
-       } // end loop over all boundary nodes with current boundary marker
-     } // end loop over all boundary markers
+    auto dirichletMatOp = std::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrection>(
+        bvpOperator->getBoundaryOperator() );
+    auto dirichletBoundaryIds = dirichletMatOp->getBoundaryIds();
+    auto dirichletDofIds      = dirichletMatOp->getDofIds();
+    std::vector<size_t> dofs;
+    for ( unsigned int i = 0; i < dirichletBoundaryIds.size(); i++ ) {
+        auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
+                                                       dirichletBoundaryIds[i] );
+        for ( const auto &node : bnd ) {
+            auto p       = node.coord();
+            auto bndVals = manufacturedSolution->getExactSolutions( p.x(), p.y(), p.z() );
+            NodalVectorDOF->getDOFs( node.globalID(), dofs );
+            rhsVec->setValuesByGlobalID( dofs.size(), dofs.data(), bndVals.data() );
+        }
+    }
 
-     // Compute Neumann values
-     auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
-        AMP::Operator::OperatorBuilder::createBoundaryOperator(meshAdapter,
-            "NeumannCorrection", inputDatabase, volumeOp, dummyModel));
-     //neumannVecOp->setVariable(var);
-     auto neumannBoundaryIds =  neumannVecOp->getBoundaryIds();
-     auto neumannDofIds =  neumannVecOp->getDofIds();
-     for(unsigned int i = 0; i < neumannBoundaryIds.size(); i++) {
-       auto bnd = meshAdapter->beginOwnedBoundary(neumannBoundaryIds[i]);
-       auto end_bnd = meshAdapter->endOwnedBoundary(neumannBoundaryIds[i]);
-       for ( ; bnd != end_bnd; ++bnd) {
-         std::vector<double> dummyNormal(3, 0.0);
-         std::vector<double> gradientX(3, 1.0);
-         std::vector<double> gradientY(3, 1.0);
-         std::vector<double> gradientZ(3, 1.0);
-         // The tensor is stored under the form xx yy zz yz xz xy
-         //autostressTensor = manufacturedSolution->getStressTensor(bnd->x(), bnd->y(), bnd->z());
-         double normalDotGradientX = 0.0;
-         double normalDotGradientY = 0.0;
-         double normalDotGradientZ = 0.0;
-         for (unsigned int d = 0; d < 3; ++d) { normalDotGradientX += dummyNormal[d]*gradientX[d];}
-         for (unsigned int d = 0; d < 3; ++d) { normalDotGradientY += dummyNormal[d]*gradientY[d];}
-         for (unsigned int d = 0; d < 3; ++d) { normalDotGradientZ += dummyNormal[d]*gradientZ[d];}
-         std::vector<double> bndVals; bndVals.push_back(normalDotGradientX);
-         bndVals.push_back(normalDotGradientY);
-         bndVals.push_back(normalDotGradientZ);
-         std::vector<unsigned int> bndGlobalIds;
-         dofMap->getDOFs(*bnd, bndGlobalIds, neumannDofIds[i]);
-         for(unsigned int j = 0; j < bndGlobalIds.size(); j++) {
-           unsigned int globalID = bndGlobalIds[j];
-           rhsVec->addLocalValueByGlobalID(globalID, bndVals[neumannDofIds[i][j]]);
-         }
-       } // end loop over all boundary nodes with current boundary marker
-     } // end loop over all boundary markers
+    // Compute Neumann values
+    auto neumannVecOp = std::dynamic_pointer_cast<AMP::Operator::NeumannVectorCorrection>(
+        AMP::Operator::OperatorBuilder::createBoundaryOperator(
+            meshAdapter, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
+    // neumannVecOp->setVariable(var);
+    auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
+    auto neumannDofIds      = neumannVecOp->getDofIds();
+    for ( unsigned int i = 0; i < neumannBoundaryIds.size(); i++ ) {
+        auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
+                                                       neumannBoundaryIds[i] );
+        for ( const auto &node : bnd ) {
+            std::vector<double> dummyNormal( 3, 0.0 );
+            std::vector<double> gradientX( 3, 1.0 );
+            std::vector<double> gradientY( 3, 1.0 );
+            std::vector<double> gradientZ( 3, 1.0 );
+            // The tensor is stored under the form xx yy zz yz xz xy
+            // autostressTensor = manufacturedSolution->getStressTensor(bnd->x(), bnd->y(),
+            // bnd->z());
+            double normalDotGradientX = 0.0;
+            double normalDotGradientY = 0.0;
+            double normalDotGradientZ = 0.0;
+            for ( unsigned int d = 0; d < 3; ++d )
+                normalDotGradientX += dummyNormal[d] * gradientX[d];
+            for ( unsigned int d = 0; d < 3; ++d )
+                normalDotGradientY += dummyNormal[d] * gradientY[d];
+            for ( unsigned int d = 0; d < 3; ++d )
+                normalDotGradientZ += dummyNormal[d] * gradientZ[d];
+            double bndVals[3] = { normalDotGradientX, normalDotGradientY, normalDotGradientZ };
+            std::vector<unsigned int> bndGlobalIds;
+            NodalVectorDOF->getDOFs( node.globalID(), dofs );
+            AMP_ASSERT( dofs.size() == 3 );
+            rhsVec->addLocalValuesByGlobalID( dofs.size(), dofs.data(), bndVals );
+        }
+    }
 
+    AMP::pout << "RHS Norm: " << rhsVec->L2Norm() << std::endl;
+    AMP::pout << "Initial Solution Norm: " << solVec->L2Norm() << std::endl;
 
-     AMP::pout << "RHS Norm: " << rhsVec->L2Norm() << std::endl;
-     AMP::pout << "Initial Solution Norm: " << solVec->L2Norm() << std::endl;
+    bvpOperator->residual( rhsVec, solVec, resVec );
 
-     bvpOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
+    double initResidualNorm = static_cast<double>( resVec->L2Norm() );
+    AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-     double initResidualNorm = resVec->L2Norm();
-     AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
+    auto solverDatabase = inputDatabase->getDatabase( "LinearSolver" );
 
-     auto solverDatabase = inputDatabase->getDatabase("LinearSolver");
+    // first initialize the preconditioner
+    auto precondDatabase = solverDatabase->getDatabase( "Preconditioner" );
+    auto pcSolverParams =
+        std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( precondDatabase );
+    pcSolverParams->d_pOperator = bvpOperator;
+    auto pcSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
-     // ---- first initialize the preconditioner
-     auto precondDatabase = solverDatabase->getDatabase("Preconditioner");
-     auto pcSolverParams =
-     std::make_shared<AMP::Solver::TrilinosMLSolverParameters>(precondDatabase);
-     pcSolverParams->d_pOperator = bvpOperator;
-     auto pcSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>(pcSolverParams);
+    // initialize the linear solver
+    auto linearSolverParams =
+        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( solverDatabase );
+    linearSolverParams->d_pOperator       = bvpOperator;
+    linearSolverParams->d_comm            = globalComm;
+    linearSolverParams->d_pPreconditioner = pcSolver;
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
+    linearSolver->setZeroInitialGuess( true );
+    linearSolver->solve( rhsVec, solVec );
 
-     // initialize the linear solver
-     auto linearSolverParams =
-     std::make_shared<AMP::Solver::PetscKrylovSolverParameters>(solverDatabase);
-     linearSolverParams->d_pOperator = bvpOperator;
-     linearSolverParams->d_comm = globalComm;
-     linearSolverParams->d_pPreconditioner = pcSolver;
-     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>(linearSolverParams);
-     linearSolver->setZeroInitialGuess(true);
-     linearSolver->solve(rhsVec, solVec);
+    AMP::pout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
 
-     double finalSolNorm = solVec->L2Norm();
-     AMP::pout<<"Final Solution Norm: "<<finalSolNorm<<std::endl;
+    std::string fname = exeName + "_StressAndStrain.txt";
 
-     std::string fname = exeName + "_StressAndStrain.txt";
+    std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+        bvpOperator->getVolumeOperator() )
+        ->printStressAndStrain( solVec, fname );
 
-     std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(bvpOperator->getVolumeOperator())->
-        printStressAndStrain(solVec,fname);
+    bvpOperator->residual( rhsVec, solVec, resVec );
 
-     bvpOperator->apply(rhsVec, solVec, resVec, 1.0, -1.0);
-
-     double finalResidualNorm = resVec->L2Norm();
-     AMP::pout<<"Final Residual Norm: "<<finalResidualNorm<<std::endl;
-     if(finalResidualNorm > (1.0e-10*initResidualNorm)) {
-        ut->failure(exeName);
-     } else {
-        ut->passes(exeName);
-     } */
+    double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
+    AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    if ( finalResidualNorm > ( 1.0e-10 * initResidualNorm ) ) {
+        ut->failure( exeName );
+    } else {
+        ut->passes( exeName );
+    }
 
     double epsilon = 1.0e-13 * static_cast<double>(
                                    ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );

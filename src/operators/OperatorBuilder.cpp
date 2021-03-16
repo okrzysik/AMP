@@ -234,6 +234,8 @@ std::shared_ptr<Operator> OperatorBuilder::createOperator(
             meshAdapter, operator_db, elementPhysicsModel );
     } else if ( operatorType == "NeumannVectorCorrection" ) {
     } else if ( operatorType == "RobinMatrixCorrection" ) {
+    } else {
+        AMP_ERROR( "Unknown operator: " + operatorName );
     }
 
     return retOperator;
