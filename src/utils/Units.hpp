@@ -47,7 +47,7 @@ constexpr Units::Units( const std::string_view &str ) : d_unit( { 0 } ), d_SI( {
     // Convert the string to SI units
     k                    = 0;
     d_scale              = 1.0;
-    auto findMatchingPar = [&unit]( size_t i ) {
+    auto findMatchingPar = []( const std::string_view &unit, size_t i ) {
         for ( size_t j = i, count = 1; j < unit.size(); j++ ) {
             if ( unit[j] == '(' )
                 count++;
@@ -58,7 +58,7 @@ constexpr Units::Units( const std::string_view &str ) : d_unit( { 0 } ), d_SI( {
         }
         return unit.size();
     };
-    auto findSpace = [&unit]( size_t i ) {
+    auto findSpace = []( std::string_view &unit, size_t i ) {
         for ( size_t j = i + 1; j < unit.size(); j++ ) {
             if ( unit[j] == '*' || unit[j] == '/' || unit[j] == '(' )
                 return j;
@@ -72,27 +72,27 @@ constexpr Units::Units( const std::string_view &str ) : d_unit( { 0 } ), d_SI( {
         double s  = 0;
         SI_type u = { 0 };
         if ( unit[i] == '(' ) {
-            j = findMatchingPar( i );
+            j = findMatchingPar( unit, i );
             Units u2( unit.substr( i + 1, j - i - 2 ) );
             s = u2.d_scale;
             u = u2.d_SI;
         } else if ( unit[i] == '/' ) {
             if ( unit[i + 1] == '(' ) {
-                j = findMatchingPar( i + 1 );
+                j = findMatchingPar( unit, i + 1 );
                 Units u2( unit.substr( i + 2, j - i - 3 ) );
                 s = 1.0 / u2.d_scale;
                 u = u2.d_SI;
                 for ( size_t m = 0; m < u.size(); m++ )
                     u[m] = -u[m];
             } else {
-                j             = findSpace( i );
+                j             = findSpace( unit, i );
                 auto [u2, s2] = read( unit.substr( i + 1, j - i - 1 ) );
                 s             = 1.0 / s2;
                 for ( size_t m = 0; m < u.size(); m++ )
                     u[m] = -u2[m];
             }
         } else {
-            j             = findSpace( i );
+            j             = findSpace( unit, i );
             auto [u2, s2] = read( unit.substr( i, j - i ) );
             u             = u2;
             s             = s2;
@@ -104,10 +104,17 @@ constexpr Units::Units( const std::string_view &str ) : d_unit( { 0 } ), d_SI( {
 }
 constexpr std::tuple<Units::SI_type, double> Units::read( const std::string_view &str )
 {
-    auto i = str.find( '^' );
+    auto find = []( const std::string_view &str, char c ) {
+        for ( size_t i = 0; i < str.size(); i++ ) {
+            if ( str[i] == c )
+                return i;
+        }
+        return std::string::npos;
+    };
+    auto i = find( str, '^' );
     if ( i == std::string::npos ) {
         // Check if the character '-' is present indicating a seperation between the prefix and unit
-        size_t index = str.find( '-' );
+        size_t index = find( str, '-' );
         if ( index != std::string::npos ) {
             auto prefix = getUnitPrefix( str.substr( 0, index ) );
             auto [u, s] = read2( str.substr( index + 1 ) );
