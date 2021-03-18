@@ -207,21 +207,32 @@ MESSAGE("Configure options:")
 MESSAGE("   ${CTEST_OPTIONS}")
 
 
-# Configure and run the tests
+# Configure the drop site
 IF ( NOT CTEST_SITE )
     SET( CTEST_SITE ${HOSTNAME} )
 ENDIF()
-CTEST_START("${CTEST_DASHBOARD}")
+SET( CTEST_DROP_METHOD "http" )
+SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
+SET( CTEST_DROP_SITE_CDASH TRUE )
+SET( DROP_SITE_CDASH TRUE )
+SET( CTEST_DROP_SITE ${CTEST_SITE} )
+
+
+# Configure and run the tests
+CTEST_START( "${CTEST_DASHBOARD}" )
 CTEST_UPDATE()
+CTEST_SUBMIT( PARTS Update )
 CTEST_CONFIGURE(
     BUILD   ${CTEST_BINARY_DIRECTORY}
     SOURCE  ${CTEST_SOURCE_DIRECTORY}
     OPTIONS "${CTEST_OPTIONS}"
 )
+CTEST_SUBMIT( PARTS Configure )
 
 
 # Run the configure, build and tests
 CTEST_BUILD()
+CTEST_SUBMIT( PARTS Build )
 EXECUTE_PROCESS( COMMAND ${CMAKE_MAKE_PROGRAM} install )
 IF ( SKIP_TESTS )
     # Do not run tests
@@ -236,15 +247,8 @@ ENDIF()
 IF( CTEST_COVERAGE_COMMAND )
     CTEST_COVERAGE()
 ENDIF()
-
-
-# Submit the results to CDash
-SET( CTEST_DROP_METHOD "http" )
-SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
-SET( CTEST_DROP_SITE_CDASH TRUE )
-SET( DROP_SITE_CDASH TRUE )
-SET( CTEST_DROP_SITE ${CTEST_SITE} )
-CTEST_SUBMIT()
+CTEST_SUBMIT( PARTS Test )
+CTEST_SUBMIT( PARTS Done )
 
 
 # Write a message to test for success in the ctest-builder
