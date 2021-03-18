@@ -291,7 +291,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     } else {
         AMP_ERROR( "Unknown value for typeCoeffAB" );
     } // end if typeCoeffAB
-    // TODO: I'll move this later to the MMSBuiler
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -319,7 +318,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     auto dirichletMatOp = std::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrection>(
         bvpOperator->getBoundaryOperator() );
     auto dirichletBoundaryIds = dirichletMatOp->getBoundaryIds();
-    auto dirichletDofIds      = dirichletMatOp->getDofIds();
     std::vector<size_t> dofs;
     for ( unsigned int i = 0; i < dirichletBoundaryIds.size(); i++ ) {
         auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
@@ -338,7 +336,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
             meshAdapter, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
-    auto neumannDofIds      = neumannVecOp->getDofIds();
     for ( unsigned int i = 0; i < neumannBoundaryIds.size(); i++ ) {
         auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
                                                        neumannBoundaryIds[i] );
