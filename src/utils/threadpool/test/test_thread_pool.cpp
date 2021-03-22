@@ -901,7 +901,7 @@ void run_tests( UnitTest &ut )
 
     // Test creating/destroying a thread pool using new
     comm.barrier();
-    auto pass = true;
+    auto pass = !ThreadPool::is_valid( nullptr );
     try {
         auto tpool2 = new ThreadPool( ThreadPool::MAX_THREADS - 1 );
         if ( tpool2->getNumThreads() != ThreadPool::MAX_THREADS - 1 )
@@ -909,10 +909,6 @@ void run_tests( UnitTest &ut )
         if ( !ThreadPool::is_valid( tpool2 ) )
             pass = false;
         delete tpool2;
-        // Check that tpool is invalid
-        // Note: valgrind will report this as an invalid memory read, but we want to keep it
-        if ( ThreadPool::is_valid( tpool2 ) )
-            pass = false;
     } catch ( ... ) {
         pass = false;
     }

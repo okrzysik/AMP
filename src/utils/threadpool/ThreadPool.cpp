@@ -89,23 +89,6 @@ using AMP::pout;
 namespace AMP {
 
 
-// Function to generate a random number for checking if tpool is valid
-static inline bool validHeadTail( uint32_t key )
-{
-    return ( key > 10 ) && ( ~key > 10 ) && ( key % 2 != 0 ) && ( key % 3 == 2 );
-}
-static inline uint32_t generateHeadTail()
-{
-    uint32_t key = 0;
-    std::random_device rd;
-    std::mt19937 gen( rd() );
-    std::uniform_int_distribution<> dis( 1, 0xFFFFFF );
-    while ( !validHeadTail( key ) )
-        key = static_cast<uint32_t>( dis( gen ) ) * 0x9E3779B9; // 2^32*0.5*(sqrt(5)-1)
-    return key;
-}
-
-
 /******************************************************************
  * Run some basic compile-time checks                              *
  ******************************************************************/
@@ -526,7 +509,7 @@ ThreadPool::ThreadPool( const int N,
     // Run some basic tests on startup
     check_startup();
     // Initialize the header/tail
-    d_NULL_HEAD = generateHeadTail();
+    d_NULL_HEAD = 0xB968135D;
     d_NULL_TAIL = d_NULL_HEAD;
     // Initialize the variables to NULL values
     d_id_assign     = 0;
@@ -553,12 +536,10 @@ ThreadPool::ThreadPool( const int N,
 }
 ThreadPool::~ThreadPool()
 {
-    DISABLE_WARNINGS
     if ( !is_valid( this ) ) {
         std::cerr << "Thread pool is not valid, error calling destructor\n";
         return;
     }
-    ENABLE_WARNINGS
     // Destroy the threads
     setNumThreads( 0 );
     delete[] d_thread;
@@ -578,7 +559,7 @@ bool ThreadPool::is_valid( const ThreadPool *tpool )
         return false;
     if ( tpool->d_N_threads > MAX_THREADS )
         return false;
-    if ( !validHeadTail( tpool->d_NULL_HEAD ) || tpool->d_NULL_HEAD != tpool->d_NULL_TAIL )
+    if ( tpool->d_NULL_HEAD != 0xB968135D || tpool->d_NULL_HEAD != 0xB968135D )
         return false;
     return true;
 }
