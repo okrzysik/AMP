@@ -151,7 +151,7 @@ template<class TYPE>
 TYPE MPI_CLASS::sumReduce( const TYPE value ) const
 {
     if ( comm_size > 1 ) {
-        TYPE tmp;
+        TYPE tmp = value;
         sumReduce( &value, &tmp, 1 );
         return tmp;
     } else {
