@@ -104,10 +104,10 @@ void Utilities::setenv( const char *name, const char *value )
     Utilities_mutex.lock();
 #if defined( USE_LINUX ) || defined( USE_MAC )
     bool pass = false;
-    if ( value != nullptr )
-        pass = ::setenv( name, value, 1 ) == 0;
-    else
+    if ( value == nullptr )
         pass = ::unsetenv( name ) == 0;
+    else
+        pass = ::setenv( name, value, 1 ) == 0;
 #elif defined( USE_WINDOWS )
     bool pass = SetEnvironmentVariable( name, value ) != 0;
 #else
@@ -115,13 +115,23 @@ void Utilities::setenv( const char *name, const char *value )
 #endif
     Utilities_mutex.unlock();
     if ( !pass ) {
-        char msg[100];
+        char msg[1024];
         if ( value != nullptr )
             sprintf( msg, "Error setting enviornmental variable: %s=%s\n", name, value );
         else
             sprintf( msg, "Error clearing enviornmental variable: %s\n", name );
         AMP_ERROR( msg );
     }
+}
+std::string Utilities::getenv( const char *name )
+{
+    std::string var;
+    Utilities_mutex.lock();
+    auto tmp = std::getenv( name );
+    if ( tmp )
+        var = std::string( tmp );
+    Utilities_mutex.unlock();
+    return var;
 }
 
 

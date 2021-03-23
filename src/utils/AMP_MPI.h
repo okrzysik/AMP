@@ -99,12 +99,6 @@ public:
 
 public: // Constructors
     /**
-     *\brief  Is MPI active
-     *\details  This returns true if MPI is initailized and not finalized
-     */
-    static bool MPI_active();
-
-    /**
      *\brief  Empty constructor
      *\details  This creates an empty constructor that does not contain an MPI communicator.
      */
