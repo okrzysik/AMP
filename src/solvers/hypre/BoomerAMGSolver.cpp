@@ -523,13 +523,13 @@ void BoomerAMGSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 }
 
 
-void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: BoomerAMGSolver::solve() operator cannot be NULL" );
+                "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
@@ -550,7 +550,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         const auto initialResNorm = r->L2Norm();
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual before solve "
+            AMP::pout << "BoomerAMGSolver::apply(), L2 norm of residual before solve "
                       << std::setprecision( 15 ) << initialResNorm << std::endl;
         }
     }
@@ -594,7 +594,7 @@ void BoomerAMGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     if ( d_bComputeResidual ) {
         d_pOperator->residual( f, u, r );
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "BoomerAMGSolver::solve(), L2 norm of residual after solve "
+            AMP::pout << "BoomerAMGSolver::apply(), L2 norm of residual after solve "
                       << std::setprecision( 15 ) << r->L2Norm() << std::endl;
         }
     }

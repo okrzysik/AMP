@@ -83,7 +83,7 @@ static void linearElasticTest( AMP::UnitTest *ut )
 
     mlSolver->setZeroInitialGuess( false );
 
-    mlSolver->solve( mechRhsVec, mechSolVec );
+    mlSolver->apply( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );

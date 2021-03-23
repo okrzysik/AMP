@@ -200,7 +200,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         mat->axpy( 1.0, matCopy );
 
-        mlSolver->solve( fusedRhsVec, fusedSolVec );
+        mlSolver->apply( fusedRhsVec, fusedSolVec );
         std::cout << std::endl;
     }
 
@@ -359,7 +359,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         std::cout << "MatFree-3: L2 norm of residual before solve " << std::setprecision( 15 )
                   << fusedResVec->L2Norm() << std::endl;
 
-        mlSolver->solve( fusedRhsVec, fusedSolVec );
+        mlSolver->apply( fusedRhsVec, fusedSolVec );
 
         std::cout << "MatFree-3:  solution norm: " << std::setprecision( 15 )
                   << fusedSolVec->L2Norm() << std::endl;
@@ -494,7 +494,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     std::cout << "MatFree-4: L2 norm of residual before solve " << std::setprecision( 15 )
               << fusedColumnResVec->L2Norm() << std::endl;
 
-    mlSolver->solve( fusedColumnRhsVec, fusedColumnSolVec );
+    mlSolver->apply( fusedColumnRhsVec, fusedColumnSolVec );
 
     std::cout << "MatFree-4:  solution norm: " << std::setprecision( 15 )
               << fusedColumnSolVec->L2Norm() << std::endl;

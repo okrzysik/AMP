@@ -61,7 +61,7 @@ void BiCGSTABSolver::getFromInput( std::shared_ptr<AMP::Database> db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
@@ -175,7 +175,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
-            d_pPreconditioner->solve( p, p_hat );
+            d_pPreconditioner->apply( p, p_hat );
         } else {
             p_hat->copyVector( p );
         }
@@ -202,7 +202,7 @@ void BiCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
-            d_pPreconditioner->solve( s, s_hat );
+            d_pPreconditioner->apply( s, s_hat );
         } else {
             s_hat->copyVector( s );
         }

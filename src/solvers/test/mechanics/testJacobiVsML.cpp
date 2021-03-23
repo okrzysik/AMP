@@ -136,7 +136,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-            linearSolver->solve( mechRhsVec, mechSolVec );
+            linearSolver->apply( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
         } else if ( type == 2 ) {
@@ -153,7 +153,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-            linearSolver->solve( mechRhsVec, mechSolVec );
+            linearSolver->apply( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
         } else {
@@ -177,7 +177,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-            linearSolver->solve( mechRhsVec, mechSolVec );
+            linearSolver->apply( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
         }

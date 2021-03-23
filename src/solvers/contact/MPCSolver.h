@@ -13,7 +13,7 @@ class MPCSolver : public SolverStrategy
 public:
     explicit MPCSolver( std::shared_ptr<MPCSolverParameters> params ) : SolverStrategy( params ) {}
 
-    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+    void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 };
 } // namespace Solver

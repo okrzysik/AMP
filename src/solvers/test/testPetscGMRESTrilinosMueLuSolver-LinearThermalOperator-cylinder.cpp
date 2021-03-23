@@ -132,7 +132,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     //----------------------------------------------------------------------------------------------------
     linearSolver->setZeroInitialGuess( false );
-    linearSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 

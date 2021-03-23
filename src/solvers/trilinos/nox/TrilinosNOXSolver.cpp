@@ -208,7 +208,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<SolverStrategyParameters> pa
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
-void TrilinosNOXSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void TrilinosNOXSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     // PROFILE_START("solve");

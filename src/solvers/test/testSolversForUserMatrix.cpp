@@ -178,7 +178,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->residual( f, u, ri );
 
     // Solve the problem.
-    linearSolver->solve( f, u );
+    linearSolver->apply( f, u );
 
     // Compute the final residual
     linearOp->residual( f, u, rf );

@@ -85,7 +85,7 @@ void myTest( AMP::UnitTest *ut )
 
     mlSolver->setZeroInitialGuess( true );
 
-    mlSolver->solve( rhsVec, solVec );
+    mlSolver->apply( rhsVec, solVec );
 
     ut->passes( exeName );
 }

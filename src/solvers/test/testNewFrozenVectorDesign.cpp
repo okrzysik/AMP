@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
 
     std::cout << "Formed RHS." << std::endl;
 
-    columnSolver->solve( rhsVec, solVec );
+    columnSolver->apply( rhsVec, solVec );
 
     std::cout << "Completed Solve." << std::endl;
 

@@ -103,7 +103,7 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_s
         rhs.reset();
 
         d_solver->setInitialGuess( d_solution );
-        d_solver->solve( rhs, d_solution );
+        d_solver->apply( rhs, d_solution );
     }
 
     return ( retcode );

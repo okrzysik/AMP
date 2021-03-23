@@ -319,7 +319,7 @@ void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra:
 }
 
 
-void NonlinearKrylovAccelerator::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP_INSIST( d_pOperator != nullptr, "Operator cannot be NULL" );
@@ -362,7 +362,7 @@ void NonlinearKrylovAccelerator::solve( std::shared_ptr<const AMP::LinearAlgebra
         }
 
         // apply the preconditioner
-        d_pPreconditioner->solve( d_pvResidual, d_pvCorrection );
+        d_pPreconditioner->apply( d_pvResidual, d_pvCorrection );
 
         if ( d_iDebugPrintInfoLevel > 3 ) {
             // compute residual

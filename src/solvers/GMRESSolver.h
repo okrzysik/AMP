@@ -70,7 +70,7 @@ public:
      * @param [in] f : const shared pointer to right hand side vector
      * @param [out] u : shared pointer to approximate computed solution
      */
-    void solve( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                 AMP::LinearAlgebra::Vector::shared_ptr u ) override;
 
     /**

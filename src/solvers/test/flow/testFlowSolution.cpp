@@ -165,7 +165,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( true );
 
-    nonlinearSolver->solve( mv_view_rhsVec, mv_view_solVec );
+    nonlinearSolver->apply( mv_view_rhsVec, mv_view_solVec );
 
     flowOperator->residual( rhsVec, solVec, resVec );
 

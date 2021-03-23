@@ -10,7 +10,7 @@ ConstraintsEliminationSolver::ConstraintsEliminationSolver(
 {
 }
 
-void ConstraintsEliminationSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+void ConstraintsEliminationSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
                                           std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     std::shared_ptr<AMP::Operator::ConstraintsEliminationOperator> op =

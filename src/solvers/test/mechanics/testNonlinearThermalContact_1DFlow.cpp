@@ -416,7 +416,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
         nonlinearThermalOperator1->modifyRHSvector( RightHandSideVec1 );
         nonlinearThermalOperator1->modifyInitialSolutionVector( TemperatureInKelvinVec1 );
-        nonlinearSolver1->solve( RightHandSideVec1, TemperatureInKelvinVec1 );
+        nonlinearSolver1->apply( RightHandSideVec1, TemperatureInKelvinVec1 );
         nonlinearThermalOperator1->residual(
             RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
@@ -470,7 +470,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         linearThermalOperator2->modifyRHSvector( RightHandSideVec2 );
         linearThermalOperator2->residual(
             RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2 );
-        mlSolver2->solve( RightHandSideVec2, TemperatureInKelvinVec2 );
+        mlSolver2->apply( RightHandSideVec2, TemperatureInKelvinVec2 );
 
         //------------------------------------------------------------
 

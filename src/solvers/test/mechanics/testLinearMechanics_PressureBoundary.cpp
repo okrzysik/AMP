@@ -117,7 +117,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 
     linearSolver->setZeroInitialGuess( false );
 
-    linearSolver->solve( mechRhsVec, mechSolVec );
+    linearSolver->apply( mechRhsVec, mechSolVec );
 
     AMP::pout << "Final Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 

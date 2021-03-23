@@ -68,7 +68,7 @@ void TFQMRSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void TFQMRSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                          std::shared_ptr<AMP::LinearAlgebra::Vector> x )
 {
     PROFILE_START( "solve" );
@@ -170,7 +170,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-        d_pPreconditioner->solve( y[0], z );
+        d_pPreconditioner->apply( y[0], z );
 
     } else {
 
@@ -206,7 +206,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
                 if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-                    d_pPreconditioner->solve( y[1], z );
+                    d_pPreconditioner->apply( y[1], z );
 
                 } else {
                     z = y[1];
@@ -243,7 +243,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             // unwind the preconditioner if necessary
             if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-                d_pPreconditioner->solve( delta, z );
+                d_pPreconditioner->apply( delta, z );
             } else {
                 z = delta;
             }
@@ -265,7 +265,7 @@ void TFQMRSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-            d_pPreconditioner->solve( y[0], z );
+            d_pPreconditioner->apply( y[0], z );
 
         } else {
 

@@ -4,7 +4,7 @@
 namespace AMP {
 namespace Solver {
 
-void MPCSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+void MPCSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
                        std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
 

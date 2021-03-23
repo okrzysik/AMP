@@ -56,7 +56,7 @@ void Flow1DSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorP
     }
 }
 
-void Flow1DSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void Flow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                           std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
 

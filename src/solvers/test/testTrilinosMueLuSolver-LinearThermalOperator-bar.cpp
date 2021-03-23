@@ -147,7 +147,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     mlSolver->setZeroInitialGuess( false );
 
     // Solve the prblem.
-    mlSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );

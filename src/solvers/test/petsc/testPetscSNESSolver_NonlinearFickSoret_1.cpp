@@ -125,7 +125,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
@@ -260,7 +260,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
     nlinBVPOp->residual( rhsVec, solVec, resVec );
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 

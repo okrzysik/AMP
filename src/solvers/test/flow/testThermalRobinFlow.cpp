@@ -199,7 +199,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     std::cout << " RHS Vec L2 Norm " << globalRhsVec->L2Norm() << std::endl;
-    nonlinearSolver->solve( globalRhsVec, globalSolVec );
+    nonlinearSolver->apply( globalRhsVec, globalSolVec );
 
     std::cout << "Final Solution Norm: " << globalSolVec->L2Norm() << std::endl;
     expectedVal        = 51541;

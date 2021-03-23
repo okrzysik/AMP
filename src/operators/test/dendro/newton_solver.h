@@ -43,7 +43,7 @@ public:
     }
     void set( void ( * )( vector_t const &, vector_t &, void * ),
               void ( * )( vector_t const &, vector_t const &, vector_t &, void * ) );
-    solve_status_t solve( vector_t &x, void *parameters );
+    solve_status_t apply( vector_t &x, void *parameters );
     double compute_norm( vector_t const &x );
     void update_solution( vector_t const &dx, vector_t &x );
 
@@ -69,7 +69,7 @@ static void newton_solver_t<vector_t>::set(
 }
 
 template<typename vector_t>
-solve_status_t newton_solver_t<vector_t>::solve( vector_t &solution, void *parameters )
+solve_status_t newton_solver_t<vector_t>::apply( vector_t &solution, void *parameters )
 {
     vector_t residual( solution );
     vector_t update( solution );
