@@ -125,7 +125,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     char log_file[200];
     sprintf( log_file, "output_%s_%d", exeName.c_str(), type );
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -387,7 +387,7 @@ void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
     } // end if
     sprintf( log_file, "output_%s_%d", exeName.c_str(), type );
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );

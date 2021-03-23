@@ -9,7 +9,7 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
 
     // Tells AMP to only log from rank 0 to the file ampLogOnlyNodeZero
-    AMP::PIO::logOnlyNodeZero( "ampLogOnlyNodeZero" );
+    AMP::logOnlyNodeZero( "ampLogOnlyNodeZero" );
 
     int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
 
@@ -17,7 +17,7 @@ int main( int argc, char **argv )
     AMP::plog << "Logging from rank " << rank << std::endl;
 
     // Tells AMP to begin logging from all ranks to the files ampLogAll.*
-    AMP::PIO::logAllNodes( "ampLogAll" );
+    AMP::logAllNodes( "ampLogAll" );
 
     // after running look in ampAll.* to see output from each rank
     AMP::plog << "Logging from rank " << rank << std::endl;

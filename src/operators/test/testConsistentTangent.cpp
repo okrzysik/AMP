@@ -38,7 +38,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
         msgName  = msgName + "-0";
     }
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );

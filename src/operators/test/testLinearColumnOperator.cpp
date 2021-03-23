@@ -32,7 +32,7 @@ static void myTest( AMP::UnitTest *ut )
     std::string log_file        = "output_" + exeName;
     std::string msgPrefix;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto outerInput_db = AMP::Database::parseInputFile( outerInput_file );
     outerInput_db->print( AMP::plog );

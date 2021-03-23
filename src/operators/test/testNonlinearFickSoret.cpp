@@ -37,7 +37,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     std::cout << "testing with input file " << input_file << std::endl;
     std::cout.flush();

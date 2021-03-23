@@ -53,7 +53,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     std::string input_file = "input_testIDA-NonlinearThermalOxygenDiffusion-1";
     std::string log_file   = "output_testIDA-NonlinearThermalOxygenDiffusion-1";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );

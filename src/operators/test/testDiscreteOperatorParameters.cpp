@@ -27,7 +27,7 @@ static void runTest( AMP::UnitTest *ut )
     std::string input_file = "inputOperatorParameters1";
     std::string log_file   = "outputOperatorParameters1";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );

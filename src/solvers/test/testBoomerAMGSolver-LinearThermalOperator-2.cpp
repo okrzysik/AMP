@@ -41,7 +41,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     input_db->print( AMP::plog );
 
     // Print from all cores into the output files
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
 
     //   Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );

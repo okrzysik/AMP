@@ -4,8 +4,15 @@
 
 #include <sstream>
 
-#include "AMP/utils/PIO.h"
 #include "StackTrace/Utilities.h"
+
+
+// Forward declare stream operators
+namespace AMP {
+extern std::ostream pout;
+extern std::ostream perr;
+extern std::ostream plog;
+} // namespace AMP
 
 
 /*! \defgroup Macros Set of utility macro functions used in AMP

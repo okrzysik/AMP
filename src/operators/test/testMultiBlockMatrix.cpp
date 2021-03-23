@@ -32,7 +32,7 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
     std::string input_file = "input_testMultiBlockMatrix";
     std::string log_file   = "log_testMultiBlockMatrix";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );

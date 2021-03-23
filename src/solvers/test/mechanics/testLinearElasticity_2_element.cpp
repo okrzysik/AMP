@@ -37,7 +37,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
 
     std::string log_file = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     if ( globalComm.getSize() == 1 ) {

@@ -446,7 +446,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // create input and output file names
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // get input database from input file
     auto input_db = AMP::Database::parseInputFile( input_file );

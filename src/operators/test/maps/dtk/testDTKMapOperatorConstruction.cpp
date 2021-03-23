@@ -16,7 +16,7 @@
 static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
 {
     std::string log_file = "log_DTK";
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );

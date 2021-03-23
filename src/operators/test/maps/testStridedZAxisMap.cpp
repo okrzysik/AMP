@@ -52,7 +52,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( logFile );
+    AMP::logOnlyNodeZero( logFile );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // parse input file

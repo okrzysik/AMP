@@ -26,7 +26,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     size_t N_error0 = ut->NumFailLocal();
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto solverComm = globalComm.dup(); // Create a unique solver comm to test proper cleanup
 

@@ -54,7 +54,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName + ".txt";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto input_db   = AMP::Database::parseInputFile( input_file );

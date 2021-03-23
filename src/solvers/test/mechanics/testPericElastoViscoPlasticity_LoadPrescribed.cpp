@@ -41,7 +41,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string output_file = "output_" + exeName + ".txt";
     std::string log_file    = "log_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO

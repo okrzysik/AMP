@@ -1,5 +1,5 @@
-#ifndef included_AMP_tbox_AMPManager
-#define included_AMP_tbox_AMPManager
+#ifndef included_AMP_AMPManager
+#define included_AMP_AMPManager
 
 #include "AMP/utils/AMP_MPI.h"
 #include <memory>
@@ -41,7 +41,7 @@ public:
 
     //! The default level for the MPI timers.  Default is 2
     int profile_MPI_level = 2;
-    
+
     /*!
      * Stack trace to print on error:
      *    1 - Current process/thread

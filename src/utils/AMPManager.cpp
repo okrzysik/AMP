@@ -3,7 +3,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/RNG.h"
-#include "AMP/utils/ShutdownRegistry.h"
 #include "AMP/utils/Utilities.h"
 
 #include "LapackWrappers.h"
@@ -232,8 +231,6 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
     double SAMRAI_time = start_SAMRAI();
-    // Initialize the parallel IO
-    PIO::initialize();
     // Initialze call stack
     if ( comm_world.getSize() == 1 )
         abort_stackType = std::min( abort_stackType, 2 );
@@ -286,10 +283,8 @@ void AMPManager::shutdown()
     clearHandlers();
     // Disable MPI_Abort
     AMPManager::use_MPI_Abort = false;
-    // Shutdown the registry
-    ShutdownRegistry::callRegisteredShutdowns();
     // Shutdown the parallel IO
-    PIO::finalize();
+    stopLogging();
     // Shutdown the profiler
     PROFILE_DISABLE();
     // Syncronize all ranks
@@ -480,13 +475,13 @@ double AMPManager::start_CUDA()
 #ifdef USE_CUDA
     if ( properties.bind_process_to_accelerator ) {
         auto nodeComm = comm_world.splitByNode();
-	auto nodeRank = nodeComm.getRank();
-	int deviceCount;
-	cudaGetDeviceCount(&deviceCount);               // How many GPUs?
-	int device_id = nodeRank % deviceCount;
-	cudaSetDevice(device_id);                       // Map MPI-process to a GPU
+        auto nodeRank = nodeComm.getRank();
+        int deviceCount;
+        cudaGetDeviceCount( &deviceCount ); // How many GPUs?
+        int device_id = nodeRank % deviceCount;
+        cudaSetDevice( device_id ); // Map MPI-process to a GPU
     }
-    
+
     void *tmp;
     cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
     cudaFree( tmp );
@@ -569,10 +564,7 @@ void AMPManager::clearMPIErrorHandler()
 /****************************************************************************
  * Empty constructor to setup default AMPManagerProperties                   *
  ****************************************************************************/
-AMPManagerProperties::AMPManagerProperties()
-    : COMM_WORLD( AMP_COMM_WORLD )
-{
-}
+AMPManagerProperties::AMPManagerProperties() : COMM_WORLD( AMP_COMM_WORLD ) {}
 
 
 /****************************************************************************
