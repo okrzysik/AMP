@@ -17,7 +17,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
 
     // Load the input file
     std::string log_file = input_file + ".log";
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 

@@ -42,7 +42,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     // Print from all cores into the output files
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Create the Mesh
@@ -131,7 +131,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     linearSolverParams->d_pPreconditioner = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     linearSolver->setZeroInitialGuess( false );
-    linearSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 

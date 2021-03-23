@@ -22,7 +22,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
@@ -120,7 +120,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "initial, rhsVec: " << scaledRhsVec->L2Norm() << std::endl;
         AMP::pout << "initial, solVec: " << solVec->L2Norm() << std::endl;
         AMP::pout << "initial, resVec: " << resVec->L2Norm() << std::endl;
-        nonlinearSolver->solve( scaledRhsVec, solVec );
+        nonlinearSolver->apply( scaledRhsVec, solVec );
         AMP::pout << "solved,  rhsVec: " << scaledRhsVec->L2Norm() << std::endl;
         AMP::pout << "solved,  solVec: " << solVec->L2Norm() << std::endl;
         coupledOp->residual( scaledRhsVec, solVec, resVec );

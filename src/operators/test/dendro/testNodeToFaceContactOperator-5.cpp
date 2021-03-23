@@ -44,7 +44,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
@@ -425,7 +425,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     my_p.q_prime = linearHeatGenerationRate;
     my_p.T_fo    = fuelOuterRadiusTemperature;
     my_p.R_fo    = fuelOuterRadius;
-    solver.solve( fuelCenterLineTemperature, &my_p );
+    solver.apply( fuelCenterLineTemperature, &my_p );
     if ( !rank ) {
         std::cout << "cladOuterRadiusTemperature=" << cladOuterRadiusTemperature << "\n";
         std::cout << "cladInnerRadiusTemperature=" << cladInnerRadiusTemperature << "\n";
@@ -814,7 +814,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             globalComm.barrier();
             double solveBeginTime = MPI_Wtime();
 
-            linearSolver->solve( columnRhsVec, columnSolVec );
+            linearSolver->apply( columnRhsVec, columnSolVec );
 
             globalComm.barrier();
             double solveEndTime = MPI_Wtime();

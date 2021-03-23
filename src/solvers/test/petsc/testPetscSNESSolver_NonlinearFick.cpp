@@ -43,7 +43,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
@@ -133,7 +133,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
 

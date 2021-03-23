@@ -49,7 +49,7 @@ static void nekPipe( AMP::UnitTest *ut )
     AMP::Utilities::printBanner();
 
     // Log all nodes
-    AMP::PIO::logAllNodes( "output_testNekPipe" );
+    AMP::logAllNodes( "output_testNekPipe" );
 
 
     AMP::pout << "Starting to run Nek-500 for the pipe problem" << std::endl;

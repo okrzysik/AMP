@@ -21,7 +21,7 @@ static void myTest( AMP::UnitTest *ut )
     std::string exeName( "testDTKAMPMeshManager" );
     std::string log_file = "output_" + exeName;
     std::string msgPrefix;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // Load input and build the mesh.
     AMP::pout << "Loading the  mesh" << std::endl;

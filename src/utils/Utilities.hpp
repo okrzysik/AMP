@@ -2,7 +2,12 @@
 #define included_AMP_Utilities_hpp
 
 
-#include "AMP/utils/PIO.h"
+// Forward declare stream operators
+namespace AMP {
+extern std::ostream pout;
+extern std::ostream perr;
+extern std::ostream plog;
+} // namespace AMP
 
 
 /************************************************************************

@@ -33,7 +33,7 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     std::string const inputFile = exeName;
     std::string const logFile   = "output_" + exeName;
 
-    AMP::PIO::logAllNodes( logFile );
+    AMP::logAllNodes( logFile );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Parse input file

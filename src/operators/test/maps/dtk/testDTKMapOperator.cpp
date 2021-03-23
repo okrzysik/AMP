@@ -25,7 +25,7 @@ static void myTest( AMP::UnitTest *ut )
     std::string exeName( "testDTKMapOperator" );
     std::string log_file = "output_" + exeName;
     std::string msgPrefix;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // load the source mesh
     AMP::pout << "Loading the source mesh" << std::endl;

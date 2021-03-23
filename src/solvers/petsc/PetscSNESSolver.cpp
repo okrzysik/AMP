@@ -246,7 +246,7 @@ PetscErrorCode PetscSNESSolver::apply( SNES, Vec x, Vec r, void *ctx )
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
-void PetscSNESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );

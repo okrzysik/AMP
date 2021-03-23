@@ -219,13 +219,15 @@ void Array<TYPE, FUN, Allocator>::allocate( const ArraySize &N )
         throw std::logic_error( "Array cannot be resized" );
     d_size      = N;
     auto length = d_size.length();
-    if ( length == 0 )
-        d_ptr.reset();
-    else
-        d_ptr.reset( new ( std::nothrow ) TYPE[length], []( TYPE *p ) { delete[] p; } );
-    d_data = d_ptr.get();
-    if ( length > 0 && d_data == nullptr )
-        throw std::logic_error( "Failed to allocate array" );
+    d_data      = nullptr;
+    if ( length > 0 ) {
+        try {
+            d_data = new TYPE[length];
+        } catch ( ... ) {
+            throw std::logic_error( "Failed to allocate array" );
+        }
+    }
+    d_ptr.reset( d_data, []( TYPE *p ) { delete[] p; } );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const Array &rhs )

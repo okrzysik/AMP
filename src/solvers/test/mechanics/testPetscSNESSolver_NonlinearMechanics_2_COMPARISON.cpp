@@ -38,7 +38,7 @@ static void myTest( AMP::UnitTest *ut )
     std::string exeName( "testPetscSNESSolver-NonlinearMechanics-2_COMPARISON-3" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -210,7 +210,7 @@ static void myTest( AMP::UnitTest *ut )
             ut->passes( "Nonlinear solve for current loading step" );
         } else {
             AMP::pout << "Starting Nonlinear Solve..." << std::endl;
-            nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
+            nonlinearSolver->apply( mechNlScaledRhsVec, mechNlSolVec );
 
             nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
             double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );

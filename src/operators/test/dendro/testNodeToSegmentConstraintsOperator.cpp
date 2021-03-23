@@ -109,7 +109,7 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );
     oldRes->subtract( rhs, matVec );
-    pre->solve( oldRes, ext );
+    pre->apply( oldRes, ext );
     oldDir->copyVector( ext );
     oldSol->copyVector( sol );
     double initialResNorm = oldRes->L2Norm();
@@ -141,7 +141,7 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
             os << "\n";
             break;
         }
-        pre->solve( res, ext );
+        pre->apply( res, ext );
         double extDOTres = ext->dot( res );
         double beta      = extDOTres / extDOToldRes;
         if ( verbose ) {
@@ -160,7 +160,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
@@ -393,7 +393,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         //  linearSolver->setZeroInitialGuess(true);
         linearSolver->setInitialGuess( columnSolVec );
 
-        linearSolver->solve( columnRhsVec, columnSolVec );
+        linearSolver->apply( columnRhsVec, columnSolVec );
     } else {
         size_t myPCGmaxIters = input_db->getScalar<int>( "myPCGmaxIters" );
         double myPCGrelTol   = input_db->getScalar<double>( "myPCGrelTol" );
@@ -448,7 +448,7 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     //  int npes = globalComm.getSize();
@@ -580,7 +580,7 @@ static void myTest2( AMP::UnitTest *ut, const std::string &exeName )
         auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
         linearSolver->setZeroInitialGuess( true );
 
-        linearSolver->solve( columnRhsVec, columnSolVec );
+        linearSolver->apply( columnRhsVec, columnSolVec );
     } else {
         size_t myPCGmaxIters = input_db->getScalar<int>( "myPCGmaxIters" );
         double myPCGrelTol   = input_db->getScalar<double>( "myPCGrelTol" );

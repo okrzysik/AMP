@@ -28,7 +28,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -94,7 +94,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolverParams->d_pPreconditioner = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-    linearSolver->solve( mechRhsVec, mechSolVec );
+    linearSolver->apply( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data

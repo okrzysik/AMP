@@ -77,7 +77,7 @@ static void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
             std::sqrt( vertexCoord[0] * vertexCoord[0] + vertexCoord[1] * vertexCoord[1] );
         AMP_ASSERT( radius <= fuelOuterRadius + epsilon );
         my_p.r = radius;
-        solver.solve( temperature, &my_p );
+        solver.apply( temperature, &my_p );
         temperatureField->getDOFManager()->getDOFs( meshIterator->globalID(), DOFsIndices );
         AMP_ASSERT( DOFsIndices.size() == 1 );
         temperatureField->setLocalValuesByGlobalID( 1, &( DOFsIndices[0] ), &temperature );
@@ -645,7 +645,7 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );
     oldRes->subtract( rhs, matVec );
-    pre->solve( oldRes, ext );
+    pre->apply( oldRes, ext );
     oldDir->copyVector( ext );
     oldSol->copyVector( sol );
     double initialResNorm = oldRes->L2Norm();
@@ -680,7 +680,7 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
             os << "\n";
             break;
         }
-        pre->solve( res, ext );
+        pre->apply( res, ext );
         double extDOTres = ext->dot( res );
         double beta      = extDOTres / extDOToldRes;
         if ( verbose ) {

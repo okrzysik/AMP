@@ -27,7 +27,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     const std::string input_file = "input_" + exeName;
     const std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // read the input file into a database

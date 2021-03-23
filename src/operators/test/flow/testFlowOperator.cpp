@@ -174,7 +174,7 @@ static void flowTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     // Print from all cores into the output files
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );

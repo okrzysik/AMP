@@ -25,7 +25,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
@@ -136,7 +136,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-            linearSolver->solve( mechRhsVec, mechSolVec );
+            linearSolver->apply( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
         } else if ( type == 2 ) {
@@ -153,7 +153,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-            linearSolver->solve( mechRhsVec, mechSolVec );
+            linearSolver->apply( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
         } else {
@@ -177,7 +177,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-            linearSolver->solve( mechRhsVec, mechSolVec );
+            linearSolver->apply( mechRhsVec, mechSolVec );
 
             std::cout << std::endl << std::endl;
         }

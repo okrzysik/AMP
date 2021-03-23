@@ -42,7 +42,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
 
 
     // Print from all cores into the output files
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
 
     // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -148,7 +148,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     AMP::pout << "RHS L2-norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Solve the prblem.
-    mlSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     AMP::pout << "Solution Max: " << TemperatureInKelvinVec->max() << std::endl;
     AMP::pout << "Solution Min: " << TemperatureInKelvinVec->min() << std::endl;

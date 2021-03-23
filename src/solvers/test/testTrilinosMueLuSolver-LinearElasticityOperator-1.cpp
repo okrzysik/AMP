@@ -23,7 +23,7 @@ void linearElasticTest( AMP::UnitTest *ut )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -82,7 +82,7 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     mlSolver->setZeroInitialGuess( false );
 
-    mlSolver->solve( mechRhsVec, mechSolVec );
+    mlSolver->apply( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data

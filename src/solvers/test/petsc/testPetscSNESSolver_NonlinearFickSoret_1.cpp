@@ -43,7 +43,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -125,7 +125,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
@@ -163,7 +163,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -260,7 +260,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
 
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
     nlinBVPOp->residual( rhsVec, solVec, resVec );
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 

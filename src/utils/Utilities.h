@@ -89,8 +89,14 @@ using StackTrace::Utilities::time;
  */
 void setenv( const char *name, const char *value );
 
-
 /*!
+ * Get an environmental variable
+ * @param name              The name of the environmental variable
+ * @return                  The value of the enviornmental variable
+ */
+std::string getenv( const char *name );
+
+/*
  * Create the directory specified by the path string.  Permissions are set
  * by default to rwx by user.  The intermediate directories in the
  * path are created if they do not already exist.  When

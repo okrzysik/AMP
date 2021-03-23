@@ -50,6 +50,12 @@
 #endif
 
 
+// Make sure USE_MPI is set properly
+#if !defined( USE_MPI ) && defined( USE_EXT_MPI )
+#define USE_MPI
+#endif
+
+
 // Convience defines
 #define MPI_CLASS_COMM_NULL AMP_COMM_NULL
 #define MPI_CLASS_COMM_SELF AMP_COMM_SELF
@@ -117,16 +123,6 @@ static MPI_Request getRequest( MPI_Comm comm, int tag )
     MPI_Request request;
     memcpy( &request, &hash, sizeof( MPI_Request ) );
     return request;
-}
-#endif
-
-
-// Check the mpi error code
-#ifdef USE_MPI
-inline void check_MPI( int error )
-{
-    if ( error != MPI_SUCCESS )
-        MPI_CLASS_ERROR( "Error calling MPI routine" );
 }
 #endif
 
@@ -242,7 +238,7 @@ void MPI_CLASS::setProcessAffinity( const std::vector<int> &procs )
 /************************************************************************
  *  Function to check if MPI is active                                   *
  ************************************************************************/
-bool MPI_CLASS::MPI_active()
+bool MPI_CLASS::MPI_Active()
 {
 #ifdef USE_MPI
     int initialized = 0, finalized = 0;
@@ -585,7 +581,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
     static int myGlobalRank = -1;
     if ( myGlobalRank == -1 ) {
 #ifdef USE_MPI
-        if ( MPI_active() )
+        if ( MPI_Active() )
             MPI_Comm_rank( AMP::AMPManager::comm_world.communicator, &myGlobalRank );
 #else
         myGlobalRank = 0;
@@ -726,11 +722,13 @@ MPI_CLASS MPI_CLASS::split( int color, int key ) const
     MPI_Comm new_MPI_comm = MPI_CLASS_COMM_NULL;
 #ifdef USE_MPI
     // USE MPI to split the communicator
+    int error = 0;
     if ( color == -1 ) {
-        check_MPI( MPI_Comm_split( communicator, MPI_UNDEFINED, key, &new_MPI_comm ) );
+        error = MPI_Comm_split( communicator, MPI_UNDEFINED, key, &new_MPI_comm );
     } else {
-        check_MPI( MPI_Comm_split( communicator, color, key, &new_MPI_comm ) );
+        error = MPI_Comm_split( communicator, color, key, &new_MPI_comm );
     }
+    MPI_CLASS_INSIST( error == MPI_SUCCESS, "Error calling MPI routine" );
 #endif
     // Create the new object
     NULL_USE( key );
@@ -780,7 +778,7 @@ MPI_CLASS MPI_CLASS::dup() const
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
     static MPI_Comm uniqueGlobalComm = 11;
-    new_MPI_comm = uniqueGlobalComm;
+    new_MPI_comm                     = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -1011,7 +1009,8 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
     if ( d_isNull || comm.d_isNull )
         return 0;
     int result;
-    check_MPI( MPI_Comm_compare( communicator, comm.communicator, &result ) );
+    int error = MPI_Comm_compare( communicator, comm.communicator, &result );
+    MPI_CLASS_INSIST( error == MPI_SUCCESS, "Error calling MPI routine" );
     if ( result == MPI_IDENT )
         return 2;
     else if ( result == MPI_CONGRUENT )
@@ -1041,7 +1040,7 @@ void MPI_CLASS::abort() const
     MPI_Comm comm = communicator;
     if ( comm == MPI_COMM_NULL )
         comm = MPI_COMM_WORLD;
-    if ( !MPI_active() ) {
+    if ( !MPI_Active() ) {
         // MPI is not availible
         exit( -1 );
     } else if ( comm_size > 1 ) {
@@ -1192,7 +1191,7 @@ void MPI_CLASS::barrier() const
  *  Send/Recv data                                                       *
  *  We need a concrete instantiation of send for use without MPI         *
  ************************************************************************/
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+#ifdef USE_MPI
 void MPI_CLASS::sendBytes( const void *buf, int bytes, int recv_proc, int tag ) const
 {
     send<char>( (const char *) buf, bytes, recv_proc, tag );
@@ -1219,7 +1218,7 @@ void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_CLASS_INSIST( it == global_isendrecv_list.end(),
-                "send must be paired with a previous call to irecv in serial" );
+                      "send must be paired with a previous call to irecv in serial" );
     MPI_CLASS_ASSERT( it->second.status == 2 );
     memcpy( (char *) it->second.data, buf, bytes );
     global_isendrecv_list.erase( it );
@@ -1233,7 +1232,7 @@ void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
     auto id = getRequest( communicator, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_CLASS_INSIST( it != global_isendrecv_list.end(),
-                "recv must be paired with a previous call to isend in serial" );
+                      "recv must be paired with a previous call to isend in serial" );
     MPI_CLASS_ASSERT( it->second.status == 1 );
     MPI_CLASS_ASSERT( it->second.bytes == bytes );
     memcpy( buf, it->second.data, bytes );
@@ -1636,26 +1635,15 @@ void MPI_CLASS::serializeStop()
 /****************************************************************************
  * Function to start/stop MPI                                                *
  ****************************************************************************/
-#ifdef USE_EXT_MPI
+#ifdef USE_MPI
 static bool called_MPI_Init = false;
 #endif
-bool MPI_CLASS::MPI_Active()
-{
-#ifdef USE_EXT_MPI
-    int MPI_initialized, MPI_finialized;
-    MPI_Initialized( &MPI_initialized );
-    MPI_Finalized( &MPI_finialized );
-    return MPI_initialized != 0 && MPI_finialized == 0;
-#else
-    return false;
-#endif
-}
 void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
 {
     changeProfileLevel( profile_level );
     NULL_USE( argc );
     NULL_USE( argv );
-#ifdef USE_EXT_MPI
+#ifdef USE_MPI
     if ( MPI_Active() ) {
         called_MPI_Init = false;
     } else {
@@ -1675,7 +1663,7 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
 void MPI_CLASS::stop_MPI()
 {
     AMPManager::comm_world = AMP_MPI( AMP_COMM_NULL );
-#ifdef USE_EXT_MPI
+#ifdef USE_MPI
     int finalized;
     MPI_Finalized( &finalized );
     if ( called_MPI_Init && !finalized ) {
@@ -1690,7 +1678,7 @@ void MPI_CLASS::stop_MPI()
 /****************************************************************************
  * call_bcast                                                                *
  ****************************************************************************/
-#ifdef USE_EXT_MPI
+#ifdef USE_MPI
 template<>
 void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) const
 {

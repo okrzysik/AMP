@@ -31,7 +31,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -139,7 +139,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
                   << initialResidualNorm << std::endl;
 
         AMP::pout << "Starting Nonlinear Solve..." << std::endl;
-        nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
+        nonlinearSolver->apply( mechNlScaledRhsVec, mechNlSolVec );
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
         double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );

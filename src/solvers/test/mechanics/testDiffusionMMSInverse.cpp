@@ -32,6 +32,7 @@
 #include "../../../operators/test/applyTests.h"
 
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -45,7 +46,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Initialization
     std::string input_file = exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
@@ -213,7 +214,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Run solver
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     // Get final residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );

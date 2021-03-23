@@ -39,7 +39,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
         msgName  = msgName + "-0";
     }
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );

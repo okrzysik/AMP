@@ -211,13 +211,13 @@ void TrilinosMLSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 }
 
 
-void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMLSolver::solve() operator cannot be NULL" );
+                "ERROR: TrilinosMLSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
@@ -250,7 +250,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
         initialResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual before solve "
+            AMP::pout << "TrilinosMLSolver::apply(), L2 norm of residual before solve "
                       << std::setprecision( 15 ) << initialResNorm << std::endl;
         }
     }
@@ -301,7 +301,7 @@ void TrilinosMLSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
         finalResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMLSolver::solve(), L2 norm of residual after solve "
+            AMP::pout << "TrilinosMLSolver::apply(), L2 norm of residual after solve "
                       << std::setprecision( 15 ) << finalResNorm << std::endl;
         }
     }
@@ -345,7 +345,7 @@ void TrilinosMLSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::
         d_matrix->getEpetra_CrsMatrix(), tmpMLParameterList, false ) );
     d_bCreationPhase = true;
 
-    solve( f, u );
+    apply( f, u );
 
     d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
         d_matrix->getEpetra_CrsMatrix(), d_MLParameterList, false ) );

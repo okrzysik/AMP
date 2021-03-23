@@ -258,8 +258,14 @@ void testArray( UnitTest &ut )
 #else
         ut.expected_failure( "Skipping failed allocation test on MAC" );
 #endif
+    } catch ( std::logic_error &err ) {
+        std::string msg = err.what();
+        if ( msg == "Failed to allocate array" )
+            ut.passes( "Caught failed allocation" );
+        else
+            ut.passes( "Caught exception for failed allocation: " + msg );
     } catch ( ... ) {
-        ut.passes( "Caught failed allocation" );
+        ut.failure( "Caught unknown exception for failed allocation" );
     }
 
     // Test math opertors

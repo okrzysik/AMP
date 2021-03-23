@@ -44,7 +44,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
 
 
     // Print from all cores into the output files
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
 
     // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
@@ -148,7 +148,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     mlSolver->setZeroInitialGuess( false );
 
     // Solve the prblem.
-    mlSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );

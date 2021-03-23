@@ -163,7 +163,7 @@ static void moabInterface( AMP::UnitTest *ut )
     std::string exeName     = "testMoabBasedOperator";
     std::string input_file  = "input_" + exeName;
     std::string output_file = "output_" + exeName;
-    AMP::PIO::logAllNodes( output_file );
+    AMP::logAllNodes( output_file );
 
     //--------------------------------------------------
     //  Read Input File.

@@ -1,4 +1,4 @@
-#include "AMP/utils/MechanicsManufacturedSolutions.h"
+#include "AMP/operators/mechanics/MechanicsManufacturedSolutions.h"
 #include "AMP/utils/PIO.h"
 
 

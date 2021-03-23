@@ -117,7 +117,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     PROFILE_START( "Main" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     globalComm.barrier();
 
@@ -702,7 +702,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
               << std::endl;
     AMP::pout << "Initial flow residual norm: " << std::setprecision( 13 ) << flowResNorm
               << std::endl;
-    nonlinearSolver->solve( globalRhsMultiVector, globalSolMultiVector );
+    nonlinearSolver->apply( globalRhsMultiVector, globalSolMultiVector );
     nonlinearCoupledOperator->residual(
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
     AMP::pout << "Final residual norm: " << std::setprecision( 13 )

@@ -21,7 +21,7 @@ void PelletStackMechanicsSolver::resetOperator(
 }
 
 
-void PelletStackMechanicsSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void PelletStackMechanicsSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP_ASSERT(
@@ -62,7 +62,7 @@ void PelletStackMechanicsSolver::solveSerial( std::shared_ptr<const AMP::LinearA
         AMP_ASSERT( subUvec != nullptr );
         AMP::LinearAlgebra::Vector::const_shared_ptr subFvec = currOp->subsetOutputVector( f );
         AMP_ASSERT( subFvec != nullptr );
-        currSolver->solve( subFvec, subUvec );
+        currSolver->apply( subFvec, subUvec );
     }
 
     for ( unsigned int pellId = 1; pellId < totalNumberOfPellets; pellId++ ) {
@@ -82,7 +82,7 @@ void PelletStackMechanicsSolver::solveSerial( std::shared_ptr<const AMP::LinearA
             AMP::LinearAlgebra::Vector::shared_ptr subFvec =
                 currOp->subsetOutputVector( d_fbuffer2 );
             AMP_ASSERT( subFvec != nullptr );
-            currSolver->solve( subFvec, subUvec );
+            currSolver->apply( subFvec, subUvec );
         }
     } // end for pellId
 }
@@ -90,7 +90,7 @@ void PelletStackMechanicsSolver::solveSerial( std::shared_ptr<const AMP::LinearA
 void PelletStackMechanicsSolver::solveScan( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                             std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    d_columnSolver->solve( f, u );
+    d_columnSolver->apply( f, u );
     if ( d_pelletStackOp->onlyZcorrection() ) {
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         d_pelletStackOp->apply( nullVec, u );
@@ -99,7 +99,7 @@ void PelletStackMechanicsSolver::solveScan( std::shared_ptr<const AMP::LinearAlg
             d_fbuffer2 = f->cloneVector();
         }
         d_pelletStackOp->residual( f, u, d_fbuffer2 );
-        d_columnSolver->solve( d_fbuffer2, u );
+        d_columnSolver->apply( d_fbuffer2, u );
     }
 }
 

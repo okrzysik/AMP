@@ -56,7 +56,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
 {
 
-    AMP::PIO::logOnlyNodeZero( "output_test_SiloIO" );
+    AMP::logOnlyNodeZero( "output_test_SiloIO" );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     globalComm.barrier();
     double t1 = AMP::AMP_MPI::time();

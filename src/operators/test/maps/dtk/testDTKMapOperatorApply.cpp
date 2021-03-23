@@ -21,7 +21,7 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     std::string log_file = "log_DTKMapOperatorApply";
     std::string out_file = "out_DTKMapOperatorApply";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db( new AMP::Database( "input_db" ) );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );

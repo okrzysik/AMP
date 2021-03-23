@@ -34,7 +34,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Initialization
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // Input database
     auto input_db = AMP::Database::parseInputFile( input_file );

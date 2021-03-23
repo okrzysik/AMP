@@ -22,7 +22,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #endif
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     // build mesh database
     auto database = std::make_shared<AMP::Database>( "Mesh" );

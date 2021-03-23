@@ -34,7 +34,7 @@ static void myTest( AMP::UnitTest *ut )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -182,7 +182,7 @@ static void myTest( AMP::UnitTest *ut )
         auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
         linearSolver->setInitialGuess( solVec );
 
-        linearSolver->solve( rhsVec, solVec );
+        linearSolver->apply( rhsVec, solVec );
 
         if ( dummy ) {
             dirOp->copyMasterToSlave( solVec );

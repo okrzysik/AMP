@@ -40,7 +40,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
@@ -122,7 +122,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto richSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( richParams );
         richSolver->setZeroInitialGuess( true );
 
-        richSolver->solve( rhsVec, solVec );
+        richSolver->apply( rhsVec, solVec );
 
         globalComm.barrier();
         double luEndTime = AMP::AMP_MPI::time();
@@ -161,7 +161,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto cgSolver               = std::make_shared<AMP::Solver::PetscKrylovSolver>( cgParams );
         cgSolver->setZeroInitialGuess( true );
 
-        cgSolver->solve( rhsVec, solVec );
+        cgSolver->apply( rhsVec, solVec );
 
         globalComm.barrier();
         double mlEndTime = AMP::AMP_MPI::time();

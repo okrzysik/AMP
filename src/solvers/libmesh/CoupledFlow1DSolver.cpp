@@ -77,7 +77,7 @@ void CoupledFlow1DSolver::resetOperator(
     }
 }
 
-void CoupledFlow1DSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void CoupledFlow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                  std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -96,7 +96,7 @@ void CoupledFlow1DSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         ->setVector( d_Sol );
 
     d_flowInternal3to1->apply( d_Rhs, nullVec );
-    d_flow1DSolver->solve( d_flowInput, d_flowOutput );
+    d_flow1DSolver->apply( d_flowInput, d_flowOutput );
     d_flowInternal1to3->apply( d_flowOutput, nullVec );
 }
 } // namespace Solver

@@ -42,7 +42,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string output_file = "output_" + exeName + ".txt";
     std::string log_file    = "log_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
@@ -177,7 +177,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Initial Residual Norm for loading step " << ( step + 1 ) << " is "
                   << initialResidualNorm << std::endl;
 
-        nonlinearSolver->solve( scaledRhsVec, solVec );
+        nonlinearSolver->apply( scaledRhsVec, solVec );
 
         nonlinearMechanicsBVPoperator->residual( scaledRhsVec, solVec, resVec );
         double finalResidualNorm = static_cast<double>( resVec->L2Norm() );

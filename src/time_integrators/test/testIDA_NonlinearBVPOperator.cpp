@@ -39,7 +39,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     std::string input_file = "input_testIDA-NonlinearBVPOperator-1";
     std::string log_file   = "output_testIDA-NonlinearBVPOperator-1";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
 
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );

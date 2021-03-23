@@ -43,7 +43,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     AMP::Utilities::printBanner();
 
     // Log all nodes
-    AMP::PIO::logAllNodes( "output_testNekOperator" );
+    AMP::logAllNodes( "output_testNekOperator" );
 
     // Build new database
     AMP::pout << "Building Input Database" << std::endl;

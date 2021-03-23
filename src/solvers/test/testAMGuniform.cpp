@@ -25,7 +25,7 @@ void myTest( AMP::UnitTest *ut )
     std::string exeName( "testAMGuniform" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
@@ -85,7 +85,7 @@ void myTest( AMP::UnitTest *ut )
 
     mlSolver->setZeroInitialGuess( true );
 
-    mlSolver->solve( rhsVec, solVec );
+    mlSolver->apply( rhsVec, solVec );
 
     ut->passes( exeName );
 }

@@ -1,113 +1,114 @@
-//
-// File:	$URL: file:///usr/casc/samrai/repository/AMP/tags/v-2-4-4/source/toolbox/base/PIO.h $
-// Package:	AMP toolbox
-// Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
-// Revision:	$LastChangedRevision: 2132 $
-// Modified:	$LastChangedDate: 2008-04-14 14:51:47 -0700 (Mon, 14 Apr 2008) $
-// Description:	Parallel I/O classes pout, perr, and plog and control class
-//
-// NOTE: This is a modification of the PIO class from SAMRAI
-//       We have simply used it with modifications
-
 #ifndef included_AMP_PIO
 #define included_AMP_PIO
 
-
 #include <cstdarg>
-#include <cstdio>
-#include <fstream>
-#include <iosfwd>
-#include <string>
+#include <functional>
+#include <iostream>
 
 
 namespace AMP {
 
 
-/**
- * Class PIO manages parallel stream I/O and logging.  Static member
- * function initialize() must be called before any of the parallel streams
- * pout, perr, or plog may be used.  Routine finalize() should also be called
- * before termination of the program.  Note that these functions are currently
- * called by the AMP manager startup and shutdown routines and therefore
- * should not be explicitly called by an application code.
- *
- * By default, logging is disabled.  To enable logging, call one of the
- * routines logOnlyNodeZero() or logAllNodes().  Logging may be suspended
- * and resumed.
+/*!
+ * Class ParallelBuffer is a simple I/O stream utility that
+ * intercepts output from an ostream and redirects the output as necessary
+ * for parallel I/O.  This class defines a stream buffer class for an
+ * ostream class.
  */
-struct PIO {
-    /**
-     * Initialize the parallel I/O streams.  This routine must be called
-     * before using pout, perr, or plog.  This routine is automatically
-     * invoked by the AMP library start-up routines.  This routine
-     * must be called after the MPI routines have been initialized.
+class ParallelStreamBuffer final : public std::streambuf
+{
+public:
+    enum StreamOutputType : uint8_t {
+        null    = 0,
+        out     = 1,
+        log     = 2,
+        err     = 4,
+        out_log = 3,
+        err_log = 6
+    };
+
+    /*!
+     * Create a parallel buffer class.  The object will require further
+     * initialization to set up the I/O streams and prefix string.
+     * @param type      Output type
      */
-    static void initialize();
+    explicit ParallelStreamBuffer( StreamOutputType type );
+
+    /*!
+     * Set the output stream type
+     * @param type      Output type
+     */
+    void setOutputType( StreamOutputType type );
+
+    /*!
+     * Set the output file stream
+     * @param stream    Output stream
+     */
+    void setOutputStream( std::ofstream *stream );
+
+    /*!
+     * The destructor simply deallocates any internal data
+     * buffers.  It does not modify the output streams.
+     */
+    virtual ~ParallelStreamBuffer();
+
+    /*!
+     * Synchronize the parallel buffer (called from streambuf).
+     */
+    int sync() override;
 
     /**
-     * Shut down the parallel I/O streams and close log files.  This routine
-     * must be called before program termination and is currently invoked from
-     * the AMP library shutdown procedure.
+     * Write the specified number of characters into the output stream (called
+     * from streambuf).
      */
-    static void finalize();
+    std::streamsize xsputn( const char *text, std::streamsize n ) override;
 
-    /**
-     * Log messages for node zero only to the specified filename.  All output
-     * to pout, perr, and plog on node zero will go to the log file.
+    /*!
+     * Write an overflow character into the parallel buffer (called from
+     * streambuf).
      */
-    static void logOnlyNodeZero( const std::string &filename );
+    int overflow( int ch ) override;
 
-    /**
-     * Log messages from all nodes.  The diagnostic data for processor XXXXX
-     * will be sent to a file with the name filename.XXXXX, where filename is
-     * the function argument.
+    /*!
+     * Read an overflow character from the parallel buffer (called from
+     * streambuf).  This is not implemented.  It is needed by the
+     * MSVC++ stream implementation.
      */
-    static void logAllNodes( const std::string &filename );
+    int underflow() override;
 
-    /**
-     * Temporarily suspend file logging.  Log file output will be discarded,
-     * although the output file will not be closed.  Logging can be resumed
-     * by calling member function resumeLogging().
+    /*!
+     * Clear the internal buffer's memory
      */
-    static void suspendLogging();
-
-    /**
-     * Resume logging after logging was suspended via member function
-     * suspendLogging().
-     */
-    static void resumeLogging();
+    void reset();
 
 private:
-    static void shutdownFilestream(); // shutdown the log filestream
-
-    static int s_rank;                  // processor rank in MPI group
-    static std::ofstream *s_filestream; // NULL or log filestream
+    StreamOutputType d_type;
+    size_t d_size;
+    size_t d_buffer_size;
+    char *d_buffer;
+    std::ofstream *d_stream;
+    inline void reserve( size_t size );
 };
 
-/**
+
+/*!
  * Parallel output stream pout writes to the standard output from node zero
  * only.  Output from other nodes is ignored.  If logging is enabled, then
  * output is mirrored to the log stream, as well.
  */
 extern std::ostream pout;
 
-/**
+/*!
  * Parallel output stream perr writes to the standard error from all nodes.
- * Output is prepended with the processor number.  If logging is enabled,
- * then output is mirrored to the log stream, as well.
+ * Output is prepended with the processor number.
  */
 extern std::ostream perr;
 
-/**
+/*!
  * Parallel output stream plog writes output to the log file.  When logging
  * from multiple processors, the processor number is appended to the filename.
  */
 extern std::ostream plog;
-
-/**
- * Null output stream.
- */
-extern std::ostream pnull;
 
 /*!
  * Parallel output printp pout writes to the standard output from node zero
@@ -127,6 +128,37 @@ inline int printp( const char *format, ... )
     return n;
 }
 
+
+/*!
+ * Log messages for node zero only to the specified filename.  All output
+ * to pout, perr, and plog on node zero will go to the log file.
+ */
+void logOnlyNodeZero( const std::string &filename );
+
+/*!
+ * Log messages from all nodes.  The diagnostic data for processor XXXXX
+ * will be sent to a file with the name filename.XXXXX, where filename is
+ * the function argument.
+ */
+void logAllNodes( const std::string &filename, bool singleStream = false );
+
+/*!
+ * Stop logging messages, flush buffers, and reset memory.
+ */
+void stopLogging();
+
+/*!
+ * Redirect the output stream to a user defined function
+ */
+void overrideCout( std::function<void( const char * )> fun );
+
+/*!
+ * Redirect the error stream to a user defined function
+ */
+void overrideCerr( std::function<void( const char * )> fun );
+
+
 } // namespace AMP
+
 
 #endif

@@ -1,6 +1,7 @@
-#include "UnitTest.h"
-#include "AMPManager.h"
-#include "Utilities.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/PIO.h"
+#include "AMP/utils/Utilities.h"
 
 #include <cstring>
 #include <iostream>
@@ -17,7 +18,7 @@ namespace AMP {
  ********************************************************************/
 UnitTest::UnitTest() : d_verbose( false ), d_comm( AMP_COMM_SELF )
 {
-    if ( AMP_MPI::MPI_active() )
+    if ( AMP_MPI::MPI_Active() )
         d_comm = MPI_COMM_WORLD;
 }
 UnitTest::~UnitTest() { reset(); }

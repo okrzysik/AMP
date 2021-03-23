@@ -29,6 +29,7 @@
 #include "../applyTests.h"
 
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -43,7 +44,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // Input database
 

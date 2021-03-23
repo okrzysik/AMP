@@ -56,7 +56,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
@@ -247,7 +247,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->setZeroInitialGuess( false );
 
     // solve
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
     nonlinearOperator->residual( rhsVec, solVec, resVec );
 
     // Compute the flow temperature

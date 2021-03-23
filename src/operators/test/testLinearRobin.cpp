@@ -84,7 +84,7 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
 
     std::cout << "testing with input file " << input_file << std::endl;
     std::cout.flush();

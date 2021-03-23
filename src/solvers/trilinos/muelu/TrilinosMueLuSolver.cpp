@@ -517,7 +517,7 @@ void TrilinosMueLuSolver::solveWithHierarchy( std::shared_ptr<const AMP::LinearA
     PROFILE_STOP( "solveWithHierarchy" );
 }
 
-void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                  std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
@@ -527,7 +527,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
 
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMueLuSolver::solve() operator cannot be NULL" );
+                "ERROR: TrilinosMueLuSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
@@ -549,7 +549,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         initialResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual before solve "
+            AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual before solve "
                       << std::setprecision( 15 ) << initialResNorm << std::endl;
         }
     }
@@ -614,7 +614,7 @@ void TrilinosMueLuSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         finalResNorm = static_cast<double>( r->L2Norm() );
 
         if ( d_iDebugPrintInfoLevel > 1 ) {
-            AMP::pout << "TrilinosMueLuSolver::solve(), L2 norm of residual after solve "
+            AMP::pout << "TrilinosMueLuSolver::apply(), L2 norm of residual after solve "
                       << std::setprecision( 15 ) << finalResNorm << std::endl;
         }
     }
@@ -661,7 +661,7 @@ void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebr
 
     d_bCreationPhase = false;
 
-    solve( f, u );
+    apply( f, u );
 
     mueluRCP = MueLu::CreateEpetraPreconditioner( fineLevelMatrixPtr, d_MueLuParameterList );
 

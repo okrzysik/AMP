@@ -55,7 +55,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    AMP::PIO::logAllNodes( log_file );
+    AMP::logAllNodes( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Create the Mesh.
@@ -342,7 +342,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
         nonlinearThermalOperator1->modifyRHSvector( RightHandSideVec1 );
         nonlinearThermalOperator1->modifyInitialSolutionVector( TemperatureInKelvinVec1 );
-        nonlinearSolver1->solve( RightHandSideVec1, TemperatureInKelvinVec1 );
+        nonlinearSolver1->apply( RightHandSideVec1, TemperatureInKelvinVec1 );
         nonlinearThermalOperator1->residual(
             RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
@@ -369,7 +369,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         linearThermalOperator2->modifyRHSvector( RightHandSideVec2 );
         linearThermalOperator2->residual(
             RightHandSideVec2, TemperatureInKelvinVec2, ResidualVec2 );
-        mlSolver2->solve( RightHandSideVec2, TemperatureInKelvinVec2 );
+        mlSolver2->apply( RightHandSideVec2, TemperatureInKelvinVec2 );
 
         std::cout << "Residual Norm on Pellet after " << cnt
                   << " iteration is : " << ResidualVec1->L2Norm() << std::endl;

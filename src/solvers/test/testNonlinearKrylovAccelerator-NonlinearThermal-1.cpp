@@ -34,7 +34,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -135,7 +135,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 

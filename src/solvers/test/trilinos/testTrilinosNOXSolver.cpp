@@ -21,7 +21,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto solverComm = globalComm.dup(); // Create a unique solver comm to test proper cleanup
 
@@ -60,7 +60,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Call solve with a simple vector
     u->setRandomValues();
     f->setRandomValues();
-    nonlinearSolver->solve( f, u );
+    nonlinearSolver->apply( f, u );
     ut->passes( "TrilinosNOXSolver solve called with simple vector" );
     auto x = u->cloneVector();
     x->subtract( *u, *f );
@@ -81,7 +81,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     mf->addVector( f );
     mu->setRandomValues();
     mf->zero();
-    nonlinearSolver->solve( mf, mu );
+    nonlinearSolver->apply( mf, mu );
     ut->passes( "TrilinosNOXSolver solve called with multivector" );
 }
 

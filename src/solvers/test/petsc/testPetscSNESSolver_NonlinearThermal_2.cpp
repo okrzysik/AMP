@@ -40,7 +40,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -183,7 +183,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     std::cout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
     expectedVal    = 45612;

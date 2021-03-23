@@ -468,7 +468,7 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
     auto amp_rvec = getAMP( rvec );
     auto amp_zvec = getAMP( zvec );
 
-    user_data->getPreconditioner()->solve( amp_rvec, amp_zvec );
+    user_data->getPreconditioner()->apply( amp_rvec, amp_zvec );
 
     return ( IDA_SUCCESS );
 }

@@ -33,7 +33,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string output_file = "output_" + exeName + ".txt";
     std::string log_file    = "log_" + exeName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Read the input file
@@ -153,7 +153,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     linearSolver->setPreconditioner( preconditioner );
 
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     mechanicsNonlinearVolumeOperator->printStressAndStrain( solVec, output_file );
 

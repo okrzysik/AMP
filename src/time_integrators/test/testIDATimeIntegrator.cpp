@@ -35,7 +35,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     std::weak_ptr<AMP::Mesh::Mesh> mesh_ref;
     std::string input_file = "input_testIDA-LinearBVPOperator-1";
     std::string log_file   = "output_testIDA-LinearBVPOperator-1";
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     {
         // Read the input file

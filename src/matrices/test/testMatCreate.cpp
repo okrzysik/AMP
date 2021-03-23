@@ -22,7 +22,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
 {
 
     std::string log_file = "output_testMatCreate";
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );

@@ -25,7 +25,7 @@ int main( int argc, char *argv[] )
     std::string exeName    = "testNewFrozenVectorDesign";
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
 
     std::cout << "Formed RHS." << std::endl;
 
-    columnSolver->solve( rhsVec, solVec );
+    columnSolver->apply( rhsVec, solVec );
 
     std::cout << "Completed Solve." << std::endl;
 

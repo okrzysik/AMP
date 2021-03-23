@@ -59,7 +59,7 @@ void CGSolver::getFromInput( std::shared_ptr<AMP::Database> db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                       std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
@@ -120,7 +120,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
-        d_pPreconditioner->solve( r, z );
+        d_pPreconditioner->apply( r, z );
     } else {
         z->copyVector( r );
     }
@@ -165,7 +165,7 @@ void CGSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
-            d_pPreconditioner->solve( r, z );
+            d_pPreconditioner->apply( r, z );
         } else {
             z->copyVector( r );
         }

@@ -44,7 +44,7 @@ public:
      @param [in] f shared pointer to right hand side
      @param [out] u shared pointer to computed approximate solution
      */
-    void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+    void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
     /**

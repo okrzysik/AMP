@@ -42,7 +42,7 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 {
     std::string input_file = "input_testBackwardEulerTimeIntegrator";
     std::string log_file   = "output_testBackwardEulerTimeIntegrator";
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );

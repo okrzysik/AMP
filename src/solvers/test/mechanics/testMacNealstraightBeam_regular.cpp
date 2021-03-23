@@ -34,7 +34,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName + ".txt";
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto input_db           = AMP::Database::parseInputFile( input_file );
@@ -107,7 +107,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 
     linearSolver->setZeroInitialGuess( false );
 
-    linearSolver->solve( mechRhsVec, mechSolVec );
+    linearSolver->apply( mechRhsVec, mechSolVec );
 
     AMP::pout << "Final Solution Norm: " << mechSolVec->L2Norm() << std::endl;
 

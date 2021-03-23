@@ -29,7 +29,7 @@
 void myTest( AMP::UnitTest *ut, std::string mesh_file )
 {
     std::string log_file = "output_testMatMultiply";
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
 
     auto mesh_file_db = AMP::Database::parseInputFile( mesh_file );
 

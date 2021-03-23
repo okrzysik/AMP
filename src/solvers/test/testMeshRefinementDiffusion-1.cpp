@@ -475,7 +475,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     nonlinearThermalSolver->setZeroInitialGuess( false );
 
-    nonlinearThermalSolver->solve( integratedRHSVec, TemperatureVec );
+    nonlinearThermalSolver->apply( integratedRHSVec, TemperatureVec );
 
     //  nonlinearThermalCoupledOperator->apply(integratedRHSVec, TemperatureVec, ResidualVec, 1.0,
     //  -1.0);

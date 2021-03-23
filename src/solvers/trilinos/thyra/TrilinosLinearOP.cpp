@@ -93,7 +93,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
             y[i]->axpby( alpha, beta, *f );
         } else {
             // Apply the AMP::Solver
-            d_solver->solve( x[i], y[i] );
+            d_solver->apply( x[i], y[i] );
         }
     }
 }

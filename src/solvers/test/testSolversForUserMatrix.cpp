@@ -83,7 +83,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     const std::string input_file = inputFileName;
     const std::string log_file   = "output_" + inputFileName;
 
-    AMP::PIO::logOnlyNodeZero( log_file );
+    AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // read the input file into a database
@@ -178,7 +178,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->residual( f, u, ri );
 
     // Solve the problem.
-    linearSolver->solve( f, u );
+    linearSolver->apply( f, u );
 
     // Compute the final residual
     linearOp->residual( f, u, rf );
