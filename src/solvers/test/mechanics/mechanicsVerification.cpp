@@ -357,7 +357,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
             for ( unsigned int d = 0; d < 3; ++d )
                 normalDotGradientZ += dummyNormal[d] * gradientZ[d];
             double bndVals[3] = { normalDotGradientX, normalDotGradientY, normalDotGradientZ };
-            std::vector<unsigned int> bndGlobalIds;
             NodalVectorDOF->getDOFs( node.globalID(), dofs );
             AMP_ASSERT( dofs.size() == 3 );
             rhsVec->addLocalValuesByGlobalID( dofs.size(), dofs.data(), bndVals );

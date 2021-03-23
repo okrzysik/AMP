@@ -559,7 +559,7 @@ bool ThreadPool::is_valid( const ThreadPool *tpool )
         return false;
     if ( tpool->d_N_threads > MAX_THREADS )
         return false;
-    if ( tpool->d_NULL_HEAD != 0xB968135D || tpool->d_NULL_HEAD != 0xB968135D )
+    if ( tpool->d_NULL_HEAD != 0xB968135D || tpool->d_NULL_TAIL != 0xB968135D )
         return false;
     return true;
 }
