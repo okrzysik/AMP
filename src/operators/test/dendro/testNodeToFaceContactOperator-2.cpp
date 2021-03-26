@@ -587,7 +587,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             globalComm.barrier();
             double solveBeginTime = MPI_Wtime();
 
-            linearSolver->solve( columnRhsVec, columnSolVec );
+            linearSolver->apply( columnRhsVec, columnSolVec );
 
             globalComm.barrier();
             double solveEndTime = MPI_Wtime();

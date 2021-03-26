@@ -183,7 +183,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     std::cout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
     expectedVal    = 45612;

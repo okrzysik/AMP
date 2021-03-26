@@ -235,7 +235,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     mlSolver->setZeroInitialGuess( false );
 
     // Solve the prblem.
-    mlSolver->solve( SourceVec, TemperatureInKelvinVec );
+    mlSolver->apply( SourceVec, TemperatureInKelvinVec );
 
     // Compute the residual
     diffusionOperator->residual( SourceVec, TemperatureInKelvinVec, ResidualVec );

@@ -178,11 +178,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // STEP 1 :
     BtMat->mult( pressureSolVec, velocityRhsVec );
-    convdiffSolver->solve( velocityRhsVec, velocityPrimeVec );
+    convdiffSolver->apply( velocityRhsVec, velocityPrimeVec );
 
     // STEP 2 :
     BMat->mult( velocityPrimeVec, pressureRhsVec );
-    schurMatSolver->solve( pressureRhsVec, pressureUpdateVec );
+    schurMatSolver->apply( pressureRhsVec, pressureUpdateVec );
 
     // STEP 3 :
     DInvBtMat->mult( pressureUpdateVec, velocityUpdateVec );

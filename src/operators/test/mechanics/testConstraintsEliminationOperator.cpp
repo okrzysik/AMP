@@ -182,7 +182,7 @@ static void myTest( AMP::UnitTest *ut )
         auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
         linearSolver->setInitialGuess( solVec );
 
-        linearSolver->solve( rhsVec, solVec );
+        linearSolver->apply( rhsVec, solVec );
 
         if ( dummy ) {
             dirOp->copyMasterToSlave( solVec );

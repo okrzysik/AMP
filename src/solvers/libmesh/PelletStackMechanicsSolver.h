@@ -21,7 +21,7 @@ public:
     virtual void
     resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
 
-    virtual void solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+    virtual void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                         std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
 protected:

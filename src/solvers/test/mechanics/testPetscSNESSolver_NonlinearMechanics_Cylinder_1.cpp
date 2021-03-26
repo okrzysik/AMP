@@ -158,7 +158,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << initialResidualNorm << std::endl;
 
         AMP::pout << "Starting Nonlinear Solve..." << std::endl;
-        nonlinearSolver->solve( mechNlScaledRhsVec, mechNlSolVec );
+        nonlinearSolver->apply( mechNlScaledRhsVec, mechNlSolVec );
 
         nonlinBvpOperator->residual( mechNlScaledRhsVec, mechNlSolVec, mechNlResVec );
         double finalResidualNorm = static_cast<double>( mechNlResVec->L2Norm() );

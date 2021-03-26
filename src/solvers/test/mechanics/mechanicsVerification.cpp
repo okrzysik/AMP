@@ -388,7 +388,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     linearSolverParams->d_pPreconditioner = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     linearSolver->setZeroInitialGuess( true );
-    linearSolver->solve( rhsVec, solVec );
+    linearSolver->apply( rhsVec, solVec );
 
     AMP::pout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
 

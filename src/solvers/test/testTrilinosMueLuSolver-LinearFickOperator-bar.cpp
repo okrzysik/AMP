@@ -114,7 +114,7 @@ void linearFickTest( AMP::UnitTest *ut )
     mlSolver->setZeroInitialGuess( false );
 
     // Solve the problem.
-    mlSolver->solve( RightHandSideVec, SolutionVec );
+    mlSolver->apply( RightHandSideVec, SolutionVec );
 
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, SolutionVec, ResidualVec );

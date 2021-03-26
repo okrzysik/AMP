@@ -83,7 +83,7 @@ void GMRESSolver::getFromInput( std::shared_ptr<AMP::Database> db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                          std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
@@ -169,7 +169,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
             z = f->cloneVector();
-            d_pPreconditioner->solve( d_vBasis[k], z );
+            d_pPreconditioner->apply( d_vBasis[k], z );
         } else {
             z = d_vBasis[k];
         }
@@ -243,7 +243,7 @@ void GMRESSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
-        d_pPreconditioner->solve( z, v );
+        d_pPreconditioner->apply( z, v );
         u->axpy( 1.0, *v, *u );
 
     } else {

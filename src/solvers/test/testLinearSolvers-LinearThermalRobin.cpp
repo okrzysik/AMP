@@ -195,7 +195,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     linearSolver->setZeroInitialGuess( false );
 
     // Solve the prblem.
-    linearSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     // Compute the residual
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );

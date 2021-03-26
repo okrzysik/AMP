@@ -15,7 +15,7 @@ ColumnSolver::ColumnSolver( std::shared_ptr<SolverStrategyParameters> parameters
     d_resetColumnOperator = db->getWithDefault( "ResetColumnOperator", false );
 }
 
-void ColumnSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void ColumnSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                           std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     // u->zero();
@@ -45,7 +45,7 @@ void ColumnSolver::GaussSeidel( std::shared_ptr<const AMP::LinearAlgebra::Vector
             AMP_INSIST( su.get() != nullptr,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
-            elem->solve( sf, su );
+            elem->apply( sf, su );
         }
     }
 }
@@ -66,7 +66,7 @@ void ColumnSolver::SymmetricGaussSeidel( std::shared_ptr<const AMP::LinearAlgebr
             AMP_INSIST( su.get() != nullptr,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
-            elem->solve( sf, su );
+            elem->apply( sf, su );
         }
 
         for ( int i = (int) d_Solvers.size() - 1; i >= 0; i-- ) {
@@ -81,7 +81,7 @@ void ColumnSolver::SymmetricGaussSeidel( std::shared_ptr<const AMP::LinearAlgebr
             AMP_INSIST( su.get() != nullptr,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
-            d_Solvers[i]->solve( sf, su );
+            d_Solvers[i]->apply( sf, su );
         }
     }
 }

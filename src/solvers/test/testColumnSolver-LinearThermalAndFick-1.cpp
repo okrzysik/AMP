@@ -145,7 +145,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
-    columnSolver->solve( rhsVec, solVec );
+    columnSolver->apply( rhsVec, solVec );
 
     linearThermalFickOperator->residual( rhsVec, solVec, resVec );
 

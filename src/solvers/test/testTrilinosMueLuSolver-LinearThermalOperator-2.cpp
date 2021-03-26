@@ -151,7 +151,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     AMP::pout << "RHS L2-norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Solve the prblem.
-    mlSolver->solve( RightHandSideVec, TemperatureInKelvinVec );
+    mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     AMP::pout << "Solution Max: " << TemperatureInKelvinVec->max() << std::endl;
     AMP::pout << "Solution Min: " << TemperatureInKelvinVec->min() << std::endl;

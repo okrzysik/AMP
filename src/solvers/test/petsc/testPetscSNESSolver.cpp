@@ -65,7 +65,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Call solve with a simple vector
     u->setRandomValues();
     f->setRandomValues();
-    nonlinearSolver->solve( f, u );
+    nonlinearSolver->apply( f, u );
     ut->passes( "PetscSNESSolver solve called with simple vector" );
     auto x = u->cloneVector();
     x->subtract( *u, *f );
@@ -84,7 +84,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     mf->addVector( f );
     mu->setRandomValues();
     mf->zero();
-    nonlinearSolver->solve( mf, mu );
+    nonlinearSolver->apply( mf, mu );
 
     if ( N_error0 == ut->NumFailLocal() )
         ut->passes( exeName );

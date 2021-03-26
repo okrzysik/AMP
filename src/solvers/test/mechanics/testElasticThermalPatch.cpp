@@ -153,7 +153,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     linearSolver->setPreconditioner( preconditioner );
 
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     mechanicsNonlinearVolumeOperator->printStressAndStrain( solVec, output_file );
 

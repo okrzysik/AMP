@@ -102,7 +102,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         mlSolver->setZeroInitialGuess( false );
 
-        mlSolver->solve( mechRhsVec, mechSolVec );
+        mlSolver->apply( mechRhsVec, mechSolVec );
 
         double finalSolNorm = static_cast<double>( mechSolVec->L2Norm() );
 

@@ -67,7 +67,7 @@ void QMRCGSTABSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
  *  Solve                                                        *
  * TODO: store convergence history, iterations, convergence reason
  ****************************************************************/
-void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void QMRCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                              std::shared_ptr<AMP::LinearAlgebra::Vector> x )
 {
     PROFILE_START( "solve" );
@@ -165,7 +165,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-        d_pPreconditioner->solve( p, z );
+        d_pPreconditioner->apply( p, z );
 
     } else {
 
@@ -211,7 +211,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-            d_pPreconditioner->solve( s, z );
+            d_pPreconditioner->apply( s, z );
 
         } else {
             z = s;
@@ -269,7 +269,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         p->axpy( beta, *p, *r );
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            d_pPreconditioner->solve( p, z );
+            d_pPreconditioner->apply( p, z );
         } else {
             z = p;
         }
@@ -286,7 +286,7 @@ void QMRCGSTABSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         // unwind the preconditioner if necessary
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
             z->copyVector( x );
-            d_pPreconditioner->solve( z, x );
+            d_pPreconditioner->apply( z, x );
         }
     }
 

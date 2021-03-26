@@ -214,7 +214,7 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 /****************************************************************
  *  Solve                                                        *
  ****************************************************************/
-void PetscKrylovSolver::solve( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     PROFILE_START( "solve" );
@@ -375,7 +375,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     // Call the preconditioner
     auto preconditioner = solver->getPreconditioner();
     if ( preconditioner != nullptr ) {
-        preconditioner->solve( sp_r, sp_z );
+        preconditioner->apply( sp_r, sp_z );
     } else {
         // Use the identity preconditioner
         sp_z->copyVector( sp_r );

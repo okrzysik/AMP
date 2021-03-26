@@ -94,7 +94,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolverParams->d_pPreconditioner = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
-    linearSolver->solve( mechRhsVec, mechSolVec );
+    linearSolver->apply( mechRhsVec, mechSolVec );
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data

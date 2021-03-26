@@ -309,7 +309,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // solve
     nonlinearOperator->residual( rhsVec, solVec, resVec );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
     nonlinearOperator->residual( rhsVec, solVec, resVec );
 
     // Compute the flow temperature

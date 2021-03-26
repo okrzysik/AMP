@@ -214,7 +214,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Run solver
     nonlinearSolver->setZeroInitialGuess( false );
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     // Get final residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );

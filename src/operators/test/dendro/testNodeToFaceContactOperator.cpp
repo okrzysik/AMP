@@ -115,7 +115,7 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );
     oldRes->subtract( rhs, matVec );
-    pre->solve( oldRes, ext );
+    pre->apply( oldRes, ext );
     oldDir->copyVector( ext );
     oldSol->copyVector( sol );
     double initialResNorm = oldRes->L2Norm();
@@ -150,7 +150,7 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
             os << "\n";
             break;
         }
-        pre->solve( res, ext );
+        pre->apply( res, ext );
         double extDOTres = ext->dot( res );
         double beta      = extDOTres / extDOToldRes;
         if ( verbose ) {
@@ -457,7 +457,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             //  linearSolver->setZeroInitialGuess(true);
             linearSolver->setInitialGuess( columnSolVec );
 
-            linearSolver->solve( columnRhsVec, columnSolVec );
+            linearSolver->apply( columnRhsVec, columnSolVec );
         } else {
             size_t myPCGmaxIters = input_db->getScalar<int>( "myPCGmaxIters" );
             double myPCGrelTol   = input_db->getScalar<double>( "myPCGrelTol" );

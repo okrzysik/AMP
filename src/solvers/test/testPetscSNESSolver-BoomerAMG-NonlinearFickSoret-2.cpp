@@ -171,7 +171,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-    nonlinearSolver->solve( rhsVec, solVec );
+    nonlinearSolver->apply( rhsVec, solVec );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 
