@@ -259,21 +259,6 @@ void kdtree2<NDIM, TYPE>::checkNearest( const kdtree2::Point &x,
 }
 
 
-/********************************************************
- * Return the memory usage (this should be removed)      *
- ********************************************************/
-template<uint8_t NDIM, class TYPE>
-size_t kdtree2<NDIM, TYPE>::memory_usage() const
-{
-    size_t size = sizeof( *this );
-    if ( d_left )
-        size += d_left->memory_usage() + d_right->memory_usage();
-    if ( d_data )
-        size += sizeof( *d_data ) + d_N * ( sizeof( Point ) + sizeof( TYPE ) );
-    return size;
-}
-
-
 } // namespace AMP
 
 #endif

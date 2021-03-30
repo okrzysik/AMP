@@ -11,10 +11,12 @@ COPY_TEST_FILE( input_InputManager )
 COPY_TEST_FILE( laser_plasma_input.txt )
 COPY_TEST_FILE( input_Database )
 COPY_TEST_FILE( input_SAMRAI )
+COPY_TEST_FILE( library.yml )
+COPY_TEST_FILE( Johnson.yml )
 
 # Add the tests
 ADD_AMP_TEST( test_compile )
-ADD_AMP_TEST( test_Database laser_plasma_input.txt )
+ADD_AMP_TEST( test_Database laser_plasma_input.txt library.yml Johnson.yml )
 ADD_AMP_TEST( test_Database2 )
 ADD_AMP_TEST( test_intN )
 ADD_AMP_TEST( test_kdtree )

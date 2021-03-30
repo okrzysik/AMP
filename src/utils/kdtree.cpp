@@ -136,10 +136,8 @@ kdtree::~kdtree()
  ********************************************************/
 std::shared_ptr<kdtree> kdtree::create2d( const size_t N, const double *x, const double *y )
 {
-    const double *x_tmp[2];
-    x_tmp[0] = x;
-    x_tmp[1] = y;
-    return std::make_shared<kdtree>( 2, N, x_tmp );
+    const double *x2[2] = { x, y };
+    return std::make_shared<kdtree>( 2, N, x2 );
 }
 
 
@@ -149,11 +147,8 @@ std::shared_ptr<kdtree> kdtree::create2d( const size_t N, const double *x, const
 std::shared_ptr<kdtree>
 kdtree::create3d( const size_t N, const double *x, const double *y, const double *z )
 {
-    const double *x_tmp[3];
-    x_tmp[0] = x;
-    x_tmp[1] = y;
-    x_tmp[2] = z;
-    return std::make_shared<kdtree>( 3, N, x_tmp );
+    const double *x2[3] = { x, y, z };
+    return std::make_shared<kdtree>( 3, N, x2 );
 }
 
 
@@ -190,29 +185,6 @@ std::vector<double> kdtree::box() const
 
 
 /********************************************************
- * Return the memory_usage                               *
- ********************************************************/
-size_t kdtree::memory_usage() const
-{
-    size_t bytes = sizeof( kdtree );
-    if ( d_dim == 1 ) {
-        bytes += reinterpret_cast<kdtree2<1, int> *>( d_tree )->memory_usage();
-    } else if ( d_dim == 2 ) {
-        bytes += reinterpret_cast<kdtree2<2, int> *>( d_tree )->memory_usage();
-    } else if ( d_dim == 3 ) {
-        bytes += reinterpret_cast<kdtree2<3, int> *>( d_tree )->memory_usage();
-    } else if ( d_dim == 4 ) {
-        bytes += reinterpret_cast<kdtree2<4, int> *>( d_tree )->memory_usage();
-    } else if ( d_dim == 5 ) {
-        bytes += reinterpret_cast<kdtree2<5, int> *>( d_tree )->memory_usage();
-    } else {
-        AMP_ERROR( "Not finished" );
-    }
-    return bytes;
-}
-
-
-/********************************************************
  * Add a point                                           *
  ********************************************************/
 void kdtree::add( const double *x )
@@ -239,7 +211,7 @@ void kdtree::add( const double *x )
  ********************************************************/
 AMP::Mesh::MeshPoint<double> kdtree::find_nearest( const AMP::Mesh::MeshPoint<double> &p ) const
 {
-    auto p2 = p;
+    auto p2      = p;
     double dist2 = 1e100;
     find_nearest2( p.data(), dist2, p2.data() );
     return p2;
@@ -321,11 +293,7 @@ size_t kdtree::find_nearest2d( const double x, const double y ) const
 {
     AMP_ASSERT( d_dim == 2 );
     PROFILE_START( "find_nearest 2d", 5 );
-    double xy[2];
-    xy[0] = x;
-    xy[1] = y;
-    double dist2;
-    double pos2[2];
+    double xy[2] = { x, y }, dist2, pos2[2] = { 0 };
     size_t index = find_nearest2( xy, dist2, pos2 );
     PROFILE_STOP( "find_nearest 2d", 5 );
     return index;
@@ -334,12 +302,7 @@ size_t kdtree::find_nearest3d( const double x, const double y, const double z ) 
 {
     AMP_ASSERT( d_dim == 3 );
     PROFILE_START( "find_nearest 3d", 5 );
-    double xyz[3];
-    xyz[0] = x;
-    xyz[1] = y;
-    xyz[2] = z;
-    double dist2;
-    double pos2[3];
+    double xyz[3] = { x, y, z }, dist2, pos2[3] = { 0 };
     size_t index = find_nearest2( xyz, dist2, pos2 );
     PROFILE_STOP( "find_nearest 3d", 5 );
     return index;

@@ -858,6 +858,30 @@ public: // Member functions
 
 
     /*!
+     * @brief This function sends and recieves data using a blocking call
+     *
+     * @param[in] sendbuf   Initial address of send buffer (choice).
+     * @param[in] sendcount Number of elements to send (integer).
+     * @param[in] sendtype  Type of elements in send buffer (handle).
+     * @param[in] dest      Rank of destination (integer).
+     * @param[in] sendtag   Send tag (integer).
+     * @param[in] recvcount Maximum number of elements to receive (integer).
+     * @param[in] recvtype  Type of elements in receive buffer (handle).
+     * @param[in] source    Rank of source (integer).
+     * @param[in] recvtag   Receive tag (integer).
+     */
+    template<class type>
+    void sendrecv( const type *sendbuf,
+                   int sendcount,
+                   int dest,
+                   int sendtag,
+                   type *recvbuf,
+                   int recvcount,
+                   int source,
+                   int recvtag ) const;
+
+
+    /*!
      * Each processor sends every other processor a single value.
      * @param[in] x      Input value for allGather
      * @return           Output array for allGather

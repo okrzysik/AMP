@@ -91,14 +91,6 @@ public:
     std::vector<double> box() const;
 
 
-    //! Function to get the current memory usage
-    /*!
-     * This function returns the current number of bytes in use by the structures.
-     * Note: This is the total number of bytes used
-     */
-    size_t memory_usage() const;
-
-
     /**
      * \brief   Add a point
      * \details  This will add a point to the kdtree.

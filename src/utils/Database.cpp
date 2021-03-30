@@ -15,14 +15,37 @@ namespace AMP {
 
 
 /********************************************************************
+ * Read the input file into memory                                   *
+ ********************************************************************/
+static std::vector<char> readFile( const std::string &filename )
+{
+    // Read the input file into memory
+    FILE *fid = fopen( filename.data(), "rb" );
+    DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
+    fseek( fid, 0, SEEK_END );
+    size_t bytes = ftell( fid );
+    rewind( fid );
+    std::vector<char> data( bytes + 1, 0 );
+    size_t result = fread( data.data(), 1, bytes, fid );
+    fclose( fid );
+    NULL_USE( result );
+    return data;
+}
+
+
+/********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
 static constexpr inline std::string_view deblank( const std::string_view &str )
 {
+    if ( str.empty() )
+        return std::string_view();
     int i1 = 0, i2 = str.size() - 1;
     for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '\t' ); i1++ ) {}
-    for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '\t' ); i2-- ) {}
-    return i1 <= i2 ? str.substr( i1, i2 - i1 + 1 ) : std::string_view();
+    for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '\t' || str[i2] == '\r' ); i2-- ) {}
+    if ( i2 == 0 && ( str[i2] == ' ' || str[i2] == '\t' || str[i2] == '\r' ) )
+        return std::string_view();
+    return str.substr( i1, i2 - i1 + 1 );
 }
 static inline bool strcmpi( const std::string_view &s1, const std::string_view &s2 )
 {
@@ -236,6 +259,15 @@ std::shared_ptr<const Database> Database::getDatabase( const std::string_view &k
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
 }
+const Database &Database::operator()( const std::string_view &key ) const
+{
+    auto hash = hashString( key );
+    int index = find( hash );
+    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
+    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    return *ptr2;
+}
 std::vector<std::string> Database::getAllKeys() const
 {
     auto keys = d_keys;
@@ -405,23 +437,36 @@ std::string Database::print( const std::string_view &indent ) const
  ********************************************************************/
 std::shared_ptr<Database> Database::parseInputFile( const std::string &filename )
 {
-    auto db = std::make_unique<Database>( filename );
-    db->readDatabase( filename );
+    std::shared_ptr<Database> db;
+    auto extension = filename.substr( filename.rfind( '.' ) + 1 );
+    if ( extension == "yml" ) {
+        std::shared_ptr<KeyData> data = readYAML( filename );
+        auto db2                      = std::dynamic_pointer_cast<Database>( data );
+        auto dbVec                    = std::dynamic_pointer_cast<DatabaseVector>( data );
+        if ( db2 ) {
+            db = db2;
+        } else if ( dbVec ) {
+            db = std::make_shared<Database>( filename );
+            for ( const auto &db3 : dbVec->get() ) {
+                auto key = db3.getName();
+                AMP_ASSERT( !key.empty() );
+                AMP_ASSERT( !db->keyExists( key ) );
+                db->putDatabase( key, db3.cloneDatabase() );
+            }
+        } else {
+            AMP_ERROR( "Unknown keyData" );
+        }
+        db->setName( filename );
+    } else {
+        db = std::make_shared<Database>( filename );
+        db->readDatabase( filename );
+    }
     return db;
 }
 void Database::readDatabase( const std::string &filename )
 {
     // Read the input file into memory
-    FILE *fid = fopen( filename.data(), "rb" );
-    DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
-    fseek( fid, 0, SEEK_END );
-    size_t bytes = ftell( fid );
-    rewind( fid );
-    std::vector<char> buffer( bytes + 1 );
-    size_t result = fread( buffer.data(), 1, bytes, fid );
-    fclose( fid );
-    DATABASE_INSIST( result == bytes, "Error reading file %s", filename.data() );
-    buffer[bytes] = 0;
+    auto buffer = readFile( filename );
     // Create the database entries
     try {
         loadDatabase( buffer.data(), *this );
@@ -885,82 +930,90 @@ static inline std::unique_ptr<KeyData> makeKeyData( std::vector<Database> &&data
         return std::make_unique<Database>( std::move( data[0] ) );
     return std::make_unique<DatabaseVector>( std::move( data ) );
 }
-static inline void removeNewline( std::string_view &line )
+static inline size_t getLine( const char *buffer, size_t pos )
 {
-    if ( line.find( '\n' ) != std::string::npos )
-        line = line.substr( 0, line.find( '\n' ) );
-    if ( line.find( '\r' ) != std::string::npos )
-        line = line.substr( 0, line.find( '\r' ) );
+    size_t i = pos;
+    while ( buffer[i] != 0 && buffer[i] != '\n' ) {
+        i++;
+    }
+    return i;
 }
-static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
+size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_t indent = 0 )
 {
-    char tmp[4096];
-    std::vector<Database> data;
-    size_t indent2 = 10000;
     std::string lastKey;
-    while ( true ) {
-        tmp[0] = 0;
-        if ( !fgets( tmp, sizeof( tmp ), fid ) )
-            break;
-        std::string_view line( tmp );
-        // Remove newline
-        removeNewline( line );
+    while ( buffer[pos] != 0 ) {
+        // Get the next line
+        auto pos2 = getLine( buffer, pos );
+        std::string_view line( &buffer[pos], pos2 - pos );
         // Remove the comments
         line = line.substr( 0, line.find( '#' ) );
-        if ( line.empty() )
-            continue;
         // Find the first non-whitespace character
-        size_t pos = line.find_first_not_of( ' ' );
-        if ( pos < indent ) {
-            fseek( fid, -strlen( tmp ), SEEK_CUR );
-            return makeKeyData( std::move( data ) );
-        }
-        if ( pos > indent2 ) {
-            // We are dealing with a sub-item
-            fseek( fid, -strlen( tmp ), SEEK_CUR );
-            auto data2 = loadYAMLDatabase( fid, indent2 );
-            data.back().putData( lastKey, std::move( data2 ) );
+        size_t p = line.find_first_not_of( ' ' );
+        if ( p < indent )
+            return pos;
+        // Remove empty space
+        line = deblank( line );
+        if ( line.empty() ) {
+            pos = pos2 + 1;
             continue;
         }
-        if ( line[pos] == '-' ) {
-            // We are dealing with a new item for the list
-            data.resize( data.size() + 1 );
-            indent2 = pos + 1 + line.substr( pos + 1 ).find_first_not_of( ' ' );
+        if ( p < indent ) {
+            // We are dealing with a list (database)
+            return pos;
         }
-        std::string_view key, value;
-        std::tie( key, value ) = splitYAML( line );
-        std::unique_ptr<KeyData> entry;
-        if ( value == "|" ) {
+        if ( line[0] == '-' ) {
+            // We are dealing with a new item (database)
+            auto p2 = line.find( ':' );
+            std::string name;
+            if ( p2 != std::string::npos )
+                name = deblank( line.substr( p2 + 1 ) );
+            else
+                name = deblank( line.substr( 1 ) );
+            auto db2 = std::make_unique<Database>( name );
+            pos      = loadYAMLDatabase( buffer, *db2, pos2 + 1, p + 1 );
+            db.putDatabase( name, std::move( db2 ) );
+            continue;
+        }
+        auto [key, value] = splitYAML( line );
+        AMP_ASSERT( !key.empty() );
+        if ( value.empty() ) {
+            // Treat the key as a new database to load
+            Database tmp;
+            pos = loadYAMLDatabase( buffer, tmp, pos2 + 1, p + 1 );
+            for ( auto key : tmp.getAllKeys() )
+                db.putData( key, tmp.getData( key )->clone() );
+            continue;
+        } else if ( value == "|" ) {
             // Special case with block scalars
+            pos2++;
+            size_t pos3 = getLine( buffer, pos2 );
+            std::string_view line2( &buffer[pos2 + 1], pos3 - pos2 );
+            size_t p0 = line2.find_first_not_of( ' ' );
             Array<double> x;
             while ( true ) {
-                char tmp2[4096] = { 0 };
-                if ( !fgets( tmp2, sizeof( tmp2 ), fid ) )
+                size_t pos3 = getLine( buffer, pos2 );
+                std::string_view line2( &buffer[pos2], pos3 - pos2 );
+                size_t p2 = line2.find_first_not_of( ' ' );
+                if ( p2 < p0 )
                     break;
-                std::string_view line2( tmp2 );
-                removeNewline( line2 );
-                size_t pos2 = line2.find_first_not_of( ' ' );
-                if ( pos2 <= indent2 ) {
-                    fseek( fid, -strlen( tmp2 ), SEEK_CUR );
-                    break;
-                }
-                line2 = deblank( line2.substr( pos2 ) );
+                pos2  = pos3 + 1;
+                line2 = deblank( line2 );
                 std::string line3( line2 );
                 strrep( line3, "  ", " " );
                 strrep( line3, " ", "," );
                 line3 += '\n';
-                std::unique_ptr<KeyData> read_entry;
-                std::tie( std::ignore, read_entry ) = read_value( line3.data(), key );
-                auto y                              = read_entry->convertToDouble();
-                size_t i                            = x.size( 0 );
+                auto [pos4, read_entry] = read_value( line3.data(), key );
+                NULL_USE( pos4 );
+                auto y   = read_entry->convertToDouble();
+                size_t i = x.size( 0 );
                 x.resize( i + 1, y.length() );
                 for ( size_t j = 0; j < y.length(); j++ )
                     x( i, j ) = y( j );
             }
-            // need to store a multi-dimentional array
-            entry = std::make_unique<KeyDataScalar<std::string>>(
-                std::string( "Not finished, need to store Array" ) );
+            auto data = std::make_unique<KeyDataArray<double>>( std::move( x ) );
+            db.putData( key, std::move( data ), true );
         } else if ( !value.empty() ) {
+            std::unique_ptr<KeyData> entry;
             try {
                 std::tie( std::ignore, entry ) = read_value( value.data(), key );
             } catch ( ... ) {
@@ -971,23 +1024,28 @@ static std::unique_ptr<KeyData> loadYAMLDatabase( FILE *fid, size_t indent = 0 )
                     entry = std::make_unique<KeyDataScalar<std::string>>( std::string( value ) );
             } catch ( ... ) {
             }
+            if ( !entry )
+                AMP_ERROR( "Unable to parse value: " + std::string( value ) );
+            db.putData( key, std::move( entry ), true );
+        } else {
+            AMP_ERROR( "Not finished" );
         }
-        if ( entry ) {
-            if ( data.empty() )
-                data.resize( 1 );
-            data.back().putData( key, std::move( entry ) );
-        }
-        lastKey = std::string( key.data(), key.size() );
+        pos = pos2 + 1;
     }
-    return makeKeyData( std::move( data ) );
+    return pos;
 }
 std::unique_ptr<KeyData> Database::readYAML( const std::string_view &filename )
 {
-    FILE *fid = fopen( filename.data(), "rb" );
-    DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
-    auto data = loadYAMLDatabase( fid );
-    fclose( fid );
-    return data;
+    // Read the file into memory
+    auto buffer = readFile( std::string( filename ) );
+    // Read the file
+    std::vector<Database> data;
+    for ( size_t i = 0; i < buffer.size(); ) {
+        data.resize( data.size() + 1 );
+        i = loadYAMLDatabase( &buffer[i], data.back() ) + 1;
+    }
+    // Return the result
+    return makeKeyData( std::move( data ) );
 }
 
 
