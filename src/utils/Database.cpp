@@ -950,16 +950,12 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
         // Find the first non-whitespace character
         size_t p = line.find_first_not_of( ' ' );
         if ( p < indent )
-            return pos;
+            return pos; // End of list
         // Remove empty space
         line = deblank( line );
         if ( line.empty() ) {
             pos = pos2 + 1;
             continue;
-        }
-        if ( p < indent ) {
-            // We are dealing with a list (database)
-            return pos;
         }
         if ( line[0] == '-' ) {
             // We are dealing with a new item (database)
