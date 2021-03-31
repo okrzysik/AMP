@@ -2,6 +2,8 @@
 #define included_AMP_MathExpr
 
 
+#include <initializer_list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,14 +32,14 @@ public:
      * \param[in] expression        Expression to evaluate: "sqrt(x^2+y^2)"
      * \param[in] variables         List of variables: { "x", "y" }
      */
-    explicit MathExpr( const std::string &expression,
-                       const std::vector<std::string> &variables = std::vector<std::string>() );
+    explicit MathExpr( std::string expression,
+                       std::vector<std::string> variables = std::vector<std::string>() );
 
     //! Copy constructor
-    MathExpr( const MathExpr & );
+    MathExpr( const MathExpr & ) = delete;
 
     //! Assignment operator
-    MathExpr &operator=( const MathExpr & );
+    MathExpr &operator=( const MathExpr & ) = delete;
 
     //! Move constructor
     MathExpr( MathExpr &&rhs );
@@ -48,16 +50,30 @@ public:
     //! Destructor
     ~MathExpr();
 
+    //! Return the expression
+    inline const auto &getExpr() const { return d_expr; }
+
+    //! Return the variables
+    inline const auto &getVars() const { return d_vars; }
+
     /**
      * \brief Evaluate
      * \details  Evaluate the expression provided in the constructor with given arguments
      * \param[in] data              List of variable values: { x, y }
      * @return                      Returns the result
      */
-    double eval( const std::vector<double> &data = std::vector<double>() );
+    double operator()( const std::initializer_list<double> &data = {} );
+
+    /**
+     * \brief Evaluate
+     * \details  Evaluate the expression provided in the constructor with given arguments
+     * \param[in] data              List of variable values: { x, y }
+     * @return                      Returns the result
+     */
+    double operator()( const double *data );
 
 private:
-    void initialize( const std::string &expression, const std::vector<std::string> &variables );
+    void initialize();
 
     std::string d_expr;
     te_expr *d_fun;

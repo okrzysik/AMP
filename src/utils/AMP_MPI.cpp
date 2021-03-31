@@ -26,30 +26,6 @@
 #include <typeinfo>
 
 
-// Include OS specific headers
-#undef USE_WINDOWS
-#undef USE_LINUX
-#undef USE_MAC
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-// We are using windows
-#define USE_WINDOWS
-#include <process.h>
-#include <windows.h>
-#define sched_yield() Sleep( 0 )
-#elif defined( __APPLE__ )
-// Using MAC
-#define USE_MAC
-#include <sched.h>
-#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
-// We are using linux
-#define USE_LINUX
-#include <sched.h>
-#include <unistd.h>
-#else
-#error Unknown OS
-#endif
-
-
 // Make sure USE_MPI is set properly
 #if !defined( USE_MPI ) && defined( USE_EXT_MPI )
 #define USE_MPI
@@ -778,7 +754,7 @@ MPI_CLASS MPI_CLASS::dup() const
     MPI_Comm_dup( communicator, &new_MPI_comm );
 #else
     static MPI_Comm uniqueGlobalComm = 11;
-    new_MPI_comm                     = uniqueGlobalComm;
+    new_MPI_comm = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
@@ -1249,11 +1225,11 @@ MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) co
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
         Isendrecv_struct data;
-        data.bytes  = bytes;
-        data.data   = buf;
+        data.bytes = bytes;
+        data.data = buf;
         data.status = 1;
-        data.comm   = communicator;
-        data.tag    = tag;
+        data.comm = communicator;
+        data.tag = tag;
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
@@ -1275,11 +1251,11 @@ MPI_Request MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const 
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
         Isendrecv_struct data;
-        data.bytes  = bytes;
-        data.data   = buf;
+        data.bytes = bytes;
+        data.data = buf;
         data.status = 2;
-        data.comm   = communicator;
-        data.tag    = tag;
+        data.comm = communicator;
+        data.tag = tag;
         global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
@@ -1370,7 +1346,7 @@ void MPI_CLASS::wait( MPI_Request request )
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
         // Check if the request has finished
         MPI_Test( &request, &flag, &status );
     }
@@ -1388,7 +1364,7 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
         // Check if the request has finished
         MPI_Testany( count, request, &index, &flag, status );
     }
@@ -1408,7 +1384,7 @@ void MPI_CLASS::waitAll( int count, MPI_Request *request )
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
         // Check if the request has finished
         MPI_Testall( count, request, &flag, status );
     }
@@ -1446,7 +1422,7 @@ void MPI_CLASS::wait( MPI_Request request )
         if ( global_isendrecv_list.find( request ) == global_isendrecv_list.end() )
             break;
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
     }
     PROFILE_STOP( "wait", profile_level );
 }
@@ -1462,13 +1438,13 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
         for ( int i = 0; i < count; i++ ) {
             if ( global_isendrecv_list.find( request[i] ) == global_isendrecv_list.end() ) {
                 found_any = true;
-                index     = i;
+                index = i;
             }
         }
         if ( found_any )
             break;
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
     }
     PROFILE_STOP( "waitAny", profile_level );
     return index;
@@ -1488,7 +1464,7 @@ void MPI_CLASS::waitAll( int count, MPI_Request *request )
         if ( found_all )
             break;
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
     }
     PROFILE_STOP( "waitAll", profile_level );
 }
@@ -1507,7 +1483,7 @@ std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
         if ( !indicies.empty() )
             break;
         // Put the current thread to sleep to allow other threads to run
-        sched_yield();
+        std::this_thread::yield();
     }
     PROFILE_STOP( "waitSome", profile_level );
     return indicies;
@@ -1573,7 +1549,7 @@ double MPI_CLASS::tick() { return MPI_Wtick(); }
 #else
 double MPI_CLASS::time()
 {
-    auto t  = std::chrono::system_clock::now();
+    auto t = std::chrono::system_clock::now();
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t.time_since_epoch() );
     return 1e-9 * ns.count();
 }
@@ -1591,18 +1567,14 @@ double MPI_CLASS::tick()
 void MPI_CLASS::serializeStart()
 {
 #ifdef USE_MPI
-    using namespace std::chrono_literals;
-    if ( comm_rank == 0 ) {
-        // Start rank 0 immediately
-    } else {
-        // Wait for a message from the previous rank
+    // Wait for a message from the previous rank
+    if ( comm_rank > 0 ) {
         MPI_Request request;
-        MPI_Status status;
         int flag = false, buf = 0;
-        MPI_Irecv( &buf, 1, MPI_INT, comm_rank - 1, 5627, MPI_COMM_WORLD, &request );
+        MPI_Irecv( &buf, 1, MPI_INT, comm_rank - 1, 5627, communicator, &request );
         while ( !flag ) {
-            MPI_Test( &request, &flag, &status );
-            std::this_thread::sleep_for( 50ms );
+            MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
+            std::this_thread::yield();
         }
     }
 #endif
@@ -1610,24 +1582,11 @@ void MPI_CLASS::serializeStart()
 void MPI_CLASS::serializeStop()
 {
 #ifdef USE_MPI
-    using namespace std::chrono_literals;
-    if ( comm_rank < comm_size - 1 ) {
-        // Send flag to next rank
-        MPI_Send( &comm_rank, 1, MPI_INT, comm_rank + 1, 5627, MPI_COMM_WORLD );
-        // Wait for final finished flag
-        int flag = false, buf = 0;
-        MPI_Request request;
-        MPI_Status status;
-        MPI_Irecv( &buf, 1, MPI_INT, comm_size - 1, 5627, MPI_COMM_WORLD, &request );
-        while ( !flag ) {
-            MPI_Test( &request, &flag, &status );
-            std::this_thread::sleep_for( 50ms );
-        }
-    } else {
-        // Send final flag to all ranks
-        for ( int i = 0; i < comm_size - 1; i++ )
-            MPI_Send( &comm_rank, 1, MPI_INT, i, 5627, MPI_COMM_WORLD );
-    }
+    // Send flag to next rank
+    if ( comm_rank < comm_size - 1 )
+        MPI_Send( &comm_rank, 1, MPI_INT, comm_rank + 1, 5627, communicator );
+    // Final barrier to sync all threads
+    MPI_Barrier( communicator );
 #endif
 }
 
