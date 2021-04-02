@@ -19,32 +19,36 @@ std::default_random_engine generator( 123 );
 bool equal( double a, double b ) { return fabs( a - b ) <= 1e-12 * fabs( a + b ); }
 
 
+// Add the result to the tests
+void checkResult( AMP::UnitTest &ut, bool pass, const std::string &msg )
+{
+    if ( pass )
+        ut.passes( msg );
+    else
+        ut.failure( msg );
+}
+
+
 // Generate random number
 template<class TYPE>
-static typename std::enable_if<std::is_floating_point<TYPE>::value, TYPE>::type random()
+static TYPE random()
 {
-    static std::uniform_real_distribution<double> dist( 0, 1 );
-    return static_cast<TYPE>( dist( generator ) );
-}
-template<class TYPE>
-static typename std::enable_if<std::is_integral<TYPE>::value, TYPE>::type random()
-{
-    static std::uniform_int_distribution<int> dist( 0, 1 );
-    return static_cast<TYPE>( dist( generator ) );
-}
-template<class TYPE>
-static typename std::enable_if<std::is_same<TYPE, std::complex<double>>::value,
-                               std::complex<double>>::type
-random()
-{
-    return std::complex<double>( random<double>(), random<double>() );
-}
-template<class TYPE>
-static typename std::enable_if<std::is_same<TYPE, std::complex<float>>::value,
-                               std::complex<float>>::type
-random()
-{
-    return std::complex<float>( random<float>(), random<float>() );
+    if constexpr ( std::is_floating_point<TYPE>::value ) {
+        static std::uniform_real_distribution<double> dist( 0, 1 );
+        return static_cast<TYPE>( dist( generator ) );
+    } else if constexpr ( std::is_integral<TYPE>::value ) {
+        static std::uniform_int_distribution<int> dist( 0, 1000000000 );
+        return static_cast<TYPE>( dist( generator ) );
+    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+        static std::uniform_real_distribution<double> dist( 0, 1 );
+        return std::complex<double>( random<double>(), random<double>() );
+    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+        static std::uniform_real_distribution<float> dist( 0, 1 );
+        return std::complex<float>( random<float>(), random<float>() );
+    } else {
+        AMP_ERROR( "Invalid TYPE: " + std::string( typeid( TYPE ).name() ) );
+    }
+    return 0;
 }
 
 
@@ -173,20 +177,14 @@ void runBasicTests( UnitTest &ut )
          !equal( db2->getVector<double>( "x1", "um" )[0], 15000 ) ||
          !equal( db2->getVector<double>( "x2", "um" )[0], 2500 ) )
         ut.failure( "units" );
-    if ( db == *db2 )
-        ut.passes( "print" );
-    else
-        ut.failure( "print" );
+    checkResult( ut, db == *db2, "print" );
 
     // Add more types that are not compatible with print
     addType<std::complex<float>>( db, ut );
 
     // Try to clone the database
     auto db3 = db.cloneDatabase();
-    if ( db == *db3 )
-        ut.passes( "clone" );
-    else
-        ut.failure( "clone" );
+    checkResult( ut, db == *db3, "clone" );
 
     // Test copy/move operators
     bool pass = true;
@@ -198,10 +196,7 @@ void runBasicTests( UnitTest &ut )
     Database db6;
     db6.copy( db5 );
     pass = pass && db == db5;
-    if ( pass )
-        ut.passes( "copy/move" );
-    else
-        ut.failure( "copy/move" );
+    checkResult( ut, pass, "copy/move" );
 
     // Test creating a database from key/value pairs
     int v1                   = 4;
@@ -212,45 +207,24 @@ void runBasicTests( UnitTest &ut )
     std::set<double> v6      = { 1.2, 1.3, 1.4 };
     auto db7                 = Database::create(
         "v1", v1, "v2", v2, "v3", v3, "v4", v4, "v5", v5, "v6", v6, "v7", "test" );
-    if ( db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2" ) == v2 &&
-         db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4" ) == v4 &&
-         db7->getVector<double>( "v5" ) == std::vector<double>( v5.begin(), v5.end() ) &&
-         db7->getVector<double>( "v6" ) == std::vector<double>( v6.begin(), v6.end() ) &&
-         db7->getString( "v7" ) == "test" )
-        ut.passes( "Database::create" );
-    else
-        ut.failure( "Database::create" );
+    pass = db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2" ) == v2 &&
+           db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4" ) == v4 &&
+           db7->getVector<double>( "v5" ) == std::vector<double>( v5.begin(), v5.end() ) &&
+           db7->getVector<double>( "v6" ) == std::vector<double>( v6.begin(), v6.end() ) &&
+           db7->getString( "v7" ) == "test";
+    checkResult( ut, pass, "Database::create" );
 
     // Test creating a database from key/value/unit triplets
-    db7 = Database::createWithUnits( "v1",
-                                     v1,
-                                     "",
-                                     "v2",
-                                     v2,
-                                     "cm",
-                                     "v3",
-                                     v3,
-                                     "",
-                                     "v4",
-                                     v4,
-                                     "m",
-                                     "v5",
-                                     v5,
-                                     "kg",
-                                     "v6",
-                                     v6,
-                                     "J",
-                                     "v7",
-                                     "test",
-                                     "" );
-    if ( db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2", "m" ) == 1e-2 * v2 &&
-         db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4", "m" ) == v4 &&
-         db7->getVector<double>( "v5", "kg" ) == std::vector<double>( v5.begin(), v5.end() ) &&
-         db7->getVector<double>( "v6", "J" ) == std::vector<double>( v6.begin(), v6.end() ) &&
-         db7->getString( "v7" ) == "test" )
-        ut.passes( "Database::create" );
-    else
-        ut.failure( "Database::create" );
+    // clang-format off
+    db7 = Database::createWithUnits( "v1", v1,   "", "v2", v2, "cm", "v3", v3, "", "v4", v4, "m",
+                                     "v5", v5, "kg", "v6", v6,  "J", "v7", "test", "" );
+    // clang-format on
+    pass = db7->getScalar<int>( "v1" ) == v1 && db7->getScalar<double>( "v2", "m" ) == 1e-2 * v2 &&
+           db7->getString( "v3" ) == v3 && db7->getVector<double>( "v4", "m" ) == v4 &&
+           db7->getVector<double>( "v5", "kg" ) == std::vector<double>( v5.begin(), v5.end() ) &&
+           db7->getVector<double>( "v6", "J" ) == std::vector<double>( v6.begin(), v6.end() ) &&
+           db7->getString( "v7" ) == "test";
+    checkResult( ut, pass, "Database::createUnits" );
 
     // Test getting some values in different units
     Database db8;
@@ -260,39 +234,39 @@ void runBasicTests( UnitTest &ut )
     double I1 = db8.getScalar<double>( "I1", "W/cm^2" );
     double I2 = db8.getScalar<double>( "I2", "W/cm^2" );
     double I3 = db8.getScalar<double>( "I3", "W/cm^2" );
-    if ( equal( I1, 2.3 ) && equal( I2, 2.3 ) && equal( I3, 2.3 ) )
-        ut.passes( "Database::units" );
-    else
-        ut.failure( "Database::units" );
+    pass      = equal( I1, 2.3 ) && equal( I2, 2.3 ) && equal( I3, 2.3 );
+    checkResult( ut, pass, "Database::units" );
 
     // Run some extra Units tests
     pass = Units( Units( "W/m^2" ).str() ) == Units( "uW/mm^2" );
     pass = pass && Units( ( Units( "V" ) * Units( "A" ) ).str() ) == Units( "W" );
-    if ( pass )
-        ut.passes( "Units" );
-    else
-        ut.failure( "Units" );
+    checkResult( ut, pass, "Units" );
 }
 
 
 // Run tests using an input file
 void runFileTests( UnitTest &ut, const std::string &filename )
 {
+    auto prefix = filename + " - ";
     // Read the file
     auto t1 = std::chrono::system_clock::now();
     auto db = Database::parseInputFile( filename );
     auto t2 = std::chrono::system_clock::now();
     int us  = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     printf( "Time to read %s: %i us\n", filename.c_str(), us );
+    checkResult( ut, !db->empty(), prefix + "!empty()" );
     // Create database from string
-    std::ifstream ifstream( filename );
-    std::stringstream buffer;
-    buffer << ifstream.rdbuf();
-    t1       = std::chrono::system_clock::now();
-    auto db2 = Database::createFromString( buffer.str() );
-    t2       = std::chrono::system_clock::now();
-    us       = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    printf( "Time to create from string: %i us\n", us );
+    if ( AMP::Utilities::getSuffix( filename ) != "yml" ) {
+        std::ifstream ifstream( filename );
+        std::stringstream buffer;
+        buffer << ifstream.rdbuf();
+        t1       = std::chrono::system_clock::now();
+        auto db2 = Database::createFromString( buffer.str() );
+        t2       = std::chrono::system_clock::now();
+        us       = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+        printf( "Time to create from string: %i us\n", us );
+        checkResult( ut, *db2 == *db, prefix + "createFromString" );
+    }
     // Clone the database
     t1       = std::chrono::system_clock::now();
     auto db3 = db->cloneDatabase();
@@ -300,22 +274,27 @@ void runFileTests( UnitTest &ut, const std::string &filename )
     us       = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     printf( "Time to clone database: %i us\n", us );
     // Check the database
-    bool pass = !db->empty();
-    t1        = std::chrono::system_clock::now();
-    pass      = pass && *db2 == *db;
-    pass      = pass && *db3 == *db;
-    t2        = std::chrono::system_clock::now();
-    us        = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    t1 = std::chrono::system_clock::now();
+    checkResult( ut, *db3 == *db, prefix + "clone" );
+    t2 = std::chrono::system_clock::now();
+    us = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     printf( "Time to compare database: %i us\n", us / 2 );
-    // Check that data loaded
+    // Check that data loaded correctly
     if ( filename == "laser_plasma_input.txt" ) {
-        pass = !db->getVector<std::string>( "material" ).empty();
+        bool pass = !db->getVector<std::string>( "material" ).empty();
+        checkResult( ut, pass, "Found material" );
     }
-    // Finished test
-    if ( pass )
-        ut.passes( filename );
-    else
-        ut.failure( filename );
+    if ( filename == "library.yml" ) {
+        auto name = ( *db )( "3d" )( "plastics" )( "pmma" ).getString( "name" );
+        bool pass = name == "PMMA - Poly(methyl methacrylate)";
+        checkResult( ut, pass, "Found material" );
+    }
+    if ( filename == "Johnson.yml" ) {
+        auto data = ( *db )( "tabulated nk" ).getArray<double>( "data" );
+        bool pass = data.size() == AMP::ArraySize( 49, 3 );
+        checkResult( ut, pass, "Found material" );
+    }
+    printf( "\n" );
 }
 
 

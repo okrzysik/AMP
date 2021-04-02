@@ -1,9 +1,11 @@
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <thread>
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"
@@ -16,14 +18,6 @@
 #include "StackTrace/StackTrace.h"
 
 #include "ProfilerApp.h"
-
-
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-#include <windows.h>
-#define sched_yield() Sleep( 0 )
-#else
-#include <sched.h>
-#endif
 
 
 #undef MPI_CLASS
@@ -71,12 +65,10 @@ struct mytype {
 
 
 // Routines to test Reduce with known data types
-// flag - 0: all tests should pass
-//        1: basic reduce should pass, reduce with rank should fail with error message
 template<class type>
-int testReduce( MPI_CLASS comm, UnitTest *ut, int flag );
+int testReduce( MPI_CLASS comm, UnitTest *ut );
 template<>
-int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut, int )
+int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testReduce<complex double>" );
     char message[128];
@@ -99,7 +91,7 @@ int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut, int )
     return 2; // Return the number of tests
 }
 template<class type>
-int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
+int testReduce( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testReduce" );
     char message[128];
@@ -168,13 +160,8 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->passes( message );
         else
             ut->failure( message );
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->failure( message );
     } catch ( StackTrace::abort_error &err ) {
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->expected_failure( message );
-        else
-            ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( message ) + " - " + err.message );
     } catch ( ... ) {
         ut->failure( std::string( message ) + " - caught unknown exception" );
     }
@@ -185,13 +172,8 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->passes( message );
         else
             ut->failure( message );
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->failure( message );
     } catch ( StackTrace::abort_error &err ) {
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->expected_failure( message );
-        else
-            ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( message ) + " - " + err.message );
     } catch ( ... ) {
         ut->failure( std::string( message ) + " - caught unknown exception" );
     }
@@ -203,13 +185,8 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->passes( message );
         else
             ut->failure( message );
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->failure( message );
     } catch ( StackTrace::abort_error &err ) {
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->expected_failure( message );
-        else
-            ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( message ) + " - " + err.message );
     } catch ( ... ) {
         ut->failure( std::string( message ) + " - caught unknown exception" );
     }
@@ -220,13 +197,8 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
             ut->passes( message );
         else
             ut->failure( message );
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->failure( message );
     } catch ( StackTrace::abort_error &err ) {
-        if ( flag == 1 && comm.getSize() > 1 )
-            ut->expected_failure( message );
-        else
-            ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( message ) + " - " + err.message );
     } catch ( ... ) {
         ut->failure( std::string( message ) + " - caught unknown exception" );
     }
@@ -236,10 +208,8 @@ int testReduce( MPI_CLASS comm, UnitTest *ut, int flag )
 
 
 // Routine to test Scan with known data types
-// flag - 0: all tests should pass
-//        1: only sumScan is valid (complex<double>)
 template<class type>
-int testScan( MPI_CLASS comm, UnitTest *ut, int flag = 0 )
+int testScan( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testScan" );
     char message[500];
@@ -252,7 +222,7 @@ int testScan( MPI_CLASS comm, UnitTest *ut, int flag = 0 )
         ut->passes( message );
     else
         ut->failure( message );
-    if ( flag == 1 ) {
+    if ( std::is_same<type, std::complex<double>>::value ) {
         PROFILE_STOP2( "testScan" );
         return 1;
     }
@@ -940,32 +910,18 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
         ut->passes( "newTag" );
     else
         ut->failure( "newTag" );
-    // Test all and any reduce
-    bool test1 = !comm.allReduce( comm.getRank() != 0 );
-    bool test2 = comm.allReduce( true );
-    if ( test1 && test2 )
-        ut->passes( "allReduce" );
-    else
-        ut->failure( "allReduce" );
-    test1 = comm.anyReduce( comm.getRank() == 0 );
-    test2 = !comm.anyReduce( false );
-    if ( test1 && test2 )
-        ut->passes( "anyReduce" );
-    else
-        ut->failure( "anyReduce" );
     // Test min, max, and sum reduce
     start_time = time();
-    timer.N_reduce += testReduce<unsigned char>( comm, ut, 0 );
-    timer.N_reduce += testReduce<char>( comm, ut, 0 );
-    timer.N_reduce += testReduce<unsigned int>( comm, ut, 0 );
-    timer.N_reduce += testReduce<int>( comm, ut, 0 );
-    timer.N_reduce += testReduce<unsigned long int>( comm, ut, 0 );
-    timer.N_reduce += testReduce<long int>( comm, ut, 0 );
-    timer.N_reduce += testReduce<size_t>( comm, ut, 0 );
-    timer.N_reduce += testReduce<float>( comm, ut, 0 );
-    timer.N_reduce += testReduce<double>( comm, ut, 0 );
-    timer.N_reduce += testReduce<std::complex<double>>(
-        comm, ut, 2 ); // only sumreduce is valid for complex numbers
+    timer.N_reduce += testReduce<unsigned char>( comm, ut );
+    timer.N_reduce += testReduce<char>( comm, ut );
+    timer.N_reduce += testReduce<unsigned int>( comm, ut );
+    timer.N_reduce += testReduce<int>( comm, ut );
+    timer.N_reduce += testReduce<unsigned long int>( comm, ut );
+    timer.N_reduce += testReduce<long int>( comm, ut );
+    timer.N_reduce += testReduce<size_t>( comm, ut );
+    timer.N_reduce += testReduce<float>( comm, ut );
+    timer.N_reduce += testReduce<double>( comm, ut );
+    timer.N_reduce += testReduce<std::complex<double>>( comm, ut );
     mytype tmp1( 1, -1.0 );
     mytype tmp2;
     if ( comm.getSize() > 1 ) {
@@ -1005,8 +961,7 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
     timer.N_scan += testScan<size_t>( comm, ut );
     timer.N_scan += testScan<float>( comm, ut );
     timer.N_scan += testScan<double>( comm, ut );
-    timer.N_scan +=
-        testScan<std::complex<double>>( comm, ut, 1 ); // Only sumScan is valid with complex data
+    timer.N_scan += testScan<std::complex<double>>( comm, ut );
     if ( comm.getSize() > 1 ) {
         // We can't perform a reduce on an unknown data type (this should throw an error)
         try {
@@ -1128,6 +1083,37 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
     timer.N_IsendIrecv += testIsendIrecv<double>( comm, ut, -1.0, 1.0 );
     timer.N_IsendIrecv += testIsendIrecv<mytype>( comm, ut, tmp3, tmp4 );
     timer.t_IsendIrecv = time() - start_time;
+    // Test all/any reduce
+    int size = comm.getSize();
+    int rank = comm.getRank();
+    std::vector<bool> src( size + 2, false );
+    src[rank] = true;
+    src[size] = true;
+    auto all  = src;
+    auto any  = src;
+    comm.anyReduce( any );
+    comm.allReduce( all );
+    pass = comm.allReduce( true ) && comm.anyReduce( rank == 0 );
+    pass = pass && any[size] && all[size] && !any[size + 1] && !all[size + 1];
+    for ( int i = 0; i < rank; i++ )
+        pass = pass && any[i] && !all[i];
+    if ( pass )
+        ut->passes( "anyReduce/allReduce" );
+    else
+        ut->failure( "anyReduce/allReduce" );
+    // Test serializeStart()
+    if ( size < 64 ) {
+        double start = MPI_CLASS::time();
+        comm.serializeStart();
+        std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+        comm.serializeStop();
+        double stop = MPI_CLASS::time();
+        double avg  = ( stop - start ) / size;
+        if ( std::abs( avg - 0.1 ) < 0.01 )
+            ut->passes( "serialize" );
+        else
+            ut->failure( "serialize: " + std::to_string( avg ) );
+    }
     // Test commRanks
     testCommRanks( comm, ut );
     PROFILE_STOP( "testComm" );
@@ -1512,11 +1498,11 @@ int main( int argc, char *argv[] )
 #endif
         }
 
-        // Test the performance of sched_yield (used internally by AMP_MPI wait routines)
+        // Test the performance of yield (used internally by AMP_MPI wait routines)
         globalComm.barrier();
         double start_yield = time();
         for ( int i = 0; i < 10000; i++ )
-            sched_yield();
+            std::this_thread::yield();
         double time_yield = ( time() - start_yield ) / 10000;
         if ( globalComm.getRank() == 0 )
             std::cout << "Time to yield: " << time_yield * 1e6 << " us" << std::endl;

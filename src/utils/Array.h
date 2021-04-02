@@ -98,6 +98,12 @@ public: // Constructors / assignment operators
      */
     Array( std::initializer_list<TYPE> data );
 
+    /*!
+     * Create a 2D Array with the given initializer lists
+     * @param data          Input data
+     */
+    Array( std::initializer_list<std::initializer_list<TYPE>> data );
+
 
     /*!
      * Copy constructor

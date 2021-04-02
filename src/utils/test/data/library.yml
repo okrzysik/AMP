@@ -1,0 +1,161 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+# Modified for testing purposes
+
+- SHELF: main
+  name: "MAIN - simple inorganic materials"
+  content:
+    - DIVIDER: "Ag - Silver"
+    - BOOK: Ag
+      name: "Ag (Silver)"
+      info: "main/Ag.html"
+      content:
+        - DIVIDER: "Experimental data: bulk, thick film"
+        - PAGE: Johnson
+          name: "Johnson and Christy 1972: n,k 0.188-1.937 µm"
+          data: "main/Ag/Johnson.yml"
+        - PAGE: Yang
+          name: "Yang et al. 2015: n,k 0.270-24.92 µm"
+          data: "main/Ag/Yang.yml"
+        - PAGE: McPeak
+          name: "McPeak et al. 2015: n,k 0.3-1.7 µm"
+          data: "main/Ag/McPeak.yml"
+        - PAGE: Babar
+          name: "Babar and Weaver 2015: n,k 0.2066-12.40 µm"
+          data: "main/Ag/Babar.yml"
+        - DIVIDER: "Experimental data: thin film"
+        - PAGE: Ciesielski
+          name: "Ciesielski et al. 2017: Ag/SiO2; n,k 0.191-20.9 µm"
+          data: "main/Ag/Ciesielski.yml"
+        - PAGE: Ciesielski-Ge
+          name: "Ciesielski et al. 2017: Ag/Ge/SiO2; n,k 0.191-20.9 µm"
+          data: "main/Ag/Ciesielski-Ge.yml"
+        - PAGE: Ciesielski-Ni
+          name: "Ciesielski et al. 2017: Ag/Ni/SiO2; n,k 0.191-15.8 µm"
+          data: "main/Ag/Ciesielski-Ni.yml"
+        - DIVIDER: "Models and simulations"
+        - PAGE: Rakic-BB
+          name: "Rakić et al. 1998: Brendel-Bormann model; n,k 0.248-12.4 µm"
+          data: "main/Ag/Rakic-BB.yml"
+        - PAGE: Rakic-LD
+          name: "Rakić et al. 1998: Lorentz-Drude model; n,k 0.248-12.4 µm"
+          data: "main/Ag/Rakic-LD.yml"
+        - PAGE: Werner-DFT
+          name: "Werner et al. 2009: DFT calculations; n,k 0.01759-2.480 µm"
+          data: "main/Ag/Werner-DFT.yml"
+    - DIVIDER: "Al - Aluminium and aluminates"
+    - BOOK: Al
+      name: "Al (Aluminium)"
+      info: "main/Al.html"
+      content:
+        - DIVIDER: "Experimental data"
+        - PAGE: Rakic
+          name: "Rakić 1995: 0.00012399-200 µm"
+          data: "main/Al/Rakic.yml"
+        - PAGE: McPeak
+          name: "McPeak et al. 2015: n,k 0.15-1.7 µm"
+          data: "main/Al/McPeak.yml"
+        - DIVIDER: "Models and simulations"
+        - PAGE: Rakic-BB
+          name: "Rakić et al. 1998: Brendel-Bormann model; n,k 0.0620-248 µm"
+          data: "main/Al/Rakic-BB.yml"
+        - PAGE: Rakic-LD
+          name: "Rakić et al. 1998: Lorentz-Drude model; n,k 0.0620-248 µm"
+          data: "main/Al/Rakic-LD.yml"
+    - BOOK: MgAl2O4
+      name: "MgAl<sub>2</sub>O<sub>4</sub> (Magnesium aluminate, spinel)"
+      info: "main/MgAl2O4.html"
+      content:
+        - PAGE: Tropf
+          name: "Tropf and Thomas 1991: n 0.35-5.5 µm"
+          data: "main/MgAl2O4/Tropf.yml"
+    - BOOK: Y3Al5O12
+      name: "Y<sub>3</sub>Al<sub>5</sub>O<sub>12</sub> (Yttrium aluminium garnet, YAG)"
+      info: "main/Y3Al5O12.html"
+      content:
+        - PAGE: Zelmon
+          name: "Zelmon et al. 1998: n 0.4-5.0 µm"
+          data: "main/Y3Al5O12/Zelmon.yml"
+- SHELF: 3d
+  name: "3D - selected data for 3D artists"
+  content:
+    - BOOK: metals
+      name: "METALS"
+      info: "metals.html"
+      content:
+        - PAGE: aluminium
+          name: "Aluminium (Al)"
+          data: "main/Al/Rakic-BB.yml"
+          info: "main/Al.html"
+        - PAGE: "brass"
+          name: "Brass (Cu-Zn alloy)"
+          data: "other/alloys/Cu-Zn/Querry-Cu70Zn30.yml"
+          info: "other/Cu-Zn.html"
+        - PAGE: copper
+          name: "Copper (Cu)"
+          data: "main/Cu/Rakic-BB.yml"
+          info: "main/Cu.html"
+        - PAGE: gold
+          name: "Gold (Au)"
+          data: "main/Au/Rakic-BB.yml"
+          info: "main/Au.html"
+        - PAGE: iron
+          name: "Iron (Fe)"
+          data: "main/Fe/Johnson.yml"
+          info: "main/Fe.html"
+        - PAGE: lead
+          name: "Lead (Pb)"
+          data: "main/Pb/Golovashkin-293K.yml"
+          info: "main/Pb.html"
+        - PAGE: mercury
+          name: "Mercury (Hg)"
+          data: "main/Hg/Inagaki.yml"
+          info: "main/Hg.html"
+        - PAGE: platinum
+          name: "Platinum (Pt)"
+          data: "main/Pt/Rakic-BB.yml"
+          info: "main/Pt.html"
+        - PAGE: silver
+          name: "Silver (Ag)"
+          data: "main/Ag/Rakic-BB.yml"
+          info: "main/Ag.html"
+        - PAGE: titanium
+          name: "Titanium (Ti)"
+          data: "main/Ti/Johnson.yml"
+          info: "main/Ti.html"
+    - BOOK: plastics
+      name: "PLASTICS"
+      info: "plastics.html"
+      content:
+        - PAGE: pmma
+          name: "PMMA - Poly(methyl methacrylate)"
+          data: "organic/(C5H8O2)n - poly(methyl methacrylate)/Sultanova.yml"
+          info: "organic/poly(methyl methacrylate).html"
+        - PAGE: pvp
+          name: "PVP - Polyvinylpyrrolidone"
+          data: "organic/(C6H9NO)n - polyvinylpyrrolidone/Konig.yml"
+          info: "organic/polyvinylpyrrolidone.html"
+        - PAGE: ps
+          name: "PS - Polystyren"
+          data: "organic/(C8H8)n - polystyren/Sultanova.yml"
+          info: "organic/polystyren.html"
+        - PAGE: pc
+          name: "PC - Polycarbonate"
+          data: "organic/(C16H14O3)n - polycarbonate/Sultanova.yml"
+          info: "organic/polycarbonate.html"
+        - PAGE: Cellulose
+          name: "Cellulose"
+          data: "organic/(C6H10O5)n - cellulose/Sultanova.yml"
+          info: "organic/cellulose.html"
+        - PAGE: NAS-21
+          name: "NAS-21"
+          data: "other/commercial plastics/NAS-21/Sultanova.yml"
+        - PAGE: Optorez1330
+          name: "Optorez1330"
+          data: "other/commercial plastics/Optorez1330/Sultanova.yml"
+        - PAGE: ZeonexE48R
+          name: "ZeonexE48R"
+          data: "other/commercial plastics/ZeonexE48R/Sultanova.yml"
+
