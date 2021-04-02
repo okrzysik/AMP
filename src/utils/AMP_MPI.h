@@ -268,8 +268,10 @@ public: // Member functions
      * context.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects.
+     * \param[in] manage    Do we want to manage the comm (free the MPI_Comm when this object leaves
+     * scope)
      */
-    AMP_MPI dup() const;
+    AMP_MPI dup( bool manage = true ) const;
 
 
     /**
