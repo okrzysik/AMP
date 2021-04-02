@@ -205,6 +205,29 @@ void testArraySize( UnitTest &ut )
 }
 
 
+// Test the initializer lists
+void testArrayInitializerList( UnitTest &ut )
+{
+    bool pass        = true;
+    Array<double> M1 = { 1, 2, 3 };
+    Array<double> M2 = { { 1, 2, 3 }, { 4, 5, 6 } };
+    pass             = pass && M1.size() == ArraySize( 3 ) && M2.size() == ArraySize( 2, 3 );
+    pass             = pass && M1( 0 ) == 1;
+    pass             = pass && M1( 1 ) == 2;
+    pass             = pass && M1( 2 ) == 3;
+    pass             = pass && M2( 0, 0 ) == 1;
+    pass             = pass && M2( 0, 1 ) == 2;
+    pass             = pass && M2( 0, 2 ) == 3;
+    pass             = pass && M2( 1, 0 ) == 4;
+    pass             = pass && M2( 1, 1 ) == 5;
+    pass             = pass && M2( 1, 2 ) == 6;
+    if ( pass )
+        ut.passes( "Array constructor - initializer list" );
+    else
+        ut.failure( "Array constructor - initializer list" );
+}
+
+
 // Run some basic tests of Array
 void testArray( UnitTest &ut )
 {
@@ -227,12 +250,16 @@ void testArray( UnitTest &ut )
     else
         ut.failure( "Array constructors" );
 
+    // Test construction based on initializer lists
+    testArrayInitializerList( ut );
+
     // Test range based creation
     Array<double> Mr( Range<double>( 1, 6, 0.5 ) );
     if ( Mr.length() == 11 && Mr.ndim() == 1 && Mr( 2 ) == 2.0 )
         ut.passes( "Array range-based constructor" );
     else
         ut.failure( "Array range-based constructor" );
+
     // Test std::string
     bool pass = true;
     Array<std::string> S;

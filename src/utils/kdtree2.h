@@ -58,13 +58,6 @@ public:
     inline size_t size() const { return d_N; }
 
     /**
-     * \brief  Function to get the current memory usage
-     * \details  This function returns the current number of bytes in use by the structures.
-     *     Note: This is the total number of bytes used
-     */
-    size_t memory_usage() const;
-
-    /**
      * \brief   Add a point
      * \details  This will add a point to the kdtree.
      *    Note that no rebalancing will be performed

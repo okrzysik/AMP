@@ -20,6 +20,10 @@
 #define MPI_CLASS_WARNING AMP_WARNING
 
 
+#define MPI_CLASS_ERROR_TYPE( MSG ) \
+    MPI_CLASS_ERROR( std::string( MSG ) + " (" + typeid( TYPE ).name() + "(" );
+
+
 namespace AMP {
 
 
@@ -422,7 +426,7 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
         size_t bytes = length * sizeof( TYPE );
         MPI_Send( buf, bytes, MPI_BYTE, recv_proc, tag, communicator );
     } else {
-        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "send", profile_level );
 }
@@ -456,7 +460,7 @@ MPI_Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int ta
         size_t bytes = length * sizeof( TYPE );
         MPI_Isend( buf, bytes, MPI_BYTE, recv_proc, tag, communicator, &request );
     } else {
-        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "isend", profile_level );
     return request;
@@ -498,7 +502,7 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
         size_t bytes = length * sizeof( TYPE );
         MPI_Recv( buf, bytes, MPI_BYTE, send_proc, tag, communicator, &status );
     } else {
-        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "recv", profile_level );
 }
@@ -539,7 +543,7 @@ MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) co
         size_t bytes = length * sizeof( TYPE );
         MPI_Irecv( buf, bytes, MPI_BYTE, send_proc, tag, communicator, &request );
     } else {
-        MPI_CLASS_ERROR( "Arbitrary types are not supported" );
+        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
     }
     PROFILE_STOP( "Irecv", profile_level );
     return request;
@@ -552,6 +556,67 @@ MPI_Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) co
     return IrecvBytes( buf, bytes, send_proc, tag );
 }
 #endif
+
+
+/************************************************************************
+ *  sendrecv                                                             *
+ ************************************************************************/
+template<class TYPE>
+void MPI_CLASS::sendrecv( const TYPE *sendbuf,
+                          int sendcount,
+                          int dest,
+                          int sendtag,
+                          TYPE *recvbuf,
+                          int recvcount,
+                          int source,
+                          int recvtag ) const
+{
+    if ( getSize() <= 1 ) {
+        MPI_CLASS_ASSERT( dest == 0 );
+        MPI_CLASS_ASSERT( source == 0 );
+        MPI_CLASS_ASSERT( sendcount <= recvcount );
+        MPI_CLASS_ASSERT( sendtag == recvtag );
+        for ( int i = 0; i < sendcount; i++ )
+            recvbuf[i] = sendbuf[i];
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    PROFILE_START( "sendrecv", profile_level );
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
+        MPI_Sendrecv( sendbuf,
+                      sendcount,
+                      type,
+                      dest,
+                      sendtag,
+                      recvbuf,
+                      recvcount,
+                      type,
+                      source,
+                      recvtag,
+                      communicator,
+                      MPI_STATUS_IGNORE );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t sendbytes = sendcount * sizeof( TYPE );
+        size_t recvbytes = recvcount * sizeof( TYPE );
+        MPI_Sendrecv( sendbuf,
+                      sendbytes,
+                      MPI_BYTE,
+                      dest,
+                      sendtag,
+                      recvbuf,
+                      recvbytes,
+                      MPI_BYTE,
+                      source,
+                      recvtag,
+                      communicator,
+                      MPI_STATUS_IGNORE );
+    } else {
+        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
+    }
+    PROFILE_STOP( "sendrecv", profile_level );
+#endif
+}
 
 
 /************************************************************************
@@ -844,7 +909,7 @@ void MPI_CLASS::allToAll( int n, const TYPE *send, TYPE *recv ) const
         int N = n * sizeof( TYPE );
         MPI_Alltoall( send, N, MPI_BYTE, recv, N, MPI_BYTE, communicator );
     } else {
-        MPI_CLASS_ERROR( "Not finished" );
+        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
     }
 #endif
 }

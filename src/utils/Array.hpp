@@ -48,6 +48,7 @@ extern template class Array<float>;
     template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t, size_t );    \
     template AMP::Array<TYPE>::Array( const std::vector<size_t> &, const TYPE * ); \
     template AMP::Array<TYPE>::Array( std::initializer_list<TYPE> );               \
+    template AMP::Array<TYPE>::Array( std::initializer_list<std::initializer_list<TYPE>> ); \
     template AMP::Array<TYPE>::Array( const AMP::Array<TYPE> & );                  \
     template AMP::Array<TYPE>::Array( AMP::Array<TYPE> && );                       \
     template void AMP::Array<TYPE>::reshape( AMP::ArraySize const& );              \
@@ -211,6 +212,23 @@ Array<TYPE, FUN, Allocator>::Array( std::initializer_list<TYPE> x )
     auto it = x.begin();
     for ( size_t i = 0; i < x.size(); ++i, ++it )
         d_data[i] = *it;
+}
+template<class TYPE, class FUN, class Allocator>
+Array<TYPE, FUN, Allocator>::Array( std::initializer_list<std::initializer_list<TYPE>> x )
+    : d_isCopyable( true ), d_isFixedSize( false )
+{
+    size_t Nx = x.size();
+    size_t Ny = 0;
+    for ( const auto y : x )
+        Ny = std::max<size_t>( Ny, y.size() );
+    allocate( { Nx, Ny } );
+    auto itx = x.begin();
+    for ( size_t i = 0; i < x.size(); ++i, ++itx ) {
+        auto ity = itx->begin();
+        for ( size_t j = 0; j < itx->size(); ++j, ++ity ) {
+            d_data[i + j * Nx] = *ity;
+        }
+    }
 }
 template<class TYPE, class FUN, class Allocator>
 void Array<TYPE, FUN, Allocator>::allocate( const ArraySize &N )

@@ -343,6 +343,14 @@ public:
 
 
     /**
+     * Access the database
+     *
+     * @param key Key name in database.
+     */
+    const Database &operator()( const std::string_view &name ) const;
+
+
+    /**
      * Put the database for a key in the database.
      * If the specified key already exists in the database an error is thrown.
      *

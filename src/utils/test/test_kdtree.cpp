@@ -2,19 +2,25 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <random>
 #include <set>
 #include <vector>
 
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree.h"
 
 #include "ProfilerApp.h"
 
-// Get a random double value between 0 and 1
-double getRand()
+
+// Add the result to the tests
+void checkResult( AMP::UnitTest &ut, bool pass, const std::string &msg )
 {
-    return ( (double) rand() / (double) RAND_MAX ) + 1e-7 * ( (double) rand() / (double) RAND_MAX );
+    if ( pass )
+        ut.passes( msg );
+    else
+        ut.failure( msg );
 }
 
 
@@ -88,25 +94,27 @@ double compute_avg_dist( int DIM, int N )
 
 
 // Run the kdtree tests
-int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
+void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
 {
-    // Initialize the seed
-    srand( static_cast<unsigned int>( time( nullptr ) ) );
+    auto prefix = AMP::Utilities::stringf( "kdtree<%i,%i,%i>::", DIM, Nx, Ns );
+
+    // Initialize the random number
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dis( 0, 1 );
 
     // Create the coordinates
     std::vector<std::vector<double>> points( DIM, std::vector<double>( Nx, 0.0 ) );
     for ( int d = 0; d < DIM; d++ ) {
-        for ( size_t i = 0; i < Nx; i++ ) {
-            points[d][i] = getRand();
-        }
+        for ( size_t i = 0; i < Nx; i++ )
+            points[d][i] = dis( gen );
     }
 
     // Create the search points
     std::vector<std::vector<double>> search( DIM, std::vector<double>( Ns, 0.0 ) );
     for ( int d = 0; d < DIM; d++ ) {
-        for ( size_t i = 0; i < Ns; i++ ) {
-            search[d][i] = getRand();
-        }
+        for ( size_t i = 0; i < Ns; i++ )
+            search[d][i] = dis( gen );
     }
 
     // Create the kdtree
@@ -118,32 +126,35 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
     delete[] x;
     PROFILE_STOP( "create_tree" );
 
+    // Check the bounding box
+    auto box  = tree.box();
+    bool pass = (int) box.size() == 2 * DIM;
+    for ( int d = 0; d < DIM; d++ ) {
+        pass = pass && box[2 * d + 0] >= 0.0;
+        pass = pass && box[2 * d + 1] <= 1.0;
+    }
+    checkResult( ut, pass, prefix + "box" );
+
     // Search for the local points
     PROFILE_START( "search_local" );
-    bool error = false;
+    pass = true;
     double dist, xs[100], pos[100];
     for ( size_t i = 0; i < Nx; i++ ) {
         for ( int d = 0; d < DIM; d++ )
             xs[d] = points[d][i];
         size_t j = tree.find_nearest( xs, &dist, pos );
         if ( j != i || dist != 0.0 )
-            error = true;
+            pass = false;
         for ( int d = 0; d < DIM; d++ )
             if ( pos[d] != xs[d] )
-                error = true;
+                pass = false;
     }
     PROFILE_STOP( "search_local" );
-    if ( error ) {
-        printf( "Unable to correctly find local point in kdtree (%i,%i,%i)\n",
-                DIM,
-                (int) Nx,
-                (int) Ns );
-        return -1;
-    }
+    checkResult( ut, pass, prefix + "find_nearest (local)" );
 
     // Search for the unknown points
     PROFILE_START( "search_unknown" );
-    error           = false;
+    pass            = true;
     double dist_max = sqrt( (double) DIM ); // Maximum possible distance between two points
     double dist_avg = compute_avg_dist( DIM, (int) Nx ); // Average distance between two points
     for ( size_t i = 0; i < Ns; i++ ) {
@@ -151,18 +162,10 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
             xs[d] = search[d][i];
         size_t j = tree.find_nearest( xs, &dist, pos );
         if ( j >= Nx || dist <= 0.0 || dist > dist_max || dist > 100.0 * dist_avg )
-            error = true;
+            pass = false;
     }
     PROFILE_STOP( "search_unknown" );
-    if ( error ) {
-        printf( "Unable to find neighbor to unknown point in kdtree (%i,%i,%i)\n",
-                DIM,
-                (int) Nx,
-                (int) Ns );
-        return -2;
-    }
-
-    return 0;
+    checkResult( ut, pass, prefix + "find_nearest (unknown)" );
 }
 
 
@@ -170,47 +173,46 @@ int run_kdtree_test( int DIM, size_t Nx, size_t Ns )
 int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
+    AMP::UnitTest ut;
 
-    int error = 0;
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
 
     // Run a 1D test
     PROFILE_START( "1D kdtree" );
-    error += run_kdtree_test( 1, 10, 10 );
-    error += run_kdtree_test( 1, 10000, 1000 );
+    run_kdtree_test( ut, 1, 10, 10 );
+    run_kdtree_test( ut, 1, 10000, 1000 );
     PROFILE_STOP( "1D kdtree" );
 
     // Run a 2D test
     PROFILE_START( "2D kdtree" );
-    error += run_kdtree_test( 2, 10, 10 );
-    error += run_kdtree_test( 2, 100000, 10000 );
+    run_kdtree_test( ut, 2, 10, 10 );
+    run_kdtree_test( ut, 2, 100000, 10000 );
     PROFILE_STOP( "2D kdtree" );
 
     // Run a 3D test
     PROFILE_START( "3D kdtree" );
-    error += run_kdtree_test( 3, 10, 10 );
-    error += run_kdtree_test( 3, 100000, 100000 );
+    run_kdtree_test( ut, 3, 10, 10 );
+    run_kdtree_test( ut, 3, 100000, 100000 );
     PROFILE_STOP( "3D kdtree" );
 
     // Run a 5D test
     PROFILE_START( "5D kdtree" );
-    error += run_kdtree_test( 5, 10, 10 );
-    error += run_kdtree_test( 5, 10000, 2000 );
+    run_kdtree_test( ut, 5, 10, 10 );
+    run_kdtree_test( ut, 5, 10000, 2000 );
     PROFILE_STOP( "5D kdtree" );
 
     // Run a 10D test
-    //    PROFILE_START( "10D kdtree" );
-    //    error += run_kdtree_test( 10, 10, 10 );
-    //    error += run_kdtree_test( 10, 10000, 2000 );
-    //    PROFILE_STOP( "10D kdtree" );
+    // PROFILE_START( "10D kdtree" );
+    // run_kdtree_test( ut, 10, 10, 10 );
+    // run_kdtree_test( ut, 10, 10000, 2000 );
+    // PROFILE_STOP( "10D kdtree" );
 
     // Save the results
     PROFILE_SAVE( "test_kdtree" );
-    if ( error == 0 )
-        printf( "All tests passed\n" );
-    else
-        printf( "Some tests failed\n" );
+    ut.report();
+    int N_errors = ut.NumFailGlobal();
+    ut.reset();
     AMP::AMPManager::shutdown();
-    return error;
+    return N_errors;
 }
