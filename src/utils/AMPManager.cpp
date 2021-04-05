@@ -21,8 +21,8 @@
     #include "petscversion.h"
 #endif
 #if USE_EXT_TIMER
-    #include "TimerUtilityVersion.h"
     #include "MemoryApp.h"
+    #include "TimerUtilityVersion.h"
 #endif
 #ifdef USE_EXT_TRILINOS
     #include "Trilinos_version.h"
@@ -41,31 +41,32 @@
 #endif
 #ifdef USE_EXT_SAMRAI
     #undef NULL_USE
-    #include "SAMRAI/tbox/StartupShutdownManager.h"
-    #include "SAMRAI/tbox/SAMRAIManager.h"
     #include "SAMRAI/tbox/Logger.h"
+    #include "SAMRAI/tbox/SAMRAIManager.h"
+    #include "SAMRAI/tbox/StartupShutdownManager.h"
 #endif
 #ifdef USE_EXT_HYPRE
     #include "HYPRE_config.h"
 #endif
 #ifdef USE_CUDA
-    #include <cuda_runtime_api.h>
     #include <cuda.h>
+    #include <cuda_runtime_api.h>
 #endif
 // clang-format on
 
 
+#include <algorithm>
+#include <array>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <memory>
 #include <new>
 #include <sstream>
-#include <cstring>
-#include <vector>
-#include <array>
-#include <algorithm>
-#include <csignal>
 #include <stdexcept>
-#include <cstdio>
-#include <memory>
+#include <vector>
 
 
 namespace AMP {
@@ -514,10 +515,8 @@ void AMPManager::setHandlers()
     StackTrace::Utilities::setErrorHandlers();
     // Set atexit function
     std::atexit( exitFun );
-#ifdef USE_LINUX
     int err = std::at_quick_exit( exitFun );
     AMP_ASSERT( err == 0 );
-#endif
 }
 void AMPManager::clearHandlers()
 {
