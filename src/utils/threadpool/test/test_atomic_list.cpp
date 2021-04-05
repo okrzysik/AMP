@@ -76,15 +76,15 @@ public:
 
 private:
     std::multiset<TYPE> d_data;
-    AtomicOperations::int32_atomic d_lock;
+    std::atomic_uint32_t d_lock;
     inline void lock()
     {
         int tmp = 0;
         do {
-            tmp = AtomicOperations::atomic_fetch_and_and( &d_lock, 0 );
+            tmp = d_lock.fetch_and( 0 );
         } while ( tmp == 0 );
     }
-    inline void unlock() { AtomicOperations::atomic_fetch_and_or( &d_lock, 1 ); }
+    inline void unlock() { d_lock.fetch_or( 1 ); }
 };
 
 

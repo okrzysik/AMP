@@ -69,11 +69,11 @@ protected:
 private:
     ThreadPoolWorkItem( const ThreadPoolWorkItem & ) = delete;
     ThreadPoolWorkItem &operator=( const ThreadPoolWorkItem & ) = delete;
-    volatile ThreadPoolID::Status d_state;  // Current state
-    uint16_t d_N_ids;                       // Number of dependencies
-    uint16_t d_size;                        // Size of d_ids
-    AtomicOperations::int32_atomic d_count; // Count used by a thread_id
-    ThreadPoolID *d_ids;                    // Pointer to id list
+    volatile ThreadPoolID::Status d_state; // Current state
+    uint16_t d_N_ids;                      // Number of dependencies
+    uint16_t d_size;                       // Size of d_ids
+    volatile std::atomic_int32_t d_count;  // Count used by a thread_id
+    ThreadPoolID *d_ids;                   // Pointer to id list
     // Friends
     friend class ThreadPoolID;
 };

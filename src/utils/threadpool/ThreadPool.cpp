@@ -94,26 +94,27 @@ namespace AMP {
  ******************************************************************/
 static_assert( ThreadPool::MAX_THREADS % 64 == 0, "MAX_THREADS must be a multiple of 64" );
 static_assert( ThreadPool::MAX_THREADS < 65535, "MAX_THREADS must < 65535" );
-static_assert( sizeof( AtomicOperations::int32_atomic ) == 4, "atomic32 must be a 32-bit integer" );
-static_assert( sizeof( AtomicOperations::int64_atomic ) == 8, "atomic64 must be a 64-bit integer" );
+static_assert( sizeof( std::atomic_int32_t ) == 4, "atomic32 must be a 32-bit integer" );
+static_assert( sizeof( std::atomic_int64_t ) == 8, "atomic64 must be a 64-bit integer" );
+static_assert( sizeof( std::atomic_uint64_t ) == sizeof( uint64_t ), "atomic_uint64_t size" );
 
 
 /******************************************************************
  * Get/Set a bit                                                   *
  * Note: The these int64_atomic versions are thread-safe           *
  ******************************************************************/
-static inline void set_bit( volatile AtomicOperations::int64_atomic *x, size_t index )
+static inline void set_bit( volatile std::atomic_uint64_t *x, size_t index )
 {
     uint64_t mask = 0x01;
     mask <<= index & 0x3F;
     size_t i  = index >> 6;
     bool test = false;
     while ( !test ) {
-        AtomicOperations::int64_atomic y = x[i];
-        test = AtomicOperations::atomic_compare_and_swap( &x[i], y, ( y | mask ) );
+        uint64_t y = x[i].load();
+        test       = x[i].compare_exchange_weak( y, ( y | mask ) );
     }
 }
-static inline void unset_bit( volatile AtomicOperations::int64_atomic *x, size_t index )
+static inline void unset_bit( volatile std::atomic_uint64_t *x, size_t index )
 {
     uint64_t mask = 0x01;
     mask <<= index & 0x3F;
@@ -121,16 +122,15 @@ static inline void unset_bit( volatile AtomicOperations::int64_atomic *x, size_t
     size_t i  = index >> 6;
     bool test = false;
     while ( !test ) {
-        AtomicOperations::int64_atomic y = x[i];
-        test = AtomicOperations::atomic_compare_and_swap( &x[i], y, ( y & mask ) );
+        uint64_t y = x[i].load();
+        test       = x[i].compare_exchange_weak( y, ( y & mask ) );
     }
 }
-static inline bool get_bit( const volatile AtomicOperations::int64_atomic *x, size_t index )
+static inline bool get_bit( const volatile std::atomic_uint64_t *x, size_t index )
 {
     uint64_t mask = 0x01;
     mask <<= index & 0x3F;
-    // This is thread-safe since we only care about a single bit
-    AtomicOperations::int64_atomic y = x[index >> 6];
+    uint64_t y = x[index >> 6].load();
     return ( y & mask ) != 0;
 }
 
@@ -452,7 +452,7 @@ void ThreadPool::setThreadAffinity( int thread, const std::vector<int> &procs ) 
 void ThreadPool::check_startup()
 {
     // Check getting/setting a bit
-    AtomicOperations::int64_atomic x[2] = { 0x0, 0x7 };
+    volatile std::atomic_uint64_t x[2] = { 0x0, 0x7 };
     set_bit( x, 2 );
     unset_bit( x, 66 );
     if ( x[0] != 4 || x[1] != 3 || !get_bit( x, 2 ) || get_bit( x, 66 ) )
@@ -486,8 +486,8 @@ void ThreadPool::check_startup()
         }
     }
     d_id_assign = ThreadPoolID::maxThreadID;
-    AtomicOperations::atomic_decrement( &d_id_assign ); // Advance the id
-    AtomicOperations::atomic_decrement( &d_id_assign ); // Advance the id
+    --d_id_assign; // Advance the id
+    --d_id_assign; // Advance the id
     ThreadPoolID id2;
     id2.reset( 3, d_id_assign, nullptr );
     if ( isValid( id ) || !isValid( id2 ) )
@@ -524,7 +524,7 @@ ThreadPool::ThreadPool( const int N,
     memset( (void *) d_active, 0, MAX_THREADS / 8 );
     memset( (void *) d_cancel, 0, MAX_THREADS / 8 );
     for ( auto &tmp : d_wait )
-        tmp = nullptr;
+        tmp.store( nullptr );
     // Initialize the id
     d_id_assign = ThreadPoolID::maxThreadID;
     // Create the threads
@@ -705,7 +705,7 @@ void ThreadPool::tpool_thread( int thread_id )
 {
     if ( get_bit( d_active, thread_id ) )
         throw std::logic_error( "Thread cannot already be active" );
-    AtomicOperations::atomic_increment( &d_num_active );
+    ++d_num_active;
     set_bit( d_active, thread_id );
     unset_bit( d_cancel, thread_id );
     AMP::Utilities::setenv( "OMP_NUM_THREADS", "1" );
@@ -724,7 +724,7 @@ void ThreadPool::tpool_thread( int thread_id )
                 continue;
             }
             WorkItem *work = work_id.getWork();
-            AtomicOperations::atomic_increment( &d_N_started );
+            ++d_N_started;
             // Start work here
             PROFILE_THREADPOOL_START( "thread working" );
             work->d_state = ThreadPoolID::Status::started;
@@ -756,25 +756,24 @@ void ThreadPool::tpool_thread( int thread_id )
             }
             work->d_state = ThreadPoolID::Status::finished;
             PROFILE_THREADPOOL_STOP( "thread working" );
-            AtomicOperations::atomic_increment( &d_N_finished );
+            ++d_N_finished;
             // Check if any threads are waiting on the current work item
             // This can be done without blocking
             for ( int i = 0; i < MAX_WAIT; i++ ) {
-                auto ptr  = const_cast<volatile wait_ids_struct **>( &d_wait[i] );
-                auto wait = AtomicOperations::atomic_get( ptr );
+                auto wait = d_wait[i].load();
                 if ( wait != nullptr )
                     wait->id_finished( work_id );
             }
             // Check the signal count and signal if desired
             // This can be done without blocking
             if ( d_signal_count > 0 ) {
-                int count = AtomicOperations::atomic_decrement( &d_signal_count );
+                int count = --d_signal_count;
                 if ( count == 0 )
                     d_wait_finished.notify_all();
             }
             shutdown = get_bit( d_cancel, thread_id );
         } else {
-            int N_active = AtomicOperations::atomic_decrement( &d_num_active );
+            int N_active = --d_num_active;
             unset_bit( d_active, thread_id );
             // Alert main thread that a thread finished processing
             if ( ( N_active == 0 ) && d_signal_empty ) {
@@ -789,12 +788,12 @@ void ThreadPool::tpool_thread( int thread_id )
                 shutdown = get_bit( d_cancel, thread_id );
             }
             PROFILE_THREADPOOL_START2( "thread active" );
-            AtomicOperations::atomic_increment( &d_num_active );
+            ++d_num_active;
             set_bit( d_active, thread_id );
         }
     }
     PROFILE_THREADPOOL_STOP( "thread active" );
-    AtomicOperations::atomic_decrement( &d_num_active );
+    --d_num_active;
     unset_bit( d_active, thread_id );
     return;
 }
@@ -824,7 +823,7 @@ void ThreadPool::add_work( size_t N,
     PROFILE_THREADPOOL_SCOPED( timer, "add_work" );
     // Create the thread ids (can be done without blocking)
     for ( size_t i = 0; i < N; i++ )
-        ids[i].reset( priority[i], AtomicOperations::atomic_decrement( &d_id_assign ), work[i] );
+        ids[i].reset( priority[i], --d_id_assign, work[i] );
     // If there are no threads, perform the work immediately
     if ( d_N_threads < 1 ) {
         for ( size_t i = 0; i < N; i++ ) {
@@ -866,7 +865,7 @@ void ThreadPool::add_work( size_t N,
     for ( size_t i = 0; i < N; i++ )
         work[i]->d_state = ThreadPoolID::Status::added;
     d_queue.insert( N, ids );
-    AtomicOperations::atomic_add( &d_N_added, N );
+    d_N_added.fetch_add( N );
     // Activate sleeping threads
     if ( d_num_active == d_N_threads || d_queue.empty() ) {
         // All threads are active, no need to wake anybody
@@ -993,33 +992,34 @@ ThreadPool::wait_ids_struct::wait_ids_struct( size_t N,
       d_finished( finished ),
       d_wait_event( wait_event )
 {
-    if ( d_N == 0 )
+    if ( d_N.load() == 0 )
         return;
-    int i = 0;
-    using AtomicOperations::atomic_compare_and_swap;
-    while ( !atomic_compare_and_swap( (void *volatile *) &list[i], nullptr, this ) ) {
-        i = ( i + 1 ) % N_wait_list;
+    int i                 = 0;
+    wait_ids_struct *null = nullptr;
+    while ( !list[i].compare_exchange_weak( null, this ) ) {
+        null = nullptr;
+        i    = ( i + 1 ) % N_wait_list;
     }
+    AMP_ASSERT( list[i].load() == this );
     d_ptr = &list[i];
 }
 ThreadPool::wait_ids_struct::~wait_ids_struct()
 {
     clear();
-    while ( AtomicOperations::atomic_get( &d_lock ) != 0 )
+    while ( d_lock.load() != 0 )
         std::this_thread::yield();
 }
 void ThreadPool::wait_ids_struct::clear() const
 {
-    if ( d_N == 0 )
+    if ( d_N.load() == 0 )
         return;
-    while ( !AtomicOperations::atomic_compare_and_swap(
-        (void *volatile *) d_ptr, (void *) *d_ptr, nullptr ) ) {}
-    AtomicOperations::atomic_set( &d_N, 0 );
-    AtomicOperations::atomic_set( &d_wait, 0 );
+    d_ptr->store( nullptr );
+    d_N.store( 0 );
+    d_wait.store( 0 );
 }
 inline bool ThreadPool::wait_ids_struct::check()
 {
-    bool finished = d_N == 0;
+    bool finished = d_N.load() == 0;
     if ( !finished ) {
         int N_finished = d_finished.sum();
         if ( N_finished >= d_wait ) {
@@ -1031,11 +1031,11 @@ inline bool ThreadPool::wait_ids_struct::check()
 }
 void ThreadPool::wait_ids_struct::id_finished( const ThreadPoolID &id ) const
 {
-    if ( d_N == 0 )
+    if ( d_N.load() == 0 )
         return;
-    AtomicOperations::atomic_increment( &d_lock );
+    ++d_lock;
     int N_finished = 0;
-    for ( int i = 0; i < d_N; i++ ) {
+    for ( int i = 0; i < d_N.load(); i++ ) {
         if ( d_ids[i] == id ) {
             d_finished.set( i );
             N_finished = d_finished.sum();
@@ -1046,7 +1046,7 @@ void ThreadPool::wait_ids_struct::id_finished( const ThreadPoolID &id ) const
         clear();
         d_wait_event.notify_all();
     }
-    AtomicOperations::atomic_decrement( &d_lock );
+    --d_lock;
 }
 bool ThreadPool::wait_ids_struct::wait_for( double total_time, double recheck_time )
 {
@@ -1055,7 +1055,7 @@ bool ThreadPool::wait_ids_struct::wait_for( double total_time, double recheck_ti
     auto t1     = std::chrono::high_resolution_clock::now();
     auto t2     = t1;
     int us1     = 0;
-    int N       = AtomicOperations::atomic_get( &d_N );
+    int N       = d_N.load();
     while ( us1 < total ) {
         for ( int i = 0; i < N; i++ ) {
             if ( d_ids[i].finished() )

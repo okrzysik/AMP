@@ -22,7 +22,7 @@ AtomicList<TYPE, COMPARE>::AtomicList( size_t capacity,
       d_default( default_value ),
       d_objects( new TYPE[capacity] ),
       d_N( 0 ),
-      d_next( new AtomicOperations::int32_atomic[capacity + 1] ),
+      d_next( new std::atomic_int32_t[capacity + 1] ),
       d_unused( 1 ),
       d_N_insert( 0 ),
       d_N_remove( 0 )
@@ -80,8 +80,8 @@ inline TYPE AtomicList<TYPE, COMPARE>::remove( Compare compare, const Args &... 
     if ( pos != -1 ) {
         std::swap( rtn, const_cast<TYPE &>( d_objects[pos - 1] ) );
         put_unused( pos );
-        AtomicOperations::atomic_decrement( &d_N );
-        AtomicOperations::atomic_increment( &d_N_remove );
+        --d_N;
+        ++d_N_remove;
     }
     return rtn;
 }
@@ -96,8 +96,8 @@ inline TYPE AtomicList<TYPE, COMPARE>::remove_first()
         unlock( 0, next2 );
         std::swap( rtn, const_cast<TYPE &>( d_objects[next - 1] ) );
         put_unused( next );
-        AtomicOperations::atomic_decrement( &d_N );
-        AtomicOperations::atomic_increment( &d_N_remove );
+        --d_N;
+        ++d_N_remove;
     } else {
         unlock( 0, next );
     }
@@ -111,9 +111,9 @@ inline TYPE AtomicList<TYPE, COMPARE>::remove_first()
 template<class TYPE, class COMPARE>
 inline void AtomicList<TYPE, COMPARE>::insert( const TYPE &x )
 {
-    size_t N_used = AtomicOperations::atomic_increment( &d_N );
+    size_t N_used = ++d_N;
     if ( N_used > d_capacity ) {
-        AtomicOperations::atomic_decrement( &d_N );
+        --d_N;
         throw std::logic_error( "No room in list" );
     }
     // Get an index to store the entry
@@ -121,7 +121,7 @@ inline void AtomicList<TYPE, COMPARE>::insert( const TYPE &x )
     if ( index < 1 )
         throw std::logic_error( "Internal error" );
     // Store the object in d_objects
-    AtomicOperations::atomic_increment( &d_N_insert );
+    ++d_N_insert;
     d_objects[index - 1] = x;
     d_next[index]        = -1;
     // Find the position to store and update the next entires
@@ -172,7 +172,7 @@ inline bool AtomicList<TYPE, COMPARE>::check()
             N1++;
     }
     for ( size_t i = 0; i <= d_capacity; i++ ) {
-        int next = i == 0 ? start : d_next[i];
+        int next = i == 0 ? start : d_next[i].load();
         if ( next > 0 ) {
             N2++;
         } else if ( next < -3 ) {
@@ -187,7 +187,7 @@ inline bool AtomicList<TYPE, COMPARE>::check()
     int it  = 0;
     int pos = 0;
     while ( true ) {
-        int next = pos == 0 ? start : d_next[pos];
+        int next = pos == 0 ? start : d_next[pos].load();
         if ( next == -1 )
             break;
         pos = next;

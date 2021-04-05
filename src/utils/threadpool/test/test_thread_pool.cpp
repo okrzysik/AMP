@@ -263,27 +263,27 @@ ThreadPoolID f2( ThreadPoolID a ) { return a; }
 /******************************************************************
  * Test the basic functionallity of the atomics                    *
  ******************************************************************/
-int test_atomics()
+template<class T>
+T atomic_compare_and_swap( volatile std::atomic<T> &x, T e, T d )
 {
-    using namespace AtomicOperations;
-    int N_errors = 0;
-    volatile int32_atomic i32;
-    volatile int64_atomic i64;
-    i32 = 32;
-    i64 = 64;
-    if ( atomic_increment( &i32 ) != 33 || atomic_increment( &i64 ) != 65 )
-        N_errors++;
-    if ( atomic_decrement( &i32 ) != 32 || atomic_decrement( &i64 ) != 64 )
-        N_errors++;
-    if ( atomic_add( &i32, 2 ) != 34 || atomic_add( &i64, 4 ) != 68 )
-        N_errors++;
-    if ( atomic_compare_and_swap( &i32, 0, 0 ) || atomic_compare_and_swap( &i64, 0, 0 ) )
-        N_errors++;
-    if ( !atomic_compare_and_swap( &i32, 34, 32 ) || !atomic_compare_and_swap( &i64, 68, 64 ) )
-        N_errors++;
-    if ( i32 != 32 || i64 != 64 )
-        N_errors++;
-    return N_errors;
+    auto e2 = e;
+    return x.compare_exchange_weak( e2, d );
+}
+bool test_atomics()
+{
+    bool pass                        = true;
+    volatile std::atomic_int32_t i32 = 32;
+    volatile std::atomic_int32_t i64 = 64;
+    pass                             = pass && ++i32 == 33 && ++i64 == 65;
+    pass                             = pass && --i32 == 32 && --i64 == 64;
+    pass                             = pass && i32.fetch_add( 2 ) != 34;
+    pass                             = pass && i64.fetch_add( 4 ) != 68;
+    pass                             = pass && !atomic_compare_and_swap( i32, 0, 0 );
+    pass                             = pass && !atomic_compare_and_swap( i64, 0, 0 );
+    pass                             = pass && atomic_compare_and_swap( i32, 34, 32 );
+    pass                             = pass && atomic_compare_and_swap( i64, 68, 64 );
+    pass                             = pass && i32 == 32 && i64 == 64;
+    return pass;
 }
 
 
@@ -790,7 +790,7 @@ void run_tests( UnitTest &ut )
 
 
     // Test the atomics
-    if ( test_atomics() == 0 )
+    if ( test_atomics() )
         ut.passes( "Atomics passed" );
     else
         ut.failure( "Atomics failed" );
