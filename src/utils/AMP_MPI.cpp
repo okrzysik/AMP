@@ -5,6 +5,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/threadpool/ThreadPool.h"
 
 #include "ProfilerApp.h"
 #include "StackTrace/ErrorHandlers.h"
@@ -153,61 +154,10 @@ std::string MPI_CLASS::info()
  *  Functions to get/set the process affinities                          *
  ************************************************************************/
 int MPI_CLASS::getNumberOfProcessors() { return std::thread::hardware_concurrency(); }
-std::vector<int> MPI_CLASS::getProcessAffinity()
-{
-    std::vector<int> procs;
-#ifdef USE_LINUX
-    cpu_set_t mask;
-    int error = sched_getaffinity( getpid(), sizeof( cpu_set_t ), &mask );
-    if ( error != 0 )
-        MPI_CLASS_ERROR( "Error getting process affinity" );
-    for ( int i = 0; i < (int) sizeof( cpu_set_t ) * CHAR_BIT; i++ ) {
-        if ( CPU_ISSET( i, &mask ) )
-            procs.push_back( i );
-    }
-#elif defined( USE_MAC )
-    // MAC does not support getting or setting the affinity
-    printf( "Warning: MAC does not support getting the process affinity\n" );
-    procs.clear();
-#elif defined( USE_WINDOWS )
-    HANDLE hProc = GetCurrentProcess();
-    size_t procMask;
-    size_t sysMask;
-    PDWORD_PTR procMaskPtr = reinterpret_cast<PDWORD_PTR>( &procMask );
-    PDWORD_PTR sysMaskPtr  = reinterpret_cast<PDWORD_PTR>( &sysMask );
-    GetProcessAffinityMask( hProc, procMaskPtr, sysMaskPtr );
-    for ( int i = 0; i < (int) sizeof( size_t ) * CHAR_BIT; i++ ) {
-        if ( ( procMask & 0x1 ) != 0 )
-            procs.push_back( i );
-        procMask >>= 1;
-    }
-#else
-#error Unknown OS
-#endif
-    return procs;
-}
+std::vector<int> MPI_CLASS::getProcessAffinity() { return ThreadPool::getThreadAffinity(); }
 void MPI_CLASS::setProcessAffinity( const std::vector<int> &procs )
 {
-#ifdef USE_LINUX
-    cpu_set_t mask;
-    CPU_ZERO( &mask );
-    for ( auto cpu : procs )
-        CPU_SET( cpu, &mask );
-    int error = sched_setaffinity( getpid(), sizeof( cpu_set_t ), &mask );
-    if ( error != 0 )
-        MPI_CLASS_ERROR( "Error setting process affinity" );
-#elif defined( USE_MAC )
-    // MAC does not support getting or setting the affinity
-    NULL_USE( procs );
-#elif defined( USE_WINDOWS )
-    DWORD mask = 0;
-    for ( size_t i = 0; i < procs.size(); i++ )
-        mask |= ( (DWORD) 1 ) << procs[i];
-    HANDLE hProc = GetCurrentProcess();
-    SetProcessAffinityMask( hProc, mask );
-#else
-#error Unknown OS
-#endif
+    ThreadPool::setProcessAffinity( procs );
 }
 
 

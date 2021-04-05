@@ -26,24 +26,10 @@
 #include "MemoryApp.h"
 #endif
 
-// Detect the OS
-// clang-format off
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
-    #define USE_WINDOWS
-#elif defined( __APPLE__ )
-    #define USE_MAC
-#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
-    #define USE_LINUX
-    #define USE_NM
-#else
-    #error Unknown OS
-#endif
-// clang-format on
-
 
 // Include system dependent headers
 // clang-format off
-#ifdef USE_WINDOWS
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || defined( _MSC_VER )
     #include <process.h>
     #include <psapi.h>
     #include <stdio.h>
@@ -56,10 +42,7 @@
     #include <sys/time.h>
     #include <unistd.h>
 #endif
-#ifdef USE_LINUX
-    #include <malloc.h>
-#endif
-#ifdef USE_MAC
+#if defined( __APPLE__ )
     #include <mach/mach.h>
     #include <sys/sysctl.h>
     #include <sys/types.h>
@@ -102,16 +85,15 @@ std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); 
 void Utilities::setenv( const char *name, const char *value )
 {
     Utilities_mutex.lock();
-#if defined( USE_LINUX ) || defined( USE_MAC )
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
+    defined( _MSC_VER )
+    bool pass = SetEnvironmentVariable( name, value ) != 0;
+#else
     bool pass = false;
     if ( value == nullptr )
         pass = ::unsetenv( name ) == 0;
     else
         pass = ::setenv( name, value, 1 ) == 0;
-#elif defined( USE_WINDOWS )
-    bool pass = SetEnvironmentVariable( name, value ) != 0;
-#else
-#error Unknown OS
 #endif
     Utilities_mutex.unlock();
     if ( !pass ) {
@@ -448,14 +430,12 @@ void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 std::string Utilities::demangle( const std::string &name )
 {
     std::string out;
-#if defined( _GNU_SOURCE ) || defined( USE_MAC )
-#if defined( USE_ABI )
+#ifdef __GNUC__
     int status;
     char *demangled = abi::__cxa_demangle( name.data(), nullptr, nullptr, &status );
     if ( status == 0 && demangled != nullptr )
         out = demangled;
     free( demangled );
-#endif
 #endif
     if ( out.empty() )
         out = name;
