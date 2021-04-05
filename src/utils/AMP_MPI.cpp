@@ -694,7 +694,7 @@ MPI_CLASS MPI_CLASS::splitByNode( int key ) const
 /************************************************************************
  *  Duplicate an exisiting comm object                                   *
  ************************************************************************/
-MPI_CLASS MPI_CLASS::dup() const
+MPI_CLASS MPI_CLASS::dup( bool manage ) const
 {
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
@@ -708,7 +708,7 @@ MPI_CLASS MPI_CLASS::dup() const
     uniqueGlobalComm++;
 #endif
     // Create the new comm object
-    MPI_CLASS new_comm( new_MPI_comm, true );
+    MPI_CLASS new_comm( new_MPI_comm, manage );
     new_comm.d_isNull     = d_isNull;
     new_comm.d_call_abort = d_call_abort;
     return new_comm;
