@@ -11,6 +11,20 @@ extern std::ostream plog;
 
 
 /************************************************************************
+ * Get the operating system                                              *
+ ************************************************************************/
+#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
+constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::Windows; }
+#elif defined( __APPLE__ )
+constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::macOS; }
+#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
+constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::Linux; }
+#else
+constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::Unknown; }
+#endif
+
+
+/************************************************************************
  * Functions to hash                                                     *
  ************************************************************************/
 constexpr unsigned int AMP::Utilities::hash_char( const char *name )

@@ -80,6 +80,12 @@ std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); 
 
 
 /****************************************************************************
+ *  Basic checks                                                             *
+ ****************************************************************************/
+static_assert( AMP::Utilities::getOS() != AMP::Utilities::OS::Unknown );
+
+
+/****************************************************************************
  *  Function to set an environemental variable                               *
  ****************************************************************************/
 void Utilities::setenv( const char *name, const char *value )

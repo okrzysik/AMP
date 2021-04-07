@@ -82,6 +82,13 @@ using StackTrace::Utilities::tick;
 using StackTrace::Utilities::time;
 
 
+//! Enum for the operating system
+enum class OS { macOS, Linux, Windows, Unknown };
+
+//! Return the OS
+constexpr OS getOS();
+
+
 /*!
  * Set an environmental variable
  * @param name              The name of the environmental variable
