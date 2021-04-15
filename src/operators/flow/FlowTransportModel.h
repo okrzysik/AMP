@@ -51,7 +51,8 @@ protected:
 
     double d_density, d_fmu, d_Re;
 
-    AMP::Materials::Material::shared_ptr d_coolant; /**< Shared pointer to the materials object. */
+    std::shared_ptr<AMP::Materials::Material>
+        d_coolant; /**< Shared pointer to the materials object. */
 
 private:
 };

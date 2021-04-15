@@ -31,11 +31,6 @@ public:
 
     virtual ~Material() { delete d_propertyMap; }
 
-    /// specific shared pointer for this class
-    typedef std::shared_ptr<Material> shared_ptr;
-
-    static size_t counter;
-
 public:
     /// check if a property exists in the material
     bool hasProperty( std::string type );

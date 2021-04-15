@@ -15,27 +15,24 @@
 #include <iostream>
 #include <string>
 #include <valarray>
-using namespace std;
+
 
 int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    using namespace AMP::Materials;
-
     bool good = true;
 
     // get material pointer
-    Material::shared_ptr mat =
-        AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "Independent" );
+    auto mat  = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "Independent" );
     auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors
-    string tcname = prop->get_name();
-    string tcsorc = prop->get_source();
-    good          = good && tcname == string( "Independent" ) + string( "_ThermalConductivity" );
-    good          = good && tcsorc == prop->get_source();
+    std::string tcname = prop->get_name();
+    std::string tcsorc = prop->get_source();
+    good               = good && tcname == "Independent_ThermalConductivity";
+    good               = good && tcsorc == prop->get_source();
     std::cout << "thermal conductivity name is " << tcname << "\n";
     std::cout << "thermal conductivity source is " << tcsorc << "\n";
 
@@ -62,9 +59,8 @@ int main( int argc, char **argv )
     for ( size_t i = 0; i < 3; i++ )
         vfcv[i] = std::make_shared<std::vector<double>>( n );
 
-    std::shared_ptr<AMP::Materials::VectorProperty<double>> vectorProperty =
-        std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
-            mat->property( "VectorFickCoefficient" ) );
+    auto vectorProperty = std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
+        mat->property( "VectorFickCoefficient" ) );
     vectorProperty->set_dimension( 3 );
     double vparams[] = { 1.1, 2.2, 3.3 };
     vectorProperty->set_parameters_and_number( vparams, 3 );
@@ -76,9 +72,8 @@ int main( int argc, char **argv )
         for ( size_t j = 0; j < 3; j++ )
             tfcv[i][j] = std::make_shared<std::vector<double>>( n );
 
-    std::shared_ptr<AMP::Materials::TensorProperty<double>> tensorProperty =
-        std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>(
-            mat->property( "TensorFickCoefficient" ) );
+    auto tensorProperty = std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>(
+        mat->property( "TensorFickCoefficient" ) );
     tensorProperty->set_dimensions( std::vector<size_t>( 2, 3U ) );
     double tparams[9] = { 1.1, 2.2, 3.3, 11., 22., 33., 111., 222., 333. };
     tensorProperty->set_parameters_and_number( tparams, 9 );
@@ -92,12 +87,12 @@ int main( int argc, char **argv )
 
     prop->evalv( tcv, argMap );
 
-    good                    = good && AMP::Utilities::approx_equal( tcv[1], tcv[n - 1] );
-    good                    = good && AMP::Utilities::approx_equal( tcv[2], tcv[n - 1] );
-    valarray<double> params = prop->get_parameters();
-    good                    = good && AMP::Utilities::approx_equal( tcv[1], params[0] );
+    good        = good && AMP::Utilities::approx_equal( tcv[1], tcv[n - 1] );
+    good        = good && AMP::Utilities::approx_equal( tcv[2], tcv[n - 1] );
+    auto params = prop->get_parameters();
+    good        = good && AMP::Utilities::approx_equal( tcv[1], params[0] );
 
-    std::valarray<double> sparams = mat->property( "PoissonRatio" )->get_parameters();
+    auto sparams = mat->property( "PoissonRatio" )->get_parameters();
     for ( size_t i = 0; i < n; i++ ) {
         good = good && prv[i] == sparams[0];
     }

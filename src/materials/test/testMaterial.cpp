@@ -78,12 +78,11 @@ void testArgsRange( const PROP &property,
 // Test a given material
 MatTestResult testMaterial( std::string &name )
 {
-    using namespace AMP::Materials;
     MatTestResult results;
     results.name = name;
 
     // create material object
-    Material::shared_ptr mat;
+    std::shared_ptr<AMP::Materials::Material> mat;
     try {
         mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
         results.creationGood = true;
@@ -1085,7 +1084,6 @@ int main( int argc, char **argv )
 
     { // Limit scope
 
-        using namespace AMP::Materials;
 
         // test all materials and all properties and print report
         auto matlist = AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();

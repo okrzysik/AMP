@@ -21,17 +21,13 @@
 #include <sstream>
 #include <string>
 
-AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
+
+inline AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 {
+    AMP_ASSERT( volume != AMP::Mesh::GeomType::null );
     if ( volume == AMP::Mesh::GeomType::Vertex )
         return AMP::Mesh::GeomType::Vertex;
-    else if ( volume == AMP::Mesh::GeomType::Edge )
-        return AMP::Mesh::GeomType::Vertex;
-    else if ( volume == AMP::Mesh::GeomType::Face )
-        return AMP::Mesh::GeomType::Edge;
-    else if ( volume == AMP::Mesh::GeomType::Volume )
-        return AMP::Mesh::GeomType::Face;
-    return AMP::Mesh::GeomType::null;
+    return static_cast<AMP::Mesh::GeomType>( static_cast<int>( volume ) - 1 );
 }
 
 
@@ -53,7 +49,34 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 }
 
 
-void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
+void test_HDF5( AMP::UnitTest &ut )
+{
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    if ( globalComm.getRank() != 0 )
+        return;
+
+#ifdef USE_AMP_VECTORS
+    // Create the writer
+    auto writer = AMP::Utilities::Writer::buildWriter( "hdf5" );
+
+    // Create and register the vector
+    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
+    auto vec = AMP::LinearAlgebra::createArrayVector<double>( AMP::ArraySize( 5, 4, 3 ), var );
+    vec->setRandomValues();
+    writer->registerVector( vec, "vec" );
+
+    // Write the file
+    writer->writeFile( "test_HDF5", 0, 0.0 );
+
+    if ( AMP::Utilities::fileExists( "test_HDF5_0.hdf5" ) )
+        ut.passes( "Wrote HDF5 file" );
+    else
+        ut.failure( "Wrote HDF5 file" );
+#endif
+}
+
+
+void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
 {
 
     AMP::logOnlyNodeZero( "output_test_SiloIO" );
@@ -239,7 +262,7 @@ void test_Silo( AMP::UnitTest *ut, const std::string &input_file )
         std::cout << "Total time: " << t7 - t1 << std::endl;
     }
 
-    ut->passes( "test ran to completion" );
+    ut.passes( "Silo test ran to completion" );
 }
 
 
@@ -249,19 +272,18 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
     PROFILE_ENABLE();
 
-#ifdef USE_EXT_SILO
-    const char *filename = "input_SiloIO-1";
+    std::string filename = "input_SiloIO-1";
     if ( argc == 2 )
         filename = argv[1];
-    test_Silo( &ut, filename );
-#else
-    ut.expected_failure( "AMP was not configured with silo" );
-#endif
 
+    test_Silo( ut, filename );
+
+    test_HDF5( ut );
+
+    int N_failed = ut.NumFailGlobal();
     ut.report();
     ut.reset();
     PROFILE_SAVE( "test_Silo" );
-    int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
-    return num_failed;
+    return N_failed;
 }

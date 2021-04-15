@@ -365,7 +365,8 @@ inline std::string stringf( const char *format, ... );
 
 
 //! Print a database
-void printDatabase( Database &, std::ostream &, const std::string &indent = "" );
+[[deprecated( "This function will be removed soon, use Database::print" )]] void
+printDatabase( Database &, std::ostream &, const std::string &indent = "" );
 
 
 } // namespace Utilities

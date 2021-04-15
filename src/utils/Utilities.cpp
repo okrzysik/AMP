@@ -448,6 +448,7 @@ std::string Utilities::demangle( const std::string &name )
     return out;
 }
 
+
 // Print a database to an output stream
 template<class TYPE>
 static void printVar( const std::string &name,
@@ -465,33 +466,8 @@ static void printVar( const std::string &name,
 }
 void Utilities::printDatabase( Database &db, std::ostream &os, const std::string &indent )
 {
-    for ( const auto &name : db.getAllKeys() ) {
-        if ( db.isDatabase( name ) ) {
-            os << indent << name << "{\n";
-            printDatabase( *db.getDatabase( name ), os, indent + "   " );
-            os << indent << "}\n";
-        } else if ( db.isType<bool>( name ) ) {
-            auto data = db.getVector<bool>( name );
-            os << indent << name << " = ";
-            if ( !data.empty() ) {
-                os << ( data[0] ? "TRUE" : "FALSE" );
-                for ( size_t i = 1; i < data.size(); i++ )
-                    os << ", " << ( data[i] ? "TRUE" : "FALSE" );
-            }
-            os << std::endl;
-        } else if ( db.isType<double>( name ) ) {
-            auto data = db.getVector<double>( name );
-            printVar( name, data, os, indent );
-        } else if ( db.isType<int>( name ) ) {
-            auto data = db.getVector<int>( name );
-            printVar( name, data, os, indent );
-        } else if ( db.isString( name ) ) {
-            auto data = db.getVector<std::string>( name );
-            printVar( name, data, os, indent );
-        } else {
-            AMP_ERROR( "Unknown type for field: " + name );
-        }
-    }
+    db.print( os, indent );
 }
+
 
 } // namespace AMP

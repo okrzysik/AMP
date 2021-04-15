@@ -15,27 +15,25 @@
 #include <iostream>
 #include <string>
 #include <valarray>
-using namespace std;
+
 
 int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    using namespace AMP::Materials;
 
     bool good = true;
 
     // get material pointer
-    Material::shared_ptr mat =
-        AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "FixedClad" );
+    auto mat  = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "FixedClad" );
     auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors
-    string tcname = prop->get_name();
-    string tcsorc = prop->get_source();
-    good          = good && tcname == string( "FixedClad" ) + string( "_ThermalConductivity" );
-    good          = good && tcsorc == prop->get_source();
+    std::string tcname = prop->get_name();
+    std::string tcsorc = prop->get_source();
+    good               = good && tcname == "FixedClad_ThermalConductivity";
+    good               = good && tcsorc == prop->get_source();
     std::cout << "thermal conductivity name is " << tcname << "\n";
     std::cout << "thermal conductivity source is " << tcsorc << "\n";
 
@@ -91,12 +89,12 @@ int main( int argc, char **argv )
 
     prop->evalv( tcv, argMap );
 
-    good                    = good && AMP::Utilities::approx_equal( tcv[1], tcv[n - 1] );
-    good                    = good && AMP::Utilities::approx_equal( tcv[2], tcv[n - 1] );
-    valarray<double> params = prop->get_parameters();
-    good                    = good && AMP::Utilities::approx_equal( tcv[1], params[0] );
+    good        = good && AMP::Utilities::approx_equal( tcv[1], tcv[n - 1] );
+    good        = good && AMP::Utilities::approx_equal( tcv[2], tcv[n - 1] );
+    auto params = prop->get_parameters();
+    good        = good && AMP::Utilities::approx_equal( tcv[1], params[0] );
 
-    std::valarray<double> sparams = mat->property( "PoissonRatio" )->get_parameters();
+    auto sparams = mat->property( "PoissonRatio" )->get_parameters();
     for ( size_t i = 0; i < n; i++ ) {
         good = good && prv[i] == sparams[0];
     }

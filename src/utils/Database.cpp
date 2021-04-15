@@ -14,6 +14,10 @@
 namespace AMP {
 
 
+// Forward declarations
+static size_t loadDatabase( const char *, size_t, Database & );
+
+
 /********************************************************************
  * Read the input file into memory                                   *
  ********************************************************************/
@@ -469,7 +473,7 @@ void Database::readDatabase( const std::string &filename )
     auto buffer = readFile( filename );
     // Create the database entries
     try {
-        loadDatabase( buffer.data(), *this );
+        loadDatabase( buffer.data(), buffer.size(), *this );
     } catch ( std::exception &err ) {
         throw std::logic_error( "Error loading database from file \"" + filename + "\"\n" +
                                 err.what() );
@@ -478,7 +482,7 @@ void Database::readDatabase( const std::string &filename )
 std::unique_ptr<Database> Database::createFromString( const std::string_view &data )
 {
     auto db = std::make_unique<Database>();
-    loadDatabase( data.data(), *db );
+    loadDatabase( data.data(), data.size(), *db );
     return db;
 }
 enum class token_type {
@@ -544,16 +548,25 @@ static size_t skip_comment( const char *buffer )
 {
     auto tmp          = find_next_token( buffer );
     auto comment_type = std::get<1>( tmp );
-    auto end_comment =
-        ( comment_type == token_type::line_comment ) ? token_type::newline : token_type::block_stop;
-    size_t pos = 0;
-    while ( std::get<1>( tmp ) != end_comment ) {
-        if ( comment_type == token_type::block_start && std::get<1>( tmp ) == token_type::end )
-            throw std::logic_error( "Encountered end of file before block comment end" );
+    size_t pos        = 0;
+    if ( comment_type == token_type::line_comment ) {
+        // Line comment
+        while ( std::get<1>( tmp ) != token_type::newline &&
+                std::get<1>( tmp ) != token_type::end ) {
+            pos += std::get<0>( tmp );
+            tmp = find_next_token( &buffer[pos] );
+        }
         pos += std::get<0>( tmp );
-        tmp = find_next_token( &buffer[pos] );
+    } else {
+        /* Block comment */
+        while ( std::get<1>( tmp ) != token_type::block_stop ) {
+            if ( comment_type == token_type::block_start && std::get<1>( tmp ) == token_type::end )
+                throw std::logic_error( "Encountered end of file before block comment end" );
+            pos += std::get<0>( tmp );
+            tmp = find_next_token( &buffer[pos] );
+        }
+        pos += std::get<0>( tmp );
     }
-    pos += std::get<0>( tmp );
     return pos;
 }
 enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, ARRAY, UNKNOWN };
@@ -849,10 +862,10 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
     }
     return std::make_tuple( pos, std::move( data ) );
 }
-size_t Database::loadDatabase( const char *buffer, Database &db )
+static size_t loadDatabase( const char *buffer, size_t N, Database &db )
 {
     size_t pos = 0;
-    while ( true ) {
+    while ( pos < N ) {
         size_t i;
         token_type type;
         std::tie( i, type ) = find_next_token( &buffer[pos] );
@@ -879,7 +892,7 @@ size_t Database::loadDatabase( const char *buffer, Database &db )
             DATABASE_INSIST( !key.empty(), "Empty key" );
             pos += i;
             auto database = std::make_unique<Database>();
-            pos += loadDatabase( &buffer[pos], *database );
+            pos += loadDatabase( &buffer[pos], N - pos, *database );
             database->setName( std::string( key.data(), key.size() ) );
             db.putData( key, std::move( database ) );
         } else if ( type == token_type::end_bracket || type == token_type::end ) {

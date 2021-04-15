@@ -274,11 +274,9 @@ void AMPManager::shutdown()
     double start_time = Utilities::time();
     int rank          = comm_world.getRank();
     if ( initialized == 0 )
-        AMP_ERROR( "AMP is not initialized, did you forget to call startup or call shutdown more "
-                   "than once" );
+        AMP_ERROR( "AMP is not initialized, did you forget to call startup" );
     if ( initialized == -1 )
-        AMP_ERROR(
-            "AMP has been initialized and shutdown.  Calling shutdown more than once is invalid" );
+        AMP_ERROR( "Calling shutdown more than once is invalid" );
     initialized = -1;
     // Clear error handlers
     clearHandlers();

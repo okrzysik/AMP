@@ -51,7 +51,7 @@ template<>
 void Property<double>::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                               const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
-    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> mapargs = make_map( args );
+    auto mapargs = make_map( args );
     evalv( r, mapargs );
 }
 } // namespace Materials

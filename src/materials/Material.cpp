@@ -15,8 +15,6 @@
 namespace AMP {
 namespace Materials {
 
-size_t Material::counter = 0;
-
 
 // check if a property exists in the material
 bool Material::hasProperty( std::string type )
