@@ -466,9 +466,8 @@ MultiMesh::createDatabases( std::shared_ptr<AMP::Database> database )
             }
         }
         // Add the new databases to meshDatabases
-        for ( int j = 0; j < N; j++ ) {
+        for ( int j = 0; j < N; j++ )
             meshDatabases.push_back( databaseArray[j] );
-        }
     }
     return meshDatabases;
 }
@@ -908,17 +907,27 @@ bool MultiMesh::operator==( const Mesh &rhs ) const
 template<class TYPE>
 static inline void putEntry( std::shared_ptr<const AMP::Database> database1,
                              std::vector<std::shared_ptr<AMP::Database>> &database2,
-                             const std::string &key,
-                             bool select )
+                             const std::string &key )
 {
     auto N    = database2.size();
     auto data = database1->getVector<TYPE>( key );
     for ( size_t i = 0; i < database2.size(); i++ ) {
-        if ( N == data.size() && select )
+        if ( N == data.size() )
             database2[i]->putScalar( key, data[i] );
         else
             database2[i]->putVector( key, data );
     }
+}
+static std::string
+strrep( const std::string &in, const std::string_view &s, const std::string_view &r )
+{
+    std::string str( in );
+    size_t pos = str.find( s.data(), 0, s.size() );
+    while ( pos != std::string::npos ) {
+        str.replace( pos, s.size(), r.data(), r.size() );
+        pos = str.find( s.data(), 0, s.size() );
+    }
+    return str;
 }
 static void copyKey( std::shared_ptr<const AMP::Database> database1,
                      std::vector<std::shared_ptr<AMP::Database>> &database2,
@@ -938,24 +947,40 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
             for ( auto &subKey : subKeys )
                 copyKey( subDatabase1, subDatabase2, subKey, false, iterator, index2 );
         }
+    } else if ( !select ) {
+        for ( size_t i = 0; i < database2.size(); i++ )
+            database2[i]->putData( key, database1->getData( key )->clone() );
     } else if ( database1->isType<bool>( key ) ) {
         // Copy a bool
-        putEntry<bool>( database1, database2, key, select );
+        putEntry<bool>( database1, database2, key );
     } else if ( database1->isType<int>( key ) ) {
         // Copy a int
-        putEntry<int>( database1, database2, key, select );
+        putEntry<int>( database1, database2, key );
     } else if ( database1->isType<float>( key ) ) {
         // Copy a float
-        putEntry<float>( database1, database2, key, select );
+        putEntry<float>( database1, database2, key );
     } else if ( database1->isType<double>( key ) ) {
         // Copy a double
-        putEntry<double>( database1, database2, key, select );
+        putEntry<double>( database1, database2, key );
     } else if ( database1->isType<std::complex<double>>( key ) ) {
         // Copy a std::complex<double>
-        putEntry<std::complex<double>>( database1, database2, key, select );
+        putEntry<std::complex<double>>( database1, database2, key );
     } else if ( database1->isType<std::string>( key ) ) {
-        // Copy a std::string
-        putEntry<std::string>( database1, database2, key, select );
+        // Copy a std::string (checking for the index)
+        auto data = database1->getVector<std::string>( key );
+        AMP_ASSERT( !data.empty() );
+        if ( data.size() == database2.size() ) {
+            for ( size_t i = 0; i < database2.size(); i++ )
+                database2[i]->putScalar( key, data[i] );
+        } else if ( data.size() == 1 ) {
+            for ( size_t i = 0; i < database2.size(); i++ ) {
+                auto data2 = strrep( data[0], iterator, index[i] );
+                database2[i]->putScalar( key, data2 );
+            }
+        } else {
+            for ( size_t i = 0; i < database2.size(); i++ )
+                database2[i]->putVector( key, data );
+        }
     } else {
         AMP_ERROR( "Unknown key type" );
     }

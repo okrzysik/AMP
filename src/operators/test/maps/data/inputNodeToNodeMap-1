@@ -17,7 +17,7 @@ Mesh{
         Range = 0.004095, 0, 0.01016
         x_offset = 0.0
         y_offset = 0.0
-        z_offset = 0.0, 0.5, 1.0
+        z_offset = 0.0, 0.01016, 0.02032
         //MeshType = "libMesh"
         //FileName = "TC1-PELL-COARSE.e"
         //NumberOfElements = 80
@@ -30,9 +30,9 @@ NodeToNodeMaps{
     MapType = "NodeToNode"
     N_maps = 2
     Mesh1 = "pellet_1", "pellet_2"
-    Surface1 = 1
+    Surface1 = 1, 1
     Mesh2 = "pellet_2", "pellet_3"
-    Surface2 = 2
+    Surface2 = 2, 2
     DOFsPerObject = 3
     VariableName = "displacement"
 }

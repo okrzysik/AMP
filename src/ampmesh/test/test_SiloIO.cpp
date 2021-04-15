@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -57,7 +58,7 @@ void test_HDF5( AMP::UnitTest &ut )
 
 #ifdef USE_AMP_VECTORS
     // Create the writer
-    auto writer = AMP::Utilities::Writer::buildWriter( "hdf5" );
+    auto writer = AMP::Utilities::Writer::buildWriter( "hdf5", AMP_COMM_SELF );
 
     // Create and register the vector
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
@@ -73,6 +74,17 @@ void test_HDF5( AMP::UnitTest &ut )
     else
         ut.failure( "Wrote HDF5 file" );
 #endif
+}
+
+
+void printMeshNames( AMP::Mesh::Mesh::shared_ptr mesh, const std::string &prefix = "" )
+{
+    std::cout << prefix << mesh->getName() << std::endl;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        for ( auto mesh2 : multimesh->getMeshes() )
+            printMeshNames( mesh2, prefix + "   " );
+    }
 }
 
 
@@ -102,6 +114,12 @@ void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
+
+    // Print the mesh names (rank 0)
+    if ( globalComm.getRank() == 0 ) {
+        std::cout << "Mesh names (rank 0):\n";
+        printMeshNames( mesh, "   " );
+    }
 
     // Create a surface mesh
     auto submesh = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );

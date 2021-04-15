@@ -464,7 +464,7 @@ static void printVar( const std::string &name,
     }
     os << std::endl;
 }
-void Utilities::printDatabase( Database &db, std::ostream &os, const std::string &indent )
+void Utilities::printDatabase( const Database &db, std::ostream &os, const std::string &indent )
 {
     db.print( os, indent );
 }

@@ -16,7 +16,7 @@ namespace Utilities {
 /************************************************************
  * Builder                                                   *
  ************************************************************/
-std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( const std::string &type )
+std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( const std::string &type, AMP_MPI comm )
 {
     std::shared_ptr<AMP::Utilities::Writer> writer;
     if ( type == "None" || type == "none" || type == "NONE" ) {
@@ -34,6 +34,7 @@ std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( const std::string &
     } else {
         AMP_ERROR( "Unknown writer: " + type );
     }
+    writer->d_comm = std::move( comm );
     return writer;
 }
 std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::shared_ptr<AMP::Database> db )

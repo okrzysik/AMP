@@ -39,9 +39,11 @@ NodeToNodeMap::NodeToNodeMap( const std::shared_ptr<AMP::Operator::OperatorParam
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
 
     // Create the element iterators
-    if ( d_mesh1.get() != nullptr )
+    d_iterator1 = AMP::Mesh::MeshIterator();
+    d_iterator2 = AMP::Mesh::MeshIterator();
+    if ( d_mesh1 )
         d_iterator1 = d_mesh1->getBoundaryIDIterator( geomType, Params.d_BoundaryID1, 0 );
-    if ( d_mesh2.get() != nullptr )
+    if ( d_mesh2 )
         d_iterator2 = d_mesh2->getBoundaryIDIterator( geomType, Params.d_BoundaryID2, 0 );
 
     // Create the pairs of points that are aligned
@@ -71,12 +73,7 @@ NodeToNodeMap::~NodeToNodeMap() = default;
 /********************************************************
  * Check if the string matches a NodeToNode map          *
  ********************************************************/
-bool NodeToNodeMap::validMapType( const std::string &t )
-{
-    if ( t == "NodeToNode" )
-        return true;
-    return false;
-}
+bool NodeToNodeMap::validMapType( const std::string &t ) { return t == "NodeToNode"; }
 
 
 /********************************************************
@@ -257,13 +254,8 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     d_localPairsMesh2.resize( 0 );
 
     // For each mesh, get the list of points owned by the current processor
-    std::vector<Point> ownedPointsMesh1;
-    std::vector<Point> ownedPointsMesh2;
-    if ( !d_mesh1 )
-        ownedPointsMesh1 = createOwnedPoints( d_iterator1 );
-    if ( !d_mesh2 )
-        ownedPointsMesh2 = createOwnedPoints( d_iterator2 );
-
+    auto ownedPointsMesh1 = createOwnedPoints( d_iterator1 );
+    auto ownedPointsMesh2 = createOwnedPoints( d_iterator2 );
 
     // Send the list of points on mesh1 to all processors
     int commSize  = d_MapComm.getSize();
@@ -302,7 +294,6 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
         }
     }
     surfacePts.clear();
-
 
     // Send the list of points on mesh2 to all processors
     send_cnt = (int) ownedPointsMesh2.size();
@@ -420,5 +411,7 @@ bool NodeToNodeMap::Point::operator<=( const Point &rhs ) const
 }
 bool NodeToNodeMap::Point::operator>=( const Point &rhs ) const { return !operator<( rhs ); }
 bool NodeToNodeMap::Point::operator>( const Point &rhs ) const { return !operator<=( rhs ); }
+
+
 } // namespace Operator
 } // namespace AMP
