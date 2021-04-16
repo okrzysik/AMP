@@ -47,12 +47,7 @@ ScalarZAxisMap::~ScalarZAxisMap() = default;
 /************************************************************************
  *  Check if the map type is "ScalarZAxis"                               *
  ************************************************************************/
-bool ScalarZAxisMap::validMapType( const std::string &t )
-{
-    if ( t == "ScalarZAxis" )
-        return true;
-    return false;
-}
+bool ScalarZAxisMap::validMapType( const std::string &t ) { return t == "ScalarZAxis"; }
 
 
 /************************************************************************

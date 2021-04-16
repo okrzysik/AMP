@@ -69,10 +69,14 @@ void test_HDF5( AMP::UnitTest &ut )
     // Write the file
     writer->writeFile( "test_HDF5", 0, 0.0 );
 
+#ifdef USE_EXT_HDF5
     if ( AMP::Utilities::fileExists( "test_HDF5_0.hdf5" ) )
         ut.passes( "Wrote HDF5 file" );
     else
         ut.failure( "Wrote HDF5 file" );
+#else
+    ut.expected_failure( "HDF5 not installed" );
+#endif
 #endif
 }
 
