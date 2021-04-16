@@ -17,11 +17,8 @@
 #include <vector>
 
 
-int main( int argc, char *argv[] )
+void run( AMP::UnitTest &ut )
 {
-    AMP::AMPManager::startup( argc, argv );
-    AMP::UnitTest ut;
-
     std::string exeName    = "testNewFrozenVectorDesign";
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
@@ -93,15 +90,23 @@ int main( int argc, char *argv[] )
 
     auto firstSolData  = firstSol->getVectorData();
     auto secondSolData = secondSol->getVectorData();
-    //    std::cout << "First Solution = " << ( ( *firstSolData )[0] ) << std::endl;
-    //   std::cout << "Second Solution = " << ( ( *secondSolData )[0] ) << std::endl;
+    // std::cout << "First Solution = " << ( ( *firstSolData )[0] ) << std::endl;
+    // std::cout << "Second Solution = " << ( ( *secondSolData )[0] ) << std::endl;
 
     ut.passes( exeName );
+}
 
+
+int main( int argc, char *argv[] )
+{
+    AMP::AMPManager::startup( argc, argv );
+    AMP::UnitTest ut;
+
+    run( ut );
+
+    int N_failed = ut.NumFailGlobal();
     ut.report();
-    int num_failed = ut.NumFailGlobal();
-
+    ut.reset();
     AMP::AMPManager::shutdown();
-
-    return num_failed;
+    return N_failed;
 }
