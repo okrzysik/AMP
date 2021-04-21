@@ -13,27 +13,43 @@
 #include <iostream>
 
 
-// Helper functions
-static inline size_t min( const std::vector<double> &x )
+// Main function
+int run( int N_procs, const std::string &filename, double ratio )
 {
-    double y = 1e100;
-    for ( auto i : x )
-        y = std::min( y, i );
-    return y;
-}
-static inline size_t max( const std::vector<double> &x )
-{
-    double y = 0;
-    for ( auto i : x )
-        y = std::max( y, i );
-    return y;
-}
-static inline size_t avg( const std::vector<double> &x )
-{
-    double y = 0;
-    for ( auto i : x )
-        y += i;
-    return y / x.size();
+    // Simulate loading the mesh
+    auto input_db = AMP::Database::parseInputFile( filename );
+    auto database = input_db->getDatabase( "Mesh" );
+    double t0     = AMP::AMP_MPI::time();
+    AMP::Mesh::loadBalanceSimulator mesh( database );
+    mesh.setProcs( N_procs );
+    double t1 = AMP::AMP_MPI::time();
+
+    // Print the results of the load balance
+    mesh.print();
+
+    // Print the time required
+    std::cout << "Time = " << t1 - t0 << std::endl << std::endl;
+
+    // Get the worst and average element count
+    auto cost  = mesh.getRankCost();
+    double max = 0, avg = 0;
+    for ( auto x : cost ) {
+        avg += x;
+        max = std::max( max, x );
+    }
+    avg /= cost.size();
+
+    // Print the errors and return
+    int N_errors = 0;
+    if ( t1 - t0 > 10 ) {
+        N_errors++;
+        std::cout << "load balance failed run time limits" << std::endl;
+    }
+    if ( max > ratio * avg ) {
+        N_errors++;
+        std::cout << "load balance failed quality limits" << std::endl;
+    }
+    return N_errors;
 }
 
 
@@ -44,50 +60,23 @@ int main( int argc, char **argv )
     PROFILE_ENABLE( 3 );
     PROFILE_START( "Main" );
 
-    // Load the input file and the desired number of processors
+    // Load the inputs
     if ( argc < 3 ) {
         std::cout << "Error calling test_LoadBalancer, format should be:" << std::endl;
         std::cout << "   ./test_LoadBalancer  N_procs  input_file" << std::endl;
         return -1;
     }
-    int N_procs            = std::atoi( argv[1] );
-    std::string input_file = argv[2];
-    double ratio           = 2.0;
+    int N_procs   = std::atoi( argv[1] );
+    auto filename = argv[2];
+    double ratio  = 2.0;
     if ( argc > 3 )
         ratio = atof( argv[3] );
 
-    // Simulate loading the mesh
-    auto input_db = AMP::Database::parseInputFile( input_file );
-    auto database = input_db->getDatabase( "Mesh" );
-    double t0     = AMP::AMP_MPI::time();
-    AMP::Mesh::loadBalanceSimulator mesh( database );
-    mesh.setProcs( N_procs );
-    double t1 = AMP::AMP_MPI::time();
-
-    // Print the results of the load balance
-    if ( N_procs < 10000 ) {
-        mesh.print();
-        std::cout << std::endl;
-    }
-    auto cost = mesh.getRankCost();
-    std::cout << "min = " << min( cost ) << std::endl;
-    std::cout << "max = " << max( cost ) << std::endl;
-    std::cout << "avg = " << avg( cost ) << std::endl;
-    std::cout << "time = " << t1 - t0 << std::endl;
+    // Run the problem
+    int N_errors = run( N_procs, filename, ratio );
 
     // Shutdown AMP
-    PROFILE_SAVE( input_file );
+    PROFILE_SAVE( filename );
     AMP::AMPManager::shutdown();
-
-    // Print the errors and return
-    int N_errors = 0;
-    if ( t1 - t0 > 10 ) {
-        N_errors++;
-        std::cout << "load balance failed run time limits" << std::endl;
-    }
-    if ( max( cost ) > ratio * avg( cost ) ) {
-        N_errors++;
-        std::cout << "load balance failed quality limits" << std::endl;
-    }
     return N_errors;
 }

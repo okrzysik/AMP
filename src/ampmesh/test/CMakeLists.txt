@@ -43,6 +43,7 @@ ENDIF()
 ADD_AMP_TEST( test_LoadBalance 4 input_crystal_mesh 4.0 )
 ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 )
 ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
+ADD_AMP_TEST( test_LoadBalance 1000000 17x17_denovo_thermal_1x )
 
 # Add tests
 ADD_AMP_TEST( view_STL CRYSTAL_FINAL_2mm.STL )

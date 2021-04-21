@@ -9,6 +9,7 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 
 
 namespace AMP::Mesh {
@@ -31,12 +32,12 @@ static inline TYPE max( const std::vector<TYPE> &x )
     return y;
 }
 template<class TYPE>
-static inline TYPE sum( const std::vector<TYPE> &x )
+static inline TYPE avg( const std::vector<TYPE> &x )
 {
     TYPE y = 0;
-    for ( TYPE i : x )
+    for ( auto i : x )
         y += i;
-    return y;
+    return y / x.size();
 }
 
 
@@ -65,15 +66,6 @@ static inline int findMax( const std::vector<TYPE> &x )
         }
     }
     return i;
-}
-
-
-static inline bool allEqual( const std::vector<loadBalanceSimulator> &data )
-{
-    bool equal = true;
-    for ( size_t i = 1; i < data.size(); i++ )
-        equal = equal && data[0].getCost() == data[i].getCost();
-    return equal;
 }
 
 
@@ -106,11 +98,12 @@ static std::vector<int> divideGroups( int N, const std::vector<double> &x )
  * Constructors                                              *
  ************************************************************/
 loadBalanceSimulator::loadBalanceSimulator()
-    : d_cost( 0 ), d_maxCostRank( 0 ), d_max_procs( 0 ), d_method( 0 )
+    : d_cost( 0 ), d_maxCostRank( 0 ), d_max_procs( 0 ), d_method( 0 ), d_allEqual( true )
 {
 }
 loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
 {
+    PROFILE_SCOPED( timer, "loadBalanceSimulator", 1 );
     // Get required values from the parameters
     AMP_ASSERT( db );
     AMP_INSIST( db->keyExists( "MeshType" ), "MeshType must exist in input database" );
@@ -129,7 +122,7 @@ loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
             d_cost += d_submeshes[i].d_cost;
         d_method = db->getWithDefault( "LoadBalanceMethod", 2 );
         if ( d_method == 0 ) {
-            d_max_procs = 100000000;
+            d_max_procs = std::numeric_limits<decltype( d_max_procs )>::max();
             for ( size_t i = 0; i < meshDatabases.size(); i++ )
                 d_max_procs = std::min( d_max_procs, d_submeshes[i].d_max_procs );
         } else {
@@ -137,12 +130,16 @@ loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
             for ( size_t i = 0; i < meshDatabases.size(); i++ )
                 d_max_procs += d_submeshes[i].d_max_procs;
         }
+        d_allEqual = true;
+        for ( size_t i = 1; i < d_submeshes.size(); i++ )
+            d_allEqual = d_allEqual && d_submeshes[0].getCost() == d_submeshes[i].getCost();
     } else {
         d_submeshes.resize( 0 );
         auto params = std::make_shared<MeshParameters>( db );
         d_max_procs = Mesh::maxProcs( params );
         d_cost      = Mesh::estimateMeshSize( params );
         d_method    = 0;
+        d_allEqual  = true;
     }
     d_cost *= db->getWithDefault( "Weight", 1.0 );
     d_maxCostRank = d_cost;
@@ -150,7 +147,12 @@ loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
     AMP_ASSERT( d_cost > 0 );
 }
 loadBalanceSimulator::loadBalanceSimulator( double cost, int maxProc, const std::string &name )
-    : d_name( name ), d_cost( cost ), d_maxCostRank( cost ), d_max_procs( maxProc ), d_method( 0 )
+    : d_name( name ),
+      d_cost( cost ),
+      d_maxCostRank( cost ),
+      d_max_procs( maxProc ),
+      d_method( 0 ),
+      d_allEqual( true )
 {
     AMP_ASSERT( d_cost > 0 );
     if ( d_max_procs == 0 )
@@ -164,13 +166,14 @@ loadBalanceSimulator::loadBalanceSimulator( const std::vector<loadBalanceSimulat
       d_maxCostRank( 0 ),
       d_max_procs( 0 ),
       d_method( method ),
+      d_allEqual( true ),
       d_submeshes( meshes )
 {
     for ( size_t i = 0; i < d_submeshes.size(); i++ )
         d_cost += d_submeshes[i].d_cost;
     d_maxCostRank = d_cost;
     if ( d_method == 0 ) {
-        d_max_procs = 100000000;
+        d_max_procs = std::numeric_limits<decltype( d_max_procs )>::max();
         for ( size_t i = 0; i < d_submeshes.size(); i++ )
             d_max_procs = std::min( d_max_procs, d_submeshes[i].d_max_procs );
     } else {
@@ -218,12 +221,21 @@ void loadBalanceSimulator::print( uint8_t detail, uint8_t indent_N )
     int N_procs = 0;
     for ( auto &elem : d_ranks )
         N_procs = std::max( N_procs, elem + 1 );
-    char indent[512] = { 0 };
+    if ( detail == 0 ) {
+        detail = 1;
+        if ( N_procs < 1000 )
+            detail |= 2;
+        if ( getMeshCount() < 100 )
+            detail |= 4;
+    }
+    char indent[256] = { 0 };
     memset( indent, 0x20, indent_N );
-    if ( detail & 0x1 ) {
+    std::vector<double> cost;
+    if ( detail & 0x2 ) {
         // Print the global load balance
-        auto N_elements = getRankCost();
-        std::cout << indent << "Rank, N_elements:" << std::endl;
+        if ( cost.empty() )
+            cost = getRankCost();
+        std::cout << indent << "Rank, Cost:" << std::endl;
         int N_line = 16;
         for ( int i = 0; i < ( N_procs + N_line - 1 ) / N_line; i++ ) {
             std::cout << indent;
@@ -232,11 +244,12 @@ void loadBalanceSimulator::print( uint8_t detail, uint8_t indent_N )
             std::cout << std::endl;
             std::cout << indent;
             for ( int j = i * N_line; j < std::min( ( i + 1 ) * N_line, N_procs ); j++ )
-                std::cout << std::setw( 8 ) << static_cast<int>( N_elements[j] );
+                std::cout << std::setw( 8 ) << static_cast<int>( cost[j] );
             std::cout << std::endl << std::endl;
         }
     }
-    if ( detail & 0x2 ) {
+    if ( detail & 0x4 ) {
+        // Print the rank info
         printf( "%s%s (%0.0f): %i", indent, d_name.data(), d_cost, (int) d_ranks.size() );
         if ( !d_ranks.empty() ) {
             printf( " (%i", d_ranks[0] );
@@ -248,13 +261,45 @@ void loadBalanceSimulator::print( uint8_t detail, uint8_t indent_N )
         }
         printf( "\n" );
         for ( auto &elem : d_submeshes )
-            elem.print( 2, indent_N + 3 );
+            elem.print( 4, indent_N + 3 );
+    }
+    if ( detail & 0x1 ) {
+        if ( cost.empty() )
+            cost = getRankCost();
+        std::cout << std::endl;
+        std::cout << "Min = " << static_cast<int>( min( cost ) ) << std::endl;
+        std::cout << "Max = " << static_cast<int>( max( cost ) ) << std::endl;
+        std::cout << "Avg = " << static_cast<int>( avg( cost ) ) << std::endl;
+        std::cout << std::endl;
     }
 }
 
 
 /************************************************************
- * Misc. functions                                           *
+ * Get the number of base meshes                             *
+ ************************************************************/
+int loadBalanceSimulator::getMeshCount() const
+{
+    int count = 0;
+    for ( const auto &mesh : d_submeshes )
+        count += mesh.getMeshCount();
+    return std::max( count, 1 );
+}
+
+
+/************************************************************
+ * Get the ranks                                             *
+ ************************************************************/
+std::vector<int> loadBalanceSimulator::getRanks() const
+{
+    auto ranks = d_ranks;
+    AMP::Utilities::quicksort( ranks );
+    return ranks;
+}
+
+
+/************************************************************
+ * Set the processors                                        *
  ************************************************************/
 void loadBalanceSimulator::setProcs( int N_procs )
 {
@@ -281,17 +326,20 @@ void loadBalanceSimulator::loadBalance( int N_proc, std::vector<int> &N )
 {
     PROFILE_SCOPED( timer, "setRanks-loadBalance", 2 );
     // Initialize the cost
+    int Np = 0;
+    int N0 = 0;
     std::vector<double> cost( d_submeshes.size(), 0 );
     for ( size_t i = 0; i < N.size(); i++ ) {
+        Np += N[i];
         if ( N[i] > 0 ) {
+            N0++;
             d_submeshes[i].setProcs( N[i] );
             cost[i] = d_maxCostRank;
         }
     }
     setCost0( N, d_submeshes, cost );
     // Add processors until we have used all processors
-    int N0 = min( N ) == 0 ? 1 : 0;
-    while ( N_proc - sum( N ) - N0 > 0 ) {
+    while ( N_proc - Np - std::min( N0, 1 ) > 0 ) {
         int i = findMax( cost );
         if ( N[i] == 0 ) {
             int k    = -1;
@@ -306,13 +354,18 @@ void loadBalanceSimulator::loadBalance( int N_proc, std::vector<int> &N )
             d_submeshes[i].setProcs( 1 );
             cost[i] = d_submeshes[i].d_maxCostRank;
             setCost0( N, d_submeshes, cost );
-            N0 = min( N ) == 0 ? 1 : 0;
+            N0--;
         } else {
             N[i]++;
             d_submeshes[i].addRank( N[i] - 1 );
             cost[i] = d_submeshes[i].d_maxCostRank;
         }
+        Np++;
     }
+    if ( N0 > 0 )
+        AMP_ASSERT( Np == N_proc - 1 );
+    else
+        AMP_ASSERT( Np == N_proc );
 }
 void loadBalanceSimulator::addRank( int rank )
 {
@@ -320,8 +373,10 @@ void loadBalanceSimulator::addRank( int rank )
     if ( d_ranks.size() >= d_max_procs )
         return;
     PROFILE_SCOPED( timer, "addRank", 2 );
+    bool found = false;
     for ( int r : d_ranks )
-        AMP_ASSERT( r != rank );
+        found = found || r == rank;
+    AMP_ASSERT( !found );
     d_ranks.push_back( rank );
     if ( d_submeshes.size() <= 1 || d_ranks.size() == 1 || d_method == 0 ) {
         for ( auto &mesh : d_submeshes )
@@ -331,7 +386,7 @@ void loadBalanceSimulator::addRank( int rank )
         std::vector<int> N( d_submeshes.size(), 0 );
         std::vector<double> cost( d_submeshes.size(), 0 );
         for ( size_t i = 0; i < N.size(); i++ ) {
-            N[i] = d_submeshes[i].getRanks().size();
+            N[i] = d_submeshes[i].d_ranks.size();
             if ( N[i] > 0 )
                 cost[i] = d_maxCostRank;
         }
@@ -351,11 +406,11 @@ void loadBalanceSimulator::addRank( int rank )
     else
         d_maxCostRank = max( getRankCost() );
 }
-void loadBalanceSimulator::setRanks( const std::vector<int> &ranks_in )
+void loadBalanceSimulator::setRanks( std::vector<int> ranks_in )
 {
     PROFILE_SCOPED( timer, "setRanks", 1 );
     // Set the processors for this mesh
-    d_ranks = ranks_in;
+    d_ranks = std::move( ranks_in );
     AMP_ASSERT( !d_ranks.empty() );
     if ( d_ranks.size() > d_max_procs )
         d_ranks.resize( d_max_procs );
@@ -366,7 +421,7 @@ void loadBalanceSimulator::setRanks( const std::vector<int> &ranks_in )
         // Everybody is on the same communicator
         for ( auto &mesh : d_submeshes )
             mesh.setRanks( d_ranks );
-    } else if ( allEqual( d_submeshes ) ) {
+    } else if ( d_allEqual ) {
         // Special case where all children are the same size
         if ( N_proc <= N_mesh ) {
             for ( int i = 0; i < N_mesh; i++ ) {
@@ -374,12 +429,13 @@ void loadBalanceSimulator::setRanks( const std::vector<int> &ranks_in )
                 d_submeshes[i].setRanks( { d_ranks[j] } );
             }
         } else {
+            std::vector<int> ranks2;
             for ( int i = 0, k = 0, Np = N_proc; i < N_mesh; i++ ) {
                 int Ng = N_mesh - i;
                 int N  = Np / Ng;
-                std::vector<int> ranks2;
+                ranks2.resize( N );
                 for ( int k2 = 0; k2 < N; k2++, k++ )
-                    ranks2.push_back( d_ranks[k] );
+                    ranks2[k2] = d_ranks[k];
                 Np -= N;
                 d_submeshes[i].setRanks( ranks2 );
             }
@@ -400,13 +456,12 @@ void loadBalanceSimulator::setRanks( const std::vector<int> &ranks_in )
                 N[i] = std::max<int>( 1, NP * d_submeshes[i].d_cost / d_cost );
             // Load balance
             loadBalance( N_proc, N );
-            AMP_ASSERT( min( N ) > 0 );
-            AMP_ASSERT( sum( N ) == N_proc );
             // Set the ranks
+            std::vector<int> ranks2;
             for ( int i = 0, k = 0; i < N_mesh; i++ ) {
-                std::vector<int> ranks2;
+                ranks2.resize( N[i] );
                 for ( int k2 = 0; k2 < N[i]; k2++, k++ )
-                    ranks2.push_back( d_ranks[k] );
+                    ranks2[k2] = d_ranks[k];
                 d_submeshes[i].setRanks( ranks2 );
             }
         } else {
@@ -437,20 +492,18 @@ void loadBalanceSimulator::setRanks( const std::vector<int> &ranks_in )
                 N[i] = NP * d_submeshes[i].d_cost / d_cost;
             // Load balance
             loadBalance( N_proc, N );
-            if ( min( N ) == 0 )
-                AMP_ASSERT( sum( N ) == N_proc - 1 );
-            else
-                AMP_ASSERT( sum( N ) == N_proc );
             // Set the ranks
+            std::vector<int> ranks2;
             for ( int i = 0, k = 0; i < N_mesh; i++ ) {
                 if ( N[i] == 0 ) {
-                    d_submeshes[i].setRanks( { d_ranks.back() } );
+                    ranks2.resize( 1 );
+                    ranks2[0] = d_ranks.back();
                 } else {
-                    std::vector<int> ranks2;
+                    ranks2.resize( N[i] );
                     for ( int k2 = 0; k2 < N[i]; k2++, k++ )
-                        ranks2.push_back( d_ranks[k] );
-                    d_submeshes[i].setRanks( ranks2 );
+                        ranks2[k2] = d_ranks[k];
                 }
+                d_submeshes[i].setRanks( ranks2 );
             }
         }
     } else {

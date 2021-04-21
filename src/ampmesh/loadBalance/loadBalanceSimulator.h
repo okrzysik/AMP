@@ -55,19 +55,22 @@ public:
     size_t getMethod() const { return d_method; }
 
     //! Function to get the ranks for the mesh
-    const std::vector<int> &getRanks() const { return d_ranks; }
+    std::vector<int> getRanks() const;
 
     //! Function to get the ranks for the ith submesh
-    inline const std::vector<int> &getRanks( int i ) const { return d_submeshes[i].d_ranks; }
+    inline std::vector<int> getRanks( int i ) const { return d_submeshes[i].getRanks(); }
 
     //! Function to change the ranks
     void setProcs( int N_ranks );
 
     //! Function to change the ranks
-    void setRanks( const std::vector<int> &ranks );
+    void setRanks( std::vector<int> ranks );
 
     //! Return the submeshes
     inline const auto &getSubmeshes() const { return d_submeshes; }
+
+    //! Return the number of base meshes
+    int getMeshCount() const;
 
     //! Function to get the total cost
     double getCost() const { return d_cost; }
@@ -78,12 +81,15 @@ public:
     /**
      * \brief    Print the mesh hierarchy
      * \details  This function will print the load balance and mesh hierarchy
-     * \param detail    The details on what to print (bit array)
-     *                  Bit 0: print the load balance by rank
-     *                  Bit 1: print the number of procs per mesh
+     * \param detail    The details on what to print (bit mask)
+     *                  0: Auto determine the level of info to print
+     *                  1: Print summary info only
+     *                  3: Print summary + rank info
+     *                  5: Print summary + mesh info
+     *                  6: Print summary + rank + mesh info
      * \param indent    Number of spaces to indent the printing
      */
-    void print( uint8_t detail = 3, uint8_t indent = 0 );
+    void print( uint8_t detail = 0, uint8_t indent = 0 );
 
 
 private:
@@ -93,6 +99,7 @@ private:
     double d_maxCostRank;
     size_t d_max_procs;
     int d_method;
+    bool d_allEqual;
     std::vector<int> d_ranks;
     std::vector<loadBalanceSimulator> d_submeshes;
 
