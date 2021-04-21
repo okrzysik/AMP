@@ -28,6 +28,7 @@ namespace Geometry {
 std::shared_ptr<AMP::Geometry::Geometry>
 Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
 {
+    AMP_ASSERT( db );
     auto generator = db->getString( "Generator" );
     std::for_each( generator.begin(), generator.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::Geometry::Geometry> geom;
@@ -96,6 +97,7 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
     } else {
         AMP_ERROR( "Unknown generator: " + generator );
     }
+    AMP_INSIST( geom, "Failed to generate " + generator );
     // Displace the geometry
     double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),
                        db->getWithDefault( "y_offset", 0.0 ),

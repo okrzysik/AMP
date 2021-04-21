@@ -9,6 +9,7 @@
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/ampmesh/shapes/Sphere.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/DelaunayTessellation.h"
@@ -579,6 +580,30 @@ std::vector<std::vector<std::array<int64_t, 2>>>
 /********************************************************
  *  Generate mesh for STL file                           *
  ********************************************************/
+typedef std::vector<std::array<int64_t, 3>> triset;
+static std::vector<AMP::AMP_MPI>
+loadbalance( const std::vector<triset> &tri, const AMP_MPI &comm, int method )
+{
+    // Check if we are not load-balancing the meshes
+    if ( method == 0 || comm.getSize() == 1 )
+        return std::vector<AMP::AMP_MPI>( tri.size(), comm );
+    // Perform the load balance
+    std::vector<loadBalanceSimulator> list( tri.size() );
+    for ( size_t i = 0; i < tri.size(); i++ )
+        list[i] = loadBalanceSimulator( tri[i].size() );
+    loadBalanceSimulator mesh( list, 1 );
+    mesh.setProcs( comm.getSize() );
+    // Create the communicators
+    std::vector<AMP::AMP_MPI> comm2( tri.size(), AMP_COMM_NULL );
+    for ( size_t i = 0; i < tri.size(); i++ ) {
+        bool found = false;
+        for ( int r : mesh.getRanks( i ) )
+            found = found || r == comm.getRank();
+        int key  = found ? 1 : -1;
+        comm2[i] = comm.split( comm.getRank(), key );
+    }
+    return comm2;
+}
 std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<MeshParameters> params )
 {
     auto db       = params->getDatabase();
@@ -586,9 +611,7 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<MeshParameters> pa
     auto name     = db->getWithDefault<std::string>( "MeshName", "NULL" );
     auto comm     = params->getComm();
     // Read the STL file
-    typedef std::vector<std::array<double, 3>> pointset;
-    typedef std::vector<std::array<int64_t, 3>> triset;
-    pointset vert;
+    std::vector<std::array<double, 3>> vert;
     std::vector<triset> tri( 1 ), tri_nab;
     if ( comm.getRank() == 0 ) {
         auto scale     = db->getWithDefault<double>( "scale", 1.0 );
@@ -627,24 +650,35 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<MeshParameters> pa
             }
         }
     }
-    size_t N_domains = comm.bcast( tri.size(), 0 );
+    // Send the triangle data to all ranks
+    int N_domains = comm.bcast( tri.size(), 0 );
+    vert          = comm.bcast( std::move( vert ), 0 );
     tri.resize( N_domains );
     tri_nab.resize( N_domains );
+    for ( int i = 0; i < N_domains; i++ ) {
+        tri[i]     = comm.bcast( std::move( tri[i] ), 0 );
+        tri_nab[i] = comm.bcast( std::move( tri_nab[i] ), 0 );
+    }
     // Create the block ids
     std::vector<std::vector<int>> blocks( N_domains );
-    for ( size_t i = 0; i < N_domains; i++ )
+    for ( int i = 0; i < N_domains; i++ )
         blocks[i] = createBlockIDs<2, 3>( vert, tri[i], tri_nab[i] );
     // Create the mesh
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( N_domains == 1 ) {
         mesh = TriangleMesh<2, 3>::generate( vert, tri[0], tri_nab[0], comm, nullptr, blocks[0] );
     } else {
-        // For now have all meshes on the same communicator
-        std::vector<std::shared_ptr<AMP::Mesh::Mesh>> submeshes( N_domains );
-        for ( size_t i = 0; i < N_domains; i++ ) {
-            submeshes[i] =
-                TriangleMesh<2, 3>::generate( vert, tri[i], tri_nab[i], comm, nullptr, blocks[i] );
-            submeshes[i]->setName( name + "_" + std::to_string( i + 1 ) );
+        // We are dealing with multiple sub-domains, choose the load balance method
+        int method = db->getWithDefault( "LoadBalanceMethod", 1 );
+        auto comm2 = loadbalance( tri, comm, method );
+        std::vector<std::shared_ptr<AMP::Mesh::Mesh>> submeshes;
+        for ( size_t i = 0; i < tri.size(); i++ ) {
+            if ( !comm2[i].isNull() ) {
+                auto mesh2 = TriangleMesh<2, 3>::generate(
+                    vert, tri[i], tri_nab[i], comm2[i], nullptr, blocks[i] );
+                mesh2->setName( name + "_" + std::to_string( i + 1 ) );
+                submeshes.push_back( mesh2 );
+            }
         }
         mesh.reset( new MultiMesh( name, comm, submeshes ) );
     }

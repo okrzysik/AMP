@@ -1155,7 +1155,7 @@ static inline void centroid( AMP::Mesh::Mesh::shared_ptr mesh )
         auto x = elem.centroid();
         pass   = pass && x == x;
     }
-    AMP_ASSERT( pass );
+    AMP_INSIST( pass, "NaN centroid" );
 }
 static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh )
 {
@@ -1164,7 +1164,7 @@ static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh )
         auto V = elem.volume();
         pass   = pass && V > 0;
     }
-    AMP_ASSERT( pass );
+    AMP_INSIST( pass, "Negitive or zero volume" );
 }
 static inline void getElementIDs( AMP::Mesh::Mesh::shared_ptr mesh )
 {

@@ -2,10 +2,10 @@
 #define included_AMP_loadBalanceSimulator
 
 #include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/utils/Database.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -26,52 +26,54 @@ public:
      *                      (0: Get the number of elements through a call to
      * Mesh::estimateMeshSize())
      */
-    loadBalanceSimulator( std::shared_ptr<MeshParameters> params,
-                          const std::vector<int> &ranks,
-                          size_t N_elements = 0 );
+    loadBalanceSimulator( std::shared_ptr<AMP::Database> params );
 
     /**
-     * \brief    Advanced constructor
-     * \details  This is an advanced constuctor used to create the load balance
-     * \param params  Input parameters for the current mesh
-     * \param ranks   List of processor ranks that are used
-     * \param submeshes  List of sub-meshes
-     * \param decomp  Domain decomposition for the submeshes
-     *                (0: General, 1: No set of submeshes share a rank, and all ranks are used)
+     * \brief    Default constructor
+     * \details  This will simulate creating a new load balance
+     * \param cost      The cost of the mesh (# of elements)
+     * \param maxProc   The maximum number of processors (0: no limit)
+     * \param name      The mesh name
      */
-    loadBalanceSimulator( std::shared_ptr<MeshParameters> params,
-                          const std::vector<int> &ranks,
-                          const std::vector<loadBalanceSimulator> &submeshes,
-                          int decomp );
+    loadBalanceSimulator( double cost, int maxProc = 0, const std::string &name = "" );
+
+    /**
+     * \brief    Default constructor
+     * \details  This will simulate creating a new load balance
+     * \param meshes    The list of meshes
+     * \param method    The load balance method
+     * \param name      The mesh name
+     */
+    loadBalanceSimulator( const std::vector<loadBalanceSimulator> &meshes,
+                          int method              = 2,
+                          const std::string &name = "" );
 
     //! Empty constructor
     loadBalanceSimulator();
 
-    //! Copy constructor
-    loadBalanceSimulator( const loadBalanceSimulator & );
-
-    //! Assignment operator
-    loadBalanceSimulator &operator=( const loadBalanceSimulator & );
-
-    /**
-     * \brief    Function to add a processor
-     * \details  This function will add a processor with the given rank to the load balance,
-     *    adjusting the load balance of any subsequent meshes
-     * \param rank  The rank of the processor to add
-     */
-    bool addProc( int rank );
-
     //! Function to get the current ranks in the load balance
-    size_t getSize() const { return d_N_elements; }
+    size_t getMethod() const { return d_method; }
 
-    //! Function to get the total number of elements in the load balance
+    //! Function to get the ranks for the mesh
     const std::vector<int> &getRanks() const { return d_ranks; }
 
-    //! Function to change the ranks
-    void changeRanks( const std::vector<int> &ranks );
+    //! Function to get the ranks for the ith submesh
+    inline const std::vector<int> &getRanks( int i ) const { return d_submeshes[i].d_ranks; }
 
-    //! Function to get the mesh parameters
-    std::shared_ptr<MeshParameters> getParams() const { return d_params; }
+    //! Function to change the ranks
+    void setProcs( int N_ranks );
+
+    //! Function to change the ranks
+    void setRanks( const std::vector<int> &ranks );
+
+    //! Return the submeshes
+    inline const auto &getSubmeshes() const { return d_submeshes; }
+
+    //! Function to get the total cost
+    double getCost() const { return d_cost; }
+
+    //! Get the cost per rank ( # of elements * relative weight )
+    std::vector<double> getRankCost() const;
 
     /**
      * \brief    Print the mesh hierarchy
@@ -83,38 +85,25 @@ public:
      */
     void print( uint8_t detail = 3, uint8_t indent = 0 );
 
-    //! Function to return the minimum number of elements on a processor
-    size_t min();
-
-    //! Function to return the maximum number of elements on a processor
-    size_t max();
-
-    //! Function to return the average number of elements per processor
-    size_t avg();
 
 private:
     // Internal data
     std::string d_name;
-    std::string d_type;
-    size_t d_N_elements;
-    size_t d_max_ranks;
+    double d_cost;
+    double d_maxCostRank;
+    size_t d_max_procs;
+    int d_method;
     std::vector<int> d_ranks;
-    std::shared_ptr<MeshParameters> d_params;
     std::vector<loadBalanceSimulator> d_submeshes;
 
-    // Special flag used to identify key decompositions
-    char d_decomp; // 0: General decomposition, 1: All submeshes are on distinct sets of processors
+    void addRank( int rank );
 
-    // Cache some commonly used data
-    bool cache_valid;
-    size_t d_min, d_max;
-
-    // Function to count the elements on each rank
-    void countElements( const loadBalanceSimulator &mesh, std::vector<size_t> &N_elements );
-
-    // Function to update cached data
-    void updateCache();
+    // Function to add the rank cost
+    void addRankCost( std::vector<double> &cost ) const;
+    void loadBalance( int, std::vector<int> &N );
 };
-} // namespace Mesh
-} // namespace AMP
+
+
+} // namespace AMP::Mesh
+
 #endif
