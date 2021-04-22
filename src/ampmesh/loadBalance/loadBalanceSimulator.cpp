@@ -44,8 +44,9 @@ static inline TYPE avg( const std::vector<TYPE> &x )
 template<class TYPE>
 static inline int findMin( const std::vector<TYPE> &x )
 {
-    int i  = -1;
-    TYPE y = std::numeric_limits<TYPE>::max();
+    AMP_ASSERT( !x.empty() );
+    int i  = 0;
+    TYPE y = x[0];
     for ( int j = 0; j < (int) x.size(); j++ ) {
         if ( x[j] < y ) {
             i = j;
@@ -57,8 +58,9 @@ static inline int findMin( const std::vector<TYPE> &x )
 template<class TYPE>
 static inline int findMax( const std::vector<TYPE> &x )
 {
-    int i  = -1;
-    TYPE y = 0;
+    AMP_ASSERT( !x.empty() );
+    int i  = 0;
+    TYPE y = x[0];
     for ( int j = 0; j < (int) x.size(); j++ ) {
         if ( x[j] > y ) {
             i = j;
@@ -330,9 +332,10 @@ void loadBalanceSimulator::loadBalance( int N_proc, std::vector<int> &N )
     int N0 = 0;
     std::vector<double> cost( d_submeshes.size(), 0 );
     for ( size_t i = 0; i < N.size(); i++ ) {
-        Np += N[i];
-        if ( N[i] > 0 ) {
+        if ( N[i] == 0 ) {
             N0++;
+        } else {
+            Np += N[i];
             d_submeshes[i].setProcs( N[i] );
             cost[i] = d_maxCostRank;
         }
@@ -342,19 +345,21 @@ void loadBalanceSimulator::loadBalance( int N_proc, std::vector<int> &N )
     while ( N_proc - Np - std::min( N0, 1 ) > 0 ) {
         int i = findMax( cost );
         if ( N[i] == 0 ) {
-            int k    = -1;
-            double c = 0;
-            for ( size_t j = 0; j < N.size(); j++ ) {
-                if ( N[j] == 0 && c < d_submeshes[i].d_maxCostRank ) {
-                    k = j;
-                    c = d_submeshes[i].d_maxCostRank;
+            if ( N0 == 2 ) {
+                int k    = -1;
+                double c = 0;
+                for ( size_t j = 0; j < N.size(); j++ ) {
+                    if ( N[j] == 0 && c < d_submeshes[j].d_maxCostRank ) {
+                        k = j;
+                        c = d_submeshes[j].d_maxCostRank;
+                    }
                 }
+                N[k] = 1;
+                d_submeshes[k].setProcs( 1 );
+                cost[k] = d_submeshes[k].d_cost;
+                setCost0( N, d_submeshes, cost );
+                N0--;
             }
-            N[k] = 1;
-            d_submeshes[i].setProcs( 1 );
-            cost[i] = d_submeshes[i].d_maxCostRank;
-            setCost0( N, d_submeshes, cost );
-            N0--;
         } else {
             N[i]++;
             d_submeshes[i].addRank( N[i] - 1 );
