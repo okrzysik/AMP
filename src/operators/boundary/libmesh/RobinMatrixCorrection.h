@@ -60,7 +60,7 @@ public:
        is passed to the NeumannVectorCorrection. This function also does a matrix
        correction on the boundary.
     */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
        Adds a Neumann Correction Vector to the RHS vector.

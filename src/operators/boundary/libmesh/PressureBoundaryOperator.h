@@ -10,7 +10,7 @@ namespace Operator {
 class PressureBoundaryOperator : public BoundaryOperator
 {
 public:
-    explicit PressureBoundaryOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit PressureBoundaryOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~PressureBoundaryOperator() {}
 

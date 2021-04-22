@@ -120,7 +120,7 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     double reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
     double prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
     AMP::LinearAlgebra::Vector::shared_ptr flowVec, cladTemp;
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         int DOFsPerFace[3] = { 0, 0, 2 };
         auto flowDOF =
             AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );

@@ -27,7 +27,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    void reset( const std::shared_ptr<OperatorParameters> & ) override {}
+    void reset( std::shared_ptr<const OperatorParameters> ) override {}
 
     void setMasterVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var )
     {

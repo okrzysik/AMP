@@ -23,7 +23,7 @@ public:
 
     virtual ~DiffusionLinearFEOperator() {}
 
-    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
+    void preAssembly( std::shared_ptr<const OperatorParameters> params ) override;
 
     void postAssembly() override;
 

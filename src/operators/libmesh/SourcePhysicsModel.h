@@ -37,7 +37,7 @@ public:
      * and also USE_ELEMENT_PHYSICS from the database. These specify if material library or the
      * element physics model are used for calculating the source terms.
      */
-    explicit SourcePhysicsModel( const std::shared_ptr<SourcePhysicsModelParameters> &params );
+    explicit SourcePhysicsModel( std::shared_ptr<const SourcePhysicsModelParameters> params );
 
     /**
      * Destructor.

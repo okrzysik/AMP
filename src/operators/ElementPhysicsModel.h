@@ -18,9 +18,9 @@ public:
     /**
       Constructor.
       */
-    explicit ElementPhysicsModel( const std::shared_ptr<ElementPhysicsModelParameters> &params )
+    explicit ElementPhysicsModel( std::shared_ptr<const ElementPhysicsModelParameters> params )
     {
-        d_iDebugPrintInfoLevel = ( params->d_db )->getWithDefault( "print_info_level", 0 );
+        d_iDebugPrintInfoLevel = params->d_db->getWithDefault( "print_info_level", 0 );
     }
 
     /**

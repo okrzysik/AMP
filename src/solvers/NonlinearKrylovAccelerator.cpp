@@ -38,7 +38,7 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
     d_piNext     = new int[n];
     d_piPrevious = new int[n];
 
-    if ( params->d_pInitialGuess.get() != nullptr ) {
+    if ( params->d_pInitialGuess ) {
         initialize( params );
     }
 
@@ -323,7 +323,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     AMP_INSIST( d_pOperator != nullptr, "Operator cannot be NULL" );
-    AMP_INSIST( d_pPreconditioner.get() != nullptr, "Preconditioning operator cannot be NULL" );
+    AMP_INSIST( d_pPreconditioner, "Preconditioning operator cannot be NULL" );
 
     double residual_norm = 1.0e10;
 
@@ -346,7 +346,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
         d_pOperator->getParameters( "Jacobian", d_pvSolution );
     std::shared_ptr<AMP::Operator::Operator> pc_operator = d_pPreconditioner->getOperator();
 
-    AMP_INSIST( pc_operator.get() != nullptr,
+    AMP_INSIST( pc_operator,
                 "NonlinearKrylovAccelerator::solve: preconditioning operator cannot be NULL" );
 
     // if using a frozen preconditioner set it up iFirstVectorIndex
@@ -478,7 +478,7 @@ void NonlinearKrylovAccelerator::setMaxFunctionEvaluations( int max_feval )
 void NonlinearKrylovAccelerator::putToDatabase( std::shared_ptr<AMP::Database> &db )
 {
 
-    AMP_INSIST( db.get() != nullptr, "database object cannot be NULL" );
+    AMP_INSIST( db, "database object cannot be NULL" );
 
     db->putScalar( "d_MaxIterations", d_iMaxIterations );
     db->putScalar( "d_iMaximumFunctionEvals", d_iMaximumFunctionEvals );

@@ -24,7 +24,7 @@ namespace TimeIntegrator {
 TimeIntegrator::TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
-    AMP_INSIST( parameters.get() != nullptr, "Null parameter" );
+    AMP_INSIST( parameters, "Null parameter" );
 
     // initialize member data
     d_initial_time         = 0;
@@ -122,7 +122,7 @@ double TimeIntegrator::getNextDt( const bool ) { return ( d_current_dt ); }
 
 void TimeIntegrator::getFromInput( const std::shared_ptr<AMP::Database> db )
 {
-    AMP_ASSERT( db.get() != nullptr );
+    AMP_ASSERT( db );
 
     if ( db->keyExists( "initial_time" ) ) {
         d_initial_time = db->getScalar<double>( "initial_time" );

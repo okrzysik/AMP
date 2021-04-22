@@ -17,15 +17,13 @@ AsyncMapOperator::AsyncMapOperator( const std::shared_ptr<OperatorParameters> &p
     d_mesh1     = params->d_Mesh1;
     d_mesh2     = params->d_Mesh2;
     AMP_INSIST( !d_MapComm.isNull(), "NULL communicator for map is invalid" );
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh1.get() != nullptr ? 1 : 0 ) > 0,
-                "Somebody must own mesh 1" );
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh2.get() != nullptr ? 1 : 0 ) > 0,
-                "Somebody must own mesh 2" );
+    AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh1 ? 1 : 0 ) > 0, "Somebody must own mesh 1" );
+    AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh2 ? 1 : 0 ) > 0, "Somebody must own mesh 2" );
     // Create a multimesh to use for the operator base class for subsetting
     std::vector<AMP::Mesh::Mesh::shared_ptr> meshes;
-    if ( d_mesh1.get() != nullptr )
+    if ( d_mesh1 )
         meshes.push_back( d_mesh1 );
-    if ( d_mesh2.get() != nullptr )
+    if ( d_mesh2 )
         meshes.push_back( d_mesh2 );
     d_Mesh = std::make_shared<AMP::Mesh::MultiMesh>( "mesh", d_MapComm, meshes );
     // Get the input variable
@@ -59,7 +57,7 @@ void AsyncMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     applyStart( u, f );
     applyFinish( u, f );
     if ( requiresMakeConsistentSet() ) {
-        AMP_ASSERT( d_OutputVector.get() != nullptr );
+        AMP_ASSERT( d_OutputVector );
         d_OutputVector->makeConsistent(
             AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     }

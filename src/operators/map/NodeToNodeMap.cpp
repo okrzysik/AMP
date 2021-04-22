@@ -24,11 +24,11 @@ NodeToNodeMap::NodeToNodeMap( const std::shared_ptr<AMP::Operator::OperatorParam
     // Cast the params appropriately
     d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr();
     AMP_ASSERT( params );
-    auto &Params = *std::dynamic_pointer_cast<NodeToNodeMapParameters>( params );
+    auto &Params = *std::dynamic_pointer_cast<const NodeToNodeMapParameters>( params );
 
     // Set class members
     dim = -1;
-    if ( d_mesh1.get() != nullptr )
+    if ( d_mesh1 )
         dim = d_mesh1->getDim();
     dim = d_MapComm.maxReduce( dim );
     AMP_INSIST( dim <= 3, "Node to Node map only works up to 3d (see Point)" );

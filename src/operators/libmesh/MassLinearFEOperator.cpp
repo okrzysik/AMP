@@ -57,7 +57,7 @@ MassLinearFEOperator::MassLinearFEOperator(
 }
 
 
-void MassLinearFEOperator::preAssembly( const std::shared_ptr<AMP::Operator::OperatorParameters> & )
+void MassLinearFEOperator::preAssembly( std::shared_ptr<const AMP::Operator::OperatorParameters> )
 {
     d_matrix->zero();
 

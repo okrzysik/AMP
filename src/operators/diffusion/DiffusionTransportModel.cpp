@@ -21,7 +21,7 @@ const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
     std::vector<libMesh::Point>( 0 );
 
 DiffusionTransportModel::DiffusionTransportModel(
-    const std::shared_ptr<DiffusionTransportModelParameters> &params )
+    std::shared_ptr<const DiffusionTransportModelParameters> params )
     : ElementPhysicsModel( params ),
       d_defaults( Diffusion::NUMBER_VARIABLES ),
       d_MaterialParameters( 0 ),

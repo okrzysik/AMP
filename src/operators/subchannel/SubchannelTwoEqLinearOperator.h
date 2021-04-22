@@ -29,7 +29,7 @@ public:
     //! Return the name of the operator
     std::string type() const override { return "SubchannelTwoEqLinearOperator"; }
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     //! Sets frozen vector
     void setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
@@ -38,10 +38,10 @@ public:
     }
 
     //! Get the current operator parameters
-    std::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+    auto getParams() { return d_params; }
 
 protected:
-    std::shared_ptr<SubchannelOperatorParameters> d_params;
+    std::shared_ptr<const SubchannelOperatorParameters> d_params;
 
     // subchannel physics model
     std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
@@ -53,13 +53,15 @@ private:
     bool d_initialized;
 
     // Function used in reset to get double parameter or use default if missing
-    double getDoubleParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, double );
+    double
+    getDoubleParameter( std::shared_ptr<const SubchannelOperatorParameters>, std::string, double );
 
     // Function used in reset to get integer parameter or use default if missing
-    int getIntegerParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, int );
+    int
+    getIntegerParameter( std::shared_ptr<const SubchannelOperatorParameters>, std::string, int );
 
     // Function used in reset to get double parameter or use default if missing
-    std::string getStringParameter( std::shared_ptr<SubchannelOperatorParameters>,
+    std::string getStringParameter( std::shared_ptr<const SubchannelOperatorParameters>,
                                     std::string,
                                     std::string );
 

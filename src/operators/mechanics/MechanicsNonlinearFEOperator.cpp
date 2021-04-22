@@ -17,12 +17,11 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
 
-    d_resetReusesRadialReturn =
-        ( params->d_db )->getWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
+    d_resetReusesRadialReturn = params->d_db->getWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
     d_jacobianReusesRadialReturn =
-        ( params->d_db )->getWithDefault( "JACOBIAN_REUSES_RADIAL_RETURN", true );
+        params->d_db->getWithDefault( "JACOBIAN_REUSES_RADIAL_RETURN", true );
 
-    d_useUpdatedLagrangian = ( params->d_db )->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+    d_useUpdatedLagrangian = params->d_db->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem =
@@ -78,8 +77,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
             d_isFrozen[i] = false;
         } else {
             d_isActive[i] = activeInpVar_db->keyExists( keysForVariables[i] );
-            d_isFrozen[i] =
-                ( params->d_db )->getWithDefault( "FREEZE_" + keysForVariables[i], true );
+            d_isFrozen[i] = params->d_db->getWithDefault( "FREEZE_" + keysForVariables[i], true );
         }
         if ( d_isActive[i] ) {
             std::string varName = activeInpVar_db->getString( keysForVariables[i] );
@@ -344,14 +342,13 @@ void MechanicsNonlinearFEOperator::init()
 }
 
 
-void MechanicsNonlinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    if ( !d_isInitialized ) {
+    if ( !d_isInitialized )
         init();
-    }
 
-    std::shared_ptr<MechanicsNonlinearFEOperatorParameters> myParams =
-        std::dynamic_pointer_cast<MechanicsNonlinearFEOperatorParameters>( params );
+    auto myParams =
+        std::dynamic_pointer_cast<const MechanicsNonlinearFEOperatorParameters>( params );
 
     AMP_INSIST( ( ( myParams.get() ) != nullptr ), "Null parameter!" );
 
@@ -759,7 +756,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                               AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, vec->getVariable()->getName() );
@@ -773,7 +770,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                               AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, vec->getVariable()->getName() );

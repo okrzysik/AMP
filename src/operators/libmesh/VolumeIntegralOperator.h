@@ -48,7 +48,7 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     void setAuxVariable( const std::shared_ptr<AMP::LinearAlgebra::MultiVariable> &var )
     {

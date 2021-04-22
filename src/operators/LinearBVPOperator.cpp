@@ -9,7 +9,7 @@
 namespace AMP {
 namespace Operator {
 
-LinearBVPOperator::LinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &params )
+LinearBVPOperator::LinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> params )
     : LinearOperator( params ),
       d_volumeOperator( std::dynamic_pointer_cast<LinearOperator>( params->d_volumeOperator ) ),
       d_boundaryOperator( params->d_boundaryOperator )
@@ -18,12 +18,11 @@ LinearBVPOperator::LinearBVPOperator( const std::shared_ptr<BVPOperatorParameter
     d_matrix = d_volumeOperator->getMatrix();
 }
 
-void LinearBVPOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void LinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<BVPOperatorParameters> inParams =
-        std::dynamic_pointer_cast<BVPOperatorParameters>( params );
+    auto inParams = std::dynamic_pointer_cast<const BVPOperatorParameters>( params );
 
-    AMP_INSIST( ( inParams.get() != nullptr ), "LinearBVPOperator :: reset Null parameter" );
+    AMP_INSIST( inParams, "LinearBVPOperator :: reset Null parameter" );
 
     d_volumeOperator->reset( inParams->d_volumeOperatorParams );
 
@@ -31,24 +30,24 @@ void LinearBVPOperator::reset( const std::shared_ptr<OperatorParameters> &params
     // This logic does not work with NeumannVectorCorrection boundary
     // operator. As Neumann does not do a matrix correction and its params is
     // not derived from LinearBoundaryOperatorParameters - Allu
-    std::shared_ptr<LinearBoundaryOperatorParameters> linearBoundaryParams =
-        std::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(
-            inParams->d_boundaryOperatorParams );
+    auto linearBoundaryParams = std::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(
+        std::const_pointer_cast<OperatorParameters>( inParams->d_boundaryOperatorParams ) );
 
-    if ( linearBoundaryParams != nullptr ) {
+    if ( linearBoundaryParams ) {
         linearBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
         d_boundaryOperator->reset( linearBoundaryParams );
     } else {
-        std::shared_ptr<ColumnBoundaryOperatorParameters> columnBoundaryParams =
-            std::dynamic_pointer_cast<ColumnBoundaryOperatorParameters>(
+        auto columnBoundaryParams =
+            std::dynamic_pointer_cast<const ColumnBoundaryOperatorParameters>(
                 inParams->d_boundaryOperatorParams );
 
         AMP_ASSERT( columnBoundaryParams != nullptr );
 
         for ( auto cparams : columnBoundaryParams->d_OperatorParameters ) {
 
-            std::shared_ptr<LinearBoundaryOperatorParameters> linearColBoundaryParams =
-                std::dynamic_pointer_cast<LinearBoundaryOperatorParameters>( cparams );
+            auto linearColBoundaryParams =
+                std::dynamic_pointer_cast<LinearBoundaryOperatorParameters>(
+                    std::const_pointer_cast<OperatorParameters>( cparams ) );
             if ( linearColBoundaryParams != nullptr ) {
                 linearColBoundaryParams->d_inputMatrix = d_volumeOperator->getMatrix();
             }
@@ -61,8 +60,8 @@ void LinearBVPOperator::reset( const std::shared_ptr<OperatorParameters> &params
 
 void LinearBVPOperator::modifyRHSvector( AMP::LinearAlgebra::Vector::shared_ptr rhs )
 {
-    ( this->getBoundaryOperator() )->addRHScorrection( rhs );
-    ( this->getBoundaryOperator() )->setRHScorrection( rhs );
+    this->getBoundaryOperator()->addRHScorrection( rhs );
+    this->getBoundaryOperator()->setRHScorrection( rhs );
 }
 } // namespace Operator
 } // namespace AMP

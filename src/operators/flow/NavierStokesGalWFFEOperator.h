@@ -38,7 +38,7 @@ public:
 
     void postElementOperation() override;
 
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in ) override;

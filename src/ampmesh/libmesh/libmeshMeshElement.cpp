@@ -65,7 +65,7 @@ libmeshMeshElement::libmeshMeshElement( int dim,
                                         const libmeshMesh *mesh )
     : d_delete_elem( false )
 {
-    AMP_ASSERT( libmesh_element.get() != nullptr );
+    AMP_ASSERT( libmesh_element );
     typeID          = getTypeID();
     element         = nullptr;
     d_dim           = dim;

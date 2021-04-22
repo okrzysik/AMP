@@ -20,7 +20,7 @@ public:
     explicit FlowTransportModel( const std::shared_ptr<FlowTransportModelParameters> &params )
         : ElementPhysicsModel( params )
     {
-        d_useMaterialsLibrary = ( params->d_db )->getWithDefault( "USE_MATERIALS_LIBRARY", false );
+        d_useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );
 
         if ( d_useMaterialsLibrary == true ) {
             AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
@@ -28,9 +28,9 @@ public:
             d_coolant =
                 AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
         } else {
-            d_density = ( params->d_db )->getWithDefault<double>( "DENSITY", 1 );
-            d_fmu     = ( params->d_db )->getWithDefault<double>( "VISCOSITY", 1.0 );
-            d_Re      = ( params->d_db )->getWithDefault<double>( "ReynoldsNumber", 1.0 );
+            d_density = params->d_db->getWithDefault<double>( "DENSITY", 1 );
+            d_fmu     = params->d_db->getWithDefault<double>( "VISCOSITY", 1.0 );
+            d_Re      = params->d_db->getWithDefault<double>( "ReynoldsNumber", 1.0 );
         }
     }
 

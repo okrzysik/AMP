@@ -37,7 +37,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;

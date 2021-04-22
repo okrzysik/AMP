@@ -17,26 +17,24 @@ ThermalStrainMaterialModel::ThermalStrainMaterialModel(
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_Is_Source = ( params->d_db )->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+    d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
     if ( d_useMaterialsLibrary == false ) {
 
-        d_Is_Source = ( params->d_db )->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+        d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
+        AMP_INSIST( params->d_db->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
                     "Missing key: THERMAL_EXPANSION_COEFFICIENT" );
 
-        default_alpha = ( params->d_db )->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
+        default_alpha = params->d_db->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "Youngs_Modulus" ),
-                    "Missing key: Youngs_Modulus" );
+        AMP_INSIST( params->d_db->keyExists( "Youngs_Modulus" ), "Missing key: Youngs_Modulus" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "Poissons_Ratio" ),
-                    "Missing key: Poissons_Ratio" );
+        AMP_INSIST( params->d_db->keyExists( "Poissons_Ratio" ), "Missing key: Poissons_Ratio" );
 
-        default_E = ( params->d_db )->getScalar<double>( "Youngs_Modulus" );
+        default_E = params->d_db->getScalar<double>( "Youngs_Modulus" );
 
-        default_Nu = ( params->d_db )->getScalar<double>( "Poissons_Ratio" );
+        default_Nu = params->d_db->getScalar<double>( "Poissons_Ratio" );
 
         if ( d_useUpdatedLagrangian == true ) {
             constructConstitutiveMatrixUpdatedLagrangian( default_E, default_Nu );
@@ -45,12 +43,12 @@ ThermalStrainMaterialModel::ThermalStrainMaterialModel(
         }
     }
 
-    default_TEMPERATURE = ( params->d_db )->getWithDefault<double>( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = params->d_db->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = ( params->d_db )->getWithDefault<double>( "Default_Burnup", 0.0 );
+    default_BURNUP = params->d_db->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        ( params->d_db )->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
+        params->d_db->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     for ( size_t i = 0; i < 6; i++ ) {
         for ( size_t j = 0; j < 6; j++ ) {

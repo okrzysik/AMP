@@ -45,7 +45,7 @@ public:
      * \param params
      *    parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
      * Copies the shared pointer for the matrix representation of this linear operator.

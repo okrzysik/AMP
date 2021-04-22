@@ -15,18 +15,18 @@ CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
     const std::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params )
     : Operator( params )
 {
-    AMP_ASSERT( params->d_thermalMapOperator.get() != nullptr );
-    AMP_ASSERT( params->d_densityMapOperator.get() != nullptr );
+    AMP_ASSERT( params->d_thermalMapOperator );
+    AMP_ASSERT( params->d_densityMapOperator );
     d_thermalMapOperator     = params->d_thermalMapOperator;
     d_densityMapOperator     = params->d_densityMapOperator;
     d_flowVariable           = params->d_variable;
     d_Mesh                   = params->d_subchannelMesh;
     d_subchannelPhysicsModel = params->d_subchannelPhysicsModel;
     d_subchannelTemperature  = params->d_vector;
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP_ASSERT( d_subchannelPhysicsModel != nullptr );
     }
-    if ( d_subchannelTemperature.get() != nullptr ) {
+    if ( d_subchannelTemperature ) {
         d_subchannelDensity = d_subchannelTemperature->cloneVector();
         AMP::LinearAlgebra::Variable::shared_ptr densityVariable(
             new AMP::LinearAlgebra::Variable( "Density" ) );

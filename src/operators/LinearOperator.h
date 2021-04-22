@@ -25,7 +25,7 @@ public:
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params
      */
-    explicit LinearOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit LinearOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~LinearOperator() {}

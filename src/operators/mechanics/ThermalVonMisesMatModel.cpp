@@ -18,41 +18,39 @@ ThermalVonMisesMatModel::ThermalVonMisesMatModel(
 
     if ( d_useMaterialsLibrary == false ) {
 
-        AMP_INSIST( ( params->d_db )->keyExists( "Youngs_Modulus" ),
-                    "Missing key: Youngs_Modulus" );
+        AMP_INSIST( params->d_db->keyExists( "Youngs_Modulus" ), "Missing key: Youngs_Modulus" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "Poissons_Ratio" ),
-                    "Missing key: Poissons_Ratio" );
+        AMP_INSIST( params->d_db->keyExists( "Poissons_Ratio" ), "Missing key: Poissons_Ratio" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
+        AMP_INSIST( params->d_db->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
                     "Missing key: THERMAL_EXPANSION_COEFFICIENT" );
     }
 
-    AMP_INSIST( ( params->d_db )->keyExists( "Linear_Strain_Hardening" ),
+    AMP_INSIST( params->d_db->keyExists( "Linear_Strain_Hardening" ),
                 "Missing key: Linear_Strain_Hardening" );
 
-    AMP_INSIST( ( params->d_db )->keyExists( "Elastic_Yield_Stress" ),
+    AMP_INSIST( params->d_db->keyExists( "Elastic_Yield_Stress" ),
                 "Missing key: Elastic_Yield_Stress" );
 
     if ( d_useMaterialsLibrary == false ) {
 
-        default_E = ( params->d_db )->getScalar<double>( "Youngs_Modulus" );
+        default_E = params->d_db->getScalar<double>( "Youngs_Modulus" );
 
-        default_Nu = ( params->d_db )->getScalar<double>( "Poissons_Ratio" );
+        default_Nu = params->d_db->getScalar<double>( "Poissons_Ratio" );
 
-        default_alpha = ( params->d_db )->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
+        default_alpha = params->d_db->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
     }
 
-    d_H = ( params->d_db )->getScalar<double>( "Linear_Strain_Hardening" );
+    d_H = params->d_db->getScalar<double>( "Linear_Strain_Hardening" );
 
-    d_Sig0 = ( params->d_db )->getScalar<double>( "Elastic_Yield_Stress" );
+    d_Sig0 = params->d_db->getScalar<double>( "Elastic_Yield_Stress" );
 
-    default_TEMPERATURE = ( params->d_db )->getWithDefault<double>( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = params->d_db->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = ( params->d_db )->getWithDefault<double>( "Default_Burnup", 0.0 );
+    default_BURNUP = params->d_db->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        ( params->d_db )->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
+        params->d_db->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     d_Is_Init_Called = false;
 

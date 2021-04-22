@@ -33,7 +33,7 @@ void TrilinosMatrixShellOperator::residual( AMP::LinearAlgebra::Vector::const_sh
     d_operator->residual( f, u, r );
 }
 
-void TrilinosMatrixShellOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void TrilinosMatrixShellOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     d_operator->reset( params );
 }

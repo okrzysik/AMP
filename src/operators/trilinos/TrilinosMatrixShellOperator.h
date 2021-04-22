@@ -35,7 +35,7 @@ public:
                            AMP::LinearAlgebra::Vector::const_shared_ptr u,
                            AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
 

@@ -51,7 +51,7 @@ void ImplicitTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameter
     std::shared_ptr<ImplicitTimeIntegratorParameters> params =
         std::dynamic_pointer_cast<ImplicitTimeIntegratorParameters>( parameters );
 
-    if ( params.get() != nullptr ) {
+    if ( params ) {
         d_solver = params->d_solver;
 
         /*
@@ -119,10 +119,7 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_s
 *************************************************************************
 */
 
-void ImplicitTimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> db )
-{
-    AMP_ASSERT( db.get() != nullptr );
-}
+void ImplicitTimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> db ) { AMP_ASSERT( db ); }
 
 /*
 *************************************************************************

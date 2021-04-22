@@ -28,7 +28,7 @@ public:
     virtual void reset( const std::shared_ptr<RobinPhysicsModelParameters> &params )
     {
         if ( params->d_db->keyExists( "Number_Active_Variables" ) ) {
-            d_numActiveVariables = ( params->d_db )->getScalar<int>( "Number_Active_Variables" );
+            d_numActiveVariables = params->d_db->getScalar<int>( "Number_Active_Variables" );
         }
         std::shared_ptr<AMP::Database> activeDb;
         if ( params->d_db->keyExists( "ActiveInputVariables" ) ) {

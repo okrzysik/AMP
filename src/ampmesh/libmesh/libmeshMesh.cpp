@@ -542,7 +542,7 @@ void libmeshMesh::initialize()
 size_t libmeshMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
 {
     auto database = params->getDatabase();
-    AMP_ASSERT( database.get() != nullptr );
+    AMP_ASSERT( database );
     size_t NumberOfElements = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything

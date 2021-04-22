@@ -70,7 +70,7 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     /**
       This function is used to set the reference temperature when using temperature dependent

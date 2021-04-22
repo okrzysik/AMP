@@ -300,7 +300,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         int root_submesh = d_comm.getSize();
         int subcommSize  = -1;
         int myRank       = -1;
-        if ( submesh.get() != nullptr ) {
+        if ( submesh ) {
             AMP_MPI subcomm = submesh->getComm();
             rank_submesh    = subcomm.getRank();
             root_submesh    = d_comm.getRank();

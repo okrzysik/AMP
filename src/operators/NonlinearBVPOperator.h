@@ -36,7 +36,7 @@ public:
      FALSE, when set to
      to TRUE the same local model is used for both the volume and boundary operators
      */
-    explicit NonlinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &parameters );
+    explicit NonlinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> parameters );
 
     /**
      * virtual destructor which does nothing
@@ -60,7 +60,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     std::shared_ptr<Operator> getVolumeOperator() { return d_volumeOperator; }
 
@@ -80,7 +80,7 @@ public:
         return d_volumeOperator->getOutputVariable();
     }
 
-    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &sol ) override
+    bool isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr sol ) override
     {
         return d_volumeOperator->isValidInput( sol );
     }

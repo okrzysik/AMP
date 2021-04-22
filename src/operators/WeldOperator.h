@@ -29,7 +29,7 @@ public:
 
     std::string type() const override { return "WeldOperator"; }
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params ) { (void) params; }
+    virtual void reset( std::shared_ptr<const OperatorParameters> params ) { (void) params; }
 
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                         AMP::LinearAlgebra::Vector::const_shared_ptr u,

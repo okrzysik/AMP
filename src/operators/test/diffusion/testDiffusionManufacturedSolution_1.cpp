@@ -65,9 +65,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // use the linear BVP operator to create a linear diffusion operator with bc's
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> linearPhysicsModel;
-    // auto bvp_db =
-    //        std::dynamic_pointer_cast<AMP::Database>(
-    //        input_db->getDatabase("ThermalLinearBVPOperator"));
+    // auto bvp_db = input_db->getDatabase("ThermalLinearBVPOperator");
     // auto linBVPOperator =
     //        AMP::Operator::OperatorBuilder::createOperator(meshAdapter, bvp_db,
     //        linearPhysicsModel);

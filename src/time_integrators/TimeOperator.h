@@ -72,7 +72,7 @@ public:
         optional field: no
 
     */
-    explicit TimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> params );
+    explicit TimeOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params );
 
     /**
      * virtual destructor
@@ -84,7 +84,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * This function registers a rhs operator with the TimeOperator class

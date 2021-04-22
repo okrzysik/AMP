@@ -23,7 +23,7 @@ public:
 
     std::string type() const override { return "MassLinearFEOperator"; }
 
-    void preAssembly( const std::shared_ptr<AMP::Operator::OperatorParameters> & ) override;
+    void preAssembly( std::shared_ptr<const AMP::Operator::OperatorParameters> ) override;
 
     void postAssembly() override;
 

@@ -18,7 +18,7 @@ GMRESSolver::GMRESSolver() : d_restarts( 0 ) { NULL_USE( d_restarts ); }
 GMRESSolver::GMRESSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_restarts( 0 )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     // Initialize
     initialize( parameters );
@@ -36,7 +36,7 @@ GMRESSolver::~GMRESSolver() {}
 void GMRESSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
     auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
 
@@ -54,7 +54,7 @@ void GMRESSolver::initialize( std::shared_ptr<SolverStrategyParameters> const pa
 
     d_pPreconditioner = parameters->d_pPreconditioner;
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 }
@@ -114,7 +114,7 @@ void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         std::cout << "GMRESSolver::solve: initial L2Norm of rhs vector: " << f_norm << std::endl;
     }
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 
@@ -362,24 +362,24 @@ void GMRESSolver::backwardSolve( void )
  ****************************************************************/
 void GMRESSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
-    AMP_ASSERT( op.get() != nullptr );
+    AMP_ASSERT( op );
 
     d_pOperator = op;
 
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator.get() != nullptr );
+    AMP_ASSERT( linearOperator );
 }
 
 void GMRESSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         d_pOperator->reset( params );
     }
 
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner.get() != nullptr ) {
+    if ( d_pPreconditioner ) {
         d_pPreconditioner->resetOperator( params );
     }
 }

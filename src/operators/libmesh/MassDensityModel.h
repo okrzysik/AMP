@@ -36,7 +36,7 @@ public:
         UnknownManufacturedEquation
     };
 
-    explicit MassDensityModel( const std::shared_ptr<MassDensityModelParameters> &params );
+    explicit MassDensityModel( std::shared_ptr<const MassDensityModelParameters> params );
 
     virtual ~MassDensityModel() {}
 

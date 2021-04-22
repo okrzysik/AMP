@@ -72,7 +72,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params );
+    virtual void reset( std::shared_ptr<const OperatorParameters> params );
 
     /**
       The apply function for this operator, A, performs the following operation:

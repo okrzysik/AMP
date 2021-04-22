@@ -17,7 +17,7 @@ TimeIntegratorFactory::~TimeIntegratorFactory() = default;
 std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
     std::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters )
 {
-    AMP_ASSERT( timeIntegratorParameters.get() != nullptr );
+    AMP_ASSERT( timeIntegratorParameters );
 
     std::shared_ptr<TimeIntegrator> timeIntegrator;
 

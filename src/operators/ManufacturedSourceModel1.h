@@ -25,7 +25,7 @@ class ManufacturedSourceModel1 : public ElementPhysicsModel
 {
 public:
     explicit ManufacturedSourceModel1(
-        const std::shared_ptr<ManufacturedSourceModel1Parameters> &params )
+        std::shared_ptr<const ManufacturedSourceModel1Parameters> params )
         : ElementPhysicsModel( params )
     {
         d_Dzero = 1.0;

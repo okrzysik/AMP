@@ -11,14 +11,14 @@ PelletContactConductanceModel::PelletContactConductanceModel(
     const std::shared_ptr<RobinPhysicsModelParameters> &params )
     : RobinPhysicsModel( params )
 {
-    d_nTransportModels = ( params->d_db )->getScalar<int>( "Number_TransportModels" );
+    d_nTransportModels = params->d_db->getScalar<int>( "Number_TransportModels" );
     d_transportModels.resize( d_nTransportModels );
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel;
 
     for ( unsigned int i = 0; i < d_nTransportModels; i++ ) {
         char key[100];
         sprintf( key, "DiffusionTransportModel_%d", (int) i );
-        std::shared_ptr<Database> transportModel_db = ( params->d_db )->getDatabase( key );
+        std::shared_ptr<Database> transportModel_db = params->d_db->getDatabase( key );
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
         d_transportModels[i] =

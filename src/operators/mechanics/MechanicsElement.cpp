@@ -18,16 +18,16 @@ namespace Operator {
 MechanicsElement::MechanicsElement( const std::shared_ptr<ElementOperationParameters> &params )
     : ElementOperation( params ), d_elem( nullptr )
 {
-    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
+    AMP_INSIST( ( params ), "''params'' is NULL" );
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_useReducedIntegration = ( params->d_db )->getWithDefault( "USE_REDUCED_INTEGRATION", false );
+    d_useReducedIntegration = params->d_db->getWithDefault( "USE_REDUCED_INTEGRATION", false );
 
-    d_useJaumannRate = ( params->d_db )->getWithDefault( "USE_JAUMANN_RATE", false );
+    d_useJaumannRate = params->d_db->getWithDefault( "USE_JAUMANN_RATE", false );
 
     d_useFlanaganTaylorElem =
-        ( params->d_db )->getWithDefault( "USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION", false );
+        params->d_db->getWithDefault( "USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION", false );
 
     if ( d_useFlanaganTaylorElem == true ) {
         AMP_INSIST(
@@ -35,18 +35,15 @@ MechanicsElement::MechanicsElement( const std::shared_ptr<ElementOperationParame
             "Flanagan Taylor element formulation can only be used with Green-Naghdi stress rate." );
     }
 
-    std::string feTypeOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    std::string feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName =
-        ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    std::string feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
 
     auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
 
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
@@ -58,7 +55,7 @@ MechanicsElement::MechanicsElement( const std::shared_ptr<ElementOperationParame
     d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
     std::string qruleOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 
@@ -72,7 +69,7 @@ MechanicsElement::MechanicsElement( const std::shared_ptr<ElementOperationParame
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
-    d_iDebugPrintInfoLevel = ( params->d_db )->getWithDefault( "print_info_level", 0 );
+    d_iDebugPrintInfoLevel = params->d_db->getWithDefault( "print_info_level", 0 );
 }
 } // namespace Operator
 } // namespace AMP

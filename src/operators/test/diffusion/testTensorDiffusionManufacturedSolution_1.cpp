@@ -89,7 +89,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
         std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( nlinOp->getInputVariable() );
     auto solVar = std::make_shared<AMP::LinearAlgebra::MultiVariable>( tmp->getName() );
     for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
-        if ( tmp->getVariable( i ).get() != nullptr )
+        if ( tmp->getVariable( i ) )
             solVar->add( tmp->getVariable( i ) );
     }
     auto rhsVar    = nlinOp->getOutputVariable();

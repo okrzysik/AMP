@@ -47,7 +47,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<OperatorParameters> &params );
+    void reset( std::shared_ptr<const OperatorParameters> params );
 
     void addSlaveToMaster( AMP::LinearAlgebra::Vector::shared_ptr u );
 

@@ -182,7 +182,7 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_pt
     // Create the subset DOF Manager
     AMP_MPI comm( AMP_COMM_NULL );
     if ( useMeshComm ) {
-        if ( mesh.get() != nullptr )
+        if ( mesh )
             comm = mesh->getComm();
     } else {
         comm = d_comm;

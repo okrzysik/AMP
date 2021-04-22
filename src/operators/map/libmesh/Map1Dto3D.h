@@ -39,7 +39,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     /**
       For this operator the apply function would map the solution by injunction from

@@ -39,7 +39,7 @@ TrilinosMueLuSolver::TrilinosMueLuSolver() : d_bCreationPhase( true ), d_maxLeve
 TrilinosMueLuSolver::TrilinosMueLuSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_maxLevels( 0 )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
     initialize( parameters );
 }
 TrilinosMueLuSolver::~TrilinosMueLuSolver()
@@ -52,7 +52,7 @@ void TrilinosMueLuSolver::initialize( std::shared_ptr<SolverStrategyParameters> 
 {
     getFromInput( parameters->d_db );
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
 
         registerOperator( d_pOperator );
     }
@@ -422,8 +422,7 @@ void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db
 void TrilinosMueLuSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
 {
     d_pOperator = op;
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMueLuSolver::initialize() operator cannot be NULL" );
+    AMP_INSIST( d_pOperator, "ERROR: TrilinosMueLuSolver::initialize() operator cannot be NULL" );
 
     if ( d_bUseEpetra ) {
 
@@ -442,11 +441,11 @@ void TrilinosMueLuSolver::registerOperator( const std::shared_ptr<AMP::Operator:
 
             auto linearOperator =
                 std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-            AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+            AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
             d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
                 linearOperator->getMatrix() );
-            AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
+            AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
             // MueLu expects a Teuchos ref pointer
             Teuchos::RCP<Epetra_CrsMatrix> fineLevelMatrixPtr =
@@ -469,7 +468,7 @@ void TrilinosMueLuSolver::resetOperator(
     const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
-    AMP_INSIST( ( d_pOperator.get() != nullptr ),
+    AMP_INSIST( ( d_pOperator ),
                 "ERROR: TrilinosMueLuSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
@@ -526,8 +525,7 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     AMP_ASSERT( u != nullptr );
 
     // in this case we make the assumption we can access a EpetraMat for now
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMueLuSolver::apply() operator cannot be NULL" );
+    AMP_INSIST( d_pOperator, "ERROR: TrilinosMueLuSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
@@ -641,11 +639,11 @@ void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebr
     }
 
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+    AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
     d_matrix =
         std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
-    AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
+    AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
     auto tmpMueLuParameterList = d_MueLuParameterList;
     tmpMueLuParameterList.set( "verbosity", "medium" );

@@ -34,7 +34,7 @@ public:
 
     void postElementOperation() override;
 
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     /*
             void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {

@@ -50,7 +50,7 @@ public:
       This function can be used to change the Robin boundary conditions i.e., change the
       RHS flux values.
       */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
 protected:
     /**

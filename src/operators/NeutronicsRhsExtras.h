@@ -26,7 +26,6 @@ class NeutronicsRhsExtras : public Operator
 
 public:
     typedef std::shared_ptr<NeutronicsRhsExtrasParameters> SP_Parameters;
-    typedef std::shared_ptr<OperatorParameters> SP_OperatorParameters;
     typedef std::vector<double> Vec_Dbl;
     typedef std::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
     typedef std::shared_ptr<AMP::Database> SP_Database;
@@ -72,7 +71,7 @@ public:
     /**
       A function to reinitialize this object.
       */
-    void reset( const SP_OperatorParameters &parameters ) override;
+    void reset( std::shared_ptr<const OperatorParameters> parameters ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
     {

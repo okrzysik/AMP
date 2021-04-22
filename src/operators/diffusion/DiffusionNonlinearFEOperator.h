@@ -22,7 +22,7 @@ public:
 
     virtual ~DiffusionNonlinearFEOperator() {}
 
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 
@@ -63,7 +63,7 @@ public:
     /**
      * checks input to apply operator for satisfaction of range conditions
      */
-    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u ) override;
+    bool isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
 protected:
     std::shared_ptr<OperatorParameters>
@@ -112,7 +112,7 @@ private:
 
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_Frozen;
 
-    void resetFrozen( const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> params );
+    void resetFrozen( std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params );
 };
 } // namespace Operator
 } // namespace AMP

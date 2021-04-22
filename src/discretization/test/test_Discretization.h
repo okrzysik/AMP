@@ -187,9 +187,9 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     // Create a simple DOF manager and check if it is a multiDOF manager
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    if ( std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
+    if ( std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ) ) {
         auto multiDOF = std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
-        if ( multiDOF.get() != nullptr ) {
+        if ( multiDOF ) {
             ut->passes( "Created multiDOFManager from simpleDOFManager: " + GENERATOR::name() );
             testMultiDOFMap( ut, multiDOF );
         } else {

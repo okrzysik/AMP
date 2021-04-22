@@ -55,7 +55,7 @@ public:
     /**
       This function reads parameters related to boundary Ids
       */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
       Adds a vector to the RHS vector.

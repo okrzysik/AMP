@@ -130,7 +130,7 @@ static void myTest( AMP::UnitTest *ut )
             std::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
                 AMP::LinearAlgebra::MultiVector::create( tmp_var, meshAdapter->getComm() );
             for ( size_t iv = 0; iv < inputVariables.size(); iv++ ) {
-                if ( inputVariables[iv].get() != nullptr )
+                if ( inputVariables[iv] )
                     solVec->addVector(
                         AMP::LinearAlgebra::createVector( dofMapVec[iv], inputVariables[iv] ) );
             }

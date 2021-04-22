@@ -28,7 +28,7 @@ class LinearFEOperator : public LinearOperator
 public:
     //! Constructor. This copies the share pointer to the element operation from the input parameter
     //! object.
-    explicit LinearFEOperator( const std::shared_ptr<LinearFEOperatorParameters> &params );
+    explicit LinearFEOperator( std::shared_ptr<const LinearFEOperatorParameters> params );
 
     //! Destructor
     virtual ~LinearFEOperator() {}
@@ -44,7 +44,7 @@ public:
       Also, the derived classes can access the parameters passed to the reset
       function by implementing this function.
       */
-    virtual void preAssembly( const std::shared_ptr<OperatorParameters> & ) = 0;
+    virtual void preAssembly( std::shared_ptr<const OperatorParameters> ) = 0;
 
     /**
       This function will be called just after looping over all the elements to
@@ -75,7 +75,7 @@ public:
       This function creates the stiffness matrix and uses virtual
       function calls for setting values into the matrix.
       */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
 protected:
     void createCurrentLibMeshElement();

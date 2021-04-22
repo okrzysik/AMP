@@ -18,7 +18,7 @@ class CoupledFlowFrapconOperator : public ColumnOperator
 public:
     explicit CoupledFlowFrapconOperator( const std::shared_ptr<OperatorParameters> &params );
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override
+    void reset( std::shared_ptr<const OperatorParameters> params ) override
     {
         d_operators[2]->reset( params );
     }

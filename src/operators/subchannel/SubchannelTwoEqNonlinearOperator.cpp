@@ -47,10 +47,9 @@ SubchannelTwoEqNonlinearOperator::SubchannelTwoEqNonlinearOperator(
 
 
 // reset
-void SubchannelTwoEqNonlinearOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void SubchannelTwoEqNonlinearOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<SubchannelOperatorParameters> myparams =
-        std::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     d_params = myparams;
@@ -73,15 +72,15 @@ void SubchannelTwoEqNonlinearOperator::reset( const std::shared_ptr<OperatorPara
     d_NGrid         = getIntegerParameter( myparams, "Number_GridSpacers", 0 );
 
     // Check for obsolete properites
-    if ( ( myparams->d_db )->keyExists( "Rod_Diameter" ) )
+    if ( myparams->d_db->keyExists( "Rod_Diameter" ) )
         AMP_WARNING( "Field 'Rod_Diameter' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "Channel_Diameter" ) )
+    if ( myparams->d_db->keyExists( "Channel_Diameter" ) )
         AMP_WARNING( "Field 'Channel_Diameter' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "Lattice_Pitch" ) )
+    if ( myparams->d_db->keyExists( "Lattice_Pitch" ) )
         AMP_WARNING( "Field 'Lattice_Pitch' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "ChannelFractions" ) )
+    if ( myparams->d_db->keyExists( "ChannelFractions" ) )
         AMP_WARNING( "Field 'ChannelFractions' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "Mass_Flow_Rate" ) )
+    if ( myparams->d_db->keyExists( "Mass_Flow_Rate" ) )
         AMP_WARNING( "Field 'Mass_Flow_Rate' is obsolete and should be removed from database" );
 
     // Get the subchannel properties from the mesh
@@ -120,9 +119,9 @@ void SubchannelTwoEqNonlinearOperator::reset( const std::shared_ptr<OperatorPara
 
     // get form loss parameters if there are grid spacers
     if ( d_NGrid > 0 ) {
-        d_zMinGrid = ( myparams->d_db )->getVector<double>( "zMin_GridSpacers" );
-        d_zMaxGrid = ( myparams->d_db )->getVector<double>( "zMax_GridSpacers" );
-        d_lossGrid = ( myparams->d_db )->getVector<double>( "LossCoefficient_GridSpacers" );
+        d_zMinGrid = myparams->d_db->getVector<double>( "zMin_GridSpacers" );
+        d_zMaxGrid = myparams->d_db->getVector<double>( "zMax_GridSpacers" );
+        d_lossGrid = myparams->d_db->getVector<double>( "LossCoefficient_GridSpacers" );
         // check that sizes of grid spacer loss vectors are consistent with the provided number of
         // grid spacers
         if ( !( d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() &&
@@ -515,7 +514,7 @@ std::shared_ptr<OperatorParameters> SubchannelTwoEqNonlinearOperator::getJacobia
 
 // function used in reset to get double parameter or set default if missing
 double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     double defaultValue )
 {
@@ -531,7 +530,7 @@ double SubchannelTwoEqNonlinearOperator::getDoubleParameter(
 
 // function used in reset to get integer parameter or set default if missing
 int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     int defaultValue )
 {
@@ -547,13 +546,13 @@ int SubchannelTwoEqNonlinearOperator::getIntegerParameter(
 
 // function used in reset to get string parameter or set default if missing
 std::string SubchannelTwoEqNonlinearOperator::getStringParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     std::string defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getString( paramString );
+        return myparams->d_db->getString( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );

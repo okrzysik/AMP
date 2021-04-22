@@ -28,7 +28,7 @@ public:
                         const double a = -1.0,
                         const double b = 1.0 );
 
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params );
+    virtual void reset( std::shared_ptr<const OperatorParameters> params );
 
     virtual void append( std::shared_ptr<Operator> op );
 

@@ -117,8 +117,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::ColumnBoundaryOperator>( boundaryOp )
             ->getBoundaryOperator( 0 );
 
-    auto robinboundaryDatabase = std::dynamic_pointer_cast<AMP::Database>(
-        input_db->getDatabase( "RobinMatrixCorrection" ) );
+    auto robinboundaryDatabase = input_db->getDatabase( "RobinMatrixCorrection" );
 
     robinboundaryDatabase->putScalar( "constant_flux", false );
     robinboundaryDatabase->putScalar( "skip_matrix_correction", true );

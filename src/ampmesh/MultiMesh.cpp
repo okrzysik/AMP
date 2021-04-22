@@ -181,7 +181,7 @@ MultiMesh::MultiMesh( const std::string &name,
     // Get the list of non-null meshes
     d_meshes = std::vector<Mesh::shared_ptr>();
     for ( auto &meshe : meshes ) {
-        if ( meshe.get() != nullptr )
+        if ( meshe )
             d_meshes.push_back( meshe );
     }
     if ( d_comm.sumReduce( d_meshes.size() ) == 0 ) {
@@ -646,7 +646,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
         return std::const_pointer_cast<Mesh>( shared_from_this() );
     for ( auto &elem : d_meshes ) {
         std::shared_ptr<Mesh> mesh = elem->Subset( meshID );
-        if ( mesh.get() != nullptr )
+        if ( mesh )
             return mesh;
     }
     return std::shared_ptr<Mesh>();
@@ -682,7 +682,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
                                           elem->getIterator( type, elem->getMaxGhostWidth() ) );
         }
         auto mesh = elem->Subset( iterator, isGlobal );
-        if ( mesh.get() != nullptr ) {
+        if ( mesh ) {
             subset.push_back( mesh );
             subsetID.insert( mesh->meshID() );
         }
@@ -723,7 +723,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     std::set<MeshID> subsetID;
     for ( auto &elem : d_meshes ) {
         Mesh::shared_ptr mesh = elem->Subset( name );
-        if ( mesh.get() != nullptr ) {
+        if ( mesh ) {
             subset.push_back( mesh );
             subsetID.insert( mesh->meshID() );
         }

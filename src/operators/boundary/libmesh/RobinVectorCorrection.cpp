@@ -33,23 +33,23 @@ RobinVectorCorrection::RobinVectorCorrection(
 }
 
 
-void RobinVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
+void RobinVectorCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
     NeumannVectorCorrection::reset( params );
 
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
+    d_skipParams = params->d_db->getWithDefault( "skip_params", false );
 
-    AMP_INSIST( ( params->d_db )->keyExists( "alpha" ), "Missing key: prefactor alpha" );
-    d_alpha = ( params->d_db )->getScalar<double>( "alpha" );
+    AMP_INSIST( params->d_db->keyExists( "alpha" ), "Missing key: prefactor alpha" );
+    d_alpha = params->d_db->getScalar<double>( "alpha" );
 
-    AMP_INSIST( ( params->d_db )->keyExists( "beta" ), "Missing key: prefactor beta" );
-    d_beta = ( params->d_db )->getScalar<double>( "beta" );
+    AMP_INSIST( params->d_db->keyExists( "beta" ), "Missing key: prefactor beta" );
+    d_beta = params->d_db->getScalar<double>( "beta" );
 
-    AMP_INSIST( ( params->d_db )->keyExists( "gamma" ), "Missing key: total prefactor gamma" );
-    d_gamma = ( params->d_db )->getScalar<double>( "gamma" );
+    AMP_INSIST( params->d_db->keyExists( "gamma" ), "Missing key: total prefactor gamma" );
+    d_gamma = params->d_db->getScalar<double>( "gamma" );
 }
 
 
@@ -69,7 +69,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
 
     std::vector<std::string> variableNames;
     size_t numVar = 0;
-    if ( d_robinPhysicsModel.get() != nullptr ) {
+    if ( d_robinPhysicsModel ) {
         variableNames = d_robinPhysicsModel->getVariableName();
         numVar        = variableNames.size();
     }
@@ -77,10 +77,10 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     d_elementInputVec.resize( numVar + 1 );
     d_elementInputVec[0] = d_variableFlux;
 
-    if ( d_robinPhysicsModel.get() != nullptr ) {
+    if ( d_robinPhysicsModel ) {
         for ( size_t i = 0; i < variableNames.size(); i++ ) {
             std::string cview = variableNames[i] + " view";
-            if ( d_Frozen.get() != nullptr ) {
+            if ( d_Frozen ) {
                 if ( d_Frozen->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ),
                                        cview ) != nullptr ) {
                     d_elementInputVec[i + 1] = d_Frozen->constSelect(
@@ -114,7 +114,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     AMP_ASSERT( *dofManager == *( uInternal->getDOFManager() ) );
     AMP_ASSERT( *dofManager == *( rInternal->getDOFManager() ) );
     if ( !d_isFluxGaussPtVector ) {
-        if ( d_variableFlux.get() != nullptr )
+        if ( d_variableFlux )
             AMP_ASSERT( *dofManager == *( d_variableFlux->getDOFManager() ) );
     }
 
@@ -177,7 +177,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                 std::vector<double> beta( numGaussPts, d_beta );
                 std::vector<double> gamma( numGaussPts, d_gamma );
                 PROFILE_START( "get conductance", 2 );
-                if ( d_robinPhysicsModel.get() != nullptr ) {
+                if ( d_robinPhysicsModel ) {
                     unsigned int startIdx = 0;
                     if ( d_isFluxGaussPtVector && d_IsCoupledBoundary[nid] ) {
                         d_variableFlux->getValuesByGlobalID(

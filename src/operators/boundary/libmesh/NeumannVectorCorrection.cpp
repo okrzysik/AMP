@@ -30,10 +30,10 @@ NeumannVectorCorrection::NeumannVectorCorrection(
     d_isFluxGaussPtVector = false;
     d_numBndIds           = 0;
 
-    auto feTypeOrderName = ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feFamilyName    = ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto qruleTypeName   = ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    auto qruleOrderName = ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feFamilyName    = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto qruleTypeName   = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    auto qruleOrderName  = params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     // Create the libmesh qruleOrder, qruleType, and FEType
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
@@ -52,20 +52,18 @@ NeumannVectorCorrection::NeumannVectorCorrection(
 }
 
 
-void NeumannVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
+void NeumannVectorCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<NeumannVectorCorrectionParameters> myparams =
-        std::dynamic_pointer_cast<NeumannVectorCorrectionParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "number_of_ids" ),
-                "Key ''number_of_ids'' is missing!" );
-    d_numBndIds = ( myparams->d_db )->getScalar<int>( "number_of_ids" );
+    AMP_INSIST( myparams->d_db->keyExists( "number_of_ids" ), "Key ''number_of_ids'' is missing!" );
+    d_numBndIds = myparams->d_db->getScalar<int>( "number_of_ids" );
 
-    d_isConstantFlux      = ( myparams->d_db )->getWithDefault( "constant_flux", true );
-    d_isFluxGaussPtVector = ( myparams->d_db )->getWithDefault( "IsFluxGaussPtVector", true );
+    d_isConstantFlux      = myparams->d_db->getWithDefault( "constant_flux", true );
+    d_isFluxGaussPtVector = myparams->d_db->getWithDefault( "IsFluxGaussPtVector", true );
 
     d_boundaryIds.resize( d_numBndIds );
     d_dofIds.resize( d_numBndIds );
@@ -76,27 +74,27 @@ void NeumannVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &
     char key[100];
     for ( int j = 0; j < d_numBndIds; j++ ) {
         sprintf( key, "id_%d", j );
-        AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-        d_boundaryIds[j] = ( myparams->d_db )->getScalar<int>( key );
+        AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+        d_boundaryIds[j] = myparams->d_db->getScalar<int>( key );
 
         sprintf( key, "number_of_dofs_%d", j );
-        AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-        d_numDofIds[j] = ( myparams->d_db )->getScalar<int>( key );
+        AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+        d_numDofIds[j] = myparams->d_db->getScalar<int>( key );
 
         sprintf( key, "IsCoupledBoundary_%d", j );
-        d_IsCoupledBoundary[j] = ( params->d_db )->getWithDefault( key, false );
+        d_IsCoupledBoundary[j] = params->d_db->getWithDefault( key, false );
 
         d_dofIds[j].resize( d_numDofIds[j] );
         d_neumannValues[j].resize( d_numDofIds[j] );
         for ( int i = 0; i < d_numDofIds[j]; i++ ) {
             sprintf( key, "dof_%d_%d", j, i );
-            AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-            d_dofIds[j][i] = ( myparams->d_db )->getScalar<int>( key );
+            AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+            d_dofIds[j][i] = myparams->d_db->getScalar<int>( key );
 
             if ( d_isConstantFlux ) {
                 sprintf( key, "value_%d_%d", j, i );
-                AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-                d_neumannValues[j][i] = ( myparams->d_db )->getScalar<double>( key );
+                AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+                d_neumannValues[j][i] = myparams->d_db->getScalar<double>( key );
             } else {
                 d_variableFlux = myparams->d_variableFlux;
             }
@@ -282,7 +280,7 @@ std::shared_ptr<OperatorParameters>
 void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::shared_ptr f )
 {
     AMP::LinearAlgebra::Vector::shared_ptr f2 = f;
-    if ( d_Mesh.get() != nullptr )
+    if ( d_Mesh )
         f2 = f->select( AMP::LinearAlgebra::VS_Mesh( d_Mesh ), f->getVariable()->getName() );
     if ( f2 == nullptr )
         return;
@@ -294,7 +292,7 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
 
 void NeumannVectorCorrection::setVariableFlux( const AMP::LinearAlgebra::Vector::shared_ptr &flux )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             flux->select( meshSelector, d_variable->getName() );

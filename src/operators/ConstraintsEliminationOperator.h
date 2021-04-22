@@ -46,7 +46,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
       Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:

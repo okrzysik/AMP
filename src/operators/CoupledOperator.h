@@ -19,7 +19,7 @@ namespace Operator {
 class CoupledOperator : public ColumnOperator
 {
 public:
-    explicit CoupledOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit CoupledOperator( std::shared_ptr<const OperatorParameters> params );
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -54,11 +54,11 @@ public:
     void append( std::shared_ptr<Operator> op ) override
     {
         AMP_ASSERT( d_operators.size() < 4 );
-        AMP_ASSERT( op.get() != nullptr );
+        AMP_ASSERT( op );
         d_operators.push_back( op );
     }
 
-    bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override
+    bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> u ) override
     {
         return d_operators[3]->isValidInput( u );
     }

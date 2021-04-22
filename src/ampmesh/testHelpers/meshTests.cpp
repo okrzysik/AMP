@@ -38,7 +38,7 @@ meshTests::createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
         auto mesh2 = mesh->Subset( meshID );
         int N_send = 0;
         std::pair<int, int> map;
-        if ( mesh2.get() != nullptr ) {
+        if ( mesh2 ) {
             map    = std::pair<int, int>( mesh2->getComm().getRank(), mesh->getComm().getRank() );
             N_send = 1;
         }
@@ -765,7 +765,7 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
         // Store the neighbor list
         neighbors.resize( 0 );
         for ( auto &element : elements ) {
-            if ( element.get() != nullptr )
+            if ( element )
                 neighbors.push_back( element->globalID() );
         }
         // Sort the neighbor list for easy searching

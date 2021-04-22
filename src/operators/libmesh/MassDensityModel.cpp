@@ -15,7 +15,7 @@
 namespace AMP {
 namespace Operator {
 
-MassDensityModel::MassDensityModel( const std::shared_ptr<MassDensityModelParameters> &params )
+MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParameters> params )
     : ElementPhysicsModel( params )
 {
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Mass Key ''Material'' is missing!" );

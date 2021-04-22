@@ -36,7 +36,7 @@ public:
    FALSE, when set to
       to TRUE the same local model is used for both the volume and boundary operators
       */
-    explicit LinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &parameters );
+    explicit LinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> parameters );
 
     /**
      * virtual destructor which does nothing
@@ -49,7 +49,7 @@ public:
     /**
      * This function is useful for re-initializing/updating an operator
      */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
     {

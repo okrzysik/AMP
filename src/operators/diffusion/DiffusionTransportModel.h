@@ -26,7 +26,7 @@ class DiffusionTransportModel : public ElementPhysicsModel
 {
 public:
     explicit DiffusionTransportModel(
-        const std::shared_ptr<DiffusionTransportModelParameters> &params );
+        std::shared_ptr<const DiffusionTransportModelParameters> params );
 
     virtual ~DiffusionTransportModel() {}
 

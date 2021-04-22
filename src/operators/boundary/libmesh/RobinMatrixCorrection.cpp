@@ -31,10 +31,10 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     d_JxW   = nullptr;
     d_phi   = nullptr;
 
-    auto feTypeOrderName = ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feFamilyName    = ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto qruleTypeName   = ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
-    d_qruleOrderName = ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feFamilyName    = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto qruleTypeName   = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    d_qruleOrderName     = params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     d_feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
     d_feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
@@ -51,34 +51,33 @@ RobinMatrixCorrection::RobinMatrixCorrection(
     reset( params );
 }
 
-void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
+void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
 
-    auto myparams = std::dynamic_pointer_cast<RobinMatrixCorrectionParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams = ( myparams->d_db )->getWithDefault( "skip_params", true );
+    bool skipParams = myparams->d_db->getWithDefault( "skip_params", true );
 
-    bool d_isFluxGaussPtVector = ( myparams->d_db )->getWithDefault( "IsFluxGaussPtVector", true );
+    bool d_isFluxGaussPtVector = myparams->d_db->getWithDefault( "IsFluxGaussPtVector", true );
 
     if ( !skipParams ) {
-        AMP_INSIST( ( myparams->d_db )->keyExists( "alpha" ), "Missing key: prefactor alpha" );
-        d_alpha = ( myparams->d_db )->getScalar<double>( "alpha" );
+        AMP_INSIST( myparams->d_db->keyExists( "alpha" ), "Missing key: prefactor alpha" );
+        d_alpha = myparams->d_db->getScalar<double>( "alpha" );
         AMP_INSIST( d_alpha != 0.0, "prefactor alpha must be != 0.0" );
 
-        AMP_INSIST( ( myparams->d_db )->keyExists( "beta" ), "Missing key: prefactor beta" );
-        d_beta = ( myparams->d_db )->getScalar<double>( "beta" );
+        AMP_INSIST( myparams->d_db->keyExists( "beta" ), "Missing key: prefactor beta" );
+        d_beta = myparams->d_db->getScalar<double>( "beta" );
 
-        AMP_INSIST( ( myparams->d_db )->keyExists( "gamma" ),
-                    "Missing key: total prefactor gamma" );
-        d_gamma = ( myparams->d_db )->getScalar<double>( "gamma" );
+        AMP_INSIST( myparams->d_db->keyExists( "gamma" ), "Missing key: total prefactor gamma" );
+        d_gamma = myparams->d_db->getScalar<double>( "gamma" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
+        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
+        int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -88,23 +87,23 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
         for ( int j = 0; j < numIds; j++ ) {
 
             sprintf( key, "id_%d", j );
-            AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( myparams->d_db )->getScalar<int>( key );
+            AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+            d_boundaryIds[j] = myparams->d_db->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
-            AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( myparams->d_db )->getScalar<int>( key );
+            AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+            int numDofIds = myparams->d_db->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             d_robinValues[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; i++ ) {
                 sprintf( key, "dof_%d_%d", j, i );
-                AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( myparams->d_db )->getScalar<int>( key );
+                AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+                d_dofIds[j][i] = myparams->d_db->getScalar<int>( key );
 
                 sprintf( key, "value_%d_%d", j, i );
-                AMP_INSIST( ( myparams->d_db )->keyExists( key ), "Key is missing!" );
-                d_robinValues[j][i] = ( myparams->d_db )->getScalar<double>( key );
+                AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
+                d_robinValues[j][i] = myparams->d_db->getScalar<double>( key );
             }
         }
     }
@@ -118,8 +117,7 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
     ( d_NeumannParams->d_db )->putScalar( "gamma", d_gamma );
     d_NeumannCorrection->reset( d_NeumannParams );
 
-    bool skipMatrixCorrection =
-        ( myparams->d_db )->getWithDefault( "skip_matrix_correction", false );
+    bool skipMatrixCorrection = myparams->d_db->getWithDefault( "skip_matrix_correction", false );
     if ( !skipMatrixCorrection ) {
         // Create the libmesh elements
         AMP::Mesh::MeshIterator iterator;
@@ -152,7 +150,7 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
         std::vector<size_t> dofs;
 
         std::shared_ptr<AMP::Discretization::DOFManager> gpDOFManager;
-        if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != nullptr ) {
+        if ( d_isFluxGaussPtVector && myparams->d_variableFlux ) {
             gpDOFManager = ( myparams->d_variableFlux )->getDOFManager();
         }
 
@@ -199,7 +197,7 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
                     for ( size_t n = 0; n < dofIndices.size(); n++ )
                         dofs[n] = dofIndices[n][d_dofIds[nid][k]];
 
-                    if ( d_isFluxGaussPtVector && myparams->d_variableFlux.get() != nullptr ) {
+                    if ( d_isFluxGaussPtVector && myparams->d_variableFlux ) {
                         gpDOFManager->getDOFs( bnd1->globalID(), gpDofs );
                     }
 
@@ -219,7 +217,7 @@ void RobinMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &pa
                     std::vector<std::vector<double>> inputArgsAtGpts(
                         elementInputVec.size(), std::vector<double>( numGaussPts ) );
                     std::vector<double> beta( numGaussPts, d_beta );
-                    if ( d_robinPhysicsModel.get() != nullptr ) {
+                    if ( d_robinPhysicsModel ) {
                         unsigned int startIdx = 0;
                         if ( d_isFluxGaussPtVector ) {
                             ( myparams->d_variableFlux )

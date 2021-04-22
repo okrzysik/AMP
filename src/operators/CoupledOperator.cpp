@@ -11,10 +11,10 @@ namespace AMP {
 namespace Operator {
 
 
-CoupledOperator::CoupledOperator( const std::shared_ptr<OperatorParameters> &params )
+CoupledOperator::CoupledOperator( std::shared_ptr<const OperatorParameters> params )
     : ColumnOperator( params )
 {
-    auto myparams = std::dynamic_pointer_cast<CoupledOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const CoupledOperatorParameters>( params );
     d_operators.push_back( myparams->d_NodeToGaussPointOperator );
     d_operators.push_back( myparams->d_CopyOperator );
     d_operators.push_back( myparams->d_MapOperator );
@@ -54,10 +54,10 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     this->apply( u, r );
 
     //    AMP::LinearAlgebra::Vector::shared_ptr rInternal = subsetOutputVector( r );
-    //    AMP_INSIST( ( rInternal.get() != nullptr ), "rInternal is NULL" );
+    //    AMP_INSIST( ( rInternal  ), "rInternal is NULL" );
 
     // the rhs can be NULL
-    if ( f.get() != nullptr ) {
+    if ( f ) {
         //        AMP::LinearAlgebra::Vector::const_shared_ptr fInternal = subsetOutputVector( f );
         r->subtract( *f, *r );
     } else {

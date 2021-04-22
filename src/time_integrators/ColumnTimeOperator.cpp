@@ -8,19 +8,19 @@ namespace AMP {
 namespace TimeIntegrator {
 
 ColumnTimeOperator::ColumnTimeOperator(
-    std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
     : ColumnOperator( in_params )
 {
-    auto params    = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params    = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
     auto column_db = params->d_db;
     d_Mesh         = params->d_Mesh;
     d_pRhsOperator = std::dynamic_pointer_cast<ColumnOperator>( params->d_pRhsOperator );
-    AMP_INSIST( d_pRhsOperator.get() != nullptr,
+    AMP_INSIST( d_pRhsOperator,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() rhs "
                 "operator must be a non-NULL column operator" );
 
     d_pMassOperator = std::dynamic_pointer_cast<ColumnOperator>( params->d_pMassOperator );
-    AMP_INSIST( d_pRhsOperator.get() != nullptr,
+    AMP_INSIST( d_pRhsOperator,
                 "Error: ColumnTimeOperator::ColumnTimeOperator() "
                 "mass operator must be a non-NULL column operator" );
 
@@ -80,17 +80,16 @@ ColumnTimeOperator::ColumnTimeOperator(
 
 ColumnTimeOperator::~ColumnTimeOperator() = default;
 
-void ColumnTimeOperator::reset(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
+void ColumnTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
 {
-    auto params         = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params         = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
     auto column_db      = params->d_db;
     auto pRhsParameters = std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
         params->d_pRhsOperatorParameters );
     auto pMassParameters = std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>(
         params->d_pMassOperatorParameters );
 
-    AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
+    AMP_INSIST( params, "Error: NULL TimeOperatorParameters object" );
 
     getFromInput( params->d_db );
 
@@ -113,14 +112,14 @@ void ColumnTimeOperator::reset(
                                     column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
         auto timeOperatorParameters =
             std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
-        if ( pRhsParameters.get() != nullptr ) {
+        if ( pRhsParameters ) {
             timeOperatorParameters->d_pRhsOperatorParameters =
                 ( pRhsParameters->d_OperatorParameters )[i];
         }
 
         // if there are algebraic components set the mass operator to NULL
         if ( i != d_iAlgebraicComponent ) {
-            if ( pMassParameters.get() != nullptr ) {
+            if ( pMassParameters ) {
                 timeOperatorParameters->d_pMassOperatorParameters =
                     ( pMassParameters->d_OperatorParameters )[i];
             }

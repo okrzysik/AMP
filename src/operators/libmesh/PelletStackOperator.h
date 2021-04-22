@@ -30,7 +30,7 @@ public:
 
     bool useScaling();
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     void applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr f );
 

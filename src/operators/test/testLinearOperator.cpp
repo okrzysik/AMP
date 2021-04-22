@@ -65,7 +65,7 @@ static void myTest( AMP::UnitTest *ut )
 
         msgPrefix = exeName + " : " + innerInput_file;
 
-        if ( testOperator.get() != nullptr ) {
+        if ( testOperator ) {
             ut->passes( msgPrefix + " : create" );
         } else {
             ut->failure( msgPrefix + " : create" );

@@ -19,7 +19,7 @@ namespace TimeIntegrator {
  ************************************************************************/
 OxideTimeIntegrator::OxideTimeIntegrator( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_INSIST( parameters.get() != nullptr, "Null parameter" );
+    AMP_INSIST( parameters, "Null parameter" );
 
     initialize( parameters );
 }
@@ -39,11 +39,10 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     // Get the parameters
     auto oxide_parameters = std::dynamic_pointer_cast<OxideTimeIntegratorParameters>( parameters );
     d_mesh                = oxide_parameters->d_mesh;
-    AMP_INSIST( d_mesh.get() != nullptr, "Oxide Time Integrator needs a mesh" );
+    AMP_INSIST( d_mesh, "Oxide Time Integrator needs a mesh" );
     AMP_INSIST( (int) d_mesh->getGeomType() < d_mesh->getDim(),
                 "Oxide mesh must be a surface mesh (dimension < physical dimension" );
-    AMP_INSIST( oxide_parameters->d_temp.get() != nullptr,
-                "Oxide Time Integrator needs a temerature vector" );
+    AMP_INSIST( oxide_parameters->d_temp, "Oxide Time Integrator needs a temerature vector" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_mesh );
     d_temp = ( oxide_parameters->d_temp )->select( meshSelector, "temperature" );
     AMP_ASSERT( d_temp.get() );

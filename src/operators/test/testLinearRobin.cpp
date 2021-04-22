@@ -25,8 +25,8 @@
 
 static void bcTests( AMP::UnitTest *ut,
                      std::string msgPrefix,
-                     std::shared_ptr<AMP::Operator::Operator> &feOperator,
-                     std::shared_ptr<AMP::Operator::Operator> &bcOperator,
+                     std::shared_ptr<AMP::Operator::Operator> feOperator,
+                     std::shared_ptr<AMP::Operator::Operator> bcOperator,
                      std::shared_ptr<AMP::Database> bcDatabase,
                      AMP::LinearAlgebra::Vector::shared_ptr bcCorrectionVec )
 //             std::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
@@ -106,30 +106,23 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the mesh
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
-    /////////////////////////////////////////////////
-    //   CREATE THE LINEAR DIFFUSION BVP OPERATOR  //
-    /////////////////////////////////////////////////
+    //   CREATE THE LINEAR DIFFUSION BVP OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> diffusionOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "DiffusionBVPOperator", input_db, elementModel ) );
+    auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "DiffusionBVPOperator", input_db, elementModel ) );
 
-    std::shared_ptr<AMP::Database> bcDatabase = std::dynamic_pointer_cast<AMP::Database>(
-        input_db->getDatabase( "RobinMatrixCorrection" ) );
+    auto bcDatabase = input_db->getDatabase( "RobinMatrixCorrection" );
 
-    AMP::Operator::Operator::shared_ptr boundaryOp, volumeOp;
-    boundaryOp = diffusionOperator->getBoundaryOperator();
-    volumeOp   = diffusionOperator->getVolumeOperator();
+    auto boundaryOp = diffusionOperator->getBoundaryOperator();
+    auto volumeOp   = diffusionOperator->getVolumeOperator();
 
-    // AMP::LinearAlgebra::Vector::shared_ptr bndVec = meshAdapter->createVector(
-    // volumeOp->getOutputVariable() );
-    std::shared_ptr<AMP::Discretization::DOFManager> NodalScalarDOF =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Vector::shared_ptr bndVec =
+    // auto bndVec = meshAdapter->createVector( volumeOp->getOutputVariable() );
+    auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto bndVec =
         AMP::LinearAlgebra::createVector( NodalScalarDOF, volumeOp->getOutputVariable(), true );
 
     std::string msgPrefix = exeName + "- Boundary Conditions";

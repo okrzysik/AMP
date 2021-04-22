@@ -99,7 +99,7 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
                       << std::endl;
         }
 
-        AMP_INSIST( d_pPreconditioner.get() != nullptr,
+        AMP_INSIST( d_pPreconditioner,
                     "ERROR: IDATimeIntegrator::initialize(): creation of linear time "
                     "operators internally is only currently supported with a valid "
                     "non NULL preconditioner " );
@@ -194,7 +194,7 @@ void IDATimeIntegrator::initializeIDA()
 
 void IDATimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
     AMP_ERROR( "Not Finished" );
 }
 

@@ -23,7 +23,7 @@ public:
     explicit ColumnOperator();
 
     //! Default constructor;
-    explicit ColumnOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit ColumnOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~ColumnOperator() {}
@@ -45,7 +45,7 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    AMP::LinearAlgebra::Vector::shared_ptr r ) override;
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
       A function for computing the information necessary to construct the jacobian.
@@ -76,7 +76,7 @@ public:
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
 
-    bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> &u ) override;
+    bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> u ) override;
 
     std::shared_ptr<Operator> getOperator( size_t i ) { return d_operators[i]; }
 

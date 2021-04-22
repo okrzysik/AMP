@@ -14,9 +14,9 @@ IdentityOperator::IdentityOperator( const std::shared_ptr<OperatorParameters> &p
     reset( params );
 }
 
-void IdentityOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void IdentityOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    if ( params->d_db.get() != nullptr ) {
+    if ( params->d_db ) {
         if ( params->d_db->keyExists( "InputVariable" ) ) {
             std::string inpVar = params->d_db->getString( "InputVariable" );
             d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
@@ -43,8 +43,8 @@ void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = subsetInputVector( u );
     AMP::LinearAlgebra::Vector::shared_ptr rInternal       = subsetOutputVector( r );
 
-    AMP_INSIST( ( uInternal.get() != nullptr ), "uInternal is NULL" );
-    AMP_INSIST( ( rInternal.get() != nullptr ), "rInternal is NULL" );
+    AMP_INSIST( ( uInternal ), "uInternal is NULL" );
+    AMP_INSIST( ( rInternal ), "rInternal is NULL" );
 
     rInternal->copyVector( uInternal );
 

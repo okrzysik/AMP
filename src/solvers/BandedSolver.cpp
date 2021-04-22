@@ -44,11 +44,11 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
     // Get the linear operator
     std::shared_ptr<AMP::Operator::LinearOperator> linear_op =
         std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_INSIST( linear_op.get() != nullptr, "ERROR: BandedSolver requires a linear operator" );
+    AMP_INSIST( linear_op, "ERROR: BandedSolver requires a linear operator" );
 
     // Get the matrix
     AMP::LinearAlgebra::Matrix::shared_ptr matrix = linear_op->getMatrix();
-    AMP_INSIST( matrix.get() != nullptr, "ERROR: BandedSolver requires a matrix" );
+    AMP_INSIST( matrix, "ERROR: BandedSolver requires a matrix" );
     rightDOF = matrix->getRightDOFManager();
     leftDOF  = matrix->getLeftDOFManager();
     M        = static_cast<int>( matrix->numLocalRows() );
@@ -106,8 +106,7 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 void BandedSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
-    AMP_INSIST( ( d_pOperator.get() != nullptr ),
-                "ERROR: BandedSolver::resetOperator() operator cannot be NULL" );
+    AMP_INSIST( ( d_pOperator ), "ERROR: BandedSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
     PROFILE_STOP( "resetOperator" );

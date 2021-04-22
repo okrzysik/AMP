@@ -20,8 +20,7 @@ public:
     explicit MechanicsModel( const std::shared_ptr<MechanicsModelParameters> &params )
         : ElementPhysicsModel( params )
     {
-        bool useMaterialsLibrary =
-            ( params->d_db )->getWithDefault( "USE_MATERIALS_LIBRARY", false );
+        bool useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );
         if ( useMaterialsLibrary == true ) {
             AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
             std::string matname = params->d_db->getString( "Material" );

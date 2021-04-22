@@ -24,11 +24,11 @@ namespace AMP {
 namespace Operator {
 
 PressureBoundaryOperator::PressureBoundaryOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : BoundaryOperator( params )
 {
-    AMP_ASSERT( ( params->d_db )->keyExists( "BoundaryID" ) );
-    short int bndId = ( params->d_db )->getScalar<int>( "BoundaryID" );
+    AMP_ASSERT( params->d_db->keyExists( "BoundaryID" ) );
+    short int bndId = params->d_db->getScalar<int>( "BoundaryID" );
 
     // ASSUMPTION: Each boundary face element is associated with an unique volume element. This will
     // be true
@@ -181,8 +181,8 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     std::shared_ptr<libMesh::QBase> qrule(
         ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
-    AMP_ASSERT( ( params->d_db )->keyExists( "Value" ) );
-    const double val = ( params->d_db )->getScalar<double>( "Value" );
+    AMP_ASSERT( params->d_db->keyExists( "Value" ) );
+    const double val = params->d_db->getScalar<double>( "Value" );
 
     std::vector<double> pressure( 12 * ( recvSideList.size() ) );
 
@@ -221,11 +221,11 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     } // end i
 
     std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
-    AMP_ASSERT( ( params->d_db )->keyExists( "Variable" ) );
+    AMP_ASSERT( params->d_db->keyExists( "Variable" ) );
     std::string varName = params->d_db->getString( "Variable" );
     tmp_db->putScalar( "Variable", varName );
-    AMP_ASSERT( ( params->d_db )->keyExists( "ResidualMode" ) );
-    tmp_db->putScalar( "ResidualMode", ( ( params->d_db )->getScalar<bool>( "ResidualMode" ) ) );
+    AMP_ASSERT( params->d_db->keyExists( "ResidualMode" ) );
+    tmp_db->putScalar( "ResidualMode", ( params->d_db->getScalar<bool>( "ResidualMode" ) ) );
 
     std::shared_ptr<TractionBoundaryOperatorParameters> tracOpParams(
         new TractionBoundaryOperatorParameters( tmp_db ) );

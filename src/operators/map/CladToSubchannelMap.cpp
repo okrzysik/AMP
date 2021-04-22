@@ -34,10 +34,10 @@ CladToSubchannelMap::CladToSubchannelMap(
     d_currRequests = std::vector<MPI_Request>();
 
     // Get the iterators
-    if ( d_mesh1.get() != nullptr )
+    if ( d_mesh1 )
         d_iterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID1, 0 );
-    if ( d_mesh2.get() != nullptr )
+    if ( d_mesh2 )
         d_iterator2 = getSubchannelIterator( d_mesh2 );
 
     // Get the x-y-z grid for the subchannel mesh
@@ -45,7 +45,7 @@ CladToSubchannelMap::CladToSubchannelMap(
 
     // For each subchannel, get the list of local MeshElement in that channel
     d_elem = std::vector<std::vector<AMP::Mesh::MeshElementID>>( N_subchannels );
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         auto it = d_iterator1.begin();
         for ( size_t k = 0; k < it.size(); k++ ) {
             auto center = it->centroid();
@@ -70,7 +70,7 @@ CladToSubchannelMap::CladToSubchannelMap(
     // Create the send/recv buffers
     d_sendMaxBufferSize = 0;
     d_sendBuffer        = std::vector<double *>( N_subchannels, nullptr );
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         for ( size_t i = 0; i < N_subchannels; i++ ) {
             if ( d_elem[i].size() > 0 ) {
                 d_sendBuffer[i] = new double[2 * d_elem[i].size()];
@@ -139,7 +139,7 @@ void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
     N_subchannels = Nx * Ny;
     // Get a list of processors that need each x-y point
     d_ownSubChannel = std::vector<bool>( Nx * Ny, false );
-    if ( mesh.get() != nullptr ) {
+    if ( mesh ) {
         auto it = getSubchannelIterator( mesh );
         AMP_ASSERT( it.size() > 0 );
         for ( size_t k = 0; k < it.size(); k++ ) {
@@ -303,12 +303,12 @@ void CladToSubchannelMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_
  ************************************************************************/
 void CladToSubchannelMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
-    if ( result.get() != nullptr )
+    if ( result )
         d_OutputVector = subsetInputVector( result );
     else
         d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr();
-    if ( d_mesh2.get() != nullptr )
-        AMP_ASSERT( d_OutputVector.get() != nullptr );
+    if ( d_mesh2 )
+        AMP_ASSERT( d_OutputVector );
 }
 
 

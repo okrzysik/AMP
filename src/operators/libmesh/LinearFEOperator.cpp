@@ -12,7 +12,7 @@ namespace AMP {
 namespace Operator {
 
 
-LinearFEOperator::LinearFEOperator( const std::shared_ptr<LinearFEOperatorParameters> &params )
+LinearFEOperator::LinearFEOperator( std::shared_ptr<const LinearFEOperatorParameters> params )
     : LinearOperator( params ),
       d_currElemPtr( nullptr ),
       d_elemOp( params->d_elemOp ),
@@ -28,13 +28,13 @@ LinearFEOperator::LinearFEOperator( const std::shared_ptr<LinearFEOperatorParame
 }
 
 
-void LinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     PROFILE_START( "reset" );
     AMP_INSIST( ( params != nullptr ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != nullptr ), "NULL database" );
 
-    const bool reuse_matrix = ( params->d_db )->getWithDefault( "reset_reuses_matrix", true );
+    const bool reuse_matrix = params->d_db->getWithDefault( "reset_reuses_matrix", true );
 
     if ( ( d_matrix.get() == nullptr ) || ( !reuse_matrix ) ) {
         AMP::LinearAlgebra::Vector::shared_ptr inVec =
