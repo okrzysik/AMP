@@ -13,7 +13,7 @@ namespace Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-SquareFrustum::SquareFrustum( std::shared_ptr<AMP::Database> db ) : LogicalGeometry()
+SquareFrustum::SquareFrustum( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
 {
     auto dir      = db->getString( "Dir" );
     double height = db->getScalar<double>( "Height" );

@@ -9,7 +9,7 @@ namespace Mesh {
 /****************************************************************
  * Constructors                                                 *
  ****************************************************************/
-StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<MeshParameters> params )
+StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParameters> params )
     : BoxMesh( params ), d_pos_hash( 0 )
 {
     // Basic defaults

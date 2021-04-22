@@ -20,7 +20,7 @@ Operator::Operator()
 
 Operator::Operator( std::shared_ptr<const OperatorParameters> params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( params, "NULL parameter" );
 
     d_Mesh                 = params->d_Mesh;
     d_iObject_id           = Operator::d_iInstance_id;

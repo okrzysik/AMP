@@ -30,7 +30,7 @@ namespace Mesh {
 /****************************************************************
  * Generator                                                     *
  ****************************************************************/
-std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<MeshParameters> params )
+std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<const MeshParameters> params )
 {
     auto db          = params->getDatabase();
     bool static_mesh = db->getWithDefault( "static", false );
@@ -44,7 +44,7 @@ std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<MeshParameters> para
 /****************************************************************
  * Estimate the mesh size                                        *
  ****************************************************************/
-size_t BoxMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
+size_t BoxMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     auto size = estimateLogicalMeshSize( params );
     size_t N  = 1;
@@ -53,7 +53,7 @@ size_t BoxMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params 
     return N;
 }
 std::vector<size_t>
-BoxMesh::estimateLogicalMeshSize( const std::shared_ptr<MeshParameters> &params )
+BoxMesh::estimateLogicalMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     auto db    = params->getDatabase();
     auto geom  = AMP::Geometry::Geometry::buildGeometry( db );
@@ -69,7 +69,7 @@ BoxMesh::estimateLogicalMeshSize( const std::shared_ptr<MeshParameters> &params 
 /****************************************************************
  * Constructor                                                   *
  ****************************************************************/
-BoxMesh::BoxMesh( std::shared_ptr<MeshParameters> params_in ) : Mesh( params_in )
+BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
@@ -298,11 +298,11 @@ BoxMesh::~BoxMesh() = default;
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-size_t BoxMesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
+size_t BoxMesh::maxProcs( std::shared_ptr<const MeshParameters> params )
 {
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
-    std::shared_ptr<AMP::Database> db = params->getDatabase();
+    auto db = params->getDatabase();
     AMP_INSIST( db.get(), "Database must exist" );
     size_t maxProcs = 1;
     if ( db->keyExists( "LoadBalanceMinSize" ) ) {

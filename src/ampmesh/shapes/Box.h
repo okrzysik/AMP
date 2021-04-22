@@ -24,7 +24,7 @@ public:
      * \brief Construct a Box geometry
      * \param db        Input database
      */
-    explicit Box( std::shared_ptr<AMP::Database> db );
+    explicit Box( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a box
@@ -84,7 +84,7 @@ public:
      * \brief Construct a Grid geometry
      * \param db        Input database
      */
-    explicit Grid( std::shared_ptr<AMP::Database> db );
+    explicit Grid( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a grid geometry

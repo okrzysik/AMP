@@ -329,7 +329,7 @@ static void sortData( std::vector<TYPE> &data,
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
 std::shared_ptr<TriangleMesh<NG, NP>>
-TriangleMesh<NG, NP>::generate( std::shared_ptr<MeshParameters> params )
+TriangleMesh<NG, NP>::generate( std::shared_ptr<const MeshParameters> params )
 {
     auto db = params->getDatabase();
     // Create the mesh
@@ -818,7 +818,7 @@ TriangleMesh<NG, NP>::createIterator( std::shared_ptr<std::vector<ElementID>> li
  * Estimate the mesh size                                        *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-size_t TriangleMesh<NG, NP>::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
+size_t TriangleMesh<NG, NP>::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     size_t N      = 0;
     auto db       = params->getDatabase();
@@ -838,7 +838,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const std::shared_ptr<MeshParamet
  * Constructor                                                   *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<MeshParameters> params_in ) : Mesh( params_in )
+TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
@@ -884,7 +884,7 @@ TriangleMesh<NG, NP>::~TriangleMesh() = default;
  * Estimate the maximum number of processors                     *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-size_t TriangleMesh<NG, NP>::maxProcs( const std::shared_ptr<MeshParameters> &params )
+size_t TriangleMesh<NG, NP>::maxProcs( std::shared_ptr<const MeshParameters> params )
 {
     return estimateMeshSize( params );
 }

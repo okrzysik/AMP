@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Cylinder::Cylinder( std::shared_ptr<AMP::Database> db )
+Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;

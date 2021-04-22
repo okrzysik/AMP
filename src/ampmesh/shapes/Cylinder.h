@@ -22,7 +22,7 @@ public:
      * \brief Construct a Cylinder geometry
      * \param db        Input database
      */
-    explicit Cylinder( std::shared_ptr<AMP::Database> db );
+    explicit Cylinder( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a Cylinder geometry

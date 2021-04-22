@@ -35,7 +35,7 @@ static unsigned int nextLocalMeshID = 1;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Mesh::Mesh( const std::shared_ptr<MeshParameters> &params_in )
+Mesh::Mesh( std::shared_ptr<const MeshParameters> params_in )
 {
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );

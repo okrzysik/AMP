@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Parallelepiped::Parallelepiped( std::shared_ptr<AMP::Database> db )
+Parallelepiped::Parallelepiped( std::shared_ptr<const AMP::Database> db )
 {
     // Fill some basic properties
     d_physicalDim = 3;

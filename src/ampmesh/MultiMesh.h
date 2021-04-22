@@ -35,7 +35,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    explicit MultiMesh( const std::shared_ptr<MeshParameters> &params );
+    explicit MultiMesh( std::shared_ptr<const MeshParameters> params );
 
 
     /**
@@ -65,7 +65,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
+    static size_t estimateMeshSize( std::shared_ptr<const MeshParameters> params );
 
     /**
      * \brief   Return the maximum number of processors that can be used with the mesh
@@ -73,7 +73,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
+    static size_t maxProcs( std::shared_ptr<const MeshParameters> params );
 
     /* Return the number of local element of the given type
      * \param type   Geometric type
@@ -342,7 +342,7 @@ public: // Functions to help with load balancing
 public:
     //! Function to create the databases for the meshes within the multimesh
     static std::vector<std::shared_ptr<AMP::Database>>
-    createDatabases( std::shared_ptr<AMP::Database> database );
+    createDatabases( std::shared_ptr<const AMP::Database> database );
 
 
 private:

@@ -44,7 +44,7 @@ static void copyKey( std::shared_ptr<const AMP::Database>,
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MultiMesh::MultiMesh( const std::shared_ptr<MeshParameters> &params_in ) : Mesh( params_in )
+MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
 {
 
     AMP_ASSERT( d_db != nullptr );
@@ -73,7 +73,7 @@ MultiMesh::MultiMesh( const std::shared_ptr<MeshParameters> &params_in ) : Mesh(
     for ( size_t i = 0; i < comms.size(); i++ ) {
         if ( comms[i].isNull() )
             continue;
-        auto params = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
+        auto params = std::make_shared<MeshParameters>( meshDatabases[i] );
         params->setComm( comms[i] );
         auto new_mesh = AMP::Mesh::Mesh::buildMesh( params );
         d_meshes.push_back( new_mesh );
@@ -261,7 +261,7 @@ std::unique_ptr<Mesh> MultiMesh::clone() const { return std::make_unique<MultiMe
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t MultiMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params_in )
+size_t MultiMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params_in )
 {
     auto db = params_in->getDatabase();
     // Create an array of MeshParameters for each submesh
@@ -288,7 +288,7 @@ size_t MultiMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &param
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t MultiMesh::maxProcs( const std::shared_ptr<MeshParameters> &params_in )
+size_t MultiMesh::maxProcs( std::shared_ptr<const MeshParameters> params_in )
 {
     auto db = params_in->getDatabase();
     // Create an array of MeshParameters for each submesh
@@ -317,7 +317,7 @@ size_t MultiMesh::maxProcs( const std::shared_ptr<MeshParameters> &params_in )
  * within the multimesh.                                 *
  ********************************************************/
 std::vector<std::shared_ptr<AMP::Database>>
-MultiMesh::createDatabases( std::shared_ptr<AMP::Database> database )
+MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
 {
     // We might have already created and stored the databases for each mesh
     if ( database->keyExists( "submeshDatabases" ) ) {

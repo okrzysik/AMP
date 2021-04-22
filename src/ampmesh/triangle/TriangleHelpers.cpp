@@ -604,7 +604,7 @@ loadbalance( const std::vector<triset> &tri, const AMP_MPI &comm, int method )
     }
     return comm2;
 }
-std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<MeshParameters> params )
+std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<const MeshParameters> params )
 {
     auto db       = params->getDatabase();
     auto filename = db->getWithDefault<std::string>( "FileName", "" );

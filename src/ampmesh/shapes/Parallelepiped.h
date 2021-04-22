@@ -23,7 +23,7 @@ public:
      * \brief Construct a Parallelepiped geometry
      * \param db        Input database
      */
-    explicit Parallelepiped( std::shared_ptr<AMP::Database> db );
+    explicit Parallelepiped( std::shared_ptr<const AMP::Database> db );
 
     // Functions inherited from Geometry
     std::string getName() const override final { return "Parallelepiped"; }

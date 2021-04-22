@@ -44,7 +44,7 @@ std::vector<std::vector<std::array<int64_t, NG + 1>>>
     splitDomains( std::vector<std::array<int64_t, NG + 1>> tri );
 
 //! Read an STL file and generate a mesh (triangle mesh or multi-mesh)
-std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<AMP::Mesh::MeshParameters> params );
+std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<const AMP::Mesh::MeshParameters> params );
 
 //! Generate a triangle mesh (or multi-mesh) from a geometry
 std::shared_ptr<AMP::Mesh::Mesh>

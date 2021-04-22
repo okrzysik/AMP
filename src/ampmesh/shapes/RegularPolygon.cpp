@@ -11,7 +11,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-RegularPolygon::RegularPolygon( std::shared_ptr<AMP::Database> db )
+RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db )
 {
     d_physicalDim = 2;
     d_logicalDim  = 2;
