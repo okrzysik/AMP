@@ -112,14 +112,14 @@ public:
                                const std::vector<libMesh::Point> &Coordinates = d_DummyCoords );
 
     std::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
-    std::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }
+    std::shared_ptr<AMP::Materials::Property> getProperty() { return d_property; }
 
     bool isaTensor() { return d_IsTensor; }
 
 protected:
     std::shared_ptr<AMP::Materials::Material> d_material;
 
-    std::shared_ptr<AMP::Materials::Property<double>> d_property;
+    std::shared_ptr<AMP::Materials::Property> d_property;
 
     /**
      * \brief Use a bilogarithmic scaling of material arguments

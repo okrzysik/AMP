@@ -158,7 +158,7 @@ loadBalanceSimulator::loadBalanceSimulator( double cost, int maxProc, const std:
 {
     AMP_ASSERT( d_cost > 0 );
     if ( d_max_procs == 0 )
-        d_max_procs = 1000000;
+        d_max_procs = std::numeric_limits<decltype( d_max_procs )>::max();
 }
 loadBalanceSimulator::loadBalanceSimulator( const std::vector<loadBalanceSimulator> &meshes,
                                             int method,
@@ -345,21 +345,19 @@ void loadBalanceSimulator::loadBalance( int N_proc, std::vector<int> &N )
     while ( N_proc - Np - std::min( N0, 1 ) > 0 ) {
         int i = findMax( cost );
         if ( N[i] == 0 ) {
-            if ( N0 == 2 ) {
-                int k    = -1;
-                double c = 0;
-                for ( size_t j = 0; j < N.size(); j++ ) {
-                    if ( N[j] == 0 && c < d_submeshes[j].d_maxCostRank ) {
-                        k = j;
-                        c = d_submeshes[j].d_maxCostRank;
-                    }
+            int k    = -1;
+            double c = 0;
+            for ( size_t j = 0; j < N.size(); j++ ) {
+                if ( N[j] == 0 && c < d_submeshes[j].d_maxCostRank ) {
+                    k = j;
+                    c = d_submeshes[j].d_maxCostRank;
                 }
-                N[k] = 1;
-                d_submeshes[k].setProcs( 1 );
-                cost[k] = d_submeshes[k].d_cost;
-                setCost0( N, d_submeshes, cost );
-                N0--;
             }
+            N[k] = 1;
+            d_submeshes[k].setProcs( 1 );
+            cost[k] = d_submeshes[k].d_cost;
+            setCost0( N, d_submeshes, cost );
+            N0--;
         } else {
             N[i]++;
             d_submeshes[i].addRank( N[i] - 1 );

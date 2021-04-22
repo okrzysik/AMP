@@ -22,8 +22,7 @@ DiffusionTransportTensorModel::DiffusionTransportTensorModel(
     std::string modelName = params->d_db->getString( "name" );
     if ( not( modelName == "DiffusionCylindricalTransportModel" ) ) {
         AMP_INSIST( d_property->isTensor(), "material property must be of tensor type" );
-        d_tensorProperty =
-            std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
+        d_tensorProperty = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
     }
 }
 

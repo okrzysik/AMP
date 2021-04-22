@@ -3,7 +3,7 @@ Mesh{
     MeshType = "Multimesh"
     MeshDatabasePrefix = "Mesh_"
     MeshArrayDatabasePrefix = "MeshArray_"
-    LoadBalanceMethod = 2
+    LoadBalanceMethod = 0
 
     Mesh_1 {
         MeshName = "ybYAG"
@@ -20,7 +20,7 @@ Mesh{
         MeshType = "Multimesh"
         MeshDatabasePrefix = "Mesh_"
         MeshArrayDatabasePrefix = "MeshArray_"
-        LoadBalanceMethod = 2
+        LoadBalanceMethod = 0
         Mesh_1 {
             MeshName = "crYAGtop"
             MeshType = "AMP"

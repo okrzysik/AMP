@@ -1,7 +1,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"

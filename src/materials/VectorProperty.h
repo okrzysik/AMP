@@ -6,8 +6,7 @@
 namespace AMP {
 namespace Materials {
 
-template<class Number>
-class VectorProperty : public Property<Number>
+class VectorProperty : public Property
 {
 public:
     /**
@@ -23,13 +22,13 @@ public:
      */
     VectorProperty( const std::string &name    = std::string( "NotDefined" ),
                     const std::string &source  = std::string( "None" ),
-                    const Number *params       = NULL,
+                    const double *params       = nullptr,
                     const unsigned int nparams = 0,
                     const std::string *args    = nullptr,
                     const unsigned int nargs   = 0,
-                    const Number ranges[][2]   = NULL,
+                    const double ranges[][2]   = nullptr,
                     const size_t dimension     = 1 )
-        : Property<Number>( name, source, params, nparams, args, nargs, ranges ),
+        : Property( name, source, params, nparams, args, nargs, ranges ),
           d_dimension( dimension ),
           d_variableDimension( false )
     {
@@ -79,7 +78,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return vector of property values of dimension get_dimensions()[0]
      */
-    virtual std::vector<Number> evalVector( std::vector<Number> &args ) = 0;
+    virtual std::vector<double> evalVector( std::vector<double> &args ) = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of vectors of return values
@@ -94,8 +93,8 @@ public:
      *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the result
      *  returned in r[i].
      */
-    virtual void evalv( std::vector<std::shared_ptr<std::vector<Number>>> &r,
-                        const std::map<std::string, std::shared_ptr<std::vector<Number>>> &args );
+    virtual void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
+                        const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of AMP vectors of return values
@@ -130,15 +129,15 @@ public:
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    Number eval( std::vector<Number> & ) override
+    double eval( std::vector<double> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
         return 0;
     }
 
     // disable scalar evaluator
-    void evalv( std::vector<Number> &,
-                const std::map<std::string, std::shared_ptr<std::vector<Number>>> & ) override
+    void evalv( std::vector<double> &,
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
     }
@@ -159,18 +158,9 @@ public:
     }
 };
 
-template<>
-void VectorProperty<double>::evalv(
-    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
-
-template<>
-void VectorProperty<double>::evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                                    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
 } // namespace Materials
 } // namespace AMP
 
-#include "VectorProperty.i.h"
 
 #endif /* included_AMP_VectorProperty */

@@ -60,7 +60,7 @@ int main( int argc, char **argv )
     for ( size_t i = 0; i < 3; i++ )
         vfcv[i] = std::make_shared<std::vector<double>>( n );
 
-    auto vectorProperty = std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>(
+    auto vectorProperty = std::dynamic_pointer_cast<AMP::Materials::VectorProperty>(
         mat->property( "VectorFickCoefficient" ) );
     vectorProperty->set_dimension( 3 );
     double vparams[] = { 1.1, 2.2, 3.3 };
@@ -73,8 +73,8 @@ int main( int argc, char **argv )
         for ( size_t j = 0; j < 3; j++ )
             tfcv[i][j] = std::make_shared<std::vector<double>>( n );
 
-    std::shared_ptr<AMP::Materials::TensorProperty<double>> tensorProperty =
-        std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>(
+    std::shared_ptr<AMP::Materials::TensorProperty> tensorProperty =
+        std::dynamic_pointer_cast<AMP::Materials::TensorProperty>(
             mat->property( "TensorFickCoefficient" ) );
     tensorProperty->set_dimensions( std::vector<size_t>( 2, 3U ) );
     double tparams[9] = { 1.1, 2.2, 3.3, 11., 22., 33., 111., 222., 333. };

@@ -52,7 +52,7 @@ protected:
     std::shared_ptr<AMP::Materials::Material> d_material;
 
     // map of property identifier strings and property pointers
-    std::map<std::string, std::shared_ptr<AMP::Materials::Property<double>>> d_properties;
+    std::map<std::string, std::shared_ptr<AMP::Materials::Property>> d_properties;
 };
 } // namespace Operator
 } // namespace AMP

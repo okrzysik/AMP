@@ -243,8 +243,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
     std::valarray<double> soln( 10 );
     size_t neval = result.size();
 
-    std::shared_ptr<AMP::Materials::Property<double>> sourceProp;
-    std::shared_ptr<AMP::Materials::Property<double>> dSourceProp;
+    std::shared_ptr<AMP::Materials::Property> sourceProp;
+    std::shared_ptr<AMP::Materials::Property> dSourceProp;
     bool needD = false;
 
     if ( d_PropertyName == "unspecified" ) {
@@ -316,8 +316,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                          solnname.find( "Cylindrical" ) < solnname.size();
 
     if ( sourceProp->isTensor() && !isCylindrical ) {
-        std::shared_ptr<Materials::TensorProperty<double>> sourceTensorProp =
-            std::dynamic_pointer_cast<Materials::TensorProperty<double>>( sourceProp );
+        std::shared_ptr<Materials::TensorProperty> sourceTensorProp =
+            std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
         std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
         std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
             dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
@@ -346,8 +346,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     } else if ( sourceProp->isTensor() ) {
         // check dimensions, set up temporary storage
-        std::shared_ptr<Materials::TensorProperty<double>> sourceTensorProp =
-            std::dynamic_pointer_cast<Materials::TensorProperty<double>>( sourceProp );
+        std::shared_ptr<Materials::TensorProperty> sourceTensorProp =
+            std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
         std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
         AMP_ASSERT( ( dimensions[0] == 3 ) && ( dimensions[1] == 3 ) );
         std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(

@@ -225,136 +225,136 @@ static const double EnthalpyRanges[2][2] = { { EnthalpyTminVal, EnthalpyTmaxVal 
 
 //=================== Classes =======================================================
 
-class TemperatureProp : public Property<double>
+class TemperatureProp : public Property
 {
 public:
     TemperatureProp()
-        : Property<double>( name_base + "_" + "Temperature", // Name string
-                            source,                          // Reference source
-                            TempParams,                      // Property parameters
-                            TempNumParams,                   // Number of parameters
-                            TempArgs,    // Names of arguments to the eval function
-                            TempNumArgs, // Number of arguments
-                            TempRanges )
+        : Property( name_base + "_" + "Temperature", // Name string
+                    source,                          // Reference source
+                    TempParams,                      // Property parameters
+                    TempNumParams,                   // Number of parameters
+                    TempArgs,                        // Names of arguments to the eval function
+                    TempNumArgs,                     // Number of arguments
+                    TempRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class SaturatedLiquidEnthalpyProp : public Property<double>
+class SaturatedLiquidEnthalpyProp : public Property
 {
 public:
     SaturatedLiquidEnthalpyProp()
-        : Property<double>( name_base + "_" + "SaturatedLiquidEnthalpy", // Name string
-                            source,                                      // Reference source
-                            HfSatParams,                                 // Property parameters
-                            HfSatNumParams,                              // Number of parameters
-                            HfSatArgs,    // Names of arguments to the eval function
-                            HfSatNumArgs, // Number of arguments
-                            HfSatRanges )
+        : Property( name_base + "_" + "SaturatedLiquidEnthalpy", // Name string
+                    source,                                      // Reference source
+                    HfSatParams,                                 // Property parameters
+                    HfSatNumParams,                              // Number of parameters
+                    HfSatArgs,    // Names of arguments to the eval function
+                    HfSatNumArgs, // Number of arguments
+                    HfSatRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class SaturatedVaporEnthalpyProp : public Property<double>
+class SaturatedVaporEnthalpyProp : public Property
 {
 public:
     SaturatedVaporEnthalpyProp()
-        : Property<double>( name_base + "_" + "SaturatedVaporEnthalpy", // Name string
-                            source,                                     // Reference source
-                            HgSatParams,                                // Property parameters
-                            HgSatNumParams,                             // Number of parameters
-                            HgSatArgs,    // Names of arguments to the eval function
-                            HgSatNumArgs, // Number of arguments
-                            HgSatRanges )
+        : Property( name_base + "_" + "SaturatedVaporEnthalpy", // Name string
+                    source,                                     // Reference source
+                    HgSatParams,                                // Property parameters
+                    HgSatNumParams,                             // Number of parameters
+                    HgSatArgs,    // Names of arguments to the eval function
+                    HgSatNumArgs, // Number of arguments
+                    HgSatRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class SpecificVolumeProp : public Property<double>
+class SpecificVolumeProp : public Property
 {
 public:
     SpecificVolumeProp()
-        : Property<double>( name_base + "_" + "SpecificVolume", // Name string
-                            source,                             // Reference source
-                            VolParams,                          // Property parameters
-                            VolNumParams,                       // Number of parameters
-                            VolArgs,    // Names of arguments to the eval function
-                            VolNumArgs, // Number of arguments
-                            VolRanges )
+        : Property( name_base + "_" + "SpecificVolume", // Name string
+                    source,                             // Reference source
+                    VolParams,                          // Property parameters
+                    VolNumParams,                       // Number of parameters
+                    VolArgs,                            // Names of arguments to the eval function
+                    VolNumArgs,                         // Number of arguments
+                    VolRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class ThermalConductivityProp : public Property<double>
+class ThermalConductivityProp : public Property
 {
 public:
     ThermalConductivityProp()
-        : Property<double>( name_base + "_" + "ThermalConductivity", // Name string
-                            source,                                  // Reference source
-                            CondParams,                              // Property parameters
-                            CondNumParams,                           // Number of parameters
-                            CondArgs,    // Names of arguments to the eval function
-                            CondNumArgs, // Number of arguments
-                            CondRanges )
+        : Property( name_base + "_" + "ThermalConductivity", // Name string
+                    source,                                  // Reference source
+                    CondParams,                              // Property parameters
+                    CondNumParams,                           // Number of parameters
+                    CondArgs,    // Names of arguments to the eval function
+                    CondNumArgs, // Number of arguments
+                    CondRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class ConvectiveHeatProp : public Property<double>
+class ConvectiveHeatProp : public Property
 {
 public:
     ConvectiveHeatProp()
-        : Property<double>( name_base + "_" + "ConvectiveHeat", // Name string
-                            source,                             // Reference source
-                            ConvParams,                         // Property parameters
-                            ConvNumParams,                      // Number of parameters
-                            ConvArgs,    // Names of arguments to the eval function
-                            ConvNumArgs, // Number of arguments
-                            ConvRanges )
+        : Property( name_base + "_" + "ConvectiveHeat", // Name string
+                    source,                             // Reference source
+                    ConvParams,                         // Property parameters
+                    ConvNumParams,                      // Number of parameters
+                    ConvArgs,                           // Names of arguments to the eval function
+                    ConvNumArgs,                        // Number of arguments
+                    ConvRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DynamicViscosityProp : public Property<double>
+class DynamicViscosityProp : public Property
 {
 public:
     DynamicViscosityProp()
-        : Property<double>( name_base + "_" + "DynamicViscosity", // Name string
-                            source,                               // Reference source
-                            ViscParams,                           // Property parameters
-                            ViscNumParams,                        // Number of parameters
-                            ViscArgs,    // Names of arguments to the eval function
-                            ViscNumArgs, // Number of arguments
-                            ViscRanges )
+        : Property( name_base + "_" + "DynamicViscosity", // Name string
+                    source,                               // Reference source
+                    ViscParams,                           // Property parameters
+                    ViscNumParams,                        // Number of parameters
+                    ViscArgs,                             // Names of arguments to the eval function
+                    ViscNumArgs,                          // Number of arguments
+                    ViscRanges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class EnthalpyProp : public Property<double>
+class EnthalpyProp : public Property
 {
 public:
     EnthalpyProp()
-        : Property<double>( name_base + "_" + "Enthalpy", // Name string
-                            source,                       // Reference source
-                            EnthalpyParams,               // Property parameters
-                            EnthalpyNumParams,            // Number of parameters
-                            EnthalpyArgs,                 // Names of arguments to the eval function
-                            EnthalpyNumArgs,              // Number of arguments
-                            EnthalpyRanges )
+        : Property( name_base + "_" + "Enthalpy", // Name string
+                    source,                       // Reference source
+                    EnthalpyParams,               // Property parameters
+                    EnthalpyNumParams,            // Number of parameters
+                    EnthalpyArgs,                 // Names of arguments to the eval function
+                    EnthalpyNumArgs,              // Number of arguments
+                    EnthalpyRanges )
     {
     } // Range of variables
 
@@ -1008,7 +1008,7 @@ inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double
 
 WaterLibrary::WaterLibrary()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
     INSERT_PROPERTY_IN_MAP( Temperature, WaterLibrary_NS );
     INSERT_PROPERTY_IN_MAP( SaturatedLiquidEnthalpy, WaterLibrary_NS );
     INSERT_PROPERTY_IN_MAP( SaturatedVaporEnthalpy, WaterLibrary_NS );

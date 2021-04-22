@@ -32,10 +32,11 @@ int run( int N_procs, const std::string &filename, double ratio )
 
     // Get the worst and average element count
     auto cost  = mesh.getRankCost();
-    double max = 0, avg = 0;
+    double max = 0, min = 1e100, avg = 0;
     for ( auto x : cost ) {
         avg += x;
         max = std::max( max, x );
+        min = std::min( min, x );
     }
     avg /= cost.size();
 
@@ -48,6 +49,10 @@ int run( int N_procs, const std::string &filename, double ratio )
     if ( max > ratio * avg ) {
         N_errors++;
         std::cout << "load balance failed quality limits" << std::endl;
+    }
+    if ( min == 0 ) {
+        N_errors++;
+        std::cout << "load balance failed with empty rank" << std::endl;
     }
     return N_errors;
 }

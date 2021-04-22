@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/operators/map/libmesh/Map1Dto3D.h"

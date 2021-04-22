@@ -3,7 +3,7 @@
 #include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
+
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"

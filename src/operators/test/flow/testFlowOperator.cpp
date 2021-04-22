@@ -1,5 +1,4 @@
 #include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/OperatorBuilder.h"

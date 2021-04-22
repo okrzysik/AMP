@@ -24,7 +24,7 @@ bool Material::hasProperty( std::string type )
 
 
 // get a pointer to a specific property through its name
-std::shared_ptr<Property<double>> Material::property( std::string type )
+std::shared_ptr<Property> Material::property( std::string type )
 {
     auto it = d_propertyMap->find( type );
     AMP_INSIST( it != d_propertyMap->end(), std::string( "property " ) + type + " is not defined" );

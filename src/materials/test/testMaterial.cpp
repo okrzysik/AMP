@@ -477,7 +477,7 @@ MatTestResult testMaterial( std::string &name )
             propResults.isVector = true;
 
             auto vectorProperty =
-                std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>( property );
+                std::dynamic_pointer_cast<AMP::Materials::VectorProperty>( property );
 
             // check that scalar nature is not signaled
             if ( vectorProperty->isScalar() ) {
@@ -770,7 +770,7 @@ MatTestResult testMaterial( std::string &name )
             propResults.isTensor = true;
 
             auto tensorProperty =
-                std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( property );
+                std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( property );
 
             // check that scalar nature is not signaled
             if ( tensorProperty->isScalar() ) {

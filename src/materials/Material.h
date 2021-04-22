@@ -12,8 +12,8 @@
 
 // do not use property name with an embedded underscore
 #define INSERT_PROPERTY_IN_MAP( name, space ) \
-    d_propertyMap->insert(                    \
-        std::make_pair( #name, std::shared_ptr<space::name##Prop>( new space::name##Prop ) ) );
+    d_propertyMap->insert( std::make_pair(    \
+        std::string( #name ), std::shared_ptr<space::name##Prop>( new space::name##Prop ) ) );
 
 
 namespace AMP {
@@ -36,15 +36,16 @@ public:
     bool hasProperty( std::string type );
 
     /// get a pointer to a specific scalar property through its name
-    std::shared_ptr<Property<double>> property( std::string type );
+    std::shared_ptr<Property> property( std::string type );
 
     /// return a list of all properties in this material
     std::vector<std::string> list();
 
 protected:
     /// database of scalar properties
-    std::map<std::string, std::shared_ptr<Property<double>>> *d_propertyMap;
+    std::map<std::string, std::shared_ptr<Property>> *d_propertyMap;
 };
+
 
 /*// This macro is to be placed after each material class (UO2, Pu, etc.)
 // It will register the material with the factory
@@ -53,6 +54,8 @@ namespace																\
 {																		\
     AMP::voodoo::Registration<Material,name> reg(#name);				\
 }*/
+
+
 } // namespace Materials
 } // namespace AMP
 

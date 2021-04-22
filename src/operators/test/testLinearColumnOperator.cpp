@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
