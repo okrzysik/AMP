@@ -16,10 +16,10 @@ static double interp_linear( const std::vector<double> &, const std::vector<doub
  *  Default constructor                                                  *
  ************************************************************************/
 SubchannelToCladMap::SubchannelToCladMap(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> p )
     : AsyncMapOperator( p )
 {
-    auto params = std::dynamic_pointer_cast<SubchannelToCladMapParameters>( p );
+    auto params = std::dynamic_pointer_cast<const SubchannelToCladMapParameters>( p );
     AMP_ASSERT( params );
 
     // Clone the communicator to protect the communication (we need a large number of unique tags)

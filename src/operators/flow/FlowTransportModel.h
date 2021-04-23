@@ -17,7 +17,7 @@ typedef ElementPhysicsModelParameters FlowTransportModelParameters;
 class FlowTransportModel : public ElementPhysicsModel
 {
 public:
-    explicit FlowTransportModel( const std::shared_ptr<FlowTransportModelParameters> &params )
+    explicit FlowTransportModel( std::shared_ptr<FlowTransportModelParameters> params )
         : ElementPhysicsModel( params )
     {
         d_useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );

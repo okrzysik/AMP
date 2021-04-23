@@ -14,7 +14,7 @@ class BlockOperator : public Operator
 public:
     BlockOperator();
 
-    explicit BlockOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit BlockOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~BlockOperator() {}
 

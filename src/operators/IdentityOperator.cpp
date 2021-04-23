@@ -8,7 +8,7 @@ namespace Operator {
 
 IdentityOperator::IdentityOperator() : LinearOperator() {}
 
-IdentityOperator::IdentityOperator( const std::shared_ptr<OperatorParameters> &params )
+IdentityOperator::IdentityOperator( std::shared_ptr<const OperatorParameters> params )
     : LinearOperator( params )
 {
     reset( params );

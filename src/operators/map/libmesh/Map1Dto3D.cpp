@@ -25,7 +25,7 @@ namespace Operator {
 
 
 // Constructor
-Map1Dto3D::Map1Dto3D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+Map1Dto3D::Map1Dto3D( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
 {
     auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
     d_MapMesh     = myparams->d_MapMesh;

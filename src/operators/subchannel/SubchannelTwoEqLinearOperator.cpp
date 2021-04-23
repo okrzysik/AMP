@@ -20,7 +20,7 @@ namespace Operator {
 
 // Constructor
 SubchannelTwoEqLinearOperator::SubchannelTwoEqLinearOperator(
-    const std::shared_ptr<SubchannelOperatorParameters> &params )
+    std::shared_ptr<const SubchannelOperatorParameters> params )
     : LinearOperator( params ),
       d_Pout( 0 ),
       d_Tin( 0 ),

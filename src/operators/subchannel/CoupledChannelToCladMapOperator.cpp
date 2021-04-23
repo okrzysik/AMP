@@ -12,7 +12,7 @@ namespace Operator {
 
 
 CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
-    const std::shared_ptr<CoupledChannelToCladMapOperatorParameters> &params )
+    std::shared_ptr<const CoupledChannelToCladMapOperatorParameters> params )
     : Operator( params )
 {
     AMP_ASSERT( params->d_thermalMapOperator );

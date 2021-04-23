@@ -15,7 +15,7 @@ class VonMises_IsotropicKinematicHardening : public MechanicsMaterialModel
 {
 public:
     explicit VonMises_IsotropicKinematicHardening(
-        const std::shared_ptr<MechanicsMaterialModelParameters> & );
+        std::shared_ptr<MechanicsMaterialModelParameters> );
 
     virtual ~VonMises_IsotropicKinematicHardening() {}
 

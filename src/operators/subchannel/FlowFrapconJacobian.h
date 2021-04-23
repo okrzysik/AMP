@@ -26,7 +26,7 @@ public:
       Constructor creates a simpleVariables for Input and Output. The reset is called to
       read the flow parameters.
       */
-    explicit FlowFrapconJacobian( const std::shared_ptr<FlowFrapconJacobianParameters> &params );
+    explicit FlowFrapconJacobian( std::shared_ptr<const FlowFrapconJacobianParameters> params );
 
     /**
       Destructor

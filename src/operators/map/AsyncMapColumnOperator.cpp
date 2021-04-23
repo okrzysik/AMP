@@ -15,7 +15,7 @@ size_t globalMapTagOffset = 0; // Initialize the global map tag offset
  * Constructors                                          *
  ********************************************************/
 AsyncMapColumnOperator::AsyncMapColumnOperator() : AsynchronousColumnOperator() {}
-AsyncMapColumnOperator::AsyncMapColumnOperator( const std::shared_ptr<OperatorParameters> &params )
+AsyncMapColumnOperator::AsyncMapColumnOperator( std::shared_ptr<const OperatorParameters> params )
     : AsynchronousColumnOperator( params )
 {
 }

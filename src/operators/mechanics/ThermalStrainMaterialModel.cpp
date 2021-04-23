@@ -10,7 +10,7 @@ namespace AMP {
 namespace Operator {
 
 ThermalStrainMaterialModel::ThermalStrainMaterialModel(
-    const std::shared_ptr<MechanicsMaterialModelParameters> &params )
+    std::shared_ptr<MechanicsMaterialModelParameters> params )
     : MechanicsMaterialModel( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );

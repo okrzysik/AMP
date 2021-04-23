@@ -13,7 +13,7 @@ namespace Operator {
 
 
 VolumeIntegralOperator::VolumeIntegralOperator(
-    const std::shared_ptr<VolumeIntegralOperatorParameters> &params )
+    std::shared_ptr<const VolumeIntegralOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
@@ -204,7 +204,7 @@ void VolumeIntegralOperator::postAssembly()
 }
 
 
-void VolumeIntegralOperator::init( const std::shared_ptr<VolumeIntegralOperatorParameters> & )
+void VolumeIntegralOperator::init( std::shared_ptr<const VolumeIntegralOperatorParameters> )
 {
     AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     d_srcNonlinElem->setElementFlags( d_isInputType );

@@ -17,15 +17,18 @@ namespace LinearAlgebra {
 class MultiVector final : public Vector
 {
 public:
-    /** \brief Return the first vector in the MultiVector
-     * \return The first vector
-     */
-    inline auto beginVector() { return d_vVectors.begin(); }
+    //! Return the first vector in the MultiVector
+    inline auto begin() { return d_vVectors.begin(); }
 
-    /** \brief Return one past the last vector in the MultiVector
-     * \return One past the last vector
-     */
-    inline auto endVector() { return d_vVectors.end(); }
+    //! Return the first vector in the MultiVector
+    inline auto begin() const { return d_vVectors.begin(); }
+
+    //! Return one past the last vector in the MultiVector
+    inline auto end() { return d_vVectors.end(); }
+
+    //! Return one past the last vector in the MultiVector
+    inline auto end() const { return d_vVectors.end(); }
+
 
     /** \brief Determine if a Vector is a constituent
      * \param[in]  p  The vector to look for

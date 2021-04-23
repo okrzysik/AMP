@@ -12,7 +12,7 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-DTKMapOperator::DTKMapOperator( const std::shared_ptr<OperatorParameters> &params )
+DTKMapOperator::DTKMapOperator( std::shared_ptr<const OperatorParameters> params )
     : d_mapOnThisProc( false ), d_dtk_operator( nullptr )
 {
     // Get the operator parameters.

@@ -17,7 +17,7 @@ class MechanicsModel : public ElementPhysicsModel
 {
 public:
     /** Constructor */
-    explicit MechanicsModel( const std::shared_ptr<MechanicsModelParameters> &params )
+    explicit MechanicsModel( std::shared_ptr<const MechanicsModelParameters> &params )
         : ElementPhysicsModel( params )
     {
         bool useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );

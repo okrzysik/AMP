@@ -12,7 +12,7 @@ namespace Operator {
 class LinearCoupledFlowOperator : public Operator
 {
 public:
-    explicit LinearCoupledFlowOperator( const std::shared_ptr<OperatorParameters> &params )
+    explicit LinearCoupledFlowOperator( std::shared_ptr<const OperatorParameters> params )
         : Operator( params )
     {
         (void) params;

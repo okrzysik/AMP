@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 PetscMatrixShellOperator::PetscMatrixShellOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : LinearOperator( params )
 {
     d_iMatLocalRowSize    = -1234;

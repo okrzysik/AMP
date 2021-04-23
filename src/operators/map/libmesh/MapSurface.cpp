@@ -7,7 +7,7 @@ namespace AMP {
 namespace Operator {
 
 
-MapSurface::MapSurface( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+MapSurface::MapSurface( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
 {
 
     auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );

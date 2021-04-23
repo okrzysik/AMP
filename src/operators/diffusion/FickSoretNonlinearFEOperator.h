@@ -18,7 +18,7 @@ namespace Operator {
 class FickSoretNonlinearFEOperator : public Operator
 {
 public:
-    explicit FickSoretNonlinearFEOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit FickSoretNonlinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~FickSoretNonlinearFEOperator() {}
 

@@ -24,7 +24,7 @@
 #include <string>
 
 std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const std::shared_ptr<AMP::Database> &input_db,
+buildSolver( std::shared_ptr<AMP::Database> input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
              std::shared_ptr<AMP::Operator::LinearOperator> &op )

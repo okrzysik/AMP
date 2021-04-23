@@ -13,7 +13,7 @@ namespace AMP {
 namespace Operator {
 
 DiffusionCylindricalTransportModel::DiffusionCylindricalTransportModel(
-    const std::shared_ptr<DiffusionCylindricalTransportModelParameters> params )
+    std::shared_ptr<const DiffusionCylindricalTransportModelParameters> params )
     : DiffusionTransportTensorModel( params )
 {
     AMP_INSIST( params->d_db->keyExists( "RadiusArgument" ),

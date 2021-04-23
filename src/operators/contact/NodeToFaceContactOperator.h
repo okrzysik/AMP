@@ -29,7 +29,7 @@ public:
       Constructor. This resets the matrix shared pointer.
       @param [in] params
       */
-    NodeToGeomType::FaceContactOperator( const std::shared_ptr<ContactOperatorParameters> &params )
+    NodeToGeomType::FaceContactOperator( std::shared_ptr<const ContactOperatorParameters> params )
         : ContactOperator( params ), d_ContactIsFrictionless( false )
     {
         size_t rank          = d_GlobalComm.getRank();

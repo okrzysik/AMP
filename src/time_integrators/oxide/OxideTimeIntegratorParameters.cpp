@@ -7,8 +7,7 @@ namespace TimeIntegrator {
 /************************************************************************
  * Constructor and destructor for TimeIntegrator.                        *
  ************************************************************************/
-OxideTimeIntegratorParameters::OxideTimeIntegratorParameters(
-    const std::shared_ptr<AMP::Database> db )
+OxideTimeIntegratorParameters::OxideTimeIntegratorParameters( std::shared_ptr<AMP::Database> db )
     : TimeIntegratorParameters( db )
 {
     depth = -1.0;

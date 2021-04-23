@@ -31,7 +31,7 @@ public:
       @param [in] params
       */
     NodeToSegmentConstraintsOperator(
-        const std::shared_ptr<NodeToSegmentConstraintsOperatorParameters> &params )
+        std::shared_ptr<const NodeToSegmentConstraintsOperatorParameters> params )
         : Operator( params )
     {
         AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );

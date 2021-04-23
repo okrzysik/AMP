@@ -103,7 +103,7 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
 }
 
 
-void BandedSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void BandedSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator ), "ERROR: BandedSolver::resetOperator() operator cannot be NULL" );

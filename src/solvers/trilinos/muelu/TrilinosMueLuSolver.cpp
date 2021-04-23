@@ -252,7 +252,7 @@ void TrilinosMueLuSolver::buildHierarchyByLevel( void )
     }
 }
 
-void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
+void TrilinosMueLuSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     d_bRobustMode = db->getWithDefault<bool>( "ROBUST_MODE", false );
     d_bUseEpetra  = db->getWithDefault<bool>( "USE_EPETRA", true );
@@ -419,7 +419,7 @@ void TrilinosMueLuSolver::getFromInput( const std::shared_ptr<AMP::Database> &db
                               db->getWithDefault<bool>( "transpose_use_implicit", false ) );
 }
 
-void TrilinosMueLuSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMueLuSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     d_pOperator = op;
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMueLuSolver::initialize() operator cannot be NULL" );
@@ -465,7 +465,7 @@ void TrilinosMueLuSolver::registerOperator( const std::shared_ptr<AMP::Operator:
 
 
 void TrilinosMueLuSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator ),

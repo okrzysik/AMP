@@ -19,10 +19,10 @@ static double interp_linear( const std::vector<double> &, const std::vector<doub
  *  Default constructor                                                  *
  ************************************************************************/
 CladToSubchannelMap::CladToSubchannelMap(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> p )
     : AsyncMapOperator( p )
 {
-    auto params = std::dynamic_pointer_cast<CladToSubchannelMapParameters>( p );
+    auto params = std::dynamic_pointer_cast<const CladToSubchannelMapParameters>( p );
     AMP_ASSERT( params );
 
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );

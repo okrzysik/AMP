@@ -51,7 +51,7 @@ void QMRCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> cons
 }
 
 // Function to get values from input
-void QMRCGSTABSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
+void QMRCGSTABSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
 
@@ -300,7 +300,7 @@ void QMRCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void QMRCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void QMRCGSTABSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
 
@@ -311,7 +311,7 @@ void QMRCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Ope
     AMP_ASSERT( linearOperator );
 }
 void QMRCGSTABSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

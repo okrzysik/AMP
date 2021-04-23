@@ -70,7 +70,7 @@ void CoupledFlow1DSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 }
 
 void CoupledFlow1DSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

@@ -292,7 +292,7 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void PetscKrylovSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // in this case we make the assumption we can access a PetscMat for now
     AMP_ASSERT( op );
@@ -310,7 +310,7 @@ void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::O
     KSPSetOperators( d_KrylovSolver, mat, mat );
 }
 void PetscKrylovSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

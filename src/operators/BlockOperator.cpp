@@ -14,7 +14,7 @@ BlockOperator::BlockOperator() : Operator()
     d_iNumColumnBlocks = -5678;
 }
 
-BlockOperator::BlockOperator( const std::shared_ptr<OperatorParameters> & ) : Operator()
+BlockOperator::BlockOperator( std::shared_ptr<const OperatorParameters> ) : Operator()
 {
     d_iNumRowBlocks    = -1234;
     d_iNumColumnBlocks = -5678;

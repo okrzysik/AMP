@@ -21,7 +21,7 @@ class SubchannelToPointMap : public AMP::Operator::Operator
 {
 public:
     //! Default constructor
-    explicit SubchannelToPointMap( const std::shared_ptr<SubchannelToPointMapParameters> &params );
+    explicit SubchannelToPointMap( std::shared_ptr<const SubchannelToPointMapParameters> params );
 
     //! Deconstructor
     virtual ~SubchannelToPointMap() {}

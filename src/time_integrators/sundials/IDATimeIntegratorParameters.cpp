@@ -3,7 +3,7 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-IDATimeIntegratorParameters::IDATimeIntegratorParameters( const std::shared_ptr<AMP::Database> db )
+IDATimeIntegratorParameters::IDATimeIntegratorParameters( std::shared_ptr<AMP::Database> db )
     : TimeIntegratorParameters( db )
 
 {

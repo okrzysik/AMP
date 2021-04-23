@@ -7,7 +7,7 @@ namespace AMP {
 namespace Operator {
 
 PelletStackOperator::PelletStackOperator(
-    const std::shared_ptr<PelletStackOperatorParameters> &params )
+    std::shared_ptr<const PelletStackOperatorParameters> params )
     : Operator( params )
 {
     d_totalNumberOfPellets = params->d_db->getScalar<int>( "TOTAL_NUMBER_OF_PELLETS" );

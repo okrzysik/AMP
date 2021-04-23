@@ -16,7 +16,7 @@ namespace Operator {
 class RowOperator : public Operator
 {
 public:
-    explicit RowOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit RowOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~RowOperator() = default;
 

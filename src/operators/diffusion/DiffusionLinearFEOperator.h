@@ -19,7 +19,7 @@ class DiffusionLinearFEOperator : public LinearFEOperator
 {
 public:
     explicit DiffusionLinearFEOperator(
-        const std::shared_ptr<DiffusionLinearFEOperatorParameters> &params );
+        std::shared_ptr<const DiffusionLinearFEOperatorParameters> params );
 
     virtual ~DiffusionLinearFEOperator() {}
 

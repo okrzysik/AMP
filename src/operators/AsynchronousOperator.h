@@ -80,7 +80,7 @@ protected:
 
 
 public:
-    explicit AsynchronousOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit AsynchronousOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~AsynchronousOperator();
 

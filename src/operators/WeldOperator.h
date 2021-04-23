@@ -23,7 +23,7 @@ class WeldOperator : public Operator
 {
 
 public:
-    WeldOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator( params ) {}
+    WeldOperator( std::shared_ptr<const OperatorParameters> params ) : Operator( params ) {}
 
     virtual ~WeldOperator() {}
 

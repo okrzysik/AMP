@@ -17,7 +17,7 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
-    const std::shared_ptr<SubchannelOperatorParameters> &params )
+    std::shared_ptr<const SubchannelOperatorParameters> params )
     : Operator( params ),
       d_forceNoConduction( false ),
       d_forceNoTurbulence( false ),

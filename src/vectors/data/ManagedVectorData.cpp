@@ -71,7 +71,7 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<Vector> vec )
     d_Engine->getVectorData()->registerListener( listener );
 }
 
-ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
+ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
     : VectorData( alias->getCommunicationList() )
 {
     auto vec = getManaged( alias );

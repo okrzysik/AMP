@@ -120,7 +120,7 @@ double TimeIntegrator::getNextDt( const bool ) { return ( d_current_dt ); }
 *************************************************************************
 */
 
-void TimeIntegrator::getFromInput( const std::shared_ptr<AMP::Database> db )
+void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     AMP_ASSERT( db );
 

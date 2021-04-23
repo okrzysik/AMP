@@ -10,7 +10,7 @@ namespace Operator {
 class PelletStackOperator : public Operator
 {
 public:
-    explicit PelletStackOperator( const std::shared_ptr<PelletStackOperatorParameters> &params );
+    explicit PelletStackOperator( std::shared_ptr<const PelletStackOperatorParameters> params );
 
     virtual ~PelletStackOperator() {}
 

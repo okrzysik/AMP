@@ -25,7 +25,7 @@ class Map3Dto1D : public MapOperator
 {
 public:
     //!  Constructor
-    explicit Map3Dto1D( const std::shared_ptr<OperatorParameters> &params );
+    explicit Map3Dto1D( std::shared_ptr<const OperatorParameters> params );
 
     //!  Destructor
     virtual ~Map3Dto1D() {}

@@ -6,7 +6,7 @@ namespace AMP {
 namespace Solver {
 
 
-ColumnSolver::ColumnSolver( std::shared_ptr<SolverStrategyParameters> parameters )
+ColumnSolver::ColumnSolver( std::shared_ptr<const SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters );
@@ -93,7 +93,7 @@ void ColumnSolver::append( std::shared_ptr<AMP::Solver::SolverStrategy> solver )
     d_Solvers.push_back( solver );
 }
 
-void ColumnSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void ColumnSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_resetColumnOperator ) {
         d_pOperator->reset( params );
@@ -104,12 +104,12 @@ void ColumnSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorP
             elem->reset( solverParams );
         }
     } else {
-        std::shared_ptr<AMP::Operator::ColumnOperatorParameters> columnParams =
-            std::dynamic_pointer_cast<AMP::Operator::ColumnOperatorParameters>( params );
+        auto columnParams =
+            std::dynamic_pointer_cast<const AMP::Operator::ColumnOperatorParameters>( params );
         AMP_INSIST( columnParams, "Dynamic cast failed!" );
 
         for ( unsigned int i = 0; i < d_Solvers.size(); i++ ) {
-            d_Solvers[i]->resetOperator( ( columnParams->d_OperatorParameters )[i] );
+            d_Solvers[i]->resetOperator( columnParams->d_OperatorParameters[i] );
         }
     }
 }

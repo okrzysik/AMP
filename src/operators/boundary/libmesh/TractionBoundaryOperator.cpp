@@ -20,7 +20,7 @@ namespace AMP {
 namespace Operator {
 
 TractionBoundaryOperator::TractionBoundaryOperator(
-    const std::shared_ptr<TractionBoundaryOperatorParameters> &params )
+    std::shared_ptr<const TractionBoundaryOperatorParameters> params )
     : BoundaryOperator( params ), d_residualMode( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Variable" ), "key not found" );

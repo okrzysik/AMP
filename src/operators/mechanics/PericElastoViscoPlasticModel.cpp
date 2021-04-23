@@ -11,7 +11,7 @@ namespace Operator {
 
 
 PericElastoViscoPlasticModel::PericElastoViscoPlasticModel(
-    const std::shared_ptr<MechanicsMaterialModelParameters> &params )
+    std::shared_ptr<MechanicsMaterialModelParameters> params )
     : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( params, "NULL parameter" );

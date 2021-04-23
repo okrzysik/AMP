@@ -17,7 +17,7 @@ namespace AMP {
 namespace Operator {
 
 SourceNonlinearElement::SourceNonlinearElement(
-    const std::shared_ptr<ElementOperationParameters> &params )
+    std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elementOutputVector( nullptr ), d_elem( nullptr )
 {
 
@@ -71,7 +71,7 @@ SourceNonlinearElement::SourceNonlinearElement(
 
 
 void SourceNonlinearElement::initializeForCurrentElement(
-    const libMesh::Elem *elem, const std::shared_ptr<SourcePhysicsModel> &sourcePhysicsModel )
+    const libMesh::Elem *elem, std::shared_ptr<SourcePhysicsModel> sourcePhysicsModel )
 {
     d_elem = elem;
 

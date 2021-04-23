@@ -27,7 +27,7 @@ public:
     enum MaterialUpdateType { RESET, JACOBIAN };
 
     //! Constructor.
-    explicit MechanicsNonlinearElement( const std::shared_ptr<ElementOperationParameters> &params )
+    explicit MechanicsNonlinearElement( std::shared_ptr<const ElementOperationParameters> params )
         : MechanicsElement( params ), d_elementOutputVector( nullptr )
     {
         d_JxW = &( d_fe->get_JxW() );

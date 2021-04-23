@@ -11,7 +11,7 @@ namespace Operator {
 
 
 IsotropicElasticModel::IsotropicElasticModel(
-    const std::shared_ptr<MechanicsMaterialModelParameters> &params )
+    std::shared_ptr<MechanicsMaterialModelParameters> params )
     : MechanicsMaterialModel( params )
 {
     // Zero d_constitutiveMatrix and d_constitutiveMatrix_UL

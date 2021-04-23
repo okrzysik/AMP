@@ -15,7 +15,7 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace Operator {
 
-MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &params )
+MassElement::MassElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
 {
 
@@ -65,8 +65,8 @@ MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &par
 }
 
 
-void MassElement::initializeForCurrentElement(
-    const libMesh::Elem *elem, const std::shared_ptr<MassDensityModel> &densityModel )
+void MassElement::initializeForCurrentElement( const libMesh::Elem *elem,
+                                               std::shared_ptr<MassDensityModel> densityModel )
 {
     d_elem = elem;
 

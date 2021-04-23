@@ -15,7 +15,7 @@ namespace Operator {
 class TrilinosMatrixShellOperator : public LinearOperator
 {
 public:
-    explicit TrilinosMatrixShellOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit TrilinosMatrixShellOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~TrilinosMatrixShellOperator() {}
 

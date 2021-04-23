@@ -20,7 +20,7 @@ public:
       Constructor creates a simpleVariables for Input and Output. The reset is called to
       read the flow parameters.
       */
-    explicit FlowFrapconOperator( const std::shared_ptr<FlowFrapconOperatorParameters> &params );
+    explicit FlowFrapconOperator( std::shared_ptr<const FlowFrapconOperatorParameters> params );
 
     /**
       Destructor

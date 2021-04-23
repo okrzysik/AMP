@@ -25,7 +25,7 @@ public:
     /**
       Constructor
       */
-    explicit SubchannelPhysicsModel( const std::shared_ptr<ElementPhysicsModelParameters> &params );
+    explicit SubchannelPhysicsModel( std::shared_ptr<const ElementPhysicsModelParameters> params );
 
     /**
       Destructor

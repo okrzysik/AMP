@@ -23,7 +23,7 @@ class NavierStokesGalWFFEOperator : public NonlinearFEOperator
 {
 public:
     explicit NavierStokesGalWFFEOperator(
-        const std::shared_ptr<NavierStokesGalWFFEOperatorParameters> &params );
+        std::shared_ptr<const NavierStokesGalWFFEOperatorParameters> params );
 
     virtual ~NavierStokesGalWFFEOperator() {}
 

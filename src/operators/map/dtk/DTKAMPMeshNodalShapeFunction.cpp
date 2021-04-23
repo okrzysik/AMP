@@ -13,7 +13,7 @@ namespace Operator {
 //---------------------------------------------------------------------------//
 // Constructor.
 AMPMeshNodalShapeFunction::AMPMeshNodalShapeFunction(
-    const std::shared_ptr<AMP::Discretization::DOFManager> &dof_manager )
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager )
     : d_dof_manager( dof_manager )
 { /* ... */
 }

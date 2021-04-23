@@ -12,7 +12,7 @@ namespace Operator {
 class VectorCopyOperator : public Operator
 {
 public:
-    explicit VectorCopyOperator( const std::shared_ptr<VectorCopyOperatorParameters> &params );
+    explicit VectorCopyOperator( std::shared_ptr<const VectorCopyOperatorParameters> params );
 
     virtual ~VectorCopyOperator() {}
 

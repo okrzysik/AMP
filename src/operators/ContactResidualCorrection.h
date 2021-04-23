@@ -15,7 +15,7 @@ class ContactResidualCorrection : public Operator
 {
 public:
     explicit ContactResidualCorrection(
-        const std::shared_ptr<ContactResidualCorrectionParameters> &params )
+        std::shared_ptr<const ContactResidualCorrectionParameters> params )
         : Operator( params )
     {
     }

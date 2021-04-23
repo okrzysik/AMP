@@ -16,7 +16,7 @@ namespace Operator {
 class CoupledFlowFrapconOperator : public ColumnOperator
 {
 public:
-    explicit CoupledFlowFrapconOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit CoupledFlowFrapconOperator( std::shared_ptr<const OperatorParameters> params );
 
     void reset( std::shared_ptr<const OperatorParameters> params ) override
     {

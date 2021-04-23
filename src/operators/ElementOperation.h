@@ -20,7 +20,7 @@ public:
     /**
       Constructor.
       */
-    explicit ElementOperation( const std::shared_ptr<ElementOperationParameters> & ) {}
+    explicit ElementOperation( std::shared_ptr<const ElementOperationParameters> ) {}
 
     /**
       Destructor.

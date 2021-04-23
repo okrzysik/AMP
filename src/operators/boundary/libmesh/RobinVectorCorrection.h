@@ -33,7 +33,7 @@ public:
       will be called to read the required parameters.
       */
     explicit RobinVectorCorrection(
-        const std::shared_ptr<NeumannVectorCorrectionParameters> &params );
+        std::shared_ptr<const NeumannVectorCorrectionParameters> params );
 
     virtual ~RobinVectorCorrection() {}
 

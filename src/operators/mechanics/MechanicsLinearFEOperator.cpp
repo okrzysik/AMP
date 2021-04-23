@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 MechanicsLinearFEOperator::MechanicsLinearFEOperator(
-    const std::shared_ptr<MechanicsLinearFEOperatorParameters> &params )
+    std::shared_ptr<const MechanicsLinearFEOperatorParameters> params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );

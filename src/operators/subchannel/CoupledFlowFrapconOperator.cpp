@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 
 CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : ColumnOperator( params )
 {
     d_Mesh        = params->d_Mesh;

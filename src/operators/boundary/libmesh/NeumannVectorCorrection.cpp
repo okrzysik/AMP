@@ -23,7 +23,7 @@ namespace Operator {
 
 // Constructor
 NeumannVectorCorrection::NeumannVectorCorrection(
-    const std::shared_ptr<NeumannVectorCorrectionParameters> &params )
+    std::shared_ptr<const NeumannVectorCorrectionParameters> params )
     : BoundaryOperator( params ), d_params( params )
 {
     d_isConstantFlux      = false;

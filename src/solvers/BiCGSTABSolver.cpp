@@ -257,7 +257,7 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void BiCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void BiCGSTABSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
 
@@ -268,7 +268,7 @@ void BiCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Oper
     AMP_ASSERT( linearOperator );
 }
 void BiCGSTABSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

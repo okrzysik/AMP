@@ -21,7 +21,7 @@ namespace AMP {
 namespace Operator {
 
 RobinMatrixCorrection::RobinMatrixCorrection(
-    const std::shared_ptr<RobinMatrixCorrectionParameters> &params )
+    std::shared_ptr<const RobinMatrixCorrectionParameters> params )
     : BoundaryOperator( params )
 {
     d_hef   = 0;

@@ -9,7 +9,7 @@ namespace AMP {
 namespace Operator {
 
 
-NonlinearFEOperator::NonlinearFEOperator( const std::shared_ptr<FEOperatorParameters> &params )
+NonlinearFEOperator::NonlinearFEOperator( std::shared_ptr<const FEOperatorParameters> params )
     : Operator( params ), d_elemOp( params->d_elemOp )
 {
     createLibMeshElementList();

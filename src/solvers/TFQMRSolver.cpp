@@ -51,7 +51,7 @@ void TFQMRSolver::initialize( std::shared_ptr<SolverStrategyParameters> const pa
 }
 
 // Function to get values from input
-void TFQMRSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
+void TFQMRSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
 
     d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
@@ -292,7 +292,7 @@ void TFQMRSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void TFQMRSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void TFQMRSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
 
@@ -302,7 +302,7 @@ void TFQMRSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operato
         std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator );
 }
-void TFQMRSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void TFQMRSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

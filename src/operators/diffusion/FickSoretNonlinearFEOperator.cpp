@@ -9,7 +9,7 @@ namespace AMP {
 namespace Operator {
 
 FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
 {
     auto fsParams =
         std::dynamic_pointer_cast<const FickSoretNonlinearFEOperatorParameters>( params );

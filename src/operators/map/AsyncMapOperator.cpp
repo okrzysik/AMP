@@ -8,11 +8,11 @@ namespace AMP {
 namespace Operator {
 
 
-AsyncMapOperator::AsyncMapOperator( const std::shared_ptr<OperatorParameters> &p )
+AsyncMapOperator::AsyncMapOperator( std::shared_ptr<const OperatorParameters> p )
     : AsynchronousOperator( p )
 {
     // Fill some basic info
-    auto params = std::dynamic_pointer_cast<AsyncMapOperatorParameters>( p );
+    auto params = std::dynamic_pointer_cast<const AsyncMapOperatorParameters>( p );
     d_MapComm   = params->d_MapComm;
     d_mesh1     = params->d_Mesh1;
     d_mesh2     = params->d_Mesh2;

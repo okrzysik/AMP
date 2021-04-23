@@ -25,7 +25,7 @@ class ColumnBoundaryOperator : public BoundaryOperator
 {
 
 public:
-    explicit ColumnBoundaryOperator( const std::shared_ptr<OperatorParameters> &params )
+    explicit ColumnBoundaryOperator( std::shared_ptr<const OperatorParameters> params )
         : BoundaryOperator( params )
     {
     }

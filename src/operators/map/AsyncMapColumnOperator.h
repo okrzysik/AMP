@@ -30,7 +30,7 @@ public:
     explicit AsyncMapColumnOperator();
 
     //! Empty constructor
-    explicit AsyncMapColumnOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit AsyncMapColumnOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Return the name of the operator
     std::string type() const override { return "AsyncMapColumnOperator"; }

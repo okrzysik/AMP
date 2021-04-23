@@ -9,7 +9,7 @@ namespace Operator {
 
 
 FlowFrapconJacobian::FlowFrapconJacobian(
-    const std::shared_ptr<FlowFrapconJacobianParameters> &params )
+    std::shared_ptr<const FlowFrapconJacobianParameters> params )
     : Operator( params ), dCp( 0 )
 {
     std::string inpVar = params->d_db->getString( "InputVariable" );

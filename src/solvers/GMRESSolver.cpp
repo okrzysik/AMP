@@ -360,7 +360,7 @@ void GMRESSolver::backwardSolve( void )
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void GMRESSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void GMRESSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
 
@@ -370,7 +370,7 @@ void GMRESSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operato
     AMP_ASSERT( linearOperator );
 }
 
-void GMRESSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void GMRESSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

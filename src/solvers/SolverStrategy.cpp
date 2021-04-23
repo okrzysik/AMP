@@ -21,7 +21,7 @@ SolverStrategy::SolverStrategy()
     d_iMaxIterations       = 0;
     d_iObjectId            = 0;
 }
-SolverStrategy::SolverStrategy( std::shared_ptr<SolverStrategyParameters> parameters )
+SolverStrategy::SolverStrategy( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     AMP_INSIST( parameters, "NULL SolverStrategyParameters object" );
 
@@ -66,7 +66,7 @@ void SolverStrategy::initialize( std::shared_ptr<SolverStrategyParameters> const
  * Reset                                                         *
  ****************************************************************/
 void SolverStrategy::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

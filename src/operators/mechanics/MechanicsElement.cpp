@@ -15,7 +15,7 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace Operator {
 
-MechanicsElement::MechanicsElement( const std::shared_ptr<ElementOperationParameters> &params )
+MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
 {
     AMP_INSIST( ( params ), "''params'' is NULL" );

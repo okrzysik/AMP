@@ -75,7 +75,7 @@ private:
     Teuchos::RCP<Thyra::VectorBase<double>> d_thyraVec;
 
     static Teuchos::RCP<const Thyra::VectorBase<double>>
-    getThyraVec( const std::shared_ptr<const VectorData> &vec );
+    getThyraVec( std::shared_ptr<const VectorData> vec );
 
     static Teuchos::RCP<const Thyra::VectorBase<double>> getThyraVec( const VectorData &v );
     static Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( VectorData &v );

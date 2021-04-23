@@ -48,7 +48,7 @@ public:
       4) OutputVariable (No default value) - Name of the output variable
       */
     explicit MechanicsLinearFEOperator(
-        const std::shared_ptr<MechanicsLinearFEOperatorParameters> &params );
+        std::shared_ptr<const MechanicsLinearFEOperatorParameters> params );
 
     /**
       Destructor

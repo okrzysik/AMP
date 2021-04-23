@@ -24,7 +24,7 @@ public:
     /**
      * Constructor.
      */
-    explicit AMPMeshEntitySet( const std::shared_ptr<AMP::Mesh::Mesh> &mesh );
+    explicit AMPMeshEntitySet( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //@{
     //! Parallel functions.

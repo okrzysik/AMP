@@ -14,7 +14,7 @@ class DiffusionTransportTensorModel : public DiffusionTransportModel
 {
 public:
     explicit DiffusionTransportTensorModel(
-        const std::shared_ptr<DiffusionTransportTensorModelParameters> params );
+        std::shared_ptr<const DiffusionTransportTensorModelParameters> params );
 
     /**
      * \brief transport model returning a vector of tensors

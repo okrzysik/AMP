@@ -16,8 +16,7 @@ namespace Operator {
 class ConvectiveHeatCoefficient : public RobinPhysicsModel
 {
 public:
-    explicit ConvectiveHeatCoefficient(
-        const std::shared_ptr<RobinPhysicsModelParameters> &params );
+    explicit ConvectiveHeatCoefficient( std::shared_ptr<const RobinPhysicsModelParameters> params );
 
     virtual ~ConvectiveHeatCoefficient() {}
 

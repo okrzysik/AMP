@@ -92,7 +92,7 @@ void DiffusionNonlinearFEOperator::setVector( unsigned int id,
 
 
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
-    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
+    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
     : NonlinearFEOperator( params ), d_Frozen( Diffusion::NUMBER_VARIABLES )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
@@ -287,7 +287,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
 
 
 void DiffusionNonlinearFEOperator::init(
-    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> & )
+    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> )
 {
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::init, entering" << std::endl;

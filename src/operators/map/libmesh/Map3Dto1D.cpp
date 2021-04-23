@@ -24,7 +24,7 @@ namespace AMP {
 namespace Operator {
 
 
-Map3Dto1D::Map3Dto1D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+Map3Dto1D::Map3Dto1D( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
 {
     auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
     reset( myparams );

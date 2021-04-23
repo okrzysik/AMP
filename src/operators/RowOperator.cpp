@@ -7,7 +7,7 @@ namespace Operator {
 
 
 // Constructor
-RowOperator::RowOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator()
+RowOperator::RowOperator( std::shared_ptr<const OperatorParameters> params ) : Operator()
 {
     (void) params;
     getAllJacobian = false;

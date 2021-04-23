@@ -60,7 +60,7 @@ public:
       5) OutputVariable (No default value) - Name of the output variable
       */
     explicit MechanicsNonlinearFEOperator(
-        const std::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params );
+        std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params );
 
     /**
       Destructor.

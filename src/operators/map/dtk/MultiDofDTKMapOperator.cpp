@@ -5,7 +5,7 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-MultiDofDTKMapOperator::MultiDofDTKMapOperator( const std::shared_ptr<OperatorParameters> &params )
+MultiDofDTKMapOperator::MultiDofDTKMapOperator( std::shared_ptr<const OperatorParameters> params )
 {
     // Get the operator parameters.
     auto multiDofDTKMapOpParams =

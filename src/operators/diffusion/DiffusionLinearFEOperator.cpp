@@ -6,7 +6,7 @@ namespace AMP {
 namespace Operator {
 
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(
-    const std::shared_ptr<DiffusionLinearFEOperatorParameters> &params )
+    std::shared_ptr<const DiffusionLinearFEOperatorParameters> params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );

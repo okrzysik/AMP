@@ -22,7 +22,7 @@ public:
      * Constructor. This resets the matrix shared pointer.
      * @param [in] params
      */
-    explicit IdentityOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit IdentityOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~IdentityOperator() {}

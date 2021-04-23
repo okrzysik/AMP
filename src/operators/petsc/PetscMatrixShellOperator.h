@@ -37,7 +37,7 @@ namespace Operator {
 class PetscMatrixShellOperator : public LinearOperator
 {
 public:
-    explicit PetscMatrixShellOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit PetscMatrixShellOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~PetscMatrixShellOperator() {}
 

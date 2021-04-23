@@ -20,7 +20,7 @@ class DiffusionCylindricalTransportModel : public DiffusionTransportTensorModel
 {
 public:
     explicit DiffusionCylindricalTransportModel(
-        const std::shared_ptr<DiffusionTransportTensorModelParameters> params );
+        std::shared_ptr<const DiffusionTransportTensorModelParameters> params );
 
     /**
      * \brief transport model returning a vector of tensors for cylindrical symmetry

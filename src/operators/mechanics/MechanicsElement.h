@@ -44,7 +44,7 @@ public:
       4) QRULE_TYPE (QGAUSS by default) - Type of numerical integration scheme used.
       5) QRULE_ORDER (DEFAULT by default) - Order of the numerical integration scheme.
       */
-    explicit MechanicsElement( const std::shared_ptr<ElementOperationParameters> &params );
+    explicit MechanicsElement( std::shared_ptr<const ElementOperationParameters> params );
 
     /**
       Destructor.
@@ -60,7 +60,7 @@ public:
       element.
       */
     void initializeForCurrentElement( const libMesh::Elem *elem,
-                                      const std::shared_ptr<MechanicsMaterialModel> &materialModel )
+                                      std::shared_ptr<MechanicsMaterialModel> materialModel )
     {
         d_elem          = elem;
         d_materialModel = materialModel;

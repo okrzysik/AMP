@@ -12,7 +12,7 @@ namespace Operator {
 
 // Constructor
 SubchannelToPointMap::SubchannelToPointMap(
-    const std::shared_ptr<SubchannelToPointMapParameters> &params )
+    std::shared_ptr<const SubchannelToPointMapParameters> params )
 {
     // Copy the inputs
     AMP_ASSERT( params != nullptr );

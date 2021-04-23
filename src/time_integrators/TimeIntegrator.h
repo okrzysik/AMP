@@ -236,7 +236,7 @@ protected:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void getFromInput( const std::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<const AMP::Database> db );
 
     /*
      * Read object state from restart database and initialize class members.

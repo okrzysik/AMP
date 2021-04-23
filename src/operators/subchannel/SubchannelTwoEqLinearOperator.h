@@ -21,7 +21,7 @@ class SubchannelTwoEqLinearOperator : public LinearOperator
 public:
     //! Constructor
     explicit SubchannelTwoEqLinearOperator(
-        const std::shared_ptr<SubchannelOperatorParameters> &params );
+        std::shared_ptr<const SubchannelOperatorParameters> params );
 
     //! Destructor
     virtual ~SubchannelTwoEqLinearOperator() {}

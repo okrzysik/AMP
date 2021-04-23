@@ -187,7 +187,7 @@ void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void CGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void CGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
 
@@ -197,7 +197,7 @@ void CGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> 
         std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
     AMP_ASSERT( linearOperator );
 }
-void CGSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void CGSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

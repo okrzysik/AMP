@@ -10,7 +10,7 @@ namespace Operator {
 
 
 FlowFrapconOperator::FlowFrapconOperator(
-    const std::shared_ptr<FlowFrapconOperatorParameters> &params )
+    std::shared_ptr<const FlowFrapconOperatorParameters> params )
     : Operator( params ), d_boundaryId( 0 )
 {
     std::string inpVar = params->d_db->getString( "InputVariable" );

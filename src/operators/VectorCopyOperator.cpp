@@ -3,8 +3,7 @@
 namespace AMP {
 namespace Operator {
 
-VectorCopyOperator::VectorCopyOperator(
-    const std::shared_ptr<VectorCopyOperatorParameters> &params )
+VectorCopyOperator::VectorCopyOperator( std::shared_ptr<const VectorCopyOperatorParameters> params )
     : AMP::Operator::Operator( params )
 {
     auto copyParams =

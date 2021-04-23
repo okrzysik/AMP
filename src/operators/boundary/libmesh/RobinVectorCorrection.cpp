@@ -20,7 +20,7 @@ namespace Operator {
 
 
 RobinVectorCorrection::RobinVectorCorrection(
-    const std::shared_ptr<NeumannVectorCorrectionParameters> &params )
+    std::shared_ptr<const NeumannVectorCorrectionParameters> params )
     : NeumannVectorCorrection( params )
 {
     d_hef        = 0;

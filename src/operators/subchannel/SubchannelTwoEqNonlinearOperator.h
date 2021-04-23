@@ -21,7 +21,7 @@ class SubchannelTwoEqNonlinearOperator : public Operator
 public:
     //! Constructor
     explicit SubchannelTwoEqNonlinearOperator(
-        const std::shared_ptr<SubchannelOperatorParameters> &params );
+        std::shared_ptr<const SubchannelOperatorParameters> params );
 
     //! Destructor
     virtual ~SubchannelTwoEqNonlinearOperator() {}

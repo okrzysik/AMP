@@ -115,7 +115,7 @@ void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 }
 
 
-void TrilinosMLSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     d_pOperator = op;
     AMP_INSIST( d_pOperator, "ERROR: TrilinosMLSolver::initialize() operator cannot be NULL" );
@@ -181,7 +181,7 @@ void TrilinosMLSolver::registerOperator( const std::shared_ptr<AMP::Operator::Op
 
 
 void TrilinosMLSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator ),
@@ -430,7 +430,7 @@ void TrilinosMLSolver::buildML()
 }
 
 
-void TrilinosMLSolver::computeCoordinates( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::computeCoordinates( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
     auto myMesh = op->getMesh();
@@ -457,7 +457,7 @@ void TrilinosMLSolver::computeCoordinates( const std::shared_ptr<AMP::Operator::
 }
 
 
-void TrilinosMLSolver::computeNullSpace( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::computeNullSpace( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
     auto myMesh = op->getMesh();

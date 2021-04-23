@@ -25,7 +25,7 @@ namespace Operator {
 
 // Constructor
 NodeToGaussPointOperator::NodeToGaussPointOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : Operator( params )
 {
     PROFILE_START( "NodeToGaussPointOperator" );

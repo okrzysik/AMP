@@ -18,7 +18,7 @@ namespace Operator {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-NodeToNodeMap::NodeToNodeMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &params )
+NodeToNodeMap::NodeToNodeMap( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
     : AMP::Operator::AsyncMapOperator( params )
 {
     // Cast the params appropriately

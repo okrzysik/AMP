@@ -8,7 +8,7 @@ namespace Operator {
 
 
 PelletContactConductanceModel::PelletContactConductanceModel(
-    const std::shared_ptr<RobinPhysicsModelParameters> &params )
+    std::shared_ptr<const RobinPhysicsModelParameters> params )
     : RobinPhysicsModel( params )
 {
     d_nTransportModels = params->d_db->getScalar<int>( "Number_TransportModels" );

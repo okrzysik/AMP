@@ -61,13 +61,12 @@ Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args
     if ( d_n_arguments > 0 ) {
         size_t xls = d_translator.size();
         AMP_INSIST( xls > 0, "attempt to make MultiVector map without setting translator" );
-        for ( auto vec = args->beginVector(); vec != args->endVector(); ++vec ) {
-            std::string name = ( *vec )->getVariable()->getName();
-
+        for ( auto vec : *args ) {
+            std::string name = vec->getVariable()->getName();
             for ( auto &elem : d_translator ) {
                 std::string key = elem.first;
                 if ( elem.second == name ) {
-                    result.insert( std::make_pair( key, *vec ) );
+                    result.insert( std::make_pair( key, vec ) );
                 }
             }
         }

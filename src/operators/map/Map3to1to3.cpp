@@ -14,11 +14,11 @@ namespace Operator {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Map3to1to3::Map3to1to3( const std::shared_ptr<OperatorParameters> &params_in )
+Map3to1to3::Map3to1to3( std::shared_ptr<const OperatorParameters> params_in )
     : AsyncMapOperator( params_in )
 {
     // Get the input parameters
-    auto params = std::dynamic_pointer_cast<Map3to1to3Parameters>( params_in );
+    auto params = std::dynamic_pointer_cast<const Map3to1to3Parameters>( params_in );
     AMP_ASSERT( params );
     d_commTag = params->d_commTag;
 

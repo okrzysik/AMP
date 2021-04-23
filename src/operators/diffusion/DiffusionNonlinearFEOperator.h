@@ -18,7 +18,7 @@ class DiffusionNonlinearFEOperator : public NonlinearFEOperator
 {
 public:
     explicit DiffusionNonlinearFEOperator(
-        const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
+        std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params );
 
     virtual ~DiffusionNonlinearFEOperator() {}
 
@@ -78,7 +78,7 @@ protected:
 
     void postElementOperation() override;
 
-    void init( const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params );
+    void init( std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params );
 
     std::vector<double> d_elementOutputVector;
 

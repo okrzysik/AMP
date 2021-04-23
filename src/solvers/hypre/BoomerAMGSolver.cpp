@@ -46,7 +46,7 @@ void BoomerAMGSolver::initialize( std::shared_ptr<SolverStrategyParameters> cons
     setParameters();
 }
 
-void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
+void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", false );
 
@@ -346,7 +346,7 @@ void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 }
 
-void BoomerAMGSolver::createHYPREMatrix( const std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
+void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
     int ierr;
     char hypre_mesg[100];
@@ -476,7 +476,7 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     amp_v->setLocalValuesByGlobalID( nDOFS, &indices[0], &values[0] );
 }
 
-void BoomerAMGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void BoomerAMGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
 
     d_pOperator = op;
@@ -503,7 +503,7 @@ void BoomerAMGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Ope
 void BoomerAMGSolver::setParameters( void ) {}
 
 void BoomerAMGSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
     AMP_INSIST( ( d_pOperator ),

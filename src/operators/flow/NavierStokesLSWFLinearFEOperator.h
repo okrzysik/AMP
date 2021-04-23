@@ -17,7 +17,7 @@ class NavierStokesLSWFLinearFEOperator : public LinearFEOperator
 {
 public:
     explicit NavierStokesLSWFLinearFEOperator(
-        const std::shared_ptr<NavierStokesLinearFEOperatorParameters> &params );
+        std::shared_ptr<const NavierStokesLinearFEOperatorParameters> params );
 
     virtual ~NavierStokesLSWFLinearFEOperator() {}
 

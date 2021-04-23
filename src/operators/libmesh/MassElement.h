@@ -26,12 +26,12 @@ namespace Operator {
 class MassElement : public ElementOperation
 {
 public:
-    explicit MassElement( const std::shared_ptr<ElementOperationParameters> &params );
+    explicit MassElement( std::shared_ptr<const ElementOperationParameters> params );
 
     virtual ~MassElement() {}
 
     void initializeForCurrentElement( const libMesh::Elem *elem,
-                                      const std::shared_ptr<MassDensityModel> &densityModel );
+                                      std::shared_ptr<MassDensityModel> densityModel );
 
 protected:
     std::shared_ptr<libMesh::FEType> d_feType;

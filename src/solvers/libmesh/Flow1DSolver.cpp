@@ -49,7 +49,7 @@ void Flow1DSolver::reset( std::shared_ptr<SolverStrategyParameters> )
     if ( d_pOperator ) {}
 }
 
-void Flow1DSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void Flow1DSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     if ( d_pOperator ) {
         d_pOperator->reset( params );

@@ -19,7 +19,7 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqLinearOperator::SubchannelFourEqLinearOperator(
-    const std::shared_ptr<SubchannelOperatorParameters> &params )
+    std::shared_ptr<const SubchannelOperatorParameters> params )
     : LinearOperator( params ),
       d_forceNoConduction( false ),
       d_forceNoTurbulence( false ),

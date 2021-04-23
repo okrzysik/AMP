@@ -11,7 +11,7 @@ namespace AMP {
 namespace Operator {
 
 MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
-    const std::shared_ptr<MechanicsNonlinearFEOperatorParameters> &params )
+    std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );

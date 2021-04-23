@@ -14,7 +14,7 @@ namespace AMP {
 namespace Operator {
 
 DiffusionTransportTensorModel::DiffusionTransportTensorModel(
-    const std::shared_ptr<DiffusionTransportTensorModelParameters> params )
+    std::shared_ptr<const DiffusionTransportTensorModelParameters> params )
     : DiffusionTransportModel( params )
 {
     d_IsTensor = true;

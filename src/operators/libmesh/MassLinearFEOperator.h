@@ -17,7 +17,7 @@ namespace Operator {
 class MassLinearFEOperator : public LinearFEOperator
 {
 public:
-    explicit MassLinearFEOperator( const std::shared_ptr<MassLinearFEOperatorParameters> &params );
+    explicit MassLinearFEOperator( std::shared_ptr<const MassLinearFEOperatorParameters> params );
 
     virtual ~MassLinearFEOperator() {}
 

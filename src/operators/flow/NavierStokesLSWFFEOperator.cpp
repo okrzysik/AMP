@@ -12,7 +12,7 @@ namespace AMP {
 namespace Operator {
 
 NavierStokesLSWFFEOperator::NavierStokesLSWFFEOperator(
-    const std::shared_ptr<NavierStokesLSWFFEOperatorParameters> &params )
+    std::shared_ptr<const NavierStokesLSWFFEOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
