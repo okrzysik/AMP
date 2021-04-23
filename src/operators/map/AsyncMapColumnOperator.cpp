@@ -31,8 +31,7 @@ void AsyncMapColumnOperator::setVector( AMP::LinearAlgebra::Vector::shared_ptr p
 
 void AsyncMapColumnOperator::append( std::shared_ptr<Operator> op )
 {
-    std::shared_ptr<AsyncMapColumnOperator> mapColumn =
-        std::dynamic_pointer_cast<AsyncMapColumnOperator>( op );
+    auto mapColumn = std::dynamic_pointer_cast<AsyncMapColumnOperator>( op );
     if ( mapColumn ) {
         auto curOp = mapColumn.get()->d_operators.begin();
         while ( curOp != mapColumn.get()->d_operators.end() ) {
@@ -40,7 +39,7 @@ void AsyncMapColumnOperator::append( std::shared_ptr<Operator> op )
             ++curOp;
         }
     } else {
-        std::shared_ptr<AsyncMapOperator> mapOp = std::dynamic_pointer_cast<AsyncMapOperator>( op );
+        auto mapOp = std::dynamic_pointer_cast<AsyncMapOperator>( op );
         AMP_INSIST( mapOp, "Attempt to add a non-AsyncMapOperator to a AsyncMapColumnOperator" );
         AsynchronousColumnOperator::append( mapOp );
     }
@@ -77,8 +76,8 @@ bool AsyncMapColumnOperator::requiresMakeConsistentSet()
  * If the key is an array of size N it will only copy the ith value. *
  ********************************************************************/
 template<class TYPE>
-static inline void putEntry( std::shared_ptr<AMP::Database> &database1,
-                             std::shared_ptr<AMP::Database> &database2,
+static inline void putEntry( std::shared_ptr<AMP::Database> database1,
+                             std::shared_ptr<AMP::Database> database2,
                              const std::string &key,
                              size_t N,
                              size_t i )
@@ -89,8 +88,8 @@ static inline void putEntry( std::shared_ptr<AMP::Database> &database1,
     else
         database2->putVector( key, data );
 }
-static void copyKey( std::shared_ptr<AMP::Database> &database1,
-                     std::shared_ptr<AMP::Database> &database2,
+static void copyKey( std::shared_ptr<AMP::Database> database1,
+                     std::shared_ptr<AMP::Database> database2,
                      std::string key,
                      int N,
                      int i )
@@ -135,8 +134,8 @@ AsyncMapColumnOperator::createDatabases( std::shared_ptr<AMP::Database> database
     meshDatabases.reserve( N_maps );
     for ( int i = 0; i < N_maps; i++ ) {
         // Create a new database from the existing database
-        std::shared_ptr<AMP::Database> database2( new AMP::Database( "MapDatabase" ) );
-        std::vector<std::string> keys = database1->getAllKeys();
+        auto database2 = std::make_shared<AMP::Database>( "MapDatabase" );
+        auto keys      = database1->getAllKeys();
         for ( auto &key : keys ) {
             if ( key.compare( "N_maps" ) == 0 ) {
                 // These keys are used by the builder and should not be in the sub database

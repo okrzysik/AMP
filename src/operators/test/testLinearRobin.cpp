@@ -29,7 +29,6 @@ static void bcTests( AMP::UnitTest *ut,
                      std::shared_ptr<AMP::Operator::Operator> bcOperator,
                      std::shared_ptr<AMP::Database> bcDatabase,
                      AMP::LinearAlgebra::Vector::shared_ptr bcCorrectionVec )
-//             std::shared_ptr<AMP::Operator::OperatorParameters> &bcParameters)
 {
 
     try {
