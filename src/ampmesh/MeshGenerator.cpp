@@ -119,7 +119,9 @@ size_t Mesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
     // This is being called through the base class, call the appropriate function
     AMP_INSIST( db->keyExists( "MeshType" ), "MeshType must exist in input database" );
     auto MeshType = db->getString( "MeshType" );
-    if ( MeshType == "Multimesh" ) {
+    if ( db->keyExists( "NumberOfElements" ) ) {
+        meshSize = db->getScalar<int>( "NumberOfElements" );
+    } else if ( MeshType == "Multimesh" ) {
         // The mesh is a multimesh
         meshSize = AMP::Mesh::MultiMesh::estimateMeshSize( params );
     } else if ( MeshType == "AMP" ) {
@@ -156,12 +158,9 @@ size_t Mesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
 #else
         AMP_ERROR( "AMP was compiled without support for STKMesh" );
 #endif
-    } else if ( db->keyExists( "NumberOfElements" ) ) {
-        int NumberOfElements = db->getScalar<int>( "NumberOfElements" );
-        meshSize             = NumberOfElements;
     } else {
         // Unknown mesh type
-        AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
+        AMP_ERROR( "Unknown mesh type " + MeshType + " and NumberOfElements is not set" );
     }
     return meshSize;
 }
@@ -181,7 +180,9 @@ size_t Mesh::maxProcs( std::shared_ptr<const MeshParameters> params )
     AMP_INSIST( db->keyExists( "MeshType" ), "MeshType must exist in input database" );
     std::string MeshType = db->getString( "MeshType" );
     size_t maxSize       = 0;
-    if ( MeshType == std::string( "Multimesh" ) ) {
+    if ( db->keyExists( "maxProcs" ) ) {
+        maxSize = db->getScalar<int>( "maxProcs" );
+    } else if ( MeshType == std::string( "Multimesh" ) ) {
         // The mesh is a multimesh
         maxSize = AMP::Mesh::MultiMesh::maxProcs( params );
     } else if ( MeshType == std::string( "AMP" ) ) {
@@ -194,6 +195,16 @@ size_t Mesh::maxProcs( std::shared_ptr<const MeshParameters> params )
         } else {
             maxSize = AMP::Mesh::BoxMesh::maxProcs( params );
         }
+    } else if ( MeshType == "TriangleGeometryMesh" ) {
+        // We will build a triangle mesh from a geometry
+        /*auto geom_db  = db->getDatabase( "Geometry" );
+        auto geometry   = AMP::Geometry::Geometry::buildGeometry( geom_db );
+        auto [lb, ub]   = geometry->box();
+        auto resolution = db->getScalar<double>( "Resolution" );
+        meshSize        = 1;
+        for ( int d = 0; d < lb.ndim(); d++ )
+            meshSize *= std::max<int64_t>( ( ub[d] - lb[d] ) / resolution, 1 ); */
+        maxSize = 1;
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
 #ifdef USE_EXT_LIBMESH
@@ -211,7 +222,7 @@ size_t Mesh::maxProcs( std::shared_ptr<const MeshParameters> params )
 #endif
     } else {
         // Unknown mesh type
-        AMP_ERROR( "Unknown mesh type and NumberOfElements does not exist in database" );
+        AMP_ERROR( "Unknown mesh type " + MeshType + " and maxProcs is not set" );
     }
     return maxSize;
 }
