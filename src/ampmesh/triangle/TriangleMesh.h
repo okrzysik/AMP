@@ -91,7 +91,8 @@ public:
      * \details Create triangle mesh data from the given parameters
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static std::shared_ptr<TriangleMesh<NG, NP>> generate( std::shared_ptr<const MeshParameters> params );
+    static std::shared_ptr<TriangleMesh<NG, NP>>
+    generate( std::shared_ptr<const MeshParameters> params );
 
     /**
      * \brief Generate a triangle mesh from local triangle coordinates

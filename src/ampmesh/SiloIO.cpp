@@ -1028,8 +1028,8 @@ SiloIO::siloMultiMeshData::siloMultiMeshData( const SiloIO::siloMultiMeshData &r
       varName( rhs.varName )
 {
 }
-SiloIO::siloMultiMeshData &SiloIO::siloMultiMeshData::
-operator=( const SiloIO::siloMultiMeshData &rhs )
+SiloIO::siloMultiMeshData &
+SiloIO::siloMultiMeshData::operator=( const SiloIO::siloMultiMeshData &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;

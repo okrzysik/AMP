@@ -838,7 +838,8 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( std::shared_ptr<const MeshParamet
  * Constructor                                                   *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
+TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params_in )
+    : Mesh( params_in )
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );

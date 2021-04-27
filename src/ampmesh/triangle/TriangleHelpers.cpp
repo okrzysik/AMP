@@ -472,7 +472,7 @@ static inline void erase( TYPE &faceMap, int64_t i )
 }
 template<size_t NG>
 static std::vector<std::array<int64_t, NG + 1>>
-    removeSubDomain( std::vector<std::array<int64_t, NG + 1>> &tri )
+removeSubDomain( std::vector<std::array<int64_t, NG + 1>> &tri )
 {
     // For each triangle get a hash id for each face
     std::multimap<uint64_t, int64_t> faceMap;
@@ -561,7 +561,7 @@ static std::vector<std::array<int64_t, NG + 1>>
 }
 template<size_t NG>
 std::vector<std::vector<std::array<int64_t, NG + 1>>>
-    splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
+splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
 {
     std::vector<std::vector<std::array<int64_t, NG + 1>>> tri_sets;
     while ( !tri.empty() )
