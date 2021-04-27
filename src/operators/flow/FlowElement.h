@@ -28,12 +28,12 @@ namespace Operator {
 class FlowElement : public ElementOperation
 {
 public:
-    explicit FlowElement( const std::shared_ptr<ElementOperationParameters> &params );
+    explicit FlowElement( std::shared_ptr<const ElementOperationParameters> params );
 
     virtual ~FlowElement() {}
 
     void initializeForCurrentElement( const libMesh::Elem *elem,
-                                      const std::shared_ptr<FlowTransportModel> &transportModel )
+                                      std::shared_ptr<FlowTransportModel> transportModel )
     {
         d_elem           = elem;
         d_transportModel = transportModel;

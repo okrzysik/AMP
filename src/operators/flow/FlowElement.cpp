@@ -15,26 +15,24 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace Operator {
 
-FlowElement::FlowElement( const std::shared_ptr<ElementOperationParameters> &params )
+FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
 {
-    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
+    AMP_INSIST( ( params ), "''params'' is NULL" );
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    const unsigned int dimension = ( params->d_db )->getWithDefault( "DIMENSION", 3 );
+    const unsigned int dimension = params->d_db->getWithDefault( "DIMENSION", 3 );
     // int numApprox = (params->d_db)->getScalar<int>WithDefault("NUM_APPROX", 2);
 
     std::string U_feTypeOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "SECOND" );
+        params->d_db->getWithDefault<std::string>( "FE_ORDER", "SECOND" );
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( U_feTypeOrderName );
 
-    std::string feFamilyName =
-        ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    std::string feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
     auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
@@ -43,7 +41,7 @@ FlowElement::FlowElement( const std::shared_ptr<ElementOperationParameters> &par
     d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
     std::string qruleOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 

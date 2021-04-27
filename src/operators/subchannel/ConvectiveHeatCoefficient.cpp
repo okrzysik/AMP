@@ -8,7 +8,7 @@ namespace Operator {
 
 
 ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
-    const std::shared_ptr<RobinPhysicsModelParameters> &params )
+    std::shared_ptr<const RobinPhysicsModelParameters> params )
     : RobinPhysicsModel( params )
 {
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ),

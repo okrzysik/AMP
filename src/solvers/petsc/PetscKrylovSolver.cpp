@@ -71,10 +71,10 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
       d_iMaxKrylovDimension( 0 ),
       d_KrylovSolver( nullptr )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     auto params = std::dynamic_pointer_cast<PetscKrylovSolverParameters>( parameters );
-    AMP_ASSERT( params.get() != nullptr );
+    AMP_ASSERT( params );
 
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
@@ -101,7 +101,7 @@ PetscKrylovSolver::~PetscKrylovSolver()
 void PetscKrylovSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
     auto parameters = std::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     // the comm is set here of instead of the constructor because this routine
     // could be called by SNES directly
@@ -162,13 +162,13 @@ void PetscKrylovSolver::initialize( std::shared_ptr<SolverStrategyParameters> co
     if ( d_bKSPCreatedInternally ) {
         checkErr( KSPSetFromOptions( d_KrylovSolver ) );
     }
-    if ( d_PetscMonitor.get() != nullptr ) {
+    if ( d_PetscMonitor ) {
         // Add the monitor
         checkErr( KSPMonitorSet(
             d_KrylovSolver, PetscMonitor::monitorKSP, d_PetscMonitor.get(), PETSC_NULL ) );
     }
     // in this case we make the assumption we can access a PetscMat for now
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 }
@@ -259,7 +259,7 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 
@@ -292,15 +292,15 @@ void PetscKrylovSolver::setKrylovSolver( KSP *ksp )
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void PetscKrylovSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // in this case we make the assumption we can access a PetscMat for now
-    AMP_ASSERT( op.get() != nullptr );
+    AMP_ASSERT( op );
 
     d_pOperator = op;
 
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator.get() != nullptr );
+    AMP_ASSERT( linearOperator );
 
     auto pMatrix = AMP::LinearAlgebra::PetscMatrix::view( linearOperator->getMatrix() );
 
@@ -310,13 +310,13 @@ void PetscKrylovSolver::registerOperator( const std::shared_ptr<AMP::Operator::O
     KSPSetOperators( d_KrylovSolver, mat, mat );
 }
 void PetscKrylovSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         d_pOperator->reset( params );
         auto linearOperator =
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_ASSERT( linearOperator.get() != nullptr );
+        AMP_ASSERT( linearOperator );
 
         auto pMatrix = AMP::LinearAlgebra::PetscMatrix::view( linearOperator->getMatrix() );
 
@@ -328,7 +328,7 @@ void PetscKrylovSolver::resetOperator(
 
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator though it's unclear where this might be necessary
-    if ( d_pPreconditioner.get() != nullptr ) {
+    if ( d_pPreconditioner ) {
         d_pPreconditioner->resetOperator( params );
     }
 }

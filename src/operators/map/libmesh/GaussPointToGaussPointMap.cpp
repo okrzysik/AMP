@@ -27,7 +27,7 @@ namespace Operator {
 
 // Constructor
 GaussPointToGaussPointMap::GaussPointToGaussPointMap(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
     : NodeToNodeMap( params )
 {
     createIdxMap( params );
@@ -90,7 +90,7 @@ void GaussPointToGaussPointMap::correctLocalOrdering()
 
 
 void GaussPointToGaussPointMap::createIdxMap(
-    std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     std::shared_ptr<AMP::Database> db = params->d_db;
     std::string feTypeOrderName       = db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );

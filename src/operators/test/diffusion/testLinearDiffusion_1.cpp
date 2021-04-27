@@ -49,9 +49,8 @@ static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
 
-    auto diffLinFEOp_db =
-        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "LinearDiffusionOp" ) );
-    auto diffOp = std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
+    auto diffLinFEOp_db = input_db->getDatabase( "LinearDiffusionOp" );
+    auto diffOp         = std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearDiffusionOp", input_db ) );
     auto elementModel = diffOp->getTransportModel();

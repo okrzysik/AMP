@@ -25,7 +25,7 @@ class Map3Dto1D : public MapOperator
 {
 public:
     //!  Constructor
-    explicit Map3Dto1D( const std::shared_ptr<OperatorParameters> &params );
+    explicit Map3Dto1D( std::shared_ptr<const OperatorParameters> params );
 
     //!  Destructor
     virtual ~Map3Dto1D() {}
@@ -37,7 +37,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;

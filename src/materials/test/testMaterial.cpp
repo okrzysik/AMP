@@ -78,12 +78,11 @@ void testArgsRange( const PROP &property,
 // Test a given material
 MatTestResult testMaterial( std::string &name )
 {
-    using namespace AMP::Materials;
     MatTestResult results;
     results.name = name;
 
     // create material object
-    Material::shared_ptr mat;
+    std::shared_ptr<AMP::Materials::Material> mat;
     try {
         mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
         results.creationGood = true;
@@ -478,7 +477,7 @@ MatTestResult testMaterial( std::string &name )
             propResults.isVector = true;
 
             auto vectorProperty =
-                std::dynamic_pointer_cast<AMP::Materials::VectorProperty<double>>( property );
+                std::dynamic_pointer_cast<AMP::Materials::VectorProperty>( property );
 
             // check that scalar nature is not signaled
             if ( vectorProperty->isScalar() ) {
@@ -771,7 +770,7 @@ MatTestResult testMaterial( std::string &name )
             propResults.isTensor = true;
 
             auto tensorProperty =
-                std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( property );
+                std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( property );
 
             // check that scalar nature is not signaled
             if ( tensorProperty->isScalar() ) {
@@ -1085,7 +1084,6 @@ int main( int argc, char **argv )
 
     { // Limit scope
 
-        using namespace AMP::Materials;
 
         // test all materials and all properties and print report
         auto matlist = AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();

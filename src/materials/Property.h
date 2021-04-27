@@ -36,12 +36,10 @@ namespace Materials {
 /**
  * \class          Property
  * \brief          Provides material properties of scalar type.
- * \tparam        Number  Precision to be used (float, double). Currently, only double is used.
  *
  * A Property class may provide only one of eval(), evalVector() or evalTensor(). It can not
  * provide both scalar and tensor
  */
-template<class Number>
 class Property
 {
 public:
@@ -57,41 +55,11 @@ public:
      */
     Property( const std::string &name    = std::string( "NotDefined" ),
               const std::string &source  = std::string( "None" ),
-              const Number *params       = NULL,
+              const double *params       = nullptr,
               const unsigned int nparams = 0,
               const std::string *args    = nullptr,
               const unsigned int nargs   = 0,
-              const Number ranges[][2]   = NULL )
-        : d_name( name ),
-          d_source( source ),
-          d_params( std::valarray<Number>( params, nparams ) ),
-          d_nparams( nparams ),
-          d_n_arguments( nargs ),
-          d_arguments( nargs ),
-          d_defaults( nargs ),
-          d_ranges( nargs, std::vector<Number>( 2 ) ),
-          d_variableNumberParameters( false )
-    {
-        if ( args != nullptr ) {
-            for ( size_t i = 0; i < d_n_arguments; i++ )
-                d_arguments[i] = args[i];
-        }
-        for ( size_t i = 0; i < d_n_arguments; i++ ) {
-            d_argToIndexMap.insert( std::pair<std::string, size_t>( d_arguments[i], i ) );
-        }
-        if ( ranges == nullptr && d_n_arguments > 0 ) {
-            AMP_INSIST( false, "argument ranges not set" );
-        }
-        for ( size_t i = 0; i < d_n_arguments; i++ ) {
-            for ( size_t j = 0; j < 2; j++ ) {
-                d_ranges[i][j] = ranges[i][j];
-            }
-        }
-        for ( size_t i = 0; i < d_n_arguments; i++ ) {
-            d_defaults[i] = d_ranges[i][0];
-        }
-        d_defaultsAreSet = true;
-    }
+              const double ranges[][2]   = nullptr );
 
     /**
      * Destructor
@@ -99,66 +67,58 @@ public:
     virtual ~Property() {}
 
     /** return name of property */
-    std::string get_name() { return d_name; }
+    inline std::string get_name() { return d_name; }
 
     /** return source reference */
-    std::string get_source() { return d_source; }
+    inline std::string get_source() { return d_source; }
 
     /** return property parameters */
-    std::valarray<Number> get_parameters() { return d_params; }
+    inline std::valarray<double> get_parameters() { return d_params; }
 
     /**
      * \brief		   set the property parameters
      * \param[in]	   params the new parameters
      * \param[in]	   nparams the number of new parameters
      */
-    void set_parameters( const Number *params, const unsigned int nparams )
+    inline void set_parameters( const double *params, const unsigned int nparams )
     {
         AMP_INSIST( d_nparams == nparams, "new parameters must be same in number as old" );
-        d_params = std::valarray<Number>( params, nparams );
+        d_params = std::valarray<double>( params, nparams );
     }
 
     /**
      * \brief          changing number of parameters allowed
      */
-    bool variable_number_parameters() { return d_variableNumberParameters; }
+    inline bool variable_number_parameters() { return d_variableNumberParameters; }
 
     /**
      * \brief		   set the property parameters
      * \param[in]	   params the new parameters
      * \param[in]	   nparams the number of new parameters
      */
-    virtual void set_parameters_and_number( const Number *params, const unsigned int nparams )
-    {
-        AMP_INSIST( d_variableNumberParameters,
-                    "changing number of parameters for this property not allowed" );
-        d_params.resize( nparams );
-        for ( size_t i = 0; i < nparams; i++ )
-            d_params[i] = params[i];
-        d_nparams = nparams;
-    }
+    virtual void set_parameters_and_number( const double *params, const unsigned int nparams );
 
     /** return the names of the arguments to eval */
-    std::vector<std::string> get_arguments() { return d_arguments; }
+    inline std::vector<std::string> get_arguments() { return d_arguments; }
 
     /** return the number of arguments to eval */
-    unsigned int get_number_arguments() { return d_n_arguments; }
+    inline unsigned int get_number_arguments() { return d_n_arguments; }
 
     /** get the defaults */
-    std::vector<Number> get_defaults() { return d_defaults; }
+    inline std::vector<double> get_defaults() { return d_defaults; }
 
     /** set the defaults */
-    void set_defaults( std::vector<Number> defaults )
+    inline void set_defaults( std::vector<double> defaults )
     {
         AMP_INSIST( defaults.size() == d_n_arguments, "incorrect number of defaults specified" );
         d_defaults = defaults;
     }
 
     //! get ranges for all arguments used in this material
-    virtual std::vector<std::vector<Number>> get_arg_ranges() { return d_ranges; }
+    virtual std::vector<std::vector<double>> get_arg_ranges() { return d_ranges; }
 
     //! determine if a string is an argument
-    bool is_argument( const std::string &argname )
+    inline bool is_argument( const std::string &argname )
     {
         std::map<std::string, size_t>::iterator it = d_argToIndexMap.find( argname );
         if ( it == d_argToIndexMap.end() )
@@ -167,44 +127,21 @@ public:
     }
 
     //! get range for a specific argument
-    virtual std::vector<Number> get_arg_range( const std::string &argname )
-    {
-        std::map<std::string, size_t>::iterator it = d_argToIndexMap.find( argname );
-        // AMP_INSIST(it != d_argToIndexMap.end(), std::string("argument ")+argname+std::string("is
-        // invalid"));
-        if ( it == d_argToIndexMap.end() ) {
-            std::vector<Number> infinite_range( 2 );
-            infinite_range[0] = -std::numeric_limits<double>::max();
-            infinite_range[1] = std::numeric_limits<double>::max();
-            return infinite_range;
-        }
-        size_t index = it->second;
-        return d_ranges[index];
-    }
+    virtual std::vector<double> get_arg_range( const std::string &argname );
 
     //! determine if a value is within range or not
-    bool in_range( const std::string &argname, const Number value );
+    inline bool in_range( const std::string &argname, const double value );
 
     //! determine if a set of values are all within range or not
     template<class INPUT_VTYPE>
-    bool in_range( const std::string &argname, const INPUT_VTYPE &values );
+    inline bool in_range( const std::string &argname, const INPUT_VTYPE &values );
 
     //! determine if a set of sets of values are all within range or not
     template<class INPUT_VTYPE>
-    bool in_range( const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &values );
+    inline bool in_range( const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &values );
 
     //! set the translation table between property arguments and AMP::Multivector entries
-    void set_translator( const std::map<std::string, std::string> &xlator )
-    {
-        // assure incoming map has correct keys
-        for ( std::map<std::string, std::string>::const_iterator iter = xlator.begin();
-              iter != xlator.end();
-              ++iter ) {
-            AMP_ASSERT( std::find( d_arguments.begin(), d_arguments.end(), iter->first ) !=
-                        d_arguments.end() );
-        }
-        d_translator = xlator;
-    }
+    void set_translator( const std::map<std::string, std::string> &xlator );
 
     //! get the translation table between property arguments and AMP::Multivector entries
     std::map<std::string, std::string> get_translator() { return d_translator; }
@@ -243,13 +180,13 @@ public:
 protected:
     std::string d_name;             //!< should be unique
     std::string d_source;           //!< journal or report reference: from where did model come?
-    std::valarray<Number> d_params; //!< parameters
+    std::valarray<double> d_params; //!< parameters
     unsigned int d_nparams;         //!< number of parameters
     unsigned int d_n_arguments;     //!< number of arguments to the eval function
     std::vector<std::string> d_arguments;          //!< names of the arguments to the eval function
-    std::vector<Number> d_defaults;                //!< default values of arguments to eval function
+    std::vector<double> d_defaults;                //!< default values of arguments to eval function
     bool d_defaultsAreSet;                         //!< indicates defaults have been set
-    std::vector<std::vector<Number>> d_ranges;     //!< allowed ranges of arguments
+    std::vector<std::vector<double>> d_ranges;     //!< allowed ranges of arguments
     std::map<std::string, size_t> d_argToIndexMap; //!< connects argument names to their indices
     std::map<std::string, std::string> d_translator; //!< standard names to multivector names
     bool d_variableNumberParameters;                 //!< can change number of parameters
@@ -272,7 +209,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return scalar value of property
      */
-    virtual Number eval( std::vector<Number> &args ) = 0;
+    virtual double eval( std::vector<double> &args ) = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of return values
@@ -284,8 +221,8 @@ public:
      *  Sizes of  \a r  and \a args["name"] must match. Members of
      *  \a args  indexed by names other than those in  get_arguments()  are ignored.
      */
-    void virtual evalv( std::vector<Number> &r,
-                        const std::map<std::string, std::shared_ptr<std::vector<Number>>> &args );
+    virtual void evalv( std::vector<double> &r,
+                        const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
@@ -300,9 +237,9 @@ public:
      * result
      *  returned in (*r[k][j])[i].
      */
-    void virtual evalv(
-        std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-        const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+    virtual void
+    evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
@@ -316,22 +253,10 @@ public:
      * and passed to another
      * version of evalv.
      */
-    void virtual evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+    virtual void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 };
 
-template<>
-std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
-Property<double>::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
-
-template<>
-void Property<double>::evalv(
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
-
-template<>
-void Property<double>::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                              const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
 } // namespace Materials
 } // namespace AMP

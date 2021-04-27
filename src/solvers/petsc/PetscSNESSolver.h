@@ -167,7 +167,7 @@ protected:
 private:
     void initialize( std::shared_ptr<SolverStrategyParameters> parameters ) override;
 
-    void getFromInput( const std::shared_ptr<AMP::Database> db );
+    void getFromInput( std::shared_ptr<const AMP::Database> db );
 
     void setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
 

@@ -46,7 +46,7 @@ struct NullDeleter {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-STKMesh::STKMesh( const std::shared_ptr<MeshParameters> &params_in ) : Mesh( params_in )
+STKMesh::STKMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
 {
     PROFILE_START( "constructor" );
     this->d_max_gcw = 1;
@@ -493,7 +493,7 @@ void STKMesh::initialize()
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t STKMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
+size_t STKMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     std::shared_ptr<AMP::Database> database = params->getDatabase();
     AMP_ASSERT( database.get() != NULL );
@@ -551,7 +551,7 @@ size_t STKMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params 
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-size_t STKMesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
+size_t STKMesh::maxProcs( std::shared_ptr<const MeshParameters> params )
 {
     return estimateMeshSize( params );
 }

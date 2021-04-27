@@ -33,7 +33,7 @@ ElementOperationFactory::createElementOperation( std::shared_ptr<Database> eleme
     std::shared_ptr<ElementOperation> retElementOp;
     std::shared_ptr<ElementOperationParameters> params;
 
-    AMP_INSIST( elementOperationDb.get() != nullptr,
+    AMP_INSIST( elementOperationDb,
                 "ElementOperationFactory::createElementOperation:: NULL Database object input" );
 
     std::string name = elementOperationDb->getString( "name" );

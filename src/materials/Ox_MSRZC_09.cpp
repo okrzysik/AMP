@@ -44,34 +44,34 @@ static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } 
 
 //=================== Classes =======================================================
 
-class FickCoefficientProp : public Property<double>
+class FickCoefficientProp : public Property
 {
 public:
     FickCoefficientProp()
-        : Property<double>( name_base + "_" + "FickCoefficient", // Name string
-                            source,                              // Reference source
-                            FCparams,                            // Property parameters
-                            4U,                                  // Number of parameters
-                            arguments,  // Names of arguments to the eval function
-                            narguments, // Number of arguments
-                            ranges )
+        : Property( name_base + "_" + "FickCoefficient", // Name string
+                    source,                              // Reference source
+                    FCparams,                            // Property parameters
+                    4U,                                  // Number of parameters
+                    arguments,                           // Names of arguments to the eval function
+                    narguments,                          // Number of arguments
+                    ranges )
     {
     } // Range of variables
 
     double eval( std::vector<double> &args ) override;
 };
 
-class SoretCoefficientProp : public Property<double>
+class SoretCoefficientProp : public Property
 {
 public:
     SoretCoefficientProp()
-        : Property<double>( name_base + "_" + "SoretCoefficient", // Name string
-                            source,                               // Reference source
-                            SCparams,                             // Property parameters
-                            7U,                                   // Number of parameters
-                            arguments,  // Names of arguments to the eval function
-                            narguments, // Number of arguments
-                            ranges )
+        : Property( name_base + "_" + "SoretCoefficient", // Name string
+                    source,                               // Reference source
+                    SCparams,                             // Property parameters
+                    7U,                                   // Number of parameters
+                    arguments,                            // Names of arguments to the eval function
+                    narguments,                           // Number of arguments
+                    ranges )
     {
     } // Range of variables
 
@@ -136,7 +136,7 @@ static const double thermDiffRanges[2][2]     = { { TminVal, TmaxVal }, { uminVa
 
 Ox_MSRZC_09::Ox_MSRZC_09()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
     INSERT_PROPERTY_IN_MAP( FickCoefficient, Ox_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( SoretCoefficient, Ox_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, Ox_MSRZC_09_NS );

@@ -25,7 +25,7 @@ public:
     NullOperator( void ) {}
 
     //! Constructor
-    explicit NullOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator( params )
+    explicit NullOperator( std::shared_ptr<const OperatorParameters> params ) : Operator( params )
     {
     }
 

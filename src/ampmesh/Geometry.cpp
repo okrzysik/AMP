@@ -26,8 +26,9 @@ namespace Geometry {
  * Create the geometry object                            *
  ********************************************************/
 std::shared_ptr<AMP::Geometry::Geometry>
-Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
+Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
 {
+    AMP_ASSERT( db );
     auto generator = db->getString( "Generator" );
     std::for_each( generator.begin(), generator.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::Geometry::Geometry> geom;
@@ -81,7 +82,7 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
     } else if ( generator.compare( "Mesh" ) == 0 ) {
         // Generate a mesh geometry
         auto mesh_db = db->getDatabase( "Mesh" );
-        auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+        auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db->cloneDatabase() );
         params->setComm( AMP_COMM_SELF );
         auto mesh      = AMP::Mesh::Mesh::buildMesh( params );
         auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
@@ -96,6 +97,7 @@ Geometry::buildGeometry( std::shared_ptr<AMP::Database> db )
     } else {
         AMP_ERROR( "Unknown generator: " + generator );
     }
+    AMP_INSIST( geom, "Failed to generate " + generator );
     // Displace the geometry
     double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),
                        db->getWithDefault( "y_offset", 0.0 ),

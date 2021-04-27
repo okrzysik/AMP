@@ -1,5 +1,4 @@
 #include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -55,8 +54,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
                 "Key ''FlowFrapconOperator'' is missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> flowtransportModel;
-    auto flowDatabase =
-        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "FlowFrapconOperator" ) );
+    auto flowDatabase = input_db->getDatabase( "FlowFrapconOperator" );
     auto flowOperator = std::dynamic_pointer_cast<AMP::Operator::FlowFrapconOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "FlowFrapconOperator", input_db, flowtransportModel ) );

@@ -4,7 +4,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
+
 #include "AMP/materials/UO2_MSRZC_09.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"

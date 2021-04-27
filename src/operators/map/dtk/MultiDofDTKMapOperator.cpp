@@ -5,14 +5,14 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-MultiDofDTKMapOperator::MultiDofDTKMapOperator( const std::shared_ptr<OperatorParameters> &params )
+MultiDofDTKMapOperator::MultiDofDTKMapOperator( std::shared_ptr<const OperatorParameters> params )
 {
     // Get the operator parameters.
-    std::shared_ptr<MultiDofDTKMapOperatorParameters> multiDofDTKMapOpParams =
-        std::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
+    auto multiDofDTKMapOpParams =
+        std::dynamic_pointer_cast<const MultiDofDTKMapOperatorParameters>( params );
     AMP_ASSERT( multiDofDTKMapOpParams );
     d_multiDofDTKMapOpParams =
-        std::dynamic_pointer_cast<MultiDofDTKMapOperatorParameters>( params );
+        std::dynamic_pointer_cast<const MultiDofDTKMapOperatorParameters>( params );
 
     AMP::Mesh::Mesh::shared_ptr mesh1 = multiDofDTKMapOpParams->d_Mesh1;
     AMP::Mesh::Mesh::shared_ptr mesh2 = multiDofDTKMapOpParams->d_Mesh2;

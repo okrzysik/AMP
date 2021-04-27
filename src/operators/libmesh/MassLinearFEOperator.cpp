@@ -21,10 +21,10 @@ AMP::LinearAlgebra::Variable::shared_ptr MassLinearFEOperator::getOutputVariable
 
 
 MassLinearFEOperator::MassLinearFEOperator(
-    const std::shared_ptr<MassLinearFEOperatorParameters> &params )
+    std::shared_ptr<const MassLinearFEOperatorParameters> params )
     : LinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( params, "NULL parameter" );
 
     d_massLinElem = std::dynamic_pointer_cast<MassLinearElement>( d_elemOp );
 
@@ -57,7 +57,7 @@ MassLinearFEOperator::MassLinearFEOperator(
 }
 
 
-void MassLinearFEOperator::preAssembly( const std::shared_ptr<AMP::Operator::OperatorParameters> & )
+void MassLinearFEOperator::preAssembly( std::shared_ptr<const AMP::Operator::OperatorParameters> )
 {
     d_matrix->zero();
 

@@ -15,7 +15,7 @@ namespace AMP {
 namespace Operator {
 
 SubchannelPhysicsModel::SubchannelPhysicsModel(
-    const std::shared_ptr<ElementPhysicsModelParameters> &params )
+    std::shared_ptr<const ElementPhysicsModelParameters> params )
     : ElementPhysicsModel( params )
 {
     // get material key

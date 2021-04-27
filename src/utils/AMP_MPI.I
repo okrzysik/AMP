@@ -376,16 +376,21 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
         return;
     if ( root >= comm_size )
         MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
-    PROFILE_START( "bcast", profile_level );
+    PROFILE_SCOPED( timer, "bcast", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Bcast( x, n, type, root, communicator );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         MPI_Bcast( x, n * sizeof( TYPE ), MPI_BYTE, root, communicator );
+    } else if constexpr ( is_vector<TYPE>::value ) {
+        for ( int i = 0; i < n; i++ ) {
+            size_t N = bcast( x[i].size(), root );
+            x[i].resize( N );
+            bcast( x[i].data(), N, root );
+        }
     } else {
         call_bcast<TYPE>( x, n, root );
     }
-    PROFILE_STOP( "bcast", profile_level );
 }
 #else
 template<class TYPE>
@@ -395,15 +400,11 @@ void MPI_CLASS::bcast( TYPE *, int, int ) const
 #endif
 // Default implimentation of bcast
 template<class TYPE>
-TYPE MPI_CLASS::bcast( const TYPE &x, int root ) const
+TYPE MPI_CLASS::bcast( TYPE x, int root ) const
 {
-    if ( comm_size == 1 ) {
-        return x;
-    } else {
-        TYPE y = x;
-        bcast( &y, 1, root );
-        return y;
-    }
+    if ( comm_size > 1 )
+        bcast( &x, 1, root );
+    return std::move( x );
 }
 
 

@@ -50,7 +50,7 @@ void MathExpr::initialize()
     d_fun     = te_compile( d_expr.c_str(), d_tevar.data(), d_vars.size(), &error );
     if ( error != 0 ) {
         te_free( d_fun );
-        d_fun == nullptr;
+        d_fun           = nullptr;
         std::string msg = "Error calling te_compile (" + std::to_string( error ) + ")" + d_expr;
         AMP_ERROR( msg );
     }

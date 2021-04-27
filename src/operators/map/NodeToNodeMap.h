@@ -41,7 +41,7 @@ public:
     static const int CommTagBase = 10000;
 
     //! Constructor
-    explicit NodeToNodeMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &params );
+    explicit NodeToNodeMap( std::shared_ptr<const AMP::Operator::OperatorParameters> params );
 
     //! Destructor
     virtual ~NodeToNodeMap();

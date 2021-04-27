@@ -20,12 +20,12 @@ void BackwardEulerTimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
 
-    AMP_INSIST( d_pRhsOperator.get() != nullptr,
+    AMP_INSIST( d_pRhsOperator,
                 "ERROR: "
                 "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
                 "apply, the rhs operator is NULL!" );
 
-    if ( d_pMassOperator.get() != nullptr ) {
+    if ( d_pMassOperator ) {
         if ( d_bLinearMassOperator ) {
             d_pScratchVector->subtract( *u, *d_pPreviousTimeSolution );
             d_pMassOperator->apply( d_pScratchVector, r );

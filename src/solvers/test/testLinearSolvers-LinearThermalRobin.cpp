@@ -2,7 +2,7 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
+
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -33,7 +33,7 @@
 
 
 std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const std::shared_ptr<AMP::Database> &input_db,
+buildSolver( std::shared_ptr<AMP::Database> input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
              std::shared_ptr<AMP::Operator::Operator> &op )
@@ -44,7 +44,7 @@ buildSolver( const std::shared_ptr<AMP::Database> &input_db,
 
     AMP_INSIST( input_db->keyExists( solver_name ), "Key " + solver_name + " is missing!" );
 
-    const auto &db = input_db->getDatabase( solver_name );
+    auto db = input_db->getDatabase( solver_name );
 
     if ( db->keyExists( "name" ) ) {
 
@@ -63,7 +63,7 @@ buildSolver( const std::shared_ptr<AMP::Database> &input_db,
 
                 pcSolver = buildSolver( input_db, pc_name, comm, op );
 
-                AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner" );
+                AMP_INSIST( pcSolver, "null preconditioner" );
             }
 
             auto params               = std::make_shared<AMP::Solver::KrylovSolverParameters>( db );

@@ -12,12 +12,11 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
-DTKMapOperator::DTKMapOperator( const std::shared_ptr<OperatorParameters> &params )
+DTKMapOperator::DTKMapOperator( std::shared_ptr<const OperatorParameters> params )
     : d_mapOnThisProc( false ), d_dtk_operator( nullptr )
 {
     // Get the operator parameters.
-    std::shared_ptr<DTKMapOperatorParameters> dtk_op_params =
-        std::dynamic_pointer_cast<DTKMapOperatorParameters>( params );
+    auto dtk_op_params = std::dynamic_pointer_cast<const DTKMapOperatorParameters>( params );
     AMP_ASSERT( dtk_op_params );
 
     int inComm = -1;

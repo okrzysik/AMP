@@ -12,7 +12,7 @@ namespace AMP {
 namespace Operator {
 
 NavierStokesLSWFFEOperator::NavierStokesLSWFFEOperator(
-    const std::shared_ptr<NavierStokesLSWFFEOperatorParameters> &params )
+    std::shared_ptr<const NavierStokesLSWFFEOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
@@ -208,7 +208,7 @@ void NavierStokesLSWFFEOperator::postElementOperation()
     }     // end for r
 }
 
-void NavierStokesLSWFFEOperator::reset( const std::shared_ptr<OperatorParameters> & )
+void NavierStokesLSWFFEOperator::reset( std::shared_ptr<const OperatorParameters> )
 {
     // DO Nothing
 }
@@ -260,7 +260,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                             AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, var->getName() );
@@ -274,7 +274,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                             AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, var->getName() );

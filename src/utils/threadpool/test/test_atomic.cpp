@@ -2,7 +2,6 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/threadpool/atomic_helpers.h"
 
 #include <atomic>
 #include <chrono>
@@ -14,19 +13,23 @@
 #include <thread>
 #include <vector>
 
+#ifdef __USE_GNU
+#include <unistd.h>
+#endif
+
 
 using namespace AMP;
 
 
 // Function to increment/decrement a counter N times
-static void modify_counter( int N, AtomicOperations::counter_t &counter )
+static void modify_counter( int N, std::atomic_int64_t &counter )
 {
     if ( N > 0 ) {
         for ( int i = 0; i < N; i++ )
-            counter.increment();
+            ++counter;
     } else if ( N < 0 ) {
         for ( int i = 0; i < -N; i++ )
-            counter.decrement();
+            --counter;
     }
 }
 
@@ -53,28 +56,28 @@ int main( int argc, char *argv[] )
 #endif
 
     // Create the counter we want to test
-    AtomicOperations::counter_t count;
-    if ( count.increment() == 1 )
+    std::atomic_int64_t count = 0;
+    if ( ++count == 1 )
         ut.passes( "increment count" );
     else
         ut.failure( "increment count" );
-    if ( count.decrement() == 0 )
+    if ( --count == 0 )
         ut.passes( "decrement count" );
     else
         ut.failure( "decrement count" );
-    count.setCount( 3 );
-    if ( count.getCount() == 3 )
+    count = 3;
+    if ( count == 3 )
         ut.passes( "set count" );
     else
         ut.failure( "set count" );
-    count.setCount( 0 );
+    count = 0;
 
     // Increment the counter in serial
     auto start = std::chrono::high_resolution_clock::now();
     modify_counter( N_count, count );
     auto stop              = std::chrono::high_resolution_clock::now();
     double time_inc_serial = std::chrono::duration<double>( stop - start ).count() / N_count;
-    int val                = count.getCount();
+    int val                = count;
     if ( val != N_count ) {
         char tmp[100];
         sprintf( tmp, "Count of %i did not match expected count of %i", val, N_count );
@@ -87,7 +90,7 @@ int main( int argc, char *argv[] )
     modify_counter( -N_count, count );
     stop                   = std::chrono::high_resolution_clock::now();
     double time_dec_serial = std::chrono::duration<double>( stop - start ).count() / N_count;
-    val                    = count.getCount();
+    val                    = count;
     if ( val != 0 ) {
         char tmp[100];
         sprintf( tmp, "Count of %i did not match expected count of %i", val, 0 );
@@ -105,7 +108,7 @@ int main( int argc, char *argv[] )
     stop = std::chrono::high_resolution_clock::now();
     double time_inc_parallel =
         std::chrono::duration<double>( stop - start ).count() / ( N_count * N_threads );
-    val = count.getCount();
+    val = count;
     if ( val != N_count * N_threads ) {
         char tmp[100];
         sprintf( tmp, "Count of %i did not match expected count of %i", val, N_count * N_threads );
@@ -122,7 +125,7 @@ int main( int argc, char *argv[] )
     stop = std::chrono::high_resolution_clock::now();
     double time_dec_parallel =
         std::chrono::duration<double>( stop - start ).count() / ( N_count * N_threads );
-    val = count.getCount();
+    val = count;
     if ( val != 0 ) {
         char tmp[100];
         sprintf( tmp, "Count of %i did not match expected count of %i", val, 0 );

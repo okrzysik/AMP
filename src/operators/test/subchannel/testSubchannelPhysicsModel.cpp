@@ -1,4 +1,3 @@
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"

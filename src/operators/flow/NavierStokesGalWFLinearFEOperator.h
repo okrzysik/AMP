@@ -18,13 +18,13 @@ class NavierStokesGalWFLinearFEOperator : public LinearFEOperator
 {
 public:
     explicit NavierStokesGalWFLinearFEOperator(
-        const std::shared_ptr<NavierStokesLinearFEOperatorParameters> &params );
+        std::shared_ptr<const NavierStokesLinearFEOperatorParameters> params );
 
     virtual ~NavierStokesGalWFLinearFEOperator() {}
 
     std::string type() const override { return "NavierStokesGalWFLinearFEOperator"; }
 
-    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
+    void preAssembly( std::shared_ptr<const OperatorParameters> params ) override;
 
     void postAssembly() override;
 

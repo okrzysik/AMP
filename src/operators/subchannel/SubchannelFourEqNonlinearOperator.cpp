@@ -17,7 +17,7 @@ namespace Operator {
 
 // Constructor
 SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
-    const std::shared_ptr<SubchannelOperatorParameters> &params )
+    std::shared_ptr<const SubchannelOperatorParameters> params )
     : Operator( params ),
       d_forceNoConduction( false ),
       d_forceNoTurbulence( false ),
@@ -53,10 +53,9 @@ SubchannelFourEqNonlinearOperator::SubchannelFourEqNonlinearOperator(
 }
 
 // reset
-void SubchannelFourEqNonlinearOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void SubchannelFourEqNonlinearOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<SubchannelOperatorParameters> myparams =
-        std::dynamic_pointer_cast<SubchannelOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const SubchannelOperatorParameters>( params );
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
     d_params = myparams;
@@ -88,7 +87,7 @@ void SubchannelFourEqNonlinearOperator::reset( const std::shared_ptr<OperatorPar
     if ( ( d_source == "totalHeatGeneration" ) ||
          ( d_source == "totalHeatGenerationWithDiscretizationError" ) ) {
         d_Q         = getDoubleParameter( myparams, "Max_Rod_Power", 66.0e3 );
-        d_QFraction = ( myparams->d_db )->getVector<double>( "Rod_Power_Fraction" );
+        d_QFraction = myparams->d_db->getVector<double>( "Rod_Power_Fraction" );
         d_heatShape = getStringParameter( myparams, "Heat_Shape", "Sinusoidal" );
     }
 
@@ -103,9 +102,9 @@ void SubchannelFourEqNonlinearOperator::reset( const std::shared_ptr<OperatorPar
     // get form loss parameters if there are grid spacers
     d_NGrid = getIntegerParameter( myparams, "Number_GridSpacers", 0 );
     if ( d_NGrid > 0 ) {
-        d_zMinGrid = ( myparams->d_db )->getVector<double>( "zMin_GridSpacers" );
-        d_zMaxGrid = ( myparams->d_db )->getVector<double>( "zMax_GridSpacers" );
-        d_lossGrid = ( myparams->d_db )->getVector<double>( "LossCoefficient_GridSpacers" );
+        d_zMinGrid = myparams->d_db->getVector<double>( "zMin_GridSpacers" );
+        d_zMaxGrid = myparams->d_db->getVector<double>( "zMax_GridSpacers" );
+        d_lossGrid = myparams->d_db->getVector<double>( "LossCoefficient_GridSpacers" );
         // check that sizes of grid spacer loss vectors are consistent with the provided number of
         // grid spacers
         if ( !( d_NGrid == d_zMinGrid.size() && d_NGrid == d_zMaxGrid.size() &&
@@ -118,15 +117,15 @@ void SubchannelFourEqNonlinearOperator::reset( const std::shared_ptr<OperatorPar
     d_subchannelPhysicsModel = myparams->d_subchannelPhysicsModel;
 
     // Check for obsolete properites
-    if ( ( myparams->d_db )->keyExists( "Rod_Diameter" ) )
+    if ( myparams->d_db->keyExists( "Rod_Diameter" ) )
         AMP_WARNING( "Field 'Rod_Diameter' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "Channel_Diameter" ) )
+    if ( myparams->d_db->keyExists( "Channel_Diameter" ) )
         AMP_WARNING( "Field 'Channel_Diameter' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "Lattice_Pitch" ) )
+    if ( myparams->d_db->keyExists( "Lattice_Pitch" ) )
         AMP_WARNING( "Field 'Lattice_Pitch' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "ChannelFractions" ) )
+    if ( myparams->d_db->keyExists( "ChannelFractions" ) )
         AMP_WARNING( "Field 'ChannelFractions' is obsolete and should be removed from database" );
-    if ( ( myparams->d_db )->keyExists( "Mass_Flow_Rate" ) )
+    if ( myparams->d_db->keyExists( "Mass_Flow_Rate" ) )
         AMP_WARNING( "Field 'Mass_Flow_Rate' is obsolete and should be removed from database" );
 
     // Get the subchannel properties from the mesh
@@ -186,13 +185,13 @@ void SubchannelFourEqNonlinearOperator::reset( const std::shared_ptr<OperatorPar
 
 // function used in reset to get double parameter or set default if missing
 double SubchannelFourEqNonlinearOperator::getDoubleParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     double defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getScalar<double>( paramString );
+        return myparams->d_db->getScalar<double>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -202,13 +201,13 @@ double SubchannelFourEqNonlinearOperator::getDoubleParameter(
 
 // function used in reset to get integer parameter or set default if missing
 int SubchannelFourEqNonlinearOperator::getIntegerParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     int defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getScalar<int>( paramString );
+        return myparams->d_db->getScalar<int>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -218,13 +217,13 @@ int SubchannelFourEqNonlinearOperator::getIntegerParameter(
 
 // function used in reset to get string parameter or set default if missing
 std::string SubchannelFourEqNonlinearOperator::getStringParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     std::string defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getString( paramString );
+        return myparams->d_db->getString( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -234,13 +233,13 @@ std::string SubchannelFourEqNonlinearOperator::getStringParameter(
 
 // function used in reset to get bool parameter or set default if missing
 bool SubchannelFourEqNonlinearOperator::getBoolParameter(
-    std::shared_ptr<SubchannelOperatorParameters> myparams,
+    std::shared_ptr<const SubchannelOperatorParameters> myparams,
     std::string paramString,
     bool defaultValue )
 {
-    bool keyExists = ( myparams->d_db )->keyExists( paramString );
+    bool keyExists = myparams->d_db->keyExists( paramString );
     if ( keyExists ) {
-        return ( myparams->d_db )->getScalar<bool>( paramString );
+        return myparams->d_db->getScalar<bool>( paramString );
     } else {
         AMP_WARNING( "Key '" + paramString + "' was not provided. Using default value: "
                      << defaultValue << "\n" );
@@ -374,7 +373,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
 {
     // Create the grid for all processors
     std::set<double> x, y, z;
-    if ( mesh.get() != nullptr ) {
+    if ( mesh ) {
         AMP::Mesh::MeshIterator vertex = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         // for all vertices in mesh
         for ( size_t i = 0; i < vertex.size(); i++ ) {
@@ -429,7 +428,7 @@ void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::sha
     size_t Nx = d_x.size() - 1; // number of mesh divisions along x-axis
     size_t Ny = d_y.size() - 1; // number of mesh divisions along y-axis
     size_t Nz = d_z.size() - 1; // number of mesh divisions along z-axis
-    if ( mesh.get() != nullptr )
+    if ( mesh )
         // check that computed number of elements matches that found by numGlobalElements()
         AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) );
     // compute number of subchannels
@@ -1254,7 +1253,7 @@ SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -1270,7 +1269,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
@@ -1286,7 +1285,7 @@ SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vecto
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -1302,7 +1301,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );

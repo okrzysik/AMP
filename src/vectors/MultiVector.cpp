@@ -160,9 +160,9 @@ void MultiVector::resetVectorData()
     AMP_ASSERT( !getComm().isNull() );
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
-        AMP_ASSERT( d_vVectors[i].get() != nullptr );
+        AMP_ASSERT( d_vVectors[i] );
         managers[i] = d_vVectors[i]->getDOFManager();
-        AMP_INSIST( managers[i].get() != nullptr,
+        AMP_INSIST( managers[i],
                     "All vectors must have a DOFManager for MultiVector to work properly" );
     }
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
@@ -191,7 +191,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
             if ( managed )
                 multivec = std::dynamic_pointer_cast<MultiVector>( managed->getVectorEngine() );
         }
-        if ( multivec.get() != nullptr ) {
+        if ( multivec ) {
             for ( size_t i = 0; i != multivec->getNumberOfSubvectors(); i++ )
                 addVectorHelper( multivec->getVector( i ) );
         } else {
@@ -235,8 +235,8 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 void MultiVector::eraseVector( Vector::shared_ptr ) { AMP_ERROR( "Needs to be fixed" ); }
 void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_ptr newVec )
 {
-    AMP_ASSERT( oldVec.get() != nullptr );
-    AMP_ASSERT( newVec.get() != nullptr );
+    AMP_ASSERT( oldVec );
+    AMP_ASSERT( newVec );
     AMP_INSIST( oldVec->getDOFManager() == newVec->getDOFManager(),
                 "oldVec and newVec must chare the same DOFManager" );
     int pos = -1;
@@ -321,7 +321,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
     /* A variable used to contain a mesh and a name, now it only contains a name
      * as a result we need to subset for the variable name (there may be many)
      * and then create a new multivector if necessary */
-    AMP_ASSERT( name.get() != nullptr );
+    AMP_ASSERT( name );
 
     // Check if the variable matches the variable of the multivector
     if ( *d_pVariable == *name )
@@ -331,7 +331,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
     std::vector<Vector::shared_ptr> subvectors;
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
         auto subset = d_vVectors[i]->subsetVectorForVariable( name );
-        if ( subset.get() != nullptr )
+        if ( subset )
             subvectors.push_back( subset );
     }
 
@@ -340,7 +340,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
     AMP_ASSERT( !comm.isNull() );
     if ( comm.sumReduce( subvectors.size() ) == 0 ) {
         auto multivariable = std::dynamic_pointer_cast<const MultiVariable>( name );
-        if ( multivariable.get() != nullptr ) {
+        if ( multivariable ) {
             bool all_found = true;
             std::vector<Vector::shared_ptr> sub_subvectors( multivariable->numVariables() );
             for ( size_t i = 0; i != multivariable->numVariables(); i++ ) {

@@ -18,9 +18,9 @@ Operator::Operator()
 }
 
 
-Operator::Operator( const std::shared_ptr<OperatorParameters> &params )
+Operator::Operator( std::shared_ptr<const OperatorParameters> params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( params, "NULL parameter" );
 
     d_Mesh                 = params->d_Mesh;
     d_iObject_id           = Operator::d_iInstance_id;
@@ -34,7 +34,7 @@ Operator::Operator( const std::shared_ptr<OperatorParameters> &params )
 }
 
 
-void Operator::reset( const std::shared_ptr<OperatorParameters> &params )
+void Operator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
@@ -55,10 +55,10 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     apply( u, r );
 
     auto rInternal = subsetOutputVector( r );
-    AMP_INSIST( ( rInternal.get() != nullptr ), "rInternal is NULL" );
+    AMP_INSIST( ( rInternal ), "rInternal is NULL" );
 
     // the rhs can be NULL
-    if ( f.get() != nullptr ) {
+    if ( f ) {
         auto fInternal = subsetOutputVector( f );
         rInternal->subtract( *fInternal, *rInternal );
     } else {
@@ -82,7 +82,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     PROFILE_START( "subsetOutputVector", 1 );
     auto var = getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr retvec;
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
@@ -101,7 +101,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     PROFILE_START( "subsetInputVector", 1 );
     auto var = getInputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr retvec;
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
@@ -120,7 +120,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     PROFILE_START( "constSubsetOutputVector", 1 );
     auto var = getOutputVariable();
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         auto meshSubsetVec = vec->constSelect( meshSelector, vec->getVariable()->getName() );
         auto varSubsetVec  = meshSubsetVec->constSubsetVectorForVariable( var );
@@ -139,7 +139,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     PROFILE_START( "constSubsetInputVector", 1 );
     auto var = getInputVariable();
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         auto meshSubsetVec = vec->constSelect( meshSelector, vec->getVariable()->getName() );
         auto varSubsetVec  = meshSubsetVec->constSubsetVectorForVariable( var );

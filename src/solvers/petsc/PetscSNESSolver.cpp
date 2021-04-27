@@ -135,7 +135,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
         // access the SNES internal pointer to KSP and get a pointer to KSP
         SNESGetKSP( d_SNESSolver, &kspSolver );
 
-        const std::shared_ptr<AMP::Database> nonlinearSolverDb = parameters->d_db;
+        auto nonlinearSolverDb = parameters->d_db;
 
         if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
             d_pKrylovSolver.reset( new PetscKrylovSolver() );
@@ -166,7 +166,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> para
     }
     PROFILE_STOP( "initialize" );
 }
-void PetscSNESSolver::getFromInput( const std::shared_ptr<AMP::Database> db )
+void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     std::string petscOptions = db->getWithDefault<std::string>( "SNESOptions", "" );
     d_PetscMonitor.reset();

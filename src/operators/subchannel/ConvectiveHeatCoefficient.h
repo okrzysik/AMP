@@ -16,8 +16,7 @@ namespace Operator {
 class ConvectiveHeatCoefficient : public RobinPhysicsModel
 {
 public:
-    explicit ConvectiveHeatCoefficient(
-        const std::shared_ptr<RobinPhysicsModelParameters> &params );
+    explicit ConvectiveHeatCoefficient( std::shared_ptr<const RobinPhysicsModelParameters> params );
 
     virtual ~ConvectiveHeatCoefficient() {}
 
@@ -25,13 +24,13 @@ public:
                          std::vector<double> &gamma,
                          const std::vector<std::vector<double>> &arguments ) override;
 
-    AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
-    std::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }
+    std::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
+    std::shared_ptr<AMP::Materials::Property> getProperty() { return d_property; }
 
 protected:
-    AMP::Materials::Material::shared_ptr d_material;
+    std::shared_ptr<AMP::Materials::Material> d_material;
 
-    std::shared_ptr<AMP::Materials::Property<double>> d_property;
+    std::shared_ptr<AMP::Materials::Property> d_property;
 
     std::vector<std::string> d_argNames;
 

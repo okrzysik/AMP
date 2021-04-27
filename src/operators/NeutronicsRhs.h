@@ -26,7 +26,6 @@ class NeutronicsRhs : public Operator
 
 public:
     typedef std::shared_ptr<NeutronicsRhsParameters> SP_Parameters;
-    typedef std::shared_ptr<OperatorParameters> SP_OperatorParameters;
     typedef std::shared_ptr<std::vector<double>> SP_Vec_Dbl;
     typedef std::shared_ptr<AMP::Database> SP_Database;
 
@@ -68,7 +67,7 @@ public:
     /**
       A function to reinitialize this object.
       */
-    void reset( const SP_OperatorParameters &parameters ) override;
+    void reset( std::shared_ptr<const OperatorParameters> parameters ) override;
 
     // static SP_HexGaussPointVariable createOutputVariable (const std::string & name, int varId =
     // -1);

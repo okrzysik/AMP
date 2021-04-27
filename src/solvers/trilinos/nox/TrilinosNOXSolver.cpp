@@ -60,10 +60,10 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<SolverStrategyParameters> pa
     // Copy the parameters
     std::shared_ptr<TrilinosNOXSolverParameters> params =
         std::dynamic_pointer_cast<TrilinosNOXSolverParameters>( parameters );
-    AMP_ASSERT( params.get() != nullptr );
-    AMP_ASSERT( params->d_db.get() != nullptr );
+    AMP_ASSERT( params );
+    AMP_ASSERT( params->d_db );
     d_comm = params->d_comm;
-    if ( params->d_pInitialGuess.get() != nullptr )
+    if ( params->d_pInitialGuess )
         d_initialGuess = params->d_pInitialGuess;
     AMP_ASSERT( d_initialGuess != nullptr );
     std::shared_ptr<AMP::Database> nonlinear_db = parameters->d_db;
@@ -163,7 +163,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<SolverStrategyParameters> pa
         d_nlParams->sublist( "Anderson Parameters" ).set( "Mixing Parameter", mixing );
         d_nlParams->sublist( "Anderson Parameters" )
             .sublist( "Preconditioning" )
-            .set( "Precondition", d_precOp.get() != nullptr );
+            .set( "Precondition", d_precOp );
         Teuchos::RCP<NOX::StatusTest::RelativeNormF> relresid(
             new NOX::StatusTest::RelativeNormF( d_dRelativeTolerance ) );
         d_status->addStatusTest( relresid );
@@ -178,7 +178,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<SolverStrategyParameters> pa
         .sublist( "Newton" )
         .sublist( "Linear Solver" )
         .set( "Tolerance", linearRelativeTolerance );
-    if ( params->d_prePostOperator.get() != nullptr ) {
+    if ( params->d_prePostOperator ) {
         Teuchos::RefCountPtr<NOX::Abstract::PrePostOperator> prePostOperator(
             params->d_prePostOperator.get(),
             Teuchos::DeallocDelete<NOX::Abstract::PrePostOperator>(),

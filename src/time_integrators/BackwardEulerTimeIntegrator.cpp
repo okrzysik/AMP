@@ -32,7 +32,7 @@ BackwardEulerTimeIntegrator::~BackwardEulerTimeIntegrator() = default;
  ***********************************************************************/
 void BackwardEulerTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     d_initial_dt = 0.0;
 
@@ -50,7 +50,7 @@ void BackwardEulerTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorPara
 }
 void BackwardEulerTimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     AMP_ERROR( "Not Finished" );
 }

@@ -43,242 +43,242 @@ static const std::string *arguments = nullptr;
 
 //  =================== Classes =======================================================
 
-class ThermalConductivityProp : public Property<double>
+class ThermalConductivityProp : public Property
 {
 public:
     ThermalConductivityProp()
-        : Property<double>( name_base + "_" + "ThermalConductivity", // Name string
-                            source,                                  // Reference source
-                            &thermalval,                             // Property parameters
-                            1U,                                      // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "ThermalConductivity", // Name string
+                    source,                                  // Reference source
+                    &thermalval,                             // Property parameters
+                    1U,                                      // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class FickCoefficientProp : public Property<double>
+class FickCoefficientProp : public Property
 {
 public:
     FickCoefficientProp()
-        : Property<double>( name_base + "_" + "FickCoefficient", // Name string
-                            source,                              // Reference source
-                            &fickval,                            // Property parameters
-                            1U,                                  // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "FickCoefficient", // Name string
+                    source,                              // Reference source
+                    &fickval,                            // Property parameters
+                    1U,                                  // Number of parameters
+                    arguments,                           // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class SoretCoefficientProp : public Property<double>
+class SoretCoefficientProp : public Property
 {
 public:
     SoretCoefficientProp()
-        : Property<double>( name_base + "_" + "SoretCoefficient", // Name string
-                            source,                               // Reference source
-                            &fickval,                             // Property parameters
-                            1U,                                   // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "SoretCoefficient", // Name string
+                    source,                               // Reference source
+                    &fickval,                             // Property parameters
+                    1U,                                   // Number of parameters
+                    arguments,                            // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DensityProp : public Property<double>
+class DensityProp : public Property
 {
 public:
     DensityProp()
-        : Property<double>( name_base + "_" + "Density", // Name string
-                            source,                      // Reference source
-                            &densval,                    // Property parameters
-                            1U,                          // Number of parameters
-                            arguments,                   // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "Density", // Name string
+                    source,                      // Reference source
+                    &densval,                    // Property parameters
+                    1U,                          // Number of parameters
+                    arguments,                   // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class ThermalExpansionProp : public Property<double>
+class ThermalExpansionProp : public Property
 {
 public:
     ThermalExpansionProp()
-        : Property<double>( name_base + "_" + "ThermalExpansion", // Name string
-                            source,                               // Reference source
-                            &alphaval,                            // Property parameters
-                            1U,                                   // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "ThermalExpansion", // Name string
+                    source,                               // Reference source
+                    &alphaval,                            // Property parameters
+                    1U,                                   // Number of parameters
+                    arguments,                            // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class HeatCapacityPressureProp : public Property<double>
+class HeatCapacityPressureProp : public Property
 {
 public:
     HeatCapacityPressureProp()
-        : Property<double>( name_base + "_" + "HeatCapacityPressure", // Name string
-                            source,                                   // Reference source
-                            &heatcpval,                               // Property parameters
-                            1U,                                       // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "HeatCapacityPressure", // Name string
+                    source,                                   // Reference source
+                    &heatcpval,                               // Property parameters
+                    1U,                                       // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class YoungsModulusProp : public Property<double>
+class YoungsModulusProp : public Property
 {
 public:
     YoungsModulusProp()
-        : Property<double>( name_base + "_" + "YoungsModulus", // Name string
-                            source,                            // Reference source
-                            &youngsval,                        // Property parameters
-                            1U,                                // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "YoungsModulus", // Name string
+                    source,                            // Reference source
+                    &youngsval,                        // Property parameters
+                    1U,                                // Number of parameters
+                    arguments,                         // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class PoissonRatioProp : public Property<double>
+class PoissonRatioProp : public Property
 {
 public:
     PoissonRatioProp()
-        : Property<double>( name_base + "_" + "PoissonRatio", // Name string
-                            source,                           // Reference source
-                            &pratioval,                       // Property parameters
-                            1U,                               // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "PoissonRatio", // Name string
+                    source,                           // Reference source
+                    &pratioval,                       // Property parameters
+                    1U,                               // Number of parameters
+                    arguments,                        // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DTThermalConductivityProp : public Property<double>
+class DTThermalConductivityProp : public Property
 {
 public:
     DTThermalConductivityProp()
-        : Property<double>( name_base + "_" + "DTThermalConductivity", // Name string
-                            source,                                    // Reference source
-                            &thermalval,                               // Property parameters
-                            1U,                                        // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "DTThermalConductivity", // Name string
+                    source,                                    // Reference source
+                    &thermalval,                               // Property parameters
+                    1U,                                        // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DTFickCoefficientProp : public Property<double>
+class DTFickCoefficientProp : public Property
 {
 public:
     DTFickCoefficientProp()
-        : Property<double>( name_base + "_" + "DTFickCoefficient", // Name string
-                            source,                                // Reference source
-                            &fickval,                              // Property parameters
-                            1U,                                    // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "DTFickCoefficient", // Name string
+                    source,                                // Reference source
+                    &fickval,                              // Property parameters
+                    1U,                                    // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DTSoretCoefficientProp : public Property<double>
+class DTSoretCoefficientProp : public Property
 {
 public:
     DTSoretCoefficientProp()
-        : Property<double>( name_base + "_" + "DTSoretCoefficient", // Name string
-                            source,                                 // Reference source
-                            &soretval,                              // Property parameters
-                            1U,                                     // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "DTSoretCoefficient", // Name string
+                    source,                                 // Reference source
+                    &soretval,                              // Property parameters
+                    1U,                                     // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DxThermalConductivityProp : public Property<double>
+class DxThermalConductivityProp : public Property
 {
 public:
     DxThermalConductivityProp()
-        : Property<double>( name_base + "_" + "DxThermalConductivity", // Name string
-                            source,                                    // Reference source
-                            &thermalval,                               // Property parameters
-                            1U,                                        // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "DxThermalConductivity", // Name string
+                    source,                                    // Reference source
+                    &thermalval,                               // Property parameters
+                    1U,                                        // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DxFickCoefficientProp : public Property<double>
+class DxFickCoefficientProp : public Property
 {
 public:
     DxFickCoefficientProp()
-        : Property<double>( name_base + "_" + "DxFickCoefficient", // Name string
-                            source,                                // Reference source
-                            &fickval,                              // Property parameters
-                            1U,                                    // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "DxFickCoefficient", // Name string
+                    source,                                // Reference source
+                    &fickval,                              // Property parameters
+                    1U,                                    // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class DxSoretCoefficientProp : public Property<double>
+class DxSoretCoefficientProp : public Property
 {
 public:
     DxSoretCoefficientProp()
-        : Property<double>( name_base + "_" + "DxSoretCoefficient", // Name string
-                            source,                                 // Reference source
-                            &soretval,                              // Property parameters
-                            1U,                                     // Number of parameters
-                            arguments, // Names of arguments to the eval function
-                            0 )
+        : Property( name_base + "_" + "DxSoretCoefficient", // Name string
+                    source,                                 // Reference source
+                    &soretval,                              // Property parameters
+                    1U,                                     // Number of parameters
+                    arguments, // Names of arguments to the eval function
+                    0 )
     {
     } // Number of arguments
 
     double eval( std::vector<double> &args ) override;
 };
 
-class VectorFickCoefficientProp : public VectorProperty<double>
+class VectorFickCoefficientProp : public VectorProperty
 {
 public:
     explicit VectorFickCoefficientProp( const size_t dim = 1 )
-        : VectorProperty<double>( name_base + "_" + "VectorFickCoefficient", // Name string
-                                  source,                                    // Reference source
-                                  fickVectorVal,                             // Property parameters
-                                  1U,                                        // Number of parameters
-                                  arguments, // Names of arguments to the eval function
-                                  0,         // Number of arguments
-                                  ( double ( * )[2] )( nullptr ), // ranges
-                                  dim )                           // dimension
+        : VectorProperty( name_base + "_" + "VectorFickCoefficient", // Name string
+                          source,                                    // Reference source
+                          fickVectorVal,                             // Property parameters
+                          1U,                                        // Number of parameters
+                          arguments,                      // Names of arguments to the eval function
+                          0,                              // Number of arguments
+                          ( double ( * )[2] )( nullptr ), // ranges
+                          dim )                           // dimension
     {
         AMP_INSIST( d_nparams == dim, "dimensions and number of parameters don't match" );
         d_variableNumberParameters = true;
@@ -289,25 +289,25 @@ public:
     void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_INSIST( d_dimension == nparams, "number of new parameters must be same as dimension" );
-        Property<double>::set_parameters_and_number( params, nparams );
+        Property::set_parameters_and_number( params, nparams );
     }
 
     std::vector<double> evalVector( std::vector<double> &args ) override;
 };
 
-class TensorFickCoefficientProp : public TensorProperty<double>
+class TensorFickCoefficientProp : public TensorProperty
 {
 public:
     explicit TensorFickCoefficientProp( const std::vector<size_t> &dims = std::vector<size_t>( 2,
                                                                                                1 ) )
-        : TensorProperty<double>( name_base + "_" + "TensorFickCoefficient", // Name string
-                                  source,                                    // Reference source
-                                  fickTensorVal,                             // Property parameters
-                                  1U,                                        // Number of parameters
-                                  arguments, // Names of arguments to the eval function
-                                  0,         // Number of arguments
-                                  ( double ( * )[2] )( nullptr ), // ranges
-                                  dims )                          // dimensions
+        : TensorProperty( name_base + "_" + "TensorFickCoefficient", // Name string
+                          source,                                    // Reference source
+                          fickTensorVal,                             // Property parameters
+                          1U,                                        // Number of parameters
+                          arguments,                      // Names of arguments to the eval function
+                          0,                              // Number of arguments
+                          ( double ( * )[2] )( nullptr ), // ranges
+                          dims )                          // dimensions
     {
         AMP_INSIST( d_nparams == dims[0] * dims[1],
                     "dimensions and number of parameters don't match" );
@@ -320,7 +320,7 @@ public:
     {
         AMP_INSIST( d_dimensions[0] * d_dimensions[1] == nparams,
                     "number of new parameters must be product of dimensions" );
-        Property<double>::set_parameters_and_number( params, nparams );
+        Property::set_parameters_and_number( params, nparams );
     }
 
     std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) override;
@@ -393,7 +393,7 @@ std::vector<std::vector<double>> TensorFickCoefficientProp::evalTensor( std::vec
 
 FixedClad::FixedClad()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
     INSERT_PROPERTY_IN_MAP( ThermalConductivity, FixedClad_NS );
     INSERT_PROPERTY_IN_MAP( FickCoefficient, FixedClad_NS );
     INSERT_PROPERTY_IN_MAP( SoretCoefficient, FixedClad_NS );

@@ -4,6 +4,7 @@
 #ifndef included_AMP_ThreadPool
 #define included_AMP_ThreadPool
 
+#include <atomic>
 #include <condition_variable>
 #include <cstring>
 #include <functional>
@@ -14,11 +15,9 @@
 #include <typeinfo>
 #include <vector>
 
-#include "AMP/utils/threadpool/AtomicList.h"
 #include "AMP/utils/threadpool/ThreadPoolId.h"
 #include "AMP/utils/threadpool/ThreadPoolQueue.h"
 #include "AMP/utils/threadpool/ThreadPoolWorkItem.h"
-#include "AMP/utils/threadpool/atomic_helpers.h"
 
 
 namespace AMP {
@@ -104,6 +103,14 @@ public:
      */
     ThreadPool( const int N = 0, const std::string &affinity = "none",
         const std::vector<int> &procs = std::vector<int>(), int queueSize = 4096 );
+
+
+    //! Copy constructor
+    ThreadPool( const ThreadPool & ) = delete;
+
+
+    //! Assignment operator
+    ThreadPool &operator=( const ThreadPool & ) = delete;
 
 
     //! Destructor
@@ -443,8 +450,9 @@ private:
         bit_array() : d_N2( 0 ), d_data( nullptr ) {}
         explicit bit_array( size_t N ) : d_N2( ( N + 63 ) / 64 ), d_data( nullptr )
         {
-            d_data = new uint64_t[d_N2];
-            memset( const_cast<uint64_t*>( d_data ), 0, d_N2 * sizeof( uint64_t ) );
+            d_data = new std::atomic_uint64_t[d_N2];
+            for ( size_t i = 0; i < d_N2; i++ )
+                d_data[i] = 0;
         }
         ~bit_array( ) { delete[] d_data; }
         bit_array( const bit_array& ) = delete;
@@ -454,14 +462,12 @@ private:
         inline void set( uint64_t index )
         {
             uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            auto ptr = reinterpret_cast<volatile AtomicOperations::int64_atomic*>( &d_data[index >> 6] );
-            AtomicOperations::atomic_fetch_and_or( ptr, mask );
+            d_data[index >> 6].fetch_or( mask );
         }
         inline void unset( uint64_t index )
         {
             uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            auto ptr = reinterpret_cast<volatile AtomicOperations::int64_atomic*>( &d_data[index >> 6] );
-            AtomicOperations::atomic_fetch_and_and( ptr, ~mask );
+            d_data[index >> 6].fetch_and( ~mask );
         }
         inline bool get( uint64_t index ) const
         {
@@ -500,7 +506,7 @@ private:
         }
       private:
         size_t d_N2;
-        volatile uint64_t *d_data;
+        volatile std::atomic_uint64_t *d_data;
     };
     
 
@@ -536,8 +542,8 @@ private:
     //    before calling wait
     class wait_ids_struct final {
       private:
-        typedef volatile AtomicOperations::int64_atomic vint32_t;
-        typedef wait_ids_struct* volatile wait_ptr;
+        typedef volatile std::atomic_int32_t vint32_t;
+        typedef volatile std::atomic<wait_ids_struct*> wait_ptr;
       public:
         wait_ids_struct() = delete;
         wait_ids_struct( const wait_ids_struct& ) = delete;
@@ -563,10 +569,6 @@ private:
 
 private:
     ///// Member functions
-
-    // Copy constructors ( we do not want the user to be able to copy the thread pool)
-    ThreadPool( const ThreadPool & );
-    ThreadPool &operator=( const ThreadPool & );
 
     // Function to check the startup
     void check_startup( );
@@ -606,16 +608,16 @@ private:
     ///// Member data
 
     // Typedefs
-    typedef volatile AtomicOperations::int32_atomic vint32_t;   // volatile atomic int
-    typedef volatile AtomicOperations::int64_atomic vint64_t;   // volatile atomic int64
-    typedef wait_ids_struct* volatile vwait_t;                  // volatile pointer to wait id
-    typedef condition_variable cond_t;                          // condition variable
+    typedef volatile std::atomic_uint32_t vint32_t;         // volatile atomic int
+    typedef volatile std::atomic_uint64_t vint64_t;         // volatile atomic int64
+    typedef volatile std::atomic<wait_ids_struct*> vwait_t; // volatile pointer to wait id
+    typedef condition_variable cond_t;                      // condition variable
 
     // Internal data
     uint32_t d_NULL_HEAD;                 // Null data buffer to check memory bounds
     volatile mutable bool d_signal_empty; // Do we want to send a signal when the queue is empty
     uint16_t d_N_threads;                 // Number of threads
-    int d_max_wait_time;                  // The maximum time in a wait command before printing a warning message
+    int d_max_wait_time;                  // The maximum time waiting before printing a warning message
     vint32_t d_signal_count;              // Signal count
     vint32_t d_num_active;                // Number of threads that are currently active
     vint64_t d_id_assign;                 // An internal variable used to store the current id to assign
@@ -624,7 +626,7 @@ private:
     vint64_t d_N_added;                   // Number of items added to the work queue
     vint64_t d_N_started;                 // Number of items started
     vint64_t d_N_finished;                // Number of items finished
-    mutable volatile vwait_t d_wait[MAX_WAIT]; // The wait events to check
+    mutable vwait_t d_wait[MAX_WAIT];     // The wait events to check
     mutable cond_t d_wait_finished;       // Condition variable to signal when work is finished
     mutable cond_t d_wait_work;           // Condition variable to signal when there is new work
     ThreadPoolListQueue d_queue;          // The work queue

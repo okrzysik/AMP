@@ -17,7 +17,7 @@ typedef ElementPhysicsModelParameters RobinPhysicsModelParameters;
 class RobinPhysicsModel : public ElementPhysicsModel
 {
 public:
-    explicit RobinPhysicsModel( const std::shared_ptr<RobinPhysicsModelParameters> &params )
+    explicit RobinPhysicsModel( std::shared_ptr<const RobinPhysicsModelParameters> params )
         : ElementPhysicsModel( params ), d_numActiveVariables( 0 )
     {
         reset( params );
@@ -25,10 +25,10 @@ public:
 
     virtual ~RobinPhysicsModel() {}
 
-    virtual void reset( const std::shared_ptr<RobinPhysicsModelParameters> &params )
+    virtual void reset( std::shared_ptr<const RobinPhysicsModelParameters> params )
     {
         if ( params->d_db->keyExists( "Number_Active_Variables" ) ) {
-            d_numActiveVariables = ( params->d_db )->getScalar<int>( "Number_Active_Variables" );
+            d_numActiveVariables = params->d_db->getScalar<int>( "Number_Active_Variables" );
         }
         std::shared_ptr<AMP::Database> activeDb;
         if ( params->d_db->keyExists( "ActiveInputVariables" ) ) {

@@ -14,7 +14,7 @@ class BlockOperator : public Operator
 public:
     BlockOperator();
 
-    explicit BlockOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit BlockOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~BlockOperator() {}
 
@@ -30,7 +30,7 @@ public:
 
     void setBlock( int row, int col, std::shared_ptr<Operator> op );
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;

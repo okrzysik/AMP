@@ -26,7 +26,7 @@ public:
 
     void reset( std::shared_ptr<SolverStrategyParameters> ) override;
 
-    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     AMP::LinearAlgebra::Variable::shared_ptr getInputVariable( int varId = -1 );
 

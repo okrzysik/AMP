@@ -30,7 +30,7 @@ class NonlinearFEOperator : public Operator
 public:
     //! Constructor. This copies the share pointer to the element operation from the input parameter
     //! object.
-    explicit NonlinearFEOperator( const std::shared_ptr<FEOperatorParameters> &params );
+    explicit NonlinearFEOperator( std::shared_ptr<const FEOperatorParameters> params );
 
     //! Destructor
     virtual ~NonlinearFEOperator();

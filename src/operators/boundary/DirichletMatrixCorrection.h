@@ -24,7 +24,7 @@ class DirichletMatrixCorrection : public BoundaryOperator
 public:
     //! Constructor
     explicit DirichletMatrixCorrection(
-        const std::shared_ptr<DirichletMatrixCorrectionParameters> &params );
+        std::shared_ptr<const DirichletMatrixCorrectionParameters> params );
 
     //! Destructor
     virtual ~DirichletMatrixCorrection() {}
@@ -45,14 +45,14 @@ public:
         // Do Nothing
     }
 
-    void parseParams( const std::shared_ptr<DirichletMatrixCorrectionParameters> & );
+    void parseParams( std::shared_ptr<const DirichletMatrixCorrectionParameters> );
 
     /**
       This function modifies the entries of the matrix formed by the volume operator
       in order to impose Dirichlet boundary conditions. This function can also be used
       to change the Dirichlet boundary conditions, if required.
       */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     /**
       Adds a vector to the RHS vector. This is one of the steps for imposing Dirichlet boundary

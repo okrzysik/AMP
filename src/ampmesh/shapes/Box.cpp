@@ -17,7 +17,7 @@ namespace Geometry {
  * Constructors                                          *
  ********************************************************/
 template<std::size_t NDIM>
-Box<NDIM>::Box( std::shared_ptr<AMP::Database> db )
+Box<NDIM>::Box( std::shared_ptr<const AMP::Database> db )
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
@@ -45,7 +45,7 @@ Box<NDIM>::Box( const std::vector<double> &range ) : LogicalGeometry()
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( std::shared_ptr<AMP::Database> db ) : LogicalGeometry()
+Grid<NDIM>::Grid( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
 {
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;

@@ -19,11 +19,11 @@ class DiffusionLinearFEOperator : public LinearFEOperator
 {
 public:
     explicit DiffusionLinearFEOperator(
-        const std::shared_ptr<DiffusionLinearFEOperatorParameters> &params );
+        std::shared_ptr<const DiffusionLinearFEOperatorParameters> params );
 
     virtual ~DiffusionLinearFEOperator() {}
 
-    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
+    void preAssembly( std::shared_ptr<const OperatorParameters> params ) override;
 
     void postAssembly() override;
 

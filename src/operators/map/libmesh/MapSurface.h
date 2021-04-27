@@ -18,7 +18,7 @@ namespace Operator {
 class MapSurface : public MapOperator
 {
 public:
-    explicit MapSurface( const std::shared_ptr<OperatorParameters> &params );
+    explicit MapSurface( std::shared_ptr<const OperatorParameters> params );
     virtual ~MapSurface() {}
 
     std::string type() const override { return "MapSurface"; }

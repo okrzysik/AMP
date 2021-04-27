@@ -9,7 +9,7 @@ namespace AMP {
 namespace Operator {
 
 
-NonlinearFEOperator::NonlinearFEOperator( const std::shared_ptr<FEOperatorParameters> &params )
+NonlinearFEOperator::NonlinearFEOperator( std::shared_ptr<const FEOperatorParameters> params )
     : Operator( params ), d_elemOp( params->d_elemOp )
 {
     createLibMeshElementList();
@@ -29,7 +29,7 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
     AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
 
-    if ( u.get() != nullptr )
+    if ( u )
         AMP_ASSERT( u->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 

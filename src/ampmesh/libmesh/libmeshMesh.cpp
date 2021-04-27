@@ -40,7 +40,7 @@ namespace Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-libmeshMesh::libmeshMesh( const std::shared_ptr<MeshParameters> &params_in )
+libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params_in )
     : Mesh( params_in ), d_pos_hash( 0 )
 {
     PROFILE_START( "constructor" );
@@ -539,10 +539,10 @@ void libmeshMesh::initialize()
 /********************************************************
  * Function to estimate the mesh size                    *
  ********************************************************/
-size_t libmeshMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
+size_t libmeshMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     auto database = params->getDatabase();
-    AMP_ASSERT( database.get() != nullptr );
+    AMP_ASSERT( database );
     size_t NumberOfElements = 0;
     if ( database->keyExists( "NumberOfElements" ) ) {
         // User specified the number of elements, this should override everything
@@ -590,7 +590,7 @@ size_t libmeshMesh::estimateMeshSize( const std::shared_ptr<MeshParameters> &par
 /****************************************************************
  * Estimate the maximum number of processors                     *
  ****************************************************************/
-size_t libmeshMesh::maxProcs( const std::shared_ptr<MeshParameters> &params )
+size_t libmeshMesh::maxProcs( std::shared_ptr<const MeshParameters> params )
 {
     return estimateMeshSize( params );
 }

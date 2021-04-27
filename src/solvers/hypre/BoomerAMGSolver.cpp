@@ -23,7 +23,7 @@ BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> para
 
     HYPRE_BoomerAMGCreate( &d_solver );
 
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
     initialize( parameters );
 }
 
@@ -39,14 +39,14 @@ void BoomerAMGSolver::initialize( std::shared_ptr<SolverStrategyParameters> cons
 {
     getFromInput( parameters->d_db );
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 
     setParameters();
 }
 
-void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
+void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", false );
 
@@ -346,7 +346,7 @@ void BoomerAMGSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
 }
 
-void BoomerAMGSolver::createHYPREMatrix( const std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
+void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
     int ierr;
     char hypre_mesg[100];
@@ -395,10 +395,10 @@ void BoomerAMGSolver::createHYPREVectors( void )
     char hypre_mesg[100];
 
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+    AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
     const auto &matrix = linearOperator->getMatrix();
-    AMP_INSIST( matrix.get() != nullptr, "matrix cannot be NULL" );
+    AMP_INSIST( matrix, "matrix cannot be NULL" );
 
     const auto myFirstRow = matrix->getLeftDOFManager()->beginDOF();
     const auto myEndRow =
@@ -424,9 +424,9 @@ void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vec
     char hypre_mesg[100];
     int ierr;
 
-    AMP_INSIST( amp_v.get() != nullptr, "vector cannot be NULL" );
+    AMP_INSIST( amp_v, "vector cannot be NULL" );
     const auto &dofManager = amp_v->getDOFManager();
-    AMP_INSIST( dofManager.get() != nullptr, "DOF_Manager cannot be NULL" );
+    AMP_INSIST( dofManager, "DOF_Manager cannot be NULL" );
 
     const auto startingIndex = dofManager->beginDOF();
     const auto nDOFS         = dofManager->numLocalDOF();
@@ -456,9 +456,9 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
 
     int ierr;
 
-    AMP_INSIST( amp_v.get() != nullptr, "vector cannot be NULL" );
+    AMP_INSIST( amp_v, "vector cannot be NULL" );
     const auto &dofManager = amp_v->getDOFManager();
-    AMP_INSIST( dofManager.get() != nullptr, "DOF_Manager cannot be NULL" );
+    AMP_INSIST( dofManager, "DOF_Manager cannot be NULL" );
 
     const auto startingIndex = dofManager->beginDOF();
     const auto nDOFS         = dofManager->numLocalDOF();
@@ -476,18 +476,17 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     amp_v->setLocalValuesByGlobalID( nDOFS, &indices[0], &values[0] );
 }
 
-void BoomerAMGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void BoomerAMGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
 
     d_pOperator = op;
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: BoomerAMGSolver::registerOperator() operator cannot be NULL" );
+    AMP_INSIST( d_pOperator, "ERROR: BoomerAMGSolver::registerOperator() operator cannot be NULL" );
 
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+    AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
     auto matrix = linearOperator->getMatrix();
-    AMP_INSIST( matrix.get() != nullptr, "matrix cannot be NULL" );
+    AMP_INSIST( matrix, "matrix cannot be NULL" );
 
     // set the comm for this solver based on the comm for the matrix
     // being lazy??
@@ -504,10 +503,10 @@ void BoomerAMGSolver::registerOperator( const std::shared_ptr<AMP::Operator::Ope
 void BoomerAMGSolver::setParameters( void ) {}
 
 void BoomerAMGSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
-    AMP_INSIST( ( d_pOperator.get() != nullptr ),
+    AMP_INSIST( ( d_pOperator ),
                 "ERROR: BoomerAMGSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
@@ -528,8 +527,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
+    AMP_INSIST( d_pOperator, "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();

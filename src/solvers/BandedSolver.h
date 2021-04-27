@@ -50,7 +50,7 @@ public:
      *        OperatorParameters object that is NULL by default
      */
     void
-    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> parameters ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary

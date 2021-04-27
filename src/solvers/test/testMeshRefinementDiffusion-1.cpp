@@ -68,7 +68,7 @@ void calculateManufacturedSolution(
     //  CALCULATE THE MANFACTURED SOLUTION
     auto dof_map       = manufacturedSolution->getDOFManager();
     auto bottomAdapter = meshAdapter->Subset( "Bottom" );
-    if ( bottomAdapter.get() != nullptr ) {
+    if ( bottomAdapter ) {
         auto el     = bottomAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
         auto end_el = el.end();
 

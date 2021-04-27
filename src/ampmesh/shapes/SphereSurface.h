@@ -22,7 +22,7 @@ public:
      * \brief Construct a SphereSurface geometry
      * \param db        Input database
      */
-    explicit SphereSurface( std::shared_ptr<AMP::Database> db );
+    explicit SphereSurface( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a SphereSurface geometry

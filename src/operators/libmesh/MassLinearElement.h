@@ -15,7 +15,7 @@ namespace Operator {
 class MassLinearElement : public MassElement
 {
 public:
-    explicit MassLinearElement( const std::shared_ptr<ElementOperationParameters> &params )
+    explicit MassLinearElement( std::shared_ptr<const ElementOperationParameters> params )
         : MassElement( params ),
           d_elementMassMatrix( NULL ),
           d_equation( MassDensityModel::MassEquation::UnknownMassEquation )

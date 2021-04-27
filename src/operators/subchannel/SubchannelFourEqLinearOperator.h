@@ -19,7 +19,7 @@ class SubchannelFourEqLinearOperator : public LinearOperator
 public:
     //! Constructor
     explicit SubchannelFourEqLinearOperator(
-        const std::shared_ptr<SubchannelOperatorParameters> &params );
+        std::shared_ptr<const SubchannelOperatorParameters> params );
 
     //! Destructor
     virtual ~SubchannelFourEqLinearOperator() {}
@@ -27,7 +27,7 @@ public:
     //! Return the name of the operator
     std::string type() const override { return "SubchannelFourEqLinearOperator"; }
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;
@@ -58,7 +58,7 @@ public:
     double getOutletPressure() { return d_Pout; }
 
     //! Get the current operator parameters
-    std::shared_ptr<SubchannelOperatorParameters> getParams() { return d_params; }
+    auto getParams() { return d_params; }
 
     //! Makes map of lateral gaps to their centroids
     void getLateralFaces( AMP::Mesh::Mesh::shared_ptr,
@@ -86,7 +86,7 @@ protected:
     std::shared_ptr<OperatorParameters>
     getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override;
 
-    std::shared_ptr<SubchannelOperatorParameters> d_params;
+    std::shared_ptr<const SubchannelOperatorParameters> d_params;
 
     std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 
@@ -94,18 +94,20 @@ private:
     bool d_initialized;
 
     // Function used in reset to get double parameter or use default if missing
-    double getDoubleParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, double );
+    double
+    getDoubleParameter( std::shared_ptr<const SubchannelOperatorParameters>, std::string, double );
 
     // Function used in reset to get integer parameter or use default if missing
-    int getIntegerParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, int );
+    int
+    getIntegerParameter( std::shared_ptr<const SubchannelOperatorParameters>, std::string, int );
 
     // Function used in reset to get string parameter or use default if missing
-    std::string getStringParameter( std::shared_ptr<SubchannelOperatorParameters>,
+    std::string getStringParameter( std::shared_ptr<const SubchannelOperatorParameters>,
                                     std::string,
                                     std::string );
 
     // Function used in reset to get bool parameter or use default if missing
-    bool getBoolParameter( std::shared_ptr<SubchannelOperatorParameters>, std::string, bool );
+    bool getBoolParameter( std::shared_ptr<const SubchannelOperatorParameters>, std::string, bool );
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_cladTemperature;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_frozenVec;

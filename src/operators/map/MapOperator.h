@@ -31,11 +31,10 @@ public:
     /**
       Constructor calls the reset member which reads the information about the boundary.
       */
-    explicit MapOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator( params )
+    explicit MapOperator( std::shared_ptr<const OperatorParameters> params ) : Operator( params )
     {
-        std::shared_ptr<MapOperatorParameters> myparams =
-            std::dynamic_pointer_cast<MapOperatorParameters>( params );
-        d_boundaryId = 0;
+        auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
+        d_boundaryId  = 0;
         reset( myparams );
     }
 
@@ -47,7 +46,7 @@ public:
     //! Return the name of the operator
     std::string type() const override { return "MapOperator"; }
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     virtual AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &, int )
     {

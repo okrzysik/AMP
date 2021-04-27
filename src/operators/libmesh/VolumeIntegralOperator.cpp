@@ -13,7 +13,7 @@ namespace Operator {
 
 
 VolumeIntegralOperator::VolumeIntegralOperator(
-    const std::shared_ptr<VolumeIntegralOperatorParameters> &params )
+    std::shared_ptr<const VolumeIntegralOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
@@ -31,8 +31,8 @@ VolumeIntegralOperator::VolumeIntegralOperator(
 
     std::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase( "ActiveInputVariables" );
 
-    int numPrimaryVariables   = ( params->d_db )->getScalar<int>( "Number_Active_Variables" );
-    int numAuxillaryVariables = ( params->d_db )->getScalar<int>( "Number_Auxillary_Variables" );
+    int numPrimaryVariables   = params->d_db->getScalar<int>( "Number_Active_Variables" );
+    int numAuxillaryVariables = params->d_db->getScalar<int>( "Number_Auxillary_Variables" );
 
     d_inpVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myInpVar" ) );
     d_auxVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myAuxVar" ) );
@@ -204,7 +204,7 @@ void VolumeIntegralOperator::postAssembly()
 }
 
 
-void VolumeIntegralOperator::init( const std::shared_ptr<VolumeIntegralOperatorParameters> & )
+void VolumeIntegralOperator::init( std::shared_ptr<const VolumeIntegralOperatorParameters> )
 {
     AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     d_srcNonlinElem->setElementFlags( d_isInputType );
@@ -217,7 +217,7 @@ void VolumeIntegralOperator::init( const std::shared_ptr<VolumeIntegralOperatorP
 }
 
 
-void VolumeIntegralOperator::reset( const std::shared_ptr<OperatorParameters> & )
+void VolumeIntegralOperator::reset( std::shared_ptr<const OperatorParameters> )
 {
     d_outVec.reset();
 }

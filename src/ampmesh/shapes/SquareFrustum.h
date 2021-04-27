@@ -22,7 +22,7 @@ public:
      * \brief Construct a SquareFrustum geometry
      * \param db        Input database
      */
-    explicit SquareFrustum( std::shared_ptr<AMP::Database> db );
+    explicit SquareFrustum( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a SquareFrustum geometry

@@ -123,7 +123,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::MultiVector::create( inputMultiVariable, meshAdapter->getComm() );
     auto resVec = AMP::LinearAlgebra::MultiVector::create( outputVariable, meshAdapter->getComm() );
     for ( size_t i = 0; i < inputVariables.size(); i++ ) {
-        if ( inputVariables[i].get() != nullptr ) {
+        if ( inputVariables[i] ) {
             std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( solVec )->addVector(
                 AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
             std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( resVec )->addVector(

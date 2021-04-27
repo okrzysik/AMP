@@ -155,11 +155,11 @@ Scalar Scalar::sqrt() const
     if ( !has_value() )
         return 0.0;
     if ( is_floating_point() ) {
-        return Scalar::create(::sqrt( get<double>() ) );
+        return Scalar::create( ::sqrt( get<double>() ) );
     } else if ( is_integral() ) {
-        return Scalar::create(::sqrt( get<int64_t>() ) );
+        return Scalar::create( ::sqrt( get<int64_t>() ) );
     } else if ( is_complex() ) {
-        return Scalar::create(::sqrt( get<std::complex<double>>() ) );
+        return Scalar::create( ::sqrt( get<std::complex<double>>() ) );
     } else {
         AMP_ERROR( "Unable to get types for Scalar" );
     }

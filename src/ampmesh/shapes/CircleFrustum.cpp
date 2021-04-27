@@ -14,7 +14,7 @@ namespace Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-CircleFrustum::CircleFrustum( std::shared_ptr<AMP::Database> db ) : d_offset{ 0, 0, 0 }
+CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db ) : d_offset{ 0, 0, 0 }
 {
     d_r[0]   = db->getScalar<double>( "BaseRadius" );
     d_r[1]   = db->getScalar<double>( "TopRadius" );

@@ -9,7 +9,7 @@ namespace AMP {
 namespace Operator {
 /*
     NavierStokesGalWFLinearFEOperator :: NavierStokesGalWFLinearFEOperator (
-        const std::shared_ptr<NavierStokesLinearFEOperatorParameters> & params)
+        std::shared_ptr<const NavierStokesLinearFEOperatorParameters> params)
       : LinearFEOperator (params) {
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter" );
 
@@ -71,7 +71,7 @@ namespace Operator {
         }
       }
 
-    void NavierStokesGalWFLinearFEOperator :: preAssembly(const std::shared_ptr<OperatorParameters>&
+    void NavierStokesGalWFLinearFEOperator :: preAssembly( std::shared_ptr<const OperatorParameters>
    oparams)
     {
 

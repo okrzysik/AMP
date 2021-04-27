@@ -29,24 +29,23 @@ namespace Operator {
 /************************************************************************
  *  Default constructor                                                  *
  ************************************************************************/
-ScalarN2GZAxisMap::ScalarN2GZAxisMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
+ScalarN2GZAxisMap::ScalarN2GZAxisMap( std::shared_ptr<const AMP::Operator::OperatorParameters> p )
     : Map3to1to3( p )
 {
-    std::shared_ptr<Map3to1to3Parameters> params =
-        std::dynamic_pointer_cast<Map3to1to3Parameters>( p );
+    auto params = std::dynamic_pointer_cast<const Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 4, "ScalarZAxis is currently only designed for 4 Gp per elem" );
 
     // Create the element iterators
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         d_srcIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID1, 0 );
         d_dstIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, params->d_BoundaryID1, 0 );
     }
-    if ( d_mesh2.get() != nullptr ) {
+    if ( d_mesh2 ) {
         d_srcIterator2 =
             d_mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID2, 0 );
         d_dstIterator2 =
@@ -122,9 +121,9 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
 {
     if ( iterator.size() == 0 )
         return AMP::LinearAlgebra::Vector::const_shared_ptr();
-    if ( iterator == d_dstIterator1 && d_z_coord1.get() != nullptr )
+    if ( iterator == d_dstIterator1 && d_z_coord1 )
         return d_z_coord1;
-    if ( iterator == d_dstIterator2 && d_z_coord2.get() != nullptr )
+    if ( iterator == d_dstIterator2 && d_z_coord2 )
         return d_z_coord2;
     PROFILE_START( "getGaussPoints" );
     std::shared_ptr<AMP::Discretization::DOFManager> GpDofMap =
@@ -189,7 +188,7 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
 
     // Get the coordinates of the gauss points
     AMP::LinearAlgebra::Vector::const_shared_ptr z_pos = getGaussPoints( iterator );
-    AMP_ASSERT( z_pos.get() != nullptr );
+    AMP_ASSERT( z_pos );
 
     // Get the DOF managers
     std::shared_ptr<AMP::Discretization::DOFManager> DOFs      = vec->getDOFManager();

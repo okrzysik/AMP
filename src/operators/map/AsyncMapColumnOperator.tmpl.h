@@ -47,7 +47,6 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
     // Loop through the maps
     AMP_MPI managerComm = manager->getComm();
     for ( int i = 0; i < N_maps; i++ ) {
-
         // Get the names of the 2 meshes involved
         auto meshName1 = map_databases[i]->getString( "Mesh1" );
         auto meshName2 = map_databases[i]->getString( "Mesh2" );

@@ -12,7 +12,7 @@ class TractionBoundaryOperator : public BoundaryOperator
 {
 public:
     explicit TractionBoundaryOperator(
-        const std::shared_ptr<TractionBoundaryOperatorParameters> &params );
+        std::shared_ptr<const TractionBoundaryOperatorParameters> params );
 
     virtual ~TractionBoundaryOperator() {}
 

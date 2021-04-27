@@ -23,7 +23,7 @@ public:
      * Constructor.
      */
     explicit AMPMeshNodalShapeFunction(
-        const std::shared_ptr<AMP::Discretization::DOFManager> &dof_manager );
+        std::shared_ptr<AMP::Discretization::DOFManager> dof_manager );
 
     /*!
      * \brief Given an entity, get the ids of the degrees of freedom in the

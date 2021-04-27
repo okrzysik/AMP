@@ -50,7 +50,7 @@ public:
     /**
      * Constructor.
      */
-    explicit DTKMapOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit DTKMapOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     ~DTKMapOperator() {}

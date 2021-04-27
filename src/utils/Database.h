@@ -425,9 +425,6 @@ protected: // Internal data and functions
     std::vector<std::string> d_keys;
     std::vector<std::shared_ptr<KeyData>> d_data;
 
-    // Function to load a database from a buffer
-    static size_t loadDatabase( const char *buffer, Database &db );
-
     // Function to add arguments to the database
     template<class TYPE, class... Args>
     void addArgs( const std::string_view &key, TYPE value, Args... args );

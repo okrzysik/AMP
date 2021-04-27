@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -54,8 +53,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto fsOp_db =
-        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "NonlinearFickSoretOp" ) );
+    auto fsOp_db           = input_db->getDatabase( "NonlinearFickSoretOp" );
     auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "NonlinearFickSoretOp", input_db, elementModel );
     auto fsOp =
@@ -77,7 +75,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Operator::DiffusionNonlinearFEOperatorParameters>( fsOp_db );
     fickOpParams->d_transportModel  = fickModel;
     soretOpParams->d_transportModel = soretModel;
-    auto fsOpBase_db                = std::dynamic_pointer_cast<AMP::Database>( fsOp_db );
+    auto fsOpBase_db                = fsOp_db;
     auto fsOpParams =
         std::make_shared<AMP::Operator::FickSoretNonlinearFEOperatorParameters>( fsOpBase_db );
     fsOpParams->d_FickParameters  = fickOpParams;

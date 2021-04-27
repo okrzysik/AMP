@@ -24,7 +24,7 @@ public:
      * \details  Constructor to create the MeshParamaters from an AMP Database object.
      * \param db    Input database for constructing a mesh
      */
-    explicit MeshParameters( const std::shared_ptr<AMP::Database> db );
+    explicit MeshParameters( std::shared_ptr<AMP::Database> db );
 
     /**
      * \brief       Set the comm for the mesh
@@ -41,6 +41,9 @@ public:
 
     //!  Get the database for the mesh
     std::shared_ptr<AMP::Database> getDatabase();
+
+    //!  Get the database for the mesh
+    std::shared_ptr<const AMP::Database> getDatabase() const;
 
     //! Deconstructor
     virtual ~MeshParameters();

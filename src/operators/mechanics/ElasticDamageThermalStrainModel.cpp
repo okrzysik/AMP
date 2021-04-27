@@ -10,34 +10,32 @@ namespace AMP {
 namespace Operator {
 
 ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
-    const std::shared_ptr<MechanicsMaterialModelParameters> &params )
+    std::shared_ptr<MechanicsMaterialModelParameters> params )
     : MechanicsMaterialModel( params ), d_constitutiveMatrix{ { 0 } }
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_Is_Source = ( params->d_db )->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+    d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
     if ( d_useMaterialsLibrary == false ) {
         // IsotropicElasticModel C_Elastic(params);
 
-        d_Is_Source = ( params->d_db )->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+        d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
+        AMP_INSIST( params->d_db->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
                     "Missing key: THERMAL_EXPANSION_COEFFICIENT" );
 
-        default_alpha = ( params->d_db )->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
+        default_alpha = params->d_db->getScalar<double>( "THERMAL_EXPANSION_COEFFICIENT" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "Youngs_Modulus" ),
-                    "Missing key: Youngs_Modulus" );
+        AMP_INSIST( params->d_db->keyExists( "Youngs_Modulus" ), "Missing key: Youngs_Modulus" );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "Poissons_Ratio" ),
-                    "Missing key: Poissons_Ratio" );
+        AMP_INSIST( params->d_db->keyExists( "Poissons_Ratio" ), "Missing key: Poissons_Ratio" );
 
-        default_E = ( params->d_db )->getScalar<double>( "Youngs_Modulus" );
+        default_E = params->d_db->getScalar<double>( "Youngs_Modulus" );
 
-        default_Nu = ( params->d_db )->getScalar<double>( "Poissons_Ratio" );
+        default_Nu = params->d_db->getScalar<double>( "Poissons_Ratio" );
 
         constructConstitutiveMatrix( default_E, default_Nu );
 
@@ -58,17 +56,17 @@ ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
         }*/
     }
 
-    d_DamageThreshold = ( params->d_db )->getWithDefault<double>( "Initial_Damage_Threshold", 0.5 );
+    d_DamageThreshold = params->d_db->getWithDefault<double>( "Initial_Damage_Threshold", 0.5 );
 
     d_CriticalDamageThreshold =
-        ( params->d_db )->getWithDefault<double>( "Critical_Damage_Threshold", 0.4 );
+        params->d_db->getWithDefault<double>( "Critical_Damage_Threshold", 0.4 );
 
-    default_TEMPERATURE = ( params->d_db )->getWithDefault<double>( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = params->d_db->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = ( params->d_db )->getWithDefault<double>( "Default_Burnup", 0.0 );
+    default_BURNUP = params->d_db->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        ( params->d_db )->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
+        params->d_db->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     d_gaussPtCnt                 = 0;
     d_resetReusesRadialReturn    = false;

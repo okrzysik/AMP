@@ -31,7 +31,7 @@ public:
       @param [in] params
       */
     NodeToSegmentConstraintsOperator(
-        const std::shared_ptr<NodeToSegmentConstraintsOperatorParameters> &params )
+        std::shared_ptr<const NodeToSegmentConstraintsOperatorParameters> params )
         : Operator( params )
     {
         AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );
@@ -72,7 +72,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params );
+    virtual void reset( std::shared_ptr<const OperatorParameters> params );
 
     /**
       The apply function for this operator, A, performs the following operation:

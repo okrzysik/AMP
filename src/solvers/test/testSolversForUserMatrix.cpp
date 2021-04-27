@@ -24,7 +24,7 @@
 #include <string>
 
 std::shared_ptr<AMP::Solver::SolverStrategy>
-buildSolver( const std::shared_ptr<AMP::Database> &input_db,
+buildSolver( std::shared_ptr<AMP::Database> input_db,
              const std::string &solver_name,
              const AMP::AMP_MPI &comm,
              std::shared_ptr<AMP::Operator::LinearOperator> &op )
@@ -53,7 +53,7 @@ buildSolver( const std::shared_ptr<AMP::Database> &input_db,
 
                 auto pcSolver = buildSolver( input_db, pc_name, comm, op );
 
-                AMP_INSIST( pcSolver.get() != nullptr, "null preconditioner" );
+                AMP_INSIST( pcSolver, "null preconditioner" );
             }
 
             auto params               = std::make_shared<AMP::Solver::KrylovSolverParameters>( db );

@@ -50,7 +50,7 @@ public:
      * communicator.  As such, some math STKraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    STKMesh( const std::shared_ptr<MeshParameters> &params );
+    STKMesh( std::shared_ptr<const MeshParameters> params );
 
     /**
      * \brief Contructor to create a STKMesh object from a STKMesh mesh.
@@ -78,7 +78,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
+    static size_t estimateMeshSize( std::shared_ptr<const MeshParameters> params );
 
 
     /**
@@ -87,7 +87,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
+    static size_t maxProcs( std::shared_ptr<const MeshParameters> params );
 
 
     /* Return the number of local element of the given type

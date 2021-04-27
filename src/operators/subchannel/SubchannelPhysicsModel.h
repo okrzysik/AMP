@@ -25,7 +25,7 @@ public:
     /**
       Constructor
       */
-    explicit SubchannelPhysicsModel( const std::shared_ptr<ElementPhysicsModelParameters> &params );
+    explicit SubchannelPhysicsModel( std::shared_ptr<const ElementPhysicsModelParameters> params );
 
     /**
       Destructor
@@ -45,14 +45,14 @@ public:
     /**
       Function to return a pointer to the material
       */
-    AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
+    std::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
 
 protected:
     // pointer to the material
-    AMP::Materials::Material::shared_ptr d_material;
+    std::shared_ptr<AMP::Materials::Material> d_material;
 
     // map of property identifier strings and property pointers
-    std::map<std::string, std::shared_ptr<AMP::Materials::Property<double>>> d_properties;
+    std::map<std::string, std::shared_ptr<AMP::Materials::Property>> d_properties;
 };
 } // namespace Operator
 } // namespace AMP

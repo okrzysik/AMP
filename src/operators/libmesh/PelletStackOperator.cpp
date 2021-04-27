@@ -7,25 +7,25 @@ namespace AMP {
 namespace Operator {
 
 PelletStackOperator::PelletStackOperator(
-    const std::shared_ptr<PelletStackOperatorParameters> &params )
+    std::shared_ptr<const PelletStackOperatorParameters> params )
     : Operator( params )
 {
-    d_totalNumberOfPellets = ( params->d_db )->getScalar<int>( "TOTAL_NUMBER_OF_PELLETS" );
-    d_useSerial            = ( params->d_db )->getWithDefault( "USE_SERIAL", false );
-    d_onlyZcorrection      = ( params->d_db )->getWithDefault( "ONLY_Z_CORRECTION", false );
+    d_totalNumberOfPellets = params->d_db->getScalar<int>( "TOTAL_NUMBER_OF_PELLETS" );
+    d_useSerial            = params->d_db->getWithDefault( "USE_SERIAL", false );
+    d_onlyZcorrection      = params->d_db->getWithDefault( "ONLY_Z_CORRECTION", false );
     AMP_ASSERT( !( d_useSerial && d_onlyZcorrection ) );
-    d_masterId = ( params->d_db )->getScalar<int>( "MASTER" );
-    d_slaveId  = ( params->d_db )->getScalar<int>( "SLAVE" );
-    if ( ( params->d_db )->keyExists( "SCALING_FACTOR" ) ) {
+    d_masterId = params->d_db->getScalar<int>( "MASTER" );
+    d_slaveId  = params->d_db->getScalar<int>( "SLAVE" );
+    if ( params->d_db->keyExists( "SCALING_FACTOR" ) ) {
         d_useScaling    = true;
-        d_scalingFactor = ( params->d_db )->getScalar<double>( "SCALING_FACTOR" );
+        d_scalingFactor = params->d_db->getScalar<double>( "SCALING_FACTOR" );
     } else {
         d_useScaling = false;
     }
     d_frozenVectorSet   = false;
-    std::string varName = ( params->d_db )->getString( "Variable" );
+    std::string varName = params->d_db->getString( "Variable" );
     d_var.reset( new AMP::LinearAlgebra::Variable( varName ) );
-    std::string meshNamePrefix = ( params->d_db )->getString( "MeshNamePrefix" );
+    std::string meshNamePrefix = params->d_db->getString( "MeshNamePrefix" );
     d_currentPellet            = params->d_currentPellet;
     d_pelletStackComm          = params->d_pelletStackComm;
     d_n2nMaps                  = params->d_n2nMaps;
@@ -44,10 +44,9 @@ PelletStackOperator::PelletStackOperator(
     } // end for pellId
 }
 
-void PelletStackOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void PelletStackOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<PelletStackOperatorParameters> myParams =
-        std::dynamic_pointer_cast<PelletStackOperatorParameters>( params );
+    auto myParams   = std::dynamic_pointer_cast<const PelletStackOperatorParameters>( params );
     d_currentPellet = myParams->d_currentPellet;
 }
 

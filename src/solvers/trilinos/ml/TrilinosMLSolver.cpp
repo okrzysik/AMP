@@ -34,7 +34,7 @@ TrilinosMLSolver::TrilinosMLSolver( std::shared_ptr<SolverStrategyParameters> pa
 {
     d_ml          = nullptr;
     d_mlAggregate = nullptr;
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
     initialize( parameters );
 }
 TrilinosMLSolver::~TrilinosMLSolver()
@@ -54,7 +54,7 @@ TrilinosMLSolver::~TrilinosMLSolver()
 void TrilinosMLSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
     getFromInput( parameters->d_db );
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 }
@@ -115,11 +115,10 @@ void TrilinosMLSolver::convertMLoptionsToTeuchosParameterList()
 }
 
 
-void TrilinosMLSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     d_pOperator = op;
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMLSolver::initialize() operator cannot be NULL" );
+    AMP_INSIST( d_pOperator, "ERROR: TrilinosMLSolver::initialize() operator cannot be NULL" );
 
     if ( d_bUseEpetra ) {
         // Compute coordinates to give to ML if requested
@@ -147,18 +146,18 @@ void TrilinosMLSolver::registerOperator( const std::shared_ptr<AMP::Operator::Op
 
         std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-        AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+        AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
         d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
             linearOperator->getMatrix() );
-        AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
+        AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
         d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
             d_matrix->getEpetra_CrsMatrix(), d_MLParameterList, false ) );
     } else {
         std::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator =
             std::dynamic_pointer_cast<AMP::Operator::TrilinosMatrixShellOperator>( d_pOperator );
-        AMP_ASSERT( matShellOperator.get() != nullptr );
+        AMP_ASSERT( matShellOperator );
 
         size_t matSize = matShellOperator->getMatrixSize();
         ML_Create( &d_ml, d_mlOptions->d_maxLevels );
@@ -182,10 +181,10 @@ void TrilinosMLSolver::registerOperator( const std::shared_ptr<AMP::Operator::Op
 
 
 void TrilinosMLSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     PROFILE_START( "resetOperator" );
-    AMP_INSIST( ( d_pOperator.get() != nullptr ),
+    AMP_INSIST( ( d_pOperator ),
                 "ERROR: TrilinosMLSolver::resetOperator() operator cannot be NULL" );
     d_pOperator->reset( params );
     reset( std::shared_ptr<SolverStrategyParameters>() );
@@ -216,8 +215,7 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
 {
     PROFILE_START( "solve" );
     // in this case we make the assumption we can access a EpetraMat for now
-    AMP_INSIST( d_pOperator.get() != nullptr,
-                "ERROR: TrilinosMLSolver::apply() operator cannot be NULL" );
+    AMP_INSIST( d_pOperator, "ERROR: TrilinosMLSolver::apply() operator cannot be NULL" );
 
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
@@ -329,11 +327,11 @@ void TrilinosMLSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::
 
     std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
-    AMP_INSIST( linearOperator.get() != nullptr, "linearOperator cannot be NULL" );
+    AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
     d_matrix =
         std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
-    AMP_INSIST( d_matrix.get() != nullptr, "d_matrix cannot be NULL" );
+    AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
     Teuchos::ParameterList tmpMLParameterList;
     tmpMLParameterList.set( "ML output", d_iDebugPrintInfoLevel );
@@ -432,7 +430,7 @@ void TrilinosMLSolver::buildML()
 }
 
 
-void TrilinosMLSolver::computeCoordinates( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::computeCoordinates( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
     auto myMesh = op->getMesh();
@@ -459,7 +457,7 @@ void TrilinosMLSolver::computeCoordinates( const std::shared_ptr<AMP::Operator::
 }
 
 
-void TrilinosMLSolver::computeNullSpace( const std::shared_ptr<AMP::Operator::Operator> op )
+void TrilinosMLSolver::computeNullSpace( std::shared_ptr<AMP::Operator::Operator> op )
 {
     // Get mesh adapter for this operator
     auto myMesh = op->getMesh();

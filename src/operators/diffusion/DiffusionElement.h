@@ -29,13 +29,12 @@ namespace Operator {
 class DiffusionElement : public ElementOperation
 {
 public:
-    explicit DiffusionElement( const std::shared_ptr<ElementOperationParameters> &params );
+    explicit DiffusionElement( std::shared_ptr<const ElementOperationParameters> params );
 
     virtual ~DiffusionElement() {}
 
-    void
-    initializeForCurrentElement( const libMesh::Elem *elem,
-                                 const std::shared_ptr<DiffusionTransportModel> &transportModel );
+    void initializeForCurrentElement( const libMesh::Elem *elem,
+                                      std::shared_ptr<DiffusionTransportModel> transportModel );
 
 protected:
     std::shared_ptr<libMesh::FEType> d_feType;

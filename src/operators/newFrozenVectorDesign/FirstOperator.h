@@ -10,7 +10,7 @@ namespace Operator {
 class FirstOperator : public OnePointOperator
 {
 public:
-    explicit FirstOperator( const std::shared_ptr<OperatorParameters> &params )
+    explicit FirstOperator( std::shared_ptr<const OperatorParameters> params )
         : OnePointOperator( params )
     {
         d_constant = 2.0;

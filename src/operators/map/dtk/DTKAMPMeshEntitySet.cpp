@@ -18,7 +18,7 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-AMPMeshEntitySet::AMPMeshEntitySet( const std::shared_ptr<AMP::Mesh::Mesh> &mesh )
+AMPMeshEntitySet::AMPMeshEntitySet( std::shared_ptr<AMP::Mesh::Mesh> mesh )
     : d_amp_mesh( mesh ), d_id_maps( 4 )
 {
     // Build the rank map.

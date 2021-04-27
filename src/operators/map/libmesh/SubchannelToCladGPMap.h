@@ -31,7 +31,7 @@ public:
      * \param[in] params  Input parameters
      */
     explicit SubchannelToCladGPMap(
-        const std::shared_ptr<AMP::Operator::OperatorParameters> &params );
+        std::shared_ptr<const AMP::Operator::OperatorParameters> params );
 
     //! Destructor
     virtual ~SubchannelToCladGPMap();

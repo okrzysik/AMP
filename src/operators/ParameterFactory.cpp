@@ -26,8 +26,7 @@ ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<OperatorParameters> retParameters;
     std::string name;
 
-    AMP_INSIST( input_db.get() != nullptr,
-                "ParameterFactory::createParameter:: NULL Database object input" );
+    AMP_INSIST( input_db, "ParameterFactory::createParameter:: NULL Database object input" );
     AMP_INSIST( input_db->keyExists( "name" ),
                 "ParameterFactory::createParameter:: key 'name' must be a part of database " );
 

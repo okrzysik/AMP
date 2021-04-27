@@ -19,7 +19,7 @@ class AsyncMapOperator : public AsynchronousOperator
 {
 public:
     //! Constructor
-    explicit AsyncMapOperator( const std::shared_ptr<OperatorParameters> & );
+    explicit AsyncMapOperator( std::shared_ptr<const OperatorParameters> );
 
     virtual ~AsyncMapOperator();
 

@@ -6,7 +6,7 @@ namespace Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
-DTKAMPField::DTKAMPField( const std::shared_ptr<AMP::LinearAlgebra::Vector> &amp_vector )
+DTKAMPField::DTKAMPField( std::shared_ptr<AMP::LinearAlgebra::Vector> amp_vector )
     : d_amp_vector( amp_vector ), d_support_ids( 0 )
 {
     // Get the dof IDs if amp_vector is not NULL

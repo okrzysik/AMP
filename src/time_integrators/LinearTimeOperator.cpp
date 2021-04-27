@@ -7,7 +7,7 @@ namespace AMP {
 namespace TimeIntegrator {
 
 LinearTimeOperator::LinearTimeOperator(
-    std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
     : LinearOperator( in_params )
 {
     d_bModifyRhsOperatorMatrix = false;
@@ -16,7 +16,7 @@ LinearTimeOperator::LinearTimeOperator(
     d_dScalingFactor = 0.0;
     d_dCurrentDt     = 0.0;
 
-    auto params = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
 
     d_pRhsOperator  = std::dynamic_pointer_cast<LinearOperator>( params->d_pRhsOperator );
     d_pMassOperator = std::dynamic_pointer_cast<LinearOperator>( params->d_pMassOperator );
@@ -38,41 +38,38 @@ void LinearTimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
 }
 
-void LinearTimeOperator::reset(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
+void LinearTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
 {
-    std::shared_ptr<TimeOperatorParameters> params =
-        std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
 
     getFromInput( params->d_db );
 
     // the parameter object for the rhs operator will be NULL during construction, but should
     // not be NULL during a reset based on getJacobianParameters
-    if ( params->d_pRhsOperatorParameters.get() != nullptr ) {
+    if ( params->d_pRhsOperatorParameters ) {
         d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
     }
 
     // the parameter object for the mass operator will be NULL during construction, but should
     // not be NULL during a reset based on getJacobianParameters
-    if ( params->d_pMassOperatorParameters.get() != nullptr ) {
+    if ( params->d_pMassOperatorParameters ) {
         d_pMassOperator->reset( params->d_pMassOperatorParameters );
     }
 
-    std::shared_ptr<AMP::Operator::LinearOperator> pRhsOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pRhsOperator );
-    AMP_INSIST( pRhsOperator.get() != nullptr, "ERROR: RhsOperator is not of type LinearOperator" );
+    auto pRhsOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pRhsOperator );
+    AMP_INSIST( pRhsOperator, "ERROR: RhsOperator is not of type LinearOperator" );
 
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> pMatrix = pRhsOperator->getMatrix();
+    auto pMatrix = pRhsOperator->getMatrix();
 
     if ( d_bModifyRhsOperatorMatrix ) {
-        AMP_INSIST( pMatrix.get() != nullptr, "ERROR: NULL matrix pointer" );
+        AMP_INSIST( pMatrix, "ERROR: NULL matrix pointer" );
         setMatrix( pMatrix );
     } else {
         // if it's not okay to modify the rhs matrix then copy it over
-        if ( d_matrix.get() == nullptr ) {
-            AMP_INSIST( pMatrix.get() != nullptr, "ERROR: NULL matrix pointer" );
+        if ( !d_matrix ) {
+            AMP_INSIST( pMatrix, "ERROR: NULL matrix pointer" );
             d_matrix = pMatrix->cloneMatrix();
-            AMP_INSIST( d_matrix.get() != nullptr, "ERROR: NULL matrix pointer" );
+            AMP_INSIST( d_matrix, "ERROR: NULL matrix pointer" );
         }
 
         d_matrix->zero();
@@ -83,14 +80,13 @@ void LinearTimeOperator::reset(
     }
 
     if ( !d_bAlgebraicComponent ) {
-        std::shared_ptr<AMP::Operator::LinearOperator> pMassOperator =
+        auto pMassOperator =
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pMassOperator );
-        AMP_INSIST( pMassOperator.get() != nullptr,
-                    "ERROR: MassOperator is not of type LinearOperator" );
+        AMP_INSIST( pMassOperator, "ERROR: MassOperator is not of type LinearOperator" );
 
         std::shared_ptr<AMP::LinearAlgebra::Matrix> pMassMatrix = pMassOperator->getMatrix();
 
-        AMP_INSIST( pMassMatrix.get() != nullptr, "ERROR: NULL matrix pointer" );
+        AMP_INSIST( pMassMatrix, "ERROR: NULL matrix pointer" );
         // update the matrix to incorporate the contribution from the time derivative
         d_matrix->axpy( d_dScalingFactor, *pMassMatrix );
     }
@@ -103,14 +99,13 @@ LinearTimeOperator::getParameters( const std::string &type,
                                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                    std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    std::shared_ptr<AMP::Database> timeOperator_db(
-        new AMP::Database( "LinearTimeOperatorDatabase" ) );
+    auto timeOperator_db = std::make_shared<AMP::Database>( "LinearTimeOperatorDatabase" );
     timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
     timeOperator_db->putScalar( "name", "LinearTimeOperator" );
     timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
 
-    std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> timeOperatorParameters(
-        new AMP::TimeIntegrator::TimeOperatorParameters( timeOperator_db ) );
+    auto timeOperatorParameters =
+        std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
     timeOperatorParameters->d_pRhsOperatorParameters =
         d_pRhsOperator->getParameters( type, u, params );
     timeOperatorParameters->d_pMassOperatorParameters =

@@ -71,7 +71,7 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<Vector> vec )
     d_Engine->getVectorData()->registerListener( listener );
 }
 
-ManagedVectorData::ManagedVectorData( const std::shared_ptr<VectorData> alias )
+ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
     : VectorData( alias->getCommunicationList() )
 {
     auto vec = getManaged( alias );
@@ -109,7 +109,7 @@ VectorData::UpdateState ManagedVectorData::getUpdateStatus() const
 {
     VectorData::UpdateState state     = *d_UpdateState;
     std::shared_ptr<const Vector> vec = getVectorEngine();
-    if ( vec.get() != nullptr ) {
+    if ( vec ) {
         VectorData::UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
             // No change in state
@@ -137,7 +137,7 @@ void ManagedVectorData::setUpdateStatus( UpdateState state )
 {
     *d_UpdateState = state;
     auto vec       = getVectorEngine();
-    if ( vec.get() != nullptr )
+    if ( vec )
         vec->setUpdateStatus( state );
 }
 
@@ -213,7 +213,7 @@ void ManagedVectorData::setGhostValuesByGlobalID( int numVals, size_t *ndx, cons
 void ManagedVectorData::setValuesByGlobalID( int numVals, size_t *ndx, const double *vals )
 {
     auto vec = getVectorEngine();
-    if ( vec.get() != nullptr ) {
+    if ( vec ) {
         AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
         *d_UpdateState = UpdateState::SETTING;
         vec->setValuesByGlobalID( numVals, ndx, vals );

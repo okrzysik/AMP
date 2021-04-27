@@ -407,7 +407,7 @@ std::vector<TYPE> Database::getVector( const std::string_view &key, Units unit )
         DATABASE_INSIST( factor != 0, "Unit conversion failed" );
         scaleData( data, factor );
     }
-    DATABASE_INSIST( data.ndim() <= 1, "Variable %s cannot e converted to a vector", key.data() );
+    DATABASE_INSIST( data.ndim() <= 1, "Variable %s cannot be converted to a vector", key.data() );
     std::vector<TYPE> data2( data.length() );
     for ( size_t i = 0; i < data.length(); i++ )
         data2[i] = data( i );

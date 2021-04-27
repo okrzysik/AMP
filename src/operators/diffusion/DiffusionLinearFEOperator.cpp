@@ -6,7 +6,7 @@ namespace AMP {
 namespace Operator {
 
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(
-    const std::shared_ptr<DiffusionLinearFEOperatorParameters> &params )
+    std::shared_ptr<const DiffusionLinearFEOperatorParameters> params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
@@ -30,10 +30,9 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
 }
 
 
-void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParameters> &oparams )
+void DiffusionLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParameters> oparams )
 {
-    std::shared_ptr<DiffusionLinearFEOperatorParameters> params =
-        std::dynamic_pointer_cast<DiffusionLinearFEOperatorParameters>( oparams );
+    auto params = std::dynamic_pointer_cast<const DiffusionLinearFEOperatorParameters>( oparams );
 
     if ( d_iDebugPrintInfoLevel > 7 ) {
         AMP::pout << "DiffusionLinearFEOperator::preAssembly, entering" << std::endl;
@@ -41,11 +40,11 @@ void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
 
     d_transportModel = params->d_transportModel;
 
-    if ( d_temperature.get() == nullptr and params->d_temperature.get() != nullptr ) {
+    if ( d_temperature.get() == nullptr and params->d_temperature ) {
         d_temperature = params->d_temperature->cloneVector();
     }
-    if ( d_temperature.get() != nullptr ) {
-        if ( params->d_temperature.get() != nullptr ) {
+    if ( d_temperature ) {
+        if ( params->d_temperature ) {
             d_temperature->copyVector( params->d_temperature );
             d_temperature->makeConsistent(
                 AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -55,11 +54,11 @@ void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
         //    std::cout << d_temperature << std::endl;
     }
 
-    if ( d_concentration.get() == nullptr and params->d_concentration.get() != nullptr ) {
+    if ( d_concentration.get() == nullptr and params->d_concentration ) {
         d_concentration = params->d_concentration->cloneVector();
     }
-    if ( d_concentration.get() != nullptr ) {
-        if ( params->d_concentration.get() != nullptr ) {
+    if ( d_concentration ) {
+        if ( params->d_concentration ) {
             d_concentration->copyVector( params->d_concentration );
             d_concentration->makeConsistent(
                 AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -68,11 +67,11 @@ void DiffusionLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParam
         }
     }
 
-    if ( d_burnup.get() == nullptr and params->d_burnup.get() != nullptr ) {
+    if ( d_burnup.get() == nullptr and params->d_burnup ) {
         d_burnup = params->d_burnup->cloneVector();
     }
-    if ( d_burnup.get() != nullptr ) {
-        if ( params->d_burnup.get() != nullptr ) {
+    if ( d_burnup ) {
+        if ( params->d_burnup ) {
             d_burnup->copyVector( params->d_burnup );
             d_burnup->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         } else {

@@ -3,7 +3,7 @@
 namespace AMP {
 namespace Solver {
 
-KrylovSolverParameters::KrylovSolverParameters( const std::shared_ptr<AMP::Database> db )
+KrylovSolverParameters::KrylovSolverParameters( std::shared_ptr<AMP::Database> db )
     : SolverStrategyParameters( db )
 {
 }

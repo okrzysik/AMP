@@ -31,7 +31,7 @@ public:
      class SolverStrategy. The IterationType must currently either be "GaussSeidel"
      or "SymmetricGaussSeidel"
      */
-    explicit ColumnSolver( std::shared_ptr<SolverStrategyParameters> parameters );
+    explicit ColumnSolver( std::shared_ptr<const SolverStrategyParameters> parameters );
 
     /**
      * destructor, currently does nothing
@@ -72,7 +72,7 @@ public:
      * @param params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
 protected:
     void GaussSeidel( std::shared_ptr<const AMP::LinearAlgebra::Vector> &f,

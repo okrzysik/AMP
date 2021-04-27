@@ -80,14 +80,14 @@ public:
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
      */
-    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -99,13 +99,13 @@ public:
      */
     void reset( std::shared_ptr<SolverStrategyParameters> params ) override;
 
-    void getFromInput( const std::shared_ptr<AMP::Database> &db );
+    void getFromInput( std::shared_ptr<const AMP::Database> db );
 
 private:
     /**
      * create the internal HYPRE_IJMatrix based on the AMP matrix
      */
-    void createHYPREMatrix( const std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
+    void createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix );
 
     /**
      * create and initialize the internal hypre vectors for rhs and solution

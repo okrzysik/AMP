@@ -329,7 +329,7 @@ static void sortData( std::vector<TYPE> &data,
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
 std::shared_ptr<TriangleMesh<NG, NP>>
-TriangleMesh<NG, NP>::generate( std::shared_ptr<MeshParameters> params )
+TriangleMesh<NG, NP>::generate( std::shared_ptr<const MeshParameters> params )
 {
     auto db = params->getDatabase();
     // Create the mesh
@@ -818,7 +818,7 @@ TriangleMesh<NG, NP>::createIterator( std::shared_ptr<std::vector<ElementID>> li
  * Estimate the mesh size                                        *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-size_t TriangleMesh<NG, NP>::estimateMeshSize( const std::shared_ptr<MeshParameters> &params )
+size_t TriangleMesh<NG, NP>::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     size_t N      = 0;
     auto db       = params->getDatabase();
@@ -826,14 +826,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const std::shared_ptr<MeshParamet
     auto suffix   = Utilities::getSuffix( filename );
     if ( suffix == "stl" ) {
         // We are reading an stl file
-        char header[80];
-        uint32_t N2;
-        auto fid = fopen( filename.c_str(), "rb" );
-        AMP_INSIST( fid, "Unable to open " + filename );
-        fread2( header, sizeof( header ), 1, fid );
-        fread2( &N2, sizeof( N2 ), 1, fid );
-        fclose( fid );
-        N = N2;
+        N = TriangleHelpers::readSTLHeader( filename );
     } else {
         AMP_ERROR( "Not finished" );
     }
@@ -845,7 +838,8 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( const std::shared_ptr<MeshParamet
  * Constructor                                                   *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<MeshParameters> params_in ) : Mesh( params_in )
+TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params_in )
+    : Mesh( params_in )
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
@@ -891,7 +885,7 @@ TriangleMesh<NG, NP>::~TriangleMesh() = default;
  * Estimate the maximum number of processors                     *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-size_t TriangleMesh<NG, NP>::maxProcs( const std::shared_ptr<MeshParameters> &params )
+size_t TriangleMesh<NG, NP>::maxProcs( std::shared_ptr<const MeshParameters> params )
 {
     return estimateMeshSize( params );
 }
@@ -1331,21 +1325,29 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
             found = found || list[i] == id;
         return found;
     };
+    AMP_ASSERT( it );
+    auto errMsg = []( const MeshIterator *it ) {
+        constexpr uint32_t id0 = TriangleMeshIterator<NG, NP, 0>::getTypeID();
+        constexpr uint32_t id1 = TriangleMeshIterator<NG, NP, 1>::getTypeID();
+        constexpr uint32_t id2 = TriangleMeshIterator<NG, NP, 2>::getTypeID();
+        constexpr uint32_t id3 = TriangleMeshIterator<NG, NP, 3>::getTypeID();
+        return AMP::Utilities::stringf( "%u <%u,%u,%u,%u>", it->type_id(), id0, id1, id2, id3 );
+    };
     if ( type == AMP::Mesh::GeomType::Vertex ) {
-        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it );
-        AMP_ASSERT( it2 );
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it->rawIterator() );
+        AMP_INSIST( it2, errMsg( it ) );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Edge ) {
-        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 1> *>( it );
-        AMP_ASSERT( it2 );
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 1> *>( it->rawIterator() );
+        AMP_INSIST( it2, errMsg( it ) );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Face ) {
-        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it );
-        AMP_ASSERT( it2 );
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it->rawIterator() );
+        AMP_INSIST( it2, errMsg( it ) );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Volume ) {
-        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it );
-        AMP_ASSERT( it2 );
+        auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it->rawIterator() );
+        AMP_INSIST( it2, errMsg( it ) );
         return find( id, it2 );
     }
     return false;

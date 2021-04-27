@@ -32,7 +32,7 @@ public:
     Operator( void );
 
     //! Constructor
-    explicit Operator( const std::shared_ptr<OperatorParameters> &params );
+    explicit Operator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~Operator() {}
@@ -45,7 +45,7 @@ public:
      * \param params
      *    parameter object containing parameters to change
      */
-    virtual void reset( const std::shared_ptr<OperatorParameters> &params );
+    virtual void reset( std::shared_ptr<const OperatorParameters> params );
 
     /**
       This base class can not give a meaningful definition of apply. See the derived classes for
@@ -134,7 +134,7 @@ public:
     virtual AMP::LinearAlgebra::Vector::const_shared_ptr
     subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
 
-    virtual bool isValidInput( std::shared_ptr<AMP::LinearAlgebra::Vector> & ) { return true; }
+    virtual bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) { return true; }
 
     AMP::Mesh::Mesh::shared_ptr getMesh() { return d_Mesh; }
 

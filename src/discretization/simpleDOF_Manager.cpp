@@ -26,13 +26,13 @@ DOFManager::shared_ptr simpleDOFManager::create( std::shared_ptr<AMP::Mesh::Mesh
 {
     if ( mesh.get() == nullptr )
         return DOFManager::shared_ptr();
-    if ( split && std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ).get() != nullptr ) {
+    if ( split && std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ) ) {
         // We want to split the DOFs by the mesh
         auto meshIDs = mesh->getLocalBaseMeshIDs();
         std::vector<DOFManager::shared_ptr> managers;
         for ( auto &meshID : meshIDs ) {
             auto subMesh = mesh->Subset( meshID );
-            if ( subMesh.get() != nullptr )
+            if ( subMesh )
                 managers.push_back( create( subMesh, type, gcw, DOFsPerObject, false ) );
         }
         auto rtn = std::make_shared<multiDOFManager>( mesh->getComm(), managers );
@@ -314,7 +314,7 @@ std::vector<size_t> simpleDOFManager::getRowDOFs( const AMP::Mesh::MeshElement &
         ids.reserve( neighbor_elements.size() + 1 );
         ids.push_back( obj.globalID() );
         for ( auto &neighbor_element : neighbor_elements ) {
-            if ( neighbor_element.get() != nullptr )
+            if ( neighbor_element )
                 ids.push_back( neighbor_element->globalID() );
         }
     } else if ( objType == d_type ) {
@@ -394,7 +394,7 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         int rank_submesh = -1;
         int root_submesh = comm.getSize();
         int subcommSize  = -1;
-        if ( submesh.get() != nullptr ) {
+        if ( submesh ) {
             AMP_MPI subcomm = submesh->getComm();
             rank_submesh    = subcomm.getRank();
             root_submesh    = comm.getRank();

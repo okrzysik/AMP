@@ -10,7 +10,7 @@ namespace Operator {
 
 
 FlowFrapconOperator::FlowFrapconOperator(
-    const std::shared_ptr<FlowFrapconOperatorParameters> &params )
+    std::shared_ptr<const FlowFrapconOperatorParameters> params )
     : Operator( params ), d_boundaryId( 0 )
 {
     std::string inpVar = params->d_db->getString( "InputVariable" );
@@ -22,37 +22,36 @@ FlowFrapconOperator::FlowFrapconOperator(
     reset( params );
 }
 
-void FlowFrapconOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void FlowFrapconOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<FlowFrapconOperatorParameters> myparams =
-        std::dynamic_pointer_cast<FlowFrapconOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const FlowFrapconOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
-    d_numpoints = ( myparams->d_db )->getScalar<int>( "numpoints" );
+    AMP_INSIST( myparams->d_db->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
+    d_numpoints = myparams->d_db->getScalar<int>( "numpoints" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Channel_Diameter" ), "Missing key: Channel_Dia" );
-    d_De = ( myparams->d_db )->getScalar<double>( "Channel_Diameter" );
+    AMP_INSIST( myparams->d_db->keyExists( "Channel_Diameter" ), "Missing key: Channel_Dia" );
+    d_De = myparams->d_db->getScalar<double>( "Channel_Diameter" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Heat_Capacity" ), "Missing key: Heat_Capacity" );
-    Cp = ( myparams->d_db )->getScalar<double>( "Heat_Capacity" );
+    AMP_INSIST( myparams->d_db->keyExists( "Heat_Capacity" ), "Missing key: Heat_Capacity" );
+    Cp = myparams->d_db->getScalar<double>( "Heat_Capacity" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Mass_Flux" ), "Missing key: Mass_Flux" );
-    d_G = ( myparams->d_db )->getScalar<double>( "Mass_Flux" );
+    AMP_INSIST( myparams->d_db->keyExists( "Mass_Flux" ), "Missing key: Mass_Flux" );
+    d_G = myparams->d_db->getScalar<double>( "Mass_Flux" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Temp_Inlet" ), "Missing key: Temp_In" );
-    d_Tin = ( myparams->d_db )->getWithDefault<double>( "Temp_Inlet", 300. );
+    AMP_INSIST( myparams->d_db->keyExists( "Temp_Inlet" ), "Missing key: Temp_In" );
+    d_Tin = myparams->d_db->getWithDefault<double>( "Temp_Inlet", 300. );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Conductivity" ), "Missing key: Kconductivity" );
-    d_K = ( myparams->d_db )->getScalar<double>( "Conductivity" );
+    AMP_INSIST( myparams->d_db->keyExists( "Conductivity" ), "Missing key: Kconductivity" );
+    d_K = myparams->d_db->getScalar<double>( "Conductivity" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Reynolds" ), "Missing key: Reynolds" );
-    d_Re = ( myparams->d_db )->getScalar<double>( "Reynolds" );
+    AMP_INSIST( myparams->d_db->keyExists( "Reynolds" ), "Missing key: Reynolds" );
+    d_Re = myparams->d_db->getScalar<double>( "Reynolds" );
 
-    AMP_INSIST( ( myparams->d_db )->keyExists( "Prandtl" ), "Missing key: Prandtl" );
-    d_Pr = ( myparams->d_db )->getScalar<double>( "Prandtl" );
+    AMP_INSIST( myparams->d_db->keyExists( "Prandtl" ), "Missing key: Prandtl" );
+    d_Pr = myparams->d_db->getScalar<double>( "Prandtl" );
 }
 
 
@@ -150,7 +149,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr 
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -167,7 +166,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr v
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::shared_ptr commVec =
             vec->select( commSelector, var->getName() );
@@ -184,7 +183,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );
@@ -201,7 +200,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
     AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
             vec->constSelect( commSelector, var->getName() );

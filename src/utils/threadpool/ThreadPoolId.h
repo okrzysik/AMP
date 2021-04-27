@@ -5,7 +5,7 @@
 #define included_AMP_ThreadPoolID
 
 
-#include "AMP/utils/threadpool/atomic_helpers.h"
+#include <atomic>
 
 
 namespace AMP {
@@ -136,9 +136,9 @@ public:
 
 private:
     // Data
-    uint64_t d_id;                                    // 64-bit data to store id
-    volatile AtomicOperations::int32_atomic *d_count; // Reference count
-    void *d_work;                                     // Pointer to the work item
+    uint64_t d_id;                         // 64-bit data to store id
+    volatile std::atomic_int32_t *d_count; // Reference count
+    void *d_work;                          // Pointer to the work item
 };
 
 

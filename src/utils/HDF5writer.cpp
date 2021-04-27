@@ -69,7 +69,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     NULL_USE( cycle );
     NULL_USE( time );
 #ifdef USE_EXT_HDF5
-    AMP_ASSERT( AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 );
+    AMP_ASSERT( d_comm.getSize() == 1 );
     // Create the file
     auto filename = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
     auto fid      = openHDF5( filename, "w", Compression::GZIP );

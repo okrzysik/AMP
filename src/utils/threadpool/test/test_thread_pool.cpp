@@ -134,10 +134,11 @@ static int myfun4( int, float, double, char ) { return 4; }
 static int myfun5( int, float, double, char, std::string ) { return 5; }
 static int myfun6( int, float, double, char, std::string, int ) { return 6; }
 static int myfun7( int, float, double, char, std::string, int, int ) { return 7; }
-static int test_function_arguements( ThreadPool *tpool )
+static void test_function_arguments( ThreadPool *tpool, UnitTest &ut )
 {
-    int N_errors = 0;
     // Test some basic types of instantiations
+    bool pass = true;
+    printp( "Testing arguments:\n" );
     ThreadPoolID id0 = TPOOL_ADD_WORK( tpool, myfun0, ( nullptr ) );
     ThreadPoolID id1 = TPOOL_ADD_WORK( tpool, myfun1, ( (int) 1 ) );
     ThreadPoolID id2 = TPOOL_ADD_WORK( tpool, myfun2, ( (int) 1, (float) 2 ) );
@@ -157,37 +158,20 @@ static int test_function_arguements( ThreadPool *tpool )
         myfun7,
         ( (int) 1, (float) 2, (double) 3, (char) 4, std::string( "test" ), (int) 1, (int) 1 ) );
     tpool->wait_pool_finished();
-    if ( !tpool->isFinished( id0 ) ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id0 ) != 0 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id1 ) != 1 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id2 ) != 2 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id3 ) != 3 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id4 ) != 4 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id5 ) != 5 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id52 ) != 5 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id6 ) != 6 ) {
-        N_errors++;
-    }
-    if ( tpool->getFunctionRet<int>( id7 ) != 7 ) {
-        N_errors++;
-    }
-    return N_errors;
+    pass = pass && tpool->isFinished( id0 );
+    pass = pass && tpool->getFunctionRet<int>( id0 ) == 0;
+    pass = pass && tpool->getFunctionRet<int>( id1 ) == 1;
+    pass = pass && tpool->getFunctionRet<int>( id2 ) == 2;
+    pass = pass && tpool->getFunctionRet<int>( id3 ) == 3;
+    pass = pass && tpool->getFunctionRet<int>( id4 ) == 4;
+    pass = pass && tpool->getFunctionRet<int>( id5 ) == 5;
+    pass = pass && tpool->getFunctionRet<int>( id52 ) == 5;
+    pass = pass && tpool->getFunctionRet<int>( id6 ) == 6;
+    pass = pass && tpool->getFunctionRet<int>( id7 ) == 7;
+    if ( pass )
+        ut.passes( "Calling function with default arguments" );
+    else
+        ut.failure( "Error calling function with default arguments" );
 }
 
 
@@ -263,27 +247,27 @@ ThreadPoolID f2( ThreadPoolID a ) { return a; }
 /******************************************************************
  * Test the basic functionallity of the atomics                    *
  ******************************************************************/
-int test_atomics()
+template<class T>
+T atomic_compare_and_swap( volatile std::atomic<T> &x, T e, T d )
 {
-    using namespace AtomicOperations;
-    int N_errors = 0;
-    volatile int32_atomic i32;
-    volatile int64_atomic i64;
-    i32 = 32;
-    i64 = 64;
-    if ( atomic_increment( &i32 ) != 33 || atomic_increment( &i64 ) != 65 )
-        N_errors++;
-    if ( atomic_decrement( &i32 ) != 32 || atomic_decrement( &i64 ) != 64 )
-        N_errors++;
-    if ( atomic_add( &i32, 2 ) != 34 || atomic_add( &i64, 4 ) != 68 )
-        N_errors++;
-    if ( atomic_compare_and_swap( &i32, 0, 0 ) || atomic_compare_and_swap( &i64, 0, 0 ) )
-        N_errors++;
-    if ( !atomic_compare_and_swap( &i32, 34, 32 ) || !atomic_compare_and_swap( &i64, 68, 64 ) )
-        N_errors++;
-    if ( i32 != 32 || i64 != 64 )
-        N_errors++;
-    return N_errors;
+    auto e2 = e;
+    return x.compare_exchange_weak( e2, d );
+}
+bool test_atomics()
+{
+    bool pass                        = true;
+    volatile std::atomic_int32_t i32 = 32;
+    volatile std::atomic_int32_t i64 = 64;
+    pass                             = pass && ++i32 == 33 && ++i64 == 65;
+    pass                             = pass && --i32 == 32 && --i64 == 64;
+    pass                             = pass && i32.fetch_add( 2 ) != 34;
+    pass                             = pass && i64.fetch_add( 4 ) != 68;
+    pass                             = pass && !atomic_compare_and_swap( i32, 0, 0 );
+    pass                             = pass && !atomic_compare_and_swap( i64, 0, 0 );
+    pass                             = pass && atomic_compare_and_swap( i32, 34, 32 );
+    pass                             = pass && atomic_compare_and_swap( i64, 68, 64 );
+    pass                             = pass && i32 == 32 && i64 == 64;
+    return pass;
 }
 
 
@@ -783,22 +767,17 @@ void run_tests( UnitTest &ut )
     // Disable OS specific warnings for all non-root ranks
     AMP::AMP_MPI comm( MPI_COMM_WORLD );
     int rank = comm.getRank();
-    int size = comm.getSize();
     if ( rank > 0 )
         ThreadPool::set_OS_warnings( 1 );
-    NULL_USE( size );
-
 
     // Test the atomics
-    if ( test_atomics() == 0 )
+    if ( test_atomics() )
         ut.passes( "Atomics passed" );
     else
         ut.failure( "Atomics failed" );
 
-
     // Print the size of the thread pool class
     printp( "Size of ThreadPool = %i\n", (int) sizeof( ThreadPool ) );
-
 
     // Test process affinities
     comm.barrier();
@@ -806,7 +785,6 @@ void run_tests( UnitTest &ut )
     int N_procs      = ThreadPool::getNumberOfProcessors();
     int N_procs_used = std::min<int>( N_procs, N_threads );
     printp( "%i processors used\n", N_procs_used );
-
 
     // Create the thread pool
     comm.barrier();
@@ -827,32 +805,22 @@ void run_tests( UnitTest &ut )
     // Test setting the thread affinities
     testThreadAffinity( tpool, ut );
 
-
     // Print the current processors by thread id
     comm.barrier();
     ThreadPool::set_OS_warnings( 1 );
     print_processor( &tpool );
     launchAndTime( tpool, N_threads, print_processor, &tpool );
 
-
     // Test the move operator for thread_id
     test_move_thread_id( ut, tpool );
 
-
     // Test calling functions with different number of arguments
     comm.barrier();
-    printp( "Testing arguments:\n" );
-    int N_errors_args = test_function_arguements( &tpool );
-    if ( N_errors_args == 0 )
-        ut.passes( "Calling function with default arguments" );
-    else
-        ut.failure( "Error calling function with default arguments" );
-
+    test_function_arguments( &tpool, ut );
 
     // Check that threads sleep in parallel (does not depend on the number of processors)
     comm.barrier();
     test_sleep_parallel( ut, tpool );
-
 
     // Check that the threads are actually working in parallel
     comm.barrier();

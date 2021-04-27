@@ -4,7 +4,7 @@
 namespace AMP {
 namespace Operator {
 
-MoveMeshOperator::MoveMeshOperator( const std::shared_ptr<OperatorParameters> &params )
+MoveMeshOperator::MoveMeshOperator( std::shared_ptr<const OperatorParameters> params )
     : Operator( params )
 {
     d_prevDisp.reset();

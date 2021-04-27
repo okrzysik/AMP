@@ -25,7 +25,7 @@ namespace Operator {
 
 // Constructor
 NodeToGaussPointOperator::NodeToGaussPointOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : Operator( params )
 {
     PROFILE_START( "NodeToGaussPointOperator" );
@@ -33,7 +33,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         new AMP::LinearAlgebra::Variable( params->d_db->getString( "InputVariable" ) ) );
     d_GaussPtVariable.reset(
         new AMP::LinearAlgebra::Variable( params->d_db->getString( "OutputVariable" ) ) );
-    d_UseSurfaceElements = ( params->d_db )->getWithDefault( "UseSurfaceElements", true );
+    d_UseSurfaceElements = params->d_db->getWithDefault( "UseSurfaceElements", true );
     // Get the iterator for the mesh
     d_dim = 0;
     if ( d_UseSurfaceElements ) {

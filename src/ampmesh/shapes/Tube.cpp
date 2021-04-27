@@ -13,7 +13,7 @@ namespace Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Tube::Tube( std::shared_ptr<AMP::Database> db )
+Tube::Tube( std::shared_ptr<const AMP::Database> db )
 {
     d_physicalDim = 3;
     d_logicalDim  = 3;

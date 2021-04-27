@@ -119,6 +119,5 @@ bool MultiGeometry::operator==( const Geometry &rhs ) const
 }
 
 
-
 } // namespace Geometry
 } // namespace AMP

@@ -16,8 +16,8 @@ AMPMeshEntityIterator::AMPMeshEntityIterator() { this->b_iterator_impl = NULL; }
  * Constructor.
  */
 AMPMeshEntityIterator::AMPMeshEntityIterator(
-    const std::shared_ptr<std::unordered_map<int, int>> &rank_map,
-    const std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> &id_map,
+    std::shared_ptr<std::unordered_map<int, int>> rank_map,
+    std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> id_map,
     const AMP::Mesh::MeshIterator &iterator,
     const std::function<bool( DataTransferKit::Entity )> &predicate )
     : d_amp_iterator( iterator.begin() ), d_rank_map( rank_map ), d_id_map( id_map )

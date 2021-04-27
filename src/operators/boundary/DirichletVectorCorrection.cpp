@@ -7,27 +7,26 @@
 namespace AMP {
 namespace Operator {
 
-void DirichletVectorCorrection::reset( const std::shared_ptr<OperatorParameters> &tmpParams )
+void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> tmpParams )
 {
-    std::shared_ptr<DirichletVectorCorrectionParameters> params =
-        std::dynamic_pointer_cast<DirichletVectorCorrectionParameters>( tmpParams );
+    auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( tmpParams );
 
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    bool skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
+    bool skipParams = params->d_db->getWithDefault( "skip_params", false );
 
     if ( !skipParams ) {
-        d_scalingFactor = ( params->d_db )->getWithDefault<double>( "SCALING_FACTOR", 1.0 );
-        d_setResidual   = ( params->d_db )->getWithDefault( "setResidual", false );
+        d_scalingFactor = params->d_db->getWithDefault<double>( "SCALING_FACTOR", 1.0 );
+        d_setResidual   = params->d_db->getWithDefault( "setResidual", false );
         d_isAttachedToVolumeOperator =
-            ( params->d_db )->getWithDefault( "isAttachedToVolumeOperator", false );
-        d_valuesType = ( params->d_db )->getWithDefault( "valuesType", 1 );
+            params->d_db->getWithDefault( "isAttachedToVolumeOperator", false );
+        d_valuesType = params->d_db->getWithDefault( "valuesType", 1 );
         AMP_INSIST( ( ( d_valuesType == 1 ) || ( d_valuesType == 2 ) ), "Wrong value." );
 
-        AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
+        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
+        int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -39,12 +38,12 @@ void DirichletVectorCorrection::reset( const std::shared_ptr<OperatorParameters>
         char key[100];
         for ( int j = 0; j < numIds; j++ ) {
             sprintf( key, "id_%d", j );
-            AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( params->d_db )->getScalar<int>( key );
+            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+            d_boundaryIds[j] = params->d_db->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
-            AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( params->d_db )->getScalar<int>( key );
+            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+            int numDofIds = params->d_db->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
 
@@ -53,12 +52,12 @@ void DirichletVectorCorrection::reset( const std::shared_ptr<OperatorParameters>
             }
             for ( int i = 0; i < numDofIds; i++ ) {
                 sprintf( key, "dof_%d_%d", j, i );
-                AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( params->d_db )->getScalar<int>( key );
+                AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+                d_dofIds[j][i] = params->d_db->getScalar<int>( key );
 
                 if ( d_valuesType == 1 ) {
                     sprintf( key, "value_%d_%d", j, i );
-                    d_dirichletValues1[j][i] = ( params->d_db )->getWithDefault<double>( key, 0.0 );
+                    d_dirichletValues1[j][i] = params->d_db->getWithDefault<double>( key, 0.0 );
                 }
             } // end for i
         }     // end for j
@@ -185,7 +184,7 @@ AMP::LinearAlgebra::Vector::shared_ptr
 DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                            AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
             vec->select( meshSelector, ( vec->getVariable() )->getName() );
@@ -201,7 +200,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr
 DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
                                            AMP::LinearAlgebra::Variable::shared_ptr var )
 {
-    if ( d_Mesh.get() != nullptr ) {
+    if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
             vec->constSelect( meshSelector, ( vec->getVariable() )->getName() );

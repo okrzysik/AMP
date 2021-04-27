@@ -4,6 +4,7 @@
 
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/triangle/TriangleMeshElement.h"
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP {
@@ -76,6 +77,17 @@ protected:
     //! Clone the iterator
     MeshIterator *clone() const override;
 
+    //! Get the type id
+    static constexpr uint32_t getTypeID()
+    {
+        char name[] = "TriangleMeshIterator<0,0,0>";
+        name[21]    = 48 + NG;
+        name[23]    = 48 + NP;
+        name[25]    = 48 + TYPE;
+        return AMP::Utilities::hash_char( name );
+    }
+
+
     friend class AMP::Mesh::TriangleMesh<NG, NP>;
 
 private:
@@ -83,9 +95,6 @@ private:
     const AMP::Mesh::TriangleMesh<NG, NP> *d_mesh;
     std::shared_ptr<const std::vector<ElementID>> d_list;
     TriangleMeshElement<NG, NP, TYPE> d_cur_element;
-
-private:
-    static constexpr uint32_t getTypeID();
 };
 
 

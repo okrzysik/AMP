@@ -26,7 +26,7 @@ class DiffusionTransportModel : public ElementPhysicsModel
 {
 public:
     explicit DiffusionTransportModel(
-        const std::shared_ptr<DiffusionTransportModelParameters> &params );
+        std::shared_ptr<const DiffusionTransportModelParameters> params );
 
     virtual ~DiffusionTransportModel() {}
 
@@ -111,15 +111,15 @@ public:
                                std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                                const std::vector<libMesh::Point> &Coordinates = d_DummyCoords );
 
-    AMP::Materials::Material::shared_ptr getMaterial() { return d_material; }
-    std::shared_ptr<AMP::Materials::Property<double>> getProperty() { return d_property; }
+    std::shared_ptr<AMP::Materials::Material> getMaterial() { return d_material; }
+    std::shared_ptr<AMP::Materials::Property> getProperty() { return d_property; }
 
     bool isaTensor() { return d_IsTensor; }
 
 protected:
-    AMP::Materials::Material::shared_ptr d_material;
+    std::shared_ptr<AMP::Materials::Material> d_material;
 
-    std::shared_ptr<AMP::Materials::Property<double>> d_property;
+    std::shared_ptr<AMP::Materials::Property> d_property;
 
     /**
      * \brief Use a bilogarithmic scaling of material arguments

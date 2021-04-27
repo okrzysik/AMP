@@ -8,11 +8,11 @@ namespace AMP {
 namespace Operator {
 
 CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : ColumnOperator( params )
 {
     d_Mesh        = params->d_Mesh;
-    auto myparams = std::dynamic_pointer_cast<CoupledFlowFrapconOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const CoupledFlowFrapconOperatorParameters>( params );
     d_operators.push_back( myparams->d_Map3to1 );
 
     std::string flowOutVar = ( ( myparams->d_Map1to3 )->getOutputVariable() )->getName();
@@ -20,7 +20,7 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
     std::string flowInpVar = ( ( myparams->d_FlowOperator )->getOutputVariable() )->getName();
     d_SimpleVariable.reset( new AMP::LinearAlgebra::Variable( flowInpVar ) );
 
-    d_numpoints = ( std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( myparams->d_Map1to3 ) )
+    d_numpoints = std::dynamic_pointer_cast<AMP::Operator::Map1Dto3D>( myparams->d_Map1to3 )
                       ->getNumZlocations();
     d_zPoints.resize( d_numpoints );
 
@@ -34,9 +34,9 @@ CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
     auto mapflowInternal3to1Params =
         std::make_shared<AMP::Operator::MapOperatorParameters>( tmp_db1 );
     mapflowInternal3to1Params->d_Mesh =
-        ( std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( myparams->d_Map3to1 ) )->getMesh();
+        std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( myparams->d_Map3to1 )->getMesh();
     mapflowInternal3to1Params->d_MapMesh =
-        ( std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( myparams->d_Map3to1 ) )->getMesh();
+        std::dynamic_pointer_cast<AMP::Operator::Map3Dto1D>( myparams->d_Map3to1 )->getMesh();
     mapflowInternal3to1Params->d_MapComm = mapflowInternal3to1Params->d_MapMesh->getComm();
     d_flowInternal3to1.reset( new AMP::Operator::Map3Dto1D( mapflowInternal3to1Params ) );
 

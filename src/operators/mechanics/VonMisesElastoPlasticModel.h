@@ -15,8 +15,7 @@ namespace Operator {
 class VonMisesElastoPlasticModel : public MechanicsMaterialModel
 {
 public:
-    explicit VonMisesElastoPlasticModel(
-        const std::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit VonMisesElastoPlasticModel( std::shared_ptr<MechanicsMaterialModelParameters> );
 
     virtual ~VonMisesElastoPlasticModel() {}
 

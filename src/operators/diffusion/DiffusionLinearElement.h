@@ -14,7 +14,7 @@ namespace Operator {
 class DiffusionLinearElement : public DiffusionElement
 {
 public:
-    explicit DiffusionLinearElement( const std::shared_ptr<ElementOperationParameters> &params )
+    explicit DiffusionLinearElement( std::shared_ptr<const ElementOperationParameters> params )
         : DiffusionElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_num_dofs         = 0;

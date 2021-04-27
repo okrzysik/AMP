@@ -15,26 +15,23 @@ ENABLE_WARNINGS
 namespace AMP {
 namespace Operator {
 
-MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &params )
+MassElement::MassElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
 {
 
-    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
+    AMP_INSIST( ( params ), "''params'' is NULL" );
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    std::string feTypeOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    std::string feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName =
-        ( params->d_db )->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    std::string feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
 
     auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    std::string qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
 
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
@@ -47,7 +44,7 @@ MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &par
     d_fe->get_xyz();
 
     std::string qruleOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 
@@ -68,8 +65,8 @@ MassElement::MassElement( const std::shared_ptr<ElementOperationParameters> &par
 }
 
 
-void MassElement::initializeForCurrentElement(
-    const libMesh::Elem *elem, const std::shared_ptr<MassDensityModel> &densityModel )
+void MassElement::initializeForCurrentElement( const libMesh::Elem *elem,
+                                               std::shared_ptr<MassDensityModel> densityModel )
 {
     d_elem = elem;
 

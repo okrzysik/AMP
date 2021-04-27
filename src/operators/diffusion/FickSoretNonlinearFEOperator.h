@@ -18,13 +18,13 @@ namespace Operator {
 class FickSoretNonlinearFEOperator : public Operator
 {
 public:
-    explicit FickSoretNonlinearFEOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit FickSoretNonlinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~FickSoretNonlinearFEOperator() {}
 
     std::string type() const override { return "FickSoretNonlinearFEOperator"; }
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -48,7 +48,7 @@ public:
     }
 
     //! checks input to apply operator for satisfaction of range conditions
-    bool isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u ) override
+    bool isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr u ) override
     {
         bool result;
         result = d_FickOperator->isValidInput( u ) and d_SoretOperator->isValidInput( u );
