@@ -91,7 +91,7 @@ public:
       creep strain inside the clad.
       */
     explicit GeneralCladThermalCreepPlasticModel(
-        const std::shared_ptr<MechanicsMaterialModelParameters> & );
+        std::shared_ptr<MechanicsMaterialModelParameters> );
 
     /**
       Destructor.

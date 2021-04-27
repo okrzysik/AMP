@@ -28,7 +28,7 @@ class NeumannVectorCorrection : public BoundaryOperator
 public:
     //! Constructor. This function reads all the parameters required for surface elements.
     explicit NeumannVectorCorrection(
-        const std::shared_ptr<NeumannVectorCorrectionParameters> &params );
+        std::shared_ptr<const NeumannVectorCorrectionParameters> params );
 
     /**
       Set the variable for the vector that will used with this operator.
@@ -55,7 +55,7 @@ public:
     /**
       This function reads parameters related to boundary Ids
       */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
       Adds a vector to the RHS vector.
@@ -66,7 +66,7 @@ public:
      * get a pointer to the cached parameters that were used to create this
      * operator
      */
-    std::shared_ptr<OperatorParameters> getOperatorParameters() { return d_params; }
+    auto getOperatorParameters() { return d_params; }
 
     void setVariableFlux( const AMP::LinearAlgebra::Vector::shared_ptr &flux );
 
@@ -116,7 +116,7 @@ protected:
 
     std::vector<short int> d_numDofIds;
 
-    std::shared_ptr<NeumannVectorCorrectionParameters> d_params;
+    std::shared_ptr<const NeumannVectorCorrectionParameters> d_params;
 
     std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;
 

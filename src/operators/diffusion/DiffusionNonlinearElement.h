@@ -14,7 +14,7 @@ namespace Operator {
 class DiffusionNonlinearElement : public DiffusionElement
 {
 public:
-    explicit DiffusionNonlinearElement( const std::shared_ptr<ElementOperationParameters> &params )
+    explicit DiffusionNonlinearElement( std::shared_ptr<const ElementOperationParameters> params )
         : DiffusionElement( params ),
           d_elementOutputVector( nullptr ),
           d_transportOutputVector( nullptr ),

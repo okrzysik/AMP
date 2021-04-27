@@ -31,8 +31,8 @@ Mesh {
 }
 
 MapOperator {
-    VariableName1        = "fooname"
-    VariableName2        = "barname"
+    VariableName1        = "src"
+    VariableName2        = "dst"
     DOFsPerObject = 1 // this doesn't make sense
     InputDOFsPerObject  = 5
     InputStride         = 3

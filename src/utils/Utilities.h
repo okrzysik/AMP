@@ -82,6 +82,13 @@ using StackTrace::Utilities::tick;
 using StackTrace::Utilities::time;
 
 
+//! Enum for the operating system
+enum class OS { macOS, Linux, Windows, Unknown };
+
+//! Return the OS
+constexpr OS getOS();
+
+
 /*!
  * Set an environmental variable
  * @param name              The name of the environmental variable
@@ -358,7 +365,8 @@ inline std::string stringf( const char *format, ... );
 
 
 //! Print a database
-void printDatabase( Database &, std::ostream &, const std::string &indent = "" );
+[[deprecated( "This function will be removed soon, use Database::print" )]] void
+printDatabase( const Database &, std::ostream &, const std::string &indent = "" );
 
 
 } // namespace Utilities

@@ -12,7 +12,7 @@ namespace Operator {
 class IsotropicElasticModel : public MechanicsMaterialModel
 {
 public:
-    explicit IsotropicElasticModel( const std::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit IsotropicElasticModel( std::shared_ptr<MechanicsMaterialModelParameters> );
 
     virtual ~IsotropicElasticModel() {}
 

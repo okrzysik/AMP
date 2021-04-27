@@ -18,7 +18,7 @@ class NavierStokesGalWFElement : public FlowElement
 {
 public:
     //!  Constructor.
-    explicit NavierStokesGalWFElement( const std::shared_ptr<ElementOperationParameters> &params )
+    explicit NavierStokesGalWFElement( std::shared_ptr<const ElementOperationParameters> params )
         : FlowElement( params ), d_elementOutputVector( nullptr )
     {
         d_JxW        = &( d_fe->get_JxW() );

@@ -37,11 +37,10 @@ interp_linear( const std::vector<double> &x, const std::vector<double> &f, doubl
  *  Default constructor                                                  *
  ************************************************************************/
 SubchannelToCladGPMap::SubchannelToCladGPMap(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> p )
     : SubchannelToCladMap( p )
 {
-    std::shared_ptr<SubchannelToCladMapParameters> params =
-        std::dynamic_pointer_cast<SubchannelToCladGPMapParameters>( p );
+    auto params = std::dynamic_pointer_cast<const SubchannelToCladGPMapParameters>( p );
     AMP_ASSERT( params );
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 4,

@@ -34,8 +34,8 @@ inline ThreadPoolID &ThreadPoolID::operator=( const ThreadPoolID &rhs ) volatile
     d_id    = rhs.d_id;
     d_count = rhs.d_count;
     d_work  = rhs.d_work;
-    if ( d_count != nullptr )
-        AtomicOperations::atomic_increment( d_count );
+    if ( d_count )
+        ++( *d_count );
     return const_cast<ThreadPoolID &>( *this );
 }
 inline ThreadPoolID &ThreadPoolID::operator=( volatile ThreadPoolID &&rhs ) volatile
@@ -48,15 +48,15 @@ inline ThreadPoolID &ThreadPoolID::operator=( volatile ThreadPoolID &&rhs ) vola
 inline ThreadPoolID::ThreadPoolID( const volatile ThreadPoolID &rhs )
     : d_id( rhs.d_id ), d_count( rhs.d_count ), d_work( rhs.d_work )
 {
-    if ( d_count != nullptr )
-        AtomicOperations::atomic_increment( d_count );
+    if ( d_count )
+        ++( *d_count );
 }
 #if !defined( WIN32 ) && !defined( _WIN32 ) && !defined( WIN64 ) && !defined( _WIN64 )
 inline ThreadPoolID::ThreadPoolID( const ThreadPoolID &rhs )
     : d_id( rhs.d_id ), d_count( rhs.d_count ), d_work( rhs.d_work )
 {
-    if ( d_count != nullptr )
-        AtomicOperations::atomic_increment( d_count );
+    if ( d_count )
+        ++( *d_count );
 }
 inline ThreadPoolID &ThreadPoolID::operator=( ThreadPoolID &&rhs )
 {
@@ -73,8 +73,8 @@ inline ThreadPoolID &ThreadPoolID::operator=( const ThreadPoolID &rhs )
     d_id    = rhs.d_id;
     d_count = rhs.d_count;
     d_work  = rhs.d_work;
-    if ( d_count != nullptr )
-        AtomicOperations::atomic_increment( d_count );
+    if ( d_count )
+        ++( *d_count );
     return const_cast<ThreadPoolID &>( *this );
 }
 inline ThreadPoolID &ThreadPoolID::operator=( const volatile ThreadPoolID &rhs )
@@ -85,8 +85,8 @@ inline ThreadPoolID &ThreadPoolID::operator=( const volatile ThreadPoolID &rhs )
     d_id    = rhs.d_id;
     d_count = rhs.d_count;
     d_work  = rhs.d_work;
-    if ( d_count != nullptr )
-        AtomicOperations::atomic_increment( d_count );
+    if ( d_count )
+        ++( *d_count );
     return const_cast<ThreadPoolID &>( *this );
 }
 inline ThreadPoolID &ThreadPoolID::operator=( const volatile ThreadPoolID &rhs ) volatile
@@ -97,15 +97,15 @@ inline ThreadPoolID &ThreadPoolID::operator=( const volatile ThreadPoolID &rhs )
     d_id    = rhs.d_id;
     d_count = rhs.d_count;
     d_work  = rhs.d_work;
-    if ( d_count != nullptr )
-        AtomicOperations::atomic_increment( d_count );
+    if ( d_count )
+        ++( *d_count );
     return const_cast<ThreadPoolID &>( *this );
 }
 #endif
 inline void ThreadPoolID::reset() volatile
 {
-    if ( d_count != nullptr ) {
-        int count = AtomicOperations::atomic_decrement( d_count );
+    if ( d_count ) {
+        int count = --( *d_count );
         if ( count == 0 ) {
             ThreadPoolWorkItem *tmp = reinterpret_cast<ThreadPoolWorkItem *>( d_work );
             delete tmp;
@@ -117,8 +117,8 @@ inline void ThreadPoolID::reset() volatile
 }
 inline void ThreadPoolID::reset()
 {
-    if ( d_count != nullptr ) {
-        int count = AtomicOperations::atomic_decrement( d_count );
+    if ( d_count ) {
+        int count = --( *d_count );
         if ( count == 0 ) {
             ThreadPoolWorkItem *tmp = reinterpret_cast<ThreadPoolWorkItem *>( d_work );
             delete tmp;
@@ -138,8 +138,8 @@ inline uint64_t ThreadPoolID::createId( int8_t priority, uint64_t local_id )
 }
 inline void ThreadPoolID::reset( int8_t priority, uint64_t local_id, void *work )
 {
-    if ( d_count != nullptr ) {
-        int count = AtomicOperations::atomic_decrement( d_count );
+    if ( d_count ) {
+        int count = --( *d_count );
         if ( count == 0 ) {
             ThreadPoolWorkItem *tmp = reinterpret_cast<ThreadPoolWorkItem *>( d_work );
             delete tmp;
@@ -150,7 +150,7 @@ inline void ThreadPoolID::reset( int8_t priority, uint64_t local_id, void *work 
     // Create the work and counter
     d_count = nullptr;
     d_work  = work;
-    if ( d_work != nullptr ) {
+    if ( d_work ) {
         d_count  = &( reinterpret_cast<ThreadPoolWorkItem *>( work )->d_count );
         *d_count = 1;
     }

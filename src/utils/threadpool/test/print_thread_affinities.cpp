@@ -26,7 +26,7 @@ std::shared_ptr<ThreadPool> create_thread_pool( std::shared_ptr<AMP::Database> t
 {
     std::shared_ptr<ThreadPool> tpool;
     // Check the ThreadPool database and create the ThreadPool
-    if ( tpool_db != nullptr ) {
+    if ( tpool_db ) {
         AMP_ASSERT( tpool_db->keyExists( "N_threads" ) );
         AMP_ASSERT( tpool_db->keyExists( "share_tpool" ) );
         if ( !tpool_db->getScalar<bool>( "share_tpool" ) ) {

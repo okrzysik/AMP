@@ -10,7 +10,7 @@ class PelletStackMechanicsSolverParameters : public SolverStrategyParameters
 {
 public:
     PelletStackMechanicsSolverParameters() {}
-    explicit PelletStackMechanicsSolverParameters( const std::shared_ptr<AMP::Database> db )
+    explicit PelletStackMechanicsSolverParameters( std::shared_ptr<AMP::Database> db )
         : SolverStrategyParameters( db )
     {
     }

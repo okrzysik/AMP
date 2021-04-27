@@ -42,17 +42,17 @@ static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } 
 
 //=================== Classes =======================================================
 
-class FickCoefficientProp : public Property<double>
+class FickCoefficientProp : public Property
 {
 public:
     FickCoefficientProp()
-        : Property<double>( name_base + "_" + "FickCoefficient", // Name string
-                            source,                              // Reference source
-                            FCparams,                            // Property parameters
-                            2U,                                  // Number of parameters
-                            arguments,  // Names of arguments to the eval function
-                            narguments, // Number of arguments
-                            ranges )
+        : Property( name_base + "_" + "FickCoefficient", // Name string
+                    source,                              // Reference source
+                    FCparams,                            // Property parameters
+                    2U,                                  // Number of parameters
+                    arguments,                           // Names of arguments to the eval function
+                    narguments,                          // Number of arguments
+                    ranges )
     {
     } // Range of variables
 
@@ -79,7 +79,7 @@ inline double FickCoefficientProp::eval( std::vector<double> &args )
 
 Dr_nonlinear::Dr_nonlinear()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
     INSERT_PROPERTY_IN_MAP( FickCoefficient, Dr_nonlinear_NS );
 }
 } // namespace Materials

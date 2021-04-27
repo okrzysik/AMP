@@ -257,7 +257,7 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
     // Get the comm for the new DOFManager
     AMP_MPI comm( AMP_COMM_NULL );
     if ( useMeshComm ) {
-        if ( mesh.get() != nullptr )
+        if ( mesh )
             comm = mesh->getComm();
     } else {
         comm = d_comm;

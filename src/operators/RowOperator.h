@@ -16,13 +16,13 @@ namespace Operator {
 class RowOperator : public Operator
 {
 public:
-    explicit RowOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit RowOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~RowOperator() = default;
 
     std::string type() const override { return "RowOperator"; }
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     void resetScaling( int idx, double a ) { scalea[idx] = a; }
 

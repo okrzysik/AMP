@@ -133,7 +133,7 @@ void runBasicTests( UnitTest &ut )
         "array  = [ [ [ 1, 2, 3, 4 ], [5,6,7,8],[9,10,11,12]],\n"
         "         [[0,1,2,3],[4,5,6,7],[8,9,10,11]]] m   // Multi-dimentional array\n"
         "empty  = []             // Empty array\n"
-        "end  = \"end\"\n";
+        "end  = \"end\"          // String\n";
     auto beam = Database::createFromString( beamDatabaseText );
     db.putDatabase( "beam", std::move( beam ) );
 

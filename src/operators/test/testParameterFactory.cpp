@@ -44,7 +44,7 @@ static void ParameterFactoryTest( AMP::UnitTest *ut )
             std::dynamic_pointer_cast<AMP::Operator::DirichletMatrixCorrectionParameters>(
                 operatorParameters );
 
-        if ( operatorParams.get() != nullptr )
+        if ( operatorParams )
             ut->passes( exeName.c_str() );
         else
             ut->failure( exeName.c_str() );

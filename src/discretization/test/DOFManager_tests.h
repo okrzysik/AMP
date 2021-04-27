@@ -137,7 +137,7 @@ void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
         bool passes = true;
         for ( size_t i = 0; i < meshIDs.size(); i++ ) {
             auto subsetMesh = mesh->Subset( meshIDs[i] );
-            if ( subsetMesh.get() != nullptr ) {
+            if ( subsetMesh ) {
                 subsetDOF = DOF->subset( subsetMesh );
                 testGetDOFIterator(
                     ut, subsetMesh->getIterator( AMP::Mesh::GeomType::Vertex, gcw ), subsetDOF );

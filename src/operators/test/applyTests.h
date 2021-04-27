@@ -51,7 +51,7 @@ inline void applyTests( AMP::UnitTest *ut,
 {
     AMP::LinearAlgebra::Variable::shared_ptr testOperatorVariable =
         testOperator->getOutputVariable();
-    AMP_ASSERT( testOperatorVariable.get() != nullptr );
+    AMP_ASSERT( testOperatorVariable );
     // first test for apply - random values in all three input vectors
     // An exception is considered a failure and will crash the application
     AMP::pout << "ApplyTest #1" << std::endl;

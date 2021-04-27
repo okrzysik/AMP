@@ -9,9 +9,10 @@ namespace AMP {
 namespace Operator {
 
 FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
 {
-    auto fsParams = std::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
+    auto fsParams =
+        std::dynamic_pointer_cast<const FickSoretNonlinearFEOperatorParameters>( params );
 
     // get databases for each sub-operator
     auto db          = params->d_db;
@@ -83,13 +84,13 @@ FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
     d_AddSoretTerm = ficksoretDb->getWithDefault( "AddSoretTerm", true );
 
     // set the member operators
-    if ( fsParams->d_FickOperator.get() != nullptr ) {
+    if ( fsParams->d_FickOperator ) {
         d_FickOperator = fsParams->d_FickOperator;
     } else {
         auto fickParams = std::make_shared<DiffusionNonlinearFEOperatorParameters>( fickDb );
         d_FickOperator.reset( new DiffusionNonlinearFEOperator( fickParams ) );
     }
-    if ( fsParams->d_SoretOperator.get() != nullptr ) {
+    if ( fsParams->d_SoretOperator ) {
         d_SoretOperator = fsParams->d_SoretOperator;
     } else {
         auto soretParams = std::make_shared<DiffusionNonlinearFEOperatorParameters>( soretDb );
@@ -109,9 +110,10 @@ void FickSoretNonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shar
     d_FickOperator->apply( u, r );
 }
 
-void FickSoretNonlinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void FickSoretNonlinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    auto fsParams = std::dynamic_pointer_cast<FickSoretNonlinearFEOperatorParameters>( params );
+    auto fsParams =
+        std::dynamic_pointer_cast<const FickSoretNonlinearFEOperatorParameters>( params );
     d_FickOperator->reset( fsParams->d_FickParameters );
     d_SoretOperator->reset( fsParams->d_SoretParameters );
 }

@@ -3,12 +3,11 @@
 namespace AMP {
 namespace Operator {
 
-VectorCopyOperator::VectorCopyOperator(
-    const std::shared_ptr<VectorCopyOperatorParameters> &params )
+VectorCopyOperator::VectorCopyOperator( std::shared_ptr<const VectorCopyOperatorParameters> params )
     : AMP::Operator::Operator( params )
 {
     auto copyParams =
-        std::dynamic_pointer_cast<AMP::Operator::VectorCopyOperatorParameters>( params );
+        std::dynamic_pointer_cast<const AMP::Operator::VectorCopyOperatorParameters>( params );
     d_copyVariable = copyParams->d_copyVariable;
     d_copyVector   = copyParams->d_copyVector;
 

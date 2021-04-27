@@ -53,6 +53,24 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Create the meshes from the input database
     auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
+    // Create a surface mesh
+    auto surfaceMesh = mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 1 ) );
+
+    // Create a surface vector with the surface ids
+    auto idDOFs = AMP::Discretization::simpleDOFManager::create(
+        surfaceMesh, AMP::Mesh::GeomType::Face, 1, 1 );
+    auto id_var = std::make_shared<AMP::LinearAlgebra::Variable>( "id" );
+    auto id_vec = AMP::LinearAlgebra::createVector( idDOFs, id_var );
+    std::vector<size_t> dofs;
+    for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
+        double val = double( id );
+        for ( auto elem : surfaceMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 ) ) {
+            idDOFs->getDOFs( elem.globalID(), dofs );
+            AMP_ASSERT( dofs.size() == 1 );
+            id_vec->setValuesByGlobalID( 1, &dofs[0], &val );
+        }
+    }
+
     // Get the database for the node to node maps
     auto map_db = input_db->getDatabase( "NodeToNodeMaps" );
 
@@ -132,18 +150,20 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( v1, mesh, AMP::Mesh::GeomType::Vertex, "v1" );
     siloWriter->registerVector( v2, mesh, AMP::Mesh::GeomType::Vertex, "v2" );
+    siloWriter->registerVector( id_vec, surfaceMesh, AMP::Mesh::GeomType::Face, "id" );
     siloWriter->writeFile( "testNodeToNodeMap", 0 );
 #endif
 
     // Check the results
     std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;
     v1->subtract( *v1, *v2 );
+    std::cout << v1->maxNorm() << std::endl;
     if ( v1->maxNorm() < 1.e-12 ) {
         ut->passes( "Node to node map test (" + fname + ")" );
     } else {
         ut->failure( "Node to node map test (" + fname + ")" );
     }
-    std::cout << v1->maxNorm() << std::endl;
+
     std::cout << "Time for apply call: " << end_time - start_time << std::endl;
 }
 

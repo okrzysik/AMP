@@ -63,13 +63,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto manager  = AMP::Mesh::Mesh::buildMesh( params );
     auto pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
     auto subchannel_mesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr subchannel_face;
-    if ( subchannel_mesh.get() != nullptr ) {
+    if ( subchannel_mesh ) {
         subchannel_mesh->setName( "subchannel" );
         subchannel_face = subchannel_mesh->Subset( getZFaceIterator( subchannel_mesh, 1 ) );
     }
@@ -89,13 +89,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr T_clad;
     AMP::LinearAlgebra::Vector::shared_ptr T_subchannel;
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
         T_clad = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
         T_clad->setToScalar( 500 );
     }
-    if ( subchannel_face.get() != nullptr ) {
+    if ( subchannel_face ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
             subchannel_face, AMP::Mesh::GeomType::Face, 1, DOFsPerNode );
         T_subchannel = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
@@ -103,7 +103,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Initialize the subchannel temperatures
-    if ( subchannel_face.get() != nullptr ) {
+    if ( subchannel_face ) {
         auto it = subchannel_face->getIterator( AMP::Mesh::GeomType::Face, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -145,7 +145,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     map->apply( T_subchannel, dummy );
 
     // Check the results
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         bool passes = true;
         auto it     = pin_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4, 1 );
         std::vector<size_t> dofs;
@@ -168,7 +168,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Perform a complete test of SubchannelToCladGPMap
     std::shared_ptr<AMP::Discretization::DOFManager> gauss_DOFs;
     AMP::LinearAlgebra::Vector::shared_ptr T_gauss;
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         gauss_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Face, 1, 4 );
         T_gauss = AMP::LinearAlgebra::createVector( gauss_DOFs, temperature );
@@ -183,7 +183,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     map->apply( T_subchannel, dummy );
 
     // Check the results
-    if ( clad_mesh.get() != nullptr ) {
+    if ( clad_mesh ) {
         bool passes = true;
         auto it     = clad_mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 );
         std::vector<size_t> dofs( 4 );
@@ -209,9 +209,9 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 // Write the results
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    if ( T_clad.get() != nullptr )
+    if ( T_clad )
         siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
-    if ( T_subchannel.get() != nullptr )
+    if ( T_subchannel )
         siloWriter->registerVector(
             T_subchannel, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );

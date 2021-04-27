@@ -21,7 +21,7 @@ const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
     std::vector<libMesh::Point>( 0 );
 
 DiffusionTransportModel::DiffusionTransportModel(
-    const std::shared_ptr<DiffusionTransportModelParameters> &params )
+    std::shared_ptr<const DiffusionTransportModelParameters> params )
     : ElementPhysicsModel( params ),
       d_defaults( Diffusion::NUMBER_VARIABLES ),
       d_MaterialParameters( 0 ),
@@ -86,8 +86,8 @@ DiffusionTransportModel::DiffusionTransportModel(
 
     // for tensor properties, set or change dimension
     if ( d_property->isTensor() ) {
-        std::shared_ptr<AMP::Materials::TensorProperty<double>> tensprop =
-            std::dynamic_pointer_cast<AMP::Materials::TensorProperty<double>>( d_property );
+        std::shared_ptr<AMP::Materials::TensorProperty> tensprop =
+            std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
         if ( tensprop->variable_dimensions() ) {
             if ( params->d_db->keyExists( "Dimensions" ) ) {
                 std::vector<int> dims = params->d_db->getVector<int>( "Dimensions" );

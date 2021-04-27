@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/utils/AMPManager.h"
@@ -66,7 +65,7 @@ static void myTest( AMP::UnitTest *ut )
 
         msgPrefix = exeName + " : " + innerInput_file;
 
-        if ( testOperator.get() != nullptr ) {
+        if ( testOperator ) {
             ut->passes( msgPrefix + " : create" );
         } else {
             ut->failure( msgPrefix + " : create" );

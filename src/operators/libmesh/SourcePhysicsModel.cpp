@@ -17,11 +17,10 @@ namespace AMP {
 namespace Operator {
 
 
-SourcePhysicsModel::SourcePhysicsModel(
-    const std::shared_ptr<SourcePhysicsModelParameters> &params )
+SourcePhysicsModel::SourcePhysicsModel( std::shared_ptr<const SourcePhysicsModelParameters> params )
     : ElementPhysicsModel( params )
 {
-    d_useMaterialsLibrary = ( params->d_db )->getWithDefault( "USE_MATERIALS_LIBRARY", false );
+    d_useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );
 
     if ( d_useMaterialsLibrary == true ) {
         AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
@@ -48,10 +47,9 @@ SourcePhysicsModel::SourcePhysicsModel(
 
     if ( d_physicsName == "DiffusionTransportModel" ) {
         d_elementPhysicsModel.reset( new AMP::Operator::DiffusionTransportModel(
-            std::dynamic_pointer_cast<DiffusionTransportModelParameters>(
+            std::dynamic_pointer_cast<const DiffusionTransportModelParameters>(
                 d_elementPhysicsParams ) ) );
-        std::shared_ptr<DiffusionTransportModel> tmp =
-            std::dynamic_pointer_cast<DiffusionTransportModel>( d_elementPhysicsModel );
+        auto tmp   = std::dynamic_pointer_cast<DiffusionTransportModel>( d_elementPhysicsModel );
         d_property = tmp->getProperty();
 
         const std::string temperatureString = "temperature";   // in the future get from input file
@@ -72,15 +70,16 @@ SourcePhysicsModel::SourcePhysicsModel(
     } else if ( d_physicsName == "MassDensityModel" ) {
         if ( d_useMaterialsLibrary ) {
             d_elementPhysicsModel.reset( new AMP::Operator::MassDensityModel(
-                std::dynamic_pointer_cast<MassDensityModelParameters>( d_elementPhysicsParams ) ) );
+                std::dynamic_pointer_cast<const MassDensityModelParameters>(
+                    d_elementPhysicsParams ) ) );
         }
     } else if ( d_physicsName == "ManufacturedSourceModel1" ) {
         d_elementPhysicsModel.reset( new AMP::Operator::ManufacturedSourceModel1(
-            std::dynamic_pointer_cast<ManufacturedSourceModel1Parameters>(
+            std::dynamic_pointer_cast<const ManufacturedSourceModel1Parameters>(
                 d_elementPhysicsParams ) ) );
     } else if ( d_physicsName == "ManufacturedSourceModel2" ) {
         d_elementPhysicsModel.reset( new AMP::Operator::ManufacturedSourceModel2(
-            std::dynamic_pointer_cast<ManufacturedSourceModel2Parameters>(
+            std::dynamic_pointer_cast<const ManufacturedSourceModel2Parameters>(
                 d_elementPhysicsParams ) ) );
     }
 }
@@ -93,8 +92,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
 {
     PROFILE_START( "getConstitutiveProperty", 6 );
     if ( d_physicsName == "DiffusionTransportModel" ) {
-        std::shared_ptr<DiffusionTransportModel> tmp =
-            std::dynamic_pointer_cast<DiffusionTransportModel>( d_elementPhysicsModel );
+        auto tmp = std::dynamic_pointer_cast<DiffusionTransportModel>( d_elementPhysicsModel );
 
         auto it = d_inputMaterialParameters.find( "temperature" );
         AMP_ASSERT( it != d_inputMaterialParameters.end() );
@@ -126,8 +124,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
                 result[i] = d_constantProperty * InputVec[0][i];
             }
         } else {
-            std::shared_ptr<MassDensityModel> tmp =
-                std::dynamic_pointer_cast<MassDensityModel>( d_elementPhysicsModel );
+            auto tmp = std::dynamic_pointer_cast<MassDensityModel>( d_elementPhysicsModel );
 
             std::string eqnname = d_elementPhysicsParams->d_db->getString( "Equation" );
             AMP_INSIST( ( eqnname == "ThermalSource" ),
@@ -154,8 +151,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
         // <<" Density [kg/m^3]:
         // " << result[0]/InputVec[0][0] <<std::endl;
     } else if ( d_physicsName == "ManufacturedSourceModel1" ) {
-        std::shared_ptr<ManufacturedSourceModel1> tmp =
-            std::dynamic_pointer_cast<ManufacturedSourceModel1>( d_elementPhysicsModel );
+        auto tmp = std::dynamic_pointer_cast<ManufacturedSourceModel1>( d_elementPhysicsModel );
 
         if ( InputVec.size() == 1 ) {
             std::vector<double> DefaultVec;
@@ -169,8 +165,7 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
             AMP_ERROR( "Invalid case" );
         }
     } else if ( d_physicsName == "ManufacturedSourceModel2" ) {
-        std::shared_ptr<ManufacturedSourceModel2> tmp =
-            std::dynamic_pointer_cast<ManufacturedSourceModel2>( d_elementPhysicsModel );
+        auto tmp = std::dynamic_pointer_cast<ManufacturedSourceModel2>( d_elementPhysicsModel );
 
         if ( InputVec.size() == 1 ) {
             std::vector<double> DefaultVec;

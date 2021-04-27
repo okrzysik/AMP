@@ -139,7 +139,7 @@ public:
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
-    inline const std::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver( void )
+    inline std::shared_ptr<ML_Epetra::MultiLevelPreconditioner> getMLSolver( void )
     {
         return d_mlSolver;
     }
@@ -159,14 +159,14 @@ public:
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
      */
-    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -188,8 +188,8 @@ protected:
 
     void buildML();
 
-    void computeCoordinates( const std::shared_ptr<AMP::Operator::Operator> op );
-    void computeNullSpace( const std::shared_ptr<AMP::Operator::Operator> op );
+    void computeCoordinates( std::shared_ptr<AMP::Operator::Operator> op );
+    void computeNullSpace( std::shared_ptr<AMP::Operator::Operator> op );
 
 private:
     bool d_bUseEpetra;

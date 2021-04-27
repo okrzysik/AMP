@@ -25,7 +25,7 @@ class ColumnBoundaryOperator : public BoundaryOperator
 {
 
 public:
-    explicit ColumnBoundaryOperator( const std::shared_ptr<OperatorParameters> &params )
+    explicit ColumnBoundaryOperator( std::shared_ptr<const OperatorParameters> params )
         : BoundaryOperator( params )
     {
     }
@@ -42,7 +42,7 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = nullptr ) override;
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
      * \param op

@@ -29,7 +29,7 @@ public:
 
     //! Constructor.
     explicit MechanicsNonlinearUpdatedLagrangianElement(
-        const std::shared_ptr<ElementOperationParameters> &params )
+        std::shared_ptr<const ElementOperationParameters> params )
         : MechanicsElement( params ), d_elementOutputVector( nullptr )
     {
         d_JxW = &( d_fe->get_JxW() );

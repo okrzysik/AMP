@@ -16,10 +16,10 @@ static double interp_linear( const std::vector<double> &, const std::vector<doub
  *  Default constructor                                                  *
  ************************************************************************/
 SubchannelToCladMap::SubchannelToCladMap(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> p )
     : AsyncMapOperator( p )
 {
-    auto params = std::dynamic_pointer_cast<SubchannelToCladMapParameters>( p );
+    auto params = std::dynamic_pointer_cast<const SubchannelToCladMapParameters>( p );
     AMP_ASSERT( params );
 
     // Clone the communicator to protect the communication (we need a large number of unique tags)
@@ -27,9 +27,9 @@ SubchannelToCladMap::SubchannelToCladMap(
     d_currRequests = std::vector<MPI_Request>();
 
     // Get the iterators
-    if ( d_mesh1.get() != nullptr )
+    if ( d_mesh1 )
         d_iterator1 = getSubchannelIterator( d_mesh1 );
-    if ( d_mesh2.get() != nullptr ) {
+    if ( d_mesh2 ) {
         int type    = params->d_db->getWithDefault( "GeomType", 0 );
         d_iterator2 = d_mesh2->getBoundaryIDIterator(
             static_cast<AMP::Mesh::GeomType>( type ), params->d_BoundaryID2, 0 );
@@ -39,7 +39,7 @@ SubchannelToCladMap::SubchannelToCladMap(
     fillSubchannelGrid( d_mesh1 );
 
     // For each subchannel, get the list of local MeshElement in that channel
-    if ( d_mesh2.get() != nullptr )
+    if ( d_mesh2 )
         d_elem = this->getElementsInSubchannel( d_x, d_y, d_iterator2 );
     else
         d_elem = std::vector<std::vector<AMP::Mesh::MeshElementID>>( N_subchannels );
@@ -57,7 +57,7 @@ SubchannelToCladMap::SubchannelToCladMap(
 
     // Create the send/recv buffers
     d_sendBuffer = std::vector<std::vector<double>>( N_subchannels );
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         for ( size_t i = 0; i < N_subchannels; i++ ) {
             if ( d_ownSubChannel[i] )
                 d_sendBuffer[i] = std::vector<double>( d_z.size() );
@@ -107,7 +107,7 @@ void SubchannelToCladMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
     N_subchannels = Nx * Ny;
     // Get a list of processors that need each x-y point
     d_ownSubChannel = std::vector<bool>( Nx * Ny, false );
-    if ( mesh.get() != nullptr ) {
+    if ( mesh ) {
         auto it = getSubchannelIterator( mesh );
         AMP_ASSERT( it.size() > 0 );
         for ( size_t k = 0; k < it.size(); k++, ++it ) {
@@ -322,12 +322,12 @@ void SubchannelToCladMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_p
  ************************************************************************/
 void SubchannelToCladMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 {
-    if ( result.get() != nullptr )
+    if ( result )
         d_OutputVector = subsetOutputVector( result );
     else
         d_OutputVector = AMP::LinearAlgebra::Vector::shared_ptr();
-    if ( d_mesh2.get() != nullptr )
-        AMP_ASSERT( d_OutputVector.get() != nullptr );
+    if ( d_mesh2 )
+        AMP_ASSERT( d_OutputVector );
 }
 
 

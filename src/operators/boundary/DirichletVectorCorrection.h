@@ -30,7 +30,7 @@ public:
       Constructor
       */
     explicit DirichletVectorCorrection(
-        const std::shared_ptr<DirichletVectorCorrectionParameters> &params )
+        std::shared_ptr<const DirichletVectorCorrectionParameters> params )
         : BoundaryOperator( params ), d_variable( params->d_variable )
     {
         d_isAttachedToVolumeOperator = false;
@@ -79,7 +79,7 @@ public:
     /**
       This function can be used to change the Dirichlet boundary conditions, if required.
       */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     void setRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override
     {

@@ -380,17 +380,17 @@ template Array<DatabaseBox, FunctionTable>::Array( size_t, size_t, size_t, size_
 template Array<DatabaseBox, FunctionTable>::Array( size_t, size_t, size_t, size_t, size_t );
 template Array<DatabaseBox, FunctionTable>::Array( const Array<DatabaseBox, FunctionTable> & );
 template Array<DatabaseBox, FunctionTable>::Array( Array<DatabaseBox, FunctionTable> && );
-template Array<DatabaseBox, FunctionTable> &Array<DatabaseBox, FunctionTable>::
-operator=( const Array<DatabaseBox, FunctionTable> & );
-template Array<DatabaseBox, FunctionTable> &Array<DatabaseBox, FunctionTable>::
-operator=( Array<DatabaseBox, FunctionTable> && );
-template Array<DatabaseBox, FunctionTable> &Array<DatabaseBox, FunctionTable>::
-operator=( const std::vector<DatabaseBox> & );
+template Array<DatabaseBox, FunctionTable> &
+Array<DatabaseBox, FunctionTable>::operator=( const Array<DatabaseBox, FunctionTable> & );
+template Array<DatabaseBox, FunctionTable> &
+Array<DatabaseBox, FunctionTable>::operator=( Array<DatabaseBox, FunctionTable> && );
+template Array<DatabaseBox, FunctionTable> &
+Array<DatabaseBox, FunctionTable>::operator=( const std::vector<DatabaseBox> & );
 template void Array<DatabaseBox, FunctionTable>::clear();
 template void
 Array<DatabaseBox, FunctionTable>::viewRaw( ArraySize const &, DatabaseBox *, bool, bool );
-template bool Array<DatabaseBox, FunctionTable>::
-operator==( Array<DatabaseBox, FunctionTable> const & ) const;
+template bool
+Array<DatabaseBox, FunctionTable>::operator==( Array<DatabaseBox, FunctionTable> const & ) const;
 template void Array<DatabaseBox, FunctionTable>::resize( ArraySize const & );
 
 

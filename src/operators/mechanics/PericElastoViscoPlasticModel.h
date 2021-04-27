@@ -14,8 +14,7 @@ namespace Operator {
 class PericElastoViscoPlasticModel : public MechanicsMaterialModel
 {
 public:
-    explicit PericElastoViscoPlasticModel(
-        const std::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit PericElastoViscoPlasticModel( std::shared_ptr<MechanicsMaterialModelParameters> );
 
     virtual ~PericElastoViscoPlasticModel() {}
 

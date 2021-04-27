@@ -7,7 +7,7 @@ namespace Operator {
 
 
 // Constructor
-RowOperator::RowOperator( const std::shared_ptr<OperatorParameters> &params ) : Operator()
+RowOperator::RowOperator( std::shared_ptr<const OperatorParameters> params ) : Operator()
 {
     (void) params;
     getAllJacobian = false;
@@ -44,12 +44,11 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 
 // Reset
-void RowOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void RowOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<ColumnOperatorParameters> fParams =
-        std::dynamic_pointer_cast<ColumnOperatorParameters>( params );
+    auto fParams = std::dynamic_pointer_cast<const ColumnOperatorParameters>( params );
 
-    AMP_INSIST( ( fParams.get() != nullptr ), "RowOperator::reset parameter object is NULL" );
+    AMP_INSIST( ( fParams ), "RowOperator::reset parameter object is NULL" );
 
     AMP_INSIST( ( ( ( fParams->d_OperatorParameters ).size() ) == ( d_Operators.size() ) ),
                 " std::vector sizes do not match! " );
@@ -63,8 +62,7 @@ void RowOperator::reset( const std::shared_ptr<OperatorParameters> &params )
 // getParameters
 void RowOperator::append( std::shared_ptr<Operator> op, double a )
 {
-    AMP_INSIST( ( op.get() != nullptr ),
-                "AMP::RowOperator::appendRow input argument is a NULL operator" );
+    AMP_INSIST( ( op ), "AMP::RowOperator::appendRow input argument is a NULL operator" );
     d_Operators.push_back( op );
     scalea.push_back( a );
 }

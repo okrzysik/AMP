@@ -20,7 +20,7 @@ namespace AMP {
 namespace Operator {
 
 TractionBoundaryOperator::TractionBoundaryOperator(
-    const std::shared_ptr<TractionBoundaryOperatorParameters> &params )
+    std::shared_ptr<const TractionBoundaryOperatorParameters> params )
     : BoundaryOperator( params ), d_residualMode( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Variable" ), "key not found" );
@@ -126,7 +126,7 @@ TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr
                                           AMP::LinearAlgebra::Variable::shared_ptr var )
 {
     if ( vec != nullptr ) {
-        if ( d_Mesh.get() != nullptr ) {
+        if ( d_Mesh ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
             AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
                 vec->select( meshSelector, ( ( vec->getVariable() )->getName() ) );

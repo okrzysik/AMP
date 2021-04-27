@@ -35,7 +35,7 @@ static unsigned int nextLocalMeshID = 1;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Mesh::Mesh( const std::shared_ptr<MeshParameters> &params_in )
+Mesh::Mesh( std::shared_ptr<const MeshParameters> params_in )
 {
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );
@@ -489,7 +489,7 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
  ********************************************************/
 namespace AMP {
 typedef AMP::Mesh::MeshElementID ID;
-template ID AMP_MPI::bcast<ID>( const ID &, int ) const;
+template ID AMP_MPI::bcast<ID>( ID, int ) const;
 template void AMP_MPI::bcast<ID>( ID *, int, int ) const;
 template void AMP_MPI::send<ID>( const ID *, int, int, int ) const;
 template MPI_Request AMP_MPI::Isend<ID>( const ID *, int, int, int ) const;

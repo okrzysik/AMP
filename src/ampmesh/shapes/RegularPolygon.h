@@ -22,7 +22,7 @@ public:
      * \brief Construct a regular polygon geometry
      * \param db        Input database
      */
-    explicit RegularPolygon( std::shared_ptr<AMP::Database> db );
+    explicit RegularPolygon( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a regular polygon geometry

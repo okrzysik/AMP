@@ -62,13 +62,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto manager  = AMP::Mesh::Mesh::buildMesh( params );
     auto pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
     auto subchannel_mesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr subchannel_face;
-    if ( subchannel_mesh.get() != nullptr ) {
+    if ( subchannel_mesh ) {
         subchannel_mesh->setName( "subchannel" );
         subchannel_face = subchannel_mesh->Subset( getZFaceIterator( subchannel_mesh, 1 ) );
     }
@@ -87,13 +87,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr T1;
     AMP::LinearAlgebra::Vector::shared_ptr T2;
     AMP::LinearAlgebra::Vector::shared_ptr dummy;
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         pin_DOFs = AMP::Discretization::simpleDOFManager::create(
             pin_mesh, AMP::Mesh::GeomType::Vertex, 1, DOFsPerNode );
         T1 = AMP::LinearAlgebra::createVector( pin_DOFs, temperature );
         T1->setToScalar( 0.0 );
     }
-    if ( subchannel_face.get() != nullptr ) {
+    if ( subchannel_face ) {
         subchannel_DOFs = AMP::Discretization::simpleDOFManager::create(
             subchannel_face, AMP::Mesh::GeomType::Face, 1, DOFsPerNode );
         T2 = AMP::LinearAlgebra::createVector( subchannel_DOFs, temperature );
@@ -101,7 +101,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
     // Initialize the pin temperatures
-    if ( pin_mesh.get() != nullptr ) {
+    if ( pin_mesh ) {
         auto it = pin_mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
@@ -154,9 +154,9 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 // Write the results
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    if ( T1.get() != nullptr )
+    if ( T1 )
         siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
-    if ( T2.get() != nullptr )
+    if ( T2 )
         siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );

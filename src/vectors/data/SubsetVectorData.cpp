@@ -85,7 +85,7 @@ void SubsetVectorData::copyOutRawData( double *out ) const
  ****************************************************************/
 void SubsetVectorData::addLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
 {
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
+    AMP_ASSERT( d_ViewVector );
     if ( cnt == 0 )
         return;
     std::vector<size_t> parentDOFs;
@@ -106,7 +106,7 @@ void SubsetVectorData::addLocalValuesByGlobalID( int cnt, size_t *ndx, const dou
 }
 void SubsetVectorData::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *vals ) const
 {
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
+    AMP_ASSERT( d_ViewVector );
     if ( cnt == 0 )
         return;
     std::vector<size_t> parentDOFs;
@@ -127,7 +127,7 @@ void SubsetVectorData::getLocalValuesByGlobalID( int cnt, size_t *ndx, double *v
 }
 void SubsetVectorData::setLocalValuesByGlobalID( int cnt, size_t *ndx, const double *vals )
 {
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
+    AMP_ASSERT( d_ViewVector );
     if ( cnt == 0 )
         return;
     std::vector<size_t> parentDOFs;
@@ -148,7 +148,7 @@ void SubsetVectorData::setLocalValuesByGlobalID( int cnt, size_t *ndx, const dou
 }
 void SubsetVectorData::addValuesByLocalID( int cnt, size_t *ndx, const double *vals )
 {
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
+    AMP_ASSERT( d_ViewVector );
     auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]];
@@ -157,7 +157,7 @@ void SubsetVectorData::addValuesByLocalID( int cnt, size_t *ndx, const double *v
 }
 void SubsetVectorData::setValuesByLocalID( int cnt, size_t *ndx, const double *vals )
 {
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
+    AMP_ASSERT( d_ViewVector );
     auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]];
@@ -166,7 +166,7 @@ void SubsetVectorData::setValuesByLocalID( int cnt, size_t *ndx, const double *v
 }
 void SubsetVectorData::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) const
 {
-    AMP_ASSERT( d_ViewVector.get() != nullptr );
+    AMP_ASSERT( d_ViewVector );
     auto t = new size_t[cnt];
     for ( int i = 0; i != cnt; i++ )
         t[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]];

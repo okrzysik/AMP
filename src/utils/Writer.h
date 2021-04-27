@@ -45,7 +45,8 @@ public:
      *               "Ascii" - A simple ascii writer
      *               "HDF5"  - A simple HDF5 writer
      */
-    static std::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type );
+    static std::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type,
+                                                                AMP_MPI comm = AMP_COMM_WORLD );
 
     /**
      * \brief   Function to build a writer

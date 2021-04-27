@@ -48,8 +48,8 @@ int ManagedMatrixParameters::maxEntitiesInRow() const
 
 bool ManagedMatrixParameters::isSquare()
 {
-    AMP_ASSERT( d_DOFManagerLeft.get() != nullptr );
-    AMP_ASSERT( d_DOFManagerRight.get() != nullptr );
+    AMP_ASSERT( d_DOFManagerLeft );
+    AMP_ASSERT( d_DOFManagerRight );
     return d_DOFManagerLeft->numLocalDOF() == d_DOFManagerRight->numLocalDOF() &&
            d_DOFManagerLeft->numGlobalDOF() == d_DOFManagerRight->numGlobalDOF();
 }

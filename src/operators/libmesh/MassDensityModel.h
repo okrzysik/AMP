@@ -36,7 +36,7 @@ public:
         UnknownManufacturedEquation
     };
 
-    explicit MassDensityModel( const std::shared_ptr<MassDensityModelParameters> &params );
+    explicit MassDensityModel( std::shared_ptr<const MassDensityModelParameters> params );
 
     virtual ~MassDensityModel() {}
 
@@ -83,7 +83,7 @@ public:
     MassEquation getEquation() { return d_equation; }
 
 protected:
-    AMP::Materials::Material::shared_ptr d_material;
+    std::shared_ptr<AMP::Materials::Material> d_material;
 
     /**
      * \brief Use a bilogarithmic scaling of material arguments

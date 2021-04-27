@@ -25,19 +25,17 @@ namespace Operator {
 
 
 // Constructor
-Map1Dto3D::Map1Dto3D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+Map1Dto3D::Map1Dto3D( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
 {
-    auto myparams =
-        std::dynamic_pointer_cast<MapOperatorParameters>( params );
-    d_MapMesh = myparams->d_MapMesh;
+    auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
+    d_MapMesh     = myparams->d_MapMesh;
     reset( myparams );
 }
 
 
-void Map1Dto3D::reset( const std::shared_ptr<OperatorParameters> &params )
+void Map1Dto3D::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    auto myparams =
-        std::dynamic_pointer_cast<MapOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -45,8 +43,7 @@ void Map1Dto3D::reset( const std::shared_ptr<OperatorParameters> &params )
     d_Mesh    = myparams->d_Mesh;
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != nullptr ? 1 : 0 ) > 0,
-                "Somebody must own the mesh" );
+    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh ? 1 : 0 ) > 0, "Somebody must own the mesh" );
 
     d_useGaussVec = myparams->d_db->getWithDefault( "UseGaussVec", false );
 
@@ -75,12 +72,12 @@ void Map1Dto3D::computeZNodeLocations()
 {
 
     // Check that the mesh exists on some processors
-    auto N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
+    auto N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh ? 1 : 0 ) );
     AMP_ASSERT( N_mesh > 0 );
 
     // Get the local location of nodes on the boundary
     std::vector<double> t_zLocations;
-    if ( d_MapMesh.get() != nullptr ) {
+    if ( d_MapMesh ) {
         // Get an iterator over the nodes on the boundary
         auto bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryId, 0 );
         AMP::Mesh::MeshIterator end_bnd = bnd.end();
@@ -117,15 +114,14 @@ void Map1Dto3D::computeZGaussLocations()
 {
 
     // Check that the mesh exists on some processors
-    auto N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh.get() != nullptr ? 1 : 0 ) );
+    auto N_mesh = d_MapComm.sumReduce<int>( ( d_MapMesh ? 1 : 0 ) );
     AMP_ASSERT( N_mesh > 0 );
 
     // Get the local location of nodes on the boundary
     std::vector<double> t_zLocations;
-    if ( d_MapMesh.get() != nullptr ) {
+    if ( d_MapMesh ) {
         // Get an iterator over the nodes on the boundary
-        auto bnd =
-            d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
+        auto bnd = d_MapMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, d_boundaryId, 0 );
         auto end_bnd = bnd.end();
 
         auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );

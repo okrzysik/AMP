@@ -1,7 +1,6 @@
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
 #include "AMP/ampmesh/triangle/TriangleMesh.h"
 #include "AMP/ampmesh/triangle/TriangleMeshElement.h"
-#include "AMP/utils/Utilities.h"
 
 
 namespace AMP {
@@ -10,20 +9,6 @@ namespace Mesh {
 
 // unused global variable to prevent compiler warning
 static MeshElement nullElement;
-
-
-/********************************************************
- * Create a unique id for each class                     *
- ********************************************************/
-template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-constexpr uint32_t TriangleMeshIterator<NG, NP, TYPE>::getTypeID()
-{
-    char name[] = "TriangleMeshIterator<0,0,0>";
-    name[21]    = 48 + NG;
-    name[23]    = 48 + NP;
-    name[25]    = 48 + TYPE;
-    return AMP::Utilities::hash_char( name );
-}
 
 
 /********************************************************
@@ -75,8 +60,8 @@ TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator( const TriangleMeshIter
     d_element  = &d_cur_element;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshIterator<NG, NP, TYPE> &TriangleMeshIterator<NG, NP, TYPE>::
-operator=( const TriangleMeshIterator &rhs )
+TriangleMeshIterator<NG, NP, TYPE> &
+TriangleMeshIterator<NG, NP, TYPE>::operator=( const TriangleMeshIterator &rhs )
 {
     if ( this == &rhs )
         return *this;

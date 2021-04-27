@@ -21,9 +21,9 @@ SolverStrategy::SolverStrategy()
     d_iMaxIterations       = 0;
     d_iObjectId            = 0;
 }
-SolverStrategy::SolverStrategy( std::shared_ptr<SolverStrategyParameters> parameters )
+SolverStrategy::SolverStrategy( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    AMP_INSIST( parameters.get() != nullptr, "NULL SolverStrategyParameters object" );
+    AMP_INSIST( parameters, "NULL SolverStrategyParameters object" );
 
     d_iObjectId            = SolverStrategy::d_iInstanceId;
     d_iNumberIterations    = -1;
@@ -48,7 +48,7 @@ SolverStrategy::~SolverStrategy() = default;
  ****************************************************************/
 void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
 {
-    AMP_INSIST( db.get() != nullptr, "InputDatabase object must be non-NULL" );
+    AMP_INSIST( db, "InputDatabase object must be non-NULL" );
     d_iMaxIterations       = db->getWithDefault( "max_iterations", 1 );
     d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
     d_bUseZeroInitialGuess = db->getWithDefault( "zero_initial_guess", true );
@@ -58,7 +58,7 @@ void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
 
 void SolverStrategy::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
 {
-    AMP_INSIST( parameters.get() != nullptr, "SolverStrategyParameters object cannot be NULL" );
+    AMP_INSIST( parameters, "SolverStrategyParameters object cannot be NULL" );
 }
 
 
@@ -66,9 +66,9 @@ void SolverStrategy::initialize( std::shared_ptr<SolverStrategyParameters> const
  * Reset                                                         *
  ****************************************************************/
 void SolverStrategy::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         d_pOperator->reset( params );
     }
 }

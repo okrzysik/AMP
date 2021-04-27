@@ -79,7 +79,7 @@ inline const Variable::shared_ptr Vector::getVariable() const { return d_pVariab
 inline Variable::shared_ptr Vector::getVariable() { return d_pVariable; }
 inline void Vector::setVariable( const Variable::shared_ptr name )
 {
-    AMP_ASSERT( name.get() != nullptr );
+    AMP_ASSERT( name );
     d_pVariable = name;
 }
 

@@ -27,7 +27,7 @@ class Map1Dto3D : public MapOperator
 {
 public:
     //! Default Constructor
-    explicit Map1Dto3D( const std::shared_ptr<OperatorParameters> &params );
+    explicit Map1Dto3D( std::shared_ptr<const OperatorParameters> params );
 
     //! De-constructor
     virtual ~Map1Dto3D() {}
@@ -39,7 +39,7 @@ public:
       This function reads the entries of the database for the operator
       and can also be used to change the parameters if required.
      */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
     /**
       For this operator the apply function would map the solution by injunction from

@@ -67,7 +67,7 @@ void MultiVariable::add( Variable::shared_ptr newVar )
 {
     std::shared_ptr<MultiVariable> multivariable =
         std::dynamic_pointer_cast<MultiVariable>( newVar );
-    if ( multivariable.get() != nullptr ) {
+    if ( multivariable ) {
         auto curVar = multivariable->beginVariable();
         while ( curVar != multivariable->endVariable() ) {
             add( *curVar );

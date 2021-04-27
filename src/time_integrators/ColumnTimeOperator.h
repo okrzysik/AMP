@@ -76,7 +76,7 @@ public:
 
     */
 
-    explicit ColumnTimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> params );
+    explicit ColumnTimeOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params );
 
     /**
      * virtual destructor
@@ -88,7 +88,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * The apply routine for the column operator calls apply on each of the component operators

@@ -98,17 +98,17 @@ static const double paramsTensor[] = { 1., 1., 1. };
 //=================== Classes =======================================================
 
 /** radial diffusion coefficient */
-class ScalarRadialFickProp : public Property<double>
+class ScalarRadialFickProp : public Property
 {
 public:
     ScalarRadialFickProp()
-        : Property<double>( name_base + "_" + "ScalarRadialFick", // Name string
-                            source,                               // Reference source
-                            params,                               // Property parameters
-                            nparams,                              // Number of parameters
-                            argumentsRadialFick,  // Names of arguments to the eval function
-                            nargumentsRadialFick, // Number of arguments
-                            fickRadialRanges )    // Ranges
+        : Property( name_base + "_" + "ScalarRadialFick", // Name string
+                    source,                               // Reference source
+                    params,                               // Property parameters
+                    nparams,                              // Number of parameters
+                    argumentsRadialFick,                  // Names of arguments to the eval function
+                    nargumentsRadialFick,                 // Number of arguments
+                    fickRadialRanges )                    // Ranges
     {
         d_variableNumberParameters = true;
     }
@@ -116,7 +116,7 @@ public:
     void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_ASSERT( nparams > 0 );
-        Property<double>::set_parameters_and_number( params, nparams );
+        Property::set_parameters_and_number( params, nparams );
     }
 
     /** returns property and derivative wrto r
@@ -126,17 +126,17 @@ public:
 };
 
 /** radial diffusion coefficient */
-class RadialFickProp : public VectorProperty<double>
+class RadialFickProp : public VectorProperty
 {
 public:
     RadialFickProp()
-        : VectorProperty<double>( name_base + "_" + "RadialFick", // Name string
-                                  source,                         // Reference source
-                                  params,                         // Property parameters
-                                  nparams,                        // Number of parameters
-                                  argumentsRadialFick,  // Names of arguments to the eval function
-                                  nargumentsRadialFick, // Number of arguments
-                                  fickRadialRanges )    // Ranges
+        : VectorProperty( name_base + "_" + "RadialFick", // Name string
+                          source,                         // Reference source
+                          params,                         // Property parameters
+                          nparams,                        // Number of parameters
+                          argumentsRadialFick,            // Names of arguments to the eval function
+                          nargumentsRadialFick,           // Number of arguments
+                          fickRadialRanges )              // Ranges
     {
         d_variableNumberParameters = true;
     }
@@ -144,7 +144,7 @@ public:
     void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_ASSERT( nparams > 0 );
-        Property<double>::set_parameters_and_number( params, nparams );
+        Property::set_parameters_and_number( params, nparams );
     }
 
     /** returns property and derivative wrto r
@@ -154,18 +154,17 @@ public:
 };
 
 /** longitudinal diffusion coefficient */
-class LongitudinalFickProp : public VectorProperty<double>
+class LongitudinalFickProp : public VectorProperty
 {
 public:
     LongitudinalFickProp()
-        : VectorProperty<double>(
-              name_base + "_" + "LongitudinalFick", // Name string
-              source,                               // Reference source
-              params,                               // Property parameters
-              nparams,                              // Number of parameters
-              argumentsLongitudinalFick,            // Names of arguments to the eval function
-              nargumentsLongitudinalFick,           // Number of arguments
-              fickLongitudinalRanges )              // Ranges
+        : VectorProperty( name_base + "_" + "LongitudinalFick", // Name string
+                          source,                               // Reference source
+                          params,                               // Property parameters
+                          nparams,                              // Number of parameters
+                          argumentsLongitudinalFick,  // Names of arguments to the eval function
+                          nargumentsLongitudinalFick, // Number of arguments
+                          fickLongitudinalRanges )    // Ranges
     {
         d_variableNumberParameters = true;
     }
@@ -173,7 +172,7 @@ public:
     void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
         AMP_ASSERT( nparams > 0 );
-        Property<double>::set_parameters_and_number( params, nparams );
+        Property::set_parameters_and_number( params, nparams );
     }
 
     std::vector<double> evalVector( std::vector<double> &args ) override;
@@ -188,18 +187,18 @@ public:
  * AuxiliaryInteger data "derivative" has values 0, 1, 2 for
  * zeroth, r- and z- derivatives, respectively.
  */
-class TensorFickProp : public TensorProperty<double>
+class TensorFickProp : public TensorProperty
 {
 public:
     TensorFickProp()
-        : TensorProperty<double>( name_base + "_" + "TensorFick", // Name string
-                                  source,                         // Reference source
-                                  paramsTensor,                   // Property parameters
-                                  nparamsTensor,                  // Number of parameters
-                                  argumentsTensorFick,  // Names of arguments to the eval function
-                                  nargumentsTensorFick, // Number of arguments
-                                  fickTensorRanges,     // ranges
-                                  std::vector<size_t>( 2, 3 ) ) // dimensions
+        : TensorProperty( name_base + "_" + "TensorFick", // Name string
+                          source,                         // Reference source
+                          paramsTensor,                   // Property parameters
+                          nparamsTensor,                  // Number of parameters
+                          argumentsTensorFick,            // Names of arguments to the eval function
+                          nargumentsTensorFick,           // Number of arguments
+                          fickTensorRanges,               // ranges
+                          std::vector<size_t>( 2, 3 ) )   // dimensions
     {
         d_variableNumberParameters = true;
         d_variableDimensions       = true;
@@ -210,7 +209,7 @@ public:
     // NOTE: must change dimension first before changing number of parameters
     void set_parameters_and_number( const double *params, const unsigned int nparams ) override
     {
-        Property<double>::set_parameters_and_number( params, nparams );
+        Property::set_parameters_and_number( params, nparams );
         AMP_ASSERT( d_nparams >= 3 );
         d_nparamsRadial = round_zero( d_params[0] );
         AMP_ASSERT( d_nparamsRadial < d_nparams - 1 );
@@ -320,7 +319,7 @@ std::vector<std::vector<double>> TensorFickProp::evalTensor( std::vector<double>
 
 CylindricallySymmetric::CylindricallySymmetric()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<AMP::Materials::Property<double>>>();
+    d_propertyMap = new std::map<std::string, std::shared_ptr<AMP::Materials::Property>>();
     INSERT_PROPERTY_IN_MAP( ScalarRadialFick, CylindricallySymmetric_NS );
     INSERT_PROPERTY_IN_MAP( RadialFick, CylindricallySymmetric_NS );
     INSERT_PROPERTY_IN_MAP( LongitudinalFick, CylindricallySymmetric_NS );

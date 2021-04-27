@@ -21,7 +21,7 @@ public:
       Constructor.
       @param [in] params
       */
-    explicit ConstraintsEliminationOperator( const std::shared_ptr<OperatorParameters> &params )
+    explicit ConstraintsEliminationOperator( std::shared_ptr<const OperatorParameters> params )
         : Operator( params )
     {
         AMP_INSIST( params->d_db->keyExists( "InputVariable" ), "key not found" );
@@ -46,7 +46,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
       Calls first addSlaveToMaster(...) and second setSlaveToZero(...) on the residual vector:

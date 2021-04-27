@@ -48,7 +48,7 @@ public:
      *                          4. type: bool, name: zero_initial_guess, default value: false,
      *                             acceptable values (TRUE, FALSE)
      */
-    explicit SolverStrategy( std::shared_ptr<SolverStrategyParameters> parameters );
+    explicit SolverStrategy( std::shared_ptr<const SolverStrategyParameters> parameters );
 
     /**
      * Default destructor. Currently does not do anything.
@@ -113,7 +113,7 @@ public:
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator \f$A()\f$ for equation \f$A(u) = f\f$
      */
-    virtual void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+    virtual void registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
     {
         d_pOperator = op;
     }
@@ -135,7 +135,7 @@ public:
      *        OperatorParameters object that is NULL by default
      */
     virtual void
-    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> parameters );
+    resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> parameters );
 
     /**
      * Resets the solver internally with new parameters if necessary

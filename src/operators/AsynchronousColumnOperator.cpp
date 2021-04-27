@@ -11,7 +11,7 @@ namespace Operator {
 AsynchronousColumnOperator::AsynchronousColumnOperator() : ColumnOperator() {}
 
 AsynchronousColumnOperator::AsynchronousColumnOperator(
-    const std::shared_ptr<OperatorParameters> &params )
+    std::shared_ptr<const OperatorParameters> params )
     : ColumnOperator( params )
 {
 }

@@ -13,23 +13,23 @@ namespace Operator {
 /************************************************************************
  *  Default constructor                                                  *
  ************************************************************************/
-ScalarZAxisMap::ScalarZAxisMap( const std::shared_ptr<AMP::Operator::OperatorParameters> &p )
+ScalarZAxisMap::ScalarZAxisMap( std::shared_ptr<const AMP::Operator::OperatorParameters> p )
     : Map3to1to3( p )
 {
-    auto params = std::dynamic_pointer_cast<Map3to1to3Parameters>( p );
+    auto params = std::dynamic_pointer_cast<const Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
     int DofsPerObj = params->d_db->getScalar<int>( "DOFsPerObject" );
     AMP_INSIST( DofsPerObj == 1, "ScalarZAxis is currently only designed for 1 DOF per node" );
 
     // Create the element iterators
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         d_srcIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID1, 0 );
         d_dstIterator1 =
             d_mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID1, 0 );
     }
-    if ( d_mesh2.get() != nullptr ) {
+    if ( d_mesh2 ) {
         d_srcIterator2 =
             d_mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, params->d_BoundaryID2, 0 );
         d_dstIterator2 =
@@ -47,12 +47,7 @@ ScalarZAxisMap::~ScalarZAxisMap() = default;
 /************************************************************************
  *  Check if the map type is "ScalarZAxis"                               *
  ************************************************************************/
-bool ScalarZAxisMap::validMapType( const std::string &t )
-{
-    if ( t == "ScalarZAxis" )
-        return true;
-    return false;
-}
+bool ScalarZAxisMap::validMapType( const std::string &t ) { return t == "ScalarZAxis"; }
 
 
 /************************************************************************

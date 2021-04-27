@@ -179,9 +179,16 @@ public:
 private:
     inline void lock()
     {
-        while ( !AtomicOperations::atomic_compare_and_swap( &d_lock, 0, 1 ) ) {}
+        int expected = 0;
+        while ( !d_lock.compare_exchange_weak( expected, 1 ) ) {
+            expected = 0;
+        }
     }
-    inline void unlock() { AtomicOperations::atomic_compare_and_swap( &d_lock, 1, 0 ); }
+    inline void unlock()
+    {
+        int expected = 1;
+        d_lock.compare_exchange_weak( expected, 0 );
+    }
     inline void checkBlocked()
     {
         if ( d_Nb == 0 )
@@ -201,7 +208,7 @@ private:
     }
 
 private: ///// Member data
-    volatile AtomicOperations::int32_atomic d_lock;
+    volatile std::atomic_int32_t d_lock;
     const size_t d_Nc;
     volatile size_t d_Nh;
     volatile size_t d_Nb;

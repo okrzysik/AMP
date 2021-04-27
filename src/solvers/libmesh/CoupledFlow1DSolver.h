@@ -25,7 +25,7 @@ public:
 
     void reset( std::shared_ptr<SolverStrategyParameters> ) override;
 
-    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
 protected:
     int d_numpoints; /**< Number of points in z direction */

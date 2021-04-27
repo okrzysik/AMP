@@ -169,7 +169,7 @@ public:
      * \param[in] db    Parameters for constructing a geometry from an input database
      */
     static std::shared_ptr<AMP::Geometry::Geometry>
-    buildGeometry( std::shared_ptr<AMP::Database> db );
+    buildGeometry( std::shared_ptr<const AMP::Database> db );
 
 
 protected:

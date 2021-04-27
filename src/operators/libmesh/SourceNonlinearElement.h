@@ -42,7 +42,7 @@ public:
       5) INTEGRATEVOLUME (TRUE by default)- Bool to choose to Integrate (Contradiction to the class
       ???).
      */
-    explicit SourceNonlinearElement( const std::shared_ptr<ElementOperationParameters> &params );
+    explicit SourceNonlinearElement( std::shared_ptr<const ElementOperationParameters> params );
 
     //! Destructor.
     virtual ~SourceNonlinearElement() {}
@@ -55,9 +55,8 @@ public:
       @param [in] sourceTransportModel Shared pointer to the Source Physics Model used in the
       current element.
      */
-    void
-    initializeForCurrentElement( const libMesh::Elem *elem,
-                                 const std::shared_ptr<SourcePhysicsModel> &sourceTransportModel );
+    void initializeForCurrentElement( const libMesh::Elem *elem,
+                                      std::shared_ptr<SourcePhysicsModel> sourceTransportModel );
 
     void setElementInputVector( const std::vector<std::vector<double>> &elementInputVector )
     {

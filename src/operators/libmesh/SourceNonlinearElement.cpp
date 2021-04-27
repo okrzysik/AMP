@@ -17,11 +17,11 @@ namespace AMP {
 namespace Operator {
 
 SourceNonlinearElement::SourceNonlinearElement(
-    const std::shared_ptr<ElementOperationParameters> &params )
+    std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elementOutputVector( nullptr ), d_elem( nullptr )
 {
 
-    AMP_INSIST( ( params.get() != nullptr ), "''params'' is NULL" );
+    AMP_INSIST( ( params ), "''params'' is NULL" );
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
@@ -45,7 +45,7 @@ SourceNonlinearElement::SourceNonlinearElement(
     d_fe->get_xyz();
 
     std::string qruleOrderName =
-        ( params->d_db )->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 
@@ -71,11 +71,11 @@ SourceNonlinearElement::SourceNonlinearElement(
 
 
 void SourceNonlinearElement::initializeForCurrentElement(
-    const libMesh::Elem *elem, const std::shared_ptr<SourcePhysicsModel> &sourcePhysicsModel )
+    const libMesh::Elem *elem, std::shared_ptr<SourcePhysicsModel> sourcePhysicsModel )
 {
     d_elem = elem;
 
-    if ( sourcePhysicsModel.get() != nullptr ) {
+    if ( sourcePhysicsModel ) {
         d_sourcePhysicsModel = sourcePhysicsModel;
     }
 }
@@ -108,7 +108,7 @@ void SourceNonlinearElement::apply()
             }
         }
 
-        if ( d_sourcePhysicsModel.get() != nullptr ) {
+        if ( d_sourcePhysicsModel ) {
             d_sourcePhysicsModel->getConstitutiveProperty(
                 source_physics, source_vectors, auxillary_vectors, coordinates );
         }
@@ -133,7 +133,7 @@ void SourceNonlinearElement::apply()
             }
         }
 
-        if ( d_sourcePhysicsModel.get() != nullptr ) {
+        if ( d_sourcePhysicsModel ) {
             d_sourcePhysicsModel->getConstitutiveProperty(
                 source_physics, source_vectors, auxillary_vectors, coordinates );
         }
@@ -146,7 +146,7 @@ void SourceNonlinearElement::apply()
     }
     for ( unsigned int j = 0; j < n_nodes; j++ ) {
         for ( unsigned int qp = 0; qp < n_points; qp++ ) {
-            if ( d_sourcePhysicsModel.get() != nullptr ) {
+            if ( d_sourcePhysicsModel ) {
                 elementOutputVector[j] += ( JxW[qp] * source_physics[qp] * phi[j][qp] );
             } else {
                 if ( d_integrateVolume ) {

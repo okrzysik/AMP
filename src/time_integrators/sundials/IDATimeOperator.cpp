@@ -22,13 +22,10 @@ IDATimeOperator::~IDATimeOperator() = default;
 
 /*
 void
-IDATimeOperator::reset(const std::shared_ptr<OperatorParameters>& in_params)
+IDATimeOperator::reset( std::shared_ptr<OperatorParameters> in_params)
 {
-    std::shared_ptr<IDATimeOperatorParameters> params =
-std::dynamic_pointer_cast<IDATimeOperatorParameters>(in_params);
-
+    auto params = std::dynamic_pointer_cast<IDATimeOperatorParameters>(in_params);
     getFromInput(params->d_db);
-
 }
 */
 
@@ -48,7 +45,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << d_pScratchVector << std::endl;
     }
 
-    if ( d_pAlgebraicVariable.get() != nullptr ) {
+    if ( d_pAlgebraicVariable ) {
         auto algebraicComponent = d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
         algebraicComponent->zero();
     }

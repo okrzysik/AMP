@@ -19,7 +19,7 @@ class KrylovSolverParameters : public SolverStrategyParameters
 {
 public:
     KrylovSolverParameters() {}
-    explicit KrylovSolverParameters( const std::shared_ptr<AMP::Database> db );
+    explicit KrylovSolverParameters( std::shared_ptr<AMP::Database> db );
     virtual ~KrylovSolverParameters() {}
 
     AMP_MPI d_comm;

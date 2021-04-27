@@ -11,15 +11,15 @@ namespace Operator {
  * Constructors                                                  *
  ****************************************************************/
 DirichletMatrixCorrection::DirichletMatrixCorrection(
-    const std::shared_ptr<DirichletMatrixCorrectionParameters> &params )
+    std::shared_ptr<const DirichletMatrixCorrectionParameters> params )
     : BoundaryOperator( params ), d_variable( params->d_variable )
 {
     d_computedAddRHScorrection = false;
-    d_symmetricCorrection      = ( params->d_db )->getWithDefault( "symmetric_correction", true );
-    d_zeroDirichletBlock       = ( params->d_db )->getWithDefault( "zero_dirichlet_block", false );
-    d_skipRHSsetCorrection     = ( params->d_db )->getWithDefault( "skip_rhs_correction", true );
+    d_symmetricCorrection      = params->d_db->getWithDefault( "symmetric_correction", true );
+    d_zeroDirichletBlock       = params->d_db->getWithDefault( "zero_dirichlet_block", false );
+    d_skipRHSsetCorrection     = params->d_db->getWithDefault( "skip_rhs_correction", true );
     d_skipRHSaddCorrection =
-        ( params->d_db )->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
+        params->d_db->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
     d_applyMatrixCorrectionWasCalled = false;
 
     reset( params );
@@ -29,12 +29,11 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
 /****************************************************************
  * Reset                                                         *
  ****************************************************************/
-void DirichletMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
+void DirichletMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<DirichletMatrixCorrectionParameters> myParams =
-        std::dynamic_pointer_cast<DirichletMatrixCorrectionParameters>( params );
+    auto myParams = std::dynamic_pointer_cast<const DirichletMatrixCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myParams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( myParams, "NULL parameters" );
 
     parseParams( myParams );
 
@@ -42,12 +41,10 @@ void DirichletMatrixCorrection::reset( const std::shared_ptr<OperatorParameters>
     AMP_INSIST( ( ( d_inputMatrix.get() ) != nullptr ), "NULL matrix" );
     d_inputMatrix->makeConsistent(); // Check that we can call makeConsistent
 
-    if ( d_skipRHSsetCorrection ) {
+    if ( d_skipRHSsetCorrection )
         AMP_ASSERT( d_skipRHSaddCorrection );
-    }
-    if ( !d_skipRHSaddCorrection ) {
+    if ( !d_skipRHSaddCorrection )
         AMP_ASSERT( !d_skipRHSsetCorrection );
-    }
 
     d_applyMatrixCorrectionWasCalled = false;
 
@@ -58,26 +55,25 @@ void DirichletMatrixCorrection::reset( const std::shared_ptr<OperatorParameters>
     } // end if
 }
 void DirichletMatrixCorrection::parseParams(
-    const std::shared_ptr<DirichletMatrixCorrectionParameters> &params )
+    std::shared_ptr<const DirichletMatrixCorrectionParameters> params )
 {
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams = ( params->d_db )->getWithDefault( "skip_params", false );
+    AMP_INSIST( params->d_db, "NULL database" );
+    bool skipParams = params->d_db->getWithDefault( "skip_params", false );
 
     if ( !skipParams ) {
-        d_symmetricCorrection = ( params->d_db )->getWithDefault( "symmetric_correction", true );
-        d_zeroDirichletBlock  = ( params->d_db )->getWithDefault( "zero_dirichlet_block", false );
+        d_symmetricCorrection = params->d_db->getWithDefault( "symmetric_correction", true );
+        d_zeroDirichletBlock  = params->d_db->getWithDefault( "zero_dirichlet_block", false );
 
-        d_skipRHSsetCorrection = ( params->d_db )->getWithDefault( "skip_rhs_correction", true );
+        d_skipRHSsetCorrection = params->d_db->getWithDefault( "skip_rhs_correction", true );
         d_skipRHSaddCorrection =
-            ( params->d_db )->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
+            params->d_db->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
 
-        if ( d_symmetricCorrection == false ) {
+        if ( d_symmetricCorrection == false )
             d_skipRHSaddCorrection = true;
-        }
 
-        AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
+        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
+        int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -85,18 +81,18 @@ void DirichletMatrixCorrection::parseParams(
         char key[100];
         for ( int j = 0; j < numIds; ++j ) {
             sprintf( key, "id_%d", j );
-            AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( params->d_db )->getScalar<int>( key );
+            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+            d_boundaryIds[j] = params->d_db->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
-            AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( params->d_db )->getScalar<int>( key );
+            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+            int numDofIds = params->d_db->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; ++i ) {
                 sprintf( key, "dof_%d_%d", j, i );
-                AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( params->d_db )->getScalar<int>( key );
+                AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+                d_dofIds[j][i] = params->d_db->getScalar<int>( key );
             } // end for i
         }     // end for j
 
@@ -108,7 +104,7 @@ void DirichletMatrixCorrection::parseParams(
 
                 for ( int i = 0; i < numDofIds; ++i ) {
                     sprintf( key, "value_%d_%d", j, i );
-                    d_dirichletValues[j][i] = ( params->d_db )->getWithDefault<double>( key, 0.0 );
+                    d_dirichletValues[j][i] = params->d_db->getWithDefault<double>( key, 0.0 );
                 } // end for i
             }     // end for j
         }

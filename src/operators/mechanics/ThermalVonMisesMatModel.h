@@ -14,7 +14,7 @@ namespace Operator {
 class ThermalVonMisesMatModel : public MechanicsMaterialModel
 {
 public:
-    explicit ThermalVonMisesMatModel( const std::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit ThermalVonMisesMatModel( std::shared_ptr<MechanicsMaterialModelParameters> );
 
     virtual ~ThermalVonMisesMatModel() {}
 

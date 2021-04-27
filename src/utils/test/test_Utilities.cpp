@@ -20,18 +20,6 @@
 
 #include "StackTrace/StackTrace.h"
 
-// Detect the OS (defines which tests we allow to fail)
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
-    defined( _MSC_VER )
-#define USE_WINDOWS
-#elif defined( __APPLE__ )
-#define USE_MAC
-#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
-#define USE_LINUX
-#else
-#error Unknown OS
-#endif
-
 
 using namespace AMP;
 
@@ -265,6 +253,17 @@ int main( int argc, char *argv[] )
         // Test enable_shared_from_this
         test_shared_from_this( &ut );
 
+        // Check the OS
+        constexpr auto OS = Utilities::getOS();
+        if constexpr ( OS == Utilities::OS::Linux )
+            ut.passes( "OS: Linux" );
+        else if constexpr ( OS == Utilities::OS::Windows )
+            ut.passes( "OS: Windows" );
+        else if constexpr ( OS == Utilities::OS::macOS )
+            ut.passes( "OS: macOS" );
+        else
+            ut.failure( "Known OS" );
+
         // Try converting an int to a string
         if ( Utilities::intToString( 37, 0 ) == "37" && Utilities::intToString( 37, 3 ) == "037" )
             ut.passes( "Convert int to string" );
@@ -366,21 +365,17 @@ int main( int argc, char *argv[] )
             ut.passes( "getMemoryUsage returns non-zero" );
             if ( n_bytes2 > n_bytes1 ) {
                 ut.passes( "getMemoryUsage increases size" );
-            } else {
-#if defined( USE_MAC )
+            } else if ( OS == Utilities::OS::macOS ) {
                 ut.expected_failure( "getMemoryUsage does not increase size" );
-#else
+            } else {
                 ut.failure( "getMemoryUsage increases size" );
-#endif
             }
             if ( n_bytes1 == n_bytes3 ) {
                 ut.passes( "getMemoryUsage decreases size properly" );
-            } else {
-#if defined( USE_MAC ) || defined( USE_WINDOWS )
+            } else if ( OS != Utilities::OS::Linux ) {
                 ut.expected_failure( "getMemoryUsage does not decrease size properly" );
-#else
+            } else {
                 ut.failure( "getMemoryUsage does not decrease size properly" );
-#endif
             }
         }
 

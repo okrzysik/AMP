@@ -10,7 +10,7 @@ Flow1DSolver::Flow1DSolver( std::shared_ptr<SolverStrategyParameters> parameters
     : SolverStrategy( parameters )
 {
 
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     initialize( parameters );
 }
@@ -23,11 +23,11 @@ void Flow1DSolver::initialize( std::shared_ptr<SolverStrategyParameters> const p
 {
     getFromInput( parameters->d_db );
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         std::shared_ptr<AMP::Operator::FlowFrapconJacobian> Operator =
             std::dynamic_pointer_cast<AMP::Operator::FlowFrapconJacobian>( d_pOperator );
 
-        AMP_ASSERT( Operator.get() != nullptr );
+        AMP_ASSERT( Operator );
 
         d_inpVariable = Operator->d_inpVariable;
         d_outVariable = Operator->d_outVariable;
@@ -46,12 +46,12 @@ void Flow1DSolver::initialize( std::shared_ptr<SolverStrategyParameters> const p
 void Flow1DSolver::reset( std::shared_ptr<SolverStrategyParameters> )
 {
 
-    if ( d_pOperator.get() != nullptr ) {}
+    if ( d_pOperator ) {}
 }
 
-void Flow1DSolver::resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+void Flow1DSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         d_pOperator->reset( params );
     }
 }

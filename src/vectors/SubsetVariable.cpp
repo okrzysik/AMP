@@ -28,7 +28,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
 {
     PROFILE_START( "view", 2 );
     auto var = std::dynamic_pointer_cast<SubsetVariable>( var_in );
-    AMP_ASSERT( var.get() != nullptr );
+    AMP_ASSERT( var );
     if ( std::dynamic_pointer_cast<const MultiVector>( v ) ) {
         // We are dealing with a multivector, it is more efficient to subset the individual pieces,
         // then create a new mulitvector

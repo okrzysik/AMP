@@ -35,7 +35,7 @@ public:
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
      */
-    explicit MultiMesh( const std::shared_ptr<MeshParameters> &params );
+    explicit MultiMesh( std::shared_ptr<const MeshParameters> params );
 
 
     /**
@@ -65,7 +65,7 @@ public:
      *   any communication and should not have to actually load a mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t estimateMeshSize( const std::shared_ptr<MeshParameters> &params );
+    static size_t estimateMeshSize( std::shared_ptr<const MeshParameters> params );
 
     /**
      * \brief   Return the maximum number of processors that can be used with the mesh
@@ -73,7 +73,7 @@ public:
      *   be used with the mesh.
      * \param params Parameters for constructing a mesh from an input database
      */
-    static size_t maxProcs( const std::shared_ptr<MeshParameters> &params );
+    static size_t maxProcs( std::shared_ptr<const MeshParameters> params );
 
     /* Return the number of local element of the given type
      * \param type   Geometric type
@@ -321,16 +321,6 @@ public:
     using Mesh::Subset;
 
 
-    // Function to simulate loading a multimesh
-    static loadBalanceSimulator simulateBuildMesh( const std::shared_ptr<MeshParameters> params,
-                                                   const std::vector<int> &comm_ranks );
-
-    // Function to add a processor to the load balance simulation
-    static bool addProcSimulation( const loadBalanceSimulator &mesh,
-                                   std::vector<loadBalanceSimulator> &submeshes,
-                                   int rank,
-                                   char &decomp );
-
 public: // Default constructors
     MultiMesh()                           = delete;
     explicit MultiMesh( MultiMesh &&rhs ) = default;
@@ -339,33 +329,6 @@ public: // Default constructors
     MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
 public: // Functions to help with load balancing
-    //! A convienence typedef to hold a list of ranks
-    typedef std::vector<int> rank_list;
-
-    /**
-     * \brief    A function to compute the comm groups given a weight
-     * \details  This function computes the sub communicator groups given
-     *   the weights for each submesh.
-     * \param N_procs   The size of the communicator for the splitting
-     * \param params    Array of mesh parameters used to contruct the submeshes
-     * \param size      Array of the number of elements in each submesh
-     * \param method    Method to use for the load balance calculation
-     *                  0: All meshes will be on the same communication
-     *                  1: Minimize comm size and split the meshes.
-     *                     If there are more processor than meshes, then every
-     *                     mesh will be on a different set of processors regardless
-     *                     of the effect on the load balancer.
-     *                  2: Non-overlapping communicators that tries to achieve a good
-     *                     load balancing.  This will attempt to split the meshes onto different
-     *                     communicators, but may combine them to achieve a better load
-     *                     balance.  This is not implimented yet.
-     */
-    static std::vector<rank_list>
-    loadBalancer( int N_procs,
-                  const std::vector<std::shared_ptr<MeshParameters>> &params,
-                  const std::vector<size_t> &size,
-                  int method = 1 );
-
     /**
      * \brief    A function to compute the AMP_MPI comms for each mesh
      * \details  This function computes the AMP_MPI comms for each mesh given the comm groups
@@ -373,33 +336,14 @@ public: // Functions to help with load balancing
      * \param groups   List of ranks for each communication group
      */
     static std::vector<AMP_MPI> createComms( const AMP_MPI &comm,
-                                             const std::vector<rank_list> &groups );
+                                             const std::vector<std::vector<int>> &groups );
 
 
-private:
+public:
     //! Function to create the databases for the meshes within the multimesh
     static std::vector<std::shared_ptr<AMP::Database>>
-    createDatabases( std::shared_ptr<AMP::Database> database );
+    createDatabases( std::shared_ptr<const AMP::Database> database );
 
-    // Structure used to create communication groups
-    struct comm_groups {
-        int N_procs;          // Number of processor in the group
-        std::vector<int> ids; // mesh ids in the groups
-    };
-
-    // Function to distribute N groups with weights onto P processors (P>N) with the greatest number
-    // of groups possible
-    // (smallest comms)
-    static std::vector<comm_groups>
-    independentGroups1( int N_procs,
-                        const std::vector<std::shared_ptr<MeshParameters>> &params,
-                        const std::vector<size_t> &size );
-
-    // Function to distribute N groups with weights onto P processors (N>P) with the greatest number
-    // of groups possible
-    // (comm size = 1)
-    static std::vector<comm_groups> independentGroups2( int N_procs,
-                                                        std::vector<std::pair<double, int>> &ids );
 
 private:
     //! A list of all meshes in the multimesh

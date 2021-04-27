@@ -20,18 +20,17 @@
 
 //=================== Classes =======================================================
 
-class ThermalDiffusionCoefficientProp : public AMP::Materials::Property<double>
+class ThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
     ThermalDiffusionCoefficientProp()
-        : AMP::Materials::Property<double>(
-              name_base + "_" + "ThermalDiffusionCoefficient", // Name string
-              source,                                          // Reference source
-              thermalDiffusionParams,                          // Property parameters
-              numberThDiffParams,                              // Number of parameters
-              thermDiffArgs, // Names of arguments to the eval function
-              numberThermDiffArgs,
-              thermDiffRanges ),
+        : AMP::Materials::Property( name_base + "_" + "ThermalDiffusionCoefficient", // Name string
+                                    source,                 // Reference source
+                                    thermalDiffusionParams, // Property parameters
+                                    numberThDiffParams,     // Number of parameters
+                                    thermDiffArgs, // Names of arguments to the eval function
+                                    numberThermDiffArgs,
+                                    thermDiffRanges ),
           d_ExtraParams( 2 )
     {
     } // Number of arguments
@@ -69,18 +68,18 @@ private:
 // derivatives of Fick and Soret coefficients.
 #ifdef THERMAL_DIFFUSION_DERIVATIVE
 
-class DxThermalDiffusionCoefficientProp : public AMP::Materials::Property<double>
+class DxThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
     DxThermalDiffusionCoefficientProp()
-        : AMP::Materials::Property<double>(
-              name_base + "_" + "DxThermalDiffusionCoefficient", // Name string
-              source,                                            // Reference source
-              thermalDiffusionParams,                            // Property parameters
-              numberThDiffParams,                                // Number of parameters
-              thermDiffArgs, // Names of arguments to the eval function
-              numberThermDiffArgs,
-              thermDiffRanges ),
+        : AMP::Materials::Property( name_base + "_" +
+                                        "DxThermalDiffusionCoefficient", // Name string
+                                    source,                              // Reference source
+                                    thermalDiffusionParams,              // Property parameters
+                                    numberThDiffParams,                  // Number of parameters
+                                    thermDiffArgs, // Names of arguments to the eval function
+                                    numberThermDiffArgs,
+                                    thermDiffRanges ),
           d_ExtraParams( 4 )
     {
     } // Number of arguments
@@ -118,18 +117,18 @@ private:
     std::vector<double> d_ExtraParams;
 };
 
-class DTThermalDiffusionCoefficientProp : public AMP::Materials::Property<double>
+class DTThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
     DTThermalDiffusionCoefficientProp()
-        : AMP::Materials::Property<double>(
-              name_base + "_" + "DTThermalDiffusionCoefficient", // Name string
-              source,                                            // Reference source
-              thermalDiffusionParams,                            // Property parameters
-              numberThDiffParams,                                // Number of parameters
-              thermDiffArgs, // Names of arguments to the eval function
-              numberThermDiffArgs,
-              thermDiffRanges ),
+        : AMP::Materials::Property( name_base + "_" +
+                                        "DTThermalDiffusionCoefficient", // Name string
+                                    source,                              // Reference source
+                                    thermalDiffusionParams,              // Property parameters
+                                    numberThDiffParams,                  // Number of parameters
+                                    thermDiffArgs, // Names of arguments to the eval function
+                                    numberThermDiffArgs,
+                                    thermDiffRanges ),
           d_ExtraParams( 4 )
     {
     } // Number of arguments

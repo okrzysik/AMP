@@ -13,7 +13,7 @@ class GaussPointToGaussPointMap : public NodeToNodeMap
 {
 public:
     explicit GaussPointToGaussPointMap(
-        const std::shared_ptr<AMP::Operator::OperatorParameters> &params );
+        std::shared_ptr<const AMP::Operator::OperatorParameters> params );
 
     virtual void applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr f ) override;
@@ -30,7 +30,7 @@ public:
     std::string type() const override { return "GaussPointToGaussPointMap"; }
 
 protected:
-    void createIdxMap( std::shared_ptr<AMP::Operator::OperatorParameters> params );
+    void createIdxMap( std::shared_ptr<const AMP::Operator::OperatorParameters> params );
 
     void correctLocalOrdering();
 

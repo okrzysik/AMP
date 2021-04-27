@@ -25,7 +25,7 @@ namespace TimeIntegrator {
 class LinearTimeOperator : public AMP::Operator::LinearOperator
 {
 public:
-    explicit LinearTimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> params );
+    explicit LinearTimeOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params );
     virtual ~LinearTimeOperator();
 
     /**
@@ -33,7 +33,7 @@ public:
      * \param params
      *        parameter object containing parameters to change
      */
-    void reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     void registerRhsOperator( std::shared_ptr<AMP::Operator::LinearOperator> op )
     {

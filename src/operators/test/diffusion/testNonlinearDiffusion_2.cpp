@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -63,8 +62,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
     //----------------------------------------------------------------------------------------------------------------------------------------------//
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
-    auto diffFEOp_db =
-        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "NonlinearDiffusionOp" ) );
+    auto diffFEOp_db       = input_db->getDatabase( "NonlinearDiffusionOp" );
     auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "NonlinearDiffusionOp", input_db, elementModel );
     auto diffOp =

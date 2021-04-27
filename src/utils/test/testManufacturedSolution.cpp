@@ -26,8 +26,7 @@ void testit( AMP::UnitTest *ut,
              double y,
              double z )
 {
-    std::shared_ptr<AMP::Database> db( std::dynamic_pointer_cast<AMP::Database>(
-        std::make_shared<AMP::Database>( "ManufacturedSolution" ) ) );
+    auto db = std::make_shared<AMP::Database>( "ManufacturedSolution" );
 
     db->putScalar( "Geometry", geom );
     db->putScalar( "Order", order );

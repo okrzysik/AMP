@@ -88,14 +88,14 @@ public:
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator $A()$ for equation \f$A(u) = f\f$
      */
-    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the registered operator internally with new parameters if necessary
      * @param parameters    OperatorParameters object that is NULL by default
      */
     void
-    resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> parameters ) override;
+    resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> parameters ) override;
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );

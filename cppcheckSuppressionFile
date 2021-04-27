@@ -25,6 +25,7 @@ preprocessorErrorDirective:* // Suppress #error messages (may be valid and will 
 // Suppress headers                                         *
 // Keeping these seperate is useful for downstream packages *
 //***********************************************************
+noExplicitConstructor:*/AMP/ampmesh/loadBalance/loadBalanceSimulator.h
 noExplicitConstructor:*/AMP/ampmesh/MeshID.h
 noExplicitConstructor:*/AMP/ampmesh/MeshPoint.h
 noExplicitConstructor:*/AMP/ampmesh/MeshGeometry.h

@@ -6,11 +6,11 @@
 namespace AMP {
 namespace TimeIntegrator {
 
-TimeOperator::TimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
+TimeOperator::TimeOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
     : Operator( in_params )
 
 {
-    auto params = std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
 
     d_bLinearMassOperator = false;
     d_bLinearRhsOperator  = false;
@@ -42,20 +42,19 @@ void TimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
 }
 
-void TimeOperator::reset( const std::shared_ptr<AMP::Operator::OperatorParameters> &in_params )
+void TimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
 {
-    std::shared_ptr<TimeOperatorParameters> params =
-        std::dynamic_pointer_cast<TimeOperatorParameters>( in_params );
+    auto params = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
 
-    AMP_INSIST( params.get() != nullptr, "Error: NULL TimeOperatorParameters object" );
+    AMP_INSIST( params, "Error: NULL TimeOperatorParameters object" );
 
     getFromInput( params->d_db );
 
-    if ( params->d_pRhsOperatorParameters.get() != nullptr ) {
+    if ( params->d_pRhsOperatorParameters ) {
         d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
     }
 
-    if ( params->d_pMassOperatorParameters.get() != nullptr ) {
+    if ( params->d_pMassOperatorParameters ) {
         d_pMassOperator->reset( params->d_pMassOperatorParameters );
     }
 }
@@ -69,16 +68,16 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
 
-    AMP_INSIST( d_pMassOperator.get() != nullptr,
+    AMP_INSIST( d_pMassOperator,
                 "ERROR: "
                 "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
                 "apply, the mass operator is NULL!" );
-    AMP_INSIST( d_pRhsOperator.get() != nullptr,
+    AMP_INSIST( d_pRhsOperator,
                 "ERROR: "
                 "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
                 "apply, the rhs operator is NULL!" );
 
-    if ( u.get() != nullptr )
+    if ( u )
         AMP_ASSERT( u->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 

@@ -5,8 +5,6 @@
 #include <csignal>
 #include <functional>
 
-#include "AMP/utils/threadpool/atomic_helpers.h"
-
 
 namespace AMP {
 
@@ -58,13 +56,13 @@ public:
      * \brief   Return the size of the list
      * \details Return the number of items in the list
      */
-    inline size_t size() const { return AtomicOperations::atomic_get( &d_N ); }
+    inline size_t size() const { return d_N.load(); }
 
     /*!
      * \brief   Check if the list is empty
      * \details Return true if the list is empty
      */
-    inline bool empty() const { return AtomicOperations::atomic_get( &d_N ) == 0; }
+    inline bool empty() const { return d_N.load() == 0; }
 
     /*!
      * \brief   Clear the list
@@ -101,11 +99,11 @@ public:
 
 
     //! Return the total number of inserts since object creation
-    inline size_t N_insert() const { return AtomicOperations::atomic_get( &d_N_insert ); }
+    inline size_t N_insert() const { return d_N_insert.load(); }
 
 
     //! Return the total number of removals since object creation
-    inline size_t N_remove() const { return AtomicOperations::atomic_get( &d_N_remove ); }
+    inline size_t N_remove() const { return d_N_remove.load(); }
 
 private:
     // Data members
@@ -113,11 +111,11 @@ private:
     const size_t d_capacity;
     volatile TYPE d_default;
     volatile TYPE *d_objects;
-    volatile AtomicOperations::int32_atomic d_N;
-    volatile AtomicOperations::int32_atomic *d_next;
-    volatile AtomicOperations::int32_atomic d_unused;
-    volatile AtomicOperations::int64_atomic d_N_insert;
-    volatile AtomicOperations::int64_atomic d_N_remove;
+    volatile std::atomic_int32_t d_N;
+    volatile std::atomic_int32_t *d_next;
+    volatile std::atomic_int32_t d_unused;
+    volatile std::atomic_int64_t d_N_insert;
+    volatile std::atomic_int64_t d_N_remove;
 
 private:
     inline int lock( int i )
@@ -126,22 +124,22 @@ private:
             return -1;
         int tmp = 0;
         do {
-            tmp = AtomicOperations::atomic_fetch_and_and( &d_next[i], 0 );
+            tmp = d_next[i].fetch_and( 0 );
         } while ( tmp == 0 );
         return tmp;
     }
     inline void unlock( int i, int value )
     {
         if ( i != -1 )
-            AtomicOperations::atomic_fetch_and_or( &d_next[i], value );
+            d_next[i].fetch_or( value );
     }
     inline int get_unused()
     {
         int i = 0;
         do {
-            i = AtomicOperations::atomic_fetch_and_and( &d_unused, 0 );
+            i = d_unused.fetch_and( 0 );
         } while ( i == 0 );
-        AtomicOperations::atomic_fetch_and_or( &d_unused, -( d_next[i] + 4 ) + 1 );
+        d_unused.fetch_or( -( d_next[i] + 4 ) + 1 );
         d_next[i] = -3;
         return i;
     }
@@ -149,10 +147,10 @@ private:
     {
         int j = 0;
         do {
-            AtomicOperations::atomic_swap( &d_unused, &j );
+            j = d_unused.exchange( j );
         } while ( j == 0 );
         d_next[i] = -3 - j;
-        AtomicOperations::atomic_fetch_and_or( &d_unused, i );
+        d_unused.fetch_or( i );
     }
 
 

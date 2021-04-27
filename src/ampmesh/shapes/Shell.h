@@ -22,7 +22,7 @@ public:
      * \brief Construct a Shell geometry
      * \param db        Input database
      */
-    explicit Shell( std::shared_ptr<AMP::Database> db );
+    explicit Shell( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a Shell geometry

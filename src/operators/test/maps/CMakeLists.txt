@@ -7,7 +7,7 @@ COPY_TEST_FILE( inputNodeToNodeMap-1 )
 
 
 # Test strided z axis map
-ADD_TB_PROVISIONAL_TEST( testStridedZAxisMap )
+ADD_TB_TEST( testStridedZAxisMap )
 COPY_TEST_FILE( input_testStridedZAxisMap )
 
 

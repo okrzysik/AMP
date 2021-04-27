@@ -16,7 +16,7 @@ public:
     explicit AsynchronousColumnOperator();
 
     //! Default constructor
-    explicit AsynchronousColumnOperator( const std::shared_ptr<OperatorParameters> & );
+    explicit AsynchronousColumnOperator( std::shared_ptr<const OperatorParameters> );
 
     //! Return the name of the operator
     std::string type() const override { return "AsynchronousColumnOperator"; }

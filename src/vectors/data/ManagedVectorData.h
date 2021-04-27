@@ -33,7 +33,7 @@ public:
     /** \brief Construct a view of an AMP vector
      * \param[in] alias  Vector to view
      */
-    explicit ManagedVectorData( const std::shared_ptr<VectorData> alias );
+    explicit ManagedVectorData( std::shared_ptr<VectorData> alias );
 
     //! Destructor
     virtual ~ManagedVectorData();

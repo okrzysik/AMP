@@ -22,7 +22,7 @@ public:
      * \brief Construct a Circle geometry
      * \param db        Input database
      */
-    explicit Circle( std::shared_ptr<AMP::Database> db );
+    explicit Circle( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a Circle geometry

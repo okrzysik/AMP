@@ -30,7 +30,7 @@ EpetraVectorEngineParameters::~EpetraVectorEngineParameters() = default;
  ********************************************************/
 Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
 {
-    if ( d_emap.get() != nullptr )
+    if ( d_emap )
         return *d_emap;
 // Create the epetra map
 #ifdef USE_EXT_MPI

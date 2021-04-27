@@ -132,14 +132,13 @@ void NeutronicsRhsExtras::printClassData( std::ostream &os ) const
  * Reset the class.                                                      *
  *************************************************************************
  */
-void NeutronicsRhsExtras::reset( const SP_OperatorParameters &parameters )
+void NeutronicsRhsExtras::reset( std::shared_ptr<const OperatorParameters> parameters )
 {
 
-    AMP_ASSERT( parameters.get() != nullptr );
-    d_db = parameters->d_db;
-    SP_Parameters params =
-        std::dynamic_pointer_cast<NeutronicsRhsExtrasParameters, OperatorParameters>( parameters );
-    AMP_ASSERT( params.get() != nullptr );
+    AMP_ASSERT( parameters );
+    d_db        = parameters->d_db;
+    auto params = std::dynamic_pointer_cast<const NeutronicsRhsExtrasParameters>( parameters );
+    AMP_ASSERT( params );
     AMP_ASSERT( ( ( params->d_db ).get() ) != nullptr );
     getFromInput( params->d_db );
 

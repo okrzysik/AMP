@@ -14,11 +14,11 @@ namespace Operator {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Map3to1to3::Map3to1to3( const std::shared_ptr<OperatorParameters> &params_in )
+Map3to1to3::Map3to1to3( std::shared_ptr<const OperatorParameters> params_in )
     : AsyncMapOperator( params_in )
 {
     // Get the input parameters
-    auto params = std::dynamic_pointer_cast<Map3to1to3Parameters>( params_in );
+    auto params = std::dynamic_pointer_cast<const Map3to1to3Parameters>( params_in );
     AMP_ASSERT( params );
     d_commTag = params->d_commTag;
 
@@ -41,13 +41,13 @@ Map3to1to3::Map3to1to3( const std::shared_ptr<OperatorParameters> &params_in )
         d_own_mesh2[i] = tmp2[i] != 0;
     }
     size_t numToSend = 0;
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         for ( const auto &elem : d_own_mesh2 ) {
             if ( elem == 1 )
                 numToSend++;
         }
     }
-    if ( d_mesh2.get() != nullptr ) {
+    if ( d_mesh2 ) {
         for ( const auto &elem : d_own_mesh1 ) {
             if ( elem == 1 )
                 numToSend++;
@@ -166,7 +166,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Send the data
     auto myRank = (size_t) d_MapComm.getRank();
     auto curReq = beginRequests();
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         for ( size_t i = 0; i < d_own_mesh2.size(); i++ ) {
             if ( i == myRank )
                 continue; // Don't communicate local data
@@ -176,7 +176,7 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             }
         }
     }
-    if ( d_mesh2.get() != nullptr ) {
+    if ( d_mesh2 ) {
         for ( size_t i = 0; i < d_own_mesh1.size(); i++ ) {
             if ( i == myRank )
                 continue; // Don't communicate local data
@@ -204,7 +204,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     std::map<double, std::pair<int, double>> map1;
     std::map<double, std::pair<int, double>> map2;
     std::vector<comm_data> recvBuf;
-    if ( d_mesh1.get() != nullptr ) {
+    if ( d_mesh1 ) {
         // First get any local data
         if ( d_own_mesh2[myRank] )
             unpackBuffer( d_SendBuf2, map1 );
@@ -222,7 +222,7 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
             }
         }
     }
-    if ( d_mesh2.get() != nullptr ) {
+    if ( d_mesh2 ) {
         // First get any local data
         if ( d_own_mesh1[myRank] )
             unpackBuffer( d_SendBuf1, map2 );
@@ -255,9 +255,9 @@ void Map3to1to3::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     }
 
     // Build the return vector
-    if ( d_mesh1.get() != nullptr )
+    if ( d_mesh1 )
         buildReturn( d_ResultVector, d_mesh1, d_dstIterator1, final_map1 );
-    if ( d_mesh2.get() != nullptr )
+    if ( d_mesh2 )
         buildReturn( d_ResultVector, d_mesh2, d_dstIterator2, final_map2 );
 
     // Apply make consistent

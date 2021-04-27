@@ -6,8 +6,7 @@
 namespace AMP {
 namespace Materials {
 
-template<class Number>
-class TensorProperty : public Property<Number>
+class TensorProperty : public Property
 {
 public:
     /**
@@ -23,13 +22,13 @@ public:
      */
     TensorProperty( const std::string &name               = std::string( "NotDefined" ),
                     const std::string &source             = std::string( "None" ),
-                    const Number *params                  = NULL,
+                    const double *params                  = nullptr,
                     const unsigned int nparams            = 0,
                     const std::string *args               = nullptr,
                     const unsigned int nargs              = 0,
-                    const Number ranges[][2]              = NULL,
+                    const double ranges[][2]              = nullptr,
                     const std::vector<size_t> &dimensions = std::vector<size_t>( 2, 1 ) )
-        : Property<Number>( name, source, params, nparams, args, nargs, ranges ),
+        : Property( name, source, params, nparams, args, nargs, ranges ),
           d_dimensions( dimensions ),
           d_variableDimensions( false )
     {
@@ -83,7 +82,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return tensor of property values with dimensions get_dimensions()
      */
-    virtual std::vector<std::vector<Number>> evalTensor( std::vector<Number> &args ) = 0;
+    virtual std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r tensor vector of return values
@@ -99,8 +98,8 @@ public:
      * result
      *  returned in (*r[j])[i].
      */
-    virtual void evalv( std::vector<std::vector<std::shared_ptr<std::vector<Number>>>> &r,
-                        const std::map<std::string, std::shared_ptr<std::vector<Number>>> &args );
+    virtual void evalv( std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &r,
+                        const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r tensor of AMP vectors of return values
@@ -135,15 +134,15 @@ public:
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    Number eval( std::vector<Number> & ) override
+    double eval( std::vector<double> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
         return 0;
     }
 
     // disable scalar evaluator
-    void evalv( std::vector<Number> &,
-                const std::map<std::string, std::shared_ptr<std::vector<Number>>> & ) override
+    void evalv( std::vector<double> &,
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
     }
@@ -164,19 +163,9 @@ public:
     }
 };
 
-template<>
-void TensorProperty<double>::evalv(
-    std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
-
-template<>
-void TensorProperty<double>::evalv(
-    std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
 } // namespace Materials
 } // namespace AMP
 
-#include "TensorProperty.i.h"
 
 #endif /* included_AMP_TensorProperty */

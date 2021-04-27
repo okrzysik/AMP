@@ -6,16 +6,16 @@ namespace AMP {
 namespace Operator {
 
 void MassMatrixCorrection::resetBoundaryIds(
-    const std::shared_ptr<MassMatrixCorrectionParameters> &params )
+    std::shared_ptr<const MassMatrixCorrectionParameters> params )
 {
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams          = ( params->d_db )->getWithDefault( "skip_params", true );
-    d_bSetIdentityOnDiagonal = ( params->d_db )->getWithDefault( "setIdentityOnDiagonal", false );
+    bool skipParams          = params->d_db->getWithDefault( "skip_params", true );
+    d_bSetIdentityOnDiagonal = params->d_db->getWithDefault( "setIdentityOnDiagonal", false );
 
     if ( !skipParams ) {
-        AMP_INSIST( ( params->d_db )->keyExists( "number_of_ids" ),
+        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
                     "Key ''number_of_ids'' is missing!" );
-        int numIds = ( params->d_db )->getScalar<int>( "number_of_ids" );
+        int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
@@ -23,29 +23,28 @@ void MassMatrixCorrection::resetBoundaryIds(
         char key[100];
         for ( int j = 0; j < numIds; j++ ) {
             sprintf( key, "id_%d", j );
-            AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = ( params->d_db )->getScalar<int>( key );
+            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+            d_boundaryIds[j] = params->d_db->getScalar<int>( key );
 
             sprintf( key, "number_of_dofs_%d", j );
-            AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-            int numDofIds = ( params->d_db )->getScalar<int>( key );
+            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+            int numDofIds = params->d_db->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; i++ ) {
                 sprintf( key, "dof_%d_%d", j, i );
-                AMP_INSIST( ( params->d_db )->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = ( params->d_db )->getScalar<int>( key );
+                AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
+                d_dofIds[j][i] = params->d_db->getScalar<int>( key );
             } // end for i
         }     // end for j
     }
 }
 
-void MassMatrixCorrection::reset( const std::shared_ptr<OperatorParameters> &params )
+void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
 
 
-    std::shared_ptr<MassMatrixCorrectionParameters> myParams =
-        std::dynamic_pointer_cast<MassMatrixCorrectionParameters>( params );
+    auto myParams = std::dynamic_pointer_cast<const MassMatrixCorrectionParameters>( params );
 
     AMP_INSIST( ( ( myParams.get() ) != nullptr ), "NULL parameters" );
 

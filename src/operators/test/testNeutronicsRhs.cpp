@@ -1,7 +1,6 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -79,7 +78,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
         auto ntxBld = std::dynamic_pointer_cast<AMP::Operator::NeutronicsRhs>(
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "NeutronicsRhs", input_db, unusedModel ) );
-        AMP_INSIST( ntxBld.get() != nullptr, "NULL rhs out of OperatorBuilder" );
+        AMP_INSIST( ntxBld, "NULL rhs out of OperatorBuilder" );
         ut->passes( "NeutronicsRhs was constructed by OperatorBuilder for: " + input_file );
         // ntxBld->setTimeStep(0);
         // ut->passes( "NeutronicsRhs, constructed by OperatorBuilder, set the time for: " +

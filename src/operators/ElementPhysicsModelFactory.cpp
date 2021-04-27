@@ -41,7 +41,7 @@ std::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPh
     std::shared_ptr<ElementPhysicsModelParameters> params;
 
     AMP_INSIST(
-        elementPhysicsModelDb.get() != nullptr,
+        elementPhysicsModelDb,
         "ElementPhysicsModelFactory::createElementPhysicsModel:: NULL Database object input" );
 
     std::string name = elementPhysicsModelDb->getString( "name" );

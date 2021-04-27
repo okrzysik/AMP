@@ -17,7 +17,7 @@ class NavierStokesGalWFLinearElement : public FlowElement
 {
 public:
     explicit NavierStokesGalWFLinearElement(
-        const std::shared_ptr<ElementOperationParameters> &params )
+        std::shared_ptr<const ElementOperationParameters> params )
         : FlowElement( params ), d_elementStiffnessMatrix( nullptr )
     {
         d_JxW     = &( d_fe->get_JxW() );

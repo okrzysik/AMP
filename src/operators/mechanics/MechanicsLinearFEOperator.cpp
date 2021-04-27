@@ -8,11 +8,11 @@ namespace AMP {
 namespace Operator {
 
 MechanicsLinearFEOperator::MechanicsLinearFEOperator(
-    const std::shared_ptr<MechanicsLinearFEOperatorParameters> &params )
+    std::shared_ptr<const MechanicsLinearFEOperatorParameters> params )
     : LinearFEOperator( params )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
-    d_useUpdatedLagrangian = ( params->d_db )->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+    d_useUpdatedLagrangian = params->d_db->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {
         d_mechLinULElem =
             std::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>( d_elemOp );
@@ -87,11 +87,11 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     }
 }
 
-void MechanicsLinearFEOperator::preAssembly( const std::shared_ptr<OperatorParameters> &oparams )
+void MechanicsLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParameters> oparams )
 {
     if ( d_useUpdatedLagrangian ) {
-        std::shared_ptr<MechanicsLinearFEOperatorParameters> params =
-            std::dynamic_pointer_cast<MechanicsLinearFEOperatorParameters>( oparams );
+        auto params =
+            std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( oparams );
         AMP_INSIST( ( params != nullptr ), "NULL params" );
 
         if ( ( d_dispVec == nullptr ) and ( params->d_dispVec != nullptr ) ) {

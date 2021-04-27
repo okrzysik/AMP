@@ -11,7 +11,7 @@ namespace Operator {
 class NodeToGaussPointOperator : public Operator
 {
 public:
-    explicit NodeToGaussPointOperator( const std::shared_ptr<OperatorParameters> &params );
+    explicit NodeToGaussPointOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~NodeToGaussPointOperator() {}
 

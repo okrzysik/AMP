@@ -19,7 +19,7 @@ QMRCGSTABSolver::QMRCGSTABSolver() {}
 QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
 
     // Initialize
     initialize( parameters );
@@ -37,7 +37,7 @@ QMRCGSTABSolver::~QMRCGSTABSolver() {}
 void QMRCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
 {
     auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
-    AMP_ASSERT( parameters.get() != nullptr );
+    AMP_ASSERT( parameters );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
 
@@ -45,13 +45,13 @@ void QMRCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> cons
 
     getFromInput( parameters->d_db );
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 }
 
 // Function to get values from input
-void QMRCGSTABSolver::getFromInput( const std::shared_ptr<AMP::Database> &db )
+void QMRCGSTABSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
 
@@ -98,7 +98,7 @@ void QMRCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
                   << std::endl;
     }
 
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 
@@ -300,27 +300,27 @@ void QMRCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 /****************************************************************
  *  Function to set the register the operator                    *
  ****************************************************************/
-void QMRCGSTABSolver::registerOperator( const std::shared_ptr<AMP::Operator::Operator> op )
+void QMRCGSTABSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
-    AMP_ASSERT( op.get() != nullptr );
+    AMP_ASSERT( op );
 
     d_pOperator = op;
 
     std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
         std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator.get() != nullptr );
+    AMP_ASSERT( linearOperator );
 }
 void QMRCGSTABSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    if ( d_pOperator.get() != nullptr ) {
+    if ( d_pOperator ) {
         d_pOperator->reset( params );
     }
 
     // should add a mechanism for the linear operator to provide updated parameters for the
     // preconditioner operator
     // though it's unclear where this might be necessary
-    if ( d_pPreconditioner.get() != nullptr ) {
+    if ( d_pPreconditioner ) {
         d_pPreconditioner->resetOperator( params );
     }
 }

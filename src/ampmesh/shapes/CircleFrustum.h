@@ -23,7 +23,7 @@ public:
      * \brief Construct a CircleFrustum geometry
      * \param db        Input database
      */
-    explicit CircleFrustum( std::shared_ptr<AMP::Database> db );
+    explicit CircleFrustum( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a CircleFrustum geometry

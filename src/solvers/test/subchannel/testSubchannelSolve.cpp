@@ -29,6 +29,7 @@
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperator.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
+#include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 #include "AMP/operators/subchannel/SubchannelToPointMap.h"
 #include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
@@ -86,7 +87,7 @@ static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
         std::make_shared<AMP::LinearAlgebra::Variable>( "SpecificPowerInWattsPerGram" );
 
     AMP::LinearAlgebra::Vector::shared_ptr thermalVec;
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh ) {
         auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
             pinMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         thermalVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, thermalVariable );
@@ -94,7 +95,7 @@ static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
     multivec->addVector( thermalVec );
 
     AMP::LinearAlgebra::Vector::shared_ptr flowVec;
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         int DOFsPerFace[3] = { 0, 0, 2 };
         auto faceDOFManager =
             AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
@@ -103,7 +104,7 @@ static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
     }
     multivec->addVector( flowVec );
 
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh ) {
         auto gaussPtDOFManager = AMP::Discretization::simpleDOFManager::create(
             pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
         specificPowerGpVec = AMP::LinearAlgebra::createVector( gaussPtDOFManager, powerVariable );
@@ -134,13 +135,13 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto manager = AMP::Mesh::Mesh::buildMesh( meshParams );
     auto pinMesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr cladMesh;
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh ) {
         pinMesh->setName( "MultiPin" );
         cladMesh = pinMesh->Subset( "clad" );
     }
     auto subchannelMesh = manager->Subset( "subchannel" );
     AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         auto face  = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
         xyFaceMesh = subchannelMesh->Subset( face );
     }
@@ -162,7 +163,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearColumnSolver;
     std::shared_ptr<AMP::Solver::ColumnSolver> columnPreconditioner;
 
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh ) {
         auto pinMeshIDs = pinMesh->getBaseMeshIDs();
 
         // CREATE OPERATORS
@@ -237,7 +238,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp;
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         int DOFsPerFace[3] = { 0, 0, 1 };
         auto scalarFaceDOFManager =
             AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
@@ -259,7 +260,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     // Get the subchannel operators
     std::vector<double> clad_x, clad_y, clad_d;
     AMP::Operator::Subchannel::getCladProperties( globalComm, cladMesh, clad_x, clad_y, clad_d );
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         auto subChannelMeshIDs = subchannelMesh->getBaseMeshIDs();
 
         for ( auto subChannelMeshID : subChannelMeshIDs ) {
@@ -274,7 +275,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                     std::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
                         AMP::Operator::OperatorBuilder::createOperator(
                             adapter, "SubchannelTwoEqNonlinearOperator", global_input_db ) );
-                auto nonlinearOpParams    = subchannelNonlinearOperator->getParams();
+                auto nonlinearOpParams =
+                    std::const_pointer_cast<AMP::Operator::SubchannelOperatorParameters>(
+                        subchannelNonlinearOperator->getParams() );
                 nonlinearOpParams->clad_x = clad_x;
                 nonlinearOpParams->clad_y = clad_y;
                 nonlinearOpParams->clad_d = clad_d;
@@ -313,14 +316,14 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     // CREATE MAPS
     AMP::LinearAlgebra::Vector::shared_ptr thermalMapVec;
     AMP::LinearAlgebra::Vector::shared_ptr density_map_vec;
-    if ( cladMesh.get() != nullptr ) {
+    if ( cladMesh ) {
         auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
             cladMesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
         auto densityVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Density" );
         density_map_vec      = AMP::LinearAlgebra::createVector( nodalScalarDOF, densityVariable );
         density_map_vec->zero();
     }
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh ) {
         // flow temperature on clad outer surfaces and pellet temperature on clad innner surfaces,
         // and clad inner
         // surface temp on pellet outer surfaces
@@ -447,7 +450,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     auto densitySubchannelToCladMap =
         AMP::Operator::AsyncMapColumnOperator::build<AMP::Operator::SubchannelToCladMap>(
             manager, densityCladToSubchannelDb );
-    if ( cladMesh.get() != nullptr ) {
+    if ( cladMesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( cladMesh->getComm() );
         auto subsetTheramlVec =
             thermalMapVec->select( commSelector, thermalMapVec->getVariable()->getName() );
@@ -471,9 +474,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     mapsColumn->append( coupledChannelMapOperator );
 
     std::shared_ptr<AMP::Operator::Operator> thermalCopyOperator;
-    if ( pinMesh.get() != nullptr ) {
-        auto copyOp_db = std::dynamic_pointer_cast<AMP::Database>(
-            global_input_db->getDatabase( "CopyOperator" ) );
+    if ( pinMesh ) {
+        auto copyOp_db = global_input_db->getDatabase( "CopyOperator" );
         auto vecCopyOperatorParams =
             std::make_shared<AMP::Operator::VectorCopyOperatorParameters>( copyOp_db );
         vecCopyOperatorParams->d_copyVariable = thermalVariable;
@@ -586,7 +588,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     int root_subchannel = -1;
     std::vector<double> range( 6 );
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         range = subchannelMesh->getBoundingBox();
         AMP_ASSERT( range.size() == 6 );
         if ( subchannelMesh->getComm().getRank() == 0 )
@@ -598,7 +600,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     double P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                    ->getScalar<double>( "Rod_Power" );
     // GeomType::Volume of fuel in a 3.81m pin
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh ) {
         const double V = 1.939e-4;
         globalThermalSolVec->setToScalar( 600 );
         auto gaussPtDOFManager = AMP::Discretization::simpleDOFManager::create(
@@ -613,7 +615,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             }
             ++it;
         }
-        if ( cladMesh.get() != nullptr ) {
+        if ( cladMesh ) {
             AMP::LinearAlgebra::VS_Mesh meshSelector( cladMesh );
             auto cladPower = specificPowerGpVec->select( meshSelector, "cladPower" );
             cladPower->zero();
@@ -623,7 +625,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         volumeIntegralColumnOperator->apply( specificPowerGpVec, globalThermalRhsVec );
     }
 
-    if ( subchannelMesh.get() != nullptr ) {
+    if ( subchannelMesh ) {
         // get exit pressure
         double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                           ->getScalar<double>( "Exit_Pressure" );
@@ -831,7 +833,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     const double P_scale = 1.0 / AMP::Operator::Subchannel::scalePressure;
     auto enthalpy        = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     auto pressure        = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
-    if ( enthalpy.get() != nullptr ) {
+    if ( enthalpy  ) {
         enthalpy->scale( h_scale );
         pressure->scale( P_scale );
     }
@@ -847,7 +849,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         siloWriter->registerVector(
             flowDensityVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "FlowDensity" );
     }
-    if ( pinMesh.get() != nullptr ) {
+    if ( pinMesh  ) {
         siloWriter->registerVector(
             globalThermalSolVec, pinMesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
         siloWriter->registerVector(

@@ -138,7 +138,7 @@ size_t NativeThyraVectorData::sizeOfDataBlock( size_t i ) const
 }
 
 Teuchos::RCP<const Thyra::VectorBase<double>>
-NativeThyraVectorData::getThyraVec( const std::shared_ptr<const VectorData> &vec )
+NativeThyraVectorData::getThyraVec( std::shared_ptr<const VectorData> vec )
 {
     auto vec2 = std::dynamic_pointer_cast<const ThyraVector>( vec );
     AMP_ASSERT( vec2 != nullptr );

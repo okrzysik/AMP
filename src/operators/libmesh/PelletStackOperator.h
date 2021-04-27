@@ -10,7 +10,7 @@ namespace Operator {
 class PelletStackOperator : public Operator
 {
 public:
-    explicit PelletStackOperator( const std::shared_ptr<PelletStackOperatorParameters> &params );
+    explicit PelletStackOperator( std::shared_ptr<const PelletStackOperatorParameters> params );
 
     virtual ~PelletStackOperator() {}
 
@@ -30,7 +30,7 @@ public:
 
     bool useScaling();
 
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     void applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr f );
 

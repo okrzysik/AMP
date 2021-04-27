@@ -11,7 +11,7 @@ namespace Operator {
 
 
 IsotropicElasticModel::IsotropicElasticModel(
-    const std::shared_ptr<MechanicsMaterialModelParameters> &params )
+    std::shared_ptr<MechanicsMaterialModelParameters> params )
     : MechanicsMaterialModel( params )
 {
     // Zero d_constitutiveMatrix and d_constitutiveMatrix_UL
@@ -29,25 +29,23 @@ IsotropicElasticModel::IsotropicElasticModel(
     if ( d_useMaterialsLibrary == false ) {
         AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
         AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
-        AMP_INSIST( ( params->d_db )->keyExists( "Youngs_Modulus" ),
-                    "Missing key: Youngs_Modulus" );
-        AMP_INSIST( ( params->d_db )->keyExists( "Poissons_Ratio" ),
-                    "Missing key: Poissons_Ratio" );
+        AMP_INSIST( params->d_db->keyExists( "Youngs_Modulus" ), "Missing key: Youngs_Modulus" );
+        AMP_INSIST( params->d_db->keyExists( "Poissons_Ratio" ), "Missing key: Poissons_Ratio" );
 
-        default_E  = ( params->d_db )->getScalar<double>( "Youngs_Modulus" );
-        default_Nu = ( params->d_db )->getScalar<double>( "Poissons_Ratio" );
+        default_E  = params->d_db->getScalar<double>( "Youngs_Modulus" );
+        default_Nu = params->d_db->getScalar<double>( "Poissons_Ratio" );
 
         constructConstitutiveMatrix( default_E, default_Nu );
         constructConstitutiveMatrixUpdatedLagrangian( default_E, default_Nu );
 
     } // end d_useMaterialsLibrary == false
 
-    default_TEMPERATURE = ( params->d_db )->getWithDefault<double>( "Default_Temperature", 310.0 );
+    default_TEMPERATURE = params->d_db->getWithDefault<double>( "Default_Temperature", 310.0 );
 
-    default_BURNUP = ( params->d_db )->getWithDefault<double>( "Default_Burnup", 0.0 );
+    default_BURNUP = params->d_db->getWithDefault<double>( "Default_Burnup", 0.0 );
 
     default_OXYGEN_CONCENTRATION =
-        ( params->d_db )->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
+        params->d_db->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
     // fout = fopen("Stress-Strain-Response.txt","w");
     // fprintf(fout,"%le %le %le %le %le %le\n",0.0,0.0,0.0,0.0,0.0,0.0);

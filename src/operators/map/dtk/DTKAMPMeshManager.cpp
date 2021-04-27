@@ -11,8 +11,8 @@ namespace Operator {
 //---------------------------------------------------------------------------//
 // Constructor.
 DTKAMPMeshManager::DTKAMPMeshManager(
-    const std::shared_ptr<AMP::Mesh::Mesh> &mesh,
-    const std::shared_ptr<AMP::Discretization::DOFManager> &dof_manager,
+    std::shared_ptr<AMP::Mesh::Mesh> mesh,
+    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager,
     const std::function<bool( DataTransferKit::Entity )> &predicate )
 {
     Teuchos::RCP<DataTransferKit::EntitySet> entity_set;

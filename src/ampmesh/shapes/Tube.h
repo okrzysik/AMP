@@ -22,7 +22,7 @@ public:
      * \brief Construct a Tube geometry
      * \param db        Input database
      */
-    explicit Tube( std::shared_ptr<AMP::Database> db );
+    explicit Tube( std::shared_ptr<const AMP::Database> db );
 
     /**
      * \brief Construct a Tube geometry

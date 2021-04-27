@@ -109,10 +109,7 @@ public:
     /**
      * Return a shared pointer to the ML_Epetra::MultiLevelPreconditioner object
      */
-    inline const std::shared_ptr<MueLu::EpetraOperator> getMLSolver( void )
-    {
-        return d_mueluSolver;
-    }
+    inline std::shared_ptr<MueLu::EpetraOperator> getMLSolver( void ) { return d_mueluSolver; }
 
     /**
      * Initialize the solution vector and potentially create internal vectors needed for solution
@@ -129,14 +126,14 @@ public:
      * Register the operator that the solver will use during solves
      @param [in] op shared pointer to the linear operator $A$ for equation \f$A u = f\f$
     */
-    void registerOperator( const std::shared_ptr<AMP::Operator::Operator> op ) override;
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override;
 
     /**
      * Resets the associated operator internally with new parameters if necessary
      * @param [in] params
      *        OperatorParameters object that is NULL by default
      */
-    void resetOperator( const std::shared_ptr<AMP::Operator::OperatorParameters> params ) override;
+    void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
     /**
      * Resets the solver internally with new parameters if necessary
@@ -152,7 +149,7 @@ protected:
     void reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                         std::shared_ptr<AMP::LinearAlgebra::Vector> u );
 
-    void getFromInput( const std::shared_ptr<AMP::Database> &db );
+    void getFromInput( std::shared_ptr<const AMP::Database> db );
 
     //! build the hierarchy using the defaults constructed by MueLu
     void buildHierarchyFromDefaults( void );

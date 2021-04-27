@@ -14,8 +14,7 @@ namespace Operator {
 class ThermalStrainMaterialModel : public MechanicsMaterialModel
 {
 public:
-    explicit ThermalStrainMaterialModel(
-        const std::shared_ptr<MechanicsMaterialModelParameters> & );
+    explicit ThermalStrainMaterialModel( std::shared_ptr<MechanicsMaterialModelParameters> );
 
     virtual ~ThermalStrainMaterialModel() {}
 

@@ -26,7 +26,7 @@ public:
       Constructor creates a simpleVariables for Input and Output. The reset is called to
       read the flow parameters.
       */
-    explicit FlowFrapconJacobian( const std::shared_ptr<FlowFrapconJacobianParameters> &params );
+    explicit FlowFrapconJacobian( std::shared_ptr<const FlowFrapconJacobianParameters> params );
 
     /**
       Destructor
@@ -48,7 +48,7 @@ public:
       This function reads the entries of the database for the flow operator
       and can also be used to change the parameters if required.
       */
-    void reset( const std::shared_ptr<OperatorParameters> &params ) override;
+    void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /*
           static bool sort_nodes_in_z ( const libMesh::Node *one , const libMesh::Node *two ) {

@@ -8,7 +8,7 @@ namespace AMP {
 namespace Operator {
 /*
     NavierStokesGalWFFEOperator :: NavierStokesGalWFFEOperator (
-        const std::shared_ptr<NavierStokesGalWFFEOperatorParameters> & params)
+        std::shared_ptr<const NavierStokesGalWFFEOperatorParameters> params)
       : NonlinearFEOperator (params) {
 
         AMP_INSIST( ((params.get()) != NULL), "NULL parameter!" );
@@ -212,7 +212,7 @@ namespace Operator {
       d_isInitialized = true;
     }
 
-    void NavierStokesGalWFFEOperator :: reset(const std::shared_ptr<OperatorParameters>& params)
+    void NavierStokesGalWFFEOperator :: reset( std::shared_ptr<const OperatorParameters> params)
     {
       if(!d_isInitialized) {
         init();
@@ -236,7 +236,7 @@ namespace Operator {
     }
 
     std::shared_ptr<OperatorParameters> NavierStokesGalWFFEOperator ::
-      getJacobianParameters(const std::shared_ptr<AMP::LinearAlgebra::Vector>& u) {
+      getJacobianParameters( std::shared_ptr<AMP::LinearAlgebra::Vector> u) {
 
         if(!d_isInitialized) {
           init();

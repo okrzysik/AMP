@@ -138,7 +138,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto rhsVec = AMP::LinearAlgebra::MultiVector::create( outputVariable, meshAdapter->getComm() );
     auto resVec = AMP::LinearAlgebra::MultiVector::create( outputVariable, meshAdapter->getComm() );
     for ( size_t i = 0; i < inputVariables.size(); i++ ) {
-        if ( inputVariables[i].get() != nullptr ) {
+        if ( inputVariables[i] ) {
             solVec->addVector(
                 AMP::LinearAlgebra::createVector( inputDOFs[i], inputVariables[i] ) );
             rhsVec->addVector(

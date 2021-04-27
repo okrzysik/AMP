@@ -1643,7 +1643,7 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
     template void MPI_CLASS::sumScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template void MPI_CLASS::minScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template void MPI_CLASS::maxScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
-    template TYPE MPI_CLASS::bcast<TYPE>( const TYPE&, int ) const;                     \
+    template TYPE MPI_CLASS::bcast<TYPE>( TYPE, int ) const;                            \
     template void MPI_CLASS::bcast<TYPE>( TYPE*, int, int ) const;                      \
     template void MPI_CLASS::send<TYPE>( const TYPE*, int, int, int ) const;            \
     template MPI_Request MPI_CLASS::Isend<TYPE>( const TYPE*, int, int, int ) const;    \
@@ -1671,7 +1671,7 @@ INSTANTIATE( double )
 INSTANTIATE( std::complex<float> )
 INSTANTIATE( std::complex<double> )
 // Instantiate std::string
-template std::string MPI_CLASS::bcast<std::string>( const std::string&, int ) const;
+template std::string MPI_CLASS::bcast<std::string>( std::string, int ) const;
 template void MPI_CLASS::bcast<std::string>( std::string*, int, int ) const;
 template std::vector<std::string> MPI_CLASS::allGather<std::string>( const std::string & ) const;
 template void MPI_CLASS::allGather<std::string>( const std::string&, std::string* ) const;

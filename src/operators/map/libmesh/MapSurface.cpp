@@ -7,11 +7,10 @@ namespace AMP {
 namespace Operator {
 
 
-MapSurface::MapSurface( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+MapSurface::MapSurface( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
 {
 
-    std::shared_ptr<MapOperatorParameters> myparams =
-        std::dynamic_pointer_cast<MapOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
 
     // Construct for Map3Dto1D, Map1Dto3D
     std::shared_ptr<AMP::Database> mapMaster_db = myparams->d_db->getDatabase( "Map3Dto1D" );

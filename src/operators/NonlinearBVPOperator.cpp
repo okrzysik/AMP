@@ -7,7 +7,7 @@
 namespace AMP {
 namespace Operator {
 
-NonlinearBVPOperator::NonlinearBVPOperator( const std::shared_ptr<BVPOperatorParameters> &params )
+NonlinearBVPOperator::NonlinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> params )
     : Operator( params ),
       d_volumeOperator( params->d_volumeOperator ),
       d_boundaryOperator( params->d_boundaryOperator )
@@ -20,7 +20,7 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 {
     PROFILE_START( "apply" );
 
-    if ( u.get() != nullptr )
+    if ( u )
         AMP_ASSERT( u->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
@@ -61,13 +61,12 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     PROFILE_STOP( "apply" );
 }
 
-void NonlinearBVPOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void NonlinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     PROFILE_START( "reset" );
-    std::shared_ptr<BVPOperatorParameters> inParams =
-        std::dynamic_pointer_cast<BVPOperatorParameters>( params );
+    auto inParams = std::dynamic_pointer_cast<const BVPOperatorParameters>( params );
 
-    AMP_INSIST( ( inParams.get() != nullptr ), "NonlinearBVPOperator :: reset Null parameter" );
+    AMP_INSIST( ( inParams ), "NonlinearBVPOperator :: reset Null parameter" );
 
     d_volumeOperator->reset( inParams->d_volumeOperatorParams );
     d_boundaryOperator->reset( inParams->d_boundaryOperatorParams );

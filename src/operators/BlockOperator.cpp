@@ -14,16 +14,15 @@ BlockOperator::BlockOperator() : Operator()
     d_iNumColumnBlocks = -5678;
 }
 
-BlockOperator::BlockOperator( const std::shared_ptr<OperatorParameters> & ) : Operator()
+BlockOperator::BlockOperator( std::shared_ptr<const OperatorParameters> ) : Operator()
 {
     d_iNumRowBlocks    = -1234;
     d_iNumColumnBlocks = -5678;
 }
 
-void BlockOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void BlockOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<BlockOperatorParameters> myParams =
-        std::dynamic_pointer_cast<BlockOperatorParameters>( params );
+    auto myParams = std::dynamic_pointer_cast<const BlockOperatorParameters>( params );
     for ( int i = 0; i < d_iNumRowBlocks; i++ ) {
         for ( int j = 0; j < d_iNumColumnBlocks; j++ ) {
             d_blocks[i][j]->reset( ( myParams->d_blockParams )[i][j] );

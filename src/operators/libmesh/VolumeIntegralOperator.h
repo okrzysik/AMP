@@ -35,7 +35,7 @@ public:
       3) OutputVariable - Name of the output variable
       */
     explicit VolumeIntegralOperator(
-        const std::shared_ptr<VolumeIntegralOperatorParameters> &params );
+        std::shared_ptr<const VolumeIntegralOperatorParameters> params );
 
     /**
       Destructor.
@@ -48,9 +48,9 @@ public:
     /**
       This is used to update the operator between successive solves with the operator.
       */
-    void reset( const std::shared_ptr<OperatorParameters> & ) override;
+    void reset( std::shared_ptr<const OperatorParameters> ) override;
 
-    void setAuxVariable( const std::shared_ptr<AMP::LinearAlgebra::MultiVariable> &var )
+    void setAuxVariable( std::shared_ptr<AMP::LinearAlgebra::MultiVariable> var )
     {
         d_auxVariables = var;
     }
@@ -65,7 +65,7 @@ public:
 
     /*
        std::shared_ptr<AMP::LinearAlgebra::Matrix> getLinearizedVolumeIntegralOperator(
-       const std::shared_ptr<OperatorParameters>& params);
+       std::shared_ptr<OperatorParameters> params);
      */
 
 protected:
@@ -100,7 +100,7 @@ protected:
 
     void getNodeDofIndicesForCurrentElement();
 
-    void init( const std::shared_ptr<VolumeIntegralOperatorParameters> &params );
+    void init( std::shared_ptr<const VolumeIntegralOperatorParameters> params );
 
     std::string d_isInputType;
 

@@ -48,8 +48,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create nonlinear Diffusion BVP operator and access volume nonlinear Diffusion operator
-    auto nbvp_db = std::dynamic_pointer_cast<AMP::Database>(
-        input_db->getDatabase( "ThermalNonlinearBVPOperator" ) );
+    auto nbvp_db         = input_db->getDatabase( "ThermalNonlinearBVPOperator" );
     auto nlinBVPOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "ThermalNonlinearBVPOperator", input_db );
     auto nlinBVPOp =

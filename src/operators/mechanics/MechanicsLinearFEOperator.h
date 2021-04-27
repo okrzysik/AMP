@@ -48,7 +48,7 @@ public:
       4) OutputVariable (No default value) - Name of the output variable
       */
     explicit MechanicsLinearFEOperator(
-        const std::shared_ptr<MechanicsLinearFEOperatorParameters> &params );
+        std::shared_ptr<const MechanicsLinearFEOperatorParameters> params );
 
     /**
       Destructor
@@ -58,7 +58,7 @@ public:
     /**
       This is called at the start of the FE assembly. The matrix is set to 0.
       */
-    void preAssembly( const std::shared_ptr<OperatorParameters> &params ) override;
+    void preAssembly( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
       This is called at the end of the FE assembly. The entries of the matrix corresponding

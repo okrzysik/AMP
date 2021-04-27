@@ -1108,8 +1108,8 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
         std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
         comm.serializeStop();
         double stop = MPI_CLASS::time();
-        double avg  = ( stop - start ) / size;
-        if ( std::abs( avg - 0.1 ) < 0.01 )
+        double avg  = 1e3 * ( stop - start ) / size;
+        if ( avg > 98 && avg < 120 )
             ut->passes( "serialize" );
         else
             ut->failure( "serialize: " + std::to_string( avg ) );

@@ -753,7 +753,7 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
                                    nActiveSlaveVerticesDeactivated );
 }
 
-void NodeToGeomType::FaceContactOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void NodeToGeomType::FaceContactOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     AMP_INSIST( ( params != NULL ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );

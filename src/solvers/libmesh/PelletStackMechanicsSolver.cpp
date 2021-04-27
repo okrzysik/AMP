@@ -15,7 +15,7 @@ PelletStackMechanicsSolver::PelletStackMechanicsSolver(
 
 
 void PelletStackMechanicsSolver::resetOperator(
-    const std::shared_ptr<AMP::Operator::OperatorParameters> params )
+    std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
     d_columnSolver->resetOperator( params );
 }

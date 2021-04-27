@@ -34,19 +34,19 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 {
     if ( DOFs.get() == nullptr )
         return Vector::shared_ptr();
-    AMP_ASSERT( variable.get() != nullptr );
+    AMP_ASSERT( variable );
     // Check if we are dealing with a multiDOFManager
     std::shared_ptr<AMP::Discretization::multiDOFManager> multiDOF;
     if ( split )
         multiDOF = std::dynamic_pointer_cast<AMP::Discretization::multiDOFManager>( DOFs );
     // Check if we are dealing with a multiVariable
     auto multiVariable = std::dynamic_pointer_cast<MultiVariable>( variable );
-    if ( multiVariable.get() != nullptr ) {
+    if ( multiVariable ) {
         // We are dealing with a MultiVariable, first check that there are no duplicate or null
         // variables
         for ( size_t i = 0; i < multiVariable->numVariables(); i++ ) {
             auto var1 = multiVariable->getVariable( i );
-            AMP_INSIST( var1.get() != nullptr,
+            AMP_INSIST( var1,
                         "Error using a MultiVariable in createVector, NULL variables detected" );
             for ( size_t j = 0; j < i; j++ ) {
                 auto var2 = multiVariable->getVariable( j );
@@ -72,7 +72,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         auto multiVector = MultiVector::create( variable, comm );
         multiVector->addVector( vectors );
         return multiVector;
-    } else if ( multiDOF.get() != nullptr ) {
+    } else if ( multiDOF ) {
         // We are dealing with a multiDOFManager and want to split the vector based on the DOF
         // managers
         auto subDOFs = multiDOF->getDOFManagers();

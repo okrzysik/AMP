@@ -47,7 +47,7 @@ namespace TimeIntegrator {
 class IDATimeIntegratorParameters : public TimeIntegratorParameters
 {
 public:
-    explicit IDATimeIntegratorParameters( const std::shared_ptr<AMP::Database> db );
+    explicit IDATimeIntegratorParameters( std::shared_ptr<AMP::Database> db );
 
     virtual ~IDATimeIntegratorParameters();
 

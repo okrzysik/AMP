@@ -24,18 +24,16 @@ namespace AMP {
 namespace Operator {
 
 
-Map3Dto1D::Map3Dto1D( const std::shared_ptr<OperatorParameters> &params ) : MapOperator( params )
+Map3Dto1D::Map3Dto1D( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
 {
-    std::shared_ptr<MapOperatorParameters> myparams =
-        std::dynamic_pointer_cast<MapOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
     reset( myparams );
 }
 
 
-void Map3Dto1D::reset( const std::shared_ptr<OperatorParameters> &params )
+void Map3Dto1D::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    std::shared_ptr<MapOperatorParameters> myparams =
-        std::dynamic_pointer_cast<MapOperatorParameters>( params );
+    auto myparams = std::dynamic_pointer_cast<const MapOperatorParameters>( params );
 
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameter" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
@@ -43,8 +41,7 @@ void Map3Dto1D::reset( const std::shared_ptr<OperatorParameters> &params )
     d_Mesh    = myparams->d_Mesh;
     d_MapMesh = myparams->d_MapMesh;
     d_MapComm = myparams->d_MapComm;
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh.get() != nullptr ? 1 : 0 ) > 0,
-                "Somebody must own the mesh" );
+    AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh ? 1 : 0 ) > 0, "Somebody must own the mesh" );
 
     d_useGaussVec = myparams->d_db->getWithDefault( "UseGaussVec", false );
 

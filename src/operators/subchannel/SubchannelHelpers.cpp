@@ -341,22 +341,22 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
 AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     AMP::Mesh::Mesh::shared_ptr clad, AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm )
 {
-    if ( clad.get() != nullptr )
+    if ( clad )
         AMP_ASSERT( clad->getComm() <= comm );
-    if ( subchannel.get() != nullptr )
+    if ( subchannel )
         AMP_ASSERT( subchannel->getComm() <= comm );
     // Get the clad properties
     std::vector<double> clad_x, clad_y, clad_d;
     getCladProperties( comm, clad, clad_x, clad_y, clad_d );
     AMP::Mesh::Mesh::shared_ptr clad_surface;
-    if ( clad.get() != nullptr )
+    if ( clad )
         clad_surface =
             clad->Subset( clad->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, 4, 1 ) );
     // Get the subchannel properties
     size_t N[2];
     std::vector<double> x, y, hydraulic_diam;
     int root = -1;
-    if ( subchannel.get() != nullptr ) {
+    if ( subchannel ) {
         std::vector<double> area, rod_diameter, channel_fraction;
         getSubchannelProperties( subchannel,
                                  clad_x,

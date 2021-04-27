@@ -37,7 +37,7 @@ public:
      * and also USE_ELEMENT_PHYSICS from the database. These specify if material library or the
      * element physics model are used for calculating the source terms.
      */
-    explicit SourcePhysicsModel( const std::shared_ptr<SourcePhysicsModelParameters> &params );
+    explicit SourcePhysicsModel( std::shared_ptr<const SourcePhysicsModelParameters> params );
 
     /**
      * Destructor.
@@ -55,9 +55,9 @@ protected:
     std::string d_physicsName;
     double d_constantProperty; // Constant value of property if the material is not used.
 
-    AMP::Materials::Material::shared_ptr d_material;
+    std::shared_ptr<AMP::Materials::Material> d_material;
 
-    std::shared_ptr<AMP::Materials::Property<double>> d_property;
+    std::shared_ptr<AMP::Materials::Property> d_property;
 
 private:
     double d_DefaultTemperature;

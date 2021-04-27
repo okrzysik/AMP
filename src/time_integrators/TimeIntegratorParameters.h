@@ -36,7 +36,7 @@ public:
     //! Convience typedef
     typedef std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> shared_ptr;
 
-    explicit TimeIntegratorParameters( const std::shared_ptr<AMP::Database> db );
+    explicit TimeIntegratorParameters( std::shared_ptr<AMP::Database> db );
 
     virtual ~TimeIntegratorParameters();
     /**

@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -60,8 +59,7 @@ static void linearTest( AMP::UnitTest *ut,
     // Create the meshes from the input database
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
 
-    auto diffFEOp_db =
-        std::dynamic_pointer_cast<AMP::Database>( input_db->getDatabase( "LinearDiffusionOp" ) );
+    auto diffFEOp_db = input_db->getDatabase( "LinearDiffusionOp" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "LinearDiffusionOp", input_db, elementModel );

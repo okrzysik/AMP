@@ -20,7 +20,7 @@ class PetscKrylovSolverParameters : public SolverStrategyParameters
 {
 public:
     PetscKrylovSolverParameters() {}
-    explicit PetscKrylovSolverParameters( const std::shared_ptr<AMP::Database> db );
+    explicit PetscKrylovSolverParameters( std::shared_ptr<AMP::Database> db );
     virtual ~PetscKrylovSolverParameters() {}
 
     AMP_MPI d_comm;

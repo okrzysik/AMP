@@ -45,7 +45,7 @@ public:
     //! Return the name of the operator
     std::string type() const override { return "IDATimeOperator"; }
 
-    // virtual void reset(const std::shared_ptr<AMP::Operator::OperatorParameters>& params);
+    // virtual void reset( std::shared_ptr<const AMP::Operator::OperatorParameters> params);
 
     /**
       The function that computes the residual.

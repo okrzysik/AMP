@@ -20,7 +20,7 @@ class ManufacturedDiffusionTransportModel : public DiffusionTransportModel
 {
 public:
     explicit ManufacturedDiffusionTransportModel(
-        const std::shared_ptr<DiffusionTransportModelParameters> &params )
+        std::shared_ptr<const DiffusionTransportModelParameters> params )
         : DiffusionTransportModel( params )
     {
     }

@@ -92,7 +92,7 @@ void DiffusionNonlinearFEOperator::setVector( unsigned int id,
 
 
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
-    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> &params )
+    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
     : NonlinearFEOperator( params ), d_Frozen( Diffusion::NUMBER_VARIABLES )
 {
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
@@ -287,7 +287,7 @@ void DiffusionNonlinearFEOperator::postElementOperation()
 
 
 void DiffusionNonlinearFEOperator::init(
-    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> & )
+    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> )
 {
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::init, entering" << std::endl;
@@ -307,11 +307,10 @@ void DiffusionNonlinearFEOperator::init(
 }
 
 
-void DiffusionNonlinearFEOperator::reset( const std::shared_ptr<OperatorParameters> &params )
+void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     auto dnlparams_sp =
-        std::dynamic_pointer_cast<DiffusionNonlinearFEOperatorParameters, OperatorParameters>(
-            params );
+        std::dynamic_pointer_cast<const DiffusionNonlinearFEOperatorParameters>( params );
 
     if ( d_PrincipalVariable == Diffusion::TEMPERATURE )
         d_inVec[d_PrincipalVariable] = dnlparams_sp->d_FrozenTemperature;
@@ -408,7 +407,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
 
 
 void DiffusionNonlinearFEOperator::resetFrozen(
-    const std::shared_ptr<DiffusionNonlinearFEOperatorParameters> params )
+    std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
 {
     using namespace Diffusion;
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
@@ -424,7 +423,7 @@ void DiffusionNonlinearFEOperator::resetFrozen(
 }
 
 
-bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::shared_ptr &u )
+bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
     auto property = d_transportModel->getProperty();
     auto names    = property->get_arguments();
@@ -452,9 +451,9 @@ bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::sha
 
     bool result = true;
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->select( meshSelector, "u_mesh" );
+    auto u_meshVec = u->constSelect( meshSelector, "u_mesh" );
     if ( found ) {
-        auto uinp = u_meshVec->subsetVectorForVariable(
+        auto uinp = u_meshVec->constSubsetVectorForVariable(
             d_inpVariables->getVariable( d_PrincipalVariable ) );
         std::vector<double> vals( uinp->getLocalSize() );
         size_t nit = 0;

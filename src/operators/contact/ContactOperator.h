@@ -22,7 +22,7 @@ public:
       Constructor. This resets the matrix shared pointer.
       @param [in] params
       */
-    ContactOperator( const std::shared_ptr<ContactOperatorParameters> &params )
+    ContactOperator( std::shared_ptr<const ContactOperatorParameters> params )
         : ConstraintsEliminationOperator( params )
     {
         d_Mesh = ( params->d_Mesh );
