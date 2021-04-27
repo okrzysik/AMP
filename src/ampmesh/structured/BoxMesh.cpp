@@ -52,6 +52,7 @@ size_t BoxMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
         N *= s;
     return N;
 }
+
 std::vector<size_t> BoxMesh::estimateLogicalMeshSize( std::shared_ptr<const MeshParameters> params )
 {
     auto db    = params->getDatabase();
