@@ -88,18 +88,18 @@ bool Tube::inside( const Point &pos ) const
  ********************************************************/
 int Tube::surface( const Point &pos ) const
 {
-    double x  = pos.x() - d_offset[0];
-    double y  = pos.y() - d_offset[1];
-    double z  = pos.z() - d_offset[2];
-    double r2 = x * x + y * y;
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
     if ( z <= d_z_min )
         return 0;
     if ( z >= d_z_max )
         return 1;
+    double r  = sqrt( x * x + y * y );
     double d1 = fabs( z - d_z_min );
     double d2 = fabs( z - d_z_max );
-    double d3 = fabs( r2 - d_r_min );
-    double d4 = fabs( r2 - d_r_max );
+    double d3 = fabs( r - d_r_min );
+    double d4 = fabs( r - d_r_max );
     if ( d1 <= std::min( { d2, d3, d4 } ) )
         return 0;
     if ( d2 <= std::min( { d1, d3, d4 } ) )

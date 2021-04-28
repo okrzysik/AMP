@@ -125,13 +125,15 @@ int Cylinder::surface( const Point &pos ) const
     double r  = sqrt( x * x + y * y );
     double d1 = std::abs( r - d_r );
     double d2 = std::abs( z - d_z_min );
-    double d3 = std::abs( r - d_z_max );
-    if ( d1 < std::min( d2, d3 ) )
+    double d3 = std::abs( z - d_z_max );
+    if ( d1 <= std::min( d2, d3 ) )
         return 0;
-    else if ( d2 < d3 )
+    if ( d2 <= std::min( d1, d3 ) )
         return 1;
-    else
+    if ( d3 <= std::min( d1, d2 ) )
         return 2;
+    AMP_ERROR( "Internal error" );
+    return -1;
 }
 Point Cylinder::surfaceNorm( const Point &pos ) const
 {
