@@ -95,6 +95,7 @@ uninitMemberVar:*/src/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.cpp
 uninitMemberVar:*/src/vectors/trilinos/thyra/NativeThyraVector.cpp
 postfixOperator:*/src/ampmesh/testHelpers/meshTests.cpp
 redundantCondition:*/src/ampmesh/triangle/TriangleMeshElement.cpp
+incorrectLogicOperator:*/src/ampmesh/triangle/TriangleMeshElement.cpp
 invalidLifetime:*/src/ampmesh/libmesh/libmeshMesh.cpp
 autovarInvalidDeallocation:*/src/vectors/petsc/PetscHelpers.cpp
 exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
