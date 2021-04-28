@@ -32,10 +32,11 @@ libmeshElemIterator::libmeshElemIterator( const AMP::Mesh::libmeshMesh *mesh,
       d_meshID( mesh->meshID() ),
       d_mesh( mesh )
 {
-    d_typeID  = getTypeID();
-    d_pos     = pos2;
-    d_size    = size;
-    d_element = &d_cur_element;
+    d_typeID       = getTypeID();
+    d_iteratorType = MeshIterator::Type::Forward;
+    d_pos          = pos2;
+    d_size         = size;
+    d_element      = &d_cur_element;
     // Count the number of elements in the iterator
     if ( size == -1 ) {
         d_size = 0;
@@ -67,29 +68,31 @@ libmeshElemIterator::libmeshElemIterator( const libmeshElemIterator &rhs )
       d_meshID( rhs.d_meshID ),
       d_mesh( rhs.d_mesh )
 {
-    d_typeID  = rhs.d_typeID;
-    d_pos     = rhs.d_pos;
-    d_size    = rhs.d_size;
-    d_element = &d_cur_element;
+    d_typeID       = rhs.d_typeID;
+    d_iteratorType = rhs.d_iteratorType;
+    d_pos          = rhs.d_pos;
+    d_size         = rhs.d_size;
+    d_element      = &d_cur_element;
     setCurrentElement();
 }
 libmeshElemIterator &libmeshElemIterator::operator=( const libmeshElemIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->d_typeID   = getTypeID();
-    this->d_iterator = nullptr;
-    this->d_mesh     = rhs.d_mesh;
-    this->d_gcw      = rhs.d_gcw;
-    this->d_pos      = rhs.d_pos;
-    this->d_size     = rhs.d_size;
-    this->d_rank     = rhs.d_rank;
-    this->d_meshID   = rhs.d_meshID;
-    this->d_dim      = rhs.d_dim;
-    this->d_element  = &d_cur_element;
-    this->d_begin2   = rhs.d_begin2;
-    this->d_end2     = rhs.d_end2;
-    this->d_pos2     = rhs.d_pos2;
+    this->d_iterator     = nullptr;
+    this->d_typeID       = getTypeID();
+    this->d_iteratorType = rhs.d_iteratorType;
+    this->d_mesh         = rhs.d_mesh;
+    this->d_gcw          = rhs.d_gcw;
+    this->d_pos          = rhs.d_pos;
+    this->d_size         = rhs.d_size;
+    this->d_rank         = rhs.d_rank;
+    this->d_meshID       = rhs.d_meshID;
+    this->d_dim          = rhs.d_dim;
+    this->d_element      = &d_cur_element;
+    this->d_begin2       = rhs.d_begin2;
+    this->d_end2         = rhs.d_end2;
+    this->d_pos2         = rhs.d_pos2;
     setCurrentElement();
     return *this;
 }
@@ -134,7 +137,7 @@ MeshIterator libmeshElemIterator::operator++( int )
 }
 MeshIterator &libmeshElemIterator::operator--()
 {
-    // Prefix decrement (increment and return this)
+    // Prefix decrement (decrement and return this)
     AMP_ERROR( "Decrementing libmeshMesh iterators is not supported" );
     return *this;
 }

@@ -100,13 +100,13 @@ int Tube::surface( const Point &pos ) const
     double d2 = fabs( z - d_z_max );
     double d3 = fabs( r2 - d_r_min );
     double d4 = fabs( r2 - d_r_max );
-    if ( d1 <= std::max( { d2, d3, d4 } ) )
+    if ( d1 <= std::min( { d2, d3, d4 } ) )
         return 0;
-    if ( d2 <= std::max( { d1, d3, d4 } ) )
+    if ( d2 <= std::min( { d1, d3, d4 } ) )
         return 1;
-    if ( d3 <= std::max( { d1, d2, d4 } ) )
+    if ( d3 <= std::min( { d1, d2, d4 } ) )
         return 2;
-    if ( d4 <= std::max( { d1, d2, d3 } ) )
+    if ( d4 <= std::min( { d1, d2, d3 } ) )
         return 3;
     AMP_ERROR( "Internal error" );
     return -1;

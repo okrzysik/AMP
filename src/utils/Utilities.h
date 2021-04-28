@@ -363,6 +363,10 @@ void nullUse( void * );
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... );
 
+//! Print a vector
+template<class TYPE>
+std::string to_string( const std::vector<TYPE> &x );
+
 
 //! Print a database
 [[deprecated( "This function will be removed soon, use Database::print" )]] void

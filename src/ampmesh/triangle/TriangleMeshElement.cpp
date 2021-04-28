@@ -105,6 +105,11 @@ constexpr uint32_t TriangleMeshElement<NG, NP, TYPE>::getTypeID()
     name[25]    = 48 + TYPE;
     return AMP::Utilities::hash_char( name );
 }
+template<uint8_t NG, uint8_t NP, uint8_t TYPE>
+std::string TriangleMeshElement<NG, NP, TYPE>::elementClass() const
+{
+    return AMP::Utilities::stringf( "TriangleMeshElement<%u,%u,%u>", NG, NP, TYPE );
+}
 
 
 /********************************************************
@@ -147,8 +152,8 @@ TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( TriangleMeshElement &&rh
     element = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
-operator=( const TriangleMeshElement &rhs )
+TriangleMeshElement<NG, NP, TYPE> &
+TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
 {
     if ( &rhs == this )
         return *this;
@@ -159,8 +164,8 @@ operator=( const TriangleMeshElement &rhs )
     return *this;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-TriangleMeshElement<NG, NP, TYPE> &TriangleMeshElement<NG, NP, TYPE>::
-operator=( TriangleMeshElement &&rhs )
+TriangleMeshElement<NG, NP, TYPE> &
+TriangleMeshElement<NG, NP, TYPE>::operator=( TriangleMeshElement &&rhs )
 {
     if ( &rhs == this )
         return *this;
@@ -251,7 +256,7 @@ inline void TriangleMeshElement<NG, NP, TYPE>::getVertexCoord( std::array<double
         x[0] = d_mesh->getPos( d_globalID.elemID() );
     } else {
         ElementID ids[TYPE + 1];
-        d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
+        d_mesh->getVerticies( d_globalID.elemID(), ids );
         for ( size_t i = 0; i <= TYPE; i++ )
             x[i] = d_mesh->getPos( ids[i] );
     }
@@ -274,7 +279,9 @@ double TriangleMeshElement<NG, NP, TYPE>::volume() const
         auto AB  = x[1] - x[0];
         auto AC  = x[2] - x[0];
         double t = dot( AB, AC );
-        return 0.5 * sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
+        double V = 0.5 * sqrt( dot( AB, AB ) * dot( AC, AC ) - t * t );
+        AMP_ASSERT( V == V );
+        return V;
     } else if constexpr ( TYPE == NP ) {
         /* Calculate the volume of a N-dimensional simplex:
          *         1  |  x1-x4   x2-x4   x3-x4  |
@@ -291,6 +298,7 @@ double TriangleMeshElement<NG, NP, TYPE>::volume() const
         }
         constexpr double C = inv_factorial( TYPE );
         double V           = std::abs( C * DelaunayHelpers<TYPE>::det( M ) );
+        AMP_ASSERT( V == V );
         return V;
     } else {
         AMP_ERROR( "TriangleMeshElement::volume - Not finished" );
@@ -326,26 +334,15 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::centroid() const
 {
     if constexpr ( TYPE == 0 )
         return MeshPoint<double>( d_mesh->getPos( d_globalID.elemID() ) );
-    std::array<double, NP> x2[TYPE + 1];
-    getVertexCoord( x2 );
-    ElementID ids[TYPE + 1];
-    d_mesh->getElementsIDs( d_globalID.elemID(), GeomType::Vertex, ids );
-    MeshPoint<double> x( (size_t) NP );
-    for ( size_t i = 0; i <= TYPE; i++ ) {
+    std::array<double, NP> x[TYPE + 1];
+    getVertexCoord( x );
+    for ( size_t i = 1; i <= TYPE; i++ ) {
         for ( size_t d = 0; d < NP; d++ )
-            x[d] += x2[i][d];
+            x[0][d] += x[i][d];
     }
     for ( size_t d = 0; d < NP; d++ )
-        x[d] /= ( TYPE + 1 );
-    return x;
-}
-template<size_t N>
-std::array<double, N> convert( const MeshPoint<double> &p )
-{
-    std::array<double, N> p2;
-    for ( size_t i = 0; i < N; i++ )
-        p2[i] = p[i];
-    return p2;
+        x[0][d] /= ( TYPE + 1 );
+    return MeshPoint<double>( (size_t) NP, x[0].data() );
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 bool TriangleMeshElement<NG, NP, TYPE>::containsPoint( const MeshPoint<double> &pos,
@@ -360,6 +357,11 @@ bool TriangleMeshElement<NG, NP, TYPE>::containsPoint( const MeshPoint<double> &
         auto L =
             AMP::Geometry::GeometryHelpers::barycentric<3, 3>( x, { pos.x(), pos.y(), pos.z() } );
         return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL );
+    } else if constexpr ( TYPE == 3 && NP == 3 ) {
+        // Compute barycentric coordinates
+        auto L =
+            AMP::Geometry::GeometryHelpers::barycentric<4, 3>( x, { pos.x(), pos.y(), pos.z() } );
+        return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL ) && ( L[3] >= -TOL );
     } else {
         AMP_ERROR( "TriangleMeshElement::containsPoint - Not finished" );
     }
@@ -403,8 +405,27 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::nearest( const MeshPoint<do
         // Nearest point to a triangle in 3D
         auto p = AMP::Geometry::GeometryHelpers::nearest( v, { pos.x(), pos.y(), pos.z() } );
         return { p[0], p[1], p[2] };
+    } else if constexpr ( TYPE == 3 && NP == 3 ) {
+        // Nearest point to a tet in 3D
+        if ( containsPoint( pos ) )
+            return pos;
+        std::array<double, NP> p0 = { pos.x(), pos.y(), pos.z() };
+        MeshPoint<double> p       = { 1e100, 1e100, 1e100 };
+        for ( int i = 0; i < 4; i++ ) {
+            std::array<double, NP> v2[TYPE];
+            for ( int j = 0, k = 0; j < 4; j++ ) {
+                if ( i != j ) {
+                    v2[k] = v[i];
+                    k++;
+                }
+            }
+            MeshPoint<double> p2 = AMP::Geometry::GeometryHelpers::nearest( v2, p0 );
+            if ( ( p2 - pos ).norm() < ( p - pos ).norm() )
+                p = p2;
+        }
+        return p;
     } else {
-        AMP_ERROR( "TriangleMeshElement - Not finished" );
+        AMP_ERROR( "TriangleMeshElement::nearest - Not finished" );
     }
     return MeshPoint<double>();
 }

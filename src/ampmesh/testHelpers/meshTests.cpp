@@ -129,12 +129,14 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
         it5 += iterator.size();
         if ( it1 != it2 || it1 != it3 || it4 != iterator.begin() || it5 != iterator.end() )
             pass = false;
-        /*it1--;
-        --it1;
-        it2 = it2-2;
-        it3-=2;
-        if ( it1!=iterator.begin() || it2!=iterator.begin() || it3!=iterator.begin() )
-            pass = false;*/
+        if ( static_cast<int>( it1.type() ) >= 2 ) {
+            it1--;
+            --it1;
+            it2 = it2 - 2;
+            it3 -= 2;
+            if ( it1 != iterator.begin() || it2 != iterator.begin() || it3 != iterator.begin() )
+                pass = false;
+        }
         if ( pass )
             ut->passes( name + "-regular iterator increments/decrements" );
         else
@@ -1155,16 +1157,18 @@ static inline void centroid( AMP::Mesh::Mesh::shared_ptr mesh )
         auto x = elem.centroid();
         pass   = pass && x == x;
     }
-    AMP_INSIST( pass, "NaN centroid" );
+    AMP_INSIST( pass, "NaN centroid: " + mesh->getName() );
 }
 static inline void volume( AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    bool pass = true;
     for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 0 ) ) {
         auto V = elem.volume();
-        pass   = pass && V > 0;
+        if ( V <= 0 || V != V ) {
+            auto msg = "Failed volume check: " + mesh->getName() + "\n";
+            msg += elem.print( 6 );
+            AMP_ERROR( msg );
+        }
     }
-    AMP_INSIST( pass, "Negitive or zero volume" );
 }
 static inline void getElementIDs( AMP::Mesh::Mesh::shared_ptr mesh )
 {

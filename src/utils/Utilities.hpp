@@ -375,4 +375,22 @@ size_t AMP::Utilities::findfirst( size_t n, const T *x, const T &value )
     return index;
 }
 
+
+/************************************************************************
+ * Convert a vector to a string                                          *
+ ************************************************************************/
+template<class TYPE>
+std::string AMP::Utilities::to_string( const std::vector<TYPE> &x )
+{
+    using std::to_string;
+    if ( x.empty() )
+        return "[]";
+    std::string str = "[" + to_string( x[0] );
+    for ( size_t i = 1; i < x.size(); i++ )
+        str += "," + to_string( x[i] );
+    str += "]";
+    return str;
+}
+
+
 #endif

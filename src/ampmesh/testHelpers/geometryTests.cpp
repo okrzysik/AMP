@@ -3,6 +3,7 @@
 #include "AMP/ampmesh/MeshUtilities.h"
 #include "AMP/ampmesh/MultiGeometry.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
 
@@ -24,9 +25,38 @@ static inline Point genRandDir( int ndim )
 }
 
 
+// Add the surface points from the rays
+static bool addSurfacePoints( const AMP::Geometry::Geometry &geom,
+                              const Point &x0,
+                              const Point &dir,
+                              std::vector<Point> &surfacePoints )
+{
+    double d = geom.distance( x0, dir );
+    AMP_ASSERT( d == d );
+    bool inside = d <= 0;
+    double d2   = 0;
+    int it      = 0;
+    while ( fabs( d ) < 1e100 ) {
+        d2 += fabs( d );
+        surfacePoints.push_back( x0 + d2 * dir );
+        d2 += 1e-6;
+        d = geom.distance( x0 + d2 * dir, dir );
+        ++it;
+        if ( it > 100 )
+            AMP_ERROR( "Infinite surfaces" );
+    }
+    return inside;
+}
+
+
 // Run all geometry based tests
 void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
 {
+    auto multigeom = dynamic_cast<const MultiGeometry *>( &geom );
+    if ( multigeom ) {
+        for ( const auto geom2 : multigeom->getGeometries() )
+            testGeometry( *geom2, ut );
+    }
     // Get the physical dimension
     int ndim  = geom.getDim();
     auto name = geom.getName();
@@ -46,26 +76,37 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     surfacePoints.reserve( N );
     bool all_hit = true;
     while ( surfacePoints.size() < N ) {
-        // Keep each surface the ray hits
-        auto dir = genRandDir( ndim );
-        double d = geom.distance( center, dir );
-        AMP_ASSERT( d == d );
-        all_hit   = all_hit && d <= 0;
-        double d2 = 0;
-        while ( fabs( d ) < 1e100 ) {
-            d2 += fabs( d );
-            surfacePoints.push_back( center + d2 * dir );
-            d2 += 1e-6;
-            d = geom.distance( center + d2 * dir, dir );
-            if ( surfacePoints.size() > N )
-                break;
-        }
+        auto dir  = genRandDir( ndim );
+        bool test = addSurfacePoints( geom, center, dir, surfacePoints );
+        all_hit   = all_hit && test;
     }
     pass = pass && !surfacePoints.empty();
     if ( surfacePoints.empty() )
         ut.failure( "testGeometry unable to get surface: " + name );
     if ( geom.inside( center ) && !all_hit )
         ut.failure( "testGeometry failed all rays hit: " + name );
+    // Add points propagating from box surface
+    if ( ndim == 3 && !multigeom ) {
+        int n         = 11;
+        auto [lb, ub] = box;
+        auto dx       = 1.0 / n * ( ub - lb );
+        for ( int i = 0; i < n; i++ ) {
+            for ( int j = 0; j < n; j++ ) {
+                Point x0 = { lb[0] - dx[0],
+                             lb[1] + ( i + 0.5 ) * dx[1],
+                             lb[2] + ( j + 0.5 ) * dx[2] };
+                Point y0 = { lb[0] + ( i + 0.5 ) * dx[0],
+                             lb[1] - dx[1],
+                             lb[2] + ( j + 0.5 ) * dx[2] };
+                Point z0 = { lb[0] + ( i + 0.5 ) * dx[0],
+                             lb[1] + ( j + 0.5 ) * dx[1],
+                             lb[2] - dx[2] };
+                addSurfacePoints( geom, x0, { 1, 0, 0 }, surfacePoints );
+                addSurfacePoints( geom, y0, { 0, 1, 0 }, surfacePoints );
+                addSurfacePoints( geom, z0, { 0, 0, 1 }, surfacePoints );
+            }
+        }
+    }
     PROFILE_STOP( "testGeometry-surface " + name );
     // Verify each surface point is "inside" the object
     PROFILE_START( "testGeometry-inside " + name );
@@ -97,7 +138,8 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             d += fabs( geom.distance( pos2, ang ) );
         }
         if ( fabs( d - d0 ) > 1e-5 ) {
-            printf( "testGeometry-distance: %f %f\n", d0, d );
+            std::cout << "testGeometry-distance: " << d0 << " " << d << " " << tmp << " " << pos
+                      << std::endl;
             pass_projection = false;
         }
     }
@@ -172,8 +214,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         if ( !passVol )
             ut.failure( "testGeometry volume: " + name );
         // Test mesh utilities volume overlap
-        auto multigeom = dynamic_cast<const MultiGeometry *>( &geom );
-        if ( ndim == static_cast<int>( geom.getGeomType() ) && multigeom == nullptr ) {
+        if ( ndim == static_cast<int>( geom.getGeomType() ) && !multigeom ) {
             auto tmp      = AMP::Mesh::volumeOverlap( geom, std::vector<int>( ndim, 35 ) );
             double vol2   = tmp.sum();
             bool passVol2 = fabs( vol2 - volume ) < 0.01 * volume;
@@ -182,6 +223,24 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
                 ut.failure( "testGeometry volumeOverlap: " + name );
         }
         PROFILE_STOP( "testGeometry-volume " + name );
+    }
+    // Test getting the surface id
+    if ( !multigeom ) {
+        PROFILE_START( "testGeometry-surfaceID " + name );
+        std::set<int> ids;
+        for ( const auto &p : surfacePoints )
+            ids.insert( geom.surface( p ) );
+        if ( (int) ids.size() != geom.NSurface() ) {
+            using AMP::Utilities::stringf;
+            auto msg = stringf( "testGeometry surface: %s (%i,%i)\n",
+                                name.data(),
+                                geom.NSurface(),
+                                (int) ids.size() );
+            msg += "           ids = ";
+            msg += AMP::Utilities::to_string( std::vector<int>( ids.begin(), ids.end() ) );
+            ut.failure( msg );
+        }
+        PROFILE_STOP( "testGeometry-surfaceID " + name );
     }
     // Finished with all tests
     if ( pass )

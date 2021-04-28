@@ -472,7 +472,7 @@ static inline void erase( TYPE &faceMap, int64_t i )
 }
 template<size_t NG>
 static std::vector<std::array<int64_t, NG + 1>>
-    removeSubDomain( std::vector<std::array<int64_t, NG + 1>> &tri )
+removeSubDomain( std::vector<std::array<int64_t, NG + 1>> &tri )
 {
     // For each triangle get a hash id for each face
     std::multimap<uint64_t, int64_t> faceMap;
@@ -561,7 +561,7 @@ static std::vector<std::array<int64_t, NG + 1>>
 }
 template<size_t NG>
 std::vector<std::vector<std::array<int64_t, NG + 1>>>
-    splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
+splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
 {
     std::vector<std::vector<std::array<int64_t, NG + 1>>> tri_sets;
     while ( !tri.empty() )
@@ -709,6 +709,20 @@ static inline void check_nearest( const std::vector<Point> &x )
     auto dx    = x[index.first] - x[index.second];
     double d   = dx.abs();
     AMP_ASSERT( d > 1e-8 );
+}
+template<uint8_t NDIM>
+static inline void checkTri( const std::vector<std::array<int, NDIM + 1>> &tri )
+{
+    AMP_ASSERT( !tri.empty() );
+    // Check the triangles for duplicate nodes within a triangle
+    for ( const auto &tri2 : tri ) {
+        for ( size_t i = 0; i <= NDIM; i++ ) {
+            for ( size_t j = 0; j < i; j++ ) {
+                AMP_ASSERT( tri2[i] != -1 );
+                AMP_ASSERT( tri2[i] != tri2[j] );
+            }
+        }
+    }
 }
 static inline std::vector<Point> getVolumePoints( const AMP::Geometry::Geometry &geom,
                                                   double resolution )
@@ -888,14 +902,15 @@ createTessellation( const Point &lb, const Point &ub, const std::vector<Point> &
         }
     }
     // Convert to output format
-    std::vector<std::array<int, NDIM + 1>> tri2( tri.size( 1 ) );
-    std::vector<std::array<int, NDIM + 1>> nab2( tri.size( 1 ) );
+    std::vector<std::array<int, NDIM + 1>> tri2( tri.size( 1 ), { -1 } );
+    std::vector<std::array<int, NDIM + 1>> nab2( tri.size( 1 ), { -1 } );
     for ( size_t i = 0; i < tri2.size(); i++ ) {
-        for ( size_t d = 0; d < NDIM; d++ ) {
+        for ( size_t d = 0; d <= NDIM; d++ ) {
             tri2[i][d] = tri( d, i );
             nab2[i][d] = nab( d, i );
         }
     }
+    checkTri<NDIM>( tri2 );
     return std::tie( tri2, nab2 );
 }
 template<uint8_t NDIM>
@@ -906,7 +921,6 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
     // Tessellate
     auto [lb, ub]       = geom->box();
     auto [tri, tri_nab] = createTessellation<NDIM>( lb, ub, points );
-    AMP_ASSERT( !tri.empty() );
     // Delete triangles that have duplicate neighbors
     {
         // Identify the triangles that need to be removed
@@ -967,6 +981,7 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
         // Remove the triangles
         removeTriangles<NDIM>( tri, tri_nab, remove );
     }
+    checkTri<NDIM>( tri );
     // Generate the mesh
     std::vector<std::array<int64_t, NDIM + 1>> tri2( tri.size() ), tri_nab2( tri.size() );
     for ( size_t i = 0; i < tri.size(); i++ ) {
@@ -975,7 +990,6 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
             tri_nab2[i][d] = tri_nab[i][d];
         }
     }
-    // Generate the mesh
     std::vector<std::array<double, NDIM>> x1( points.size() );
     for ( size_t i = 0; i < points.size(); i++ ) {
         for ( int d = 0; d < NDIM; d++ )

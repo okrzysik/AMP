@@ -91,7 +91,8 @@ public:
      * \details Create triangle mesh data from the given parameters
      * \param params  Parameters for constructing a mesh from an input database
      */
-    static std::shared_ptr<TriangleMesh<NG, NP>> generate( std::shared_ptr<const MeshParameters> params );
+    static std::shared_ptr<TriangleMesh<NG, NP>>
+    generate( std::shared_ptr<const MeshParameters> params );
 
     /**
      * \brief Generate a triangle mesh from local triangle coordinates
@@ -355,7 +356,7 @@ protected:
 
     // Return the IDs of the elements composing the current element
     void getElementsIDs( const ElementID &id, const GeomType type, ElementID *IDs ) const;
-    inline void getVerticies( const ElementID &id, int &N, ElementID *IDs ) const;
+    void getVerticies( const ElementID &id, ElementID *IDs ) const;
 
     // Return the IDs of the neighboring elements
     void getNeighborIDs( const ElementID &id, std::vector<ElementID> &IDs ) const;
