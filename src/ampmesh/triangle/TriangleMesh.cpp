@@ -50,6 +50,19 @@ static inline void fread2( void *ptr, size_t size, size_t count, FILE *stream )
 }
 
 
+// Helper function to perform simple checks
+template<class TYPE, std::size_t N>
+static inline void check( const std::vector<std::array<TYPE, N>> &x )
+{
+    for ( const auto &y : x ) {
+        // Check for duplicate entries in the triangle
+        for ( size_t i = 0; i < N; i++ )
+            for ( size_t j = 0; j < i; j++ )
+                AMP_ASSERT( y[i] != y[j] );
+    }
+}
+
+
 /****************************************************************
  * Get the number of n-Simplex elements of each type             *
  ****************************************************************/
@@ -468,6 +481,7 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
     if ( block.empty() )
         block = std::vector<int>( tri.size(), 0 );
     AMP_ASSERT( block.size() == tri.size() );
+    check( tri );
     // Set basic mesh info
     d_db        = nullptr;
     d_params    = nullptr;
@@ -491,6 +505,7 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
     d_vert    = std::move( verticies );
     auto tri2 = createGlobalIDs<NG>( tri, d_vert.size(), GeomType::Vertex, comm );
     sortData( tri2, tri_nab, block, comm );
+    check( tri2 );
     d_neighbors = createGlobalIDs<NG>( tri_nab, tri2.size(), static_cast<GeomType>( NG ), comm );
     if constexpr ( NG == 1 )
         std::swap( d_edge, tri2 );
@@ -783,6 +798,10 @@ void TriangleMesh<NG, NP>::initialize()
         d_tet_edge = getChildrenIDs<3, 1>( d_tet, d_edge, d_remote_edge, rank );
         d_tet_tri  = getChildrenIDs<3, 2>( d_tet, d_tri, d_remote_tri, rank );
     }
+    // Check the data for errors
+    check( d_edge );
+    check( d_tri );
+    check( d_tet );
 }
 template<uint8_t NG, uint8_t NP>
 MeshIterator
@@ -1138,16 +1157,14 @@ std::array<double, NP> TriangleMesh<NG, NP>::getPos( const ElementID &id ) const
  * Return the IDs of the elements composing the current element  *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-inline void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, int &N, ElementID *IDs ) const
+void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, ElementID *IDs ) const
 {
     auto type = id.type();
     if ( type == GeomType::Vertex ) {
-        N      = 1;
         IDs[0] = id;
         return;
     }
     if ( type == GeomType::Edge ) {
-        N = 2;
         Edge edge;
         if ( id.is_local() )
             edge = d_edge[id.local_id()];
@@ -1156,7 +1173,6 @@ inline void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, int &N, Ele
         IDs[0] = edge[0];
         IDs[1] = edge[1];
     } else if ( type == GeomType::Face ) {
-        N = 3;
         Triangle tri;
         if ( id.is_local() )
             tri = d_tri[id.local_id()];
@@ -1166,7 +1182,6 @@ inline void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, int &N, Ele
         IDs[1] = tri[1];
         IDs[2] = tri[2];
     } else if ( type == GeomType::Volume ) {
-        N = 4;
         Tetrahedron tet;
         if ( id.is_local() )
             tet = d_tet[id.local_id()];
@@ -1190,8 +1205,7 @@ void TriangleMesh<NG, NP>::getElementsIDs( const ElementID &id,
         return;
     }
     if ( type == GeomType::Vertex ) {
-        int N_vertex = 0;
-        getVerticies( id, N_vertex, IDs );
+        getVerticies( id, IDs );
         return;
     }
     if ( !id.is_local() )
@@ -1287,7 +1301,7 @@ bool TriangleMesh<NG, NP>::isOnBoundary( const ElementID &elemID, int id ) const
         if ( d_boundary_ids[i] == id )
             index = i;
     }
-    if ( type > NG || index >= d_block_iterators.size() )
+    if ( type > NG || index >= d_boundary_iterators.size() )
         return false;
     const auto &it = d_boundary_iterators[index].back()[type];
     return inIterator( elemID, &it );

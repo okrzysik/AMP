@@ -7,7 +7,7 @@
 #include "AMP/ampmesh/MeshElement.h"
 #include "AMP/ampmesh/MeshPoint.h"
 #include "AMP/utils/Array.h"
-#include "AMP/utils/kdtree.h"
+#include "AMP/utils/kdtree2.h"
 
 
 namespace AMP::Mesh {
@@ -48,16 +48,14 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
  * \brief A class used to help find the nearest element to a point
  * \details  This class provides functions to help find the nearest element to a point
  */
-class ElementFinder final
+class ElementFinder
 {
 public:
     //! Empty constructor
     ElementFinder() : d_pos_hash( 0 ), d_type( AMP::Mesh::GeomType::Vertex ) {}
 
     //! Empty constructor
-    ElementFinder(
-        std::shared_ptr<AMP::Mesh::Mesh> mesh,
-        std::vector<AMP::Mesh::MeshElementID> elements = std::vector<AMP::Mesh::MeshElementID>() );
+    ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     //! Copy constructor
     ElementFinder( const ElementFinder & ) = delete;
@@ -68,11 +66,20 @@ public:
     //! Move operator
     ElementFinder &operator=( ElementFinder && ) = default;
 
-    //! Get the nearest elements to a point
-    std::vector<AMP::Mesh::MeshElement> getNearestElements( const Point &x ) const;
-
     //! Get the nearest element and point
-    std::pair<AMP::Mesh::MeshElement, Point> getNearestPoint( const Point &x ) const;
+    std::pair<AMP::Mesh::MeshElement, Point> nearest( const Point &x ) const;
+
+    /**
+     * \brief    Calculate the distance to the object given a ray
+     * \details  This function computes the distance to the object given a ray.
+     *     If the ray is inside the object, this distance is negitive.  If the
+     *     ray will never intersect the object, this distance is inf.
+     * \param[in] pos   Current position of ray
+     * \param[in] dir   Direction of ray (should be normalized for most uses)
+     * @return          Returns the surface and distance to the nearest surface
+     *                  (intersection = pos + dir*distance)
+     */
+    double distance( const Point &pos, const Point &dir ) const;
 
 private:
     void initialize() const;
@@ -81,9 +88,7 @@ private:
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     mutable uint64_t d_pos_hash;
     AMP::Mesh::GeomType d_type;
-    mutable kdtree d_tree;
-    mutable std::vector<AMP::Mesh::MeshElementID> d_ids;
-    std::vector<AMP::Mesh::MeshElementID> d_elements;
+    mutable kdtree2<3, AMP::Mesh::MeshElementID> d_tree;
 };
 
 

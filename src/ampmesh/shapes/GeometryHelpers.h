@@ -317,9 +317,9 @@ double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const
  * \param[in] p         Point of interest
  * @return              Returns the barycentric coordinates
  */
-template<int N1, int N2>
-std::array<double, N1> barycentric( const std::array<double, N2> ( &x )[N1],
-                                    const std::array<double, N2> &p );
+template<int NP, int NDIM>
+std::array<double, NP> barycentric( const std::array<double, NDIM> ( &x )[NP],
+                                    const std::array<double, NDIM> &p );
 
 
 /**

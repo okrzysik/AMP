@@ -135,12 +135,6 @@ public:
     bool operator==( const Geometry &rhs ) const override;
 
 
-private: // Internal functions
-    // Get the nearest element to a point
-    std::vector<AMP::Mesh::MeshElement> getNearestElements( const Point &x ) const;
-    std::pair<AMP::Mesh::MeshElement, Point> getNearestPoint( const Point &x ) const;
-
-
 private: // Internal data
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     std::vector<int> d_surfaceIds;

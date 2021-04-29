@@ -111,6 +111,14 @@ public: // non-virtual functions
     inline bool containsPoint( const std::vector<double> &pos, double TOL = 1e-12 ) const;
 
 
+    /**
+     * \brief     Print info about the element
+     * \details   This function returns debug info about the element
+     * \param indent    The number of spaces to indent new lines
+     */
+    std::string print( uint8_t indent = 0 ) const;
+
+
 public: // Virtual functions
     //! Return the unique global ID of the element
     virtual MeshElementID globalID() const;

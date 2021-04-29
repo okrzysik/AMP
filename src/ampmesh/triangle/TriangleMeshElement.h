@@ -50,7 +50,7 @@ public:
     MeshElementID globalID() const override { return d_globalID; }
 
     //! Return the element class
-    inline std::string elementClass() const override { return "TriangleMeshElement"; }
+    std::string elementClass() const override;
 
     //! Return the elements composing the current element
     virtual void getElements( const GeomType type,
