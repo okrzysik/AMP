@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <math.h>
 #include <ostream>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -23,80 +24,53 @@ class MeshPoint final
 {
 public:
     //! Empty constructor
-    constexpr MeshPoint() noexcept : d_ndim( 0 )
-    {
-        d_data[0] = 0;
-        d_data[1] = 0;
-        d_data[2] = 0;
-    }
+    constexpr MeshPoint() noexcept : d_ndim( 0 ), d_data{ 0, 0, 0 } {}
 
     // Constructors
-    constexpr MeshPoint( std::initializer_list<TYPE> x ) : d_ndim( x.size() )
+    constexpr MeshPoint( std::initializer_list<TYPE> x ) : d_ndim( x.size() ), d_data{ 0, 0, 0 }
     {
         if ( d_ndim > 3 || d_ndim == 0 )
             throw std::logic_error( "Invalid Dimension" );
         auto it   = x.begin();
         d_data[0] = *it;
-        d_data[1] = 0;
-        d_data[2] = 0;
         for ( size_t d = 1; d < d_ndim; d++ )
             d_data[d] = *( ++it );
     }
-    constexpr explicit MeshPoint( size_t ndim ) noexcept : d_ndim( ndim )
+    constexpr explicit MeshPoint( size_t ndim ) noexcept : d_ndim( ndim ), d_data{ 0, 0, 0 } {}
+    constexpr explicit MeshPoint( const TYPE &x ) noexcept : d_ndim( 1 ), d_data{ x, 0, 0 } {}
+    constexpr explicit MeshPoint( const TYPE &x, const TYPE &y ) noexcept
+        : d_ndim( 2 ), d_data{ x, y, 0 }
     {
-        d_data[0] = 0;
-        d_data[1] = 0;
-        d_data[2] = 0;
-    }
-    constexpr explicit MeshPoint( const TYPE &x ) noexcept : d_ndim( 1 )
-    {
-        d_data[0] = x;
-        d_data[1] = 0;
-        d_data[2] = 0;
-    }
-    constexpr explicit MeshPoint( const TYPE &x, const TYPE &y ) noexcept : d_ndim( 2 )
-    {
-        d_data[0] = x;
-        d_data[1] = y;
-        d_data[2] = 0;
     }
     constexpr explicit MeshPoint( const TYPE &x, const TYPE &y, const TYPE &z ) noexcept
-        : d_ndim( 3 )
+        : d_ndim( 3 ), d_data{ x, y, z }
     {
-        d_data[0] = x;
-        d_data[1] = y;
-        d_data[2] = z;
     }
-    constexpr explicit MeshPoint( const size_t ndim, const TYPE *x ) noexcept : d_ndim( ndim )
+    constexpr explicit MeshPoint( const size_t ndim, const TYPE *x ) noexcept
+        : d_ndim( ndim ), d_data{ 0, 0, 0 }
     {
-        d_data[0] = 0;
-        d_data[1] = 0;
-        d_data[2] = 0;
         for ( size_t d = 0; d < d_ndim; d++ )
             d_data[d] = x[d];
     }
-    constexpr MeshPoint( const size_t ndim, std::initializer_list<TYPE> x ) : d_ndim( ndim )
+    constexpr MeshPoint( const size_t ndim, std::initializer_list<TYPE> x )
+        : d_ndim( ndim ), d_data{ 0, 0, 0 }
     {
         if ( d_ndim > 3 )
             throw std::logic_error( "Invalid Dimension" );
         auto it   = x.begin();
         d_data[0] = *it;
-        d_data[1] = 0;
-        d_data[2] = 0;
         for ( size_t d = 1; d < std::min<size_t>( d_ndim, x.size() ); d++ )
             d_data[d] = *( ++it );
     }
     template<std::size_t NDIM>
-    constexpr MeshPoint( const std::array<TYPE, NDIM> &x ) : d_ndim( NDIM )
+    constexpr MeshPoint( const std::array<TYPE, NDIM> &x ) : d_ndim( NDIM ), d_data{ 0, 0, 0 }
     {
-        d_data[0] = 0;
-        d_data[1] = 0;
-        d_data[2] = 0;
         for ( size_t d = 0; d < NDIM; d++ )
             d_data[d] = x[d];
     }
 
     // Typecast operators
+    constexpr operator std::array<TYPE, 1>() const { return { d_data[0] }; }
     constexpr operator std::array<TYPE, 2>() const { return { d_data[0], d_data[1] }; }
     constexpr operator std::array<TYPE, 3>() const { return { d_data[0], d_data[1], d_data[2] }; }
 
@@ -260,6 +234,14 @@ public:
                 os << "," << d_data[d];
             os << ")";
         }
+    }
+
+    //! Print the point
+    inline std::string print() const
+    {
+        std::ostringstream stream;
+        print( stream );
+        return stream.str();
     }
 
 private:

@@ -79,7 +79,7 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
         auto db2 = db->cloneDatabase();
         db2->putScalar( "N", 5 );
         geom.reset( new RegularPolygon( std::move( db2 ) ) );
-    } else if ( generator.compare( "Mesh" ) == 0 ) {
+    } else if ( generator.compare( "mesh" ) == 0 ) {
         // Generate a mesh geometry
         auto mesh_db = db->getDatabase( "Mesh" );
         auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db->cloneDatabase() );

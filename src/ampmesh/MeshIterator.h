@@ -20,7 +20,6 @@ namespace Mesh {
  */
 class MeshIterator : public std::iterator<std::random_access_iterator_tag, AMP::Mesh::MeshElement>
 {
-
 public:
     /**
      *\typedef shared_ptr
@@ -29,6 +28,11 @@ public:
      */
     typedef std::shared_ptr<MeshIterator> shared_ptr;
 
+    //! Enum for the type of iterator supported
+    enum class Type : uint8_t { Forward = 1, Bidirectional = 2, RandomAccess = 3 };
+
+
+public:
     //! Empty MeshIterator constructor
     MeshIterator();
 
@@ -46,6 +50,7 @@ public:
 
     //! Deconstructor
     virtual ~MeshIterator();
+
 
 public: // Virtual functions
     /**
@@ -172,6 +177,9 @@ public: // Virtual functions
 
 
 public: // non-virtual functions
+    //! Return the iterator type
+    Type type() const;
+
     //! Return the raw iterator (may be this)
     inline const MeshIterator *rawIterator() const;
 
@@ -217,6 +225,8 @@ protected:
     MeshIterator *d_iterator;
     // Unique (per class) ID for identifing the underlying iterator
     unsigned int d_typeID;
+    // Type of iterator
+    Type d_iteratorType;
     // Size of the iterator
     size_t d_size;
     // Position of the iterator

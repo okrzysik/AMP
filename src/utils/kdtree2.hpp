@@ -25,6 +25,16 @@ extern template class kdtree2<3, int>;
  * Constructor                                           *
  ********************************************************/
 template<uint8_t NDIM, class TYPE>
+kdtree2<NDIM, TYPE>::kdtree2()
+    : d_N( 0 ),
+      d_split_dim( 0 ),
+      d_split( 0 ),
+      d_left( nullptr ),
+      d_right( nullptr ),
+      d_data( nullptr )
+{
+}
+template<uint8_t NDIM, class TYPE>
 kdtree2<NDIM, TYPE>::kdtree2( size_t N, const std::array<double, NDIM> *x, const TYPE *data )
     : d_N( N ),
       d_split_dim( 0 ),
@@ -92,6 +102,39 @@ void kdtree2<NDIM, TYPE>::splitData( size_t N, const Point *x, const TYPE *data 
     d_right = new kdtree2( N - k, &t1[k], &t2[k] );
     delete[] t1;
     delete[] t2;
+}
+template<uint8_t NDIM, class TYPE>
+kdtree2<NDIM, TYPE>::kdtree2( kdtree2 &&rhs )
+    : d_N( rhs.d_N ),
+      d_split_dim( rhs.d_split_dim ),
+      d_split( rhs.d_split ),
+      d_lb( rhs.d_lb ),
+      d_ub( rhs.d_ub ),
+      d_left( rhs.d_left ),
+      d_right( rhs.d_right ),
+      d_data( rhs.d_data )
+{
+    rhs.d_left  = nullptr;
+    rhs.d_right = nullptr;
+    rhs.d_data  = nullptr;
+}
+template<uint8_t NDIM, class TYPE>
+kdtree2<NDIM, TYPE> &kdtree2<NDIM, TYPE>::operator=( kdtree2 &&rhs )
+{
+    if ( &rhs == this )
+        return *this;
+    d_N         = rhs.d_N;
+    d_split_dim = rhs.d_split_dim;
+    d_split     = rhs.d_split;
+    d_lb        = rhs.d_lb;
+    d_ub        = rhs.d_ub;
+    d_left      = rhs.d_left;
+    d_right     = rhs.d_right;
+    d_data      = rhs.d_data;
+    rhs.d_left  = nullptr;
+    rhs.d_right = nullptr;
+    rhs.d_data  = nullptr;
+    return *this;
 }
 template<uint8_t NDIM, class TYPE>
 kdtree2<NDIM, TYPE>::~kdtree2()
@@ -195,6 +238,22 @@ constexpr double kdtree2<NDIM, TYPE>::norm( const Point &x, const Point &y )
     }
 }
 template<uint8_t NDIM, class TYPE>
+constexpr double kdtree2<NDIM, TYPE>::dot( const Point &x, const Point &y )
+{
+    if constexpr ( NDIM == 1 ) {
+        return x[0] * y[0];
+    } else if constexpr ( NDIM == 2 ) {
+        return x[0] * y[0] + x[1] * y[1];
+    } else if constexpr ( NDIM == 3 ) {
+        return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+    } else {
+        double d = 0;
+        for ( int d = 0; d < NDIM; d++ )
+            d += x[d] * y[d];
+        return d;
+    }
+}
+template<uint8_t NDIM, class TYPE>
 std::tuple<std::array<double, NDIM>, TYPE>
 kdtree2<NDIM, TYPE>::findNearest( const kdtree2::Point &x ) const
 {
@@ -256,6 +315,91 @@ void kdtree2<NDIM, TYPE>::checkNearest( const kdtree2::Point &x,
     }
     if ( k != -1 )
         nearest = std::tie( d_data->x[k], d_data->data[k] );
+}
+
+
+/********************************************************
+ * Ray-neighborhood intersection                         *
+ ********************************************************/
+template<std::size_t NDIM>
+inline std::array<double, NDIM> operator*( double a, const std::array<double, NDIM> &b )
+{
+    if constexpr ( NDIM == 1 ) {
+        return { a * b[0] };
+    } else if constexpr ( NDIM == 2 ) {
+        return { a * b[0], a * b[1] };
+    } else if constexpr ( NDIM == 3 ) {
+        return { a * b[0], a * b[1], a * b[2] };
+    } else {
+        auto c = b;
+        for ( size_t d = 0; d < NDIM; d++ )
+            c[d] *= a;
+        return c;
+    }
+}
+template<std::size_t NDIM>
+inline std::array<double, NDIM> operator+( const std::array<double, NDIM> &a,
+                                           const std::array<double, NDIM> &b )
+{
+    if constexpr ( NDIM == 1 ) {
+        return { a[0] + b[0] };
+    } else if constexpr ( NDIM == 2 ) {
+        return { a[0] + b[0], a[1] + b[1] };
+    } else if constexpr ( NDIM == 3 ) {
+        return { a[0] + b[0], a[1] + b[1], a[2] + b[2] };
+    } else {
+        auto c = a;
+        for ( size_t d = 0; d < NDIM; d++ )
+            c[d] += b[d];
+        return c;
+    }
+}
+template<uint8_t NDIM, class TYPE>
+std::vector<std::tuple<std::array<double, NDIM>, TYPE, std::array<double, NDIM>, double>>
+kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
+{
+    // Compute the nearest point to a ray
+    auto intersect = []( const Point &p0, const Point &v, const Point &x ) {
+        Point u;
+        for ( uint8_t d = 0; d < NDIM; d++ )
+            u[d] = p0[d] - x[d];
+        auto t = -dot( v, u ) / dot( v, v );
+        t      = std::max( t, 0.0 );
+        Point p;
+        for ( uint8_t d = 0; d < NDIM; d++ )
+            p[d] = p0[d] + v[d] * t;
+        return p;
+    };
+    // Normalize dir
+    double n = sqrt( dot( dir, dir ) );
+    AMP_ASSERT( n > 0 );
+    for ( uint8_t d = 0; d < NDIM; d++ )
+        dir[d] /= n;
+    // Loop advancing the point until we leave the domain
+    std::vector<std::tuple<Point, TYPE, Point, double>> nearest;
+    double max_d = sqrt( std::max( norm( x, d_lb ), norm( x, d_ub ) ) );
+    double min_d = 1e200;
+    for ( int it = 0; it < 10000; it++ ) {
+        auto [p, data] = findNearest( x );       // Find the nearest point
+        auto pi        = intersect( x, dir, p ); // Find the intersection with the ray
+        double d1      = sqrt( norm( p, x ) );   // Distance: nearest-point
+        double d2      = sqrt( norm( pi, p ) );  // Distance: ray-nearest
+        // printf("(%0.2f,%0.2f,%0.2f)\n",x[0],x[1],x[2]);
+        // printf("   p = (%0.2f,%0.2f,%0.2f)\n",p[0],p[1],p[2]);
+        // printf("   pi = (%0.2f,%0.2f,%0.2f)\n",pi[0],pi[1],pi[2]);
+        // printf("   d1 = %0.4f\n",d1);
+        // printf("   d2 = %0.4f\n",d2);
+        if ( d2 < min_d ) {
+            // Save the point if it was closer
+            nearest.push_back( std::tie( p, data, pi, d2 ) );
+            min_d = d2;
+        }
+        if ( d1 > max_d )
+            break;
+        // Advance the point
+        x = x + 0.5 * d1 * dir;
+    }
+    return nearest;
 }
 
 

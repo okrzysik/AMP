@@ -2,6 +2,8 @@
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
+#include <cstring>
+
 
 namespace AMP {
 namespace Mesh {
@@ -92,6 +94,32 @@ bool MeshElement::containsPoint( const Point &pos, double TOL ) const
     return false;
 }
 
+
+/********************************************************
+ * Function to print debug info                          *
+ ********************************************************/
+std::string MeshElement::print( uint8_t indent_N ) const
+{
+    using AMP::Utilities::stringf;
+    char prefix[256] = { 0 };
+    memset( prefix, 0x20, indent_N );
+    if ( element == nullptr && typeID == MeshElementTypeID )
+        return stringf( "%sMeshElement: null element", prefix );
+    int type        = static_cast<int>( elementType() );
+    std::string out = prefix + elementClass() + "\n";
+    out += stringf( "%s   Type = %i\n", prefix, type );
+    out += stringf( "%s   Centroid: %s\n", prefix, centroid().print().data() );
+    if ( type != 0 ) {
+        auto nodes = getElements( AMP::Mesh::GeomType::Vertex );
+        out += std::string( prefix ) + "   Nodes:";
+        for ( const auto &node : nodes )
+            out += " " + node.coord().print();
+        out += stringf( "\n%s   Volume: %f\n", prefix, volume() );
+    }
+    if ( out.back() == '\n' )
+        out.resize( out.size() - 1 );
+    return out;
+}
 
 /********************************************************
  * Functions that aren't implimented for the base class  *
