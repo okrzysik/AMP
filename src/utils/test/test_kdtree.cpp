@@ -174,6 +174,8 @@ void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
 template<int DIM>
 void run_kdtree2_test( AMP::UnitTest &ut, size_t N )
 {
+    NULL_USE( ut );
+
     // Initialize the random number
     static std::random_device rd;
     static std::mt19937 gen( rd() );
@@ -219,37 +221,38 @@ int main( int argc, char *argv[] )
 
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
-    /*
-        // Run a 1D test
-        PROFILE_START( "1D kdtree" );
-        run_kdtree_test( ut, 1, 10, 10 );
-        run_kdtree_test( ut, 1, 10000, 1000 );
-        PROFILE_STOP( "1D kdtree" );
 
-        // Run a 2D test
-        PROFILE_START( "2D kdtree" );
-        run_kdtree_test( ut, 2, 10, 10 );
-        run_kdtree_test( ut, 2, 100000, 10000 );
-        PROFILE_STOP( "2D kdtree" );
+    // Run a 1D test
+    PROFILE_START( "1D kdtree" );
+    run_kdtree_test( ut, 1, 10, 10 );
+    run_kdtree_test( ut, 1, 10000, 1000 );
+    PROFILE_STOP( "1D kdtree" );
 
-        // Run a 3D test
-        PROFILE_START( "3D kdtree" );
-        run_kdtree_test( ut, 3, 10, 10 );
-        run_kdtree_test( ut, 3, 100000, 100000 );
-        PROFILE_STOP( "3D kdtree" );
+    // Run a 2D test
+    PROFILE_START( "2D kdtree" );
+    run_kdtree_test( ut, 2, 10, 10 );
+    run_kdtree_test( ut, 2, 100000, 10000 );
+    PROFILE_STOP( "2D kdtree" );
 
-        // Run a 5D test
-        PROFILE_START( "5D kdtree" );
-        run_kdtree_test( ut, 5, 10, 10 );
-        run_kdtree_test( ut, 5, 10000, 2000 );
-        PROFILE_STOP( "5D kdtree" );
+    // Run a 3D test
+    PROFILE_START( "3D kdtree" );
+    run_kdtree_test( ut, 3, 10, 10 );
+    run_kdtree_test( ut, 3, 100000, 100000 );
+    PROFILE_STOP( "3D kdtree" );
 
-        // Run a 10D test
-        // PROFILE_START( "10D kdtree" );
-        // run_kdtree_test( ut, 10, 10, 10 );
-        // run_kdtree_test( ut, 10, 10000, 2000 );
-        // PROFILE_STOP( "10D kdtree" );*/
+    // Run a 5D test
+    PROFILE_START( "5D kdtree" );
+    run_kdtree_test( ut, 5, 10, 10 );
+    run_kdtree_test( ut, 5, 10000, 2000 );
+    PROFILE_STOP( "5D kdtree" );
 
+    // Run a 10D test
+    // PROFILE_START( "10D kdtree" );
+    // run_kdtree_test( ut, 10, 10, 10 );
+    // run_kdtree_test( ut, 10, 10000, 2000 );
+    // PROFILE_STOP( "10D kdtree" );*/
+
+    // Run specific kdtree2 tests
     run_kdtree2_test<3>( ut, 1000 );
 
     // Save the results

@@ -67,7 +67,7 @@ ADD_AMP_TEST_PARALLEL( test_SiloIO 2 input_crystal )
 IF ( AMP_DATA )
     # triangle meshes currently only work on 1 rank
     ADD_AMP_TEST( test_Mesh input_stl )
-    ADD_AMP_TEST( test_Mesh input_crystal_circular_tri )
+    # ADD_AMP_TEST( test_Mesh input_crystal_triangle )
     ADD_AMP_TEST( test_SiloIO input_stl )
 ENDIF()
 IF ( USE_EXT_LIBMESH AND AMP_DATA )

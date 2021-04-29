@@ -52,10 +52,13 @@ class ElementFinder
 {
 public:
     //! Empty constructor
-    ElementFinder() : d_pos_hash( 0 ), d_type( AMP::Mesh::GeomType::Vertex ) {}
+    ElementFinder() : d_pos_hash( 0 ) {}
 
     //! Empty constructor
     ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh );
+
+    //! Empty constructor
+    ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::MeshIterator it );
 
     //! Copy constructor
     ElementFinder( const ElementFinder & ) = delete;
@@ -87,7 +90,7 @@ private:
 private:
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     mutable uint64_t d_pos_hash;
-    AMP::Mesh::GeomType d_type;
+    AMP::Mesh::MeshIterator d_elements;
     mutable kdtree2<3, AMP::Mesh::MeshElementID> d_tree;
 };
 
