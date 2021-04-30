@@ -38,6 +38,7 @@ enum class UnitPrefix : int8_t {
 
 //! Enum to hold type
 enum class UnitType : int8_t {
+    unitless              = 0,
     time                  = 1,
     length                = 2,
     mass                  = 3,
@@ -62,7 +63,7 @@ enum class UnitType : int8_t {
     inductance            = 22,
     luminousFlux          = 23,
     illuminance           = 24,
-    unknown               = 0
+    unknown               = -1
 };
 
 

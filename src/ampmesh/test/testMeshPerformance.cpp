@@ -18,7 +18,7 @@ void runTest( AMP::UnitTest &ut )
 {
     auto generator = std::make_shared<GENERATOR>();
     generator->build_mesh();
-    AMP::Mesh::meshTests::MeshPerformance( &ut, generator->getMesh() );
+    AMP::Mesh::meshTests::MeshPerformance( ut, generator->getMesh() );
 }
 
 
@@ -58,7 +58,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Run the mesh tests
-    AMP::Mesh::meshTests::MeshPerformance( &ut, mesh );
+    AMP::Mesh::meshTests::MeshPerformance( ut, mesh );
     ;
     PROFILE_STOP( "testInputMesh" );
 }
