@@ -15,7 +15,7 @@
 
 // Function to test the creation/destruction of a mesh with the mesh generators
 // Note: this only runs the mesh tests, not the vector or matrix tests
-void testMeshGenerators( AMP::UnitTest *ut )
+void testMeshGenerators( AMP::UnitTest &ut )
 {
     PROFILE_START( "testMeshGenerators" );
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
@@ -69,7 +69,7 @@ void testMeshGenerators( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a native AMP mesh
-void testAMPMesh( AMP::UnitTest *ut )
+void testAMPMesh( AMP::UnitTest &ut )
 {
     PROFILE_START( "testAMPMesh" );
     // Create the AMP mesh
@@ -89,21 +89,21 @@ void testAMPMesh( AMP::UnitTest *ut )
                             ( size[0] + 1 ) * ( size[1] + 1 ) * size[2];
     size_t N_nodes_global = ( size[0] + 1 ) * ( size[1] + 1 ) * ( size[2] + 1 );
     if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex ) == N_nodes_global )
-        ut->passes( "Simple structured mesh has expected number of nodes" );
+        ut.passes( "Simple structured mesh has expected number of nodes" );
     else
-        ut->failure( "Simple structured mesh has expected number of nodes" );
+        ut.failure( "Simple structured mesh has expected number of nodes" );
     if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Edge ) == N_edges_global )
-        ut->passes( "Simple structured mesh has expected number of edges" );
+        ut.passes( "Simple structured mesh has expected number of edges" );
     else
-        ut->failure( "Simple structured mesh has expected number of edges" );
+        ut.failure( "Simple structured mesh has expected number of edges" );
     if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Face ) == N_faces_global )
-        ut->passes( "Simple structured mesh has expected number of faces" );
+        ut.passes( "Simple structured mesh has expected number of faces" );
     else
-        ut->failure( "Simple structured mesh has expected number of faces" );
+        ut.failure( "Simple structured mesh has expected number of faces" );
     if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) == N_elements_global )
-        ut->passes( "Simple structured mesh has expected number of elements" );
+        ut.passes( "Simple structured mesh has expected number of elements" );
     else
-        ut->failure( "Simple structured mesh has expected number of elements" );
+        ut.failure( "Simple structured mesh has expected number of elements" );
 
     // Check the volumes
     std::vector<double> range( 6, 0.0 );
@@ -118,9 +118,9 @@ void testAMPMesh( AMP::UnitTest *ut )
             passes = false;
     }
     if ( passes )
-        ut->passes( "Simple structured mesh has correct edge legth" );
+        ut.passes( "Simple structured mesh has correct edge legth" );
     else
-        ut->failure( "Simple structured mesh has correct edge legth" );
+        ut.failure( "Simple structured mesh has correct edge legth" );
     iterator = mesh->getIterator( AMP::Mesh::GeomType::Face );
     passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
@@ -128,9 +128,9 @@ void testAMPMesh( AMP::UnitTest *ut )
             passes = false;
     }
     if ( passes )
-        ut->passes( "Simple structured mesh has correct face area" );
+        ut.passes( "Simple structured mesh has correct face area" );
     else
-        ut->failure( "Simple structured mesh has correct face area" );
+        ut.failure( "Simple structured mesh has correct face area" );
     iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
     passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
@@ -138,9 +138,9 @@ void testAMPMesh( AMP::UnitTest *ut )
             passes = false;
     }
     if ( passes )
-        ut->passes( "Simple structured mesh has correct element volume" );
+        ut.passes( "Simple structured mesh has correct element volume" );
     else
-        ut->failure( "Simple structured mesh has correct element volume" );
+        ut.failure( "Simple structured mesh has correct element volume" );
 
     // Run the mesh tests
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
@@ -152,7 +152,7 @@ void testAMPMesh( AMP::UnitTest *ut )
 
 
 // Function to test the creation/destruction of a STKmesh mesh
-void testSTKMesh( AMP::UnitTest *ut )
+void testSTKMesh( AMP::UnitTest &ut )
 {
 #if defined( USE_TRILINOS_STKCLASSIC ) && defined( USE_AMP_DATA )
     PROFILE_START( "testSTKMesh" );
@@ -175,14 +175,14 @@ void testSTKMesh( AMP::UnitTest *ut )
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testSTKMesh" );
 #else
-    ut->expected_failure( "testSTKMesh disabled (compiled without STKClassic)" );
+    ut.expected_failure( "testSTKMesh disabled (compiled without STKClassic)" );
 #endif
 }
 
 
 // Function to test the creation/destruction of a libmesh mesh
 
-void testlibMesh( AMP::UnitTest *ut )
+void testlibMesh( AMP::UnitTest &ut )
 {
 #if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
     PROFILE_START( "testlibMesh" );
@@ -205,13 +205,13 @@ void testlibMesh( AMP::UnitTest *ut )
     AMP::Mesh::meshTests::MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testlibMesh" );
 #else
-    ut->expected_failure( "testlibMesh disabled (compiled without libmesh)" );
+    ut.expected_failure( "testlibMesh disabled (compiled without libmesh)" );
 #endif
 }
 
 
 // Function to test the creation/destruction of a moab mesh
-void testMoabMesh( AMP::UnitTest *ut )
+void testMoabMesh( AMP::UnitTest &ut )
 {
 #if defined( USE_EXT_MOAB ) && defined( USE_AMP_DATA )
     PROFILE_START( "testMoabMesh" );
@@ -229,18 +229,18 @@ void testMoabMesh( AMP::UnitTest *ut )
     AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
-    ut->expected_failure( "Mesh tests not working on a MOAB mesh yet" );
+    ut.expected_failure( "Mesh tests not working on a MOAB mesh yet" );
     // MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
     PROFILE_STOP( "testMoabMesh" );
 #else
-    ut->expected_failure( "testMoabMesh disabled (compiled without MOAB)" );
+    ut.expected_failure( "testMoabMesh disabled (compiled without MOAB)" );
 #endif
 }
 
 
-void testInputMesh( AMP::UnitTest *ut, std::string filename )
+void testInputMesh( AMP::UnitTest &ut, std::string filename )
 {
 #ifdef USE_AMP_DATA
     PROFILE_START( "testInputMesh" );
@@ -268,7 +268,7 @@ void testInputMesh( AMP::UnitTest *ut, std::string filename )
 }
 
 
-void testSubsetMesh( AMP::UnitTest *ut )
+void testSubsetMesh( AMP::UnitTest &ut )
 {
     PROFILE_START( "testSubsetMesh" );
 #if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
@@ -297,36 +297,58 @@ void testSubsetMesh( AMP::UnitTest *ut )
 }
 
 
+// Test initializing libMesh
+void testIntializeLibmesh( AMP::UnitTest &ut )
+{
+#if defined( USE_EXT_LIBMESH )
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    AMP::AMP_MPI splitComm = globalComm.split( globalComm.getRank() % 2 );
+    AMP_ASSERT( !AMP::Mesh::initializeLibMesh::isInitialized() );
+    AMP_ASSERT( AMP::Mesh::initializeLibMesh::canBeInitialized( globalComm ) );
+    AMP_ASSERT( AMP::Mesh::initializeLibMesh::canBeInitialized( splitComm ) );
+    auto libmesh = std::make_shared<AMP::Mesh::initializeLibMesh>( splitComm );
+    AMP_ASSERT( AMP::Mesh::initializeLibMesh::isInitialized() );
+    if ( globalComm.getSize() > 1 )
+        AMP_ASSERT( !AMP::Mesh::initializeLibMesh::canBeInitialized( globalComm ) );
+    AMP_ASSERT( AMP::Mesh::initializeLibMesh::canBeInitialized( splitComm ) );
+    libmesh.reset();
+    AMP_ASSERT( AMP::Mesh::initializeLibMesh::canBeInitialized( globalComm ) );
+    ut.passes( "Initialize libMesh" );
+#endif
+}
+
+
 // Run the default tests/mesh generators
 void testDefaults( AMP::UnitTest &ut )
 {
     // Run the ID test
-    AMP::Mesh::meshTests::testID( &ut );
+    AMP::Mesh::meshTests::testID( ut );
 
     // Run tests on a native AMP mesh
-    testAMPMesh( &ut );
+    testAMPMesh( ut );
 
     // Run tests on a STKmesh mesh (currently disabled)
-    // testSTKMesh( &ut );
+    // testSTKMesh( ut );
 
 #if defined( USE_EXT_LIBMESH )
     // Run tests on a libmesh mesh
-    testlibMesh( &ut );
+    testIntializeLibmesh( ut );
+    testlibMesh( ut );
 #endif
 
     // Run tests on a moab mesh
-    testMoabMesh( &ut );
+    testMoabMesh( ut );
 
 #if defined( USE_EXT_LIBMESH )
     // Run tests on the input file
-    testInputMesh( &ut, "input_Mesh" );
+    testInputMesh( ut, "input_Mesh" );
 #endif
 
     // Run the basic tests on all mesh generators
-    testMeshGenerators( &ut );
+    testMeshGenerators( ut );
 
     // Run the tests on the subset meshes
-    testSubsetMesh( &ut );
+    testSubsetMesh( ut );
 }
 
 
@@ -346,7 +368,7 @@ int main( int argc, char **argv )
     } else {
         // Test each given input file
         for ( int i = 1; i < argc; i++ )
-            testInputMesh( &ut, argv[i] );
+            testInputMesh( ut, argv[i] );
     }
 
     // Save the timing results
