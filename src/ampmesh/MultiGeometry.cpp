@@ -66,25 +66,24 @@ Point MultiGeometry::centroid() const
 }
 std::pair<Point, Point> MultiGeometry::box() const
 {
-    std::pair<Point, Point> range;
-    range.first  = { 1e200, 1e200, 1e200 };
-    range.second = { -1e200, -1e200, -1e200 };
+    Point lb = { 1e200, 1e200, 1e200 };
+    Point ub = { -1e200, -1e200, -1e200 };
     for ( const auto &geom : d_geom ) {
-        auto range2      = geom->box();
-        range.first.x()  = std::min( range.first.x(), range2.first.x() );
-        range.first.y()  = std::min( range.first.y(), range2.first.y() );
-        range.first.z()  = std::min( range.first.z(), range2.first.z() );
-        range.second.x() = std::max( range.second.x(), range2.second.x() );
-        range.second.y() = std::max( range.second.y(), range2.second.y() );
-        range.second.z() = std::max( range.second.z(), range2.second.z() );
+        auto [lb2, ub2] = geom->box();
+        lb.x()          = std::min( lb.x(), lb2.x() );
+        lb.y()          = std::min( lb.y(), lb2.y() );
+        lb.z()          = std::min( lb.z(), lb2.z() );
+        ub.x()          = std::max( ub.x(), ub2.x() );
+        ub.y()          = std::max( ub.y(), ub2.y() );
+        ub.z()          = std::max( ub.z(), ub2.z() );
     }
     for ( int d = d_physicalDim; d < 3; d++ ) {
-        range.first[d]  = 0;
-        range.second[d] = 0;
+        lb[d] = 0;
+        ub[d] = 0;
     }
-    range.first.setNdim( d_physicalDim );
-    range.second.setNdim( d_physicalDim );
-    return range;
+    lb.setNdim( d_physicalDim );
+    ub.setNdim( d_physicalDim );
+    return std::make_pair( lb, ub );
 }
 double MultiGeometry::volume() const
 {

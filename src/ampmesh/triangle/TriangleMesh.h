@@ -356,7 +356,7 @@ protected:
 
     // Return the IDs of the elements composing the current element
     void getElementsIDs( const ElementID &id, const GeomType type, ElementID *IDs ) const;
-    inline void getVerticies( const ElementID &id, int &N, ElementID *IDs ) const;
+    void getVerticies( const ElementID &id, ElementID *IDs ) const;
 
     // Return the IDs of the neighboring elements
     void getNeighborIDs( const ElementID &id, std::vector<ElementID> &IDs ) const;

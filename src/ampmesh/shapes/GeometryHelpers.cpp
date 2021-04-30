@@ -1,5 +1,6 @@
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/ampmesh/Geometry.h"
+#include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -254,7 +255,7 @@ std::vector<Point2D> get_poly_verticies( int N, double R )
     // Create the verticies
     std::vector<Point2D> verticies( N );
     for ( int i = 0; i < N; i++ ) {
-        verticies[0] = { R * cos( theta ), R * sin( theta ) };
+        verticies[i] = { R * cos( theta ), R * sin( theta ) };
         theta -= d_theta;
     }
     return verticies;
@@ -685,6 +686,34 @@ Point3D barycentric<3, 3>( const Point3D ( &x )[3], const Point3D &p )
     auto u   = 1.0 - v - w;
     return { u, v, w };
 }
+template<int NP, int NDIM>
+std::array<double, NP> barycentric( const std::array<double, NDIM> ( &x )[NP],
+                                    const std::array<double, NDIM> &xi )
+{
+    // Compute the barycentric coordinates T*L=r-r0
+    // http://en.wikipedia.org/wiki/Barycentric_coordinate_system_(mathematics)
+    long double T[NDIM * NDIM];
+    for ( int i = 0; i < NDIM; i++ ) {
+        for ( int j = 0; j < NDIM; j++ )
+            T[j + i * NDIM] = x[i][j] - x[NDIM][j];
+    }
+    long double r[NDIM];
+    for ( int i = 0; i < NDIM; i++ )
+        r[i] = xi[i] - x[NDIM][i];
+    long double L2[NDIM + 1], det( 0 );
+    DelaunayHelpers<NDIM>::solve_system( T, r, L2, det );
+    L2[NDIM] = det;
+    for ( int i = 0; i < NDIM; i++ )
+        L2[NDIM] -= L2[i];
+    // Perform the normalization (will require inexact math)
+    double scale = 1.0 / static_cast<double>( det );
+    std::array<double, NDIM + 1> L;
+    for ( int i = 0; i < NDIM + 1; i++ )
+        L[i] = static_cast<double>( L2[i] ) * scale;
+    return L;
+}
+template std::array<double, 4> barycentric<4, 3>( const std::array<double, 3> ( & )[4],
+                                                  const std::array<double, 3> & );
 
 
 /****************************************************************

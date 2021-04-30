@@ -22,6 +22,7 @@ const uint32_t MeshIterator::MeshIteratorTypeID = AMP::Utilities::hash_char( "Me
 MeshIterator::MeshIterator()
     : d_iterator( nullptr ),
       d_typeID( MeshIteratorTypeID ),
+      d_iteratorType( Type::RandomAccess ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
@@ -30,6 +31,7 @@ MeshIterator::MeshIterator()
 MeshIterator::MeshIterator( MeshIterator &&rhs )
     : d_iterator( nullptr ),
       d_typeID( MeshIteratorTypeID ),
+      d_iteratorType( rhs.d_iteratorType ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
@@ -46,6 +48,7 @@ MeshIterator::MeshIterator( MeshIterator &&rhs )
 MeshIterator::MeshIterator( const MeshIterator &rhs )
     : d_iterator( nullptr ),
       d_typeID( MeshIteratorTypeID ),
+      d_iteratorType( rhs.d_iteratorType ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
@@ -67,10 +70,11 @@ MeshIterator &MeshIterator::operator=( MeshIterator &&rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID  = MeshIteratorTypeID;
-    d_size    = 0;
-    d_pos     = 0;
-    d_element = nullptr;
+    d_typeID       = MeshIteratorTypeID;
+    d_iteratorType = rhs.d_iteratorType;
+    d_size         = 0;
+    d_pos          = 0;
+    d_element      = nullptr;
     if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
     } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
@@ -90,10 +94,11 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID  = MeshIteratorTypeID;
-    d_size    = 0;
-    d_pos     = 0;
-    d_element = nullptr;
+    d_typeID       = MeshIteratorTypeID;
+    d_iteratorType = rhs.d_iteratorType;
+    d_size         = 0;
+    d_pos          = 0;
+    d_element      = nullptr;
     if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
         d_iterator = nullptr;
     } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
@@ -117,20 +122,31 @@ MeshIterator::~MeshIterator()
 
 
 /********************************************************
- * Function to clone the d_iterator                        *
+ * Function to clone the d_iterator                      *
  ********************************************************/
 MeshIterator *MeshIterator::clone() const
 {
     if ( d_iterator == nullptr )
         return new MeshIterator();
     else
-        AMP_ERROR( "clone must instantiated by the derived class" );
+        AMP_ERROR( "clone must be instantiated by the derived class" );
     return nullptr;
 }
 
 
 /********************************************************
- * Functions to return the begin or end d_iterator         *
+ * Return the iterator type                              *
+ ********************************************************/
+MeshIterator::Type MeshIterator::type() const
+{
+    if ( d_iterator == nullptr )
+        return d_iteratorType;
+    return d_iterator->d_iteratorType;
+}
+
+
+/********************************************************
+ * Functions to return the begin or end d_iterator       *
  ********************************************************/
 MeshIterator MeshIterator::begin() const
 {

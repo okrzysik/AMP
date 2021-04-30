@@ -58,11 +58,11 @@ void RegularPolygon::computeNorms()
  ********************************************************/
 std::tuple<Point, double, int> RegularPolygon::nearest2( const Point &pos ) const
 {
-    // Check the intersection with each line segment (keeping the closest)
     std::array<double, 2> p0 = { pos.x(), pos.y() };
-    Point p                  = GeometryHelpers::nearest( d_verticies[0], d_verticies.back(), p0 );
-    double d                 = ( p - pos ).norm();
-    int k                    = 0;
+    // Check the intersection with each line segment (keeping the closest)
+    Point p  = GeometryHelpers::nearest( d_verticies[0], d_verticies.back(), p0 );
+    double d = ( p - pos ).norm();
+    int k    = 0;
     for ( size_t i = 1; i < d_verticies.size(); i++ ) {
         Point p2  = GeometryHelpers::nearest( d_verticies[i], d_verticies[i - 1], p0 );
         double d2 = ( p2 - pos ).norm();

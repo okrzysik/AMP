@@ -26,6 +26,9 @@ public: // Convience typedef
     using Point = std::array<double, NDIM>;
 
 public:
+    //! Empty constructor
+    kdtree2();
+
     /**
      * \brief   Default constructor
      * \details  This is the default constructor for creating the kdtree
@@ -68,11 +71,28 @@ public:
 
     /**
      * \brief   Search the tree for the nearest neighbor point
-     * \details  This will return the index of the nearest neighbor in the tree
+     * \details  This will return the point and data for the nearest neighbor in the tree
      * \param[in] x       The coordinates of the point to search (NDIM)
      * @return            Returns a tuple containing the point and the data
      */
     std::tuple<Point, TYPE> findNearest( const Point &x ) const;
+
+    /**
+     * \brief   Search the tree for the nearest points to a ray
+     * \details  This function is similar to findNearest for a ray with some
+     *    sigificant differences.  It takes an initial point and a direction
+     *    vector for a ray.  Instead of returning the closest point to the ray,
+     *    it returns a set of "canidates" that are close to the point.  This is
+     *    useful in the event that the points represent regions and we want to
+     *    find the first region we intersect.  The algorithm works as the following:
+     *        First we find and return the closest point to the starting position.
+     *        Using the previous guess we advance the ray to find the next point that
+     *           is closer to the ray than the previous point.
+     * \param[in] x       The coordinates of the starting point (NDIM)
+     * \param[in] dir     The direction vector (NDIM)
+     * @return            Returns a vector of canidates for the nearest points to a ray.
+     */
+    std::vector<std::tuple<Point, TYPE, Point, double>> findNearestRay( Point x, Point dir ) const;
 
 
 private: // Internal data
@@ -96,6 +116,7 @@ private: // Internal functions
     void splitData( size_t N, const Point *x, const TYPE *data );
     void checkNearest( const Point &x, std::tuple<Point, TYPE> &nearest ) const;
     static constexpr double norm( const Point &x, const Point &y );
+    static constexpr double dot( const Point &x, const Point &y );
 };
 
 

@@ -15,7 +15,9 @@ MultiIterator::MultiIterator( const std::vector<MeshIterator> &iterators, size_t
     d_typeID   = getTypeID();
     d_iterator = nullptr;
     d_iterators.resize( 0 );
+    d_iteratorType = MeshIterator::Type::RandomAccess;
     for ( auto &iterator : iterators ) {
+        d_iteratorType = std::min( d_iteratorType, iterator.type() );
         if ( iterator.size() > 0 )
             d_iterators.push_back( iterator );
     }
@@ -58,17 +60,19 @@ MultiIterator::MultiIterator( const MultiIterator &rhs )
       d_iterators( rhs.d_iterators ),
       cur_iterator( rhs.cur_iterator )
 {
-    d_typeID   = getTypeID();
-    d_iterator = nullptr;
-    d_size     = rhs.d_size;
-    d_pos      = rhs.d_pos;
-    d_element  = cur_iterator.operator->();
+    d_iterator     = nullptr;
+    d_typeID       = getTypeID();
+    d_iteratorType = rhs.d_iteratorType;
+    d_size         = rhs.d_size;
+    d_pos          = rhs.d_pos;
+    d_element      = cur_iterator.operator->();
 }
 MultiIterator &MultiIterator::operator=( const MultiIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->d_typeID       = getTypeID();
+    this->d_iteratorType = rhs.d_iteratorType;
     this->d_iterator     = nullptr;
     this->d_iterators    = rhs.d_iterators;
     this->d_iteratorSize = rhs.d_iteratorSize;

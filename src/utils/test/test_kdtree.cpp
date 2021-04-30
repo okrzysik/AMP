@@ -10,6 +10,7 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree.h"
+#include "AMP/utils/kdtree2.h"
 
 #include "ProfilerApp.h"
 
@@ -169,6 +170,49 @@ void run_kdtree_test( AMP::UnitTest &ut, int DIM, size_t Nx, size_t Ns )
 }
 
 
+// Run the kdtree2 specific tests (note: kdtree uses kdtree2 under the hood)
+template<int DIM>
+void run_kdtree2_test( AMP::UnitTest &ut, size_t N )
+{
+    NULL_USE( ut );
+
+    // Initialize the random number
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<double> dis( 0, 1 );
+
+    // Create the coordinates
+    std::vector<int> index( N, -1 );
+    std::vector<std::array<double, DIM>> x( N, { 0.0 } );
+    for ( size_t i = 0; i < N; i++ ) {
+        index[i] = i;
+        for ( int d = 0; d < DIM; d++ )
+            x[i][d] = dis( gen );
+    }
+
+    // Create the tree
+    auto tree = AMP::kdtree2<DIM, int>( N, x.data(), index.data() );
+
+    // Check for ray intersections
+    auto result = tree.findNearestRay( { 10, 20, 20 }, { -1, -2, -2 } );
+    AMP_ASSERT( !result.empty() );
+    std::cout << "Ray-point intersection:\n";
+    for ( auto tmp : result ) {
+        auto p  = std::get<0>( tmp );
+        auto pi = std::get<2>( tmp );
+        auto d  = std::get<3>( tmp );
+        printf( "   (%0.2f,%0.2f,%0.2f)  (%0.2f,%0.2f,%0.2f)  %0.5f\n",
+                p[0],
+                p[1],
+                p[2],
+                pi[0],
+                pi[1],
+                pi[2],
+                d );
+    }
+}
+
+
 // Main
 int main( int argc, char *argv[] )
 {
@@ -206,7 +250,10 @@ int main( int argc, char *argv[] )
     // PROFILE_START( "10D kdtree" );
     // run_kdtree_test( ut, 10, 10, 10 );
     // run_kdtree_test( ut, 10, 10000, 2000 );
-    // PROFILE_STOP( "10D kdtree" );
+    // PROFILE_STOP( "10D kdtree" );*/
+
+    // Run specific kdtree2 tests
+    run_kdtree2_test<3>( ut, 1000 );
 
     // Save the results
     PROFILE_SAVE( "test_kdtree" );

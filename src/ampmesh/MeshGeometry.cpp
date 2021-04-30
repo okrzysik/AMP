@@ -31,19 +31,21 @@ std::unique_ptr<AMP::Geometry::Geometry> MeshGeometry::clone() const
 /********************************************************
  * Get the distance to the surface                       *
  ********************************************************/
-Point MeshGeometry::nearest( const Point &pos ) const { return getNearestPoint( pos ).second; }
+Point MeshGeometry::nearest( const Point &pos ) const { return d_find.nearest( pos ).second; }
 double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 {
-    NULL_USE( pos );
-    NULL_USE( dir );
-    AMP_ERROR( "distance is not implimented" );
-    return 0;
+    return d_find.distance( pos, dir );
 }
 bool MeshGeometry::inside( const Point &pos ) const
 {
-    // Get the nearest elements
-    auto elems = d_find.getNearestElements( pos );
-    // If the nearest element is a surface, add the neighbors
+    // Get the nearest element
+    auto [elem, p] = d_find.nearest( pos );
+    if ( p == pos )
+        return true;
+    //
+    NULL_USE( elem );
+    AMP_ERROR( "Not finished" );
+    /*// If the nearest element is a surface, add the neighbors
     if ( elems.size() == 1 ) {
         auto neighbors = elems[0].getNeighbors();
         for ( const auto &tmp : neighbors )
@@ -61,7 +63,8 @@ bool MeshGeometry::inside( const Point &pos ) const
         test     = test && t >= -1e-12;
     }
 
-    return test;
+    return test;*/
+    return false;
 }
 
 
@@ -75,7 +78,8 @@ int MeshGeometry::surface( const Point &x ) const
         return 0;
     if ( d_surfaceIds.size() == 1 )
         return d_surfaceIds[0];
-    auto elem = getNearestPoint( x ).first;
+    auto elem = d_find.nearest( x ).first;
+    AMP_ASSERT( !elem.isNull() );
     for ( auto id : d_surfaceIds ) {
         if ( elem.isInBlock( id ) )
             return id;
@@ -84,7 +88,8 @@ int MeshGeometry::surface( const Point &x ) const
 }
 Point MeshGeometry::surfaceNorm( const Point &x ) const
 {
-    auto elem = getNearestPoint( x ).first;
+    auto elem = d_find.nearest( x ).first;
+    AMP_ASSERT( !elem.isNull() );
     return elem.norm();
 }
 
@@ -132,19 +137,6 @@ void MeshGeometry::displace( const double *x )
 {
     std::vector<double> x2( x, x + d_mesh->getDim() );
     d_mesh->displaceMesh( x2 );
-}
-
-
-/********************************************************
- * Get the nearest element                               *
- ********************************************************/
-std::vector<AMP::Mesh::MeshElement> MeshGeometry::getNearestElements( const Point &x ) const
-{
-    return d_find.getNearestElements( x );
-}
-std::pair<AMP::Mesh::MeshElement, Point> MeshGeometry::getNearestPoint( const Point &x ) const
-{
-    return d_find.getNearestPoint( x );
 }
 
 

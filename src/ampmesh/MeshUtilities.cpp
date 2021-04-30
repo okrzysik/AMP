@@ -3,6 +3,7 @@
 #include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/kdtree.h"
+#include "AMP/utils/kdtree2.hpp"
 
 namespace AMP::Mesh {
 
@@ -23,6 +24,12 @@ static inline double dist( const kdtree &tree, const Point &p )
     double d;
     tree.find_nearest( p.data(), &d );
     return d;
+}
+
+
+static inline double norm2( const std::array<double, 3> &a, const std::array<double, 3> &b )
+{
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
 
@@ -373,104 +380,82 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
 /********************************************************
  * ElementFinder                                         *
  ********************************************************/
-ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                              std::vector<AMP::Mesh::MeshElementID> elements )
-    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( std::move( elements ) )
+ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh )
+    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( mesh->getIterator( mesh->getGeomType() ) )
 {
-    if ( elements.empty() ) {
-        // We are using the full mesh
-        d_type = d_mesh->getGeomType();
-    } else {
-        // We are using a subset of the elements
-        d_type = elements[0].type();
-        for ( const auto &id : elements )
-            AMP_INSIST( id.type() == d_type, "All elements must be the same type" );
-    }
+    initialize();
+}
+ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::MeshIterator it )
+    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( std::move( it ) )
+{
     initialize();
 }
 void ElementFinder::initialize() const
 {
+    // Create a list of points in each element and the mesh ids
+    std::vector<AMP::Mesh::MeshElementID> ids;
+    std::vector<std::array<double, 3>> points;
+    auto add = [&ids, &points]( const AMP::Mesh::Point &p, const AMP::Mesh::MeshElementID &id ) {
+        points.push_back( { p.x(), p.y(), p.z() } );
+        ids.push_back( id );
+    };
+    std::vector<MeshElement> children;
+    for ( auto elem : d_elements ) {
+        auto id = elem.globalID();
+        // Get the centroid
+        auto p0 = elem.centroid();
+        add( p0, id );
+        // Add points on the children elements (adjusting so they are within the element)
+        int elemType = static_cast<int>( id.type() );
+        for ( int type = 0; type < elemType; type++ ) {
+            elem.getElements( static_cast<GeomType>( type ), children );
+            for ( const auto &child : children )
+                add( 0.95 * child.centroid() + 0.05 * p0, id );
+        }
+    }
     // Update the internal hash
     d_pos_hash = d_mesh->positionHash();
-    // Create the points/ids to use for search
-    std::vector<AMP::Mesh::MeshPoint<double>> points;
-    if ( d_elements.empty() ) {
-        // We are using the full mesh
-        std::tie( points, d_ids ) = AMP::Mesh::sample( *d_mesh, 0 );
-    } else {
-        // We are using a subset of the elements
-        std::vector<AMP::Mesh::MeshElement> elems( d_elements.size() );
-        for ( size_t i = 0; i < d_elements.size(); i++ )
-            elems[i] = d_mesh->getElement( d_elements[i] );
-        std::tie( points, d_ids ) = AMP::Mesh::sample( *d_mesh, elems, 0 );
-    }
-    std::sort( d_ids.begin(), d_ids.end() );
     // Create a kdtree with the points
-    d_tree = AMP::kdtree( points );
+    d_tree = AMP::kdtree2<3, AMP::Mesh::MeshElementID>( ids.size(), points.data(), ids.data() );
 }
-std::vector<AMP::Mesh::MeshElement> ElementFinder::getNearestElements( const Point &x ) const
+std::pair<AMP::Mesh::MeshElement, Point> ElementFinder::nearest( const Point &x ) const
 {
     // Update cached data if position moved
     if ( d_pos_hash != d_mesh->positionHash() )
         initialize();
-    // Get the nearest node/edge/face
-    size_t i = d_tree.find_nearest( x.data() );
-    auto id0 = d_ids[i];
-    // Find the nearest point and parent element
-    auto elem = d_mesh->getElement( id0 );
-    if ( id0.type() == d_type )
-        return { elem };
-    auto ids = d_mesh->getElementParents( elem, d_type );
-    auto fun = [&ids = d_ids]( const AMP::Mesh::MeshElement &elem ) {
-        auto id  = elem.globalID();
-        size_t i = AMP::Utilities::findfirst( ids, id );
-        i        = std::min( i, ids.size() - 1 );
-        return id == ids[i];
-    };
-    ids.erase( std::remove_if( ids.begin(), ids.end(), fun ) );
-    return ids;
+    // Get the nearest element
+    std::array<double, 3> p0 = { x.x(), x.y(), x.z() };
+    auto [p1, id]            = d_tree.findNearest( p0 );
+    auto elem                = d_mesh->getElement( id );
+    // Get the nearest point in the element
+    Point p = x;
+    if ( norm2( p1, p0 ) > 1e-12 )
+        elem.nearest( x );
+    return std::pair<AMP::Mesh::MeshElement, Point>( std::move( elem ), p );
 }
-std::pair<AMP::Mesh::MeshElement, Point> ElementFinder::getNearestPoint( const Point &x ) const
+double ElementFinder::distance( const Point &pos, const Point &dir ) const
 {
     // Update cached data if position moved
     if ( d_pos_hash != d_mesh->positionHash() )
         initialize();
-    // Get the nearest node/edge/face
-    size_t i = d_tree.find_nearest( x.data() );
-    auto id0 = d_ids[i];
-    // Find the nearest point and parent element
-    auto elem = d_mesh->getElement( id0 );
-    if ( id0.type() == d_type ) {
-        // The element is the parent type
-        auto p = elem.nearest( x );
-        return std::make_pair( elem, p );
-    } else {
-        // Check each parent to find the closest point
-        double d = 1e200;
-        Point p;
-        AMP::Mesh::MeshElement elem2;
-        auto parents = d_mesh->getElementParents( elem, d_type );
-        AMP_INSIST( !parents.empty(), "Error with mesh, node has no parents" );
-        auto fun = [&ids = d_ids]( const AMP::Mesh::MeshElement &elem ) {
-            auto id  = elem.globalID();
-            size_t i = AMP::Utilities::findfirst( ids, id );
-            i        = std::min( i, ids.size() - 1 );
-            return id == ids[i];
-        };
-        for ( const auto &parent : parents ) {
-            if ( fun( parent ) ) {
-                auto p2 = parent.nearest( x );
-                auto d2 = ( x - p2 ).norm();
-                if ( d2 < d ) {
-                    d     = d2;
-                    p     = p2;
-                    elem2 = parent;
-                }
-            }
-        }
-        return std::make_pair( elem2, p );
+    // Get a list of ids to check
+    double dist = 1e200;
+    std::set<AMP::Mesh::MeshElementID> ids;
+    for ( const auto &tmp : d_tree.findNearestRay( pos, dir ) )
+        ids.insert( std::get<1>( tmp ) );
+    // Check each element for the closest intersection
+    for ( const auto &id : ids ) {
+        auto elem = d_mesh->getElement( id );
+        auto d    = elem.distance( pos, dir );
+        dist      = std::min( dist, d );
     }
+    return dist;
 }
-
 
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ *  Explicit instantiations of kdtree2                   *
+ ********************************************************/
+template class AMP::kdtree2<3, AMP::Mesh::MeshElementID>;
