@@ -191,7 +191,7 @@ public:
     static size_t maxProcs( std::shared_ptr<const MeshParameters> params );
 
 
-    //! Deconstructor
+    //! Destructor
     virtual ~BoxMesh();
 
 

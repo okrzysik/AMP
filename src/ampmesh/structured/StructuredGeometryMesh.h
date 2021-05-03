@@ -31,6 +31,9 @@ public:
     //! Assignment operator
     StructuredGeometryMesh &operator=( const StructuredGeometryMesh & ) = delete;
 
+    //! Return a string with the mesh class name
+    std::string meshClass() const override;
+
     //! Check if two meshes are equal
     bool operator==( const Mesh &mesh ) const override;
 

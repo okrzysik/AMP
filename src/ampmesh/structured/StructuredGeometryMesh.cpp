@@ -69,6 +69,13 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
     }
 }
 
+
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string StructuredGeometryMesh::meshClass() const { return "StructuredGeometryMesh"; }
+
+
 /****************************************************************
  * Basic functions                                               *
  ****************************************************************/

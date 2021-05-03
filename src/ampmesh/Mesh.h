@@ -171,6 +171,10 @@ public:
     virtual std::unique_ptr<Mesh> clone() const = 0;
 
 
+    //! Return a string with the mesh class name
+    virtual std::string meshClass() const = 0;
+
+
     /**
      * \brief    Subset a mesh given a MeshID
      * \details  This function will return the mesh with the given meshID.

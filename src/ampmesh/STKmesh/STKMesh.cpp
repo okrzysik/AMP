@@ -131,7 +131,7 @@ STKMesh::STKMesh( std::shared_ptr<stk::mesh::BulkData> mesh, std::string name )
 
 
 /********************************************************
- * De-constructor                                        *
+ * Destructor                                            *
  ********************************************************/
 STKMesh::~STKMesh()
 {
@@ -144,6 +144,12 @@ STKMesh::~STKMesh()
     // We need to clear all STKmesh objects before STKmeshInit
     STKmeshInit.reset();
 }
+
+
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string STKMesh::meshClass() const { return "STKMesh"; }
 
 
 /********************************************************

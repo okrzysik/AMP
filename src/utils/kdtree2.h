@@ -78,11 +78,19 @@ public:
     std::tuple<Point, TYPE> findNearest( const Point &x ) const;
 
     /**
+     * \brief   Search the tree for the nearest neighbor points
+     * \details  This will return the point and data for the nearest N neighbors in the tree
+     * \param[in] x       The coordinates of the point to search (NDIM)
+     * @return            Returns a vector of tuples containing the points and the data
+     */
+    std::vector<std::tuple<Point, TYPE>> findNearest( const Point &x, int N ) const;
+
+    /**
      * \brief   Search the tree for the nearest points to a ray
      * \details  This function is similar to findNearest for a ray with some
-     *    sigificant differences.  It takes an initial point and a direction
+     *    significant differences.  It takes an initial point and a direction
      *    vector for a ray.  Instead of returning the closest point to the ray,
-     *    it returns a set of "canidates" that are close to the point.  This is
+     *    it returns a set of "candidates" that are close to the point.  This is
      *    useful in the event that the points represent regions and we want to
      *    find the first region we intersect.  The algorithm works as the following:
      *        First we find and return the closest point to the starting position.
@@ -90,7 +98,7 @@ public:
      *           is closer to the ray than the previous point.
      * \param[in] x       The coordinates of the starting point (NDIM)
      * \param[in] dir     The direction vector (NDIM)
-     * @return            Returns a vector of canidates for the nearest points to a ray.
+     * @return            Returns a vector of candidates for the nearest points to a ray.
      */
     std::vector<std::tuple<Point, TYPE, Point, double>> findNearestRay( Point x, Point dir ) const;
 
@@ -114,7 +122,10 @@ private: // Internal data
 private: // Internal functions
     static size_t find_split( size_t N, const double *x );
     void splitData( size_t N, const Point *x, const TYPE *data );
-    void checkNearest( const Point &x, std::tuple<Point, TYPE> &nearest ) const;
+    void
+    findNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
+    void
+    checkNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
     static constexpr double norm( const Point &x, const Point &y );
     static constexpr double dot( const Point &x, const Point &y );
 };

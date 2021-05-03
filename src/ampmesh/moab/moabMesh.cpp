@@ -35,9 +35,15 @@ moabMesh::moabMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( pa
 
 
 /********************************************************
- * De-constructor                                        *
+ * Destructor                                            *
  ********************************************************/
 moabMesh::~moabMesh() {}
+
+
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string moabMesh::meshClass() const { return "moabMesh"; }
 
 
 /********************************************************

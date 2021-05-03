@@ -30,12 +30,11 @@ void meshTests::MeshTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh
     if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Deform )
         DisplaceMeshVector( ut, mesh );
     // Test cloneMesh
-    // if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace )
-    //    cloneMesh( ut, mesh );
-    // VerifyNodeElemMapIteratorTest( ut, mesh );
+    cloneMesh( ut, mesh );
     // Test the elements
-    // VerifyBoundaryIteratorTest( ut, mesh );
-    // VerifyElementForNode( ut, mesh );
+    VerifyNodeElemMapIteratorTest( ut, mesh );
+    VerifyBoundaryIteratorTest( ut, mesh );
+    VerifyElementForNode( ut, mesh );
     // Test performance
     MeshPerformance( ut, mesh );
     PROFILE_STOP( "MeshTestLoop" );

@@ -57,11 +57,12 @@ Mesh::Mesh( const Mesh &rhs )
       d_max_gcw( rhs.d_max_gcw ),
       d_comm( rhs.d_comm ),
       d_db( rhs.d_db ),
-      d_meshID( rhs.d_meshID ),
+      d_meshID( 0 ),
       d_name( rhs.d_name ),
       d_box( rhs.d_box ),
       d_box_local( rhs.d_box_local )
 {
+    setMeshID();
     if ( rhs.d_geometry )
         d_geometry = rhs.d_geometry->clone();
 }
@@ -164,7 +165,7 @@ MeshElement Mesh::getElement( const MeshElementID &elem_id ) const
  ********************************************************/
 std::vector<MeshElement> Mesh::getElementParents( const MeshElement &, const GeomType ) const
 {
-    AMP_ERROR( "getElementParents is not implimented for the base class" );
+    AMP_ERROR( "getElementParents is not implimented: " + meshClass() );
     return std::vector<MeshElement>();
 }
 
@@ -212,52 +213,52 @@ bool Mesh::isMember( const MeshElementID &id ) const { return id.meshID() == d_m
  ********************************************************/
 std::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
 {
-    AMP_ERROR( "Subset is not implimented for the base class" );
+    AMP_ERROR( "Subset is not implimented: " + meshClass() );
     return std::shared_ptr<Mesh>();
 }
 MeshIterator Mesh::getIterator( const GeomType, const int ) const
 {
-    AMP_ERROR( "getIterator is not implimented for the base class" );
+    AMP_ERROR( "getIterator is not implimented: " + meshClass() );
     return MeshIterator();
 }
 MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) const
 {
-    AMP_ERROR( "getSurfaceIterator is not implimented for the base class" );
+    AMP_ERROR( "getSurfaceIterator is not implimented: " + meshClass() );
     return MeshIterator();
 }
 std::vector<int> Mesh::getBoundaryIDs() const
 {
-    AMP_ERROR( "getBoundaryIDs is not implimented for the base class" );
+    AMP_ERROR( "getBoundaryIDs is not implimented: " + meshClass() );
     return std::vector<int>();
 }
 MeshIterator Mesh::getBoundaryIDIterator( const GeomType, const int, const int ) const
 {
-    AMP_ERROR( "getBoundaryIDIterator is not implimented for the base class" );
+    AMP_ERROR( "getBoundaryIDIterator is not implimented: " + meshClass() );
     return MeshIterator();
 }
 std::vector<int> Mesh::getBlockIDs() const
 {
-    AMP_ERROR( "getBlockIDs is not implimented for the base class" );
+    AMP_ERROR( "getBlockIDs is not implimented: " + meshClass() );
     return std::vector<int>();
 }
 MeshIterator Mesh::getBlockIDIterator( const GeomType, const int, const int ) const
 {
-    AMP_ERROR( "getBlockIDIterator is not implimented for the base class" );
+    AMP_ERROR( "getBlockIDIterator is not implimented: " + meshClass() );
     return MeshIterator();
 }
 size_t Mesh::numLocalElements( const GeomType ) const
 {
-    AMP_ERROR( "numLocalElements is not implimented for the base class" );
+    AMP_ERROR( "numLocalElements is not implimented: " + meshClass() );
     return 0;
 }
 size_t Mesh::numGlobalElements( const GeomType ) const
 {
-    AMP_ERROR( "numGlobalElements is not implimented for the base class" );
+    AMP_ERROR( "numGlobalElements is not implimented: " + meshClass() );
     return 0;
 }
 size_t Mesh::numGhostElements( const GeomType, int ) const
 {
-    AMP_ERROR( "numGhostElements is not implimented for the base class" );
+    AMP_ERROR( "numGhostElements is not implimented: " + meshClass() );
     return 0;
 }
 
