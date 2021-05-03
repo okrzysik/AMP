@@ -176,6 +176,7 @@ public:
     /*!
      * Create from initializer list
      * @param N             Size of the array
+     * @param ndim          Number of dimensions
      */
     CONSTEXPR ArraySize( std::initializer_list<size_t> N, int ndim = -1 )
         : d_ndim( N.size() ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }

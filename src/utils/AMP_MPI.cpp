@@ -634,9 +634,9 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 
 
 /************************************************************************
- *  Split a comm						                                    *
+ *  Split a comm						                                 *
  ************************************************************************/
-MPI_CLASS MPI_CLASS::split( int color, int key ) const
+MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
 {
     if ( d_isNull ) {
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
@@ -658,11 +658,11 @@ MPI_CLASS MPI_CLASS::split( int color, int key ) const
 #endif
     // Create the new object
     NULL_USE( key );
-    MPI_CLASS new_comm( new_MPI_comm, true );
+    MPI_CLASS new_comm( new_MPI_comm, manage );
     new_comm.d_call_abort = d_call_abort;
     return new_comm;
 }
-MPI_CLASS MPI_CLASS::splitByNode( int key ) const
+MPI_CLASS MPI_CLASS::splitByNode( int key, bool manage ) const
 {
     // Check if we are dealing with a single processor (trivial case)
     if ( comm_size == 1 )
@@ -686,8 +686,7 @@ MPI_CLASS MPI_CLASS::splitByNode( int key ) const
             color[i] = color[i - 1] + 1;
         }
     }
-    MPI_CLASS new_comm = this->split( color[comm_rank], key );
-    return new_comm;
+    return split( color[comm_rank], key, manage );
 }
 
 

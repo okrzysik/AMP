@@ -220,7 +220,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] alpha a scalar
      * \details  for vectors, \f$\mathit{this}_i = x_i + \alpha\f$.
      */
-    void addScalar( const Vector &x, const Scalar &alpha_in );
+    void addScalar( const Vector &x, const Scalar &alpha );
 
     /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
@@ -289,7 +289,7 @@ public: // the next set of functions defines the public math. interface for vect
      * \param[in] x        a vector
      * \param[in] tol      tolerance to use
      */
-    bool equals( const Vector &a, const Scalar &tol = 1e-6 ) const;
+    bool equals( const Vector &x, const Scalar &tol = 1e-6 ) const;
 
 
 public: // Virtual functions
