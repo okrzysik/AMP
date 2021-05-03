@@ -61,7 +61,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
     d_blockSize  = mesh.d_blockSize;
     d_numBlocks  = mesh.d_numBlocks;
     d_surfaceId  = mesh.d_surfaceId;
-    d_geometry2  = mesh.d_geometry2;
+    d_geometry2  = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
     d_pos_hash   = mesh.d_pos_hash;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )

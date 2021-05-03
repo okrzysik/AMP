@@ -312,7 +312,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
 
 
 // Check the different mesh element iterators
-void meshTests::MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     char message[1000];
     // Loop through different ghost widths
@@ -356,8 +356,7 @@ void meshTests::MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::
 
 
 // Test operator operations for iterator
-void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut,
-                                           std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create some iterators to work with
     auto A        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
@@ -397,7 +396,7 @@ void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut,
 
 
 // Test set operations for the iterators
-void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto A = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto B = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
@@ -432,7 +431,7 @@ void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, std::shared_ptr<AMP::M
 
 
 // Test the number of elements in the mesh
-void meshTests::MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshCountTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::AMP_MPI comm = mesh->getComm();
     for ( int i = 0; i <= (int) mesh->getGeomType(); i++ ) {
@@ -467,7 +466,7 @@ void meshTests::MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mes
 
 
 // Test some basic Mesh properties
-void meshTests::MeshBasicTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshBasicTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // test that we can get the mesh ID
     auto meshID = mesh->meshID();
@@ -1105,10 +1104,10 @@ void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::
 
 
 // Test that cloning a mesh does not modify the existing mesh
-void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
     // Run the tests on each individual mesh (if we are dealing with a multimesh)
-    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
     if ( multimesh ) {
         for ( auto mesh2 : multimesh->getMeshes() )
             cloneMesh( ut, mesh2 );
@@ -1122,12 +1121,15 @@ void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
         coord.push_back( elem.coord() );
     // Clone the mesh
     auto mesh2 = mesh->clone();
+    AMP_ASSERT( mesh->meshID() != mesh2->meshID() );
+    if ( mesh->getGeometry() && mesh2->getGeometry() )
+        AMP_ASSERT( mesh->getGeometry().get() != mesh2->getGeometry().get() );
     // Displace the mesh
     AMP::Mesh::Point p0( mesh->getDim(), { 0.0 } );
-    if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace ) {
+    if ( mesh2->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace ) {
         std::vector<double> x0 = { 1.0, 2.0, 3.0 };
-        x0.resize( mesh->getDim() );
-        p0 = AMP::Mesh::Point( mesh->getDim(), x0.data() );
+        x0.resize( mesh2->getDim() );
+        p0 = AMP::Mesh::Point( mesh2->getDim(), x0.data() );
         mesh2->displaceMesh( x0 );
     }
     // Get the original coordinates and make sure they match
@@ -1138,8 +1140,6 @@ void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
         auto p   = it->coord();
         auto err = ( p - p0 - coord[i] ).abs();
         pass     = pass && err < 1e-6;
-        if ( err > 1e-6 )
-            std::cout << p << "  " << coord[i] << "  " << err << std::endl;
     }
     if ( pass )
         ut.passes( "cloneMesh" );
