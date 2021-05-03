@@ -20,7 +20,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <map>
 #include <random>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -666,27 +668,16 @@ MPI_CLASS MPI_CLASS::splitByNode( int key, bool manage ) const
 {
     // Check if we are dealing with a single processor (trivial case)
     if ( comm_size == 1 )
-        return this->split( 0, 0 );
+        return this->split( 0, 0, manage );
     // Get the node name
     std::string name = MPI_CLASS::getNodeName();
+    unsigned int id  = AMP::Utilities::hash_char( name.data() );
     // Gather the names from all ranks
-    std::vector<std::string> list( comm_size );
-    allGather( name, &list[0] );
+    auto list = allGather( id );
     // Create the colors
-    std::vector<int> color( comm_size, -1 );
-    color[0] = 0;
-    for ( int i = 1; i < comm_size; i++ ) {
-        const std::string tmp1 = list[i];
-        for ( int j = 0; j < i; j++ ) {
-            const std::string tmp2 = list[j];
-            if ( tmp1 == tmp2 ) {
-                color[i] = color[j];
-                break;
-            }
-            color[i] = color[i - 1] + 1;
-        }
-    }
-    return split( color[comm_rank], key, manage );
+    std::set<unsigned int> set( list.begin(), list.end() );
+    int color = std::distance( set.begin(), set.find( id ) );
+    return split( color, key, manage );
 }
 
 
