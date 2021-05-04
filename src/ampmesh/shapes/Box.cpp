@@ -17,67 +17,59 @@ namespace Geometry {
  * Constructors                                          *
  ********************************************************/
 template<std::size_t NDIM>
-Box<NDIM>::Box( std::shared_ptr<const AMP::Database> db )
+Box<NDIM>::Box() : LogicalGeometry()
 {
+    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
-    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
+    d_range.fill( 0 );
+}
+template<std::size_t NDIM>
+Box<NDIM>::Box( std::shared_ptr<const AMP::Database> db ) : Box<NDIM>()
+{
     auto range = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 2 * NDIM, "Range must be 2*dim for cube generator" );
-    for ( int i = 0; i < 3; i++ ) {
-        d_range[2 * i + 0] = -1e100;
-        d_range[2 * i + 1] = 1e100;
-    }
     for ( size_t i = 0; i < 2 * NDIM; i++ )
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Box<NDIM>::Box( const std::vector<double> &range ) : LogicalGeometry()
+Box<NDIM>::Box( const std::vector<double> &range ) : Box<NDIM>()
 {
-    d_physicalDim = NDIM;
-    d_logicalDim  = NDIM;
-    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
-    for ( int i = 0; i < 3; i++ ) {
-        d_range[2 * i + 0] = -1e100;
-        d_range[2 * i + 1] = 1e100;
-    }
+    AMP_INSIST( range.size() == 2 * NDIM, "Range must be 2*dim" );
     for ( size_t i = 0; i < 2 * NDIM; i++ )
         d_range[i] = range[i];
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
+Grid<NDIM>::Grid( std::shared_ptr<const AMP::Database> db ) : Box<NDIM>()
 {
-    d_physicalDim = NDIM;
-    d_logicalDim  = NDIM;
-    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
-    for ( int i = 0; i < 3; i++ ) {
-        d_range[2 * i + 0] = -1e100;
-        d_range[2 * i + 1] = 1e100;
-    }
     const char *names[3] = { "x_grid", "y_grid", "z_grid" };
-    for ( size_t i = 0; i < NDIM; i++ ) {
-        d_coord[i] = std::move( db->getVector<double>( names[i] ) );
-        for ( const auto tmp : d_coord[i] ) {
-            d_range[2 * i + 0] = std::min( d_range[2 * i + 0], tmp );
-            d_range[2 * i + 1] = std::max( d_range[2 * i + 1], tmp );
+    for ( size_t d = 0; d < NDIM; d++ ) {
+        this->d_coord[d] = std::move( db->getVector<double>( names[d] ) );
+        AMP_ASSERT( d_coord[d].size() > 2 );
+        for ( size_t j = 1; j < d_coord[d].size(); j++ )
+            AMP_ASSERT( d_coord[d][j] > d_coord[d][j - 1] );
+        this->d_range[2 * d + 0] = 1e100;
+        this->d_range[2 * d + 1] = -1e100;
+        for ( const auto tmp : d_coord[d] ) {
+            this->d_range[2 * d + 0] = std::min( this->d_range[2 * d + 0], tmp );
+            this->d_range[2 * d + 1] = std::max( this->d_range[2 * d + 1], tmp );
         }
     }
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : LogicalGeometry()
+Grid<NDIM>::Grid( const std::vector<std::vector<double>> &coord ) : Box<NDIM>()
 {
-    d_physicalDim = NDIM;
-    d_logicalDim  = NDIM;
-    static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
-    for ( int i = 0; i < 3; i++ ) {
-        d_range[2 * i + 0] = -1e100;
-        d_range[2 * i + 1] = 1e100;
-    }
-    for ( size_t i = 0; i < coord.size(); i++ ) {
-        d_coord[i] = coord[i];
-        for ( const auto tmp : d_coord[i] ) {
-            d_range[2 * i + 0] = std::min( d_range[2 * i + 0], tmp );
-            d_range[2 * i + 1] = std::max( d_range[2 * i + 1], tmp );
+    AMP_ASSERT( coord.size() == NDIM );
+    for ( size_t d = 0; d < NDIM; d++ ) {
+        d_coord[d] = coord[d];
+        AMP_ASSERT( d_coord[d].size() > 2 );
+        for ( size_t j = 1; j < d_coord[d].size(); j++ )
+            AMP_ASSERT( d_coord[d][j] > d_coord[d][j - 1] );
+        this->d_range[2 * d + 0] = 1e100;
+        this->d_range[2 * d + 1] = -1e100;
+        for ( const auto tmp : d_coord[d] ) {
+            this->d_range[2 * d + 0] = std::min( this->d_range[2 * d + 0], tmp );
+            this->d_range[2 * d + 1] = std::max( this->d_range[2 * d + 1], tmp );
         }
     }
 }
@@ -142,15 +134,6 @@ Point Box<NDIM>::nearest( const Point &pos ) const
     double p2[3] = { p1[0] + d_range[0], p1[1] + d_range[2], p1[2] + d_range[4] };
     return Point( NDIM, p2 );
 }
-template<std::size_t NDIM>
-Point Grid<NDIM>::nearest( const Point &pos ) const
-{
-    double s[3]  = { d_range[1] - d_range[0], d_range[3] - d_range[2], d_range[5] - d_range[4] };
-    double p0[3] = { pos.x() - d_range[0], pos.y() - d_range[2], pos.z() - d_range[4] };
-    auto p1      = nearest2( p0, s );
-    double p2[3] = { p1[0] + d_range[0], p1[1] + d_range[2], p1[2] + d_range[4] };
-    return Point( NDIM, p2 );
-}
 
 
 /********************************************************
@@ -158,11 +141,6 @@ Point Grid<NDIM>::nearest( const Point &pos ) const
  ********************************************************/
 template<std::size_t NDIM>
 double Box<NDIM>::distance( const Point &pos, const Point &ang ) const
-{
-    return GeometryHelpers::distanceToBox( pos, ang, d_range );
-}
-template<std::size_t NDIM>
-double Grid<NDIM>::distance( const Point &pos, const Point &ang ) const
 {
     return GeometryHelpers::distanceToBox( pos, ang, d_range );
 }
@@ -198,33 +176,6 @@ bool Box<3>::inside( const Point &pos ) const
     double t2 = 1.0 + 1e-12;
     return x >= t1 && x <= t2 && y >= t1 && y <= t2 && z >= t1 && z <= t2;
 }
-template<>
-bool Grid<1>::inside( const Point &pos ) const
-{
-    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
-    double t1 = -1e-12;
-    double t2 = 1.0 + 1e-12;
-    return x >= t1 && x <= t2;
-}
-template<>
-bool Grid<2>::inside( const Point &pos ) const
-{
-    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
-    double y  = ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] );
-    double t1 = -1e-12;
-    double t2 = 1.0 + 1e-12;
-    return x >= t1 && x <= t2 && y >= t1 && y <= t2;
-}
-template<>
-bool Grid<3>::inside( const Point &pos ) const
-{
-    double x  = ( pos.x() - d_range[0] ) / ( d_range[1] - d_range[0] );
-    double y  = ( pos.y() - d_range[2] ) / ( d_range[3] - d_range[2] );
-    double z  = ( pos.z() - d_range[4] ) / ( d_range[5] - d_range[4] );
-    double t1 = -1e-12;
-    double t2 = 1.0 + 1e-12;
-    return x >= t1 && x <= t2 && y >= t1 && y <= t2 && z >= t1 && z <= t2;
-}
 
 
 /********************************************************
@@ -238,23 +189,7 @@ int Box<NDIM>::surface( const Point &pos ) const
                     fabs( pos.z() - d_range[4] ), fabs( pos.z() - d_range[5] ) };
     double d0   = d[0];
     int s       = 0;
-    for ( int i = 1; i < 6; i++ ) {
-        if ( d[i] < d0 ) {
-            d0 = d[i];
-            s  = i;
-        }
-    }
-    return s;
-}
-template<std::size_t NDIM>
-int Grid<NDIM>::surface( const Point &pos ) const
-{
-    double d[6] = { fabs( pos.x() - d_range[0] ), fabs( pos.x() - d_range[1] ),
-                    fabs( pos.y() - d_range[2] ), fabs( pos.y() - d_range[3] ),
-                    fabs( pos.z() - d_range[4] ), fabs( pos.z() - d_range[5] ) };
-    double d0   = d[0];
-    int s       = 0;
-    for ( int i = 1; i < 6; i++ ) {
+    for ( size_t i = 1; i < 2 * NDIM; i++ ) {
         if ( d[i] < d0 ) {
             d0 = d[i];
             s  = i;
@@ -264,16 +199,6 @@ int Grid<NDIM>::surface( const Point &pos ) const
 }
 template<std::size_t NDIM>
 Point Box<NDIM>::surfaceNorm( const Point &pos ) const
-{
-    // Get the surface id
-    int s = surface( pos );
-    // Set the normal
-    Point norm( NDIM );
-    norm[s / 2] = s % 2 == 0 ? -1 : 1;
-    return norm;
-}
-template<std::size_t NDIM>
-Point Grid<NDIM>::surfaceNorm( const Point &pos ) const
 {
     // Get the surface id
     int s = surface( pos );
@@ -342,14 +267,14 @@ Point Box<3>::logical( const Point &pos ) const
 template<std::size_t NDIM>
 Point Grid<NDIM>::logical( const Point &pos ) const
 {
-    Point logical;
+    Point logical( NDIM );
     for ( size_t d = 0; d < NDIM; d++ ) {
         int i = AMP::Utilities::findfirst( d_coord[d], pos[d] );
         i     = std::max<int>( i, 1 );
         i     = std::min<int>( i, d_coord[d].size() - 1 );
         logical[d] =
             ( i - 1 ) + ( pos[d] - d_coord[d][i - 1] ) / ( d_coord[d][i] - d_coord[d][i - 1] );
-        logical[d] /= d_coord[d].size();
+        logical[d] /= ( d_coord[d].size() - 1 );
     }
     return logical;
 }
@@ -368,23 +293,7 @@ Point Box<NDIM>::centroid() const
     return p;
 }
 template<std::size_t NDIM>
-Point Grid<NDIM>::centroid() const
-{
-    Point p( NDIM );
-    p.x() = 0.5 * ( d_range[0] + d_range[1] );
-    p.y() = 0.5 * ( d_range[2] + d_range[3] );
-    p.z() = 0.5 * ( d_range[4] + d_range[5] );
-    return p;
-}
-template<std::size_t NDIM>
 std::pair<Point, Point> Box<NDIM>::box() const
-{
-    Point lb( NDIM, { d_range[0], d_range[2], d_range[4] } );
-    Point ub( NDIM, { d_range[1], d_range[3], d_range[5] } );
-    return { lb, ub };
-}
-template<std::size_t NDIM>
-std::pair<Point, Point> Grid<NDIM>::box() const
 {
     Point lb( NDIM, { d_range[0], d_range[2], d_range[4] } );
     Point ub( NDIM, { d_range[1], d_range[3], d_range[5] } );
@@ -403,14 +312,6 @@ double Box<NDIM>::volume() const
         v *= d_range[2 * d + 1] - d_range[2 * d];
     return v;
 }
-template<std::size_t NDIM>
-double Grid<NDIM>::volume() const
-{
-    double v = 1.0;
-    for ( size_t d = 0; d < NDIM; d++ )
-        v *= d_range[2 * d + 1] - d_range[2 * d];
-    return v;
-}
 
 
 /********************************************************
@@ -418,12 +319,6 @@ double Grid<NDIM>::volume() const
  ********************************************************/
 template<std::size_t NDIM>
 std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<int> &x ) const
-{
-    AMP_ASSERT( x.size() == NDIM );
-    return x;
-}
-template<std::size_t NDIM>
-std::vector<int> Grid<NDIM>::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_ASSERT( x.size() == NDIM );
     return x;
@@ -438,34 +333,12 @@ std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<double> &res )
     return size;
 }
 template<std::size_t NDIM>
-std::vector<int> Grid<NDIM>::getLogicalGridSize( const std::vector<double> &res ) const
-{
-    AMP_ASSERT( res.size() == NDIM );
-    std::vector<int> size( NDIM );
-    for ( size_t d = 0; d < NDIM; d++ )
-        size[d] = ( d_range[2 * d + 1] - d_range[2 * d] ) / res[d];
-    return size;
-}
-template<std::size_t NDIM>
 std::vector<bool> Box<NDIM>::getPeriodicDim() const
 {
     return std::vector<bool>( NDIM, false );
 }
 template<std::size_t NDIM>
-std::vector<bool> Grid<NDIM>::getPeriodicDim() const
-{
-    return std::vector<bool>( NDIM, false );
-}
-template<std::size_t NDIM>
 std::vector<int> Box<NDIM>::getLogicalSurfaceIds() const
-{
-    std::vector<int> ids( 2 * NDIM );
-    for ( size_t i = 0; i < ids.size(); i++ )
-        ids[i] = i;
-    return ids;
-}
-template<std::size_t NDIM>
-std::vector<int> Grid<NDIM>::getLogicalSurfaceIds() const
 {
     std::vector<int> ids( 2 * NDIM );
     for ( size_t i = 0; i < ids.size(); i++ )
@@ -488,9 +361,8 @@ void Box<NDIM>::displace( const double *x )
 template<std::size_t NDIM>
 void Grid<NDIM>::displace( const double *x )
 {
+    Box<NDIM>::displace( x );
     for ( size_t d = 0; d < NDIM; d++ ) {
-        d_range[2 * d + 0] += x[d];
-        d_range[2 * d + 1] += x[d];
         for ( auto &tmp : d_coord[d] )
             tmp += x[d];
     }
@@ -529,7 +401,7 @@ bool Grid<NDIM>::operator==( const Geometry &rhs ) const
     auto geom = dynamic_cast<const Grid<NDIM> *>( &rhs );
     if ( !geom )
         return false;
-    bool test = d_range == geom->d_range;
+    bool test = this->d_range == geom->d_range;
     for ( size_t d = 0; d < NDIM; d++ )
         test = test && d_coord[d] == geom->d_coord[d];
     return test;

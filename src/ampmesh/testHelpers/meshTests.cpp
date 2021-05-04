@@ -312,7 +312,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
 
 
 // Check the different mesh element iterators
-void meshTests::MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     char message[1000];
     // Loop through different ghost widths
@@ -356,8 +356,7 @@ void meshTests::MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::
 
 
 // Test operator operations for iterator
-void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut,
-                                           std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create some iterators to work with
     auto A        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
@@ -397,7 +396,7 @@ void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut,
 
 
 // Test set operations for the iterators
-void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto A = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto B = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
@@ -432,7 +431,7 @@ void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, std::shared_ptr<AMP::M
 
 
 // Test the number of elements in the mesh
-void meshTests::MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshCountTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::AMP_MPI comm = mesh->getComm();
     for ( int i = 0; i <= (int) mesh->getGeomType(); i++ ) {
@@ -467,7 +466,7 @@ void meshTests::MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mes
 
 
 // Test some basic Mesh properties
-void meshTests::MeshBasicTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshBasicTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // test that we can get the mesh ID
     auto meshID = mesh->meshID();
@@ -979,117 +978,173 @@ void meshTests::getParents( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh 
 // VerifyElementForNode
 void meshTests::VerifyElementForNode( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
-                                const AMP::Mesh::MeshElement &n ) {
-        std::vector<MeshElementID> ids;
-        elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
-        auto id0 = n.globalID();
-        for ( auto id : ids ) {
-            if ( id == id0 )
-                return true;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        // Mesh is a multimesh and test is not valid if multimesh contains meshes with
+        //   different geometric types
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyElementForNode( ut, mesh2 );
+    } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
+        // libmeshMesh does not currently support getElementParents
+        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        return;
+    } else {
+        auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
+                                    const AMP::Mesh::MeshElement &n ) {
+            std::vector<MeshElementID> ids;
+            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+            auto id0 = n.globalID();
+            for ( auto id : ids ) {
+                if ( id == id0 )
+                    return true;
+            }
+            return false;
+        };
+        auto type = mesh->getGeomType();
+        bool pass = true;
+        for ( auto node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
+            for ( auto elem : mesh->getElementParents( node, type ) )
+                pass = pass && element_has_node( elem, node );
         }
-        return false;
-    };
-    auto type = mesh->getGeomType();
-    bool pass = true;
-    for ( auto node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
-        for ( auto elem : mesh->getElementParents( node, type ) )
-            pass = pass && element_has_node( elem, node );
+        if ( pass )
+            ut.passes( "All elements found are correct" );
+        else
+            ut.failure( "Found an incorrect element" );
     }
-    if ( pass )
-        ut.passes( "All elements found are correct" );
-    else
-        ut.failure( "Found an incorrect element" );
 }
 
 
 // VerifyNodeElemMapIteratorTest
 void meshTests::VerifyNodeElemMapIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto verify_node = []( const AMP::Mesh::MeshElement &node, AMP::Mesh::Mesh::shared_ptr mesh ) {
-        std::set<AMP::Mesh::MeshElementID> elems_from_node, elems_from_mesh;
-        auto elements = mesh->getElementParents( node, mesh->getGeomType() );
-        for ( const auto &elem : elements )
-            elems_from_node.insert( elem.globalID() );
-        std::vector<MeshElementID> ids;
-        for ( const auto &elem : mesh->getIterator( mesh->getGeomType() ) ) {
-            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
-            for ( const auto &id : ids )
-                if ( id == node.globalID() )
-                    elems_from_mesh.insert( elem.globalID() );
-        }
-        return elems_from_node == elems_from_mesh;
-    };
-    int i    = 0;
-    int SKIP = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) / 20;
-    for ( const auto &node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
-        if ( i % SKIP == 0 ) {
-            if ( !verify_node( node, mesh ) ) {
-                ut.failure( "Verify Node<->Element iterator" );
-                return;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        // Mesh is a multimesh and test is not valid if multimesh contains meshes with
+        //   different geometric types
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyNodeElemMapIteratorTest( ut, mesh2 );
+    } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
+        // libmeshMesh does not currently support getElementParents
+        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        return;
+    } else {
+        auto verify_node = []( const AMP::Mesh::MeshElement &node,
+                               AMP::Mesh::Mesh::shared_ptr mesh ) {
+            std::set<AMP::Mesh::MeshElementID> elems_from_node, elems_from_mesh;
+            auto elements = mesh->getElementParents( node, mesh->getGeomType() );
+            for ( const auto &elem : elements )
+                elems_from_node.insert( elem.globalID() );
+            std::vector<MeshElementID> ids;
+            for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 1 ) ) {
+                elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+                for ( const auto &id : ids )
+                    if ( id == node.globalID() )
+                        elems_from_mesh.insert( elem.globalID() );
             }
+            return elems_from_node == elems_from_mesh;
+        };
+        int i    = 0;
+        int SKIP = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) / 20;
+        for ( const auto &node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
+            if ( i % SKIP == 0 ) {
+                if ( !verify_node( node, mesh ) ) {
+                    ut.failure( "Verify Node<->Element map iterator" );
+                    return;
+                }
+            }
+            i++;
         }
-        i++;
+        ut.passes( "Verify Node<->Element map iterator" );
     }
-    ut.passes( "Verify Node<->Element iterator" );
 }
 
 
 // VerifyBoundaryIteratorTest
 void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
-        auto neighbors = elem.getNeighbors();
-        for ( const auto &neighbor : neighbors )
-            if ( !neighbor )
-                return true;
-        return false;
-    };
-    auto isNodeOnBoundary = [isBoundaryElement]( const AMP::Mesh::MeshElement &node,
-                                                 AMP::Mesh::Mesh::shared_ptr mesh ) {
-        auto elements = mesh->getElementParents( node, mesh->getGeomType() );
-        for ( const auto &elem : elements ) {
-            if ( !isBoundaryElement( elem ) )
-                return false;
-        }
-        return true;
-    };
-    for ( auto bid : mesh->getBoundaryIDs() ) {
-        for ( const auto &node : mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bid ) ) {
-            if ( !isNodeOnBoundary( node, mesh ) ) {
-                ut.failure( "Verify Node<->Element iterator" );
-                return;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        // Mesh is a multimesh and test is not valid if multimesh contains meshes with
+        //   different geometric types
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyBoundaryIteratorTest( ut, mesh2 );
+    } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
+        // libmeshMesh does not currently support getElementParents
+        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        return;
+    } else {
+        auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
+            auto neighbors = elem.getNeighbors();
+            for ( const auto &neighbor : neighbors )
+                if ( !neighbor )
+                    return true;
+            return false;
+        };
+        auto isNodeOnBoundary = [isBoundaryElement]( const AMP::Mesh::MeshElement &node,
+                                                     AMP::Mesh::Mesh::shared_ptr mesh ) {
+            auto elements = mesh->getElementParents( node, mesh->getGeomType() );
+            for ( const auto &elem : elements ) {
+                if ( !isBoundaryElement( elem ) )
+                    return false;
+            }
+            return true;
+        };
+        for ( auto bid : mesh->getBoundaryIDs() ) {
+            for ( const auto &node :
+                  mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bid ) ) {
+                if ( !isNodeOnBoundary( node, mesh ) ) {
+                    ut.expected_failure( "Verify Boundary iterator" );
+                    return;
+                }
             }
         }
+        ut.passes( "Verify Boundary iterator" );
     }
-    ut.passes( "Verify Node<->Element iterator" );
 }
 
 
 // Test that cloning a mesh does not modify the existing mesh
-void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
+    // Run the tests on each individual mesh (if we are dealing with a multimesh)
+    auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        for ( auto mesh2 : multimesh->getMeshes() )
+            cloneMesh( ut, mesh2 );
+    }
+    // Clone is not supported for certain meshes
+    if ( mesh->meshClass().find( "SubsetMesh" ) != std::string::npos )
+        return;
     // Get the coordinates of the mesh points
     std::vector<AMP::Mesh::Point> coord;
     for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) )
         coord.push_back( elem.coord() );
     // Clone the mesh
     auto mesh2 = mesh->clone();
+    AMP_ASSERT( mesh->meshID() != mesh2->meshID() );
+    if ( mesh->getGeometry() && mesh2->getGeometry() )
+        AMP_ASSERT( mesh->getGeometry().get() != mesh2->getGeometry().get() );
     // Displace the mesh
-    mesh2->displaceMesh( std::vector<double>( mesh2->getDim(), 1 ) );
-    auto geom1 = dynamic_cast<AMP::Geometry::MultiGeometry *>( mesh->getGeometry().get() );
-    auto geom2 = dynamic_cast<AMP::Geometry::MultiGeometry *>( mesh2->getGeometry().get() );
-    NULL_USE( geom1 );
-    NULL_USE( geom2 );
+    AMP::Mesh::Point p0( mesh->getDim(), { 0.0 } );
+    if ( mesh2->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace ) {
+        std::vector<double> x0 = { 1.0, 2.0, 3.0 };
+        x0.resize( mesh2->getDim() );
+        p0 = AMP::Mesh::Point( mesh2->getDim(), x0.data() );
+        mesh2->displaceMesh( x0 );
+    }
     // Get the original coordinates and make sure they match
+    bool pass = true;
     std::vector<AMP::Mesh::Point> coord2;
-    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) )
-        coord2.push_back( elem.coord() );
-    bool pass = coord == coord2;
+    auto it = mesh2->getIterator( AMP::Mesh::GeomType::Vertex );
+    for ( size_t i = 0; i < coord.size(); i++, ++it ) {
+        auto p   = it->coord();
+        auto err = ( p - p0 - coord[i] ).abs();
+        pass     = pass && err < 1e-6;
+    }
     if ( pass )
-        ut.passes( "clone" );
+        ut.passes( "cloneMesh" );
     else
-        ut.failure( "clone " + mesh->getName() );
+        ut.failure( "cloneMesh " + mesh->getName() );
 }
 
 

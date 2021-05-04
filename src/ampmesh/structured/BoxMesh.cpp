@@ -429,12 +429,12 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromPhysical( const AMP::Geometry::
 std::vector<MeshElement> BoxMesh::getElementParents( const MeshElement &meshelem,
                                                      const GeomType type ) const
 {
-    AMP_INSIST( meshelem.globalID().meshID() == d_meshID,
-                "MeshElement is not from the given mesh" );
-    AMP_INSIST( type >= meshelem.globalID().type() && type <= GeomDim,
-                "Cannot get the parents of the given type for the current element" );
-    if ( type == meshelem.globalID().type() )
+    auto id = meshelem.globalID();
+    if ( type == id.type() )
         return std::vector<MeshElement>( 1, meshelem );
+    AMP_INSIST( id.meshID() == d_meshID, "MeshElement is not from the given mesh" );
+    // AMP_INSIST( type >= id.type() && type <= GeomDim,
+    //            "Cannot get the parents of the given type for the current element" );
     // Get the element of interest
     const auto *elem = dynamic_cast<const structuredMeshElement *>( meshelem.getRawElement() );
     AMP_ASSERT( elem != nullptr );

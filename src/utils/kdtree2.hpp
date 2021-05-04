@@ -1,6 +1,7 @@
 #ifndef included_AMP_kdtree2_hpp
 #define included_AMP_kdtree2_hpp
 
+#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.h"
 
@@ -257,64 +258,91 @@ template<uint8_t NDIM, class TYPE>
 std::tuple<std::array<double, NDIM>, TYPE>
 kdtree2<NDIM, TYPE>::findNearest( const kdtree2::Point &x ) const
 {
-    std::tuple<Point, TYPE> nearest;
+    double d;
+    std::tuple<std::array<double, NDIM>, TYPE> nearest;
+    findNearest( x, 1, &nearest, &d );
+    return nearest;
+}
+template<uint8_t NDIM, class TYPE>
+std::vector<std::tuple<std::array<double, NDIM>, TYPE>>
+kdtree2<NDIM, TYPE>::findNearest( const kdtree2::Point &x, int N ) const
+{
+    std::vector<double> dist( N );
+    std::vector<std::tuple<std::array<double, NDIM>, TYPE>> nearest( N );
+    findNearest( x, N, nearest.data(), dist.data() );
+    return nearest;
+}
+template<uint8_t NDIM, class TYPE>
+void kdtree2<NDIM, TYPE>::findNearest( const Point &x,
+                                       size_t N,
+                                       std::tuple<Point, TYPE> *nearest,
+                                       double *dist ) const
+{
     // First, find dive into the structure to find where the position would be stored
     if ( d_left != nullptr ) {
         // Drill down the tree to find the node that should contain the point
         // As we travel back check the neighboring trees for any points that might be closer
         if ( x[d_split_dim] <= d_split ) {
-            nearest = d_left->findNearest( x );
-            d_right->checkNearest( x, nearest );
+            d_left->findNearest( x, N, nearest, dist );
+            d_right->checkNearest( x, N, nearest, dist );
         } else {
-            nearest = d_right->findNearest( x );
-            d_left->checkNearest( x, nearest );
+            d_right->findNearest( x, N, nearest, dist );
+            d_left->checkNearest( x, N, nearest, dist );
         }
     } else {
-        // We are at the final node, find the closest value using the naive approach
-        size_t k     = 0;
-        double dist1 = norm( x, d_data->x[0] );
-        for ( size_t i = 1; i < d_N; i++ ) {
-            double dist2 = norm( x, d_data->x[i] );
-            if ( dist2 < dist1 ) {
-                k     = i;
-                dist1 = dist2;
+        // We are at the final node, find the closest values using the naive approach
+        for ( size_t i = 0; i < N; i++ )
+            dist[i] = 1e200;
+        for ( size_t i = 0; i < d_N; i++ ) {
+            double d = norm( x, d_data->x[i] );
+            if ( d < dist[N - 1] ) {
+                dist[N - 1]    = d;
+                nearest[N - 1] = std::tie( d_data->x[i], d_data->data[i] );
+                for ( size_t j = N - 1; j > 0; j-- ) {
+                    if ( dist[j] < dist[j - 1] ) {
+                        std::swap( dist[j], dist[j - 1] );
+                        std::swap( nearest[j], nearest[j - 1] );
+                    }
+                }
             }
         }
-        nearest = std::tie( d_data->x[k], d_data->data[k] );
     }
-    return nearest;
 }
 template<uint8_t NDIM, class TYPE>
 void kdtree2<NDIM, TYPE>::checkNearest( const kdtree2::Point &x,
-                                        std::tuple<kdtree2::Point, TYPE> &nearest ) const
+                                        size_t N,
+                                        std::tuple<kdtree2::Point, TYPE> *nearest,
+                                        double *dist ) const
 {
     // Check if the point (and its radius) intersects with the current box
-    double dist1 = norm( x, std::get<0>( nearest ) );
     double dist2 = 0.0;
     for ( int k = 0; k < NDIM; k++ ) {
         double d = std::max( d_lb[k] - x[k], x[k] - d_ub[k] );
         if ( d > 0.0 )
             dist2 += d * d;
     }
-    if ( dist2 > dist1 )
+    if ( dist2 > dist[N - 1] )
         return;
     // Recursively search the subtrees
     if ( d_left != nullptr ) {
-        d_left->checkNearest( x, nearest );
-        d_right->checkNearest( x, nearest );
+        d_left->checkNearest( x, N, nearest, dist );
+        d_right->checkNearest( x, N, nearest, dist );
         return;
     }
     // We are at a base node, check the points for any that might be closer
-    int64_t k = -1;
     for ( size_t i = 0; i < d_N; i++ ) {
         dist2 = norm( x, d_data->x[i] );
-        if ( dist2 < dist1 ) {
-            k     = i;
-            dist1 = dist2;
+        if ( dist2 < dist[N - 1] ) {
+            dist[N - 1]    = dist2;
+            nearest[N - 1] = std::tie( d_data->x[N - 1], d_data->data[N - 1] );
+            for ( size_t j = N - 1; j > 0; j-- ) {
+                if ( dist[j] < dist[j - 1] ) {
+                    std::swap( dist[j], dist[j - 1] );
+                    std::swap( nearest[j], nearest[j - 1] );
+                }
+            }
         }
     }
-    if ( k != -1 )
-        nearest = std::tie( d_data->x[k], d_data->data[k] );
 }
 
 
@@ -354,6 +382,22 @@ inline std::array<double, NDIM> operator+( const std::array<double, NDIM> &a,
         return c;
     }
 }
+template<uint8_t NDIM>
+static double distanceToBox( const std::array<double, NDIM> &x0,
+                             const std::array<double, NDIM> &dir,
+                             const std::array<double, NDIM> &lb,
+                             const std::array<double, NDIM> &ub )
+{
+    std::array<double, 3> x = { 0 }, ang = { 0 };
+    std::array<double, 6> box = { 0 };
+    for ( int d = 0; d < NDIM; d++ ) {
+        x[d]           = x0[d];
+        ang[d]         = dir[d];
+        box[2 * d + 0] = lb[d];
+        box[2 * d + 1] = ub[d];
+    }
+    return AMP::Geometry::GeometryHelpers::distanceToBox( x, ang, box );
+}
 template<uint8_t NDIM, class TYPE>
 std::vector<std::tuple<std::array<double, NDIM>, TYPE, std::array<double, NDIM>, double>>
 kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
@@ -375,29 +419,43 @@ kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
     AMP_ASSERT( n > 0 );
     for ( uint8_t d = 0; d < NDIM; d++ )
         dir[d] /= n;
+    // Propagate to the box
+    double d = distanceToBox<NDIM>( x, dir, d_lb, d_ub );
+    if ( d > 1e100 )
+        return std::vector<std::tuple<Point, TYPE, Point, double>>();
+    if ( d > 0.0 )
+        x = x + d * dir;
     // Loop advancing the point until we leave the domain
     std::vector<std::tuple<Point, TYPE, Point, double>> nearest;
-    double max_d = sqrt( std::max( norm( x, d_lb ), norm( x, d_ub ) ) );
     double min_d = 1e200;
+    int N        = std::min<int>( d_N, 5 );
+    std::vector<double> dist( N );
+    std::vector<std::tuple<Point, TYPE>> nearest2( N );
     for ( int it = 0; it < 10000; it++ ) {
-        auto [p, data] = findNearest( x );       // Find the nearest point
-        auto pi        = intersect( x, dir, p ); // Find the intersection with the ray
-        double d1      = sqrt( norm( p, x ) );   // Distance: nearest-point
-        double d2      = sqrt( norm( pi, p ) );  // Distance: ray-nearest
-        // printf("(%0.2f,%0.2f,%0.2f)\n",x[0],x[1],x[2]);
-        // printf("   p = (%0.2f,%0.2f,%0.2f)\n",p[0],p[1],p[2]);
-        // printf("   pi = (%0.2f,%0.2f,%0.2f)\n",pi[0],pi[1],pi[2]);
-        // printf("   d1 = %0.4f\n",d1);
-        // printf("   d2 = %0.4f\n",d2);
-        if ( d2 < min_d ) {
-            // Save the point if it was closer
-            nearest.push_back( std::tie( p, data, pi, d2 ) );
-            min_d = d2;
+        // Find the closest several points
+        findNearest( x, N, nearest2.data(), dist.data() );
+        // For each point check if it is closer to the ray
+        for ( int i = 0; i < N; i++ ) {
+            auto p    = std::get<0>( nearest2[i] );
+            auto data = std::get<1>( nearest2[i] );
+            auto pi   = intersect( x, dir, p ); // Find the intersection with the ray
+            double d  = sqrt( norm( pi, p ) );  // Distance: ray-nearest
+            if ( d < min_d ) {
+                // Save the point if it was closer
+                nearest.push_back( std::tie( p, data, pi, d ) );
+                min_d = d;
+            }
         }
-        if ( d1 > max_d )
+        // Calculate the distance to propagate
+        double d1 = sqrt( dot( x, std::get<0>( nearest.back() ) ) );
+        double d2 = sqrt( dot( x, std::get<2>( nearest.back() ) ) );
+        if ( distanceToBox<NDIM>( x, dir, d_lb, d_ub ) > 1e100 )
             break;
-        // Advance the point
-        x = x + 0.5 * d1 * dir;
+        if ( d2 < 1e-4 * d1 ) {
+            x = std::get<2>( nearest.back() );
+        } else {
+            x = x + 0.1 * d1 * dir;
+        }
     }
     return nearest;
 }

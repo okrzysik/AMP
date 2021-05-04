@@ -17,7 +17,7 @@ namespace Geometry {
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Box final : public LogicalGeometry
+class Box : public LogicalGeometry
 {
 public:
     /**
@@ -39,7 +39,7 @@ public: // Default constructors
     Box<NDIM> &operator=( const Box<NDIM> &range ) = default;
 
 public: // Functions inherited from Geometry
-    std::string getName() const override final;
+    std::string getName() const override;
     bool isConvex() const override final { return true; }
     Point nearest( const Point &pos ) const override final;
     double distance( const Point &pos, const Point &dir ) const override final;
@@ -47,27 +47,26 @@ public: // Functions inherited from Geometry
     int NSurface() const override final { return 2 * NDIM; }
     int surface( const Point &x ) const override final;
     Point surfaceNorm( const Point &x ) const override final;
-    Point logical( const Point &x ) const override final;
-    Point physical( const Point &x ) const override final;
+    Point logical( const Point &x ) const override;
+    Point physical( const Point &x ) const override;
     Point centroid() const override final;
     std::pair<Point, Point> box() const override final;
     double volume() const override final;
-    void displace( const double *x ) override final;
+    void displace( const double *x ) override;
     std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<int>
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::vector<bool> getPeriodicDim() const override final;
     std::vector<int> getLogicalSurfaceIds() const override final;
-    std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
-    bool operator==( const Geometry &rhs ) const override final;
+    std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
+    bool operator==( const Geometry &rhs ) const override;
+
+protected:
+    Box();
 
 protected:
     // Internal data
     std::array<double, 6> d_range;
-
-private:
-    // Private constuctor
-    Box();
 };
 
 
@@ -77,7 +76,7 @@ private:
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
 template<std::size_t NDIM>
-class Grid final : public LogicalGeometry
+class Grid final : public Box<NDIM>
 {
 public:
     /**
@@ -99,32 +98,15 @@ public: // Default constructors
     Grid<NDIM> &operator=( const Grid<NDIM> &rhs ) = default;
 
 public: // Functions inherited from Geometry
-    std::string getName() const override final;
-    bool isConvex() const override final { return true; }
-    Point nearest( const Point &pos ) const override final;
-    double distance( const Point &pos, const Point &dir ) const override final;
-    bool inside( const Point &pos ) const override final;
-    int NSurface() const override final { return 2 * NDIM; }
-    int surface( const Point &x ) const override final;
-    Point surfaceNorm( const Point &x ) const override final;
+    std::string getName() const override;
     Point logical( const Point &x ) const override final;
     Point physical( const Point &x ) const override final;
-    Point centroid() const override final;
-    std::pair<Point, Point> box() const override final;
-    double volume() const override final;
     void displace( const double *x ) override final;
-    std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
-    virtual std::vector<int>
-    getLogicalGridSize( const std::vector<double> &res ) const override final;
-    std::vector<bool> getPeriodicDim() const override final;
-    std::vector<int> getLogicalSurfaceIds() const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
 
 protected:
-    // Internal data
-    std::array<double, 6> d_range;
-    std::vector<double> d_coord[NDIM];
+    std::array<std::vector<double>, NDIM> d_coord; // Coordinates
 
 private:
     // Private constuctor

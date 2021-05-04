@@ -171,8 +171,11 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         for ( const auto &p : surfacePoints ) {
             auto p2 = geom2->logical( p );
             auto p3 = geom2->physical( p2 );
-            for ( int d = 0; d < ndim; d++ )
+            for ( int d = 0; d < ndim; d++ ) {
                 pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
+                if ( fabs( p[d] - p3[d] ) >= 1e-6 )
+                    std::cout << p << "  " << p2 << "  " << p3 << std::endl;
+            }
         }
         for ( const auto &p : interiorPoints ) {
             auto p2 = geom2->logical( p );

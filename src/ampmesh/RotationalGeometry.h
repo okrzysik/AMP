@@ -50,8 +50,8 @@ public: // Functions inherited from Geometry
     Point centroid() const override final { return out( d_geom->centroid() ); }
     std::pair<Point, Point> box() const override final;
     double volume() const override final { return d_geom->volume(); }
-    void displace( const double *x ) override final std::vector<int> getLogicalGridSize(
-        const std::vector<int> &x ) const override final;
+    void displace( const double *x ) override final;
+    std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     std::vector<bool> getPeriodicDim() const override final { return d_geom->getPeriodicDim(); }
     std::vector<int> getLogicalSurfaceIds() const override final
     {

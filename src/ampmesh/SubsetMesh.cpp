@@ -298,9 +298,18 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
 
 
 /********************************************************
- * De-constructor                                        *
+ * Destructor                                            *
  ********************************************************/
 SubsetMesh::~SubsetMesh() = default;
+
+
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string SubsetMesh::meshClass() const
+{
+    return "SubsetMesh<" + d_parent_mesh->meshClass() + ">";
+}
 
 
 /********************************************************

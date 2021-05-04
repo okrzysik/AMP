@@ -66,6 +66,11 @@ public:
     //! Deconstructor
     virtual ~STKMesh();
 
+
+    //! Return a string with the mesh class name
+    std::string meshClass() const override;
+
+
     //! Function to copy the mesh (allows use to proply copy the derived class)
     Mesh copy() const;
 

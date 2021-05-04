@@ -54,6 +54,11 @@ public:
     //! Deconstructor
     virtual ~MultiMesh();
 
+
+    //! Return a string with the mesh class name
+    std::string meshClass() const override;
+
+
     //! Function to clone the mesh (allows use to properly copy the derived class)
     std::unique_ptr<Mesh> clone() const override;
 

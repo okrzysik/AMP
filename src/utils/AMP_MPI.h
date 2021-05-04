@@ -232,17 +232,19 @@ public: // Member functions
      *   See MPI_Comm_split for information on how the underlying split will occur.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects.
-     * \param[in] color Control of subset assignment (nonnegative integer).
-     *                  Processes with the same color are in the same new communicator.
-     *                  -1: processor will not be a member of any object
-     *                      (NULL object will be returned)
-     * \param[in] key   Control of rank assignment (integer).
-     *                  Note that, for a fixed color, the keys need not be unique.
-     *                  The processes will be sorted in ascending order according to this key,
-     *                  then all the processes in a given color will have the relative rank
-     *                  order as they did in their parent group. (See MPI_Comm_split)
+     * \param[in] color     Control of subset assignment (nonnegative integer).
+     *                      Processes with the same color are in the same new communicator.
+     *                      -1: processor will not be a member of any object
+     *                          (NULL object will be returned)
+     * \param[in] key       Control of rank assignment (integer).
+     *                      Note that, for a fixed color, the keys need not be unique.
+     *                      The processes will be sorted in ascending order according to this key,
+     *                      then all the processes in a given color will have the relative rank
+     *                      order as they did in their parent group. (See MPI_Comm_split)
+     * \param[in] manage    Do we want to manage the comm
+     *                      (free the MPI_Comm when this object leaves scope)
      */
-    AMP_MPI split( int color, int key = -1 ) const;
+    AMP_MPI split( int color, int key = -1, bool manage = true ) const;
 
 
     /**
@@ -252,13 +254,15 @@ public: // Member functions
      *   Internally this will use MPI_Get_processor_name to identify the nodes.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects)
-     * \param[in] key   Control of rank assignment (integer).
-     *                  Note that, for a fixed color, the keys need not be unique.
-     *                  The processes will be sorted in ascending order according to this key,
-     *                  then all the processes in a given color will have the relative rank
-     *                  order as they did in their parent group. (See MPI_Comm_split)
+     * \param[in] key       Control of rank assignment (integer).
+     *                      Note that, for a fixed color, the keys need not be unique.
+     *                      The processes will be sorted in ascending order according to this key,
+     *                      then all the processes in a given color will have the relative rank
+     *                      order as they did in their parent group. (See MPI_Comm_split)
+     * \param[in] manage    Do we want to manage the comm
+     *                      (free the MPI_Comm when this object leaves scope)
      */
-    AMP_MPI splitByNode( int key = -1 ) const;
+    AMP_MPI splitByNode( int key = -1, bool manage = true ) const;
 
 
     /**
@@ -268,8 +272,8 @@ public: // Member functions
      * context.
      *   Note: the underlying MPI_Comm object will be free'd automatically when it is no longer
      *   used by any MPI objects.
-     * \param[in] manage    Do we want to manage the comm (free the MPI_Comm when this object leaves
-     * scope)
+     * \param[in] manage    Do we want to manage the comm
+     *                      (free the MPI_Comm when this object leaves scope)
      */
     AMP_MPI dup( bool manage = true ) const;
 
@@ -284,6 +288,8 @@ public: // Member functions
      *          the smaller communicator only.
      *      The communicators partially overlap.  This will require communication on the first
      * communicator.
+     * \param[in] comm1     First communicator
+     * \param[in] comm2     First communicator
      */
     static AMP_MPI intersect( const AMP_MPI &comm1, const AMP_MPI &comm2 );
 
@@ -599,8 +605,6 @@ public: // Member functions
      * the size of the supplied 'rank_of_min' array should be n.
      * \param[in] x         The input/output array for the reduce
      * \param[in] n         The number of values in the array (must match on all nodes)
-     * \param[out] rank     Output array indicating the rank of the processor containing
-     *                      the minimum value
      */
     template<class type>
     void maxReduce( type *x, int n ) const;
@@ -618,8 +622,6 @@ public: // Member functions
      * \param[in] x         The input array for the reduce
      * \param[in] y         The output array for the reduce
      * \param[in] n         The number of values in the array (must match on all nodes)
-     * \param[out] rank     Output array indicating the rank of the processor containing
-     *                      the minimum value
      */
     template<class type>
     void maxReduce( const type *x, type *y, int n ) const;
@@ -864,11 +866,10 @@ public: // Member functions
      *
      * @param[in] sendbuf   Initial address of send buffer (choice).
      * @param[in] sendcount Number of elements to send (integer).
-     * @param[in] sendtype  Type of elements in send buffer (handle).
      * @param[in] dest      Rank of destination (integer).
      * @param[in] sendtag   Send tag (integer).
+     * @param[out] recvbuf  Initial address of recv buffer (choice).
      * @param[in] recvcount Maximum number of elements to receive (integer).
-     * @param[in] recvtype  Type of elements in receive buffer (handle).
      * @param[in] source    Rank of source (integer).
      * @param[in] recvtag   Receive tag (integer).
      */
