@@ -21,6 +21,7 @@ class VectorDataIterator;
  * \details  VectorData is a class to helping disassociate data storage
  *    and vector operations such as dot product, norms, etc.
  */
+
 class VectorData : public DataChangeFirer
 {
 public: // enums
