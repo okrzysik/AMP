@@ -163,6 +163,23 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             interiorPoints.push_back( pos );
     }
     PROFILE_STOP( "testGeometry-sample " + name );
+    // Check that nearest returns the surface/interior points
+    PROFILE_START( "testGeometry-nearest " + name );
+    bool pass_nearest = true;
+    for ( const auto &p0 : surfacePoints ) {
+        auto p       = geom.nearest( p0 );
+        double d     = ( p - p0 ).abs();
+        pass_nearest = pass_nearest && d < 1e-8;
+    }
+    for ( const auto &p0 : interiorPoints ) {
+        auto p       = geom.nearest( p0 );
+        double d     = ( p - p0 ).abs();
+        pass_nearest = pass_nearest && d < 1e-8;
+    }
+    pass = pass && pass_nearest;
+    if ( !pass_nearest )
+        ut.failure( "testGeometry-nearest: " + name );
+    PROFILE_STOP( "testGeometry-nearest " + name );
     // Test logical transformation (if valid)
     PROFILE_START( "testGeometry-logical " + name );
     auto geom2 = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );

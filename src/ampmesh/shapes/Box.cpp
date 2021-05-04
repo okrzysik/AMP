@@ -103,28 +103,6 @@ std::string Grid<NDIM>::getName() const
 /********************************************************
  * Compute the nearest point on the surface              *
  ********************************************************/
-static inline std::array<double, 3> nearest2( const double x[3], const double s[3] )
-{
-    double p[3];
-    p[0] = std::min( std::max( x[0], 0.0 ), s[0] );
-    p[1] = std::min( std::max( x[1], 0.0 ), s[1] );
-    p[2] = std::min( std::max( x[2], 0.0 ), s[2] );
-    if ( p[0] == 0 || p[1] == 0 || p[2] == 0 || p[0] == s[0] || p[1] == s[1] || p[2] == s[2] )
-        return { p[0], p[1], p[2] };
-    double d[6] = { p[0], s[0] - p[0], p[1], s[1] - p[1], p[2], s[2] - p[2] };
-    double min  = std::min( { d[0], d[1], d[2], d[3], d[4], d[5] } );
-    if ( d[0] == min )
-        return { 0, p[1], p[2] };
-    if ( d[1] == min )
-        return { s[0], p[1], p[2] };
-    if ( d[2] == min )
-        return { p[0], 0, p[2] };
-    if ( d[3] == min )
-        return { p[0], s[1], p[2] };
-    if ( d[4] == min )
-        return { p[0], p[1], 0 };
-    return { p[0], p[1], s[2] };
-}
 template<std::size_t NDIM>
 Point Box<NDIM>::nearest( const Point &pos ) const
 {

@@ -26,31 +26,39 @@ std::ostream &operator<<( std::ostream &out, const Point3D &x )
 /****************************************************************
  * Vector operations                                             *
  ****************************************************************/
-static inline Point2D operator+( const Point2D &x, const Point2D &y )
+template<std::size_t N>
+static inline std::array<double, N> operator+( const std::array<double, N> &x,
+                                               const std::array<double, N> &y )
 {
-    return { x[0] + y[0], x[1] + y[1] };
+    auto z = x;
+    for ( size_t i = 0; i < N; i++ )
+        z[i] += y[i];
+    return z;
 }
-static inline Point3D operator+( const Point3D &x, const Point3D &y )
+template<std::size_t N>
+static inline std::array<double, N> operator-( const std::array<double, N> &x,
+                                               const std::array<double, N> &y )
 {
-    return { x[0] + y[0], x[1] + y[1], x[2] + y[2] };
+    auto z = x;
+    for ( int i = 0; i < N; i++ )
+        z[i] -= y[i];
+    return z;
 }
-static inline Point2D operator-( const Point2D &x, const Point2D &y )
+template<std::size_t N>
+static inline std::array<double, N> operator*( double x, const std::array<double, N> &y )
 {
-    return { x[0] - y[0], x[1] - y[1] };
+    auto z = y;
+    for ( size_t i = 0; i < N; i++ )
+        z[i] *= x;
+    return z;
 }
-static inline Point3D operator-( const Point3D &x, const Point3D &y )
+template<std::size_t N>
+static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
 {
-    return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
-}
-static inline Point2D operator*( double x, const Point2D &y ) { return { x * y[0], x * y[1] }; }
-static inline Point3D operator*( double x, const Point3D &y )
-{
-    return { x * y[0], x * y[1], x * y[2] };
-}
-static inline double dot( const Point2D &x, const Point2D &y ) { return x[0] * y[0] + x[1] * y[1]; }
-static inline double dot( const Point3D &x, const Point3D &y )
-{
-    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+    double d = 0;
+    for ( size_t i = 0; i < N; i++ )
+        d += x[i] * y[i];
+    return d;
 }
 static inline double cross( const Point2D &x, const Point2D &y )
 {
@@ -60,15 +68,14 @@ static inline Point3D cross( const Point3D &x, const Point3D &y )
 {
     return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
 }
-static inline Point2D normalize( const Point2D &x )
+template<std::size_t N>
+static inline std::array<double, N> normalize( const std::array<double, N> &x )
 {
-    double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] );
-    return { tmp * x[0], tmp * x[1] };
-}
-static inline Point3D normalize( const Point3D &x )
-{
-    double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
-    return { tmp * x[0], tmp * x[1], tmp * x[2] };
+    double tmp = 1.0 / sqrt( dot( x, x ) );
+    auto y     = x;
+    for ( size_t i = 0; i < N; i++ )
+        y[i] *= tmp;
+    return y;
 }
 
 
@@ -420,58 +427,60 @@ distanceToPlane( const Point3D &n, const Point3D &p0, const Point3D &pos, const 
 /****************************************************************
  * Compute the distance to a box                                 *
  ****************************************************************/
-double distanceToBox( const Point3D &pos, const Point3D &ang, const std::array<double, 6> &range )
+template<std::size_t NDIM>
+double distanceToBox( const std::array<double, NDIM> &pos,
+                      const std::array<double, NDIM> &ang,
+                      const std::array<double, NDIM> &lb,
+                      const std::array<double, NDIM> &ub )
 {
-    constexpr double tol = 1e-12;
-    // Compute the distance to each surface
-    double d1 = ( range[0] - pos[0] ) / ang[0];
-    double d2 = ( range[1] - pos[0] ) / ang[0];
-    double d3 = ( range[2] - pos[1] ) / ang[1];
-    double d4 = ( range[3] - pos[1] ) / ang[1];
-    double d5 = ( range[4] - pos[2] ) / ang[2];
-    double d6 = ( range[5] - pos[2] ) / ang[2];
-    if ( d1 < 0 )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( d2 < 0 )
-        d2 = std::numeric_limits<double>::infinity();
-    if ( d3 < 0 )
-        d3 = std::numeric_limits<double>::infinity();
-    if ( d4 < 0 )
-        d4 = std::numeric_limits<double>::infinity();
-    if ( d5 < 0 )
-        d5 = std::numeric_limits<double>::infinity();
-    if ( d6 < 0 )
-        d6 = std::numeric_limits<double>::infinity();
+    double d = std::numeric_limits<double>::infinity();
     // Check if the intersection of each surface is within the bounds of the box
-    auto p1     = pos + d1 * ang;
-    auto p2     = pos + d2 * ang;
-    auto p3     = pos + d3 * ang;
-    auto p4     = pos + d4 * ang;
-    auto p5     = pos + d5 * ang;
-    auto p6     = pos + d6 * ang;
-    auto inside = [range]( const Point &p ) {
-        return ( ( p[0] >= range[0] - tol ) && ( p[0] <= range[1] + tol ) ) &&
-               ( ( p[1] >= range[2] - tol ) && ( p[1] <= range[3] + tol ) ) &&
-               ( ( p[2] >= range[4] - tol ) && ( p[2] <= range[5] + tol ) );
+    auto inside = [&lb, &ub]( const std::array<double, NDIM> &p ) {
+        bool in = true;
+        for ( size_t d = 0; d < NDIM; d++ )
+            in = in && ( p[d] >= lb[d] - 1e-12 ) && ( p[d] <= ub[d] + 1e-12 );
+        return in;
     };
-    if ( !inside( p1 ) )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( !inside( p2 ) )
-        d2 = std::numeric_limits<double>::infinity();
-    if ( !inside( p3 ) )
-        d3 = std::numeric_limits<double>::infinity();
-    if ( !inside( p4 ) )
-        d4 = std::numeric_limits<double>::infinity();
-    if ( !inside( p5 ) )
-        d5 = std::numeric_limits<double>::infinity();
-    if ( !inside( p6 ) )
-        d6 = std::numeric_limits<double>::infinity();
-    // Return the closest surface
-    double d = std::min( { d1, d2, d3, d4, d5, d6 } );
+    // Compute the distance to each surface and check if it is closer
+    for ( size_t i = 0; i < NDIM; i++ ) {
+        double d1 = ( lb[i] - pos[i] ) / ang[i];
+        double d2 = ( ub[i] - pos[i] ) / ang[i];
+        if ( d1 >= 0 ) {
+            auto p = pos + d1 * ang;
+            if ( inside( p ) )
+                d = std::min( d, d1 );
+        }
+        if ( d2 >= 0 ) {
+            auto p = pos + d2 * ang;
+            if ( inside( p ) )
+                d = std::min( d, d2 );
+        }
+    }
+    // Return the distance
     if ( inside( pos ) && d < 1e100 )
         d = -d;
     return d;
 }
+template double distanceToBox<1>( const std::array<double, 1> &,
+                                  const std::array<double, 1> &,
+                                  const std::array<double, 1> &,
+                                  const std::array<double, 1> & );
+template double distanceToBox<2>( const std::array<double, 2> &,
+                                  const std::array<double, 2> &,
+                                  const std::array<double, 2> &,
+                                  const std::array<double, 2> & );
+template double distanceToBox<3>( const std::array<double, 3> &,
+                                  const std::array<double, 3> &,
+                                  const std::array<double, 3> &,
+                                  const std::array<double, 3> & );
+template double distanceToBox<4>( const std::array<double, 4> &,
+                                  const std::array<double, 4> &,
+                                  const std::array<double, 4> &,
+                                  const std::array<double, 4> & );
+template double distanceToBox<5>( const std::array<double, 5> &,
+                                  const std::array<double, 5> &,
+                                  const std::array<double, 5> &,
+                                  const std::array<double, 5> & );
 
 
 /****************************************************************

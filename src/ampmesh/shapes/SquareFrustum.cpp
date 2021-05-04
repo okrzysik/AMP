@@ -124,12 +124,18 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
 
 /********************************************************
  * Compute the nearest point on the surface              *
+ * Note: this is currently an approximation              *
  ********************************************************/
 Point SquareFrustum::nearest( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return {};
+    auto L = logical( pos );
+    L.x()  = std::max( L.x(), 0.0 );
+    L.x()  = std::min( L.x(), 1.0 );
+    L.y()  = std::max( L.y(), 0.0 );
+    L.y()  = std::min( L.y(), 1.0 );
+    L.z()  = std::max( L.z(), 0.0 );
+    L.z()  = std::min( L.z(), 1.0 );
+    return physical( L );
 }
 
 
