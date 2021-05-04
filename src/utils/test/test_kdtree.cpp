@@ -221,7 +221,7 @@ int main( int argc, char *argv[] )
 
     PROFILE_ENABLE( 3 );
     PROFILE_ENABLE_TRACE();
-     // Run a 1D test
+    // Run a 1D test
     PROFILE_START( "1D kdtree" );
     run_kdtree_test( ut, 1, 10, 10 );
     run_kdtree_test( ut, 1, 10000, 1000 );
