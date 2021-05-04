@@ -114,7 +114,10 @@ private: // Internal data
 private: // Internal functions
     static size_t find_split( size_t N, const double *x );
     void splitData( size_t N, const Point *x, const TYPE *data );
-    void checkNearest( const Point &x, std::tuple<Point, TYPE> &nearest ) const;
+    void
+    findNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
+    void
+    checkNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
     static constexpr double norm( const Point &x, const Point &y );
     static constexpr double dot( const Point &x, const Point &y );
 };

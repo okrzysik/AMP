@@ -119,7 +119,7 @@ Mesh{
 		Height = 1
 		Dir = "+z"
 		x_offset = -2
-		y_offset = 6
+		y_offset = 2
 		z_offset = 5
         static = TRUE
 	}
@@ -133,12 +133,27 @@ Mesh{
         b = 0, 1, 0
         c = 0.2, 0, 1
 		x_offset = 2
+		y_offset = 2
+		z_offset = 5
+        static = TRUE
+	}
+
+	Mesh_11 {
+		MeshName = "grid_3d"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "cube"
+		Size = 30, 30, 30
+		x_grid = -1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0
+		y_grid = -0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.8, 0.9
+		z_grid = -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8
+		x_offset = -2
 		y_offset = 6
 		z_offset = 5
         static = TRUE
 	}
 
-	/*Mesh_17 {
+	/*Mesh_12 {
 		MeshName = "Utah_teapot"
 		MeshType = "AMP"
         FileName = "Utah_teapot.stl"

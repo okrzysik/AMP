@@ -24,20 +24,26 @@ namespace Mesh {
  ****************************************************************/
 MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh ), d_pos_hash( 0 )
 {
-    // Get a list of all nodes on the current processor
-    MeshIterator nodeIterator = mesh.getIterator( GeomType::Vertex, d_max_gcw );
-    d_index.reserve( nodeIterator.size() );
-    for ( size_t i = 0; i < nodeIterator.size(); ++i, ++nodeIterator ) {
-        auto element = dynamic_cast<structuredMeshElement *>( nodeIterator->getRawElement() );
-        AMP_ASSERT( element != nullptr );
-        d_index.emplace_back( element->getIndex() );
+    if ( dynamic_cast<const MovableBoxMesh *>( &mesh ) ) {
+        // We are copying another MovableBoxMesh
+        auto rhs = dynamic_cast<const MovableBoxMesh &>( mesh );
+        d_index  = rhs.d_index;
+        d_coord  = rhs.d_coord;
+    } else {
+        // Get a list of all nodes on the current processor
+        MeshIterator nodeIterator = mesh.getIterator( GeomType::Vertex, d_max_gcw );
+        d_index.reserve( nodeIterator.size() );
+        for ( size_t i = 0; i < nodeIterator.size(); ++i, ++nodeIterator ) {
+            auto element = dynamic_cast<structuredMeshElement *>( nodeIterator->getRawElement() );
+            AMP_ASSERT( element != nullptr );
+            d_index.emplace_back( element->getIndex() );
+        }
+        AMP::Utilities::quicksort( d_index );
+        // Generate coordinates
+        d_coord.resize( d_index.size(), { 0, 0, 0 } );
+        for ( size_t i = 0; i < d_index.size(); i++ )
+            mesh.coord( d_index[i], d_coord[i].data() );
     }
-    AMP::Utilities::quicksort( d_index );
-
-    // Generate coordinates
-    d_coord.resize( d_index.size(), { 0, 0, 0 } );
-    for ( size_t i = 0; i < d_index.size(); i++ )
-        mesh.coord( d_index[i], d_coord[i].data() );
 }
 
 
@@ -126,6 +132,12 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
 #endif
 }
 #endif
+
+
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string MovableBoxMesh::meshClass() const { return "MovableBoxMesh"; }
 
 
 /****************************************************************

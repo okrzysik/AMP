@@ -54,6 +54,10 @@ public:
     std::shared_ptr<Mesh> Subset( std::string name ) const override;
 
 
+    //! Return a string with the mesh class name
+    std::string meshClass() const override;
+
+
     //! Function to copy the mesh (allows use to properly copy the derived class)
     std::unique_ptr<Mesh> clone() const override;
 

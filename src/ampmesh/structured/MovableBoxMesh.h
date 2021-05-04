@@ -26,6 +26,11 @@ public:
     //! Construct a movable box mesh from any existing box mesh
     explicit MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh );
 
+
+    //! Return a string with the mesh class name
+    std::string meshClass() const override;
+
+
     /**
      * \brief    Is the mesh movable
      * \details  This function will check if the mesh can be displaced.
@@ -111,8 +116,8 @@ private:
 
     // Boundary information
     std::vector<int> d_ids;
-    std::vector<MeshIterator> d_surface[4];
-    std::vector<std::vector<MeshIterator>> d_boundary[4];
+    // std::vector<MeshIterator> d_surface[4];
+    // std::vector<std::vector<MeshIterator>> d_boundary[4];
 };
 
 

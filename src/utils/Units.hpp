@@ -358,6 +358,9 @@ constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_
         return create( UnitType::energy, 4.359744722207185e-18 );
     if ( str == "bohr" )
         return create( UnitType::length, 5.2917721090380e-11 );
+    // Check special units/characters
+    if ( str == "%" )
+        return create( UnitType::unitless, 0.01 );
     // No success
     SI_type u = { 0 };
     double s  = 0;
@@ -384,9 +387,11 @@ constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_
  ********************************************************************/
 constexpr Units::SI_type Units::getSI( UnitType type )
 {
+    if ( type == UnitType::unknown )
+        return { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     // s, m, kg, A, K, mol, cd, rad, sr
     constexpr SI_type id[25] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // 0: unknown
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // 0: unitless
         { 1, 0, 0, 0, 0, 0, 0, 0, 0 },    // 1: time (s)
         { 0, 1, 0, 0, 0, 0, 0, 0, 0 },    // 2: length (m)
         { 0, 0, 1, 0, 0, 0, 0, 0, 0 },    // 3: mass (kg)

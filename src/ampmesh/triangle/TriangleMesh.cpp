@@ -720,8 +720,6 @@ getChildrenIDs( const std::vector<std::array<ElementID, N1 + 1>> &elements,
 template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::initialize()
 {
-    int rank = d_comm.getRank();
-    int size = d_comm.getSize();
     // Re-sort the points and triangles
     AMP_ASSERT( std::is_sorted( d_vert.begin(), d_vert.end() ) );
     if constexpr ( NG == 1 )
@@ -763,6 +761,13 @@ void TriangleMesh<NG, NP>::initialize()
     // Get the bounding boxes
     initializeBoundingBox();
     // Initialize the iterators
+    initializeIterators();
+}
+template<uint8_t NG, uint8_t NP>
+void TriangleMesh<NG, NP>::initializeIterators()
+{
+    int rank    = d_comm.getRank();
+    int size    = d_comm.getSize();
     int max_gcw = size == 1 ? 0 : d_max_gcw;
     d_iterators.resize( max_gcw + 1 );
     d_iterators[0][0] = createIterator( createLocalList( d_vert.size(), GeomType::Vertex, rank ) );
@@ -833,6 +838,16 @@ TriangleMesh<NG, NP>::createIterator( std::shared_ptr<std::vector<ElementID>> li
 }
 
 
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+template<uint8_t NG, uint8_t NP>
+std::string TriangleMesh<NG, NP>::meshClass() const
+{
+    return "TriangleMesh<NG, NP>";
+}
+
+
 /****************************************************************
  * Estimate the mesh size                                        *
  ****************************************************************/
@@ -868,23 +883,32 @@ TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params
 }
 template<uint8_t NG, uint8_t NP>
 TriangleMesh<NG, NP>::TriangleMesh( const TriangleMesh &rhs )
-    : Mesh( rhs.d_params ),
+    : Mesh( rhs ),
       d_N_global{ rhs.d_N_global },
-      d_vert{ rhs.d_vert },
-      d_edge{ rhs.d_edge },
-      d_tri{ rhs.d_tri },
-      d_tet{ rhs.d_tet },
-      d_neighbors{ rhs.d_neighbors },
-      d_remote_vert{ rhs.d_remote_vert },
-      d_remote_edge{ rhs.d_remote_edge },
-      d_remote_tri{ rhs.d_remote_tri },
-      d_remote_tet{ rhs.d_remote_tet }
+      d_vert( rhs.d_vert ),
+      d_edge( rhs.d_edge ),
+      d_tri( rhs.d_tri ),
+      d_tet( rhs.d_tet ),
+      d_neighbors( rhs.d_neighbors ),
+      d_blockID( rhs.d_blockID ),
+      d_remote_vert( rhs.d_remote_vert ),
+      d_remote_edge( rhs.d_remote_edge ),
+      d_remote_tri( rhs.d_remote_tri ),
+      d_remote_tet( rhs.d_remote_tet ),
+      d_remote_neighbors( rhs.d_remote_neighbors ),
+      d_tri_edge( rhs.d_tri_edge ),
+      d_tet_tri( rhs.d_tet_tri ),
+      d_tet_edge( rhs.d_tet_edge ),
+      d_block_ids( rhs.d_block_ids ),
+      d_boundary_ids( rhs.d_boundary_ids ),
+      d_pos_hash( 0 )
 {
     for ( size_t i = 0; i < NG; i++ ) {
-        for ( size_t j = 0; j < NG; j++ ) {
+        for ( size_t j = 0; j <= NG; j++ ) {
             d_parents[i][j] = rhs.d_parents[i][j];
         }
     }
+    initializeIterators();
 }
 template<uint8_t NG, uint8_t NP>
 std::unique_ptr<Mesh> TriangleMesh<NG, NP>::clone() const

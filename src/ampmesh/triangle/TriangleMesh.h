@@ -129,6 +129,10 @@ public:
               std::vector<int> blockID                 = std::vector<int>() );
 
 
+    //! Return a string with the mesh class name
+    std::string meshClass() const override;
+
+
     //! Virtual function to copy the mesh (allows use to proply copy the derived class)
     std::unique_ptr<Mesh> clone() const override final;
 
@@ -348,6 +352,7 @@ protected:
                            std::shared_ptr<Geometry::Geometry> geom,
                            std::vector<int> block );
     void initialize();
+    void initializeIterators();
     void initializeBoundingBox();
 
 protected:

@@ -53,7 +53,7 @@ meshTests::createRankMap( AMP::Mesh::Mesh::shared_ptr mesh )
 
 
 // This test checks a single mesh element iterator
-void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
+void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
                                      AMP::Mesh::Mesh::shared_ptr mesh,
                                      const AMP::Mesh::MeshIterator &iterator,
                                      const size_t N_local,
@@ -68,21 +68,21 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     auto end_it   = iterator.end();
     if ( N_local + N_ghost == 0 ) {
         if ( begin_it == end_it )
-            ut->passes( name + "-trival iterator begin and end returned" );
+            ut.passes( name + "-trival iterator begin and end returned" );
         else
-            ut->failure( name + "-trival iterator begin and end returned" );
+            ut.failure( name + "-trival iterator begin and end returned" );
         return;
     }
     if ( begin_it != end_it )
-        ut->passes( name + "-iterator begin and end returned" );
+        ut.passes( name + "-iterator begin and end returned" );
     else
-        ut->failure( name + "-iterator begin and end returned" );
+        ut.failure( name + "-iterator begin and end returned" );
 
     // Check that the iterator iterates through the proper number of elements
     if ( iterator.size() == N_local + N_ghost )
-        ut->passes( name + "-regular iterator size()" );
+        ut.passes( name + "-regular iterator size()" );
     else
-        ut->failure( name + "-regular iterator size()" );
+        ut.failure( name + "-regular iterator size()" );
     size_t number_of_local_elements = 0;
     size_t number_of_ghost_elements = 0;
     std::set<AMP::Mesh::MeshElementID> id_set;
@@ -101,17 +101,17 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
         }
     }
     if ( pass_position )
-        ut->passes( name + "-iterator.position()" );
+        ut.passes( name + "-iterator.position()" );
     else
-        ut->failure( name + "-iterator.position()" );
+        ut.failure( name + "-iterator.position()" );
     if ( number_of_local_elements == N_local && number_of_ghost_elements == N_ghost )
-        ut->passes( name + "-regular iterator count" );
+        ut.passes( name + "-regular iterator count" );
     else
-        ut->failure( name + "-regular iterator count" );
+        ut.failure( name + "-regular iterator count" );
     if ( id_set.size() == N_local + N_ghost )
-        ut->passes( name + "-regular iterator uniqueness" );
+        ut.passes( name + "-regular iterator uniqueness" );
     else
-        ut->failure( name + "-regular iterator uniqueness" );
+        ut.failure( name + "-regular iterator uniqueness" );
 
     // Check that we can increment and decrement properly
     if ( iterator.size() >= 2 ) {
@@ -138,9 +138,9 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
                 pass = false;
         }
         if ( pass )
-            ut->passes( name + "-regular iterator increments/decrements" );
+            ut.passes( name + "-regular iterator increments/decrements" );
         else
-            ut->failure( name + "-regular iterator increments/decrements" );
+            ut.failure( name + "-regular iterator increments/decrements" );
     }
 
     // Run element tests
@@ -233,26 +233,26 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
     }
     if ( id_pass && type_pass && volume_pass && coord_pass && elements_pass && neighbor_pass == 1 &&
          block_pass ) {
-        ut->passes( name + "-elements passed" );
+        ut.passes( name + "-elements passed" );
     } else {
         if ( !id_pass )
-            ut->failure( name + "-elements failed id test" );
+            ut.failure( name + "-elements failed id test" );
         if ( !type_pass )
-            ut->failure( name + "-elements failed type test" );
+            ut.failure( name + "-elements failed type test" );
         if ( !volume_pass )
-            ut->failure( name + "-elements failed volume test" );
+            ut.failure( name + "-elements failed volume test" );
         if ( !coord_pass )
-            ut->failure( name + "-elements failed coord test" );
+            ut.failure( name + "-elements failed coord test" );
         if ( !centroid_pass )
-            ut->failure( name + "-elements failed centroid test" );
+            ut.failure( name + "-elements failed centroid test" );
         if ( !elements_pass )
-            ut->failure( name + "-elements failed getElements test" );
+            ut.failure( name + "-elements failed getElements test" );
         if ( neighbor_pass == 0 )
-            ut->failure( name + "-elements failed getNeighbors test" );
+            ut.failure( name + "-elements failed getNeighbors test" );
         else if ( neighbor_pass == 2 )
-            ut->expected_failure( name + "-elements failed getNeighbors test" );
+            ut.expected_failure( name + "-elements failed getNeighbors test" );
         if ( !block_pass )
-            ut->failure( name + "-Element is not in a block" );
+            ut.failure( name + "-Element is not in a block" );
     }
     // Check that we can get the element from the global id for all elements
     bool getElem_pass = true;
@@ -264,9 +264,9 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
             getElem_pass = false;
     }
     if ( getElem_pass )
-        ut->passes( name + "-Got elements from element ids" );
+        ut.passes( name + "-Got elements from element ids" );
     else
-        ut->failure( name + "-Got elements from element ids" );
+        ut.failure( name + "-Got elements from element ids" );
     // Check nearest
     try {
         bool pass = true;
@@ -275,44 +275,44 @@ void meshTests::ElementIteratorTest( AMP::UnitTest *ut,
             pass          = pass && element.nearest( centroid ) == centroid;
         }
         if ( pass )
-            ut->passes( name + "-elements nearest passed" );
+            ut.passes( name + "-elements nearest passed" );
         else
-            ut->passes( name + "-elements nearest failed" );
+            ut.passes( name + "-elements nearest failed" );
     } catch ( const StackTrace::abort_error &e ) {
         auto pos = e.message.find( "nearest is not implimented" );
         if ( pos != std::string::npos )
-            ut->expected_failure( name + "-elements " + e.message );
+            ut.expected_failure( name + "-elements " + e.message );
         else
-            ut->failure( name + "-elements nearest exception: " + e.message );
+            ut.failure( name + "-elements nearest exception: " + e.message );
     } catch ( ... ) {
-        ut->failure( name + "-nearest distance unknown exception" );
+        ut.failure( name + "-nearest distance unknown exception" );
     }
     // Check distance
     try {
-        ut->expected_failure( name + "-elements distance test not implimented yet" );
+        ut.expected_failure( name + "-elements distance test not implimented yet" );
         /*bool pass  = true;
         for ( const auto &element : iterator ) {
             auto centroid = element.centroid();
             pass = pass && element.nearest( centroid ) == centroid;
         }
         if ( pass )
-            ut->passes( name + "-elements distance passed" );
+            ut.passes( name + "-elements distance passed" );
         else
-            ut->passes( name + "-elements distance failed" );*/
+            ut.passes( name + "-elements distance failed" );*/
     } catch ( const StackTrace::abort_error &e ) {
         auto pos = e.message.find( "distance is not implimented" );
         if ( pos != std::string::npos )
-            ut->passes( name + "-elements " + e.message );
+            ut.passes( name + "-elements " + e.message );
         else
-            ut->failure( name + "-elements distance exception: " + e.message );
+            ut.failure( name + "-elements distance exception: " + e.message );
     } catch ( ... ) {
-        ut->failure( name + "-elements distance unknown exception" );
+        ut.failure( name + "-elements distance unknown exception" );
     }
 }
 
 
 // Check the different mesh element iterators
-void meshTests::MeshIteratorTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     char message[1000];
     // Loop through different ghost widths
@@ -330,18 +330,18 @@ void meshTests::MeshIteratorTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::
                 N_ghost  = mesh->numGhostElements( type, gcw );
                 iterator = mesh->getIterator( type, gcw );
                 sprintf( message, "Element iterator created (gcw=%i)", gcw );
-                ut->passes( message );
+                ut.passes( message );
             } catch ( ... ) {
                 iterator_created = false;
                 if ( i == 0 ) {
                     sprintf( message, "Node iterator failed (gcw=%i)", gcw );
-                    ut->failure( message );
+                    ut.failure( message );
                 } else if ( type == mesh->getGeomType() ) {
                     sprintf( message, "Geometric element iterator failed (gcw=%i)", gcw );
-                    ut->failure( message );
+                    ut.failure( message );
                 } else {
                     sprintf( message, "Intermediate element iterator failed (gcw=%i)", gcw );
-                    ut->expected_failure( message );
+                    ut.expected_failure( message );
                 }
             }
             if ( !iterator_created )
@@ -356,8 +356,7 @@ void meshTests::MeshIteratorTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::
 
 
 // Test operator operations for iterator
-void meshTests::MeshIteratorOperationTest( AMP::UnitTest *ut,
-                                           std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorOperationTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Create some iterators to work with
     auto A        = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
@@ -370,34 +369,34 @@ void meshTests::MeshIteratorOperationTest( AMP::UnitTest *ut,
     // Check operator== and operator!=
     auto C = AMP::Mesh::MultiVectorIterator( elements );
     if ( A == A && B == B && C == C )
-        ut->passes( "Iterator == with same iterator" );
+        ut.passes( "Iterator == with same iterator" );
     else
-        ut->failure( "Iterator == with same iterator" );
+        ut.failure( "Iterator == with same iterator" );
     if ( !( A != A ) && !( B != B ) && !( C != C ) )
-        ut->passes( "Iterator != with same iterator" );
+        ut.passes( "Iterator != with same iterator" );
     else
-        ut->failure( "Iterator != with same iterator" );
+        ut.failure( "Iterator != with same iterator" );
     if ( !( A == B ) )
-        ut->passes( "Iterator == with same type, different iterator" );
+        ut.passes( "Iterator == with same type, different iterator" );
     else
-        ut->failure( "Iterator == with same type, different iterator" );
+        ut.failure( "Iterator == with same type, different iterator" );
     if ( A != B )
-        ut->passes( "Iterator != with same type, different iterator" );
+        ut.passes( "Iterator != with same type, different iterator" );
     else
-        ut->failure( "Iterator != with same type, different iterator" );
+        ut.failure( "Iterator != with same type, different iterator" );
     if ( A == C && C == A && !( B == C ) && !( C == B ) )
-        ut->passes( "Iterator == with different type" );
+        ut.passes( "Iterator == with different type" );
     else
-        ut->failure( "Iterator == with different type" );
+        ut.failure( "Iterator == with different type" );
     if ( !( A != C ) && !( C != A ) && B != C && C != B )
-        ut->passes( "Iterator != with different type" );
+        ut.passes( "Iterator != with different type" );
     else
-        ut->failure( "Iterator != with different type" );
+        ut.failure( "Iterator != with different type" );
 }
 
 
 // Test set operations for the iterators
-void meshTests::MeshIteratorSetOPTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshIteratorSetOPTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto A = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
     auto B = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
@@ -408,31 +407,31 @@ void meshTests::MeshIteratorSetOPTest( AMP::UnitTest *ut, std::shared_ptr<AMP::M
     R2 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, B, C );
     R3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, B.end(), C.end() );
     if ( R1.size() == A.size() && R2.size() == B.size() && R2 == R3 )
-        ut->passes( "SetOP::Union iterator create" );
+        ut.passes( "SetOP::Union iterator create" );
     else
-        ut->failure( "SetOP::Union iterator create" );
+        ut.failure( "SetOP::Union iterator create" );
     // Check SetOP::Intersection
     R1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, A, B );
     R2 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, B, C );
     R3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Intersection, B.end(), C.end() );
     if ( R1.size() == B.size() && R2.size() == 0 && R2 == R3 )
-        ut->passes( "SetOP::Intersection iterator create" );
+        ut.passes( "SetOP::Intersection iterator create" );
     else
-        ut->failure( "SetOP::Intersection iterator create" );
+        ut.failure( "SetOP::Intersection iterator create" );
     // Check SetOP::Complement
     R1 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Complement, A, B );
     R2 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Complement, B, C );
     R3 = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Complement, B.end(), C.end() );
     if ( R1.size() == mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, 1 ) &&
          R2.size() == B.size() && R2 == R3 )
-        ut->passes( "SetOP::Complement iterator create" );
+        ut.passes( "SetOP::Complement iterator create" );
     else
-        ut->failure( "SetOP::Complement iterator create" );
+        ut.failure( "SetOP::Complement iterator create" );
 }
 
 
 // Test the number of elements in the mesh
-void meshTests::MeshCountTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshCountTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::AMP_MPI comm = mesh->getComm();
     for ( int i = 0; i <= (int) mesh->getGeomType(); i++ ) {
@@ -443,68 +442,68 @@ void meshTests::MeshCountTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mes
         const size_t N_ghost1 = comm.sumReduce( mesh->numGhostElements( type, 1 ) );
         const size_t N_sum    = comm.sumReduce( N_local );
         if ( N_global > 0 )
-            ut->passes( "Non-trivial mesh created" );
+            ut.passes( "Non-trivial mesh created" );
         else
-            ut->failure( "Non-trivial mesh created" );
+            ut.failure( "Non-trivial mesh created" );
         if ( N_sum == N_global )
-            ut->passes( "Sum of local mesh counts matches global count" );
+            ut.passes( "Sum of local mesh counts matches global count" );
         else
-            ut->failure( "Sum of local mesh counts matches global count: " + mesh->getName() );
+            ut.failure( "Sum of local mesh counts matches global count: " + mesh->getName() );
         if ( N_ghost0 == 0 )
-            ut->passes( "gcw=0 has no ghost elements" );
+            ut.passes( "gcw=0 has no ghost elements" );
         else
-            ut->failure( "gcw=0 has no ghost elements: " + mesh->getName() );
+            ut.failure( "gcw=0 has no ghost elements: " + mesh->getName() );
         auto ids          = mesh->getBaseMeshIDs();
         bool is_base_mesh = ids.size() == 1 && ids[0] == mesh->meshID();
         if ( N_local != N_global && is_base_mesh ) {
             if ( N_ghost1 > 0 )
-                ut->passes( "gcw=1 has ghost elements" );
+                ut.passes( "gcw=1 has ghost elements" );
             else
-                ut->failure( "gcw=1 has ghost elements: " + mesh->getName() );
+                ut.failure( "gcw=1 has ghost elements: " + mesh->getName() );
         }
     }
 }
 
 
 // Test some basic Mesh properties
-void meshTests::MeshBasicTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshBasicTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // test that we can get the mesh ID
     auto meshID = mesh->meshID();
     if ( meshID > 0 && meshID != AMP::Mesh::MeshID() )
-        ut->passes( "got meshID" );
+        ut.passes( "got meshID" );
     else
-        ut->failure( "got meshID" );
+        ut.failure( "got meshID" );
     // Test that we can subset the mesh for it's self using the meshID
     auto mesh2 = mesh->Subset( meshID );
     if ( mesh2.get() == mesh.get() )
-        ut->passes( "subset on meshID for self" );
+        ut.passes( "subset on meshID for self" );
     else
-        ut->failure( "subset on meshID for self" );
+        ut.failure( "subset on meshID for self" );
     // test that we can get and set the mesh name
     auto meshName = mesh->getName();
     mesh->setName( "testing mesh name" );
     bool setName = mesh->getName().compare( "testing mesh name" ) == 0;
     mesh->setName( meshName );
     if ( meshName.compare( "NULL" ) != 0 )
-        ut->passes( "non-null mesh name" );
+        ut.passes( "non-null mesh name" );
     else
-        ut->failure( "non-null mesh name" );
+        ut.failure( "non-null mesh name" );
     if ( setName )
-        ut->passes( "get/set mesh name" );
+        ut.passes( "get/set mesh name" );
     else
-        ut->failure( "get/set mesh name" );
+        ut.failure( "get/set mesh name" );
     // Test that we can subset the mesh by the mesh name
     mesh2 = mesh->Subset( meshName );
     if ( mesh2.get() == mesh.get() )
-        ut->passes( "subset on mesh name for self" );
+        ut.passes( "subset on mesh name for self" );
     else
-        ut->failure( "subset on mesh name for self" );
+        ut.failure( "subset on mesh name for self" );
     mesh2 = mesh->Subset( "Garbage name" );
     if ( mesh2.get() == nullptr )
-        ut->passes( "subset on mesh name for garbage" );
+        ut.passes( "subset on mesh name for garbage" );
     else
-        ut->failure( "subset on mesh name for garbage" );
+        ut.failure( "subset on mesh name for garbage" );
     // Check that the bounding box matches on all processors
     auto box1 = mesh->getBoundingBox();
     auto box2 = box1;
@@ -515,9 +514,9 @@ void meshTests::MeshBasicTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mes
             box_match = false;
     }
     if ( box_match )
-        ut->passes( "mesh->getBoundingBox returns global bounding box" );
+        ut.passes( "mesh->getBoundingBox returns global bounding box" );
     else
-        ut->failure( "mesh->getBoundingBox returns global bounding box" );
+        ut.failure( "mesh->getBoundingBox returns global bounding box" );
     // Check that the sum of all local elements == number of global elements
     bool pass = true;
     for ( int d = 0; d <= static_cast<int>( mesh->getGeomType() ); d++ ) {
@@ -528,14 +527,14 @@ void meshTests::MeshBasicTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mes
         pass             = pass && N_global == N_global2;
     }
     if ( pass )
-        ut->passes( "sum(numLocalElements) matches numGlobalElements" );
+        ut.passes( "sum(numLocalElements) matches numGlobalElements" );
     else
-        ut->failure( "sum(numLocalElements) matches numGlobalElements: " + mesh->getName() );
+        ut.failure( "sum(numLocalElements) matches numGlobalElements: " + mesh->getName() );
 }
 
 
 // This tests checks that all ghost elements are owned by "owner processor"
-void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGhostIsOwned( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     for ( int type = 0; type <= (int) mesh->getGeomType(); type++ ) {
         int gcw = mesh->getMaxGhostWidth();
@@ -599,16 +598,15 @@ void meshTests::VerifyGhostIsOwned( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
                 all_found = false;
         }
         if ( all_found )
-            utils->passes( "All ghosts are owned by somebody" );
+            ut.passes( "All ghosts are owned by somebody" );
         else
-            utils->failure( "All ghosts are owned by somebody" );
+            ut.failure( "All ghosts are owned by somebody" );
     }
 }
 
 
 // This tests loops over all boundary ids
-void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils,
-                                              AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     const auto bids = mesh->getBoundaryIDs();
     for ( int bid : bids ) {
@@ -643,16 +641,16 @@ void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest *utils,
             if ( numFound != node_ids.size() )
                 testPassed = false;
             if ( testPassed )
-                utils->passes( "Found all boundary nodes" );
+                ut.passes( "Found all boundary nodes" );
             else
-                utils->failure( "Found all boundary nodes" );
+                ut.failure( "Found all boundary nodes" );
         }
     }
 }
 
 
 // This tests loops over the boundary
-void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyBoundaryIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool is_surfaceMesh = static_cast<int>( mesh->getGeomType() ) < mesh->getDim();
     for ( int gcw = 0; gcw <= 0; gcw++ ) {
@@ -667,34 +665,33 @@ void meshTests::VerifyBoundaryIterator( AMP::UnitTest *utils, AMP::Mesh::Mesh::s
                     passes = passes && ( global_size < mesh->numGlobalElements( type ) );
             }
             if ( passes )
-                utils->passes( "Non-trivial surface iterator created" );
+                ut.passes( "Non-trivial surface iterator created" );
             else if ( is_surfaceMesh )
-                utils->expected_failure( "Non-trivial surface iterator created: " +
-                                         mesh->getName() );
+                ut.expected_failure( "Non-trivial surface iterator created: " + mesh->getName() );
             else
-                utils->failure( "Non-trivial surface iterator created: " + mesh->getName() );
+                ut.failure( "Non-trivial surface iterator created: " + mesh->getName() );
         }
     }
 }
 
 
 // This tests checks the block ids
-void meshTests::testBlockIDs( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::testBlockIDs( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     const std::vector<int> blockIDs = mesh->getBlockIDs();
     if ( !blockIDs.empty() )
-        utils->passes( "Block ids found" );
+        ut.passes( "Block ids found" );
     else if ( (int) mesh->getGeomType() != mesh->getDim() )
-        utils->expected_failure( "Block ids need work for surface meshes" );
+        ut.expected_failure( "Block ids need work for surface meshes" );
     else
-        utils->failure( "Block ids found" );
+        ut.failure( "Block ids found" );
 }
 
 
 // This tests basic id info
-void meshTests::testID( AMP::UnitTest *utils )
+void meshTests::testID( AMP::UnitTest &ut )
 {
-    unsigned int num_failed0 = utils->NumFailLocal();
+    unsigned int num_failed0 = ut.NumFailLocal();
     // Create some IDs for testing
     AMP::Mesh::MeshElementID id0;
     AMP::Mesh::MeshElementID id1( false, AMP::Mesh::GeomType::Vertex, 2, 1, 103 );
@@ -707,35 +704,35 @@ void meshTests::testID( AMP::UnitTest *utils )
     if ( id0.meshID() != 0xFFFFFFFFFFFFFFFF || id0.is_local() ||
          id0.type() != AMP::Mesh::GeomType::null || id0.owner_rank() != 0 ||
          id0.local_id() != 0xFFFFFFFF )
-        utils->failure( "MeshElementID test defaults" );
+        ut.failure( "MeshElementID test defaults" );
     // Test == and != operators
     if ( !( id1 == id1 ) || !( id1 == id2 ) )
-        utils->failure( "MeshElementID test ==" );
+        ut.failure( "MeshElementID test ==" );
     if ( ( id1 != id1 ) || ( id1 != id2 ) )
-        utils->failure( "MeshElementID test !=" );
+        ut.failure( "MeshElementID test !=" );
     if ( id1 == id3 || id1 == id4 || id1 == id5 || id1 == id6 )
-        utils->failure( "MeshElementID test == (2)" );
+        ut.failure( "MeshElementID test == (2)" );
     // Test that the basic properties were assigned correctly
     if ( id1.is_local() || !id2.is_local() )
-        utils->failure( "MeshElementID test is_local" );
+        ut.failure( "MeshElementID test is_local" );
     if ( id1.type() != AMP::Mesh::GeomType::Vertex || id1.local_id() != 2 ||
          id1.owner_rank() != 1 || id1.meshID() != 103 )
-        utils->failure( "MeshElementID test values" );
+        ut.failure( "MeshElementID test values" );
     id1.set_is_local( true );
     id2.set_is_local( false );
     if ( !id1.is_local() || id2.is_local() )
-        utils->failure( "MeshElementID test is_local (2)" );
+        ut.failure( "MeshElementID test is_local (2)" );
     // test greater than and less than operators
     if ( !( id1 <= id2 ) || !( id1 >= id2 ) || id1 > id2 || id1 < id2 )
-        utils->failure( "MeshElementID test <,> (1)" );
+        ut.failure( "MeshElementID test <,> (1)" );
     if ( id1 > id3 || id1 >= id3 || id3 < id1 || id3 <= id1 )
-        utils->failure( "MeshElementID test <,> (2)" );
+        ut.failure( "MeshElementID test <,> (2)" );
     if ( id1 > id4 || id1 >= id4 || id4 < id1 || id4 <= id1 )
-        utils->failure( "MeshElementID test <,> (3)" );
+        ut.failure( "MeshElementID test <,> (3)" );
     if ( id1 > id5 || id1 >= id5 || id5 < id1 || id5 <= id1 )
-        utils->failure( "MeshElementID test <,> (4)" );
+        ut.failure( "MeshElementID test <,> (4)" );
     if ( id1 > id6 || id1 >= id6 || id6 < id1 || id6 <= id1 )
-        utils->failure( "MeshElementID test <,> (5)" );
+        ut.failure( "MeshElementID test <,> (5)" );
     // The elements should sort by meshID, processor id, type, then local id
     std::vector<AMP::Mesh::MeshElementID> list( 6 );
     list[0] = id0;
@@ -747,16 +744,16 @@ void meshTests::testID( AMP::UnitTest *utils )
     AMP::Utilities::quicksort( list );
     if ( list[0] != id1 || list[1] != id4 || list[2] != id3 || list[3] != id5 || list[4] != id6 ||
          list[5] != id0 )
-        utils->failure( "MeshElementID test sort" );
-    if ( num_failed0 == utils->NumFailLocal() )
-        utils->passes( "MeshElementID tests" );
+        ut.failure( "MeshElementID test sort" );
+    if ( num_failed0 == ut.NumFailLocal() )
+        ut.passes( "MeshElementID tests" );
     else
-        utils->failure( "MeshElementID tests" );
+        ut.failure( "MeshElementID tests" );
 }
 
 
 // Test if we correctly identify the node neighbors
-void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::getNodeNeighbors( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     std::map<AMP::Mesh::MeshElementID, std::vector<AMP::Mesh::MeshElementID>> neighbor_list;
     // Get a list of all neighors for each local node
@@ -792,13 +789,13 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
             }
         }
         if ( !contains_self )
-            utils->passes( "Neighbor nodes does not contain self" );
+            ut.passes( "Neighbor nodes does not contain self" );
         else
-            utils->failure( "Neighbor nodes does not contain self" );
+            ut.failure( "Neighbor nodes does not contain self" );
         if ( !contains_duplicate )
-            utils->passes( "Neighbor nodes does not contain duplicates" );
+            ut.passes( "Neighbor nodes does not contain duplicates" );
         else
-            utils->failure( "Neighbor nodes does not contain duplicates" );
+            ut.failure( "Neighbor nodes does not contain duplicates" );
     }
     // If there are ghost nodes, then some of them must be neighbors
     if ( mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, 1 ) > 0 ) {
@@ -811,9 +808,9 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
             }
         }
         if ( ghost_neighbors )
-            utils->passes( "Found ghost neighbor nodes" );
+            ut.passes( "Found ghost neighbor nodes" );
         else
-            utils->failure( "Found ghost neighbor nodes" );
+            ut.failure( "Found ghost neighbor nodes" );
     }
     // Loop through all elements (including ghosts), for each owned node, check that all other nodes
     // are neighbors
@@ -845,16 +842,16 @@ void meshTests::getNodeNeighbors( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_
         ++elementIterator;
     }
     if ( passed )
-        utils->passes( "Node neighbors found all neighbors" );
+        ut.passes( "Node neighbors found all neighbors" );
     else
-        utils->failure( "Node neighbors found all neighbors" );
+        ut.failure( "Node neighbors found all neighbors" );
     // Transfer all neighbor lists to all processors and check that every neighbor node
     // also has the current node as a neighbor (not finished)
 }
 
 
 // Test the displacement of the mesh
-void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::DisplaceMeshScalar( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     // Test the scalar displacement
     auto box1 = mesh->getBoundingBox();
@@ -864,22 +861,22 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
     for ( int i = 0; i < mesh->getDim(); i++ )
         volume *= box1[2 * i + 1] - box1[2 * i + 0];
     if ( volume > 0.0 )
-        utils->passes( "non-zero bounding box" );
+        ut.passes( "non-zero bounding box" );
     else
-        utils->failure( "non-zero bounding box" );
+        ut.failure( "non-zero bounding box" );
     bool passes = true;
     for ( size_t i = 0; i < box1.size(); i++ ) {
         if ( fabs( box2[i] - box1[i] - 1.0 ) > 1e-12 )
             passes = false;
     }
     if ( passes )
-        utils->passes( "scalar displacement test" );
+        ut.passes( "scalar displacement test" );
     else
-        utils->failure( "scalar displacement test: " + mesh->getName() );
+        ut.failure( "scalar displacement test: " + mesh->getName() );
     std::vector<double> dist2( mesh->getDim(), -1 );
     mesh->displaceMesh( std::vector<double>( mesh->getDim(), -1 ) );
 }
-void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::DisplaceMeshVector( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
 // Test displacement vector
 #ifdef USE_AMP_VECTORS
@@ -903,9 +900,9 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
     auto diff    = dispVec->cloneVector( "diff" );
     diff->subtract( *posVec2, *posVec1 );
     if ( diff->equals( *dispVec ) )
-        utils->passes( "displacement successfully applied" );
+        ut.passes( "displacement successfully applied" );
     else
-        utils->failure( "displacement failed: " + mesh->getName() );
+        ut.failure( "displacement failed: " + mesh->getName() );
     // Get the new volumes (only valid for meshes with matching geometric and physical dimensions
     if ( static_cast<int>( mesh->getGeomType() ) == mesh->getDim() ) {
         bool volume_passed = true;
@@ -921,9 +918,9 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
             ++cur_elem;
         }
         if ( volume_passed )
-            utils->passes( "displacement changed volumes" );
+            ut.passes( "displacement changed volumes" );
         else
-            utils->failure( "displacement changed volumes: " + mesh->getName() );
+            ut.failure( "displacement changed volumes: " + mesh->getName() );
     }
     for ( auto &tmp : *dispVec )
         tmp = -tmp;
@@ -933,7 +930,7 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest *utils, AMP::Mesh::Mesh::share
 
 
 // Test getting parent elements for each mesh element
-void meshTests::getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::getParents( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     bool pass = true;
     int gcw   = mesh->getMaxGhostWidth();
@@ -972,127 +969,182 @@ void meshTests::getParents( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr me
         }
     }
     if ( pass )
-        utils->passes( "getParents passed" );
+        ut.passes( "getParents passed" );
     else
-        utils->failure( "getParents passed" );
+        ut.failure( "getParents passed" );
 }
 
 
 // VerifyElementForNode
-void meshTests::VerifyElementForNode( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyElementForNode( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
-                                const AMP::Mesh::MeshElement &n ) {
-        std::vector<MeshElementID> ids;
-        elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
-        auto id0 = n.globalID();
-        for ( auto id : ids ) {
-            if ( id == id0 )
-                return true;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        // Mesh is a multimesh and test is not valid if multimesh contains meshes with
+        //   different geometric types
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyElementForNode( ut, mesh2 );
+    } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
+        // libmeshMesh does not currently support getElementParents
+        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        return;
+    } else {
+        auto element_has_node = []( const AMP::Mesh::MeshElement &elem,
+                                    const AMP::Mesh::MeshElement &n ) {
+            std::vector<MeshElementID> ids;
+            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+            auto id0 = n.globalID();
+            for ( auto id : ids ) {
+                if ( id == id0 )
+                    return true;
+            }
+            return false;
+        };
+        auto type = mesh->getGeomType();
+        bool pass = true;
+        for ( auto node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
+            for ( auto elem : mesh->getElementParents( node, type ) )
+                pass = pass && element_has_node( elem, node );
         }
-        return false;
-    };
-    auto type = mesh->getGeomType();
-    bool pass = true;
-    for ( auto node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
-        for ( auto elem : mesh->getElementParents( node, type ) )
-            pass = pass && element_has_node( elem, node );
+        if ( pass )
+            ut.passes( "All elements found are correct" );
+        else
+            ut.failure( "Found an incorrect element" );
     }
-    if ( pass )
-        utils->passes( "All elements found are correct" );
-    else
-        utils->failure( "Found an incorrect element" );
 }
 
 
 // VerifyNodeElemMapIteratorTest
-void meshTests::VerifyNodeElemMapIteratorTest( AMP::UnitTest *utils,
-                                               AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyNodeElemMapIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto verify_node = []( const AMP::Mesh::MeshElement &node, AMP::Mesh::Mesh::shared_ptr mesh ) {
-        std::set<AMP::Mesh::MeshElementID> elems_from_node, elems_from_mesh;
-        auto elements = mesh->getElementParents( node, mesh->getGeomType() );
-        for ( const auto &elem : elements )
-            elems_from_node.insert( elem.globalID() );
-        std::vector<MeshElementID> ids;
-        for ( const auto &elem : mesh->getIterator( mesh->getGeomType() ) ) {
-            elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
-            for ( const auto &id : ids )
-                if ( id == node.globalID() )
-                    elems_from_mesh.insert( elem.globalID() );
-        }
-        return elems_from_node == elems_from_mesh;
-    };
-    int i    = 0;
-    int SKIP = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) / 20;
-    for ( const auto &node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
-        if ( i % SKIP == 0 ) {
-            if ( !verify_node( node, mesh ) ) {
-                utils->failure( "Verify Node<->Element iterator" );
-                return;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        // Mesh is a multimesh and test is not valid if multimesh contains meshes with
+        //   different geometric types
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyNodeElemMapIteratorTest( ut, mesh2 );
+    } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
+        // libmeshMesh does not currently support getElementParents
+        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        return;
+    } else {
+        auto verify_node = []( const AMP::Mesh::MeshElement &node,
+                               AMP::Mesh::Mesh::shared_ptr mesh ) {
+            std::set<AMP::Mesh::MeshElementID> elems_from_node, elems_from_mesh;
+            auto elements = mesh->getElementParents( node, mesh->getGeomType() );
+            for ( const auto &elem : elements )
+                elems_from_node.insert( elem.globalID() );
+            std::vector<MeshElementID> ids;
+            for ( const auto &elem : mesh->getIterator( mesh->getGeomType(), 1 ) ) {
+                elem.getElementsID( AMP::Mesh::GeomType::Vertex, ids );
+                for ( const auto &id : ids )
+                    if ( id == node.globalID() )
+                        elems_from_mesh.insert( elem.globalID() );
             }
+            return elems_from_node == elems_from_mesh;
+        };
+        int i    = 0;
+        int SKIP = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) / 20;
+        for ( const auto &node : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) ) {
+            if ( i % SKIP == 0 ) {
+                if ( !verify_node( node, mesh ) ) {
+                    ut.failure( "Verify Node<->Element map iterator" );
+                    return;
+                }
+            }
+            i++;
         }
-        i++;
+        ut.passes( "Verify Node<->Element map iterator" );
     }
-    utils->passes( "Verify Node<->Element iterator" );
 }
 
 
 // VerifyBoundaryIteratorTest
-void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
-        auto neighbors = elem.getNeighbors();
-        for ( const auto &neighbor : neighbors )
-            if ( !neighbor )
-                return true;
-        return false;
-    };
-    auto isNodeOnBoundary = [isBoundaryElement]( const AMP::Mesh::MeshElement &node,
-                                                 AMP::Mesh::Mesh::shared_ptr mesh ) {
-        auto elements = mesh->getElementParents( node, mesh->getGeomType() );
-        for ( const auto &elem : elements ) {
-            if ( !isBoundaryElement( elem ) )
-                return false;
-        }
-        return true;
-    };
-    for ( auto bid : mesh->getBoundaryIDs() ) {
-        for ( const auto &node : mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bid ) ) {
-            if ( !isNodeOnBoundary( node, mesh ) ) {
-                utils->failure( "Verify Node<->Element iterator" );
-                return;
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        // Mesh is a multimesh and test is not valid if multimesh contains meshes with
+        //   different geometric types
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyBoundaryIteratorTest( ut, mesh2 );
+    } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
+        // libmeshMesh does not currently support getElementParents
+        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        return;
+    } else {
+        auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
+            auto neighbors = elem.getNeighbors();
+            for ( const auto &neighbor : neighbors )
+                if ( !neighbor )
+                    return true;
+            return false;
+        };
+        auto isNodeOnBoundary = [isBoundaryElement]( const AMP::Mesh::MeshElement &node,
+                                                     AMP::Mesh::Mesh::shared_ptr mesh ) {
+            auto elements = mesh->getElementParents( node, mesh->getGeomType() );
+            for ( const auto &elem : elements ) {
+                if ( !isBoundaryElement( elem ) )
+                    return false;
+            }
+            return true;
+        };
+        for ( auto bid : mesh->getBoundaryIDs() ) {
+            for ( const auto &node :
+                  mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bid ) ) {
+                if ( !isNodeOnBoundary( node, mesh ) ) {
+                    ut.expected_failure( "Verify Boundary iterator" );
+                    return;
+                }
             }
         }
+        ut.passes( "Verify Boundary iterator" );
     }
-    utils->passes( "Verify Node<->Element iterator" );
 }
 
 
 // Test that cloning a mesh does not modify the existing mesh
-void meshTests::cloneMesh( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
+    // Run the tests on each individual mesh (if we are dealing with a multimesh)
+    auto multimesh = std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        for ( auto mesh2 : multimesh->getMeshes() )
+            cloneMesh( ut, mesh2 );
+    }
+    // Clone is not supported for certain meshes
+    if ( mesh->meshClass().find( "SubsetMesh" ) != std::string::npos )
+        return;
     // Get the coordinates of the mesh points
     std::vector<AMP::Mesh::Point> coord;
     for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) )
         coord.push_back( elem.coord() );
     // Clone the mesh
     auto mesh2 = mesh->clone();
+    AMP_ASSERT( mesh->meshID() != mesh2->meshID() );
+    if ( mesh->getGeometry() && mesh2->getGeometry() )
+        AMP_ASSERT( mesh->getGeometry().get() != mesh2->getGeometry().get() );
     // Displace the mesh
-    mesh2->displaceMesh( std::vector<double>( mesh2->getDim(), 1 ) );
-    auto geom1 = dynamic_cast<AMP::Geometry::MultiGeometry *>( mesh->getGeometry().get() );
-    auto geom2 = dynamic_cast<AMP::Geometry::MultiGeometry *>( mesh2->getGeometry().get() );
-    NULL_USE( geom1 );
-    NULL_USE( geom2 );
+    AMP::Mesh::Point p0( mesh->getDim(), { 0.0 } );
+    if ( mesh2->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace ) {
+        std::vector<double> x0 = { 1.0, 2.0, 3.0 };
+        x0.resize( mesh2->getDim() );
+        p0 = AMP::Mesh::Point( mesh2->getDim(), x0.data() );
+        mesh2->displaceMesh( x0 );
+    }
     // Get the original coordinates and make sure they match
+    bool pass = true;
     std::vector<AMP::Mesh::Point> coord2;
-    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Vertex ) )
-        coord2.push_back( elem.coord() );
-    bool pass = coord == coord2;
+    auto it = mesh2->getIterator( AMP::Mesh::GeomType::Vertex );
+    for ( size_t i = 0; i < coord.size(); i++, ++it ) {
+        auto p   = it->coord();
+        auto err = ( p - p0 - coord[i] ).abs();
+        pass     = pass && err < 1e-6;
+    }
     if ( pass )
-        utils->passes( "clone" );
+        ut.passes( "cloneMesh" );
     else
-        utils->failure( "clone " + mesh->getName() );
+        ut.failure( "cloneMesh " + mesh->getName() );
 }
 
 
@@ -1208,7 +1260,7 @@ static inline void getElements2( AMP::Mesh::Mesh::shared_ptr mesh )
         AMP_ASSERT( pass );
     }
 }
-void meshTests::MeshPerformance( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::MeshPerformance( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() != 0 )
         return;

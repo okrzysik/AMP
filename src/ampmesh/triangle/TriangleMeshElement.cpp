@@ -465,6 +465,23 @@ double TriangleMeshElement<NG, NP, TYPE>::distance( const MeshPoint<double> &pos
             return d;
         else
             return std::numeric_limits<double>::infinity();
+    } else if constexpr ( TYPE == 3 && NP == 3 ) {
+        // Distance to a tet
+        /*bool inside = containsPoint( pos );
+        std::array<double, NP> p0 = { pos.x(), pos.y(), pos.z() };
+        MeshPoint<double> p       = { 1e100, 1e100, 1e100 };
+        double d                  = 1e100;
+        for ( int i = 0; i < 4; i++ ) {
+            std::array<double, NP> v2[TYPE];
+            for ( int j = 0, k = 0; j < 4; j++ ) {
+                if ( i != j ) {
+                    v2[k] = v[i];
+                    k++;
+                }
+            }
+        }
+        return p;*/
+        AMP_ERROR( "TriangleMeshElement::distance - Not finished" );
     } else {
         AMP_ERROR( "TriangleMeshElement::distance - Not finished" );
     }
