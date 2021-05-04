@@ -44,6 +44,7 @@ public:
      *                        otherwise an empty writer will be created.
      *               "Ascii" - A simple ascii writer
      *               "HDF5"  - A simple HDF5 writer
+     * \param comm   Communicator to use
      */
     static std::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type,
                                                                 AMP_MPI comm = AMP_COMM_WORLD );

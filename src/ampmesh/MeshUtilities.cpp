@@ -186,6 +186,22 @@ std::vector<Point> sample( const MeshElement &elem, double dx )
 /********************************************************
  * Compute the volume overlap with a geometry            *
  ********************************************************/
+inline double
+cellVolume1D( const AMP::Geometry::Geometry &geom, double x0, double dx, bool in[2], double tol )
+{
+    if ( in[0] && in[1] ) {
+        return dx; // The entire cell is inside
+    } else if ( !in[0] && !in[1] ) {
+        return 0; // The entire cell is outside
+    } else if ( dx < 2 * tol ) {
+        return 0.5 * dx; // The error is less than the tolerance
+    } else {
+        // Subdivide the cell to estimate the volume
+        bool in2[3] = { in[0], geom.inside( { x0 + 0.5 * dx } ), in[1] };
+        return cellVolume1D( geom, x0, 0.5 * dx, in2, tol ) +
+               cellVolume1D( geom, x0 + 0.5 * dx, 0.5 * dx, in2, tol );
+    }
+}
 inline double cellVolume2D(
     const AMP::Geometry::Geometry &geom, double x0[2], double dx[2], bool in[4], double tol )
 {
@@ -305,7 +321,26 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
 {
     AMP_ASSERT( N.size() == geom.getDim() );
     Array<double> volume;
-    if ( geom.getDim() == 2 ) {
+    if ( geom.getDim() == 1 ) {
+        // Get the bounding box
+        auto [lb, ub] = geom.box();
+        double dx     = ( ub[0] - lb[0] ) / N[0];
+        // Get the volume for each cell
+        volume.resize( N[0] );
+        volume.fill( 0 );
+        Array<bool> inside( N[0] + 1 );
+        inside.fill( false );
+        for ( int i = 0; i <= N[0]; i++ ) {
+            double x    = lb[0] + i * dx;
+            inside( i ) = geom.inside( { x } );
+        }
+        double tol = 0.001 * dx;
+        for ( int i = 0; i < N[0]; i++ ) {
+            double x    = lb[0] + i * dx;
+            bool in[2]  = { inside( i ), inside( i + 1 ) };
+            volume( i ) = cellVolume1D( geom, x, dx, in, tol );
+        }
+    } else if ( geom.getDim() == 2 ) {
         // Get the bounding box
         auto [lb, ub] = geom.box();
         double dx[2]  = { ( ub[0] - lb[0] ) / N[0], ( ub[1] - lb[1] ) / N[1] };

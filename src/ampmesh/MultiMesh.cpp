@@ -253,6 +253,22 @@ MultiMesh::~MultiMesh() = default;
 
 
 /********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string MultiMesh::meshClass() const
+{
+    if ( d_meshes.empty() )
+        return "MultiMesh<>";
+    std::string name = "MultiMesh<" + d_meshes[0]->meshClass();
+    for ( size_t i = 1; i < d_meshes.size(); i++ ) {
+        name += "," + d_meshes[i]->meshClass();
+    }
+    name += ">";
+    return name;
+}
+
+
+/********************************************************
  * Function to copy the mesh                             *
  ********************************************************/
 std::unique_ptr<Mesh> MultiMesh::clone() const { return std::make_unique<MultiMesh>( *this ); }

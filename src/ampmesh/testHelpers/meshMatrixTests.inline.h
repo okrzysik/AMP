@@ -15,7 +15,7 @@ namespace Mesh {
 
 
 template<int DOF_PER_NODE, bool SPLIT>
-void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
 
@@ -35,7 +35,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     bool isMultiVector =
         std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vector1 ) != nullptr;
     if ( isMultiVector ) {
-        utils->expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
+        ut.expected_failure( "VerifyGetMatrixTrivialTest with split=true" );
         PROFILE_STOP2( "VerifyGetMatrixTrivialTest", 1 );
         return;
     }
@@ -45,9 +45,9 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     matrixa->makeConsistent();
     matrixa->mult( vector1, vector2 );
     if ( vector2->L1Norm() < 0.00000001 )
-        utils->passes( "obtained 0 matrix from mesh" );
+        ut.passes( "obtained 0 matrix from mesh" );
     else
-        utils->failure( "did not obtain 0 matrix from mesh" );
+        ut.failure( "did not obtain 0 matrix from mesh" );
 
     // Need to get another matrix to store data due to Epetra insert/replace idiom.
     // Matrixa is fixed with no entires.
@@ -60,15 +60,15 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest *utils, AMP::Mesh::Mes
     vector1->subtract( *vector1, *vector2 );
 
     if ( vector1->L1Norm() < 0.0000001 )
-        utils->passes( "created identity matrix from mesh" );
+        ut.passes( "created identity matrix from mesh" );
     else
-        utils->failure( "created identity matrix from mesh" );
+        ut.failure( "created identity matrix from mesh" );
     PROFILE_STOP( "VerifyGetMatrixTrivialTest", 1 );
 }
 
 
 template<int DOF_PER_NODE, bool SPLIT>
-void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::GhostWriteTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     PROFILE_START( "GhostWriteTest", 1 );
 
@@ -143,11 +143,11 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
                     }
                 }
                 if ( passes )
-                    utils->passes( "Able to write to ghost entries in matrix" );
+                    ut.passes( "Able to write to ghost entries in matrix" );
                 else
-                    utils->failure( "Able to write to ghost entries in matrix" );
+                    ut.failure( "Able to write to ghost entries in matrix" );
             } catch ( ... ) {
-                utils->failure( "Able to write to ghost entries in matrix (exception)" );
+                ut.failure( "Able to write to ghost entries in matrix (exception)" );
             }
         }
 
@@ -204,9 +204,9 @@ void meshTests::GhostWriteTest( AMP::UnitTest *utils, AMP::Mesh::Mesh::shared_pt
         sprintf(msg,"Matrix entries set by processor %i read correctly on processor
         %i",p,comm.getRank());
         if ( passes )
-            utils->passes( msg );
+            ut.passes( msg );
         else
-            utils->failure( msg );*/
+            ut.failure( msg );*/
     }
     PROFILE_STOP( "GhostWriteTest", 1 );
 }

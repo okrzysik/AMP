@@ -150,7 +150,7 @@ libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string
 
 
 /********************************************************
- * De-constructor                                        *
+ * Destructor                                            *
  ********************************************************/
 libmeshMesh::~libmeshMesh()
 {
@@ -164,6 +164,12 @@ libmeshMesh::~libmeshMesh()
     d_libMesh.reset();
     libmeshInit.reset();
 }
+
+
+/********************************************************
+ * Return the class name                                 *
+ ********************************************************/
+std::string libmeshMesh::meshClass() const { return "libmeshMesh"; }
 
 
 /********************************************************

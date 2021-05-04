@@ -21,14 +21,16 @@ int run( int N_procs, const std::string &filename, double ratio )
     auto database = input_db->getDatabase( "Mesh" );
     double t0     = AMP::AMP_MPI::time();
     AMP::Mesh::loadBalanceSimulator mesh( database );
-    mesh.setProcs( N_procs );
     double t1 = AMP::AMP_MPI::time();
+    mesh.setProcs( N_procs );
+    double t2 = AMP::AMP_MPI::time();
 
     // Print the results of the load balance
     mesh.print();
 
     // Print the time required
-    std::cout << "Time = " << t1 - t0 << std::endl << std::endl;
+    std::cout << "Time (create) = " << t1 - t0 << std::endl;
+    std::cout << "Time (setProcs) = " << t2 - t1 << std::endl << std::endl;
 
     // Get the worst and average element count
     auto cost  = mesh.getRankCost();
@@ -42,7 +44,7 @@ int run( int N_procs, const std::string &filename, double ratio )
 
     // Print the errors and return
     int N_errors = 0;
-    if ( t1 - t0 > 12 ) {
+    if ( t1 - t0 > 10 || t2 - t1 > 10 ) {
         N_errors++;
         std::cout << "load balance failed run time limits" << std::endl;
     }

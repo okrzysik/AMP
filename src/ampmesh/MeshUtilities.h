@@ -52,7 +52,7 @@ class ElementFinder
 {
 public:
     //! Empty constructor
-    ElementFinder() : d_pos_hash( 0 ), d_type( AMP::Mesh::GeomType::Vertex ) {}
+    ElementFinder() : d_pos_hash( 0 ) {}
 
     //! Empty constructor
     ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh );

@@ -347,7 +347,7 @@ public:
      *
      * @param key Key name in database.
      */
-    const Database &operator()( const std::string_view &name ) const;
+    const Database &operator()( const std::string_view &key ) const;
 
 
     /**

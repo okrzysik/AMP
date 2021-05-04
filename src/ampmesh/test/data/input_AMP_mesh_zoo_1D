@@ -1,9 +1,40 @@
 Mesh{
-	MeshName = "zoo"
-	MeshType = "Multimesh"
-	MeshDatabasePrefix = "Mesh_"
-	MeshArrayDatabasePrefix = "MeshArray_"
+    MeshName = "zoo"
+    MeshType = "Multimesh"
+    MeshDatabasePrefix = "Mesh_"
+    MeshArrayDatabasePrefix = "MeshArray_"
     LoadBalanceMethod = 0
 
+    Mesh_1 {
+        MeshName = "cube_1d"
+        MeshType = "AMP"
+        dim = 1
+        Generator = "cube"
+        Size = 30
+        Range = -1, 1
+        x_offset = 0
+        static = TRUE
+    }
+    Mesh_2 {
+        MeshName = "cube_1d_2"
+        MeshType = "AMP"
+        dim = 1
+        Generator = "cube"
+        Size = 30
+        Range = -1, 1
+        x_offset = 3
+        static = FALSE
+    }
+    Mesh_3 {
+        MeshName = "grid_1d"
+        MeshType = "AMP"
+        dim = 1
+        Generator = "cube"
+        Size = 30
+        Range = -1, 1
+        //x_grid = -1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0
+        x_offset = 6
+        static = TRUE
+    }
 }
 

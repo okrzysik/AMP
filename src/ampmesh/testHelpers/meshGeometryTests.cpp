@@ -11,7 +11,7 @@ namespace Mesh {
 
 
 // This runs the geometry only tests
-void meshTests::TestBasicGeometry( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestBasicGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
     // If we are dealing with a MultiMesh, check each mesh independently
     if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
@@ -24,12 +24,12 @@ void meshTests::TestBasicGeometry( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_sha
     if ( !geom )
         return;
     // Run basic geometry tests
-    Geometry::testGeometry( *geom, *ut );
+    Geometry::testGeometry( *geom, ut );
 }
 
 
 // This tests loops over the boundary
-void meshTests::TestInside( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestInside( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
     // If we are dealing with a MultiMesh, check each mesh independently
     if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
@@ -55,14 +55,14 @@ void meshTests::TestInside( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr
         }
     }
     if ( pass )
-        ut->passes( "All mesh elements are inside geometry: " + mesh->getName() );
+        ut.passes( "All mesh elements are inside geometry: " + mesh->getName() );
     else
-        ut->failure( "Mesh elements are outside geometry: " + mesh->getName() );
+        ut.failure( "Mesh elements are outside geometry: " + mesh->getName() );
 }
 
 
 // This tests checks physical-logical-physical transformations
-void meshTests::TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
 {
     bool pass = true;
     // If we are dealing with a MultiMesh, check each mesh independently
@@ -89,9 +89,9 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest *ut, AMP::Mesh::Mesh::const_s
     }
     // Store the results
     if ( pass )
-        ut->passes( "physical-logical-physical: " + mesh->getName() );
+        ut.passes( "physical-logical-physical: " + mesh->getName() );
     else
-        ut->failure( "physical-logical-physical: " + mesh->getName() );
+        ut.failure( "physical-logical-physical: " + mesh->getName() );
 }
 
 

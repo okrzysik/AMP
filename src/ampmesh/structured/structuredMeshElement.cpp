@@ -405,13 +405,23 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
 {
     AMP_INSIST( static_cast<int>( type ) >= d_index.d_type,
                 "We can't return a parent of geometric type < current type" );
+    auto getErrMsg = [this, type]( const std::string &message ) {
+        return AMP::Utilities::stringf(
+            "%s: dim=%i, elem_type=%i, type=%i, meshClass = %s, meshName = %s",
+            message.data(),
+            static_cast<int>( d_meshType ),
+            static_cast<int>( d_index.d_type ),
+            static_cast<int>( type ),
+            d_mesh->meshClass().data(),
+            d_mesh->getName().data() );
+    };
     // Get the indicies of the parent elements (ignore boundaries for now)
     std::vector<BoxMesh::MeshElementIndex> index_list;
     const int *ijk = d_index.d_index;
     if ( d_index.d_type == static_cast<int>( type ) ) {
         // We are looking for the current element
         return std::vector<MeshElement>( 1, MeshElement( *this ) );
-    } else if ( static_cast<int>( type ) == d_index.d_type + 1 && type == d_mesh->getGeomType() ) {
+    } else if ( static_cast<int>( type ) == d_index.d_type + 1 && type == d_meshType ) {
         // We have an entity that is the geometric type-1 and we want to get the parents of the
         // geometric type of the
         // mesh
@@ -422,7 +432,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     } else if ( d_index.d_type == static_cast<int>( GeomType::Vertex ) ) {
         // We want to get the parents of a vertex
         AMP_ASSERT( static_cast<int>( d_meshType ) <= 3 );
-        if ( type == d_mesh->getGeomType() ) {
+        if ( type == d_meshType ) {
             for ( int i = ijk[0] - 1; i <= ijk[0]; i++ ) {
                 for ( int j = ijk[1] - 1; j <= ijk[1]; j++ ) {
                     for ( int k = ijk[2] - 1; k <= ijk[2]; k++ ) {
@@ -437,7 +447,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                 index.d_index[d]--;
                 index_list.emplace_back( index );
             }
-        } else if ( type == GeomType::Face && d_mesh->getGeomType() == GeomType::Volume ) {
+        } else if ( type == GeomType::Face && d_meshType == GeomType::Volume ) {
             index_list.resize( 12 );
             index_list[0].reset( type, 0, ijk[0], ijk[1] - 1, ijk[2] - 1 );
             index_list[1].reset( type, 0, ijk[0], ijk[1] - 1, ijk[2] );
@@ -452,13 +462,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             index_list[10].reset( type, 2, ijk[0], ijk[1] - 1, ijk[2] );
             index_list[11].reset( type, 2, ijk[0], ijk[1], ijk[2] );
         } else {
-            char text[100];
-            sprintf( text,
-                     "Unknown type: dim=%i, elem_type=%i, type=%i",
-                     (int) d_meshType,
-                     (int) d_index.d_type,
-                     (int) type );
-            AMP_ERROR( std::string( text ) );
+            AMP_ERROR( getErrMsg( "Unknown type" ) );
         }
     } else if ( d_index.d_type == static_cast<int>( GeomType::Edge ) ) {
         // We want to get the parents of an edge
@@ -466,7 +470,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         int i = ijk[0];
         int j = ijk[1];
         int k = ijk[2];
-        if ( type == GeomType::Face && d_mesh->getGeomType() == GeomType::Volume ) {
+        if ( type == GeomType::Face && d_meshType == GeomType::Volume ) {
             if ( d_index.d_side == 0 ) {
                 index_list.emplace_back( type, 2, i, j - 1, k );
                 index_list.emplace_back( type, 2, i, j, k );
@@ -485,7 +489,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             } else {
                 AMP_ERROR( "Internal error" );
             }
-        } else if ( type == GeomType::Volume && d_mesh->getGeomType() == GeomType::Volume ) {
+        } else if ( type == GeomType::Volume && d_meshType == GeomType::Volume ) {
             if ( d_index.d_side == 0 ) {
                 index_list.emplace_back( type, 0, i, j - 1, k - 1 );
                 index_list.emplace_back( type, 0, i, j, k - 1 );
@@ -505,25 +509,13 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                 AMP_ERROR( "Internal error" );
             }
         } else {
-            char text[100];
-            sprintf( text,
-                     "Unknown type: dim=%i, elem_type=%i, type=%i",
-                     (int) d_meshType,
-                     (int) d_index.d_type,
-                     (int) type );
-            AMP_ERROR( std::string( text ) );
+            AMP_ERROR( getErrMsg( "Unknown type" ) );
         }
     } else {
-        char text[100];
-        sprintf( text,
-                 "Case not programmed yet: dim=%i, elem_type=%i, type=%i",
-                 (int) d_meshType,
-                 (int) d_index.d_type,
-                 (int) type );
-        AMP_ERROR( std::string( text ) );
+        AMP_ERROR( getErrMsg( "Case not programmed yet" ) );
     }
     // Get some basic properties from the mesh
-    auto meshGeomDim = (int) d_mesh->getGeomType();
+    auto meshGeomDim = (int) d_meshType;
     bool periodic[3] = { false, false, false };
     for ( int d = 0; d < meshGeomDim; d++ )
         periodic[d] = d_mesh->d_isPeriodic[d];

@@ -7,7 +7,7 @@ namespace AMP {
 namespace Mesh {
 
 
-void meshTests::MeshTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     PROFILE_START( "MeshTestLoop" );
     // Run some basic sanity checks
@@ -30,19 +30,18 @@ void meshTests::MeshTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh
     if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Deform )
         DisplaceMeshVector( ut, mesh );
     // Test cloneMesh
-    // if ( mesh->isMeshMovable() >= AMP::Mesh::Mesh::Movable::Displace )
-    //    cloneMesh( ut, mesh );
-    // VerifyNodeElemMapIteratorTest( ut, mesh );
+    cloneMesh( ut, mesh );
     // Test the elements
-    // VerifyBoundaryIteratorTest( ut, mesh );
-    // VerifyElementForNode( ut, mesh );
+    VerifyNodeElemMapIteratorTest( ut, mesh );
+    VerifyBoundaryIteratorTest( ut, mesh );
+    VerifyElementForNode( ut, mesh );
     // Test performance
     MeshPerformance( ut, mesh );
     PROFILE_STOP( "MeshTestLoop" );
 }
 
 
-void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
+void meshTests::MeshGeometryTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Return if we do not have a geometry to work with
     if ( !mesh->getGeometry() )
@@ -56,7 +55,7 @@ void meshTests::MeshGeometryTestLoop( AMP::UnitTest *ut, std::shared_ptr<AMP::Me
 }
 
 
-void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut,
+void meshTests::MeshVectorTestLoop( AMP::UnitTest &ut,
                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast )
 {
@@ -74,7 +73,7 @@ void meshTests::MeshVectorTestLoop( AMP::UnitTest *ut,
 }
 
 
-void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut,
+void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast )
 {
@@ -83,7 +82,7 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest *ut,
     bool run_tests = true;
 #if !defined( USE_EXT_TRILINOS )
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() > 1 ) {
-        ut->expected_failure( "No parallel matrix to test" );
+        ut.expected_failure( "No parallel matrix to test" );
         run_tests = false;
     }
 #endif
