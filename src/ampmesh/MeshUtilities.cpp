@@ -416,7 +416,12 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
  * ElementFinder                                         *
  ********************************************************/
 ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh )
-    : d_mesh( mesh ), d_pos_hash( -1 ), d_type( d_mesh->getGeomType() )
+    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( mesh->getIterator( mesh->getGeomType() ) )
+{
+    initialize();
+}
+ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::MeshIterator it )
+    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( std::move( it ) )
 {
     initialize();
 }
@@ -430,13 +435,14 @@ void ElementFinder::initialize() const
         ids.push_back( id );
     };
     std::vector<MeshElement> children;
-    for ( auto elem : d_mesh->getIterator( d_type ) ) {
+    for ( auto elem : d_elements ) {
         auto id = elem.globalID();
         // Get the centroid
         auto p0 = elem.centroid();
         add( p0, id );
         // Add points on the children elements (adjusting so they are within the element)
-        for ( int type = 0; type < static_cast<int>( d_type ); type++ ) {
+        int elemType = static_cast<int>( id.type() );
+        for ( int type = 0; type < elemType; type++ ) {
             elem.getElements( static_cast<GeomType>( type ), children );
             for ( const auto &child : children )
                 add( 0.95 * child.centroid() + 0.05 * p0, id );
