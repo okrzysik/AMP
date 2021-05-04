@@ -382,26 +382,11 @@ inline std::array<double, NDIM> operator+( const std::array<double, NDIM> &a,
         return c;
     }
 }
-template<uint8_t NDIM>
-static double distanceToBox( const std::array<double, NDIM> &x0,
-                             const std::array<double, NDIM> &dir,
-                             const std::array<double, NDIM> &lb,
-                             const std::array<double, NDIM> &ub )
-{
-    std::array<double, 3> x = { 0 }, ang = { 0 };
-    std::array<double, 6> box = { 0 };
-    for ( int d = 0; d < NDIM; d++ ) {
-        x[d]           = x0[d];
-        ang[d]         = dir[d];
-        box[2 * d + 0] = lb[d];
-        box[2 * d + 1] = ub[d];
-    }
-    return AMP::Geometry::GeometryHelpers::distanceToBox( x, ang, box );
-}
 template<uint8_t NDIM, class TYPE>
 std::vector<std::tuple<std::array<double, NDIM>, TYPE, std::array<double, NDIM>, double>>
 kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
 {
+    using AMP::Geometry::GeometryHelpers::distanceToBox;
     // Compute the nearest point to a ray
     auto intersect = []( const Point &p0, const Point &v, const Point &x ) {
         Point u;
@@ -420,7 +405,7 @@ kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
     for ( uint8_t d = 0; d < NDIM; d++ )
         dir[d] /= n;
     // Propagate to the box
-    double d = distanceToBox<NDIM>( x, dir, d_lb, d_ub );
+    double d = distanceToBox( x, dir, d_lb, d_ub );
     if ( d > 1e100 )
         return std::vector<std::tuple<Point, TYPE, Point, double>>();
     if ( d > 0.0 )
@@ -449,7 +434,7 @@ kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
         // Calculate the distance to propagate
         double d1 = sqrt( dot( x, std::get<0>( nearest.back() ) ) );
         double d2 = sqrt( dot( x, std::get<2>( nearest.back() ) ) );
-        if ( distanceToBox<NDIM>( x, dir, d_lb, d_ub ) > 1e100 )
+        if ( distanceToBox( x, dir, d_lb, d_ub ) > 1e100 )
             break;
         if ( d2 < 1e-4 * d1 ) {
             x = std::get<2>( nearest.back() );

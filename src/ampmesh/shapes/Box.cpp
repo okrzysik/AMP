@@ -121,9 +121,22 @@ Point Box<NDIM>::nearest( const Point &pos ) const
  * Compute the distance to the object                    *
  ********************************************************/
 template<std::size_t NDIM>
-double Box<NDIM>::distance( const Point &pos, const Point &ang ) const
+double Box<NDIM>::distance( const Point &p0, const Point &ang ) const
 {
-    return GeometryHelpers::distanceToBox( pos, ang, d_range );
+    auto pos = static_cast<std::array<double, NDIM>>( p0 );
+    auto dir = static_cast<std::array<double, NDIM>>( ang );
+    std::array<double, NDIM> lb, ub;
+    if constexpr ( NDIM == 1 ) {
+        lb = { d_range[0] };
+        ub = { d_range[1] };
+    } else if constexpr ( NDIM == 2 ) {
+        lb = { d_range[0], d_range[2] };
+        ub = { d_range[1], d_range[3] };
+    } else if constexpr ( NDIM == 3 ) {
+        lb = { d_range[0], d_range[2], d_range[4] };
+        ub = { d_range[1], d_range[3], d_range[5] };
+    }
+    return GeometryHelpers::distanceToBox( pos, dir, lb, ub );
 }
 
 
