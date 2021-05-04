@@ -16,9 +16,19 @@ MultiGeometry::MultiGeometry( const std::vector<Geometry::shared_ptr> &geom )
 }
 Point MultiGeometry::nearest( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return {};
+    if ( d_geom.empty() )
+        return Point();
+    auto p = d_geom[0]->nearest( pos );
+    auto d = ( p - pos ).norm();
+    for ( size_t i = 1; i < d_geom.size(); i++ ) {
+        auto p2 = d_geom[i]->nearest( pos );
+        auto d2 = ( p2 - pos ).norm();
+        if ( d2 < d ) {
+            d = d2;
+            p = p2;
+        }
+    }
+    return p;
 }
 double MultiGeometry::distance( const Point &pos, const Point &dir ) const
 {

@@ -213,10 +213,15 @@ distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &v1, const
  *    If the ray will never intersect the object, this distance is inf.
  * \param[in] pos       Starting point of ray
  * \param[in] ang       Direction of ray
- * \param[in] box       Box coordinates (x_min,x_max,y_min,y_max,z_min,z_max)
+ * \param[in] lb        Lower bound of the box
+ * \param[in] ub        Upper bound of the box
  * @return              Returns the distance
  */
-double distanceToBox( const Point3D &pos, const Point3D &ang, const std::array<double, 6> &box );
+template<std::size_t NDIM>
+double distanceToBox( const std::array<double, NDIM> &pos,
+                      const std::array<double, NDIM> &ang,
+                      const std::array<double, NDIM> &lb,
+                      const std::array<double, NDIM> &ub );
 
 
 /**
