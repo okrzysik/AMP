@@ -76,6 +76,8 @@ std::tuple<Point, double, int> RegularPolygon::nearest2( const Point &pos ) cons
 }
 Point RegularPolygon::nearest( const Point &pos ) const
 {
+    if ( inside( pos ) )
+        return pos;
     auto r = nearest2( pos );
     return std::get<0>( r );
 }

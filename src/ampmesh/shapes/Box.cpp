@@ -45,7 +45,7 @@ Grid<NDIM>::Grid( std::shared_ptr<const AMP::Database> db ) : Box<NDIM>()
     const char *names[3] = { "x_grid", "y_grid", "z_grid" };
     for ( size_t d = 0; d < NDIM; d++ ) {
         this->d_coord[d] = std::move( db->getVector<double>( names[d] ) );
-        AMP_ASSERT( d_coord[d].size() > 2 );
+        AMP_ASSERT( d_coord[d].size() >= 2 );
         for ( size_t j = 1; j < d_coord[d].size(); j++ )
             AMP_ASSERT( d_coord[d][j] > d_coord[d][j - 1] );
         this->d_range[2 * d + 0] = 1e100;
@@ -103,36 +103,17 @@ std::string Grid<NDIM>::getName() const
 /********************************************************
  * Compute the nearest point on the surface              *
  ********************************************************/
-static inline std::array<double, 3> nearest2( const double x[3], const double s[3] )
-{
-    double p[3];
-    p[0] = std::min( std::max( x[0], 0.0 ), s[0] );
-    p[1] = std::min( std::max( x[1], 0.0 ), s[1] );
-    p[2] = std::min( std::max( x[2], 0.0 ), s[2] );
-    if ( p[0] == 0 || p[1] == 0 || p[2] == 0 || p[0] == s[0] || p[1] == s[1] || p[2] == s[2] )
-        return { p[0], p[1], p[2] };
-    double d[6] = { p[0], s[0] - p[0], p[1], s[1] - p[1], p[2], s[2] - p[2] };
-    double min  = std::min( { d[0], d[1], d[2], d[3], d[4], d[5] } );
-    if ( d[0] == min )
-        return { 0, p[1], p[2] };
-    if ( d[1] == min )
-        return { s[0], p[1], p[2] };
-    if ( d[2] == min )
-        return { p[0], 0, p[2] };
-    if ( d[3] == min )
-        return { p[0], s[1], p[2] };
-    if ( d[4] == min )
-        return { p[0], p[1], 0 };
-    return { p[0], p[1], s[2] };
-}
 template<std::size_t NDIM>
 Point Box<NDIM>::nearest( const Point &pos ) const
 {
-    double s[3]  = { d_range[1] - d_range[0], d_range[3] - d_range[2], d_range[5] - d_range[4] };
-    double p0[3] = { pos.x() - d_range[0], pos.y() - d_range[2], pos.z() - d_range[4] };
-    auto p1      = nearest2( p0, s );
-    double p2[3] = { p1[0] + d_range[0], p1[1] + d_range[2], p1[2] + d_range[4] };
-    return Point( NDIM, p2 );
+    auto p = logical( pos );
+    p.x()  = std::min( p.x(), 1.0 );
+    p.x()  = std::max( p.x(), 0.0 );
+    p.y()  = std::min( p.y(), 1.0 );
+    p.y()  = std::max( p.y(), 0.0 );
+    p.z()  = std::min( p.z(), 1.0 );
+    p.z()  = std::max( p.z(), 0.0 );
+    return physical( p );
 }
 
 
@@ -140,9 +121,22 @@ Point Box<NDIM>::nearest( const Point &pos ) const
  * Compute the distance to the object                    *
  ********************************************************/
 template<std::size_t NDIM>
-double Box<NDIM>::distance( const Point &pos, const Point &ang ) const
+double Box<NDIM>::distance( const Point &p0, const Point &ang ) const
 {
-    return GeometryHelpers::distanceToBox( pos, ang, d_range );
+    auto pos = static_cast<std::array<double, NDIM>>( p0 );
+    auto dir = static_cast<std::array<double, NDIM>>( ang );
+    std::array<double, NDIM> lb, ub;
+    if constexpr ( NDIM == 1 ) {
+        lb = { d_range[0] };
+        ub = { d_range[1] };
+    } else if constexpr ( NDIM == 2 ) {
+        lb = { d_range[0], d_range[2] };
+        ub = { d_range[1], d_range[3] };
+    } else if constexpr ( NDIM == 3 ) {
+        lb = { d_range[0], d_range[2], d_range[4] };
+        ub = { d_range[1], d_range[3], d_range[5] };
+    }
+    return GeometryHelpers::distanceToBox( pos, dir, lb, ub );
 }
 
 

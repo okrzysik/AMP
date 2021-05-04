@@ -37,9 +37,20 @@ SphereSurface::SphereSurface( double r ) : LogicalGeometry(), d_r( r )
  ********************************************************/
 Point SphereSurface::nearest( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return {};
+    // Get the current point in the reference frame of the circle
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    // Calculate the nearest point
+    double r = sqrt( x * x + y * y + z * z );
+    if ( r == 0 ) {
+        x = d_r;
+    } else {
+        x *= d_r / r;
+        y *= d_r / r;
+        z *= d_r / r;
+    }
+    return { x + d_offset[0], y + d_offset[1], z + d_offset[2] };
 }
 
 
