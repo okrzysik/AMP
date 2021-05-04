@@ -38,9 +38,24 @@ Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min )
  ********************************************************/
 Point Shell::nearest( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return {};
+    // Get the current point in the reference frame of the circle
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    double z = pos.z() - d_offset[2];
+    // Calculate the nearest point
+    double r = sqrt( x * x + y * y + z * z );
+    if ( r == 0 ) {
+        x = d_r_min;
+    } else if ( r < d_r_min ) {
+        x *= d_r_min / r;
+        y *= d_r_min / r;
+        z *= d_r_min / r;
+    } else if ( r > d_r_max ) {
+        x *= d_r_max / r;
+        y *= d_r_max / r;
+        z *= d_r_max / r;
+    }
+    return { x + d_offset[0], y + d_offset[1], z + d_offset[2] };
 }
 
 

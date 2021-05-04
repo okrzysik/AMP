@@ -35,9 +35,18 @@ Circle::Circle( double R ) : LogicalGeometry(), d_R( R )
  ********************************************************/
 Point Circle::nearest( const Point &pos ) const
 {
-    NULL_USE( pos );
-    AMP_ERROR( "Not finished" );
-    return {};
+    // Get the current point in the reference frame of the circle
+    double x = pos.x() - d_offset[0];
+    double y = pos.y() - d_offset[1];
+    // Calculate the nearest point
+    double r = sqrt( x * x + y * y );
+    if ( r <= d_R ) {
+        return pos;
+    } else {
+        x *= d_R / r;
+        y *= d_R / r;
+        return { x + d_offset[0], y + d_offset[1] };
+    }
 }
 
 
@@ -46,12 +55,11 @@ Point Circle::nearest( const Point &pos ) const
  ********************************************************/
 double Circle::distance( const Point &pos, const Point &ang ) const
 {
-    // Get the current point in the reference frame of the cylinder
+    // Get the current point in the reference frame of the circle
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
-    double z = 0;
-    // Compute the distance to the cylinder
-    double d = GeometryHelpers::distanceToCylinder( d_R, 1e200, { x, y, z }, ang );
+    // Compute the distance to the circle
+    double d = GeometryHelpers::distanceToCircle( d_R, { x, y }, ang );
     return d;
 }
 
