@@ -270,6 +270,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
 
 void testSubsetMesh( AMP::UnitTest &ut )
 {
+    NULL_USE( ut );
     PROFILE_START( "testSubsetMesh" );
 #if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
     // Subset a mesh for a surface without ghost cells and test
@@ -281,17 +282,14 @@ void testSubsetMesh( AMP::UnitTest &ut )
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );
-
     // Subset a mesh for a surface with ghost cells and test
     generator = std::make_shared<
         AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<3>, 1>>();
     generator->build_mesh();
     mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
-// MeshVectorTestLoop( ut, mesh );
-// MeshMatrixTestLoop( ut, mesh );
-#else
-    NULL_USE( ut );
+    // MeshVectorTestLoop( ut, mesh );
+    // MeshMatrixTestLoop( ut, mesh );
 #endif
     PROFILE_STOP( "testSubsetMesh" );
 }
@@ -300,6 +298,7 @@ void testSubsetMesh( AMP::UnitTest &ut )
 // Test initializing libMesh
 void testIntializeLibmesh( AMP::UnitTest &ut )
 {
+    NULL_USE( ut );
 #if defined( USE_EXT_LIBMESH )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     AMP::AMP_MPI splitComm = globalComm.split( globalComm.getRank() % 2 );

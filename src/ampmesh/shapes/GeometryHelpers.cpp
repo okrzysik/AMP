@@ -40,7 +40,7 @@ static inline std::array<double, N> operator-( const std::array<double, N> &x,
                                                const std::array<double, N> &y )
 {
     auto z = x;
-    for ( int i = 0; i < N; i++ )
+    for ( size_t i = 0; i < N; i++ )
         z[i] -= y[i];
     return z;
 }
