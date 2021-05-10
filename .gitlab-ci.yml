@@ -2,6 +2,6 @@ variables:
   PROJECT: AMP
   
 include:
-  - project: 'AMP/dev-ops'
+  - project: 'AMP/dev-ops/ci'
     ref: master
     file: 'amp-darwin.yml'
