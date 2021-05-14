@@ -40,9 +40,9 @@ public:
      *  Documentation for parameters required by each solver can be found in the
      *  documentation for the solver.
      */
-    std::shared_ptr<AMP::Database> d_db;
+    std::shared_ptr<AMP::Database> d_db = nullptr;
 
-    std::shared_ptr<AMP::Operator::Operator> d_pOperator;
+    std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
 protected:
 private:
