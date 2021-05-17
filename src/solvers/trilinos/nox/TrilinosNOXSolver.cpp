@@ -58,8 +58,7 @@ TrilinosNOXSolver::~TrilinosNOXSolver() = default;
 void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     // Copy the parameters
-    auto params =
-        std::dynamic_pointer_cast<const TrilinosNOXSolverParameters>( parameters );
+    auto params = std::dynamic_pointer_cast<const TrilinosNOXSolverParameters>( parameters );
     AMP_ASSERT( params );
     AMP_ASSERT( params->d_db );
     d_comm = params->d_comm;
