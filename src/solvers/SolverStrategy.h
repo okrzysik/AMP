@@ -69,7 +69,7 @@ public:
      * @param[in] parameters    The parameters object contains a database object.
      *                          Currently there are no required fields for the database object.
      */
-    virtual void initialize( std::shared_ptr<SolverStrategyParameters> const parameters );
+    virtual void initialize( std::shared_ptr<const SolverStrategyParameters> parameters );
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
