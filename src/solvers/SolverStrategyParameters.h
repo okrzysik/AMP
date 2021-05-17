@@ -44,6 +44,11 @@ public:
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
+    /**
+     * List of vectors to be used during solver initialization
+     */
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vectors;
+
 protected:
 private:
 };
