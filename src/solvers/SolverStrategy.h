@@ -163,6 +163,13 @@ public:
 
     virtual void setRelativeTolerance( double rel_tol ) { d_dRelativeTolerance = rel_tol; }
 
+    /**
+     * Set the maximum number of iterations for the solver
+     */
+    virtual void setMaxIterations( const int max_iterations ) { d_iMaxIterations = max_iterations; }
+
+    int getMaxIterations( void ) const { return d_iMaxIterations; }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
