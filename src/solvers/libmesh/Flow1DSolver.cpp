@@ -19,7 +19,7 @@ Flow1DSolver::~Flow1DSolver() = default;
 
 void Flow1DSolver::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 
-void Flow1DSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
+void Flow1DSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     getFromInput( parameters->d_db );
 

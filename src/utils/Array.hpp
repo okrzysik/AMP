@@ -264,7 +264,9 @@ Array<TYPE, FUN, Allocator>::Array( Array &&rhs )
       d_data( rhs.d_data ),
       d_ptr( std::move( rhs.d_ptr ) )
 {
+    rhs.d_size = ArraySize();
     rhs.d_data = nullptr;
+    rhs.d_ptr  = nullptr;
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const Array &rhs )
@@ -287,7 +289,9 @@ Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( Array &&rhs
     d_size        = rhs.d_size;
     d_data        = rhs.d_data;
     d_ptr         = std::move( rhs.d_ptr );
+    rhs.d_size    = ArraySize();
     rhs.d_data    = nullptr;
+    rhs.d_ptr     = nullptr;
     return *this;
 }
 template<class TYPE, class FUN, class Allocator>

@@ -143,10 +143,11 @@ void NonlinearKrylovAccelerator::setInitialGuess(
 }
 
 
-void NonlinearKrylovAccelerator::initialize( std::shared_ptr<SolverStrategyParameters> parameters )
+void NonlinearKrylovAccelerator::initialize(
+    std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    std::shared_ptr<NonlinearKrylovAcceleratorParameters> params =
-        std::dynamic_pointer_cast<NonlinearKrylovAcceleratorParameters>( parameters );
+    auto params =
+        std::dynamic_pointer_cast<const NonlinearKrylovAcceleratorParameters>( parameters );
     setInitialGuess( params->d_pInitialGuess );
 }
 

@@ -71,7 +71,7 @@ public:
      * Initialize the QMRCGSTABSolver. Should not be necessary for the user to call in general.
      * @param parameters
      */
-    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     /**
      * returns a shared pointer to a preconditioner object. The preconditioner is derived from
