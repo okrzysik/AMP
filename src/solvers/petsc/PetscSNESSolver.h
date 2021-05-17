@@ -165,7 +165,7 @@ public:
 
 protected:
 private:
-    void initialize( std::shared_ptr<SolverStrategyParameters> parameters ) override;
+    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 

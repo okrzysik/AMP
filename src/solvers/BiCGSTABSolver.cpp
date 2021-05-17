@@ -33,9 +33,9 @@ BiCGSTABSolver::~BiCGSTABSolver() = default;
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void BiCGSTABSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
+void BiCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParameters> params )
 {
-    auto parameters = std::dynamic_pointer_cast<KrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );

@@ -98,9 +98,9 @@ PetscKrylovSolver::~PetscKrylovSolver()
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void PetscKrylovSolver::initialize( std::shared_ptr<SolverStrategyParameters> const params )
+void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParameters> params )
 {
-    auto parameters = std::dynamic_pointer_cast<PetscKrylovSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const PetscKrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
     // the comm is set here of instead of the constructor because this routine
