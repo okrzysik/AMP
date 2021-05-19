@@ -198,6 +198,13 @@ private:
 };
 
 
+// Stream operators
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::GeomType x );
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshID x );
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::ElementID x );
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x );
+
+
 } // namespace Mesh
 } // namespace AMP
 

@@ -62,6 +62,7 @@ static constexpr bool test_numeric_limits()
     static_assert( zero < std::numeric_limits<TYPE>::max() );
     static_assert( std::numeric_limits<TYPE>::min() < zero );
     static_assert( zero > std::numeric_limits<TYPE>::min() );
+    static_assert( zero == std::numeric_limits<TYPE>::epsilon() );
     return true;
 }
 static_assert( test_numeric_limits<int64_t>() );
@@ -117,6 +118,12 @@ static constexpr bool run_basic_tests()
     static_assert( static_cast<int>( c - b ) == -25 );
     // static_assert( compare( b, 12 ) );
     // static_assert( compare( c, -13 ) );
+
+    // Test more complex math
+    constexpr TYPE t1( 18330084947 );
+    constexpr TYPE t2( 11658926934 );
+    static_assert( static_cast<int64_t>( t1 + t2 ) == 29989011881 );
+    static_assert( static_cast<int64_t>( -t1 - t2 ) == -29989011881 );
 
     // Check some shifts
     constexpr TYPE tmp1 = createShift<TYPE>( 1, 6 );
@@ -212,9 +219,14 @@ static constexpr bool testMult()
                      1e180, -1e198, 1e216, -1e234, 1e252, -1e270, 1e288,  -1e306 };
     bool test    = true;
     for ( int i = 0; i < 17; i++ ) {
-        x2 = x2 * x;
-        test &&compare( x2, ans[i] );
+        x2   = x2 * x;
+        test = test && compare( x2, ans[i] );
     }
+    // Test multiplication of large integers
+    constexpr auto y1 = createShift<eint2048>( 1, 76 );
+    constexpr auto y2 = createShift<eint2048>( 1, 152 );
+    constexpr auto y3 = y1 * y1;
+    test              = test && y2 == y3;
     return test;
 }
 static constexpr bool testInf()

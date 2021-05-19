@@ -482,6 +482,35 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
 }
 
 
+/********************************************************
+ * Stream operators                                      *
+ ********************************************************/
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::GeomType x )
+{
+    out << static_cast<int>( x );
+    return out;
+}
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshID x )
+{
+    out << x.getData();
+    return out;
+}
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::ElementID x )
+{
+    int is_local = x.is_local() ? 1 : 0;
+    out << "(" << is_local << "," << x.type() << "," << x.local_id() << "," << x.owner_rank()
+        << ")";
+    return out;
+}
+std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x )
+{
+    int is_local = x.is_local() ? 1 : 0;
+    out << "(" << is_local << "," << x.type() << "," << x.local_id() << "," << x.owner_rank() << ","
+        << x.meshID() << ")";
+    return out;
+}
+
+
 } // namespace AMP::Mesh
 
 

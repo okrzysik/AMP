@@ -334,7 +334,7 @@ void kdtree2<NDIM, TYPE>::checkNearest( const kdtree2::Point &x,
         dist2 = norm( x, d_data->x[i] );
         if ( dist2 < dist[N - 1] ) {
             dist[N - 1]    = dist2;
-            nearest[N - 1] = std::tie( d_data->x[N - 1], d_data->data[N - 1] );
+            nearest[N - 1] = std::tie( d_data->x[i], d_data->data[i] );
             for ( size_t j = N - 1; j > 0; j-- ) {
                 if ( dist[j] < dist[j - 1] ) {
                     std::swap( dist[j], dist[j - 1] );

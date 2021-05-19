@@ -2,6 +2,7 @@
 #define included_extended_int_hpp
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <stdint.h>
@@ -38,6 +39,11 @@ constexpr int64N<N>::int64N( int64_t rhs ) : data{ 0 }
     for ( size_t i = 0; i < N; i++ )
         data[i] = fill;
     data[0] = static_cast<uint64_t>( rhs );
+}
+template<uint8_t N>
+constexpr int64N<N>::int64N( uint64_t rhs ) : data{ 0 }
+{
+    data[0] = rhs;
 }
 template<uint8_t N>
 constexpr int64N<N>::int64N( int rhs ) : data{ 0 }
@@ -77,19 +83,22 @@ constexpr int64N<N>::int64N( const char *str ) : data{ 0 }
         }
     } else {
         // Read base 10 string
-        /*for (int i=0; i<length; i++) {
-            if ( str[i]<48 || str[i]>59 ) {
-                if ( str[i]!='+' && str[i]!='-' && str[i]!='e' )
-                    throw std::logic_error("Invalid initialization");
-            }
-        }
-        int i=0;
         int sign = 1;
-        if ( str[0]=='-' || str[0]=='+' ) {
-            i = 1;
-            sign = (str[0]=='-') ? -1:1;
-        }*/
-        throw std::logic_error( "Not finished" );
+        if ( str[0] == '+' || str[0] == '-' ) {
+            sign = str[0] == '-' ? -1 : 1;
+            str++;
+            length--;
+        }
+        constexpr int64N<N> ten( 10 );
+        for ( int i = 0; i < length; i++ ) {
+            if ( str[i] < 48 || str[i] > 59 )
+                throw std::logic_error( "Invalid string for number" );
+            int64_t d = str[i] - 48;
+            operator*=( ten );
+            operator+=( d );
+        }
+        if ( sign < 0 )
+            compliment();
     }
 }
 
@@ -113,6 +122,58 @@ constexpr std::array<char, 16 * N + 3> int64N<N>::hex( bool fixedWidth ) const
         }
     }
     return hex;
+}
+
+
+/********************************************************************
+ * Convert to a decimal string                                       *
+ ********************************************************************/
+template<uint8_t N>
+std::string int64N<N>::decimal() const
+{
+    // Get the sign absolute value
+    int s   = sign();
+    auto x0 = s >= 0 ? *this : -( *this );
+    // Check if we can do a direct conversion
+    bool test = true;
+    for ( size_t i = 1; i < N; i++ )
+        test = test && x0.data[i] == 0;
+    if ( test ) {
+        if ( s >= 0 )
+            return std::to_string( x0.data[0] );
+        else
+            return "-" + std::to_string( x0.data[0] );
+    }
+    // Perform the conversion
+    const int k   = 100;
+    char tmp[128] = { 0 };
+    memset( tmp, '0', k );
+    auto write = []( char *tmp, int i, int64_t v ) {
+        while ( v > 0 ) {
+            tmp[i--] = ( v % 10 ) + 48;
+            v /= 10;
+        }
+    };
+    auto x = x0;
+    while ( static_cast<bool>( x ) ) {
+        double y = x.log10();
+        if ( y < 10 ) {
+            write( tmp, k - 1, x.data[0] );
+            break;
+        }
+        int i      = floor( y );
+        int64_t y2 = floor( 1e8 * std::pow( 10.0, y - i ) );
+        write( tmp, k - i + 7, y2 );
+        int64N<N> z( tmp );
+        x = x0 - z;
+    }
+    size_t i = 0;
+    for ( ; tmp[i] == '0'; i++ ) {}
+    std::string str( &tmp[i] );
+    if ( s >= 0 )
+        return std::string( &tmp[i] );
+    else
+        return "-" + std::string( &tmp[i] );
 }
 
 
@@ -187,6 +248,14 @@ constexpr int64N<N>::operator double() const
     return s * result;
 }
 template<uint8_t N>
+constexpr int64N<N>::operator bool() const
+{
+    bool test = false;
+    for ( uint8_t i = 0; i < N; i++ )
+        test = test || data[i] != 0;
+    return test;
+}
+template<uint8_t N>
 constexpr int int64N<N>::sign() const
 {
     constexpr uint64_t mask = 0x8000000000000000;
@@ -219,8 +288,13 @@ constexpr int64N<N> &int64N<N>::operator+=( const int64N<N> &x )
     bool carry = false;
     for ( size_t i = 0; i < N; i++ ) {
         uint64_t data0 = data[i];
-        data[i] += x.data[i] + ( carry ? 1 : 0 );
-        carry = ( ( data[i] < data0 ) || ( data[i] < x.data[i] ) );
+        if ( carry ) {
+            data[i] += x.data[i] + 1;
+            carry = ( ( data[i] <= data0 ) || ( data[i] <= x.data[i] ) );
+        } else {
+            data[i] += x.data[i];
+            carry = ( ( data[i] < data0 ) || ( data[i] < x.data[i] ) );
+        }
     }
     return *this;
 }
@@ -249,8 +323,13 @@ constexpr int64N<N> &int64N<N>::operator-=( const int64N<N> &x )
     for ( size_t i = 0; i < N; i++ ) {
         uint64_t data0 = data[i];
         uint64_t data1 = ~( x.data[i] );
-        data[i] += data1 + carry;
-        carry = ( ( data[i] < data0 ) || ( data[i] < data1 ) );
+        if ( carry ) {
+            data[i] += data1 + 1;
+            carry = ( ( data[i] <= data0 ) || ( data[i] <= data1 ) );
+        } else {
+            data[i] += data1;
+            carry = ( ( data[i] < data0 ) || ( data[i] < data1 ) );
+        }
     }
     return *this;
 }
@@ -429,6 +508,25 @@ template<uint8_t N>
 constexpr bool int64N<N>::operator<=( int rhs ) const
 {
     return operator<=( int64N<N>( rhs ) );
+}
+
+
+/********************************************************************
+ * Arithmetic operator overloading                                   *
+ ********************************************************************/
+template<uint8_t N>
+double int64N<N>::log2() const
+{
+    if ( sign() < 0 )
+        throw std::logic_error( "log2 failed (negitive number)" );
+    if ( !static_cast<bool>( *this ) )
+        throw std::logic_error( "log2(0)" );
+    int i = N - 1;
+    for ( ; i >= 0 && data[i] == 0; i-- ) {}
+    if ( i == 0 )
+        return std::log2( data[i] );
+    return 64 * i + std::log2( data[i] ) +
+           std::log2( 1.0 + 5.421010862427522170037264e-20L * data[i - 1] / data[i] );
 }
 
 
