@@ -51,7 +51,7 @@ TrilinosMLSolver::~TrilinosMLSolver()
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
 }
 
-void TrilinosMLSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
+void TrilinosMLSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     getFromInput( parameters->d_db );
     if ( d_pOperator ) {

@@ -22,7 +22,7 @@ public:
 
     void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
 
-    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     void reset( std::shared_ptr<SolverStrategyParameters> ) override;
 

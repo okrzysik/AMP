@@ -153,7 +153,7 @@ public:
      the solver.
      The LinearOperator currently is assumed to contain a pointer to an EpetraMatrix object.
      */
-    void initialize( std::shared_ptr<SolverStrategyParameters> const parameters ) override;
+    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     /**
      * Register the operator that the solver will use during solves

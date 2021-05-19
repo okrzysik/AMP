@@ -64,7 +64,7 @@ public:
      NonlinearKrylovAcceleratorParameters)
      Should contain a pointer to a solution guess vector.
      */
-    void initialize( std::shared_ptr<SolverStrategyParameters> parameters ) override;
+    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     /**
      * Provide the initial guess for the solver.

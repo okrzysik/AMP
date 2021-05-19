@@ -35,7 +35,7 @@ BoomerAMGSolver::~BoomerAMGSolver()
     HYPRE_IJVectorDestroy( d_hypre_sol );
 }
 
-void BoomerAMGSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
+void BoomerAMGSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     getFromInput( parameters->d_db );
 

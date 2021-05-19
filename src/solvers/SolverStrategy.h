@@ -69,7 +69,7 @@ public:
      * @param[in] parameters    The parameters object contains a database object.
      *                          Currently there are no required fields for the database object.
      */
-    virtual void initialize( std::shared_ptr<SolverStrategyParameters> const parameters );
+    virtual void initialize( std::shared_ptr<const SolverStrategyParameters> parameters );
 
     /**
      * Provide the initial guess for the solver. This is a pure virtual function that the derived
@@ -157,11 +157,18 @@ public:
     /*!
      *  Set absolute tolerance for nonlinear solver.
      */
-    void setAbsoluteTolerance( double abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
+    virtual void setAbsoluteTolerance( double abs_tol ) { d_dAbsoluteTolerance = abs_tol; }
 
     double getRelativeTolerance() const { return ( d_dRelativeTolerance ); }
 
-    void setRelativeTolerance( double rel_tol ) { d_dRelativeTolerance = rel_tol; }
+    virtual void setRelativeTolerance( double rel_tol ) { d_dRelativeTolerance = rel_tol; }
+
+    /**
+     * Set the maximum number of iterations for the solver
+     */
+    virtual void setMaxIterations( const int max_iterations ) { d_iMaxIterations = max_iterations; }
+
+    int getMaxIterations( void ) const { return d_iMaxIterations; }
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );

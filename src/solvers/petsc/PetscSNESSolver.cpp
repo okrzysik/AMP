@@ -91,11 +91,11 @@ PetscSNESSolver::~PetscSNESSolver()
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void PetscSNESSolver::initialize( std::shared_ptr<SolverStrategyParameters> params )
+void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters> params )
 {
     PROFILE_START( "initialize" );
 
-    auto parameters = std::dynamic_pointer_cast<PetscSNESSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const PetscSNESSolverParameters>( params );
     getFromInput( parameters->d_db );
 
     // create the SNES solver

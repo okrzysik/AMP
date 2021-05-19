@@ -48,7 +48,7 @@ TrilinosMueLuSolver::~TrilinosMueLuSolver()
     d_matrix.reset(); // Need to keep a copy of the matrix alive until after the solver is destroyed
 }
 
-void TrilinosMueLuSolver::initialize( std::shared_ptr<SolverStrategyParameters> const parameters )
+void TrilinosMueLuSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
     getFromInput( parameters->d_db );
 
