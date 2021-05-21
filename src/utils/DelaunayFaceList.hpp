@@ -62,41 +62,6 @@ namespace AMP::DelaunayTessellation {
 
 
 /********************************************************************
- * This function calculates the volume of a N-dimensional simplex    *
- *         1  |  x1-x4   x2-x4   x3-x4  |                            *
- *    V = --  |  y1-y4   y2-y4   y3-y4  |   (3D)                     *
- *        n!  |  z1-z4   z2-z4   z3-z4  |                            *
- * Note: the sign of the volume depends on the order of the points.  *
- *   It will be positive for points stored in a clockwise mannor     *
- * This version is optimized for performance.                        *
- * Note:  If the volume is zero, then the simplex is invalid         *
- *   Eg. a line in 2D or a plane in 3D.                              *
- * Note: exact math requires N^D precision                           *
- ********************************************************************/
-static constexpr double inv_factorial( int N )
-{
-    double x = 1;
-    for ( int i = 2; i <= N; i++ )
-        x *= i;
-    return 1.0 / x;
-}
-template<int NDIM, class TYPE, class ETYPE>
-double calc_volume( const std::array<TYPE, NDIM> *x )
-{
-    if constexpr ( NDIM == 1 )
-        return static_cast<double>( x[1][0] - x[0][0] );
-    ETYPE M[NDIM * NDIM];
-    for ( int d = 0; d < NDIM; d++ ) {
-        ETYPE tmp( x[NDIM][d] );
-        for ( int j = 0; j < NDIM; j++ )
-            M[d + j * NDIM] = ETYPE( x[j][d] ) - tmp;
-    }
-    constexpr double C = inv_factorial( NDIM );
-    return C * static_cast<double>( DelaunayHelpers<NDIM>::det( M ) );
-}
-
-
-/********************************************************************
  * Check if we conserve the neighbor triangles for two sets          *
  ********************************************************************/
 static bool conserved_neighbors( const int N1, const int list1[], const int N2, const int list2[] )
@@ -232,7 +197,7 @@ bool check_current_triangles( int N,
         if ( !pass ) {
             break;
         }
-        double vol = fabs( calc_volume<NDIM, TYPE, ETYPE>( x2 ) );
+        double vol = fabs( DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 ) );
         if ( vol < 0.0 ) {
             // The volume of each triangle must be strickly > 0
             printf( "Invalid triangle volume detected\n" );
@@ -429,7 +394,7 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
         for ( int j = 0; j < NDIM; j++ )
             x2[j] = data[i].x[j];
         x2[NDIM]      = x0[node_id];
-        double volume = fabs( calc_volume<NDIM, TYPE, ETYPE>( x2 ) );
+        double volume = fabs( DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 ) );
         if ( volume <= TOL_vol ) {
             continue;
         }
@@ -469,7 +434,7 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
             int k  = new_tri[i][j1];
             x2[j1] = x0[k];
         }
-        double volume = calc_volume<NDIM, TYPE, ETYPE>( x2 );
+        double volume = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_vol ) {
             // The triangle is invalid
             delete[] ids;
@@ -484,7 +449,7 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
             int k  = new_tri[i][j1];
             x2[j1] = x0[k];
         }
-        volume = calc_volume<NDIM, TYPE, ETYPE>( x2 );
+        volume = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
         if ( volume <= 0.0 )
             printf( "Warning: volume is still negitive\n" );
     }

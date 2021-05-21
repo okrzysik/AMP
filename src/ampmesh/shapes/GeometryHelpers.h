@@ -315,6 +315,48 @@ double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const
 
 
 /**
+ * \brief   Compute the intersection of a ray and triangle
+ * \details  This function will compute the intersection of a ray with a triangle.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] tri       Triangle coordinates
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double
+distanceToTriangle( const std::array<Point2D, 3> &tri, const Point2D &pos, const Point2D &ang );
+
+
+/**
+ * \brief   Compute the intersection of a ray and triangle
+ * \details  This function will compute the intersection of a ray with a triangle.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] tri       Triangle coordinates
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double
+distanceToTriangle( const std::array<Point3D, 3> &tri, const Point3D &pos, const Point3D &ang );
+
+
+/**
+ * \brief   Compute the intersection of a ray and tetrahedron
+ * \details  This function will compute the intersection of a ray with a tetrahedron.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] tet       Tetrahedron coordinates
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double
+distanceToTetrahedron( const std::array<Point3D, 4> &tet, const Point3D &pos, const Point3D &ang );
+
+
+/**
  * \brief   Compute the barycentric coordinates
  * \details  This function will compute the barycentric coordinates
  *    determine the normal.
@@ -323,7 +365,7 @@ double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const
  * @return              Returns the barycentric coordinates
  */
 template<int NP, int NDIM>
-std::array<double, NP> barycentric( const std::array<double, NDIM> ( &x )[NP],
+std::array<double, NP> barycentric( const std::array<std::array<double, NDIM>, NP> &x,
                                     const std::array<double, NDIM> &p );
 
 
@@ -363,14 +405,25 @@ Point3D nearest( const Point3D &v1, const Point3D &v2, const Point3D &p );
 
 
 /**
- * \brief   Find the nearest point to on a triangle
+ * \brief   Find the nearest point to a triangle
  * \details  This function will compute the nearest point to a triangle
  *    defined by three points in 3D.
  * \param[in] v         Verticies
  * \param[in] p         Point of interest
  * @return              Returns the normal
  */
-Point3D nearest( const Point3D ( &v )[3], const Point3D &p );
+Point3D nearest( const std::array<Point3D, 3> &v, const Point3D &p );
+
+
+/**
+ * \brief   Find the nearest point to a tetrahedron
+ * \details  This function will compute the nearest point to a triangle
+ *    defined by three points in 3D.
+ * \param[in] v         Verticies
+ * \param[in] p         Point of interest
+ * @return              Returns the normal
+ */
+Point3D nearest( const std::array<Point3D, 4> &v, const Point3D &p );
 
 
 /**

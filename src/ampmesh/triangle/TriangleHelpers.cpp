@@ -958,7 +958,7 @@ static std::shared_ptr<AMP::Mesh::Mesh> generate( std::shared_ptr<AMP::Geometry:
                     M[d + k * 3] = x[k][d] - x[3][d];
             }
             constexpr double C = 1.0 / 6.0;
-            double V           = std::abs( C * DelaunayHelpers<NDIM>::det( M ) );
+            double V           = std::abs( C * DelaunayHelpers::det<double, NDIM>( M ) );
             remove[i]          = V < 1e-6;
         }
         // Remove the triangles

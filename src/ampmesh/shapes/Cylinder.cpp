@@ -102,11 +102,11 @@ int Cylinder::surface( const Point &pos ) const
     double d2 = std::abs( z - d_z_min );
     double d3 = std::abs( z - d_z_max );
     if ( d1 <= std::min( d2, d3 ) )
-        return 0;
+        return 0; // Cylinder
     if ( d2 <= std::min( d1, d3 ) )
-        return 1;
+        return 1; // -z surface
     if ( d3 <= std::min( d1, d2 ) )
-        return 2;
+        return 2; // +z surface
     AMP_ERROR( "Internal error" );
     return -1;
 }
@@ -117,8 +117,8 @@ Point Cylinder::surfaceNorm( const Point &pos ) const
         // -z surface
         return { 0, 0, -1 };
     } else if ( s == 2 ) {
-        // -z surface
-        return { 0, 0, -1 };
+        // +z surface
+        return { 0, 0, 1 };
     } else {
         // r
         double x = pos.x() - d_offset[0];
