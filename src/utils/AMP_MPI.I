@@ -404,7 +404,7 @@ TYPE MPI_CLASS::bcast( TYPE x, int root ) const
 {
     if ( comm_size > 1 )
         bcast( &x, 1, root );
-    return std::move( x );
+    return x;
 }
 
 
