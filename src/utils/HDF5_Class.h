@@ -43,6 +43,9 @@ public:
     virtual std::vector<std::string> getNames() const = 0;
 
     //! Get the data
+    virtual AMP::ArraySize getDataSize() const = 0;
+
+    //! Get the data
     template<class TYPE>
     void getData( AMP::Array<TYPE> &data ) const;
 

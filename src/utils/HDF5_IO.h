@@ -8,9 +8,6 @@
 #include <string_view>
 
 
-namespace AMP {
-
-
 // Include the headers and define some basic types
 #ifdef USE_HDF5
 // Using HDF5
@@ -20,6 +17,9 @@ namespace AMP {
 typedef int hid_t;
 typedef size_t hsize_t;
 #endif
+
+
+namespace AMP {
 
 
 enum class Compression : uint8_t { None, GZIP, SZIP };

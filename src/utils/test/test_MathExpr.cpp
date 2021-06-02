@@ -64,17 +64,24 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     // Test some basic functions
+    constexpr double e  = 2.718281828459045;
     constexpr double pi = 3.141592653589793;
+    test( "e", {}, {}, e, ut );
+    test( "pi", {}, {}, pi, ut );
     test( "5*8", {}, {}, 40, ut );
     test( "2*x", { "x" }, { 3.2 }, 6.4, ut );
     test( "3*x", { "x" }, { 6.5 }, 19.5, ut );
+    test( "fac(8)", {}, {}, 40320, ut );
+    test( "ncr(52,5)", {}, {}, 2598960, ut );
+    test( "npr(52,5)", {}, {}, 311875200, ut );
+    test( "exp(2.5)", {}, {}, 12.182493960703473, ut );
     test( "sin(0.8*pi)", {}, {}, sin( 0.8 * pi ), ut );
     test( "sqrt(x^2+y^2)", { "x", "y" }, { 1.5, 3.5 }, sqrt( 14.5 ), ut );
     test( "x*exp(y)", { "x", "y" }, { 1.5, 3.5 }, 1.5 * exp( 3.5 ), ut );
-    test( "a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p",
+    test( "3*(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p)",
           { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p" },
           { 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16. },
-          136,
+          408,
           ut );
 
     // Test the performance

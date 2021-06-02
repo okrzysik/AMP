@@ -411,6 +411,19 @@ CONSTEXPR ArraySize cat( const ArraySize &x, const ArraySize &y )
 }
 
 
+// Remove singleton dimensions
+CONSTEXPR ArraySize squeeze( const ArraySize &x )
+{
+    int Nd      = 0;
+    size_t N[5] = { 1 };
+    for ( size_t i = 0; i < x.maxDim(); i++ ) {
+        if ( x[i] != 1 )
+            N[Nd++] = x[i];
+    }
+    return ArraySize( std::max( Nd, 1 ), N );
+}
+
+
 } // namespace AMP
 
 

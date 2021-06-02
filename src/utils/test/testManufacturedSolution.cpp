@@ -1,21 +1,14 @@
-/*
- * testManufacturedSolution.cc
- *
- *  Created on: Jul 27, 2010
- *      Author: gad
- */
-
-#include <exception>
-#include <iostream>
-#include <valarray>
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+
+#include <exception>
+#include <iostream>
 #include <memory>
+#include <valarray>
 
 
 void testit( AMP::UnitTest *ut,
@@ -67,6 +60,7 @@ int main( int argc, char **argv )
     AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 
     if ( globalComm.getRank() == 0 ) {
+        testit( &ut, "Brick", "Cubic", "Neumann", 5., 60., 700. );
         testit( &ut, "Brick", "Quadratic", "Neumann", 5., 60., 700. );
         testit( &ut, "Brick", "Quadratic", "Dirichlet-1", 5., 60., 700. );
         testit( &ut, "Brick", "Quadratic", "Dirichlet-2", 5., 60., 700. );
@@ -75,7 +69,12 @@ int main( int argc, char **argv )
         testit( &ut, "Brick", "Cubic", "Dirichlet-2", 5., 60., 700. );
         testit( &ut, "CylindricalRod", "Cubic", "None", 55., 4.2, 700. );
         testit( &ut, "CylindricalRod", "Cubic", "Dirichlet-2-z", 55., 4.2, 700. );
+        testit( &ut, "CylindricalRod", "Quadratic", "None", 55., 4.2, 700. );
+        testit( &ut, "CylindricalRodRZ", "Cubic", "None", 55., 4.2, 700. );
+        testit( &ut, "CylindricalRodRZ", "Quadratic", "None", 55., 4.2, 700. );
         testit( &ut, "CylindricalShell", "Quadratic", "Neumann", 55., 4.2, 700. );
+        testit( &ut, "CylindricalQuarterShell", "Quadratic", "Neumann", 55., 4.2, 700. );
+        testit( &ut, "CylindricalQuarterShell", "Cubic", "Neumann", 55., 4.2, 700. );
     } else {
         ut.expected_failure( "Manufactured Solutions only apply to scalar tests." );
     }
