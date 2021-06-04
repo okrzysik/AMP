@@ -181,7 +181,7 @@ computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
 static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
 {
-    NULL_USE(exampleNum);
+    NULL_USE( exampleNum );
     std::string inputFile = "input_" + exeName;
     std::string logFile   = "output_" + exeName + ".txt";
 
