@@ -794,6 +794,20 @@ public: // Member functions
 
 
     /*!
+     * @brief This function receives an MPI message with a data array from another processor.
+     *    This call must be paired with a matching call to send.
+     *
+     * @param[in] buf       Pointer to integer array buffer with capacity of length integers.
+     * @param[in] length    The number of elements to be received.
+     * @param[in] send      Processor number of sender.
+     * @param[in] tag       Optional integer argument specifying a tag which must be matched
+     *                      by the tag of the incoming message. Default tag is 0.
+     */
+    template<class type>
+    void recv( type *buf, int length, int send, int tag = 0 ) const;
+
+
+    /*!
      * @brief This function receives an MPI message with a data
      * array from another processor.
      *
@@ -813,7 +827,7 @@ public: // Member functions
      *                      by the tag of the incoming message. Default tag is 0.
      */
     template<class type>
-    void recv( type *buf, int &length, int send, bool get_length = false, int tag = 0 ) const;
+    void recv( type *buf, int &length, int send, bool get_length, int tag = 0 ) const;
 
 
     /*!

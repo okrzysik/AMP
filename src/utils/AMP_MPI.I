@@ -523,6 +523,11 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     recvBytes( buf, bytes, send_proc, tag );
 }
 #endif
+template<class TYPE>
+void MPI_CLASS::recv( TYPE *buf, int length, int send_proc, int tag ) const
+{
+    recv<TYPE>( buf, length, send_proc, false, tag );
+}
 
 
 /************************************************************************
