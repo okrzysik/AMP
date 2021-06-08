@@ -21,8 +21,7 @@
 #endif
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Utilities {
 
 
 /**
@@ -40,13 +39,12 @@ public:
     //!  Default destructor
     virtual ~SiloIO();
 
-    //!  Function to return the file extension
-    std::string getExtension() override;
+    //! Function to get the writer properties
+    WriterProperties getProperties() const override;
 
     //!  Function to read a file
     void readFile( const std::string &fname ) override;
 
-    //!  Function to write a file
     /**
      * \brief    Function to write a file
      * \details  This function will write a file with all mesh/vector data that
@@ -70,9 +68,9 @@ public:
      *                      3: Register all mesh pieces including the individual ranks
      * \param path      The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
-                               int level               = 1,
-                               const std::string &path = std::string() ) override;
+    void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                       int level               = 1,
+                       const std::string &path = std::string() ) override;
 
     /**
      * \brief    Function to register a vector
@@ -82,15 +80,15 @@ public:
      *              Note: the vector must completely cover the mesh (silo limitiation).
      *              Note: mesh does not have to be previously registered with registerMesh.
      * \param type  The entity type we want to save (vertex, face, cell, etc.)
-     *              Note: silo only supports writing one entity type.  If the vector
-     *              spans multiple entity type (eg cell+vertex) the user should register
-     *              the vector multiple times (one for each entity type).
+     *              Note: silo only supports writing one entity type.
+     *              If the vector spans multiple entity type (eg cell+vertex)  the user should
+     *              register the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                 AMP::Mesh::Mesh::shared_ptr mesh,
-                                 AMP::Mesh::GeomType type,
-                                 const std::string &name = "" ) override;
+    void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                         std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                         AMP::Mesh::GeomType type,
+                         const std::string &name = "" ) override;
 
     /**
      * \brief    Function to register a vector
@@ -196,7 +194,7 @@ private:
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
 #endif
 };
-} // namespace Mesh
-} // namespace AMP
+
+} // namespace AMP::Utilities
 
 #endif

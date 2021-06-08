@@ -3,6 +3,9 @@
 #include "AMP/utils/HDF5_IO.h"
 #include "AMP/utils/Utilities.h"
 
+#ifdef USE_AMP_MESH
+#include "AMP/ampmesh/Mesh.h"
+#endif
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
@@ -47,7 +50,17 @@ HDF5writer::~HDF5writer() = default;
 /************************************************************
  * Some basic functions                                      *
  ************************************************************/
-std::string HDF5writer::getExtension() { return "hdf5"; }
+Writer::WriterProperties HDF5writer::getProperties() const
+{
+    WriterProperties properties;
+    properties.type                   = "HDF5";
+    properties.extension              = "hdf";
+    properties.registerMesh           = false;
+    properties.registerVector         = true;
+    properties.registerVectorWithMesh = false;
+    properties.registerMatrix         = false;
+    return properties;
+}
 
 
 /************************************************************
@@ -76,10 +89,10 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     writeHDF5( fid, "time", time );
     // Add the vectors
 #ifdef USE_AMP_VECTORS
-    for ( size_t i = 0; i < d_vecs.size(); i++ ) {
-        auto arrayData = getArrayData( d_vecs[i] );
+    for ( size_t i = 0; i < d_vec.size(); i++ ) {
+        auto arrayData = getArrayData( d_vec[i].vec );
         if ( arrayData ) {
-            writeHDF5( fid, d_names[i], arrayData->getArray() );
+            writeHDF5( fid, d_vec[i].name, arrayData->getArray() );
         } else {
             AMP_ERROR( "Not finished" );
         }
@@ -94,7 +107,9 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
 /************************************************************
  * Function to register a mesh with silo                     *
  ************************************************************/
-void HDF5writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh>, int, const std::string & )
+void HDF5writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                               int level,
+                               const std::string &path )
 {
     AMP_ERROR( "Meshes are not supported yet" );
 }
@@ -113,21 +128,20 @@ void HDF5writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
 void HDF5writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                                  const std::string &name )
 {
-    NULL_USE( vec );
-    NULL_USE( name );
-#ifdef USE_AMP_VECTORS
-    d_names.push_back( name );
-    d_vecs.push_back( vec );
-#endif
+    VectorData data;
+    data.name = name;
+    data.vec  = vec;
+    data.type = AMP::Mesh::GeomType::null;
+    data.mesh = nullptr;
+    d_vec.push_back( data );
 }
 void HDF5writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
                                  const std::string &name )
 {
-    NULL_USE( mat );
-    NULL_USE( name );
-#ifdef USE_AMP_MATRICES
-    AMP_ERROR( "Not finished" );
-#endif
+    MatrixData data;
+    data.name = name;
+    data.mat  = mat;
+    d_mat.push_back( data );
 }
 
 

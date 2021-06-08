@@ -146,6 +146,8 @@ public:
     //! Write the xml file
     void write( const std::string &filename ) const;
 
+    //! Clear the internal data
+    void clear();
 
 private:
     std::map<std::string, std::vector<MeshData>> d_meshData;

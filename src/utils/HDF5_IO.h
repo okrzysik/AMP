@@ -117,6 +117,32 @@ bool H5Dexists( hid_t fid, const std::string_view &name );
 
 
 /**
+ * \brief Create a group
+ * \details This function creates a new HDF5 group
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the group
+ */
+hid_t createGroup( hid_t fid, const std::string_view &name );
+
+
+/**
+ * \brief Open a group
+ * \details This function opens an HDF5 group
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the group
+ */
+hid_t openGroup( hid_t fid, const std::string_view &name );
+
+
+/**
+ * \brief Close a group
+ * \details This function closes an HDF5 group
+ * @param[in] fid       Group to close
+ */
+void closeGroup( hid_t fid );
+
+
+/**
  * \brief Get HDF5 data type
  * \details This function returns the id of the data type
  */

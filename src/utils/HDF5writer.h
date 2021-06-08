@@ -1,14 +1,11 @@
 #ifndef included_AMP_HDF5writer
 #define included_AMP_HDF5writer
 
-#include <map>
+
 #include <memory>
-#include <set>
-#include <sstream>
-#include <string.h>
+#include <string>
 #include <vector>
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/Writer.h"
 
 
@@ -19,7 +16,7 @@ namespace AMP::Utilities {
  * \class HDF5writer
  * \brief A class used to abstract away reading/writing files for visualization
  * \details  This class provides routines for reading, accessing and writing meshes and vectors
- * using silo.
+ * using HDF5.  Note: for visualization an Xdmf file will also be written
  */
 class HDF5writer : public AMP::Utilities::Writer
 {
@@ -33,13 +30,12 @@ public:
     //! Delete copy constructor
     HDF5writer( const HDF5writer & ) = delete;
 
-    //!  Function to return the file extension
-    std::string getExtension() override;
+    //! Function to get the writer properties
+    WriterProperties getProperties() const override;
 
     //!  Function to read a file
     void readFile( const std::string &fname ) override;
 
-    //!  Function to write a file
     /**
      * \brief    Function to write a file
      * \details  This function will write a file with all mesh/vector data that
@@ -70,15 +66,15 @@ public:
 
     /**
      * \brief    Function to register a vector
-     * \details  This function will register a vector with the silo writer.
+     * \details  This function will register a vector with the writer.
      * \param vec   The vector we want to write
      * \param mesh  The mesh we want to write the vector over.
-     *              Note: the vector must completely cover the mesh (silo limitiation).
+     *              Note: the vector must completely cover the mesh for visualization.
      *              Note: mesh does not have to be previously registered with registerMesh.
      * \param type  The entity type we want to save (vertex, face, cell, etc.)
-     *              Note: silo only supports writing one entity type.  If the vector
-     *              spans multiple entity type (eg cell+vertex) the user should register
-     *              the vector multiple times (one for each entity type).
+     *              Note: xdmf only supports writing one entity type.
+     *              If the vector spans multiple entity type (eg cell+vertex)  the user should
+     *              register the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
     void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
@@ -110,8 +106,25 @@ public:
 
 
 private:
-    std::vector<std::string> d_names;
-    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vecs;
+    typedef std::shared_ptr<AMP::Mesh::Mesh> MeshData;
+
+    struct VectorData {
+        std::string name;
+        std::shared_ptr<AMP::LinearAlgebra::Vector> vec;
+        AMP::Mesh::GeomType type;
+        MeshData *mesh;
+        VectorData() : mesh( nullptr ) {}
+    };
+
+    struct MatrixData {
+        std::string name;
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> mat;
+    };
+
+private:
+    std::vector<MeshData> d_mesh;
+    std::vector<VectorData> d_vec;
+    std::vector<MatrixData> d_mat;
 };
 
 } // namespace AMP::Utilities

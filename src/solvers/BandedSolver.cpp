@@ -4,7 +4,9 @@
 #include "ProfilerApp.h"
 
 // External includes
+#ifdef USE_EXT_LAPACK_WRAPPERS
 #include "LapackWrappers.h"
+#endif
 
 
 namespace AMP {
@@ -91,6 +93,7 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
     }
 
     // Factor the matrix
+#ifdef USE_EXT_LAPACK_WRAPPERS
     int error = 0;
     Lapack<double>::gbtrf( M, N, KL, KU, AB, K, IPIV, error );
     if ( error != 0 ) {
@@ -98,6 +101,9 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
         sprintf( msg, "Error factoring matrix (%i)", error );
         AMP_ERROR( msg );
     }
+#else
+    AMP_ERROR( "Lapack Required" );
+#endif
 
     PROFILE_STOP( "reset" );
 }
@@ -124,6 +130,7 @@ void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     f->copyOutRawData( B );
 
     // Solve the
+#ifdef USE_EXT_LAPACK_WRAPPERS
     int error = 0;
     Lapack<double>::gbtrs( 'N', N, KL, KU, 1, AB, 2 * KL + KU + 1, IPIV, B, N, error );
     d_iNumberIterations = 1;
@@ -132,6 +139,9 @@ void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         sprintf( msg, "Error solving matrix (%i)", error );
         AMP_ERROR( msg );
     }
+#else
+    AMP_ERROR( "Lapack Required" );
+#endif
 
     // Copy the solution
     AMP_ASSERT( *rightDOF == *( u->getDOFManager() ) );

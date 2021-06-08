@@ -4,32 +4,26 @@
 #include "AMP/utils/AsciiWriter.h"
 #include "AMP/utils/HDF5writer.h"
 #include "AMP/utils/NullWriter.h"
-#ifdef USE_AMP_MESH
-#include "AMP/ampmesh/SiloIO.h"
-#endif
+#include "AMP/utils/SiloWriter.h"
 
 
-namespace AMP {
-namespace Utilities {
+namespace AMP::Utilities {
 
 
 /************************************************************
  * Builder                                                   *
  ************************************************************/
-std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( const std::string &type, AMP_MPI comm )
+std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type, AMP_MPI comm )
 {
+    std::for_each( type.begin(), type.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::Utilities::Writer> writer;
-    if ( type == "None" || type == "none" || type == "NONE" ) {
+    if ( type == "none" ) {
         writer.reset( new AMP::Utilities::NullWriter() );
-    } else if ( type == "Silo" || type == "silo" || type == "SILO" ) {
-#if defined( USE_AMP_MESH ) && defined( USE_EXT_SILO )
-        writer.reset( new AMP::Mesh::SiloIO() );
-#else
-        writer.reset( new AMP::Utilities::NullWriter() );
-#endif
-    } else if ( type == "HDF5" || type == "hdf5" ) {
+    } else if ( "silo" ) {
+        writer.reset( new AMP::Utilities::SiloIO() );
+    } else if ( "hdf5" ) {
         writer.reset( new AMP::Utilities::HDF5writer() );
-    } else if ( type == "Ascii" || type == "ascii" || type == "ASCII" ) {
+    } else if ( type == "ascii" ) {
         writer.reset( new AMP::Utilities::AsciiWriter() );
     } else {
         AMP_ERROR( "Unknown writer: " + type );
@@ -57,6 +51,7 @@ Writer::~Writer() = default;
 /************************************************************
  * Some basic functions                                      *
  ************************************************************/
+std::string Writer::getExtension() const { return getProperties().extension; }
 void Writer::setDecomposition( int d )
 {
     AMP_INSIST( d == 1 || d == 2, "decomposition must be 1 or 2" );
@@ -86,5 +81,4 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>, const 
 void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix>, const std::string & ) {}
 
 
-} // namespace Utilities
-} // namespace AMP
+} // namespace AMP::Utilities

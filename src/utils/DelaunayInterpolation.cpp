@@ -15,8 +15,6 @@
 
 #include "ProfilerApp.h"
 
-#include "LapackWrappers.h"
-
 #define NDIM_MAX 3
 #define PROFILE_LEVEL 3
 

@@ -5,7 +5,6 @@
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
 
-#include "LapackWrappers.h"
 #include "ProfilerApp.h"
 #include "StackTrace/ErrorHandlers.h"
 #include "StackTrace/StackTrace.h"
@@ -14,6 +13,9 @@
 
 // Include external files for startup/version info
 // clang-format off
+#ifdef USE_EXT_LAPACK_WRAPPERS
+    #include "LapackWrappers.h"
+#endif
 #ifdef USE_EXT_PETSC
     #include "petsc.h"
     #include "petscerror.h"
@@ -648,7 +650,9 @@ std::string AMPManager::info()
 #ifdef USE_EXT_MPI
     out << "MPI: " << AMP::AMP_MPI::info() << std::endl;
 #endif
+#ifdef USE_EXT_LAPACK_WRAPPERS
     out << "Lapack: " << Lapack<double>::info();
+#endif
     return out.str();
 }
 

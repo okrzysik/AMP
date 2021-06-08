@@ -44,7 +44,17 @@ AsciiWriter::~AsciiWriter() = default;
 /************************************************************
  * Some basic functions                                      *
  ************************************************************/
-std::string AsciiWriter::getExtension() { return "ascii"; }
+Writer::WriterProperties AsciiWriter::getProperties() const
+{
+    WriterProperties properties;
+    properties.type                   = "Ascii";
+    properties.extension              = "ascii";
+    properties.registerMesh           = false;
+    properties.registerVector         = true;
+    properties.registerVectorWithMesh = false;
+    properties.registerMatrix         = true;
+    return properties;
+}
 
 
 /************************************************************

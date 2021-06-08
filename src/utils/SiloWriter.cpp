@@ -1,4 +1,4 @@
-#include "AMP/ampmesh/SiloIO.h"
+#include "AMP/utils/SiloWriter.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/utils/Utilities.h"
 
@@ -7,8 +7,7 @@
 #include <chrono>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Utilities {
 
 
 static inline size_t find_slash( const std::string &filename )
@@ -57,7 +56,17 @@ SiloIO::~SiloIO() = default;
 /************************************************************
  * Some basic functions                                      *
  ************************************************************/
-std::string SiloIO::getExtension() { return "silo"; }
+Writer::WriterProperties SiloIO::getProperties() const
+{
+    WriterProperties properties;
+    properties.type                   = "Silo";
+    properties.extension              = "silo";
+    properties.registerMesh           = true;
+    properties.registerVector         = false;
+    properties.registerVectorWithMesh = true;
+    properties.registerMatrix         = false;
+    return properties;
+}
 
 
 #ifdef USE_EXT_SILO
@@ -340,15 +349,15 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     auto nodes    = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
     int shapesize = nodes.size();
     int shapetype;
-    if ( shapesize == 8 && type == GeomType::Volume )
+    if ( shapesize == 8 && type == AMP::Mesh::GeomType::Volume )
         shapetype = DB_ZONETYPE_HEX;
-    else if ( shapesize == 4 && type == GeomType::Volume )
+    else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Volume )
         shapetype = DB_ZONETYPE_TET;
-    else if ( shapesize == 4 && type == GeomType::Face )
+    else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Face )
         shapetype = DB_ZONETYPE_QUAD;
-    else if ( shapesize == 3 && type == GeomType::Face )
+    else if ( shapesize == 3 && type == AMP::Mesh::GeomType::Face )
         shapetype = DB_ZONETYPE_TRIANGLE;
-    else if ( shapesize == 2 && type == GeomType::Edge )
+    else if ( shapesize == 2 && type == AMP::Mesh::GeomType::Edge )
         shapetype = DB_ZONETYPE_BEAM;
     else
         AMP_ERROR( "Unknown element type" );
@@ -381,7 +390,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
     elem_iterator = mesh->getIterator( mesh->getGeomType(), 0 );
     std::vector<int> nodelist;
     nodelist.reserve( shapesize * elem_iterator.size() );
-    std::vector<MeshElementID> nodeids;
+    std::vector<AMP::Mesh::MeshElementID> nodeids;
     for ( const auto &elem : elem_iterator ) {
         elem.getElementsID( AMP::Mesh::GeomType::Vertex, nodeids );
         AMP_INSIST( (int) nodeids.size() == shapesize,
@@ -1149,10 +1158,20 @@ void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
 {
     AMP_ERROR( "SILO not configured" );
 }
+void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr, const std::string & )
+{
+    AMP_ERROR( "SILO not configured" );
+}
+#endif
+#ifdef USE_AMP_MATRICES
+void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr, const std::string & )
+{
+    AMP_ERROR( "SILO not configured" );
+}
 #endif
 
+
 #endif
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Utilities

@@ -422,6 +422,7 @@ void Xdmf::write( const std::string &filename ) const
     fprintf( fid, "</Xdmf>\n" );
     fclose( fid );
 }
+void Xdmf::clear() { d_meshData = std::map<std::string, std::vector<MeshData>>(); }
 
 
 /****************************************************************

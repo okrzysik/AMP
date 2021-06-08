@@ -156,21 +156,6 @@ public:
     static TYPE sum( const Array<TYPE, FUN, ALLOC> &A );
 
 
-    template<class TYPE>
-    static inline void gemmWrapper( char TRANSA,
-                                    char TRANSB,
-                                    int M,
-                                    int N,
-                                    int K,
-                                    TYPE alpha,
-                                    const TYPE *A,
-                                    int LDA,
-                                    const TYPE *B,
-                                    int LDB,
-                                    TYPE beta,
-                                    TYPE *C,
-                                    int LDC );
-
     GPUFunctionTable(){};
 
 private:

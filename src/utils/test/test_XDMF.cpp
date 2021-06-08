@@ -1,3 +1,4 @@
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Xdmf.h"
 
 #include <math.h>
@@ -6,41 +7,45 @@
 #include <stdlib.h>
 
 
-// 2D points
-void write_points( size_t N, hid_t fid, AMP::Xdmf &xmf )
+// Point mesh
+template<std::size_t NDIM>
+void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
 {
+    std::string meshname = NDIM == 2 ? "Points_2D" : "Points_3D";
+    auto gid             = AMP::createGroup( fid, meshname );
+
     // Create the coordinate data
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<double> dis;
-    AMP::Array<double> x( 2, N );
+    AMP::Array<double> x( NDIM, N );
     for ( size_t i = 0; i < N; i++ ) {
-        x( 0, i ) = dis( gen );
-        x( 1, i ) = dis( gen );
+        for ( size_t d = 0; d < NDIM; d++ )
+            x( d, i ) = dis( gen );
     }
 
     // Create the scalar data
     AMP::Array<double> distance( N );
-    for ( size_t i = 0; i < N; i++ )
-        distance( i ) = sqrt( x( 0, i ) * x( 0, i ) + x( 1, i ) * x( 1, i ) );
+    for ( size_t i = 0; i < N; i++ ) {
+        double dist = 0;
+        for ( size_t d = 0; d < NDIM; d++ )
+            dist += x( d, i ) * x( d, i );
+        distance( i ) = sqrt( dist );
+    }
 
     // Write the data to HDF5
-    writeHDF5( fid, "Points_XY", x );
-    writeHDF5( fid, "Points_dist", distance );
+    writeHDF5( gid, "XY", x );
+    writeHDF5( gid, "dist", distance );
 
     // Register the data with XDMF
-    auto mesh = AMP::Xdmf::createPointMesh( "points", 2, N, "test_XDMF.h5:/Points_XY" );
-    mesh.addVariable( "distance",
-                      distance.size(),
-                      AMP::Xdmf::RankType::Scalar,
-                      AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Points_dist" );
-    mesh.addVariable( "vector",
-                      x.size(),
-                      AMP::Xdmf::RankType::Vector,
-                      AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Points_XY" );
+    auto center = AMP::Xdmf::Center::Node;
+    auto prefix = filename + ":/" + meshname + "/";
+    auto mesh   = AMP::Xdmf::createPointMesh( meshname, NDIM, N, prefix + "XY" );
+    mesh.addVariable(
+        "distance", distance.size(), AMP::Xdmf::RankType::Scalar, center, prefix + "dist" );
+    mesh.addVariable( "vector", x.size(), AMP::Xdmf::RankType::Vector, center, prefix + "XY" );
     xmf.addMesh( "points", mesh );
+    AMP::closeGroup( gid );
 }
 
 
@@ -243,16 +248,37 @@ void write_unstructured( int NumElements, int NumNodes, hid_t fid, AMP::Xdmf &xm
 }
 
 
-int main( int, char *[] )
+int main( int argc, char *argv[] )
 {
-    auto fid = AMP::openHDF5( "test_XDMF.h5", "w", AMP::Compression::GZIP );
+    AMP::AMPManager::startup( argc, argv );
+    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
 
+    // Open HDF5 file(s)
+    auto filename = "test_XDMF." + std::to_string( rank ) + ".h5";
+    auto fid      = AMP::openHDF5( filename, "w", AMP::Compression::GZIP );
+
+    // Create the Xdmf writer
     AMP::Xdmf xmf;
-    write_points( 256, fid, xmf );
-    write_uniform( 16, 32, fid, xmf );
-    write_curvilinear( 32, 20, fid, xmf );
-    write_unstructured( 3, 6, fid, xmf );
-    xmf.write( "test_XDMF.xmf" );
 
+    // Write the serial meshes
+    if ( rank == 0 ) {
+        write_points<2>( 256, fid, filename, xmf );
+        write_uniform( 16, 32, fid, xmf );
+        write_curvilinear( 32, 20, fid, xmf );
+        write_unstructured( 3, 6, fid, xmf );
+    }
+
+    // Write the parallel meshes
+
+    // Close the HDF5 file
+    AMP::closeHDF5( fid );
+
+    // Gather the Xdmf info for all ranks and write the results
+    xmf.gather( AMP_COMM_WORLD );
+    xmf.write( "test_XDMF.xmf" );
+    xmf.clear();
+
+    // Finished
+    AMP::AMPManager::shutdown();
     return 0;
 }
