@@ -113,7 +113,7 @@ private:
         std::shared_ptr<AMP::LinearAlgebra::Vector> vec;
         AMP::Mesh::GeomType type;
         MeshData *mesh;
-        VectorData() : mesh( nullptr ) {}
+        VectorData() : type( static_cast<AMP::Mesh::GeomType>( 0xFF ) ), mesh( nullptr ) {}
     };
 
     struct MatrixData {

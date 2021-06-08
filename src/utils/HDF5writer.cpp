@@ -111,6 +111,9 @@ void HDF5writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                int level,
                                const std::string &path )
 {
+    NULL_USE( mesh );
+    NULL_USE( level );
+    NULL_USE( path );
     AMP_ERROR( "Meshes are not supported yet" );
 }
 

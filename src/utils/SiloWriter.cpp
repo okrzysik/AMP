@@ -1141,33 +1141,20 @@ void createSiloDirectory( DBfile *FileHandle, const std::string &path )
 
 
 #else
-void SiloIO::readFile( const std::string & ) { AMP_ERROR( "SILO not configured" ); }
-void SiloIO::writeFile( const std::string &, size_t, double )
-{
-    AMP_ERROR( "SILO not configured" );
-}
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string & )
-{
-    AMP_ERROR( "SILO not configured" );
-}
+void SiloIO::readFile( const std::string & ) {}
+void SiloIO::writeFile( const std::string &, size_t, double ) {}
+void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string & ) {}
 #ifdef USE_AMP_VECTORS
 void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
                              AMP::Mesh::Mesh::shared_ptr,
                              AMP::Mesh::GeomType,
                              const std::string & )
 {
-    AMP_ERROR( "SILO not configured" );
 }
-void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr, const std::string & )
-{
-    AMP_ERROR( "SILO not configured" );
-}
+void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr, const std::string & ) {}
 #endif
 #ifdef USE_AMP_MATRICES
-void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr, const std::string & )
-{
-    AMP_ERROR( "SILO not configured" );
-}
+void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr, const std::string & ) {}
 #endif
 
 

@@ -19,9 +19,9 @@ std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type, A
     std::shared_ptr<AMP::Utilities::Writer> writer;
     if ( type == "none" ) {
         writer.reset( new AMP::Utilities::NullWriter() );
-    } else if ( "silo" ) {
+    } else if ( type == "silo" ) {
         writer.reset( new AMP::Utilities::SiloIO() );
-    } else if ( "hdf5" ) {
+    } else if ( type == "hdf5" ) {
         writer.reset( new AMP::Utilities::HDF5writer() );
     } else if ( type == "ascii" ) {
         writer.reset( new AMP::Utilities::AsciiWriter() );
