@@ -1,5 +1,6 @@
 variables:
   PROJECT: AMP
+  GROUP: nerd-project
   
 include:
   - project: 'AMP/dev-ops/ci'
