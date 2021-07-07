@@ -73,15 +73,17 @@ ADD_AMP_TEST_1_2_4( testMultiMeshOwnerRank )
 
 
 # Add silo tests
-ADD_AMP_TEST( test_SiloIO input_crystal )
-ADD_AMP_TEST_PARALLEL( test_SiloIO 2 input_crystal )
-IF ( AMP_DATA )
-    ADD_AMP_TEST( test_SiloIO input_stl )
-ENDIF()
-IF ( USE_EXT_LIBMESH AND AMP_DATA )
-    ADD_AMP_TEST_1_2_4( test_SiloIO input_SiloIO-1 )
-ELSE()
-    ADD_AMP_TEST_1_2_4( test_SiloIO input_SiloIO-2 )
+IF ( USE_EXT_SILO )
+    ADD_AMP_TEST( test_SiloIO input_crystal )
+    ADD_AMP_TEST_PARALLEL( test_SiloIO 2 input_crystal )
+    IF ( AMP_DATA )
+        ADD_AMP_TEST( test_SiloIO input_stl )
+    ENDIF()
+    IF ( USE_EXT_LIBMESH AND AMP_DATA )
+        ADD_AMP_TEST_1_2_4( test_SiloIO input_SiloIO-1 )
+    ELSE()
+        ADD_AMP_TEST_1_2_4( test_SiloIO input_SiloIO-2 )
+    ENDIF()
 ENDIF()
 
 

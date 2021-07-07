@@ -107,7 +107,14 @@ std::string MeshElement::print( uint8_t indent_N ) const
         return stringf( "%sMeshElement: null element", prefix );
     int type        = static_cast<int>( elementType() );
     std::string out = prefix + elementClass() + "\n";
-    out += stringf( "%s   Type = %i\n", prefix, type );
+    out += stringf( "%s   ID = (%i,%i,%u,%u,%lu)\n",
+                    prefix,
+                    globalID().is_local() ? 1 : 0,
+                    static_cast<int>( globalID().type() ),
+                    globalID().local_id(),
+                    globalID().owner_rank(),
+                    globalID().meshID().getData() );
+    out += stringf( "%s   Type: %i\n", prefix, type );
     out += stringf( "%s   Centroid: %s\n", prefix, centroid().print().data() );
     if ( type != 0 ) {
         auto nodes = getElements( AMP::Mesh::GeomType::Vertex );
@@ -184,6 +191,14 @@ MeshElementID MeshElement::globalID() const
     if ( element == nullptr )
         return MeshElementID();
     return element->globalID();
+}
+
+
+// Stream operator
+std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x )
+{
+    out << x.print();
+    return out;
 }
 
 

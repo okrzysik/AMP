@@ -4,9 +4,6 @@
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/UtilityMacros.h"
 
-// External includes
-#include "LapackWrappers.h"
-
 #include <algorithm>
 #include <cstring>
 #include <limits>
@@ -312,26 +309,6 @@ TYPE FunctionTable::sum( const Array<TYPE, FUN, ALLOC> &A )
     const auto &fun = []( const TYPE &a, const TYPE &b ) { return a + b; };
     return reduce( fun, A, (TYPE) 0 );
 }
-
-template<class TYPE>
-inline void FunctionTable::gemmWrapper( char TRANSA,
-                                        char TRANSB,
-                                        int M,
-                                        int N,
-                                        int K,
-                                        TYPE alpha,
-                                        const TYPE *A,
-                                        int LDA,
-                                        const TYPE *B,
-                                        int LDB,
-                                        TYPE beta,
-                                        TYPE *C,
-                                        int LDC )
-{
-
-    Lapack<TYPE>::gemm( TRANSA, TRANSB, M, N, K, alpha, A, LDA, B, LDB, beta, C, LDC );
-}
-
 
 } // namespace AMP
 

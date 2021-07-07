@@ -142,7 +142,14 @@ inline std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 }
 
 
+/****************************************************************
+ * Stream operator                                               *
+ ****************************************************************/
+std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x );
+
+
 } // namespace Mesh
 } // namespace AMP
+
 
 #endif

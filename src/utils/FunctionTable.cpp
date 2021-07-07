@@ -1,6 +1,51 @@
 #include "FunctionTable.hpp"
 
 
+#ifdef USE_EXT_LAPACK_WRAPPERS
+#include "LapackWrappers.h"
+#else
+template<class TYPE>
+class Lapack
+{
+public:
+    static void axpy( size_t, TYPE, const TYPE *, size_t, TYPE *, size_t )
+    {
+        AMP_ERROR( "Lapack required" );
+    }
+    static void gemv( char,
+                      size_t,
+                      size_t,
+                      TYPE,
+                      const TYPE *,
+                      size_t,
+                      const TYPE *,
+                      size_t,
+                      TYPE,
+                      TYPE *,
+                      size_t )
+    {
+        AMP_ERROR( "Lapack required" );
+    }
+    static void gemm( char,
+                      char,
+                      size_t,
+                      size_t,
+                      size_t,
+                      TYPE,
+                      const TYPE *,
+                      size_t,
+                      const TYPE *,
+                      size_t,
+                      TYPE,
+                      TYPE *,
+                      size_t )
+    {
+        AMP_ERROR( "Lapack required" );
+    }
+};
+#endif
+
+
 namespace AMP {
 
 

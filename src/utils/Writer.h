@@ -4,10 +4,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 
-#include <map>
 #include <memory>
-#include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -35,6 +32,16 @@ namespace AMP::Utilities {
 class Writer
 {
 public:
+    struct WriterProperties {
+        std::string type;            // Writer type: Silo, HDF5, Ascii
+        std::string extension;       // The primary file extension for the writer
+        bool registerMesh;           // Does the writer support registering a mesh
+        bool registerVector;         // Does the writer support registering a vector
+        bool registerVectorWithMesh; // Does the writer support registering a vector with a mesh
+        bool registerMatrix;         // Does the writer support registering a matrix
+    };
+
+public:
     /**
      * \brief   Function to build a writer
      * \details This function will build a default writer for use.
@@ -46,7 +53,7 @@ public:
      *               "HDF5"  - A simple HDF5 writer
      * \param comm   Communicator to use
      */
-    static std::shared_ptr<AMP::Utilities::Writer> buildWriter( const std::string &type,
+    static std::shared_ptr<AMP::Utilities::Writer> buildWriter( std::string type,
                                                                 AMP_MPI comm = AMP_COMM_WORLD );
 
     /**
@@ -56,6 +63,8 @@ public:
      */
     static std::shared_ptr<AMP::Utilities::Writer> buildWriter( std::shared_ptr<AMP::Database> db );
 
+
+public:
     //!  Default constructor
     Writer();
 
@@ -65,8 +74,11 @@ public:
     //! Delete copy constructor
     Writer( const Writer & ) = delete;
 
+    //! Function to get the writer properties
+    virtual WriterProperties getProperties() const = 0;
+
     //!  Function to return the file extension
-    virtual std::string getExtension() = 0;
+    std::string getExtension() const;
 
     /**
      * \brief   Function to set the file decomposition
@@ -86,7 +98,7 @@ public:
     virtual void readFile( const std::string &fname ) = 0;
 
     //!  Function to write a file
-    virtual void writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) = 0;
+    virtual void writeFile( const std::string &fname, size_t iteration, double time = 0 ) = 0;
 
     /**
      * \brief    Function to register a mesh
@@ -114,12 +126,12 @@ public:
      *     or mesh-based operations.
      * \param vec   The vector we want to write
      * \param mesh  The mesh we want to write the vector over.
-     *              Note: for many writers the vector must completely cover the mesh.
+     *              Note: any writers require the vector to completely cover the mesh.
      *              Note: mesh does not have to be previously registered with registerMesh.
      * \param type  The entity type we want to save (vertex, face, cell, etc.)
-     *              Note: some writers only supports writing one entity type.  If the vector
-     *              spans multiple entity type (eg cell+vertex) the user should register
-     *              the vector multiple times (one for each entity type).
+     *              Note: some writers only supports writing one entity type.
+     *              If the vector spans multiple entity type (eg cell+vertex)  the user should
+     *              register the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
     virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,

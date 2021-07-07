@@ -140,7 +140,7 @@ protected:
     MeshElement *clone() const override;
 
     //! Get the verticies composing the element
-    inline void getVertexCoord( std::array<double, NP> *x ) const;
+    inline std::array<std::array<double, NP>, TYPE + 1> getVertexCoord() const;
 
     // The pointer to the current mesh
     const TriangleMesh<NG, NP> *d_mesh;

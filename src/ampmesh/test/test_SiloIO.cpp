@@ -92,10 +92,8 @@ void printMeshNames( AMP::Mesh::Mesh::shared_ptr mesh, const std::string &prefix
 }
 
 
-void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
+void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::string &input_file )
 {
-
-    AMP::logOnlyNodeZero( "output_test_SiloIO" );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     globalComm.barrier();
     double t1 = AMP::AMP_MPI::time();
@@ -175,24 +173,24 @@ void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
     }
 #endif
 
-    // Create the silo writer and register the data
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
-    int level       = 1; // How much detail do we want to register
-    siloWriter->registerMesh( mesh, level );
+    // Create the writer and register the data
+    auto writer = AMP::Utilities::Writer::buildWriter( writerName );
+    int level   = 1; // How much detail do we want to register
+    writer->registerMesh( mesh, level );
     if ( submesh != nullptr )
-        siloWriter->registerMesh( submesh, level );
+        writer->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
-    siloWriter->registerVector( meshID_vec, mesh, pointType, "MeshID" );
-    siloWriter->registerVector( block_vec, mesh, volumeType, "BlockID" );
-    siloWriter->registerVector( rank_vec, mesh, pointType, "rank" );
-    siloWriter->registerVector( position, mesh, pointType, "position" );
-    siloWriter->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
+    writer->registerVector( meshID_vec, mesh, pointType, "MeshID" );
+    writer->registerVector( block_vec, mesh, volumeType, "BlockID" );
+    writer->registerVector( rank_vec, mesh, pointType, "rank" );
+    writer->registerVector( position, mesh, pointType, "position" );
+    writer->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
     if ( submesh != nullptr ) {
-        siloWriter->registerVector( z_surface, submesh, pointType, "z_surface" );
+        writer->registerVector( z_surface, submesh, pointType, "z_surface" );
     }
     // Register a vector over the clad
     if ( clad )
-        siloWriter->registerVector( cladPosition, clad, pointType, "clad_position" );
+        writer->registerVector( cladPosition, clad, pointType, "clad_position" );
 #endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
@@ -206,15 +204,15 @@ void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
             AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
             auto meshID_vec2 = meshID_vec->select( meshSelector, "mesh subset" );
             meshID_vec2->setToScalar( i + 1 );
-            siloWriter->registerMesh( mesh2, level );
-            siloWriter->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
+            writer->registerMesh( mesh2, level );
+            writer->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
             // Get the surface
             auto surfaceMesh = mesh2->Subset( mesh2->getSurfaceIterator( surfaceType, 1 ) );
             if ( surfaceMesh ) {
                 auto DOF_surface = AMP::Discretization::simpleDOFManager::create(
                     surfaceMesh, surfaceType, 0, 1, true );
                 auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
-                siloWriter->registerVector( id_vec, surfaceMesh, surfaceType, "surface_ids" );
+                writer->registerVector( id_vec, surfaceMesh, surfaceType, "surface_ids" );
                 id_vec->setToScalar( -1 );
                 std::vector<size_t> dofs;
                 for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
@@ -258,8 +256,8 @@ void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
         std::stringstream fname1;
         fname1 << input_file << "_" << globalComm.getSize() << "proc_single";
         globalComm.barrier();
-        siloWriter->setDecomposition( 1 );
-        siloWriter->writeFile( fname1.str(), 0 );
+        writer->setDecomposition( 1 );
+        writer->writeFile( fname1.str(), 0 );
         globalComm.barrier();
     }
     double t6 = AMP::AMP_MPI::time();
@@ -268,23 +266,24 @@ void test_Silo( AMP::UnitTest &ut, const std::string &input_file )
     std::stringstream fname2;
     fname2 << input_file << "_" << globalComm.getSize() << "proc_multiple";
     globalComm.barrier();
-    siloWriter->setDecomposition( 2 );
-    siloWriter->writeFile( fname2.str(), 0 );
+    writer->setDecomposition( 2 );
+    writer->writeFile( fname2.str(), 0 );
     globalComm.barrier();
     double t7 = AMP::AMP_MPI::time();
 
     if ( globalComm.getRank() == 0 ) {
-        std::cout << "Read in meshes: " << t2 - t1 << std::endl;
-        std::cout << "Allocate vectors: " << t3 - t2 << std::endl;
-        std::cout << "Register data: " << t4 - t3 << std::endl;
-        std::cout << "Initialize vectors: " << t5 - t4 << std::endl;
+        std::cout << writerName << ":" << std::endl;
+        std::cout << "  Read in meshes: " << t2 - t1 << std::endl;
+        std::cout << "  Allocate vectors: " << t3 - t2 << std::endl;
+        std::cout << "  Register data: " << t4 - t3 << std::endl;
+        std::cout << "  Initialize vectors: " << t5 - t4 << std::endl;
         if ( globalComm.getSize() <= 20 )
-            std::cout << "Write a single file: " << t6 - t5 << std::endl;
-        std::cout << "Write multiple files: " << t7 - t6 << std::endl;
-        std::cout << "Total time: " << t7 - t1 << std::endl;
+            std::cout << "  Write a single file: " << t6 - t5 << std::endl;
+        std::cout << "  Write multiple files: " << t7 - t6 << std::endl;
+        std::cout << "  Total time: " << t7 - t1 << std::endl;
     }
 
-    ut.passes( "Silo test ran to completion" );
+    ut.passes( writerName + " test ran to completion" );
 }
 
 
@@ -293,14 +292,16 @@ int main( int argc, char **argv )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     PROFILE_ENABLE();
+    AMP::logOnlyNodeZero( "output_test_SiloIO" );
 
     std::string filename = "input_SiloIO-1";
     if ( argc == 2 )
         filename = argv[1];
 
-    test_Silo( ut, filename );
+    testWriter( ut, "Silo", filename );
+    // testWriter( ut, "HDF5", filename );
 
-    test_HDF5( ut );
+    // test_HDF5( ut );
 
     int N_failed = ut.NumFailGlobal();
     ut.report();

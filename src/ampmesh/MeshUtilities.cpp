@@ -448,6 +448,12 @@ void ElementFinder::initialize() const
                 add( 0.95 * child.centroid() + 0.05 * p0, id );
         }
     }
+    // Check the ids
+    AMP_ASSERT( ids.size() == points.size() );
+    for ( auto id : ids ) {
+        AMP_ASSERT( !id.isNull() );
+        AMP_ASSERT( id.type() != GeomType::Vertex );
+    }
     // Update the internal hash
     d_pos_hash = d_mesh->positionHash();
     // Create a kdtree with the points
@@ -474,7 +480,7 @@ double ElementFinder::distance( const Point &pos, const Point &dir ) const
     if ( d_pos_hash != d_mesh->positionHash() )
         initialize();
     // Get a list of ids to check
-    double dist = 1e200;
+    double dist = std::numeric_limits<double>::infinity();
     std::set<AMP::Mesh::MeshElementID> ids;
     for ( const auto &tmp : d_tree.findNearestRay( pos, dir ) )
         ids.insert( std::get<1>( tmp ) );

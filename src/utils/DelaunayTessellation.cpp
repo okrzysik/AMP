@@ -211,7 +211,7 @@ static inline bool coplanar( const std::array<TYPE, NDIM> *x, TYPE tol )
                 }
             }
             const ETYPE &sign = ( ( NDIM + d ) % 2 == 0 ) ? one : neg;
-            det += sign * DelaunayHelpers<NDIM>::det( M );
+            det += sign * DelaunayHelpers::det<ETYPE, NDIM>( M );
         }
         is_coplanar = fabs( static_cast<double>( det ) ) <= tol;
     } else {
@@ -386,7 +386,7 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
     Point x2[NDIM + 1];
     for ( int d = 0; d <= NDIM; d++ )
         x2[d] = x[tri[0][d]];
-    double volume = calc_volume<NDIM, TYPE, ETYPE>( x2 );
+    double volume = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
     if ( fabs( volume ) <= TOL_VOL ) {
         throw std::logic_error( "Error creating initial triangle" );
     } else if ( volume < 0 ) {
@@ -870,7 +870,7 @@ void clean_triangles( const int N,
                 int k = tri[i][j];
                 x2[j] = x[k];
             }
-            double vol = calc_volume<NDIM, TYPE, ETYPE>( x2 );
+            double vol = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
             double R, center[NDIM];
             get_circumsphere<NDIM, TYPE, ETYPE>( x2, R, center );
             double quality = vol_sphere<NDIM, TYPE, ETYPE>( R ) / vol;
@@ -1031,7 +1031,7 @@ int test_in_circumsphere( const std::array<TYPE, NDIM> x[],
         R[d] = sum;
         R2 += static_cast<double>( R[d] );
         const ETYPE &sign = ( ( NDIM + d ) % 2 == 0 ) ? one : neg;
-        det2[d]           = sign * DelaunayHelpers<NDIM>::det( A2 );
+        det2[d]           = sign * DelaunayHelpers::det<ETYPE, NDIM>( A2 );
     }
     // Compute the determinate (requires N^(NDIM+2) precision, used internally in dot)
     double det_A = dot<ETYPE>( NDIM + 1, det2, R );
@@ -1104,48 +1104,15 @@ void get_circumsphere( const std::array<TYPE, NDIM> x0[], double &R, double *cen
         for ( auto &elem : D )
             elem[i] = tmp;
     }
-    long double a = static_cast<double>( DelaunayHelpers<NDIM>::det( A ) );
+    long double a = static_cast<double>( DelaunayHelpers::det<long double, NDIM>( A ) );
     R             = 0.0;
     for ( int i = 0; i < NDIM; i++ ) {
-        long double d =
-            ( ( i % 2 == 0 ) ? 1 : -1 ) * static_cast<double>( DelaunayHelpers<NDIM>::det( D[i] ) );
+        long double d = ( ( i % 2 == 0 ) ? 1 : -1 ) *
+                        static_cast<double>( DelaunayHelpers::det<long double, NDIM>( D[i] ) );
         center[i] = static_cast<double>( d / ( 2 * a ) + static_cast<long double>( x0[0][i] ) );
         R += d * d;
     }
     R = sqrt( R ) / fabs( static_cast<double>( 2 * a ) );
-}
-
-
-/****************************************************************
- * Function to compute the Barycentric coordinates               *
- * Note: we use exact math until we perform the normalization    *
- *    The exact math component requires N^(D-1) precision        *
- ****************************************************************/
-template<int NDIM, class TYPE, class ETYPE>
-std::array<double, NDIM + 1> compute_Barycentric( const std::array<TYPE, NDIM> *x,
-                                                  const std::array<TYPE, NDIM> &xi )
-{
-    // Compute the barycentric coordinates T*L=r-r0
-    // http://en.wikipedia.org/wiki/Barycentric_coordinate_system_(mathematics)
-    ETYPE T[NDIM * NDIM];
-    for ( int i = 0; i < NDIM; i++ ) {
-        for ( int j = 0; j < NDIM; j++ )
-            T[j + i * NDIM] = ETYPE( x[i][j] - x[NDIM][j] );
-    }
-    ETYPE r[NDIM];
-    for ( int i = 0; i < NDIM; i++ )
-        r[i] = ETYPE( xi[i] - x[NDIM][i] );
-    ETYPE L2[NDIM + 1], det( 0 );
-    DelaunayHelpers<NDIM>::solve_system( T, r, L2, det );
-    L2[NDIM] = det;
-    for ( int i = 0; i < NDIM; i++ )
-        L2[NDIM] -= L2[i];
-    // Perform the normalization (will require inexact math)
-    double scale = 1.0 / static_cast<double>( det );
-    std::array<double, NDIM + 1> L;
-    for ( int i = 0; i < NDIM + 1; i++ )
-        L[i] = static_cast<double>( L2[i] ) * scale;
-    return L;
 }
 
 
@@ -1174,7 +1141,7 @@ bool test_flip_valid( const std::array<TYPE, NDIM> x[],
                       const std::array<TYPE, NDIM> &xi )
 {
     constexpr double TOL = getFlipTOL<TYPE>();
-    auto L               = compute_Barycentric<NDIM, TYPE, ETYPE>( x, xi );
+    auto L               = DelaunayHelpers::computeBarycentric<NDIM, TYPE, ETYPE>( x, xi );
     bool is_valid        = true;
     for ( int j = 0; j <= NDIM; j++ )
         is_valid = is_valid && ( j == i || L[j] >= -TOL );
@@ -1267,7 +1234,7 @@ bool flip_2D( const std::array<TYPE, 2> x[],
             int k = new_tri[i + it * 3];
             x2[i] = x[k];
         }
-        double volume = calc_volume<2, TYPE, ETYPE>( x2 );
+        double volume = DelaunayHelpers::calcVolume<2, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_VOL ) {
             // The triangle is invalid (collinear)
             isvalid = false;
@@ -1336,7 +1303,7 @@ bool flip_3D_22( const std::array<TYPE, 3> x[],
             }
             // Check if the 4 verticies are coplanar (the resulting simplex will have a volume of 0)
             std::array<TYPE, 3> x2[4] = { x[v1], x[v2], x[v3], x[v4] };
-            double vol                = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            double vol                = fabs( DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 ) );
             if ( vol > TOL_VOL ) {
                 // The points are not coplanar
                 continue;
@@ -1360,7 +1327,7 @@ bool flip_3D_22( const std::array<TYPE, 3> x[],
                     int k = new_tri[i + it * 4];
                     x2[i] = x[k];
                 }
-                double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+                double volume = DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 );
                 if ( fabs( volume ) <= TOL_VOL ) {
                     // The triangle is invalid (collinear)
                     isvalid = false;
@@ -1543,7 +1510,7 @@ bool flip_3D_32( const std::array<TYPE, 3> x[],
                 int k = new_tri[i + it * 4];
                 x2[i] = x[k];
             }
-            double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+            double volume = DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 );
             if ( fabs( volume ) <= TOL_VOL ) {
                 // The triangle is invalid (collinear)
                 isvalid = false;
@@ -1678,7 +1645,7 @@ bool flip_3D_23( const std::array<TYPE, 3> x[],
             int k = new_tri[i + it * 4];
             x2[i] = x[k];
         }
-        double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+        double volume = DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_VOL ) {
             // The triangle is invalid (collinear)
             isvalid = false;
@@ -1870,11 +1837,11 @@ bool flip_3D_44( const std::array<TYPE, 3> x[],
             for ( int j1 = 0; j1 < 4; j1++ ) {
                 x2[j1] = x[set1[j1]];
             }
-            vol1 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            vol1 = fabs( DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 ) );
             for ( int j1 = 0; j1 < 4; j1++ ) {
                 x2[j1] = x[set2[j1]];
             }
-            vol2 = fabs( calc_volume<3, TYPE, ETYPE>( x2 ) );
+            vol2 = fabs( DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 ) );
             for ( int it = 0; it < 2; it++ ) { // Loop through the sets (2)
                 if ( it == 0 ) {
                     // Check set 1
@@ -2010,7 +1977,7 @@ bool flip_3D_44( const std::array<TYPE, 3> x[],
                         int k = new_tri[i + it2 * 4];
                         x2[i] = x[k];
                     }
-                    double volume = calc_volume<3, TYPE, ETYPE>( x2 );
+                    double volume = DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 );
                     if ( fabs( volume ) <= TOL_VOL ) {
                         // The triangle is invalid (coplanar)
                         isvalid = false;
@@ -2404,7 +2371,7 @@ static inline double calc_volume2( const double x[] )
 {
     std::array<double, NDIM> x2[NDIM + 1];
     copy_x2( x, x2 );
-    return calc_volume<NDIM, double, long double>( x2 );
+    return DelaunayHelpers::calcVolume<NDIM, double, long double>( x2 );
 }
 double calc_volume( int ndim, const double x[] )
 {

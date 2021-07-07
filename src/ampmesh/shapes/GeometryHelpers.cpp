@@ -11,14 +11,13 @@ namespace AMP::Geometry::GeometryHelpers {
 
 
 // Output array
-std::ostream &operator<<( std::ostream &out, const Point2D &x )
+template<std::size_t N>
+std::ostream &operator<<( std::ostream &out, const std::array<double, N> &x )
 {
-    out << "(" << x[0] << "," << x[1] << ")";
-    return out;
-}
-std::ostream &operator<<( std::ostream &out, const Point3D &x )
-{
-    out << "(" << x[0] << "," << x[1] << "," << x[2] << ")";
+    out << "(" << x[0];
+    for ( size_t i = 1; i < N; i++ )
+        out << "," << x[i];
+    out << ")";
     return out;
 }
 
@@ -666,20 +665,12 @@ double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const
 
 
 /****************************************************************
- * Compute the normal to a plane                                 *
- ****************************************************************/
-Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 )
-{
-    return normalize( cross( v1 - v2, v1 - v3 ) );
-}
-
-
-/****************************************************************
  * Get the Barycentric coordinates (u, v, w) for point p with   *
  *   respect to triangle (a, b, c)                              *
  ***************************************************************/
 template<>
-Point3D barycentric<3, 3>( const Point3D ( &x )[3], const Point3D &p )
+std::array<double, 3> barycentric<3, 3>( const std::array<std::array<double, 3>, 3> &x,
+                                         const std::array<double, 3> &p )
 {
     auto v0  = x[1] - x[0];
     auto v1  = x[2] - x[0];
@@ -695,34 +686,119 @@ Point3D barycentric<3, 3>( const Point3D ( &x )[3], const Point3D &p )
     auto u   = 1.0 - v - w;
     return { u, v, w };
 }
-template<int NP, int NDIM>
-std::array<double, NP> barycentric( const std::array<double, NDIM> ( &x )[NP],
-                                    const std::array<double, NDIM> &xi )
+template<>
+std::array<double, 3> barycentric<3, 2>( const std::array<std::array<double, 2>, 3> &x,
+                                         const std::array<double, 2> &xi )
 {
-    // Compute the barycentric coordinates T*L=r-r0
-    // http://en.wikipedia.org/wiki/Barycentric_coordinate_system_(mathematics)
-    long double T[NDIM * NDIM];
-    for ( int i = 0; i < NDIM; i++ ) {
-        for ( int j = 0; j < NDIM; j++ )
-            T[j + i * NDIM] = x[i][j] - x[NDIM][j];
-    }
-    long double r[NDIM];
-    for ( int i = 0; i < NDIM; i++ )
-        r[i] = xi[i] - x[NDIM][i];
-    long double L2[NDIM + 1], det( 0 );
-    DelaunayHelpers<NDIM>::solve_system( T, r, L2, det );
-    L2[NDIM] = det;
-    for ( int i = 0; i < NDIM; i++ )
-        L2[NDIM] -= L2[i];
-    // Perform the normalization (will require inexact math)
-    double scale = 1.0 / static_cast<double>( det );
-    std::array<double, NDIM + 1> L;
-    for ( int i = 0; i < NDIM + 1; i++ )
-        L[i] = static_cast<double>( L2[i] ) * scale;
-    return L;
+    return DelaunayHelpers::computeBarycentric<2, double>( x.data(), xi );
 }
-template std::array<double, 4> barycentric<4, 3>( const std::array<double, 3> ( & )[4],
-                                                  const std::array<double, 3> & );
+template<>
+std::array<double, 4> barycentric<4, 3>( const std::array<std::array<double, 3>, 4> &x,
+                                         const std::array<double, 3> &xi )
+{
+    return DelaunayHelpers::computeBarycentric<3, double>( x.data(), xi );
+}
+
+
+/****************************************************************
+ * Compute the distance to the surface of a triangle/tetrahedron *
+ ****************************************************************/
+static bool containsPoint( const std::array<Point2D, 3> &x, const Point2D &pos, double TOL )
+{
+    auto L = barycentric<3, 2>( x, pos );
+    return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL );
+}
+static bool containsPoint( const std::array<Point3D, 3> &x, const Point3D &pos, double TOL )
+{
+    auto L = barycentric<3, 3>( x, pos );
+    return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL );
+}
+static bool containsPoint( const std::array<Point3D, 4> &x, const Point3D &pos, double TOL )
+{
+    auto L = barycentric<4, 3>( x, pos );
+    return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL ) && ( L[3] >= -TOL );
+}
+double distanceToTriangle( const std::array<Point2D, 3> &x, const Point2D &pos, const Point2D &dir )
+{
+    double d1 = distanceToLine( pos, dir, x[0], x[1] );
+    double d2 = distanceToLine( pos, dir, x[1], x[2] );
+    double d3 = distanceToLine( pos, dir, x[2], x[0] );
+    double d  = std::min( { d1, d2, d3 } );
+    if ( containsPoint( x, pos, 1e-8 ) ) {
+        AMP_ASSERT( d < 1e200 );
+        d = -d;
+    }
+    return d;
+}
+double distanceToTriangle( const std::array<Point3D, 3> &x, const Point3D &pos, const Point3D &dir )
+{
+    // Get the normal and a point on the plane containing the triangle
+    auto n = AMP::Geometry::GeometryHelpers::normal( x[0], x[1], x[2] );
+    // Check if the ray and plane are parallel
+    double w = dot( n, dir );
+    if ( fabs( w ) < 1e-8 ) {
+        // The ray is parallel to the plane
+        // Create the matrix to map between 2D and 3D coordinates
+        Point3D v1  = normalize( x[1] - x[0] );
+        Point3D v2  = cross( n, v1 );
+        Point3D v3  = n;
+        double M[9] = { v1[0], v1[1], v1[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2] };
+        double M_inv[9];
+        DelaunayHelpers::inverse( 3, M, M_inv );
+        // Check if the point is within the plane
+        double z  = M_inv[2] * pos[0] + M_inv[5] * pos[1] + M_inv[8] * pos[2];
+        double z0 = M_inv[2] * x[0][0] + M_inv[5] * x[0][1] + M_inv[8] * x[0][2];
+        if ( fabs( z - z0 ) > 1e-8 )
+            return std::numeric_limits<double>::infinity(); // ray is outside plane
+        // Convert the triangle and ray coordinates to 2D and re-test
+        auto convert = [&M_inv]( const Point3D &x ) {
+            Point2D y = { M_inv[0] * x[0] + M_inv[3] * x[1] + M_inv[6] * x[2],
+                          M_inv[1] * x[0] + M_inv[4] * x[1] + M_inv[7] * x[2] };
+            return y;
+        };
+        std::array<Point2D, 3> x2 = { convert( x[0] ), convert( x[1] ), convert( x[2] ) };
+        Point2D pos2              = convert( pos );
+        Point2D dir2              = normalize( convert( pos + dir ) - pos2 );
+        double d                  = distanceToTriangle( x2, pos2, dir2 );
+        return d;
+    } else {
+        // The ray and plane are not parallel
+        // Calculate the distance to the plane
+        auto v = x[0] - pos;
+        auto d = dot( v, n ) / w;
+        if ( d < 0 )
+            return std::numeric_limits<double>::infinity();
+        // Check if the point of intersection is within the triangle
+        auto p = pos + d * dir;
+        if ( containsPoint( x, p, 1e-8 ) )
+            return d;
+        else
+            return std::numeric_limits<double>::infinity();
+    }
+}
+double
+distanceToTetrahedron( const std::array<Point3D, 4> &x, const Point3D &pos, const Point3D &dir )
+{
+    double d1 = fabs( distanceToTriangle( { x[0], x[1], x[2] }, pos, dir ) );
+    double d2 = fabs( distanceToTriangle( { x[1], x[2], x[3] }, pos, dir ) );
+    double d3 = fabs( distanceToTriangle( { x[2], x[3], x[0] }, pos, dir ) );
+    double d4 = fabs( distanceToTriangle( { x[3], x[0], x[1] }, pos, dir ) );
+    double d  = std::min( { d1, d2, d3, d4 } );
+    if ( d > 1e100 )
+        return d;
+    if ( containsPoint( x, pos, 1e-8 ) )
+        d = -d;
+    return d;
+}
+
+
+/****************************************************************
+ * Compute the normal to a plane                                 *
+ ****************************************************************/
+Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 )
+{
+    return normalize( cross( v1 - v2, v1 - v3 ) );
+}
 
 
 /****************************************************************
@@ -749,7 +825,7 @@ Point3D nearest( const Point3D &A, const Point3D &B, const Point3D &P )
 /****************************************************************
  * Compute the nearest point to a triangle                       *
  ****************************************************************/
-Point3D nearest( const Point3D ( &v )[3], const Point3D &p0 )
+Point3D nearest( const std::array<Point3D, 3> &v, const Point3D &p0 )
 {
     constexpr double TOL = 1e-8;
     // Get the normal and a point on the plane containing the triangle
@@ -781,6 +857,25 @@ Point3D nearest( const Point3D ( &v )[3], const Point3D &p0 )
         // Point is closest to line between first and second verticies
         return nearest( v[0], v[1], p0 );
     }
+}
+
+
+/****************************************************************
+ * Compute the nearest point to a triangle                       *
+ ****************************************************************/
+Point3D nearest( const std::array<Point3D, 4> &v, const Point3D &p0 )
+{
+    // Compute the barycentric coordinates
+    auto L = barycentric<4, 3>( v, p0 );
+    // Restrict the coordinates
+    L[0]       = std::max( std::min( L[0], 1.0 ), 0.0 );
+    L[1]       = std::max( std::min( L[1], 1.0 ), 0.0 );
+    L[2]       = std::max( std::min( L[2], 1.0 ), 0.0 );
+    L[3]       = std::max( std::min( L[3], 1.0 ), 0.0 );
+    double tmp = 1.0 / ( L[0] + L[1] + L[2] + L[3] );
+    AMP_ASSERT( fabs( tmp - 1.0 ) < 1e-8 );
+    // Return the nearest point
+    return L[0] * v[0] + L[1] * v[1] + L[2] * v[2] + L[3] * v[3];
 }
 
 

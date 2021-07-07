@@ -11,6 +11,36 @@ using namespace AMP::Geometry::GeometryHelpers;
 using AMP::Mesh::Point;
 
 
+/****************************************************************
+ * Vector operations                                             *
+ ****************************************************************/
+static inline Point3D operator+( const Point3D &x, const Point3D &y )
+{
+    return { x[0] + y[0], x[1] + y[1], x[2] + y[2] };
+}
+static inline Point3D operator-( const Point3D &x, const Point3D &y )
+{
+    return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
+}
+static inline Point3D operator*( double x, const Point3D &y )
+{
+    return { x * y[0], x * y[1], x * y[2] };
+}
+static inline double dot( const Point3D &x, const Point3D &y )
+{
+    return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+}
+static inline Point3D cross( const Point3D &x, const Point3D &y )
+{
+    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
+}
+static inline Point3D normalize( const Point3D &x )
+{
+    double tmp = 1.0 / sqrt( dot( x, x ) );
+    return { tmp * x[0], tmp * x[1], tmp * x[2] };
+}
+
+
 // Test the mapping to/from a logical circle
 void test_dist_line( AMP::UnitTest &ut )
 {
@@ -130,6 +160,97 @@ void test_map_logical_sphere_surface( AMP::UnitTest &ut )
 }
 
 
+// Create random triangle/ray/distance sets in the same plane
+static std::tuple<std::array<Point3D, 3>, Point3D, Point3D, double> createTriRayPlane()
+{
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<> dis( -1.0, 1.0 );
+    // Create the center of a triangle and point of intersection
+    Point3D c  = { dis( gen ), dis( gen ), dis( gen ) };
+    Point3D pi = { dis( gen ), dis( gen ), dis( gen ) };
+    // Create the ray
+    auto dir = normalize( c - pi );
+    double d = 1.0 + dis( gen );
+    auto pos = pi - d * dir;
+    // Create the triangle points
+    Point3D v1 = normalize( { dis( gen ), dis( gen ), dis( gen ) } );
+    std::array<Point3D, 3> tri;
+    tri[0] = pi + fabs( dis( gen ) ) * v1;
+    tri[1] = pi - fabs( dis( gen ) ) * v1;
+    tri[2] = pi + 2 * dir;
+    return std::tie( tri, pos, dir, d );
+}
+
+
+// Create random triangle/ray/distance sets in the same plane
+static std::tuple<std::array<Point3D, 3>, Point3D, Point3D, double> createTriRayVol()
+{
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    static std::uniform_real_distribution<> dis( -1.0, 1.0 );
+    // Create the triangle points
+    std::array<Point3D, 3> tri;
+    tri[0] = { dis( gen ), dis( gen ), dis( gen ) };
+    tri[1] = { dis( gen ), dis( gen ), dis( gen ) };
+    tri[2] = { dis( gen ), dis( gen ), dis( gen ) };
+    // Create a random point within the triangle and direction
+    Point3D L = { fabs( dis( gen ) ), fabs( dis( gen ) ), fabs( dis( gen ) ) };
+    double t  = 1.0 / ( L[0] + L[1] + L[2] );
+    L         = { t * L[0], t * L[1], t * L[2] };
+    auto pi   = L[0] * tri[0] + L[1] * tri[1] + L[2] * tri[2];
+    auto dir  = normalize( { dis( gen ), dis( gen ), dis( gen ) } );
+    double d  = 1.0 + fabs( dis( gen ) );
+    auto pos  = pi - d * dir;
+    return std::tie( tri, pos, dir, d );
+}
+
+
+// Test ray-triangle intersection
+void test_ray_triangle_intersection( AMP::UnitTest &ut )
+{
+    bool pass = true;
+    // Create some sample triangles
+    std::array<Point2D, 3> t1 = { { { 0, 0 }, { 1, 0 }, { 0, 1 } } };
+    std::array<Point3D, 3> t2 = { { { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } } };
+    // Test 2D triangle
+    double d11 = distanceToTriangle( t1, { -1, 0 }, { 1, 0 } );
+    double d12 = distanceToTriangle( t1, { -1, 0.5 }, { 1, 0 } );
+    double d13 = distanceToTriangle( t1, { -1, -0.5 }, { 1, 0 } );
+    double d14 = distanceToTriangle( t1, { 0.1, 0.2 }, { -1, 0 } );
+    pass       = pass && fabs( d11 - 1.0 ) < 1e-12;
+    pass       = pass && fabs( d12 - 1.0 ) < 1e-12;
+    pass       = pass && d13 == std::numeric_limits<double>::infinity();
+    pass       = pass && fabs( d14 + 0.1 ) < 1e-12;
+    // Test 2D triangles in 3D
+    double d21 = distanceToTriangle( t2, { -1, 0, 0 }, { 1, 0, 0 } );
+    double d22 = distanceToTriangle( t2, { -1, 0.5, 0 }, { 1, 0, 0 } );
+    double d23 = distanceToTriangle( t2, { -1, -0.5, 0 }, { 1, 0, 0 } );
+    pass       = pass && fabs( d21 - 1.0 ) < 1e-12;
+    pass       = pass && fabs( d22 - 1.0 ) < 1e-12;
+    pass       = pass && d23 == std::numeric_limits<double>::infinity();
+    for ( int i = 0; i < 1000; i++ ) {
+        auto [tri, pos, dir, d] = createTriRayPlane();
+        double d2               = distanceToTriangle( tri, pos, dir );
+        if ( fabs( d - d2 ) > 1e-8 ) {
+            pass = false;
+        }
+    }
+    for ( int i = 0; i < 1000; i++ ) {
+        auto [tri, pos, dir, d] = createTriRayVol();
+        double d2               = distanceToTriangle( tri, pos, dir );
+        if ( fabs( d - d2 ) > 1e-8 ) {
+            pass = false;
+        }
+    }
+    if ( pass ) {
+        ut.passes( "ray-triangle intersection" );
+    } else {
+        ut.failure( "ray-triangle intersection" );
+    }
+}
+
+
 // Main function
 int main( int argc, char **argv )
 {
@@ -143,6 +264,7 @@ int main( int argc, char **argv )
     test_map_logical_poly( ut );
     test_map_logical_circle( ut );
     test_map_logical_sphere_surface( ut );
+    test_ray_triangle_intersection( ut );
 
     // Print the results and return
     ut.report();

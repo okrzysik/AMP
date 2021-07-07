@@ -1637,6 +1637,7 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
     template void MPI_CLASS::bcast<TYPE>( TYPE*, int, int ) const;                      \
     template void MPI_CLASS::send<TYPE>( const TYPE*, int, int, int ) const;            \
     template MPI_Request MPI_CLASS::Isend<TYPE>( const TYPE*, int, int, int ) const;    \
+    template void MPI_CLASS::recv<TYPE>( TYPE*, int, int, int ) const;                  \
     template void MPI_CLASS::recv<TYPE>( TYPE*, int&, int, const bool, int ) const;     \
     template MPI_Request MPI_CLASS::Irecv<TYPE>( TYPE* buf, int, int, int ) const;      \
     template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const TYPE & ) const;        \

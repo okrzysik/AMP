@@ -121,21 +121,6 @@ public:
     template<class TYPE, class FUN>
     static bool equals( const Array<TYPE, FUN> &A, const Array<TYPE, FUN> &B, TYPE tol );
 
-    template<class TYPE>
-    static inline void gemmWrapper( char TRANSA,
-                                    char TRANSB,
-                                    int M,
-                                    int N,
-                                    int K,
-                                    TYPE alpha,
-                                    const TYPE *A,
-                                    int LDA,
-                                    const TYPE *B,
-                                    int LDB,
-                                    TYPE beta,
-                                    TYPE *C,
-                                    int LDC );
-
 
     /* Specialized Functions */
 
