@@ -42,6 +42,17 @@ bool H5Dexists( hid_t fid, const std::string_view &name )
     //    H5Dclose( dataset );
     return exists;
 }
+hid_t createGroup( hid_t fid, const std::string_view &name )
+{
+    return H5Gcreate2( fid, name.data(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+}
+hid_t openGroup( hid_t fid, const std::string_view &name )
+{
+    if ( !H5Gexists( fid, name ) )
+        AMP_ERROR( "Group " + std::string( name ) + " does not exist" );
+    return H5Gopen2( fid, name.data(), H5P_DEFAULT );
+}
+void closeGroup( hid_t gid ) { H5Gclose( gid ); }
 
 
 /************************************************************************
@@ -590,6 +601,9 @@ hid_t openHDF5( const std::string_view &, const char *, Compression ) { return 0
 void closeHDF5( hid_t ) {}
 bool H5Gexists( hid_t, const std::string_view & ) { return false; }
 bool H5Dexists( hid_t, const std::string_view & ) { return false; }
+hid_t createGroup( hid_t, const std::string_view & ) { return 0; }
+hid_t openGroup( hid_t, const std::string_view & ) { return 0; }
+void closeGroup( hid_t ) {}
 #endif
 
 } // namespace AMP

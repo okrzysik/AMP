@@ -8,9 +8,6 @@
 #include <string_view>
 
 
-namespace AMP {
-
-
 // Include the headers and define some basic types
 #ifdef USE_HDF5
 // Using HDF5
@@ -20,6 +17,9 @@ namespace AMP {
 typedef int hid_t;
 typedef size_t hsize_t;
 #endif
+
+
+namespace AMP {
 
 
 enum class Compression : uint8_t { None, GZIP, SZIP };
@@ -114,6 +114,32 @@ bool H5Gexists( hid_t fid, const std::string_view &name );
  * @param[in] name      The name of the dataset
  */
 bool H5Dexists( hid_t fid, const std::string_view &name );
+
+
+/**
+ * \brief Create a group
+ * \details This function creates a new HDF5 group
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the group
+ */
+hid_t createGroup( hid_t fid, const std::string_view &name );
+
+
+/**
+ * \brief Open a group
+ * \details This function opens an HDF5 group
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the group
+ */
+hid_t openGroup( hid_t fid, const std::string_view &name );
+
+
+/**
+ * \brief Close a group
+ * \details This function closes an HDF5 group
+ * @param[in] fid       Group to close
+ */
+void closeGroup( hid_t fid );
 
 
 /**

@@ -73,6 +73,20 @@ int time_mult()
 }
 
 
+// Test conversion to/from decimal string
+int testDecimal( const std::string &x )
+{
+    eint1024 y( x.data() );
+    auto z = y.decimal();
+    if ( x != z ) {
+        std::cout << x << std::endl;
+        std::cout << z << std::endl;
+        return 1;
+    }
+    return 0;
+}
+
+
 // The main function
 int main( int, char *[] )
 {
@@ -87,6 +101,29 @@ int main( int, char *[] )
     eint256 a;
     if ( static_cast<double>( a ) != 0 ) {
         printf( "Failed default initialization\n" );
+        N_errors++;
+    }
+    eint512 x1( "-18330084947618492243362509" );
+    eint512 x2( "11658926934915909934019286" );
+    eint512 x3 = x1 - x2;
+    eint512 x4 = x1 + ( -x2 );
+    eint512 ans( "-29989011882534402177381795" );
+    if ( x3 != ans || x4 != ans ) {
+        printf( "Failed basic +-\n" );
+        N_errors++;
+    }
+
+    // Check converting to/from a long decimal
+    N_errors += testDecimal( "15634454661" );
+    N_errors += testDecimal( "-6843184314" );
+    N_errors +=
+        testDecimal( "-26383752273331116085217755810940080809980496163410708066430999326829" );
+
+    // Check the log2
+    double x =
+        eint1024( "26383752273331116085217755810940080809980496163410708066430999326829" ).log2();
+    if ( fabs( x - 223.968832115 ) > 1e-6 ) {
+        printf( "log2 = %f\n", x );
         N_errors++;
     }
 

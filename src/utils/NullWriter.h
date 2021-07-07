@@ -4,8 +4,7 @@
 #include "AMP/utils/Writer.h"
 
 
-namespace AMP {
-namespace Utilities {
+namespace AMP::Utilities {
 
 
 /**
@@ -23,11 +22,11 @@ public:
     virtual ~NullWriter() {}
 
     // Inherited functions
-    std::string getExtension() override { return ""; }
+    WriterProperties getProperties() const override;
     void readFile( const std::string & ) override{};
     void writeFile( const std::string &, size_t, double = 0 ) override {}
 };
-} // namespace Utilities
-} // namespace AMP
+
+} // namespace AMP::Utilities
 
 #endif

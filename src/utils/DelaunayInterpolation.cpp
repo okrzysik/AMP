@@ -15,8 +15,6 @@
 
 #include "ProfilerApp.h"
 
-#include "LapackWrappers.h"
-
 #define NDIM_MAX 3
 #define PROFILE_LEVEL 3
 
@@ -24,8 +22,6 @@
 namespace AMP {
 
 
-static void inv_M( const int n, const double *M, double *M_inv );
-static void solve_system( const int N, const double *M, const double *b, double *x );
 static void Gauss_Seidel( const unsigned int Nb,
                           const unsigned int N,
                           const unsigned int M,
@@ -480,7 +476,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                 }
             }
             // Solve the linear system to get the local gradient
-            solve_system( ndim, M, rhs, &grad[i * ndim] );
+            DelaunayHelpers::solve( ndim, M, rhs, &grad[i * ndim] );
         }
     } else if ( method == 2 || method == 3 ) {
         /* Both methods 2 and 3 use a higher order approximation for the derivative which
@@ -563,7 +559,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
             for ( unsigned int i = 0; i < N; i++ ) {
                 for ( int j = 0; j < ndim; j++ )
                     rhs2[j] = 0.5 * rhs[j + i * ndim];
-                solve_system( ndim, &D[i * ndim * ndim], rhs2, &grad[i * ndim] );
+                DelaunayHelpers::solve( ndim, &D[i * ndim * ndim], rhs2, &grad[i * ndim] );
             }
             // Now we can perform a block Gauss-Seidel iteration to improve the solution
             Gauss_Seidel( ndim,
@@ -632,7 +628,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                 // Update x
                 for ( int j = 0; j < ndim; j++ )
                     rhs[j] -= Ax[j];
-                solve_system( ndim, D, rhs, &grad[i * ndim] );
+                DelaunayHelpers::solve( ndim, D, rhs, &grad[i * ndim] );
             }
         }
     } else {
@@ -1445,7 +1441,7 @@ void DelaunayInterpolation<TYPE>::compute_Barycentric( const int ndim,
     double r[NDIM_MAX];
     for ( int i = 0; i < ndim; i++ )
         r[i] = xi[i] - x[i + ndim * ndim];
-    solve_system( ndim, T, r, L );
+    DelaunayHelpers::solve( ndim, T, r, L );
     L[ndim] = 1.0;
     for ( int i = 0; i < ndim; i++ )
         L[ndim] -= L[i];
@@ -1474,7 +1470,7 @@ inline void compute_gradient_2d( const double *x, const double *f, double *g )
     M[5] = x[4];
     M[8] = x[5];
     b[2] = f[2];
-    DelaunayHelpers<3>::solve_system( M, b, y, det );
+    DelaunayHelpers::solve<double, 3>( M, b, y, det );
     g[0] = y[1] / det;
     g[1] = y[2] / det;
 }
@@ -1501,7 +1497,7 @@ inline void compute_gradient_3d( const double *x, const double *f, double *g )
     M[11] = x[10];
     M[15] = x[11];
     b[3]  = f[3];
-    DelaunayHelpers<4>::solve_system( M, b, y, det );
+    DelaunayHelpers::solve<double, 4>( M, b, y, det );
     g[0] = y[1] / det;
     g[1] = y[2] / det;
     g[2] = y[3] / det;
@@ -1712,135 +1708,6 @@ void quicksort2( int n, type_a *arr, type_b *brr )
 }
 
 
-/****************************************************************
- * Function to solve the system Mx=b                             *
- ****************************************************************/
-static void solve_system( const int N, const double *M, const double *b, double *x )
-{
-    if ( N == 1 ) {
-        // 1x1 matrix is trivial
-        x[0] = b[0] / M[0];
-    } else if ( N == 2 ) {
-        // 2x2 matrix has a simple inverse
-        double inv_det = 1.0 / ( M[0] * M[3] - M[1] * M[2] );
-        x[0]           = ( M[3] * b[0] - M[2] * b[1] ) * inv_det;
-        x[1]           = ( M[0] * b[1] - M[1] * b[0] ) * inv_det;
-    } else if ( N == 3 ) {
-        // 3x3 matrix
-        double M_inv[9];
-        M_inv[0]       = M[4] * M[8] - M[7] * M[5];
-        M_inv[1]       = M[7] * M[2] - M[1] * M[8];
-        M_inv[2]       = M[1] * M[5] - M[4] * M[2];
-        M_inv[3]       = M[6] * M[5] - M[3] * M[8];
-        M_inv[4]       = M[0] * M[8] - M[6] * M[2];
-        M_inv[5]       = M[3] * M[2] - M[0] * M[5];
-        M_inv[6]       = M[3] * M[7] - M[6] * M[4];
-        M_inv[7]       = M[6] * M[1] - M[0] * M[7];
-        M_inv[8]       = M[0] * M[4] - M[3] * M[1];
-        double inv_det = 1.0 / ( M[0] * M_inv[0] + M[3] * M_inv[1] + M[6] * M_inv[2] );
-        x[0]           = M_inv[0] * b[0] + M_inv[3] * b[1] + M_inv[6] * b[2];
-        x[1]           = M_inv[1] * b[0] + M_inv[4] * b[1] + M_inv[7] * b[2];
-        x[2]           = M_inv[2] * b[0] + M_inv[5] * b[1] + M_inv[8] * b[2];
-        x[0] *= inv_det;
-        x[1] *= inv_det;
-        x[2] *= inv_det;
-    } else {
-#if USE_LAPACK == 0
-        // No method to solve the system
-        throw std::logic_error( "Need to link LAPACK" );
-#else
-        // Call Lapack to compute the inverse
-        int error;
-        int *IPIV;
-        double *M2;
-        double tmp1[64]; // Use the stack for small matricies (n<=8)
-        int tmp2[8];     // Use the stack for small matricies (n<=8)
-        if ( N <= 20 ) {
-            M2 = tmp1;
-            IPIV = tmp2;
-        } else {
-            M2 = new double[N * N];
-            IPIV = new int[N];
-        }
-        for ( int i = 0; i < N * N; i++ )
-            M2[i] = M[i];
-        for ( int i = 0; i < N; i++ )
-            x[i] = b[i];
-        Lapack<double>::gesv( N, 1, M2, N, IPIV, x, N, error );
-        if ( M2 != tmp1 ) {
-            delete[] M2;
-            delete[] IPIV;
-        }
-#endif
-    }
-}
-
-
-/****************************************************************
- * Function to calculate the inverse of a matrix                 *
- ****************************************************************/
-static void inv_M( const int N, const double *M, double *M_inv )
-{
-    if ( N == 1 ) {
-        // 1x1 matrix is trivial
-        M_inv[0] = 1.0 / M[0];
-    } else if ( N == 2 ) {
-        // 2x2 matrix has a simple inverse
-        double inv_det = 1.0 / ( M[0] * M[3] - M[1] * M[2] );
-        M_inv[0]       = M[3] * inv_det;
-        M_inv[1]       = -M[1] * inv_det;
-        M_inv[2]       = -M[2] * inv_det;
-        M_inv[3]       = M[0] * inv_det;
-    } else if ( N == 3 ) {
-        // 3x3 matrix
-        M_inv[0]       = M[4] * M[8] - M[7] * M[5];
-        M_inv[1]       = M[7] * M[2] - M[1] * M[8];
-        M_inv[2]       = M[1] * M[5] - M[4] * M[2];
-        M_inv[3]       = M[6] * M[5] - M[3] * M[8];
-        M_inv[4]       = M[0] * M[8] - M[6] * M[2];
-        M_inv[5]       = M[3] * M[2] - M[0] * M[5];
-        M_inv[6]       = M[3] * M[7] - M[6] * M[4];
-        M_inv[7]       = M[6] * M[1] - M[0] * M[7];
-        M_inv[8]       = M[0] * M[4] - M[3] * M[1];
-        double inv_det = 1.0 / ( M[0] * M_inv[0] + M[3] * M_inv[1] + M[6] * M_inv[2] );
-        for ( int i = 0; i < 9; i++ )
-            M_inv[i] *= inv_det;
-    } else {
-#if USE_LAPACK == 0
-        // No method to compute the inverse, return all zeros
-        AMP::perr << "Need to link LAPACK\n";
-        for ( int i = 0; i < N * N; i++ )
-            M_inv[i] = M[i];
-#else
-        // Call Lapack to compute the inverse
-        int error;
-        int LWORK;
-        int *IPIV;
-        double *WORK;
-        double tmp1[64 * 8]; // Use the stack for small matricies (N<=8)
-        int tmp2[8];         // Use the stack for small matricies (N<=8)
-        if ( N <= 8 ) {
-            LWORK = 64 * 8;
-            WORK = tmp1;
-            IPIV = tmp2;
-        } else {
-            LWORK = 64 * N;
-            WORK = new double[LWORK];
-            IPIV = new int[N];
-        }
-        for ( int i = 0; i < N * N; i++ )
-            M_inv[i] = M[i];
-        Lapack<double>::getrf( N, N, M_inv, N, IPIV, error );
-        Lapack<double>::getri( N, M_inv, N, IPIV, WORK, LWORK, error );
-        if ( WORK != tmp1 ) {
-            delete[] IPIV;
-            delete[] WORK;
-        }
-#endif
-    }
-}
-
-
 /********************************************************************
  * Function to perform block Gauss-Seidel iteration                  *
  * Note: the performance of this algorithum is strongly dependent on *
@@ -1861,7 +1728,7 @@ static void Gauss_Seidel( const unsigned int Nb,
     // First we will compute the inverse of each block
     auto D_inv = new double[Nb * Nb * N];
     for ( unsigned int i = 0; i < N; i++ )
-        inv_M( Nb, &D[i * Nb * Nb], &D_inv[i * Nb * Nb] );
+        DelaunayHelpers::inverse( Nb, &D[i * Nb * Nb], &D_inv[i * Nb * Nb] );
     // Next perform the Gauss-Seidel iterations:
     //    x(k+1) = aii^-1*(bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i))
     const double rel_tol = 1e-8;

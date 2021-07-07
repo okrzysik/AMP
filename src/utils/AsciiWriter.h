@@ -40,8 +40,8 @@ public:
     //!  Default destructor
     virtual ~AsciiWriter();
 
-    //!  Function to return the file extension
-    std::string getExtension() override;
+    //! Function to get the writer properties
+    WriterProperties getProperties() const override;
 
     //!  Function to read a file
     void readFile( const std::string &fname ) override;

@@ -52,6 +52,7 @@ public:
     ~HDF5_null() override = default;
     std::string type() const override { return "HDF5_null"; }
     size_t size() const override { return 0; }
+    AMP::ArraySize getDataSize() const override { return { 0 }; }
     std::shared_ptr<HDF5data> getData( size_t, const std::string_view & ) override
     {
         return nullptr;
@@ -72,6 +73,7 @@ public:
     ~HDF5_group() override = default;
     std::string type() const override { return "HDF5_group"; }
     size_t size() const override { return d_data.length() / d_data.size( 0 ); }
+    AMP::ArraySize getDataSize() const override { return { size() }; }
     std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) override
     {
         int j = find( d_names, name );
@@ -140,6 +142,7 @@ public:
     {
         return std::vector<std::string>( 1, d_name );
     }
+    AMP::ArraySize getDataSize() const override { return d_data.size(); }
     const AMP::Array<TYPE> &getData() const { return d_data; }
     void print( int level, const std::string_view &prefix = "" ) const override
     {
@@ -348,8 +351,9 @@ HDF5_group::HDF5_group( hid_t fid, const std::string_view &name, int type ) : HD
             bool containsLetter =
                 d_names[i].find_first_of(
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ) != std::string::npos;
-            if ( d_names[i] == "N" ||
-                 d_names[i].compare( 0, 2 + d_name.size(), "N_" + d_name ) == 0 ) {
+            if ( ( d_names[i] == "N" ||
+                   d_names[i].compare( 0, 2 + d_name.size(), "N_" + d_name ) == 0 ) &&
+                 d_data( i )->getDataSize().length() == 1 ) {
                 AMP::Array<int> data;
                 d_data( i )->getData( data );
                 AMP_ASSERT( data.length() == 1u );

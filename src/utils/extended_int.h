@@ -40,6 +40,9 @@ public:
     //! Create from int64
     explicit constexpr int64N( int64_t );
 
+    //! Create from int64
+    explicit constexpr int64N( uint64_t );
+
     //! Create from int64N<N>
     template<uint8_t N2>
     explicit constexpr int64N( const int64N<N2> & );
@@ -55,6 +58,12 @@ public:
 
     //! Conversion to double
     constexpr operator double() const;
+
+    //! Conversion to bool
+    constexpr operator bool() const;
+
+    //! Get the hexadecimal number as a char array
+    std::string decimal() const;
 
     //! Get the hexadecimal number as a char array
     constexpr std::array<char, 16 * N + 3> hex( bool fixedWidth = true ) const;
@@ -90,6 +99,12 @@ public:
 
     //! Convert to the 2's compliment of the number (equivalent to multiplying by -1)
     constexpr void compliment();
+
+    //! Calculate the log base 2
+    double log2() const;
+
+    //! Calculate the log base 2
+    inline double log10() const { return 0.301029995663981 * log2(); }
 
     //! Bitshift operators
     constexpr int64N &operator<<=( unsigned );
@@ -176,7 +191,10 @@ public: // Member functions
     }
     static constexpr AMP::extended::int64N<N> lowest() { return min(); }
     static constexpr AMP::extended::int64N<N> max() { return !min(); }
-    static constexpr AMP::extended::int64N<N> epsilon() throw();
+    static constexpr AMP::extended::int64N<N> epsilon() throw()
+    {
+        return AMP::extended::int64N<N>();
+    }
     static constexpr AMP::extended::int64N<N> round_error() throw();
     static constexpr AMP::extended::int64N<N> infinity() throw();
     static constexpr AMP::extended::int64N<N> quiet_NaN() throw();
