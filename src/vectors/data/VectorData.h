@@ -290,6 +290,13 @@ public: // Advanced functions
      */
     virtual bool isAnAliasOf( const VectorData &rhs ) const;
 
+    /** \brief reset the vector data object
+     * \details At present this interface is primarily meant for vector data over
+     * AMR hierarchies, where the number of AMR levels and vector data has to be
+     * reallocated
+     */
+    virtual void reset();
+
 public:
     /** \brief Write owned data to an std::ostream
      * \param[in] out  The output stream to write to.
@@ -361,6 +368,9 @@ public: // Virtual functions dealing with the update status
      * reallocating ghost storage.
      */
     virtual void setCommunicationList( CommunicationList::shared_ptr comm );
+
+    virtual void
+    print( std::ostream &os, const std::string &name = "A", const std::string &prefix = "" ) const;
 
 public: // Non-virtual functions
     /**

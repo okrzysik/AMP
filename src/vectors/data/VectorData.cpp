@@ -248,5 +248,18 @@ void VectorData::copyGhostValues( const VectorData &rhs )
     }
 }
 
+/****************************************************************
+ * reset a vector                                               *
+ ****************************************************************/
+void VectorData::reset( void ) { AMP_ERROR( "Not implemented" ); }
+
+void VectorData::print( std::ostream &os, const std::string &name, const std::string &prefix ) const
+{
+    NULL_USE( os );
+    NULL_USE( name );
+    NULL_USE( prefix );
+    AMP_ERROR( "Not implemented" );
+}
+
 } // namespace LinearAlgebra
 } // namespace AMP
