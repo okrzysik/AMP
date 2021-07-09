@@ -51,7 +51,7 @@ void RK23TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> p
     getFromInput( parameters->d_db );
 }
 
-void RK23TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
+void RK23TimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -61,13 +61,13 @@ void RK23TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parame
 void RK23TimeIntegrator::setupVectors()
 {
 
-    // clone vectors so they have the same data layout as d_solution
-    d_new_solution = d_solution->cloneVector( "new solution" );
-    d_k1_vec       = d_solution->cloneVector( "k1 term" );
-    d_k2_vec       = d_solution->cloneVector( "k2 term" );
-    d_k3_vec       = d_solution->cloneVector( "k3 term" );
-    d_k4_vec       = d_solution->cloneVector( "k4 term" );
-    d_z_vec        = d_solution->cloneVector( "z term" );
+    // clone vectors so they have the same data layout as d_solution_vector
+    d_new_solution = d_solution_vector->cloneVector( "new solution" );
+    d_k1_vec       = d_solution_vector->cloneVector( "k1 term" );
+    d_k2_vec       = d_solution_vector->cloneVector( "k2 term" );
+    d_k3_vec       = d_solution_vector->cloneVector( "k3 term" );
+    d_k4_vec       = d_solution_vector->cloneVector( "k4 term" );
+    d_z_vec        = d_solution_vector->cloneVector( "z term" );
 
     /* Allocate vector data no longer necessary
     d_new_solution->allocateVectorData();
@@ -93,24 +93,24 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
 {
     if ( first_step ) {
         // k1 = f(tn,un)
-        d_operator->apply( d_solution, d_k1_vec );
+        d_operator->apply( d_solution_vector, d_k1_vec );
     } else {
         d_current_dt = dt;
         d_k1_vec->swapVectors( *d_k4_vec );
     }
 
     // u* = un+k1*dt/2
-    d_new_solution->axpy( d_current_dt / 2.0, *d_k1_vec, *d_solution );
+    d_new_solution->axpy( d_current_dt / 2.0, *d_k1_vec, *d_solution_vector );
     // k2 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
     // u* = un+0.75*k2*dt
-    d_new_solution->axpy( 0.75 * d_current_dt, *d_k2_vec, *d_solution );
+    d_new_solution->axpy( 0.75 * d_current_dt, *d_k2_vec, *d_solution_vector );
     // k3 = f(t+0.75dt, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
 
     // first we calculate the 3rd order solution in d_new_solution
     // u* = un+k1*2dt/9
-    d_new_solution->axpy( 2.0 * d_current_dt / 9.0, *d_k1_vec, *d_solution );
+    d_new_solution->axpy( 2.0 * d_current_dt / 9.0, *d_k1_vec, *d_solution_vector );
     // u* = u*+k2*dt/3
     d_new_solution->axpy( d_current_dt / 3.0, *d_k2_vec, *d_new_solution );
     // u* = u*+k3*4dt/9
@@ -121,7 +121,7 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
 
     // now we calculate the 2nd order solution in d_z_vec for adapting the timestep
     // z = un+ dt*(7k1/24+k2/4+k3/3+k4/8)
-    d_z_vec->axpy( 7.0 / 24.0 * d_current_dt, *d_k1_vec, *d_solution );
+    d_z_vec->axpy( 7.0 / 24.0 * d_current_dt, *d_k1_vec, *d_solution_vector );
     d_z_vec->axpy( 0.25 * d_current_dt, *d_k2_vec, *d_z_vec );
     d_z_vec->axpy( 1.0 / 3.0 * d_current_dt, *d_k3_vec, *d_z_vec );
     d_z_vec->axpy( 0.125 * d_current_dt, *d_k4_vec, *d_z_vec );
@@ -139,7 +139,7 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
 *                                                                      *
 ************************************************************************
 */
-bool RK23TimeIntegrator::checkNewSolution() const
+bool RK23TimeIntegrator::checkNewSolution()
 {
     bool retcode = false;
 
@@ -163,7 +163,7 @@ bool RK23TimeIntegrator::checkNewSolution() const
 */
 void RK23TimeIntegrator::updateSolution()
 {
-    d_solution->swapVectors( *d_new_solution );
+    d_solution_vector->swapVectors( *d_new_solution );
     d_current_time += d_current_dt;
 }
 

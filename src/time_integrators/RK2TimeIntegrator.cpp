@@ -49,7 +49,7 @@ void RK2TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     getFromInput( parameters->d_db );
 }
 
-void RK2TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
+void RK2TimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -59,10 +59,10 @@ void RK2TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> paramet
 void RK2TimeIntegrator::setupVectors()
 {
 
-    // clone vectors so they have the same data layout as d_solution
-    d_new_solution = d_solution->cloneVector( "new solution" );
-    d_k1_vec       = d_solution->cloneVector( "k1 term" );
-    d_k2_vec       = d_solution->cloneVector( "k2 term" );
+    // clone vectors so they have the same data layout as d_solution_vector
+    d_new_solution = d_solution_vector->cloneVector( "new solution" );
+    d_k1_vec       = d_solution_vector->cloneVector( "k1 term" );
+    d_k2_vec       = d_solution_vector->cloneVector( "k2 term" );
 
     /* allocateVectorData no longer necessary
     d_new_solution->allocateVectorData();
@@ -81,14 +81,14 @@ void RK2TimeIntegrator::setupVectors()
 int RK2TimeIntegrator::advanceSolution( const double dt, const bool )
 {
     // k1 = f(tn,un)
-    d_operator->apply( d_solution, d_k1_vec );
+    d_operator->apply( d_solution_vector, d_k1_vec );
     // u* = un+dt*k1
-    d_new_solution->axpy( dt, *d_k1_vec, *d_solution );
+    d_new_solution->axpy( dt, *d_k1_vec, *d_solution_vector );
     // k2 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
     // u_new = un+ dt*(k1+k2)/2
     d_k2_vec->add( *d_k1_vec, *d_k2_vec );
-    d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution );
+    d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution_vector );
 
     return ( 0 );
 }
@@ -100,7 +100,7 @@ int RK2TimeIntegrator::advanceSolution( const double dt, const bool )
 *                                                                      *
 ************************************************************************
 */
-bool RK2TimeIntegrator::checkNewSolution() const
+bool RK2TimeIntegrator::checkNewSolution()
 {
     /*
      * Ordinarily we would check the actual error in the solution
@@ -120,7 +120,7 @@ bool RK2TimeIntegrator::checkNewSolution() const
 void RK2TimeIntegrator::updateSolution()
 {
     d_current_time += d_current_dt;
-    d_solution->swapVectors( *d_new_solution );
+    d_solution_vector->swapVectors( *d_new_solution );
 }
 
 /*

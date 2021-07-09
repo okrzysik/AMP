@@ -44,7 +44,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset.
      */
-    void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
+    void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) override;
 
     /*!
      * @brief Integrate through the specified time increment in days.
@@ -72,7 +72,7 @@ public:
      * The meaning of this value must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    bool checkNewSolution( void ) const override;
+    bool checkNewSolution( void ) override;
 
     /**
      * Update solution (e.g., reset pointers for solution data, update
@@ -94,7 +94,7 @@ public:
 
 private:
     // declare the default constructor to be private
-    OxideTimeIntegrator();
+    OxideTimeIntegrator() = delete;
 
     // The mesh over which we define the oxide
     AMP::Mesh::Mesh::shared_ptr d_mesh;

@@ -63,15 +63,15 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
 
     // for now the solution is set to the initial conditions by Jungho
     AMP_ASSERT( parameters->d_ic_vector != nullptr );
-    d_solution = ( parameters->d_ic_vector )->cloneVector();
-    d_solution->copyVector( parameters->d_ic_vector );
+    d_solution_vector = ( parameters->d_ic_vector )->cloneVector();
+    d_solution_vector->copyVector( parameters->d_ic_vector );
 
     d_pPreviousTimeSolution = ( parameters->d_ic_vector )->cloneVector();
     d_pPreviousTimeSolution->copyVector( parameters->d_ic_vector );
 
     d_pSourceTerm = parameters->d_pSourceTerm;
 
-    if ( d_solution.get() == nullptr ) {
+    if ( d_solution_vector.get() == nullptr ) {
         AMP_ERROR( "TimeIntegrator::TimeIntegrator()::TimeIntegrators must be initialized with non "
                    "null initial "
                    "condition_vectors" );
@@ -153,28 +153,18 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
                                  << " missing in input." );
     }
 
-    if ( db->keyExists( "max_dt" ) ) {
-        d_max_dt = db->getScalar<double>( "max_dt" );
+    d_max_dt = db->getWithDefault( "max_dt", std::numeric_limits<double>::max() );
 
-        if ( d_max_dt < 0.0 ) {
-            AMP_ERROR( d_object_name << " -- Error in input data "
-                                     << "max_dt < 0." );
-        }
-    } else {
-        AMP_ERROR( d_object_name << " -- Key data `max_dt'"
-                                 << " missing in input." );
+    if ( d_max_dt < 0.0 ) {
+        AMP_ERROR( d_object_name << " -- Error in input data "
+                                 << "max_dt < 0." );
     }
 
-    if ( db->keyExists( "min_dt" ) ) {
-        d_min_dt = db->getScalar<double>( "min_dt" );
+    d_min_dt = db->getWithDefault( "min_dt", std::numeric_limits<double>::min() );
 
-        if ( d_min_dt < 0.0 ) {
-            AMP_ERROR( d_object_name << " -- Error in input data "
-                                     << "min_dt < 0." );
-        }
-    } else {
-        AMP_ERROR( d_object_name << " -- Key data `min_dt'"
-                                 << " missing in input." );
+    if ( d_min_dt < 0.0 ) {
+        AMP_ERROR( d_object_name << " -- Error in input data "
+                                 << "min_dt < 0." );
     }
 
     if ( db->keyExists( "initial_dt" ) ) {
