@@ -48,7 +48,7 @@ void RK4TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     getFromInput( parameters->d_db );
 }
 
-void RK4TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
+void RK4TimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters.get() != (TimeIntegratorParameters *) nullptr );
 
@@ -58,12 +58,12 @@ void RK4TimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> paramet
 void RK4TimeIntegrator::setupVectors()
 {
 
-    // clone vectors so they have the same data layout as d_solution
-    d_new_solution = d_solution->cloneVector( "new solution" );
-    d_k1_vec       = d_solution->cloneVector( "k1 term" );
-    d_k2_vec       = d_solution->cloneVector( "k2 term" );
-    d_k3_vec       = d_solution->cloneVector( "k3 term" );
-    d_k4_vec       = d_solution->cloneVector( "k4 term" );
+    // clone vectors so they have the same data layout as d_solution_vector
+    d_new_solution = d_solution_vector->cloneVector( "new solution" );
+    d_k1_vec       = d_solution_vector->cloneVector( "k1 term" );
+    d_k2_vec       = d_solution_vector->cloneVector( "k2 term" );
+    d_k3_vec       = d_solution_vector->cloneVector( "k3 term" );
+    d_k4_vec       = d_solution_vector->cloneVector( "k4 term" );
 
     /* allocateVectorData no longer necessary
     d_new_solution->allocateVectorData();
@@ -88,17 +88,17 @@ int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
     std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
     // k1 = f(tn,un)
-    d_operator->apply( d_solution, d_k1_vec );
+    d_operator->apply( d_solution_vector, d_k1_vec );
     // u* = un+k1*dt/2
-    d_new_solution->axpy( dt / 2.0, *d_k1_vec, *d_solution );
+    d_new_solution->axpy( dt / 2.0, *d_k1_vec, *d_solution_vector );
     // k2 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
     // u* = un+k2*dt/2
-    d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution );
+    d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution_vector );
     // k3 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
     // u* = un+k3*dt
-    d_new_solution->axpy( dt, *d_k3_vec, *d_solution );
+    d_new_solution->axpy( dt, *d_k3_vec, *d_solution_vector );
     // k4 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k4_vec );
     // u_new = un+ dt*(k1+2*k2+2*k3+k4)/6
@@ -107,7 +107,7 @@ int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
     d_k2_vec->scale( 2.0, *d_k2_vec );
     d_k1_vec->add( *d_k1_vec, *d_k2_vec );
 
-    d_new_solution->axpy( dt / 6.0, *d_k1_vec, *d_solution );
+    d_new_solution->axpy( dt / 6.0, *d_k1_vec, *d_solution_vector );
 
     return ( 0 );
 }
@@ -119,7 +119,7 @@ int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
 *                                                                      *
 ************************************************************************
 */
-bool RK4TimeIntegrator::checkNewSolution() const
+bool RK4TimeIntegrator::checkNewSolution()
 {
     /*
      * Ordinarily we would check the actual error in the solution
@@ -139,7 +139,7 @@ bool RK4TimeIntegrator::checkNewSolution() const
 void RK4TimeIntegrator::updateSolution()
 {
     d_current_time += d_current_dt;
-    d_solution->swapVectors( *d_new_solution );
+    d_solution_vector->swapVectors( *d_new_solution );
 }
 
 /*

@@ -65,7 +65,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset.
      */
-    virtual void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) = 0;
+    virtual void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) = 0;
 
     /*!
      * @brief Integrate through the specified time increment.
@@ -100,7 +100,7 @@ public:
      * The meaning of this value must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    virtual bool checkNewSolution( void ) const = 0;
+    virtual bool checkNewSolution( void ) = 0;
 
     /**
      * @brief Update solution after time advance.
@@ -123,7 +123,7 @@ public:
      */
     virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution( void )
     {
-        return d_solution;
+        return d_solution_vector;
     }
 
     /**
@@ -159,6 +159,11 @@ public:
      * @details Return current timestep.
      */
     virtual double getCurrentDt() const;
+
+    /**
+     * get initial time step.
+     */
+    virtual double getInitialDt() { return d_initial_dt; };
 
     /**
      * @brief  Return current integration step number.
@@ -228,6 +233,8 @@ public:
 
     std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_operator; }
 
+    virtual int getTotalRejectedSteps() const { return d_total_steprejects; }
+
 protected:
     /*
      * Read input data from specified database and initialize class members.
@@ -252,7 +259,7 @@ protected:
     /*
      * Solution vector advanced during the time integration process.
      */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_vector;
 
     /*
      * Solution vector at previous time
@@ -281,42 +288,33 @@ protected:
      * Data members representing integrator times, time increments,
      * and step count information.
      */
-    double d_initial_time;
-    double d_final_time;
-    double d_current_time;
+    double d_initial_time = std::numeric_limits<double>::signaling_NaN();
+    double d_final_time   = std::numeric_limits<double>::signaling_NaN();
+    double d_current_time = std::numeric_limits<double>::signaling_NaN();
 
-    double d_current_dt;
-    double d_old_dt;
-    double d_min_dt;
-    double d_max_dt;
-    double d_initial_dt;
+    //! initial time increment
+    double d_initial_dt = std::numeric_limits<double>::signaling_NaN();
+    double d_current_dt = std::numeric_limits<double>::signaling_NaN();
+    double d_old_dt     = std::numeric_limits<double>::signaling_NaN();
+    double d_min_dt     = std::numeric_limits<double>::signaling_NaN();
 
-    int d_integrator_step;
-    int d_max_integrator_steps;
+    //! maximum allowable timestep (user defined)
+    double d_max_dt = std::numeric_limits<double>::max();
+
+    int d_integrator_step      = 0;
+    int d_max_integrator_steps = 0;
+
+    int d_total_steprejects = 0; //! keeps track of total number of step rejections
 
     // Writer for internal data
     std::shared_ptr<AMP::Utilities::Writer> d_writer;
 
-    // declare the default constructor to be private
-    TimeIntegrator()
-    {
-        // initialize member data
-        d_initial_time         = 0;
-        d_final_time           = 0;
-        d_current_time         = 0;
-        d_current_dt           = 0;
-        d_old_dt               = 0;
-        d_min_dt               = 0;
-        d_max_dt               = 0;
-        d_initial_dt           = 0;
-        d_integrator_step      = 0;
-        d_max_integrator_steps = 0;
-    };
+    TimeIntegrator() = default;
 
 private:
     // The following are not implemented:
-    explicit TimeIntegrator( const TimeIntegrator & );
-    void operator=( const TimeIntegrator & );
+    explicit TimeIntegrator( const TimeIntegrator & ) = delete;
+    void operator=( const TimeIntegrator & ) = delete;
 };
 } // namespace TimeIntegrator
 } // namespace AMP

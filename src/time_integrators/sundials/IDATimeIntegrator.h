@@ -137,12 +137,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
-
-    /**
-     * Specify initial time step.
-     */
-    double getInitialDt();
+    void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify next time step to use.
@@ -174,7 +169,7 @@ public:
      * on the particular nonlinear solver in use and must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    bool checkNewSolution( void ) const override;
+    bool checkNewSolution( void ) override;
 
     /**
      * return a pointer to the IDA time operator, deprecated

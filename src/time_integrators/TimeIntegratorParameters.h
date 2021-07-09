@@ -1,8 +1,8 @@
 #ifndef included_AMP_TimeIntegratorParameters
 #define included_AMP_TimeIntegratorParameters
 
-
 #include "AMP/operators/Operator.h"
+#include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
 #include "AMP/vectors/Vector.h"
@@ -30,7 +30,7 @@ namespace TimeIntegrator {
 
  */
 
-class TimeIntegratorParameters : public ParameterBase
+class TimeIntegratorParameters : public Operator::OperatorParameters
 {
 public:
     //! Convience typedef
@@ -39,17 +39,13 @@ public:
     explicit TimeIntegratorParameters( std::shared_ptr<AMP::Database> db );
 
     virtual ~TimeIntegratorParameters();
-    /**
-     *  Database object which needs to be initialized specific to the time integrator.
-     *  Documentation for parameters required by each integrator can be found in the
-     *  documentation for the integrator.
-     */
-    std::shared_ptr<AMP::Database> d_db;
 
     /**
      * String used to identify specific class instantiation of the time integrator
      */
     std::string d_object_name;
+
+    AMP::AMP_MPI d_comm; // Comm for this object
 
     /**
      * Initial conditions vector
@@ -79,12 +75,15 @@ public:
      */
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 
+    //! pointer to global database
+    std::shared_ptr<AMP::Database> d_global_db;
+
 protected:
 private:
     // not implemented
-    TimeIntegratorParameters() {}
-    explicit TimeIntegratorParameters( const TimeIntegratorParameters & );
-    void operator=( const TimeIntegratorParameters & );
+    TimeIntegratorParameters()                                            = delete;
+    explicit TimeIntegratorParameters( const TimeIntegratorParameters & ) = delete;
+    void operator=( const TimeIntegratorParameters & ) = delete;
 };
 } // namespace TimeIntegrator
 } // namespace AMP

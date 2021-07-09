@@ -48,7 +48,8 @@ void BackwardEulerTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorPara
 
     d_solver->registerOperator( d_operator );
 }
-void BackwardEulerTimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
+void BackwardEulerTimeIntegrator::reset(
+    std::shared_ptr<const TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters );
 
@@ -66,7 +67,7 @@ void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
                                                    const double )
 {
     // lousy initial guess - just to get things moving...
-    d_solution->setToScalar( (double) 0.0 );
+    d_solution_vector->setToScalar( (double) 0.0 );
 }
 
 
@@ -76,7 +77,7 @@ void BackwardEulerTimeIntegrator::setInitialGuess( const bool,
 void BackwardEulerTimeIntegrator::updateSolution()
 {
     // we can figure out a swap later
-    d_pPreviousTimeSolution->copyVector( d_solution );
+    d_pPreviousTimeSolution->copyVector( d_solution_vector );
 }
 
 
@@ -100,7 +101,7 @@ double BackwardEulerTimeIntegrator::getNextDt( const bool ) { return d_current_d
 /***********************************************************************
  *  Check whether time advanced solution is acceptable.                 *
  ***********************************************************************/
-bool BackwardEulerTimeIntegrator::checkNewSolution() const
+bool BackwardEulerTimeIntegrator::checkNewSolution()
 {
     /*
      * Ordinarily we would check the actual error in the solution

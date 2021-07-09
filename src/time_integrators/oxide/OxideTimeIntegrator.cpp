@@ -61,10 +61,10 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
     auto multivariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "solution" );
     multivariable->add( oxide_var );
     multivariable->add( alpha_var );
-    d_solution = AMP::LinearAlgebra::createVector( DOF, multivariable, true );
-    d_oxide    = d_solution->subsetVectorForVariable( oxide_var );
-    d_alpha    = d_solution->subsetVectorForVariable( alpha_var );
-    d_solution->setToScalar( 0.0 );
+    d_solution_vector = AMP::LinearAlgebra::createVector( DOF, multivariable, true );
+    d_oxide           = d_solution_vector->subsetVectorForVariable( oxide_var );
+    d_alpha           = d_solution_vector->subsetVectorForVariable( alpha_var );
+    d_solution_vector->setToScalar( 0.0 );
 
     // Create the internal vectors for storing the data
     N_layer     = std::vector<int>( 3 );
@@ -126,7 +126,8 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
         d_alpha->setLocalValuesByGlobalID( 1, &dofs[0], &val ); // Convert from cm to m
         ++iterator;
     }
-    d_solution->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    d_solution_vector->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // Free the temporary memory
     delete[] C0[0];
@@ -138,7 +139,7 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
 /************************************************************************
  * Reset the time integrator                                             *
  ************************************************************************/
-void OxideTimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> )
+void OxideTimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters> )
 {
     AMP_ERROR( "reset is not programmed for OxideTimeIntegrator" );
 }
@@ -217,7 +218,8 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
         ++iterator;
     }
     // Update ghost values for the solution
-    d_solution->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    d_solution_vector->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     // Free the temporary memory
     delete[] C0[0];
     delete[] C1[0];
@@ -229,7 +231,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
 /************************************************************************
  * Check the solution                                                    *
  ************************************************************************/
-bool OxideTimeIntegrator::checkNewSolution() const { return true; }
+bool OxideTimeIntegrator::checkNewSolution() { return true; }
 
 
 /************************************************************************

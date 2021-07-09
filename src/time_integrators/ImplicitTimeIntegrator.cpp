@@ -102,8 +102,8 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_s
         std::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
         rhs.reset();
 
-        d_solver->setInitialGuess( d_solution );
-        d_solver->apply( rhs, d_solution );
+        d_solver->setInitialGuess( d_solution_vector );
+        d_solver->apply( rhs, d_solution_vector );
     }
 
     return ( retcode );

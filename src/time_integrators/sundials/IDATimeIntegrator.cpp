@@ -85,7 +85,7 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
         if ( d_bLinearRhsOperator && d_bLinearMassOperator ) {
             std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams =
                 std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(
-                    idaTimeOp->getParameters( "Jacobian", d_solution ) );
+                    idaTimeOp->getParameters( "Jacobian", d_solution_vector ) );
             std::shared_ptr<AMP::Database> linearTimeOperator_db = linearTimeOperatorParams->d_db;
             linearTimeOperator_db->putScalar( "CurrentDt", d_current_dt );
             linearTimeOperator_db->putScalar( "CurrentTime", d_current_time );
@@ -119,7 +119,7 @@ void IDATimeIntegrator::initializeIDA()
     N_Vector id = nullptr;
 
     auto pSundials_sol = std::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
-        AMP::LinearAlgebra::SundialsVector::view( d_solution ) );
+        AMP::LinearAlgebra::SundialsVector::view( d_solution_vector ) );
     auto pSundials_sol_prime = std::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
         AMP::LinearAlgebra::SundialsVector::view( d_solution_prime ) );
 
@@ -192,7 +192,7 @@ void IDATimeIntegrator::initializeIDA()
 }
 
 
-void IDATimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
+void IDATimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters );
     AMP_ERROR( "Not Finished" );
@@ -201,8 +201,8 @@ void IDATimeIntegrator::reset( std::shared_ptr<TimeIntegratorParameters> paramet
 
 void IDATimeIntegrator::setupVectors()
 {
-    // clone vectors so they have the same data layout as d_solution
-    d_residual = d_solution->cloneVector();
+    // clone vectors so they have the same data layout as d_solution_vector
+    d_residual = d_solution_vector->cloneVector();
     // Set initial value of vectors to 0.
     d_residual->setToScalar( (double) 0.0 );
 }
@@ -221,7 +221,7 @@ void IDATimeIntegrator::updateSolution()
     AMP_ASSERT(retval==IDA_SUCCESS);
 
     d_current_time += hlast;
-    //d_solution->add( d_predictor, d_corrector );
+    //d_solution_vector->add( d_predictor, d_corrector );
     */
 }
 
@@ -291,7 +291,7 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
     long int npsolves = 0;
 
     auto ptr_y = std::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
-        AMP::LinearAlgebra::SundialsVector::view( d_solution ) );
+        AMP::LinearAlgebra::SundialsVector::view( d_solution_vector ) );
     auto ptr_ydot = std::dynamic_pointer_cast<AMP::LinearAlgebra::SundialsVector>(
         AMP::LinearAlgebra::SundialsVector::view( d_solution_prime ) );
 
@@ -337,9 +337,8 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
 
 void IDATimeIntegrator::updateSourceTerm()
 {
-    // Ideally, IDATimeIntegrator should call a function which takes d_solution and t and returns
-    // the appropriate
-    // updated source term.
+    // Ideally, IDATimeIntegrator should call a function which takes d_solution_vector and t and
+    // returns the appropriate updated source term.
 }
 /*
  ************************************************************************
@@ -348,7 +347,7 @@ void IDATimeIntegrator::updateSourceTerm()
  *                                                                      *
  ************************************************************************
  */
-bool IDATimeIntegrator::checkNewSolution() const
+bool IDATimeIntegrator::checkNewSolution()
 {
     /*
      * Ordinarily we would check the actual error in the solution
