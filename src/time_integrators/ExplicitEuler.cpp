@@ -48,7 +48,7 @@ void ExplicitEuler::initialize( std::shared_ptr<TimeIntegratorParameters> parame
     getFromInput( parameters->d_db );
 }
 
-void ExplicitEuler::reset( std::shared_ptr<TimeIntegratorParameters> parameters )
+void ExplicitEuler::reset( std::shared_ptr<const TimeIntegratorParameters> parameters )
 {
     AMP_ASSERT( parameters );
 
@@ -58,9 +58,9 @@ void ExplicitEuler::reset( std::shared_ptr<TimeIntegratorParameters> parameters 
 void ExplicitEuler::setupVectors()
 {
 
-    // clone vectors so they have the same data layout as d_solution
-    d_new_solution = d_solution->cloneVector( "new solution" );
-    d_f_vec        = d_solution->cloneVector( "f term" );
+    // clone vectors so they have the same data layout as d_solution_vector
+    d_new_solution = d_solution_vector->cloneVector( "new solution" );
+    d_f_vec        = d_solution_vector->cloneVector( "f term" );
 
     /* allocateVectorData is no longer necessary
     d_new_solution->allocateVectorData();
@@ -86,9 +86,9 @@ int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 
     if ( stepsRemaining() && ( d_current_time < d_final_time ) ) {
         // f_vec = f(tn,un)
-        d_operator->apply( d_solution, d_f_vec );
+        d_operator->apply( d_solution_vector, d_f_vec );
         // u* = un+dt*f
-        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution );
+        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
     }
 
     return ( 0 );
@@ -101,7 +101,7 @@ int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
 *                                                                      *
 ************************************************************************
 */
-bool ExplicitEuler::checkNewSolution() const
+bool ExplicitEuler::checkNewSolution()
 {
     /*
      * Ordinarily we would check the actual error in the solution
@@ -121,7 +121,7 @@ bool ExplicitEuler::checkNewSolution() const
 void ExplicitEuler::updateSolution()
 {
     d_current_time += d_current_dt;
-    d_solution->swapVectors( *d_new_solution );
+    d_solution_vector->swapVectors( *d_new_solution );
 }
 
 /*

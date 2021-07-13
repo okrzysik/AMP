@@ -82,7 +82,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    virtual void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override = 0;
+    virtual void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) override = 0;
 
     /*!
      * @brief Integrate through the
@@ -130,7 +130,7 @@ public:
      * on the particular nonlinear solver in use and must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    virtual bool checkNewSolution( void ) const override = 0;
+    virtual bool checkNewSolution( void ) override = 0;
 
     /**
      * Update solution (e.g., reset pointers for solution data, update
