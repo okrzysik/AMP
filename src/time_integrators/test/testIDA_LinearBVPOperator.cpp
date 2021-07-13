@@ -225,8 +225,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
                 ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
             }
 
-            auto max = pIDATimeIntegrator->getCurrentSolution()->max();
-            auto min = pIDATimeIntegrator->getCurrentSolution()->min();
+            auto max = pIDATimeIntegrator->getSolution()->max();
+            auto min = pIDATimeIntegrator->getSolution()->min();
 
             std::cout << "current_time = " << current_time << std::endl;
             std::cout << "max val of the current solution = " << max << std::endl;

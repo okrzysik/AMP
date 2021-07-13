@@ -61,7 +61,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     parameters->d_temp  = temp_vec;
     parameters->depth   = 1e-3;
     auto timeIntegrator = std::make_shared<AMP::TimeIntegrator::OxideTimeIntegrator>( parameters );
-    auto solution       = timeIntegrator->getCurrentSolution();
+    auto solution       = timeIntegrator->getSolution();
     auto oxide_var      = std::make_shared<AMP::LinearAlgebra::Variable>( "oxide" );
     auto alpha_var      = std::make_shared<AMP::LinearAlgebra::Variable>( "alpha" );
     auto oxide          = solution->subsetVectorForVariable( oxide_var );

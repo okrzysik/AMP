@@ -41,11 +41,6 @@ public:
     void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) override;
 
     /**
-     * Specify initial time step.
-     */
-    double getInitialDt();
-
-    /**
      * Specify next time step to use.
      */
     double getNextDt( const bool good_solution ) override;
