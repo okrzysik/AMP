@@ -329,7 +329,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
-        auto currentSolution = pIDATimeIntegrator->getCurrentSolution();
+        auto currentSolution = pIDATimeIntegrator->getSolution();
         auto currentThermalSolution =
             currentSolution->subsetVectorForVariable( thermalVolumeOperator->getOutputVariable() );
         auto currentOxygenSolution =
