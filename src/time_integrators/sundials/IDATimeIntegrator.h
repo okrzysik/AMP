@@ -192,11 +192,6 @@ public:
     bool getBoolManufacturedProblem( void ) { return d_bManufacturedProblem; }
 
     /**
-     * return a shared pointer to the solution at the current time step
-     */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> getSolution() const;
-
-    /**
      * return a shared pointer to the source term at the current time step
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() const;

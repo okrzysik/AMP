@@ -17,7 +17,7 @@ namespace TimeIntegrator {
  * Constructor and destructor for TimeIntegrator.  The                   *
  * constructor sets default values for data members, then overrides      *
  * them with values read from input or restart.  The destructor does     *
- * nothing interesting.                                                  *
+ * nothing interesting.                                      s            *
  *                                                                       *
  ************************************************************************/
 
@@ -25,18 +25,6 @@ TimeIntegrator::TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
     AMP_INSIST( parameters, "Null parameter" );
-
-    // initialize member data
-    d_initial_time         = 0;
-    d_final_time           = 0;
-    d_current_time         = 0;
-    d_current_dt           = 0;
-    d_old_dt               = 0;
-    d_min_dt               = 0;
-    d_max_dt               = 0;
-    d_initial_dt           = 0;
-    d_integrator_step      = 0;
-    d_max_integrator_steps = 0;
 
     initialize( parameters );
 }
@@ -62,12 +50,16 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
     d_object_name = parameters->d_object_name;
 
     // for now the solution is set to the initial conditions by Jungho
-    AMP_ASSERT( parameters->d_ic_vector != nullptr );
-    d_solution_vector = ( parameters->d_ic_vector )->cloneVector();
-    d_solution_vector->copyVector( parameters->d_ic_vector );
+    d_ic_vector = parameters->d_ic_vector;
+    AMP_ASSERT( d_ic_vector );
 
-    d_pPreviousTimeSolution = ( parameters->d_ic_vector )->cloneVector();
-    d_pPreviousTimeSolution->copyVector( parameters->d_ic_vector );
+    // for now the solution is set to the initial conditions
+    //    d_solution_vector = d_ic_vector->cloneVector( "current solution" );
+    d_solution_vector = d_ic_vector->cloneVector();
+    d_solution_vector->copyVector( d_ic_vector );
+
+    d_pPreviousTimeSolution = d_ic_vector->cloneVector();
+    d_pPreviousTimeSolution->copyVector( d_ic_vector );
 
     d_pSourceTerm = parameters->d_pSourceTerm;
 
@@ -81,12 +73,6 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
     d_pMassOperator = parameters->d_pMassOperator;
     // initialize the rhs operator
     d_operator = parameters->d_operator;
-
-    d_current_dt      = 0.0;
-    d_old_dt          = 0.0;
-    d_min_dt          = 0.0;
-    d_max_dt          = 0.0;
-    d_integrator_step = 0;
 
     getFromInput( parameters->d_db );
 
@@ -171,7 +157,10 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
         d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
     }
 
+    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
+
     d_current_dt = d_initial_dt;
+    d_old_dt     = d_initial_dt;
 }
 
 /*

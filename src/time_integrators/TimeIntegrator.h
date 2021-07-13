@@ -121,7 +121,7 @@ public:
     /**
      * Retrieve the current solution.
      */
-    virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getCurrentSolution( void )
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getSolution( void )
     {
         return d_solution_vector;
     }
@@ -257,6 +257,11 @@ protected:
     std::string d_object_name;
 
     /*
+     * Initial conditions vector
+     */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_ic_vector = nullptr;
+
+    /*
      * Solution vector advanced during the time integration process.
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_vector;
@@ -301,6 +306,7 @@ protected:
     //! maximum allowable timestep (user defined)
     double d_max_dt = std::numeric_limits<double>::max();
 
+    int d_iDebugPrintInfoLevel = 0;
     int d_integrator_step      = 0;
     int d_max_integrator_steps = 0;
 
