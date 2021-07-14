@@ -94,7 +94,10 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
 *************************************************************************
 */
 
-double TimeIntegrator::getNextDt( const bool ) { return ( d_current_dt ); }
+double TimeIntegrator::getNextDt( const bool )
+{
+    return std::min( std::min( d_current_dt, d_max_dt ), d_final_time - d_current_time );
+}
 
 /*
 *************************************************************************
@@ -158,6 +161,13 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
+
+    if ( db->keyExists( "name" ) ) {
+        d_object_name = db->getString( "name" );
+    } else {
+        AMP_ERROR( " -- Key data `name'"
+                   << " missing in input." );
+    }
 
     d_current_dt = d_initial_dt;
     d_old_dt     = d_initial_dt;

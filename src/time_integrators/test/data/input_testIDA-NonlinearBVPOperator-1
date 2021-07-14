@@ -209,6 +209,7 @@ MassMatrixCorrection{
 }
 
 IDATimeIntegrator{
+                name = "IDATimeIntegrator"
 		linear_solver_type		= 1
 		relative_tolerance		= 1.00e-10
 		absolute_tolerance		= 1.00e-16

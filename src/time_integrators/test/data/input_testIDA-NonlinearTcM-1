@@ -446,6 +446,7 @@ ICLinearSolver {
 
 
 IDATimeIntegrator{
+                name = "IDATimeIntegrator"
 	               print_info_level = 0
 		linear_solver_type		= 1
 		relative_tolerance		= 1.00e-10
