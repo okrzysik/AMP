@@ -17,7 +17,6 @@
 #include <iostream>
 #include <limits>
 #include <string>
-#include <valarray>
 
 
 static inline int round_zero( double x ) { return x >= 0.0 ? ceil( x ) : floor( x ); }
@@ -63,37 +62,13 @@ namespace CylindricallySymmetric_NS {
 
 //=================== Constants =====================================================
 
-static const std::string name_base( "CylindricallySymmetric" );
-static const std::string source( "" );
-
-double Pi = 3.1415926535898;
-
 static const double rMinVal = 0.0;
 static const double rMaxVal = std::numeric_limits<double>::max();
 static const double tMinVal = 0.0;
-static const double tMaxVal = 2. * Pi;
+static const double tMaxVal = 6.283185307179586; // 2*pi
 static const double zMinVal = -std::numeric_limits<double>::max();
 static const double zMaxVal = std::numeric_limits<double>::max();
 
-static const std::string argumentsRadialFick[1] = { "radius" };
-static const unsigned int nargumentsRadialFick  = 1;
-static const double fickRadialRanges[1][2]      = { { rMinVal, rMaxVal } };
-
-static const std::string argumentsLongitudinalFick[1] = { "zee" };
-static const unsigned int nargumentsLongitudinalFick  = 1;
-static const double fickLongitudinalRanges[1][2]      = { { zMinVal, zMaxVal } };
-
-static const std::string argumentsTensorFick[3] = { "radius", "theta", "zee" };
-static const unsigned int nargumentsTensorFick  = 3;
-static const double fickTensorRanges[3][2]      = { { rMinVal, rMaxVal },
-                                               { tMinVal, tMaxVal },
-                                               { zMinVal, zMaxVal } };
-
-// default polynomial is a constant
-static const size_t nparams        = 1;
-static const double params[]       = { 1. };
-static const size_t nparamsTensor  = 3;
-static const double paramsTensor[] = { 1., 1., 1. };
 
 //=================== Classes =======================================================
 
@@ -102,21 +77,13 @@ class ScalarRadialFickProp : public Property
 {
 public:
     ScalarRadialFickProp()
-        : Property( name_base + "_" + "ScalarRadialFick", // Name string
-                    source,                               // Reference source
-                    params,                               // Property parameters
-                    nparams,                              // Number of parameters
-                    argumentsRadialFick,                  // Names of arguments to the eval function
-                    nargumentsRadialFick,                 // Number of arguments
-                    fickRadialRanges )                    // Ranges
+        : Property( "CylindricallySymmetric_ScalarRadialFick", // Name string
+                    "",                                        // Reference source
+                    { 1.0 },                                   // Property parameters
+                    { "radius" },              // Names of arguments to the eval function
+                    { { rMinVal, rMaxVal } } ) // Ranges
     {
         d_variableNumberParameters = true;
-    }
-
-    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
-    {
-        AMP_ASSERT( nparams > 0 );
-        Property::set_parameters_and_number( params, nparams );
     }
 
     /** returns property and derivative wrto r
@@ -130,21 +97,13 @@ class RadialFickProp : public VectorProperty
 {
 public:
     RadialFickProp()
-        : VectorProperty( name_base + "_" + "RadialFick", // Name string
-                          source,                         // Reference source
-                          params,                         // Property parameters
-                          nparams,                        // Number of parameters
-                          argumentsRadialFick,            // Names of arguments to the eval function
-                          nargumentsRadialFick,           // Number of arguments
-                          fickRadialRanges )              // Ranges
+        : VectorProperty( "CylindricallySymmetric_RadialFick", // Name string
+                          "",                                  // Reference source
+                          { 1.0 },                             // Property parameters
+                          { "radius" },              // Names of arguments to the eval function
+                          { { rMinVal, rMaxVal } } ) // Ranges
     {
         d_variableNumberParameters = true;
-    }
-
-    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
-    {
-        AMP_ASSERT( nparams > 0 );
-        Property::set_parameters_and_number( params, nparams );
     }
 
     /** returns property and derivative wrto r
@@ -158,21 +117,13 @@ class LongitudinalFickProp : public VectorProperty
 {
 public:
     LongitudinalFickProp()
-        : VectorProperty( name_base + "_" + "LongitudinalFick", // Name string
-                          source,                               // Reference source
-                          params,                               // Property parameters
-                          nparams,                              // Number of parameters
-                          argumentsLongitudinalFick,  // Names of arguments to the eval function
-                          nargumentsLongitudinalFick, // Number of arguments
-                          fickLongitudinalRanges )    // Ranges
+        : VectorProperty( "CylindricallySymmetric_LongitudinalFick", // Name string
+                          "",                                        // Reference source
+                          { 1.0 },                                   // Property parameters
+                          { "zee" },                 // Names of arguments to the eval function
+                          { { zMinVal, zMaxVal } } ) // Ranges
     {
         d_variableNumberParameters = true;
-    }
-
-    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
-    {
-        AMP_ASSERT( nparams > 0 );
-        Property::set_parameters_and_number( params, nparams );
     }
 
     std::vector<double> evalVector( std::vector<double> &args ) override;
@@ -191,32 +142,34 @@ class TensorFickProp : public TensorProperty
 {
 public:
     TensorFickProp()
-        : TensorProperty( name_base + "_" + "TensorFick", // Name string
-                          source,                         // Reference source
-                          paramsTensor,                   // Property parameters
-                          nparamsTensor,                  // Number of parameters
-                          argumentsTensorFick,            // Names of arguments to the eval function
-                          nargumentsTensorFick,           // Number of arguments
-                          fickTensorRanges,               // ranges
-                          std::vector<size_t>( 2, 3 ) )   // dimensions
+        : TensorProperty(
+              "CylindricallySymmetric_TensorFick", // Name string
+              "",                                  // Reference source
+              { 1.0, 1.0, 1.0 },                   // Property parameters
+              { "radius", "theta", "zee" },        // Names of arguments to the eval function
+              { { rMinVal, rMaxVal }, { tMinVal, tMaxVal }, { zMinVal, zMaxVal } }, // ranges
+              { 3, 3 } )                                                            // dimensions
     {
         d_variableNumberParameters = true;
         d_variableDimensions       = true;
         d_AuxiliaryDataInteger.insert( std::make_pair( "derivative", 0 ) );
-        set_parameters_and_number( paramsTensor, nparamsTensor );
+        set_parameters_and_number( { 1.0, 1.0, 1.0 } );
     }
 
     // NOTE: must change dimension first before changing number of parameters
-    void set_parameters_and_number( const double *params, const unsigned int nparams ) override
+    void set_parameters_and_number( std::vector<double> params ) override
     {
-        Property::set_parameters_and_number( params, nparams );
-        AMP_ASSERT( d_nparams >= 3 );
+        AMP_ASSERT( params.size() >= 3 );
+        Property::set_parameters_and_number( params );
         d_nparamsRadial = round_zero( d_params[0] );
-        AMP_ASSERT( d_nparamsRadial < d_nparams - 1 );
-        d_nparamsLongitudinal = d_nparams - 1 - d_nparamsRadial;
-        d_radialK.set_parameters_and_number( &d_params[1], d_nparamsRadial );
-        d_longitudinalK.set_parameters_and_number( &d_params[1 + d_nparamsRadial],
-                                                   d_nparamsLongitudinal );
+        AMP_ASSERT( d_nparamsRadial < params.size() - 1 );
+        d_nparamsLongitudinal = params.size() - 1 - d_nparamsRadial;
+        std::vector<double> paramsRadial( &d_params[1], &d_params[1] + d_nparamsRadial );
+        std::vector<double> paramsLongitudinal( &d_params[1 + d_nparamsRadial],
+                                                &d_params[1 + d_nparamsRadial] +
+                                                    d_nparamsLongitudinal );
+        d_radialK.set_parameters_and_number( paramsRadial );
+        d_longitudinalK.set_parameters_and_number( paramsLongitudinal );
     }
 
     std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) override;
@@ -234,8 +187,8 @@ inline double ScalarRadialFickProp::eval( std::vector<double> &args )
 {
     AMP_ASSERT( !args.empty() );
     double result;
-    result = d_params[d_nparams - 1];
-    for ( size_t i = d_nparams - 1; i > 0; i-- ) {
+    result = d_params.back();
+    for ( size_t i = d_params.size() - 1; i > 0; i-- ) {
         result = result * args[0] + d_params[i - 1];
     }
     return result;
@@ -245,12 +198,12 @@ inline std::vector<double> RadialFickProp::evalVector( std::vector<double> &args
 {
     AMP_ASSERT( !args.empty() );
     std::vector<double> result( 2 );
-    result[0] = d_params[d_nparams - 1];
-    result[1] = ( d_nparams - 1 ) * d_params[d_nparams - 1];
-    for ( size_t i = d_nparams - 1; i > 0; i-- ) {
+    result[0] = d_params.back();
+    result[1] = ( d_params.size() - 1 ) * d_params.back();
+    for ( size_t i = d_params.size() - 1; i > 0; i-- ) {
         result[0] = result[0] * args[0] + d_params[i - 1];
     }
-    for ( size_t i = d_nparams - 1; i > 1; i-- ) {
+    for ( size_t i = d_params.size() - 1; i > 1; i-- ) {
         result[1] = result[1] * args[0] + ( i - 1 ) * d_params[i - 1];
     }
     return result;
@@ -260,12 +213,12 @@ inline std::vector<double> LongitudinalFickProp::evalVector( std::vector<double>
 {
     AMP_ASSERT( !args.empty() );
     std::vector<double> result( 2 );
-    result[0] = d_params[d_nparams - 1];
-    result[1] = ( d_nparams - 1 ) * d_params[d_nparams - 1];
-    for ( size_t i = d_nparams - 1; i > 0; i-- ) {
+    result[0] = d_params.back();
+    result[1] = ( d_params.size() - 1 ) * d_params.back();
+    for ( size_t i = d_params.size() - 1; i > 0; i-- ) {
         result[0] = result[0] * args[0] + d_params[i - 1];
     }
-    for ( size_t i = d_nparams - 1; i > 1; i-- ) {
+    for ( size_t i = d_params.size() - 1; i > 1; i-- ) {
         result[1] = result[1] * args[0] + ( i - 1 ) * d_params[i - 1];
     }
     return result;

@@ -116,7 +116,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     int zeroGhostWidth = 0;
     auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
     for ( ; iterator != iterator.end(); ++iterator ) {
-        std::valarray<double> poly( 10 );
         double x = ( iterator->coord() )[0];
         double y = ( iterator->coord() )[1];
         std::vector<size_t> gid;

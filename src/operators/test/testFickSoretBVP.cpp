@@ -71,11 +71,10 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // set shift, scale for applyTests
     double shift[2];
     double scale[2];
-    shift[0] = 0.;
-    shift[1] = 0.;
-    scale[0] = 1.;
-    scale[1] = 1.;
-    std::vector<double> trange( 2 ), crange( 2 );
+    shift[0]                = 0.;
+    shift[1]                = 0.;
+    scale[0]                = 1.;
+    scale[1]                = 1.;
     auto fickTransportModel = fickOp->getTransportModel();
     std::vector<double> defaults( 2, 0 );
     auto fmat = fickTransportModel->getMaterial();
@@ -83,9 +82,9 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     if ( soretOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         std::string property = "ThermalDiffusionCoefficient";
         if ( ( fmat->property( property ) )->is_argument( "temperature" ) ) {
-            trange   = ( fmat->property( property ) )->get_arg_range( "temperature" );
-            scale[1] = trange[1] - trange[0];
-            shift[1] = trange[0] + 0.001 * scale[1];
+            auto trange = ( fmat->property( property ) )->get_arg_range( "temperature" );
+            scale[1]    = trange[1] - trange[0];
+            shift[1]    = trange[0] + 0.001 * scale[1];
             scale[1] *= 0.999;
             defaults = ( fmat->property( property ) )->get_defaults();
         }
@@ -94,9 +93,9 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     if ( fickOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
         std::string property = "FickCoefficient";
         if ( ( fmat->property( property ) )->is_argument( "concentration" ) ) {
-            crange   = ( fmat->property( property ) )->get_arg_range( "concentration" );
-            scale[0] = crange[1] - crange[0];
-            shift[0] = crange[0] + 0.001 * scale[0];
+            auto crange = ( fmat->property( property ) )->get_arg_range( "concentration" );
+            scale[0]    = crange[1] - crange[0];
+            shift[0]    = crange[0] + 0.001 * scale[0];
             scale[0] *= 0.999;
             defaults = ( fmat->property( property ) )->get_defaults();
         }

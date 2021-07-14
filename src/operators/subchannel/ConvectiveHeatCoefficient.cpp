@@ -11,26 +11,26 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
     std::shared_ptr<const RobinPhysicsModelParameters> params )
     : RobinPhysicsModel( params )
 {
-    AMP_INSIST( ( params->d_db->keyExists( "Material" ) ),
+    AMP_INSIST( params->d_db->keyExists( "Material" ),
                 "Convective Heat  Coefficient Key ''Material'' is missing!" );
-    std::string matname = params->d_db->getString( "Material" );
+    auto matname = params->d_db->getString( "Material" );
 
     d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
 
-    AMP_INSIST( ( params->d_db->keyExists( "Property" ) ),
+    AMP_INSIST( params->d_db->keyExists( "Property" ),
                 "Convective Heat Coefficient Key ''Property'' is missing!" );
-    std::string propname = params->d_db->getString( "Property" );
-    d_property           = d_material->property( propname );
+    auto propname = params->d_db->getString( "Property" );
+    d_property    = d_material->property( propname );
 
     d_defaults.resize( d_property->get_number_arguments() );
-    std::vector<std::vector<double>> ranges = d_property->get_arg_ranges();
+    auto ranges = d_property->get_arg_ranges();
     for ( size_t i = 0; i < d_defaults.size(); ++i ) {
         d_defaults[i] = ranges[i][0] * ( 1.0000001 );
     }
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
-        std::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
-        std::vector<std::string> defaultkeys  = defaults_db->getAllKeys();
+        auto defaults_db = params->d_db->getDatabase( "Defaults" );
+        auto defaultkeys = defaults_db->getAllKeys();
         AMP_INSIST( defaultkeys.size() == d_property->get_number_arguments(),
                     "Incorrect number of defaults supplied." );
         d_argNames = d_property->get_arguments();

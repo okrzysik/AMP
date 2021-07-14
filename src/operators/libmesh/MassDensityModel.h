@@ -102,7 +102,7 @@ protected:
     MassEquation d_equation;
 
 private:
-    std::vector<double> d_BilogRange;
+    std::array<double, 2> d_BilogRange;
 
     size_t d_BilogIndex;
 

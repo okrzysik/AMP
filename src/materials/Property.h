@@ -4,11 +4,11 @@
 #include "AMP/utils/UtilityMacros.h"
 
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <map>
 #include <memory>
 #include <string>
-#include <valarray>
 #include <vector>
 
 
@@ -45,21 +45,17 @@ class Property
 public:
     /**
      * Constructor
-     * \param name name of property
-     * \param source literature reference for model and notes
-     * \param params default parameter values
-     * \param nparams number of parameter values
-     * \param args names of arguments
-     * \param nargs number of arguments
-     * \param ranges ranges of arguments
+     * \param name      name of property (required)
+     * \param source    literature reference for model and notes
+     * \param params    default parameter values
+     * \param args      names of arguments
+     * \param ranges    ranges of arguments
      */
-    Property( const std::string &name    = std::string( "NotDefined" ),
-              const std::string &source  = std::string( "None" ),
-              const double *params       = nullptr,
-              const unsigned int nparams = 0,
-              const std::string *args    = nullptr,
-              const unsigned int nargs   = 0,
-              const double ranges[][2]   = nullptr );
+    Property( std::string name,
+              std::string source                        = "None",
+              std::vector<double> params                = std::vector<double>(),
+              std::vector<std::string> args             = std::vector<std::string>(),
+              std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>() );
 
     /**
      * Destructor
@@ -73,17 +69,18 @@ public:
     inline std::string get_source() { return d_source; }
 
     /** return property parameters */
-    inline std::valarray<double> get_parameters() { return d_params; }
+    inline const std::vector<double> &get_parameters() const { return d_params; }
 
     /**
      * \brief		   set the property parameters
      * \param[in]	   params the new parameters
      * \param[in]	   nparams the number of new parameters
      */
-    inline void set_parameters( const double *params, const unsigned int nparams )
+    inline void set_parameters( std::vector<double> params )
     {
-        AMP_INSIST( d_nparams == nparams, "new parameters must be same in number as old" );
-        d_params = std::valarray<double>( params, nparams );
+        AMP_INSIST( d_params.size() == params.size(),
+                    "new parameters must be same in number as old" );
+        d_params = std::move( params );
     }
 
     /**
@@ -96,26 +93,27 @@ public:
      * \param[in]	   params the new parameters
      * \param[in]	   nparams the number of new parameters
      */
-    virtual void set_parameters_and_number( const double *params, const unsigned int nparams );
+    virtual void set_parameters_and_number( std::vector<double> params );
 
     /** return the names of the arguments to eval */
-    inline std::vector<std::string> get_arguments() { return d_arguments; }
+    inline const std::vector<std::string> &get_arguments() const { return d_arguments; }
 
     /** return the number of arguments to eval */
-    inline unsigned int get_number_arguments() { return d_n_arguments; }
+    inline unsigned int get_number_arguments() { return d_arguments.size(); }
 
     /** get the defaults */
-    inline std::vector<double> get_defaults() { return d_defaults; }
+    inline const std::vector<double> &get_defaults() { return d_defaults; }
 
     /** set the defaults */
     inline void set_defaults( std::vector<double> defaults )
     {
-        AMP_INSIST( defaults.size() == d_n_arguments, "incorrect number of defaults specified" );
+        AMP_INSIST( defaults.size() == d_arguments.size(),
+                    "incorrect number of defaults specified" );
         d_defaults = defaults;
     }
 
     //! get ranges for all arguments used in this material
-    virtual std::vector<std::vector<double>> get_arg_ranges() { return d_ranges; }
+    virtual std::vector<std::array<double, 2>> get_arg_ranges() { return d_ranges; }
 
     //! determine if a string is an argument
     inline bool is_argument( const std::string &argname )
@@ -127,7 +125,7 @@ public:
     }
 
     //! get range for a specific argument
-    virtual std::vector<double> get_arg_range( const std::string &argname );
+    virtual std::array<double, 2> get_arg_range( const std::string &argname );
 
     //! determine if a value is within range or not
     inline bool in_range( const std::string &argname, const double value );
@@ -178,15 +176,13 @@ public:
     void getAuxiliaryData( const std::string &key, std::string &val );
 
 protected:
-    std::string d_name;             //!< should be unique
-    std::string d_source;           //!< journal or report reference: from where did model come?
-    std::valarray<double> d_params; //!< parameters
-    unsigned int d_nparams;         //!< number of parameters
-    unsigned int d_n_arguments;     //!< number of arguments to the eval function
+    std::string d_name;           //!< should be unique
+    std::string d_source;         //!< journal or report reference: from where did model come?
+    std::vector<double> d_params; //!< parameters
     std::vector<std::string> d_arguments;          //!< names of the arguments to the eval function
     std::vector<double> d_defaults;                //!< default values of arguments to eval function
     bool d_defaultsAreSet;                         //!< indicates defaults have been set
-    std::vector<std::vector<double>> d_ranges;     //!< allowed ranges of arguments
+    std::vector<std::array<double, 2>> d_ranges;   //!< allowed ranges of arguments
     std::map<std::string, size_t> d_argToIndexMap; //!< connects argument names to their indices
     std::map<std::string, std::string> d_translator; //!< standard names to multivector names
     bool d_variableNumberParameters;                 //!< can change number of parameters
