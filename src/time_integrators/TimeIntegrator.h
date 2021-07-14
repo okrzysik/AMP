@@ -134,7 +134,7 @@ public:
      * routine checkNewSolution() was called.  The boolean argument is the
      * return value from that call.
      */
-    virtual double getNextDt( const bool good_solution ) = 0;
+    virtual double getNextDt( const bool good_solution );
 
     /**
      * @brief  Return initial integration time.
@@ -234,6 +234,10 @@ public:
     std::shared_ptr<AMP::Operator::Operator> getOperator( void ) { return d_operator; }
 
     virtual int getTotalRejectedSteps() const { return d_total_steprejects; }
+
+    virtual void setCurrentDt( const double dt ) { d_current_dt = dt; }
+
+    virtual void printStatistics( std::ostream &os = AMP::pout ) { NULL_USE( os ); }
 
 protected:
     /*
