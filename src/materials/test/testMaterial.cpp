@@ -29,6 +29,24 @@
 #endif
 
 
+// Helper functions
+double maxabs( const std::vector<double> &x )
+{
+    double y = 0;
+    for ( auto v : x )
+        y = std::max( y, std::abs( v ) );
+    return y;
+}
+static std::vector<double> operator-( const std::vector<double> &a, const std::vector<double> &b )
+{
+    AMP_ASSERT( a.size() == b.size() );
+    std::vector<double> c( a.size(), 0 );
+    for ( size_t i = 0; i < a.size(); i++ )
+        c[i] = a[i] - b[i];
+    return c;
+}
+
+
 // Test getting a value out of range
 static inline void set( std::vector<double> &vec, size_t index, double value )
 {
@@ -91,6 +109,10 @@ MatTestResult testMaterial( std::string &name )
     } catch ( ... ) {
         results.unknown = true;
     }
+    if ( !mat ) {
+        results.creationGood = false;
+        return results;
+    }
 
     // check for undefined property
     try {
@@ -117,12 +139,14 @@ MatTestResult testMaterial( std::string &name )
         try {
             auto params = property->get_parameters();
             if ( params.size() > 0 ) {
-                params *= 10.0;
-                property->set_parameters( &params[0], params.size() );
-                params /= 10.0;
-                property->set_parameters( &params[0], params.size() );
+                for ( auto &p : params )
+                    p *= 10.0;
+                property->set_parameters( params );
+                for ( auto &p : params )
+                    p /= 10.0;
+                property->set_parameters( params );
                 auto nparams = property->get_parameters();
-                bool good    = abs( nparams - params ).max() <= 1.e-10 * abs( params ).max();
+                bool good    = maxabs( nparams - params ) <= 1.e-10 * maxabs( params );
                 if ( good )
                     propResults.params = true;
                 else
@@ -227,21 +251,20 @@ MatTestResult testMaterial( std::string &name )
             AMP::LinearAlgebra::createSimpleVector<double>( npoints, nominalMultiVar );
 
         // test material range functions
-        std::vector<double> range( 2 );
         bool pass = nargs == argnames.size();
         for ( size_t i = 0; i < argnames.size(); i++ ) {
-            range = property->get_arg_range( argnames[i] );
-            pass  = pass && range[0] <= range[1];
-            pass  = pass && ( range[0] == ranges[i][0] ) && ( range[1] == ranges[i][1] );
-            pass  = pass && property->in_range( argnames[i], justright[i] );
-            pass  = pass && !property->in_range( argnames[i], toosmall[i] );
-            pass  = pass && !property->in_range( argnames[i], toobig[i] );
-            pass  = pass && property->in_range( argnames[i], justright[i][0] );
-            pass  = pass && !property->in_range( argnames[i], toosmall[i][0] );
-            pass  = pass && !property->in_range( argnames[i], toobig[i][0] );
-            pass  = pass && property->in_range( argnames[i], *justrightVec[i] );
-            pass  = pass && !property->in_range( argnames[i], *toosmallVec[i] );
-            pass  = pass && !property->in_range( argnames[i], *toobigVec[i] );
+            auto range = property->get_arg_range( argnames[i] );
+            pass       = pass && range[0] <= range[1];
+            pass       = pass && ( range[0] == ranges[i][0] ) && ( range[1] == ranges[i][1] );
+            pass       = pass && property->in_range( argnames[i], justright[i] );
+            pass       = pass && !property->in_range( argnames[i], toosmall[i] );
+            pass       = pass && !property->in_range( argnames[i], toobig[i] );
+            pass       = pass && property->in_range( argnames[i], justright[i][0] );
+            pass       = pass && !property->in_range( argnames[i], toosmall[i][0] );
+            pass       = pass && !property->in_range( argnames[i], toobig[i][0] );
+            pass       = pass && property->in_range( argnames[i], *justrightVec[i] );
+            pass       = pass && !property->in_range( argnames[i], *toosmallVec[i] );
+            pass       = pass && !property->in_range( argnames[i], *toobigVec[i] );
         }
         if ( pass )
             propResults.range = true;

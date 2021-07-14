@@ -24,29 +24,27 @@ class ThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
     ThermalDiffusionCoefficientProp()
-        : AMP::Materials::Property( name_base + "_" + "ThermalDiffusionCoefficient", // Name string
-                                    source,                 // Reference source
-                                    thermalDiffusionParams, // Property parameters
-                                    numberThDiffParams,     // Number of parameters
+        : AMP::Materials::Property( std::string( name_base ) +
+                                        "_ThermalDiffusionCoefficient", // Name string
+                                    source,                             // Reference source
+                                    thermalDiffusionParams,             // Property parameters
                                     thermDiffArgs, // Names of arguments to the eval function
-                                    numberThermDiffArgs,
                                     thermDiffRanges ),
           d_ExtraParams( 2 )
     {
-    } // Number of arguments
+    }
 
-    virtual void set_parameters( const double *params, const unsigned int nparams )
+    virtual void set_parameters( std::vector<double> params )
     {
-        std::valarray<double> fickParams  = d_FickProp.get_parameters();
-        std::valarray<double> soretParams = d_SoretProp.get_parameters();
-        AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
-        size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i = 0; i < nfick; i++ )
+        std::vector<double> fickParams  = d_FickProp.get_parameters();
+        std::vector<double> soretParams = d_SoretProp.get_parameters();
+        AMP_ASSERT( params.size() == fickParams.size() + soretParams.size() );
+        for ( size_t i = 0; i < fickParams.size(); i++ )
             fickParams[i] = params[i];
-        for ( size_t i = 0; i < nsoret; i++ )
-            soretParams[i] = params[nfick + i];
-        d_FickProp.set_parameters( &fickParams[0], nfick );
-        d_SoretProp.set_parameters( &soretParams[0], nsoret );
+        for ( size_t i = 0; i < soretParams.size(); i++ )
+            soretParams[i] = params[fickParams.size() + i];
+        d_FickProp.set_parameters( std::move( fickParams ) );
+        d_SoretProp.set_parameters( std::move( soretParams ) );
     }
 
     double eval( std::vector<double> &args ) override;
@@ -72,13 +70,11 @@ class DxThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
     DxThermalDiffusionCoefficientProp()
-        : AMP::Materials::Property( name_base + "_" +
-                                        "DxThermalDiffusionCoefficient", // Name string
-                                    source,                              // Reference source
-                                    thermalDiffusionParams,              // Property parameters
-                                    numberThDiffParams,                  // Number of parameters
+        : AMP::Materials::Property( std::string( name_base ) +
+                                        "_DxThermalDiffusionCoefficient", // Name string
+                                    source,                               // Reference source
+                                    thermalDiffusionParams,               // Property parameters
                                     thermDiffArgs, // Names of arguments to the eval function
-                                    numberThermDiffArgs,
                                     thermDiffRanges ),
           d_ExtraParams( 4 )
     {
@@ -86,16 +82,15 @@ public:
 
     virtual void set_parameters( const double *params, const unsigned int nparams )
     {
-        std::valarray<double> fickParams  = d_FickProp.get_parameters();
-        std::valarray<double> soretParams = d_SoretProp.get_parameters();
+        std::vector<double> fickParams  = d_FickProp.get_parameters();
+        std::vector<double> soretParams = d_SoretProp.get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
-        size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i = 0; i < nfick; i++ )
+        for ( size_t i = 0; i < fickParams.size(); i++ )
             fickParams[i] = params[i];
-        for ( size_t i = 0; i < nsoret; i++ )
-            soretParams[i] = params[nfick + i];
-        d_FickProp.set_parameters( &fickParams[0], nfick );
-        d_SoretProp.set_parameters( &soretParams[0], nsoret );
+        for ( size_t i = 0; i < soretParams.size(); i++ )
+            soretParams[i] = params[fickParams.size() + i];
+        d_FickProp.set_parameters( std::move( fickParams ) );
+        d_SoretProp.set_parameters( std::move( soretParams ) );
     }
 
     double eval( std::vector<double> &args ) override;
@@ -121,30 +116,27 @@ class DTThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
     DTThermalDiffusionCoefficientProp()
-        : AMP::Materials::Property( name_base + "_" +
-                                        "DTThermalDiffusionCoefficient", // Name string
-                                    source,                              // Reference source
-                                    thermalDiffusionParams,              // Property parameters
-                                    numberThDiffParams,                  // Number of parameters
+        : AMP::Materials::Property( std::string( name_base ) +
+                                        "_DTThermalDiffusionCoefficient", // Name string
+                                    source,                               // Reference source
+                                    thermalDiffusionParams,               // Property parameters
                                     thermDiffArgs, // Names of arguments to the eval function
-                                    numberThermDiffArgs,
                                     thermDiffRanges ),
           d_ExtraParams( 4 )
     {
     } // Number of arguments
 
-    virtual void set_parameters( const double *params, const unsigned int nparams )
+    virtual void set_parameters( std::vector<double> params )
     {
-        std::valarray<double> fickParams  = d_FickProp.get_parameters();
-        std::valarray<double> soretParams = d_SoretProp.get_parameters();
-        AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
-        size_t nfick = fickParams.size(), nsoret = soretParams.size();
-        for ( size_t i = 0; i < nfick; i++ )
+        std::vector<double> fickParams  = d_FickProp.get_parameters();
+        std::vector<double> soretParams = d_SoretProp.get_parameters();
+        AMP_ASSERT( params.size() == fickParams.size() + soretParams.size() );
+        for ( size_t i = 0; i < fickParams.size(); i++ )
             fickParams[i] = params[i];
-        for ( size_t i = 0; i < nsoret; i++ )
-            soretParams[i] = params[nfick + i];
-        d_FickProp.set_parameters( &fickParams[0], nfick );
-        d_SoretProp.set_parameters( &soretParams[0], nsoret );
+        for ( size_t i = 0; i < soretParams.size(); i++ )
+            soretParams[i] = params[fickParams.size() + i];
+        d_FickProp.set_parameters( std::move( fickParams ) );
+        d_SoretProp.set_parameters( std::move( soretParams ) );
     }
 
     double eval( std::vector<double> &args ) override;

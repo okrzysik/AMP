@@ -11,31 +11,20 @@ class TensorProperty : public Property
 public:
     /**
      * Constructor
-     * \param name name of property
-     * \param source literature reference for model and notes
-     * \param params default parameter values
-     * \param nparams number of parameter values
-     * \param args names of arguments
-     * \param nargs number of arguments
-     * \param ranges ranges of arguments
+     * \param name      name of property (required)
+     * \param source    literature reference for model and notes
+     * \param params    default parameter values
+     * \param args      names of arguments
+     * \param ranges    ranges of arguments
      * \param dimensions the first and second dimensions of return value tensor
      */
-    TensorProperty( const std::string &name               = std::string( "NotDefined" ),
-                    const std::string &source             = std::string( "None" ),
-                    const double *params                  = nullptr,
-                    const unsigned int nparams            = 0,
-                    const std::string *args               = nullptr,
-                    const unsigned int nargs              = 0,
-                    const double ranges[][2]              = nullptr,
-                    const std::vector<size_t> &dimensions = std::vector<size_t>( 2, 1 ) )
-        : Property( name, source, params, nparams, args, nargs, ranges ),
-          d_dimensions( dimensions ),
-          d_variableDimensions( false )
-    {
-        AMP_INSIST( d_dimensions.size() == 2, "there must be two dimensions" );
-        AMP_INSIST( d_dimensions[0] > 0, "must have first return tensor dimension > 0" );
-        AMP_INSIST( d_dimensions[1] > 0, "must have second return tensor dimension > 0" );
-    }
+    TensorProperty(
+        std::string name,
+        std::string source                        = std::string( "None" ),
+        std::vector<double> params                = std::vector<double>(),
+        std::vector<std::string> args             = std::vector<std::string>(),
+        std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>(),
+        std::vector<size_t> dimensions            = { 2, 1 } );
 
     /**
      * Destructor

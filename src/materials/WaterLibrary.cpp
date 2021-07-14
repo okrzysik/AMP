@@ -10,7 +10,7 @@
 
 #include <iomanip>
 #include <string>
-#include <valarray>
+#include <vector>
 
 namespace AMP {
 namespace Materials {
@@ -18,17 +18,12 @@ namespace WaterLibrary_NS {
 
 //=================== Constants =====================================================
 
-static const std::string name_base( "WaterLibrary" );
-static const std::string source( "\
-M. P. Paulsen, et. al, \
-RETRAN-3D, \
-Electric Power Research Institute, Technical Document NP-7450, GeomType::Volume 1, \
-September 1998" );
+static const char *source =
+    "M. P. Paulsen, et. al, RETRAN-3D, Electric Power Research Institute, Technical Document "
+    "NP-7450, GeomType::Volume 1, September 1998";
 
 // Temperature as a function of enthalpy and pressure
-static const unsigned int TempNumArgs         = 2;
-static const unsigned int TempNumParams       = 2 * 4 + 5 * 5 + 5 * 5 + 5 * 5;
-static const double TempParams[TempNumParams] = {
+static std::initializer_list<double> TempParams = {
     .3276275552e2,    .9763617000e0,    .1857226027e-3,   -.4682674330e-6, // CT1
     .3360880214e-2,   -.5595281760e-4,  .1618595991e-6,   -.1180204381e-9,  .6390801208e3,
     -.3055217235e1,   .8713231868e-2,   -.6269403683e-5,  -.9844700000e-17, // CT2
@@ -47,19 +42,17 @@ static const double TempParams[TempNumParams] = {
     .1527377542e-6,   -.5356866315e-9,  .6823225984e-12,  -.3668096142e-15, .6946004624e-19,
     -.1437179752e-10, .5006731336e-13,  -.6365519546e-16, .3473711350e-19,  -.6842306083e-23
 };
-static const std::string TempArgs[TempNumArgs] = { "enthalpy", "pressure" };
-static const double TempHminVal                = 0;        // minimum enthalpy [J/kg]
-static const double TempHmaxVal                = 4.0705e6; // maximum enthalpy of correlation [J/kg]
-static const double TempPminVal                = 689.4757; // minimum pressure [Pa]
+static std::initializer_list<std::string> TempArgs = { "enthalpy", "pressure" };
+static const double TempHminVal                    = 0; // minimum enthalpy [J/kg]
+static const double TempHmaxVal = 4.0705e6;             // maximum enthalpy of correlation [J/kg]
+static const double TempPminVal = 689.4757;             // minimum pressure [Pa]
 static const double TempPmaxVal =
     4.1369e7; // This is limiting value of correlation (6000 psi), not the critical pressure [Pa]
-static const double TempRanges[2][2] = { { TempHminVal, TempHmaxVal },
-                                         { TempPminVal, TempPmaxVal } };
+static std::initializer_list<std::array<double, 2>> TempRanges = { { TempHminVal, TempHmaxVal },
+                                                                   { TempPminVal, TempPmaxVal } };
 
 // Saturated liquid enthalpy as a function of pressure
-static const unsigned int HfSatNumArgs          = 1;
-static const unsigned int HfSatNumParams        = 3 * 9;
-static const double HfSatParams[HfSatNumParams] = {
+static std::initializer_list<double> HfSatParams = {
     .6970887859e2,   .3337529994e2,  .2318240735e1,   .1840599513e0,   -.5245502284e-2,
     .2878007027e-2,  .1753652324e-2, -.4334859620e-3, .3325699282e-4,  .8408618802e6,
     .3637413208e6,   -.4634506669e6, .1130306339e6,   -.4350217298e3,  -.3898988188e4,
@@ -67,54 +60,52 @@ static const double HfSatParams[HfSatNumParams] = {
     .1522233257e1,   -.6973992961e0, .1743091663e0,   -.2319717696e-1, .1694019149e-2,
     -.6454771710e-4, .1003003098e-5
 };
-static const std::string HfSatArgs[HfSatNumArgs] = { "pressure" };
-static const double HfSatPminVal                 = 689.4757; // minimum pressure [Pa]
-static const double HfSatPmaxVal      = 22119759.4074; // critical pressure; maximum pressure [Pa]
-static const double HfSatRanges[1][2] = { { HfSatPminVal, HfSatPmaxVal } };
+static std::initializer_list<std::string> HfSatArgs = { "pressure" };
+static const double HfSatPminVal                    = 689.4757; // minimum pressure [Pa]
+static const double HfSatPmaxVal = 22119759.4074; // critical pressure; maximum pressure [Pa]
+static std::initializer_list<std::array<double, 2>> HfSatRanges = { { HfSatPminVal,
+                                                                      HfSatPmaxVal } };
 
 // Saturated vapor enthalpy as a function of pressure
-static const unsigned int HgSatNumArgs           = 1;
-static const unsigned int HgSatNumParams         = 12 + 9 + 7;
-static const double HgSatParams[HgSatNumParams]  = { 0.1105836875e4,
-                                                    0.1436943768e2,
-                                                    0.8018288621,
-                                                    0.1617232913e-1,
-                                                    -0.1501147505e-2,
-                                                    0.0,
-                                                    0.0,
-                                                    0.0,
-                                                    0.0,
-                                                    -0.1237675562e-4,
-                                                    0.3004773304e-5,
-                                                    -0.2062390734e-6,
-                                                    -0.2234264997e7,
-                                                    0.1231247634e7,
-                                                    -0.1978847871e6,
-                                                    0.1859988044e2,
-                                                    -0.2765701318e1,
-                                                    0.1036033878e4,
-                                                    -0.2143423131e3,
-                                                    0.1690507762e2,
-                                                    -0.4864322134,
-                                                    0.9059978254e3,
-                                                    0.5561957539e1,
-                                                    0.3434189609e1,
-                                                    -0.6406390628,
-                                                    0.5918579484e-1,
-                                                    -0.2725378570e-2,
-                                                    0.5006336938e-4 };
-static const std::string HgSatArgs[HgSatNumArgs] = { "pressure" };
-static const double HgSatPminVal                 = 689.4757; // minimum pressure [Pa]
-static const double HgSatPmaxVal      = 22119759.4074; // critical pressure; maximum pressure [Pa]
-static const double HgSatRanges[1][2] = { { HgSatPminVal, HgSatPmaxVal } };
+static std::initializer_list<double> HgSatParams = { 0.1105836875e4,
+                                                     0.1436943768e2,
+                                                     0.8018288621,
+                                                     0.1617232913e-1,
+                                                     -0.1501147505e-2,
+                                                     0.0,
+                                                     0.0,
+                                                     0.0,
+                                                     0.0,
+                                                     -0.1237675562e-4,
+                                                     0.3004773304e-5,
+                                                     -0.2062390734e-6,
+                                                     -0.2234264997e7,
+                                                     0.1231247634e7,
+                                                     -0.1978847871e6,
+                                                     0.1859988044e2,
+                                                     -0.2765701318e1,
+                                                     0.1036033878e4,
+                                                     -0.2143423131e3,
+                                                     0.1690507762e2,
+                                                     -0.4864322134,
+                                                     0.9059978254e3,
+                                                     0.5561957539e1,
+                                                     0.3434189609e1,
+                                                     -0.6406390628,
+                                                     0.5918579484e-1,
+                                                     -0.2725378570e-2,
+                                                     0.5006336938e-4 };
+
+static std::initializer_list<std::string> HgSatArgs = { "pressure" };
+static const double HgSatPminVal                    = 689.4757; // minimum pressure [Pa]
+static const double HgSatPmaxVal = 22119759.4074; // critical pressure; maximum pressure [Pa]
+static std::initializer_list<std::array<double, 2>> HgSatRanges = { { HgSatPminVal,
+                                                                      HgSatPmaxVal } };
 
 
 // Specific volume as a function of enthalpy and pressure
-static const unsigned int VolNumArgs        = 2;
-static const unsigned int VolNumParams      = 3 * 3 + 3 * 5 + 4 * 3 + 4 * 4 + 3 + 4 + 3 + 4 + 1;
-static const double VolParams[VolNumParams] = {
-    1.1956901695e-9,   3.7591804374e-11,
-    -2.4473796276e-13, // CN0
+static std::initializer_list<double> VolParams = {
+    1.1956901695e-9,   3.7591804374e-11,  -2.4473796276e-13, // CN0
     1.6173258743e-13,  -2.1383283863e-14, 9.3054844544e-17,  7.4927085737e-17,  4.2176141427e-18,
     -1.1512516405e-20, -.4117961750e1,    -.3811294543e-3,   .4308265942e-5,    -.9160120130e-8,
     .8017924673e-11, // CN1
@@ -136,34 +127,32 @@ static const double VolParams[VolNumParams] = {
     1.36221661279,     -1.4985169728e-4,  2.7387521579e-8,   -2.9162058556e-12, // CJ
     -2.3256803936e-9
 };
-static const std::string VolArgs[VolNumArgs] = { "enthalpy", "pressure" };
-static const double VolHminVal               = 0; // minimum enthalpy [J/kg]
-static const double VolHmaxVal = 4.0705e6;        // maximum enthalpy; critical enthalpy [J/kg]
-static const double VolPminVal = 689.4757;        // minimum pressure [Pa]
+static const std::initializer_list<std::string> VolArgs = { "enthalpy", "pressure" };
+static const double VolHminVal                          = 0; // minimum enthalpy [J/kg]
+static const double VolHmaxVal = 4.0705e6; // maximum enthalpy; critical enthalpy [J/kg]
+static const double VolPminVal = 689.4757; // minimum pressure [Pa]
 static const double VolPmaxVal =
     4.1369e7; // This is limiting value of correlation (6000 psi), not the critical pressure [Pa]
-static const double VolRanges[2][2] = { { VolHminVal, VolHmaxVal }, { VolPminVal, VolPmaxVal } };
+static std::initializer_list<std::array<double, 2>> VolRanges = { { VolHminVal, VolHmaxVal },
+                                                                  { VolPminVal, VolPmaxVal } };
 
 // Thermal conductivity as a function of temperature and density
-static const unsigned int CondNumArgs          = 2;
-static const unsigned int CondNumParams        = 0;
-static const double CondParams[1]              = { 0 };
-static const std::string CondArgs[CondNumArgs] = { "temperature", "density" };
-static const double CondTminVal                = 200.0; // minimum temperature [K]
+static std::initializer_list<double> CondParams    = { 0 };
+static std::initializer_list<std::string> CondArgs = { "temperature", "density" };
+static const double CondTminVal                    = 200.0; // minimum temperature [K]
 static const double CondTmaxVal =
     1500; // maximum temperature [K] (arbitrary "very high" temperature)
 static const double CondRhominVal = 318; // minimum density [kg/m3]
 static const double CondRhomaxVal =
     1200.; // maximum density [kg/m3] (arbitrary "very high" density)
-static const double CondRanges[2][2] = { { CondTminVal, CondTmaxVal },
-                                         { CondRhominVal, CondRhomaxVal } };
+static std::initializer_list<std::array<double, 2>> CondRanges = {
+    { CondTminVal, CondTmaxVal }, { CondRhominVal, CondRhomaxVal }
+};
 
 // Convective Heat Coefficient as a function of thermal Conductivity,
 // Diameter, Reynolds Number and Prandtl Number
-static const unsigned int ConvNumArgs          = 5;
-static const unsigned int ConvNumParams        = 0;
-static const double ConvParams[1]              = { 0 };
-static const std::string ConvArgs[ConvNumArgs] = {
+static std::initializer_list<double> ConvParams    = { 0 };
+static std::initializer_list<std::string> ConvArgs = {
     "temperature", "density", "diameter", "reynolds", "prandtl"
 };
 static const double ConvTminVal = 200.0; // minimum temperature [K]
@@ -171,47 +160,45 @@ static const double ConvTmaxVal =
     1500; // maximum temperature [K] (arbitrary "very high" temperature)
 static const double ConvRhominVal = 318; // minimum density [kg/m3]
 static const double ConvRhomaxVal =
-    1200.; // maximum density [kg/m3] (arbitrary "very high" density)
-static const double ConvDminVal      = 0.0; // minimum diameter [m]
-static const double ConvDmaxVal      = 1.0; // maximum diameter [m] (arbitrary "very high" diameter)
-static const double ConvReyminVal    = 1e3; // minimum reynolds # []
-static const double ConvReymaxVal    = 1e6; // maximum reynolds # []
-static const double ConvPrtminVal    = 0.87; // minimum Prandtl # []
-static const double ConvPrtmaxVal    = 14.;  // maximum Prandtl # []
-static const double ConvRanges[5][2] = { { ConvTminVal, ConvTmaxVal },
-                                         { ConvRhominVal, ConvRhomaxVal },
-                                         { ConvDminVal, ConvDmaxVal },
-                                         { ConvReyminVal, ConvReymaxVal },
-                                         { ConvPrtminVal, ConvPrtmaxVal } };
+    1200.;                                // maximum density [kg/m3] (arbitrary "very high" density)
+static const double ConvDminVal   = 0.0;  // minimum diameter [m]
+static const double ConvDmaxVal   = 1.0;  // maximum diameter [m] (arbitrary "very high" diameter)
+static const double ConvReyminVal = 1e3;  // minimum reynolds # []
+static const double ConvReymaxVal = 1e6;  // maximum reynolds # []
+static const double ConvPrtminVal = 0.87; // minimum Prandtl # []
+static const double ConvPrtmaxVal = 14.;  // maximum Prandtl # []
+static std::initializer_list<std::array<double, 2>> ConvRanges = { { ConvTminVal, ConvTmaxVal },
+                                                                   { ConvRhominVal, ConvRhomaxVal },
+                                                                   { ConvDminVal, ConvDmaxVal },
+                                                                   { ConvReyminVal, ConvReymaxVal },
+                                                                   { ConvPrtminVal,
+                                                                     ConvPrtmaxVal } };
 
 
 // dynamic viscosity as a function of temperature and density
-static const unsigned int ViscNumArgs         = 2;
-static const unsigned int ViscNumParams       = 4 + 5 * 6;
-static const double ViscParams[ViscNumParams] = {
+static const std::initializer_list<double> ViscParams = {
     0.0181583,  0.0177624,  0.0105287,  -0.0036744, 0.501938,  0.162888,  -0.130356,
     0.907919,   -0.551119,  0.146543,   0.235622,   0.789393,  0.673665,  1.207552,
     0.0670665,  -0.0843370, -0.274637,  -0.743539,  -0.959456, -0.687343, -0.497089,
     0.195286,   0.145831,   0.263129,   0.347247,   0.213486,  0.100754,  -0.032932,
     -0.0270448, -0.0253093, -0.0267758, -0.0822904, 0.0602253, -0.0202595
 };
-static const std::string ViscArgs[ViscNumArgs] = { "temperature", "density" };
-static const double ViscTminVal                = 0.0; // minimum temperature [K]
+static std::initializer_list<std::string> ViscArgs = { "temperature", "density" };
+static const double ViscTminVal                    = 0.0; // minimum temperature [K]
 static const double ViscTmaxVal =
     1.5e3; // maximum temperature [K] (arbitrary "very high" temperature)
 static const double ViscRhominVal = 318; // minimum density [kg/m3]
 static const double ViscRhomaxVal =
     1200.; // maximum density [kg/m3] (arbitrary "very high" density)
-static const double ViscRanges[2][2] = { { ViscTminVal, ViscTmaxVal },
-                                         { ViscRhominVal, ViscRhomaxVal } };
+static std::initializer_list<std::array<double, 2>> ViscRanges = {
+    { ViscTminVal, ViscTmaxVal }, { ViscRhominVal, ViscRhomaxVal }
+};
 
 // enthalpy as a function of temperature and pressure
-static const unsigned int EnthalpyNumArgs              = 2;
-static const unsigned int EnthalpyNumParams            = 6;
-static const double EnthalpyParams[EnthalpyNumParams]  = { -256638.942,    -203.118982,
-                                                          0.760349801,    -3848757.66,
-                                                          -0.00106377488, 0.0000006177396046 };
-static const std::string EnthalpyArgs[EnthalpyNumArgs] = { "temperature", "pressure" };
+static std::initializer_list<double> EnthalpyParams    = { -256638.942,    -203.118982,
+                                                        0.760349801,    -3848757.66,
+                                                        -0.00106377488, 0.0000006177396046 };
+static std::initializer_list<std::string> EnthalpyArgs = { "temperature", "pressure" };
 static const double EnthalpyTminVal                    = 0.0; // minimum temperature [K]
 static const double EnthalpyTmaxVal =
     1.5e3; // maximum temperature [K] (arbitrary "very high" temperature)
@@ -220,8 +207,9 @@ static const double EnthalpyPminVal = 689.4757; // minimum pressure [Pa]
 // pressure [Pa]
 static const double EnthalpyPmaxVal =
     4.1369e7; // This is limiting value of correlation (6000 psi), not the critical pressure [Pa]
-static const double EnthalpyRanges[2][2] = { { EnthalpyTminVal, EnthalpyTmaxVal },
-                                             { EnthalpyPminVal, EnthalpyPmaxVal } };
+static std::initializer_list<std::array<double, 2>> EnthalpyRanges = {
+    { EnthalpyTminVal, EnthalpyTmaxVal }, { EnthalpyPminVal, EnthalpyPmaxVal }
+};
 
 //=================== Classes =======================================================
 
@@ -229,15 +217,14 @@ class TemperatureProp : public Property
 {
 public:
     TemperatureProp()
-        : Property( name_base + "_" + "Temperature", // Name string
-                    source,                          // Reference source
-                    TempParams,                      // Property parameters
-                    TempNumParams,                   // Number of parameters
-                    TempArgs,                        // Names of arguments to the eval function
-                    TempNumArgs,                     // Number of arguments
-                    TempRanges )
+        : Property( "WaterLibrary_Temperature", // Name string
+                    source,                     // Reference source
+                    TempParams,                 // Property parameters
+                    TempArgs,                   // Names of arguments
+                    TempRanges                  // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -246,15 +233,14 @@ class SaturatedLiquidEnthalpyProp : public Property
 {
 public:
     SaturatedLiquidEnthalpyProp()
-        : Property( name_base + "_" + "SaturatedLiquidEnthalpy", // Name string
-                    source,                                      // Reference source
-                    HfSatParams,                                 // Property parameters
-                    HfSatNumParams,                              // Number of parameters
-                    HfSatArgs,    // Names of arguments to the eval function
-                    HfSatNumArgs, // Number of arguments
-                    HfSatRanges )
+        : Property( "WaterLibrary_SaturatedLiquidEnthalpy", // Name string
+                    source,                                 // Reference source
+                    HfSatParams,                            // Property parameters
+                    HfSatArgs,                              // Names of arguments
+                    HfSatRanges                             // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -263,15 +249,14 @@ class SaturatedVaporEnthalpyProp : public Property
 {
 public:
     SaturatedVaporEnthalpyProp()
-        : Property( name_base + "_" + "SaturatedVaporEnthalpy", // Name string
-                    source,                                     // Reference source
-                    HgSatParams,                                // Property parameters
-                    HgSatNumParams,                             // Number of parameters
-                    HgSatArgs,    // Names of arguments to the eval function
-                    HgSatNumArgs, // Number of arguments
-                    HgSatRanges )
+        : Property( "WaterLibrary_SaturatedVaporEnthalpy", // Name string
+                    source,                                // Reference source
+                    HgSatParams,                           // Property parameters
+                    HgSatArgs,                             // Names of arguments
+                    HgSatRanges                            // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -280,15 +265,14 @@ class SpecificVolumeProp : public Property
 {
 public:
     SpecificVolumeProp()
-        : Property( name_base + "_" + "SpecificVolume", // Name string
-                    source,                             // Reference source
-                    VolParams,                          // Property parameters
-                    VolNumParams,                       // Number of parameters
-                    VolArgs,                            // Names of arguments to the eval function
-                    VolNumArgs,                         // Number of arguments
-                    VolRanges )
+        : Property( "WaterLibrary_SpecificVolume", // Name string
+                    source,                        // Reference source
+                    VolParams,                     // Property parameters
+                    VolArgs,                       // Names of arguments
+                    VolRanges                      // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -297,15 +281,14 @@ class ThermalConductivityProp : public Property
 {
 public:
     ThermalConductivityProp()
-        : Property( name_base + "_" + "ThermalConductivity", // Name string
-                    source,                                  // Reference source
-                    CondParams,                              // Property parameters
-                    CondNumParams,                           // Number of parameters
-                    CondArgs,    // Names of arguments to the eval function
-                    CondNumArgs, // Number of arguments
-                    CondRanges )
+        : Property( "WaterLibrary_ThermalConductivity", // Name string
+                    source,                             // Reference source
+                    CondParams,                         // Property parameters
+                    CondArgs,                           // Names of arguments
+                    CondRanges                          // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -314,15 +297,14 @@ class ConvectiveHeatProp : public Property
 {
 public:
     ConvectiveHeatProp()
-        : Property( name_base + "_" + "ConvectiveHeat", // Name string
-                    source,                             // Reference source
-                    ConvParams,                         // Property parameters
-                    ConvNumParams,                      // Number of parameters
-                    ConvArgs,                           // Names of arguments to the eval function
-                    ConvNumArgs,                        // Number of arguments
-                    ConvRanges )
+        : Property( "WaterLibrary_ConvectiveHeat", // Name string
+                    source,                        // Reference source
+                    ConvParams,                    // Property parameters
+                    ConvArgs,                      // Names of arguments
+                    ConvRanges                     // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -331,15 +313,14 @@ class DynamicViscosityProp : public Property
 {
 public:
     DynamicViscosityProp()
-        : Property( name_base + "_" + "DynamicViscosity", // Name string
-                    source,                               // Reference source
-                    ViscParams,                           // Property parameters
-                    ViscNumParams,                        // Number of parameters
-                    ViscArgs,                             // Names of arguments to the eval function
-                    ViscNumArgs,                          // Number of arguments
-                    ViscRanges )
+        : Property( "WaterLibrary_DynamicViscosity", // Name string
+                    source,                          // Reference source
+                    ViscParams,                      // Property parameters
+                    ViscArgs,                        // Names of arguments
+                    ViscRanges                       // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -348,15 +329,14 @@ class EnthalpyProp : public Property
 {
 public:
     EnthalpyProp()
-        : Property( name_base + "_" + "Enthalpy", // Name string
-                    source,                       // Reference source
-                    EnthalpyParams,               // Property parameters
-                    EnthalpyNumParams,            // Number of parameters
-                    EnthalpyArgs,                 // Names of arguments to the eval function
-                    EnthalpyNumArgs,              // Number of arguments
-                    EnthalpyRanges )
+        : Property( "WaterLibrary_Enthalpy", // Name string
+                    source,                  // Reference source
+                    EnthalpyParams,          // Property parameters
+                    EnthalpyArgs,            // Names of arguments
+                    EnthalpyRanges           // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 
@@ -397,7 +377,7 @@ inline double TemperatureProp::eval( std::vector<double> &args )
         AMP_ERROR( "Liquid water temperature called with enthalpy below 0 Btu/lbm." );
 
     // extract parameters from parameter array
-    std::valarray<double> Param = get_parameters();
+    std::vector<double> Param = get_parameters();
     double ct1[2][4], ct2[5][5], ct3[5][5], ct4[5][5];
     int offset = 0;
     for ( int i = 0; i < 2; i++ )
@@ -484,7 +464,7 @@ inline double SaturatedLiquidEnthalpyProp::eval( std::vector<double> &args )
     const double P_crit = 3208.2; // critical pressure [psi]
 
     // extract parameters from parameter array
-    std::valarray<double> Param = get_parameters();
+    std::vector<double> Param = get_parameters();
     double a[9], b[9], c[9];
     for ( int i = 0; i < 9; i++ ) {
         a[i] = Param[i];
@@ -531,7 +511,7 @@ inline double SaturatedVaporEnthalpyProp::eval( std::vector<double> &args )
     const double P_crit = 3208.2; // critical pressure [psi]
 
     // extract parameters from parameter array
-    std::valarray<double> Param = get_parameters();
+    std::vector<double> Param = get_parameters();
     double a[12], b[9], c[7];
     for ( int i = 0; i < 12; i++ ) {
         a[i] = Param[i];
@@ -589,7 +569,7 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
         AMP_ERROR( "Liquid water specific volume called with enthalpy at or below 0 Btu/lbm." );
 
     // extract parameters from parameter array
-    std::valarray<double> Param = get_parameters();
+    std::vector<double> Param = get_parameters();
     double cn0[3][3], cn1[3][5], cn2[4][3], cn3[4][4], cp[3], cx[4], ct[3], cj[4], d;
     int offset = 0;
     for ( int i = 0; i < 3; i++ )
@@ -907,7 +887,7 @@ inline double DynamicViscosityProp::eval( std::vector<double> &args )
         AMP_ERROR( "Dynamic viscosity called with temperature <= 0 K." );
 
     // extract parameters from parameter array
-    std::valarray<double> Param = get_parameters();
+    std::vector<double> Param = get_parameters();
     double a[4], b[5][6];
     for ( size_t i = 0; i < 4; i++ )
         a[i] = Param[i];

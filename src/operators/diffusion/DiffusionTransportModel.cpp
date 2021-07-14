@@ -1,21 +1,16 @@
-/*
- * DiffusionTransportModel.cc
- *
- *  Created on: Jul 8, 2010
- *      Author: gad
- */
-
 #include "DiffusionTransportModel.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "DiffusionTransportTensorModel.h"
+
 #include "ProfilerApp.h"
+
 #include <algorithm>
 #include <cmath>
 #include <map>
 
-namespace AMP {
-namespace Operator {
+
+namespace AMP::Operator {
 
 const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
     std::vector<libMesh::Point>( 0 );
@@ -27,21 +22,19 @@ DiffusionTransportModel::DiffusionTransportModel(
       d_MaterialParameters( 0 ),
       d_IsTensor( false )
 {
-    AMP_INSIST( ( params->d_db->keyExists( "Material" ) ),
-                "Diffusion Key ''Material'' is missing!" );
+    AMP_INSIST( params->d_db->keyExists( "Material" ), "Diffusion Key ''Material'' is missing!" );
     std::string matname = params->d_db->getString( "Material" );
 
     d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
 
-    AMP_INSIST( ( params->d_db->keyExists( "Property" ) ),
-                "Diffusion Key ''Property'' is missing!" );
+    AMP_INSIST( params->d_db->keyExists( "Property" ), "Diffusion Key ''Property'' is missing!" );
     std::string propname = params->d_db->getString( "Property" );
     d_property           = d_material->property( propname );
 
     // load and check defaults
     // initially set them to the minimum of the range plus a bit
     d_defaults.resize( d_property->get_number_arguments() );
-    std::vector<std::vector<double>> ranges = d_property->get_arg_ranges();
+    auto ranges = d_property->get_arg_ranges();
     for ( size_t i = 0; i < d_defaults.size(); ++i ) {
         d_defaults[i] = ranges[i][0] * ( 1.0000001 );
     }
@@ -86,16 +79,12 @@ DiffusionTransportModel::DiffusionTransportModel(
 
     // for tensor properties, set or change dimension
     if ( d_property->isTensor() ) {
-        std::shared_ptr<AMP::Materials::TensorProperty> tensprop =
-            std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
+        auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
         if ( tensprop->variable_dimensions() ) {
             if ( params->d_db->keyExists( "Dimensions" ) ) {
-                std::vector<int> dims = params->d_db->getVector<int>( "Dimensions" );
+                auto dims = params->d_db->getVector<size_t>( "Dimensions" );
                 AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
-                std::vector<size_t> dims2( dims.size() );
-                dims2[0] = dims[0];
-                dims2[1] = dims[1];
-                tensprop->set_dimensions( dims2 );
+                tensprop->set_dimensions( dims );
             }
         }
     }
@@ -106,12 +95,11 @@ DiffusionTransportModel::DiffusionTransportModel(
         size_t nparams       = d_MaterialParameters.size();
         size_t ndefparams    = d_property->get_parameters().size();
         if ( d_property->variable_number_parameters() ) {
-            d_property->set_parameters_and_number( &d_MaterialParameters[0],
-                                                   d_MaterialParameters.size() );
+            d_property->set_parameters_and_number( d_MaterialParameters );
         } else {
             AMP_INSIST( nparams == ndefparams,
                         "attempted to set incorrect number of parameters for this property" );
-            d_property->set_parameters( &d_MaterialParameters[0], d_MaterialParameters.size() );
+            d_property->set_parameters( d_MaterialParameters );
         }
     }
 }
@@ -119,7 +107,7 @@ DiffusionTransportModel::DiffusionTransportModel(
 std::shared_ptr<std::vector<double>> DiffusionTransportModel::bilogTransform(
     const std::vector<double> &U, const double a, const double b )
 {
-    std::shared_ptr<std::vector<double>> up( new std::vector<double>( U.size() ) );
+    auto up                = std::make_shared<std::vector<double>>( U.size() );
     std::vector<double> &u = *up;
 
     for ( size_t i = 0; i < U.size(); i++ ) {
@@ -147,20 +135,21 @@ void DiffusionTransportModel::getTransport(
 {
     PROFILE_START( "getTransport", 7 );
     std::shared_ptr<std::vector<double>> scaledp;
-    double lower, upper;
+
+    auto &data = *args[d_BilogVariable];
 
     if ( d_UseBilogScaling ) {
         // do the transform
-        lower                       = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
-        upper                       = d_BilogRange[1] - d_BilogEpsilonRangeLimit;
-        scaledp                     = bilogTransform( ( *args[d_BilogVariable] ), lower, upper );
-        std::vector<double> &scaled = *scaledp;
+        auto lower   = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
+        auto upper   = d_BilogRange[1] - d_BilogEpsilonRangeLimit;
+        scaledp      = bilogTransform( data, lower, upper );
+        auto &scaled = *scaledp;
 
         // save untransformed argument value
-        for ( size_t i = 0; i < ( *args[d_BilogVariable] ).size(); i++ ) {
-            double temp                   = ( *args[d_BilogVariable] )[i];
-            ( *args[d_BilogVariable] )[i] = scaled[i];
-            scaled[i]                     = temp;
+        for ( size_t i = 0; i < data.size(); i++ ) {
+            double temp = data[i];
+            data[i]     = scaled[i];
+            scaled[i]   = temp;
         }
     }
 
@@ -170,10 +159,10 @@ void DiffusionTransportModel::getTransport(
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value
         std::vector<double> &scaled = *scaledp;
-        lower                       = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
-        upper                       = d_BilogRange[1] - d_BilogEpsilonRangeLimit;
-        for ( size_t i = 0; i < args[d_BilogVariable]->size(); i++ ) {
-            ( *args[d_BilogVariable] )[i] = scaled[i];
+        auto lower                  = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
+        auto upper                  = d_BilogRange[1] - d_BilogEpsilonRangeLimit;
+        for ( size_t i = 0; i < data.size(); i++ ) {
+            data[i] = scaled[i];
         }
 
         if ( d_BilogScaleCoefficient )
@@ -181,5 +170,6 @@ void DiffusionTransportModel::getTransport(
     }
     PROFILE_STOP( "getTransport", 7 );
 }
-} // namespace Operator
-} // namespace AMP
+
+
+} // namespace AMP::Operator

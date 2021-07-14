@@ -11,29 +11,20 @@ class VectorProperty : public Property
 public:
     /**
      * Constructor
-     * \param name name of property
-     * \param source literature reference for model and notes
-     * \param params default parameter values
-     * \param nparams number of parameter values
-     * \param args names of arguments
-     * \param nargs number of arguments
-     * \param ranges ranges of arguments
+     * \param name      name of property (required)
+     * \param source    literature reference for model and notes
+     * \param params    default parameter values
+     * \param args      names of arguments
+     * \param ranges    ranges of arguments
      * \param dimension dimension of return value vector
      */
-    VectorProperty( const std::string &name    = std::string( "NotDefined" ),
-                    const std::string &source  = std::string( "None" ),
-                    const double *params       = nullptr,
-                    const unsigned int nparams = 0,
-                    const std::string *args    = nullptr,
-                    const unsigned int nargs   = 0,
-                    const double ranges[][2]   = nullptr,
-                    const size_t dimension     = 1 )
-        : Property( name, source, params, nparams, args, nargs, ranges ),
-          d_dimension( dimension ),
-          d_variableDimension( false )
-    {
-        AMP_INSIST( d_dimension > 0, "must return at least one value" );
-    }
+    VectorProperty(
+        std::string name,
+        std::string source                        = std::string( "None" ),
+        std::vector<double> params                = std::vector<double>(),
+        std::vector<std::string> args             = std::vector<std::string>(),
+        std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>(),
+        const size_t dimension                    = 1 );
 
     /**
      * Destructor
