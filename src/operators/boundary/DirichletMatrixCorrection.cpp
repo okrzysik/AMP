@@ -125,21 +125,21 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getRightDOFManager() ) );
 
+    std::vector<size_t> bndDofIds, nhDofIds;
     for ( size_t k = 0; k < d_boundaryIds.size(); ++k ) {
-        AMP::Mesh::MeshIterator bnd =
+        auto bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[k], 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
-            std::vector<size_t> bndDofIds;
             dof_map->getDOFs( bnd->globalID(), bndDofIds );
 
             // Get neighbors does not include the calling node (bnd) itself.
             // Get neighbors also returns remote neighbors
             // The calling node (bnd) must be owned locally.
-            std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = bnd->getNeighbors();
+            auto neighbors = bnd->getNeighbors();
             for ( auto &neighbor : neighbors ) {
-                AMP_ASSERT( ( *( neighbor ) ) != ( *bnd ) );
+                AMP_INSIST( *neighbor != *bnd, "boundary node neighbor includes self" );
             } // end for i
 
             for ( auto &elem : d_dofIds[k] ) {
@@ -158,7 +158,6 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
                     }
                 } // end for i
                 for ( auto &neighbor : neighbors ) {
-                    std::vector<size_t> nhDofIds;
                     dof_map->getDOFs( neighbor->globalID(), nhDofIds );
                     for ( auto &nhDofId : nhDofIds ) {
                         d_inputMatrix->setValueByGlobalID( bndDofIds[elem], nhDofId, 0.0 );

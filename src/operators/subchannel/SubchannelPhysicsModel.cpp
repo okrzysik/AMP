@@ -21,13 +21,13 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     // get material key
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ),
                 "Subchannel Key ''Material'' is missing!" );
-    std::string matname = params->d_db->getString( "Material" );
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    auto matname = params->d_db->getString( "Material" );
+    d_material   = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
 
     // get the formulation key
     AMP_INSIST( ( params->d_db->keyExists( "Formulation" ) ),
                 "Subchannel Key ''Formulation'' is missing!" );
-    std::string formulation = params->d_db->getString( "Formulation" );
+    auto formulation = params->d_db->getString( "Formulation" );
 
     // determine which property functions are needed based on formulation key
     std::vector<std::string> properties;
@@ -59,16 +59,13 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     }
 
     if ( params->d_db->keyExists( "Defaults" ) ) {
-        std::shared_ptr<Database> defaults_db =
-            params->d_db->getDatabase( "Defaults" ); // get defaults database
-        std::vector<std::string> defaultkeys =
-            defaults_db->getAllKeys(); // get defaults database keys
-        // check that all default argument names are in the list of property argument names
-        // map each default string to a boolean indicating if the default was found in at least one
-        // property argument
-        // list
+        auto defaults_db = params->d_db->getDatabase( "Defaults" ); // get defaults database
+        auto defaultkeys = defaults_db->getAllKeys();               // get defaults database keys
+        // check that all default argument names are in the list of property argument names map
+        // each default string to a boolean indicating if the default was found in at least one
+        // property argument list
         std::map<std::string, bool>
-            defaults_found; // maps Defaults key to boolean for that key being found
+            defaults_found; // Defaults key to boolean for that key being found
         // initialize entries in defaults_found to false
         for ( auto &defaultkey : defaultkeys ) {
             defaults_found.insert( std::make_pair( defaultkey, false ) );
@@ -102,11 +99,11 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         // load and check defaults:
         // for each property needed by formulation
         for ( auto &propertie : properties ) {
-            auto property      = d_properties.find( propertie )->second;   // pointer to property
-            size_t n_arguments = property->get_number_arguments();         // number of arguments
-            std::vector<std::string> argnames = property->get_arguments(); // argument names
-            std::vector<double> prop_defaults( n_arguments ); // argument default values
-            std::vector<std::vector<double>> ranges = property->get_arg_ranges(); // argument ranges
+            auto property      = d_properties.find( propertie )->second; // pointer to property
+            size_t n_arguments = property->get_number_arguments();       // number of arguments
+            auto argnames      = property->get_arguments();              // argument names
+            std::vector<double> prop_defaults( n_arguments );            // argument default values
+            auto ranges = property->get_arg_ranges();                    // argument ranges
             // for each argument
             for ( size_t i = 0; i < n_arguments; ++i ) {
                 // initially set default value to 1.0000001*(argument range minimum)

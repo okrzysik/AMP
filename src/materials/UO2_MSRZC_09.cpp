@@ -21,34 +21,31 @@ namespace UO2_MSRZC_09_NS {
 
 //=================== Constants =====================================================
 
-static const std::string name_base( "UO2_MSRZC_09" );
-static const std::string source( "\
-Bogdan Mihaila, Marius Stan, Juan Ramirez, \
-Alek Zubelewicz, Petrica Cristea, \
-Journal of Nuclear Materials 394 (2009) 182--189" );
+static const char *source = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zubelewicz, Petrica "
+                            "Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
 
-static const double TCparams[5] = { 3.24e-2, 2.51e-4, 3.67, -4.73e-4, 5.95e-11 };
+static std::initializer_list<double> TCparams = { 3.24e-2, 2.51e-4, 3.67, -4.73e-4, 5.95e-11 };
+static std::initializer_list<double> DEparams = { 0.99672,    1.179e-5,  -2.429e-9,
+                                                  1.219e-12,  0.99734,   9.082e-6,
+                                                  -2.705e-10, 4.391e-13, 10960 };
+static std::initializer_list<double> TEparams = { 1.1833e-5, -5.013e-9,  3.756e-12, -6.125e-17,
+                                                  9.828e-6,  -6.390e-10, 1.33e-12,  -1.757e-17 };
+static std::initializer_list<double> HCparams = { 52.174,      45.806,     87.951e-3,
+                                                  -7.3461e-2,  -84.241e-6, 31.542e-9,
+                                                  -2.6334e-12, -713910,    -295090 };
 
-static const double DEparams[9] = { 0.99672,  1.179e-5,   -2.429e-9, 1.219e-12, 0.99734,
-                                    9.082e-6, -2.705e-10, 4.391e-13, 10960 };
-static const double TEparams[8] = { 1.1833e-5, -5.013e-9,  3.756e-12, -6.125e-17,
-                                    9.828e-6,  -6.390e-10, 1.33e-12,  -1.757e-17 };
-static const double HCparams[9] = { 52.174,    45.806,      87.951e-3, -7.3461e-2, -84.241e-6,
-                                    31.542e-9, -2.6334e-12, -713910,   -295090 };
+static std::initializer_list<double> YMparams = { 2.334e11, 1.095e-4, -1.34 };
+static const double PRatio                    = 0.316;
 
-static const double YMparams[3] = { 2.334e11, 1.095e-4, -1.34 };
-static const double PRatio      = 0.316;
-
-static const std::string noarguments[1];
-static const std::string arguments[2] = { "temperature", "concentration" };
-static const unsigned int narguments  = 2;
+static const std::initializer_list<std::string> arguments = { "temperature", "concentration" };
 
 static const double TminVal = 299.9;
 static const double TmaxVal = 1400;
 static const double uminVal = 0.0;
 static const double umaxVal = 0.2;
 
-static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } };
+static std::initializer_list<std::array<double, 2>> ranges = { { TminVal, TmaxVal },
+                                                               { uminVal, umaxVal } };
 
 //=================== Classes =======================================================
 
@@ -56,15 +53,14 @@ class ThermalConductivityProp : public Property
 {
 public:
     ThermalConductivityProp()
-        : Property( name_base + "_" + "ThermalConductivity", // Name string
-                    source,                                  // Reference source
-                    TCparams,                                // Property parameters
-                    5U,                                      // Number of parameters
-                    arguments,  // Names of arguments to the eval function
-                    narguments, // Number of arguments
-                    ranges )
+        : Property( "UO2_MSRZC_09_ThermalConductivity", // Name string
+                    source,                             // Reference source
+                    TCparams,                           // Property parameters
+                    arguments,                          // Names of arguments to the eval function
+                    ranges                              // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -73,15 +69,14 @@ class DensityProp : public Property
 {
 public:
     DensityProp()
-        : Property( name_base + "_" + "Density", // Name string
-                    source,                      // Reference source
-                    DEparams,                    // Property parameters
-                    9U,                          // Number of parameters
-                    arguments,                   // Names of arguments to the eval function
-                    narguments,                  // Number of arguments
-                    ranges )
+        : Property( "UO2_MSRZC_09_Density", // Name string
+                    source,                 // Reference source
+                    DEparams,               // Property parameters
+                    arguments,              // Names of arguments to the eval function
+                    ranges                  // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -90,15 +85,14 @@ class ThermalExpansionProp : public Property
 {
 public:
     ThermalExpansionProp()
-        : Property( name_base + "_" + "ThermalExpansion", // Name string
-                    source,                               // Reference source
-                    TEparams,                             // Property parameters
-                    8U,                                   // Number of parameters
-                    arguments,                            // Names of arguments to the eval function
-                    narguments,                           // Number of arguments
-                    ranges )
+        : Property( "UO2_MSRZC_09_ThermalExpansion", // Name string
+                    source,                          // Reference source
+                    TEparams,                        // Property parameters
+                    arguments,                       // Names of arguments to the eval function
+                    ranges                           // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -107,15 +101,13 @@ class HeatCapacityPressureProp : public Property
 {
 public:
     HeatCapacityPressureProp()
-        : Property( name_base + "_" + "HeatCapacityPressure", // Name string
-                    source,                                   // Reference source
-                    HCparams,                                 // Property parameters
-                    9U,                                       // Number of parameters
-                    arguments,  // Names of arguments to the eval function
-                    narguments, // Number of arguments
+        : Property( "UO2_MSRZC_09_HeatCapacityPressure", // Name string
+                    source,                              // Reference source
+                    HCparams,                            // Property parameters
+                    arguments,                           // Names of arguments to the eval function
                     ranges )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -124,15 +116,14 @@ class YoungsModulusProp : public Property
 {
 public:
     YoungsModulusProp()
-        : Property( name_base + "_" + "YoungsModulus", // Name string
-                    source,                            // Reference source
-                    YMparams,                          // Property parameters
-                    3U,                                // Number of parameters
-                    arguments,                         // Names of arguments to the eval function
-                    narguments,                        // Number of arguments
-                    ranges )
+        : Property( "UO2_MSRZC_09_YoungsModulus", // Name string
+                    source,                       // Reference source
+                    YMparams,                     // Property parameters
+                    arguments,                    // Names of arguments to the eval function
+                    ranges                        // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -141,14 +132,14 @@ class PoissonRatioProp : public Property
 {
 public:
     PoissonRatioProp()
-        : Property( name_base + "_" + "PoissonRatio", // Name string
-                    source,                           // Reference source
-                    &PRatio,                          // Property parameters
-                    1U,                               // Number of parameters
-                    noarguments,                      // Names of arguments to the eval function
-                    0 )
+        : Property( "UO2_MSRZC_09_PoissonRatio", // Name string
+                    source,                      // Reference source
+                    { PRatio },                  // Property parameters
+                    {},                          // Names of arguments to the eval function
+                    {}                           // Range of variables
+          )
     {
-    } // Number of arguments
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -157,15 +148,14 @@ class DxThermalConductivityProp : public Property
 {
 public:
     DxThermalConductivityProp()
-        : Property( name_base + "_" + "DxThermalConductivity", // Name string
-                    source,                                    // Reference source
-                    TCparams,                                  // Property parameters
-                    5U,                                        // Number of parameters
-                    arguments,  // Names of arguments to the eval function
-                    narguments, // Number of arguments
-                    ranges )
+        : Property( "UO2_MSRZC_09_DxThermalConductivity", // Name string
+                    source,                               // Reference source
+                    TCparams,                             // Property parameters
+                    arguments,                            // Names of arguments to the eval function
+                    ranges                                // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -174,15 +164,14 @@ class DTThermalConductivityProp : public Property
 {
 public:
     DTThermalConductivityProp()
-        : Property( name_base + "_" + "DTThermalConductivity", // Name string
-                    source,                                    // Reference source
-                    TCparams,                                  // Property parameters
-                    5U,                                        // Number of parameters
-                    arguments,  // Names of arguments to the eval function
-                    narguments, // Number of arguments
-                    ranges )
+        : Property( "UO2_MSRZC_09_DTThermalConductivity", // Name string
+                    source,                               // Reference source
+                    TCparams,                             // Property parameters
+                    arguments,                            // Names of arguments to the eval function
+                    ranges                                // Range of variables
+          )
     {
-    } // Range of variables
+    }
 
     double eval( std::vector<double> &args ) override;
 };
@@ -195,7 +184,7 @@ inline double ThermalConductivityProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -215,7 +204,7 @@ inline double DensityProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -235,7 +224,7 @@ inline double ThermalExpansionProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -254,7 +243,7 @@ inline double HeatCapacityPressureProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -274,7 +263,7 @@ inline double YoungsModulusProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -293,7 +282,7 @@ inline double DxThermalConductivityProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -317,7 +306,7 @@ inline double DTThermalConductivityProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 

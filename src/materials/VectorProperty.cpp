@@ -7,6 +7,24 @@ namespace AMP {
 namespace Materials {
 
 
+VectorProperty::VectorProperty( std::string name,
+                                std::string source,
+                                std::vector<double> params,
+                                std::vector<std::string> args,
+                                std::vector<std::array<double, 2>> ranges,
+                                const size_t dimension )
+    : Property( std::move( name ),
+                std::move( source ),
+                std::move( params ),
+                std::move( args ),
+                std::move( ranges ) ),
+      d_dimension( dimension ),
+      d_variableDimension( false )
+{
+    AMP_INSIST( d_dimension > 0, "must return at least one value" );
+}
+
+
 void VectorProperty::evalv(
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
     const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
@@ -60,7 +78,7 @@ void VectorProperty::evalvActual( std::vector<std::shared_ptr<RETURN_VTYPE>> &r,
 
     // Make a vector of iterators - one for each d_arguments
     std::vector<double> eval_args(
-        Property::d_n_arguments ); // list of arguments for each input type
+        Property::d_arguments.size() ); // list of arguments for each input type
     std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
     std::vector<size_t> parameter_indices;
     std::vector<typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator>
@@ -91,7 +109,7 @@ void VectorProperty::evalvActual( std::vector<std::shared_ptr<RETURN_VTYPE>> &r,
         // sent to eval
         // Check that parameter iterators have not gone off the end - meaning result and input sizes
         // do not match
-        if ( Property::d_n_arguments > 0 ) {
+        if ( Property::d_arguments.size() > 0 ) {
             for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
                 AMP_INSIST( parameter_iter[ipresent] != parameter_map_iter[ipresent]->second->end(),
                             std::string( "size mismatch between results and arguments - too few "
@@ -128,7 +146,7 @@ void VectorProperty::evalvActual( std::vector<std::shared_ptr<RETURN_VTYPE>> &r,
             AMP_INSIST( alldone, "vector result vectors have unequal sizes" );
     }
     // Make sure the input value iterators all got to the end.
-    if ( Property::d_n_arguments > 0 ) {
+    if ( Property::d_arguments.size() > 0 ) {
         for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
             AMP_INSIST( parameter_iter[ipresent] == parameter_map_iter[ipresent]->second->end(),
                         "size mismatch between results and arguments - too few results\n" );

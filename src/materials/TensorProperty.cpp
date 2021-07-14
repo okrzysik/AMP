@@ -7,6 +7,25 @@ namespace AMP {
 namespace Materials {
 
 
+TensorProperty::TensorProperty( std::string name,
+                                std::string source,
+                                std::vector<double> params,
+                                std::vector<std::string> args,
+                                std::vector<std::array<double, 2>> ranges,
+                                std::vector<size_t> dimensions )
+    : Property( std::move( name ),
+                std::move( source ),
+                std::move( params ),
+                std::move( args ),
+                std::move( ranges ) ),
+      d_dimensions( std::move( dimensions ) ),
+      d_variableDimensions( false )
+{
+    AMP_INSIST( d_dimensions.size() == 2, "there must be two dimensions" );
+    AMP_INSIST( d_dimensions[0] > 0, "must have first return tensor dimension > 0" );
+    AMP_INSIST( d_dimensions[1] > 0, "must have second return tensor dimension > 0" );
+}
+
 void TensorProperty::evalv(
     std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
     const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
@@ -72,7 +91,7 @@ void TensorProperty::evalvActual( std::vector<std::vector<std::shared_ptr<RETURN
 
     // Make a vector of iterators - one for each d_arguments
     std::vector<double> eval_args(
-        Property::d_n_arguments ); // list of arguments for each input type
+        Property::d_arguments.size() ); // list of arguments for each input type
     std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
     std::vector<size_t> parameter_indices;
     std::vector<typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator>
@@ -104,7 +123,7 @@ void TensorProperty::evalvActual( std::vector<std::vector<std::shared_ptr<RETURN
         // sent to eval
         // Check that parameter iterators have not gone off the end - meaning result and input sizes
         // do not match
-        if ( Property::d_n_arguments > 0 ) {
+        if ( Property::d_arguments.size() > 0 ) {
             for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
                 AMP_INSIST( parameter_iter[ipresent] != parameter_map_iter[ipresent]->second->end(),
                             std::string( "size mismatch between results and arguments - too few "
@@ -145,7 +164,7 @@ void TensorProperty::evalvActual( std::vector<std::vector<std::shared_ptr<RETURN
             AMP_INSIST( alldone, "tensor result vectors have unequal sizes" );
     }
     // Make sure the input value iterators all got to the end.
-    if ( Property::d_n_arguments > 0 ) {
+    if ( Property::d_arguments.size() > 0 ) {
         for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
             AMP_INSIST( parameter_iter[ipresent] == parameter_map_iter[ipresent]->second->end(),
                         "size mismatch between results and arguments - too few results\n" );

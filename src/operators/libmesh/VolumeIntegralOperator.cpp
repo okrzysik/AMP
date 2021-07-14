@@ -1,10 +1,10 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
+#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "ProfilerApp.h"
-
-#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/vectors/VectorBuilder.h"
+
+#include "ProfilerApp.h"
 
 #include <cstring>
 
@@ -16,12 +16,11 @@ VolumeIntegralOperator::VolumeIntegralOperator(
     std::shared_ptr<const VolumeIntegralOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
+    AMP_INSIST( params, "NULL parameter!" );
+    AMP_INSIST( params->d_db, "NULL database!" );
 
     d_srcNonlinElem = std::dynamic_pointer_cast<SourceNonlinearElement>( d_elemOp );
-    AMP_INSIST( ( ( d_srcNonlinElem.get() ) != nullptr ),
-                "d_elemOp is not of type SourceNonlinearElement" );
+    AMP_INSIST( d_srcNonlinElem, "d_elemOp is not of type SourceNonlinearElement" );
 
     if ( params->d_sourcePhysicsModel ) {
         d_sourcePhysicsModel = params->d_sourcePhysicsModel;
@@ -29,7 +28,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
         d_sourcePhysicsModel = params->d_sourcePhysicsModel;
     }
 
-    std::shared_ptr<AMP::Database> primaryDb = params->d_db->getDatabase( "ActiveInputVariables" );
+    auto primaryDb = params->d_db->getDatabase( "ActiveInputVariables" );
 
     int numPrimaryVariables   = params->d_db->getScalar<int>( "Number_Active_Variables" );
     int numAuxillaryVariables = params->d_db->getScalar<int>( "Number_Auxillary_Variables" );
@@ -49,7 +48,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
                 "to SourcePhysicsModel.h does not appear to be "
                 "complete." );
     if ( numAuxillaryVariables > 0 ) {
-        AMP_INSIST( ( ( ( params->d_auxVec ).get() ) != nullptr ), "NULL Auxillary Vector!" );
+        AMP_INSIST( params->d_auxVec, "NULL Auxillary Vector!" );
     }
     d_multiAuxPtr = params->d_auxVec;
     d_auxVec.resize( numAuxillaryVariables );
@@ -58,8 +57,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
         char key[100];
         sprintf( key, "ActiveVariable_%d", (int) var );
         std::string varName = primaryDb->getString( key );
-        AMP::LinearAlgebra::Variable::shared_ptr inpVar(
-            new AMP::LinearAlgebra::Variable( varName ) );
+        auto inpVar         = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
         d_inpVariables->setVariable( var, inpVar );
     }
 
@@ -86,9 +84,8 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
     if ( d_inpVariables->numVariables() > 0 )
         meshSubsetPrimary = u->constSelect( meshSelector, d_inpVariables->getName() );
     for ( size_t var = 0; var < d_inpVariables->numVariables(); var++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr primaryVariable =
-            d_inpVariables->getVariable( var );
-        d_inVec[var] = meshSubsetPrimary->constSubsetVectorForVariable( primaryVariable );
+        auto primaryVariable = d_inpVariables->getVariable( var );
+        d_inVec[var]         = meshSubsetPrimary->constSubsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != nullptr );
         AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
@@ -97,8 +94,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
     if ( d_auxVariables->numVariables() > 0 )
         meshSubsetAuxillary = d_multiAuxPtr->select( meshSelector, d_auxVariables->getName() );
     for ( size_t var = 0; var < d_auxVariables->numVariables(); var++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr auxillaryVariable =
-            d_auxVariables->getVariable( var );
+        auto auxillaryVariable = d_auxVariables->getVariable( var );
         d_auxVec[var] = meshSubsetAuxillary->constSubsetVectorForVariable( auxillaryVariable );
         AMP_ASSERT( d_auxVec[var] != nullptr );
         AMP_ASSERT( d_auxVec[var]->getUpdateStatus() ==
@@ -119,13 +115,12 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
 
     if ( d_isInputType == "NodalScalar" ) {
         for ( unsigned int var = 0; var < d_inpVariables->numVariables(); var++ ) {
-            AMP::Mesh::MeshElementID tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
+            auto tmp = d_inVec[var]->getDOFManager()->getIterator()->globalID();
             if ( tmp.type() != AMP::Mesh::GeomType::Vertex )
                 AMP_ERROR( "Input vector isn't really a NodalScalar" );
         }
         for ( unsigned int var = 0; var < d_auxVariables->numVariables(); var++ ) {
-            AMP::Mesh::MeshElementID tmp =
-                d_auxVec[var]->getDOFManager()->getIterator()->globalID();
+            auto tmp = d_auxVec[var]->getDOFManager()->getIterator()->globalID();
             if ( tmp.type() != AMP::Mesh::GeomType::Vertex )
                 AMP_ERROR( "aux vector isn't really a NodalScalar" );
         }
@@ -206,7 +201,7 @@ void VolumeIntegralOperator::postAssembly()
 
 void VolumeIntegralOperator::init( std::shared_ptr<const VolumeIntegralOperatorParameters> )
 {
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     d_srcNonlinElem->setElementFlags( d_isInputType );
     for ( d_currElemIdx = 0; d_currElemIdx < el.size(); ++d_currElemIdx, ++el ) {
         d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
@@ -226,10 +221,9 @@ void VolumeIntegralOperator::reset( std::shared_ptr<const OperatorParameters> )
 std::shared_ptr<OperatorParameters>
 VolumeIntegralOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db->putScalar( "name", "VolumeIntegralOperator" );
-    std::shared_ptr<VolumeIntegralOperatorParameters> outParams(
-        new VolumeIntegralOperatorParameters( tmp_db ) );
+    auto outParams = std::make_shared<VolumeIntegralOperatorParameters>( tmp_db );
 
     outParams->d_sourcePhysicsModel = d_sourcePhysicsModel;
     outParams->d_pVector            = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u );

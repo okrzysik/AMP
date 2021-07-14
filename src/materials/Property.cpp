@@ -5,48 +5,32 @@
 
 #include <algorithm>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 /************************************************************************
  *  Constructor                                                          *
  ************************************************************************/
-Property::Property( const std::string &name,
-                    const std::string &source,
-                    const double *params,
-                    const unsigned int nparams,
-                    const std::string *args,
-                    const unsigned int nargs,
-                    const double ranges[][2] )
-    : d_name( name ),
-      d_source( source ),
-      d_params( std::valarray<double>( params, nparams ) ),
-      d_nparams( nparams ),
-      d_n_arguments( nargs ),
-      d_arguments( nargs ),
-      d_defaults( nargs ),
-      d_ranges( nargs, std::vector<double>( 2 ) ),
+Property::Property( std::string name,
+                    std::string source,
+                    std::vector<double> params,
+                    std::vector<std::string> args,
+                    std::vector<std::array<double, 2>> ranges )
+    : d_name( std::move( name ) ),
+      d_source( std::move( source ) ),
+      d_params( std::move( params ) ),
+      d_arguments( std::move( args ) ),
+      d_defaults( {} ),
+      d_ranges( std::move( ranges ) ),
       d_variableNumberParameters( false )
 {
-    if ( args != nullptr ) {
-        for ( size_t i = 0; i < d_n_arguments; i++ )
-            d_arguments[i] = args[i];
-    }
-    for ( size_t i = 0; i < d_n_arguments; i++ ) {
+    AMP_ASSERT( d_arguments.size() == d_ranges.size() );
+    for ( size_t i = 0; i < d_arguments.size(); i++ ) {
         d_argToIndexMap.insert( std::pair<std::string, size_t>( d_arguments[i], i ) );
     }
-    if ( ranges == nullptr && d_n_arguments > 0 ) {
-        AMP_INSIST( false, "argument ranges not set" );
-    }
-    for ( size_t i = 0; i < d_n_arguments; i++ ) {
-        for ( size_t j = 0; j < 2; j++ ) {
-            d_ranges[i][j] = ranges[i][j];
-        }
-    }
-    for ( size_t i = 0; i < d_n_arguments; i++ ) {
+    d_defaults.resize( d_arguments.size() );
+    for ( size_t i = 0; i < d_arguments.size(); i++ )
         d_defaults[i] = d_ranges[i][0];
-    }
     d_defaultsAreSet = true;
 }
 
@@ -58,7 +42,7 @@ std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
 Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
 {
     std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> result;
-    if ( d_n_arguments > 0 ) {
+    if ( !d_arguments.empty() ) {
         size_t xls = d_translator.size();
         AMP_INSIST( xls > 0, "attempt to make MultiVector map without setting translator" );
         for ( auto vec : *args ) {
@@ -99,7 +83,7 @@ template<class INPUT_VTYPE, class RETURN_VTYPE>
 void Property::evalvActual( RETURN_VTYPE &r,
                             const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args )
 {
-    std::vector<double> eval_args( d_n_arguments ); // list of arguments for each input type
+    std::vector<double> eval_args( d_arguments.size() ); // list of arguments for each input type
 
     // First we make sure that all of the vectors have something in them
     AMP_ASSERT( r.begin() != r.end() );
@@ -129,7 +113,7 @@ void Property::evalvActual( RETURN_VTYPE &r,
         // the vector being sent to eval
         // Check that parameter iterators have not gone off the end - meaning result and input sizes
         // do not match
-        if ( d_n_arguments > 0 ) {
+        if ( !d_arguments.empty() ) {
             for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
                 AMP_INSIST( parameter_iter[ipresent] != parameter_map_iter[ipresent]->second->end(),
                             std::string( "size mismatch between results and arguments - too few "
@@ -146,7 +130,7 @@ void Property::evalvActual( RETURN_VTYPE &r,
         }
     }
     // Make sure the input value iterators all got to the end.
-    if ( d_n_arguments > 0 ) {
+    if ( !d_arguments.empty() ) {
         for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
             AMP_INSIST( parameter_iter[ipresent] == parameter_map_iter[ipresent]->second->end(),
                         "size mismatch between results and arguments - too few results\n" );
@@ -169,8 +153,8 @@ void Property::evalv( std::vector<double> &r,
     if ( !in_range( args ) ) {
         for ( const auto &arg : args ) {
             if ( !in_range( arg.first, *( arg.second ) ) ) {
-                std::vector<double> range   = get_arg_range( arg.first );
-                std::vector<double> &values = *( arg.second );
+                auto range  = get_arg_range( arg.first );
+                auto values = *( arg.second );
                 std::stringstream ss;
                 ss << "Property '" + arg.first + "' out of range in function '" + d_name + "'."
                    << std::endl;
@@ -256,14 +240,11 @@ void Property::getAuxiliaryData( const std::string &key, std::string &val )
 /************************************************************************
  *  Misc functions                                                       *
  ************************************************************************/
-void Property::set_parameters_and_number( const double *params, const unsigned int nparams )
+void Property::set_parameters_and_number( std::vector<double> params )
 {
     AMP_INSIST( d_variableNumberParameters,
                 "changing number of parameters for this property not allowed" );
-    d_params.resize( nparams );
-    for ( size_t i = 0; i < nparams; i++ )
-        d_params[i] = params[i];
-    d_nparams = nparams;
+    d_params = std::move( params );
 }
 void Property::set_translator( const std::map<std::string, std::string> &xlator )
 {
@@ -276,21 +257,14 @@ void Property::set_translator( const std::map<std::string, std::string> &xlator 
     }
     d_translator = xlator;
 }
-std::vector<double> Property::get_arg_range( const std::string &argname )
+std::array<double, 2> Property::get_arg_range( const std::string &argname )
 {
     std::map<std::string, size_t>::iterator it = d_argToIndexMap.find( argname );
-    // AMP_INSIST(it != d_argToIndexMap.end(), std::string("argument ")+argname+std::string("is
-    // invalid"));
-    if ( it == d_argToIndexMap.end() ) {
-        std::vector<double> infinite_range( 2 );
-        infinite_range[0] = -std::numeric_limits<double>::max();
-        infinite_range[1] = std::numeric_limits<double>::max();
-        return infinite_range;
-    }
+    if ( it == d_argToIndexMap.end() )
+        return { -std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
     size_t index = it->second;
     return d_ranges[index];
 }
 
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

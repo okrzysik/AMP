@@ -14,7 +14,6 @@
 
 #include <cmath>
 #include <string>
-#include <valarray>
 
 namespace AMP {
 namespace Materials {
@@ -23,24 +22,21 @@ namespace Ox_MSRZC_09_NS {
 
 //=================== Constants =====================================================
 
-static const std::string name_base( "Ox_MSRZC_09" );
-static const std::string source( "\
-Bogdan Mihaila, Marius Stan, Juan Ramirez, \
-Alek Zubelewicz, Petrica Cristea, \
-Journal of Nuclear Materials 394 (2009) 182--189" );
+static const char *name_base = "Ox_MSRZC_09";
+static const char *source    = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zubelewicz, "
+                            "Petrica Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
 
-static const double FCparams[4] = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
-static const double SCparams[7] = { -9.386, -4.26e3, 1.2e-3, 7.5e-4, -1380.8, -134435.5, 0.0261 };
+static std::initializer_list<double> FCparams = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
+static std::initializer_list<double> SCparams = { -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
+                                                  -1380.8, -134435.5, 0.0261 };
 
-static const std::string arguments[2] = { "temperature", "concentration" };
-static const unsigned int narguments  = 2;
+static std::initializer_list<std::string> arguments = { "temperature", "concentration" };
 
 static const double TminVal = 299.9;
 static const double TmaxVal = 1400;
 static const double uminVal = 0.0;
 static const double umaxVal = 0.2;
 
-static const double ranges[2][2] = { { TminVal, TmaxVal }, { uminVal, umaxVal } };
 
 //=================== Classes =======================================================
 
@@ -48,13 +44,11 @@ class FickCoefficientProp : public Property
 {
 public:
     FickCoefficientProp()
-        : Property( name_base + "_" + "FickCoefficient", // Name string
-                    source,                              // Reference source
-                    FCparams,                            // Property parameters
-                    4U,                                  // Number of parameters
-                    arguments,                           // Names of arguments to the eval function
-                    narguments,                          // Number of arguments
-                    ranges )
+        : Property( "Ox_MSRZC_09_FickCoefficient", // Name string
+                    source,                        // Reference source
+                    FCparams,                      // Property parameters
+                    arguments,                     // Names of arguments to the eval function
+                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
     {
     } // Range of variables
 
@@ -65,13 +59,11 @@ class SoretCoefficientProp : public Property
 {
 public:
     SoretCoefficientProp()
-        : Property( name_base + "_" + "SoretCoefficient", // Name string
-                    source,                               // Reference source
-                    SCparams,                             // Property parameters
-                    7U,                                   // Number of parameters
-                    arguments,                            // Names of arguments to the eval function
-                    narguments,                           // Number of arguments
-                    ranges )
+        : Property( "Ox_MSRZC_09_SoretCoefficient", // Name string
+                    source,                         // Reference source
+                    SCparams,                       // Property parameters
+                    arguments,                      // Names of arguments to the eval function
+                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
     {
     } // Range of variables
 
@@ -85,7 +77,7 @@ inline double FickCoefficientProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -103,7 +95,7 @@ inline double SoretCoefficientProp::eval( std::vector<double> &args )
     double T = args[0];
     double u = args[1];
 
-    std::valarray<double> p = get_parameters();
+    std::vector<double> p = get_parameters();
     AMP_ASSERT( T > TminVal && T < TmaxVal );
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -120,14 +112,14 @@ inline double SoretCoefficientProp::eval( std::vector<double> &args )
 
 //=================== Thermal Diffusion Interface ================================
 
-static const unsigned int numberThDiffParams             = 11;
-static double thermalDiffusionParams[numberThDiffParams] = { -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
-                                                             -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
-                                                             -1380.8, -134435.5, 0.0261 };
 
-static const std::string thermDiffArgs[2]     = { "temperature", "concentration" };
-static const unsigned int numberThermDiffArgs = 2;
-static const double thermDiffRanges[2][2]     = { { TminVal, TmaxVal }, { uminVal, umaxVal } };
+static std::initializer_list<double> thermalDiffusionParams = { -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
+                                                                -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
+                                                                -1380.8, -134435.5, 0.0261 };
+
+static std::initializer_list<std::string> thermDiffArgs   = { "temperature", "concentration" };
+static std::vector<std::array<double, 2>> thermDiffRanges = { { TminVal, TmaxVal },
+                                                              { uminVal, umaxVal } };
 
 #include "ThermalDiffusionCoefficientProp.h"
 } // namespace Ox_MSRZC_09_NS

@@ -63,8 +63,8 @@ int main( int argc, char **argv )
     auto vectorProperty = std::dynamic_pointer_cast<AMP::Materials::VectorProperty>(
         mat->property( "VectorFickCoefficient" ) );
     vectorProperty->set_dimension( 3 );
-    double vparams[] = { 1.1, 2.2, 3.3 };
-    vectorProperty->set_parameters_and_number( vparams, 3 );
+    std::vector<double> vparams = { 1.1, 2.2, 3.3 };
+    vectorProperty->set_parameters_and_number( vparams );
     vectorProperty->evalv( vfcv, argMap );
 
     std::vector<std::vector<std::shared_ptr<std::vector<double>>>> tfcv(
@@ -77,8 +77,8 @@ int main( int argc, char **argv )
         std::dynamic_pointer_cast<AMP::Materials::TensorProperty>(
             mat->property( "TensorFickCoefficient" ) );
     tensorProperty->set_dimensions( std::vector<size_t>( 2, 3U ) );
-    double tparams[9] = { 1.1, 2.2, 3.3, 11., 22., 33., 111., 222., 333. };
-    tensorProperty->set_parameters_and_number( tparams, 9 );
+    std::vector<double> tparams = { 1.1, 2.2, 3.3, 11., 22., 33., 111., 222., 333. };
+    tensorProperty->set_parameters_and_number( tparams );
     tensorProperty->evalv( tfcv, argMap );
 
     std::vector<double> arg( 3 );
@@ -121,13 +121,13 @@ int main( int argc, char **argv )
         ut.failure( "basic tests of FixedClad" );
 
     // test parameter change
-    double param[1] = { 1.2345 };
+    std::vector<double> param = { 1.2345 };
 
-    prop->set_parameters( param, 1U );
+    prop->set_parameters( param );
     double tcs = prop->eval( arg );
     good       = good && AMP::Utilities::approx_equal( tcs, param[0] );
 
-    mat->property( "ThermalConductivity" )->set_parameters( param, 1U );
+    mat->property( "ThermalConductivity" )->set_parameters( param );
     mat->property( "ThermalConductivity" )->evalv( tcv, argMap );
     good = good && AMP::Utilities::approx_equal( tcv[0], param[0] );
 
