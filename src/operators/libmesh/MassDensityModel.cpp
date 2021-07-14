@@ -133,14 +133,14 @@ MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParame
         // load and check defaults
         // initially set them to the minimum of the range plus a bit
         std::vector<double> defaults( property->get_number_arguments() );
-        std::vector<std::vector<double>> ranges = property->get_arg_ranges();
+        auto ranges = property->get_arg_ranges();
         for ( size_t i = 0; i < defaults.size(); ++i ) {
             defaults[i] = ranges[i][0] * ( 1.0000001 );
         }
         if ( params->d_db->keyExists( "Defaults" ) ) {
             // check for correct names
-            std::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
-            std::vector<std::string> defaultkeys  = defaults_db->getAllKeys();
+            auto defaults_db = params->d_db->getDatabase( "Defaults" );
+            auto defaultkeys = defaults_db->getAllKeys();
             // if the defaults block is the right size, use it, else ignor it.
             if ( defaultkeys.size() == property->get_number_arguments() ) {
                 std::vector<std::string> argnames = property->get_arguments();
@@ -283,10 +283,10 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     } else {
         sourceProp = d_material->property( d_PropertyName );
-        if ( d_Parameters.size() > 0 and sourceProp->variable_number_parameters() ) {
-            sourceProp->set_parameters_and_number( &d_Parameters[0], d_Parameters.size() );
+        if ( d_Parameters.size() > 0 && sourceProp->variable_number_parameters() ) {
+            sourceProp->set_parameters_and_number( d_Parameters );
         } else if ( d_Parameters.size() > 0 ) {
-            sourceProp->set_parameters( &d_Parameters[0], d_Parameters.size() );
+            sourceProp->set_parameters( d_Parameters );
         }
     }
 
@@ -346,9 +346,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     } else if ( sourceProp->isTensor() ) {
         // check dimensions, set up temporary storage
-        std::shared_ptr<Materials::TensorProperty> sourceTensorProp =
-            std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
-        std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
+        auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
+        auto dimensions       = sourceTensorProp->get_dimensions();
         AMP_ASSERT( ( dimensions[0] == 3 ) && ( dimensions[1] == 3 ) );
         std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
             dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );

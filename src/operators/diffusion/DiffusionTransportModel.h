@@ -177,7 +177,7 @@ protected:
 protected: // used to be private
     std::vector<double> d_defaults;
 
-    std::vector<double> d_BilogRange;
+    std::array<double, 2> d_BilogRange;
     double d_BilogEpsilonRangeLimit;
 
     std::vector<double> d_MaterialParameters;

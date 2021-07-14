@@ -120,7 +120,6 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     shift[1] = 0.;
     scale[0] = 1.;
     scale[1] = 1.;
-    std::vector<double> range( 2 );
     std::vector<double> defaults;
     auto matFick  = fickModel->getMaterial();  // compile error
     auto matSoret = soretModel->getMaterial(); // compile error
@@ -128,7 +127,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( soretOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
         std::string property = "ThermalDiffusionCoefficient";
         if ( ( matSoret->property( property ) )->is_argument( "temperature" ) ) {
-            range =
+            auto range =
                 ( matSoret->property( property ) )->get_arg_range( "temperature" ); // Compile error
             scale[0] = range[1] - range[0];
             shift[0] = range[0] + 0.001 * scale[0];
@@ -140,8 +139,8 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( fickOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
         std::string property = "FickCoefficient";
         if ( ( matFick->property( property ) )->is_argument( "concentration" ) ) {
-            range = ( matFick->property( property ) )
-                        ->get_arg_range( "concentration" ); // Compile error
+            auto range = ( matFick->property( property ) )
+                             ->get_arg_range( "concentration" ); // Compile error
             scale[1] = range[1] - range[0];
             shift[1] = range[0] + 0.001 * scale[1];
             scale[1] *= 0.999;

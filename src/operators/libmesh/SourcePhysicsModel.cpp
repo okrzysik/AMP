@@ -126,10 +126,6 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
         } else {
             auto tmp = std::dynamic_pointer_cast<MassDensityModel>( d_elementPhysicsModel );
 
-            std::string eqnname = d_elementPhysicsParams->d_db->getString( "Equation" );
-            AMP_INSIST( ( eqnname == "ThermalSource" ),
-                        "SourcePhysicsModel should be implemented by User for this Equation" );
-
             if ( InputVec.size() == 1 ) {
                 std::vector<double> DefaultVec0( result.size() );
                 std::vector<double> DefaultVec1( result.size() );
