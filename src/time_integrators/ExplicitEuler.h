@@ -38,12 +38,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
-
-    /**
-     * Specify initial time step.
-     */
-    double getInitialDt();
+    void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify next time step to use.
@@ -53,7 +48,7 @@ public:
     /**
      * Determine whether time advanced solution is satisfactory.
      */
-    bool checkNewSolution( void ) const override;
+    bool checkNewSolution( void ) override;
 
     /**
      * Update state of the solution.

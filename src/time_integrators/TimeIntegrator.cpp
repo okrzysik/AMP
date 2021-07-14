@@ -17,7 +17,7 @@ namespace TimeIntegrator {
  * Constructor and destructor for TimeIntegrator.  The                   *
  * constructor sets default values for data members, then overrides      *
  * them with values read from input or restart.  The destructor does     *
- * nothing interesting.                                                  *
+ * nothing interesting.                                      s            *
  *                                                                       *
  ************************************************************************/
 
@@ -25,18 +25,6 @@ TimeIntegrator::TimeIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
 {
     AMP_INSIST( parameters, "Null parameter" );
-
-    // initialize member data
-    d_initial_time         = 0;
-    d_final_time           = 0;
-    d_current_time         = 0;
-    d_current_dt           = 0;
-    d_old_dt               = 0;
-    d_min_dt               = 0;
-    d_max_dt               = 0;
-    d_initial_dt           = 0;
-    d_integrator_step      = 0;
-    d_max_integrator_steps = 0;
 
     initialize( parameters );
 }
@@ -62,16 +50,20 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
     d_object_name = parameters->d_object_name;
 
     // for now the solution is set to the initial conditions by Jungho
-    AMP_ASSERT( parameters->d_ic_vector != nullptr );
-    d_solution = ( parameters->d_ic_vector )->cloneVector();
-    d_solution->copyVector( parameters->d_ic_vector );
+    d_ic_vector = parameters->d_ic_vector;
+    AMP_ASSERT( d_ic_vector );
 
-    d_pPreviousTimeSolution = ( parameters->d_ic_vector )->cloneVector();
-    d_pPreviousTimeSolution->copyVector( parameters->d_ic_vector );
+    // for now the solution is set to the initial conditions
+    //    d_solution_vector = d_ic_vector->cloneVector( "current solution" );
+    d_solution_vector = d_ic_vector->cloneVector();
+    d_solution_vector->copyVector( d_ic_vector );
+
+    d_pPreviousTimeSolution = d_ic_vector->cloneVector();
+    d_pPreviousTimeSolution->copyVector( d_ic_vector );
 
     d_pSourceTerm = parameters->d_pSourceTerm;
 
-    if ( d_solution.get() == nullptr ) {
+    if ( d_solution_vector.get() == nullptr ) {
         AMP_ERROR( "TimeIntegrator::TimeIntegrator()::TimeIntegrators must be initialized with non "
                    "null initial "
                    "condition_vectors" );
@@ -81,12 +73,6 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
     d_pMassOperator = parameters->d_pMassOperator;
     // initialize the rhs operator
     d_operator = parameters->d_operator;
-
-    d_current_dt      = 0.0;
-    d_old_dt          = 0.0;
-    d_min_dt          = 0.0;
-    d_max_dt          = 0.0;
-    d_integrator_step = 0;
 
     getFromInput( parameters->d_db );
 
@@ -153,35 +139,28 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
                                  << " missing in input." );
     }
 
-    if ( db->keyExists( "max_dt" ) ) {
-        d_max_dt = db->getScalar<double>( "max_dt" );
+    d_max_dt = db->getWithDefault( "max_dt", std::numeric_limits<double>::max() );
 
-        if ( d_max_dt < 0.0 ) {
-            AMP_ERROR( d_object_name << " -- Error in input data "
-                                     << "max_dt < 0." );
-        }
-    } else {
-        AMP_ERROR( d_object_name << " -- Key data `max_dt'"
-                                 << " missing in input." );
+    if ( d_max_dt < 0.0 ) {
+        AMP_ERROR( d_object_name << " -- Error in input data "
+                                 << "max_dt < 0." );
     }
 
-    if ( db->keyExists( "min_dt" ) ) {
-        d_min_dt = db->getScalar<double>( "min_dt" );
+    d_min_dt = db->getWithDefault( "min_dt", std::numeric_limits<double>::min() );
 
-        if ( d_min_dt < 0.0 ) {
-            AMP_ERROR( d_object_name << " -- Error in input data "
-                                     << "min_dt < 0." );
-        }
-    } else {
-        AMP_ERROR( d_object_name << " -- Key data `min_dt'"
-                                 << " missing in input." );
+    if ( d_min_dt < 0.0 ) {
+        AMP_ERROR( d_object_name << " -- Error in input data "
+                                 << "min_dt < 0." );
     }
 
     if ( db->keyExists( "initial_dt" ) ) {
         d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
     }
 
+    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
+
     d_current_dt = d_initial_dt;
+    d_old_dt     = d_initial_dt;
 }
 
 /*

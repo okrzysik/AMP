@@ -137,12 +137,7 @@ public:
      * A parameter argument is passed to allow for general flexibility
      * in determining what needs to be reset Typically used after a regrid.
      */
-    void reset( std::shared_ptr<TimeIntegratorParameters> parameters ) override;
-
-    /**
-     * Specify initial time step.
-     */
-    double getInitialDt();
+    void reset( std::shared_ptr<const TimeIntegratorParameters> parameters ) override;
 
     /**
      * Specify next time step to use.
@@ -174,7 +169,7 @@ public:
      * on the particular nonlinear solver in use and must be intepreted
      * properly by the user-supplied solution checking routine.
      */
-    bool checkNewSolution( void ) const override;
+    bool checkNewSolution( void ) override;
 
     /**
      * return a pointer to the IDA time operator, deprecated
@@ -195,11 +190,6 @@ public:
      * added by Gary, need discussion whether to deprecate
      */
     bool getBoolManufacturedProblem( void ) { return d_bManufacturedProblem; }
-
-    /**
-     * return a shared pointer to the solution at the current time step
-     */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> getSolution() const;
 
     /**
      * return a shared pointer to the source term at the current time step

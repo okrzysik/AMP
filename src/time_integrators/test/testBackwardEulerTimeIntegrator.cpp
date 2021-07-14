@@ -172,8 +172,8 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
 
         std::cout << j++ << "-th timestep" << std::endl;
 
-        auto max = BDFTimeIntegrator->getCurrentSolution()->max();
-        auto min = BDFTimeIntegrator->getCurrentSolution()->min();
+        auto max = BDFTimeIntegrator->getSolution()->max();
+        auto min = BDFTimeIntegrator->getSolution()->min();
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;

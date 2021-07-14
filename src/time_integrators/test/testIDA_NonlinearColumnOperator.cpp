@@ -280,8 +280,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->failure( "Tested IDATimeIntegrator's advanceSolution. FAIL!!" );
         }
 
-        max = static_cast<double>( pIDATimeIntegrator->getCurrentSolution()->max() );
-        min = static_cast<double>( pIDATimeIntegrator->getCurrentSolution()->min() );
+        max = static_cast<double>( pIDATimeIntegrator->getSolution()->max() );
+        min = static_cast<double>( pIDATimeIntegrator->getSolution()->min() );
 
         std::cout << "current_time = " << current_time << std::endl;
         std::cout << "max val of the current solution = " << max << std::endl;
