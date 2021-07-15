@@ -79,11 +79,12 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     double time = 0.0;
     auto times  = input_db->getVector<double>( "Time" );
     for ( size_t i = 0; i < times.size(); i++ ) {
+        auto v = timeIntegrator->getSolution();
         // Advance the solution
         double dT = times[i] - timeIntegrator->getCurrentTime();
         globalComm.barrier();
         double t0 = AMP::AMP_MPI::time();
-        timeIntegrator->advanceSolution( dT, false );
+        timeIntegrator->advanceSolution( dT, false, v, v );
         globalComm.barrier();
         time += AMP::AMP_MPI::time() - t0;
 #ifdef USE_EXT_SILO

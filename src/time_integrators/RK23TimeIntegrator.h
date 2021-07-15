@@ -59,7 +59,10 @@ public:
      */
     void updateSolution( void ) override;
 
-    int advanceSolution( const double dt, const bool first_step ) override;
+    int advanceSolution( const double dt,
+                         const bool first_step,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                         std::shared_ptr<AMP::LinearAlgebra::Vector> out ) override;
 
 private:
     /**

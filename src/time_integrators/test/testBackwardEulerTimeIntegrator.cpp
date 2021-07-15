@@ -167,7 +167,8 @@ static void BackwardEulerTimeIntegrator( AMP::UnitTest *ut )
     double current_time = 0;
     int j               = 0;
     while ( BDFTimeIntegrator->getCurrentTime() < BDFTimeIntegrator->getFinalTime() ) {
-        BDFTimeIntegrator->advanceSolution( BDFTimeIntegrator->getCurrentDt(), false );
+        auto v = BDFTimeIntegrator->getSolution();
+        BDFTimeIntegrator->advanceSolution( BDFTimeIntegrator->getCurrentDt(), false, v, v );
         current_time = BDFTimeIntegrator->getCurrentTime();
 
         std::cout << j++ << "-th timestep" << std::endl;

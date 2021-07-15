@@ -317,8 +317,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // step in time
     int j = 1;
     while ( pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime() ) {
+        auto v = pIDATimeIntegrator->getSolution();
         int retval =
-            pIDATimeIntegrator->advanceSolution( pIDATimeIntegrator->getCurrentDt(), false );
+            pIDATimeIntegrator->advanceSolution( pIDATimeIntegrator->getCurrentDt(), false, v, v );
         // pIDATimeIntegrator->updateSolution();
         double current_time = pIDATimeIntegrator->getCurrentTime();
 

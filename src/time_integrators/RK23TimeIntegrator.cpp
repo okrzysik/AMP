@@ -89,8 +89,12 @@ void RK23TimeIntegrator::setupVectors()
     d_z_vec->setToScalar( (double) 0.0 );
 }
 
-int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step )
+int RK23TimeIntegrator::advanceSolution( const double dt,
+                                         const bool first_step,
+                                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                                         std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
+    d_solution_vector = in;
     if ( first_step ) {
         // k1 = f(tn,un)
         d_operator->apply( d_solution_vector, d_k1_vec );
@@ -128,7 +132,7 @@ int RK23TimeIntegrator::advanceSolution( const double dt, const bool first_step 
 
     // store the difference in d_z_vec
     d_z_vec->subtract( *d_new_solution, *d_z_vec );
-
+    out->copyVector( d_new_solution );
     return ( 0 );
 }
 
