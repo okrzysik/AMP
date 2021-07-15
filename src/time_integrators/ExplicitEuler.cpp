@@ -74,9 +74,14 @@ void ExplicitEuler::setupVectors()
     d_f_vec->setToScalar( (double) 0.0 );
 }
 
-int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
+int ExplicitEuler::advanceSolution( const double dt,
+                                    const bool first_step,
+                                    std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                                    std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
     std::shared_ptr<AMP::LinearAlgebra::Vector> f;
+
+    d_solution_vector = in;
 
     if ( first_step ) {
         d_current_dt = d_initial_dt;
@@ -84,12 +89,14 @@ int ExplicitEuler::advanceSolution( const double dt, const bool first_step )
         d_current_dt = dt;
     }
 
-    if ( stepsRemaining() && ( d_current_time < d_final_time ) ) {
-        // f_vec = f(tn,un)
-        d_operator->apply( d_solution_vector, d_f_vec );
-        // u* = un+dt*f
-        d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
-    }
+    AMP_ASSERT( stepsRemaining() && ( d_current_time < d_final_time ) );
+
+    // f_vec = f(tn,un)
+    d_operator->apply( d_solution_vector, d_f_vec );
+    // u* = un+dt*f
+    d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
+
+    out->copyVector( d_new_solution );
 
     return ( 0 );
 }

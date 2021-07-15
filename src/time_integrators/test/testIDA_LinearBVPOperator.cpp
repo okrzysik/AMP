@@ -213,8 +213,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         int j = 1;
         while ( pIDATimeIntegrator->getCurrentTime() < pIDATimeIntegrator->getFinalTime() ) {
-            int retval =
-                pIDATimeIntegrator->advanceSolution( pIDATimeIntegrator->getCurrentDt(), false );
+            auto v     = pIDATimeIntegrator->getSolution();
+            int retval = pIDATimeIntegrator->advanceSolution(
+                pIDATimeIntegrator->getCurrentDt(), false, v, v );
             // pIDATimeIntegrator->updateSolution();
             current_time = pIDATimeIntegrator->getCurrentTime();
 
