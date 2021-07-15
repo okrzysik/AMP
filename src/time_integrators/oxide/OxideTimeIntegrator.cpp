@@ -148,7 +148,10 @@ void OxideTimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters>
 /************************************************************************
  * Reset the time integrator                                             *
  ************************************************************************/
-int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
+int OxideTimeIntegrator::advanceSolution( const double dt,
+                                          const bool,
+                                          std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                                          std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
     PROFILE_START( "advanceSolution" );
     d_current_time += dt;
@@ -220,6 +223,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt, const bool )
     // Update ghost values for the solution
     d_solution_vector->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    out->copyVector( d_solution_vector );
     // Free the temporary memory
     delete[] C0[0];
     delete[] C1[0];

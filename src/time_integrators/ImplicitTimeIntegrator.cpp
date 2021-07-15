@@ -85,26 +85,33 @@ void ImplicitTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameter
 *************************************************************************
 */
 
-int ImplicitTimeIntegrator::advanceSolution( const double dt, const bool first_step )
+int ImplicitTimeIntegrator::advanceSolution( const double dt,
+                                             const bool first_step,
+                                             std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                                             std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
+
+    NULL_USE( in );
+
     int retcode = -1;
 
-    if ( stepsRemaining() && ( d_current_time < d_final_time ) ) {
+    AMP_ASSERT( stepsRemaining() && ( d_current_time < d_final_time ) );
 
-        d_current_dt = dt;
+    out = d_solution_vector;
 
-        d_pTimeOperatorParameters->d_db->putScalar( "CurrentDt", dt );
+    d_current_dt = dt;
 
-        d_operator->reset( d_pTimeOperatorParameters );
+    d_pTimeOperatorParameters->d_db->putScalar( "CurrentDt", dt );
 
-        setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
+    d_operator->reset( d_pTimeOperatorParameters );
 
-        std::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
-        rhs.reset();
+    setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
-        d_solver->setInitialGuess( d_solution_vector );
-        d_solver->apply( rhs, d_solution_vector );
-    }
+    std::shared_ptr<AMP::LinearAlgebra::Vector> rhs;
+    rhs.reset();
+
+    d_solver->setInitialGuess( d_solution_vector );
+    d_solver->apply( rhs, d_solution_vector );
 
     return ( retcode );
 }

@@ -83,10 +83,14 @@ void RK4TimeIntegrator::setupVectors()
     d_k4_vec->setToScalar( (double) 0.0 );
 }
 
-int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
+int RK4TimeIntegrator::advanceSolution( const double dt,
+                                        const bool,
+                                        std::shared_ptr<AMP::LinearAlgebra::Vector> in,
+                                        std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
     std::shared_ptr<AMP::LinearAlgebra::Vector> f;
 
+    d_solution_vector = in;
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
     // u* = un+k1*dt/2
@@ -108,6 +112,7 @@ int RK4TimeIntegrator::advanceSolution( const double dt, const bool )
     d_k1_vec->add( *d_k1_vec, *d_k2_vec );
 
     d_new_solution->axpy( dt / 6.0, *d_k1_vec, *d_solution_vector );
+    out->copyVector( d_new_solution );
 
     return ( 0 );
 }

@@ -278,7 +278,10 @@ double IDATimeIntegrator::getNextDt( const bool /* good_solution */ )
     return d_current_dt;
 }
 
-int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_step */ )
+int IDATimeIntegrator::advanceSolution( const double dt,
+                                        const bool /* first_step */,
+                                        std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                                        std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
     int retval        = IDA_SUCCESS;
     double hin_actual = 0.0;
@@ -332,6 +335,7 @@ int IDATimeIntegrator::advanceSolution( const double dt, const bool /* first_ste
     retval = IDASpilsGetNumLinIters( d_ida_mem, &nliters );
     AMP::pout << "nliters = " << nliters << std::endl;
 
+    out->copyVector( d_solution_vector );
     return ( retval );
 }
 
