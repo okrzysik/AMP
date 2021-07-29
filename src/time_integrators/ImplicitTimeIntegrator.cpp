@@ -97,7 +97,7 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt,
 
     AMP_ASSERT( stepsRemaining() && ( d_current_time < d_final_time ) );
 
-    out = d_solution_vector;
+    d_solution_vector = in;
 
     d_current_dt = dt;
 
@@ -112,6 +112,8 @@ int ImplicitTimeIntegrator::advanceSolution( const double dt,
 
     d_solver->setInitialGuess( d_solution_vector );
     d_solver->apply( rhs, d_solution_vector );
+
+    out->copyVector( d_solution_vector );
 
     return ( retcode );
 }
