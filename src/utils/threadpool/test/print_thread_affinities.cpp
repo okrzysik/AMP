@@ -161,7 +161,7 @@ int main( int argc, char *argv[] )
         auto tpool_db = std::make_shared<AMP::Database>( "ThreadPool" );
         if ( argc == 1 ) {
             // Create a default database
-            tpool_db.reset( new AMP::Database( "ThreadPool" ) );
+            tpool_db = std::make_shared<AMP::Database>( "ThreadPool" );
             tpool_db->putScalar( "Load_balance_method", 2 );
             tpool_db->putScalar( "N_min", -1 );
             tpool_db->putScalar( "N_max", -1 );

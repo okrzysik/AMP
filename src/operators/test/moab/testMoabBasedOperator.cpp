@@ -12,19 +12,17 @@
 #include <string>
 #include <vector>
 
+// AMP Moab Includes
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/operators/moab/MoabBasedOperator.h"
+#include "AMP/operators/moab/MoabMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
-
-// AMP Moab Includes
-#include "AMP/operators/moab/MoabBasedOperator.h"
-#include "AMP/operators/moab/MoabMapOperator.h"
 
 // MOAB Includes
 #include "Coupler.hpp"
@@ -34,24 +32,14 @@
 #include "iMesh.h"
 #include "moab/Interface.hpp"
 
-//---------------------------------------------------------------------------//
+
 // Helper Class
-//---------------------------------------------------------------------------//
-
-typedef AMP::Operator::MoabBasedOperator MoabBasedOp;
-typedef std::shared_ptr<MoabBasedOp> SP_MoabBasedOp;
-
-typedef AMP::Operator::MoabBasedOperatorParameters MoabOpParams;
-typedef std::shared_ptr<MoabOpParams> SP_MoabOpParams;
-
-typedef AMP::LinearAlgebra::Vector AMPVec;
-typedef AMP::LinearAlgebra::Vector::shared_ptr SP_AMPVec;
-
-
-class MoabDummyOperator : public MoabBasedOp
+class MoabDummyOperator : public AMP::Operator::MoabBasedOperator
 {
 public:
-    explicit MoabDummyOperator( SP_MoabOpParams &moabParams ) : MoabBasedOp( moabParams )
+    explicit MoabDummyOperator(
+        std::shared_ptr<AMP::Operator::MoabBasedOperatorParameters> &moabParams )
+        : AMP::Operator::MoabBasedOperator( moabParams )
     {
         // Create iMesh instance
         iMesh_Instance mbMesh;
@@ -145,8 +133,7 @@ public:
     {
         /* Don't need an apply for this operator */
     }
-
-    void finalize(){ /* ... */ };
+    MoabOpParams void finalize(){ /* ... */ };
 };
 
 
@@ -165,19 +152,12 @@ static void moabInterface( AMP::UnitTest *ut )
     std::string output_file = "output_" + exeName;
     AMP::logAllNodes( output_file );
 
-    //--------------------------------------------------
-    //  Read Input File.
-    //--------------------------------------------------
-
-
+    // Read Input File.
     auto input_db = AMP::Database::parseInputFile( input_file );
 
-    //--------------------------------------------------
-    //   Create the Mesh.
-    //--------------------------------------------------
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    // Create the Mesh.
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     std::shared_ptr<AMP::Mesh::Mesh> mesh = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
@@ -186,18 +166,12 @@ static void moabInterface( AMP::UnitTest *ut )
     input_db->putScalar( "moabMeshName", moabMeshFile );
 
     // Build operator params
-    typedef AMP::Operator::MoabBasedOperatorParameters MoabOpParams;
-    typedef std::shared_ptr<MoabOpParams> SP_MoabOpParams;
-
     AMP::pout << "Building Moab Operator Parameters" << std::endl;
-    SP_MoabOpParams moabParams( new MoabOpParams( input_db ) );
+    auto moabParams = std::make_shared<AMP::Operator::MoabBasedOperatorParameters>( input_db );
 
     // Build operator
-    typedef AMP::Operator::MoabBasedOperator MoabBasedOp;
-    typedef std::shared_ptr<MoabBasedOp> SP_MoabBasedOp;
-
     AMP::pout << "Building Moab Operator" << std::endl;
-    SP_MoabBasedOp moabOp( new MoabDummyOperator( moabParams ) );
+    auto moabOp = std::make_shared<MoabDummyOperator>( moabParams );
 
     // Call apply
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -205,14 +179,8 @@ static void moabInterface( AMP::UnitTest *ut )
 
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
-    typedef AMP::Operator::MoabMapOperatorParameters MoabMapParams;
-    typedef std::shared_ptr<MoabMapParams> SP_MoabMapParams;
-
-    typedef AMP::Operator::MoabMapOperator MoabMap;
-    typedef std::shared_ptr<MoabMap> SP_MoabMap;
-
     input_db->putScalar( "MoabMapVariable", "TEMPERATURE" );
-    SP_MoabMapParams mapParams( new MoabMapParams( input_db ) );
+    auto mapParams = std::make_shared<AMP::Operator::MoabMapOperatorParameters>( input_db );
     mapParams->setMoabOperator( moabOp );
     mapParams->setMesh( mesh );
 
@@ -220,29 +188,25 @@ static void moabInterface( AMP::UnitTest *ut )
     size_t DOFsPerNode  = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
-    std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    AMP::LinearAlgebra::Variable::shared_ptr nodalVar(
-        new AMP::LinearAlgebra::Variable( "nodalPressure" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr nodalVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, nodalVar, true );
+    auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto nodalVar = = std::make_shared<AMP::LinearAlgebra::Variable>( "nodalPressure" );
+    auto nodalVec   = AMP::LinearAlgebra::createVector( nodalDofMap, nodalVar, true );
 
     AMP::pout << "Nodal Vector size: " << nodalVec->getGlobalSize() << std::endl;
 
     // Now create Moab map operator
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
     input_db->putScalar( "InterpolateToType", "GeomType::Vertex" );
-    SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
+    auto moabNodeMap = std::make_shared<AMP::Operator::MoabMapOperator>( mapParams );
 
     // Do interpolation
     moabNodeMap->apply( nullVec, nullVec, nodalVec, 0.0, 0.0 );
 
     // Check to make sure we didn't just get a vector of zeros
-    AMPVec::iterator myIter;
     bool nonZero = false;
-    for ( myIter = nodalVec->begin(); myIter != nodalVec->end(); ++myIter ) {
-        if ( *myIter != 0.0 )
+    for ( auto v : nodalVec ) {
+        if ( v != 0.0 )
             nonZero = true;
     }
 
@@ -257,16 +221,15 @@ static void moabInterface( AMP::UnitTest *ut )
     int numMismatched = 0;
 
     // loop over all meshes to create the preprocessor database for that mesh
-    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
-
+    auto meshIDs = mesh->getBaseMeshIDs();
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         // this is an accessor to all the mesh info.
-        AMP::Mesh::Mesh::shared_ptr currentMesh = mesh->Subset( meshIDs[meshIndex] );
+        auto currentMesh = mesh->Subset( meshIDs[meshIndex] );
         if ( currentMesh.get() == NULL )
             continue;
 
-        std::string meshCoords   = "Mesh_Coords";
-        SP_AMPVec thisMeshCoords = currentMesh->getPositionVector( meshCoords );
+        std::string meshCoords = "Mesh_Coords";
+        auto thisMeshCoords    = currentMesh->getPositionVector( meshCoords );
 
         for ( unsigned int i = 0; i < currentMesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
               ++i ) {
@@ -299,8 +262,7 @@ static void moabInterface( AMP::UnitTest *ut )
         // Useful for making sure everything looks right
 
 #ifdef USE_EXT_SILO
-    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-        AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::GeomType::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
@@ -324,7 +286,3 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::shutdown();
     return num_failed;
 }
-
-//---------------------------------------------------------------------------//
-//                 end of testMoabBasedOperator.cc
-//---------------------------------------------------------------------------//

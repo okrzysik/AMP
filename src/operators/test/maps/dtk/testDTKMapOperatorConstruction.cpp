@@ -27,36 +27,29 @@ static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> mgrParams(
-        new AMP::Mesh::MeshParameters( mesh_db ) );
+    auto mgrParams                         = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr manager( AMP::Mesh::Mesh::buildMesh( mgrParams ) );
+    auto manager = std::make_shared<AMP::Mesh::Mesh::buildMesh>( mgrParams );
     AMP::pout << "Finished loading meshes" << std::endl;
 
-    std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    AMP::LinearAlgebra::Variable::shared_ptr variable(
-        new AMP::LinearAlgebra::Variable( "Field" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr fieldVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, variable );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, variable );
-    AMP::LinearAlgebra::Vector::shared_ptr dummyVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, variable );
-    AMP::LinearAlgebra::Vector::shared_ptr mapVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, variable, true );
+    auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
+        manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto variables = std::make_shared<AMP::LinearAlgebra::Variable>( "Field" );
+    auto fieldVec  = AMP::LinearAlgebra::createVector( nodalDofMap, variable );
+    auto resVec    = AMP::LinearAlgebra::createVector( nodalDofMap, variable );
+    auto dummyVec  = AMP::LinearAlgebra::createVector( nodalDofMap, variable );
+    auto mapVec    = AMP::LinearAlgebra::createVector( nodalDofMap, variable, true );
 
     AMP::pout << "----------------------------\n";
     AMP::pout << "     CREATE MAP OPERATOR    \n";
     AMP::pout << "----------------------------\n";
     std::shared_ptr<AMP::Database> nullDatabase;
 
-    AMP::Mesh::Mesh::shared_ptr Mesh1 = manager->Subset( "Mesh1" );
-    AMP::Mesh::Mesh::shared_ptr Mesh2 = manager->Subset( "Mesh2" );
+    auto Mesh1 = manager->Subset( "Mesh1" );
+    auto Mesh2 = manager->Subset( "Mesh2" );
 
-    std::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters> mapOperatorParams(
-        new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
+    auto mapOperatorParams =
+        std::make_shared<AMP::Operator::MultiDofDTKMapOperatorParameters>( nullDatabase );
     mapOperatorParams->d_globalComm    = AMP_COMM_WORLD;
     mapOperatorParams->d_Mesh1         = Mesh1;
     mapOperatorParams->d_BoundaryID1   = 1;
@@ -70,8 +63,7 @@ static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
     mapOperatorParams->d_StrideLength2 = 1;
     mapOperatorParams->d_SourceVector  = fieldVec;
     mapOperatorParams->d_TargetVector  = mapVec;
-    std::shared_ptr<AMP::Operator::Operator> mapOperator(
-        new AMP::Operator::MultiDofDTKMapOperator( mapOperatorParams ) );
+    auto mapOperator = std::make_shared<AMP::Operator::MultiDofDTKMapOperator>( mapOperatorParams );
     ut->passes( "DTK Map Operator creation" );
 
     try {

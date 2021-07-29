@@ -13,7 +13,7 @@ public:
     template<typename UTILS>
     static void run_test( UTILS *utils )
     {
-        std::shared_ptr<AMP::Database> new_db( new AMP::Database( "Dummy db" ) );
+        auto new_db = std::make_shared<AMP::Database>( "Dummy db" );
         AMP::Operator::OperatorParameters params( new_db );
         utils->passes( "instantiate OperatorParameters" );
     }

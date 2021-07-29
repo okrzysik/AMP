@@ -96,12 +96,12 @@ static void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     std::string mesh_file = input_db->getString( "Mesh" );
 
     // Create the mesh parameter object
-    std::shared_ptr<AMP::Database> database( new AMP::Database( "Mesh" ) );
+    auto database = std::make_shared<AMP::Database>( "Mesh" );
     database->putScalar( "dim", 3 );
     database->putScalar( "MeshName", "mesh" );
     database->putScalar( "MeshType", "libMesh" );
     database->putScalar( "FileName", mesh_file );
-    std::shared_ptr<AMP::Mesh::MeshParameters> params( new AMP::Mesh::MeshParameters( database ) );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the mesh

@@ -47,19 +47,16 @@ namespace Operator {
         }//end for i
 
         std::string tempVarName = activeInpVar_db->getString("VELOCITY");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new
-   AMP::LinearAlgebra::Variable(tempVarName) );
+        auto tempVar = std::make_shared<AMP::LinearAlgebra::Variable>(tempVarName);
         d_inpVariables->setVariable(NavierStokes::VELOCITY, tempVar);
 
         tempVarName = activeInpVar_db->getString("PRESSURE");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar2(new
-   AMP::LinearAlgebra::Variable(tempVarName) );
+       auto tempVar2 = std::make_shared<AMP::LinearAlgebra::Variable>(tempVarName);
         d_inpVariables->setVariable(NavierStokes::PRESSURE, tempVar2);
 
         if(d_isActive[NavierStokes::TEMPERATURE]) {
           std::string varName = activeInpVar_db->getString("TEMPERATURE");
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new
-   AMP::LinearAlgebra::Variable(varName) );
+          auto dummyVar = std::make_shared<AMP::LinearAlgebra::Variable>(varName);
           d_inpVariables->setVariable(NavierStokes::TEMPERATURE, dummyVar);
           if(d_isFrozen[NavierStokes::TEMPERATURE]) {
             if( params->d_FrozenTemperature != NULL ) {
@@ -243,7 +240,7 @@ namespace Operator {
         }
 
         // set up a database for the linear operator params
-        std::shared_ptr<AMP::Database> tmp_db (new AMP::Database("Dummy"));
+        auto tmp_db = std::make_shared<AMP::Database>("Dummy");
         tmp_db->putScalar("isAttachedToNonlinearOperator", true);
         tmp_db->putScalar("isNonlinearOperatorInitialized", true);
 
@@ -256,8 +253,7 @@ namespace Operator {
         }
 
         // create the linear operator params
-        std::shared_ptr<NavierStokesLinearFEOperatorParameters> outParams(new
-            NavierStokesLinearFEOperatorParameters(tmp_db));
+        auto outParams = std::make_shared<NavierStokesLinearFEOperatorParameters>(tmp_db);
 
         (outParams->d_frozenVec).resize(NavierStokes::TOTAL_NUMBER_OF_VARIABLES);
         // add variables to parameters

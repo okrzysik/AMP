@@ -37,8 +37,7 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     std::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> sourceMeshParams(
-        new AMP::Mesh::MeshParameters( sourceMeshDatabase ) );
+    auto sourceMeshParams = std::make_shared<AMP::Mesh::MeshParameters>( sourceMeshDatabase );
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
     std::size_t const numVerticesOnSourceMesh =
@@ -56,8 +55,7 @@ static void myTest( AMP::UnitTest *ut )
     std::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager =
         AMP::Discretization::simpleDOFManager::create(
             sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
-    AMP::LinearAlgebra::Variable::shared_ptr variable(
-        new AMP::LinearAlgebra::Variable( "dummy" ) );
+    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
     AMP::LinearAlgebra::Vector::shared_ptr sourceVector =
         AMP::LinearAlgebra::createVector( sourceDofManager, variable, split );
     // and fill it
@@ -76,8 +74,7 @@ static void myTest( AMP::UnitTest *ut )
     }
 #ifdef USE_EXT_SILO
     {
-        std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-            AMP::Utilities::Writer::buildWriter( "silo" );
+        auto siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
         siloWriter->setDecomposition( 1 );
         siloWriter->registerVector(
             sourceVector, sourceMesh, AMP::Mesh::GeomType::Vertex, "vector" );
@@ -87,11 +84,10 @@ static void myTest( AMP::UnitTest *ut )
 
     // load the target mesh
     AMP::pout << "Loading the target mesh" << std::endl;
-    std::shared_ptr<AMP::Database> targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> targetMeshParams(
-        new AMP::Mesh::MeshParameters( targetMeshDatabase ) );
+    auto targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
+    auto targetMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( targetMeshDatabase );
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr targetMesh = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
+    auto targetMesh = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
     std::size_t const numVerticesOnTargetMesh =
         targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
     std::size_t const numElementsOnTargetMesh =
@@ -100,23 +96,19 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "target mesh contains " << numElementsOnTargetMesh << " elements\n";
 
     AMP::pout << "Building the target vector" << std::endl;
-    std::shared_ptr<AMP::Discretization::DOFManager> targetDofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            targetMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
-    AMP::LinearAlgebra::Vector::shared_ptr targetVector =
-        AMP::LinearAlgebra::createVector( targetDofManager, variable, split );
+    auto targetDofManager = AMP::Discretization::simpleDOFManager::create(
+        targetMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
+    auto targetVector = AMP::LinearAlgebra::createVector( targetDofManager, variable, split );
 
     // create dtk map operator.
     std::shared_ptr<AMP::Database> null_db;
-    std::shared_ptr<AMP::Operator::DTKMapOperatorParameters> dtk_op_params(
-        new AMP::Operator::DTKMapOperatorParameters( null_db ) );
+    auto dtk_op_params = std::make_shared<AMP::Operator::DTKMapOperatorParameters>( null_db );
     dtk_op_params->d_domain_mesh = sourceMesh;
     dtk_op_params->d_range_mesh  = targetMesh;
     dtk_op_params->d_domain_dofs = sourceDofManager;
     dtk_op_params->d_range_dofs  = targetDofManager;
     dtk_op_params->d_globalComm  = AMP::AMP_MPI( AMP_COMM_WORLD );
-    std::shared_ptr<AMP::Operator::Operator> dtk_operator(
-        new AMP::Operator::DTKMapOperator( dtk_op_params ) );
+    auto dtk_operator            = std::make_shared<AMP::Operator::DTKMapOperator>( dtk_op_params );
 
     // apply the map.
     AMP::pout << "Apply dtk operator" << std::endl;
@@ -128,17 +120,15 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "source vector l2 norm = " << sourceVector->L2Norm() << std::endl;
     AMP::pout << "target vector l2 norm = " << targetVector->L2Norm() << std::endl;
 #ifdef USE_EXT_SILO
-    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-        AMP::Utilities::Writer::buildWriter( "silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
     siloWriter->setDecomposition( 1 );
     siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::GeomType::Vertex, "vector" );
     siloWriter->writeFile( "target", 0 );
 #endif
-    double const atol = 1.0e-14;
-    double const rtol = 1.0e-14;
-    double const tol  = atol + rtol * targetVector->L2Norm();
-    AMP::Mesh::MeshIterator targetMeshIterator =
-        targetMesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    double const atol       = 1.0e-14;
+    double const rtol       = 1.0e-14;
+    double const tol        = atol + rtol * targetVector->L2Norm();
+    auto targetMeshIterator = targetMesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( targetMeshIterator = targetMeshIterator.begin();
           targetMeshIterator != targetMeshIterator.end();
           ++targetMeshIterator ) {
