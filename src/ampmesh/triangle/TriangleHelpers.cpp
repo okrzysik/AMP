@@ -474,6 +474,7 @@ template<size_t NG>
 static std::vector<std::array<int64_t, NG + 1>>
 removeSubDomain( std::vector<std::array<int64_t, NG + 1>> &tri )
 {
+    printf( "removeSubDomain: %i\n", (int) tri.size() );
     // For each triangle get a hash id for each face
     std::multimap<uint64_t, int64_t> faceMap;
     for ( size_t i = 0, k = 0; i < tri.size(); i++ ) {
@@ -564,8 +565,10 @@ std::vector<std::vector<std::array<int64_t, NG + 1>>>
 splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
 {
     std::vector<std::vector<std::array<int64_t, NG + 1>>> tri_sets;
-    while ( !tri.empty() )
+    while ( !tri.empty() ) {
+        std::cout << tri.size() << std::endl;
         tri_sets.emplace_back( removeSubDomain<NG>( tri ) );
+    }
     return tri_sets;
 }
 template<>

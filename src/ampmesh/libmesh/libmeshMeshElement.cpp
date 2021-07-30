@@ -222,26 +222,25 @@ void libmeshMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &nei
     if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         auto neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
-        neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
-        for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
-            // There are no NULL neighbors
+        int n_neighbors     = neighbor_nodes.size();
+        neighbors.reserve( n_neighbors );
+        for ( int i = 0; i < n_neighbors; i++ ) {
             std::shared_ptr<libmeshMeshElement> neighbor( new libmeshMeshElement(
                 d_dim, GeomType::Vertex, (void *) neighbor_nodes[i], d_rank, d_meshID, d_mesh ) );
-            neighbors[i] = neighbor;
+            neighbors.push_back( neighbor );
         }
     } else if ( (int) d_globalID.type() == d_dim ) {
         // Return the neighbors of the current element
-        auto *elem = (libMesh::Elem *) ptr_element;
-        // if ( elem->n_neighbors()==0 )
-        //    AMP_ERROR("Element has not neighbors, this could indicate a problem with the mesh");
-        neighbors.resize( elem->n_neighbors() );
-        for ( size_t i = 0; i < neighbors.size(); i++ ) {
+        auto *elem      = (libMesh::Elem *) ptr_element;
+        int n_neighbors = elem->n_neighbors();
+        neighbors.reserve( n_neighbors );
+        for ( int i = 0; i < n_neighbors; i++ ) {
             auto *neighbor_elem = (void *) elem->neighbor_ptr( i );
-            std::shared_ptr<libmeshMeshElement> neighbor;
-            if ( neighbor_elem != nullptr )
-                neighbor.reset( new libmeshMeshElement(
-                    d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
-            neighbors[i] = neighbor;
+            if ( neighbor_elem == nullptr )
+                continue;
+            std::shared_ptr<libmeshMeshElement> neighbor( new libmeshMeshElement(
+                d_dim, d_globalID.type(), neighbor_elem, d_rank, d_meshID, d_mesh ) );
+            neighbors.push_back( neighbor );
         }
     } else {
         // We constructed a temporary libmesh object and do not have access to the neighbor info
@@ -255,7 +254,7 @@ void libmeshMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &nei
 double libmeshMeshElement::volume() const
 {
     if ( d_globalID.type() == GeomType::Vertex )
-        AMP_ERROR( "volume is is not defined Nodes" );
+        AMP_ERROR( "volume is is not defined for nodes" );
     auto *elem = (libMesh::Elem *) ptr_element;
     return elem->volume();
 }
@@ -267,7 +266,7 @@ Point libmeshMeshElement::norm() const
 Point libmeshMeshElement::coord() const
 {
     if ( d_globalID.type() != GeomType::Vertex )
-        AMP_ERROR( "coord is only defined for Nodes" );
+        AMP_ERROR( "coord is only defined for nodes" );
     auto *node = (libMesh::Node *) ptr_element;
     Point x( (size_t) d_dim );
     for ( int i = 0; i < d_dim; i++ )
