@@ -109,35 +109,27 @@ static inline std::pair<double, double> map_c2p( int method, double xc, double y
     }
     return std::make_pair( xp, yp );
 }
-static inline double root( double a, double b, double c, int r )
-{
-    double t = b * b - 4 * a * c;
-    if ( fabs( t ) < 1e-12 * fabs( b * b ) )
-        return -b / ( 2 * a );
-    double s = r == 1 ? 1 : -1;
-    double x = ( -b + s * sqrt( t ) ) / ( 2 * a );
-    return x;
-}
 static inline std::pair<double, double> map_p2c( int method, double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
     if ( xp < 1e-12 && yp < 1e-12 )
         return std::make_pair( 0.0, 0.0 );
-    double xc          = 0;
-    double yc          = 0;
-    const double sqrt2 = 1.414213562373095;
+    double xc             = 0;
+    double yc             = 0;
+    const double sqrt2    = 1.414213562373095;
+    const double invsqrt2 = 0.707106781186547;
     if ( method == 1 ) {
         yc = yp * sqrt2;
         xc = sqrt( xp * xp + yp * yp );
     } else if ( method == 2 ) {
-        yc            = yp * sqrt2;
-        double center = xp - sqrt( 1 - yp * yp );
-        xc            = root( 2, -2 * center * sqrt2, 2 * ( center * center - 1 ), 1 );
+        yc     = yp * sqrt2;
+        auto z = xp - sqrt( 1 - yp * yp );
+        xc     = invsqrt2 * ( z + sqrt( 2 - z * z ) );
     } else if ( method == 3 ) {
-        double center = xp - sqrt( 1 - yp * yp );
-        double D      = root( 2, -2 * center, center * center - 1, 1 );
-        xc            = root( 1, -2, D * sqrt2, 2 );
-        yc            = yp * sqrt2 / ( 2 - xc );
+        auto z = xp - sqrt( 1 - yp * yp );
+        auto D = 0.5 * ( z + sqrt( 2 - z * z ) );
+        xc     = 1.0 - sqrt( 1 - D * sqrt2 );
+        yc     = yp * sqrt2 / ( 2 - xc );
     } else {
         AMP_ERROR( "Invalid method" );
     }
