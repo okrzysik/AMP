@@ -83,26 +83,30 @@ static inline std::array<double, N> normalize( const std::array<double, N> &x )
  ****************************************************************/
 static inline std::pair<double, double> map_c2p( int method, double xc, double yc )
 {
+    if ( fabs( xc ) < 1e-12 && fabs( yc ) < 1e-12 )
+        return std::make_pair( 0.0, 0.0 );
+    if ( fabs( yc ) > fabs( xc ) ) {
+        auto [yp, xp] = map_c2p( method, yc, xc );
+        return std::make_pair( xp, yp );
+    }
     // map xc > 0 and |yc| < xc ≡ d to (xp,yp) in r=1 using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
     //       and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
     //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
-    if ( xc < 1e-12 && yc < 1e-12 )
-        return std::make_pair( 0.0, 0.0 );
-    double xp          = 0;
-    double yp          = 0;
-    const double sqrt2 = 1.414213562373095;
+    double xp             = 0;
+    double yp             = 0;
+    const double invsqrt2 = 0.7071067811865475244;
     if ( method == 1 ) {
-        yp = yc / sqrt2;
+        yp = invsqrt2 * yc;
         xp = sqrt( xc * xc - yp * yp );
     } else if ( method == 2 ) {
-        double center = xc / sqrt2 - sqrt( 1.0 - xc * xc / 2 );
-        yp            = yc / sqrt2;
+        double center = invsqrt2 * xc - sqrt( 1.0 - 0.5 * xc * xc );
+        yp            = invsqrt2 * yc;
         xp            = center + sqrt( 1.0 - yp * yp );
     } else if ( method == 3 ) {
-        double D      = xc * ( 2 - xc ) / sqrt2;
+        double D      = invsqrt2 * xc * ( 2 - xc );
         double center = D - sqrt( 1.0 - D * D );
-        yp            = ( 2 - xc ) / sqrt2 * yc;
+        yp            = invsqrt2 * ( 2 - xc ) * yc;
         xp            = center + sqrt( 1.0 - yp * yp );
     } else {
         AMP_ERROR( "Invalid method" );
@@ -112,12 +116,16 @@ static inline std::pair<double, double> map_c2p( int method, double xc, double y
 static inline std::pair<double, double> map_p2c( int method, double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
-    if ( xp < 1e-12 && yp < 1e-12 )
+    if ( fabs( xp ) < 1e-12 && fabs( yp ) < 1e-12 )
         return std::make_pair( 0.0, 0.0 );
+    if ( fabs( yp ) > fabs( xp ) ) {
+        auto [yc, xc] = map_p2c( method, yp, xp );
+        return std::make_pair( xc, yc );
+    }
     double xc             = 0;
     double yc             = 0;
-    const double sqrt2    = 1.414213562373095;
-    const double invsqrt2 = 0.707106781186547;
+    const double sqrt2    = 1.4142135623730950488;
+    const double invsqrt2 = 0.7071067811865475244;
     if ( method == 1 ) {
         yc = yp * sqrt2;
         xc = sqrt( xp * xp + yp * yp );
@@ -128,7 +136,7 @@ static inline std::pair<double, double> map_p2c( int method, double xp, double y
     } else if ( method == 3 ) {
         auto z = xp - sqrt( 1 - yp * yp );
         auto D = 0.5 * ( z + sqrt( 2 - z * z ) );
-        xc     = 1.0 - sqrt( 1 - D * sqrt2 );
+        xc     = 1.0 - sqrt( std::max( 1 - D * sqrt2, 0.0 ) );
         yc     = yp * sqrt2 / ( 2 - xc );
     } else {
         AMP_ERROR( "Invalid method" );
@@ -143,16 +151,7 @@ std::pair<double, double> map_logical_circle( double r, int method, double x, do
     //       SIAM REVIEW, Vol. 50, No. 4, pp.723–752 (2008)
     const double xc = 2 * x - 1; // Change domain to [-1,1]
     const double yc = 2 * y - 1; // Change domain to [-1,1]
-    double xp, yp;
-    if ( fabs( xc ) >= fabs( yc ) ) {
-        auto p = map_c2p( method, fabs( xc ), fabs( yc ) );
-        xp     = p.first;
-        yp     = p.second;
-    } else {
-        auto p = map_c2p( method, fabs( yc ), fabs( xc ) );
-        xp     = p.second;
-        yp     = p.first;
-    }
+    auto [xp, yp]   = map_c2p( method, fabs( xc ), fabs( yc ) );
     if ( xc < 0.0 )
         xp = -xp;
     if ( yc < 0.0 )
@@ -165,17 +164,7 @@ std::pair<double, double> map_circle_logical( double r, int method, double x, do
     double xp = x / r;
     double yp = y / r;
     // Perform the inverse mapping to [-1,1]
-    double xc = 0;
-    double yc = 0;
-    if ( fabs( xp ) >= fabs( yp ) ) {
-        auto p = map_p2c( method, fabs( xp ), fabs( yp ) );
-        xc     = p.first;
-        yc     = p.second;
-    } else {
-        auto p = map_p2c( method, fabs( yp ), fabs( xp ) );
-        xc     = p.second;
-        yc     = p.first;
-    }
+    auto [xc, yc] = map_p2c( method, fabs( xp ), fabs( yp ) );
     if ( xp < 0.0 )
         xc = -xc;
     if ( yp < 0.0 )
@@ -196,12 +185,12 @@ static double inline get_m( int N )
                              2.076521396572336, 2.414213562373095 };
         return m[N - 3];
     }
-    constexpr double pi = 3.141592653589793;
+    constexpr double pi = 3.14159265358979323;
     return tan( pi * ( N - 2 ) / ( 2 * N ) );
 }
 std::pair<double, double> map_poly_logical( int N, double R, double x, double y )
 {
-    constexpr double pi = 3.141592653589793;
+    constexpr double pi = 3.14159265358979323;
     // Map the coordinates from a polygon to a circle
     double a = atan( y / x );
     if ( x > 0 ) {
@@ -223,7 +212,7 @@ std::pair<double, double> map_poly_logical( int N, double R, double x, double y 
 }
 std::pair<double, double> map_logical_poly( int N, double R, double x, double y )
 {
-    constexpr double pi = 3.141592653589793;
+    constexpr double pi = 3.14159265358979323;
     // Map the coordinates to a circle
     auto [x2, y2] = map_logical_circle( R, 2, x, y );
     // Map the coordinates from a circle to the polygon
@@ -247,7 +236,7 @@ std::pair<double, double> map_logical_poly( int N, double R, double x, double y 
 std::vector<Point2D> get_poly_verticies( int N, double R )
 {
     // Get the starting angle
-    constexpr double pi = 3.141592653589793;
+    constexpr double pi = 3.14159265358979323;
     double theta        = 0.5 * pi - pi / N;
     double d_theta      = 2.0 * pi / N;
     // Create the verticies
