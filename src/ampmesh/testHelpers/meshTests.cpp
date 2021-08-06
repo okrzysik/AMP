@@ -219,6 +219,17 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
                     neighbor_pass = 0; // All nodes / elements should have neighbors
                 else if ( neighbor_pass == 1 )
                     neighbor_pass = 2; // Neighbors of other element types are not always supported
+            } else {
+                for ( auto neighbor : neighbors ) {
+                    if ( neighbor ) {
+                        // Verify that the neighbors does not include self
+                        if ( *neighbor == element )
+                            neighbor_pass = 0;
+                    } else {
+                        // Neighbor is empty
+                        neighbor_pass = 0;
+                    }
+                }
             }
             if ( ownerRank != myRank )
                 id_pass = false;

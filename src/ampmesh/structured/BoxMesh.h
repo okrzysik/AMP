@@ -435,12 +435,13 @@ protected:
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
 
-protected:                            // Internal data
-    std::array<bool, 3> d_isPeriodic; // Which directions are periodic
-    std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
-    std::array<int, 3> d_blockSize;   // The size of the logical blocks in each direction
-    std::array<int, 3> d_numBlocks;   // The number of local box in each direction
-    std::array<int, 6> d_surfaceId;   // For each surface which id is it part of (if any, -1 if not)
+protected:                                // Internal data
+    std::array<bool, 3> d_isPeriodic;     // Which directions are periodic
+    std::array<int, 3> d_globalSize;      // The size of the logical domain in each direction
+    std::array<int, 3> d_blockSize;       // The size of the logical blocks in each direction
+    std::array<double, 3> d_invBlockSize; // Inverse of the block size
+    std::array<int, 3> d_numBlocks;       // The number of local box in each direction
+    std::array<int, 6> d_surfaceId; // For each surface which id is it part of (if any, -1 if not)
     ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements (surface/type)
 
 protected: // Friend functions to access protected functions

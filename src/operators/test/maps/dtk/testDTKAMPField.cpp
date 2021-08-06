@@ -35,10 +35,9 @@ static void myTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
 
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( meshDatabase ) );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // Create a vector.
     bool const split      = true;

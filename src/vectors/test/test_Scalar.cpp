@@ -29,6 +29,24 @@ bool testGet( TYPE x )
 }
 
 
+// Test basic arithmetic
+template<class TYPE>
+bool testArithmetic()
+{
+    TYPE a        = 17.2;
+    TYPE b        = 3.7;
+    AMP::Scalar x = AMP::Scalar::create( a );
+    AMP::Scalar y = AMP::Scalar::create( b );
+    bool pass     = true;
+    // Test some different operations
+    pass = pass && fabs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
+    pass = pass && fabs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
+    pass = pass && fabs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
+    pass = pass && fabs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
+    return pass;
+}
+
+
 // Test the performance
 void testPerformance()
 {
@@ -80,6 +98,11 @@ int main( int, char ** )
     // Test copy
     auto c2 = c1;
     pass    = pass && c1.get<std::complex<float>>() == c2.get<std::complex<float>>();
+
+    // Test arithmetic
+    pass = pass && testArithmetic<double>();
+    pass = pass && testArithmetic<int64_t>();
+    pass = pass && testArithmetic<std::complex<double>>();
 
     // Test the performance
     testPerformance();

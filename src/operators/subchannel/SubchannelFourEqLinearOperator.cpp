@@ -1305,12 +1305,11 @@ std::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianP
 {
     NULL_USE( u );
 
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
     tmp_db->putScalar( "name", "SubchannelFourEqLinearOperator" );
 
-    std::shared_ptr<SubchannelOperatorParameters> outParams(
-        new SubchannelOperatorParameters( tmp_db ) );
+    auto outParams = std::make_shared<SubchannelOperatorParameters>( tmp_db );
     return outParams;
 }
 

@@ -177,9 +177,11 @@ inline TYPE Scalar::get( double tol ) const
 /********************************************************************
  * Operator overloading                                              *
  ********************************************************************/
+Scalar operator-( const Scalar &x );
 Scalar operator+( const Scalar &x, const Scalar &y );
 Scalar operator-( const Scalar &x, const Scalar &y );
 Scalar operator*( const Scalar &x, const Scalar &y );
+Scalar operator/( const Scalar &x, const Scalar &y );
 inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); }
 
 

@@ -78,23 +78,25 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
     d_isPeriodic.fill( false );
     d_globalSize.fill( 1 );
     d_blockSize.fill( 1 );
+    d_invBlockSize.fill( 1 );
     d_numBlocks.fill( 1 );
     d_surfaceId.fill( -1 );
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 {
-    PhysicalDim  = mesh.PhysicalDim;
-    GeomDim      = mesh.GeomDim;
-    d_max_gcw    = mesh.d_max_gcw;
-    d_comm       = mesh.d_comm;
-    d_name       = mesh.d_name;
-    d_box        = mesh.d_box;
-    d_box_local  = mesh.d_box_local;
-    d_isPeriodic = mesh.d_isPeriodic;
-    d_globalSize = mesh.d_globalSize;
-    d_blockSize  = mesh.d_blockSize;
-    d_numBlocks  = mesh.d_numBlocks;
-    d_surfaceId  = mesh.d_surfaceId;
+    PhysicalDim    = mesh.PhysicalDim;
+    GeomDim        = mesh.GeomDim;
+    d_max_gcw      = mesh.d_max_gcw;
+    d_comm         = mesh.d_comm;
+    d_name         = mesh.d_name;
+    d_box          = mesh.d_box;
+    d_box_local    = mesh.d_box_local;
+    d_isPeriodic   = mesh.d_isPeriodic;
+    d_globalSize   = mesh.d_globalSize;
+    d_blockSize    = mesh.d_blockSize;
+    d_invBlockSize = mesh.d_invBlockSize;
+    d_numBlocks    = mesh.d_numBlocks;
+    d_surfaceId    = mesh.d_surfaceId;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
@@ -157,9 +159,10 @@ void BoxMesh::initialize()
             factors.pop_back();
         }
     }
-    d_blockSize = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
+    d_blockSize    = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
                     ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
                     ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
+    d_invBlockSize = { 1.0 / d_blockSize[0], 1.0 / d_blockSize[1], 1.0 / d_blockSize[2] };
     // Create the list of elements on each surface
     const std::array<int, 6> globalRange = { 0, std::max( d_globalSize[0] - 1, 0 ),
                                              0, std::max( d_globalSize[1] - 1, 0 ),

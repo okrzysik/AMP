@@ -372,8 +372,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
 //          if( nodes == 2 ) {
 #ifdef USE_EXT_SILO
-        std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-            AMP::Utilities::Writer::buildWriter( "Silo" );
+        auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
 
         siloWriter->registerVector(
             TemperatureInKelvin, manager, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );

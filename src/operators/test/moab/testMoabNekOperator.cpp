@@ -45,27 +45,18 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     // Log all nodes
     AMP::logAllNodes( "output_testNekOperator" );
 
-    // Build new database
+    // Build database
     AMP::pout << "Building Input Database" << std::endl;
-    std::shared_ptr<AMP::Database> nekDB( new AMP::Database( "Nek_DB" ) );
+    auto nekDB = std::make_shared<AMP::Database>( "Nek_DB" );
     nekDB->putScalar<std::string>( "NekProblemName", "pipe" );
 
     // Build operator params
-    typedef AMP::Operator::NekMoabOperatorParameters NekOpParams;
-    typedef std::shared_ptr<NekOpParams> SP_NekOpParams;
-
     AMP::pout << "Building Nek Operator Parameters" << std::endl;
-    SP_NekOpParams nekParams( new NekOpParams( nekDB ) );
+    auto nekParams = std::make_shared<AMP::Operator::NekMoabOperatorParameters>( nekDB );
 
     // Build operator
-    typedef AMP::Operator::NekMoabOperator NekOp;
-    typedef std::shared_ptr<NekOp> SP_NekOp;
-
-    typedef AMP::Operator::MoabBasedOperator MoabBasedOp;
-    typedef std::shared_ptr<MoabBasedOp> SP_MoabBasedOp;
-
     AMP::pout << "Building Nek Operator" << std::endl;
-    SP_MoabBasedOp nekOp( new NekOp( nekParams ) );
+    auto nekOp = std::make_shared<AMP::Operator::NekMoabOperator>( nekParams );
 
     // Call apply
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -85,40 +76,26 @@ static void nekPipeOperator( AMP::UnitTest *ut )
 
     // Create Mesh
     AMP::pout << "Creating AMP mesh" << std::endl;
-    typedef AMP::Mesh::MeshParameters MeshParams;
-    typedef std::shared_ptr<MeshParams> SP_MeshParams;
-
-    typedef AMP::Mesh::Mesh AMPMesh;
-    typedef AMP::Mesh::Mesh::shared_ptr SP_AMPMesh;
-
-    SP_MeshParams meshParams( new MeshParams( meshDB ) );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDB );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    SP_AMPMesh mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
 
     // Create Parameters for Map Operator
     AMP::pout << "Creating map operator" << std::endl;
-    typedef AMP::Operator::MoabMapOperatorParameters MoabMapParams;
-    typedef std::shared_ptr<MoabMapParams> SP_MoabMapParams;
-
-    typedef AMP::Operator::MoabMapOperator MoabMap;
-    typedef std::shared_ptr<MoabMap> SP_MoabMap;
-
     nekDB->putScalar<std::string>( "MoabMapVariable", "VPRESS" );
     nekDB->putScalar<std::string>( "InterpolateToType", "GaussPoint" );
-    SP_MoabMapParams mapParams( new MoabMapParams( nekDB ) );
+    auto mapParams = std::make_shared<AMP::Operator::MoabMapOperatorParameters>( nekDB );
     mapParams->setMoabOperator( nekOp );
     mapParams->setMesh( mesh );
 
     AMP::pout << "Creating GP-Based Moab Map Operator" << std::endl;
-    SP_MoabMap moabGPMap( new MoabMap( mapParams ) );
+    auto moabGPMap = std::make_shared<AMP::Operator::MoabMapOperator>( mapParams );
 
     // Create variable to hold pressure data
-    typedef AMP::LinearAlgebra::Variable AMPVar;
-    typedef std::shared_ptr<AMPVar> SP_AMPVar;
-
-    SP_AMPVar allGPPressures( new AMPVar( "AllGaussPointPressures" ) );
-    SP_AMPVar allNodePressures( new AMPVar( "AllNodalPressures" ) );
+    auto allGPPressures =
+        std::make_shared<AMP::LinearAlgebra::Variable>( "AllGaussPointPressures" );
+    auto allNodePressures = std::make_shared<AMP::LinearAlgebra::Variable>( "AllNodalPressures" );
 
     // Create DOF managers
     size_t DOFsPerElement    = 8;
@@ -126,18 +103,14 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     int gaussPointGhostWidth = 1;
     int nodalGhostWidth      = 1;
     bool split               = true;
-    std::shared_ptr<AMP::Discretization::DOFManager> gaussPointDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
-    std::shared_ptr<AMP::Discretization::DOFManager> nodalDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
+    auto gaussPointDofMap    = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+    auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
     // Have mesh manager create vector over all meshes
-    AMP::LinearAlgebra::Vector::shared_ptr r_gp =
-        AMP::LinearAlgebra::createVector( gaussPointDofMap, allGPPressures );
-    AMP::LinearAlgebra::Vector::shared_ptr r_node =
-        AMP::LinearAlgebra::createVector( nodalDofMap, allNodePressures );
+    auto r_gp   = AMP::LinearAlgebra::createVector( gaussPointDofMap, allGPPressures );
+    auto r_node = AMP::LinearAlgebra::createVector( nodalDofMap, allNodePressures );
 
     AMP::pout << "Gauss Point MultiVector size: " << r_gp->getGlobalSize() << std::endl;
     AMP::pout << "Nodal MultiVector size: " << r_node->getGlobalSize() << std::endl;
@@ -147,7 +120,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
 
     AMP::pout << "Creating Node-Based Moab Map Operator" << std::endl;
     nekDB->putScalar<std::string>( "InterpolateToType", "GeomType::Vertex" );
-    SP_MoabMap moabNodeMap( new MoabMap( mapParams ) );
+    auto moabNodeMap = std::make_shared<MoabMap>( mapParams );
 
     moabNodeMap->apply( nullVec, nullVec, r_node, 0.0, 0.0 );
 
@@ -187,8 +160,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
         // How about some output?
 
 #ifdef USE_EXT_SILO
-    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-        AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Volume, "AllGaussPointPressures" );
     siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );

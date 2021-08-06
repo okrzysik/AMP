@@ -293,7 +293,7 @@ void structuredMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &
     BoxMesh::MeshElementIndex index[27];
     getNeighborIndex( N, index );
     // Get the neighbor elements
-    neighbors.resize( N );
+    neighbors.reserve( N );
     bool periodic[3];
     int size[3];
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
@@ -322,9 +322,7 @@ void structuredMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &
             }
         }
         if ( in_mesh )
-            neighbors[i].reset( new structuredMeshElement( elem, d_mesh ) );
-        else if ( d_index.type() != GeomType::Vertex )
-            neighbors[i].reset();
+            neighbors.push_back( std::make_shared<structuredMeshElement>( elem, d_mesh ) );
     }
 }
 void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const

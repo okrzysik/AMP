@@ -1,0 +1,17 @@
+Mesh {
+	MeshName = "Parallelepiped"
+	MeshType = "AMP"
+	Generator = "Parallelepiped"
+	Size = 20, 20, 20
+    a = 1, 0, 0
+    b = 0, 1, 0
+    c = 0.2, 0, 1
+    static = TRUE
+}
+	
+
+GradientOperator{
+    name = "GradientOperator" 
+    InputVariable = "Temp"
+    OutputVariable = "grad_T"
+}

@@ -80,8 +80,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data
-    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-        AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector(

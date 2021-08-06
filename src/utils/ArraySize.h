@@ -91,6 +91,7 @@ public:
             return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
         } else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
+            return 0;
         }
     }
 
@@ -106,6 +107,7 @@ public:
             return k * ( i / k + static_cast<TYPE>( index ) );
         } else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
+            return index;
         }
     }
 

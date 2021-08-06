@@ -50,7 +50,7 @@ static void myTest( AMP::UnitTest *ut )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
 
     // Create the DOFManagers
     auto NodalScalarDOF =
