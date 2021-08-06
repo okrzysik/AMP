@@ -37,29 +37,27 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
     // Parse input file
-    std::shared_ptr<AMP::Database> inputDatabase( new AMP::Database( "input_db" ) );
+    auto inputDatabase = std::make_shared<AMP::Database>( "input_db" );
     AMP::Database::parseInputFile( inputFile, inputDatabase );
 
     // Read the mesh
     AMP::pout << "--------------------\n";
     AMP::pout << "    LOADING MESH    \n";
     AMP::pout << "--------------------\n";
-    AMP::Database::shared_ptr meshDatabase = inputDatabase->getDatabase( "Mesh" );
-    AMP::Mesh::std::shared_ptr<MeshParameters> meshParams(
-        new AMP::Mesh::MeshParameters( meshDatabase ) );
+    auto meshDatabase = inputDatabase->getDatabase( "Mesh" );
+    auto meshParams   = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
-    AMP::Mesh::Mesh::shared_ptr mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // Subset the mesh
-    AMP::Mesh::Mesh::shared_ptr cellSandwichMesh = mesh->Subset( "CellSandwich" );
-    AMP::Mesh::Mesh::shared_ptr CCMesh           = mesh->Subset( "CellCurrentCollectors" );
+    auto cellSandwichMesh = mesh->Subset( "CellSandwich" );
+    auto CCMesh           = mesh->Subset( "CellCurrentCollectors" );
 
     // Distribute degrees of freedom
     int const ghostWidth = 1;
     bool const split     = true;
-    std::shared_ptr<AMP::Discretization::DOFManager> phiDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 1, split );
+    auto phiDofMap       = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 1, split );
 
     //    std::shared_ptr<AMP::Discretization::DOFManager> eectDofMap =
     //        AMP::Discretization::simpleDOFManager::create(
@@ -69,37 +67,23 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     AMP::pout << "------------------------------------\n";
     AMP::pout << "     BUILD VECTORS AND FILL THEM    \n";
     AMP::pout << "------------------------------------\n";
-    AMP::LinearAlgebra::Variable::shared_ptr potentialVariable(
-        new AMP::LinearAlgebra::Variable( "Potential" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr potentialMapVec =
-        AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr potentialSolVec =
-        AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr potentialResVec =
-        AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
-    AMP::LinearAlgebra::Vector::shared_ptr potentialRhsVec =
-        AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
+    auto potentialVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Potential" );
+    auto potentialMapVec   = AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
+    auto potentialSolVec   = AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
+    auto potentialResVec   = AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
+    auto potentialRhsVec   = AMP::LinearAlgebra::createVector( phiDofMap, potentialVariable );
     /*
-        AMP::LinearAlgebra::Variable::shared_ptr batteryVariables(
-            new AMP::LinearAlgebra::Variable( "Battery" ) );
-        AMP::LinearAlgebra::Vector::shared_ptr BatterySolVec =
-            AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
-        AMP::LinearAlgebra::Vector::shared_ptr BatteryResVec =
-            AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
-        AMP::LinearAlgebra::Vector::shared_ptr BatteryMapVec =
-            AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
-        AMP::LinearAlgebra::Vector::shared_ptr BatteryRhsVec =
-            AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
-
-        AMP::LinearAlgebra::Vector::shared_ptr ElectrodeSolVec =
-            BatterySolVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
-        AMP::LinearAlgebra::Vector::shared_ptr ElectrodeMapVec =
-            BatteryMapVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
+    auto batteryVariables = std::make_shared<AMP::LinearAlgebra::Variable>( "Battery" );
+    auto BatterySolVec   = AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
+    auto BatteryResVec   = AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
+    auto BatteryMapVec   = AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
+    auto BatteryRhsVec   = AMP::LinearAlgebra::createVector( eectDofMap, batteryVariables, split );
+    auto ElectrodeSolVec = BatterySolVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
+    autoElectrodeMapVec  = BatteryMapVec->select( AMP::LinearAlgebra::VS_Stride( 3, 5 ), "V4" );
     */
     //---------------------------------------------------
 
-    std::shared_ptr<AMP::Utilities::Writer> siloWriter =
-        AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     //    siloWriter->registerMesh( mesh );
     //    siloWriter->setDecomposition( 1 );
     siloWriter->registerVector(
@@ -107,33 +91,28 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     siloWriter->registerVector(
         potentialSolVec, mesh, AMP::Mesh::GeomType::Vertex, "potentialSolVec" );
     /*
-        siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex,
-       "batteryMapVec" );
-        siloWriter->registerVector( ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex,
-       "batterySolVec" );
+    siloWriter->registerVector( ElectrodeMapVec, mesh, AMP::Mesh::GeomType::Vertex, "batteryMapVec"
+    ); siloWriter->registerVector( ElectrodeSolVec, mesh, AMP::Mesh::GeomType::Vertex,
+    "batterySolVec" );
 
-        //---------------------------------------------------
+    //---------------------------------------------------
 
-        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiSolVec =
-            AMP::LinearAlgebra::MultiVector::create( "MultiSolVec", globalComm );
-        multiSolVec->addVector( BatterySolVec );
-        multiSolVec->addVector( potentialSolVec );
+    auto multiSolVec = AMP::LinearAlgebra::MultiVector::create( "MultiSolVec", globalComm );
+    multiSolVec->addVector( BatterySolVec );
+    multiSolVec->addVector( potentialSolVec );
 
-        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiResVec =
-            AMP::LinearAlgebra::MultiVector::create( "MultiResVec", globalComm );
-        multiResVec->addVector( BatteryResVec );
-        multiResVec->addVector( potentialResVec );
+    auto multiResVec = AMP::LinearAlgebra::MultiVector::create( "MultiResVec", globalComm );
+    multiResVec->addVector( BatteryResVec );
+    multiResVec->addVector( potentialResVec );
 
-        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiRhsVec =
-            AMP::LinearAlgebra::MultiVector::create( "MultiRhsVec", globalComm );
-        multiRhsVec->addVector( BatteryRhsVec );
-        multiRhsVec->addVector( potentialRhsVec );
+    auto multiRhsVec = AMP::LinearAlgebra::MultiVector::create( "MultiRhsVec", globalComm );
+    multiRhsVec->addVector( BatteryRhsVec );
+    multiRhsVec->addVector( potentialRhsVec );
 
-        // Make new vectors
-        std::shared_ptr<AMP::LinearAlgebra::MultiVector> multiMapVec =
-            AMP::LinearAlgebra::MultiVector::create( "MultiMapVec", globalComm );
-        multiMapVec->addVector( BatteryMapVec );
-        multiMapVec->addVector( potentialMapVec );
+    // Make new vectors
+    auto multiMapVec = AMP::LinearAlgebra::MultiVector::create( "MultiMapVec", globalComm );
+    multiMapVec->addVector( BatteryMapVec );
+    multiMapVec->addVector( potentialMapVec );
     */
     potentialSolVec->setToScalar( -1.0 );
     potentialMapVec->setToScalar( -2.0 ); // TODO: possible issue here...
@@ -208,9 +187,8 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     std::shared_ptr<AMP::Database> nullDatabase;
     // INTERFACE WITH ANODE
     AMP::pout << "interface CC cellSandwich\n";
-    std::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
-        anodeCCCellSandwichMapOperatorParams(
-            new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
+    auto anodeCCCellSandwichMapOperatorParams =
+        std::make_shared<AMP::Operator::MultiDofDTKMapOperatorParameters>( nullDatabase );
     anodeCCCellSandwichMapOperatorParams->d_globalComm    = globalComm;
     anodeCCCellSandwichMapOperatorParams->d_Mesh1         = CCMesh;
     anodeCCCellSandwichMapOperatorParams->d_BoundaryID1   = 3;
@@ -224,14 +202,13 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     anodeCCCellSandwichMapOperatorParams->d_StrideLength2 = 1;
     anodeCCCellSandwichMapOperatorParams->d_SourceVector  = potentialSolVec;
     anodeCCCellSandwichMapOperatorParams->d_TargetVector  = potentialMapVec;
-    std::shared_ptr<AMP::Operator::Operator> anodeCCCellSandwichMapOperator(
-        new AMP::Operator::MultiDofDTKMapOperator( anodeCCCellSandwichMapOperatorParams ) );
+    auto anodeCCCellSandwichMapOperator = std::make_shared<AMP::Operator::MultiDofDTKMapOperator>(
+        anodeCCCellSandwichMapOperatorParams );
 
     // INTERFACE WITH CATHODE
     AMP::pout << "interface cellSandwich cathodeCC\n";
-    std::shared_ptr<AMP::Operator::MultiDofDTKMapOperatorParameters>
-        cellSandwichCathodeCCMapOperatorParams(
-            new AMP::Operator::MultiDofDTKMapOperatorParameters( nullDatabase ) );
+    auto cellSandwichCathodeCCMapOperatorParams =
+        std::make_shared<AMP::Operator::MultiDofDTKMapOperatorParameters>( nullDatabase );
     cellSandwichCathodeCCMapOperatorParams->d_globalComm    = globalComm;
     cellSandwichCathodeCCMapOperatorParams->d_Mesh1         = cellSandwichMesh;
     cellSandwichCathodeCCMapOperatorParams->d_BoundaryID1   = 2;
@@ -245,8 +222,8 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     cellSandwichCathodeCCMapOperatorParams->d_StrideLength2 = 1;
     cellSandwichCathodeCCMapOperatorParams->d_SourceVector  = potentialSolVec;
     cellSandwichCathodeCCMapOperatorParams->d_TargetVector  = potentialMapVec;
-    std::shared_ptr<AMP::Operator::Operator> cellSandwichCathodeCCMapOperator(
-        new AMP::Operator::MultiDofDTKMapOperator( cellSandwichCathodeCCMapOperatorParams ) );
+    auto cellSandwichCathodeCCMapOperator = std::make_shared<AMP::Operator::MultiDofDTKMapOperator>(
+        cellSandwichCathodeCCMapOperatorParams );
 
     // apply the map.
     AMP::pout << "----------------------\n";
@@ -275,7 +252,7 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     std::string whatAmIChecking;
 
 
-    std::vector<AMP::Mesh::MeshID> meshIDs = mesh->getBaseMeshIDs();
+    auto meshIDs = mesh->getBaseMeshIDs();
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         AMP::Mesh::Mesh::shared_ptr adapter = mesh->Subset( meshIDs[meshIndex] );
         if ( adapter.get() == NULL )
@@ -284,10 +261,8 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
         std::string meshName = adapter->getName();
         AMP::LinearAlgebra::VS_Mesh meshSelector( adapter );
 
-        AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetPVec =
-            potentialMapVec->constSelect( meshSelector, "Potential" );
-        //    AMP::LinearAlgebra::Vector::const_shared_ptr commSubsetEVec =
-        //    ElectrodeMapVec->constSelect(meshSelector, "V4");
+        auto commSubsetPVec = potentialMapVec->constSelect( meshSelector, "Potential" );
+        // auto commSubsetEVec = ElectrodeMapVec->constSelect(meshSelector, "V4");
 
         if ( meshName.compare( "CellCurrentCollectors" ) == 0 ) {
             node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3, 0 );

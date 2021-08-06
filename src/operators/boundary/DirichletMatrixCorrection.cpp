@@ -120,8 +120,8 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
     AMP_ASSERT( !d_applyMatrixCorrectionWasCalled );
     d_applyMatrixCorrectionWasCalled = true;
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec             = d_inputMatrix->getRightVector();
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = inVec->getDOFManager();
+    auto inVec   = d_inputMatrix->getRightVector();
+    auto dof_map = inVec->getDOFManager();
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getRightDOFManager() ) );
 
@@ -180,7 +180,7 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
     if ( !d_skipRHSsetCorrection ) {
         int numIds = d_dofIds.size();
         char key[100];
-        std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+        auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
         tmp_db->putScalar( "skip_params", false );
         tmp_db->putScalar( "isAttachedToVolumeOperator", false );
         tmp_db->putScalar( "number_of_ids", numIds );
@@ -203,8 +203,7 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
             } // end for i
         }     // end for j
 
-        std::shared_ptr<DirichletVectorCorrectionParameters> setDispOpParams(
-            new DirichletVectorCorrectionParameters( tmp_db ) );
+        auto setDispOpParams = std::make_shared<DirichletVectorCorrectionParameters>( tmp_db );
         setDispOpParams->d_variable = d_variable;
         setDispOpParams->d_Mesh     = d_Mesh;
 

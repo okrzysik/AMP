@@ -237,7 +237,7 @@ void NeumannVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_pt
 std::shared_ptr<OperatorParameters>
     NeumannVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
     tmp_db->putScalar( "FE_ORDER", "FIRST" );
     tmp_db->putScalar( "FE_FAMILY", "LAGRANGE" );
@@ -270,8 +270,7 @@ std::shared_ptr<OperatorParameters>
 
     tmp_db->putScalar( "skip_params", true );
 
-    std::shared_ptr<NeumannVectorCorrectionParameters> outParams(
-        new NeumannVectorCorrectionParameters( tmp_db ) );
+    auto outParams = std::make_shared<NeumannVectorCorrectionParameters>( tmp_db );
 
     return outParams;
 }

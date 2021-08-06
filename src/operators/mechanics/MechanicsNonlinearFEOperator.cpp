@@ -14,8 +14,8 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params )
     : NonlinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database!" );
+    AMP_INSIST( params, "NULL parameter!" );
+    AMP_INSIST( params->d_db, "NULL database!" );
 
     d_resetReusesRadialReturn = params->d_db->getWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
     d_jacobianReusesRadialReturn =
@@ -81,8 +81,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
         }
         if ( d_isActive[i] ) {
             std::string varName = activeInpVar_db->getString( keysForVariables[i] );
-            AMP::LinearAlgebra::Variable::shared_ptr dummyVar(
-                new AMP::LinearAlgebra::Variable( varName ) );
+            auto dummyVar       = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
             d_inpVariables->setVariable( i, dummyVar );
             if ( d_isFrozen[i] ) {
                 if ( params->d_FrozenVec[i] != nullptr ) {
@@ -440,34 +439,32 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
         std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
 
     // set up a database for the linear operator params
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db->putScalar( "reset_reuses_matrix", true );
     tmp_db->putScalar( "isAttachedToNonlinearOperator", true );
     tmp_db->putScalar( "isNonlinearOperatorInitialized", true );
 
     // create the linear operator params
-    std::shared_ptr<MechanicsLinearFEOperatorParameters> outParams(
-        new MechanicsLinearFEOperatorParameters( tmp_db ) );
+    auto outParams = std::make_shared<MechanicsLinearFEOperatorParameters>( tmp_db );
 
     // If updated-lagrangian is being used, then displacement and other variable has to be passed to
-    // the linear element
-    // level.
+    // the linear element level.
     if ( d_useUpdatedLagrangian ) {
-        AMP::LinearAlgebra::Vector::shared_ptr displacementVector =
+        auto displacementVector =
             mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) ) );
         outParams->d_dispVec = displacementVector;
-        ( outParams->d_dispVec )
-            ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        outParams->d_dispVec->makeConsistent(
+            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     }
 
     if ( d_jacobianReusesRadialReturn == false ) {
-        AMP::LinearAlgebra::Vector::shared_ptr dispVector =
+        auto dispVector =
             mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) ) );
         setVector( Mechanics::DISPLACEMENT, dispVector );
 
         if ( d_isActive[Mechanics::TEMPERATURE] ) {
             if ( !( d_isFrozen[Mechanics::TEMPERATURE] ) ) {
-                AMP::LinearAlgebra::Vector::shared_ptr tempVector =
+                auto tempVector =
                     mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::TEMPERATURE ) ) );
                 setVector( Mechanics::TEMPERATURE, tempVector );
             }
@@ -475,7 +472,7 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
         if ( d_isActive[Mechanics::BURNUP] ) {
             if ( !( d_isFrozen[Mechanics::BURNUP] ) ) {
-                AMP::LinearAlgebra::Vector::shared_ptr burnVector =
+                auto burnVector =
                     mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::BURNUP ) ) );
                 setVector( Mechanics::BURNUP, burnVector );
             }
@@ -483,7 +480,7 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
         if ( d_isActive[Mechanics::OXYGEN_CONCENTRATION] ) {
             if ( !( d_isFrozen[Mechanics::OXYGEN_CONCENTRATION] ) ) {
-                AMP::LinearAlgebra::Vector::shared_ptr oxyVector = mySubsetVector(
+                auto oxyVector = mySubsetVector(
                     u, ( d_inpVariables->getVariable( Mechanics::OXYGEN_CONCENTRATION ) ) );
                 setVector( Mechanics::OXYGEN_CONCENTRATION, oxyVector );
             }
@@ -491,8 +488,7 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
         if ( d_isActive[Mechanics::LHGR] ) {
             if ( !( d_isFrozen[Mechanics::LHGR] ) ) {
-                AMP::LinearAlgebra::Variable::shared_ptr lhgrVar =
-                    d_inpVariables->getVariable( Mechanics::LHGR );
+                auto lhgrVar = d_inpVariables->getVariable( Mechanics::LHGR );
                 AMP::LinearAlgebra::Vector::shared_ptr lhgrVector = mySubsetVector( u, lhgrVar );
                 setVector( Mechanics::LHGR, lhgrVector );
             }
@@ -502,8 +498,8 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
         d_materialModel->preNonlinearJacobian();
 
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-        AMP::Mesh::MeshIterator end_el = el.end();
+        auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        auto end_el = el.end();
 
         for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
             if ( d_useUpdatedLagrangian ) {
@@ -528,10 +524,10 @@ void MechanicsNonlinearFEOperator::printStressAndStrain(
         init();
     }
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-    AMP::Mesh::MeshIterator end_el = el.end();
+    auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto end_el = el.end();
 
-    FILE *fp = fopen( fname.c_str(), "w" );
+    auto fp = fopen( fname.c_str(), "w" );
 
     AMP::LinearAlgebra::Variable::shared_ptr dispVar =
         d_inpVariables->getVariable( Mechanics::DISPLACEMENT );

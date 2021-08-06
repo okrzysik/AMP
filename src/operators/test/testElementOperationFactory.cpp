@@ -40,7 +40,7 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
                     "Key ''ElementOperation'' is missing!" );
         auto elemOp_db = innerInput_db->getDatabase( "ElementOperation" );
         auto name      = elemOp_db->getString( "name" );
-        std::shared_ptr<AMP::Operator::ElementOperation> elementOperation =
+        auto elementOperation =
             AMP::Operator::ElementOperationFactory::createElementOperation( elemOp_db );
 
         if ( name == "MechanicsLinearElement" ) {

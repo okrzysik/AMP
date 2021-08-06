@@ -176,7 +176,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
     auto qruleType   = libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( "QGAUSS" );
-    std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+    auto feType      = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
     libMeshEnums::Order qruleOrder = feType->default_quadrature_order();
     std::shared_ptr<libMesh::QBase> qrule(
         ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
@@ -220,15 +220,14 @@ PressureBoundaryOperator::PressureBoundaryOperator(
         elem = nullptr;
     } // end i
 
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
     AMP_ASSERT( params->d_db->keyExists( "Variable" ) );
     std::string varName = params->d_db->getString( "Variable" );
     tmp_db->putScalar( "Variable", varName );
     AMP_ASSERT( params->d_db->keyExists( "ResidualMode" ) );
     tmp_db->putScalar( "ResidualMode", ( params->d_db->getScalar<bool>( "ResidualMode" ) ) );
 
-    std::shared_ptr<TractionBoundaryOperatorParameters> tracOpParams(
-        new TractionBoundaryOperatorParameters( tmp_db ) );
+    auto tracOpParams              = std::make_shared<TractionBoundaryOperatorParameters>( tmp_db );
     tracOpParams->d_Mesh           = d_Mesh;
     tracOpParams->d_traction       = pressure;
     tracOpParams->d_volumeElements = recvVolElemList;

@@ -11,8 +11,8 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
 {
     auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( tmpParams );
 
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( params, "NULL parameters" );
+    AMP_INSIST( params->d_db, "NULL database" );
 
     bool skipParams = params->d_db->getWithDefault( "skip_params", false );
 
@@ -68,7 +68,7 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
 void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                        AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector( r, d_variable );
+    auto rInternal = mySubsetVector( r, d_variable );
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of rInternal entering DirichletVectorCorrection::apply is : "
@@ -93,13 +93,13 @@ void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
 
 void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal         = mySubsetVector( r, d_variable );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = rInternal->getDOFManager();
-    size_t numIds                                            = d_boundaryIds.size();
+    auto rInternal = mySubsetVector( r, d_variable );
+    auto dof_map   = rInternal->getDOFManager();
+    size_t numIds  = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
-        AMP::Mesh::MeshIterator bnd =
+        auto bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
@@ -119,9 +119,9 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
     std::shared_ptr<AMP::Discretization::DOFManager> dof_map = rInternal->getDOFManager();
     size_t numIds                                            = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
-        AMP::Mesh::MeshIterator bnd =
+        auto bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
@@ -143,13 +143,13 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
 void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal   = mySubsetVector( u, d_variable );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = uInternal->getDOFManager();
-    size_t numIds                                            = d_boundaryIds.size();
+    auto uInternal = mySubsetVector( u, d_variable );
+    auto dof_map   = uInternal->getDOFManager();
+    size_t numIds  = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
-        AMP::Mesh::MeshIterator bnd =
+        auto bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
@@ -171,11 +171,10 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
 std::shared_ptr<OperatorParameters>
     DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
     tmp_db->putScalar( "skip_params", true );
 
-    std::shared_ptr<DirichletMatrixCorrectionParameters> outParams(
-        new DirichletMatrixCorrectionParameters( tmp_db ) );
+    auto outParams = std::make_shared<DirichletMatrixCorrectionParameters>( tmp_db );
 
     return outParams;
 }
@@ -186,10 +185,8 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_pt
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
-            vec->select( meshSelector, ( vec->getVariable() )->getName() );
-        AMP::LinearAlgebra::Vector::shared_ptr varSubsetVec =
-            meshSubsetVec->subsetVectorForVariable( var );
+        auto meshSubsetVec = vec->select( meshSelector, ( vec->getVariable() )->getName() );
+        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
     } else {
         return vec->subsetVectorForVariable( var );
@@ -202,10 +199,8 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
-            vec->constSelect( meshSelector, ( vec->getVariable() )->getName() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr varSubsetVec =
-            meshSubsetVec->constSubsetVectorForVariable( var );
+        auto meshSubsetVec = vec->constSelect( meshSelector, ( vec->getVariable() )->getName() );
+        auto varSubsetVec  = meshSubsetVec->constSubsetVectorForVariable( var );
         return varSubsetVec;
     } else {
         return vec->constSubsetVectorForVariable( var );

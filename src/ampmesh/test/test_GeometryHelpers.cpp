@@ -3,7 +3,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 
+#include <chrono>
 #include <cmath>
+#include <iostream>
 #include <random>
 
 
@@ -42,14 +44,15 @@ static inline Point3D normalize( const Point3D &x )
 
 
 // Test the mapping to/from a logical circle
-void test_dist_line( AMP::UnitTest &ut )
+void test_dist_line( int N, AMP::UnitTest &ut )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<> dis( -50, 50 );
     // Test ray - line-segment intersection
     bool pass = true;
-    for ( int i = 0; i < 1000; i++ ) {
+    auto t1   = std::chrono::high_resolution_clock::now();
+    for ( int i = 0; i < N; i++ ) {
         // Generate an intersection point, then the rays and line segments
         Point pi  = { dis( gen ), dis( gen ) };
         Point p0  = { dis( gen ), dis( gen ) };
@@ -62,13 +65,16 @@ void test_dist_line( AMP::UnitTest &ut )
         double d2 = distanceToLine( p, dir, p0, p2 );
         double d3 = distanceToLine( p, -dir, p0, p2 );
         double d4 = distanceToLine( p, dir, p1, p0 );
-        pass      = pass && fabs( d - d1 ) < 1e-10;
+        pass      = pass && fabs( d - d1 ) < 1e-8;
         pass      = pass && d2 == std::numeric_limits<double>::infinity();
         pass      = pass && d3 == std::numeric_limits<double>::infinity();
-        pass      = pass && fabs( d - d4 ) < 1e-10;
-        if ( !( fabs( d - d1 ) < 1e-10 ) )
-            printf( "distanceToLine: %f %f\n", d, d1 );
+        pass      = pass && fabs( d - d4 ) < 1e-8;
+        if ( !( fabs( d - d1 ) < 1e-8 ) )
+            printf( "distanceToLine: %f %f %e\n", d, d1, d - d1 );
     }
+    auto t2    = std::chrono::high_resolution_clock::now();
+    int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
+    printf( "distanceToLine: %i ns\n", static_cast<int>( ns / ( 4 * N ) ) );
     if ( pass )
         ut.passes( "distanceToLine" );
     else
@@ -77,7 +83,7 @@ void test_dist_line( AMP::UnitTest &ut )
 
 
 // Test the mapping to/from a logical circle
-void test_map_logical_circle( AMP::UnitTest &ut )
+void test_map_logical_circle( int N, AMP::UnitTest &ut )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
@@ -85,7 +91,8 @@ void test_map_logical_circle( AMP::UnitTest &ut )
     const double r = 2.0;
     for ( int method = 1; method <= 3; method++ ) {
         bool pass = true;
-        for ( int i = 0; i < 10000; i++ ) {
+        auto t1   = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N; i++ ) {
             double x  = dis( gen );
             double y  = dis( gen );
             auto p    = map_logical_circle( r, method, x, y );
@@ -97,6 +104,9 @@ void test_map_logical_circle( AMP::UnitTest &ut )
                 printf(
                     "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
         }
+        auto t2    = std::chrono::high_resolution_clock::now();
+        int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
+        printf( "map_logical_circle - %i: %i ns\n", method, static_cast<int>( ns / ( 4 * N ) ) );
         if ( pass )
             ut.passes( "map_logical_circle - " + std::to_string( method ) );
         else
@@ -106,19 +116,20 @@ void test_map_logical_circle( AMP::UnitTest &ut )
 
 
 // Test the mapping to/from a regular polygon
-void test_map_logical_poly( AMP::UnitTest &ut )
+void test_map_logical_poly( int N, AMP::UnitTest &ut )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<> dis( 0, 1 );
     const double r = 2.3;
-    for ( int N = 3; N <= 10; N++ ) {
+    for ( int Np = 3; Np <= 10; Np++ ) {
         bool pass = true;
-        for ( int i = 0; i < 10000; i++ ) {
+        auto t1   = std::chrono::high_resolution_clock::now();
+        for ( int i = 0; i < N; i++ ) {
             double x  = dis( gen );
             double y  = dis( gen );
-            auto p    = map_logical_poly( N, r, x, y );
-            auto p2   = map_poly_logical( N, r, p.first, p.second );
+            auto p    = map_logical_poly( Np, r, x, y );
+            auto p2   = map_poly_logical( Np, r, p.first, p.second );
             double r2 = sqrt( p.first * p.first + p.second * p.second );
             pass      = pass && r2 < r + 1e-15;
             pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
@@ -126,23 +137,27 @@ void test_map_logical_poly( AMP::UnitTest &ut )
                 printf(
                     "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
         }
+        auto t2    = std::chrono::high_resolution_clock::now();
+        int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
+        printf( "map_logical_poly - %i: %i ns\n", Np, static_cast<int>( ns / N ) );
         if ( pass )
-            ut.passes( "map_logical_poly - " + std::to_string( N ) );
+            ut.passes( "map_logical_poly - " + std::to_string( Np ) );
         else
-            ut.failure( "map_logical_poly - " + std::to_string( N ) );
+            ut.failure( "map_logical_poly - " + std::to_string( Np ) );
     }
 }
 
 
 // Test the mapping to/from the surface of a sphere
-void test_map_logical_sphere_surface( AMP::UnitTest &ut )
+void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
     std::uniform_real_distribution<> dis( 0, 1 );
     const double r = 2.0;
     bool pass      = true;
-    for ( int i = 0; i < 10000; i++ ) {
+    auto t1        = std::chrono::high_resolution_clock::now();
+    for ( int i = 0; i < N; i++ ) {
         double x  = dis( gen );
         double y  = dis( gen );
         auto p    = map_logical_sphere_surface( r, x, y );
@@ -153,6 +168,9 @@ void test_map_logical_sphere_surface( AMP::UnitTest &ut )
         if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )
             printf( "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
     }
+    auto t2    = std::chrono::high_resolution_clock::now();
+    int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
+    printf( "map_logical_sphere_surface: %i ns\n", static_cast<int>( ns / N ) );
     if ( pass )
         ut.passes( "map_logical_sphere_surface" );
     else
@@ -207,7 +225,7 @@ static std::tuple<std::array<Point3D, 3>, Point3D, Point3D, double> createTriRay
 
 
 // Test ray-triangle intersection
-void test_ray_triangle_intersection( AMP::UnitTest &ut )
+void test_ray_triangle_intersection( int N, AMP::UnitTest &ut )
 {
     bool pass = true;
     // Create some sample triangles
@@ -229,20 +247,24 @@ void test_ray_triangle_intersection( AMP::UnitTest &ut )
     pass       = pass && fabs( d21 - 1.0 ) < 1e-12;
     pass       = pass && fabs( d22 - 1.0 ) < 1e-12;
     pass       = pass && d23 == std::numeric_limits<double>::infinity();
-    for ( int i = 0; i < 1000; i++ ) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for ( int i = 0; i < N; i++ ) {
         auto [tri, pos, dir, d] = createTriRayPlane();
         double d2               = distanceToTriangle( tri, pos, dir );
         if ( fabs( d - d2 ) > 1e-8 ) {
             pass = false;
         }
     }
-    for ( int i = 0; i < 1000; i++ ) {
+    for ( int i = 0; i < N; i++ ) {
         auto [tri, pos, dir, d] = createTriRayVol();
         double d2               = distanceToTriangle( tri, pos, dir );
         if ( fabs( d - d2 ) > 1e-8 ) {
             pass = false;
         }
     }
+    auto end   = std::chrono::high_resolution_clock::now();
+    int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( end - start ).count();
+    printf( "ray-triangle intersection: %i ns\n", static_cast<int>( ns / ( 2 * N ) ) );
     if ( pass ) {
         ut.passes( "ray-triangle intersection" );
     } else {
@@ -260,11 +282,11 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
 
     // Run the tests
-    test_dist_line( ut );
-    test_map_logical_poly( ut );
-    test_map_logical_circle( ut );
-    test_map_logical_sphere_surface( ut );
-    test_ray_triangle_intersection( ut );
+    test_dist_line( 10000, ut );
+    test_map_logical_poly( 10000, ut );
+    test_map_logical_circle( 10000, ut );
+    test_map_logical_sphere_surface( 10000, ut );
+    test_ray_triangle_intersection( 1000, ut );
 
     // Print the results and return
     ut.report();

@@ -123,7 +123,7 @@ void FlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 std::shared_ptr<OperatorParameters>
 FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
     tmp_db->putScalar( "name", "FlowFrapconOperator" );
     tmp_db->putScalar( "numpoints", d_numpoints );
@@ -135,8 +135,7 @@ FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_sh
     tmp_db->putScalar( "Reynolds", d_Re );
     tmp_db->putScalar( "Prandtl", d_Pr );
 
-    std::shared_ptr<FlowFrapconJacobianParameters> outParams(
-        new FlowFrapconJacobianParameters( tmp_db ) );
+    auto outParams              = std::make_shared<FlowFrapconJacobianParameters>( tmp_db );
     auto u                      = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
     outParams->d_frozenSolution = subsetInputVector( u );
     return outParams;

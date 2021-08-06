@@ -19,7 +19,6 @@ namespace Steel316_MSRZC_09_NS {
 
 //=================== Constants =====================================================
 
-static const char *name_base = "Steel316_MSRZC_09";
 static const char *source = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zubelewicz, Petrica "
                             "Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
 

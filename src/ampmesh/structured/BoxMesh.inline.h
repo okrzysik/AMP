@@ -178,9 +178,9 @@ inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) 
     int i  = index.index( 0 );
     int j  = index.index( 1 );
     int k  = index.index( 2 );
-    int px = std::min( i / d_blockSize[0], d_numBlocks[0] - 1 );
-    int py = std::min( j / d_blockSize[1], d_numBlocks[1] - 1 );
-    int pz = std::min( k / d_blockSize[2], d_numBlocks[2] - 1 );
+    int px = std::min<int>( i * d_invBlockSize[0] + 1e-12, d_numBlocks[0] - 1 );
+    int py = std::min<int>( j * d_invBlockSize[1] + 1e-12, d_numBlocks[1] - 1 );
+    int pz = std::min<int>( k * d_invBlockSize[2] + 1e-12, d_numBlocks[2] - 1 );
     i -= d_blockSize[0] * px;
     j -= d_blockSize[1] * py;
     k -= d_blockSize[2] * pz;
@@ -193,12 +193,12 @@ inline MeshElementID BoxMesh::convert( const BoxMesh::MeshElementIndex &index ) 
 }
 inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID &id ) const
 {
-    int rank    = id.owner_rank();
-    int proc[3] = { rank % d_numBlocks[0],
+    int rank         = id.owner_rank();
+    int proc[3]      = { rank % d_numBlocks[0],
                     rank / d_numBlocks[0] % d_numBlocks[1],
                     rank / ( d_numBlocks[0] * d_numBlocks[1] ) };
-    size_t ijk  = id.local_id();
-    int i       = ijk % ( d_blockSize[0] + 1 );
+    unsigned int ijk = id.local_id();
+    int i            = ijk % ( d_blockSize[0] + 1 );
     ijk /= ( d_blockSize[0] + 1 );
     int j = ijk % ( d_blockSize[1] + 1 );
     ijk /= ( d_blockSize[1] + 1 );

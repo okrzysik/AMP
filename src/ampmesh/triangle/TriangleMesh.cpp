@@ -1256,18 +1256,21 @@ void TriangleMesh<NG, NP>::getElementsIDs( const ElementID &id,
 template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::getNeighborIDs( const ElementID &id, std::vector<ElementID> &IDs ) const
 {
+    IDs.clear();
     if ( !id.is_local() )
         AMP_ERROR( "Getting neighbors for non-owned elements is not supported" );
     // Check if we are dealing with the largest geometric type
     auto type = id.type();
     if ( static_cast<size_t>( type ) == NG ) {
-        IDs.resize( NG + 1 );
-        for ( size_t i = 0; i <= NG; i++ )
-            IDs[i] = d_neighbors[id.local_id()][i];
+        IDs.reserve( NG + 1 );
+        for ( size_t i = 0; i <= NG; i++ ) {
+            const auto &neighbor = d_neighbors[id.local_id()][i];
+            if ( !neighbor.isNull() && neighbor != id )
+                IDs.push_back( neighbor );
+        }
         return;
     }
     // The neighbors are any elements that share a parent
-    IDs.clear();
     IDs.reserve( 20 );
     int N        = n_Simplex_elements[NG][static_cast<size_t>( type )];
     auto parents = getElementParents( id, static_cast<GeomType>( NG ) );

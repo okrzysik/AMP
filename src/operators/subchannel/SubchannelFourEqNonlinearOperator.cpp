@@ -530,8 +530,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             continue;
 
         // extract subchannel cells from d_elem[isub]
-        std::shared_ptr<std::vector<AMP::Mesh::MeshElement>> subchannelElements(
-            new std::vector<AMP::Mesh::MeshElement>() );
+        auto subchannelElements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
         subchannelElements->reserve( d_numSubchannels );
         for ( const auto &ielem : d_elem[isub] ) {
             subchannelElements->push_back( ielem );
@@ -1229,12 +1228,11 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
 std::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u_in )
 {
-    std::shared_ptr<AMP::Database> tmp_db( new AMP::Database( "Dummy" ) );
+    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
 
     tmp_db->putScalar( "name", "SubchannelFourEqLinearOperator" );
 
-    std::shared_ptr<SubchannelOperatorParameters> outParams(
-        new SubchannelOperatorParameters( tmp_db ) );
+    auto outParams              = std::make_shared<SubchannelOperatorParameters>( tmp_db );
     outParams->d_db             = d_params->d_db;
     auto u                      = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
     outParams->d_frozenSolution = subsetInputVector( u );
