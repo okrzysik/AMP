@@ -62,6 +62,7 @@ template Array<std::complex<float>,FunctionTable> Array<std::complex<float>,Func
 template Array<std::complex<double>,FunctionTable> Array<std::complex<double>,FunctionTable>::subset(std::vector<unsigned long> const&) const;
 template bool Array<std::complex<float>,FunctionTable>::NaNs() const;
 template bool Array<std::complex<double>,FunctionTable>::NaNs() const;
+template void AMP::Array<std::complex<double>, AMP::FunctionTable>::rand();
 
 
 /********************************************************
