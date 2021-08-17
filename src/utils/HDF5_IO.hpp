@@ -295,7 +295,7 @@ void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::
         plist       = H5Pcreate( H5P_DATASET_CREATE );
         auto status = H5Pset_layout( plist, H5D_COMPACT );
         AMP_ASSERT( status == 0 );
-    } else if ( std::is_same<T, double>::value || std::is_same<T, float>::value ) {
+    } else {
         // Use compression if availible
         plist = createChunk( dim, defaultCompression( fid ) );
     }

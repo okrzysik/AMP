@@ -33,7 +33,8 @@ public:
     //! Copy the data
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
-    virtual void print( std::ostream &os, const std::string_view &indent = "" ) const = 0;
+    virtual void
+    print( std::ostream &os, const std::string_view &indent = "", bool sort = true ) const = 0;
     //! Return the native data type
     virtual std::string_view type() const = 0;
     //! Return true if the type is a floating point type
@@ -156,10 +157,13 @@ public:
     bool keyExists( const std::string_view &key ) const;
 
 
-    /**
-     * Return all keys in the database.
+    /** \brief Return all keys in the database.
+     * \details  This function will return the list of the keys availible.
+     *    The user may specify if they want the keys to be returned in
+     *    sorted order.
+     * \param[in] sort         Sort the keys (default is true)
      */
-    std::vector<std::string> getAllKeys() const;
+    std::vector<std::string> getAllKeys( bool sort = true ) const;
 
 
     //! Return true if the database is empty
@@ -391,7 +395,8 @@ public:
      * @param os        Output stream
      * @param indent    Indenting to use before each line
      */
-    void print( std::ostream &os, const std::string_view &indent = "" ) const override;
+    void
+    print( std::ostream &os, const std::string_view &indent = "", bool sort = true ) const override;
 
 
     //! Print the type
@@ -400,9 +405,11 @@ public:
 
     /**
      * Print the data to a string
+     * @param indent    Optional prefix
+     * @param indent    Optional flag specifying if the data should be returned in sorted order
      * @return          Output string
      */
-    std::string print( const std::string_view &indent = "" ) const;
+    std::string print( const std::string_view &indent = "", bool sort = true ) const;
 
 
 #ifdef USE_SAMRAI

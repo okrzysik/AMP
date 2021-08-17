@@ -212,6 +212,35 @@ void checkResults( const std::string &str,
 }
 
 
+// Test compression
+void testCompression( AMP::UnitTest &ut )
+{
+    // Write data using different compression formats
+    AMP::Array<int> zeros1( 500, 1000 );
+    AMP::Array<double> zeros2( 500, 500 );
+    AMP::Array<std::complex<double>> zeros3( 500, 200 );
+    zeros1.fill( 0.0 );
+    zeros2.fill( 0.0 );
+    zeros3.fill( 0.0 );
+    auto fid1 = AMP::openHDF5( "test_HDF5.none.hdf5", "w", AMP::Compression::None );
+    auto fid2 = AMP::openHDF5( "test_HDF5.gzip.hdf5", "w", AMP::Compression::GZIP );
+    auto fid3 = AMP::openHDF5( "test_HDF5.szip.hdf5", "w", AMP::Compression::SZIP );
+    AMP::writeHDF5( fid1, "zeros1", zeros1 );
+    AMP::writeHDF5( fid1, "zeros2", zeros2 );
+    AMP::writeHDF5( fid1, "zeros3", zeros3 );
+    AMP::writeHDF5( fid2, "zeros1", zeros1 );
+    AMP::writeHDF5( fid2, "zeros2", zeros2 );
+    AMP::writeHDF5( fid2, "zeros3", zeros3 );
+    AMP::writeHDF5( fid3, "zeros1", zeros1 );
+    AMP::writeHDF5( fid3, "zeros2", zeros2 );
+    AMP::writeHDF5( fid3, "zeros3", zeros3 );
+    AMP::closeHDF5( fid1 );
+    AMP::closeHDF5( fid2 );
+    AMP::closeHDF5( fid3 );
+    NULL_USE( ut );
+}
+
+
 // Main
 int main( int argc, char *argv[] )
 {
@@ -246,6 +275,9 @@ int main( int argc, char *argv[] )
     readHDF52( fid, data3 );
     AMP::closeHDF5( fid );
     checkResults( "readHDF5 (2): ", data, data3, ut );
+
+    // Test compression
+    testCompression( ut );
 
     // Return
     data.clear();

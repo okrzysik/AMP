@@ -384,15 +384,25 @@ hid_t openHDF5( const std::string_view &filename, const char *mode, Compression 
         AMP_ERROR( "Invalid mode for opening HDF5 file" );
     }
     if ( strcmp( mode, "w" ) == 0 ) {
+        int defaultCompression = 0;
         if ( compress == Compression::None ) {
-            writeHDF5<int>( fid, "DefaultCompression", 0 );
+            // No compression
         } else if ( compress == Compression::GZIP ) {
-            writeHDF5<int>( fid, "DefaultCompression", 1 );
+            // Use gzip (if availible)
+            if ( H5Zfilter_avail( H5Z_FILTER_DEFLATE ) )
+                defaultCompression = 1;
+            else
+                AMP::perr << "HDF5 gzip filter is not availible" << std::endl;
         } else if ( compress == Compression::SZIP ) {
-            writeHDF5<int>( fid, "DefaultCompression", 2 );
+            // Use szip (if availible)
+            if ( H5Zfilter_avail( H5Z_FILTER_SZIP ) )
+                defaultCompression = 2;
+            else
+                AMP::perr << "HDF5 szip filter is not availible" << std::endl;
         } else {
             AMP_ERROR( "Internal error" );
         }
+        writeHDF5<int>( fid, "DefaultCompression", defaultCompression );
     }
     // H5Pclose( pid );
     return fid;
@@ -487,6 +497,8 @@ void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
                                                   const AMP::Array<std::complex<double>> &data )
 {
     hid_t datatype = getHDF5datatype<std::complex<double>>();
+    // Create the storage properties
+    hid_t plist = createChunk( arraySize( data ), defaultCompression( fid ) );
     // Copy the data
     size_t N = data.length();
     auto *y  = new complex_t[N];
@@ -495,11 +507,12 @@ void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
     auto dim        = arraySize( data );
     hid_t dataspace = H5Screate_simple( dim.size(), dim.data(), nullptr );
     hid_t dataset =
-        H5Dcreate2( fid, name.data(), datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT );
+        H5Dcreate2( fid, name.data(), datatype, dataspace, H5P_DEFAULT, plist, H5P_DEFAULT );
     H5Dwrite( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, H5Ptr( y ) );
     H5Dclose( dataset );
-    H5Tclose( datatype );
     H5Sclose( dataspace );
+    H5Pclose( plist );
+    H5Tclose( datatype );
     delete[] y;
 }
 template<>

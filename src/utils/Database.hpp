@@ -138,7 +138,7 @@ public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
     std::unique_ptr<KeyData> clone() const override { return std::make_unique<EmptyKeyData>(); }
-    void print( std::ostream &os, const std::string_view & = "" ) const override
+    void print( std::ostream &os, const std::string_view & = "", bool = true ) const override
     {
         os << std::endl;
     }
@@ -164,7 +164,7 @@ public:
     {
         return std::make_unique<KeyDataScalar>( d_data, d_unit );
     }
-    void print( std::ostream &os, const std::string_view &indent = "" ) const override
+    void print( std::ostream &os, const std::string_view &indent = "", bool = true ) const override
     {
         os << indent;
         printValue( os, d_data );
@@ -199,7 +199,7 @@ public:
     {
         return std::make_unique<KeyDataArray>( d_data, d_unit );
     }
-    void print( std::ostream &os, const std::string_view &indent = "" ) const override
+    void print( std::ostream &os, const std::string_view &indent = "", bool = true ) const override
     {
         os << indent;
         if ( d_data.ndim() == 1 ) {
@@ -272,11 +272,12 @@ public:
     {
         return std::make_unique<DatabaseVector>( d_data );
     }
-    void print( std::ostream &os, const std::string_view &indent = "" ) const override
+    void
+    print( std::ostream &os, const std::string_view &indent = "", bool sort = true ) const override
     {
         std::string indent2 = std::string( indent ) + "   ";
         for ( const auto &data : d_data ) {
-            data.print( os, indent2 );
+            data.print( os, indent2, sort );
         }
     }
     std::string_view type() const override { return typeid( std::vector<Database> ).name(); }
