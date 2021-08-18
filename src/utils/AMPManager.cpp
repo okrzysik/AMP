@@ -54,6 +54,9 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
 #endif
+#ifdef USE_KOKKOS
+    #include "AMP/utils/KokkosManager.h"
+#endif
 // clang-format on
 
 
@@ -244,6 +247,8 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     AMP::RNG::initialize( 123 );
     // Initialize cuda
     start_CUDA();
+    // Initialize Kokkos
+    start_Kokkos( argc, argv );
     // Set the signal/terminate handlers
     StackTrace::Utilities::setErrorHandlers();
     setHandlers();
@@ -290,6 +295,8 @@ void AMPManager::shutdown()
     PROFILE_DISABLE();
     // Syncronize all ranks
     comm_world.barrier();
+    // shutdown Kokkos
+    stop_Kokkos();
     // Shutdown SAMRAI
     double SAMRAI_time = stop_SAMRAI();
     // Shudown PETSc
@@ -486,6 +493,30 @@ double AMPManager::start_CUDA()
     void *tmp;
     cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
     cudaFree( tmp );
+#endif
+    return 0;
+}
+
+
+/****************************************************************************
+ * Function to start/stop Kokkos                                             *
+ ****************************************************************************/
+
+double AMPManager::start_Kokkos( int argc, char **argv )
+{
+#ifdef USE_KOKKOS
+    AMP::Utilities::initializeKokkos( argc, argv );
+#else
+    NULL_USE( argc );
+    NULL_USE( argv );
+#endif
+    return 0;
+}
+
+double AMPManager::stop_Kokkos()
+{
+#ifdef USE_KOKKOS
+    AMP::Utilities::finalizeKokkos();
 #endif
     return 0;
 }
