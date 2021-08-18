@@ -195,8 +195,8 @@ void Database::copy( const Database &rhs )
  ********************************************************************/
 bool Database::operator==( const Database &rhs ) const
 {
-    auto keys1 = getAllKeys();
-    auto keys2 = rhs.getAllKeys();
+    auto keys1 = getAllKeys( true );
+    auto keys2 = rhs.getAllKeys( true );
     if ( keys1 != keys2 )
         return false;
     for ( const auto &key : keys1 ) {
@@ -272,10 +272,11 @@ const Database &Database::operator()( const std::string_view &key ) const
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return *ptr2;
 }
-std::vector<std::string> Database::getAllKeys() const
+std::vector<std::string> Database::getAllKeys( bool sort ) const
 {
     auto keys = d_keys;
-    std::sort( keys.begin(), keys.end() );
+    if ( sort )
+        std::sort( keys.begin(), keys.end() );
     return keys;
 }
 void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, bool check )
@@ -407,9 +408,9 @@ template bool Database::isType<long double>( const std::string_view & ) const;
 /********************************************************************
  * Print the database                                                *
  ********************************************************************/
-void Database::print( std::ostream &os, const std::string_view &indent ) const
+void Database::print( std::ostream &os, const std::string_view &indent, bool sort ) const
 {
-    auto keys = getAllKeys(); //  We want the keys in sorted order
+    auto keys = getAllKeys( sort ); //  We want the keys in sorted order
     for ( const auto &key : keys ) {
         os << indent << key;
         auto data  = getData( key );
@@ -417,21 +418,21 @@ void Database::print( std::ostream &os, const std::string_view &indent ) const
         auto dbVec = dynamic_cast<const DatabaseVector *>( data );
         if ( db ) {
             os << " {\n";
-            db->print( os, std::string( indent ) + "   " );
+            db->print( os, std::string( indent ) + "   ", sort );
             os << indent << "}\n";
         } else if ( dbVec ) {
             os << ":\n";
-            dbVec->print( os, indent );
+            dbVec->print( os, indent, sort );
         } else {
             os << " = ";
-            data->print( os, "" );
+            data->print( os, "", sort );
         }
     }
 }
-std::string Database::print( const std::string_view &indent ) const
+std::string Database::print( const std::string_view &indent, bool sort ) const
 {
     std::stringstream ss;
-    print( ss, indent );
+    print( ss, indent, sort );
     return ss.str();
 }
 

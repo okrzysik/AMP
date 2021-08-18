@@ -279,6 +279,11 @@ void runFileTests( UnitTest &ut, const std::string &filename )
     t2 = std::chrono::system_clock::now();
     us = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     printf( "Time to compare database: %i us\n", us / 2 );
+    // Write the database to a file
+    std::ofstream inputfile;
+    inputfile.open( "test_Database.2.out" );
+    db->print( inputfile, "", false );
+    inputfile.close();
     // Check that data loaded correctly
     if ( filename == "laser_plasma_input.txt" ) {
         bool pass = !db->getVector<std::string>( "material" ).empty();
