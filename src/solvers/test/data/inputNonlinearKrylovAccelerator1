@@ -15,7 +15,6 @@ Mesh{
 }
 
 ThermalOperator{
-  print_info_level = 3
   isLinearOperator = FALSE
   buildConductivityAtGaussPoints = TRUE
   useConstantConductivity = FALSE
@@ -24,20 +23,17 @@ ThermalOperator{
 
 LinearSolver{
   ksp_type = "fgmres"
-  print_info_level = 3
   max_iterations = 10
   max_error = 1e-10
   uses_preconditioner=TRUE
   pc_type="shell"
   Preconditioner{
-        print_info_level = 3
-        max_iterations = 1
+              max_iterations = 1
         max_error = 1e-15
   }
 }
 
 NonlinearSolver{
-  print_info_level = 3
   max_iterations = 10
   max_error = 1e-10
   max_vectors = 10

@@ -11,17 +11,12 @@ Mesh_1{
 
 FickNonlinearBVPOperator {
    name="NonlinearBVPOperator"
-   print_info_level = 1
-
-  VolumeOperator="FickDiffusionNonlinearFEOperator"
-   
-  BoundaryOperator="FickDirichletVectorCorrection"
+   VolumeOperator="FickDiffusionNonlinearFEOperator"
+   BoundaryOperator="FickDirichletVectorCorrection"
 }
 
 FickLinearBVPOperator {
    name="LinearBVPOperator"
-   print_info_level = 1
-
    VolumeOperator="FickDiffusionLinearFEOperator"
    BoundaryOperator="FickDirichletMatrixCorrection"
 }
@@ -30,7 +25,6 @@ FickDiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
 	 OutputVariable="divergence"
-	 print_info_level = 1
 	
 	 ActiveInputVariables { 
 	   concentration = "concentration"
@@ -50,8 +44,7 @@ FickDiffusionNonlinearFEOperator{
 
 FickDirichletVectorCorrection{
    	 name = "DirichletVectorCorrection"
-     print_info_level = 3
-     skip_params = FALSE
+        skip_params = FALSE
      setResidual = TRUE
      valuesType = 2
      isAttachedToVolumeOperator = TRUE
@@ -86,12 +79,10 @@ FickDiffusionLinearFEOperator{
       name="DiffusionLinearFEOperator"
       InputVariable="concentration"
       OutputVariable="divergence"
-      print_info_level = 3
-
+    
      DiffusionElement {
        name = "DiffusionLinearElement"
-       print_info_level = 3
-       FE_ORDER = "FIRST"  
+            FE_ORDER = "FIRST"  
        FE_FAMILY = "LAGRANGE"
        QRULE_TYPE = "QGAUSS"
        QRULE_ORDER = "DEFAULT"
@@ -102,8 +93,7 @@ FickDiffusionLinearFEOperator{
    
 FickDirichletMatrixCorrection{
    	 name = "DirichletVectorCorrection"
-     print_info_level = 3
-     skip_params = FALSE
+        skip_params = FALSE
      number_of_ids = 6
      id_0         =   1
      number_of_dofs_0 =   1
@@ -143,15 +133,13 @@ ManufacturedSourceOperator {
     name = "MassLinearFEOperator"
     InputVariable = "concentration"
     OutputVariable = "divergence"
-    print_info_level = 3
-    reset_reuses_matrix = TRUE
+      reset_reuses_matrix = TRUE
     FixedConcentration = 0.15
     FixedTemperature   = 750
     FixedBurnup   = 0.0
 
     MassElement {
         name = "MassLinearElement"
-		print_info_level = 3
         TransportAtGaussPoints = TRUE
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
@@ -168,8 +156,7 @@ MassDensityModel{
 		ManufacturedSourceEquation = "Fick"
 		ManufacturedVariable = "Concentration"
         Property = "TensorFickCoefficient"
-	    print_info_level = 3
-     	ManufacturedSolution {
+	       	ManufacturedSolution {
      		MinX = -5.12000000001
      		MinY = -5.12000000001
      		MinZ = -5.12000000001
@@ -182,7 +169,7 @@ MassDensityModel{
 }  
 
 NonlinearSolver{
-  print_info_level = 7
+    print_info_level = 1
     max_iterations = 500
     max_error = 1e-10
 
@@ -195,7 +182,7 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
 
     LinearSolver{
-      print_info_level = 0
+        print_info_level = 0
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
@@ -210,7 +197,7 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
 
         Preconditioner{
-          print_info_level = 0
+            print_info_level = 0
             max_iterations = 1
             max_error = 1.0e-15
         }
