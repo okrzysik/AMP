@@ -6,7 +6,7 @@
 
 namespace AMP::Utilities {
 
-void initializeKokkos( int argc, char **argv ) { Kokkos::initialize( argc, argv ); }
+void initializeKokkos( int &argc, char **argv ) { Kokkos::initialize( argc, argv ); }
 
 void finalizeKokkos() { Kokkos::finalize(); }
 
