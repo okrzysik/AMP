@@ -784,7 +784,7 @@ MeshElement libmeshMesh::getElement( const MeshElementID &elem_id ) const
     unsigned int rank = d_comm.getRank();
     if ( (int) elem_id.type() == PhysicalDim ) {
         // This is a libMesh element
-        auto element = d_libMesh->elem( elem_id.local_id() );
+        auto element = d_libMesh->elem_ptr( elem_id.local_id() );
         return libmeshMeshElement(
             PhysicalDim, elem_id.type(), (void *) element, rank, mesh_id, this );
     } else if ( elem_id.type() == GeomType::Vertex ) {

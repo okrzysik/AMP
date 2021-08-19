@@ -117,7 +117,7 @@ Load_Boundary {
 }
 
 NonlinearSolver{
-  print_info_level = 7
+  print_info_level = 5
     max_iterations = 100
     max_error = 1e-10
 
@@ -130,7 +130,7 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ksp_ew_version 1 -snes_ls_alpha 0.01"
 
     LinearSolver{
-      print_info_level = 10
+      print_info_level = 1
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"

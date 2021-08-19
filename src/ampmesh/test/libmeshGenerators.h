@@ -226,7 +226,7 @@ public:
             local_mesh->boundary_info->add_node( local_mesh->node_ptr( bndDofIndice ), boundaryId );
         }
 
-        local_mesh->prepare_for_use( true );
+        local_mesh->prepare_for_use( false );
         mesh = std::make_shared<AMP::Mesh::libmeshMesh>( local_mesh, "3 Element" );
     }
 
