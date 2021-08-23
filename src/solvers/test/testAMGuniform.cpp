@@ -27,7 +27,7 @@ void myTest( AMP::UnitTest *ut )
     std::string log_file   = "output_" + exeName;
     AMP::logAllNodes( log_file );
 
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -39,10 +39,9 @@ void myTest( AMP::UnitTest *ut )
     std::string mesh_file = input_db->getString( "mesh_file" );
     if ( globalComm.getRank() == 0 ) {
         AMP::readTestMesh( mesh_file, mesh );
-    } // end if root processor
+    }
     libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
-    // mesh->prepare_for_use(false);
-    mesh->prepare_for_use( true );
+    mesh->prepare_for_use(false);
     auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "uniform" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
@@ -50,7 +49,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "LinearBVPOperator", input_db, elementPhysicsModel ) );
 
-    auto mat     = bvpOperator->getMatrix();
+    /* auto mat     = bvpOperator->getMatrix();
     size_t matSz = mat->numGlobalRows();
     for ( size_t i = 0; i < matSz; ++i ) {
         std::vector<size_t> cols;
@@ -59,9 +58,9 @@ void myTest( AMP::UnitTest *ut )
         for ( size_t j = 0; j < cols.size(); ++j ) {
             std::cout << "A[" << i << "][" << ( cols[j] ) << "] = " << std::setprecision( 15 )
                       << ( vals[j] ) << std::endl;
-        } // end j
+        }
         std::cout << std::endl;
-    } // end i
+    } */
 
     int DOFsPerNode = 1;
     // int DOFsPerElement = 8;

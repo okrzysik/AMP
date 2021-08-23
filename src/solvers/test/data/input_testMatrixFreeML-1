@@ -3,7 +3,7 @@ mesh_file = "fullMpcMesh-3"
 NumberOfMeshes = 0
 
 MLoptions {
-  print_info_level = 10
+    print_info_level = 1
     max_iterations = 10
     max_error = 1.0e-16
     PDE_equations = 3
@@ -13,7 +13,6 @@ MLoptions {
 
 LoadOperator {
   name="DirichletVectorCorrection"
-    print_info_level = 1
     skip_params = FALSE
     isAttachedToVolumeOperator = FALSE
     setResidual = FALSE
@@ -43,15 +42,12 @@ LoadOperator {
 
 BVPOperator {
   name = "LinearBVPOperator"
-    print_info_level = 1
-
     VolumeOperator = "MechanicsLinearFEOperator"
     BoundaryOperator = "DirichletMatrixCorrection"
 }
 
 MechanicsLinearFEOperator{
   name = "MechanicsLinearFEOperator"
-    print_info_level = 1
     reset_reuses_matrix = TRUE
     isAttachedToNonlinearOperator = FALSE
     InputVariable = "displacement"
@@ -70,7 +66,6 @@ MechanicsLinearFEOperator{
 
 DirichletMatrixCorrection{
   name = "DirichletMatrixCorrection"
-    print_info_level = 1
     skip_params = FALSE
     symmetric_correction = TRUE
     zero_dirichlet_block = FALSE

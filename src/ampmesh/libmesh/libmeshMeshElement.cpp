@@ -333,7 +333,8 @@ bool libmeshMeshElement::isOnBoundary( int id ) const
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
         auto *node = (libMesh::Node *) ptr_element;
-        auto bids  = d_libMesh->boundary_info->boundary_ids( node );
+        std::vector<libMesh::boundary_id_type> bids;
+        d_libMesh->boundary_info->boundary_ids( node, bids );
         for ( auto &bid : bids ) {
             if ( bid == id )
                 on_boundary = true;

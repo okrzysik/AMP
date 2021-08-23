@@ -11,37 +11,33 @@ Mesh{
 }
 
 NeutronicsOperator{
-  name="NeutronicsRhsOperator"
+    name="NeutronicsRhsOperator"
     type               = "Power"
     OutputVariable     = "SpecificPowerInWattsPerGram" 
     numTimeSteps       = 1
     timeSteps          = .1
     useFixedValue      = TRUE
     fixedValues        = 4045.83
-    print_info_level   = 3
-}
+  }
 
 DiffusionBVPOperator {
-  name="LinearBVPOperator"
-    print_info_level = 1
+    name="LinearBVPOperator"
     VolumeOperator = "DiffusionLinearFEOperator1"
     BoundaryOperator = "RobinMatrixCorrection1"
 }
 
 DiffusionLinearFEOperator1{
-  name="DiffusionLinearFEOperator"
+    name="DiffusionLinearFEOperator"
     FixedTemperature = TRUE
     FixedConcentration = TRUE
     FixedBurnup   = TRUE
     InputVariable = "therm"
     OutputVariable = "therm"
-    print_info_level = 3
-
+  
 
     DiffusionElement {
       name="DiffusionLinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
@@ -50,7 +46,7 @@ DiffusionLinearFEOperator1{
 }
 
 RobinMatrixCorrection1{
-  name="RobinMatrixCorrection"
+    name="RobinMatrixCorrection"
     FE_ORDER = "FIRST"  
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
@@ -59,8 +55,7 @@ RobinMatrixCorrection1{
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
-    print_info_level = 3
-    skip_params = FALSE
+      skip_params = FALSE
     number_of_ids = 1
     id_0         =   4
     number_of_dofs_0 =   1
@@ -69,17 +64,16 @@ RobinMatrixCorrection1{
 }
 
 DiffusionTransportModel1 {
-  name="DiffusionTransportModel"
+    name="DiffusionTransportModel"
     Material = "UO2_MSRZC_09"
     Property = "ThermalConductivity"
-    print_info_level = 3
-    Default_Concentration = .1
+      Default_Concentration = .1
     Default_Temperature   = 300
     Default_Burnup   = 0.0
 }
 
 VolumeIntegralOperator{
-  name="VolumeIntegralOperator"
+    name="VolumeIntegralOperator"
     InputVariableType = "IntegrationPointScalar"
     Number_Active_Variables = 1
     Number_Auxillary_Variables = 0
@@ -87,14 +81,12 @@ VolumeIntegralOperator{
     ActiveInputVariables{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
     }
-  OutputVariable = "heatsource"
-    print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+    OutputVariable = "heatsource"
+      LocalModel = "SourcePhysicsModel"
 
     SourceElement {
       name="SourceNonlinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
@@ -102,13 +94,13 @@ VolumeIntegralOperator{
 }
 
 LinearSolver{
-  print_info_level = 10
+    print_info_level = 1
     max_iterations = 1
     max_error = 1e-15
 }
 
 SourcePhysicsModel {
-  name = "SourcePhysicsModel"
+    name = "SourcePhysicsModel"
     Material = "UO2_MSRZC_09"
     USE_ELEMENT_PHYSICS = "MassDensityModel"
     Equation = "ThermalSource"

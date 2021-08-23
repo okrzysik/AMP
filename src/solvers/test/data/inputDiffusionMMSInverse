@@ -12,17 +12,12 @@ Mesh{
 
 NonlinearBVPOperator {
    name="NonlinearBVPOperator"
-   print_info_level = 1
-
    VolumeOperator="DiffusionNonlinearFEOperator"
    BoundaryOperator = "ColumnBoundaryOperator"
-
 }
 
 LinearBVPOperator {
    name="LinearBVPOperator"
-   print_info_level = 1
-
    VolumeOperator="DiffusionLinearFEOperator"
    BoundaryOperator = "LinearColumnBoundaryOperator"
 }
@@ -31,15 +26,13 @@ ManufacturedSourceOperator {
     name = "MassLinearFEOperator"
     InputVariable = "concentration"
     OutputVariable = "manufactured"
-    print_info_level = 3
-    reset_reuses_matrix = TRUE
+      reset_reuses_matrix = TRUE
     FixedConcentration = 0.15
     FixedTemperature   = 750
     FixedBurnup   = 0.0
 
     MassElement {
         name = "MassLinearElement"
-		print_info_level = 3
         TransportAtGaussPoints = TRUE
         FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
@@ -60,8 +53,7 @@ MassDensityModel{
         Default_Concentration = .1
         Default_Temperature   = 750.
         Default_Burnup   = 0.0
-	    print_info_level = 3
-     	ManufacturedSolution {
+	       	ManufacturedSolution {
      		Geometry = "Brick"
      		Order = "Cubic"
      		BoundaryType = "Dirichlet-2"
@@ -77,7 +69,7 @@ MassDensityModel{
      }  
 
 NonlinearSolver{
-  print_info_level = 7
+  print_info_level = 1
     max_iterations = 500
     max_error = 1e-10
 
@@ -116,7 +108,6 @@ DiffusionNonlinearFEOperator{
 	 name="DiffusionNonlinearFEOperator"
 	 InputVariable="concentration"
 	 OutputVariable="concentration"
-	 print_info_level = 1
 	
 	 ActiveInputVariables { 
 	   concentration = "concentration"
@@ -143,7 +134,6 @@ ColumnBoundaryOperator{
 
 DirichletVectorBoundary {
 	   	 name = "DirichletVectorCorrection"
-		 print_info_level = 3
 		 skip_params = FALSE
 		 number_of_ids = 2
 		 id_0         =   4
@@ -158,7 +148,6 @@ DirichletVectorBoundary {
 
 NeumannVectorBoundary {
 	   	 name = "NeumannVectorCorrection"
-		 print_info_level = 3
 		 skip_params = FALSE
 		 number_of_ids = 4
 		 id_0         =   1
@@ -183,12 +172,10 @@ DiffusionLinearFEOperator{
       name="DiffusionLinearFEOperator"
       InputVariable="concentration"
       OutputVariable="concentration"
-      print_info_level = 3
-
+    
      DiffusionElement {
        name = "DiffusionLinearElement"
-       print_info_level = 3
-       FE_ORDER = "FIRST"  
+            FE_ORDER = "FIRST"  
        FE_FAMILY = "LAGRANGE"
        QRULE_TYPE = "QGAUSS"
        QRULE_ORDER = "DEFAULT"
@@ -205,7 +192,6 @@ LinearColumnBoundaryOperator{
 
 DirichletBoundary {
 	   	 name = "DirichletMatrixCorrection"
-		 print_info_level = 3
 		 skip_params = FALSE
 		 number_of_ids = 2
 		 id_0         =   4
@@ -220,7 +206,6 @@ DirichletBoundary {
 
 NeumannBoundary {
 	   	 name = "NeumannMatrixCorrection"
-		 print_info_level = 3
 		 skip_params = FALSE
 		 number_of_ids = 4
 		 id_0         =   1
@@ -245,7 +230,6 @@ DiffusionTransportModel {
 	     name = "DiffusionTransportModel"
 	     Material = "Independent"
 	     Property = "FickCoefficient"
-	     print_info_level = 3 
 	     Default_Concentration = .15
 	     Default_Temperature   = 300.
 	     Default_Burnup   = 0.0

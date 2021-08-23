@@ -17,12 +17,10 @@ NeutronicsOperator{
   timeSteps          = 1, 10000.
   useFixedValue      = TRUE
   fixedValues        = 1.0, 2.0
-  print_info_level   = 3
 }
 
 DiffusionBVPOperator {
    name="LinearBVPOperator"
-   print_info_level = 1
    VolumeOperator = "DiffusionLinearFEOperator1"
    BoundaryOperator = "ColumnBoundaryOperator1"
 }
@@ -34,12 +32,10 @@ DiffusionLinearFEOperator1{
    FixedBurnup   = TRUE
    InputVariable = "thermIn"
    OutputVariable = "thermOut"
-   print_info_level = 3
-
+ 
    DiffusionElement {
      name="DiffusionLinearElement"
-     print_info_level = 3
-     FE_ORDER = "FIRST"  
+        FE_ORDER = "FIRST"  
      FE_FAMILY = "LAGRANGE"
      QRULE_TYPE = "QGAUSS"
      QRULE_ORDER = "DEFAULT"
@@ -60,8 +56,7 @@ ColumnBoundaryOperator1 {
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
    OutputVariable = "thermOut"
-   print_info_level = 3
-   skip_params = FALSE
+    skip_params = FALSE
    number_of_ids = 1
    id_0         =   2 
    number_of_dofs_0 =   1
@@ -74,8 +69,7 @@ ColumnBoundaryOperator1 {
    skip_params = FALSE
    skip_rhs_correction = FALSE
    skip_rhs_add_correction = FALSE
-   print_info_level = 3
-   number_of_ids = 1
+    number_of_ids = 1
    id_0             = 1
    number_of_dofs_0 =   1
    dof_0_0          =   0
@@ -88,14 +82,13 @@ DiffusionTransportModel1 {
      name="DiffusionTransportModel"
      Material = "Independent"
      Property = "ThermalConductivity"
-     print_info_level = 3
-     Default_Concentration = .1
+        Default_Concentration = .1
      Default_Temperature   = 300.
      Default_Burnup   = 0.0
    }
 
 LinearSolver{
-  print_info_level = 3
+  print_info_level = 1
   max_iterations = 10
   max_error = 1e-10
 }
@@ -110,12 +103,10 @@ VolumeIntegralOperator{
     ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
   }
   OutputVariable = "heatsource"
-  print_info_level = 3
   LocalModel = "SourcePhysicsModel"
   SourceElement {
     name="SourceNonlinearElement"
-    print_info_level = 3
-    FE_ORDER = "FIRST"  
+      FE_ORDER = "FIRST"  
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"

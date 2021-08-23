@@ -17,12 +17,10 @@ NeutronicsOperator{
     timeSteps          = .1
     useFixedValue      = TRUE
     fixedValues        = 42341354.4
-    print_info_level   = 3
-}
+  }
 
 DiffusionBVPOperator {
-  name="LinearBVPOperator"
-    print_info_level = 1
+    name="LinearBVPOperator"
     VolumeOperator = "DiffusionLinearFEOperator1"
     BoundaryOperator = "DirichletMatrixCorrection1"
 }
@@ -34,13 +32,11 @@ DiffusionLinearFEOperator1{
     FixedBurnup   = TRUE
     InputVariable = "therm"
     OutputVariable = "therm"
-    print_info_level = 3
-
+  
 
     DiffusionElement {
       name="DiffusionLinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
@@ -53,8 +49,7 @@ DirichletMatrixCorrection1{
     skip_params = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    print_info_level = 3
-    number_of_ids = 1
+      number_of_ids = 1
     id_0             = 8
     number_of_dofs_0 =   1
     dof_0_0          =   0
@@ -65,14 +60,13 @@ DiffusionTransportModel1 {
   name="DiffusionTransportModel"
     Material = "Clad_Zr_MATPRO.h"
     Property = "ThermalConductivity"
-    print_info_level = 3
-    Default_Concentration = .1
+      Default_Concentration = .1
     Default_Temperature   = 557.16
     Default_Burnup   = 0.0
 }
 
 LinearSolver{
-  print_info_level = 10
+  print_info_level = 1
     max_iterations = 1
     max_error = 1e-15
 }
@@ -88,12 +82,10 @@ VolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerKg" 
     }
   OutputVariable = "heatsource"
-    print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+      LocalModel = "SourcePhysicsModel"
     SourceElement {
       name="SourceNonlinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
