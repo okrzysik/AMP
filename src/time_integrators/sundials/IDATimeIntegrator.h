@@ -197,7 +197,7 @@ public:
     /**
      * return a shared pointer to the source term at the current time step
      */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() const;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> getSourceTerm() override;
 
     /**
      * return a shared pointer to the preconditioner being used

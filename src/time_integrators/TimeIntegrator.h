@@ -242,6 +242,12 @@ public:
 
     virtual void printStatistics( std::ostream &os = AMP::pout ) { NULL_USE( os ); }
 
+    virtual void setSourceTerm( AMP::LinearAlgebra::Vector::shared_ptr src )
+    {
+        d_pSourceTerm = src;
+    }
+    virtual AMP::LinearAlgebra::Vector::shared_ptr getSourceTerm( void ) { return d_pSourceTerm; }
+
 protected:
     /*
      * Read input data from specified database and initialize class members.
