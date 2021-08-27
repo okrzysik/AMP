@@ -47,8 +47,7 @@ NeutronicsOperator{
     timeSteps          = .1
     useFixedValue      = TRUE
     fixedValues        = 4045.3147905 
-    print_info_level   = 3
-}
+  }
 
 
 MapCladtoPellet{
@@ -70,14 +69,12 @@ MapCladtoPellet{
 
 NonlinearThermalOperator1 {
   name="NonlinearBVPOperator"
-    print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator1"
     BoundaryOperator = "RobinVectorCorrection1"
 }
 
 DiffusionNonlinearFEOperator1 {
   name = "DiffusionNonlinearFEOperator" 
-    print_info_level = 6
     ActiveInputVariables {
       temperature = "Temperature"
         concentration = "Concentration"
@@ -107,8 +104,7 @@ RobinVectorCorrection1 {
     alpha          = 1.0
     beta           = 2920.0
     gamma          = 2920.0
-    print_info_level = 3
-    skip_params = FALSE
+      skip_params = FALSE
     number_of_ids = 1
     IsCoupledBoundary_0 = TRUE
     id_0         =   4
@@ -131,14 +127,12 @@ DiffusionTransportModel1{
 
 LinearThermalOperator1 {
   name = "LinearBVPOperator"
-    print_info_level = 3
-    VolumeOperator = "DiffusionLinearFEOperator1"
+      VolumeOperator = "DiffusionLinearFEOperator1"
     BoundaryOperator = "RobinMatrixCorrection1"
 }
 
 DiffusionLinearFEOperator1 {
   name = "DiffusionLinearFEOperator"
-    print_info_level = 1
     reset_reuses_matrix = TRUE
     InputVariable = "Temperature"
     OutputVariable = "Temperature"
@@ -167,8 +161,7 @@ RobinMatrixCorrection1 {
     alpha          = 1.0
     beta           = 2920.0
     gamma          = 2920.0
-    print_info_level = 3
-    skip_params = FALSE
+      skip_params = FALSE
     number_of_ids = 1
     IsCoupledBoundary_0 = TRUE
     id_0         =   4
@@ -179,14 +172,12 @@ RobinMatrixCorrection1 {
 
 testNonlinearOxygenOperator1 {
   name="NonlinearBVPOperator"
-    print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator2"
     BoundaryOperator = "DirichletVectorCorrection2"
 }
 
 DiffusionNonlinearFEOperator2 {
   name = "DiffusionNonlinearFEOperator" 
-    print_info_level = 6
     ActiveInputVariables {
       temperature="Temperature"
         concentration = "Concentration"
@@ -208,7 +199,6 @@ DiffusionNonlinearFEOperator2 {
 
 DirichletVectorCorrection2 {
   name = "DirichletVectorCorrection"
-    print_info_level = 0
     skip_params = FALSE
     isAttachedToVolumeOperator = TRUE
     number_of_ids = 1
@@ -231,14 +221,12 @@ DiffusionTransportModel2{
 
 testLinearOxygenOperator1 {
   name = "LinearBVPOperator"
-    print_info_level = 1
     VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator = "DirichletMatrixCorrection2"
 }
 
 DiffusionLinearFEOperator2 {
   name = "DiffusionLinearFEOperator"
-    print_info_level = 1
     reset_reuses_matrix = TRUE
     InputVariable = "Concentration"
     OutputVariable = "Concentration"
@@ -258,7 +246,6 @@ DiffusionLinearFEOperator2 {
 
 DirichletMatrixCorrection2 {
   name = "DirichletMatrixCorrection"
-    print_info_level = 0
     skip_params = FALSE
     skip_rhs_correction = TRUE
     number_of_ids = 1
@@ -297,14 +284,12 @@ MapPellettoClad{
 
 NonlinearThermalOperator2 {
   name="NonlinearBVPOperator"
-    print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator5"
     BoundaryOperator = "ColumnBoundaryOperator5"
 }
 
 DiffusionNonlinearFEOperator5 {
   name = "DiffusionNonlinearFEOperator" 
-    print_info_level = 6
     ActiveInputVariables {
       temperature = "Temperature"
     }
@@ -341,8 +326,7 @@ RobinVectorCorrection {
     alpha          = 1.0
     beta           = 2920.0
     gamma          = 2920.0
-    print_info_level = 3
-    skip_params = FALSE
+      skip_params = FALSE
     number_of_ids = 1
     IsCoupledBoundary_0 = TRUE
     id_0         =   8
@@ -358,8 +342,7 @@ DirichletVectorCorrection{
     isAttachedToVolumeOperator = TRUE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    print_info_level = 3
-    number_of_ids = 1
+      number_of_ids = 1
     id_0             =   4
     number_of_dofs_0 =   1
     dof_0_0          =   0
@@ -377,14 +360,12 @@ DiffusionTransportModel5{
 
 LinearThermalOperator2 {
   name = "LinearBVPOperator"
-    print_info_level = 3
-    VolumeOperator = "DiffusionLinearFEOperator6"
+      VolumeOperator = "DiffusionLinearFEOperator6"
     BoundaryOperator = "ColumnBoundaryOperator6"
 }
 
 DiffusionLinearFEOperator6 {
   name = "DiffusionLinearFEOperator"
-    print_info_level = 1
     reset_reuses_matrix = TRUE
     InputVariable = "Temperature"
     OutputVariable = "Temperature"
@@ -422,8 +403,7 @@ RobinMatrixCorrection {
     alpha          = 1.0
     beta           = 2920.0
     gamma          = 2920.0
-    print_info_level = 3
-    skip_params = FALSE
+      skip_params = FALSE
     number_of_ids = 1
     IsCoupledBoundary_0 = TRUE
     id_0         =   8
@@ -438,8 +418,7 @@ DirichletMatrixCorrection{
     skip_params = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    print_info_level = 3
-    number_of_ids = 1
+      number_of_ids = 1
     id_0             =   4
     number_of_dofs_0 =   1
     dof_0_0          =   0
@@ -456,12 +435,10 @@ VolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
     }
   OutputVariable = "heatsource"
-    print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+      LocalModel = "SourcePhysicsModel"
     SourceElement {
       name="SourceNonlinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
@@ -481,7 +458,7 @@ SourcePhysicsModel {
 
 
 NonlinearSolver{
-  print_info_level = 7
+  print_info_level = 1
     max_iterations = 500
     max_error = 1e-10
 

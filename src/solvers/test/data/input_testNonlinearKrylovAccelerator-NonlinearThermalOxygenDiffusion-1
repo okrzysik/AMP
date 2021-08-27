@@ -17,20 +17,17 @@ NeutronicsOperator{
     timeSteps          = 1, 10000.
     useFixedValue      = TRUE
     fixedValues        = 1000.0, 2.0
-    print_info_level   = 3
-}
+  }
 
 VolumeIntegralOperator{
   name="VolumeIntegralOperator"
     ConstantSource   = FALSE
     InputVariable = "therm"
     OutputVariable = "therm"
-    print_info_level = 0
 
     SourceElement {
       name="SourceNonlinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
@@ -41,7 +38,6 @@ NumberOfLoadingSteps = 1
 
 testNonlinearThermalOperator {
   name="NonlinearBVPOperator"
-    print_info_level = 0
 
 
     VolumeOperator = "DiffusionNonlinearFEOperator1"
@@ -49,7 +45,6 @@ testNonlinearThermalOperator {
 }
 DiffusionNonlinearFEOperator1 {
   name = "DiffusionNonlinearFEOperator" 
-    print_info_level = 0
     ActiveInputVariables {
       temperature = "temp"
         concentration = "concentration"
@@ -70,7 +65,6 @@ DiffusionNonlinearFEOperator1 {
 }
 DirichletVectorCorrection1 {
   name = "DirichletVectorCorrection"
-    print_info_level = 0
     skip_params = FALSE
     number_of_ids = 2
     id_0 = 2
@@ -93,14 +87,11 @@ DiffusionTransportModel1{
 
 testLinearThermalOperator {
   name = "LinearBVPOperator"
-    print_info_level = 0
-
     VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator = "DirichletMatrixCorrection2"
 }
 DiffusionLinearFEOperator2 {
   name = "DiffusionLinearFEOperator"
-    print_info_level = 0
     reset_reuses_matrix = TRUE
     InputVariable = "temp"
     OutputVariable = "temp"
@@ -120,7 +111,6 @@ DiffusionLinearFEOperator2 {
 }
 DirichletMatrixCorrection2 {
   name = "DirichletMatrixCorrection"
-    print_info_level = 0
     skip_params = FALSE
     skip_rhs_correction = TRUE
     number_of_ids = 2
@@ -142,15 +132,11 @@ DiffusionTransportModel2{
 
 testNonlinearOxygenOperator {
   name="NonlinearBVPOperator"
-    print_info_level = 1
-
-
     VolumeOperator = "DiffusionNonlinearFEOperator3"
     BoundaryOperator = "DirichletVectorCorrection3"
 }
 DiffusionNonlinearFEOperator3 {
   name = "DiffusionNonlinearFEOperator" 
-    print_info_level = 0
     ActiveInputVariables {
       temperature = "temp"
         concentration = "concentration"
@@ -172,7 +158,6 @@ DiffusionNonlinearFEOperator3 {
 }
 DirichletVectorCorrection3 {
   name = "DirichletVectorCorrection"
-    print_info_level = 0
     skip_params = FALSE
     number_of_ids = 2
     id_0 = 2
@@ -195,14 +180,11 @@ DiffusionTransportModel3{
 
 testLinearOxygenOperator {
   name = "LinearBVPOperator"
-    print_info_level = 0
-
     VolumeOperator = "DiffusionLinearFEOperator4"
     BoundaryOperator = "DirichletMatrixCorrection4"
 }
 DiffusionLinearFEOperator4 {
   name = "DiffusionLinearFEOperator"
-    print_info_level = 0
     reset_reuses_matrix = TRUE
     InputVariable = "concentration"
     OutputVariable = "concentration"
@@ -222,7 +204,6 @@ DiffusionLinearFEOperator4 {
 }
 DirichletMatrixCorrection4 {
   name = "DirichletMatrixCorrection"
-    print_info_level = 0
     skip_params = FALSE
     skip_rhs_correction = TRUE
     number_of_ids = 2
@@ -244,7 +225,6 @@ DiffusionTransportModel4{
 
 ThermalInitialGuess {
   name = "DirichletVectorCorrection"
-    print_info_level = 0
     skip_params = FALSE
     number_of_ids = 2
     id_0 = 2
@@ -259,7 +239,6 @@ ThermalInitialGuess {
 
 OxygenInitialGuess {
   name = "DirichletVectorCorrection"
-    print_info_level = 0
     skip_params = FALSE
     number_of_ids = 2
     id_0 = 2

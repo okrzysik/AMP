@@ -14,7 +14,6 @@ NumberOfLoadingSteps = 1
 
 testNonlinearThermalOperator {
    name="NonlinearBVPOperator"
-   print_info_level = 1
   
 
 VolumeOperator = "DiffusionNonlinearFEOperator1"
@@ -22,7 +21,6 @@ BoundaryOperator = "DirichletVectorCorrection1"
 }
    DiffusionNonlinearFEOperator1 {
      name = "DiffusionNonlinearFEOperator" 
-     print_info_level = 1
      ActiveInputVariables {
          temperature = "temp"
      }
@@ -42,7 +40,6 @@ LocalModel = "DiffusionTransportModel1"
    }
    DirichletVectorCorrection1 {
       name = "DirichletVectorCorrection"
-      print_info_level = 1
       skip_params = FALSE
       number_of_ids = 2
       id_0 = 4
@@ -65,15 +62,13 @@ LocalModel = "DiffusionTransportModel1"
 
 testLinearThermalOperator {
    name = "LinearBVPOperator"
-   print_info_level = 3
-
+ 
 
 VolumeOperator = "DiffusionLinearFEOperator2"
 BoundaryOperator = "DirichletMatrixCorrection2"
 }
    DiffusionLinearFEOperator2 {
      name = "DiffusionLinearFEOperator"
-     print_info_level = 1
      reset_reuses_matrix = TRUE
      InputVariable = "temp"
      OutputVariable = "temp"
@@ -93,7 +88,6 @@ LocalModel = "DiffusionTransportModel2"
    }
    DirichletMatrixCorrection2 {
      name = "DirichletMatrixCorrection"
-     print_info_level = 1
      skip_params = FALSE
      skip_rhs_correction = TRUE
      number_of_ids = 2
@@ -115,7 +109,6 @@ LocalModel = "DiffusionTransportModel2"
 
 ThermalInitialGuess {
   name = "DirichletVectorCorrection"
-  print_info_level = 1
   skip_params = FALSE
   number_of_ids = 2
   id_0 = 4
@@ -156,7 +149,7 @@ LinearSolver{
         pc_side = "RIGHT"
 
         Preconditioner{
-          print_info_level = 1
+          print_info_level = 0
           max_iterations = 1
           max_error = 1.0e-15
         }

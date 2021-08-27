@@ -9,14 +9,12 @@ Mesh {
 
 MechanicsBVPOperator {
   name="LinearBVPOperator"
-  print_info_level = 1
   VolumeOperator = "MechanicsLinearFEOperator1"
   BoundaryOperator = "DirichletMatrixCorrection1"
 }
 
 MechanicsLinearFEOperator1 {
   name="MechanicsLinearFEOperator"
-  print_info_level = 1
   reset_reuses_matrix = TRUE
   InputVariable = "disp"
   OutputVariable = "disp"
@@ -35,7 +33,6 @@ MechanicsLinearFEOperator1 {
 
 DirichletMatrixCorrection1 {
     name="DirichletMatrixCorrection"
-    print_info_level = 1
     skip_params = FALSE
     skip_rhs_correction = TRUE
     number_of_ids = 1
@@ -54,7 +51,6 @@ IsotropicElasticModel1 {
 
 Load_Boundary {
   name="DirichletVectorCorrection"
-  print_info_level = 1
   skip_params = FALSE
   number_of_ids = 1
   id_0 = 1
@@ -74,7 +70,6 @@ LinearSolver{
   nodal = 0
   strong_threshold = 0.9
   P_max_elements = 0
-  print_info_level = 3
   max_iterations = 40
   max_error = 1e-10
 }

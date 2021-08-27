@@ -56,7 +56,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Operator::NeumannVectorCorrection>( vectorCorrectionParameters );
 
     neumannBndOp->addRHScorrection( scalarVec );
-    AMP::pout << scalarVec << std::endl;
 
     bnd_db = input_db->getDatabase( "NeumannVectorCorrection2" );
     vectorCorrectionParameters =
@@ -69,7 +68,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     neumannBndOp->addRHScorrection( vectorVec );
     auto vectorVec2 = vectorVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "V2" );
 
-    AMP::pout << vectorVec2 << std::endl;
     ut->passes( "Ran to completion" );
 }
 
