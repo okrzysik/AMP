@@ -55,6 +55,17 @@ public:
      */
     virtual ~SolverStrategy();
 
+    enum class SolverStatus {
+        ConvergedOnAbsTol,
+        ConvergedOnRelTol,
+        ConvergedIterations,
+        ConvergedUserCondition,
+        DivergedMaxIterations,
+        DivergedOnNan,
+        DivergedInternalSolver,
+        DivergedOther
+    };
+
     /**
      * Solve the system \f$A(u) = f\f$.  This is a pure virtual function that the derived classes
      * need to provide an implementation of.
@@ -170,8 +181,22 @@ public:
 
     int getMaxIterations( void ) const { return d_iMaxIterations; }
 
+    virtual void printStatistics( std::ostream &os = AMP::pout )
+    {
+        os << "Not implemented for this solver!" << std::endl;
+    }
+
+    int getConvergenceStatus( void ) const
+    {
+        return d_ConvergenceStatus <= SolverStatus::ConvergedUserCondition ? 1 : 0;
+    }
+
+    virtual void print( std::ostream &os ) { NULL_USE( os ); }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
+
+    SolverStatus d_ConvergenceStatus = SolverStatus::DivergedOther;
 
     int d_iNumberIterations = 0; // iterations in solver
 

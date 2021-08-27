@@ -41,7 +41,7 @@ void myTest( AMP::UnitTest *ut )
         AMP::readTestMesh( mesh_file, mesh );
     }
     libMesh::MeshCommunication().broadcast( *( mesh.get() ) );
-    mesh->prepare_for_use(false);
+    mesh->prepare_for_use( false );
     auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "uniform" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
