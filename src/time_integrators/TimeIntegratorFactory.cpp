@@ -1,5 +1,4 @@
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
-#include "AMP/time_integrators/BackwardEulerTimeIntegrator.h"
 #include "AMP/time_integrators/ExplicitEuler.h"
 #include "AMP/time_integrators/RK23TimeIntegrator.h"
 #include "AMP/time_integrators/RK2TimeIntegrator.h"
@@ -41,8 +40,6 @@ std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
         timeIntegrator.reset( new RK4TimeIntegrator( timeIntegratorParameters ) );
     } else if ( timeIntegratorName == "RK23" ) {
         timeIntegrator.reset( new RK23TimeIntegrator( timeIntegratorParameters ) );
-    } else if ( timeIntegratorName == "BackwardEuler" ) {
-        timeIntegrator.reset( new BackwardEulerTimeIntegrator( timeIntegratorParameters ) );
     } else {
         AMP_ERROR(
             std::string( "TimeIntegratorFactory does not currently create timeIntegrator " ) +
