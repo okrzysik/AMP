@@ -240,6 +240,14 @@ public:
 
     virtual void setCurrentDt( const double dt ) { d_current_dt = dt; }
 
+    virtual void setInitialDt( const double dt ) { d_initial_dt = dt; }
+
+    virtual void setCurrentTime( const double t ) { d_current_time = t; }
+
+    virtual void setInitialTime( const double t ) { d_initial_time = t; }
+
+    virtual void setFinalTime( const double t ) { d_final_time = t; }
+
     virtual void printStatistics( std::ostream &os = AMP::pout ) { NULL_USE( os ); }
 
     virtual void setSourceTerm( AMP::LinearAlgebra::Vector::shared_ptr src )
