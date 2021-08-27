@@ -478,22 +478,22 @@ int IDATimeIntegrator::IDAPrecSolve( realtype,
 
 std::shared_ptr<IDATimeOperator> IDATimeIntegrator::getIDATimeOperator() const
 {
-    return ( d_pIDATimeOperator );
+    return d_pIDATimeOperator;
 }
 
 std::shared_ptr<LinearTimeOperator> IDATimeIntegrator::getLinearTimeOperator() const
 {
-    return ( d_pLinearTimeOperator );
+    return d_pLinearTimeOperator;
 }
 
 std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getResidualVector() const
 {
-    return ( d_residual );
+    return d_residual;
 }
 
-std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm() const
+std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm()
 {
-    return ( d_pSourceTerm );
+    return d_pSourceTerm;
 }
 
 } // namespace TimeIntegrator
