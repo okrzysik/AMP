@@ -43,19 +43,16 @@ NeutronicsOperator{
     timeSteps          = .1
     useFixedValue      = TRUE
     fixedValues        = 4045.83
-    print_info_level   = 3
-}
+  }
 
 LinearThermalOperator1 {
   name = "LinearBVPOperator"
-    print_info_level = 3
-    VolumeOperator = "DiffusionLinearFEOperator1"
+      VolumeOperator = "DiffusionLinearFEOperator1"
     BoundaryOperator = "RobinMatrixCorrection1"
 }
 
 DiffusionLinearFEOperator1 {
-  name = "DiffusionLinearFEOperator"
-    print_info_level = 1
+    name = "DiffusionLinearFEOperator"
     reset_reuses_matrix = TRUE
     InputVariable = "Temperature"
     OutputVariable = "Temperature"
@@ -89,8 +86,7 @@ RobinMatrixCorrection1{
         alpha          = 1.0
         beta           = 0
         gamma          = 1.0
-        print_info_level = 3
-        skip_params = FALSE
+              skip_params = FALSE
         number_of_ids = 1
         id_0         =   4
         number_of_dofs_0 =   1
@@ -111,14 +107,12 @@ DiffusionTransportModel1{
 
 LinearThermalOperator2 {
   name = "LinearBVPOperator"
-    print_info_level = 3
-    VolumeOperator = "DiffusionLinearFEOperator2"
+      VolumeOperator = "DiffusionLinearFEOperator2"
     BoundaryOperator = "ColumnBoundaryOperator2"
 }
 
 DiffusionLinearFEOperator2 {
-  name = "DiffusionLinearFEOperator"
-    print_info_level = 1
+    name = "DiffusionLinearFEOperator"
     reset_reuses_matrix = TRUE
     InputVariable = "Temperature"
     OutputVariable = "Temperature"
@@ -154,8 +148,7 @@ RobinMatrixCorrection {
     alpha          = 1.0
     beta           = 0
     gamma          = 1.0
-    print_info_level = 3
-    skip_params = FALSE
+      skip_params = FALSE
     number_of_ids = 1
     id_0         =   8
     number_of_dofs_0 =   1
@@ -169,8 +162,7 @@ DirichletMatrixCorrection{
     skip_params = FALSE
     skip_rhs_correction = FALSE
     skip_rhs_add_correction = FALSE
-    print_info_level = 3
-    number_of_ids = 1
+      number_of_ids = 1
     id_0             =   4
     number_of_dofs_0 =   1
     dof_0_0          =   0
@@ -196,12 +188,10 @@ VolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram" 
     }
   OutputVariable = "heatsource"
-    print_info_level = 3
-    LocalModel = "SourcePhysicsModel"
+      LocalModel = "SourcePhysicsModel"
     SourceElement {
       name="SourceNonlinearElement"
-        print_info_level = 3
-        FE_ORDER = "FIRST"  
+              FE_ORDER = "FIRST"  
         FE_FAMILY = "LAGRANGE"
         QRULE_TYPE = "QGAUSS"
         QRULE_ORDER = "DEFAULT"
@@ -221,7 +211,7 @@ SourcePhysicsModel {
 
 
 LinearSolver{
-  print_info_level = 10
+  print_info_level = 1
     max_iterations = 1
     max_error = 1.0e-15
 }

@@ -39,14 +39,12 @@ MeshToMeshMaps{
 
 BottomNonlinearThermalOperator {
     name="NonlinearBVPOperator"
-    print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator"
     BoundaryOperator = "BottomNonlinearThermalBoundaryConditions"
 }
 
 BottomLinearThermalOperator {
     name = "LinearBVPOperator"
-    print_info_level = 0
     VolumeOperator = "DiffusionLinearFEOperator"
     BoundaryOperator = "BottomLinearThermalBoundaryConditions"
 }
@@ -65,14 +63,12 @@ BottomLinearThermalBoundaryConditions {
 
 TopNonlinearThermalOperator {
     name="NonlinearBVPOperator"
-    print_info_level = 1
     VolumeOperator = "DiffusionNonlinearFEOperator"
     BoundaryOperator = "TopNonlinearThermalBoundaryConditions"
 }
 
 TopLinearThermalOperator {
     name = "LinearBVPOperator"
-    print_info_level = 0
     VolumeOperator = "DiffusionLinearFEOperator"
     BoundaryOperator = "TopLinearThermalBoundaryConditions"
 }
@@ -91,7 +87,6 @@ TopLinearThermalBoundaryConditions {
 
 DiffusionNonlinearFEOperator {
       name = "DiffusionNonlinearFEOperator"
-      print_info_level = 1
       ActiveInputVariables {
         temperature = "Temperature"
       }
@@ -110,7 +105,6 @@ DiffusionNonlinearFEOperator {
 
 DiffusionLinearFEOperator {
       name = "DiffusionLinearFEOperator"
-      print_info_level = 1
       reset_reuses_matrix = TRUE
       InputVariable = "Temperature"
       OutputVariable = "Temperature"
@@ -138,7 +132,6 @@ BottomRobinVectorCorrection {
           alpha          = 1.0
           beta           = 20.0
           gamma          = 20.0
-          print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
           IsCoupledBoundary_0 = TRUE
@@ -159,7 +152,6 @@ BottomRobinMatrixCorrection {
           alpha          = 1.0
           beta           = 20.0
           gamma          = 20.0
-          print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
           IsCoupledBoundary_0 = TRUE
@@ -179,7 +171,6 @@ TopRobinVectorCorrection {
           alpha          = 1.0
           beta           = 20.0
           gamma          = 20.0
-          print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
           IsCoupledBoundary_0 = TRUE
@@ -200,7 +191,6 @@ TopRobinMatrixCorrection {
           alpha          = 1.0
           beta           = 20.0
           gamma          = 20.0
-          print_info_level = 0
           skip_params = FALSE
           number_of_ids = 1
           IsCoupledBoundary_0 = TRUE
@@ -220,10 +210,8 @@ BottomVolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram"
     }
     OutputVariable = "Temperature"
-    print_info_level = 1
     SourceElement {
       name="SourceNonlinearElement"
-      print_info_level = 0
       FE_ORDER = "FIRST"
       FE_FAMILY = "LAGRANGE"
       QRULE_TYPE = "QGAUSS"
@@ -241,10 +229,8 @@ TopVolumeIntegralOperator{
       ActiveVariable_0 = "SpecificPowerInWattsPerGram"
     }
     OutputVariable = "Temperature"
-    print_info_level = 1
     SourceElement {
       name="SourceNonlinearElement"
-      print_info_level = 0
       FE_ORDER = "FIRST"
       FE_FAMILY = "LAGRANGE"
       QRULE_TYPE = "QGAUSS"
@@ -293,7 +279,7 @@ NonlinearThermalSolver {
           KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 10000 -ksp_rtol 1.0e-1 -ksp_atol 1.0e-13 -ksp_gmres_restart 100"
 
           Preconditioner {
-            print_info_level = 1
+            print_info_level = 0
             max_iterations = 1
             max_error = 1e-16
             absolute_tolerance = 1.0e-16
