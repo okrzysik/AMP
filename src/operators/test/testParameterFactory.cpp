@@ -43,11 +43,11 @@ static void ParameterFactoryTest( AMP::UnitTest *ut )
                 operatorParameters );
 
         if ( operatorParams )
-            ut->passes( exeName.c_str() );
+            ut->passes( exeName );
         else
-            ut->failure( exeName.c_str() );
+            ut->failure( exeName );
     } else {
-        ut->failure( exeName.c_str() );
+        ut->failure( exeName );
     }
 }
 

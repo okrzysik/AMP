@@ -11,8 +11,8 @@ MultiGeometry::MultiGeometry( const std::vector<Geometry::shared_ptr> &geom )
     : Geometry(), d_geom( geom )
 {
     d_physicalDim = 0;
-    for ( const auto &geom : d_geom )
-        d_physicalDim = std::max( d_physicalDim, geom->getDim() );
+    for ( const auto &tmp : d_geom )
+        d_physicalDim = std::max( d_physicalDim, tmp->getDim() );
 }
 Point MultiGeometry::nearest( const Point &pos ) const
 {
