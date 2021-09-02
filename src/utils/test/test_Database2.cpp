@@ -168,14 +168,14 @@ bool compare_SAMRAI( SAMRAI::tbox::Database &db1, SAMRAI::tbox::Database &db2 )
     }
     return true;
 }
-void testSAMRAI( AMP::UnitTest &ut )
+void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
 {
     // Read the input database from SAMRAI
     auto input_db1 = std::make_shared<SAMRAI::tbox::MemoryDatabase>( "input_SAMRAI" );
-    SAMRAI::tbox::InputManager::getManager()->parseInputFile( "input_SAMRAI", input_db1 );
+    SAMRAI::tbox::InputManager::getManager()->parseInputFile( inputFile, input_db1 );
 
     // Read the input database through the default reader
-    auto input_db2 = AMP::Database::parseInputFile( "input_SAMRAI" );
+    auto input_db2 = AMP::Database::parseInputFile( inputFile );
 
     // Convert SAMRAI's database to the default and check that they are equal
     AMP::Database input_db3( input_db1 );
@@ -191,9 +191,10 @@ void testSAMRAI( AMP::UnitTest &ut )
         ut.passes( "Convert AMP::Database to SAMRAI database" );
     else
         ut.failure( "Convert AMP::Database to SAMRAI database" );
+    input_db4->printClassData( AMP::pout );
 }
 #else
-void testSAMRAI( AMP::UnitTest & ) {}
+void testSAMRAI( AMP::UnitTest &, const std::string & ) {}
 #endif
 
 
@@ -207,7 +208,8 @@ int main( int argc, char *argv[] )
 
     readInputDatabase( ut );
     testCreateDatabase( ut );
-    testSAMRAI( ut );
+    testSAMRAI( ut, "input_SAMRAI" );
+    testSAMRAI( ut, "input_NRDF" );
 
     ut.report();
 
