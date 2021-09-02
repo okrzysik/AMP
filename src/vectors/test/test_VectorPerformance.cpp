@@ -35,6 +35,22 @@ struct test_times {
     size_t max;
     size_t multiply;
     size_t divide;
+    test_times()
+        : clone( 0 ),
+          zero( 0 ),
+          setToScalar( 0 ),
+          setRandomValues( 0 ),
+          L1Norm( 0 ),
+          L2Norm( 0 ),
+          maxNorm( 0 ),
+          axpy( 0 ),
+          dot( 0 ),
+          min( 0 ),
+          max( 0 ),
+          multiply( 0 ),
+          divide( 0 )
+    {
+    }
     void print()
     {
         AMP::pout << "    clone: " << clone / 1000 << " us" << std::endl;

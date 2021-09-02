@@ -372,7 +372,6 @@ template<uint8_t N>
 constexpr int64N<N> &int64N<N>::operator/=( const int64N<N> & )
 {
     throw std::logic_error( "Not finished" );
-    return *this;
 }
 
 

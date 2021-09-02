@@ -177,7 +177,7 @@ private:
 
     static bool isVectorValid( std::shared_ptr<AMP::Operator::Operator> &op,
                                AMP::LinearAlgebra::Vector::shared_ptr &v,
-                               AMP_MPI comm );
+                               const AMP_MPI &comm );
 
     static PetscErrorCode
     lineSearchPreCheck( SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx );

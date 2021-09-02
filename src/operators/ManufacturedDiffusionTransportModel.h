@@ -35,7 +35,7 @@ public:
         AMP_ASSERT( ( Coordinates.size() == result.size() ) );
         auto it = args.find( "temperature" );
         AMP_ASSERT( it != args.end() );
-        std::vector<double> &T( *( it->second ) );
+        const auto &T = *( it->second );
         AMP_ASSERT( T.size() == result.size() );
         for ( unsigned int qp = 0; qp < Coordinates.size(); qp++ ) {
             double x    = Coordinates[qp]( 0 );

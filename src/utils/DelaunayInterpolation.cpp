@@ -853,20 +853,20 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
             } else if ( extrap == 1 ) {
                 // Use linear interpolation based on the nearest node and it's gradient
                 double dist = 1e100;
-                int index   = 0;
+                int index2  = 0;
                 for ( int j = 0; j < ndim + 1; j++ ) {
                     double dist2 = 0.0;
                     for ( int d = 0; d < ndim; d++ )
                         dist2 += ( xi[d] - x2[d + j * ndim] ) * ( xi[d] - x2[d + j * ndim] );
                     if ( dist2 < dist ) {
-                        index = j;
-                        dist  = dist2;
+                        index2 = j;
+                        dist   = dist2;
                     }
                 }
-                fi = f2[index];
+                fi = f2[index2];
                 for ( int d = 0; d < ndim; d++ ) {
-                    fi += g2[d + index * ndim] * ( xi[d] - x2[d + index * ndim] );
-                    gi[d] = g2[d + index * ndim];
+                    fi += g2[d + index2 * ndim] * ( xi[d] - x2[d + index2 * ndim] );
+                    gi[d] = g2[d + index2 * ndim];
                 }
             } else if ( extrap == 2 ) {
                 // Use quadratic interpolation
@@ -1296,17 +1296,13 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
         d_tri_nab( 0, N_tri - 1 ) = -1;
         return;
     }
+    if ( N_tri == 1 )
+        return;
     // Allocate memory
     const unsigned char Nd = ndim + 1;
     auto N_tri_nab         = new unsigned int[N];   // Number of triangles connected each node (N)
     auto tri_list          = new unsigned int *[N]; // List of triangles connected each node (N)
     tri_list[0]            = new unsigned int[( ndim + 1 ) * N_tri];
-    if ( N_tri == 1 ) {
-        delete[] N_tri_nab;
-        delete[] tri_list[0];
-        delete[] tri_list;
-        return;
-    }
     PROFILE_START( "create_tri_neighbors", PROFILE_LEVEL );
     // For each node, get a list of the triangles that connect to that node
     // Count the number of triangles connected to each vertex

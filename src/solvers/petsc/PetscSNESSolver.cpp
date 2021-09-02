@@ -369,7 +369,7 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
  ****************************************************************/
 bool PetscSNESSolver::isVectorValid( std::shared_ptr<AMP::Operator::Operator> &op,
                                      AMP::LinearAlgebra::Vector::shared_ptr &v,
-                                     AMP_MPI comm )
+                                     const AMP_MPI &comm )
 {
     bool retVal = false;
     int msg     = op->isValidInput( v ) ? 1 : 0;

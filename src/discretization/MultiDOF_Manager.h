@@ -143,7 +143,8 @@ public:
      * \param[in]  DOFManager       The index to the desired DOFManager (see getDOFManagers)
      * \param[in]  globalDOF        The global DOF to convert to a DOF on the sub DOFManager
      */
-    std::vector<size_t> getSubDOF( const int DOFManager, std::vector<size_t> &globalDOF ) const;
+    std::vector<size_t> getSubDOF( const int DOFManager,
+                                   const std::vector<size_t> &globalDOF ) const;
 
 
 private:
