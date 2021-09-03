@@ -15,6 +15,12 @@
         sprintf( msg, __VA_ARGS__ );   \
         throw std::logic_error( msg ); \
     } while ( 0 )
+#define DATABASE_WARNING( ... )        \
+    do {                               \
+        char msg[1000];                \
+        sprintf( msg, __VA_ARGS__ );   \
+        AMP::pout << msg << std::endl; \
+    } while ( 0 )
 #define DATABASE_INSIST( TEST, ... )       \
     do {                                   \
         if ( !( TEST ) ) {                 \

@@ -311,9 +311,14 @@ public:
      *
      * @param key       Key name in database.
      * @param data      Data to store
-     * @param check     Check if the key exists and throw an error if does
+     * @param check     Integer to indicate the behavior of the database if the key exists
+     *                  0 - Overwrite the data
+     *                  1 - Keep the existing data
+     *                  2 - Overwrite the data but print a warning (default)
+     *                  3 - Keep the data but print a warning
+     *                  4 - Throw an error
      */
-    void putData( const std::string_view &key, std::unique_ptr<KeyData> data, bool check = false );
+    void putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check = 2 );
 
 
     // Check if the key is a database object
@@ -422,6 +427,9 @@ public: // SAMRAI interfaces
 
     //! Create a SAMRAI database from this
     std::shared_ptr<SAMRAI::tbox::Database> cloneToSAMRAI() const;
+
+    //! Create a database using SAMRAI and then convert to an AMP database
+    static std::shared_ptr<Database> readThroughSAMRAI( const std::string &filename );
 
 #endif
 

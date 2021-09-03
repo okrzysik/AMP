@@ -279,14 +279,20 @@ std::vector<std::string> Database::getAllKeys( bool sort ) const
         std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, bool check )
+void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check )
 {
+    AMP_ASSERT( check >= 0 && check <= 4 );
     auto hash = hashString( key );
     int index = find( hash );
     if ( index != -1 ) {
-        if ( check )
-            DATABASE_ERROR( "Variable %s already exists in database", key.data() );
-        d_data[index] = std::move( data );
+        if ( check == 4 )
+            DATABASE_ERROR( "Error: Variable %s already exists in database",
+                            std::string( key ).data() );
+        if ( check == 2 || check == 3 )
+            DATABASE_WARNING( "Warning: variable %s already exists in database",
+                              std::string( key ).data() );
+        if ( check == 0 || check == 2 )
+            d_data[index] = std::move( data );
     } else {
         d_hash.emplace_back( hash );
         d_keys.emplace_back( key );
