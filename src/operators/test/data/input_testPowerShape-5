@@ -13,7 +13,7 @@ MyPowerShape{
     coordinateSystem = "cylindrical"
     type = "frapcon"
     frapconConstant = 3.45
-    angularConstant = 1;
+    angularConstant = 1
     numZmoments = 2
        Zmoments = 0.1, 0.2
 }
