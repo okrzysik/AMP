@@ -45,7 +45,7 @@ static int add_libmesh_cmdline( const int argc, const char **argv, char ***argv_
     const int N_add = 0; // Number of additional arguments we want to add
     // Copy the existing command-line arguments (shifting by the number of additional arguments)
     *argv_new = new char *[argc + N_add];
-    for ( int i = 0; i != argc; i++ ) {
+    for ( int i = 0; i < argc; i++ ) {
         ( *argv_new )[i] = new char[strlen( argv[i] ) + 1];
         strcpy( ( *argv_new )[i], argv[i] );
     }

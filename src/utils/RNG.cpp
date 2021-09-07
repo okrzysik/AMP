@@ -12,10 +12,10 @@ void RNG::initialize( size_t seed )
     d_Seed         = seed;
     size_t max_int = 0;
     max_int--;
-    d_SizeTDivisor = static_cast<double>( max_int );
-    double mach_eps, t1, t2;
-    t1 = 1;
-    t2 = 2;
+    d_SizeTDivisor  = static_cast<double>( max_int );
+    double mach_eps = 0;
+    double t1       = 1;
+    double t2       = 2;
     while ( t2 > 1. ) {
         mach_eps = t1;
         t1 /= 2.;

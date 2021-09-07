@@ -37,6 +37,7 @@ noExplicitConstructor:*/AMP/utils/AMP_MPI.h
 noExplicitConstructor:*/AMP/utils/Database.h
 noExplicitConstructor:*/AMP/utils/kdtree.h
 noExplicitConstructor:*/AMP/utils/extended_int.h
+noExplicitConstructor:*/AMP/utils/Units.h
 noExplicitConstructor:*/AMP/vectors/Scalar.h
 noExplicitConstructor:*/AMP/vectors/Vector.h
 noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
@@ -57,6 +58,7 @@ operatorEqVarError:*/AMP/utils/threadpool/ThreadPoolId.hpp
 operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
 arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
 templateRecursion:*/AMP/utils/AMP_MPI.I
+invalidLifetime:*/AMP/utils/kdtree2.hpp
 
 
 //***********************************************************
@@ -108,6 +110,7 @@ nullPointer:*/src/utils/Scanner.cpp
 nullPointerRedundantCheck:*/src/utils/Scanner.cpp
 arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
+containerOutOfBounds:*/src/utils/test/test_AMP_MPI.cpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
 unreadVariable:*/utils/ReadTestMesh.cpp
 unreadVariable:*/src/utils/DelaunayInterpolation.cpp
@@ -121,6 +124,9 @@ shiftTooManyBits:*/src/utils/extended_int.cpp
 *:*/src/utils/tinyexpr/tinyexpr.c
 *:*/src/ampmesh/dendro/*
 *:*/src/ampmesh/hex8_element_t.cpp
+objectIndex:*/src/ampmesh/libmesh/initializeLibMesh.cpp
+ignoredReturnValue:*/src/ampmesh/shapes/GeometryHelpers.cpp
+unassignedVariable:*/src/ampmesh/triangle/TriangleMesh.cpp
 
 
 //***********************************************************

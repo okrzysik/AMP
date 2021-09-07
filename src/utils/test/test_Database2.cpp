@@ -168,32 +168,57 @@ bool compare_SAMRAI( SAMRAI::tbox::Database &db1, SAMRAI::tbox::Database &db2 )
     }
     return true;
 }
-void testSAMRAI( AMP::UnitTest &ut )
+void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
 {
+    bool pass = true;
+
     // Read the input database from SAMRAI
-    auto input_db1 = std::make_shared<SAMRAI::tbox::MemoryDatabase>( "input_SAMRAI" );
-    SAMRAI::tbox::InputManager::getManager()->parseInputFile( "input_SAMRAI", input_db1 );
+    auto SAMRAI_db = std::make_shared<SAMRAI::tbox::MemoryDatabase>( "input_SAMRAI" );
+    SAMRAI::tbox::InputManager::getManager()->parseInputFile( inputFile, SAMRAI_db );
 
     // Read the input database through the default reader
-    auto input_db2 = AMP::Database::parseInputFile( "input_SAMRAI" );
+    auto AMP_db = AMP::Database::parseInputFile( inputFile );
 
-    // Convert SAMRAI's database to the default and check that they are equal
-    AMP::Database input_db3( input_db1 );
-    if ( input_db3 == *input_db2 )
-        ut.passes( "Convert SAMRAI database to AMP::Database" );
-    else
-        ut.failure( "Convert SAMRAI database to AMP::Database" );
+    // Convert AMP to SAMRAI to AMP and compare
+    AMP::Database db1( AMP_db->cloneToSAMRAI() );
+    if ( db1 != *AMP_db ) {
+        pass = false;
+        ut.failure( "Read AMP dbdatabase, convert to SAMRAI then back to AMP" );
+    }
 
-    // Convert the AMP database to SAMRAI and check
-    auto input_db4 = input_db2->cloneToSAMRAI();
-    bool pass      = compare_SAMRAI( *input_db4, *input_db1 );
+    // Convert SAMRAI to AMP to SAMRAI and compare
+    auto db2 = std::make_shared<AMP::Database>( *SAMRAI_db )->cloneToSAMRAI();
+    if ( !compare_SAMRAI( *db2, *SAMRAI_db ) ) {
+        pass = false;
+        ut.failure( "Read SAMRAI database, convert to AMP then back to SAMRAI" );
+    }
+
+    // Convert SAMRAI's database to AMP and compare to AMP's reader
+    AMP::Database db3( SAMRAI_db );
+    if ( db3 != *AMP_db ) {
+        pass = false;
+        ut.failure( "Read AMP and SAMRAI databases, compare in AMP" );
+    }
+
+    // Convert the AMP database to SAMRAI and compare to AMP's reader
+    auto db4 = AMP_db->cloneToSAMRAI();
+    if ( !compare_SAMRAI( *db4, *SAMRAI_db ) ) {
+        pass = false;
+        ut.failure( "Read AMP and SAMRAI databases, compare in SAMRAI" );
+    }
+
+    // Check readThroughSAMRAI
+    auto db5 = AMP::Database::readThroughSAMRAI( inputFile )->cloneToSAMRAI();
+    if ( !compare_SAMRAI( *db5, *SAMRAI_db ) ) {
+        pass = false;
+        ut.failure( "readThroughSAMRAI" );
+    }
+
     if ( pass )
-        ut.passes( "Convert AMP::Database to SAMRAI database" );
-    else
-        ut.failure( "Convert AMP::Database to SAMRAI database" );
+        ut.passes( "Converting between AMP and SAMRAI databases" );
 }
 #else
-void testSAMRAI( AMP::UnitTest & ) {}
+void testSAMRAI( AMP::UnitTest &, const std::string & ) {}
 #endif
 
 
@@ -207,7 +232,8 @@ int main( int argc, char *argv[] )
 
     readInputDatabase( ut );
     testCreateDatabase( ut );
-    testSAMRAI( ut );
+    testSAMRAI( ut, "input_SAMRAI" );
+    testSAMRAI( ut, "input_NRDF" );
 
     ut.report();
 

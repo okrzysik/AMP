@@ -6,6 +6,7 @@
 #include <complex>
 #include <cstring>
 #include <iomanip>
+#include <map>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -15,7 +16,11 @@ namespace AMP {
 
 
 // Forward declarations
-static size_t loadDatabase( const char *, size_t, Database & );
+static size_t
+loadDatabase( const char *,
+              size_t,
+              Database &,
+              std::map<std::string, const KeyData *> = std::map<std::string, const KeyData *>() );
 
 
 /********************************************************************
@@ -279,14 +284,20 @@ std::vector<std::string> Database::getAllKeys( bool sort ) const
         std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, bool check )
+void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check )
 {
+    AMP_ASSERT( check >= 0 && check <= 4 );
     auto hash = hashString( key );
     int index = find( hash );
     if ( index != -1 ) {
-        if ( check )
-            DATABASE_ERROR( "Variable %s already exists in database", key.data() );
-        d_data[index] = std::move( data );
+        if ( check == 4 )
+            DATABASE_ERROR( "Error: Variable '%s' already exists in database",
+                            std::string( key ).data() );
+        if ( check == 2 || check == 3 )
+            DATABASE_WARNING( "Warning: variable '%s' already exists in database",
+                              std::string( key ).data() );
+        if ( check == 0 || check == 2 )
+            d_data[index] = std::move( data );
     } else {
         d_hash.emplace_back( hash );
         d_keys.emplace_back( key );
@@ -315,76 +326,51 @@ void Database::erase( const std::string_view &key, bool check )
  * Is the data of the given type                                     *
  ********************************************************************/
 template<>
-bool Database::isType<std::string>( const std::string_view &key ) const
+bool KeyData::isType<std::string>() const
 {
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type = data->type();
-    return type == typeid( std::string ).name();
-}
-bool Database::isString( const std::string_view &key ) const { return isType<std::string>( key ); }
-template<>
-bool Database::isType<bool>( const std::string_view &key ) const
-{
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type  = data->type();
-    auto type2 = typeid( bool ).name();
-    return type == type2;
+    return type() == typeid( std::string ).name();
 }
 template<>
-bool Database::isType<std::complex<float>>( const std::string_view &key ) const
+bool KeyData::isType<bool>() const
 {
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type = data->type();
-    return type == typeid( std::complex<float> ).name();
+    return type() == typeid( bool ).name();
 }
 template<>
-bool Database::isType<std::complex<double>>( const std::string_view &key ) const
+bool KeyData::isType<std::complex<float>>() const
 {
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type = data->type();
-    return type == typeid( std::complex<double> ).name();
+    return type() == typeid( std::complex<float> ).name();
 }
 template<>
-bool Database::isType<double>( const std::string_view &key ) const
+bool KeyData::isType<std::complex<double>>() const
 {
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type = data->type();
-    if ( type == typeid( double ).name() )
+    return type() == typeid( std::complex<double> ).name();
+}
+template<>
+bool KeyData::isType<double>() const
+{
+    if ( type() == typeid( double ).name() )
         return true;
-    bool is_floating = data->is_floating_point();
-    bool is_integral = data->is_integral();
-    return is_floating || is_integral;
+    return is_floating_point() || is_integral();
 }
 template<>
-bool Database::isType<DatabaseBox>( const std::string_view &key ) const
+bool KeyData::isType<DatabaseBox>() const
 {
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type = data->type();
-    return type == typeid( DatabaseBox ).name();
+    return type() == typeid( DatabaseBox ).name();
 }
 template<class TYPE>
-bool Database::isType( const std::string_view &key ) const
+bool KeyData::isType() const
 {
-    auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    auto type = data->type();
-    if ( type == typeid( TYPE ).name() )
+    if ( type() == typeid( TYPE ).name() )
         return true;
-    if ( data->is_integral() ) {
-        auto data2 = data->convertToInt64();
+    if ( is_integral() ) {
+        auto data2 = convertToInt64();
         bool pass  = true;
         for ( auto tmp : data2 )
             pass = pass && static_cast<int64_t>( static_cast<TYPE>( tmp ) ) == tmp;
         return pass;
     }
-    if ( data->is_floating_point() ) {
-        auto data2 = data->convertToDouble();
+    if ( is_floating_point() ) {
+        auto data2 = convertToDouble();
         bool pass  = true;
         for ( auto tmp : data2 )
             pass = pass && static_cast<double>( static_cast<TYPE>( tmp ) ) == tmp;
@@ -392,17 +378,23 @@ bool Database::isType( const std::string_view &key ) const
     }
     return false;
 }
-template bool Database::isType<char>( const std::string_view & ) const;
-template bool Database::isType<uint8_t>( const std::string_view & ) const;
-template bool Database::isType<uint16_t>( const std::string_view & ) const;
-template bool Database::isType<uint32_t>( const std::string_view & ) const;
-template bool Database::isType<uint64_t>( const std::string_view & ) const;
-template bool Database::isType<int8_t>( const std::string_view & ) const;
-template bool Database::isType<int16_t>( const std::string_view & ) const;
-template bool Database::isType<int32_t>( const std::string_view & ) const;
-template bool Database::isType<int64_t>( const std::string_view & ) const;
-template bool Database::isType<float>( const std::string_view & ) const;
-template bool Database::isType<long double>( const std::string_view & ) const;
+template bool KeyData::isType<char>() const;
+template bool KeyData::isType<uint8_t>() const;
+template bool KeyData::isType<uint16_t>() const;
+template bool KeyData::isType<uint32_t>() const;
+template bool KeyData::isType<uint64_t>() const;
+template bool KeyData::isType<int8_t>() const;
+template bool KeyData::isType<int16_t>() const;
+template bool KeyData::isType<int32_t>() const;
+template bool KeyData::isType<int64_t>() const;
+template bool KeyData::isType<float>() const;
+template bool KeyData::isType<long double>() const;
+bool Database::isString( const std::string_view &key ) const
+{
+    auto data = getData( key );
+    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    return data->isType<std::string>();
+}
 
 
 /********************************************************************
@@ -570,9 +562,57 @@ static size_t skip_comment( const char *buffer )
     }
     return pos;
 }
-enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, ARRAY, UNKNOWN };
-static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buffer,
-                                                                const std::string_view &key )
+enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, ARRAY, DATABASE_ENTRY, UNKNOWN };
+static class_type getType( std::string_view value0,
+                           const std::map<std::string, const KeyData *> &databaseKeys )
+{
+    // Check for empty string
+    if ( value0.empty() )
+        return class_type::INT;
+    // Check if we have units
+    auto value = value0;
+    if ( value.find( ' ' ) != std::string::npos ) {
+        value = deblank( value.substr( 0, value.find( ' ' ) ) );
+    }
+    // Check if we are dealing with a simple bool
+    if ( strcmpi( value, "true" ) || strcmpi( value, "false" ) )
+        return class_type::BOOL;
+    // Check if we could be an int or float
+    bool is_int   = true;
+    bool is_float = true;
+    for ( size_t j = 0; j < value.size(); j++ ) {
+        char c = value[j];
+        if ( c < 42 || c == 46 || c >= 58 )
+            is_int = false;
+        if ( ( c < 42 || c >= 58 ) && ( c != 69 && c != 101 ) )
+            is_float = false;
+    }
+    if ( is_int )
+        return class_type::INT;
+    if ( is_float )
+        return class_type::FLOAT;
+    // Check for special floating point types
+    if ( strcmpi( value, "inf" ) || strcmpi( value, "nan" ) )
+        return class_type::FLOAT;
+    // Check if we are a database entry
+    if ( databaseKeys.find( std::string( value0 ) ) != databaseKeys.end() )
+        return class_type::DATABASE_ENTRY;
+    // Return unknown
+    return class_type::UNKNOWN;
+}
+template<class T>
+static bool isType( const std::vector<const KeyData *> data )
+{
+    bool test = true;
+    for ( auto tmp : data )
+        test = test && tmp->isType<T>();
+    return test;
+}
+static std::tuple<size_t, std::unique_ptr<KeyData>>
+read_value( const char *buffer,
+            const std::string_view &key,
+            const std::map<std::string, const KeyData *> &databaseKeys =
+                std::map<std::string, const KeyData *>() )
 {
     // Split the value to an array of values
     size_t pos      = 0;
@@ -653,24 +693,26 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
             break;
         }
     }
-    // Check if we are dealing with boolean values
-    if ( strcmpi( values[0], "true" ) || strcmpi( values[0], "false" ) )
-        data_type = class_type::BOOL;
-    // Check if we are dealing with int
+    // Check the type of each entry
     if ( data_type == class_type::UNKNOWN ) {
-        bool is_int = true;
-        for ( size_t i = 0; i < values.size(); i++ ) {
-            for ( size_t j = 0; j < values[i].size(); j++ ) {
-                if ( values[i][j] < 42 || values[i][j] == 46 || values[i][j] >= 58 )
-                    is_int = false;
+        data_type = getType( values[0], databaseKeys );
+        for ( size_t i = 1; i < values.size(); i++ ) {
+            auto type = getType( values[i], databaseKeys );
+            if ( type == class_type::UNKNOWN ) {
+                data_type = class_type::UNKNOWN;
+                break;
+            } else if ( ( type == class_type::INT || type == class_type::FLOAT ) &&
+                        ( data_type == class_type::INT || data_type == class_type::FLOAT ) ) {
+                data_type = class_type::FLOAT;
+            } else if ( type != data_type ) {
+                throw std::logic_error( "Mismatched types in '" + std::string( key ) + "'" );
             }
         }
-        if ( is_int )
-            data_type = class_type::INT;
     }
-    // Default to an unknown type
-    if ( data_type == class_type::UNKNOWN )
-        data_type = class_type::FLOAT;
+    if ( data_type == class_type::UNKNOWN ) {
+        throw std::logic_error( "Unkown type in '" + std::string( key ) + "':\n   " +
+                                std::string( buffer, pos ) );
+    }
     // Convert the string value to the database value
     std::unique_ptr<KeyData> data;
     if ( values.empty() ) {
@@ -849,7 +891,46 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
                 data = std::make_unique<KeyDataArray<int>>( std::move( A ), unit );
             }
         }
-    } else {
+    } else if ( data_type == class_type::DATABASE_ENTRY ) {
+        std::vector<const KeyData *> data2( values.size(), nullptr );
+        for ( size_t i = 0; i < values.size(); i++ )
+            data2[i] = databaseKeys.find( std::string( values[i] ) )->second;
+        if ( values.size() == 1 ) {
+            data = data2[0]->clone();
+        } else {
+            for ( size_t i = 0; i < values.size(); i++ ) {
+                if ( data2[i]->arraySize().length() != 1 )
+                    throw std::logic_error(
+                        "Using multiple values from database only works for scalars: " +
+                        std::string( key ) );
+            }
+            if ( isType<bool>( data2 ) ) {
+                AMP::Array<bool> x( values.size() );
+                for ( size_t i = 0; i < values.size(); i++ )
+                    x( i ) = dynamic_cast<const KeyDataScalar<bool> *>( data2[i] )->get();
+                data = std::make_unique<KeyDataArray<bool>>( std::move( x ) );
+            } else if ( isType<int>( data2 ) ) {
+                AMP::Array<int> x( values.size() );
+                for ( size_t i = 0; i < values.size(); i++ )
+                    x( i ) = dynamic_cast<const KeyDataScalar<int> *>( data2[i] )->get();
+                data = std::make_unique<KeyDataArray<int>>( std::move( x ) );
+            } else if ( isType<double>( data2 ) ) {
+                AMP::Array<double> x( values.size() );
+                for ( size_t i = 0; i < values.size(); i++ )
+                    x( i ) = dynamic_cast<const KeyDataScalar<double> *>( data2[i] )->get();
+                data = std::make_unique<KeyDataArray<double>>( std::move( x ) );
+            } else if ( isType<std::string>( data2 ) ) {
+                AMP::Array<std::string> x( values.size() );
+                for ( size_t i = 0; i < values.size(); i++ )
+                    x( i ) = dynamic_cast<const KeyDataScalar<std::string> *>( data2[i] )->get();
+                data = std::make_unique<KeyDataArray<std::string>>( std::move( x ) );
+            } else {
+                throw std::logic_error(
+                    "Using multiple values from database - unable to convert data: " +
+                    std::string( key ) );
+            }
+        }
+    } else if ( data_type == class_type::UNKNOWN ) {
         // Treat unknown data as a string
         if ( values.size() == 1 ) {
             std::string str( values[0] );
@@ -860,10 +941,15 @@ static std::tuple<size_t, std::unique_ptr<KeyData>> read_value( const char *buff
                 data2( i ) = std::string( values[i].data(), values[i].size() );
             data = std::make_unique<KeyDataArray<std::string>>( std::move( data2 ) );
         }
+    } else {
+        throw std::logic_error( "Internal error" );
     }
     return std::make_tuple( pos, std::move( data ) );
 }
-static size_t loadDatabase( const char *buffer, size_t N, Database &db )
+static size_t loadDatabase( const char *buffer,
+                            size_t N,
+                            Database &db,
+                            std::map<std::string, const KeyData *> databaseKeys )
 {
     size_t pos = 0;
     while ( pos < N ) {
@@ -884,8 +970,9 @@ static size_t loadDatabase( const char *buffer, size_t N, Database &db )
             DATABASE_INSIST( !key.empty(), "Empty key" );
             pos += i;
             std::unique_ptr<KeyData> data;
-            std::tie( i, data ) = read_value( &buffer[pos], key );
+            std::tie( i, data ) = read_value( &buffer[pos], key, databaseKeys );
             DATABASE_INSIST( data.get(), "null pointer" );
+            databaseKeys[std::string( key )] = data.get();
             db.putData( key, std::move( data ) );
             pos += i;
         } else if ( type == token_type::bracket ) {
@@ -893,8 +980,9 @@ static size_t loadDatabase( const char *buffer, size_t N, Database &db )
             DATABASE_INSIST( !key.empty(), "Empty key" );
             pos += i;
             auto database = std::make_unique<Database>();
-            pos += loadDatabase( &buffer[pos], N - pos, *database );
-            database->setName( std::string( key.data(), key.size() ) );
+            pos += loadDatabase( &buffer[pos], N - pos, *database, databaseKeys );
+            database->setName( std::string( key ) );
+            databaseKeys[std::string( key )] = database.get();
             db.putData( key, std::move( database ) );
         } else if ( type == token_type::end_bracket || type == token_type::end ) {
             // Finished with the database

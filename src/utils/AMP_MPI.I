@@ -122,7 +122,6 @@ MPI_Datatype MPI_getType()
         return MPI_FLOAT_INT;
     if constexpr ( std::is_same<TYPE, TypeIntStruct<double>>::value )
         return MPI_DOUBLE_INT;
-    throw std::logic_error( "Invalid MPI type" );
     return MPI_DATATYPE_NULL;
 }
 #endif

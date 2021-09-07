@@ -1,0 +1,379 @@
+DIRICHLET  =  0
+NEUMANN  =  1
+MIXED  =  2
+ROBIN  =  4
+
+dim=3
+
+Main{
+   regrid_interval            =  0
+   restart_interval           =  0
+   plot_interval              =  0
+   plot_on_regrid             = FALSE
+   restart_write_dirname      =  "restart"
+   use_gradient_regridder_after_first_step = TRUE
+   print_load_balance         = FALSE
+//   print_boxes_on_regrid      = TRUE
+//   print_coarsened_boxes_on_regrid = TRUE
+   log_all_nodes              = FALSE
+   log_after_run              = TRUE
+//   tag_buffer = 1,1,1
+}
+
+CartesianGeometry{
+   domain_boxes  =  [(0,0,0), (3,3,3)]
+   x_lo          =  0.0e0, 0.0e0, 0.0e0
+   x_up          =  1.0e0, 1.0e0, 1.0e0
+}
+
+PatchHierarchy{
+   max_levels  = 3
+   proper_nesting_buffer   = 2
+   largest_patch_size {
+      level_0  =  4,4,4  // all finer levels will use same values as level_0...
+      level_1  =  8,8,8  // all finer levels will use same values as level_0...
+      level_2  =  16,16,16  // all finer levels will use same values as level_0...
+      level_3  =  32,32,32  // all finer levels will use same values as level_0...
+   }
+   smallest_patch_size {
+      level_0  =  4,4,4  // all finer levels will use same values as level_0...
+      level_1  =  8,8,8  // all finer levels will use same values as level_0...
+      level_2  =  16,16,16  // all finer levels will use same values as level_0...
+      level_3  =  16,16,16  // all finer levels will use same values as level_0...
+   }
+   ratio_to_coarser {
+      level_1   =  2,2,2
+      level_2   =  2,2,2
+      level_3   =  2,2,2
+      level_4   =  2,2,2
+      level_5   =  2,2,2
+      level_6   =  2,2,2
+      level_7   =  2,2,2
+      level_8   =  2,2,2
+      level_9   =  2,2,2
+      level_10  =  2,2,2
+   }
+}
+
+GriddingAlgorithm{
+   combine_efficiency  =  0.8
+   efficiency_tolerance  =  0.8
+   write_refine_boxes  =  TRUE
+}
+
+
+ChopAndPackLoadBalancer {
+   use_spatial_bin_pack  = TRUE              // input not used
+   bin_pack_method       = "SPATIAL"         // from default
+}
+
+MarshakProblem{
+   model_version = 1
+   model_order = 2
+   test_case                  =  "simple case"
+   k                          =  0.01
+   use_parameters             =  TRUE
+   use_ha                     =  TRUE
+   use_mimetic_limiter        =  FALSE
+
+//   energy_diffusion_model_str      = "constant_diffusion"
+//   const_energy_diffusion_coeff      = 0.005
+//   temperature_diffusion_model_str = "constant_diffusion"
+//   const_temperature_diffusion_coeff = 0.005
+
+   initial_energy_value       =  1.0e-05
+
+   energy_boundary_conditions      =  ROBIN, ROBIN, NEUMANN, NEUMANN, NEUMANN, NEUMANN
+   temperature_boundary_conditions =  NEUMANN, NEUMANN, NEUMANN, NEUMANN, NEUMANN, NEUMANN
+
+   incident_flux_E            =  1.0, 0.0, 0.0, 0.0, 0.0, 0.0
+   incident_flux_T            =  0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+   use_flux_limiter           =  TRUE
+   curvature_threshold        =  1.0
+   gradient_threshold         =  1.0
+   front_threshold            =  10.0
+   front_viz                  =  FALSE
+//   print_info_level = 5
+   print_info_level = 0
+   partial_refinement_level = 3
+
+// Block refinement, i.e.,
+// refine whole patch it any cell it it is tagged for refinement.
+//   fixed_block_size_refinement_strategy = TRUE
+
+   atomic_number{
+      regions  =  "Rectangle1", "Rectangle2", "Rectangle3"
+	   background_z   =  1.0
+      Rectangle1 {
+     	   material_z    =  10.0
+// When choosing starting and ending coordinates for material boundaries
+// please choose grid aligned co-ordinate points
+         material_xlo  =  0.0625, 0.375, 0.375
+         material_xhi  =  0.2, 0.625, 0.625
+      }
+
+      Rectangle2 {
+     	   material_z    =  10.0
+// When choosing starting and ending coordinates for material boundaries
+// please choose grid aligned co-ordinate points
+         material_xlo  =  0.125, 0.0, 0.0
+         material_xhi  =  0.375, 1.0, 0.125
+      }
+
+      Rectangle3 {
+     	   material_z    =  10.0
+// When choosing starting and ending coordinates for material boundaries
+// please choose grid aligned co-ordinate points
+         material_xlo  =  0.125, 0.0, 0.875
+         material_xhi  =  0.375, 1.0, 1.0
+      }
+   }
+
+
+// To use visit, set enable_viz_writer TRUE and plot_interval bigger than 0.
+// If read_checkpoint in RestartData is TRUE, set use_vist to FALSE.
+// When hitting checkpoints, solution data are written automatically.
+// Otherwise, two functions try to write data and conflict.
+   enable_viz_writer                  =  FALSE
+   viz_directory              = "viz.BDF2.FAC.16b1l"
+   nl_tangential_coarse_fine_scheme = "LINEAR"
+   nl_normal_coarse_fine_scheme       = "LINEAR"
+
+
+   PreconditionerOperator{
+      name = "RD2TPCOperator"
+
+      preconditioner_print_flag         = FALSE
+
+
+      pc_E_operator{
+         name                   = "CellDiffusionMultilevelOperator"
+         tangent_interp_scheme           = "LINEAR"
+         normal_interp_scheme            = "LINEAR"
+         adjust_cf_coefficients          = FALSE
+         interpolate_ghost_values        = TRUE
+         extrapolation_order             = 1
+         boundary_conditions             = ROBIN, ROBIN, NEUMANN, NEUMANN, NEUMANN, NEUMANN
+         coarsen_diffusive_fluxes        = TRUE
+         print_info_level                = 0
+         cell_refine_op                  = "CONSTANT_REFINE"
+         cell_coarsen_op                 = "CONSERVATIVE_COARSEN"
+         face_refine_op                  = "CONSTANT_REFINE"
+         face_coarsen_op                 = "CONSERVATIVE_COARSEN"
+         variable_order_interpolation    = FALSE
+         use_cf_interpolant              = TRUE
+      }
+
+      pc_T_operator{
+         name                   = "CellDiffusionMultilevelOperator"
+         tangent_interp_scheme           = "LINEAR"
+         normal_interp_scheme            = "LINEAR"
+         adjust_cf_coefficients          = FALSE
+         interpolate_ghost_values        = TRUE
+         extrapolation_order             = 1
+         boundary_conditions             = NEUMANN, NEUMANN, NEUMANN, NEUMANN, NEUMANN, NEUMANN
+         coarsen_diffusive_fluxes        = TRUE
+         print_info_level                = 0
+         cell_refine_op                  = "CONSTANT_REFINE"
+         cell_coarsen_op                 = "CONSERVATIVE_COARSEN"
+         face_refine_op                  = "CONSTANT_REFINE"
+         face_coarsen_op                 = "CONSERVATIVE_COARSEN"
+         variable_order_interpolation    = FALSE
+         use_cf_interpolant              = TRUE
+      }
+   }
+}
+
+NKASolver{
+   name = "NKASolver"
+   max_iterations                   = 50
+   absolute_tolerance                        = 1.0e-12
+   print_info_level                 = 0
+   max_vectors                      = 5
+   angle_tolerance                  = .01
+   absolute_tolerance               = 1.0e-12
+   relative_tolerance = 1.0e-08
+   use_preconditioner                           = TRUE
+   freeze_pc                        = FALSE
+   plot_data                        = FALSE
+}
+
+
+SNESSolver{
+   name = "SNESSolver"
+    use_preconditioner              =  TRUE
+//    use_preconditioner              =  FALSE
+    uses_explicit_jacobian           =  FALSE
+//   print_linear_residuals  =  TRUE
+//   print_nonlinear_residuals  =  TRUE
+    absolute_tolerance               =  1.0e-12
+    relative_tolerance               =  1.0e-10
+//   absolute_tolerance               =  1.0e-12
+//    relative_tolerance               =  1.0e-10
+//    absolute_tolerance               =  1.0e-12
+//    relative_tolerance               =  1.0e-13
+    step_tolerance                   =  1.0e-14
+    linear_solver_type               =  "fgmres"
+//    maximum_gmres_krylov_dimension   =  20
+    maximum_gmres_krylov_dimension   =  50
+//    maximum_linear_iterations        =  50
+    maximum_linear_iterations        =  100
+//    differencing_parameter_strategy  =  "ds"
+    differencing_parameter_strategy  =  "ds"
+    forcing_term_strategy            =  "EWCHOICE3"
+    EW_choice2_alpha = 2.0
+    EW_choice2_gamma = 0.9
+//    constant_forcing_term            =  0.01
+    constant_forcing_term            =  0.01
+//    constant_forcing_term            =  0.1
+}
+
+TimerManager{
+   print_exclusive      = TRUE
+   print_timer_overhead = TRUE
+   print_max            = TRUE
+   timer_list = "FAC::*::*", "AFAC::*::*", "AFACx::*::*", "SAMRUtils::AMRUtilities::*::*", "apps::main::main", "RD2T::*::*", "LevelSolver::*::*"
+}
+
+RestartData{
+// Set to TRUE if the regrid boxes should be written out to file
+   write_regrid_data = FALSE
+// The directory to which the regrid boxes at each regrid will be written out
+   regrid_dir = "regrid"
+
+// Set to TRUE if the timesteps for a run are to be recorded in a file
+   write_timestep_data = FALSE
+// Set to TRUE if the timesteps for a run are to be read from a file
+   read_timestep_data  = FALSE
+// Directory to write timestep data out to. This is not used currently.
+//   timestep_dir = "timesteps"
+// File to write timestep data out to
+   timestep_file = "timesteps"
+
+// Set to TRUE if the solution should be written out to file
+   write_checkpoint = FALSE
+// Set to TRUE if the reference solution for a run are to be read from a file
+   read_checkpoint = FALSE
+// Directory to write out checkpoint data to
+   checkpoint_directory = "checkpoints"
+// Check points
+   checkpoint_times = 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0
+// Number of checkpoint files
+   number_of_files = 20
+}
+
+
+TreeLoadBalancer {
+}
+
+
+
+
+StandardTagAndInitialize{
+ at_0 {
+   time=0.0
+   tag_0 {
+//   tagging_method  =  "GRADIENT_DETECTOR"
+   tagging_method  =  "REFINE_BOXES"
+   level_0{
+       boxes = [(0,0,0),(3,3,3)]
+   }
+   level_1{
+       boxes = [(0,0,0),(7,7,7)]
+   }
+   level_2{
+       boxes = [(0,0,0),(15,15,15)]
+   }
+   }
+
+ }
+}
+
+ImplicitIntegrator{
+      name             = "ImplicitIntegrator"
+      variable_names              = "E", "T"
+      solver_name                 = "NKASolver"
+      initial_time                =  0.0
+      final_time                  =  0.5
+      max_integrator_steps        =  500000
+      implicit_integrator         =  "BDF2"
+      predictor_type              = "leapfrog"
+      initial_dt            =  4.0e-04
+      use_explicit_timesteps      =  TRUE
+//      timestep_selection_strategy  =  "constant"
+//      timestep_selection_strategy  =  "final constant"
+//   timestep_selection_strategy  =  "limit relative change"
+      timestep_selection_strategy =  "truncationErrorStrategy"
+//    setting this to be true seems to be important right now after regridding
+      combine_timestep_estimators = FALSE
+      use_pi_controller        = TRUE
+      pi_controller_type          = "PC.4.7"
+      truncation_error_rtol       = 1.0e-03
+      truncation_error_atol       = 1.0e-03
+      problem_fixed_scaling       = 1.0e-04, 0.5623413251903490808
+      target_relative_change      = 0.25
+      temporal_cfl                = 0.1
+      max_fourier_number          = 40.0
+      bdf1_eps_regrid_steps       = 4      // number of steps to use BDF1 based error estimator after regrid
+//      max_dt                = 4.0e-04
+      max_dt                = 1.0
+}
+ 
+PCSolver{
+   name = "RD2TPreconditioner"
+         use_one_solver                  = FALSE
+
+         pc_solver_E{
+            name                     = "FAC"
+            max_iterations                  = 1
+            absolute_tolerance                       = 1.0e-15
+            print_info_level                = 0
+            presolve_iterations             = 1
+            postsolve_iterations            = 0
+            enable_viz_writer                       = FALSE
+            viz_directory                   = "fac_viz"
+            zero_initial_guess              = TRUE
+            check_convergence               = FALSE
+
+            level_solver_0 {
+               name                = "CellLevelSmoother"
+               smoother_type              = "Red-black Gauss-Seidel"
+//               name                = "CellLevelBlockSmoother"
+//               smoother_type              = "Block Gauss-Seidel"
+//               block_size                 = 2,2,2
+//               overlap                    = 0,0,0
+               print_info_level           = 0
+               max_iterations             = 1
+               absolute_tolerance                  = 1.0e-15
+               num_sweeps                 = 1
+            }
+         }
+
+         pc_solver_T{
+            use_one_solver                  = FALSE
+            name                     = "FAC"
+            max_iterations                  = 1
+            absolute_tolerance                       = 1.0e-15
+            print_info_level                = 0
+            presolve_iterations             = 1
+            postsolve_iterations            = 0
+            enable_viz_writer                       = FALSE
+            viz_directory                   = "fac_viz"
+            zero_initial_guess              = TRUE
+            check_convergence               = FALSE
+
+            level_solver_0 {
+               name                = "CellLevelSmoother"
+               smoother_type              = "Red-black Gauss-Seidel"
+//               name                = "CellLevelBlockSmoother"
+//               smoother_type              = "Block Gauss-Seidel"
+//               block_size                 = 2,2,2
+//               overlap                    = 0,0,0
+               print_info_level           = 0
+               max_iterations             = 1
+               absolute_tolerance                  = 1.0e-15
+               num_sweeps                 = 1
+            }
+         }
+      }

@@ -209,7 +209,7 @@ std::vector<size_t> multiDOFManager::getGlobalDOF( const int manager,
     return dofs;
 }
 std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
-                                                std::vector<size_t> &globalDOFs ) const
+                                                const std::vector<size_t> &globalDOFs ) const
 {
     std::vector<size_t> dofs( globalDOFs.size() );
     for ( size_t i = 0; i < dofs.size(); i++ ) {

@@ -15,6 +15,12 @@
         sprintf( msg, __VA_ARGS__ );   \
         throw std::logic_error( msg ); \
     } while ( 0 )
+#define DATABASE_WARNING( ... )        \
+    do {                               \
+        char msg[1000];                \
+        sprintf( msg, __VA_ARGS__ );   \
+        AMP::pout << msg << std::endl; \
+    } while ( 0 )
 #define DATABASE_INSIST( TEST, ... )       \
     do {                                   \
         if ( !( TEST ) ) {                 \
@@ -481,6 +487,18 @@ inline void Database::putArray( const std::string_view &key, Array<TYPE> data, U
 {
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( data ), unit );
     putData( key, std::move( keyData ) );
+}
+
+
+/********************************************************************
+ * isType                                                            *
+ ********************************************************************/
+template<class TYPE>
+inline bool Database::isType( const std::string_view &key ) const
+{
+    auto data = getData( key );
+    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    return data->isType<TYPE>();
 }
 
 

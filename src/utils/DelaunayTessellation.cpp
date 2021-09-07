@@ -2329,7 +2329,7 @@ static inline int digits( size_t NDIM, size_t N, const TYPE *x )
         TYPE x2 = x[i] >= 0 ? x[i] : -x[i];
         x_max   = std::max<uint64_t>( static_cast<uint64_t>( x2 ), x_max );
     }
-    return NDIM * ceil( log2( x_max ) );
+    return NDIM * ceil( log2( std::max<uint64_t>( x_max, 2 ) ) );
 }
 template<class TYPE>
 static inline uint64_t digits( const Array<TYPE> &x )

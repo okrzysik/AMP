@@ -36,3 +36,13 @@ StandardTagAndInitialize{
 TreeLoadBalancer {
 }
 
+A{
+ v1 = 1.0
+ B{
+   v2 = 2.0
+   C{
+     v3 = 5.0
+   }
+ }
+}
+     

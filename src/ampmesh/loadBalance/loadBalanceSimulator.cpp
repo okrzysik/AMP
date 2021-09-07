@@ -345,7 +345,7 @@ void loadBalanceSimulator::loadBalance( int N_proc, std::vector<int> &N )
     while ( N_proc - Np - std::min( N0, 1 ) > 0 ) {
         int i = findMax( cost );
         if ( N[i] == 0 ) {
-            int k    = -1;
+            int k    = 0;
             double c = 0;
             for ( size_t j = 0; j < N.size(); j++ ) {
                 if ( N[j] == 0 && c < d_submeshes[j].d_maxCostRank ) {

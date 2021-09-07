@@ -88,6 +88,17 @@ std::shared_ptr<SAMRAI::tbox::Database> AMP::Database::cloneToSAMRAI() const
 
 
 /********************************************************************
+ * Construct an AMP database using SAMRAI                            *
+ ********************************************************************/
+std::shared_ptr<AMP::Database> AMP::Database::readThroughSAMRAI( const std::string &filename )
+{
+    auto db = std::make_shared<SAMRAI::tbox::MemoryDatabase>( filename );
+    SAMRAI::tbox::InputManager::getManager()->parseInputFile( filename, db );
+    return std::make_shared<AMP::Database>( db );
+}
+
+
+/********************************************************************
  * Convert DatabaseBox                                               *
  ********************************************************************/
 AMP::DatabaseBox::DatabaseBox( const SAMRAI::tbox::DatabaseBox &box ) : d_dim( box.getDimVal() )
