@@ -41,6 +41,9 @@ public:
     virtual bool is_floating_point() const = 0;
     //! Return true if the type is a integer point type
     virtual bool is_integral() const = 0;
+    // Check if the entry can be stored as the given type
+    template<class TYPE>
+    bool isType() const;
     //! Return the array size
     virtual ArraySize arraySize() const = 0;
     //! Return the data as a Array<double> (throw error if this is not valid)
@@ -315,7 +318,7 @@ public:
      *                  0 - Overwrite the data
      *                  1 - Keep the existing data
      *                  2 - Overwrite the data but print a warning (default)
-     *                  3 - Keep the data but print a warning
+     *                  3 - Keep the existing data but print a warning
      *                  4 - Throw an error
      */
     void putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check = 2 );
@@ -325,13 +328,13 @@ public:
     bool isDatabase( const std::string_view &key ) const;
 
 
-    // Check if the key is a database object
+    // Check if the named entry is a string
     bool isString( const std::string_view &key ) const;
 
 
     // Check if the entry can be stored as the given type
     template<class TYPE>
-    bool isType( const std::string_view &key ) const;
+    inline bool isType( const std::string_view &key ) const;
 
 
     /**

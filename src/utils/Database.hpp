@@ -490,6 +490,18 @@ inline void Database::putArray( const std::string_view &key, Array<TYPE> data, U
 }
 
 
+/********************************************************************
+ * isType                                                            *
+ ********************************************************************/
+template<class TYPE>
+inline bool Database::isType( const std::string_view &key ) const
+{
+    auto data = getData( key );
+    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    return data->isType<TYPE>();
+}
+
+
 } // namespace AMP
 
 #endif

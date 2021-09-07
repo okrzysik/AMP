@@ -68,7 +68,23 @@ template<> struct TypeIntSelector<double>   { using type = TypeIntStruct<double>
 template<typename T> struct TypeIntSelector { using type = TypeIntStruct<T>;     };
 // clang-format on
 template<class TYPE>
-constexpr MPI_Datatype MPI_getType()
+constexpr bool isMPItype()
+{
+    return std::is_same<TYPE, char>::value || std::is_same<TYPE, uint8_t>::value ||
+           std::is_same<TYPE, int8_t>::value || std::is_same<TYPE, uint16_t>::value ||
+           std::is_same<TYPE, int16_t>::value || std::is_same<TYPE, uint32_t>::value ||
+           std::is_same<TYPE, int32_t>::value || std::is_same<TYPE, uint64_t>::value ||
+           std::is_same<TYPE, int64_t>::value || std::is_same<TYPE, float>::value ||
+           std::is_same<TYPE, double>::value || std::is_same<TYPE, std::complex<float>>::value ||
+           std::is_same<TYPE, std::complex<double>>::value ||
+           std::is_same<TYPE, TypeIntStruct<short>>::value ||
+           std::is_same<TYPE, TypeIntStruct<int>>::value ||
+           std::is_same<TYPE, TypeIntStruct<long>>::value ||
+           std::is_same<TYPE, TypeIntStruct<float>>::value ||
+           std::is_same<TYPE, TypeIntStruct<double>>::value;
+}
+template<class TYPE>
+MPI_Datatype MPI_getType()
 {
     if constexpr ( std::is_same<TYPE, char>::value )
         return MPI_CHAR;
@@ -107,11 +123,6 @@ constexpr MPI_Datatype MPI_getType()
     if constexpr ( std::is_same<TYPE, TypeIntStruct<double>>::value )
         return MPI_DOUBLE_INT;
     return MPI_DATATYPE_NULL;
-}
-template<class TYPE>
-constexpr bool isMPItype()
-{
-    return MPI_getType<TYPE>() != MPI_DATATYPE_NULL;
 }
 #endif
 
