@@ -234,6 +234,7 @@ int main( int argc, char *argv[] )
     testCreateDatabase( ut );
     testSAMRAI( ut, "input_SAMRAI" );
     testSAMRAI( ut, "input_NRDF" );
+    testSAMRAI( ut, "input_NRDF2" );
 
     ut.report();
 
