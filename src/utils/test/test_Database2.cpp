@@ -213,7 +213,7 @@ void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
         pass = false;
         ut.failure( "readThroughSAMRAI" );
     }
-    
+
     if ( pass )
         ut.passes( "Converting between AMP and SAMRAI databases" );
 }
