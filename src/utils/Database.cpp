@@ -82,12 +82,12 @@ double readValue<double>( const std::string_view &str )
     } else if ( strcmpi( str, "nan" ) ) {
         data = std::numeric_limits<double>::quiet_NaN();
     } else if ( str.find( '/' ) != std::string::npos ) {
-        throw std::logic_error( "Error reading value" );
+        AMP_ERROR( "Error reading value (double): " + std::string( str ) );
     } else {
         char *pos = nullptr;
         data      = strtod( str.data(), &pos );
         if ( static_cast<size_t>( pos - str.data() ) == str.size() + 1 )
-            throw std::logic_error( "Error reading value" );
+            AMP_ERROR( "Error reading value (double): " + std::string( str ) );
     }
     return data;
 }
@@ -97,7 +97,7 @@ int readValue<int>( const std::string_view &str )
     char *pos = nullptr;
     int data  = strtol( str.data(), &pos, 10 );
     if ( static_cast<size_t>( pos - str.data() ) == str.size() + 1 )
-        throw std::logic_error( "Error reading value" );
+        AMP_ERROR( "Error reading value (int): " + std::string( str ) );
     return data;
 }
 template<>
@@ -117,6 +117,7 @@ std::complex<double> readValue<std::complex<double>>( const std::string_view &st
 template<class TYPE>
 static std::tuple<TYPE, Units> readPair( const std::string_view &str )
 {
+    std::cout << str.size() << ": " << str << std::endl;
     auto str0    = str;
     auto tmp     = deblank( std::move( str0 ) );
     size_t index = tmp.find( ' ' );
@@ -467,9 +468,12 @@ void Database::readDatabase( const std::string &filename )
     // Create the database entries
     try {
         loadDatabase( buffer.data(), buffer.size(), *this );
+    } catch ( StackTrace::abort_error &err ) {
+        AMP_ERROR( "Error loading database from file \"" + filename + "\"\n" + "   in file " +
+                   err.filename + " at line " + std::to_string( err.line ) + "\n" + "   " +
+                   err.message );
     } catch ( std::exception &err ) {
-        throw std::logic_error( "Error loading database from file \"" + filename + "\"\n" +
-                                err.what() );
+        AMP_ERROR( "Error loading database from file \"" + filename + "\"\n" + err.what() );
     }
 }
 std::unique_ptr<Database> Database::createFromString( const std::string_view &data )
@@ -619,6 +623,11 @@ read_value( const char *buffer,
     token_type type = token_type::end;
     std::vector<std::string_view> values;
     class_type data_type = class_type::UNKNOWN;
+    auto nextChar        = []( const char *c ) {
+        while ( *c == ' ' )
+            c++;
+        return *c;
+    };
     while ( type != token_type::newline ) {
         while ( buffer[pos] == ' ' || buffer[pos] == '\t' )
             pos++;
@@ -641,12 +650,11 @@ read_value( const char *buffer,
             size_t i;
             std::tie( i, type ) = find_next_token( &buffer[pos] );
             pos += i;
-        } else if ( buffer[pos0] == '[' && buffer[pos0 + 1] == '(' ) {
+        } else if ( buffer[pos0] == '[' && nextChar( &buffer[pos0 + 1] ) == '(' ) {
             // We are reading a SAMRAI box
             data_type = class_type::BOX;
-            while ( buffer[pos] != ')' || buffer[pos + 1] != ']' )
+            while ( buffer[pos] != ']' )
                 pos++;
-            pos++;
             size_t i;
             std::tie( i, type ) = find_next_token( &buffer[pos] );
             pos += i;
