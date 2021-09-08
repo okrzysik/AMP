@@ -136,6 +136,11 @@ void AMPManager::terminate_AMP( std::string message )
         throw std::logic_error( message );
     }
 }
+static void terminate_AMP2( StackTrace::abort_error &err )
+{
+    printed_stack = true;
+    StackTrace::Utilities::terminate( err );
+}
 void AMPManager::exitFun()
 {
     if ( initialized != 1 || printed_stack )
@@ -543,7 +548,7 @@ void AMPManager::setHandlers()
     SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
 #endif
     // Set the terminate routine for runtime errors
-    StackTrace::Utilities::setErrorHandlers();
+    StackTrace::Utilities::setErrorHandlers( terminate_AMP2 );
     // Set atexit function
     std::atexit( exitFun );
     int err = std::at_quick_exit( exitFun );

@@ -1,8 +1,9 @@
 Try{
 number = 5
+
     string = "test with wildcards .\/*'"
 	intArray = 1,2,3,4, 5
-    doubleList = 1,2,3.0, 4,5                   // Add comment
+    doubleArray = 1,2,3.0, 4,5                   // Add comment
     valueWithUnits = 1,2,3, 4,5  us             // Add units
     complexList = (1,2),(3,4), ( 5, 6 )         // Add comment and units
     complexWithUnits = (1,2),(3,4), ( 5, 6 ) nm // Add comment and units
