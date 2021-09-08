@@ -455,38 +455,44 @@ Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
  * Put data                                                          *
  ********************************************************************/
 template<>
-inline void
-Database::putScalar<const char *>( const std::string_view &key, const char *value, Units unit )
+inline void Database::putScalar<const char *>( const std::string_view &key,
+                                               const char *value,
+                                               Units unit,
+                                               Check check )
 {
-    putScalar<std::string>( key, value, unit );
+    putScalar<std::string>( key, value, unit, check );
 }
 template<>
 inline void Database::putScalar<std::string_view>( const std::string_view &key,
                                                    std::string_view value,
-                                                   Units unit )
+                                                   Units unit,
+                                                   Check check )
 {
-    putScalar<std::string>( key, std::string( value.data(), value.data() ), unit );
+    putScalar<std::string>( key, std::string( value.data(), value.data() ), unit, check );
 }
 template<class TYPE>
-inline void Database::putScalar( const std::string_view &key, TYPE value, Units unit )
+inline void Database::putScalar( const std::string_view &key, TYPE value, Units unit, Check check )
 {
     auto keyData = std::make_unique<KeyDataScalar<TYPE>>( std::move( value ), unit );
-    putData( key, std::move( keyData ) );
+    putData( key, std::move( keyData ), check );
 }
 template<class TYPE>
-inline void
-Database::putVector( const std::string_view &key, const std::vector<TYPE> &data, Units unit )
+inline void Database::putVector( const std::string_view &key,
+                                 const std::vector<TYPE> &data,
+                                 Units unit,
+                                 Check check )
 {
     Array<TYPE> x;
     x            = data;
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( x ), unit );
-    putData( key, std::move( keyData ) );
+    putData( key, std::move( keyData ), check );
 }
 template<class TYPE>
-inline void Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit )
+inline void
+Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit, Check check )
 {
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( data ), unit );
-    putData( key, std::move( keyData ) );
+    putData( key, std::move( keyData ), check );
 }
 
 
