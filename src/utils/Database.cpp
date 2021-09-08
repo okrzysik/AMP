@@ -100,32 +100,33 @@ int readValue<int>( const std::string_view &str )
         AMP_ERROR( "Error reading value (int): " + std::string( str ) );
     return data;
 }
-template<>
-std::complex<double> readValue<std::complex<double>>( const std::string_view &str )
-{
-    std::complex<double> data = 0;
-    if ( str[0] != '(' ) {
-        data = readValue<double>( str );
-    } else {
-        size_t pos = str.find( ',' );
-        std::string_view s1( &str[1], pos - 1 );
-        std::string_view s2( &str[pos + 1], str.size() - pos - 2 );
-        data = std::complex<double>( readValue<double>( s1 ), readValue<double>( s2 ) );
-    }
-    return data;
-}
 template<class TYPE>
 static std::tuple<TYPE, Units> readPair( const std::string_view &str )
 {
-    std::cout << str.size() << ": " << str << std::endl;
-    auto str0    = str;
-    auto tmp     = deblank( std::move( str0 ) );
-    size_t index = tmp.find( ' ' );
-    if ( index != std::string::npos ) {
-        return std::make_tuple( readValue<TYPE>( tmp.substr( 0, index ) ),
-                                Units( tmp.substr( index + 1 ) ) );
+    auto str0 = str;
+    auto tmp  = deblank( std::move( str0 ) );
+    if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+        // We are trying to read a complex number
+        if ( str[0] != '(' ) {
+            // Read a double and convert to complex
+            auto [value, unit] = readPair<double>( str );
+            return std::make_tuple( std::complex<double>( value ), unit );
+        }
+        size_t p1 = str.find( ',' );
+        size_t p2 = str.find( ')' );
+        std::string_view s1( &str[1], p1 - 1 );
+        std::string_view s2( &str[p1 + 1], p2 - p1 - 1 );
+        auto value = std::complex<double>( readValue<double>( s1 ), readValue<double>( s2 ) );
+        return std::make_tuple( value, Units( tmp.substr( p2 + 1 ) ) );
     } else {
-        return std::make_tuple( readValue<TYPE>( tmp ), Units() );
+        // Read a scalar type
+        size_t index = tmp.find( ' ' );
+        if ( index != std::string::npos ) {
+            return std::make_tuple( readValue<TYPE>( tmp.substr( 0, index ) ),
+                                    Units( tmp.substr( index + 1 ) ) );
+        } else {
+            return std::make_tuple( readValue<TYPE>( tmp ), Units() );
+        }
     }
 }
 static void strrep( std::string &str, const std::string_view &s, const std::string_view &r )
@@ -651,13 +652,14 @@ read_value( const char *buffer,
             std::tie( i, type ) = find_next_token( &buffer[pos] );
             pos += i;
         } else if ( buffer[pos0] == '[' && nextChar( &buffer[pos0 + 1] ) == '(' ) {
-            // We are reading a SAMRAI box
+            // We are (probably) reading a SAMRAI box
             data_type = class_type::BOX;
             while ( buffer[pos] != ']' )
                 pos++;
             size_t i;
             std::tie( i, type ) = find_next_token( &buffer[pos] );
             pos += i;
+            // Check that it is a box and not an array of complex numbers
         } else if ( buffer[pos0] == '[' ) {
             // We are reading a multi-dimensional array
             data_type = class_type::ARRAY;
