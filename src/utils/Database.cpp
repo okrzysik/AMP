@@ -17,7 +17,8 @@ namespace AMP {
 
 // Forward declarations
 static size_t
-loadDatabase( const char *,
+loadDatabase( const std::string &,
+              const std::string_view &,
               size_t,
               Database &,
               std::map<std::string, const KeyData *> = std::map<std::string, const KeyData *>() );
@@ -82,12 +83,12 @@ double readValue<double>( const std::string_view &str )
     } else if ( strcmpi( str, "nan" ) ) {
         data = std::numeric_limits<double>::quiet_NaN();
     } else if ( str.find( '/' ) != std::string::npos ) {
-        throw std::logic_error( "Error reading value" );
+        AMP_ERROR( "Error reading value (double): " + std::string( str ) );
     } else {
         char *pos = nullptr;
         data      = strtod( str.data(), &pos );
         if ( static_cast<size_t>( pos - str.data() ) == str.size() + 1 )
-            throw std::logic_error( "Error reading value" );
+            AMP_ERROR( "Error reading value (double): " + std::string( str ) );
     }
     return data;
 }
@@ -97,34 +98,36 @@ int readValue<int>( const std::string_view &str )
     char *pos = nullptr;
     int data  = strtol( str.data(), &pos, 10 );
     if ( static_cast<size_t>( pos - str.data() ) == str.size() + 1 )
-        throw std::logic_error( "Error reading value" );
-    return data;
-}
-template<>
-std::complex<double> readValue<std::complex<double>>( const std::string_view &str )
-{
-    std::complex<double> data = 0;
-    if ( str[0] != '(' ) {
-        data = readValue<double>( str );
-    } else {
-        size_t pos = str.find( ',' );
-        std::string_view s1( &str[1], pos - 1 );
-        std::string_view s2( &str[pos + 1], str.size() - pos - 2 );
-        data = std::complex<double>( readValue<double>( s1 ), readValue<double>( s2 ) );
-    }
+        AMP_ERROR( "Error reading value (int): " + std::string( str ) );
     return data;
 }
 template<class TYPE>
 static std::tuple<TYPE, Units> readPair( const std::string_view &str )
 {
-    auto str0    = str;
-    auto tmp     = deblank( std::move( str0 ) );
-    size_t index = tmp.find( ' ' );
-    if ( index != std::string::npos ) {
-        return std::make_tuple( readValue<TYPE>( tmp.substr( 0, index ) ),
-                                Units( tmp.substr( index + 1 ) ) );
+    auto str0 = str;
+    auto tmp  = deblank( std::move( str0 ) );
+    if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+        // We are trying to read a complex number
+        if ( str[0] != '(' ) {
+            // Read a double and convert to complex
+            auto [value, unit] = readPair<double>( str );
+            return std::make_tuple( std::complex<double>( value ), unit );
+        }
+        size_t p1 = str.find( ',' );
+        size_t p2 = str.find( ')' );
+        std::string_view s1( &str[1], p1 - 1 );
+        std::string_view s2( &str[p1 + 1], p2 - p1 - 1 );
+        auto value = std::complex<double>( readValue<double>( s1 ), readValue<double>( s2 ) );
+        return std::make_tuple( value, Units( tmp.substr( p2 + 1 ) ) );
     } else {
-        return std::make_tuple( readValue<TYPE>( tmp ), Units() );
+        // Read a scalar type
+        size_t index = tmp.find( ' ' );
+        if ( index != std::string::npos ) {
+            return std::make_tuple( readValue<TYPE>( tmp.substr( 0, index ) ),
+                                    Units( tmp.substr( index + 1 ) ) );
+        } else {
+            return std::make_tuple( readValue<TYPE>( tmp ), Units() );
+        }
     }
 }
 static void strrep( std::string &str, const std::string_view &s, const std::string_view &r )
@@ -140,8 +143,14 @@ static void strrep( std::string &str, const std::string_view &s, const std::stri
 /********************************************************************
  * Constructors/destructor                                           *
  ********************************************************************/
+Database::Database() : d_check( Check::WarnOverwrite ) {}
+Database::Database( std::string name )
+    : d_check( Check::WarnOverwrite ), d_name( std::move( name ) )
+{
+}
 Database::Database( Database &&rhs )
 {
+    std::swap( d_check, rhs.d_check );
     std::swap( d_name, rhs.d_name );
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_keys, rhs.d_keys );
@@ -150,6 +159,7 @@ Database::Database( Database &&rhs )
 Database &Database::operator=( Database &&rhs )
 {
     if ( this != &rhs ) {
+        std::swap( d_check, rhs.d_check );
         std::swap( d_name, rhs.d_name );
         std::swap( d_hash, rhs.d_hash );
         std::swap( d_keys, rhs.d_keys );
@@ -160,14 +170,31 @@ Database &Database::operator=( Database &&rhs )
 
 
 /********************************************************************
+ * Set default behavior for database                                 *
+ ********************************************************************/
+void Database::setDefaultAddKeyBehavior( Check check, bool setChildren )
+{
+    d_check = check;
+    if ( setChildren ) {
+        for ( auto tmp : d_data ) {
+            auto db = std::dynamic_pointer_cast<Database>( tmp );
+            if ( db )
+                db->setDefaultAddKeyBehavior( check, true );
+        }
+    }
+}
+
+
+/********************************************************************
  * Clone the database                                                *
  ********************************************************************/
 std::unique_ptr<KeyData> Database::clone() const
 {
-    auto db    = std::make_unique<Database>();
-    db->d_name = d_name;
-    db->d_hash = d_hash;
-    db->d_keys = d_keys;
+    auto db     = std::make_unique<Database>();
+    db->d_check = d_check;
+    db->d_name  = d_name;
+    db->d_hash  = d_hash;
+    db->d_keys  = d_keys;
     db->d_data.resize( d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         db->d_data[i] = d_data[i]->clone();
@@ -175,10 +202,11 @@ std::unique_ptr<KeyData> Database::clone() const
 }
 std::unique_ptr<Database> Database::cloneDatabase() const
 {
-    auto db    = std::make_unique<Database>();
-    db->d_name = d_name;
-    db->d_hash = d_hash;
-    db->d_keys = d_keys;
+    auto db     = std::make_unique<Database>();
+    db->d_check = d_check;
+    db->d_name  = d_name;
+    db->d_hash  = d_hash;
+    db->d_keys  = d_keys;
     db->d_data.resize( d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         db->d_data[i] = d_data[i]->clone();
@@ -186,9 +214,10 @@ std::unique_ptr<Database> Database::cloneDatabase() const
 }
 void Database::copy( const Database &rhs )
 {
-    d_name = rhs.d_name;
-    d_hash = rhs.d_hash;
-    d_keys = rhs.d_keys;
+    d_check = rhs.d_check;
+    d_name  = rhs.d_name;
+    d_hash  = rhs.d_hash;
+    d_keys  = rhs.d_keys;
     d_data.resize( rhs.d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         d_data[i] = rhs.d_data[i]->clone();
@@ -284,19 +313,20 @@ std::vector<std::string> Database::getAllKeys( bool sort ) const
         std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check )
+void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, Check check )
 {
-    AMP_ASSERT( check >= 0 && check <= 4 );
+    if ( check == Check::GetDatabaseDefault )
+        check = d_check;
     auto hash = hashString( key );
     int index = find( hash );
     if ( index != -1 ) {
-        if ( check == 4 )
+        if ( check == Check::Error )
             DATABASE_ERROR( "Error: Variable '%s' already exists in database",
                             std::string( key ).data() );
-        if ( check == 2 || check == 3 )
+        if ( check == Check::WarnOverwrite || check == Check::WarnKeep )
             DATABASE_WARNING( "Warning: variable '%s' already exists in database",
                               std::string( key ).data() );
-        if ( check == 0 || check == 2 )
+        if ( check == Check::Overwrite || check == Check::WarnOverwrite )
             d_data[index] = std::move( data );
     } else {
         d_hash.emplace_back( hash );
@@ -465,17 +495,15 @@ void Database::readDatabase( const std::string &filename )
     // Read the input file into memory
     auto buffer = readFile( filename );
     // Create the database entries
-    try {
-        loadDatabase( buffer.data(), buffer.size(), *this );
-    } catch ( std::exception &err ) {
-        throw std::logic_error( "Error loading database from file \"" + filename + "\"\n" +
-                                err.what() );
-    }
+    loadDatabase( "Error loading database from file \"" + filename + "\"\n",
+                  buffer.data(),
+                  buffer.size(),
+                  *this );
 }
 std::unique_ptr<Database> Database::createFromString( const std::string_view &data )
 {
     auto db = std::make_unique<Database>();
-    loadDatabase( data.data(), data.size(), *db );
+    loadDatabase( "Error creating database from file\n", data.data(), data.size(), *db );
     return db;
 }
 enum class token_type {
@@ -608,112 +636,13 @@ static bool isType( const std::vector<const KeyData *> data )
         test = test && tmp->isType<T>();
     return test;
 }
-static std::tuple<size_t, std::unique_ptr<KeyData>>
-read_value( const char *buffer,
-            const std::string_view &key,
-            const std::map<std::string, const KeyData *> &databaseKeys =
-                std::map<std::string, const KeyData *>() )
+// Convert the string value to the database value
+static std::unique_ptr<KeyData>
+createKeyData( const std::string_view &key,
+               class_type data_type,
+               std::vector<std::string_view> &values,
+               const std::map<std::string, const KeyData *> &databaseKeys )
 {
-    // Split the value to an array of values
-    size_t pos      = 0;
-    token_type type = token_type::end;
-    std::vector<std::string_view> values;
-    class_type data_type = class_type::UNKNOWN;
-    while ( type != token_type::newline ) {
-        while ( buffer[pos] == ' ' || buffer[pos] == '\t' )
-            pos++;
-        size_t pos0 = pos;
-        if ( buffer[pos0] == '(' ) {
-            // We are dealing with a complex number
-            data_type = class_type::COMPLEX;
-            while ( buffer[pos] != ')' )
-                pos++;
-            size_t i;
-            std::tie( i, type ) = find_next_token( &buffer[pos] );
-            pos += i;
-        } else if ( buffer[pos0] == '"' ) {
-            // We are in a string
-            data_type = class_type::STRING;
-            pos++;
-            while ( buffer[pos] != '"' )
-                pos++;
-            pos++;
-            size_t i;
-            std::tie( i, type ) = find_next_token( &buffer[pos] );
-            pos += i;
-        } else if ( buffer[pos0] == '[' && buffer[pos0 + 1] == '(' ) {
-            // We are reading a SAMRAI box
-            data_type = class_type::BOX;
-            while ( buffer[pos] != ')' || buffer[pos + 1] != ']' )
-                pos++;
-            pos++;
-            size_t i;
-            std::tie( i, type ) = find_next_token( &buffer[pos] );
-            pos += i;
-        } else if ( buffer[pos0] == '[' ) {
-            // We are reading a multi-dimensional array
-            data_type = class_type::ARRAY;
-            int count = 1;
-            pos       = pos0 + 1;
-            while ( count != 0 ) {
-                if ( buffer[pos] == '[' )
-                    count++;
-                if ( buffer[pos] == ']' )
-                    count--;
-                pos++;
-            }
-            size_t i;
-            std::tie( i, type ) = find_next_token( &buffer[pos] );
-            pos += i;
-        } else {
-            std::tie( pos, type ) = find_next_token( &buffer[pos0] );
-            pos += pos0;
-            if ( buffer[pos - 1] == '"' ) {
-                while ( buffer[pos] != '"' )
-                    pos++;
-                size_t pos2           = pos + 1;
-                std::tie( pos, type ) = find_next_token( &buffer[pos2] );
-                pos += pos2;
-            }
-        }
-        std::string_view tmp( &buffer[pos0], pos - pos0 - length( type ) );
-        if ( !tmp.empty() ) {
-            if ( tmp.back() == ',' )
-                tmp = std::string_view( tmp.data(), tmp.size() - 1 );
-        }
-        tmp = deblank( tmp );
-        values.push_back( deblank( tmp ) );
-        if ( type == token_type::comma ) {
-            // We have multiple values
-            continue;
-        }
-        if ( type == token_type::line_comment || type == token_type::block_start ) {
-            // We encountered a comment
-            pos += skip_comment( &buffer[pos - length( type )] ) - length( type );
-            break;
-        }
-    }
-    // Check the type of each entry
-    if ( data_type == class_type::UNKNOWN ) {
-        data_type = getType( values[0], databaseKeys );
-        for ( size_t i = 1; i < values.size(); i++ ) {
-            auto type = getType( values[i], databaseKeys );
-            if ( type == class_type::UNKNOWN ) {
-                data_type = class_type::UNKNOWN;
-                break;
-            } else if ( ( type == class_type::INT || type == class_type::FLOAT ) &&
-                        ( data_type == class_type::INT || data_type == class_type::FLOAT ) ) {
-                data_type = class_type::FLOAT;
-            } else if ( type != data_type ) {
-                throw std::logic_error( "Mismatched types in '" + std::string( key ) + "'" );
-            }
-        }
-    }
-    if ( data_type == class_type::UNKNOWN ) {
-        throw std::logic_error( "Unkown type in '" + std::string( key ) + "':\n   " +
-                                std::string( buffer, pos ) );
-    }
-    // Convert the string value to the database value
     std::unique_ptr<KeyData> data;
     if ( values.empty() ) {
         data.reset( new EmptyKeyData() );
@@ -944,9 +873,126 @@ read_value( const char *buffer,
     } else {
         throw std::logic_error( "Internal error" );
     }
+    return data;
+}
+static std::tuple<size_t, std::unique_ptr<KeyData>>
+read_value( const std::string_view &buffer,
+            const std::string_view &key,
+            const std::map<std::string, const KeyData *> &databaseKeys =
+                std::map<std::string, const KeyData *>() )
+{
+    AMP_ASSERT( !buffer.empty() );
+    // Split the value to an array of values
+    size_t pos      = 0;
+    token_type type = token_type::end;
+    std::vector<std::string_view> values;
+    class_type data_type = class_type::UNKNOWN;
+    auto nextChar        = []( const char *c ) {
+        while ( *c == ' ' )
+            c++;
+        return *c;
+    };
+    while ( type != token_type::newline ) {
+        AMP_ASSERT( pos < buffer.size() );
+        while ( buffer[pos] == ' ' || buffer[pos] == '\t' )
+            pos++;
+        size_t pos0 = pos;
+        if ( buffer[pos0] == '(' ) {
+            // We are dealing with a complex number
+            data_type = class_type::COMPLEX;
+            while ( buffer[pos] != ')' )
+                pos++;
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+        } else if ( buffer[pos0] == '"' ) {
+            // We are in a string
+            data_type = class_type::STRING;
+            pos++;
+            while ( buffer[pos] != '"' )
+                pos++;
+            pos++;
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+        } else if ( buffer[pos0] == '[' && nextChar( &buffer[pos0 + 1] ) == '(' ) {
+            // We are (probably) reading a SAMRAI box
+            data_type = class_type::BOX;
+            while ( buffer[pos] != ']' )
+                pos++;
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+            // Check that it is a box and not an array of complex numbers
+        } else if ( buffer[pos0] == '[' ) {
+            // We are reading a multi-dimensional array
+            data_type = class_type::ARRAY;
+            int count = 1;
+            pos       = pos0 + 1;
+            while ( count != 0 && pos < buffer.size() ) {
+                if ( buffer[pos] == '[' )
+                    count++;
+                if ( buffer[pos] == ']' )
+                    count--;
+                pos++;
+            }
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+        } else {
+            std::tie( pos, type ) = find_next_token( &buffer[pos0] );
+            pos += pos0;
+            if ( buffer[pos - 1] == '"' ) {
+                while ( buffer[pos] != '"' )
+                    pos++;
+                size_t pos2           = pos + 1;
+                std::tie( pos, type ) = find_next_token( &buffer[pos2] );
+                pos += pos2;
+            }
+        }
+        std::string_view tmp( &buffer[pos0], pos - pos0 - length( type ) );
+        if ( !tmp.empty() ) {
+            if ( tmp.back() == ',' )
+                tmp = std::string_view( tmp.data(), tmp.size() - 1 );
+        }
+        tmp = deblank( tmp );
+        values.push_back( deblank( tmp ) );
+        if ( type == token_type::comma ) {
+            // We have multiple values
+            continue;
+        }
+        if ( type == token_type::line_comment || type == token_type::block_start ) {
+            // We encountered a comment
+            pos += skip_comment( &buffer[pos - length( type )] ) - length( type );
+            break;
+        }
+    }
+    // Check the type of each entry
+    if ( data_type == class_type::UNKNOWN ) {
+        data_type = getType( values[0], databaseKeys );
+        for ( size_t i = 1; i < values.size(); i++ ) {
+            auto type = getType( values[i], databaseKeys );
+            if ( type == class_type::UNKNOWN ) {
+                data_type = class_type::UNKNOWN;
+                break;
+            } else if ( ( type == class_type::INT || type == class_type::FLOAT ) &&
+                        ( data_type == class_type::INT || data_type == class_type::FLOAT ) ) {
+                data_type = class_type::FLOAT;
+            } else if ( type != data_type ) {
+                throw std::logic_error( "Mismatched types in '" + std::string( key ) + "'" );
+            }
+        }
+    }
+    if ( data_type == class_type::UNKNOWN ) {
+        throw std::logic_error( "Unkown type in '" + std::string( key ) + "':\n   " +
+                                std::string( buffer.data(), pos ) );
+    }
+    // Convert the string value to the database value
+    auto data = createKeyData( key, data_type, values, databaseKeys );
     return std::make_tuple( pos, std::move( data ) );
 }
-static size_t loadDatabase( const char *buffer,
+static size_t loadDatabase( const std::string &errMsgPrefix,
+                            const std::string_view &buffer,
                             size_t N,
                             Database &db,
                             std::map<std::string, const KeyData *> databaseKeys )
@@ -960,18 +1006,32 @@ static size_t loadDatabase( const char *buffer,
         const auto key = deblank( tmp );
         if ( type == token_type::line_comment || type == token_type::block_start ) {
             // Comment
-            DATABASE_INSIST( key.empty(), "Key should be empty: %s", key.data() );
+            AMP_INSIST( key.empty(), errMsgPrefix + "  Error reading comment" );
             pos += skip_comment( &buffer[pos] );
         } else if ( type == token_type::newline ) {
-            DATABASE_INSIST( key.empty(), "Key should be empty: %s", key.data() );
+            if ( !key.empty() ) {
+                auto msg = errMsgPrefix + "Key is not assigned a value: " + std::string( key );
+                AMP_ERROR( msg );
+            }
             pos += i;
         } else if ( type == token_type::equal ) {
             // Reading key/value pair
             DATABASE_INSIST( !key.empty(), "Empty key" );
             pos += i;
             std::unique_ptr<KeyData> data;
-            std::tie( i, data ) = read_value( &buffer[pos], key, databaseKeys );
-            DATABASE_INSIST( data.get(), "null pointer" );
+            try {
+                std::tie( i, data ) = read_value( &buffer[pos], key, databaseKeys );
+            } catch ( StackTrace::abort_error &err ) {
+                AMP_ERROR( errMsgPrefix + "   Error loading key '" + std::string( key ) + "'\n" +
+                           "      in file " + err.filename + " at line " +
+                           std::to_string( err.line ) + "\n" + "   " + err.message );
+            } catch ( std::exception &err ) {
+                AMP_ERROR( errMsgPrefix + "    Error loading key '" + std::string( key ) +
+                           "', unhandled exception:\n" + err.what() );
+            }
+            if ( !data )
+                AMP_ERROR( errMsgPrefix + "    Error loading key '" + std::string( key ) + "'\n" +
+                           " - empty data\n" );
             databaseKeys[std::string( key )] = data.get();
             db.putData( key, std::move( data ) );
             pos += i;
@@ -980,7 +1040,7 @@ static size_t loadDatabase( const char *buffer,
             DATABASE_INSIST( !key.empty(), "Empty key" );
             pos += i;
             auto database = std::make_unique<Database>();
-            pos += loadDatabase( &buffer[pos], N - pos, *database, databaseKeys );
+            pos += loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys );
             database->setName( std::string( key ) );
             databaseKeys[std::string( key )] = database.get();
             db.putData( key, std::move( database ) );
@@ -1109,7 +1169,7 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
                     x( i, j ) = y( j );
             }
             auto data = std::make_unique<KeyDataArray<double>>( std::move( x ) );
-            db.putData( key, std::move( data ), true );
+            db.putData( key, std::move( data ) );
         } else if ( !value.empty() ) {
             std::unique_ptr<KeyData> entry;
             try {
@@ -1124,7 +1184,7 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
             }
             if ( !entry )
                 AMP_ERROR( "Unable to parse value: " + std::string( value ) );
-            db.putData( key, std::move( entry ), true );
+            db.putData( key, std::move( entry ) );
         } else {
             AMP_ERROR( "Not finished" );
         }

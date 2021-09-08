@@ -74,11 +74,22 @@ protected:
 class Database final : public KeyData
 {
 public:
+    //! enum to control behavior when trying to add existing keys
+    enum class Check : uint8_t {
+        Overwrite,     ///< Overwrite the data
+        Keep,          ///< Keep the existing data
+        WarnOverwrite, ///< Overwrite the data but print a warning (default)
+        WarnKeep,      ///< Keep the existing data but print a warning
+        Error,         ///< Throw an error
+        GetDatabaseDefault
+    };
+
+public:
     //! Empty constructor
-    Database() = default;
+    Database();
 
     //! Basic constructor
-    explicit Database( std::string name ) : d_name( std::move( name ) ) {}
+    explicit Database( std::string name );
 
     /**
      * Open an database file.
@@ -136,6 +147,18 @@ public:
      */
     void readDatabase( const std::string &filename );
 
+
+    //! Get the default behavior when adding keys
+    inline Check getDefaultAddKeyBehavior() const { return d_check; }
+
+    //! Set the default behavior when adding keys
+    /** \brief  Set the default behavior when adding keys
+     * \details  This function will specify the default behavior when a user adds
+     *     a key that is already in the database.
+     * \param[in] check         The default behavior to set
+     * \param[in] setChildren   Change the behavior of any children
+     */
+    void setDefaultAddKeyBehavior( Check check, bool setChildren );
 
     //! Copy the data
     std::unique_ptr<KeyData> clone() const override;
@@ -258,9 +281,13 @@ public:
      * @param key           Key name in database.
      * @param value         Value to store
      * @param unit          Desired units
+     * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    inline void putScalar( const std::string_view &key, TYPE value, Units unit = Units() );
+    inline void putScalar( const std::string_view &key,
+                           TYPE value,
+                           Units unit  = Units(),
+                           Check check = Check::GetDatabaseDefault );
 
 
     /**
@@ -272,9 +299,13 @@ public:
      * @param key           Key name in database.
      * @param data          Data to store
      * @param unit          Desired units
+     * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    inline void putArray( const std::string_view &key, Array<TYPE> data, Units unit = Units() );
+    inline void putArray( const std::string_view &key,
+                          Array<TYPE> data,
+                          Units unit  = Units(),
+                          Check check = Check::GetDatabaseDefault );
 
 
     /**
@@ -286,10 +317,13 @@ public:
      * @param key           Key name in database.
      * @param data          Data to store
      * @param unit          Desired units
+     * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    inline void
-    putVector( const std::string_view &key, const std::vector<TYPE> &data, Units unit = Units() );
+    inline void putVector( const std::string_view &key,
+                           const std::vector<TYPE> &data,
+                           Units unit  = Units(),
+                           Check check = Check::GetDatabaseDefault );
 
 
     /**
@@ -314,14 +348,11 @@ public:
      *
      * @param key       Key name in database.
      * @param data      Data to store
-     * @param check     Integer to indicate the behavior of the database if the key exists
-     *                  0 - Overwrite the data
-     *                  1 - Keep the existing data
-     *                  2 - Overwrite the data but print a warning (default)
-     *                  3 - Keep the existing data but print a warning
-     *                  4 - Throw an error
+     * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
-    void putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check = 0 );
+    void putData( const std::string_view &key,
+                  std::unique_ptr<KeyData> data,
+                  Check check = Check::GetDatabaseDefault );
 
 
     // Check if the key is a database object
@@ -438,6 +469,7 @@ public: // SAMRAI interfaces
 
 
 protected: // Internal data and functions
+    Check d_check;
     std::string d_name;
     std::vector<uint32_t> d_hash;
     std::vector<std::string> d_keys;

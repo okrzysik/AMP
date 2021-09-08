@@ -1,5 +1,17 @@
 Try{
 number = 5
-	intArray = 1,2,3,4,5
-    doubleArray = 1,2,3,4,5
+
+    string = "test with wildcards .\/*'"
+	intArray = 1,2,3,4, 5
+    doubleArray = 1,2,3.0, 4,5                   // Add comment
+    valueWithUnits = 1,2,3, 4,5  us             // Add units
+    complexList = (1,2),(3,4), ( 5, 6 )         // Add comment and units
+    complexWithUnits = (1,2),(3,4), ( 5, 6 ) nm // Add comment and units
+    //complexArray = [(1,2),(3,4),(5,6)]        // 1D complex array and box are ambiguous (not yet supported)
+    //complexArray2D = [[(1,2),(3,4)],
+    //                  [(5,6).(7,8)]             // 2D complex array (crashes)
+    box = [ ( 1, 2, 3 ), ( 4, 5, 6 ) ]          // Boxes do not have units
+    boxVector = [(1,2,3),(4,5,6)], [ ( 7, 8, 9 ), ( 10, 11, 12 ) ]
+    //boxArray = [ [(1,2,3),(4,5,6)], [(4,5,6),(7,8,9)],
+    //           [ [(10,11,12),(13,14,15)], [(16,17,18),(19,20,21)] ]   // Array of boxes is not supported yet
 }
