@@ -12,6 +12,7 @@ COPY_TEST_FILE( laser_plasma_input.txt )
 COPY_TEST_FILE( input_Database )
 COPY_TEST_FILE( input_SAMRAI )
 COPY_TEST_FILE( input_NRDF )
+COPY_TEST_FILE( input_NRDF2 )
 COPY_TEST_FILE( library.yml )
 COPY_TEST_FILE( Johnson.yml )
 

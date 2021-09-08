@@ -321,7 +321,7 @@ public:
      *                  3 - Keep the existing data but print a warning
      *                  4 - Throw an error
      */
-    void putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check = 2 );
+    void putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check = 0 );
 
 
     // Check if the key is a database object
