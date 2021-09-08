@@ -143,8 +143,14 @@ static void strrep( std::string &str, const std::string_view &s, const std::stri
 /********************************************************************
  * Constructors/destructor                                           *
  ********************************************************************/
+Database::Database() : d_check( Check::WarnOverwrite ) {}
+Database::Database( std::string name )
+    : d_check( Check::WarnOverwrite ), d_name( std::move( name ) )
+{
+}
 Database::Database( Database &&rhs )
 {
+    std::swap( d_check, rhs.d_check );
     std::swap( d_name, rhs.d_name );
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_keys, rhs.d_keys );
@@ -153,6 +159,7 @@ Database::Database( Database &&rhs )
 Database &Database::operator=( Database &&rhs )
 {
     if ( this != &rhs ) {
+        std::swap( d_check, rhs.d_check );
         std::swap( d_name, rhs.d_name );
         std::swap( d_hash, rhs.d_hash );
         std::swap( d_keys, rhs.d_keys );
@@ -163,14 +170,31 @@ Database &Database::operator=( Database &&rhs )
 
 
 /********************************************************************
+ * Set default behavior for database                                 *
+ ********************************************************************/
+void Database::setDefaultAddKeyBehavior( Check check, bool setChildren )
+{
+    d_check = check;
+    if ( setChildren ) {
+        for ( auto tmp : d_data ) {
+            auto db = std::dynamic_pointer_cast<Database>( tmp );
+            if ( db )
+                db->setDefaultAddKeyBehavior( check, true );
+        }
+    }
+}
+
+
+/********************************************************************
  * Clone the database                                                *
  ********************************************************************/
 std::unique_ptr<KeyData> Database::clone() const
 {
-    auto db    = std::make_unique<Database>();
-    db->d_name = d_name;
-    db->d_hash = d_hash;
-    db->d_keys = d_keys;
+    auto db     = std::make_unique<Database>();
+    db->d_check = d_check;
+    db->d_name  = d_name;
+    db->d_hash  = d_hash;
+    db->d_keys  = d_keys;
     db->d_data.resize( d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         db->d_data[i] = d_data[i]->clone();
@@ -178,10 +202,11 @@ std::unique_ptr<KeyData> Database::clone() const
 }
 std::unique_ptr<Database> Database::cloneDatabase() const
 {
-    auto db    = std::make_unique<Database>();
-    db->d_name = d_name;
-    db->d_hash = d_hash;
-    db->d_keys = d_keys;
+    auto db     = std::make_unique<Database>();
+    db->d_check = d_check;
+    db->d_name  = d_name;
+    db->d_hash  = d_hash;
+    db->d_keys  = d_keys;
     db->d_data.resize( d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         db->d_data[i] = d_data[i]->clone();
@@ -189,9 +214,10 @@ std::unique_ptr<Database> Database::cloneDatabase() const
 }
 void Database::copy( const Database &rhs )
 {
-    d_name = rhs.d_name;
-    d_hash = rhs.d_hash;
-    d_keys = rhs.d_keys;
+    d_check = rhs.d_check;
+    d_name  = rhs.d_name;
+    d_hash  = rhs.d_hash;
+    d_keys  = rhs.d_keys;
     d_data.resize( rhs.d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         d_data[i] = rhs.d_data[i]->clone();
@@ -287,19 +313,20 @@ std::vector<std::string> Database::getAllKeys( bool sort ) const
         std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, int check )
+void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, Check check )
 {
-    AMP_ASSERT( check >= 0 && check <= 4 );
+    if ( check == Check::GetDatabaseDefault )
+        check = d_check;
     auto hash = hashString( key );
     int index = find( hash );
     if ( index != -1 ) {
-        if ( check == 4 )
+        if ( check == Check::Error )
             DATABASE_ERROR( "Error: Variable '%s' already exists in database",
                             std::string( key ).data() );
-        if ( check == 2 || check == 3 )
+        if ( check == Check::WarnOverwrite || check == Check::WarnKeep )
             DATABASE_WARNING( "Warning: variable '%s' already exists in database",
                               std::string( key ).data() );
-        if ( check == 0 || check == 2 )
+        if ( check == Check::Overwrite || check == Check::WarnOverwrite )
             d_data[index] = std::move( data );
     } else {
         d_hash.emplace_back( hash );
@@ -1142,7 +1169,7 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
                     x( i, j ) = y( j );
             }
             auto data = std::make_unique<KeyDataArray<double>>( std::move( x ) );
-            db.putData( key, std::move( data ), true );
+            db.putData( key, std::move( data ) );
         } else if ( !value.empty() ) {
             std::unique_ptr<KeyData> entry;
             try {
@@ -1157,7 +1184,7 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
             }
             if ( !entry )
                 AMP_ERROR( "Unable to parse value: " + std::string( value ) );
-            db.putData( key, std::move( entry ), true );
+            db.putData( key, std::move( entry ) );
         } else {
             AMP_ERROR( "Not finished" );
         }
