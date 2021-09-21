@@ -4,7 +4,7 @@
 #include <array>
 #include <math.h>
 #include <string_view>
-#include <tuple>
+#include <utility>
 
 
 namespace AMP {
@@ -152,6 +152,9 @@ public:
     //! Operator /=
     constexpr void operator/=( const Units &rhs ) noexcept;
 
+    //! Raise the unit to the given power
+    constexpr Units pow( int p ) const noexcept;
+
     //! Check if unit is null
     constexpr bool isNull() const { return d_scale == 0; }
 
@@ -173,6 +176,10 @@ public:
     std::string printFull() const;
 
 
+public:
+    static constexpr int atoi( std::string_view str, bool throw_error = true );
+    static constexpr double strtod( std::string_view str, bool throw_error = true );
+
 protected:
     using unit_type = std::array<char, 31>;
     using SI_type   = std::array<int8_t, 9>;
@@ -182,19 +189,18 @@ protected:
     double d_scale;
 
 protected:
-    constexpr Units( const unit_type &str );
-    constexpr Units( const unit_type &str, const std::pair<SI_type, double> &values );
+    constexpr Units( const SI_type &u, double s );
 
-    static constexpr unit_type compress( const std::string_view &str );
-    static constexpr std::pair<SI_type, double> create( const unit_type &data );
-    static constexpr std::tuple<SI_type, double> read( const std::string_view &str );
-    static constexpr std::tuple<SI_type, double> read2( const std::string_view &str );
-    static constexpr std::tuple<SI_type, double> readUnit( const std::string_view &str,
-                                                           bool throwErr = true );
+    static constexpr Units read( std::string_view str );
+    static constexpr Units read2( std::string_view str );
+    static constexpr Units readUnit( const std::string_view &str, bool throwErr = true );
     static constexpr SI_type combine( const SI_type &a, const SI_type &b );
     static constexpr SI_type getSI( UnitType );
 
     std::string printSIBase() const;
+
+    static constexpr std::pair<size_t, char> findToken( const std::string_view &, size_t );
+    static constexpr size_t findPar( const std::string_view &, size_t );
 
 private:
     static constexpr double d_pow10[22] = { 1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-9, 1e-6, 1e-3,
@@ -203,6 +209,9 @@ private:
     static constexpr const char *d_SI_units[] = {
         "s", "m", "kg", "A", "K", "mol", "cd", "rad", "sr"
     };
+
+protected:
+    friend constexpr Units pow( Units base, int exponent );
 };
 
 
