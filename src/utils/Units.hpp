@@ -109,7 +109,7 @@ constexpr int Units::atoi( std::string_view str, bool throw_error )
     for ( size_t j = 0; j < str.size(); j++ ) {
         if ( str[j] < '0' || str[j] > '9' ) {
             if ( throw_error )
-                throw std::logic_error( "Error calling atoi" );
+                throw std::logic_error( "Error calling atoi: " + std::string( str ) );
             else
                 return std::numeric_limits<int>::min();
         }
@@ -364,7 +364,7 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         return create( UnitType::electricalPotential );
     if ( str == "farad" || str == "F" )
         return create( UnitType::capacitance );
-    if ( str == "ohm" )
+    if ( str == "ohm" || str == "Ω" )
         return create( UnitType::resistance );
     if ( str == "siemens" || str == "S" )
         return create( UnitType::electricalConductance );
@@ -378,6 +378,14 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         return create( UnitType::luminousFlux );
     if ( str == "lux" || str == "lx" )
         return create( UnitType::illuminance );
+    if ( str == "becquerel" || str == "Bq" )
+        return create( UnitType::frequency );
+    if ( str == "gray" || str == "Gy" )
+        return Units( { -2, 2, 0, 0, 0, 0, 0, 0, 0 }, 1 );
+    if ( str == "sievert" || str == "Sv" )
+        return Units( { -2, 2, 0, 0, 0, 0, 0, 0, 0 }, 1 );
+    if ( str == "katal" || str == "kat" )
+        return Units( { -1, 0, 0, 0, 0, 1, 0, 0, 0 }, 1 );
     if ( str == "litre" || str == "L" )
         return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-3 );
     if ( str == "milliliters" || str == "ml" || str == "mL" )
@@ -400,6 +408,8 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         return create( UnitType::energy, 1.602176634e-19 );
     if ( str == "dyn" )
         return create( UnitType::force, 1e-5 );
+    if ( str == "barye" || str == "Ba" )
+        return create( UnitType::pressure, 0.1 );
     // Check English units
     if ( str == "inch" || str == "in" || str == "\"" )
         return create( UnitType::length, 0.0254 );
@@ -485,7 +495,7 @@ constexpr Units::SI_type Units::getSI( UnitType type )
         { -3, 2, 1, 0, 0, 0, 0, 0 },      // 11: power (kg m2 s-3)
         { -1, 0, 0, 0, 0, 0, 0, 0 },      // 12: frequency (s-1)
         { -2, 1, 1, 0, 0, 0, 0, 0, 0 },   // 13: force (kg m s-2)
-        { -2, -1, -2, 0, 0, 0, 0, 0, 0 }, // 14: pressure (kg m-1 s-2)
+        { -2, -1, 1, 0, 0, 0, 0, 0, 0 },  // 14: pressure (kg m-1 s-2)
         { 1, 0, 0, 1, 0, 0, 0, 0, 0 },    // 15: electric charge (s A)
         { -3, 2, 1, -1, 0, 0, 0, 0, 0 },  // 16: electrical potential (kg m2 s-3 A-1)
         { 4, -2, -1, 2, 0, 0, 0, 0, 0 },  // 17: capacitance (kg-1 m-2 s4 A2)

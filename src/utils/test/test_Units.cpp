@@ -144,6 +144,20 @@ void check( AMP::UnitTest &ut,
         ut.failure( testname );
     }
 }
+void check( AMP::UnitTest &ut,
+            const std::string &u1,
+            const std::string &u2,
+            const std::string &u3 )
+{
+    auto testname = u1 + " - " + u2 + " - " + u3;
+    Units x1( u1 );
+    Units x2( u2 );
+    Units x3( u3 );
+    if ( x1 == x2 && x1 == x3 )
+        ut.passes( testname );
+    else
+        ut.failure( testname );
+}
 
 
 // Main
@@ -160,13 +174,38 @@ int main( int argc, char *argv[] )
     checkType( ut );
     checkOperators( ut );
 
-    // Test some specific types and conversions
+    // Test some simple types and conversions
     check( ut, "meter" );
     check( ut, "uW/mm^2" );
     check( ut, "kg^-1*m^-2*s^3*A^2" );
     check( ut, "1.2e-6", " ", 1.2e-6 );
     check( ut, "3.2 x 10^4 μL", "L", 0.032 );
     check( ut, "W/m^2", "uW/mm^2" );
+    check( ut, "radian", "rad" );
+    check( ut, "steradian", "sr" );
+
+    // Test derived SI units
+    check( ut, "hertz", "Hz", "s^-1" );
+    check( ut, "newton", "N", "kg*m*s^-2" );
+    check( ut, "pascal", "Pa", "N/m^2" );
+    check( ut, "joule", "J", "Pa*m^3" );
+    check( ut, "watt", "W", "J/s" );
+    check( ut, "coulomb", "C", "s*A" );
+    check( ut, "volt", "V", "J/C" );
+    check( ut, "farad", "F", "C/V" );
+    check( ut, "ohm", "Ω", "V/A" );
+    check( ut, "siemens", "S", "Ω^-1" );
+    check( ut, "weber", "Wb", "V*s" );
+    check( ut, "tesla", "T", "Wb/m^2" );
+    check( ut, "henry", "H", "Wb/A" );
+    check( ut, "lumen", "lm", "cd*sr" );
+    check( ut, "lux", "lx", "lm/m^2" );
+    check( ut, "becquerel", "Bq", "s^-1" );
+    check( ut, "gray", "Gy", "J/kg" );
+    check( ut, "sievert", "Sv", "J/kg" );
+    check( ut, "katal", "kat", "mol/s" );
+
+    // Test other conversions
     check( ut, "eV", "K", 11604.51996505152 );
     check( ut, "qt", "pt", 2 );
     check( ut, "gal", "pt", 8 );
@@ -189,7 +228,9 @@ int main( int argc, char *argv[] )
     check( ut, "day", "hour", 24 );
     check( ut, "week", "day", 7 );
     check( ut, "mmHg", "Pa", 133.322387415 );
+    check( ut, "ampere*second", "coulomb" );
     check( ut, "ergs/(s*cm^2)", "W/(m^2)", 1e-3 );
+    check( ut, "	dyn	", "N", 1e-5 );
     check( ut, "(N/m^3)m(m^3/s)^2(1/m^5)", "kg/s^4" );
     check( ut, "(lbf/ft^3)ft(ft^3/s)^2(1/in^5)", "kg/s^4", 3.631430055671e6 );
 
