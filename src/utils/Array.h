@@ -21,6 +21,9 @@ namespace AMP {
 template<class TYPE, class FUN, class Allocator>
 class Array final
 {
+public: // Typedefs
+    typedef TYPE value_type;
+
 public: // Constructors / assignment operators
     /*!
      * Create a new empty Array

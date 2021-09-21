@@ -209,6 +209,7 @@ void kdtree::add( const double *x )
 /********************************************************
  * Nearest neighbor search                               *
  ********************************************************/
+#if USE_AMP_MESH
 AMP::Mesh::MeshPoint<double> kdtree::find_nearest( const AMP::Mesh::MeshPoint<double> &p ) const
 {
     auto p2      = p;
@@ -216,6 +217,7 @@ AMP::Mesh::MeshPoint<double> kdtree::find_nearest( const AMP::Mesh::MeshPoint<do
     find_nearest2( p.data(), dist2, p2.data() );
     return p2;
 }
+#endif
 size_t kdtree::find_nearest( const double *x, double *dist, double *pos ) const
 {
     PROFILE_START( "find_nearest single", 5 );

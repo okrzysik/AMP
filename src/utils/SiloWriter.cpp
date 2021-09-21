@@ -339,6 +339,8 @@ void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr, const std::
  ************************************************************/
 void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cycle, double time )
 {
+    NULL_USE( cycle );
+    NULL_USE( time );
     PROFILE_START( "writeMesh", 1 );
     auto mesh = data.mesh;
     // Get the zone (element) lists

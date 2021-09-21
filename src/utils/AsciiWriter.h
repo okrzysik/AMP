@@ -9,19 +9,8 @@
 
 #include "AMP/utils/Writer.h"
 
-#ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#endif
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
-#endif
 
-
-namespace AMP {
-namespace Utilities {
+namespace AMP::Utilities {
 
 
 /**
@@ -63,7 +52,7 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                int level               = 1,
                                const std::string &path = std::string() ) override;
 
@@ -84,8 +73,8 @@ public:
      *              the vector multiple times (one for each entity type).
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                 AMP::Mesh::Mesh::shared_ptr mesh,
+    virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                                 std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                  AMP::Mesh::GeomType type,
                                  const std::string &name = "" ) override;
 
@@ -117,29 +106,31 @@ public:
 private:
 // List of all vectors that have been registered
 #ifdef USE_AMP_VECTORS
-    std::map<global_id, AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
+    std::map<global_id, std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vectors;
 #endif
 
 // List of all matrices that have been registered
 #ifdef USE_AMP_MATRICES
-    std::map<global_id, AMP::LinearAlgebra::Matrix::shared_ptr> d_matrices;
+    std::map<global_id, std::shared_ptr<AMP::LinearAlgebra::Matrix>> d_matrices;
 #endif
 
     // Helper functions
     static global_id getID( const AMP_MPI &local_comm, const AMP_MPI &global_comm );
 #ifdef USE_AMP_VECTORS
-    static AMP::LinearAlgebra::Vector::const_shared_ptr sendVecToRoot(
-        AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, const AMP_MPI &d_comm );
+    static std::shared_ptr<const AMP::LinearAlgebra::Vector>
+    sendVecToRoot( std::shared_ptr<const AMP::LinearAlgebra::Vector> src_vec,
+                   int vec_root,
+                   const AMP_MPI &d_comm );
 #endif
 #ifdef USE_AMP_MATRICES
-    static void sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
+    static void sendRowToRoot( std::shared_ptr<const AMP::LinearAlgebra::Matrix> mat,
                                const AMP_MPI &d_comm,
                                int row,
                                std::vector<size_t> &col,
                                std::vector<double> &data );
 #endif
 };
-} // namespace Utilities
-} // namespace AMP
+
+} // namespace AMP::Utilities
 
 #endif

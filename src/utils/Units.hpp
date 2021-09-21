@@ -3,175 +3,231 @@
 
 #include "AMP/utils/Units.h"
 
+#include <iostream>
+#include <tuple>
+
 
 namespace AMP {
+
+
+/********************************************************************
+ * Helper functions                                                  *
+ ********************************************************************/
+constexpr std::string_view deblank( const std::string_view &str )
+{
+    if ( str.empty() )
+        return std::string_view();
+    int i1 = 0, i2 = str.size() - 1;
+    for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '\t' ); i1++ ) {}
+    for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '\t' || str[i2] == '\r' ); i2-- ) {}
+    if ( i2 == 0 && ( str[i2] == ' ' || str[i2] == '\t' || str[i2] == '\r' ) )
+        return std::string_view();
+    return str.substr( i1, i2 - i1 + 1 );
+}
+// Find next token
+constexpr std::pair<size_t, char> Units::findToken( const std::string_view &str, size_t i )
+{
+    char op = 0;
+    while ( i < str.size() && op == 0 ) {
+        if ( str[i] == '*' || str[i] == '(' || str[i] == '^' || str[i] == '/' || str[i] == ')' ) {
+            op = str[i];
+        } else if ( str[i] == ' ' ) {
+            op = '*';
+            while ( str[i] == ' ' ) {
+                if ( i == str.size() )
+                    return std::make_pair( i, op );
+                i++;
+            }
+            if ( str[i] == '*' || str[i] == '(' || ( str[i] == 'x' && str[i + 1] == ' ' ) ) {
+                op = '*';
+            } else if ( str[i] == '^' || str[i] == '/' || str[i] == ')' ) {
+                op = str[i];
+            } else {
+                i--;
+            }
+        } else {
+            i++;
+        }
+    }
+    return std::make_pair( i, op );
+}
+// Find matching parenthesis and evaluate substring
+constexpr size_t Units::findPar( const std::string_view &str, size_t i )
+{
+    for ( size_t j = i + 1, c = 1; j < str.size(); j++ ) {
+        if ( str[j] == '(' )
+            c++;
+        if ( str[j] == ')' )
+            c--;
+        if ( c == 0 )
+            return j;
+    }
+    return str.size();
+}
 
 
 /********************************************************************
  * Constructors                                                      *
  ********************************************************************/
 constexpr Units::Units() : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 ) {}
-constexpr Units::Units( const char *str ) : Units( compress( str ) ) {}
-constexpr Units::Units( const std::string_view &str ) : Units( compress( str ) ) {}
-constexpr Units::Units( const Units::unit_type &data ) : Units( data, create( data ) ) {}
-constexpr Units::Units( const Units::unit_type &data, const std::pair<SI_type, double> &values )
-    : d_unit( data ), d_SI( std::get<0>( values ) ), d_scale( std::get<1>( values ) )
+constexpr Units::Units( const char *str ) : Units( std::string_view( str ) ) {}
+constexpr Units::Units( const std::string_view &str )
+    : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 )
 {
+    if ( !str.empty() ) {
+        auto tmp = read( str );
+        d_SI     = tmp.d_SI;
+        d_scale  = tmp.d_scale;
+        if ( str.length() < d_unit.size() - 1 ) {
+            for ( size_t i = 0; i < str.length(); i++ )
+                d_unit[i] = str[i];
+        }
+    }
 }
-constexpr Units::unit_type Units::compress( const std::string_view &str )
+constexpr Units::Units( const SI_type &SI, double s ) : d_unit( { 0 } ), d_SI( SI ), d_scale( s ) {}
+constexpr std::array<int8_t, 9> operator+( const std::array<int8_t, 9> &a,
+                                           const std::array<int8_t, 9> &b )
 {
-    unit_type unit = { 0 };
+    std::array<int8_t, 9> c = { 0 };
+    for ( size_t i = 0; i < a.size(); i++ )
+        c[i] = a[i] + b[i];
+    return c;
+}
+constexpr int Units::atoi( std::string_view str, bool throw_error )
+{
+    str = deblank( str );
     if ( str.empty() )
-        return unit;
-    // Remove trailing/preceeding whitespace
-    int i1 = 0, i2 = str.size() - 1;
-    for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '"' ); i1++ ) {}
-    for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '"' ); i2-- ) {}
-    // Copy the unit to internal memory (removed extra spaces)
-    if ( i1 > i2 )
-        return unit;
-    int k     = 0;
-    char last = ';';
-    for ( int i = i1; i <= i2; i++ ) {
-        if ( str[i] == '*' || str[i] == ' ' ) {
-            if ( last != '*' && last != '/' && last != '(' && last != ')' ) {
-                unit[k] = '*';
-                k++;
+        return 0;
+    bool neg = false;
+    if ( str[0] == '-' ) {
+        neg = true;
+        str = deblank( str.substr( 1 ) );
+    } else if ( str[0] == '+' ) {
+        str = deblank( str.substr( 1 ) );
+    }
+    int i = 0;
+    for ( size_t j = 0; j < str.size(); j++ ) {
+        if ( str[j] < '0' || str[j] > '9' ) {
+            if ( throw_error )
+                throw std::logic_error( "Error calling atoi: " + std::string( str ) );
+            else
+                return std::numeric_limits<int>::min();
+        }
+        i = i * 10 + static_cast<int>( str[j] - '0' );
+    }
+    return neg ? -i : i;
+}
+constexpr double Units::strtod( std::string_view str, bool throw_error )
+{
+    str = deblank( str );
+    if ( str.empty() )
+        return 0;
+    bool neg = false;
+    if ( str[0] == '-' ) {
+        neg = true;
+        str = deblank( str.substr( 1 ) );
+    }
+    size_t i1 = str.find( '.' );
+    size_t i2 = std::min( str.find( 'e' ), str.find( 'E' ) );
+    auto s1   = str.substr( 0, std::min( i1, i2 ) );
+    std::string_view s2, s3;
+    if ( i1 != std::string::npos )
+        s2 = str.substr( i1 + 1, std::min( i2 - i1 - 1, str.size() ) );
+    if ( i2 != std::string::npos )
+        s3 = str.substr( i2 + 1 );
+    constexpr int errInt = std::numeric_limits<int>::min();
+    double x             = atoi( s1, throw_error );
+    if ( x == errInt )
+        return std::numeric_limits<double>::quiet_NaN();
+    if ( !s2.empty() ) {
+        double f = 0.1;
+        for ( size_t i = 0; i < s2.size(); i++, f *= 0.1 ) {
+            if ( s2[i] < '0' || s2[i] > '9' ) {
+                if ( throw_error )
+                    throw std::logic_error( "Error calling strtod" );
+                else
+                    return std::numeric_limits<double>::quiet_NaN();
             }
-        } else if ( str[i] == '/' || str[i] == '(' || str[i] == ')' ) {
-            if ( last == '*' ) {
-                unit[k - 1] = str[i];
+            x += f * static_cast<int>( s2[i] - '0' );
+        }
+    }
+    if ( !s3.empty() ) {
+        int p = atoi( s3, throw_error );
+        if ( x == errInt )
+            return std::numeric_limits<double>::quiet_NaN();
+        double s = 10.0;
+        if ( p < 0 ) {
+            s = 0.1;
+            p = -p;
+        }
+        for ( int i = 0; i < p; i++ )
+            x *= s;
+    }
+    return neg ? -x : x;
+}
+constexpr Units Units::read( std::string_view str )
+{
+    str = deblank( str );
+    if ( str.empty() )
+        return Units( { 0 }, 1.0 );
+    // Break the string into value/operator sets
+    int N        = 0;
+    char op[100] = { 0 };
+    std::string_view v[100];
+    for ( size_t i = 0; i < str.size(); ) {
+        auto tmp  = findToken( str, i );
+        size_t i2 = tmp.first;
+        op[N]     = tmp.second;
+        if ( tmp.second == '(' ) {
+            bool test = false;
+            for ( size_t j = i; j < i2; j++ )
+                test = test || str[j];
+            if ( test ) {
+                op[N]  = '*';
+                v[N++] = str.substr( i, i2 - i );
+                i      = i2;
             } else {
-                unit[k] = str[i];
-                k++;
+                op[N]     = 0;
+                i2        = findPar( str, i2 );
+                size_t i3 = i2;
+                for ( ; i3 < str.size() && str[i3] == ' '; i3++ ) {}
+                if ( i3 + 1 < str.size() ) {
+                    op[N] = '*';
+                    if ( str[i3 + 1] == '^' || str[i3 + 1] == '*' || str[i3 + 1] == '/' ) {
+                        i3++;
+                        op[N] = str[i3];
+                    }
+                }
+                v[N++] = str.substr( i + 1, i2 - i - 1 );
+                i      = i3 + 1;
             }
         } else {
-            unit[k] = str[i];
-            k++;
+            v[N++] = str.substr( i, i2 - i );
+            i      = i2 + 1;
         }
-        last = unit[k - 1];
-        if ( k >= (int) unit.size() )
-            throw std::logic_error( "Unit size" );
     }
-    return unit;
-}
-constexpr std::pair<Units::SI_type, double> Units::create( const unit_type &data )
-{
-    // Helper functions
-    auto createStringView = []( const unit_type &data ) {
-        size_t k = 0;
-        for ( k = 0; k < data.size(); k++ ) {
-            if ( data[k] == 0 )
-                break;
-        }
-        return std::string_view( data.data(), k );
-    };
-    auto findMatchingPar = []( const std::string_view &unit, size_t i ) {
-        for ( size_t j = i, count = 1; j < unit.size(); j++ ) {
-            if ( unit[j] == '(' )
-                count++;
-            else if ( unit[j] == ')' )
-                count--;
-            if ( count == 0 )
-                return j;
-        }
-        return unit.size();
-    };
-    auto findSpace = []( std::string_view &unit, size_t i ) {
-        for ( size_t j = i + 1; j < unit.size(); j++ ) {
-            if ( unit[j] == '*' || unit[j] == '/' || unit[j] == '(' )
-                return j;
-        }
-        return unit.size();
-    };
-    // Create the string_view
-    auto unit = createStringView( data );
-    if ( unit.empty() )
-        return std::pair<Units::SI_type, double>( { 0 }, 0.0 );
-    // Convert the string to SI units
-    SI_type SI   = { 0 };
-    double scale = 1.0;
-    for ( size_t i = 0; i < unit.size(); ) {
-        if ( unit[i] == '*' )
+    // Evaluate if we only have one entry
+    if ( N == 1 )
+        return read2( v[0] );
+    // Evaluate and apply operators
+    Units u( { 0 }, 1.0 );
+    char last_op = '*';
+    for ( int i = 0; i < N; i++ ) {
+        auto u2 = read( v[i] );
+        if ( op[i] == '^' ) {
+            u2 = u2.pow( atoi( v[i + 1] ) );
             i++;
-        size_t j  = 0;
-        double s  = 0;
-        SI_type u = { 0 };
-        if ( unit[i] == '(' ) {
-            j = findMatchingPar( unit, i );
-            Units u2( unit.substr( i + 1, j - i - 2 ) );
-            s = u2.d_scale;
-            u = u2.d_SI;
-        } else if ( unit[i] == '/' ) {
-            if ( unit[i + 1] == '(' ) {
-                j = findMatchingPar( unit, i + 1 );
-                Units u2( unit.substr( i + 2, j - i - 3 ) );
-                s = 1.0 / u2.d_scale;
-                u = u2.d_SI;
-                for ( size_t m = 0; m < u.size(); m++ )
-                    u[m] = -u[m];
-            } else {
-                j             = findSpace( unit, i );
-                auto [u2, s2] = read( unit.substr( i + 1, j - i - 1 ) );
-                s             = 1.0 / s2;
-                for ( size_t m = 0; m < u.size(); m++ )
-                    u[m] = -u2[m];
-            }
+        }
+        if ( last_op == '*' ) {
+            u *= u2;
+        } else if ( last_op == '/' ) {
+            u /= u2;
         } else {
-            j             = findSpace( unit, i );
-            auto [u2, s2] = read( unit.substr( i, j - i ) );
-            u             = u2;
-            s             = s2;
+            throw std::logic_error( "Invalid operator" );
         }
-        scale *= s;
-        SI = combine( SI, u );
-        i  = j;
+        last_op = op[i];
     }
-    return std::make_pair( SI, scale );
-}
-constexpr std::tuple<Units::SI_type, double> Units::read( const std::string_view &str )
-{
-    auto find = []( const std::string_view &str, char c ) {
-        for ( size_t i = 0; i < str.size(); i++ ) {
-            if ( str[i] == c )
-                return i;
-        }
-        return std::string::npos;
-    };
-    auto i = find( str, '^' );
-    if ( i == std::string::npos ) {
-        // Check if the character '-' is present indicating a seperation between the prefix and unit
-        size_t index = find( str, '-' );
-        if ( index != std::string::npos ) {
-            auto prefix = getUnitPrefix( str.substr( 0, index ) );
-            auto [u, s] = read2( str.substr( index + 1 ) );
-            s *= convert( prefix );
-            return std::tie( u, s );
-        } else {
-            return read2( str );
-        }
-        throw std::logic_error( "Error reading" );
-    } else {
-        auto [u, s] = read2( str.substr( 0, i ) );
-        auto tmp    = str.substr( i + 1 );
-        if ( tmp[0] == '-' ) {
-            for ( auto &u2 : u )
-                u2 = -u2;
-            s   = 1.0 / s;
-            tmp = tmp.substr( 1 );
-        }
-        if ( tmp.size() != 1u )
-            throw std::logic_error( "Conversion error (1)" );
-        int p = tmp[0] - 48;
-        if ( p <= 0 || p > 3 )
-            throw std::logic_error( "Conversion error (2)" );
-        double s0 = s;
-        for ( int j = 1; j < p; j++ )
-            s *= s0;
-        for ( size_t j = 0; j < u.size(); j++ )
-            u[j] *= p;
-        return std::tie( u, s );
-    }
+    return u;
 }
 constexpr Units::SI_type Units::combine( const SI_type &a, const SI_type &b )
 {
@@ -216,7 +272,7 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
         value = UnitPrefix::centi;
     } else if ( str == "milli" || str == "m" ) {
         value = UnitPrefix::milli;
-    } else if ( str == "micro" || str == "u" ) {
+    } else if ( str == "micro" || str == "u" || str == "μ" ) {
         value = UnitPrefix::micro;
     } else if ( str == "nano" || str == "n" ) {
         value = UnitPrefix::nano;
@@ -238,36 +294,37 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
 /********************************************************************
  * Get unit value                                                    *
  ********************************************************************/
-constexpr std::tuple<Units::SI_type, double> Units::read2( const std::string_view &str )
+constexpr Units Units::read2( std::string_view str )
 {
-    if ( str.size() <= 1 ) {
-        auto [u, s] = readUnit( str );
-        return std::tie( u, s );
-    } else if ( str.substr( 0, 2 ) == "da" ) {
-        auto prefix = UnitPrefix::deca;
-        auto [u, s] = readUnit( str.substr( 2 ) );
-        s *= convert( prefix );
-        return std::tie( u, s );
-    } else {
-        auto prefix = getUnitPrefix( str.substr( 0, 1 ) );
-        auto [u, s] = readUnit( str.substr( 1 ), false );
-        if ( prefix == UnitPrefix::unknown || s == 0 ) {
-            return readUnit( str );
-        } else {
-            s *= convert( prefix );
-            return std::tie( u, s );
-        }
+    // Check for special prefixes
+    if ( str.substr( 0, 2 ) == "da" ) {
+        auto u = readUnit( str.substr( 2 ), false );
+        u.d_scale *= 10.0;
+        if ( u.d_scale != 0 )
+            return u;
     }
-    SI_type u = { 0 };
-    double s  = 0.0;
-    return std::tie( u, s );
+    if ( str.substr( 0, 2 ) == "μ" ) {
+        auto u = readUnit( str.substr( 2 ), false );
+        u.d_scale *= 1e-6;
+        if ( u.d_scale != 0 )
+            return u;
+    }
+    // Try reading a prefix and then the unit
+    auto prefix = getUnitPrefix( str.substr( 0, 1 ) );
+    auto u      = readUnit( str.substr( 1 ), false );
+    if ( prefix == UnitPrefix::unknown || u.d_scale == 0 ) {
+        return readUnit( str );
+    } else {
+        u.d_scale *= convert( prefix );
+        return u;
+    }
+    return Units( { 0 }, 0.0 );
 }
-constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_view &str,
-                                                              bool throwErr )
+constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 {
     auto create = []( UnitType type, double s = 1.0 ) {
         auto u = getSI( type );
-        return std::tuple<Units::SI_type, double>( u, s );
+        return Units( u, s );
     };
     // Check base SI units
     if ( str == "second" || str == "s" )
@@ -307,7 +364,7 @@ constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_
         return create( UnitType::electricalPotential );
     if ( str == "farad" || str == "F" )
         return create( UnitType::capacitance );
-    if ( str == "ohm" )
+    if ( str == "ohm" || str == "Ω" )
         return create( UnitType::resistance );
     if ( str == "siemens" || str == "S" )
         return create( UnitType::electricalConductance );
@@ -321,13 +378,38 @@ constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_
         return create( UnitType::luminousFlux );
     if ( str == "lux" || str == "lx" )
         return create( UnitType::illuminance );
+    if ( str == "becquerel" || str == "Bq" )
+        return create( UnitType::frequency );
+    if ( str == "gray" || str == "Gy" )
+        return Units( { -2, 2, 0, 0, 0, 0, 0, 0, 0 }, 1 );
+    if ( str == "sievert" || str == "Sv" )
+        return Units( { -2, 2, 0, 0, 0, 0, 0, 0, 0 }, 1 );
+    if ( str == "katal" || str == "kat" )
+        return Units( { -1, 0, 0, 0, 0, 1, 0, 0, 0 }, 1 );
     if ( str == "litre" || str == "L" )
-        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-3 );
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-3 );
+    if ( str == "milliliters" || str == "ml" || str == "mL" )
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-6 );
+    // Non-SI units accepted for use with SI
+    if ( str == "minute" )
+        return create( UnitType::time, 60 );
+    if ( str == "hour" )
+        return create( UnitType::time, 3600 );
+    if ( str == "day" )
+        return create( UnitType::time, 86400 );
+    if ( str == "week" )
+        return create( UnitType::time, 604800 );
+    if ( str == "mmHg" )
+        return create( UnitType::pressure, 133.322387415 );
     // Check cgs units
     if ( str == "ergs" || str == "erg" )
         return create( UnitType::energy, 1e-7 );
     if ( str == "eV" )
         return create( UnitType::energy, 1.602176634e-19 );
+    if ( str == "dyn" )
+        return create( UnitType::force, 1e-5 );
+    if ( str == "barye" || str == "Ba" )
+        return create( UnitType::pressure, 0.1 );
     // Check English units
     if ( str == "inch" || str == "in" || str == "\"" )
         return create( UnitType::length, 0.0254 );
@@ -340,45 +422,53 @@ constexpr std::tuple<Units::SI_type, double> Units::readUnit( const std::string_
     if ( str == "mile" || str == "mi" )
         return create( UnitType::length, 1609.344 );
     if ( str == "acre" )
-        return std::tuple<Units::SI_type, double>( { 0, 2, 0, 0, 0, 0, 0, 0, 0 }, 4046.8564224 );
+        return Units( { 0, 2, 0, 0, 0, 0, 0, 0, 0 }, 4046.8564224 );
+    if ( str == "teaspoon" || str == "tsp" )
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 4.92892e-6 );
+    if ( str == "tablespoon" || str == "tbsp" )
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1.47868e-5 );
+    if ( str == "cup" || str == "cp" )
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 2.36588e-4 );
     if ( str == "pint" || str == "pt" )
-        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 0.56826125 );
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 4.7317647274592e-4 );
     if ( str == "quart" || str == "qt" )
-        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1.1365225 );
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 9.4635294549184e-4 );
     if ( str == "gallon" || str == "gal" )
-        return std::tuple<Units::SI_type, double>( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 4.54609 );
+        return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 3.78541178196736e-3 );
     if ( str == "ounce" || str == "oz" )
         return create( UnitType::mass, 0.028349523125 );
     if ( str == "pound" || str == "lb" )
         return create( UnitType::mass, 0.45359237 );
     if ( str == "ton" )
         return create( UnitType::mass, 1016.0469088 );
+    if ( str == "lbf" )
+        return create( UnitType::force, 4.4482216152605 );
+    if ( str == "Rankine" || str == "R" )
+        return create( UnitType::temperature, 5.0 / 9.0 );
     // Check atomic units
     if ( str == "hartree" )
         return create( UnitType::energy, 4.359744722207185e-18 );
     if ( str == "bohr" )
         return create( UnitType::length, 5.2917721090380e-11 );
     // Check special units/characters
-    if ( str == "%" )
+    if ( str == "percent" || str == "%" )
         return create( UnitType::unitless, 0.01 );
     // No success
     SI_type u = { 0 };
     double s  = 0;
     if ( throwErr && s == 0 ) {
-        // We have an error intpreting the string, try to interpret it as a double
+        // We have an error interpreting the string, try to interpret it as a double
         // Note: this is only valid when we are not using constexpr (also true for throw)
-        const char *begin = str.begin();
-        const char *end   = str.end();
-        s                 = strtod( (char *) begin, (char **) &end );
-        if ( s != 0 )
-            return std::tie( u, s );
+        s = strtod( str, false );
+        if ( s == s && s != 0 )
+            return Units( u, s );
         // Still unable, throw an error
-        char err[64] = "Unknown unit: ";
+        char err[256] = "Unknown unit: ";
         for ( size_t i = 0; i < str.size(); i++ )
             err[14 + i] = str[i];
         throw std::logic_error( err );
     }
-    return std::tie( u, s );
+    return Units( u, s );
 }
 
 
@@ -405,7 +495,7 @@ constexpr Units::SI_type Units::getSI( UnitType type )
         { -3, 2, 1, 0, 0, 0, 0, 0 },      // 11: power (kg m2 s-3)
         { -1, 0, 0, 0, 0, 0, 0, 0 },      // 12: frequency (s-1)
         { -2, 1, 1, 0, 0, 0, 0, 0, 0 },   // 13: force (kg m s-2)
-        { -2, -1, -2, 0, 0, 0, 0, 0, 0 }, // 14: pressure (kg m-1 s-2)
+        { -2, -1, 1, 0, 0, 0, 0, 0, 0 },  // 14: pressure (kg m-1 s-2)
         { 1, 0, 0, 1, 0, 0, 0, 0, 0 },    // 15: electric charge (s A)
         { -3, 2, 1, -1, 0, 0, 0, 0, 0 },  // 16: electrical potential (kg m2 s-3 A-1)
         { 4, -2, -1, 2, 0, 0, 0, 0, 0 },  // 17: capacitance (kg-1 m-2 s4 A2)
@@ -485,7 +575,7 @@ constexpr double Units::convert( const Units &rhs ) const
 constexpr bool Units::operator==( const Units &rhs ) const noexcept
 {
     double err = d_scale >= rhs.d_scale ? d_scale - rhs.d_scale : rhs.d_scale - d_scale;
-    bool test  = err < 1e-6 * d_scale;
+    bool test  = err < 1e-10 * d_scale;
     for ( size_t i = 0; i < d_SI.size(); i++ )
         test = test && d_SI[i] == rhs.d_SI[i];
     return test;
@@ -508,7 +598,7 @@ constexpr void Units::operator/=( const Units &rhs ) noexcept
         tmp[i] = -rhs.d_SI[i];
     d_unit = { 0 };
     d_SI   = combine( d_SI, tmp );
-    d_scale *= rhs.d_scale;
+    d_scale /= rhs.d_scale;
 }
 constexpr Units operator*( const Units &a, const Units &b )
 {
@@ -521,6 +611,22 @@ constexpr Units operator/( const Units &a, const Units &b )
     Units c = a;
     c /= b;
     return c;
+}
+constexpr Units Units::pow( int exponent ) const noexcept
+{
+    if ( exponent == 0 )
+        return Units( { 0 }, 1.0 );
+    auto base = *this;
+    if ( exponent < 0 ) {
+        base     = Units( { 0 }, 1.0 ) / base;
+        exponent = -exponent;
+    }
+    Units u = base;
+    while ( exponent > 1 ) {
+        u *= base;
+        exponent -= 1;
+    }
+    return u;
 }
 
 

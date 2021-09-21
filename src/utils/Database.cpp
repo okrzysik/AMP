@@ -46,17 +46,6 @@ static std::vector<char> readFile( const std::string &filename )
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
-static constexpr inline std::string_view deblank( const std::string_view &str )
-{
-    if ( str.empty() )
-        return std::string_view();
-    int i1 = 0, i2 = str.size() - 1;
-    for ( ; i1 < (int) str.size() && ( str[i1] == ' ' || str[i1] == '\t' ); i1++ ) {}
-    for ( ; i2 > 0 && ( str[i2] == ' ' || str[i2] == '\t' || str[i2] == '\r' ); i2-- ) {}
-    if ( i2 == 0 && ( str[i2] == ' ' || str[i2] == '\t' || str[i2] == '\r' ) )
-        return std::string_view();
-    return str.substr( i1, i2 - i1 + 1 );
-}
 static inline bool strcmpi( const std::string_view &s1, const std::string_view &s2 )
 {
     if ( s1.size() != s2.size() )
