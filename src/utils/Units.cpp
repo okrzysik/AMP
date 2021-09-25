@@ -96,7 +96,7 @@ static_assert( Units::convert( Units::getUnitPrefix( "P" ) ) == 1e15 );
 static_assert( Units::convert( Units::getUnitPrefix( "E" ) ) == 1e18 );
 static_assert( Units::convert( Units::getUnitPrefix( "Z" ) ) == 1e21 );
 static_assert( Units::convert( Units::getUnitPrefix( "Y" ) ) == 1e24 );
-#if !defined( __INTEL_COMPILER )  
+#if !defined( __INTEL_COMPILER )
 static_assert( Units( "meter" ).getType() == UnitType::length );
 static_assert( Units( "gram" ).getType() == UnitType::mass );
 static_assert( Units( "second" ).getType() == UnitType::time );
