@@ -102,7 +102,7 @@ Scalar Scalar::create( TYPE x )
                 y.store( x );
             }
         } else {
-            if ( x <= std::numeric_limits<int64_t>::max() ) {
+            if ( x <= static_cast<uint64_t>( std::numeric_limits<int64_t>::max() ) ) {
                 y.store( static_cast<int64_t>( x ) );
             } else {
                 y.store( x );

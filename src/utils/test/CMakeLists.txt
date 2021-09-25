@@ -18,6 +18,7 @@ COPY_TEST_FILE( Johnson.yml )
 
 # Add the tests
 ADD_AMP_TEST( test_compile )
+ADD_AMP_TEST( test_Units )
 ADD_AMP_TEST( test_Database laser_plasma_input.txt library.yml Johnson.yml )
 ADD_AMP_TEST( test_Database2 )
 ADD_AMP_TEST( test_intN )

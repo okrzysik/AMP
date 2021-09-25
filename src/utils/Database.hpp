@@ -353,41 +353,6 @@ TYPE Database::getScalar( const std::string_view &key, Units unit ) const
     return data;
 }
 template<class TYPE>
-TYPE Database::getWithDefault( const std::string_view &key, const TYPE &value, Units unit ) const
-{
-    auto keyData = getData( key );
-    if ( !keyData )
-        return value;
-    TYPE data;
-    auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
-    auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if ( scalarData ) {
-        // We are dealing with a scalar of the same type
-        data = scalarData->get();
-    } else if ( arrayData ) {
-        // We are dealing with an Array of the same type
-        const auto &data2 = arrayData->get();
-        DATABASE_INSIST( data2.size() == 1, "Variable %s is not a scalar", key.data() );
-        data = data2( 0 );
-    } else if constexpr ( std::is_same<TYPE, bool>::value ) {
-        DATABASE_ERROR(
-            "Unable to convert key %s to bool from %s", key.data(), keyData->type().data() );
-    } else {
-        // We need to convert the data
-        auto data2 = convertFromDouble<TYPE>( keyData->convertToDouble() );
-        DATABASE_INSIST( data2.size() == 1, "Variable %s is not a scalar", key.data() );
-        data = data2( 0 );
-    }
-    if ( !unit.isNull() ) {
-        auto unit2 = keyData->unit();
-        DATABASE_INSIST( !unit2.isNull(), "Field %s must have units", key.data() );
-        double factor = unit2.convert( unit );
-        DATABASE_INSIST( factor != 0, "Unit conversion failed" );
-        scaleData( data, factor );
-    }
-    return data;
-}
-template<class TYPE>
 std::vector<TYPE> Database::getVector( const std::string_view &key, Units unit ) const
 {
     auto keyData = getData( key );
@@ -448,6 +413,27 @@ Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
         scaleData( data, factor );
     }
     return data;
+}
+
+
+/********************************************************************
+ * Get data with default                                             *
+ ********************************************************************/
+template<class TYPE>
+TYPE Database::getWithDefault( const std::string_view &key, const TYPE &value, Units unit ) const
+{
+    // Check if the key exists and return if it does not
+    auto keyData = getData( key );
+    if ( !keyData )
+        return value;
+    // Call the appropriate getScalar/getArray/getVector function
+    if constexpr ( is_vector<TYPE>::value ) {
+        return getVector<typename TYPE::value_type>( key, unit );
+    } else if constexpr ( is_Array<TYPE>::value ) {
+        return getArray<typename TYPE::value_type>( key, unit );
+    } else {
+        return getScalar<TYPE>( key, unit );
+    }
 }
 
 

@@ -43,10 +43,15 @@ std::string Units::printSIBase() const
         s.resize( s.size() - 1 );
     return s;
 }
-std::string Units::printSI() const { return Utilities::stringf( "%e ", d_scale ) + printSIBase(); }
+std::string Units::printSI() const
+{
+    if ( d_scale == 1.0 )
+        return printSIBase();
+    return Utilities::stringf( "%0.12e ", d_scale ) + printSIBase();
+}
 std::string Units::printFull() const
 {
-    return std::string( d_unit.data(), 0, d_unit.size() ) + " - " + printSI();
+    return std::string( d_unit.data(), 0, d_unit.size() ) + " --- " + printSI();
 }
 
 
@@ -64,6 +69,12 @@ static_assert( std::is_trivially_copyable<Units>::value );
 static_assert( !std::is_arithmetic<Units>::value );
 static_assert( Units().isNull() );
 static_assert( Units( "" ).isNull() );
+static_assert( Units::atoi( " 2303785 " ) == 2303785 );
+static_assert( Units::atoi( " +2303785 " ) == 2303785 );
+static_assert( Units::atoi( " -2303785 " ) == -2303785 );
+static_assert( Units::strtod( " 2303785 " ) == 2303785 );
+static_assert( Units::strtod( "2303785.42" ) - 2303785.42 < 1e-12 );
+static_assert( Units::strtod( " -2303785.42E-4 " ) + 230.378542 < 1e-12 );
 static_assert( Units::convert( Units::getUnitPrefix( "y" ) ) == 1e-24 );
 static_assert( Units::convert( Units::getUnitPrefix( "z" ) ) == 1e-21 );
 static_assert( Units::convert( Units::getUnitPrefix( "a" ) ) == 1e-18 );
@@ -85,6 +96,7 @@ static_assert( Units::convert( Units::getUnitPrefix( "P" ) ) == 1e15 );
 static_assert( Units::convert( Units::getUnitPrefix( "E" ) ) == 1e18 );
 static_assert( Units::convert( Units::getUnitPrefix( "Z" ) ) == 1e21 );
 static_assert( Units::convert( Units::getUnitPrefix( "Y" ) ) == 1e24 );
+#if !defined( __INTEL_COMPILER )
 static_assert( Units( "meter" ).getType() == UnitType::length );
 static_assert( Units( "gram" ).getType() == UnitType::mass );
 static_assert( Units( "second" ).getType() == UnitType::time );
@@ -104,8 +116,8 @@ static_assert( approx_equal( Units( "qt" ).convert( Units( "pt" ) ), 2 ) );
 static_assert( approx_equal( Units( "gal" ).convert( Units( "pt" ) ), 8 ) );
 static_assert( approx_equal( Units( "lb" ).convert( Units( "oz" ) ), 16 ) );
 static_assert( approx_equal( Units( "ergs/(s*cm^2)" ).convert( Units( "W/(m^2)" ) ), 1e-3 ) );
-static_assert( approx_equal( Units( "pt" ).convert( Units( "litre" ) ), 568.26125 ) );
+static_assert( approx_equal( Units( "pt" ).convert( Units( "litre" ) ), 0.4731764727459 ) );
 static_assert( approx_equal( Units( "oz" ).convert( Units( "g" ) ), 28.349523125 ) );
 static_assert( approx_equal( Units( "ton" ).convert( Units( "lb" ) ), 2240 ) );
-
+#endif
 } // namespace AMP

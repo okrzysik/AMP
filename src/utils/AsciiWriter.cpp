@@ -6,6 +6,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #endif
 #ifdef USE_AMP_VECTORS
+#include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_MATRICES
@@ -168,7 +169,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 /************************************************************
  * Function to register a mesh                               *
  ************************************************************/
-void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string & )
+void AsciiWriter::registerMesh( std::shared_ptr<AMP::Mesh::Mesh>, int, const std::string & )
 {
     AMP_ERROR( "registerMesh is not implimented yet" );
 }
@@ -177,14 +178,14 @@ void AsciiWriter::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::str
 /************************************************************
  * Function to register a vector                             *
  ************************************************************/
-void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
-                                  AMP::Mesh::Mesh::shared_ptr,
+void AsciiWriter::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                                  std::shared_ptr<AMP::Mesh::Mesh>,
                                   AMP::Mesh::GeomType,
                                   const std::string & )
 {
     AMP_ERROR( "Mesh support is not implimented yet" );
 }
-void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
+void AsciiWriter::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                                   const std::string &name )
 {
     NULL_USE( vec );
@@ -194,7 +195,7 @@ void AsciiWriter::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     d_vectors.insert( std::pair<global_id, AMP::LinearAlgebra::Vector::shared_ptr>( id, vec ) );
 #endif
 }
-void AsciiWriter::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr mat,
+void AsciiWriter::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
                                   const std::string &name )
 {
     NULL_USE( mat );

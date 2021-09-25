@@ -138,6 +138,24 @@ public:
 
     AMP::Mesh::Mesh::shared_ptr getMesh() { return d_Mesh; }
 
+    /**
+     * virtual interface used to make a vector consistent in an operator defined
+     * way. An example of where an operator is required to make a vector consistent is
+     * in the context of AMR where ghost values on coarse-fine interfaces are filled
+     * in an operator dependent way. The default implementation is to simply call the
+     * vector makeConsistent(SET)
+     */
+    virtual void makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
+
+    //! re-initialize a vector, e.g. after a regrid operation has happened.
+    //! This is useful for example when numerical
+    //! overshoots or undershoots have happened due to interpolation for example
+    //! The default is a null op
+    virtual void reInitializeVector( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
+
+    //! given a vector return whether it is valid or not
+    // default behavior is to return true;
+    virtual bool isValidVector( std::shared_ptr<AMP::LinearAlgebra::Vector> ) { return true; }
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
