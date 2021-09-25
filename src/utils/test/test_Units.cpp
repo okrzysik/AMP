@@ -144,10 +144,7 @@ void check( AMP::UnitTest &ut,
         ut.failure( testname );
     }
 }
-void check( AMP::UnitTest &ut,
-            const std::string &u1,
-            const std::string &u2,
-            const std::string &u3 )
+void check( AMP::UnitTest &ut, const std::string &u1, const std::string &u2, const std::string &u3 )
 {
     auto testname = u1 + " - " + u2 + " - " + u3;
     Units x1( u1 );

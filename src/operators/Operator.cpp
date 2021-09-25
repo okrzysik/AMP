@@ -150,5 +150,12 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     PROFILE_STOP( "constSubsetInputVector", 1 );
     return retvec;
 }
+
+void Operator::makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
+{
+    AMP_ASSERT( vec );
+    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+}
+
 } // namespace Operator
 } // namespace AMP
