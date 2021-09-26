@@ -117,7 +117,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
         bool isthere           = namespec != "not_specified";
         d_isActive[var]        = isthere;
         std::string frozenName = "Freeze" + Diffusion::names[var];
-        d_isFrozen[var]        = params->d_db->getWithDefault( frozenName, false );
+        d_isFrozen[var]        = params->d_db->getWithDefault<bool>( frozenName, false );
         if ( d_isFrozen[var] )
             AMP_INSIST( d_isActive[var], "can not freeze a variable unless it is active" );
     }

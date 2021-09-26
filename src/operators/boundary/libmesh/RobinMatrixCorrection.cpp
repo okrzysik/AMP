@@ -60,9 +60,10 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams = myparams->d_db->getWithDefault( "skip_params", true );
+    bool skipParams = myparams->d_db->getWithDefault<bool>( "skip_params", true );
 
-    bool d_isFluxGaussPtVector = myparams->d_db->getWithDefault( "IsFluxGaussPtVector", true );
+    bool d_isFluxGaussPtVector =
+        myparams->d_db->getWithDefault<bool>( "IsFluxGaussPtVector", true );
 
     if ( !skipParams ) {
         AMP_INSIST( myparams->d_db->keyExists( "alpha" ), "Missing key: prefactor alpha" );
@@ -111,13 +112,15 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
     d_robinPhysicsModel = myparams->d_robinPhysicsModel;
 
     ( d_NeumannParams->d_db )
-        ->putScalar( "constant_flux", myparams->d_db->getWithDefault( "constant_flux", true ) );
+        ->putScalar( "constant_flux",
+                     myparams->d_db->getWithDefault<bool>( "constant_flux", true ) );
     d_NeumannParams->d_variableFlux      = myparams->d_variableFlux;
     d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel;
     ( d_NeumannParams->d_db )->putScalar( "gamma", d_gamma );
     d_NeumannCorrection->reset( d_NeumannParams );
 
-    bool skipMatrixCorrection = myparams->d_db->getWithDefault( "skip_matrix_correction", false );
+    bool skipMatrixCorrection =
+        myparams->d_db->getWithDefault<bool>( "skip_matrix_correction", false );
     if ( !skipMatrixCorrection ) {
         // Create the libmesh elements
         AMP::Mesh::MeshIterator iterator;

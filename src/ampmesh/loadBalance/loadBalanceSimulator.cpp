@@ -122,7 +122,7 @@ loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
         d_cost = 0;
         for ( size_t i = 0; i < meshDatabases.size(); i++ )
             d_cost += d_submeshes[i].d_cost;
-        d_method = db->getWithDefault( "LoadBalanceMethod", 2 );
+        d_method = db->getWithDefault<int>( "LoadBalanceMethod", 2 );
         if ( d_method == 0 ) {
             d_max_procs = std::numeric_limits<decltype( d_max_procs )>::max();
             for ( size_t i = 0; i < meshDatabases.size(); i++ )
@@ -143,7 +143,7 @@ loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
         d_method    = 0;
         d_allEqual  = true;
     }
-    d_cost *= db->getWithDefault( "Weight", 1.0 );
+    d_cost *= db->getWithDefault<double>( "Weight", 1.0 );
     d_maxCostRank = d_cost;
     AMP_ASSERT( d_max_procs > 0 );
     AMP_ASSERT( d_cost > 0 );

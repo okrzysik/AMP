@@ -84,6 +84,11 @@ public:
         GetDatabaseDefault
     };
 
+    template<typename T>
+    struct IdentityType {
+        typedef T type;
+    };
+
 public:
     //! Empty constructor
     Database();
@@ -246,8 +251,9 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE
-    getWithDefault( const std::string_view &key, const TYPE &value, Units unit = Units() ) const;
+    TYPE getWithDefault( const std::string_view &key,
+                         typename IdentityType<const TYPE &>::type value,
+                         Units unit = Units() ) const;
 
 
     /**

@@ -17,11 +17,12 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     AMP_INSIST( params, "NULL parameter!" );
     AMP_INSIST( params->d_db, "NULL database!" );
 
-    d_resetReusesRadialReturn = params->d_db->getWithDefault( "RESET_REUSES_RADIAL_RETURN", true );
+    d_resetReusesRadialReturn =
+        params->d_db->getWithDefault<bool>( "RESET_REUSES_RADIAL_RETURN", true );
     d_jacobianReusesRadialReturn =
-        params->d_db->getWithDefault( "JACOBIAN_REUSES_RADIAL_RETURN", true );
+        params->d_db->getWithDefault<bool>( "JACOBIAN_REUSES_RADIAL_RETURN", true );
 
-    d_useUpdatedLagrangian = params->d_db->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+    d_useUpdatedLagrangian = params->d_db->getWithDefault<bool>( "USE_UPDATED_LAGRANGIAN", false );
 
     if ( d_useUpdatedLagrangian ) {
         d_mechNULElem =
@@ -77,7 +78,8 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
             d_isFrozen[i] = false;
         } else {
             d_isActive[i] = activeInpVar_db->keyExists( keysForVariables[i] );
-            d_isFrozen[i] = params->d_db->getWithDefault( "FREEZE_" + keysForVariables[i], true );
+            d_isFrozen[i] =
+                params->d_db->getWithDefault<bool>( "FREEZE_" + keysForVariables[i], true );
         }
         if ( d_isActive[i] ) {
             std::string varName = activeInpVar_db->getString( keysForVariables[i] );

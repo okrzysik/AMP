@@ -1,10 +1,13 @@
 #include "AMP/utils/HDF5writer.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/utils/HDF5_IO.h"
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
+#else
+namespace AMP::Mesh {
+enum class GeomType : uint8_t { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
+}
 #endif
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/MultiVector.h"
@@ -122,7 +125,7 @@ void HDF5writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
  * Function to register a vector with silo                   *
  ************************************************************/
 void HDF5writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
-                                 AMP::Mesh::Mesh::shared_ptr,
+                                 std::shared_ptr<AMP::Mesh::Mesh>,
                                  AMP::Mesh::GeomType,
                                  const std::string & )
 {

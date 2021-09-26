@@ -73,15 +73,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                   << " seconds." << std::endl;
     }
 
-    bool useML                    = input_db->getWithDefault( "useML", false );
-    bool cladExpansionConstrained = input_db->getWithDefault( "cladExpansionConstrained", true );
-    bool useLevitatingFuel        = input_db->getWithDefault( "useLevitatingFuel", true );
+    bool useML = input_db->getWithDefault<bool>( "useML", false );
+    bool cladExpansionConstrained =
+        input_db->getWithDefault<bool>( "cladExpansionConstrained", true );
+    bool useLevitatingFuel = input_db->getWithDefault<bool>( "useLevitatingFuel", true );
     std::string prefixFileName =
         input_db->getWithDefault<std::string>( "prefixFileName", "TATA_0" );
     double scaleSolution       = input_db->getWithDefault<double>( "scaleSolution", 1.0 );
     double cladNeedALittleHelp = input_db->getWithDefault<double>( "cladNeedALittleHelp", 0.0 );
     double fuelNeedALittleHelp = input_db->getWithDefault<double>( "fuelNeedALittleHelp", -1.0 );
-    bool contactIsFrictionless = input_db->getWithDefault( "contactIsFrictionless", false );
+    bool contactIsFrictionless = input_db->getWithDefault<bool>( "contactIsFrictionless", false );
     double shrinkFactor        = input_db->getWithDefault<double>( "shrinkFactor", 0.0 );
 
     // Load the meshes
@@ -148,8 +149,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             bottomPelletTopPelletContactOperatorParams );
     bottomPelletTopPelletContactOperator->initialize();
     bottomPelletTopPelletContactOperator->setContactIsFrictionless( contactIsFrictionless );
-    //  bottomPelletTopPelletContactOperator->setContactIsFrictionless(bottomPelletTopPelletContact_db->getWithDefault("ContactIsFrictionless",
-    //  false));
+    // bottomPelletTopPelletContactOperator->setContactIsFrictionless(bottomPelletTopPelletContact_db->getWithDefault<bool>("ContactIsFrictionless",false));
 
     auto bottomPelletCladContact_db = input_db->getDatabase( "BottomPelletCladContactOperator" );
     auto bottomPelletCladContactOperatorParams =
@@ -166,8 +166,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             bottomPelletCladContactOperatorParams );
     bottomPelletCladContactOperator->initialize();
     bottomPelletCladContactOperator->setContactIsFrictionless( contactIsFrictionless );
-    //  bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getWithDefault("ContactIsFrictionless",
-    //  false));
+    // bottomPelletCladContactOperator->setContactIsFrictionless(bottomPelletCladContact_db->getWithDefault<bool>("ContactIsFrictionless",false));
 
     auto topPelletCladContact_db = input_db->getDatabase( "TopPelletCladContactOperator" );
     auto topPelletCladContactOperatorParams =
@@ -183,8 +182,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             topPelletCladContactOperatorParams );
     topPelletCladContactOperator->initialize();
     topPelletCladContactOperator->setContactIsFrictionless( contactIsFrictionless );
-    //  topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getWithDefault("ContactIsFrictionless",
-    //  false));
+    // topPelletCladContactOperator->setContactIsFrictionless(topPelletCladContact_db->getWithDefault<bool>("ContactIsFrictionless",false));
 
     // Build the BVP operators
     std::shared_ptr<AMP::Operator::LinearBVPOperator> bottomPelletBVPOperator;
@@ -643,12 +641,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto fullThermalLoadingTempMinusRefTempVec = tempVec->cloneVector();
     fullThermalLoadingTempMinusRefTempVec->subtract( tempVec, refTempVec );
 
-    size_t maxActiveSetIterations = input_db->getWithDefault( "maxActiveSetIterations", 5 );
+    size_t maxActiveSetIterations = input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
     size_t maxThermalLoadingIterations =
-        input_db->getWithDefault( "maxThermalLoadingIterations", 5 );
+        input_db->getWithDefault<size_t>( "maxThermalLoadingIterations", 5 );
     std::vector<double> scalingFactors;
     std::vector<int> maxIterations;
-    bool customLoading = input_db->getWithDefault( "customLoading", false );
+    bool customLoading = input_db->getWithDefault<bool>( "customLoading", false );
     if ( customLoading ) {
         scalingFactors = input_db->getVector<double>( "scalingFactors" );
         maxIterations  = input_db->getVector<int>( "maxIterations" );

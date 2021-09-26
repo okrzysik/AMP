@@ -261,12 +261,12 @@ void IDATimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> input_db )
         AMP_ERROR( d_object_name << " -- Key data `absolute_tolerance' missing in input." );
     }
 
-    d_bCallCalcIC        = input_db->getWithDefault( "CallCalcIC", true );
-    d_bUsePreconditioner = input_db->getWithDefault( "usePreconditioner", true );
+    d_bCallCalcIC        = input_db->getWithDefault<bool>( "CallCalcIC", true );
+    d_bUsePreconditioner = input_db->getWithDefault<bool>( "usePreconditioner", true );
 
     d_createLinearOperatorInternally =
-        input_db->getWithDefault( "createLinearTimeOperatorInternally", false );
-    d_bManufacturedProblem = input_db->getWithDefault( "bManufacturedProblem", false );
+        input_db->getWithDefault<bool>( "createLinearTimeOperatorInternally", false );
+    d_bManufacturedProblem = input_db->getWithDefault<bool>( "bManufacturedProblem", false );
 }
 
 

@@ -35,6 +35,13 @@ namespace AMP {
 
 
 /********************************************************************
+ * Helper function to perform data conversion                        *
+ ********************************************************************/
+template<class TYPE1, class TYPE2>
+Array<TYPE2> convert( const Array<TYPE1> &x );
+
+
+/********************************************************************
  * Create database from arguments                                    *
  ********************************************************************/
 template<class TYPE, class... Args>
@@ -109,7 +116,7 @@ inline std::unique_ptr<Database> Database::createWithUnits( Args... args )
 
 
 /********************************************************************
- * Basic classes for primative data types                            *
+ * Basic classes for primitive data types                            *
  ********************************************************************/
 template<class TYPE>
 inline void printValue( std::ostream &os, const TYPE &value )
@@ -182,8 +189,18 @@ public:
     bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
     bool is_integral() const override { return std::is_integral<TYPE>(); }
     ArraySize arraySize() const override { return ArraySize( 1 ); }
-    Array<double> convertToDouble() const override;
-    Array<int64_t> convertToInt64() const override;
+    Array<double> convertToDouble() const override
+    {
+        Array<TYPE> x( 1 );
+        x( 0 ) = d_data;
+        return convert<TYPE, double>( x );
+    }
+    Array<int64_t> convertToInt64() const override
+    {
+        Array<TYPE> x( 1 );
+        x( 0 ) = d_data;
+        return convert<TYPE, int64_t>( x );
+    }
     bool operator==( const KeyData &rhs ) const override;
     const TYPE &get() const { return d_data; }
 
@@ -248,8 +265,8 @@ public:
     bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
     bool is_integral() const override { return std::is_integral<TYPE>(); }
     ArraySize arraySize() const override { return d_data.size(); }
-    Array<double> convertToDouble() const override;
-    Array<int64_t> convertToInt64() const override;
+    Array<double> convertToDouble() const override { return convert<TYPE, double>( d_data ); }
+    Array<int64_t> convertToInt64() const override { return convert<TYPE, int64_t>( d_data ); }
     bool operator==( const KeyData &rhs ) const override;
     const Array<TYPE> &get() const { return d_data; }
 
@@ -320,8 +337,6 @@ void scaleData( Array<TYPE> &data, double factor );
 template<class TYPE>
 void scaleData( TYPE &data, double factor );
 template<class TYPE>
-Array<TYPE> convertFromDouble( const Array<double> &data );
-template<class TYPE>
 TYPE Database::getScalar( const std::string_view &key, Units unit ) const
 {
     auto keyData = getData( key );
@@ -337,11 +352,18 @@ TYPE Database::getScalar( const std::string_view &key, Units unit ) const
         const auto &data2 = arrayData->get();
         DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
         data = data2( 0 );
-    } else {
-        // We need to convert the data
-        auto data2 = convertFromDouble<TYPE>( keyData->convertToDouble() );
+    } else if ( keyData->is_integral() ) {
+        // We need to convert the data using int
+        auto data2 = convert<int64_t, TYPE>( keyData->convertToInt64() );
         DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
         data = data2( 0 );
+    } else if ( keyData->is_floating_point() ) {
+        // We need to convert the data using double
+        auto data2 = convert<double, TYPE>( keyData->convertToDouble() );
+        DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+        data = data2( 0 );
+    } else {
+        DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
     }
     if ( !unit.isNull() ) {
         auto unit2 = keyData->unit();
@@ -368,9 +390,14 @@ std::vector<TYPE> Database::getVector( const std::string_view &key, Units unit )
     } else if ( arrayData ) {
         // We are dealing with an array of the same type
         data = arrayData->get();
-    } else {
+    } else if ( keyData->is_integral() ) {
         // We need to convert the data
-        data = std::move( convertFromDouble<TYPE>( keyData->convertToDouble() ) );
+        data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
+    } else if ( keyData->is_floating_point() ) {
+        // We need to convert the data
+        data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
+    } else {
+        DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
     }
     if ( !unit.isNull() && !data.empty() ) {
         auto unit2 = keyData->unit();
@@ -401,9 +428,14 @@ Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
     } else if ( arrayData ) {
         // We are dealing with an array of the same type
         data = arrayData->get();
-    } else {
+    } else if ( keyData->is_integral() ) {
         // We need to convert the data
-        data = std::move( convertFromDouble<TYPE>( keyData->convertToDouble() ) );
+        data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
+    } else if ( keyData->is_floating_point() ) {
+        // We need to convert the data
+        data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
+    } else {
+        DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
     }
     if ( !unit.isNull() && !data.empty() ) {
         auto unit2 = keyData->unit();
@@ -420,7 +452,9 @@ Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
  * Get data with default                                             *
  ********************************************************************/
 template<class TYPE>
-TYPE Database::getWithDefault( const std::string_view &key, const TYPE &value, Units unit ) const
+TYPE Database::getWithDefault( const std::string_view &key,
+                               const typename IdentityType<const TYPE &>::type value,
+                               Units unit ) const
 {
     // Check if the key exists and return if it does not
     auto keyData = getData( key );

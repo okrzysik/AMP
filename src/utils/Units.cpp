@@ -45,9 +45,12 @@ std::string Units::printSIBase() const
 }
 std::string Units::printSI() const
 {
-    if ( d_scale == 1.0 )
-        return printSIBase();
-    return Utilities::stringf( "%0.12e ", d_scale ) + printSIBase();
+    auto str = printSIBase();
+    if ( d_scale != 1.0 )
+        str = Utilities::stringf( "%0.12e ", d_scale ) + str;
+    if ( str.empty() )
+        str = " ";
+    return str;
 }
 std::string Units::printFull() const
 {

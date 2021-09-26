@@ -33,7 +33,7 @@ namespace Mesh {
 std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<const MeshParameters> params )
 {
     auto db          = params->getDatabase();
-    bool static_mesh = db->getWithDefault( "static", false );
+    bool static_mesh = db->getWithDefault<bool>( "static", false );
     std::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
     if ( !static_mesh )
         mesh.reset( new MovableBoxMesh( *mesh ) );

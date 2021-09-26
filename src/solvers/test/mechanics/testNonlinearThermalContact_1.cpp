@@ -309,7 +309,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     bool testPassed = false;
 
-    int maxIt = input_db->getWithDefault( "max_iterations", 100 );
+    int maxIt = input_db->getWithDefault<int>( "max_iterations", 100 );
 
     while ( cnt < maxIt ) {
         cnt++;

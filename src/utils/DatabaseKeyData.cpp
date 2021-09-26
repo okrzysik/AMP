@@ -4,6 +4,7 @@
 #include "AMP/utils/Utilities.h"
 
 
+#include <cmath>
 #include <complex>
 #include <cstdlib>
 #include <cstring>
@@ -13,262 +14,192 @@
 #include <string>
 
 
-// clang-format off
 namespace AMP {
+
+
+/********************************************************************
+ * Helper function to perform data conversion                        *
+ ********************************************************************/
+template<class TYPE>
+static constexpr TYPE getTol()
+{
+    if constexpr ( std::is_same<TYPE, float>::value ) {
+        return 1e-6;
+    } else if constexpr ( std::is_same<TYPE, double>::value ) {
+        return 1e-12;
+    } else {
+        return 0;
+    }
+}
+template<class TYPE>
+static constexpr TYPE abs( const TYPE &x )
+{
+    if constexpr ( std::is_signed<TYPE>::value ) {
+        return x < 0 ? -x : x;
+    } else {
+        return x;
+    }
+}
+template<class TYPE1, class TYPE2>
+Array<TYPE2> convert( const Array<TYPE1> &x )
+{
+    using AMP::Utilities::type_name;
+    if constexpr ( std::is_same<TYPE1, TYPE2>::value ) {
+        return x;
+    } else if constexpr ( std::is_arithmetic<TYPE1>::value && std::is_arithmetic<TYPE2>::value ) {
+        Array<TYPE2> y( x.size() );
+        y.fill( 0 );
+        bool pass = true;
+        TYPE1 tol = getTol<TYPE1>();
+        for ( size_t i = 0; i < x.length(); i++ ) {
+            y( i ) = static_cast<TYPE2>( x( i ) );
+            pass   = pass && abs( static_cast<TYPE1>( y( i ) - x( i ) ) ) <= tol * x( i );
+        }
+        if ( !pass ) {
+            std::string msg = "Converting " + std::string( type_name<TYPE1>() ) + "-" +
+                              std::string( type_name<TYPE2>() ) + " results in loss of precision";
+            AMP_WARNING( msg );
+        }
+        return y;
+    } else {
+        std::string msg = "Invalid conversion: " + std::string( type_name<TYPE1>() ) + "-" +
+                          std::string( type_name<TYPE2>() ) + " results in loss of precision";
+        throw std::logic_error( msg );
+    }
+}
 
 
 /********************************************************************
  * Scale data                                                        *
  ********************************************************************/
-#define scaleDataValid( TYPE )                            \
-    template<>                                            \
-    void scaleData( Array<TYPE>& data, double factor )    \
-    {                                                     \
-        data.scale( factor );                             \
-    }                                                     \
-    template<>                                            \
-    void scaleData( TYPE& data, double factor )           \
-    {                                                     \
-        data = static_cast<TYPE>( factor * data );        \
-    }
-#define scaleDataInvalid( TYPE )                          \
-    template<>                                            \
-    void scaleData( Array<TYPE>&, double )                \
-    {                                                     \
-        throw std::logic_error( "Unable to scale data" ); \
-    }                                                     \
-    template<>                                            \
-    void scaleData( TYPE&, double )                       \
-    {                                                     \
-        throw std::logic_error( "Unable to scale data" ); \
-    }
-scaleDataValid( int8_t )
-scaleDataValid( int16_t )
-scaleDataValid( int32_t )
-scaleDataValid( int64_t )
-scaleDataValid( uint8_t )
-scaleDataValid( uint16_t )
-scaleDataValid( uint32_t )
-scaleDataValid( uint64_t )
-scaleDataValid( float )
-scaleDataValid( double )
-scaleDataValid( long double )
-scaleDataValid( std::complex<double> )
-scaleDataInvalid( bool )
-scaleDataInvalid( char )
-scaleDataInvalid( std::string )
-scaleDataInvalid( DatabaseBox )
-template<>
-void scaleData( Array<std::complex<float>>& data, double factor )
+template<class TYPE>
+void scaleData( TYPE &data, double factor )
 {
-    data.scale( factor );
+    if constexpr ( std::is_same<TYPE, bool>::value ) {
+        throw std::logic_error( "Unable to scale bool" );
+    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+        data = static_cast<float>( factor ) * data;
+    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+        data = factor * data;
+    } else if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        data = static_cast<TYPE>( factor ) * data;
+    } else {
+        NULL_USE( factor );
+        using AMP::Utilities::type_name;
+        throw std::logic_error( "Unable to scale " + std::string( type_name<TYPE>() ) );
+    }
 }
-template<>
-void scaleData( std::complex<float>& data, double factor )
+template<class TYPE>
+void scaleData( Array<TYPE> &data, double factor )
 {
-    data = static_cast<float>( factor ) * data;
+    if constexpr ( std::is_same<TYPE, bool>::value ) {
+        throw std::logic_error( "Unable to scale bool" );
+    } else if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        data.scale( factor );
+    } else {
+        NULL_USE( factor );
+        using AMP::Utilities::type_name;
+        throw std::logic_error( "Unable to scale " + std::string( type_name<TYPE>() ) );
+    }
 }
-
-
-/********************************************************************
- * ConvertData                                                       *
- ********************************************************************/
-#define convertDataValid( TYPE )                                           \
-    template<>                                                             \
-    Array<double> KeyDataScalar<TYPE>::convertToDouble() const             \
-    {                                                                      \
-        Array<double> data( 1 );                                           \
-        data(0) = d_data;                                                  \
-        return data;                                                       \
-    }                                                                      \
-    template<>                                                             \
-    Array<int64_t> KeyDataScalar<TYPE>::convertToInt64() const             \
-    {                                                                      \
-        Array<int64_t> data( 1 );                                          \
-        data(0) = d_data;                                                  \
-        return data;                                                       \
-    }                                                                      \
-    template<>                                                             \
-    Array<double> KeyDataArray<TYPE>::convertToDouble() const              \
-    {                                                                      \
-        Array<double> data( d_data.size() );                               \
-        data.copy( d_data );                                               \
-        return data;                                                       \
-    }                                                                      \
-    template<>                                                             \
-    Array<int64_t> KeyDataArray<TYPE>::convertToInt64() const              \
-    {                                                                      \
-        Array<int64_t> data( d_data.size() );                              \
-        data.copy( d_data );                                               \
-        return data;                                                       \
-    }                                                                      \
-    template<>                                                             \
-    Array<TYPE> convertFromDouble( const Array<double>& data )             \
-    {                                                                      \
-        Array<TYPE> data2( data.size() );                                  \
-        data2.copy( data );                                                \
-        return data2;                                                      \
-    }
-#define convertDataInvalid( TYPE )                                        \
-    template<>                                                            \
-    Array<double> KeyDataScalar<TYPE>::convertToDouble() const            \
-    {                                                                     \
-        throw std::logic_error( "Invalid conversion: " #TYPE "-double" ); \
-    }                                                                     \
-    template<>                                                            \
-    Array<int64_t> KeyDataScalar<TYPE>::convertToInt64() const            \
-    {                                                                     \
-        throw std::logic_error( "Invalid conversion: " #TYPE"-int" );     \
-    }                                                                     \
-    template<>                                                            \
-    Array<double> KeyDataArray<TYPE>::convertToDouble() const             \
-    {                                                                     \
-        throw std::logic_error( "Invalid conversion: " #TYPE "-double" ); \
-    }                                                                     \
-    template<>                                                            \
-    Array<int64_t> KeyDataArray<TYPE>::convertToInt64() const             \
-    {                                                                     \
-        throw std::logic_error( "Invalid conversion: " #TYPE "-int" );    \
-    }                                                                     \
-    template<>                                                            \
-    Array<TYPE> convertFromDouble( const Array<double>& )                 \
-    {                                                                     \
-        throw std::logic_error( "Invalid conversion: double-" #TYPE );    \
-    }
-convertDataValid( char )
-convertDataValid( int8_t )
-convertDataValid( int16_t )
-convertDataValid( int32_t )
-convertDataValid( int64_t )
-convertDataValid( uint8_t )
-convertDataValid( uint16_t )
-convertDataValid( uint32_t )
-convertDataValid( uint64_t )
-convertDataValid( float )
-convertDataValid( double )
-convertDataValid( long double )
-convertDataInvalid( std::complex<double> )
-convertDataInvalid( std::complex<float> )
-convertDataInvalid( bool )
-convertDataInvalid( std::_Bit_reference )
-convertDataInvalid( std::string )
-convertDataInvalid( DatabaseBox )
 
 
 /********************************************************************
  * KeyDataScalar::operator==                                         *
  ********************************************************************/
 template<class TYPE>
-static inline bool compare( const TYPE& x, const TYPE& y );
-template<> inline bool compare( const double& x, const double& y )
+static inline bool compare( const TYPE &x, const TYPE &y );
+template<>
+inline bool compare( const double &x, const double &y )
 {
     bool test = x == y;
-    test = test || fabs( x - y ) <= 1e-12 * fabs( x + y );
-    test = test || ( ( x != x ) && ( y != y ) );
+    test      = test || fabs( x - y ) <= 1e-12 * fabs( x + y );
+    test      = test || ( ( x != x ) && ( y != y ) );
     return test;
 }
-template<> inline bool compare( const float& x, const float& y )
+template<>
+inline bool compare( const float &x, const float &y )
 {
     bool test = x == y;
-    test = test || fabs( x - y ) <= 1e-7 * fabs( x + y );
-    test = test || ( ( x != x ) && ( y != y ) );
+    test      = test || fabs( x - y ) <= 1e-7 * fabs( x + y );
+    test      = test || ( ( x != x ) && ( y != y ) );
     return test;
 }
-template<> inline bool compare( const std::complex<double>& x, const std::complex<double>& y )
+template<>
+inline bool compare( const std::complex<double> &x, const std::complex<double> &y )
 {
     bool test = x == y;
-    test = test || std::abs( x - y ) <= 1e-12 * std::abs( x + y );
-    test = test || ( ( x != x ) && ( y != y ) );
+    test      = test || std::abs( x - y ) <= 1e-12 * std::abs( x + y );
+    test      = test || ( ( x != x ) && ( y != y ) );
     return test;
 }
-template<> inline bool compare( const std::complex<float>& x, const std::complex<float>& y )
+template<>
+inline bool compare( const std::complex<float> &x, const std::complex<float> &y )
 {
     bool test = x == y;
-    test = test || std::abs( x - y ) <= 1e-7 * std::abs( x + y );
-    test = test || ( ( x != x ) && ( y != y ) );
+    test      = test || std::abs( x - y ) <= 1e-7 * std::abs( x + y );
+    test      = test || ( ( x != x ) && ( y != y ) );
     return test;
 }
 template<class TYPE>
-static inline bool compare( const TYPE& x, const TYPE& y )
+static inline bool compare( const TYPE &x, const TYPE &y )
 {
     return x == y;
 }
-#define compareKeyData( TYPE )                                        \
-    template<>                                                        \
-    bool KeyDataScalar<TYPE>::operator==( const KeyData& rhs ) const  \
-    {                                                                 \
-        auto tmp1 = dynamic_cast<const KeyDataScalar<TYPE>*>( &rhs ); \
-        auto tmp2 = dynamic_cast<const KeyDataArray<TYPE>*>( &rhs );  \
-        if ( tmp1 ) {                                                 \
-            return compare( d_data, tmp1->d_data );                   \
-        } else if ( tmp2 ) {                                          \
-            if ( tmp2->get().size() != 1 )                            \
-                return false;                                         \
-            return compare( d_data, tmp2->get()(0) );                 \
-        } else if ( ( is_floating_point() || is_integral() ) &&       \
-                 ( rhs.is_floating_point() || rhs.is_integral() ) ) { \
-            auto data1 = convertToDouble();                           \
-            auto data2 = rhs.convertToDouble();                       \
-            if ( data1.size() != data2.size() )                       \
-                return false;                                         \
-            bool test = true;                                         \
-            for ( size_t i=0; i<data1.length(); i++)                  \
-                test = test && compare( data1(i), data2(i) );         \
-            return test;                                              \
-        }                                                             \
-        return false;                                                 \
-    }                                                                 \
-    template<>                                                        \
-    bool KeyDataArray<TYPE>::operator==( const KeyData& rhs ) const   \
-    {                                                                 \
-        auto tmp1 = dynamic_cast<const KeyDataScalar<TYPE>*>( &rhs ); \
-        auto tmp2 = dynamic_cast<const KeyDataArray<TYPE>*>( &rhs ); \
-        if ( tmp1 ) {                                                 \
-            if ( d_data.size() != 1 )                                 \
-                return false;                                         \
-            return compare( d_data(0), tmp1->get() );                 \
-        } else if ( tmp2 ) {                                          \
-            return compare( d_data, tmp2->get() );                    \
-        } else if ( ( is_floating_point() || is_integral() ) &&       \
-                 ( rhs.is_floating_point() || rhs.is_integral() ) ) { \
-            auto data1 = convertToDouble();                           \
-            auto data2 = rhs.convertToDouble();                       \
-            if ( data1.size() != data2.size() )                       \
-                return false;                                         \
-            bool test = true;                                         \
-            for ( size_t i=0; i<data1.length(); i++)                  \
-                test = test && compare( data1(i), data2(i) );         \
-            return test;                                              \
-        }                                                             \
-        return false;                                                 \
+template<class TYPE>
+bool KeyDataScalar<TYPE>::operator==( const KeyData &rhs ) const
+{
+    auto tmp1 = dynamic_cast<const KeyDataScalar<TYPE> *>( &rhs );
+    auto tmp2 = dynamic_cast<const KeyDataArray<TYPE> *>( &rhs );
+    if ( tmp1 ) {
+        return compare( d_data, tmp1->d_data );
+    } else if ( tmp2 ) {
+        if ( tmp2->get().size() != 1 )
+            return false;
+        return compare( d_data, tmp2->get()( 0 ) );
+    } else if ( ( is_floating_point() || is_integral() ) &&
+                ( rhs.is_floating_point() || rhs.is_integral() ) ) {
+        auto data1 = convertToDouble();
+        auto data2 = rhs.convertToDouble();
+        if ( data1.size() != data2.size() )
+            return false;
+        bool test = true;
+        for ( size_t i = 0; i < data1.length(); i++ )
+            test = test && compare( data1( i ), data2( i ) );
+        return test;
     }
-compareKeyData( int8_t )
-compareKeyData( int16_t )
-compareKeyData( int32_t )
-compareKeyData( int64_t )
-compareKeyData( uint8_t )
-compareKeyData( uint16_t )
-compareKeyData( uint32_t )
-compareKeyData( uint64_t )
-compareKeyData( float )
-compareKeyData( double )
-compareKeyData( long double )
-compareKeyData( std::complex<double> )
-compareKeyData( std::complex<float> )
-compareKeyData( bool )
-compareKeyData( char )
-compareKeyData( std::string )
-compareKeyData( std::_Bit_reference )
-compareKeyData( DatabaseBox )
+    return false;
+}
+template<class TYPE>
+bool KeyDataArray<TYPE>::operator==( const KeyData &rhs ) const
+{
+    auto tmp1 = dynamic_cast<const KeyDataScalar<TYPE> *>( &rhs );
+    auto tmp2 = dynamic_cast<const KeyDataArray<TYPE> *>( &rhs );
+    if ( tmp1 ) {
+        if ( d_data.size() != 1 )
+            return false;
+        return compare( d_data( 0 ), tmp1->get() );
+    } else if ( tmp2 ) {
+        return compare( d_data, tmp2->get() );
+    } else if ( ( is_floating_point() || is_integral() ) &&
+                ( rhs.is_floating_point() || rhs.is_integral() ) ) {
+        auto data1 = convertToDouble();
+        auto data2 = rhs.convertToDouble();
+        if ( data1.size() != data2.size() )
+            return false;
+        bool test = true;
+        for ( size_t i = 0; i < data1.length(); i++ )
+            test = test && compare( data1( i ), data2( i ) );
+        return test;
+    }
+    return false;
+}
 
-    // clang-format on
 
-
-    /********************************************************************
-     * DatabaseBox                                                       *
-     ********************************************************************/
-    DatabaseBox::DatabaseBox()
-    : d_dim( 0 )
+/********************************************************************
+ * DatabaseBox                                                       *
+ ********************************************************************/
+DatabaseBox::DatabaseBox() : d_dim( 0 )
 {
     d_lower.fill( 0 );
     d_upper.fill( 0 );
@@ -366,6 +297,58 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     out << ")";
     return out;
 }
+
+
+/********************************************************************
+ * Explicit instantiations                                           *
+ ********************************************************************/
+#define instantiate( FUN )       \
+    FUN( bool );                 \
+    FUN( char );                 \
+    FUN( int8_t );               \
+    FUN( int16_t );              \
+    FUN( int32_t );              \
+    FUN( int64_t );              \
+    FUN( uint8_t );              \
+    FUN( uint16_t );             \
+    FUN( uint32_t );             \
+    FUN( uint64_t );             \
+    FUN( float );                \
+    FUN( double );               \
+    FUN( long double );          \
+    FUN( std::complex<float> );  \
+    FUN( std::complex<double> ); \
+    FUN( std::string );          \
+    FUN( std::_Bit_reference );  \
+    FUN( AMP::DatabaseBox )
+#define instantiateConvert( TYPE )                                             \
+    template AMP::Array<TYPE> convert( const Array<bool> &x );                 \
+    template AMP::Array<TYPE> convert( const Array<char> &x );                 \
+    template AMP::Array<TYPE> convert( const Array<int8_t> &x );               \
+    template AMP::Array<TYPE> convert( const Array<int16_t> &x );              \
+    template AMP::Array<TYPE> convert( const Array<int32_t> &x );              \
+    template AMP::Array<TYPE> convert( const Array<int64_t> &x );              \
+    template AMP::Array<TYPE> convert( const Array<uint8_t> &x );              \
+    template AMP::Array<TYPE> convert( const Array<uint16_t> &x );             \
+    template AMP::Array<TYPE> convert( const Array<uint32_t> &x );             \
+    template AMP::Array<TYPE> convert( const Array<uint64_t> &x );             \
+    template AMP::Array<TYPE> convert( const Array<float> &x );                \
+    template AMP::Array<TYPE> convert( const Array<double> &x );               \
+    template AMP::Array<TYPE> convert( const Array<long double> &x );          \
+    template AMP::Array<TYPE> convert( const Array<std::complex<float>> &x );  \
+    template AMP::Array<TYPE> convert( const Array<std::complex<double>> &x ); \
+    template AMP::Array<TYPE> convert( const Array<std::string> &x );          \
+    template AMP::Array<TYPE> convert( const Array<std::_Bit_reference> &x );  \
+    template AMP::Array<TYPE> convert( const Array<AMP::DatabaseBox> &x )
+#define instantiateScaleData( TYPE )                             \
+    template void scaleData<TYPE>( TYPE & data, double factor ); \
+    template void scaleData<TYPE>( AMP::Array<TYPE> & data, double factor )
+#define instantiateKeyDataScalar( TYPE ) template class KeyDataScalar<TYPE>
+#define instantiateKeyDataArray( TYPE ) template class KeyDataArray<TYPE>
+instantiate( instantiateConvert );       // convert
+instantiate( instantiateScaleData );     // scaleData
+instantiate( instantiateKeyDataScalar ); // KeyDataScalar
+instantiate( instantiateKeyDataArray );  // KeyDataArray
 
 
 /********************************************************

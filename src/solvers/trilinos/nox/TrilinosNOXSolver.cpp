@@ -75,7 +75,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     modelParams->d_icVec       = d_initialGuess;
     modelParams->d_preconditioner.reset();
     modelParams->d_prePostOperator = params->d_prePostOperator;
-    if ( linear_db->getWithDefault( "uses_preconditioner", false ) )
+    if ( linear_db->getWithDefault<bool>( "uses_preconditioner", false ) )
         modelParams->d_preconditioner = params->d_preconditioner;
     d_thyraModel =
         Teuchos::RCP<TrilinosThyraModelEvaluator>( new TrilinosThyraModelEvaluator( modelParams ) );
@@ -86,10 +86,10 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     Teuchos::RCP<Teuchos::ParameterList> p( new Teuchos::ParameterList );
     std::string linearSolverType = linear_db->getString( "linearSolverType" );
     std::string linearSolver     = linear_db->getString( "linearSolver" );
-    int maxLinearIterations      = linear_db->getWithDefault( "max_iterations", 100 );
+    int maxLinearIterations      = linear_db->getWithDefault<int>( "max_iterations", 100 );
     double linearRelativeTolerance =
         linear_db->getWithDefault<double>( "relative_tolerance", 1e-3 );
-    bool flexGmres = linear_db->getWithDefault( "flexibleGmres", true );
+    bool flexGmres = linear_db->getWithDefault<bool>( "flexibleGmres", true );
     p->set( "Linear Solver Type", linearSolverType );
     p->set( "Preconditioner Type", "None" );
     p->sublist( "Linear Solver Types" )
@@ -106,7 +106,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Flexible Gmres", flexGmres );
-    if ( linear_db->getWithDefault( "print_info_level", 0 ) >= 2 ) {
+    if ( linear_db->getWithDefault<int>( "print_info_level", 0 ) >= 2 ) {
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Output Frequency", 1 );
@@ -119,7 +119,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
                       Belos::Warnings + Belos::IterationDetails + Belos::OrthoDetails +
                           Belos::FinalSummary + Belos::Debug + Belos::StatusTestDetails );
         }
-    } else if ( linear_db->getWithDefault( "print_info_level", 0 ) >= 1 ) {
+    } else if ( linear_db->getWithDefault<int>( "print_info_level", 0 ) >= 1 ) {
         linearSolverParams.sublist( "Solver Types" )
             .sublist( linearSolver )
             .set( "Output Frequency", 1 );
@@ -156,7 +156,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
         d_nlParams->set( "Nonlinear Solver", "Line Search Based" );
     } else if ( solverType == "Anderson" ) {
         d_nlParams->set( "Nonlinear Solver", "Anderson Accelerated Fixed-Point" );
-        int depth     = nonlinear_db->getWithDefault( "StorageDepth", 5 );
+        int depth     = nonlinear_db->getWithDefault<int>( "StorageDepth", 5 );
         double mixing = nonlinear_db->getWithDefault<double>( "MixingParameter", 1.0 );
         d_nlParams->sublist( "Anderson Parameters" ).set( "Storage Depth", depth );
         d_nlParams->sublist( "Anderson Parameters" ).set( "Mixing Parameter", mixing );

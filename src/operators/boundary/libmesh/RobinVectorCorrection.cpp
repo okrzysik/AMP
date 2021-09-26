@@ -40,7 +40,7 @@ void RobinVectorCorrection::reset( std::shared_ptr<const OperatorParameters> par
     AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_skipParams = params->d_db->getWithDefault( "skip_params", false );
+    d_skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
     AMP_INSIST( params->d_db->keyExists( "alpha" ), "Missing key: prefactor alpha" );
     d_alpha = params->d_db->getScalar<double>( "alpha" );

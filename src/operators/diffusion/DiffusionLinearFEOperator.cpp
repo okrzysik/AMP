@@ -16,9 +16,9 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
     AMP_INSIST( ( ( d_diffLinElem.get() ) != nullptr ),
                 "d_elemOp is not of type DiffusionLinearElement" );
 
-    d_useConstantTemperature   = params->d_db->getWithDefault( "FixedTemperature", false );
-    d_useConstantConcentration = params->d_db->getWithDefault( "FixedConcentration", false );
-    d_useConstantBurnup        = params->d_db->getWithDefault( "FixedBurnup", false );
+    d_useConstantTemperature   = params->d_db->getWithDefault<bool>( "FixedTemperature", false );
+    d_useConstantConcentration = params->d_db->getWithDefault<bool>( "FixedConcentration", false );
+    d_useConstantBurnup        = params->d_db->getWithDefault<bool>( "FixedBurnup", false );
 
     std::string inpVar = params->d_db->getString( "InputVariable" );
     d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );

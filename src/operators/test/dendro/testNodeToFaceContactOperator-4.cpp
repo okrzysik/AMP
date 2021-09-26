@@ -76,8 +76,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     globalComm.barrier();
     double meshBeginTime = MPI_Wtime();
 
-    bool bis                   = input_db->getWithDefault( "bis", false );
-    bool useALittleHelp        = input_db->getWithDefault( "useALittleHelp", false );
+    bool bis                   = input_db->getWithDefault<bool>( "bis", false );
+    bool useALittleHelp        = input_db->getWithDefault<bool>( "useALittleHelp", false );
     std::string prefixFileName = input_db->getWithDefault<std::string>( "prefixFileName", "prout" );
     if ( bis ) {
         prefixFileName.append( "bis" );
@@ -142,13 +142,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         contactOperatorParams );
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
-        input_db->getWithDefault( "contactIsFrictionless", false ) );
+        input_db->getWithDefault<bool>( "contactIsFrictionless", false ) );
 
-    bool useML                    = input_db->getWithDefault( "useML", false );
-    bool cladExpansionConstrained = input_db->getWithDefault( "cladExpansionConstrained", true );
-    bool useLevitatingFuel        = input_db->getWithDefault( "useLevitatingFuel", true );
-    double scaleSolution          = input_db->getWithDefault<double>( "scaleSolution", 1.0 );
-    double shrinkFactor           = input_db->getWithDefault<double>( "shrinkFactor", 0.0 );
+    bool useML = input_db->getWithDefault<bool>( "useML", false );
+    bool cladExpansionConstrained =
+        input_db->getWithDefault<bool>( "cladExpansionConstrained", true );
+    bool useLevitatingFuel = input_db->getWithDefault<bool>( "useLevitatingFuel", true );
+    double scaleSolution   = input_db->getWithDefault<double>( "scaleSolution", 1.0 );
+    double shrinkFactor    = input_db->getWithDefault<double>( "shrinkFactor", 0.0 );
 
     // Build the master and slave operators
     std::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
@@ -526,7 +527,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     int TOTO_count = 0;
     size_t const maxThermalLoadingIterations =
-        input_db->getWithDefault( "maxThermalLoadingIterations", 5 );
+        input_db->getWithDefault<size_t>( "maxThermalLoadingIterations", 5 );
     for ( size_t thermalLoadingIteration = 0; thermalLoadingIteration < maxThermalLoadingIterations;
           ++thermalLoadingIteration ) {
         if ( !rank ) {
@@ -538,7 +539,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         tempVec->axpy( scalingFactor, fullThermalLoadingTempMinusRefTempVec, refTempVec );
 
         size_t const maxActiveSetIterations =
-            input_db->getWithDefault( "maxActiveSetIterations", 5 );
+            input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
         for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
               ++activeSetIteration ) {
             if ( !rank ) {

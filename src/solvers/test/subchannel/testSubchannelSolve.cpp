@@ -406,7 +406,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                     p2pBC->reset( p2pBC->getOperatorParameters() );
                 } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
                     auto thisDb    = global_input_db->getDatabase( opNames[curBCentry] );
-                    bool isCoupled = thisDb->getWithDefault( "IsCoupledBoundary_0", false );
+                    bool isCoupled = thisDb->getWithDefault<bool>( "IsCoupledBoundary_0", false );
                     if ( isCoupled ) {
                         auto c2wBC =
                             std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(

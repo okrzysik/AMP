@@ -34,17 +34,17 @@ std::shared_ptr<ThreadPool> create_thread_pool( std::shared_ptr<AMP::Database> t
             AMP_ASSERT( tpool_db->keyExists( "N_threads_T" ) );
         }
         // Get the number threads needed and the processors availible
-        int N_threads     = tpool_db->getWithDefault( "N_threads", 0 );
+        int N_threads     = tpool_db->getWithDefault<int>( "N_threads", 0 );
         int N_threads_max = std::max( N_threads, 1 );
         if ( !tpool_db->getScalar<bool>( "share_tpool" ) ) {
-            int N_threads_T = tpool_db->getWithDefault( "N_threads_T", 0 );
-            int N_threads_E = tpool_db->getWithDefault( "N_threads_E", 0 );
+            int N_threads_T = tpool_db->getWithDefault<int>( "N_threads_T", 0 );
+            int N_threads_E = tpool_db->getWithDefault<int>( "N_threads_E", 0 );
             N_threads_max   = std::max( N_threads_max, N_threads_T + N_threads_E );
         }
         // First we need to check and modify the affinities of the current process
-        int method = tpool_db->getWithDefault( "Load_balance_method", 1 );
-        int N_min  = tpool_db->getWithDefault( "N_min", -1 );
-        int N_max  = tpool_db->getWithDefault( "N_max", -1 );
+        int method = tpool_db->getWithDefault<int>( "Load_balance_method", 1 );
+        int N_min  = tpool_db->getWithDefault<int>( "N_min", -1 );
+        int N_max  = tpool_db->getWithDefault<int>( "N_max", -1 );
         if ( N_min == -1 )
             N_min = std::min( N_threads_max, N_max );
         auto procs = ThreadPool::getProcessAffinity();
@@ -81,8 +81,8 @@ void create_nested_thread_pool( std::shared_ptr<AMP::Database> tpool_db,
                                 std::shared_ptr<ThreadPool> &tpool_E,
                                 std::shared_ptr<ThreadPool> &tpool_T )
 {
-    int N_threads_E = tpool_db->getWithDefault( "N_threads_E", 0 );
-    int N_threads_T = tpool_db->getWithDefault( "N_threads_T", 0 );
+    int N_threads_E = tpool_db->getWithDefault<int>( "N_threads_E", 0 );
+    int N_threads_T = tpool_db->getWithDefault<int>( "N_threads_T", 0 );
     if ( tpool_db->getScalar<bool>( "share_tpool" ) || N_threads_E + N_threads_T == 0 ) {
         tpool_E.reset();
         tpool_T.reset();

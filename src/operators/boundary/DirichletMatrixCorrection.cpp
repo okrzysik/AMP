@@ -15,11 +15,11 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
     : BoundaryOperator( params ), d_variable( params->d_variable )
 {
     d_computedAddRHScorrection = false;
-    d_symmetricCorrection      = params->d_db->getWithDefault( "symmetric_correction", true );
-    d_zeroDirichletBlock       = params->d_db->getWithDefault( "zero_dirichlet_block", false );
-    d_skipRHSsetCorrection     = params->d_db->getWithDefault( "skip_rhs_correction", true );
+    d_symmetricCorrection      = params->d_db->getWithDefault<bool>( "symmetric_correction", true );
+    d_zeroDirichletBlock   = params->d_db->getWithDefault<bool>( "zero_dirichlet_block", false );
+    d_skipRHSsetCorrection = params->d_db->getWithDefault<bool>( "skip_rhs_correction", true );
     d_skipRHSaddCorrection =
-        params->d_db->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
+        params->d_db->getWithDefault<bool>( "skip_rhs_add_correction", d_skipRHSsetCorrection );
     d_applyMatrixCorrectionWasCalled = false;
 
     reset( params );
@@ -58,15 +58,15 @@ void DirichletMatrixCorrection::parseParams(
     std::shared_ptr<const DirichletMatrixCorrectionParameters> params )
 {
     AMP_INSIST( params->d_db, "NULL database" );
-    bool skipParams = params->d_db->getWithDefault( "skip_params", false );
+    bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
     if ( !skipParams ) {
-        d_symmetricCorrection = params->d_db->getWithDefault( "symmetric_correction", true );
-        d_zeroDirichletBlock  = params->d_db->getWithDefault( "zero_dirichlet_block", false );
+        d_symmetricCorrection = params->d_db->getWithDefault<bool>( "symmetric_correction", true );
+        d_zeroDirichletBlock  = params->d_db->getWithDefault<bool>( "zero_dirichlet_block", false );
 
-        d_skipRHSsetCorrection = params->d_db->getWithDefault( "skip_rhs_correction", true );
+        d_skipRHSsetCorrection = params->d_db->getWithDefault<bool>( "skip_rhs_correction", true );
         d_skipRHSaddCorrection =
-            params->d_db->getWithDefault( "skip_rhs_add_correction", d_skipRHSsetCorrection );
+            params->d_db->getWithDefault<bool>( "skip_rhs_add_correction", d_skipRHSsetCorrection );
 
         if ( d_symmetricCorrection == false )
             d_skipRHSaddCorrection = true;

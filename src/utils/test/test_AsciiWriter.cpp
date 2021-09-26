@@ -1,4 +1,3 @@
-#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -9,6 +8,7 @@
 #include "ProfilerApp.h"
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION

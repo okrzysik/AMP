@@ -63,7 +63,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 "Key ''NumberOfLoadingSteps'' is missing!" );
     int NumberOfLoadingSteps = input_db->getScalar<int>( "NumberOfLoadingSteps" );
 
-    bool ExtractData    = input_db->getWithDefault( "ExtractStressStrainData", false );
+    bool ExtractData    = input_db->getWithDefault<bool>( "ExtractStressStrainData", false );
     std::string ss_file = exeName + "_UniaxialTmperatureDisplacement.txt";
     auto fout123        = fopen( ss_file.c_str(), "w" );
 

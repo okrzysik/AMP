@@ -128,6 +128,10 @@ private: // Internal functions
     checkNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
     static constexpr double norm( const Point &x, const Point &y );
     static constexpr double dot( const Point &x, const Point &y );
+    static double distanceToBox( const std::array<double, NDIM> &pos,
+                                 const std::array<double, NDIM> &ang,
+                                 const std::array<double, NDIM> &lb,
+                                 const std::array<double, NDIM> &ub );
 };
 
 

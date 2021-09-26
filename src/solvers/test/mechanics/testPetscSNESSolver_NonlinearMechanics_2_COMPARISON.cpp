@@ -92,7 +92,7 @@ static void myTest( AMP::UnitTest *ut )
     initTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     bool setFinalTempEqualsInitialTemp =
-        input_db->getWithDefault( "SET_FINAL_TEMP_EQUALS_INIT_TEMP", false );
+        input_db->getWithDefault<bool>( "SET_FINAL_TEMP_EQUALS_INIT_TEMP", false );
 
     if ( setFinalTempEqualsInitialTemp ) {
         finalTempVec->copyVector( initTempVec );

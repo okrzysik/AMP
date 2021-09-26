@@ -75,9 +75,9 @@ constexpr Units::Units( const std::string_view &str )
     : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 )
 {
     if ( !str.empty() ) {
-        auto tmp = read( str );
-        d_SI     = tmp.d_SI;
-        d_scale  = tmp.d_scale;
+        Units tmp = read( str );
+        d_SI      = tmp.d_SI;
+        d_scale   = tmp.d_scale;
         if ( str.length() < d_unit.size() - 1 ) {
             for ( size_t i = 0; i < str.length(); i++ )
                 d_unit[i] = str[i];
@@ -213,7 +213,7 @@ constexpr Units Units::read( std::string_view str )
     Units u( { 0 }, 1.0 );
     char last_op = '*';
     for ( int i = 0; i < N; i++ ) {
-        auto u2 = read( v[i] );
+        Units u2 = read( v[i] );
         if ( op[i] == '^' ) {
             u2 = u2.pow( atoi( v[i + 1] ) );
             i++;
@@ -289,6 +289,11 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
     }
     return value;
 }
+inline std::vector<std::string> Units::getAllPrefixes()
+{
+    return { "Y", "Z", "E", "P", "T", "G", "M", "k", "h", "da", "",
+             "d", "c", "m", "u", "μ", "n", "p", "f", "a", "z",  "y" };
+}
 
 
 /********************************************************************
@@ -298,20 +303,20 @@ constexpr Units Units::read2( std::string_view str )
 {
     // Check for special prefixes
     if ( str.substr( 0, 2 ) == "da" ) {
-        auto u = readUnit( str.substr( 2 ), false );
+        Units u = readUnit( str.substr( 2 ), false );
         u.d_scale *= 10.0;
         if ( u.d_scale != 0 )
             return u;
     }
     if ( str.substr( 0, 2 ) == "μ" ) {
-        auto u = readUnit( str.substr( 2 ), false );
+        Units u = readUnit( str.substr( 2 ), false );
         u.d_scale *= 1e-6;
         if ( u.d_scale != 0 )
             return u;
     }
     // Try reading a prefix and then the unit
     auto prefix = getUnitPrefix( str.substr( 0, 1 ) );
-    auto u      = readUnit( str.substr( 1 ), false );
+    Units u     = readUnit( str.substr( 1 ), false );
     if ( prefix == UnitPrefix::unknown || u.d_scale == 0 ) {
         return readUnit( str );
     } else {
@@ -391,9 +396,9 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
     if ( str == "milliliters" || str == "ml" || str == "mL" )
         return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-6 );
     // Non-SI units accepted for use with SI
-    if ( str == "minute" )
+    if ( str == "minute" || str == "minutes" )
         return create( UnitType::time, 60 );
-    if ( str == "hour" )
+    if ( str == "hour" || str == "hr" )
         return create( UnitType::time, 3600 );
     if ( str == "day" )
         return create( UnitType::time, 86400 );
@@ -470,6 +475,28 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
     }
     return Units( u, s );
 }
+inline std::vector<std::string> Units::getAllUnits()
+{
+    return { "second",   "s",           "meter",      "m",         "gram",    "g",
+             "ampere",   "A",           "kelvin",     "K",         "mole",    "mol",
+             "candela",  "cd",          "radian",     "radians",   "rad",     "steradian",
+             "sr",       "degree",      "degrees",    "joule",     "J",       "watt",
+             "W",        "hertz",       "Hz",         "newton",    "N",       "pascal",
+             "Pa",       "coulomb",     "C",          "volt",      "V",       "farad",
+             "F",        "ohm",         "Ω",          "siemens",   "S",       "weber",
+             "Wb",       "tesla",       "T",          "henry",     "H",       "lumen",
+             "lm",       "lux",         "lx",         "becquerel", "Bq",      "gray",
+             "Gy",       "sievert",     "Sv",         "katal",     "kat",     "litre",
+             "L",        "milliliters", "ml",         "mL",        "minute",  "minutes",
+             "hour",     "hr",          "day",        "week",      "mmHg",    "ergs",
+             "erg",      "eV",          "dyn",        "barye",     "Ba",      "inch",
+             "in",       "\"",          "foot",       "ft",        "\'",      "yard",
+             "yd",       "furlong",     "fur",        "mile",      "mi",      "acre",
+             "teaspoon", "tsp",         "tablespoon", "tbsp",      "cup",     "cp",
+             "pint",     "pt",          "quart",      "qt",        "gallon",  "gal",
+             "ounce",    "oz",          "pound",      "lb",        "ton",     "lbf",
+             "Rankine",  "R",           "hartree",    "bohr",      "percent", "%" };
+}
 
 
 /********************************************************************
@@ -481,31 +508,31 @@ constexpr Units::SI_type Units::getSI( UnitType type )
         return { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     // s, m, kg, A, K, mol, cd, rad, sr
     constexpr SI_type id[25] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // 0: unitless
-        { 1, 0, 0, 0, 0, 0, 0, 0, 0 },    // 1: time (s)
-        { 0, 1, 0, 0, 0, 0, 0, 0, 0 },    // 2: length (m)
-        { 0, 0, 1, 0, 0, 0, 0, 0, 0 },    // 3: mass (kg)
-        { 0, 0, 0, 1, 0, 0, 0, 0, 0 },    // 4: current (A)
-        { 0, 0, 0, 0, 1, 0, 0, 0, 0 },    // 5: temperature (K)
-        { 0, 0, 0, 0, 0, 1, 0, 0, 0 },    // 6: mole (mol)
-        { 0, 0, 0, 0, 0, 0, 1, 0, 0 },    // 7: intensity (cd)
-        { 0, 0, 0, 0, 0, 0, 0, 1, 0 },    // 8: angle (rad)
-        { 0, 0, 0, 0, 0, 0, 0, 0, 1 },    // 9: solid angle (sr)
-        { -2, 2, 1, 0, 0, 0, 0, 0 },      // 10: energy (kg m2 s-2)
-        { -3, 2, 1, 0, 0, 0, 0, 0 },      // 11: power (kg m2 s-3)
-        { -1, 0, 0, 0, 0, 0, 0, 0 },      // 12: frequency (s-1)
-        { -2, 1, 1, 0, 0, 0, 0, 0, 0 },   // 13: force (kg m s-2)
-        { -2, -1, 1, 0, 0, 0, 0, 0, 0 },  // 14: pressure (kg m-1 s-2)
-        { 1, 0, 0, 1, 0, 0, 0, 0, 0 },    // 15: electric charge (s A)
-        { -3, 2, 1, -1, 0, 0, 0, 0, 0 },  // 16: electrical potential (kg m2 s-3 A-1)
-        { 4, -2, -1, 2, 0, 0, 0, 0, 0 },  // 17: capacitance (kg-1 m-2 s4 A2)
-        { -3, 2, 1, -2, 0, 0, 0, 0, 0 },  // 18: resistance (kg m2 s-3 A-2)
-        { 3, -2, -1, 2, 0, 0, 0, 0, 0 },  // 19: electrical conductance (kg-1 m-2 s3 A2)
-        { -2, 2, 1, -1, 0, 0, 0, 0, 0 },  // 20: magnetic flux (kg m2 s-2 A-1)
-        { -2, 0, 1, -1, 0, 0, 0, 0, 0 },  // 21: magnetic flux density (kg s-2 A-1)
-        { -2, 2, 1, -2, 0, 0, 0, 0, 0 },  // 22: inductance (kg m2 s-2 A-2)
-        { 0, 0, 0, 0, 0, 0, 1, 0, 1 },    // 23: luminous flux (cd sr)
-        { 0, -2, 0, 0, 0, 0, 1, 0, 1 }    // 24: illuminance (cd sr m-2)
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },   // 0: unitless
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0 },   // 1: time (s)
+        { 0, 1, 0, 0, 0, 0, 0, 0, 0 },   // 2: length (m)
+        { 0, 0, 1, 0, 0, 0, 0, 0, 0 },   // 3: mass (kg)
+        { 0, 0, 0, 1, 0, 0, 0, 0, 0 },   // 4: current (A)
+        { 0, 0, 0, 0, 1, 0, 0, 0, 0 },   // 5: temperature (K)
+        { 0, 0, 0, 0, 0, 1, 0, 0, 0 },   // 6: mole (mol)
+        { 0, 0, 0, 0, 0, 0, 1, 0, 0 },   // 7: intensity (cd)
+        { 0, 0, 0, 0, 0, 0, 0, 1, 0 },   // 8: angle (rad)
+        { 0, 0, 0, 0, 0, 0, 0, 0, 1 },   // 9: solid angle (sr)
+        { -2, 2, 1, 0, 0, 0, 0, 0 },     // 10: energy (kg m2 s-2)
+        { -3, 2, 1, 0, 0, 0, 0, 0 },     // 11: power (kg m2 s-3)
+        { -1, 0, 0, 0, 0, 0, 0, 0 },     // 12: frequency (s-1)
+        { -2, 1, 1, 0, 0, 0, 0, 0, 0 },  // 13: force (kg m s-2)
+        { -2, -1, 1, 0, 0, 0, 0, 0, 0 }, // 14: pressure (kg m-1 s-2)
+        { 1, 0, 0, 1, 0, 0, 0, 0, 0 },   // 15: electric charge (s A)
+        { -3, 2, 1, -1, 0, 0, 0, 0, 0 }, // 16: electrical potential (kg m2 s-3 A-1)
+        { 4, -2, -1, 2, 0, 0, 0, 0, 0 }, // 17: capacitance (kg-1 m-2 s4 A2)
+        { -3, 2, 1, -2, 0, 0, 0, 0, 0 }, // 18: resistance (kg m2 s-3 A-2)
+        { 3, -2, -1, 2, 0, 0, 0, 0, 0 }, // 19: electrical conductance (kg-1 m-2 s3 A2)
+        { -2, 2, 1, -1, 0, 0, 0, 0, 0 }, // 20: magnetic flux (kg m2 s-2 A-1)
+        { -2, 0, 1, -1, 0, 0, 0, 0, 0 }, // 21: magnetic flux density (kg s-2 A-1)
+        { -2, 2, 1, -2, 0, 0, 0, 0, 0 }, // 22: inductance (kg m2 s-2 A-2)
+        { 0, 0, 0, 0, 0, 0, 1, 0, 1 },   // 23: luminous flux (cd sr)
+        { 0, -2, 0, 0, 0, 0, 1, 0, 1 }   // 24: illuminance (cd sr m-2)
     };
     return id[static_cast<int>( type )];
 }

@@ -35,7 +35,7 @@ SourceNonlinearElement::SourceNonlinearElement(
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
-    d_integrateVolume = params->d_db->getWithDefault( "INTEGRATEVOLUME", true );
+    d_integrateVolume = params->d_db->getWithDefault<bool>( "INTEGRATEVOLUME", true );
 
     const unsigned int dimension = 3;
 
