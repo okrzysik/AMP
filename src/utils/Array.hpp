@@ -59,7 +59,9 @@ extern template class Array<float>;
     template void AMP::Array<TYPE>::viewRaw( ArraySize const&, TYPE*, bool, bool ); \
     template void AMP::Array<TYPE>::view2(ArraySize const&, std::shared_ptr<TYPE> ); \
     template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( const AMP::Array<TYPE> & ); \
-    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && );
+    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && ); \
+    template TYPE* AMP::Array<TYPE>::data();                                       \
+    template const TYPE* AMP::Array<TYPE>::data() const;                           \
 // clang-format on
 
 
