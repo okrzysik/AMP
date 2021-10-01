@@ -493,8 +493,14 @@ inline void Database::putScalar<std::string_view>( const std::string_view &key,
 template<class TYPE>
 inline void Database::putScalar( const std::string_view &key, TYPE value, Units unit, Check check )
 {
-    auto keyData = std::make_unique<KeyDataScalar<TYPE>>( std::move( value ), unit );
-    putData( key, std::move( keyData ), check );
+    if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
+        // Guard against storing a bit reference (store a bool instead)
+        putScalar<bool>( key, value, unit, check );
+    } else {
+        // Store the scalar value
+        auto keyData = std::make_unique<KeyDataScalar<TYPE>>( std::move( value ), unit );
+        putData( key, std::move( keyData ), check );
+    }
 }
 template<class TYPE>
 inline void Database::putVector( const std::string_view &key,
