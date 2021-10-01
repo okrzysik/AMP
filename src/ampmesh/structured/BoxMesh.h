@@ -417,6 +417,9 @@ protected:
     // Function to finalize the mesh data once the coordinates have been set
     void finalize();
 
+    // Function to finalize the mesh data once the coordinates have been set
+    virtual void createBoundingBox();
+
     // Helper function to return the indices of the local block owned by the given processor
     inline std::array<int, 6> getLocalBlock( unsigned int rank ) const;
 
@@ -435,7 +438,8 @@ protected:
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
 
-protected:                                // Internal data
+protected:              // Internal data
+    int d_rank, d_size; // Cached values for the rank and size (may be used if comm is null)
     std::array<bool, 3> d_isPeriodic;     // Which directions are periodic
     std::array<int, 3> d_globalSize;      // The size of the logical domain in each direction
     std::array<int, 3> d_blockSize;       // The size of the logical blocks in each direction

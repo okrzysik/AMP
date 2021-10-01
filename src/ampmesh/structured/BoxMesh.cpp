@@ -2,6 +2,7 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/structured/MovableBoxMesh.h"
+#include "AMP/ampmesh/structured/PureLogicalMesh.h"
 #include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/structured/structuredMeshIterator.h"
@@ -32,12 +33,17 @@ namespace Mesh {
  ****************************************************************/
 std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<const MeshParameters> params )
 {
-    auto db          = params->getDatabase();
-    bool static_mesh = db->getWithDefault<bool>( "static", false );
-    std::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
-    if ( !static_mesh )
-        mesh.reset( new MovableBoxMesh( *mesh ) );
-    return mesh;
+    auto db        = params->getDatabase();
+    auto generator = db->getWithDefault<std::string>( "Generator", "" );
+    if ( generator == "logical" ) {
+        return std::make_shared<PureLogicalMesh>( params );
+    } else {
+        std::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
+        bool static_mesh = db->getWithDefault<bool>( "static", false );
+        if ( !static_mesh )
+            mesh.reset( new MovableBoxMesh( *mesh ) );
+        return mesh;
+    }
 }
 
 
@@ -73,7 +79,6 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
-    AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     AMP_INSIST( d_db.get(), "Database must exist" );
     d_isPeriodic.fill( false );
     d_globalSize.fill( 1 );
@@ -81,6 +86,12 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
     d_invBlockSize.fill( 1 );
     d_numBlocks.fill( 1 );
     d_surfaceId.fill( -1 );
+    d_rank = -1;
+    d_size = 0;
+    if ( !d_comm.isNull() ) {
+        d_rank = d_comm.getRank();
+        d_size = d_comm.getSize();
+    }
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 {
@@ -88,6 +99,8 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
     GeomDim        = mesh.GeomDim;
     d_max_gcw      = mesh.d_max_gcw;
     d_comm         = mesh.d_comm;
+    d_rank         = mesh.d_rank;
+    d_size         = mesh.d_size;
     d_name         = mesh.d_name;
     d_box          = mesh.d_box;
     d_box_local    = mesh.d_box_local;
@@ -120,7 +133,7 @@ void BoxMesh::initialize()
     }
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
         AMP_ASSERT( d_globalSize[d] > 0 );
-    // Get the minimum mesh size
+    // Get the minimum mesh sizephysicalToLogical
     std::vector<int> minSize( static_cast<int>( GeomDim ), 1 );
     if ( d_db->keyExists( "LoadBalanceMinSize" ) ) {
         minSize = d_db->getVector<int>( "LoadBalanceMinSize" );
@@ -133,14 +146,15 @@ void BoxMesh::initialize()
         }
     }
     // Create the load balance
-    if ( d_comm.getSize() == 1 ) {
+    AMP_INSIST( d_size > 0, "Communicator must be set" );
+    if ( d_size == 1 ) {
         // We are dealing with a serial mesh (do nothing to change the local box sizes)
         for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
             d_numBlocks[d] = 1;
     } else {
         // We are dealing with a parallel mesh
         // First, get the prime factors for number of processors and divide the dimensions
-        auto factors = AMP::Utilities::factor( d_comm.getSize() );
+        auto factors = AMP::Utilities::factor( d_size );
         for ( int d = 0; d < 3; d++ )
             d_numBlocks[d] = 1;
         while ( !factors.empty() ) {
@@ -242,12 +256,10 @@ void BoxMesh::initialize()
     // Create the initial boundary info
     PROFILE_STOP( "initialize" );
 }
-void BoxMesh::finalize()
+void BoxMesh::createBoundingBox()
 {
-    PROFILE_START( "finalize" );
-    // Fill in the final info for the mesh
-    AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
-    d_name      = d_db->getString( "MeshName" );
+    // Fill the bounding box
+    AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     d_box_local = std::vector<double>( 2 * PhysicalDim );
     for ( int d = 0; d < PhysicalDim; d++ ) {
         d_box_local[2 * d + 0] = 1e100;
@@ -270,6 +282,14 @@ void BoxMesh::finalize()
         d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
+}
+void BoxMesh::finalize()
+{
+    PROFILE_START( "finalize" );
+    // Fill in the final info for the mesh
+    AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
+    d_name = d_db->getString( "MeshName" );
+    createBoundingBox();
     // Displace the mesh
     std::vector<double> displacement( PhysicalDim, 0.0 );
     if ( d_db->keyExists( "x_offset" ) && PhysicalDim >= 1 )
@@ -285,9 +305,6 @@ void BoxMesh::finalize()
     }
     if ( test )
         displaceMesh( displacement );
-    // Get the global ranks for the comm to make sure it is set
-    auto globalRanks = getComm().globalRanks();
-    AMP_ASSERT( !globalRanks.empty() );
     PROFILE_STOP( "finalize" );
 }
 
@@ -452,7 +469,7 @@ size_t BoxMesh::numLocalElements( const GeomType type ) const
 {
     if ( type > GeomDim )
         return 0;
-    auto box   = getLocalBlock( d_comm.getRank() );
+    auto box   = getLocalBlock( d_rank );
     auto range = getIteratorRange( box, type, 0 );
     size_t N   = 0;
     for ( const auto &tmp : range )
@@ -476,7 +493,7 @@ size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     if ( type > GeomDim )
         return 0;
-    auto box    = getLocalBlock( d_comm.getRank() );
+    auto box    = getLocalBlock( d_rank );
     auto range1 = getIteratorRange( box, type, 0 );
     auto range2 = getIteratorRange( box, type, gcw );
     size_t N    = 0;
@@ -631,7 +648,7 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
     if ( type > GeomDim )
         return MeshIterator();
-    auto box   = getLocalBlock( d_comm.getRank() );
+    auto box   = getLocalBlock( d_rank );
     auto range = getIteratorRange( box, type, gcw );
     return createIterator( range );
 }
@@ -653,7 +670,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
         }
     }
     // Intersect with the local ghost box
-    auto box          = getLocalBlock( d_comm.getRank() );
+    auto box          = getLocalBlock( d_rank );
     auto range        = getIteratorRange( box, type, gcw );
     auto intersection = intersect( sufaceSet, range );
     // Create a list if elements removing any duplicate elements
@@ -702,7 +719,7 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
         }
     }
     // Intersect with the local ghost box
-    auto box          = getLocalBlock( d_comm.getRank() );
+    auto box          = getLocalBlock( d_rank );
     auto range        = getIteratorRange( box, type, gcw );
     auto intersection = intersect( sufaceSet, range );
     // Create a list if elements removing any duplicate elements
