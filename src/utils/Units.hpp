@@ -75,9 +75,9 @@ constexpr Units::Units( const std::string_view &str )
     : d_unit( { 0 } ), d_SI( { 0 } ), d_scale( 0.0 )
 {
     if ( !str.empty() ) {
-        auto tmp = read( str );
-        d_SI     = tmp.d_SI;
-        d_scale  = tmp.d_scale;
+        Units tmp = read( str );
+        d_SI      = tmp.d_SI;
+        d_scale   = tmp.d_scale;
         if ( str.length() < d_unit.size() - 1 ) {
             for ( size_t i = 0; i < str.length(); i++ )
                 d_unit[i] = str[i];
@@ -213,7 +213,7 @@ constexpr Units Units::read( std::string_view str )
     Units u( { 0 }, 1.0 );
     char last_op = '*';
     for ( int i = 0; i < N; i++ ) {
-        auto u2 = read( v[i] );
+        Units u2 = read( v[i] );
         if ( op[i] == '^' ) {
             u2 = u2.pow( atoi( v[i + 1] ) );
             i++;
@@ -289,6 +289,11 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
     }
     return value;
 }
+inline std::vector<std::string> Units::getAllPrefixes()
+{
+    return { "Y", "Z", "E", "P", "T", "G", "M", "k", "h", "da", "",
+             "d", "c", "m", "u", "μ", "n", "p", "f", "a", "z",  "y" };
+}
 
 
 /********************************************************************
@@ -298,20 +303,20 @@ constexpr Units Units::read2( std::string_view str )
 {
     // Check for special prefixes
     if ( str.substr( 0, 2 ) == "da" ) {
-        auto u = readUnit( str.substr( 2 ), false );
+        Units u = readUnit( str.substr( 2 ), false );
         u.d_scale *= 10.0;
         if ( u.d_scale != 0 )
             return u;
     }
     if ( str.substr( 0, 2 ) == "μ" ) {
-        auto u = readUnit( str.substr( 2 ), false );
+        Units u = readUnit( str.substr( 2 ), false );
         u.d_scale *= 1e-6;
         if ( u.d_scale != 0 )
             return u;
     }
     // Try reading a prefix and then the unit
     auto prefix = getUnitPrefix( str.substr( 0, 1 ) );
-    auto u      = readUnit( str.substr( 1 ), false );
+    Units u     = readUnit( str.substr( 1 ), false );
     if ( prefix == UnitPrefix::unknown || u.d_scale == 0 ) {
         return readUnit( str );
     } else {
@@ -391,9 +396,9 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
     if ( str == "milliliters" || str == "ml" || str == "mL" )
         return Units( { 0, 3, 0, 0, 0, 0, 0, 0, 0 }, 1e-6 );
     // Non-SI units accepted for use with SI
-    if ( str == "minute" )
+    if ( str == "minute" || str == "minutes" )
         return create( UnitType::time, 60 );
-    if ( str == "hour" )
+    if ( str == "hour" || str == "hr" )
         return create( UnitType::time, 3600 );
     if ( str == "day" )
         return create( UnitType::time, 86400 );
@@ -469,6 +474,28 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         throw std::logic_error( err );
     }
     return Units( u, s );
+}
+inline std::vector<std::string> Units::getAllUnits()
+{
+    return { "second",   "s",           "meter",      "m",         "gram",    "g",
+             "ampere",   "A",           "kelvin",     "K",         "mole",    "mol",
+             "candela",  "cd",          "radian",     "radians",   "rad",     "steradian",
+             "sr",       "degree",      "degrees",    "joule",     "J",       "watt",
+             "W",        "hertz",       "Hz",         "newton",    "N",       "pascal",
+             "Pa",       "coulomb",     "C",          "volt",      "V",       "farad",
+             "F",        "ohm",         "Ω",          "siemens",   "S",       "weber",
+             "Wb",       "tesla",       "T",          "henry",     "H",       "lumen",
+             "lm",       "lux",         "lx",         "becquerel", "Bq",      "gray",
+             "Gy",       "sievert",     "Sv",         "katal",     "kat",     "litre",
+             "L",        "milliliters", "ml",         "mL",        "minute",  "minutes",
+             "hour",     "hr",          "day",        "week",      "mmHg",    "ergs",
+             "erg",      "eV",          "dyn",        "barye",     "Ba",      "inch",
+             "in",       "\"",          "foot",       "ft",        "\'",      "yard",
+             "yd",       "furlong",     "fur",        "mile",      "mi",      "acre",
+             "teaspoon", "tsp",         "tablespoon", "tbsp",      "cup",     "cp",
+             "pint",     "pt",          "quart",      "qt",        "gallon",  "gal",
+             "ounce",    "oz",          "pound",      "lb",        "ton",     "lbf",
+             "Rankine",  "R",           "hartree",    "bohr",      "percent", "%" };
 }
 
 

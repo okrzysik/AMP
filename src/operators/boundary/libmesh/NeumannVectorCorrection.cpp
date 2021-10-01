@@ -62,8 +62,8 @@ void NeumannVectorCorrection::reset( std::shared_ptr<const OperatorParameters> p
     AMP_INSIST( myparams->d_db->keyExists( "number_of_ids" ), "Key ''number_of_ids'' is missing!" );
     d_numBndIds = myparams->d_db->getScalar<int>( "number_of_ids" );
 
-    d_isConstantFlux      = myparams->d_db->getWithDefault( "constant_flux", true );
-    d_isFluxGaussPtVector = myparams->d_db->getWithDefault( "IsFluxGaussPtVector", true );
+    d_isConstantFlux      = myparams->d_db->getWithDefault<bool>( "constant_flux", true );
+    d_isFluxGaussPtVector = myparams->d_db->getWithDefault<bool>( "IsFluxGaussPtVector", true );
 
     d_boundaryIds.resize( d_numBndIds );
     d_dofIds.resize( d_numBndIds );
@@ -82,7 +82,7 @@ void NeumannVectorCorrection::reset( std::shared_ptr<const OperatorParameters> p
         d_numDofIds[j] = myparams->d_db->getScalar<int>( key );
 
         sprintf( key, "IsCoupledBoundary_%d", j );
-        d_IsCoupledBoundary[j] = params->d_db->getWithDefault( key, false );
+        d_IsCoupledBoundary[j] = params->d_db->getWithDefault<bool>( key, false );
 
         d_dofIds[j].resize( d_numDofIds[j] );
         d_neumannValues[j].resize( d_numDofIds[j] );

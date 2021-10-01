@@ -32,14 +32,14 @@ TimeOperator::~TimeOperator() = default;
 
 void TimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
-    d_bLinearMassOperator = db->getWithDefault( "bLinearMassOperator", false );
-    d_bLinearRhsOperator  = db->getWithDefault( "bLinearRhsOperator", false );
+    d_bLinearMassOperator = db->getWithDefault<bool>( "bLinearMassOperator", false );
+    d_bLinearRhsOperator  = db->getWithDefault<bool>( "bLinearRhsOperator", false );
 
     AMP_INSIST( db->keyExists( "CurrentDt" ), "key CurrentDt missing in input" );
 
     d_dCurrentDt = db->getScalar<double>( "CurrentDt" );
 
-    d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
+    d_bAlgebraicComponent = db->getWithDefault<bool>( "bAlgebraicComponent", false );
 }
 
 void TimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )

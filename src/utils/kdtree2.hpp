@@ -1,7 +1,6 @@
 #ifndef included_AMP_kdtree2_hpp
 #define included_AMP_kdtree2_hpp
 
-#include "AMP/ampmesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.h"
 
@@ -20,6 +19,45 @@ namespace AMP {
 extern template class kdtree2<1, int>;
 extern template class kdtree2<2, int>;
 extern template class kdtree2<3, int>;
+
+
+/****************************************************************
+ * Compute the distance to a box                                 *
+ ****************************************************************/
+template<uint8_t NDIM, class TYPE>
+double kdtree2<NDIM, TYPE>::distanceToBox( const std::array<double, NDIM> &pos,
+                                           const std::array<double, NDIM> &ang,
+                                           const std::array<double, NDIM> &lb,
+                                           const std::array<double, NDIM> &ub )
+{
+    double d = std::numeric_limits<double>::infinity();
+    // Check if the intersection of each surface is within the bounds of the box
+    auto inside = [&lb, &ub]( const std::array<double, NDIM> &p ) {
+        bool in = true;
+        for ( size_t d = 0; d < NDIM; d++ )
+            in = in && ( p[d] >= lb[d] - 1e-12 ) && ( p[d] <= ub[d] + 1e-12 );
+        return in;
+    };
+    // Compute the distance to each surface and check if it is closer
+    for ( size_t i = 0; i < NDIM; i++ ) {
+        double d1 = ( lb[i] - pos[i] ) / ang[i];
+        double d2 = ( ub[i] - pos[i] ) / ang[i];
+        if ( d1 >= 0 ) {
+            auto p = pos + d1 * ang;
+            if ( inside( p ) )
+                d = std::min( d, d1 );
+        }
+        if ( d2 >= 0 ) {
+            auto p = pos + d2 * ang;
+            if ( inside( p ) )
+                d = std::min( d, d2 );
+        }
+    }
+    // Return the distance
+    if ( inside( pos ) && d < 1e100 )
+        d = -d;
+    return d;
+}
 
 
 /********************************************************
@@ -386,7 +424,6 @@ template<uint8_t NDIM, class TYPE>
 std::vector<std::tuple<std::array<double, NDIM>, TYPE, std::array<double, NDIM>, double>>
 kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
 {
-    using AMP::Geometry::GeometryHelpers::distanceToBox;
     // Compute the nearest point to a ray
     auto intersect = []( const Point &p0, const Point &v, const Point &x ) {
         Point u;

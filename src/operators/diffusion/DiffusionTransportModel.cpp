@@ -63,7 +63,7 @@ DiffusionTransportModel::DiffusionTransportModel(
     d_property->set_defaults( d_defaults );
 
     // process bilog scaling details
-    d_UseBilogScaling = params->d_db->getWithDefault( "UseBilogScaling", false );
+    d_UseBilogScaling = params->d_db->getWithDefault<bool>( "UseBilogScaling", false );
     if ( d_UseBilogScaling ) {
         AMP_INSIST( params->d_db->keyExists( "BilogVariable" ), "must specify BilogVariable" );
         d_BilogVariable = params->d_db->getWithDefault<std::string>( "BilogVariable", "NONE" );
@@ -72,7 +72,8 @@ DiffusionTransportModel::DiffusionTransportModel(
         AMP_INSIST( d_BilogRange[1] > d_BilogRange[0],
                     "material argument upper bound <= lower bound" );
 
-        d_BilogScaleCoefficient = params->d_db->getWithDefault( "BilogScaleCoefficient", true );
+        d_BilogScaleCoefficient =
+            params->d_db->getWithDefault<bool>( "BilogScaleCoefficient", true );
         d_BilogEpsilonRangeLimit =
             params->d_db->getWithDefault<double>( "BilogEpsilonRangeLimit", 1.0e-06 );
     }

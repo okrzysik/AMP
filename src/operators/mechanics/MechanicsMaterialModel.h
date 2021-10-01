@@ -33,15 +33,18 @@ public:
     explicit MechanicsMaterialModel( std::shared_ptr<MechanicsMaterialModelParameters> params )
         : ElementPhysicsModel( params )
     {
-        d_useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );
+        d_useMaterialsLibrary =
+            params->d_db->getWithDefault<bool>( "USE_MATERIALS_LIBRARY", false );
 
-        d_useUpdatedLagrangian = params->d_db->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+        d_useUpdatedLagrangian =
+            params->d_db->getWithDefault<bool>( "USE_UPDATED_LAGRANGIAN", false );
 
-        d_useJaumannRate = params->d_db->getWithDefault( "USE_JAUMANN_RATE", false );
+        d_useJaumannRate = params->d_db->getWithDefault<bool>( "USE_JAUMANN_RATE", false );
 
-        d_useContinuumTangent = params->d_db->getWithDefault( "USE_CONTINUUM_TANGENT", false );
+        d_useContinuumTangent =
+            params->d_db->getWithDefault<bool>( "USE_CONTINUUM_TANGENT", false );
 
-        d_checkCladOrPellet = params->d_db->getWithDefault( "IS_IT_CLAD", false );
+        d_checkCladOrPellet = params->d_db->getWithDefault<bool>( "IS_IT_CLAD", false );
 
         if ( d_useMaterialsLibrary == true ) {
             AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );

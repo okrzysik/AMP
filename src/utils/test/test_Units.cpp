@@ -157,6 +157,36 @@ void check( AMP::UnitTest &ut, const std::string &u1, const std::string &u2, con
 }
 
 
+void testPrefixUnits( AMP::UnitTest &ut )
+{
+    // Test combinations of units and prefixes to make sure there are not read errors
+    auto units    = Units::getAllUnits();
+    auto prefixes = Units::getAllPrefixes();
+    bool pass     = true;
+    for ( auto u : units ) {
+        Units u1( u );
+        for ( auto p : prefixes ) {
+            double s = Units::convert( Units::getUnitPrefix( p ) );
+            Units u2( p + u );
+            double s2 = 0.0;
+            try {
+                s2 = u2.convert( u1 );
+            } catch ( ... ) {
+            }
+            if ( !approx_equal( s2, s ) ) {
+                pass = false;
+                std::cout << u1.str() << "   " << u2.str() << "   " << s << std::endl;
+            }
+        }
+    }
+    if ( pass ) {
+        ut.passes( "unit-prefix combinations" );
+    } else {
+        ut.failure( "unit-prefix combinations" );
+    }
+}
+
+
 // Main
 int main( int argc, char *argv[] )
 {
@@ -202,8 +232,13 @@ int main( int argc, char *argv[] )
     check( ut, "sievert", "Sv", "J/kg" );
     check( ut, "katal", "kat", "mol/s" );
 
-    // Test other conversions
-    check( ut, "eV", "K", 11604.51996505152 );
+    // Test English units
+    check( ut, "inch", "in", "25.4 mm" );
+    check( ut, "foot", "ft", "12 in" );
+    check( ut, "yard", "yd", "3 ft" );
+    check( ut, "furlong", "fur", "220 yd" );
+    check( ut, "mile", "mi", "5280 ft" );
+    check( ut, "acre", "4840 yd^2" );
     check( ut, "qt", "pt", 2 );
     check( ut, "gal", "pt", 8 );
     check( ut, "lb", "oz", 16 );
@@ -220,8 +255,20 @@ int main( int argc, char *argv[] )
     check( ut, "pt", "0.4731764727459 litre" );
     check( ut, "oz", "g", 28.349523125 );
     check( ut, "ton", "lb", 2240 );
+
+    // Test atomic units
+    check( ut, "hartree", "J", 4.359744722207185e-18 );
+    check( ut, "bohr", "m", 5.2917721090380e-11 );
+
+    // Test other conversions
+    check( ut, "%", " ", 0.01 );
+    check( ut, "%", "percent" );
+    check( ut, "m^0", " " );
+    check( ut, "barye", "Ba", "0.1 Pa" );
+    check( ut, "eV", "K", 11604.51996505152 );
+    check( ut, "K", "eV", 8.617331893190124e-5 );
     check( ut, "minute", "s", 60 );
-    check( ut, "hour", "minute", 60 );
+    check( ut, "hour", "hr", "60 minutes" );
     check( ut, "day", "hour", 24 );
     check( ut, "week", "day", 7 );
     check( ut, "mmHg", "Pa", 133.322387415 );
@@ -230,6 +277,9 @@ int main( int argc, char *argv[] )
     check( ut, "	dyn	", "N", 1e-5 );
     check( ut, "(N/m^3)m(m^3/s)^2(1/m^5)", "kg/s^4" );
     check( ut, "(lbf/ft^3)ft(ft^3/s)^2(1/in^5)", "kg/s^4", 3.631430055671e6 );
+
+    // Test combinations of units and prefixes
+    testPrefixUnits( ut );
 
     // Return
     int N_errors = ut.NumFailGlobal();

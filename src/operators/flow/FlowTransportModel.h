@@ -20,7 +20,8 @@ public:
     explicit FlowTransportModel( std::shared_ptr<FlowTransportModelParameters> params )
         : ElementPhysicsModel( params )
     {
-        d_useMaterialsLibrary = params->d_db->getWithDefault( "USE_MATERIALS_LIBRARY", false );
+        d_useMaterialsLibrary =
+            params->d_db->getWithDefault<bool>( "USE_MATERIALS_LIBRARY", false );
 
         if ( d_useMaterialsLibrary == true ) {
             AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );

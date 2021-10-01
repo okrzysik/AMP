@@ -672,7 +672,7 @@ std::shared_ptr<AMP::Mesh::Mesh> generateSTL( std::shared_ptr<const MeshParamete
         mesh = TriangleMesh<2, 3>::generate( vert, tri[0], tri_nab[0], comm, nullptr, blocks[0] );
     } else {
         // We are dealing with multiple sub-domains, choose the load balance method
-        int method = db->getWithDefault( "LoadBalanceMethod", 1 );
+        int method = db->getWithDefault<int>( "LoadBalanceMethod", 1 );
         auto comm2 = loadbalance( tri, comm, method );
         std::vector<std::shared_ptr<AMP::Mesh::Mesh>> submeshes;
         for ( size_t i = 0; i < tri.size(); i++ ) {

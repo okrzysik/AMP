@@ -17,12 +17,12 @@ ElasticDamageThermalStrainModel::ElasticDamageThermalStrainModel(
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+    d_Is_Source = params->d_db->getWithDefault<bool>( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
     if ( d_useMaterialsLibrary == false ) {
         // IsotropicElasticModel C_Elastic(params);
 
-        d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+        d_Is_Source = params->d_db->getWithDefault<bool>( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
         AMP_INSIST( params->d_db->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
                     "Missing key: THERMAL_EXPANSION_COEFFICIENT" );

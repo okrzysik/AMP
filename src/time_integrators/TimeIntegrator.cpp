@@ -142,14 +142,14 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
                                  << " missing in input." );
     }
 
-    d_max_dt = db->getWithDefault( "max_dt", std::numeric_limits<double>::max() );
+    d_max_dt = db->getWithDefault<double>( "max_dt", std::numeric_limits<double>::max() );
 
     if ( d_max_dt < 0.0 ) {
         AMP_ERROR( d_object_name << " -- Error in input data "
                                  << "max_dt < 0." );
     }
 
-    d_min_dt = db->getWithDefault( "min_dt", std::numeric_limits<double>::min() );
+    d_min_dt = db->getWithDefault<double>( "min_dt", std::numeric_limits<double>::min() );
 
     if ( d_min_dt < 0.0 ) {
         AMP_ERROR( d_object_name << " -- Error in input data "
@@ -160,7 +160,7 @@ void TimeIntegrator::getFromInput( std::shared_ptr<const AMP::Database> db )
         d_initial_dt = db->getWithDefault<double>( "initial_dt", 0.0 );
     }
 
-    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
+    d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
 
     if ( db->keyExists( "name" ) ) {
         d_object_name = db->getString( "name" );

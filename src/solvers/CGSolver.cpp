@@ -52,7 +52,7 @@ void CGSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );
     d_iMaxIterations       = db->getWithDefault<double>( "max_iterations", 1000 );
 
-    d_bUsesPreconditioner = db->getWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 }
 
 /****************************************************************

@@ -46,7 +46,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
     auto ntx_db = input_db->getDatabase( "NeutronicsRhs" );
 
     // Construct stand-alone.
-    if ( input_db->getWithDefault( "ConstructStandAlone", true ) ) {
+    if ( input_db->getWithDefault<bool>( "ConstructStandAlone", true ) ) {
         // construct it.
         auto ntxPrm = std::make_shared<AMP::Operator::NeutronicsRhsParameters>( ntx_db );
         auto ntxRhs = std::make_shared<AMP::Operator::NeutronicsRhs>( ntxPrm );

@@ -31,8 +31,8 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     // Fill basic mesh information
     PhysicalDim = d_geometry2->getDim();
     GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
-    d_max_gcw   = d_db->getWithDefault( "GCW", 2 );
-    AMP_ASSERT( PhysicalDim == d_db->getWithDefault( "dim", PhysicalDim ) );
+    d_max_gcw   = d_db->getWithDefault<int>( "GCW", 2 );
+    AMP_ASSERT( PhysicalDim == d_db->getWithDefault<int>( "dim", PhysicalDim ) );
     auto size = d_geometry2->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];

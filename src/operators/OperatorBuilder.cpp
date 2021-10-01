@@ -622,21 +622,21 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOpe
     if ( name != "not_specified" ) {
         tVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         tVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tVar, true );
-        if ( diffusionNLinFEOp_db->getWithDefault( "FreezeTemperature", false ) )
+        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeTemperature", false ) )
             diffusionNLOpParams->d_FrozenTemperature = tVec;
     }
     name = active_db->getWithDefault<std::string>( "Concentration", "not_specified" );
     if ( name != "not_specified" ) {
         cVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         cVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, cVar, true );
-        if ( diffusionNLinFEOp_db->getWithDefault( "FreezeConcentration", false ) )
+        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeConcentration", false ) )
             diffusionNLOpParams->d_FrozenConcentration = cVec;
     }
     name = active_db->getWithDefault<std::string>( "Burnup", "not_specified" );
     if ( name != "not_specified" ) {
         bVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         bVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, bVar, true );
-        if ( diffusionNLinFEOp_db->getWithDefault( "FreezeBurnup", false ) )
+        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeBurnup", false ) )
             diffusionNLOpParams->d_FrozenBurnup = bVec;
     }
 
@@ -974,8 +974,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     std::string volumeOperatorName = operator_db->getString( "VolumeOperator" );
     // if this flag is true the same local physics model will be used for both boundary and volume
     // operators
-    bool useSameLocalModelForVolumeAndBoundaryOperators =
-        operator_db->getWithDefault( "useSameLocalModelForVolumeAndBoundaryOperators", false );
+    bool useSameLocalModelForVolumeAndBoundaryOperators = operator_db->getWithDefault<bool>(
+        "useSameLocalModelForVolumeAndBoundaryOperators", false );
 
     auto volumeOperator = OperatorBuilder::createOperator(
         meshAdapter, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
@@ -1034,8 +1034,8 @@ AMP::Operator::Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     std::string volumeOperatorName = operator_db->getString( "VolumeOperator" );
     // if this flag is true the same local physics model will be used for both boundary and volume
     // operators
-    bool useSameLocalModelForVolumeAndBoundaryOperators =
-        operator_db->getWithDefault( "useSameLocalModelForVolumeAndBoundaryOperators", false );
+    bool useSameLocalModelForVolumeAndBoundaryOperators = operator_db->getWithDefault<bool>(
+        "useSameLocalModelForVolumeAndBoundaryOperators", false );
 
     auto volumeOperator = OperatorBuilder::createOperator(
         meshAdapter, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
@@ -1201,7 +1201,8 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
                 "Error: OperatorBuilder::createBoundaryOperator(): "
                 "database object with given name not in database" );
 
-    int numberOfBoundaryOperators = operator_db->getWithDefault( "numberOfBoundaryOperators", 1 );
+    int numberOfBoundaryOperators =
+        operator_db->getWithDefault<int>( "numberOfBoundaryOperators", 1 );
 
     auto boundaryOps = operator_db->getVector<std::string>( "boundaryOperators" );
     AMP_ASSERT( numberOfBoundaryOperators == (int) boundaryOps.size() );

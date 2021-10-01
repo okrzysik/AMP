@@ -9,8 +9,8 @@ void MassMatrixCorrection::resetBoundaryIds(
     std::shared_ptr<const MassMatrixCorrectionParameters> params )
 {
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
-    bool skipParams          = params->d_db->getWithDefault( "skip_params", true );
-    d_bSetIdentityOnDiagonal = params->d_db->getWithDefault( "setIdentityOnDiagonal", false );
+    bool skipParams          = params->d_db->getWithDefault<bool>( "skip_params", true );
+    d_bSetIdentityOnDiagonal = params->d_db->getWithDefault<bool>( "setIdentityOnDiagonal", false );
 
     if ( !skipParams ) {
         AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),

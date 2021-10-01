@@ -81,7 +81,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     double default_BURNUP, default_OXYGEN_CONCENTRATION;
 
     bool useMaterialsLibrary =
-        materialModelDatabase->getWithDefault( "USE_MATERIALS_LIBRARY", false );
+        materialModelDatabase->getWithDefault<bool>( "USE_MATERIALS_LIBRARY", false );
     if ( useMaterialsLibrary == true ) {
         AMP_INSIST( ( materialModelDatabase->keyExists( "Material" ) ),
                     "Key ''Material'' is missing!" );

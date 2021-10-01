@@ -314,7 +314,7 @@ size_t MultiMesh::maxProcs( std::shared_ptr<const MeshParameters> params_in )
         params[i] = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabases[i] );
     // Get the approximate number of elements for each mesh
     size_t totalMaxSize = 0;
-    int method          = db->getWithDefault( "LoadBalanceMethod", 1 );
+    int method          = db->getWithDefault<int>( "LoadBalanceMethod", 1 );
     for ( auto &elem : params ) {
         size_t localMaxSize = AMP::Mesh::Mesh::maxProcs( elem );
         AMP_ASSERT( localMaxSize > 0 );

@@ -34,7 +34,7 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     AMP_INSIST( ( params != nullptr ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != nullptr ), "NULL database" );
 
-    const bool reuse_matrix = params->d_db->getWithDefault( "reset_reuses_matrix", true );
+    const bool reuse_matrix = params->d_db->getWithDefault<bool>( "reset_reuses_matrix", true );
 
     if ( ( d_matrix.get() == nullptr ) || ( !reuse_matrix ) ) {
         AMP::LinearAlgebra::Vector::shared_ptr inVec =

@@ -11,8 +11,8 @@ PelletStackOperator::PelletStackOperator(
     : Operator( params )
 {
     d_totalNumberOfPellets = params->d_db->getScalar<int>( "TOTAL_NUMBER_OF_PELLETS" );
-    d_useSerial            = params->d_db->getWithDefault( "USE_SERIAL", false );
-    d_onlyZcorrection      = params->d_db->getWithDefault( "ONLY_Z_CORRECTION", false );
+    d_useSerial            = params->d_db->getWithDefault<bool>( "USE_SERIAL", false );
+    d_onlyZcorrection      = params->d_db->getWithDefault<bool>( "ONLY_Z_CORRECTION", false );
     AMP_ASSERT( !( d_useSerial && d_onlyZcorrection ) );
     d_masterId = params->d_db->getScalar<int>( "MASTER" );
     d_slaveId  = params->d_db->getScalar<int>( "SLAVE" );

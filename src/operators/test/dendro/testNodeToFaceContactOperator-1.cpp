@@ -334,13 +334,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
-        contact_db->getWithDefault( "ContactIsFrictionless", false ) );
+        contact_db->getWithDefault<bool>( "ContactIsFrictionless", false ) );
 
     std::shared_ptr<AMP::Operator::DirichletVectorCorrection> masterLoadOperator;
     std::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
 
-    bool useML      = input_db->getWithDefault( "useML", false );
-    bool matrixFree = input_db->getWithDefault( "matrixFree", false );
+    bool useML      = input_db->getWithDefault<bool>( "useML", false );
+    bool matrixFree = input_db->getWithDefault<bool>( "matrixFree", false );
     // Build the master and slave operators
     auto masterMeshID      = contactOperator->getMasterMeshID();
     auto masterMeshAdapter = meshAdapter->Subset( masterMeshID );
@@ -616,7 +616,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     selectNodes( slaveMeshAdapter, slaveNodesGlobalIDs );
     printNodesValues( slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec );
 
-    size_t const maxActiveSetIterations = input_db->getWithDefault( "maxActiveSetIterations", 5 );
+    size_t const maxActiveSetIterations =
+        input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
     for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
           ++activeSetIteration ) {
         if ( !rank ) {

@@ -149,7 +149,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
         if ( d_type == "legendre" ) {
 
             // Number of moments in the X direction. Default = 0
-            d_numXmoments = db->getWithDefault( "numXmoments", 0 );
+            d_numXmoments = db->getWithDefault<int>( "numXmoments", 0 );
             AMP_ASSERT( (int) d_numXmoments > -1 );
             if ( d_numXmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Xmoments" ) );
@@ -160,7 +160,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
             }
 
             // Number of moments in the Y direction. Default = 0
-            d_numYmoments = db->getWithDefault( "numYmoments", 0 );
+            d_numYmoments = db->getWithDefault<int>( "numYmoments", 0 );
             AMP_ASSERT( (int) d_numYmoments > -1 );
             if ( d_numYmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Ymoments" ) );
@@ -171,7 +171,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
             }
 
             // Number of moments in the Z direction. Default = 0
-            d_numZmoments = db->getWithDefault( "numZmoments", 0 );
+            d_numZmoments = db->getWithDefault<int>( "numZmoments", 0 );
             AMP_ASSERT( (int) d_numZmoments > -1 );
             if ( d_numZmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Zmoments" ) );
@@ -193,7 +193,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
             d_sigmaY = db->getWithDefault<double>( "sigmaY", 3.0 );
 
             // Number of moments in the Z direction. Default = 0
-            d_numZmoments = db->getWithDefault( "numZmoments", 0 );
+            d_numZmoments = db->getWithDefault<int>( "numZmoments", 0 );
             AMP_ASSERT( (int) d_numZmoments > -1 );
             if ( d_numZmoments > 0 ) {
                 AMP_ASSERT( db->keyExists( "Zmoments" ) );
@@ -209,7 +209,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
     } else if ( d_coordinateSystem == "cylindrical" ) {
 
         // Number of moments in the Z direction. Default =0
-        d_numZmoments = db->getWithDefault( "numZmoments", 0 );
+        d_numZmoments = db->getWithDefault<int>( "numZmoments", 0 );
         AMP_ASSERT( (int) d_numZmoments > -1 );
         if ( d_numZmoments > 0 ) {
             AMP_ASSERT( db->keyExists( "Zmoments" ) );
@@ -234,7 +234,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
         } else if ( d_type == "zernikeRadial" ) {
 
             // Number of moments in the Radial direction. Default =0
-            d_numMoments = db->getWithDefault( "numMoments", 4 );
+            d_numMoments = db->getWithDefault<int>( "numMoments", 4 );
             d_Moments.resize( d_numMoments );
 
             // Establish default values
@@ -268,7 +268,7 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
         } else if ( d_type == "zernike" ) {
 
             // Number of "m" moments in the zernike polynomial. Default =0
-            d_numMoments = db->getWithDefault( "numMoments", 0 );
+            d_numMoments = db->getWithDefault<int>( "numMoments", 0 );
             // m=1; n=-1, 1
             // m=2; n=-2, 0, 2
             // m=3; n=-3, -1, 1, 3

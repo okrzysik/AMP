@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 
 namespace AMP {
@@ -70,12 +71,26 @@ enum class UnitType : int8_t {
 /**
  * \class Units
  * \brief  Provides a class for storing units
- * \details  This class provides routines for creating and storing units.
- *    A user can specify a unit and get the scaling factor to a compatible unit.
- *    All user-provided units are converted to SI base units with a scaling factor.
- *    Currently we support all major SI units and some additional units with prefixes.
- *    Note: currently the majority of the routines are constexpr so that the creation
- *       of a unit can be done at compile-time.
+ * \details
+ * \verbatim
+ This class provides routines for creating and storing units.
+ A user can specify a unit and get the scaling factor to a compatible unit.
+ All user-provided units are converted to SI base units with a scaling factor.
+ Currently we support all major SI units and some additional units with prefixes.
+ Note: currently the majority of the routines are constexpr so that the creation
+    of a unit can be done at compile-time.
+ Note: To prevent ambiguity some unit abbreviations are not supported:
+    min (minute) - ambiguous with min (milli-inch)
+ Note: To prevent ambiguity some units are not supported:
+    year: could be 365 days, 365.25 days, 365.2425 days
+    horsepower:
+        Mechanical horsepower - 745.6998715822702 W
+        Metric horsepower - 735.49875 W
+        Electric horsepower - 746 W
+        Boiler horsepower - 9,812.5 W
+        Hydraulic horsepower - 745.69987 W
+        Air horsepower - 745.69987 W
+ \endverbatim
  */
 class alignas( 8 ) Units final
 {
@@ -174,6 +189,14 @@ public:
 
     //! Get the full unit and conversion string
     std::string printFull() const;
+
+
+public:
+    //! Get all supported unit prefixes
+    static inline std::vector<std::string> getAllPrefixes();
+
+    //! Get all supported units
+    static inline std::vector<std::string> getAllUnits();
 
 
 public:

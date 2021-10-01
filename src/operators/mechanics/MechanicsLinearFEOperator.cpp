@@ -11,17 +11,16 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     std::shared_ptr<const MechanicsLinearFEOperatorParameters> params )
     : LinearFEOperator( params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
-    d_useUpdatedLagrangian = params->d_db->getWithDefault( "USE_UPDATED_LAGRANGIAN", false );
+    AMP_INSIST( params, "NULL parameter" );
+    d_useUpdatedLagrangian = params->d_db->getWithDefault<bool>( "USE_UPDATED_LAGRANGIAN", false );
     if ( d_useUpdatedLagrangian ) {
         d_mechLinULElem =
             std::dynamic_pointer_cast<MechanicsLinearUpdatedLagrangianElement>( d_elemOp );
-        AMP_INSIST( ( ( d_mechLinULElem.get() ) != nullptr ),
+        AMP_INSIST( d_mechLinULElem,
                     "d_elemOp is not of type MechanicsLinearUpdatedLagrangianElement" );
     } else {
         d_mechLinElem = std::dynamic_pointer_cast<MechanicsLinearElement>( d_elemOp );
-        AMP_INSIST( ( ( d_mechLinElem.get() ) != nullptr ),
-                    "d_elemOp is not of type MechanicsLinearElement" );
+        AMP_INSIST( d_mechLinElem, "d_elemOp is not of type MechanicsLinearElement" );
     }
     d_materialModel = params->d_materialModel;
 
@@ -68,11 +67,11 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     } // end of UpdatedLagrangian condition.
 
     bool isAttachedToNonlinearOperator =
-        params->d_db->getWithDefault( "isAttachedToNonlinearOperator", false );
+        params->d_db->getWithDefault<bool>( "isAttachedToNonlinearOperator", false );
 
     if ( isAttachedToNonlinearOperator ) {
         bool isNonlinearOperatorInitialized =
-            params->d_db->getWithDefault( "isNonlinearOperatorInitialized", false );
+            params->d_db->getWithDefault<bool>( "isNonlinearOperatorInitialized", false );
         if ( isNonlinearOperatorInitialized ) {
             reset( params );
         } else {

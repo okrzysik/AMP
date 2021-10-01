@@ -99,9 +99,9 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
     }
     AMP_INSIST( geom, "Failed to generate " + generator );
     // Displace the geometry
-    double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),
-                       db->getWithDefault( "y_offset", 0.0 ),
-                       db->getWithDefault( "z_offset", 0.0 ) };
+    double dist[3] = { db->getWithDefault<double>( "x_offset", 0.0 ),
+                       db->getWithDefault<double>( "y_offset", 0.0 ),
+                       db->getWithDefault<double>( "z_offset", 0.0 ) };
     geom->displace( dist );
     return geom;
 }

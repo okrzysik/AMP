@@ -81,7 +81,6 @@ void VectorTests::testPetsc( AMP::UnitTest *ut )
     test1.testPetscVector( ut );
     test2.testPetscVector( ut );
     if ( std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory ) ) {
-        auto factory2 = std::dynamic_pointer_cast<const PetscVectorFactory>( d_factory );
         PetscVectorTests test3( petscCloneFactory );
         test3.testPetscVector( ut );
     }

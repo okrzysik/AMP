@@ -45,11 +45,11 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
     */
 
     bool isAttachedToNonlinearOperator =
-        params->d_db->getWithDefault( "isAttachedToNonlinearOperator", false );
+        params->d_db->getWithDefault<bool>( "isAttachedToNonlinearOperator", false );
 
     if ( isAttachedToNonlinearOperator ) {
         bool isNonlinearOperatorInitialized =
-            params->d_db->getWithDefault( "isNonlinearOperatorInitialized", false );
+            params->d_db->getWithDefault<bool>( "isNonlinearOperatorInitialized", false );
         if ( isNonlinearOperatorInitialized ) {
             reset( params );
         } else {

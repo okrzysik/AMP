@@ -1,11 +1,20 @@
 #include "AMP/utils/SiloWriter.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
 
 #include <chrono>
 
+#ifdef USE_AMP_MESH
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#endif
+#ifdef USE_AMP_VECTORS
+#include "AMP/vectors/Vector.h"
+#endif
+#ifdef USE_AMP_MATRICES
+#include "AMP/matrices/Matrix.h"
+#endif
 
 namespace AMP::Utilities {
 
@@ -45,9 +54,11 @@ static inline void strrep( std::string &str, const std::string &s, const std::st
  ************************************************************/
 SiloIO::SiloIO() : AMP::Utilities::Writer()
 {
+#ifdef USE_AMP_MESH
     d_dim = -1;
 #ifdef USE_EXT_SILO
     DBSetAllowEmptyObjects( true );
+#endif
 #endif
 }
 SiloIO::~SiloIO() = default;
@@ -69,7 +80,7 @@ Writer::WriterProperties SiloIO::getProperties() const
 }
 
 
-#ifdef USE_EXT_SILO
+#if defined( USE_EXT_SILO ) && defined( USE_AMP_MESH )
 
 // Some internal functions
 static void createSiloDirectory( DBfile *FileHandle, const std::string &path );
@@ -1145,21 +1156,15 @@ void createSiloDirectory( DBfile *FileHandle, const std::string &path )
 #else
 void SiloIO::readFile( const std::string & ) {}
 void SiloIO::writeFile( const std::string &, size_t, double ) {}
-void SiloIO::registerMesh( AMP::Mesh::Mesh::shared_ptr, int, const std::string & ) {}
-#ifdef USE_AMP_VECTORS
-void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr,
-                             AMP::Mesh::Mesh::shared_ptr,
+void SiloIO::registerMesh( std::shared_ptr<AMP::Mesh::Mesh>, int, const std::string & ) {}
+void SiloIO::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                             std::shared_ptr<AMP::Mesh::Mesh>,
                              AMP::Mesh::GeomType,
                              const std::string & )
 {
 }
-void SiloIO::registerVector( AMP::LinearAlgebra::Vector::shared_ptr, const std::string & ) {}
-#endif
-#ifdef USE_AMP_MATRICES
-void SiloIO::registerMatrix( AMP::LinearAlgebra::Matrix::shared_ptr, const std::string & ) {}
-#endif
-
-
+void SiloIO::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>, const std::string & ) {}
+void SiloIO::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix>, const std::string & ) {}
 #endif
 
 

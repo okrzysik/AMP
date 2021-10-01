@@ -61,8 +61,8 @@ void TrilinosMLSolver::initialize( std::shared_ptr<const SolverStrategyParameter
 
 void TrilinosMLSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
-    d_bRobustMode = db->getWithDefault( "ROBUST_MODE", false );
-    d_bUseEpetra  = db->getWithDefault( "USE_EPETRA", true );
+    d_bRobustMode = db->getWithDefault<bool>( "ROBUST_MODE", false );
+    d_bUseEpetra  = db->getWithDefault<bool>( "USE_EPETRA", true );
     d_mlOptions.reset( new MLoptions( db ) );
     if ( d_bUseEpetra ) {
         convertMLoptionsToTeuchosParameterList();

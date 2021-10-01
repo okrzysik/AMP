@@ -186,7 +186,7 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
 
-    d_bUsesJacobian = db->getWithDefault( "usesJacobian", false );
+    d_bUsesJacobian = db->getWithDefault<bool>( "usesJacobian", false );
     d_sMFFDDifferencingStrategy =
         db->getWithDefault<std::string>( "MFFDDifferencingStrategy", MATMFFD_WP );
     d_dMFFDFunctionDifferencingError =
@@ -200,13 +200,13 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     if ( db->keyExists( "stepTolerance" ) )
         d_dStepTolerance = db->getScalar<double>( "stepTolerance" );
 
-    d_bEnableLineSearchPreCheck = db->getWithDefault( "enableLineSearchPreCheck", false );
+    d_bEnableLineSearchPreCheck = db->getWithDefault<bool>( "enableLineSearchPreCheck", false );
 
     if ( d_bEnableLineSearchPreCheck )
         d_iNumberOfLineSearchPreCheckAttempts =
-            db->getWithDefault( "numberOfLineSearchPreCheckAttempts", 5 );
+            db->getWithDefault<int>( "numberOfLineSearchPreCheckAttempts", 5 );
 
-    d_bEnableMFFDBoundsCheck = db->getWithDefault( "enableMFFDBoundsCheck", false );
+    d_bEnableMFFDBoundsCheck = db->getWithDefault<bool>( "enableMFFDBoundsCheck", false );
     if ( d_bEnableMFFDBoundsCheck )
         d_operatorComponentToEnableBoundsCheck =
             db->getScalar<int>( "operatorComponentToEnableBoundsCheck" );
