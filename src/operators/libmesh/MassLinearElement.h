@@ -20,7 +20,7 @@ public:
           d_elementMassMatrix( NULL ),
           d_equation( MassDensityModel::MassEquation::UnknownMassEquation )
     {
-        d_densityAtGauss = params->d_db->getWithDefault( "DensityAtGaussPoints", true );
+        d_densityAtGauss = params->d_db->getWithDefault<bool>( "DensityAtGaussPoints", true );
     }
 
     virtual ~MassLinearElement() {}

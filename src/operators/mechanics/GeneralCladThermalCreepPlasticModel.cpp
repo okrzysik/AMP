@@ -38,11 +38,11 @@ GeneralCladThermalCreepPlasticModel::GeneralCladThermalCreepPlasticModel(
     default_OXYGEN_CONCENTRATION =
         params->d_db->getWithDefault<double>( "Default_Oxygen_Concentration", 0.0 );
 
-    d_UseThermalStrain = params->d_db->getWithDefault( "Use_Thermal_Strain", true );
+    d_UseThermalStrain = params->d_db->getWithDefault<bool>( "Use_Thermal_Strain", true );
 
     AMP_INSIST( ( d_UseThermalStrain == true ), "Thermal_Strain must be used inside the clad." );
 
-    d_UseCreepStrain = params->d_db->getWithDefault( "Use_Creep_Strain", false );
+    d_UseCreepStrain = params->d_db->getWithDefault<bool>( "Use_Creep_Strain", false );
 
     d_Is_Init_Called = false;
 

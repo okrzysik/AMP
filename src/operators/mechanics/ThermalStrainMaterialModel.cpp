@@ -13,15 +13,15 @@ ThermalStrainMaterialModel::ThermalStrainMaterialModel(
     std::shared_ptr<MechanicsMaterialModelParameters> params )
     : MechanicsMaterialModel( params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( params, "NULL parameter" );
 
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( params->d_db, "NULL database" );
 
-    d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+    d_Is_Source = params->d_db->getWithDefault<bool>( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
     if ( d_useMaterialsLibrary == false ) {
 
-        d_Is_Source = params->d_db->getWithDefault( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
+        d_Is_Source = params->d_db->getWithDefault<bool>( "THERMAL_STRAIN_AS_SOURCE_TERM", false );
 
         AMP_INSIST( params->d_db->keyExists( "THERMAL_EXPANSION_COEFFICIENT" ),
                     "Missing key: THERMAL_EXPANSION_COEFFICIENT" );

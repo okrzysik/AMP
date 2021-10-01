@@ -379,7 +379,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 #endif
 
-    size_t const maxActiveSetIterations = input_db->getWithDefault( "maxActiveSetIterations", 5 );
+    size_t const maxActiveSetIterations =
+        input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
     for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
           ++activeSetIteration ) {
         if ( !rank ) {

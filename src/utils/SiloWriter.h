@@ -7,15 +7,12 @@
 #include <string.h>
 #include <vector>
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/Writer.h"
 
-#ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
+#ifdef USE_AMP_MESH
+#include "AMP/ampmesh/Mesh.h"
 #endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
-#endif
+
 #ifdef USE_EXT_SILO
 #include <silo.h>
 #endif
@@ -114,6 +111,7 @@ public:
 
 
 private:
+#ifdef USE_AMP_MESH
     // Structure used to hold data for the silo meshes
     struct siloBaseMeshData {
         AMP::Mesh::MeshID id;             // Unique ID to identify the mesh
@@ -127,7 +125,7 @@ private:
         std::vector<AMP::Mesh::GeomType> varType; // Types of variables for each mesh
         std::vector<int> varSize;                 // Number of unknowns per point
 #ifdef USE_AMP_VECTORS
-        std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vec; // Vectors for each mesh
+        std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> vec; // Vectors for each mesh
 #endif
         // Function to count the number of bytes needed to pack the data
         size_t size() const;
@@ -191,7 +189,8 @@ private:
 
 // List of all vectors that have been registered
 #ifdef USE_AMP_VECTORS
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vectors;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vectors;
+#endif
 #endif
 };
 

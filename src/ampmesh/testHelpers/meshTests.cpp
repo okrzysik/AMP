@@ -884,7 +884,6 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_p
         ut.passes( "scalar displacement test" );
     else
         ut.failure( "scalar displacement test: " + mesh->getName() );
-    std::vector<double> dist2( mesh->getDim(), -1 );
     mesh->displaceMesh( std::vector<double>( mesh->getDim(), -1 ) );
 }
 void meshTests::DisplaceMeshVector( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
@@ -1145,8 +1144,7 @@ void meshTests::cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr 
     }
     // Get the original coordinates and make sure they match
     bool pass = true;
-    std::vector<AMP::Mesh::Point> coord2;
-    auto it = mesh2->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto it   = mesh2->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( size_t i = 0; i < coord.size(); i++, ++it ) {
         auto p   = it->coord();
         auto err = ( p - p0 - coord[i] ).abs();

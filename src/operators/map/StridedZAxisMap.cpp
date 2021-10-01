@@ -17,10 +17,10 @@ StridedZAxisMap::StridedZAxisMap( std::shared_ptr<const AMP::Operator::OperatorP
     auto params = std::dynamic_pointer_cast<const Map3to1to3Parameters>( p );
     AMP_ASSERT( params );
 
-    d_inpDofs   = params->d_db->getWithDefault( "InputDOFsPerObject", 1 );
-    d_inpStride = params->d_db->getWithDefault( "InputStride", 0 );
-    d_outDofs   = params->d_db->getWithDefault( "OutputDOFsPerObject", 1 );
-    d_outStride = params->d_db->getWithDefault( "OutputStride", 0 );
+    d_inpDofs   = params->d_db->getWithDefault<int>( "InputDOFsPerObject", 1 );
+    d_inpStride = params->d_db->getWithDefault<int>( "InputStride", 0 );
+    d_outDofs   = params->d_db->getWithDefault<int>( "OutputDOFsPerObject", 1 );
+    d_outStride = params->d_db->getWithDefault<int>( "OutputStride", 0 );
 }
 
 

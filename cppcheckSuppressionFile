@@ -127,6 +127,7 @@ shiftTooManyBits:*/src/utils/extended_int.cpp
 objectIndex:*/src/ampmesh/libmesh/initializeLibMesh.cpp
 ignoredReturnValue:*/src/ampmesh/shapes/GeometryHelpers.cpp
 unassignedVariable:*/src/ampmesh/triangle/TriangleMesh.cpp
+duplicateExpression:*/src/utils/DatabaseKeyData.cpp
 
 
 //***********************************************************

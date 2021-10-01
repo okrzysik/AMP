@@ -24,10 +24,11 @@ ColumnTimeOperator::ColumnTimeOperator(
                 "Error: ColumnTimeOperator::ColumnTimeOperator() "
                 "mass operator must be a non-NULL column operator" );
 
-    d_bCreateLinearTimeOperators = column_db->getWithDefault( "CreateLinearTimeOperators", true );
+    d_bCreateLinearTimeOperators =
+        column_db->getWithDefault<bool>( "CreateLinearTimeOperators", true );
 
     // for now we only allow one algebraic component
-    d_iAlgebraicComponent = column_db->getWithDefault( "algebraicComponent", -1 );
+    d_iAlgebraicComponent = column_db->getWithDefault<int>( "algebraicComponent", -1 );
 
     d_dCurrentDt = column_db->getWithDefault<double>( "CurrentTime", 0.0 );
 
@@ -43,10 +44,12 @@ ColumnTimeOperator::ColumnTimeOperator(
             timeOperator_db->putScalar( "CurrentTime",
                                         column_db->getWithDefault<double>( "CurrentTime", 0.0 ) );
             timeOperator_db->putScalar( "name", "TimeOperator" );
-            timeOperator_db->putScalar( "bLinearMassOperator",
-                                        column_db->getWithDefault( "bLinearMassOperator", true ) );
-            timeOperator_db->putScalar( "bLinearRhsOperator",
-                                        column_db->getWithDefault( "bLinearRhsOperator", false ) );
+            timeOperator_db->putScalar(
+                "bLinearMassOperator",
+                column_db->getWithDefault<bool>( "bLinearMassOperator", true ) );
+            timeOperator_db->putScalar(
+                "bLinearRhsOperator",
+                column_db->getWithDefault<bool>( "bLinearRhsOperator", false ) );
             timeOperator_db->putScalar(
                 "ScalingFactor", column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
             auto timeOperatorParameters =
@@ -104,10 +107,10 @@ void ColumnTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorPar
         timeOperator_db->putScalar( "CurrentTime",
                                     column_db->getWithDefault<double>( "CurrentTime", 0.0 ) );
         timeOperator_db->putScalar( "name", "TimeOperator" );
-        timeOperator_db->putScalar( "bLinearMassOperator",
-                                    column_db->getWithDefault( "bLinearMassOperator", true ) );
-        timeOperator_db->putScalar( "bLinearRhsOperator",
-                                    column_db->getWithDefault( "bLinearRhsOperator", false ) );
+        timeOperator_db->putScalar(
+            "bLinearMassOperator", column_db->getWithDefault<bool>( "bLinearMassOperator", true ) );
+        timeOperator_db->putScalar(
+            "bLinearRhsOperator", column_db->getWithDefault<bool>( "bLinearRhsOperator", false ) );
         timeOperator_db->putScalar( "ScalingFactor",
                                     column_db->getWithDefault<double>( "ScalingFactor", 1.0e6 ) );
         auto timeOperatorParameters =

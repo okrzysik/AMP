@@ -72,7 +72,7 @@ void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( ( ( db.get() ) != nullptr ), "NULL database" );
 
-    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
+    d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
 }
 
 

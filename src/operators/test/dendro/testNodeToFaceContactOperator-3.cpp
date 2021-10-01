@@ -222,9 +222,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         contactOperatorParams );
     contactOperator->initialize();
     contactOperator->setContactIsFrictionless(
-        contact_db->getWithDefault( "ContactIsFrictionless", false ) );
+        contact_db->getWithDefault<bool>( "ContactIsFrictionless", false ) );
 
-    bool useML = input_db->getWithDefault( "useML", false );
+    bool useML = input_db->getWithDefault<bool>( "useML", false );
 
     // Build the master and slave operators
     std::shared_ptr<AMP::Operator::LinearBVPOperator> masterBVPOperator;
@@ -464,8 +464,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     selectNodes( slaveMeshAdapter, slaveNodesGlobalIDs );
     printNodesValues( slaveMeshAdapter, slaveNodesGlobalIDs, contactPressureVec );
 
-    int TOTO_count                    = 0;
-    size_t const maxLoadingIterations = input_db->getWithDefault( "maxLoadingIterations", 5 );
+    int TOTO_count = 0;
+    size_t const maxLoadingIterations =
+        input_db->getWithDefault<size_t>( "maxLoadingIterations", 5 );
     for ( size_t loadingIteration = 0; loadingIteration < maxLoadingIterations;
           ++loadingIteration ) {
         double scalingFactor = static_cast<double>( loadingIteration + 1 ) /
@@ -478,7 +479,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         }
 
         size_t const maxActiveSetIterations =
-            input_db->getWithDefault( "maxActiveSetIterations", 5 );
+            input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
         for ( size_t activeSetIteration = 0; activeSetIteration < maxActiveSetIterations;
               ++activeSetIteration ) {
             if ( !rank ) {

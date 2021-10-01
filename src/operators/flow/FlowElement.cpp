@@ -22,7 +22,7 @@ FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> para
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    const unsigned int dimension = params->d_db->getWithDefault( "DIMENSION", 3 );
+    const unsigned int dimension = params->d_db->getWithDefault<unsigned>( "DIMENSION", 3 );
     // int numApprox = (params->d_db)->getScalar<int>WithDefault("NUM_APPROX", 2);
 
     std::string U_feTypeOrderName =

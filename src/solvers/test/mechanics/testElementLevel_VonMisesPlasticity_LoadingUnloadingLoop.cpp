@@ -63,7 +63,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto meshAdapter = std::make_shared<AMP::Mesh::libmeshMesh>( mesh, "cook" );
     //--------------------------------------------------
 
-    bool ExtractData = input_db->getWithDefault( "ExtractStressStrainData", false );
+    bool ExtractData = input_db->getWithDefault<bool>( "ExtractStressStrainData", false );
     FILE *fout123;
     std::string ss_file = exeName + "_UniaxialStressStrain.txt";
     fout123             = fopen( ss_file.c_str(), "w" );

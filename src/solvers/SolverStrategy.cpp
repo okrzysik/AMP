@@ -49,9 +49,9 @@ SolverStrategy::~SolverStrategy() = default;
 void SolverStrategy::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( db, "InputDatabase object must be non-NULL" );
-    d_iMaxIterations       = db->getWithDefault( "max_iterations", 1 );
-    d_iDebugPrintInfoLevel = db->getWithDefault( "print_info_level", 0 );
-    d_bUseZeroInitialGuess = db->getWithDefault( "zero_initial_guess", true );
+    d_iMaxIterations       = db->getWithDefault<int>( "max_iterations", 1 );
+    d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
+    d_bUseZeroInitialGuess = db->getWithDefault<bool>( "zero_initial_guess", true );
     d_dAbsoluteTolerance   = db->getWithDefault<double>( "absolute_tolerance", 1.0e-14 );
     d_dRelativeTolerance   = db->getWithDefault<double>( "relative_tolerance", 1.0e-09 );
 }

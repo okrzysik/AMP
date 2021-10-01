@@ -22,12 +22,13 @@ MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParame
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    d_useReducedIntegration = params->d_db->getWithDefault( "USE_REDUCED_INTEGRATION", false );
+    d_useReducedIntegration =
+        params->d_db->getWithDefault<bool>( "USE_REDUCED_INTEGRATION", false );
 
-    d_useJaumannRate = params->d_db->getWithDefault( "USE_JAUMANN_RATE", false );
+    d_useJaumannRate = params->d_db->getWithDefault<bool>( "USE_JAUMANN_RATE", false );
 
     d_useFlanaganTaylorElem =
-        params->d_db->getWithDefault( "USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION", false );
+        params->d_db->getWithDefault<bool>( "USE_FLANAGAN_TAYLOR_ELEMENT_FORMULATION", false );
 
     if ( d_useFlanaganTaylorElem == true ) {
         AMP_INSIST(
@@ -69,7 +70,7 @@ MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParame
 
     d_fe->attach_quadrature_rule( d_qrule.get() );
 
-    d_iDebugPrintInfoLevel = params->d_db->getWithDefault( "print_info_level", 0 );
+    d_iDebugPrintInfoLevel = params->d_db->getWithDefault<int>( "print_info_level", 0 );
 }
 } // namespace Operator
 } // namespace AMP

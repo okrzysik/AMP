@@ -147,11 +147,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // set frozen vectors in parameters
-    if ( diffFEOp_db->getWithDefault( "Freezetemperature", false ) )
+    if ( diffFEOp_db->getWithDefault<bool>( "Freezetemperature", false ) )
         diffOpParams->d_FrozenTemperature = tVec;
-    if ( diffFEOp_db->getWithDefault( "Freezeconcentration", false ) )
+    if ( diffFEOp_db->getWithDefault<bool>( "Freezeconcentration", false ) )
         diffOpParams->d_FrozenConcentration = cVec;
-    if ( diffFEOp_db->getWithDefault( "Freezeburnup", false ) )
+    if ( diffFEOp_db->getWithDefault<bool>( "Freezeburnup", false ) )
         diffOpParams->d_FrozenBurnup = bVec;
 
     // set transport model

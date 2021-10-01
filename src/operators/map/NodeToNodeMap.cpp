@@ -32,9 +32,9 @@ NodeToNodeMap::NodeToNodeMap( std::shared_ptr<const AMP::Operator::OperatorParam
         dim = d_mesh1->getDim();
     dim = d_MapComm.maxReduce( dim );
     AMP_INSIST( dim <= 3, "Node to Node map only works up to 3d (see Point)" );
-    DofsPerObj = Params.d_db->getWithDefault( "DOFsPerObject", 1 );
+    DofsPerObj = Params.d_db->getWithDefault<int>( "DOFsPerObject", 1 );
     auto geomType =
-        static_cast<AMP::Mesh::GeomType>( Params.d_db->getWithDefault( "GeomType", 0 ) );
+        static_cast<AMP::Mesh::GeomType>( Params.d_db->getWithDefault<int>( "GeomType", 0 ) );
     d_commTag               = Params.d_commTag;
     d_callMakeConsistentSet = Params.callMakeConsistentSet;
 
@@ -273,7 +273,8 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     // Sort the points for fast searching
     AMP::Utilities::quicksort( surfacePts );
 
-    // Find the points in mesh1 that align with the points owned by the current processor on mesh2
+    // Find the points in mesh1 that align with the points owned by the current processor on
+    // mesh2
     d_localPairsMesh2.reserve( ownedPointsMesh2.size() );
     for ( auto &elem : ownedPointsMesh2 ) {
         // Search for the point
@@ -308,7 +309,8 @@ void NodeToNodeMap::createPairs( bool requireAllPaired )
     // Sort the points for fast searching
     AMP::Utilities::quicksort( surfacePts );
 
-    // Find the points in mesh1 that align with the points owned by the current processor on mesh2
+    // Find the points in mesh1 that align with the points owned by the current processor on
+    // mesh2
     d_localPairsMesh1.reserve( ownedPointsMesh1.size() );
     for ( auto &elem : ownedPointsMesh1 ) {
         // Search for the point

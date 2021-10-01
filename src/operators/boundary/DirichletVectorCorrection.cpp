@@ -14,14 +14,14 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
     AMP_INSIST( params, "NULL parameters" );
     AMP_INSIST( params->d_db, "NULL database" );
 
-    bool skipParams = params->d_db->getWithDefault( "skip_params", false );
+    bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
     if ( !skipParams ) {
         d_scalingFactor = params->d_db->getWithDefault<double>( "SCALING_FACTOR", 1.0 );
-        d_setResidual   = params->d_db->getWithDefault( "setResidual", false );
+        d_setResidual   = params->d_db->getWithDefault<bool>( "setResidual", false );
         d_isAttachedToVolumeOperator =
-            params->d_db->getWithDefault( "isAttachedToVolumeOperator", false );
-        d_valuesType = params->d_db->getWithDefault( "valuesType", 1 );
+            params->d_db->getWithDefault<bool>( "isAttachedToVolumeOperator", false );
+        d_valuesType = params->d_db->getWithDefault<int>( "valuesType", 1 );
         AMP_INSIST( ( ( d_valuesType == 1 ) || ( d_valuesType == 2 ) ), "Wrong value." );
 
         AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),

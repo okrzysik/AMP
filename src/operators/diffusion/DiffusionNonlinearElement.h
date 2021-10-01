@@ -24,7 +24,7 @@ public:
 
         d_dphi = &( d_fe->get_dphi() );
 
-        d_transportAtGauss = params->d_db->getWithDefault( "TransportAtGaussPoints", true );
+        d_transportAtGauss = params->d_db->getWithDefault<bool>( "TransportAtGaussPoints", true );
     }
 
     virtual ~DiffusionNonlinearElement() {}

@@ -43,7 +43,7 @@ void Map3Dto1D::reset( std::shared_ptr<const OperatorParameters> params )
     d_MapComm = myparams->d_MapComm;
     AMP_INSIST( d_MapComm.sumReduce<int>( d_MapMesh ? 1 : 0 ) > 0, "Somebody must own the mesh" );
 
-    d_useGaussVec = myparams->d_db->getWithDefault( "UseGaussVec", false );
+    d_useGaussVec = myparams->d_db->getWithDefault<bool>( "UseGaussVec", false );
 
     if ( d_useGaussVec ) {
         AMP::Mesh::MeshIterator iterator =

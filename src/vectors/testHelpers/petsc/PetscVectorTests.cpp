@@ -290,8 +290,6 @@ void PetscVectorTests::VerifyLogPetscVector( AMP::UnitTest *ut )
 
 void PetscVectorTests::VerifyNormsPetscVector( AMP::UnitTest *ut )
 {
-    auto name = d_factory->name() + "VerifyNormsPetscVector: ";
-
     auto vectora = d_factory->getVector();
     auto veca    = d_factory->getVec( vectora );
 

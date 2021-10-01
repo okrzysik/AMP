@@ -49,11 +49,11 @@ namespace Operator {
         d_outVariable->setVariable(NavierStokes::PRESSURE, tempVar2);
 
         bool isAttachedToNonlinearOperator =
-   params->d_db->getWithDefault("isAttachedToNonlinearOperator", false);
+   params->d_db->getWithDefault<bool>("isAttachedToNonlinearOperator", false);
 
         if(isAttachedToNonlinearOperator) {
           bool isNonlinearOperatorInitialized =
-   params->d_db->getWithDefault("isNonlinearOperatorInitialized",
+   params->d_db->getWithDefault<bool>("isNonlinearOperatorInitialized",
    false);
           if(isNonlinearOperatorInitialized) {
             reset(params);

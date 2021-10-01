@@ -190,12 +190,12 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     d_KSPAppendOptionsPrefix = db->getWithDefault<std::string>( "KSPAppendOptionsPrefix", "" );
 
     if ( ( d_sKspType == "fgmres" ) || ( d_sKspType == "gmres" ) ) {
-        d_iMaxKrylovDimension              = db->getWithDefault( "max_krylov_dimension", 20 );
+        d_iMaxKrylovDimension              = db->getWithDefault<int>( "max_krylov_dimension", 20 );
         d_sGmresOrthogonalizationAlgorithm = db->getWithDefault<std::string>(
             "gmres_orthogonalization_algorithm", "modifiedgramschmidt" );
     }
 
-    d_bUsesPreconditioner = db->getWithDefault( "uses_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
     if ( d_bUsesPreconditioner ) {
         if ( db->keyExists( "pc_type" ) ) {

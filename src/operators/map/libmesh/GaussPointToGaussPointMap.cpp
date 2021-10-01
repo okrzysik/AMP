@@ -31,7 +31,7 @@ GaussPointToGaussPointMap::GaussPointToGaussPointMap(
     : NodeToNodeMap( params )
 {
     createIdxMap( params );
-    d_useFrozenInputVec = params->d_db->getWithDefault( "FrozenInput", false );
+    d_useFrozenInputVec = params->d_db->getWithDefault<bool>( "FrozenInput", false );
 }
 
 
@@ -105,7 +105,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     std::string qruleOrderName = db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
-    int faceDim = db->getWithDefault( "DIMENSION", 2 );
+    int faceDim = db->getWithDefault<int>( "DIMENSION", 2 );
 
     std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
 

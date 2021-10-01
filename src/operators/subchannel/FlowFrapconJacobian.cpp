@@ -59,7 +59,7 @@ void FlowFrapconJacobian::reset( std::shared_ptr<const OperatorParameters> param
     AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
     AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
 
-    bool skipParams = params->d_db->getWithDefault( "skip_params", false );
+    bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
     if ( !skipParams ) {
         AMP_INSIST( myparams->d_db->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );

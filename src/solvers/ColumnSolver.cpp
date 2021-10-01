@@ -12,7 +12,7 @@ ColumnSolver::ColumnSolver( std::shared_ptr<const SolverStrategyParameters> para
     AMP_ASSERT( parameters );
     std::shared_ptr<AMP::Database> db = parameters->d_db;
     d_IterationType       = db->getWithDefault<std::string>( "IterationType", "GaussSeidel" );
-    d_resetColumnOperator = db->getWithDefault( "ResetColumnOperator", false );
+    d_resetColumnOperator = db->getWithDefault<bool>( "ResetColumnOperator", false );
 }
 
 void ColumnSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,

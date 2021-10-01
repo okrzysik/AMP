@@ -20,6 +20,7 @@ namespace AMP {
 /********************************************************
  *  External instantiations                              *
  ********************************************************/
+extern template class Array<bool>;
 extern template class Array<char>;
 extern template class Array<uint8_t>;
 extern template class Array<uint16_t>;
@@ -51,13 +52,16 @@ extern template class Array<float>;
     template AMP::Array<TYPE>::Array( std::initializer_list<std::initializer_list<TYPE>> ); \
     template AMP::Array<TYPE>::Array( const AMP::Array<TYPE> & );                  \
     template AMP::Array<TYPE>::Array( AMP::Array<TYPE> && );                       \
+    template void AMP::Array<TYPE>::allocate( const ArraySize & );                 \
     template void AMP::Array<TYPE>::reshape( AMP::ArraySize const& );              \
     template std::unique_ptr<const AMP::Array<TYPE>>                               \
         AMP::Array<TYPE>::constView(ArraySize const&, std::shared_ptr<TYPE const> const&); \
     template void AMP::Array<TYPE>::viewRaw( ArraySize const&, TYPE*, bool, bool ); \
     template void AMP::Array<TYPE>::view2(ArraySize const&, std::shared_ptr<TYPE> ); \
     template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( const AMP::Array<TYPE> & ); \
-    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && );
+    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && ); \
+    template TYPE* AMP::Array<TYPE>::data();                                       \
+    template const TYPE* AMP::Array<TYPE>::data() const;                           \
 // clang-format on
 
 

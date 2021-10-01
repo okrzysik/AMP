@@ -54,9 +54,9 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( std::shared_ptr<const MeshPara
     } else if ( MeshType == "TriangleGeometryMesh" ) {
         // We will build a triangle mesh from a geometry
         auto geom_db   = db->getDatabase( "Geometry" );
-        double dist[3] = { db->getWithDefault( "x_offset", 0.0 ),
-                           db->getWithDefault( "y_offset", 0.0 ),
-                           db->getWithDefault( "z_offset", 0.0 ) };
+        double dist[3] = { db->getWithDefault<double>( "x_offset", 0.0 ),
+                           db->getWithDefault<double>( "y_offset", 0.0 ),
+                           db->getWithDefault<double>( "z_offset", 0.0 ) };
         auto geom      = AMP::Geometry::Geometry::buildGeometry( geom_db );
         geom->displace( dist );
         auto res = db->getScalar<double>( "Resolution" );

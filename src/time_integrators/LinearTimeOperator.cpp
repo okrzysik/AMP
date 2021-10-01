@@ -35,7 +35,7 @@ void LinearTimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
 
     d_dScalingFactor      = db->getScalar<double>( "ScalingFactor" );
     d_current_time        = db->getWithDefault<double>( "CurrentTime", 0.0 );
-    d_bAlgebraicComponent = db->getWithDefault( "bAlgebraicComponent", false );
+    d_bAlgebraicComponent = db->getWithDefault<bool>( "bAlgebraicComponent", false );
 }
 
 void LinearTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )

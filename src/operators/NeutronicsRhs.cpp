@@ -67,7 +67,7 @@ void NeutronicsRhs::getFromInput( SP_Database db )
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
 
     // number of time steps
-    d_numTimeSteps = db->getWithDefault( "numTimeSteps", 1 );
+    d_numTimeSteps = db->getWithDefault<int>( "numTimeSteps", 1 );
     AMP_ASSERT( d_numTimeSteps > 0 );
     d_timeStepsInDays.resize( d_numTimeSteps );
     d_fixedValues.resize( d_numTimeSteps );
@@ -85,7 +85,7 @@ void NeutronicsRhs::getFromInput( SP_Database db )
     }
 
     // Power in Watts per gram
-    d_useFixedValue = db->getWithDefault( "useFixedValue", true );
+    d_useFixedValue = db->getWithDefault<bool>( "useFixedValue", true );
     if ( d_useFixedValue ) {
         if ( db->keyExists( "fixedValues" ) ) {
             d_fixedValues = db->getVector<double>( "fixedValues" );
