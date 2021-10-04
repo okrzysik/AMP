@@ -1,6 +1,7 @@
 #ifndef included_TimeIntegratorInterface_h_
 #define included_TimeIntegratorInterface_h_
 
+#include <memory>
 #include <string>
 #include <vector>
 
