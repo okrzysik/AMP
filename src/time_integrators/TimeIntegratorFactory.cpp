@@ -1,8 +1,4 @@
 #include "AMP/time_integrators/TimeIntegratorFactory.h"
-#include "AMP/time_integrators/ExplicitEuler.h"
-#include "AMP/time_integrators/RK23TimeIntegrator.h"
-#include "AMP/time_integrators/RK2TimeIntegrator.h"
-#include "AMP/time_integrators/RK4TimeIntegrator.h"
 #include "AMP/utils/Utilities.h"
 
 
@@ -32,19 +28,8 @@ std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
                    << " missing in input." );
     }
 
-    if ( timeIntegratorName == "ExplicitEuler" ) {
-        timeIntegrator.reset( new ExplicitEuler( timeIntegratorParameters ) );
-    } else if ( timeIntegratorName == "RK2" ) {
-        timeIntegrator.reset( new RK2TimeIntegrator( timeIntegratorParameters ) );
-    } else if ( timeIntegratorName == "RK4" ) {
-        timeIntegrator.reset( new RK4TimeIntegrator( timeIntegratorParameters ) );
-    } else if ( timeIntegratorName == "RK23" ) {
-        timeIntegrator.reset( new RK23TimeIntegrator( timeIntegratorParameters ) );
-    } else {
-        AMP_ERROR(
-            std::string( "TimeIntegratorFactory does not currently create timeIntegrator " ) +
-            timeIntegratorName );
-    }
+    AMP_ERROR( std::string( "TimeIntegratorFactory does not currently create timeIntegrator " ) +
+               timeIntegratorName );
 
     return timeIntegrator;
 }
