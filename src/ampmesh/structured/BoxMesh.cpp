@@ -82,8 +82,8 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
     AMP_INSIST( d_db.get(), "Database must exist" );
     d_isPeriodic.fill( false );
     d_globalSize.fill( 1 );
-    d_blockSize.fill( 1 );
-    d_invBlockSize.fill( 1 );
+    d_indexSize.fill( 0 );
+    d_localIndex.fill( 0 );
     d_numBlocks.fill( 1 );
     d_surfaceId.fill( -1 );
     d_rank = -1;
@@ -95,21 +95,25 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 {
-    PhysicalDim    = mesh.PhysicalDim;
-    GeomDim        = mesh.GeomDim;
-    d_max_gcw      = mesh.d_max_gcw;
-    d_comm         = mesh.d_comm;
-    d_rank         = mesh.d_rank;
-    d_size         = mesh.d_size;
-    d_name         = mesh.d_name;
-    d_box          = mesh.d_box;
-    d_box_local    = mesh.d_box_local;
-    d_isPeriodic   = mesh.d_isPeriodic;
-    d_globalSize   = mesh.d_globalSize;
-    d_blockSize    = mesh.d_blockSize;
-    d_invBlockSize = mesh.d_invBlockSize;
-    d_numBlocks    = mesh.d_numBlocks;
-    d_surfaceId    = mesh.d_surfaceId;
+    PhysicalDim  = mesh.PhysicalDim;
+    GeomDim      = mesh.GeomDim;
+    d_max_gcw    = mesh.d_max_gcw;
+    d_comm       = mesh.d_comm;
+    d_rank       = mesh.d_rank;
+    d_size       = mesh.d_size;
+    d_name       = mesh.d_name;
+    d_box        = mesh.d_box;
+    d_box_local  = mesh.d_box_local;
+    d_isPeriodic = mesh.d_isPeriodic;
+    d_globalSize = mesh.d_globalSize;
+    d_numBlocks  = mesh.d_numBlocks;
+    d_localIndex = mesh.d_localIndex;
+    d_indexSize  = mesh.d_indexSize;
+    for ( int d = 0; d < 3; d++ ) {
+        d_startIndex[d] = mesh.d_startIndex[d];
+        d_endIndex[d]   = mesh.d_endIndex[d];
+    }
+    d_surfaceId = mesh.d_surfaceId;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
@@ -173,10 +177,24 @@ void BoxMesh::initialize()
             factors.pop_back();
         }
     }
-    d_blockSize    = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
-                    ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
-                    ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
-    d_invBlockSize = { 1.0 / d_blockSize[0], 1.0 / d_blockSize[1], 1.0 / d_blockSize[2] };
+    for ( int d = 0; d < 3; d++ ) {
+        double n = d_globalSize[d] / static_cast<double>( d_numBlocks[d] ) + 1e-12;
+        d_startIndex[d].resize( d_numBlocks[d] );
+        for ( int i = 0; i < d_numBlocks[d]; i++ )
+            d_startIndex[d][i] = static_cast<int>( i * n );
+        d_endIndex[d].resize( d_numBlocks[d] );
+        for ( int i = 1; i < d_numBlocks[d]; i++ )
+            d_endIndex[d][i - 1] = d_startIndex[d][i];
+        d_endIndex[d].back() = d_globalSize[d];
+    }
+    auto block   = getLocalBlock( d_rank );
+    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
+    d_localIndex = block;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
+            d_localIndex[2 * d + 1] = d_globalSize[d];
+        d_localIndex[2 * d + 1]++;
+    }
     // Create the list of elements on each surface
     const std::array<int, 6> globalRange = { 0, std::max( d_globalSize[0] - 1, 0 ),
                                              0, std::max( d_globalSize[1] - 1, 0 ),
@@ -810,10 +828,17 @@ bool BoxMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     // Perform basic comparison
-    if ( d_isPeriodic != mesh->d_isPeriodic || d_globalSize != mesh->d_globalSize ||
-         d_blockSize != mesh->d_blockSize || d_surfaceId != mesh->d_surfaceId ||
-         *d_geometry != *mesh->d_geometry )
+    if ( d_isPeriodic != mesh->d_isPeriodic || d_globalSize != mesh->d_globalSize )
         return false;
+    if ( d_numBlocks != mesh->d_numBlocks || d_indexSize != mesh->d_indexSize ||
+         d_localIndex != mesh->d_localIndex )
+        return false;
+    if ( d_surfaceId != mesh->d_surfaceId || *d_geometry != *mesh->d_geometry )
+        return false;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_startIndex[d] != mesh->d_startIndex[d] || d_endIndex[d] != mesh->d_endIndex[d] )
+            return false;
+    }
     return true;
 }
 

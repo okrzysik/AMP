@@ -500,6 +500,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const siloBaseMeshData &data, int cy
         const char *varnames[] = { "1", "2", "3" };
         if ( data.varType[i] > mesh->getGeomType() ) {
             // We have a mixed mesh type and there will be no data of the given type for this mesh
+            continue;
         } else if ( data.varType[i] == AMP::Mesh::GeomType::Vertex ) {
             // We are saving node-centered data
             centering = DB_NODECENT;

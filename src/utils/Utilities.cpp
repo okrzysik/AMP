@@ -277,13 +277,54 @@ void Utilities::printBanner()
 }
 // clang-format on
 
-// Factor a number into it's prime factors
-std::vector<int> Utilities::factor( uint64_t number )
+
+/****************************************************************************
+ *  Prime number functions                                                   *
+ ****************************************************************************/
+struct bitvector {
+    bitvector() = delete;
+    explicit bitvector( size_t n0, bool value = false ) : n( n0 ), x( nullptr )
+    {
+        N = ( n + 63 ) / 64;
+        x = new uint64_t[N];
+        fill( value );
+    }
+    bitvector( const bitvector & ) = delete;
+    ~bitvector() { delete[] x; }
+    size_t size() const { return n; }
+    void fill( bool v )
+    {
+        uint8_t v2 = v ? 0xFF : 0x00;
+        memset( x, v2, sizeof( uint64_t ) * N );
+    }
+    bool get( size_t i ) const
+    {
+        size_t i1     = i >> 6;
+        size_t i2     = i & 0x3F;
+        uint64_t mask = ( (uint64_t) 1 ) << i2;
+        return ( x[i1] & mask ) != 0;
+    }
+    void set( size_t i, bool v )
+    {
+        size_t i1     = i >> 6;
+        size_t i2     = i & 0x3F;
+        uint64_t mask = ( (uint64_t) 1 ) << i2;
+        if ( v )
+            x[i1] |= mask;
+        else
+            x[i1] &= ~mask;
+    }
+
+private:
+    size_t n;
+    size_t N;
+    uint64_t *x;
+};
+std::vector<int> Utilities::factor( uint64_t n )
 {
-    uint64_t n = number;
     // Handle trival case
     if ( n <= 3 )
-        return std::vector<int>( 1, (int) number );
+        return { static_cast<int>( n ) };
     // Initialize factors
     size_t N = 0;
     int factors[64];
@@ -291,17 +332,28 @@ std::vector<int> Utilities::factor( uint64_t number )
     while ( ( n & 0x01 ) == 0 ) {
         factors[N++] = 2;
         n >>= 1;
-        continue;
+    }
+    // Remove all factors of 3
+    while ( n % 3 == 0 ) {
+        factors[N++] = 3;
+        n /= 3;
     }
     // Use brute force to find remaining factors
-    uint64_t f = 3;
+    uint64_t f = 5;
     while ( true ) {
-        auto f_max = static_cast<uint64_t>( floor( sqrt( n ) ) );
+        // Determine the largest number we need to check
+        auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * sqrt( n ) ) );
+        // Search all remaining numbers (note  we skip every 3rd odd number)
         bool found = false;
-        for ( ; f <= f_max && !found; f += 2 ) {
+        for ( ; f <= f_max && !found; f += 6 ) {
             while ( n % f == 0 ) {
                 factors[N++] = f;
                 n /= f;
+                found = true;
+            }
+            while ( n % ( f + 2 ) == 0 ) {
+                factors[N++] = f + 2;
+                n /= f + 2;
                 found = true;
             }
         }
@@ -311,6 +363,47 @@ std::vector<int> Utilities::factor( uint64_t number )
         }
     }
     return std::vector<int>( factors, factors + N );
+}
+bool Utilities::isPrime( uint64_t n )
+{
+    if ( n <= 3 )
+        return true;
+    if ( ( n & 0x01 ) == 0 || n % 3 == 0 )
+        return false;
+    // Determine the largest number we need to check
+    auto f_max = static_cast<uint64_t>( floor( 1.000000000000001 * sqrt( n ) ) );
+    // Check if the number is prime
+    for ( uint64_t f = 5; f <= f_max; f += 6 ) {
+        if ( ( n % f == 0 ) || ( n % ( f + 2 ) == 0 ) )
+            return false;
+    }
+    return true;
+}
+std::vector<uint64_t> Utilities::primes( uint64_t n )
+{
+    if ( n < 2 )
+        return { 1u };
+    if ( n == 2 )
+        return { 2u };
+    uint64_t n2 = ( n + 1 ) / 2;
+    double tmp  = 1.000000000000001 * sqrt( static_cast<double>( n ) );
+    uint64_t ub = static_cast<uint64_t>( tmp ) >> 1;
+    bitvector p( n2, true );
+    for ( uint64_t k = 1; k <= ub; k++ ) {
+        if ( p.get( k ) ) {
+            uint64_t k2 = 2 * k + 1;
+            for ( size_t j = 2 * k * ( k + 1 ); j < p.size(); j += k2 )
+                p.set( j, false );
+        }
+    }
+    std::vector<uint64_t> p2;
+    p2.reserve( static_cast<size_t>( n / log2( n ) ) );
+    p2.push_back( 2 );
+    for ( size_t i = 1; i < p.size(); i++ ) {
+        if ( p.get( i ) )
+            p2.push_back( 2 * i + 1 );
+    }
+    return p2;
 }
 
 

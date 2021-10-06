@@ -168,6 +168,17 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
         if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )
             printf( "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
     }
+    int N2 = 100;
+    for ( int i = 0; i < N2; i++ ) {
+        double x = i / static_cast<double>( N - 1 );
+        auto p1  = map_logical_sphere_surface( r, 0, x );
+        auto p2  = map_logical_sphere_surface( r, 1, x );
+        if ( p1 != p2 ) {
+            printf(
+                "Failed boundary 1: (%e,%e,%e)\n", p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2] );
+            pass = false;
+        }
+    }
     auto t2    = std::chrono::high_resolution_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
     printf( "map_logical_sphere_surface: %i ns\n", static_cast<int>( ns / N ) );

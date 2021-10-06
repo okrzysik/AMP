@@ -149,16 +149,16 @@ double SphereSurface::volume() const
 std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 1u, "Size must be an array of length 1" );
-    return { x[0], x[0] / 2, 1 };
+    return { x[0], x[0] / 2 };
 }
 std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<double> &res ) const
 {
-    AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
+    AMP_INSIST( res.size() == 2u, "Resolution must be an array of length 2" );
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, false, false }; }
-std::vector<int> SphereSurface::getLogicalSurfaceIds() const { return { -1, -1, -1, -1, -1, -1 }; }
+std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, true }; }
+std::vector<int> SphereSurface::getLogicalSurfaceIds() const { return { -1, -1, -1, -1 }; }
 
 
 /********************************************************

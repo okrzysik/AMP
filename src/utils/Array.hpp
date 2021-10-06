@@ -180,18 +180,18 @@ Array<TYPE, FUN, Allocator>::Array( std::string str ) : d_isCopyable( true ), d_
             size_t k   = tmp.find( ':' );
             TYPE x1    = std::stod( tmp.substr( 0, k ) );
             TYPE x2    = std::stod( tmp.substr( k + 1 ) );
-            double tol = 1e-8 * ( x2 - x1 );
-            for ( TYPE x = x1; x <= x2 + tol; x += 1 )
-                data.push_back( x );
+            Range<TYPE> f( x1, x2 );
+            for ( size_t i=0; i<f.size(); i++)
+                data.push_back( f.get(i) );
         } else if ( type == 2 ) {
             size_t k1  = tmp.find( ':' );
             size_t k2  = tmp.find( ':', k1 + 1 );
             TYPE x1    = std::stod( tmp.substr( 0, k1 ) );
             TYPE dx    = std::stod( tmp.substr( k1 + 1, k2 - k1 - 1 ) );
             TYPE x2    = std::stod( tmp.substr( k2 + 1 ) );
-            double tol = 1e-8 * ( x2 - x1 );
-            for ( TYPE x = x1; x <= x2 + tol; x += dx )
-                data.push_back( x );
+            Range<TYPE> f( x1, x2, dx );
+            for ( size_t i=0; i<f.size(); i++)
+                data.push_back( f.get(i) );
         } else {
             throw std::logic_error( "Failed to parse string constructor: " + str );
         }

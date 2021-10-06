@@ -27,40 +27,30 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
     }
     // Fill basic mesh information
     auto size = d_db->getVector<int>( "Size" );
-    AMP_INSIST( size.size() >= 1u && size.size() <= 3u, "bad value for size" );
+    auto per  = d_db->getWithDefault<std::vector<bool>>( "Periodic",
+                                                        std::vector<bool>( size.size(), false ) );
+    AMP_INSIST( size.size() >= 1u && size.size() <= 3u, "bad value for Size" );
+    AMP_ASSERT( per.size() == size.size() );
     PhysicalDim = size.size();
     GeomDim     = static_cast<AMP::Mesh::GeomType>( size.size() );
     d_max_gcw   = d_db->getWithDefault<int>( "GCW", 2 );
     AMP_ASSERT( PhysicalDim == d_db->getWithDefault<int>( "dim", PhysicalDim ) );
     for ( size_t d = 0; d < size.size(); d++ ) {
         d_globalSize[d] = size[d];
-        d_isPeriodic[d] = false;
+        d_isPeriodic[d] = per[d];
+        if ( !d_isPeriodic[d] ) {
+            d_surfaceId[2 * d + 0] = 2 * d + 0;
+            d_surfaceId[2 * d + 1] = 2 * d + 1;
+        } else {
+            d_surfaceId[2 * d + 0] = -1;
+            d_surfaceId[2 * d + 1] = -1;
+        }
     }
-    for ( size_t d = 0; d < 2 * size.size(); d++ )
-        d_surfaceId[d] = d;
     // Initialize the logical mesh
     BoxMesh::initialize();
     BoxMesh::finalize();
 }
-PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) : BoxMesh( mesh )
-{
-    PhysicalDim  = mesh.PhysicalDim;
-    GeomDim      = mesh.GeomDim;
-    d_max_gcw    = mesh.d_max_gcw;
-    d_comm       = mesh.d_comm;
-    d_name       = mesh.d_name;
-    d_box        = mesh.d_box;
-    d_box_local  = mesh.d_box_local;
-    d_isPeriodic = mesh.d_isPeriodic;
-    d_globalSize = mesh.d_globalSize;
-    d_blockSize  = mesh.d_blockSize;
-    d_numBlocks  = mesh.d_numBlocks;
-    d_surfaceId  = mesh.d_surfaceId;
-    for ( int d = 0; d < 4; d++ ) {
-        for ( int i = 0; i < 6; i++ )
-            d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
-    }
-}
+PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) : BoxMesh( mesh ) {}
 
 
 /********************************************************

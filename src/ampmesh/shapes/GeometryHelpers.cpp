@@ -324,7 +324,9 @@ Point3D map_logical_sphere_surface( double R, double x, double y )
     double xp  = point.first;
     double yp  = point.second;
     double zp  = sqrt( fabs( 1.0 - ( xp * xp + yp * yp ) ) );
-    if ( x2 < 0 )
+    if ( zp < 1e-7 )
+        zp = 0;
+    else if ( x2 < 0 )
         zp = -zp; // negate z in lower hemisphere
     xp *= R;
     yp *= R;

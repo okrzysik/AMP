@@ -314,6 +314,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "Got the expected hash key" );
 
+
         // Test the factor function
         auto factors = Utilities::factor( 13958 );
         if ( factors == std::vector<int>( { 2, 7, 997 } ) )
@@ -330,6 +331,38 @@ int main( int argc, char *argv[] )
         }
         t2 = Utilities::time();
         std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
+
+
+        // Test the isPrime function
+        if ( !Utilities::isPrime( 13958 ) && Utilities::isPrime( 9999991 ) )
+            ut.passes( "isPrime" );
+        else
+            ut.failure( "isPrime" );
+        t1 = Utilities::time();
+        for ( int i = 0; i < N_it; i++ ) {
+            auto tmp = AMP::Utilities::factor( dist( gen ) );
+            NULL_USE( tmp );
+        }
+        t2 = Utilities::time();
+        std::cout << "isPrime = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
+
+
+        // Test the primes function
+        auto p1 = Utilities::primes( 50 );
+        pass    = p1 ==
+               std::vector<uint64_t>( { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47 } );
+        t1   = Utilities::time();
+        p1   = Utilities::primes( 10000000 );
+        pass = pass && p1.size() == 664579;
+        t2   = Utilities::time();
+        if ( pass )
+            ut.passes( "primes" );
+        else
+            ut.failure( "primes" );
+        std::cout << "size: primes(10000000) = " << p1.size() << std::endl;
+        std::cout << "time: primes(10000000) = " << round( 1e3 * ( t2 - t1 ) ) << " ms"
+                  << std::endl;
+
 
         // Test getSystemMemory
         size_t system_bytes = Utilities::getSystemMemory();
