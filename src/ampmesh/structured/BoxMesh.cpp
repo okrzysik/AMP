@@ -122,11 +122,68 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 
 
 /****************************************************************
+ * Perform the load balancing                                    *
+ ****************************************************************/
+void BoxMesh::loadBalance( std::array<int, 3> size,
+                           int N_procs,
+                           std::vector<int> *startIndex,
+                           const AMP::Database *db )
+{
+    AMP_ASSERT( size[0] > 0 && size[1] > 0 && size[2] > 0 );
+    // Check if we are dealing with a serial mesh
+    if ( N_procs == 1 ) {
+        startIndex[0] = std::vector<int>( 1, 0 );
+        startIndex[1] = std::vector<int>( 1, 0 );
+        startIndex[2] = std::vector<int>( 1, 0 );
+        return;
+    }
+    // Get the minimum size / proc
+    std::array<int, 3> minSize = { 1, 1, 1 };
+    if ( db ) {
+        auto tmp = db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", { 1, 1, 1 } );
+        if ( tmp.size() == 1 )
+            tmp.resize( 3, tmp[0] );
+        tmp.resize( 3, -1 );
+        minSize = { tmp[0], tmp[1], tmp[2] };
+        for ( int d = 0; d < 3; d++ ) {
+            if ( minSize[d] == -1 )
+                minSize[d] = size[d];
+        }
+    }
+    // Get the number of processors for each dimension
+    int numBlocks[3] = { 1, 1, 1 };
+    auto factors     = AMP::Utilities::factor( N_procs );
+    while ( !factors.empty() ) {
+        int d    = -1;
+        double v = -1;
+        for ( int i = 0; i < 3; i++ ) {
+            double tmp = (double) size[i] / (double) numBlocks[i];
+            if ( tmp > v && tmp > minSize[i] && minSize[i] >= 0 ) {
+                d = i;
+                v = tmp;
+            }
+        }
+        if ( d == -1 )
+            break;
+        numBlocks[d] *= factors.back();
+        factors.pop_back();
+    }
+    // Calculate the starting index for each dimension
+    for ( int d = 0; d < 3; d++ ) {
+        double n = size[d] / static_cast<double>( numBlocks[d] ) + 1e-12;
+        startIndex[d].resize( numBlocks[d] );
+        for ( int i = 0; i < numBlocks[d]; i++ )
+            startIndex[d][i] = static_cast<int>( i * n );
+    }
+}
+
+
+/****************************************************************
  * Initialize the mesh                                           *
  ****************************************************************/
 void BoxMesh::initialize()
 {
-    PROFILE_START( "initialize" );
+    PROFILE_SCOPED( timer, "initialize" );
     // Check some assumptions/variables
     AMP_INSIST( static_cast<int>( GeomDim ) <= 3, "Geometric dimension must be <= 3" );
     for ( int i = 2 * static_cast<int>( GeomDim ); i < 6; i++ )
@@ -137,51 +194,13 @@ void BoxMesh::initialize()
     }
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
         AMP_ASSERT( d_globalSize[d] > 0 );
-    // Get the minimum mesh sizephysicalToLogical
-    std::vector<int> minSize( static_cast<int>( GeomDim ), 1 );
-    if ( d_db->keyExists( "LoadBalanceMinSize" ) ) {
-        minSize = d_db->getVector<int>( "LoadBalanceMinSize" );
-        AMP_ASSERT( (int) minSize.size() == (int) GeomDim );
-        for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-            if ( minSize[d] == -1 )
-                minSize[d] = d_globalSize[d];
-            if ( minSize[d] == 0 )
-                minSize[d] = 1;
-        }
-    }
     // Create the load balance
     AMP_INSIST( d_size > 0, "Communicator must be set" );
-    if ( d_size == 1 ) {
-        // We are dealing with a serial mesh (do nothing to change the local box sizes)
-        for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
-            d_numBlocks[d] = 1;
-    } else {
-        // We are dealing with a parallel mesh
-        // First, get the prime factors for number of processors and divide the dimensions
-        auto factors = AMP::Utilities::factor( d_size );
-        for ( int d = 0; d < 3; d++ )
-            d_numBlocks[d] = 1;
-        while ( !factors.empty() ) {
-            int d    = -1;
-            double v = -1;
-            for ( int i = 0; i < static_cast<int>( GeomDim ); i++ ) {
-                double tmp = (double) d_globalSize[i] / (double) d_numBlocks[i];
-                if ( tmp > v && tmp > minSize[i] && minSize[i] >= 0 ) {
-                    d = i;
-                    v = tmp;
-                }
-            }
-            if ( d == -1 )
-                break;
-            d_numBlocks[d] *= factors.back();
-            factors.pop_back();
-        }
-    }
+    loadBalance( d_globalSize, d_size, d_startIndex, d_db.get() );
+    // Set some cached values
     for ( int d = 0; d < 3; d++ ) {
-        double n = d_globalSize[d] / static_cast<double>( d_numBlocks[d] ) + 1e-12;
-        d_startIndex[d].resize( d_numBlocks[d] );
-        for ( int i = 0; i < d_numBlocks[d]; i++ )
-            d_startIndex[d][i] = static_cast<int>( i * n );
+        AMP_ASSERT( !d_startIndex[d].empty() );
+        d_numBlocks[d] = d_startIndex[d].size();
         d_endIndex[d].resize( d_numBlocks[d] );
         for ( int i = 1; i < d_numBlocks[d]; i++ )
             d_endIndex[d][i - 1] = d_startIndex[d][i];
@@ -272,7 +291,6 @@ void BoxMesh::initialize()
         }
     }
     // Create the initial boundary info
-    PROFILE_STOP( "initialize" );
 }
 void BoxMesh::createBoundingBox()
 {

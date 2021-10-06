@@ -411,6 +411,12 @@ protected:
     explicit BoxMesh( const BoxMesh & );
     BoxMesh &operator=( const BoxMesh & ) = delete;
 
+    // Function to create the load balancing
+    static void loadBalance( std::array<int, 3> size,
+                             int N_procs,
+                             std::vector<int> *startIndex,
+                             const AMP::Database *db = nullptr );
+
     // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();
 
