@@ -12,8 +12,8 @@
 
 #include "AMP/vectors/Vector.h"
 
-#include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/RK45TimeIntegrator.h"
+#include "AMP/time_integrators/TimeIntegratorParameters.h"
 
 #include "ProfilerApp.h"
 
