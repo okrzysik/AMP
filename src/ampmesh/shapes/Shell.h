@@ -11,9 +11,9 @@ namespace Geometry {
 
 
 /**
- * \class Geometry
+ * \class Shell
  * \brief A class used to abstract away geometry information from an application or mesh.
- * \details  This class provides routines for reading, accessing and writing geometries.
+ * \details  This class provides routines for reading, accessing and writing a spherical shell.
  */
 class Shell : public LogicalGeometry
 {

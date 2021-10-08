@@ -22,6 +22,7 @@ COPY_TEST_FILE( input_crystal_circular_tri )
 COPY_TEST_FILE( CRYSTAL_FINAL_2mm.STL )
 COPY_TEST_FILE( input_testMultiMeshOwnerRank )
 COPY_TEST_FILE( input_testMultiMeshSubset )
+COPY_TEST_FILE( input_LogicalMesh )
 
 # Copy meshes
 IF ( AMP_DATA )
@@ -58,6 +59,7 @@ ELSE()
     ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_2D )
     ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_3D )
 ENDIF()
+ADD_AMP_TEST( test_Mesh input_LogicalMesh )
 ADD_AMP_TEST( test_Mesh input_crystal_circular_tri )  # triangle mesh (1 rank only)
 IF ( AMP_DATA )
     ADD_AMP_TEST( test_Mesh input_stl )  # triangle mesh (1 rank only)
@@ -70,6 +72,7 @@ ADD_AMP_TEST( view_STL CRYSTAL_FINAL_2mm.STL )
 ADD_AMP_TEST_1_2_4( test_StructuredMeshHelpers )
 ADD_AMP_TEST_1_2_4( testMultiMeshSubset )
 ADD_AMP_TEST_1_2_4( testMultiMeshOwnerRank )
+ADD_AMP_TEST( test_BoxMeshIndex )
 
 
 # Add silo tests

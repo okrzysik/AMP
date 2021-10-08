@@ -51,7 +51,12 @@ void meshTests::TestInside( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr
     for ( auto type : types ) {
         for ( const auto &elem : mesh->getIterator( type, gcw ) ) {
             auto p = elem.centroid();
-            pass   = pass && geom->inside( p );
+            if ( !geom->inside( p ) ) {
+                p       = elem.centroid();
+                bool in = geom->inside( p );
+                NULL_USE( in );
+                pass = false;
+            }
         }
     }
     if ( pass )

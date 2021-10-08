@@ -14,7 +14,7 @@ namespace Geometry {
 Shell::Shell( std::shared_ptr<const AMP::Database> db )
 {
     d_physicalDim = 3;
-    d_logicalDim  = 2;
+    d_logicalDim  = 3;
     d_offset[0]   = 0;
     d_offset[1]   = 0;
     d_offset[2]   = 0;
@@ -26,7 +26,7 @@ Shell::Shell( std::shared_ptr<const AMP::Database> db )
 Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max )
 {
     d_physicalDim = 3;
-    d_logicalDim  = 2;
+    d_logicalDim  = 3;
     d_offset[0]   = 0;
     d_offset[1]   = 0;
     d_offset[2]   = 0;
@@ -77,7 +77,7 @@ double Shell::distance( const Point &pos, const Point &ang ) const
 
 
 /********************************************************
- * Check if the ray is inside the geometry               *
+ * Check if the point is inside the geometry             *
  ********************************************************/
 bool Shell::inside( const Point &pos ) const
 {

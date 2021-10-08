@@ -34,6 +34,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     d_max_gcw   = d_db->getWithDefault<int>( "GCW", 2 );
     AMP_ASSERT( PhysicalDim == d_db->getWithDefault<int>( "dim", PhysicalDim ) );
     auto size = d_geometry2->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
+    AMP_ASSERT( size.size() == static_cast<size_t>( GeomDim ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];
     auto isPeriodic = d_geometry2->getPeriodicDim();
@@ -49,24 +50,8 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
 StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &mesh )
     : BoxMesh( mesh )
 {
-    PhysicalDim  = mesh.PhysicalDim;
-    GeomDim      = mesh.GeomDim;
-    d_max_gcw    = mesh.d_max_gcw;
-    d_comm       = mesh.d_comm;
-    d_name       = mesh.d_name;
-    d_box        = mesh.d_box;
-    d_box_local  = mesh.d_box_local;
-    d_isPeriodic = mesh.d_isPeriodic;
-    d_globalSize = mesh.d_globalSize;
-    d_blockSize  = mesh.d_blockSize;
-    d_numBlocks  = mesh.d_numBlocks;
-    d_surfaceId  = mesh.d_surfaceId;
-    d_geometry2  = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
-    d_pos_hash   = mesh.d_pos_hash;
-    for ( int d = 0; d < 4; d++ ) {
-        for ( int i = 0; i < 6; i++ )
-            d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
-    }
+    d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
+    d_pos_hash  = mesh.d_pos_hash;
 }
 
 

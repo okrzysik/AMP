@@ -80,8 +80,9 @@ public:
     CONSTEXPR size_t size() const
     {
         if CONSTEXPR_IF ( std::is_integral<TYPE>::value ) {
-            return ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
-                   static_cast<int64_t>( k );
+            int64_t tmp = ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
+                          static_cast<int64_t>( k );
+            return tmp + 1;
         } else if CONSTEXPR_IF ( std::is_floating_point<TYPE>::value ) {
             double tmp = static_cast<double>( ( j - i ) ) / static_cast<double>( k );
             return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
