@@ -342,6 +342,15 @@ constexpr unsigned int type_hash();
 //! Get the prime factors for a number
 std::vector<int> factor( uint64_t );
 
+
+//! Check if a number is prime
+bool isPrime( uint64_t );
+
+
+//! Return all prime numbers <= x
+std::vector<uint64_t> primes( uint64_t );
+
+
 /*!
  * Sleep for X ms
  * @param N         Time to sleep (ms)

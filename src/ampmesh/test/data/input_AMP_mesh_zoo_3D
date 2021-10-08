@@ -74,7 +74,7 @@ Mesh{
 		MeshType = "AMP"
 		dim = 3
 		Generator = "shell"
-		Size = 10, 20
+		Size = 10, 5
 		Range = 0.8, 1
 		x_offset = 2
 		y_offset = 2

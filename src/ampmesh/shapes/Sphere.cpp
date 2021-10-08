@@ -14,7 +14,7 @@ namespace Geometry {
 Sphere::Sphere( std::shared_ptr<const AMP::Database> db )
 {
     d_physicalDim = 3;
-    d_logicalDim  = 2;
+    d_logicalDim  = 3;
     d_offset[0]   = 0;
     d_offset[1]   = 0;
     d_offset[2]   = 0;

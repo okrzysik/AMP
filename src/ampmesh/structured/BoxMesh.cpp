@@ -2,6 +2,7 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/structured/MovableBoxMesh.h"
+#include "AMP/ampmesh/structured/PureLogicalMesh.h"
 #include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/structured/structuredMeshIterator.h"
@@ -32,12 +33,17 @@ namespace Mesh {
  ****************************************************************/
 std::shared_ptr<BoxMesh> BoxMesh::generate( std::shared_ptr<const MeshParameters> params )
 {
-    auto db          = params->getDatabase();
-    bool static_mesh = db->getWithDefault<bool>( "static", false );
-    std::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
-    if ( !static_mesh )
-        mesh.reset( new MovableBoxMesh( *mesh ) );
-    return mesh;
+    auto db        = params->getDatabase();
+    auto generator = db->getWithDefault<std::string>( "Generator", "" );
+    if ( generator == "logical" ) {
+        return std::make_shared<PureLogicalMesh>( params );
+    } else {
+        std::shared_ptr<BoxMesh> mesh( new StructuredGeometryMesh( params ) );
+        bool static_mesh = db->getWithDefault<bool>( "static", false );
+        if ( !static_mesh )
+            mesh.reset( new MovableBoxMesh( *mesh ) );
+        return mesh;
+    }
 }
 
 
@@ -73,33 +79,101 @@ BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( para
 {
     // Check for valid inputs
     AMP_INSIST( d_params != nullptr, "Params must not be null" );
-    AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     AMP_INSIST( d_db.get(), "Database must exist" );
     d_isPeriodic.fill( false );
     d_globalSize.fill( 1 );
-    d_blockSize.fill( 1 );
-    d_invBlockSize.fill( 1 );
+    d_indexSize.fill( 0 );
+    d_localIndex.fill( 0 );
     d_numBlocks.fill( 1 );
     d_surfaceId.fill( -1 );
+    d_rank = -1;
+    d_size = 0;
+    if ( !d_comm.isNull() ) {
+        d_rank = d_comm.getRank();
+        d_size = d_comm.getSize();
+    }
 }
 BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 {
-    PhysicalDim    = mesh.PhysicalDim;
-    GeomDim        = mesh.GeomDim;
-    d_max_gcw      = mesh.d_max_gcw;
-    d_comm         = mesh.d_comm;
-    d_name         = mesh.d_name;
-    d_box          = mesh.d_box;
-    d_box_local    = mesh.d_box_local;
-    d_isPeriodic   = mesh.d_isPeriodic;
-    d_globalSize   = mesh.d_globalSize;
-    d_blockSize    = mesh.d_blockSize;
-    d_invBlockSize = mesh.d_invBlockSize;
-    d_numBlocks    = mesh.d_numBlocks;
-    d_surfaceId    = mesh.d_surfaceId;
+    PhysicalDim  = mesh.PhysicalDim;
+    GeomDim      = mesh.GeomDim;
+    d_max_gcw    = mesh.d_max_gcw;
+    d_comm       = mesh.d_comm;
+    d_rank       = mesh.d_rank;
+    d_size       = mesh.d_size;
+    d_name       = mesh.d_name;
+    d_box        = mesh.d_box;
+    d_box_local  = mesh.d_box_local;
+    d_isPeriodic = mesh.d_isPeriodic;
+    d_globalSize = mesh.d_globalSize;
+    d_numBlocks  = mesh.d_numBlocks;
+    d_localIndex = mesh.d_localIndex;
+    d_indexSize  = mesh.d_indexSize;
+    for ( int d = 0; d < 3; d++ ) {
+        d_startIndex[d] = mesh.d_startIndex[d];
+        d_endIndex[d]   = mesh.d_endIndex[d];
+    }
+    d_surfaceId = mesh.d_surfaceId;
     for ( int d = 0; d < 4; d++ ) {
         for ( int i = 0; i < 6; i++ )
             d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
+    }
+}
+
+
+/****************************************************************
+ * Perform the load balancing                                    *
+ ****************************************************************/
+void BoxMesh::loadBalance( std::array<int, 3> size,
+                           int N_procs,
+                           std::vector<int> *startIndex,
+                           const AMP::Database *db )
+{
+    AMP_ASSERT( size[0] > 0 && size[1] > 0 && size[2] > 0 );
+    // Check if we are dealing with a serial mesh
+    if ( N_procs == 1 ) {
+        startIndex[0] = std::vector<int>( 1, 0 );
+        startIndex[1] = std::vector<int>( 1, 0 );
+        startIndex[2] = std::vector<int>( 1, 0 );
+        return;
+    }
+    // Get the minimum size / proc
+    std::array<int, 3> minSize = { 1, 1, 1 };
+    if ( db ) {
+        auto tmp = db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", { 1, 1, 1 } );
+        if ( tmp.size() == 1 )
+            tmp.resize( 3, tmp[0] );
+        tmp.resize( 3, -1 );
+        minSize = { tmp[0], tmp[1], tmp[2] };
+        for ( int d = 0; d < 3; d++ ) {
+            if ( minSize[d] == -1 )
+                minSize[d] = size[d];
+        }
+    }
+    // Get the number of processors for each dimension
+    int numBlocks[3] = { 1, 1, 1 };
+    auto factors     = AMP::Utilities::factor( N_procs );
+    while ( !factors.empty() ) {
+        int d    = -1;
+        double v = -1;
+        for ( int i = 0; i < 3; i++ ) {
+            double tmp = (double) size[i] / (double) numBlocks[i];
+            if ( tmp > v && tmp > minSize[i] && minSize[i] >= 0 ) {
+                d = i;
+                v = tmp;
+            }
+        }
+        if ( d == -1 )
+            break;
+        numBlocks[d] *= factors.back();
+        factors.pop_back();
+    }
+    // Calculate the starting index for each dimension
+    for ( int d = 0; d < 3; d++ ) {
+        double n = size[d] / static_cast<double>( numBlocks[d] ) + 1e-12;
+        startIndex[d].resize( numBlocks[d] );
+        for ( int i = 0; i < numBlocks[d]; i++ )
+            startIndex[d][i] = static_cast<int>( i * n );
     }
 }
 
@@ -109,7 +183,7 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
  ****************************************************************/
 void BoxMesh::initialize()
 {
-    PROFILE_START( "initialize" );
+    PROFILE_SCOPED( timer, "initialize" );
     // Check some assumptions/variables
     AMP_INSIST( static_cast<int>( GeomDim ) <= 3, "Geometric dimension must be <= 3" );
     for ( int i = 2 * static_cast<int>( GeomDim ); i < 6; i++ )
@@ -120,49 +194,26 @@ void BoxMesh::initialize()
     }
     for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
         AMP_ASSERT( d_globalSize[d] > 0 );
-    // Get the minimum mesh size
-    std::vector<int> minSize( static_cast<int>( GeomDim ), 1 );
-    if ( d_db->keyExists( "LoadBalanceMinSize" ) ) {
-        minSize = d_db->getVector<int>( "LoadBalanceMinSize" );
-        AMP_ASSERT( (int) minSize.size() == (int) GeomDim );
-        for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-            if ( minSize[d] == -1 )
-                minSize[d] = d_globalSize[d];
-            if ( minSize[d] == 0 )
-                minSize[d] = 1;
-        }
-    }
     // Create the load balance
-    if ( d_comm.getSize() == 1 ) {
-        // We are dealing with a serial mesh (do nothing to change the local box sizes)
-        for ( int d = 0; d < static_cast<int>( GeomDim ); d++ )
-            d_numBlocks[d] = 1;
-    } else {
-        // We are dealing with a parallel mesh
-        // First, get the prime factors for number of processors and divide the dimensions
-        auto factors = AMP::Utilities::factor( d_comm.getSize() );
-        for ( int d = 0; d < 3; d++ )
-            d_numBlocks[d] = 1;
-        while ( !factors.empty() ) {
-            int d    = -1;
-            double v = -1;
-            for ( int i = 0; i < static_cast<int>( GeomDim ); i++ ) {
-                double tmp = (double) d_globalSize[i] / (double) d_numBlocks[i];
-                if ( tmp > v && tmp > minSize[i] && minSize[i] >= 0 ) {
-                    d = i;
-                    v = tmp;
-                }
-            }
-            if ( d == -1 )
-                break;
-            d_numBlocks[d] *= factors.back();
-            factors.pop_back();
-        }
+    AMP_INSIST( d_size > 0, "Communicator must be set" );
+    loadBalance( d_globalSize, d_size, d_startIndex, d_db.get() );
+    // Set some cached values
+    for ( int d = 0; d < 3; d++ ) {
+        AMP_ASSERT( !d_startIndex[d].empty() );
+        d_numBlocks[d] = d_startIndex[d].size();
+        d_endIndex[d].resize( d_numBlocks[d] );
+        for ( int i = 1; i < d_numBlocks[d]; i++ )
+            d_endIndex[d][i - 1] = d_startIndex[d][i];
+        d_endIndex[d].back() = d_globalSize[d];
     }
-    d_blockSize    = { ( d_globalSize[0] + d_numBlocks[0] - 1 ) / d_numBlocks[0],
-                    ( d_globalSize[1] + d_numBlocks[1] - 1 ) / d_numBlocks[1],
-                    ( d_globalSize[2] + d_numBlocks[2] - 1 ) / d_numBlocks[2] };
-    d_invBlockSize = { 1.0 / d_blockSize[0], 1.0 / d_blockSize[1], 1.0 / d_blockSize[2] };
+    auto block   = getLocalBlock( d_rank );
+    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
+    d_localIndex = block;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
+            d_localIndex[2 * d + 1] = d_globalSize[d];
+        d_localIndex[2 * d + 1]++;
+    }
     // Create the list of elements on each surface
     const std::array<int, 6> globalRange = { 0, std::max( d_globalSize[0] - 1, 0 ),
                                              0, std::max( d_globalSize[1] - 1, 0 ),
@@ -240,14 +291,11 @@ void BoxMesh::initialize()
         }
     }
     // Create the initial boundary info
-    PROFILE_STOP( "initialize" );
 }
-void BoxMesh::finalize()
+void BoxMesh::createBoundingBox()
 {
-    PROFILE_START( "finalize" );
-    // Fill in the final info for the mesh
-    AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
-    d_name      = d_db->getString( "MeshName" );
+    // Fill the bounding box
+    AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     d_box_local = std::vector<double>( 2 * PhysicalDim );
     for ( int d = 0; d < PhysicalDim; d++ ) {
         d_box_local[2 * d + 0] = 1e100;
@@ -270,6 +318,14 @@ void BoxMesh::finalize()
         d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
+}
+void BoxMesh::finalize()
+{
+    PROFILE_START( "finalize" );
+    // Fill in the final info for the mesh
+    AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
+    d_name = d_db->getString( "MeshName" );
+    createBoundingBox();
     // Displace the mesh
     std::vector<double> displacement( PhysicalDim, 0.0 );
     if ( d_db->keyExists( "x_offset" ) && PhysicalDim >= 1 )
@@ -285,9 +341,6 @@ void BoxMesh::finalize()
     }
     if ( test )
         displaceMesh( displacement );
-    // Get the global ranks for the comm to make sure it is set
-    auto globalRanks = getComm().globalRanks();
-    AMP_ASSERT( !globalRanks.empty() );
     PROFILE_STOP( "finalize" );
 }
 
@@ -452,7 +505,7 @@ size_t BoxMesh::numLocalElements( const GeomType type ) const
 {
     if ( type > GeomDim )
         return 0;
-    auto box   = getLocalBlock( d_comm.getRank() );
+    auto box   = getLocalBlock( d_rank );
     auto range = getIteratorRange( box, type, 0 );
     size_t N   = 0;
     for ( const auto &tmp : range )
@@ -476,7 +529,7 @@ size_t BoxMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     if ( type > GeomDim )
         return 0;
-    auto box    = getLocalBlock( d_comm.getRank() );
+    auto box    = getLocalBlock( d_rank );
     auto range1 = getIteratorRange( box, type, 0 );
     auto range2 = getIteratorRange( box, type, gcw );
     size_t N    = 0;
@@ -631,7 +684,7 @@ MeshIterator BoxMesh::getIterator( const GeomType type, const int gcw ) const
 {
     if ( type > GeomDim )
         return MeshIterator();
-    auto box   = getLocalBlock( d_comm.getRank() );
+    auto box   = getLocalBlock( d_rank );
     auto range = getIteratorRange( box, type, gcw );
     return createIterator( range );
 }
@@ -653,7 +706,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
         }
     }
     // Intersect with the local ghost box
-    auto box          = getLocalBlock( d_comm.getRank() );
+    auto box          = getLocalBlock( d_rank );
     auto range        = getIteratorRange( box, type, gcw );
     auto intersection = intersect( sufaceSet, range );
     // Create a list if elements removing any duplicate elements
@@ -702,7 +755,7 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
         }
     }
     // Intersect with the local ghost box
-    auto box          = getLocalBlock( d_comm.getRank() );
+    auto box          = getLocalBlock( d_rank );
     auto range        = getIteratorRange( box, type, gcw );
     auto intersection = intersect( sufaceSet, range );
     // Create a list if elements removing any duplicate elements
@@ -793,10 +846,17 @@ bool BoxMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     // Perform basic comparison
-    if ( d_isPeriodic != mesh->d_isPeriodic || d_globalSize != mesh->d_globalSize ||
-         d_blockSize != mesh->d_blockSize || d_surfaceId != mesh->d_surfaceId ||
-         *d_geometry != *mesh->d_geometry )
+    if ( d_isPeriodic != mesh->d_isPeriodic || d_globalSize != mesh->d_globalSize )
         return false;
+    if ( d_numBlocks != mesh->d_numBlocks || d_indexSize != mesh->d_indexSize ||
+         d_localIndex != mesh->d_localIndex )
+        return false;
+    if ( d_surfaceId != mesh->d_surfaceId || *d_geometry != *mesh->d_geometry )
+        return false;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_startIndex[d] != mesh->d_startIndex[d] || d_endIndex[d] != mesh->d_endIndex[d] )
+            return false;
+    }
     return true;
 }
 

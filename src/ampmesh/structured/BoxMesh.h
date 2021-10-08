@@ -8,11 +8,9 @@
 #include "AMP/utils/ArraySize.h"
 
 #ifdef USE_AMP_VECTORS
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 class Vector;
 }
-} // namespace AMP
 #endif
 
 #include <array>
@@ -21,8 +19,7 @@ class Vector;
 #include <vector>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 class structuredMeshElement;
 class structuredMeshIterator;
@@ -325,6 +322,9 @@ public:
     //! Return the size of the mesh
     inline std::vector<size_t> size() const;
 
+    //! Return the number of blocks
+    inline std::vector<size_t> numBlocks() const;
+
 
     //! Check if two meshes are equal
     bool operator==( const Mesh &mesh ) const override;
@@ -411,14 +411,23 @@ protected:
     explicit BoxMesh( const BoxMesh & );
     BoxMesh &operator=( const BoxMesh & ) = delete;
 
+    // Function to create the load balancing
+    static void loadBalance( std::array<int, 3> size,
+                             int N_procs,
+                             std::vector<int> *startIndex,
+                             const AMP::Database *db = nullptr );
+
     // Function to initialize the mesh data once the logical mesh info has been created
     void initialize();
 
     // Function to finalize the mesh data once the coordinates have been set
     void finalize();
 
+    // Function to finalize the mesh data once the coordinates have been set
+    virtual void createBoundingBox();
+
     // Helper function to return the indices of the local block owned by the given processor
-    inline std::array<int, 6> getLocalBlock( unsigned int rank ) const;
+    inline std::array<int, 6> getLocalBlock( int rank ) const;
 
     // Helper functions to identify the iterator blocks
     ElementBlocks
@@ -435,13 +444,16 @@ protected:
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
 
-protected:                                // Internal data
-    std::array<bool, 3> d_isPeriodic;     // Which directions are periodic
-    std::array<int, 3> d_globalSize;      // The size of the logical domain in each direction
-    std::array<int, 3> d_blockSize;       // The size of the logical blocks in each direction
-    std::array<double, 3> d_invBlockSize; // Inverse of the block size
-    std::array<int, 3> d_numBlocks;       // The number of local box in each direction
-    std::array<int, 6> d_surfaceId; // For each surface which id is it part of (if any, -1 if not)
+protected:                            // Internal data
+    int d_rank, d_size;               // Cached values for the rank and size
+    std::array<bool, 3> d_isPeriodic; // Which directions are periodic
+    std::array<int, 3> d_globalSize;  // The size of the logical domain in each direction
+    std::array<int, 3> d_numBlocks;   // The number of local box in each direction
+    std::vector<int> d_startIndex[3]; // The first index for each block
+    std::vector<int> d_endIndex[3];   // The end index (last=1) for each block
+    std::array<int, 6> d_localIndex;  // Local index range (cached for performance)
+    std::array<int, 3> d_indexSize;   // Local index size (local box + 2) (cached for performance)
+    std::array<int, 6> d_surfaceId;   // ID of each surface (if any, -1 if not)
     ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements (surface/type)
 
 protected: // Friend functions to access protected functions
@@ -457,9 +469,7 @@ private:
 std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x );
 
 
-} // namespace Mesh
-} // namespace AMP
-
+} // namespace AMP::Mesh
 
 #include "AMP/ampmesh/structured/BoxMesh.inline.h"
 

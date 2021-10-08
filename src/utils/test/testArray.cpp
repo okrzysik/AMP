@@ -518,11 +518,19 @@ int main( int argc, char *argv[] )
 
     // Test string range based constructor
     {
+        auto createRange = []( double lb, double ub, double dx ) {
+            return AMP::Array<double>( AMP::Range( lb, ub, dx ) );
+        };
         bool pass = true;
         auto tmp1 = Array<double>( "[ -3.5:0.1:-2 -1.96:0.02:0 0.05:0.05:1 1.1:0.1:2 ]" );
         pass      = pass && tmp1.ndim() == 1 && tmp1.length() == 145;
         auto tmp2 = Array<int>( "[ 0 1:1:10; 11:20 0 ]" );
         pass      = pass && tmp2.ndim() == 2 && tmp2.size( 0 ) == 2 && tmp2.size( 1 ) == 11;
+        auto tmp3 = AMP::Array<double>::cat( { createRange( -3.5, -2, 0.1 ),
+                                               createRange( -1.96, 0, 0.02 ),
+                                               createRange( 0.05, 1, 0.05 ),
+                                               createRange( 1.1, 2, 0.1 ) } );
+        pass      = pass && tmp1 == tmp3;
         if ( pass )
             ut.passes( "range-string" );
         else
