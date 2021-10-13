@@ -1292,7 +1292,7 @@ void meshTests::MeshPerformance( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr 
     auto to_ns = []( double time, size_t N ) {
         return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
     };
-    printf( "   getIterator: %i us\n", static_cast<int>( 1e6 * t1 ) );
+    printf( "   getIterator: %i ns\n", static_cast<int>( 1e9 * t1 ) );
     printf( "   ++iterator: %i ns\n", to_ns( t2, N_nodes ) );
     printf( "   rangeLoop: %i ns\n", to_ns( t3, N_nodes ) );
     printf( "   globalID: %i ns\n", to_ns( t4 - t3, N_nodes ) );

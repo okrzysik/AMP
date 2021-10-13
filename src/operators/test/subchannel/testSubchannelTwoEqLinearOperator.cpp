@@ -176,8 +176,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     { // test block
         std::cout << std::endl << "Test Computed Jacobian:" << std::endl;
-        std::vector<size_t> dofs;
-        auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+        face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         faceDOFManager->getDOFs( face->globalID(), dofs );
         double val = h_scale * 700.0e3;
         FrozenVec->setValuesByGlobalID( 1, &dofs[0], &val );

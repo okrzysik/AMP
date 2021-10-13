@@ -89,7 +89,7 @@ computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
     std::vector<double> U( nQuad ), V( nQuad ), W( nQuad );
     for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ) ) {
         auto id = elem.globalID();
-        auto el = libMeshElements.getElement( id );
+        el      = libMeshElements.getElement( id );
         volumeOp->getSourceElement()->getFEBase()->reinit( el );
         auto quadraturePoints   = volumeOp->getSourceElement()->getFEBase()->get_xyz();
         auto n_quadraturePoints = quadraturePoints.size();

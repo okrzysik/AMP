@@ -210,11 +210,11 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         std::cout << "Matrix-Free ML Type-1: " << std::endl;
         fusedSolVec->zero();
 
-        ML_Comm *comm;
-        ML_Comm_Create( &comm );
-        ML_Comm_Set_UsrComm( comm, globalComm.getCommunicator() );
+        ML_Comm *MLcomm;
+        ML_Comm_Create( &MLcomm );
+        ML_Comm_Set_UsrComm( MLcomm, globalComm.getCommunicator() );
 
-        ML_Operator *ml_op = ML_Operator_Create( comm );
+        ML_Operator *ml_op = ML_Operator_Create( MLcomm );
         ML_Operator_Set_ApplyFuncData(
             ml_op, localSize, localSize, fusedOperator.get(), localSize, myMatVec, 0 );
         ML_Operator_Set_Getrow( ml_op, localSize, myGetRow );
@@ -255,7 +255,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         ML_Operator_Destroy( &ml_op );
 
-        ML_Comm_Destroy( &comm );
+        ML_Comm_Destroy( &MLcomm );
     }
 
     // Matrix-free-2

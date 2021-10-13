@@ -79,7 +79,7 @@ void checkOperators( AMP::UnitTest &ut )
     pass = pass && x / y == Units( "V/A" );
     // Try catching an error
     try {
-        Units y( "m/s garbage" );
+        Units z( "m/s garbage" );
         pass = false;
     } catch ( const std::logic_error &err ) {
         if ( err.what() != std::string_view( "Unknown unit: garbage" ) ) {

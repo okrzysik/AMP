@@ -62,6 +62,14 @@ extern template class Array<float>;
     template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && ); \
     template TYPE* AMP::Array<TYPE>::data();                                       \
     template const TYPE* AMP::Array<TYPE>::data() const;                           \
+    template void Array<TYPE>::resize( size_t );                                   \
+    template void Array<TYPE>::resize( size_t, size_t );                           \
+    template void Array<TYPE>::resize( size_t, size_t, size_t );                   \
+    template void Array<TYPE>::resize( ArraySize const& );                         \
+    template void Array<TYPE>::clear();                                            \
+    template bool Array<TYPE>::empty() const;                                      \
+    template Array<TYPE> &Array<TYPE>::operator=( const std::vector<TYPE> & );     \
+    template bool Array<TYPE>::operator==( Array<TYPE> const & ) const
 // clang-format on
 
 
@@ -177,21 +185,21 @@ Array<TYPE, FUN, Allocator>::Array( std::string str ) : d_isCopyable( true ), d_
         if ( type == 0 ) {
             data.push_back( std::stod( tmp ) );
         } else if ( type == 1 ) {
-            size_t k   = tmp.find( ':' );
-            TYPE x1    = std::stod( tmp.substr( 0, k ) );
-            TYPE x2    = std::stod( tmp.substr( k + 1 ) );
+            size_t k = tmp.find( ':' );
+            TYPE x1  = std::stod( tmp.substr( 0, k ) );
+            TYPE x2  = std::stod( tmp.substr( k + 1 ) );
             Range<TYPE> f( x1, x2 );
-            for ( size_t i=0; i<f.size(); i++)
-                data.push_back( f.get(i) );
+            for ( size_t i = 0; i < f.size(); i++ )
+                data.push_back( f.get( i ) );
         } else if ( type == 2 ) {
-            size_t k1  = tmp.find( ':' );
-            size_t k2  = tmp.find( ':', k1 + 1 );
-            TYPE x1    = std::stod( tmp.substr( 0, k1 ) );
-            TYPE dx    = std::stod( tmp.substr( k1 + 1, k2 - k1 - 1 ) );
-            TYPE x2    = std::stod( tmp.substr( k2 + 1 ) );
+            size_t k1 = tmp.find( ':' );
+            size_t k2 = tmp.find( ':', k1 + 1 );
+            TYPE x1   = std::stod( tmp.substr( 0, k1 ) );
+            TYPE dx   = std::stod( tmp.substr( k1 + 1, k2 - k1 - 1 ) );
+            TYPE x2   = std::stod( tmp.substr( k2 + 1 ) );
             Range<TYPE> f( x1, x2, dx );
-            for ( size_t i=0; i<f.size(); i++)
-                data.push_back( f.get(i) );
+            for ( size_t i = 0; i < f.size(); i++ )
+                data.push_back( f.get( i ) );
         } else {
             throw std::logic_error( "Failed to parse string constructor: " + str );
         }
@@ -1156,20 +1164,20 @@ template<class TYPE>
 inline TYPE Array_interp_2D( double x, double y, int Nx, int Ny, const TYPE *data )
 {
     if constexpr ( is_compatible_double<TYPE>() ) {
-        int i       = floor( x );
-        i           = std::max( i, 0 );
-        i           = std::min( i, Nx - 2 );
-        double dx   = x - i;
-        double dx2  = 1.0 - dx;
-        int j       = floor( y );
-        j           = std::max( j, 0 );
-        j           = std::min( j, Ny - 2 );
-        double dy   = y - j;
-        double dy2  = 1.0 - dy;
-        double f[4] = { (double) data[i + j * Nx],
-                        (double) data[i + 1 + j * Nx],
-                        (double) data[i + ( j + 1 ) * Nx],
-                        (double) data[i + 1 + ( j + 1 ) * Nx] };
+        int i             = floor( x );
+        i                 = std::max( i, 0 );
+        i                 = std::min( i, Nx - 2 );
+        double dx         = x - i;
+        double dx2        = 1.0 - dx;
+        int j             = floor( y );
+        j                 = std::max( j, 0 );
+        j                 = std::min( j, Ny - 2 );
+        double dy         = y - j;
+        double dy2        = 1.0 - dy;
+        const double f[4] = { (double) data[i + j * Nx],
+                              (double) data[i + 1 + j * Nx],
+                              (double) data[i + ( j + 1 ) * Nx],
+                              (double) data[i + 1 + ( j + 1 ) * Nx] };
         return ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
     } else {
         throw std::logic_error( "Invalid conversion" );
@@ -1180,31 +1188,31 @@ inline TYPE
 Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYPE *data )
 {
     if constexpr ( is_compatible_double<TYPE>() ) {
-        int i       = floor( x );
-        i           = std::max( i, 0 );
-        i           = std::min( i, Nx - 2 );
-        double dx   = x - i;
-        double dx2  = 1.0 - dx;
-        int j       = floor( y );
-        j           = std::max( j, 0 );
-        j           = std::min( j, Ny - 2 );
-        double dy   = y - j;
-        double dy2  = 1.0 - dy;
-        int k       = floor( z );
-        k           = std::max( k, 0 );
-        k           = std::min( k, Nz - 2 );
-        double dz   = z - k;
-        double dz2  = 1.0 - dz;
-        double f[8] = { (double) data[i + j * Nx + k * Nx * Ny],
-                        (double) data[i + 1 + j * Nx + k * Nx * Ny],
-                        (double) data[i + ( j + 1 ) * Nx + k * Nx * Ny],
-                        (double) data[i + 1 + ( j + 1 ) * Nx + k * Nx * Ny],
-                        (double) data[i + j * Nx + ( k + 1 ) * Nx * Ny],
-                        (double) data[i + 1 + j * Nx + ( k + 1 ) * Nx * Ny],
-                        (double) data[i + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny],
-                        (double) data[i + 1 + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny] };
-        double h0   = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
-        double h1   = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
+        int i             = floor( x );
+        i                 = std::max( i, 0 );
+        i                 = std::min( i, Nx - 2 );
+        double dx         = x - i;
+        double dx2        = 1.0 - dx;
+        int j             = floor( y );
+        j                 = std::max( j, 0 );
+        j                 = std::min( j, Ny - 2 );
+        double dy         = y - j;
+        double dy2        = 1.0 - dy;
+        int k             = floor( z );
+        k                 = std::max( k, 0 );
+        k                 = std::min( k, Nz - 2 );
+        double dz         = z - k;
+        double dz2        = 1.0 - dz;
+        const double f[8] = { (double) data[i + j * Nx + k * Nx * Ny],
+                              (double) data[i + 1 + j * Nx + k * Nx * Ny],
+                              (double) data[i + ( j + 1 ) * Nx + k * Nx * Ny],
+                              (double) data[i + 1 + ( j + 1 ) * Nx + k * Nx * Ny],
+                              (double) data[i + j * Nx + ( k + 1 ) * Nx * Ny],
+                              (double) data[i + 1 + j * Nx + ( k + 1 ) * Nx * Ny],
+                              (double) data[i + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny],
+                              (double) data[i + 1 + ( j + 1 ) * Nx + ( k + 1 ) * Nx * Ny] };
+        double h0         = ( dx * f[1] + dx2 * f[0] ) * dy2 + ( dx * f[3] + dx2 * f[2] ) * dy;
+        double h1         = ( dx * f[5] + dx2 * f[4] ) * dy2 + ( dx * f[7] + dx2 * f[6] ) * dy;
         return h0 * dz2 + h1 * dz;
     } else {
         throw std::logic_error( "Invalid conversion" );
