@@ -5,8 +5,6 @@
 operatorEq:*
 unmatchedSuppression:*
 duplicateCondition:*
-invalidscanf:*
-invalidscanf_libc:*
 knownConditionTrueFalse:*
 shadowFunction:*            // Too many false positives, depends on caller's scope
 useStlAlgorithm:*           // Too aggressive
@@ -127,6 +125,7 @@ objectIndex:*/src/ampmesh/libmesh/initializeLibMesh.cpp
 ignoredReturnValue:*/src/ampmesh/shapes/GeometryHelpers.cpp
 unassignedVariable:*/src/ampmesh/triangle/TriangleMesh.cpp
 duplicateExpression:*/src/utils/DatabaseKeyData.cpp
+invalidscanf:*/src/utils/ReadTestMesh.cpp
 
 
 //***********************************************************
