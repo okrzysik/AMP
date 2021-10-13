@@ -62,14 +62,14 @@ extern template class Array<float>;
     template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && ); \
     template TYPE* AMP::Array<TYPE>::data();                                       \
     template const TYPE* AMP::Array<TYPE>::data() const;                           \
-    template void Array<TYPE>::resize( size_t );                                   \
-    template void Array<TYPE>::resize( size_t, size_t );                           \
-    template void Array<TYPE>::resize( size_t, size_t, size_t );                   \
-    template void Array<TYPE>::resize( ArraySize const& );                         \
-    template void Array<TYPE>::clear();                                            \
-    template bool Array<TYPE>::empty() const;                                      \
-    template Array<TYPE> &Array<TYPE>::operator=( const std::vector<TYPE> & );     \
-    template bool Array<TYPE>::operator==( Array<TYPE> const & ) const
+    template void AMP::Array<TYPE>::resize( size_t );                              \
+    template void AMP::Array<TYPE>::resize( size_t, size_t );                      \
+    template void AMP::Array<TYPE>::resize( size_t, size_t, size_t );              \
+    template void AMP::Array<TYPE>::resize( AMP::ArraySize const& );               \
+    template void AMP::Array<TYPE>::clear();                                       \
+    template bool AMP::Array<TYPE>::empty() const;                                 \
+    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( const std::vector<TYPE> & ); \
+    template bool AMP::Array<TYPE>::operator==( AMP::Array<TYPE> const & ) const
 // clang-format on
 
 
