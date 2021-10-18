@@ -80,17 +80,17 @@ void DirichletMatrixCorrection::parseParams(
 
         char key[100];
         for ( int j = 0; j < numIds; ++j ) {
-            sprintf( key, "id_%d", j );
+            snprintf( key, sizeof key, "id_%d", j );
             AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
             d_boundaryIds[j] = params->d_db->getScalar<int>( key );
 
-            sprintf( key, "number_of_dofs_%d", j );
+            snprintf( key, sizeof key, "number_of_dofs_%d", j );
             AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
             int numDofIds = params->d_db->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; ++i ) {
-                sprintf( key, "dof_%d_%d", j, i );
+                snprintf( key, sizeof key, "dof_%d_%d", j, i );
                 AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
                 d_dofIds[j][i] = params->d_db->getScalar<int>( key );
             } // end for i
@@ -103,7 +103,7 @@ void DirichletMatrixCorrection::parseParams(
                 d_dirichletValues[j].resize( numDofIds );
 
                 for ( int i = 0; i < numDofIds; ++i ) {
-                    sprintf( key, "value_%d_%d", j, i );
+                    snprintf( key, sizeof key, "value_%d_%d", j, i );
                     d_dirichletValues[j][i] = params->d_db->getWithDefault<double>( key, 0.0 );
                 } // end for i
             }     // end for j
@@ -188,17 +188,17 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
         for ( int j = 0; j < numIds; j++ ) {
             int numDofIds = d_dofIds[j].size();
 
-            sprintf( key, "id_%d", j );
+            snprintf( key, sizeof key, "id_%d", j );
             tmp_db->putScalar( key, d_boundaryIds[j] );
 
-            sprintf( key, "number_of_dofs_%d", j );
+            snprintf( key, sizeof key, "number_of_dofs_%d", j );
             tmp_db->putScalar( key, numDofIds );
 
             for ( int i = 0; i < numDofIds; i++ ) {
-                sprintf( key, "dof_%d_%d", j, i );
+                snprintf( key, sizeof key, "dof_%d_%d", j, i );
                 tmp_db->putScalar( key, d_dofIds[j][i] );
 
-                sprintf( key, "value_%d_%d", j, i );
+                snprintf( key, sizeof key, "value_%d_%d", j, i );
                 tmp_db->putScalar( key, d_dirichletValues[j][i] );
             } // end for i
         }     // end for j

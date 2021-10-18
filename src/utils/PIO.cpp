@@ -62,9 +62,7 @@ void logAllNodes( const std::string &filename, bool singleStream )
     // Open the log stream and redirect output
     std::string full_filename = filename;
     if ( !singleStream ) {
-        char tmp[32];
-        sprintf( tmp, ".%04i", getRank() );
-        full_filename += std::string( tmp );
+        full_filename += AMP::Utilities::stringf( ".%04i", getRank() );
     }
     global_filestream = new std::ofstream( full_filename.c_str() );
 

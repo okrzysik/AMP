@@ -214,9 +214,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             dirichletVectorCorrectionDatabase );
         ( nonlinearMechanicsBVPoperator->getBoundaryOperator() )->reset( bndParams );
 
-        char num1[256];
-        sprintf( num1, "%d", step );
-        std::string number1 = num1;
+        std::string number1 = std::to_string( step );
         std::string fname   = exeName + "_Stress_Strain_" + number1 + ".txt";
 
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
@@ -226,8 +224,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         meshAdapter->displaceMesh( solVec );
-        char outFileName[256];
-        sprintf( outFileName, "displacementPrescribed-DeformedPlateWithHole_%d", step );
+        auto outFileName =
+            AMP::Utilities::stringf( "displacementPrescribed-DeformedPlateWithHole_%d", step );
         siloWriter->writeFile( outFileName, 0 );
 #endif
     }

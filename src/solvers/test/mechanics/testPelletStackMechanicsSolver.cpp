@@ -148,7 +148,7 @@ int testPelletStackMechanicsSolver( int argc, char *argv[] )
     }
 
     char exeName[200];
-    sprintf( exeName, "testPelletStackMechanicsSolver-%d", inp );
+    snprintf( exeName, sizeof exeName, "testPelletStackMechanicsSolver-%d", inp );
 
     myTest( &ut, exeName );
 

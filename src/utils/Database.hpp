@@ -8,25 +8,25 @@
 #include <tuple>
 
 
-#define DATABASE_ERROR( ... )          \
-    do {                               \
-        char msg[1000];                \
-        sprintf( msg, __VA_ARGS__ );   \
-        throw std::logic_error( msg ); \
+#define DATABASE_ERROR( ... )                        \
+    do {                                             \
+        char msg[1000];                              \
+        snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
+        throw std::logic_error( msg );               \
     } while ( 0 )
-#define DATABASE_WARNING( ... )        \
-    do {                               \
-        char msg[1000];                \
-        sprintf( msg, __VA_ARGS__ );   \
-        AMP::pout << msg << std::endl; \
+#define DATABASE_WARNING( ... )                      \
+    do {                                             \
+        char msg[1000];                              \
+        snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
+        AMP::pout << msg << std::endl;               \
     } while ( 0 )
-#define DATABASE_INSIST( TEST, ... )       \
-    do {                                   \
-        if ( !( TEST ) ) {                 \
-            char msg[1000];                \
-            sprintf( msg, __VA_ARGS__ );   \
-            throw std::logic_error( msg ); \
-        }                                  \
+#define DATABASE_INSIST( TEST, ... )                     \
+    do {                                                 \
+        if ( !( TEST ) ) {                               \
+            char msg[1000];                              \
+            snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
+            throw std::logic_error( msg );               \
+        }                                                \
     } while ( 0 )
 
 

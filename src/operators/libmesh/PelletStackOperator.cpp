@@ -1,6 +1,7 @@
 
 #include "AMP/operators/libmesh/PelletStackOperator.h"
 #include "AMP/operators/map/NodeToNodeMap.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
 
 namespace AMP {
@@ -30,13 +31,11 @@ PelletStackOperator::PelletStackOperator(
     d_pelletStackComm          = params->d_pelletStackComm;
     d_n2nMaps                  = params->d_n2nMaps;
     for ( unsigned int pellId = 0; pellId < d_totalNumberOfPellets; pellId++ ) {
-        char pellId2Str[256];
-        sprintf( pellId2Str, "%u", ( pellId + 1 ) );
-        std::string meshName                 = meshNamePrefix + "_" + pellId2Str;
-        AMP::Mesh::Mesh::shared_ptr currMesh = d_Mesh->Subset( meshName );
-        if ( currMesh == nullptr ) {
+        auto pellId2Str = AMP::Utilities::stringf( "%u", pellId + 1 );
+        auto meshName   = meshNamePrefix + "_" + pellId2Str;
+        auto currMesh   = d_Mesh->Subset( meshName );
+        if ( currMesh == nullptr )
             continue;
-        }
         currMesh->setName(
             meshName ); // This is needed since subset may change the name and we rely on it later
         d_pelletIds.push_back( pellId );
@@ -74,11 +73,10 @@ int PelletStackOperator::getLocalIndexForPellet( unsigned int pellId )
 
 void PelletStackOperator::applyUnscaling( AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr subF              = f->subsetVectorForVariable( d_var );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = subF->getDOFManager();
-    AMP::Mesh::MeshIterator bnd =
-        d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
-    AMP::Mesh::MeshIterator end_bnd = bnd.end();
+    auto subF    = f->subsetVectorForVariable( d_var );
+    auto dof_map = subF->getDOFManager();
+    auto bnd     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
+    auto end_bnd = bnd.end();
     for ( ; bnd != end_bnd; ++bnd ) {
         std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
@@ -112,12 +110,12 @@ void PelletStackOperator::applyOnlyZcorrection( AMP::LinearAlgebra::Vector::shar
 {
     std::vector<double> finalMaxZdispsList;
     computeZscan( u, finalMaxZdispsList );
-    AMP::LinearAlgebra::Vector::shared_ptr subU              = u->subsetVectorForVariable( d_var );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = subU->getDOFManager();
+    auto subU    = u->subsetVectorForVariable( d_var );
+    auto dof_map = subU->getDOFManager();
     for ( size_t i = 0; i < d_pelletIds.size(); ++i ) {
         if ( d_pelletIds[i] > 0 ) {
-            AMP::Mesh::MeshIterator nd = d_meshes[i]->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
-            AMP::Mesh::MeshIterator end_nd = nd.end();
+            auto nd     = d_meshes[i]->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+            auto end_nd = nd.end();
             for ( ; nd != end_nd; ++nd ) {
                 std::vector<size_t> dofIds;
                 dof_map->getDOFs( nd->globalID(), dofIds );
@@ -141,13 +139,11 @@ void PelletStackOperator::applyXYZcorrection( AMP::LinearAlgebra::Vector::const_
     //      r->copyVector(f);
     d_frozenVectorForMaps->zero();
     d_n2nMaps->apply( u, nullVec );
-    AMP::LinearAlgebra::Vector::shared_ptr subU =
-        d_frozenVectorForMaps->subsetVectorForVariable( d_var );
-    AMP::LinearAlgebra::Vector::shared_ptr subR              = r->subsetVectorForVariable( d_var );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = subR->getDOFManager();
-    AMP::Mesh::MeshIterator bnd =
-        d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
-    AMP::Mesh::MeshIterator end_bnd = bnd.end();
+    auto subU    = d_frozenVectorForMaps->subsetVectorForVariable( d_var );
+    auto subR    = r->subsetVectorForVariable( d_var );
+    auto dof_map = subR->getDOFManager();
+    auto bnd     = d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
+    auto end_bnd = bnd.end();
     for ( ; bnd != end_bnd; ++bnd ) {
         std::vector<size_t> bndGlobalIds;
         dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
@@ -183,9 +179,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     size_t numMaps  = d_n2nMaps->getNumberOfOperators();
     if ( currPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
-                    d_n2nMaps->getOperator( m ) );
+            auto currMap = std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+                d_n2nMaps->getOperator( m ) );
             if ( currMap->getMesh( 2 ) == d_meshes[currPellIdx] ) {
                 currMap->applyStart( u, nullVec );
                 break;
@@ -194,9 +189,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
     if ( prevPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
-                    d_n2nMaps->getOperator( m ) );
+            auto currMap = std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+                d_n2nMaps->getOperator( m ) );
             if ( currMap->getMesh( 1 ) == d_meshes[prevPellIdx] ) {
                 currMap->applyStart( u, nullVec );
                 break;
@@ -205,9 +199,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
     if ( currPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
-                    d_n2nMaps->getOperator( m ) );
+            auto currMap = std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+                d_n2nMaps->getOperator( m ) );
             if ( ( currMap->getMesh( 2 ) ) == d_meshes[currPellIdx] ) {
                 currMap->applyFinish( u, nullVec );
                 break;
@@ -216,9 +209,8 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
     if ( prevPellIdx != -1 ) {
         for ( size_t m = 0; m < numMaps; m++ ) {
-            std::shared_ptr<AMP::Operator::NodeToNodeMap> currMap =
-                std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
-                    d_n2nMaps->getOperator( m ) );
+            auto currMap = std::dynamic_pointer_cast<AMP::Operator::NodeToNodeMap>(
+                d_n2nMaps->getOperator( m ) );
             if ( ( currMap->getMesh( 1 ) ) == d_meshes[prevPellIdx] ) {
                 currMap->applyFinish( u, nullVec );
                 break;
@@ -228,19 +220,18 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
 
     //      AMP::LinearAlgebra::Vector::const_shared_ptr subF =
     //      f->constSubsetVectorForVariable(d_var);
-    AMP::LinearAlgebra::Vector::shared_ptr subR = r->subsetVectorForVariable( d_var );
-    AMP::LinearAlgebra::Vector::shared_ptr subU =
-        d_frozenVectorForMaps->subsetVectorForVariable( d_var );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = subR->getDOFManager();
+    auto subR    = r->subsetVectorForVariable( d_var );
+    auto subU    = d_frozenVectorForMaps->subsetVectorForVariable( d_var );
+    auto dof_map = subR->getDOFManager();
     if ( currPellIdx != -1 ) {
         // commenting out next line of code instead. Possibly introducing
         // bug involving uninitialized values
         // Currently not filling r with zeros as r may contain valid values
         // BP, Nov 3, 2015
         //        subR->copyVector(subF);
-        AMP::Mesh::MeshIterator bnd = d_meshes[currPellIdx]->getBoundaryIDIterator(
+        auto bnd = d_meshes[currPellIdx]->getBoundaryIDIterator(
             AMP::Mesh::GeomType::Vertex, d_slaveId, 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
@@ -255,13 +246,12 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
 void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                         std::vector<double> &finalMaxZdispsList )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr subU = u->constSubsetVectorForVariable( d_var );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = subU->getDOFManager();
+    auto subU    = u->constSubsetVectorForVariable( d_var );
+    auto dof_map = subU->getDOFManager();
     std::vector<double> myMaxZdisps( d_pelletIds.size(), 0.0 );
     for ( size_t i = 0; i < d_pelletIds.size(); i++ ) {
-        AMP::Mesh::MeshIterator bnd =
-            d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_masterId, 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto bnd = d_meshes[i]->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_masterId, 0 );
+        auto end_bnd = bnd.end();
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );

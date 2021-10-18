@@ -222,9 +222,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearMechanicsBVPoperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
 
-        char num1[256];
-        sprintf( num1, "%d", step );
-        std::string number1 = num1;
+        std::string number1 = std::to_string( step );
         std::string fname   = exeName + "_Stress_Strain_" + number1 + ".txt";
 
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(

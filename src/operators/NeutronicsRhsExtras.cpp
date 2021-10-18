@@ -39,7 +39,7 @@ NeutronicsRhsExtras::NeutronicsRhsExtras( SP_Parameters parameters )
         for ( int extras = 0; extras < d_numExtras; extras++ ) {
             for ( int t = 0; t < d_numTimeSteps; t++ ) {
                 char key[100];
-                sprintf( key, "%s_%d", d_extrasName[extras].c_str(), t );
+                snprintf( key, sizeof key, "%s_%d", d_extrasName[extras].c_str(), t );
                 d_values[extras][t] = parameters->d_db->getVector<double>( key );
             }
         }
@@ -150,7 +150,7 @@ void NeutronicsRhsExtras::reset( std::shared_ptr<const OperatorParameters> param
         for ( int extras = 0; extras < d_numExtras; extras++ ) {
             for ( int t = 0; t < d_numTimeSteps; t++ ) {
                 char key[100];
-                sprintf( key, "%s_%d", d_extrasName[extras].c_str(), t );
+                snprintf( key, sizeof key, "%s_%d", d_extrasName[extras].c_str(), t );
                 d_values[extras][t] = params->d_db->getVector<double>( key );
             }
         }

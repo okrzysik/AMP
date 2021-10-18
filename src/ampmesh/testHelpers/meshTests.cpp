@@ -340,18 +340,24 @@ void meshTests::MeshIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr
                 N_local  = mesh->numLocalElements( type );
                 N_ghost  = mesh->numGhostElements( type, gcw );
                 iterator = mesh->getIterator( type, gcw );
-                sprintf( message, "Element iterator created (gcw=%i)", gcw );
+                snprintf( message, sizeof message, "Element iterator created (gcw=%i)", gcw );
                 ut.passes( message );
             } catch ( ... ) {
                 iterator_created = false;
                 if ( i == 0 ) {
-                    sprintf( message, "Node iterator failed (gcw=%i)", gcw );
+                    snprintf( message, sizeof message, "Node iterator failed (gcw=%i)", gcw );
                     ut.failure( message );
                 } else if ( type == mesh->getGeomType() ) {
-                    sprintf( message, "Geometric element iterator failed (gcw=%i)", gcw );
+                    snprintf( message,
+                              sizeof message,
+                              "Geometric element iterator failed (gcw=%i)",
+                              gcw );
                     ut.failure( message );
                 } else {
-                    sprintf( message, "Intermediate element iterator failed (gcw=%i)", gcw );
+                    snprintf( message,
+                              sizeof message,
+                              "Intermediate element iterator failed (gcw=%i)",
+                              gcw );
                     ut.expected_failure( message );
                 }
             }

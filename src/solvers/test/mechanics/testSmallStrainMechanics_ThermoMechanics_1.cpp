@@ -242,13 +242,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         burnVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialDamageThreshold" );
     siloWriter->registerVector(
         lhgrVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "CriticalDamageThreshold" );
-    char outFileName1[256];
-    sprintf( outFileName1, "undeformedMesh_SS_3" );
-    siloWriter->writeFile( outFileName1, 1 );
+    siloWriter->writeFile( "undeformedMesh_SS_3", 1 );
     meshAdapter->displaceMesh( solVec );
-    char outFileName2[256];
-    sprintf( outFileName2, "deformedMesh_SS_3" );
-    siloWriter->writeFile( outFileName2, 1 );
+    siloWriter->writeFile( "deformedMesh_SS_3", 1 );
 #endif
 
     ut->passes( exeName );

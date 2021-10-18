@@ -866,13 +866,14 @@ std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x 
 {
     const char *type[] = { "Vertex", "Edge", "Face", "Volume" };
     char tmp[128];
-    sprintf( tmp,
-             "(%i,%i,%i,%s,%i)",
-             x.index( 0 ),
-             x.index( 1 ),
-             x.index( 2 ),
-             type[static_cast<int>( x.type() )],
-             x.side() );
+    snprintf( tmp,
+              sizeof tmp,
+              "(%i,%i,%i,%s,%i)",
+              x.index( 0 ),
+              x.index( 1 ),
+              x.index( 2 ),
+              type[static_cast<int>( x.type() )],
+              x.side() );
     out << tmp;
     return out;
 }
