@@ -1086,9 +1086,9 @@ static void get_interpolant_points( const int d_ndim,
             throw std::logic_error( "Not programmed for this dimension yet" );
         }
         if ( !collinear ) {
-            char tmp[100];
-            sprintf( tmp, "get_interpolant_points failed: collinear (%i,%i)", N_neg, N );
-            throw std::logic_error( tmp );
+            auto msg = AMP::Utilities::stringf(
+                "get_interpolant_points failed: collinear (%i,%i)", N_neg, N );
+            throw std::logic_error( msg );
         }
     }
 }

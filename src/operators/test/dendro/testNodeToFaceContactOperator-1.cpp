@@ -593,9 +593,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
         siloWriter->registerVector(
             contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
-        char outFileName[256];
-        sprintf( outFileName, "TOTO_%d", 0 );
-        siloWriter->writeFile( outFileName, 0 );
+        siloWriter->writeFile( "TOTO_0", 0 );
     }
 #endif
 
@@ -785,9 +783,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         {
             columnSolVec->scale( 1.0e3 );
             meshAdapter->displaceMesh( columnSolVec );
-            char outFileName[256];
-            sprintf( outFileName, "TOTO_%d", 0 );
-            siloWriter->writeFile( outFileName, activeSetIteration + 1 );
+            siloWriter->writeFile( "TOTO_0", activeSetIteration + 1 );
             columnSolVec->scale( -1.0 );
             meshAdapter->displaceMesh( columnSolVec );
             columnSolVec->scale( -1.0e-3 );
@@ -823,11 +819,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     } // end if
 
 #ifdef USE_EXT_SILO
-    {
-        char outFileName[256];
-        sprintf( outFileName, "MPC_%d", 0 );
-        siloWriter->writeFile( outFileName, 0 );
-    }
+    siloWriter->writeFile( "MPC_0", 0 );
 #endif
     fout.close();
 

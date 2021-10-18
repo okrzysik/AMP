@@ -340,18 +340,24 @@ void meshTests::MeshIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr
                 N_local  = mesh->numLocalElements( type );
                 N_ghost  = mesh->numGhostElements( type, gcw );
                 iterator = mesh->getIterator( type, gcw );
-                sprintf( message, "Element iterator created (gcw=%i)", gcw );
+                snprintf( message, sizeof message, "Element iterator created (gcw=%i)", gcw );
                 ut.passes( message );
             } catch ( ... ) {
                 iterator_created = false;
                 if ( i == 0 ) {
-                    sprintf( message, "Node iterator failed (gcw=%i)", gcw );
+                    snprintf( message, sizeof message, "Node iterator failed (gcw=%i)", gcw );
                     ut.failure( message );
                 } else if ( type == mesh->getGeomType() ) {
-                    sprintf( message, "Geometric element iterator failed (gcw=%i)", gcw );
+                    snprintf( message,
+                              sizeof message,
+                              "Geometric element iterator failed (gcw=%i)",
+                              gcw );
                     ut.failure( message );
                 } else {
-                    sprintf( message, "Intermediate element iterator failed (gcw=%i)", gcw );
+                    snprintf( message,
+                              sizeof message,
+                              "Intermediate element iterator failed (gcw=%i)",
+                              gcw );
                     ut.expected_failure( message );
                 }
             }
@@ -1292,7 +1298,7 @@ void meshTests::MeshPerformance( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr 
     auto to_ns = []( double time, size_t N ) {
         return static_cast<int>( 1e9 * std::max( time, 0.0 ) / N );
     };
-    printf( "   getIterator: %i us\n", static_cast<int>( 1e6 * t1 ) );
+    printf( "   getIterator: %i ns\n", static_cast<int>( 1e9 * t1 ) );
     printf( "   ++iterator: %i ns\n", to_ns( t2, N_nodes ) );
     printf( "   rangeLoop: %i ns\n", to_ns( t3, N_nodes ) );
     printf( "   globalID: %i ns\n", to_ns( t4 - t3, N_nodes ) );

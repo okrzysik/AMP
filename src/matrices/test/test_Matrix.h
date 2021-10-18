@@ -50,14 +50,11 @@ public:
 
     std::string name() const override
     {
-        char tmp[128];
-        sprintf( tmp,
-                 "DOFMatrixTestFactory<%i,%i,%s,%i>",
-                 NUM_DOF_ROW,
-                 NUM_DOF_COL,
-                 GENERATOR::name().c_str(),
-                 TYPE );
-        return std::string( tmp );
+        return AMP::Utilities::stringf( "DOFMatrixTestFactory<%i,%i,%s,%i>",
+                                        NUM_DOF_ROW,
+                                        NUM_DOF_COL,
+                                        GENERATOR::name().c_str(),
+                                        TYPE );
     }
 
     std::string type() const override

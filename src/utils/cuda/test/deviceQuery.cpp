@@ -14,6 +14,7 @@
 // Shared Utilities (QA Testing)
 
 // std::system includes
+#include <cstdio>
 #include <iostream>
 
 #include "AMP/utils/cuda/helper_cuda.h"
@@ -104,10 +105,11 @@ int main( int argc, char **argv )
                 deviceProp.minor );
 
         char msg[256];
-        SPRINTF( msg,
-                 "  Total amount of global memory:                 %.0f MBytes (%llu bytes)\n",
-                 (float) deviceProp.totalGlobalMem / 1048576.0f,
-                 (unsigned long long) deviceProp.totalGlobalMem );
+        snprintf( msg,
+                  sizeof msg,
+                  "  Total amount of global memory:                 %.0f MBytes (%llu bytes)\n",
+                  (float) deviceProp.totalGlobalMem / 1048576.0f,
+                  (unsigned long long) deviceProp.totalGlobalMem );
         printf( "%s", msg );
 
         printf( "  (%2d) Multiprocessors, (%3d) CUDA Cores/MP:     %d CUDA Cores\n",
@@ -282,38 +284,23 @@ int main( int argc, char **argv )
 
     // driver version
     sProfileString += ", CUDA Driver Version = ";
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-    sprintf_s( cTemp, 10, "%d.%d", driverVersion / 1000, ( driverVersion % 100 ) / 10 );
-#else
-    sprintf( cTemp, "%d.%d", driverVersion / 1000, ( driverVersion % 100 ) / 10 );
-#endif
+    snprintf( cTemp, 10, "%d.%d", driverVersion / 1000, ( driverVersion % 100 ) / 10 );
     sProfileString += cTemp;
 
     // Runtime version
     sProfileString += ", CUDA Runtime Version = ";
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-    sprintf_s( cTemp, 10, "%d.%d", runtimeVersion / 1000, ( runtimeVersion % 100 ) / 10 );
-#else
-    sprintf( cTemp, "%d.%d", runtimeVersion / 1000, ( runtimeVersion % 100 ) / 10 );
-#endif
+    snprintf( cTemp, 10, "%d.%d", runtimeVersion / 1000, ( runtimeVersion % 100 ) / 10 );
     sProfileString += cTemp;
 
     // Device count
     sProfileString += ", NumDevs = ";
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-    sprintf_s( cTemp, 10, "%d", deviceCount );
-#else
-    sprintf( cTemp, "%d", deviceCount );
-#endif
+    snprintf( cTemp, 10, "%d", deviceCount );
+
     sProfileString += cTemp;
 
     // Print Out all device Names
     for ( dev = 0; dev < deviceCount; ++dev ) {
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-        sprintf_s( cTemp, 13, ", Device%d = ", dev );
-#else
-        sprintf( cTemp, ", Device%d = ", dev );
-#endif
+        snprintf( cTemp, 13, ", Device%d = ", dev );
         cudaDeviceProp deviceProp;
         cudaGetDeviceProperties( &deviceProp, dev );
         sProfileString += cTemp;

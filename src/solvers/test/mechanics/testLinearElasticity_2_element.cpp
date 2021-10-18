@@ -146,14 +146,12 @@ int testLinearElasticity_2_element( int argc, char *argv[] )
 
     if ( argc == 1 ) {
         for ( int i = 1; i <= 6; i++ ) {
-            char name[100];
-            sprintf( name, "mesh2elem-%d", i );
+            auto name = AMP::Utilities::stringf( "mesh2elem-%d", i );
             mesh_files.emplace_back( name );
         } // end for i
     } else {
         for ( int i = 1; i < argc; i++ ) {
-            char name[100];
-            sprintf( name, "mesh2elem-%d", atoi( argv[i] ) );
+            auto name = AMP::Utilities::stringf( "mesh2elem-%d", atoi( argv[i] ) );
             mesh_files.emplace_back( name );
         } // end for i
     }

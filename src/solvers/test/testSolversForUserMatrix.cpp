@@ -51,7 +51,7 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
 
                 auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
 
-                auto pcSolver = buildSolver( input_db, pc_name, comm, op );
+                pcSolver = buildSolver( input_db, pc_name, comm, op );
 
                 AMP_INSIST( pcSolver, "null preconditioner" );
             }

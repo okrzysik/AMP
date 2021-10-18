@@ -135,12 +135,10 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    char outFileName1[256];
-    sprintf( outFileName1, "undeformedBeam_%d", exampleNum );
+    auto outFileName1 = AMP::Utilities::stringf( "undeformedBeam_%d", exampleNum );
     siloWriter->writeFile( outFileName1, 0 );
     meshAdapter->displaceMesh( mechSolVec );
-    char outFileName2[256];
-    sprintf( outFileName2, "deformedBeam_%d", exampleNum );
+    auto outFileName2 = AMP::Utilities::stringf( "deformedBeam_%d", exampleNum );
     siloWriter->writeFile( outFileName2, 0 );
 #endif
 }
@@ -178,12 +176,10 @@ int testMacNealstraightBeam_regular( int argc, char *argv[] )
         exeNames.emplace_back( "testMacNealstraightBeam-regular-Z-reduced-mesh2" );
     } else {
         for ( int i = 1; i < argc; i += 3 ) {
-            char inpName[100];
-            sprintf( inpName,
-                     "testMacNealstraightBeam-regular-%s-%s-mesh%d",
-                     argv[i],
-                     argv[i + 1],
-                     atoi( argv[i + 2] ) );
+            auto inpName = AMP::Utilities::stringf( "testMacNealstraightBeam-regular-%s-%s-mesh%d",
+                                                    argv[i],
+                                                    argv[i + 1],
+                                                    atoi( argv[i + 2] ) );
             exeNames.emplace_back( inpName );
         } // end for i
     }

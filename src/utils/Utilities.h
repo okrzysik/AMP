@@ -36,37 +36,22 @@ typedef int mode_t;
 
 // \cond HIDDEN_SYMBOLS
 template<class T>
-inline T type_default_tol();
-template<>
-inline int type_default_tol<int>()
-{
-    return 0;
-}
-template<>
-inline unsigned int type_default_tol<unsigned int>()
-{
-    return 0;
-}
-template<>
-inline size_t type_default_tol<size_t>()
-{
-    return 0;
-}
-template<>
-inline double type_default_tol<double>()
-{
-    return 1e-12;
-}
-template<class T>
 inline T type_default_tol()
 {
-    return pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
+    if constexpr ( std::is_integral<T>::value )
+        return 0;
+    else if constexpr ( std::is_same<T, double>::value )
+        return 1e-12;
+    else if constexpr ( std::is_floating_point<T>::value )
+        return pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
+    else
+        return T();
 }
 // \endcond
 
 
 /*!
- * Utilities is a Singleton class containing basic routines for error
+ * Utilities is a namespace containing basic routines for error
  * reporting, file manipulations, etc.  Included are a set of \ref Macros "macros" that are commonly
  * used.
  */
@@ -380,6 +365,50 @@ std::string to_string( const std::vector<TYPE> &x );
 //! Print a database
 [[deprecated( "This function will be removed soon, use Database::print" )]] void
 printDatabase( const Database &, std::ostream &, const std::string &indent = "" );
+
+
+//! Stack based vector
+template<class TYPE, std::size_t CAPACITY>
+class stackVector final
+{
+public:
+    stackVector() : d_size( 0 ) {}
+    size_t size() const { return d_size; }
+    bool empty() const { return d_size == 0; }
+    void push_back( const TYPE &v )
+    {
+        if ( d_size == CAPACITY )
+            throw std::bad_alloc();
+        d_data[d_size++] = v;
+    }
+    void clear()
+    {
+        for ( size_t i = 0; i < d_size; i++ )
+            d_data[i] = TYPE();
+        d_size = 0;
+    }
+    TYPE &operator[]( size_t i ) { return d_data[i]; }
+    TYPE *begin() { return d_data; }
+    TYPE *end() { return d_data + d_size; }
+    TYPE &back() { return d_data[d_size - 1]; }
+    TYPE *data() { return d_size == 0 ? nullptr : d_data; }
+    void pop_back() { d_size = std::max<size_t>( d_size, 1 ) - 1; }
+    const TYPE &operator[]( size_t i ) const { return d_data[i]; }
+    const TYPE *begin() const { return d_data; }
+    const TYPE *end() const { return d_data + d_size; }
+    const TYPE &back() const { return d_data[d_size - 1]; }
+    template<class... Args>
+    void emplace_back( Args &&... args )
+    {
+        if ( d_size == CAPACITY )
+            throw std::bad_alloc();
+        d_data[d_size++] = TYPE( args... );
+    }
+
+private:
+    uint32_t d_size;
+    TYPE d_data[CAPACITY];
+};
 
 
 } // namespace Utilities

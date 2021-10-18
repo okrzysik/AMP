@@ -147,9 +147,9 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
         for ( unsigned int qp = 0; qp < qrule->n_points(); ++qp ) {
             double Bl_np1[6][24];
 
-            for ( auto &elem : Bl_np1 ) {
+            for ( auto &x : Bl_np1 ) {
                 for ( size_t j = 0; j < ( 3 * numNodesInCurrElem ); ++j ) {
-                    elem[j] = 0.0;
+                    x[j] = 0.0;
                 } // end j
             }     // end i
 

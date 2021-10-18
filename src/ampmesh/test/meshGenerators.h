@@ -64,7 +64,7 @@ public:
     static std::string name()
     {
         char tmp[128];
-        sprintf( tmp, "AMPCubeGenerator<%i>", SIZE );
+        snprintf( tmp, sizeof( tmp ), "AMPCubeGenerator<%i>", SIZE );
         return std::string( tmp );
     }
 };

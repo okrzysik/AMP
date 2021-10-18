@@ -6,6 +6,7 @@
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/utils/ArraySize.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
 namespace AMP::LinearAlgebra {
@@ -403,7 +404,8 @@ public: // BoxMesh specific functionality
 
 
 protected: // Convenience typedef
-    typedef std::vector<std::pair<MeshElementIndex, MeshElementIndex>> ElementBlocks;
+    typedef AMP::Utilities::stackVector<std::pair<MeshElementIndex, MeshElementIndex>, 32>
+        ElementBlocks;
 
 protected:
     // Constructor

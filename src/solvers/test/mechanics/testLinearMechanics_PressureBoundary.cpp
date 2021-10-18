@@ -155,12 +155,10 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
 #ifdef USE_EXT_SILO
     auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    char outFileName1[256];
-    sprintf( outFileName1, "undeformedBeam_%d", exampleNum );
+    auto outFileName1 = AMP::Utilities::stringf( "undeformedBeam_%d", exampleNum );
     siloWriter->writeFile( outFileName1, 1 );
     meshAdapter->displaceMesh( mechSolVec );
-    char outFileName2[256];
-    sprintf( outFileName2, "deformedBeam_%d", exampleNum );
+    auto outFileName2 = AMP::Utilities::stringf( "deformedBeam_%d", exampleNum );
     siloWriter->writeFile( outFileName2, 1 );
 #endif
 }
@@ -177,8 +175,8 @@ int testLinearMechanics_PressureBoundary( int argc, char *argv[] )
         exeNames.emplace_back( "testLinearMechanics-PressureBoundary-HaldenPellet" );
     } else {
         for ( int i = 1; i < argc; ++i ) {
-            char inpName[100];
-            sprintf( inpName, "testLinearMechanics-PressureBoundary-%s", argv[i] );
+            auto inpName =
+                AMP::Utilities::stringf( "testLinearMechanics-PressureBoundary-%s", argv[i] );
             exeNames.emplace_back( inpName );
         } // end for i
     }

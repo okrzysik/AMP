@@ -272,8 +272,8 @@ private:
     std::vector<std::vector<libMesh::Node *>> neighborNodes;
 
     // Data used to elements that libmesh doesn't create
-    std::map<GeomType, std::shared_ptr<std::vector<MeshElement>>> d_localElements;
-    std::map<GeomType, std::shared_ptr<std::vector<MeshElement>>> d_ghostElements;
+    std::shared_ptr<std::vector<MeshElement>> d_localElements[4];
+    std::shared_ptr<std::vector<MeshElement>> d_ghostElements[4];
 
     // Data used to store the boundary elements
     std::map<std::pair<int, GeomType>, std::shared_ptr<std::vector<MeshElement>>> d_boundarySets;

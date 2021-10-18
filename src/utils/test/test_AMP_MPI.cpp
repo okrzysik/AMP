@@ -24,7 +24,9 @@
 #define MPI_CLASS AMP::AMP_MPI
 #define MPI_ASSERT AMP_ASSERT
 #define COMM_WORLD AMP_COMM_WORLD
+
 using AMP::UnitTest;
+using AMP::Utilities::stringf;
 
 
 // Return the time elapsed in seconds
@@ -71,22 +73,21 @@ template<>
 int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testReduce<complex double>" );
-    char message[128];
     std::complex<double> rank = comm.getRank() + 1;
     std::complex<double> N    = ( ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2 );
     // Test sumReduce
-    sprintf( message, "sumReduce (%s)", typeid( std::complex<double> ).name() );
+    auto msg = stringf( "sumReduce (%s)", typeid( std::complex<double> ).name() );
     if ( comm.sumReduce<std::complex<double>>( rank ) == N )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
-    sprintf( message, "sumReduce (%s) (x,y)", typeid( std::complex<double> ).name() );
+        ut->failure( msg );
+    msg = stringf( "sumReduce (%s) (x,y)", typeid( std::complex<double> ).name() );
     std::complex<double> y;
     comm.sumReduce<std::complex<double>>( &rank, &y, 1 );
     if ( y == N )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     PROFILE_STOP( "testReduce<complex double>" );
     return 2; // Return the number of tests
 }
@@ -94,113 +95,111 @@ template<class type>
 int testReduce( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testReduce" );
-    char message[128];
     auto rank = (type) comm.getRank();
     auto size = (type) comm.getSize();
     if ( (int) ( size ) != comm.getSize() ) {
-        sprintf( message,
-                 "Reduce (%s) cannot represent the number of processors",
-                 typeid( type ).name() );
-        ut->expected_failure( message );
+        auto msg = stringf( "Reduce (%s) cannot represent the number of processors",
+                            typeid( type ).name() );
+        ut->expected_failure( msg );
         PROFILE_STOP2( "testReduce<class type>" );
         return 0;
     }
     type x, y;
     int N = ( ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2 );
     // Test sumReduce
-    sprintf( message, "sumReduce (%s)", typeid( type ).name() );
+    auto msg = stringf( "sumReduce (%s)", typeid( type ).name() );
     if ( ( (int) ( (type) N ) ) != N )
-        ut->expected_failure( message ); // type cannot represent N
+        ut->expected_failure( msg ); // type cannot represent N
     else if ( comm.sumReduce<type>( rank + 1 ) == (type) N )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
-    sprintf( message, "sumReduce (%s) (x,y)", typeid( type ).name() );
-    x = rank + 1;
+        ut->failure( msg );
+    msg = stringf( "sumReduce (%s) (x,y)", typeid( type ).name() );
+    x   = rank + 1;
     comm.sumReduce<type>( &x, &y, 1 );
     if ( ( (int) ( (type) N ) ) != N )
-        ut->expected_failure( message );
+        ut->expected_failure( msg );
     else if ( y == (type) N )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test minReduce
-    sprintf( message, "minReduce (%s)", typeid( type ).name() );
+    msg = stringf( "minReduce (%s)", typeid( type ).name() );
     if ( comm.minReduce<type>( rank + 1 ) == 1 )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
-    sprintf( message, "minReduce (%s) (x,y)", typeid( type ).name() );
+        ut->failure( msg );
+    msg = stringf( "minReduce (%s) (x,y)", typeid( type ).name() );
     comm.minReduce<type>( &x, &y, 1, nullptr );
     if ( y == 1 )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test maxReduce
-    sprintf( message, "maxReduce (%s)", typeid( type ).name() );
+    msg = stringf( "maxReduce (%s)", typeid( type ).name() );
     if ( comm.maxReduce<type>( rank + 1 ) == size )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
-    sprintf( message, "maxReduce (%s) (x,y)", typeid( type ).name() );
+        ut->failure( msg );
+    msg = stringf( "maxReduce (%s) (x,y)", typeid( type ).name() );
     comm.maxReduce<type>( &x, &y, 1, nullptr );
     if ( y == size )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test minReduce with rank
     int rank_of_min = -1;
     int rank_of_max = -1;
     type rank_min   = rank + 1;
     type rank_max   = rank + 1;
-    sprintf( message, "minReduce-rank (%s)", typeid( type ).name() );
+    msg             = stringf( "minReduce-rank (%s)", typeid( type ).name() );
     try {
         comm.minReduce<type>( &rank_min, 1, &rank_of_min );
         if ( rank_min == 1 && rank_of_min == 0 )
-            ut->passes( message );
+            ut->passes( msg );
         else
-            ut->failure( message );
+            ut->failure( msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( message ) + " - caught unknown exception" );
+        ut->failure( std::string( msg ) + " - caught unknown exception" );
     }
-    sprintf( message, "minReduce-rank (%s) (x,y)", typeid( type ).name() );
+    msg = stringf( "minReduce-rank (%s) (x,y)", typeid( type ).name() );
     try {
         comm.minReduce<type>( &x, &rank_min, 1, &rank_of_min );
         if ( rank_min == 1 && rank_of_min == 0 )
-            ut->passes( message );
+            ut->passes( msg );
         else
-            ut->failure( message );
+            ut->failure( msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( message ) + " - caught unknown exception" );
+        ut->failure( std::string( msg ) + " - caught unknown exception" );
     }
     // Test maxReduce with rank
-    sprintf( message, "maxReduce-rank (%s)", typeid( type ).name() );
+    msg = stringf( "maxReduce-rank (%s)", typeid( type ).name() );
     try {
         comm.maxReduce<type>( &rank_max, 1, &rank_of_max );
         if ( rank_max == size && rank_of_max == comm.getSize() - 1 )
-            ut->passes( message );
+            ut->passes( msg );
         else
-            ut->failure( message );
+            ut->failure( msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( message ) + " - caught unknown exception" );
+        ut->failure( std::string( msg ) + " - caught unknown exception" );
     }
-    sprintf( message, "maxReduce-rank (%s) (x,y)", typeid( type ).name() );
+    msg = stringf( "maxReduce-rank (%s) (x,y)", typeid( type ).name() );
     try {
         comm.maxReduce<type>( &x, &rank_max, 1, &rank_of_max );
         if ( rank_max == size && rank_of_max == comm.getSize() - 1 )
-            ut->passes( message );
+            ut->passes( msg );
         else
-            ut->failure( message );
+            ut->failure( msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( message ) + " - " + err.message );
+        ut->failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( message ) + " - caught unknown exception" );
+        ut->failure( std::string( msg ) + " - caught unknown exception" );
     }
     PROFILE_STOP( "testReduce" );
     return 10; // Return the number of tests
@@ -212,32 +211,31 @@ template<class type>
 int testScan( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testScan" );
-    char message[500];
     auto x = ( type )( comm.getRank() + 1 );
     type y;
-    sprintf( message, "sumScan (%s)", typeid( type ).name() );
+    auto msg = stringf( "sumScan (%s)", typeid( type ).name() );
     comm.sumScan<type>( &x, &y, 1 );
     auto N = ( type )( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
     if ( y == N )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     if ( std::is_same<type, std::complex<double>>::value ) {
         PROFILE_STOP2( "testScan" );
         return 1;
     }
-    sprintf( message, "minScan (%s)", typeid( type ).name() );
+    msg = stringf( "minScan (%s)", typeid( type ).name() );
     comm.minScan<type>( &x, &y, 1 );
     if ( y == (type) 1 )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
-    sprintf( message, "maxScan (%s)", typeid( type ).name() );
+        ut->failure( msg );
+    msg = stringf( "maxScan (%s)", typeid( type ).name() );
     comm.maxScan<type>( &x, &y, 1 );
     if ( y == x )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     PROFILE_STOP( "testScan" );
     return 3; // Return the number of tests
 }
@@ -248,16 +246,15 @@ template<class type>
 int testBcast( MPI_CLASS comm, UnitTest *ut, type default_val, type new_val )
 {
     PROFILE_START( "testBcast" );
-    char message[128];
     for ( int i = 0; i < comm.getSize(); i++ ) {
         type tmp1 = default_val;
         if ( comm.getRank() == i )
             tmp1 = new_val;
-        sprintf( message, "bcast scalar (%s) from rank %i", typeid( type ).name(), i );
+        auto msg = stringf( "bcast scalar (%s) from rank %i", typeid( type ).name(), i );
         if ( comm.bcast( tmp1, i ) == new_val )
-            ut->passes( message );
+            ut->passes( msg );
         else
-            ut->failure( message );
+            ut->failure( msg );
         type tmp2[2];
         tmp2[0] = default_val;
         tmp2[1] = default_val;
@@ -265,12 +262,12 @@ int testBcast( MPI_CLASS comm, UnitTest *ut, type default_val, type new_val )
             tmp2[0] = new_val;
             tmp2[1] = new_val;
         }
-        sprintf( message, "bcast vector (%s) from rank %i", typeid( type ).name(), i );
+        msg = stringf( "bcast vector (%s) from rank %i", typeid( type ).name(), i );
         comm.bcast( tmp2, 2, i );
         if ( tmp2[0] == new_val && tmp2[1] == new_val )
-            ut->passes( message );
+            ut->passes( msg );
         else
-            ut->failure( message );
+            ut->failure( msg );
     }
     PROFILE_STOP( "testBcast" );
     return 2 * comm.getSize(); // Return the number of tests
@@ -282,7 +279,6 @@ template<class type>
 int testAllGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testAllGather" );
-    char message[128];
     // Test scalar allGather
     auto x1  = (type) comm.getRank();
     auto *x2 = new type[comm.getSize()];
@@ -293,11 +289,11 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
         if ( x2[i] != test )
             pass = false;
     }
-    sprintf( message, "allGather scalar (%s)", typeid( type ).name() );
+    auto msg = stringf( "allGather scalar (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test vector allGather
     int N     = ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2;
     auto *x3  = new type[comm.getRank() + 1];
@@ -324,11 +320,11 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
             k++;
         }
     }
-    sprintf( message, "allGather vector (%s)", typeid( type ).name() );
+    msg = stringf( "allGather vector (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     delete[] x2;
     delete[] x3;
     delete[] x4;
@@ -365,25 +361,24 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
                 pass = false;
         }
     }
-    sprintf( message,
-             "allGather vector with known recv and non-zero displacements (%s)",
-             typeid( type ).name() );
+    msg = stringf( "allGather vector with known recv and non-zero displacements (%s)",
+                   typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     delete[] send;
     delete[] recv;
     delete[] recv_size;
     delete[] recv_disp;
     // Test vector allGather with no elements
     size = new int[comm.getSize()];
-    sprintf( message, "allGather scalar (%s)", typeid( type ).name() );
+    msg  = stringf( "allGather scalar (%s)", typeid( type ).name() );
     try {
         comm.allGather( &x1, 0, (type *) nullptr, size );
-        ut->passes( message );
+        ut->passes( msg );
     } catch ( ... ) {
-        ut->failure( message );
+        ut->failure( msg );
     }
     delete[] size;
     PROFILE_STOP( "testAllGather" );
@@ -396,7 +391,6 @@ template<class type>
 int testSetGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testSetGather" );
-    char message[500];
     auto x1 = (type) comm.getRank();
     std::set<type> set;
     set.insert( x1 );
@@ -407,11 +401,11 @@ int testSetGather( MPI_CLASS comm, UnitTest *ut )
         if ( set.find( x2 ) == set.end() )
             pass = false;
     }
-    sprintf( message, "setGather (%s)", typeid( type ).name() );
+    auto msg = stringf( "setGather (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     PROFILE_STOP( "testSetGather" );
     return 1; // Return the number of tests
 }
@@ -422,7 +416,6 @@ template<class type>
 int testMapGather( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testMapGather" );
-    char message[128];
     auto x1 = (type) comm.getRank();
     std::map<int, type> map;
     map.insert( std::pair<int, type>( comm.getRank(), x1 ) );
@@ -436,11 +429,11 @@ int testMapGather( MPI_CLASS comm, UnitTest *ut )
         else if ( it->second != x2 )
             pass = false;
     }
-    sprintf( message, "mapGather (%s)", typeid( type ).name() );
+    auto msg = stringf( "mapGather (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     PROFILE_STOP( "testMapGather" );
     return 1; // Return the number of tests
 }
@@ -452,7 +445,6 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testAllToAll" );
     bool pass;
-    char message[128];
     int size = 0;
     type *send_data, *recv_data;
     auto *send_cnt  = new int[comm.getSize()];
@@ -473,11 +465,11 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     }
     delete[] send_data;
     delete[] recv_data;
-    sprintf( message, "allToAll with scalar (%s)", typeid( type ).name() );
+    auto msg = stringf( "allToAll with scalar (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test allToAll vector with a scalar value to each processor
     send_data = new type[comm.getSize()];
     recv_data = new type[comm.getSize()];
@@ -500,11 +492,11 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     }
     delete[] send_data;
     delete[] recv_data;
-    sprintf( message, "allToAll vector with scalar (%s)", typeid( type ).name() );
+    msg = stringf( "allToAll vector with scalar (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test allToAll with a variable number of values per processor and spacing
     send_data = new type[comm.getSize() * comm.getSize()];
     recv_data = new type[2 * comm.getRank() * comm.getSize()];
@@ -541,13 +533,12 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     }
     delete[] send_data;
     delete[] recv_data;
-    sprintf( message,
-             "allToAll with vector of known size and displacements (%s)",
-             typeid( type ).name() );
+    msg = stringf( "allToAll with vector of known size and displacements (%s)",
+                   typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Test allToAll with a unknown receive length
     send_data        = new type[comm.getSize() * comm.getSize()];
     auto *recv_data1 = new type[comm.getSize() * comm.getSize()];
@@ -591,17 +582,17 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     delete[] send_data;
     delete[] recv_data1;
     delete[] recv_data2;
-    sprintf( message, "allToAll with vector of unknown size (%s)", typeid( type ).name() );
+    msg = stringf( "allToAll with vector of unknown size (%s)", typeid( type ).name() );
     if ( pass1 )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
-    sprintf(
-        message, "allToAll with vector of unknown size with NULL recv(%s)", typeid( type ).name() );
+        ut->failure( msg );
+    msg =
+        stringf( "allToAll with vector of unknown size with NULL recv(%s)", typeid( type ).name() );
     if ( pass2 )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     // Free temporary variables
     delete[] send_cnt;
     delete[] recv_cnt;
@@ -617,13 +608,12 @@ template<class type>
 int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
 {
     PROFILE_START( "testSendRecv" );
-    char message[128];
     // Test send-recv with a known length
     for ( int i = 0; i < comm.getSize(); i++ ) {
         for ( int j = 0; j < comm.getSize(); j++ ) {
-            type x  = v1;
-            int tag = i + j * comm.getSize();
-            sprintf( message, "send-recv %i-%i known length (%s)", i, j, typeid( type ).name() );
+            type x   = v1;
+            int tag  = i + j * comm.getSize();
+            auto msg = stringf( "send-recv %i-%i known length (%s)", i, j, typeid( type ).name() );
             if ( i == j ) {
                 // We are not allowed to send/receive from the same processor
                 continue;
@@ -636,9 +626,9 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
                 int size = 1;
                 comm.recv( &x, size, i, false, tag );
                 if ( size == 1 && x == v2 )
-                    ut->passes( message );
+                    ut->passes( msg );
                 else
-                    ut->failure( message );
+                    ut->failure( msg );
             }
         }
     }
@@ -647,7 +637,8 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
         for ( int j = 0; j < comm.getSize(); j++ ) {
             type x  = v1;
             int tag = i + j * comm.getSize();
-            sprintf( message, "send-recv %i-%i unknown length (%s)", i, j, typeid( type ).name() );
+            auto msg =
+                stringf( "send-recv %i-%i unknown length (%s)", i, j, typeid( type ).name() );
             if ( i == j ) {
                 // We are not allowed to send/receive from the same processor
                 continue;
@@ -660,18 +651,18 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
                 int size = 1;
                 comm.recv( &x, size, i, true, tag );
                 if ( size == 1 && x == v2 )
-                    ut->passes( message );
+                    ut->passes( msg );
                 else
-                    ut->failure( message );
+                    ut->failure( msg );
             }
         }
     }
     // Test send-recv with an empty length
     for ( int i = 0; i < comm.getSize(); i++ ) {
         for ( int j = 0; j < comm.getSize(); j++ ) {
-            type x  = v1;
-            int tag = i + j * comm.getSize();
-            sprintf( message, "send-recv %i-%i empty length (%s)", i, j, typeid( type ).name() );
+            type x   = v1;
+            int tag  = i + j * comm.getSize();
+            auto msg = stringf( "send-recv %i-%i empty length (%s)", i, j, typeid( type ).name() );
             if ( i == j ) {
                 // We are not allowed to send/receive from the same processor
                 continue;
@@ -684,9 +675,9 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
                 int size = comm.probe( i, tag );
                 comm.recv( &x, size, i, false, tag );
                 if ( size == 0 )
-                    ut->passes( message );
+                    ut->passes( msg );
                 else
-                    ut->failure( message );
+                    ut->failure( msg );
             }
         }
     }
@@ -700,10 +691,9 @@ template<class type>
 int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
 {
     PROFILE_START( "testIsendIrecv" );
-    char message[128];
     std::vector<MPI_Request> sendRequest;
     std::vector<MPI_Request> recvRequest;
-    // Send all messages
+    // Send all msgs
     for ( int i = 0; i < comm.getSize(); i++ ) {
         // Check if the current rank is sending
         if ( i != comm.getRank() )
@@ -715,7 +705,7 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             sendRequest.insert( sendRequest.begin(), request );
         }
     }
-    // Recv all messages
+    // Recv all msgs
     auto *recv_buffer = new type[comm.getSize()];
     for ( int i = 0; i < comm.getSize(); i++ )
         recv_buffer[i] = v2;
@@ -753,11 +743,11 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
         if ( recv_buffer[i] != v1 )
             pass = false;
     }
-    sprintf( message, "Isend-Irecv (%s)", typeid( type ).name() );
+    auto msg = stringf( "Isend-Irecv (%s)", typeid( type ).name() );
     if ( pass )
-        ut->passes( message );
+        ut->passes( msg );
     else
-        ut->failure( message );
+        ut->failure( msg );
     delete[] recv_buffer;
     PROFILE_STOP( "testIsendIrecv" );
     return comm.getSize() * comm.getSize(); // Return the number of tests
@@ -1183,11 +1173,9 @@ void testCommDup( UnitTest *ut )
         }
         double stop = MPI_CLASS::time();
         ut->passes( "Created/Destroyed an unlimited number of comms" );
-        char message[128];
-        sprintf( message,
-                 "Time to create/destroy comm using MPI_CLASS::dup() is: %0.1f us",
-                 1e6 * ( stop - start ) / N_dup );
-        AMP::pout << message << std::endl;
+        auto msg = stringf( "Time to create/destroy comm using MPI_CLASS::dup() is: %0.1f us",
+                            1e6 * ( stop - start ) / N_dup );
+        AMP::pout << msg << std::endl;
     } catch ( ... ) {
         ut->failure( "Failed to create/destroy an unlimited number of comms" );
         AMP::pout << "Maximum number of communicators created with destruction: " << N_dup

@@ -202,8 +202,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         siloWriter->registerVector(
             mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( mechNlSolVec );
-        char outFileName2[256];
-        sprintf( outFileName2, "PressurePrescribed-DeformedBrick-LinearElasticity_%d", step );
+        auto outFileName2 =
+            AMP::Utilities::stringf( "PressurePrescribed-DeformedBrick-LinearElasticity_%d", step );
         siloWriter->writeFile( outFileName2, 1 );
 #endif
     }

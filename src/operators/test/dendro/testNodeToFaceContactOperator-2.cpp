@@ -490,9 +490,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
         siloWriter->registerVector(
             contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
-        char outFileName[256];
-        sprintf( outFileName, "TITI_%d", 0 );
-        siloWriter->writeFile( outFileName, 0 );
+        siloWriter->writeFile( "TITI_0", 0 );
     }
 #endif
 
@@ -745,9 +743,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
             {
                 meshAdapter->displaceMesh( columnSolVec );
-                char outFileName[256];
-                sprintf( outFileName, "TITI_%d", 0 );
-                siloWriter->writeFile( outFileName, TOTO_count );
+                siloWriter->writeFile( "TITI_0", TOTO_count );
                 columnSolVec->scale( -1.0 );
                 meshAdapter->displaceMesh( columnSolVec );
                 columnSolVec->scale( -1.0 );

@@ -55,7 +55,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
 
     for ( int var = 0; var < numPrimaryVariables; var++ ) {
         char key[100];
-        sprintf( key, "ActiveVariable_%d", (int) var );
+        snprintf( key, sizeof key, "ActiveVariable_%d", (int) var );
         std::string varName = primaryDb->getString( key );
         auto inpVar         = std::make_shared<AMP::LinearAlgebra::Variable>( varName );
         d_inpVariables->setVariable( var, inpVar );

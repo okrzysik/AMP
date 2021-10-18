@@ -32,12 +32,14 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int i ) const
         i += d_first.index( 0 );
         j += d_first.index( 1 );
         k += d_first.index( 2 );
-        if ( d_isPeriodic[0] )
-            i = ( i + d_globalSize[0] ) % d_globalSize[0];
-        if ( d_isPeriodic[1] )
-            j = ( j + d_globalSize[1] ) % d_globalSize[1];
-        if ( d_isPeriodic[2] )
-            k = ( k + d_globalSize[2] ) % d_globalSize[2];
+        if ( d_checkBoundary ) {
+            if ( d_isPeriodic[0] && ( i < 0 || ( i + 1 ) > d_globalSize[0] ) )
+                i = ( i + d_globalSize[0] ) % d_globalSize[0];
+            if ( d_isPeriodic[1] && ( j < 0 || ( j + 1 ) > d_globalSize[1] ) )
+                j = ( j + d_globalSize[1] ) % d_globalSize[1];
+            if ( d_isPeriodic[2] && ( k < 0 || ( k + 1 ) > d_globalSize[2] ) )
+                k = ( k + d_globalSize[2] ) % d_globalSize[2];
+        }
         return BoxMesh::MeshElementIndex( d_first.type(), d_first.side(), i, j, k );
     }
 }
@@ -48,11 +50,12 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int i ) const
  ********************************************************/
 structuredMeshIterator::structuredMeshIterator()
 {
-    d_typeID   = getTypeID();
-    d_iterator = nullptr;
-    d_pos      = 0;
-    d_size     = 0;
-    d_mesh     = nullptr;
+    d_typeID        = getTypeID();
+    d_iterator      = nullptr;
+    d_pos           = 0;
+    d_size          = 0;
+    d_checkBoundary = false;
+    d_mesh          = nullptr;
     d_isPeriodic.fill( false );
     d_globalSize.fill( 0 );
     d_element = &d_cur_element;
@@ -61,24 +64,29 @@ structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex 
                                                 const BoxMesh::MeshElementIndex &last,
                                                 const AMP::Mesh::BoxMesh *mesh,
                                                 size_t pos )
-    : d_isPeriodic( mesh->d_isPeriodic ),
+    : d_checkBoundary( false ),
+      d_isPeriodic( mesh->d_isPeriodic ),
       d_globalSize( mesh->d_globalSize ),
       d_first( first ),
       d_last( last ),
       d_mesh( mesh )
 {
-    d_typeID      = getTypeID();
-    d_iterator    = nullptr;
-    d_pos         = pos;
-    d_size        = BoxMesh::MeshElementIndex::numElements( d_first, d_last );
-    d_element     = &d_cur_element;
-    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
+    d_typeID        = getTypeID();
+    d_iterator      = nullptr;
+    d_pos           = pos;
+    d_size          = BoxMesh::MeshElementIndex::numElements( d_first, d_last );
+    d_element       = &d_cur_element;
+    d_cur_element   = structuredMeshElement( getIndex( d_pos ), d_mesh );
+    d_checkBoundary = d_first.index( 0 ) < 0 || d_last.index( 0 ) >= d_globalSize[0] ||
+                      d_first.index( 1 ) < 0 || d_last.index( 1 ) >= d_globalSize[1] ||
+                      d_first.index( 2 ) < 0 || d_last.index( 2 ) >= d_globalSize[2];
 }
 structuredMeshIterator::structuredMeshIterator(
     std::shared_ptr<const std::vector<BoxMesh::MeshElementIndex>> elements,
     const AMP::Mesh::BoxMesh *mesh,
     size_t pos )
-    : d_isPeriodic( mesh->d_isPeriodic ),
+    : d_checkBoundary( false ),
+      d_isPeriodic( mesh->d_isPeriodic ),
       d_globalSize( mesh->d_globalSize ),
       d_elements( std::move( elements ) ),
       d_mesh( mesh )
@@ -92,6 +100,7 @@ structuredMeshIterator::structuredMeshIterator(
 }
 structuredMeshIterator::structuredMeshIterator( const structuredMeshIterator &rhs )
     : MeshIterator(),
+      d_checkBoundary( rhs.d_checkBoundary ),
       d_isPeriodic( rhs.d_isPeriodic ),
       d_globalSize( rhs.d_globalSize ),
       d_first( rhs.d_first ),
@@ -110,18 +119,19 @@ structuredMeshIterator &structuredMeshIterator::operator=( const structuredMeshI
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    d_typeID      = getTypeID();
-    d_iterator    = nullptr;
-    d_pos         = rhs.d_pos;
-    d_size        = rhs.d_size;
-    d_isPeriodic  = rhs.d_isPeriodic;
-    d_globalSize  = rhs.d_globalSize;
-    d_mesh        = rhs.d_mesh;
-    d_first       = rhs.d_first;
-    d_last        = rhs.d_last;
-    d_elements    = rhs.d_elements;
-    d_element     = &d_cur_element;
-    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
+    d_typeID        = getTypeID();
+    d_iterator      = nullptr;
+    d_pos           = rhs.d_pos;
+    d_size          = rhs.d_size;
+    d_checkBoundary = rhs.d_checkBoundary;
+    d_isPeriodic    = rhs.d_isPeriodic;
+    d_globalSize    = rhs.d_globalSize;
+    d_mesh          = rhs.d_mesh;
+    d_first         = rhs.d_first;
+    d_last          = rhs.d_last;
+    d_elements      = rhs.d_elements;
+    d_element       = &d_cur_element;
+    d_cur_element   = structuredMeshElement( getIndex( d_pos ), d_mesh );
     return *this;
 }
 
