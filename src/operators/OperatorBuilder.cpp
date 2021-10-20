@@ -1340,7 +1340,7 @@ OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr me
 {
     std::shared_ptr<BoundaryOperator> retOperator;
     auto vectorCorrectionParameters =
-        endif std::make_shared<DirichletVectorCorrectionParameters>( input_db );
+        std::make_shared<DirichletVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_Mesh = meshAdapter;
 
     retOperator.reset( new DirichletVectorCorrection( vectorCorrectionParameters ) );

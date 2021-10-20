@@ -351,6 +351,13 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
 #define instantiatePutScalar( TYPE )              \
     template void AMP::Database::putScalar<TYPE>( \
         const std::string_view &, TYPE, AMP::Units, AMP::Database::Check )
+#define instantiateGetScalar( TYPE ) \
+    template TYPE AMP::Database::getScalar<TYPE>( const std::string_view &, AMP::Units ) const
+#define instantiateGetArray( TYPE ) \
+    template Array<TYPE> AMP::Database::getArray( const std::string_view &, Units unit ) const
+#define instantiateGetVector( TYPE )                                                            \
+    template std::vector<TYPE> AMP::Database::getVector( const std::string_view &, Units unit ) \
+        const
 #define instantiatePutVector( TYPE )              \
     template void AMP::Database::putVector<TYPE>( \
         const std::string_view &, const std::vector<TYPE> &, AMP::Units, AMP::Database::Check )
@@ -374,6 +381,9 @@ instantiate( instantiateScaleData );      // scaleData
 instantiate( instantiateKeyDataScalar );  // KeyDataScalar
 instantiate( instantiateKeyDataArray );   // KeyDataArray
 instantiate( instantiateIsType );         // Database::isType
+instantiate( instantiateGetScalar );      // Database::getScalar
+instantiate( instantiateGetVector );      // Database::getVector
+instantiate( instantiateGetArray );       // Database::getArray
 instantiate( instantiatePutScalar );      // Database::putScalar
 instantiate( instantiatePutVector );      // Database::putVector
 instantiate( instantiatePutArray );       // Database::putArray
