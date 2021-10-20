@@ -177,8 +177,8 @@ int testCook( int argc, char *argv[] )
         exeNames.emplace_back( "testCook-reduced-mesh2" );
     } else {
         for ( int i = 1; i < argc; i += 2 ) {
-            char inpName[100];
-            sprintf( inpName, "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
+            auto inpName =
+                AMP::Utilities::stringf( "testCook-%s-mesh%d", argv[i], atoi( argv[i + 1] ) );
             exeNames.emplace_back( inpName );
         } // end for i
     }

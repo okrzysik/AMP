@@ -87,22 +87,22 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
         char key[100];
         for ( int j = 0; j < numIds; j++ ) {
 
-            sprintf( key, "id_%d", j );
+            snprintf( key, sizeof key, "id_%d", j );
             AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
             d_boundaryIds[j] = myparams->d_db->getScalar<int>( key );
 
-            sprintf( key, "number_of_dofs_%d", j );
+            snprintf( key, sizeof key, "number_of_dofs_%d", j );
             AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
             int numDofIds = myparams->d_db->getScalar<int>( key );
 
             d_dofIds[j].resize( numDofIds );
             d_robinValues[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; i++ ) {
-                sprintf( key, "dof_%d_%d", j, i );
+                snprintf( key, sizeof key, "dof_%d_%d", j, i );
                 AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
                 d_dofIds[j][i] = myparams->d_db->getScalar<int>( key );
 
-                sprintf( key, "value_%d_%d", j, i );
+                snprintf( key, sizeof key, "value_%d_%d", j, i );
                 AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
                 d_robinValues[j][i] = myparams->d_db->getScalar<double>( key );
             }

@@ -205,8 +205,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         meshAdapter->displaceMesh( solVec );
-        char outFileName[256];
-        sprintf( outFileName, "LoadPrescribed-DeformedPlateWithHole-NonlinearPlasticity_%d", step );
+        auto outFileName = AMP::Utilities::stringf(
+            "LoadPrescribed-DeformedPlateWithHole-NonlinearPlasticity_%d", step );
         siloWriter->writeFile( outFileName, 0 );
 #endif
     } // end step

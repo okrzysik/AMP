@@ -121,7 +121,7 @@ inline int printp( const char *format, ... )
     va_list ap;
     va_start( ap, format );
     char tmp[4096];
-    int n = vsprintf( tmp, format, ap );
+    int n = vsnprintf( tmp, sizeof( tmp ), format, ap );
     va_end( ap );
     pout << tmp;
     pout.flush();

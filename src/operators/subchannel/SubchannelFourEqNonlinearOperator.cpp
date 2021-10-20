@@ -1142,7 +1142,6 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                 if ( m_gap_avg >= 0.0 )
                     w_axialDonor_plus = w_mid;
                 else {
-                    auto cell1PlusFaceCentroid = cell1PlusFace.centroid();
                     if ( AMP::Utilities::approx_equal(
                              cell1PlusFaceCentroid[2], height, 1.0e-6 ) ) {
                         // cell is in the uppermost axial interval

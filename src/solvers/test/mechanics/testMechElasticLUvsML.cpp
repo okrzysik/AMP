@@ -58,8 +58,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     for ( int meshId = 1; meshId <= numMeshes; meshId++ ) {
         std::cout << "Working on mesh " << meshId << std::endl;
 
-        char meshFileKey[200];
-        sprintf( meshFileKey, "mesh%d", meshId );
+        auto meshFileKey = AMP::Utilities::stringf( "mesh%d", meshId );
 
         auto meshFile = input_db->getString( meshFileKey );
 

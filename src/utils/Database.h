@@ -2,6 +2,7 @@
 #define included_AMP_Database
 
 #include "AMP/utils/Array.h"
+#include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/Units.h"
 
 #include <iostream>
@@ -12,12 +13,10 @@
 
 
 // Forward declare SAMRAI's database
-namespace SAMRAI {
-namespace tbox {
+namespace SAMRAI::tbox {
 class Database;
 class DatabaseBox;
-} // namespace tbox
-} // namespace SAMRAI
+} // namespace SAMRAI::tbox
 
 
 // AMP namespace
@@ -290,10 +289,10 @@ public:
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    inline void putScalar( const std::string_view &key,
-                           TYPE value,
-                           Units unit  = Units(),
-                           Check check = Check::GetDatabaseDefault );
+    void putScalar( const std::string_view &key,
+                    TYPE value,
+                    Units unit  = Units(),
+                    Check check = Check::GetDatabaseDefault );
 
 
     /**
@@ -308,10 +307,10 @@ public:
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    inline void putArray( const std::string_view &key,
-                          Array<TYPE> data,
-                          Units unit  = Units(),
-                          Check check = Check::GetDatabaseDefault );
+    void putArray( const std::string_view &key,
+                   Array<TYPE> data,
+                   Units unit  = Units(),
+                   Check check = Check::GetDatabaseDefault );
 
 
     /**
@@ -326,10 +325,10 @@ public:
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    inline void putVector( const std::string_view &key,
-                           const std::vector<TYPE> &data,
-                           Units unit  = Units(),
-                           Check check = Check::GetDatabaseDefault );
+    void putVector( const std::string_view &key,
+                    const std::vector<TYPE> &data,
+                    Units unit  = Units(),
+                    Check check = Check::GetDatabaseDefault );
 
 
     /**
@@ -371,7 +370,7 @@ public:
 
     // Check if the entry can be stored as the given type
     template<class TYPE>
-    inline bool isType( const std::string_view &key ) const;
+    bool isType( const std::string_view &key ) const;
 
 
     /**
@@ -569,12 +568,88 @@ private:
     std::array<int, 5> d_lower, d_upper;
 };
 
+
+/********************************************************************
+ * Overload ostream operator                                         *
+ ********************************************************************/
 std::ostream &operator<<( std::ostream &out, const DatabaseBox & );
+
+
+/********************************************************************
+ * Create database from arguments                                    *
+ ********************************************************************/
+template<class TYPE, class... Args>
+inline void Database::addArgs( const std::string_view &key, TYPE value, Args... args )
+{
+    if constexpr ( is_vector<TYPE>::value ) {
+        putVector( key, value );
+    } else if constexpr ( is_Array<TYPE>::value ) {
+        putArray( key, value );
+    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
+                          std::is_same<TYPE, std::string_view>::value ) {
+        putScalar( key, value );
+    } else if constexpr ( has_size<TYPE>::value ) {
+        typedef decltype( *value.begin() ) TYPE2;
+        typedef typename std::remove_reference<TYPE2>::type TYPE3;
+        typedef typename std::remove_cv<TYPE3>::type TYPE4;
+        std::vector<TYPE4> data( value.begin(), value.end() );
+        putVector( key, std::move( data ) );
+    } else {
+        putScalar( key, value );
+    }
+    if constexpr ( sizeof...( args ) > 0 )
+        addArgs( args... );
+}
+template<class TYPE, class... Args>
+inline void Database::addArgsWithUnits( const std::string_view &key,
+                                        TYPE value,
+                                        const Units &unit,
+                                        Args... args )
+{
+    if constexpr ( is_vector<TYPE>::value ) {
+        putVector( key, value, unit );
+    } else if constexpr ( is_Array<TYPE>::value ) {
+        putArray( key, value );
+    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
+                          std::is_same<TYPE, std::string_view>::value ) {
+        putScalar( key, value, unit );
+    } else if constexpr ( has_size<TYPE>::value ) {
+        typedef decltype( *value.begin() ) TYPE2;
+        typedef typename std::remove_reference<TYPE2>::type TYPE3;
+        typedef typename std::remove_cv<TYPE3>::type TYPE4;
+        std::vector<TYPE4> data( value.begin(), value.end() );
+        putVector( key, std::move( data ), unit );
+    } else {
+        putScalar( key, value, unit );
+    }
+    if constexpr ( sizeof...( args ) > 0 )
+        addArgsWithUnits( args... );
+}
+template<class... Args>
+inline std::unique_ptr<Database> Database::create( Args... args )
+{
+    constexpr size_t n = sizeof...( args );
+    static_assert( n % 2 == 0 );
+    auto db = std::make_unique<Database>();
+    if ( n == 0 )
+        return db;
+    db->addArgs( args... );
+    return db;
+}
+template<class... Args>
+inline std::unique_ptr<Database> Database::createWithUnits( Args... args )
+{
+    constexpr size_t n = sizeof...( args );
+    static_assert( n % 3 == 0 );
+    auto db = std::make_unique<Database>();
+    if ( n == 0 )
+        return db;
+    db->addArgsWithUnits( args... );
+    return db;
+}
 
 
 } // namespace AMP
 
-
-#include "AMP/utils/Database.hpp"
 
 #endif

@@ -162,9 +162,9 @@ inline BoxMesh::Box BoxMesh::getLocalBox( int gcw ) const
  ****************************************************************/
 inline std::array<int, 6> BoxMesh::getLocalBlock( int rank ) const
 {
-    int p[3] = { rank % d_numBlocks[0],
-                 rank / d_numBlocks[0] % d_numBlocks[1],
-                 rank / ( d_numBlocks[0] * d_numBlocks[1] ) };
+    const int p[3] = { rank % d_numBlocks[0],
+                       rank / d_numBlocks[0] % d_numBlocks[1],
+                       rank / ( d_numBlocks[0] * d_numBlocks[1] ) };
     AMP_ASSERT( p[2] < d_numBlocks[2] );
     std::array<int, 6> range;
     range.fill( 0 );

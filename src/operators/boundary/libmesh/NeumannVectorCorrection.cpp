@@ -73,26 +73,26 @@ void NeumannVectorCorrection::reset( std::shared_ptr<const OperatorParameters> p
 
     char key[100];
     for ( int j = 0; j < d_numBndIds; j++ ) {
-        sprintf( key, "id_%d", j );
+        snprintf( key, sizeof key, "id_%d", j );
         AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
         d_boundaryIds[j] = myparams->d_db->getScalar<int>( key );
 
-        sprintf( key, "number_of_dofs_%d", j );
+        snprintf( key, sizeof key, "number_of_dofs_%d", j );
         AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
         d_numDofIds[j] = myparams->d_db->getScalar<int>( key );
 
-        sprintf( key, "IsCoupledBoundary_%d", j );
+        snprintf( key, sizeof key, "IsCoupledBoundary_%d", j );
         d_IsCoupledBoundary[j] = params->d_db->getWithDefault<bool>( key, false );
 
         d_dofIds[j].resize( d_numDofIds[j] );
         d_neumannValues[j].resize( d_numDofIds[j] );
         for ( int i = 0; i < d_numDofIds[j]; i++ ) {
-            sprintf( key, "dof_%d_%d", j, i );
+            snprintf( key, sizeof key, "dof_%d_%d", j, i );
             AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
             d_dofIds[j][i] = myparams->d_db->getScalar<int>( key );
 
             if ( d_isConstantFlux ) {
-                sprintf( key, "value_%d_%d", j, i );
+                snprintf( key, sizeof key, "value_%d_%d", j, i );
                 AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
                 d_neumannValues[j][i] = myparams->d_db->getScalar<double>( key );
             } else {
@@ -249,18 +249,18 @@ std::shared_ptr<OperatorParameters>
 
     char key[100];
     for ( int j = 0; j < d_numBndIds; j++ ) {
-        sprintf( key, "id_%d", j );
+        snprintf( key, sizeof key, "id_%d", j );
         tmp_db->putScalar( key, d_boundaryIds[j] );
-        sprintf( key, "number_of_dofs_%d", j );
+        snprintf( key, sizeof key, "number_of_dofs_%d", j );
         tmp_db->putScalar( key, d_numDofIds[j] );
-        sprintf( key, "IsCoupledBoundary_%d", j );
+        snprintf( key, sizeof key, "IsCoupledBoundary_%d", j );
         tmp_db->putScalar( key, d_IsCoupledBoundary[j] );
 
         for ( int i = 0; i < d_numDofIds[j]; i++ ) {
-            sprintf( key, "dof_%d_%d", j, i );
+            snprintf( key, sizeof key, "dof_%d_%d", j, i );
             tmp_db->putScalar( key, d_dofIds[j][i] );
             if ( d_isConstantFlux ) {
-                sprintf( key, "value_%d_%d", j, i );
+                snprintf( key, sizeof key, "value_%d_%d", j, i );
                 tmp_db->putScalar( key, d_neumannValues[j][i] );
             } else {
                 // d_variableFlux ??

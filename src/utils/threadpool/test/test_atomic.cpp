@@ -19,6 +19,7 @@
 
 
 using namespace AMP;
+using AMP::Utilities::stringf;
 
 
 // Function to increment/decrement a counter N times
@@ -79,8 +80,7 @@ int main( int argc, char *argv[] )
     double time_inc_serial = std::chrono::duration<double>( stop - start ).count() / N_count;
     int val                = count;
     if ( val != N_count ) {
-        char tmp[100];
-        sprintf( tmp, "Count of %i did not match expected count of %i", val, N_count );
+        auto tmp = stringf( "Count of %i did not match expected count of %i", val, N_count );
         ut.failure( tmp );
     }
     printp( "Time to increment (serial) = %0.1f ns\n", 1e9 * time_inc_serial );
@@ -92,8 +92,7 @@ int main( int argc, char *argv[] )
     double time_dec_serial = std::chrono::duration<double>( stop - start ).count() / N_count;
     val                    = count;
     if ( val != 0 ) {
-        char tmp[100];
-        sprintf( tmp, "Count of %i did not match expected count of %i", val, 0 );
+        auto tmp = stringf( "Count of %i did not match expected count of %i", val, 0 );
         ut.failure( tmp );
     }
     printp( "Time to decrement (serial) = %0.1f ns\n", 1e9 * time_dec_serial );
@@ -110,8 +109,8 @@ int main( int argc, char *argv[] )
         std::chrono::duration<double>( stop - start ).count() / ( N_count * N_threads );
     val = count;
     if ( val != N_count * N_threads ) {
-        char tmp[100];
-        sprintf( tmp, "Count of %i did not match expected count of %i", val, N_count * N_threads );
+        auto tmp =
+            stringf( "Count of %i did not match expected count of %i", val, N_count * N_threads );
         ut.failure( tmp );
     }
     printp( "Time to increment (parallel) = %0.1f ns\n", 1e9 * time_inc_parallel );
@@ -127,8 +126,7 @@ int main( int argc, char *argv[] )
         std::chrono::duration<double>( stop - start ).count() / ( N_count * N_threads );
     val = count;
     if ( val != 0 ) {
-        char tmp[100];
-        sprintf( tmp, "Count of %i did not match expected count of %i", val, 0 );
+        auto tmp = stringf( "Count of %i did not match expected count of %i", val, 0 );
         ut.failure( tmp );
     }
     printp( "Time to decrement (parallel) = %0.1f ns\n", 1e9 * time_dec_parallel );

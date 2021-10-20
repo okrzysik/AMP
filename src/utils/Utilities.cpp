@@ -103,11 +103,11 @@ void Utilities::setenv( const char *name, const char *value )
 #endif
     Utilities_mutex.unlock();
     if ( !pass ) {
-        char msg[1024];
+        std::string msg;
         if ( value != nullptr )
-            sprintf( msg, "Error setting enviornmental variable: %s=%s\n", name, value );
+            msg = stringf( "Error setting enviornmental variable: %s=%s\n", name, value );
         else
-            sprintf( msg, "Error clearing enviornmental variable: %s\n", name );
+            msg = stringf( "Error clearing enviornmental variable: %s\n", name );
         AMP_ERROR( msg );
     }
 }
@@ -185,7 +185,8 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
     if ( ( !only_node_zero_creates ) || ( comm.getRank() == 0 ) ) {
         auto length    = (int) path.length();
         auto *path_buf = new char[length + 1];
-        sprintf( path_buf, "%s", path.c_str() );
+        memcpy( path_buf, path.data(), length );
+        path_buf[length] = '\0';
         struct stat status;
         int pos = length - 1;
         // find part of path that has not yet been created
@@ -281,45 +282,6 @@ void Utilities::printBanner()
 /****************************************************************************
  *  Prime number functions                                                   *
  ****************************************************************************/
-struct bitvector {
-    bitvector() = delete;
-    explicit bitvector( size_t n0, bool value = false ) : n( n0 ), x( nullptr )
-    {
-        N = ( n + 63 ) / 64;
-        x = new uint64_t[N];
-        fill( value );
-    }
-    bitvector( const bitvector & ) = delete;
-    ~bitvector() { delete[] x; }
-    size_t size() const { return n; }
-    void fill( bool v )
-    {
-        uint8_t v2 = v ? 0xFF : 0x00;
-        memset( x, v2, sizeof( uint64_t ) * N );
-    }
-    bool get( size_t i ) const
-    {
-        size_t i1     = i >> 6;
-        size_t i2     = i & 0x3F;
-        uint64_t mask = ( (uint64_t) 1 ) << i2;
-        return ( x[i1] & mask ) != 0;
-    }
-    void set( size_t i, bool v )
-    {
-        size_t i1     = i >> 6;
-        size_t i2     = i & 0x3F;
-        uint64_t mask = ( (uint64_t) 1 ) << i2;
-        if ( v )
-            x[i1] |= mask;
-        else
-            x[i1] &= ~mask;
-    }
-
-private:
-    size_t n;
-    size_t N;
-    uint64_t *x;
-};
 std::vector<int> Utilities::factor( uint64_t n )
 {
     // Handle trival case
@@ -381,26 +343,46 @@ bool Utilities::isPrime( uint64_t n )
 }
 std::vector<uint64_t> Utilities::primes( uint64_t n )
 {
+    // Handle special cases
     if ( n < 2 )
         return { 1u };
     if ( n == 2 )
         return { 2u };
+    // Create our bit array
     uint64_t n2 = ( n + 1 ) / 2;
     double tmp  = 1.000000000000001 * sqrt( static_cast<double>( n ) );
     uint64_t ub = static_cast<uint64_t>( tmp ) >> 1;
-    bitvector p( n2, true );
+    auto N      = ( n2 + 63 ) / 64;
+    auto p      = new uint64_t[N];
+    memset( p, 0xFF, sizeof( uint64_t ) * N );
+    // Helper functions to get/set the bits
+    auto get = [p]( size_t i ) {
+        size_t i1 = i >> 6;
+        size_t i2 = i & 0x3F;
+        return ( p[i1] & ( 1UL << i2 ) ) != 0;
+    };
+    auto unset = [p]( size_t i ) {
+        size_t i1 = i >> 6;
+        size_t i2 = i & 0x3F;
+        p[i1] &= ~( 1UL << i2 );
+    };
+    // Set all non-prime values to false
+    static_assert( sizeof( unsigned long ) == sizeof( uint64_t ) );
     for ( uint64_t k = 1; k <= ub; k++ ) {
-        if ( p.get( k ) ) {
+        if ( get( k ) ) {
             uint64_t k2 = 2 * k + 1;
-            for ( size_t j = 2 * k * ( k + 1 ); j < p.size(); j += k2 )
-                p.set( j, false );
+            for ( size_t j = 2 * k * ( k + 1 ); j < n2; j += k2 )
+                unset( j );
         }
     }
+    // Store the prime numbers (note: this takes longer than computing them)
+    size_t M = static_cast<size_t>( n / log2( n ) );
+    M        = 1UL << static_cast<int>( round( log2( M ) ) );
     std::vector<uint64_t> p2;
-    p2.reserve( static_cast<size_t>( n / log2( n ) ) );
+    p2.reserve( M );
     p2.push_back( 2 );
-    for ( size_t i = 1; i < p.size(); i++ ) {
-        if ( p.get( i ) )
+    for ( size_t i = 1; i < n2; i++ ) {
+        if ( get( i ) )
             p2.push_back( 2 * i + 1 );
     }
     return p2;

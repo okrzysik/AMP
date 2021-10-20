@@ -287,7 +287,7 @@ constexpr double kdtree2<NDIM, TYPE>::dot( const Point &x, const Point &y )
         return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
     } else {
         double d = 0;
-        for ( int d = 0; d < NDIM; d++ )
+        for ( d = 0; d < NDIM; d++ )
             d += x[d] * y[d];
         return d;
     }
@@ -461,7 +461,7 @@ kdtree2<NDIM, TYPE>::findNearestRay( Point x, Point dir ) const
             auto p    = std::get<0>( nearest2[i] );
             auto data = std::get<1>( nearest2[i] );
             auto pi   = intersect( x, dir, p ); // Find the intersection with the ray
-            double d  = sqrt( norm( pi, p ) );  // Distance: ray-nearest
+            d         = sqrt( norm( pi, p ) );  // Distance: ray-nearest
             if ( d < min_d ) {
                 // Save the point if it was closer
                 nearest.push_back( std::tie( p, data, pi, d ) );

@@ -1,5 +1,6 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Array.h"
+#include "AMP/utils/Database.hpp"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -960,14 +961,14 @@ read_value( const std::string_view &buffer,
     if ( data_type == class_type::UNKNOWN ) {
         data_type = getType( values[0], databaseKeys );
         for ( size_t i = 1; i < values.size(); i++ ) {
-            auto type = getType( values[i], databaseKeys );
-            if ( type == class_type::UNKNOWN ) {
+            auto type2 = getType( values[i], databaseKeys );
+            if ( type2 == class_type::UNKNOWN ) {
                 data_type = class_type::UNKNOWN;
                 break;
-            } else if ( ( type == class_type::INT || type == class_type::FLOAT ) &&
+            } else if ( ( type2 == class_type::INT || type2 == class_type::FLOAT ) &&
                         ( data_type == class_type::INT || data_type == class_type::FLOAT ) ) {
                 data_type = class_type::FLOAT;
-            } else if ( type != data_type ) {
+            } else if ( type2 != data_type ) {
                 throw std::logic_error( "Mismatched types in '" + std::string( key ) + "'" );
             }
         }
@@ -1127,8 +1128,8 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
             // Treat the key as a new database to load
             Database tmp;
             pos = loadYAMLDatabase( buffer, tmp, pos2 + 1, p + 1 );
-            for ( auto key : tmp.getAllKeys() )
-                db.putData( key, tmp.getData( key )->clone() );
+            for ( auto key2 : tmp.getAllKeys() )
+                db.putData( key2, tmp.getData( key2 )->clone() );
             continue;
         } else if ( value == "|" ) {
             // Special case with block scalars
@@ -1138,8 +1139,8 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
             size_t p0 = line2.find_first_not_of( ' ' );
             Array<double> x;
             while ( true ) {
-                size_t pos3 = getLine( buffer, pos2 );
-                std::string_view line2( &buffer[pos2], pos3 - pos2 );
+                pos3      = getLine( buffer, pos2 );
+                line2     = std::string_view( &buffer[pos2], pos3 - pos2 );
                 size_t p2 = line2.find_first_not_of( ' ' );
                 if ( p2 < p0 )
                     break;

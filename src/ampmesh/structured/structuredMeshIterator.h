@@ -92,6 +92,7 @@ protected:
 
 private:
     // Data members
+    bool d_checkBoundary;
     std::array<bool, 3> d_isPeriodic;
     std::array<int, 3> d_globalSize;
     BoxMesh::MeshElementIndex d_first;

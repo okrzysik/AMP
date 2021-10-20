@@ -89,8 +89,7 @@ AMP::LinearAlgebra::Vector::shared_ptr ThyraVector::view( Thyra::VectorBase<doub
         } else {
             std::vector<AMP::LinearAlgebra::Variable::shared_ptr> vars;
             for ( size_t i = 0; i < tmp->d_vecs.size(); i++ ) {
-                char name[100];
-                sprintf( name, "col-%i\n", (int) tmp->d_cols[i] );
+                auto name = AMP::Utilities::stringf( "col-%i\n", (int) tmp->d_cols[i] );
                 vars.push_back( std::make_shared<AMP::LinearAlgebra::Variable>( name ) );
             }
             auto multiVar =
@@ -120,8 +119,7 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
         } else {
             std::vector<AMP::LinearAlgebra::Variable::shared_ptr> vars;
             for ( size_t i = 0; i < tmp->d_vecs.size(); i++ ) {
-                char name[100];
-                sprintf( name, "col-%i\n", (int) tmp->d_cols[i] );
+                auto name = AMP::Utilities::stringf( "col-%i\n", (int) tmp->d_cols[i] );
                 vars.push_back( std::make_shared<AMP::LinearAlgebra::Variable>( name ) );
             }
             auto multiVar =

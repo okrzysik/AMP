@@ -2,32 +2,31 @@
 #define included_AMP_Database_hpp
 
 #include "AMP/utils/Database.h"
-#include "AMP/utils/TypeTraits.h"
 
 #include <iomanip>
 #include <limits>
 #include <tuple>
 
 
-#define DATABASE_ERROR( ... )          \
-    do {                               \
-        char msg[1000];                \
-        sprintf( msg, __VA_ARGS__ );   \
-        throw std::logic_error( msg ); \
+#define DATABASE_ERROR( ... )                        \
+    do {                                             \
+        char msg[1000];                              \
+        snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
+        throw std::logic_error( msg );               \
     } while ( 0 )
-#define DATABASE_WARNING( ... )        \
-    do {                               \
-        char msg[1000];                \
-        sprintf( msg, __VA_ARGS__ );   \
-        AMP::pout << msg << std::endl; \
+#define DATABASE_WARNING( ... )                      \
+    do {                                             \
+        char msg[1000];                              \
+        snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
+        AMP::pout << msg << std::endl;               \
     } while ( 0 )
-#define DATABASE_INSIST( TEST, ... )       \
-    do {                                   \
-        if ( !( TEST ) ) {                 \
-            char msg[1000];                \
-            sprintf( msg, __VA_ARGS__ );   \
-            throw std::logic_error( msg ); \
-        }                                  \
+#define DATABASE_INSIST( TEST, ... )                     \
+    do {                                                 \
+        if ( !( TEST ) ) {                               \
+            char msg[1000];                              \
+            snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
+            throw std::logic_error( msg );               \
+        }                                                \
     } while ( 0 )
 
 
@@ -39,80 +38,6 @@ namespace AMP {
  ********************************************************************/
 template<class TYPE1, class TYPE2>
 Array<TYPE2> convert( const Array<TYPE1> &x );
-
-
-/********************************************************************
- * Create database from arguments                                    *
- ********************************************************************/
-template<class TYPE, class... Args>
-inline void Database::addArgs( const std::string_view &key, TYPE value, Args... args )
-{
-    if constexpr ( is_vector<TYPE>::value ) {
-        putVector( key, value );
-    } else if constexpr ( is_Array<TYPE>::value ) {
-        putArray( key, value );
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, std::string_view>::value ) {
-        putScalar( key, value );
-    } else if constexpr ( has_size<TYPE>::value ) {
-        typedef decltype( *value.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> data( value.begin(), value.end() );
-        putVector( key, std::move( data ) );
-    } else {
-        putScalar( key, value );
-    }
-    if constexpr ( sizeof...( args ) > 0 )
-        addArgs( args... );
-}
-template<class TYPE, class... Args>
-inline void Database::addArgsWithUnits( const std::string_view &key,
-                                        TYPE value,
-                                        const Units &unit,
-                                        Args... args )
-{
-    if constexpr ( is_vector<TYPE>::value ) {
-        putVector( key, value, unit );
-    } else if constexpr ( is_Array<TYPE>::value ) {
-        putArray( key, value );
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, std::string_view>::value ) {
-        putScalar( key, value, unit );
-    } else if constexpr ( has_size<TYPE>::value ) {
-        typedef decltype( *value.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> data( value.begin(), value.end() );
-        putVector( key, std::move( data ), unit );
-    } else {
-        putScalar( key, value, unit );
-    }
-    if constexpr ( sizeof...( args ) > 0 )
-        addArgsWithUnits( args... );
-}
-template<class... Args>
-inline std::unique_ptr<Database> Database::create( Args... args )
-{
-    constexpr size_t n = sizeof...( args );
-    static_assert( n % 2 == 0 );
-    auto db = std::make_unique<Database>();
-    if ( n == 0 )
-        return db;
-    db->addArgs( args... );
-    return db;
-}
-template<class... Args>
-inline std::unique_ptr<Database> Database::createWithUnits( Args... args )
-{
-    constexpr size_t n = sizeof...( args );
-    static_assert( n % 3 == 0 );
-    auto db = std::make_unique<Database>();
-    if ( n == 0 )
-        return db;
-    db->addArgsWithUnits( args... );
-    return db;
-}
 
 
 /********************************************************************
@@ -474,28 +399,17 @@ TYPE Database::getWithDefault( const std::string_view &key,
 /********************************************************************
  * Put data                                                          *
  ********************************************************************/
-template<>
-inline void Database::putScalar<const char *>( const std::string_view &key,
-                                               const char *value,
-                                               Units unit,
-                                               Check check )
-{
-    putScalar<std::string>( key, value, unit, check );
-}
-template<>
-inline void Database::putScalar<std::string_view>( const std::string_view &key,
-                                                   std::string_view value,
-                                                   Units unit,
-                                                   Check check )
-{
-    putScalar<std::string>( key, std::string( value.data(), value.data() ), unit, check );
-}
 template<class TYPE>
-inline void Database::putScalar( const std::string_view &key, TYPE value, Units unit, Check check )
+void Database::putScalar( const std::string_view &key, TYPE value, Units unit, Check check )
 {
     if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
         // Guard against storing a bit reference (store a bool instead)
         putScalar<bool>( key, value, unit, check );
+    } else if constexpr ( std::is_same<TYPE, char *>::value ||
+                          std::is_same<TYPE, const char *>::value ||
+                          std::is_same<TYPE, std::string_view>::value ) {
+        // Guard against storing a char* or string_view (store a std::string instead)
+        putScalar<std::string>( key, std::string( value ), unit, check );
     } else {
         // Store the scalar value
         auto keyData = std::make_unique<KeyDataScalar<TYPE>>( std::move( value ), unit );
@@ -503,10 +417,10 @@ inline void Database::putScalar( const std::string_view &key, TYPE value, Units 
     }
 }
 template<class TYPE>
-inline void Database::putVector( const std::string_view &key,
-                                 const std::vector<TYPE> &data,
-                                 Units unit,
-                                 Check check )
+void Database::putVector( const std::string_view &key,
+                          const std::vector<TYPE> &data,
+                          Units unit,
+                          Check check )
 {
     Array<TYPE> x;
     x            = data;
@@ -514,8 +428,7 @@ inline void Database::putVector( const std::string_view &key,
     putData( key, std::move( keyData ), check );
 }
 template<class TYPE>
-inline void
-Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit, Check check )
+void Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit, Check check )
 {
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( data ), unit );
     putData( key, std::move( keyData ), check );
@@ -526,11 +439,16 @@ Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit, C
  * isType                                                            *
  ********************************************************************/
 template<class TYPE>
-inline bool Database::isType( const std::string_view &key ) const
+bool Database::isType( const std::string_view &key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
-    return data->isType<TYPE>();
+    if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
+        // Guard against checking a bit reference (use a bool instead)
+        return data->isType<bool>();
+    } else {
+        return data->isType<TYPE>();
+    }
 }
 
 

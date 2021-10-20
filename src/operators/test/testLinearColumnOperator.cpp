@@ -50,7 +50,7 @@ static void myTest( AMP::UnitTest *ut )
 
     for ( int i = 0; i < numTests; i++ ) {
         char key[256];
-        sprintf( key, "test_%d", i );
+        snprintf( key, sizeof key, "test_%d", i );
 
         AMP_INSIST( outerInput_db->keyExists( key ), "key missing!" );
         std::string innerInput_file = outerInput_db->getString( key );
@@ -83,8 +83,7 @@ static void myTest( AMP::UnitTest *ut )
             dofMapVec.push_back( AMP::Discretization::simpleDOFManager::create(
                 meshAdapter, AMP::Mesh::GeomType::Vertex, 1, dofsPerNodeArr[opN - 1], true ) );
 
-            char testOpName[256];
-            sprintf( testOpName, "testOperator%d", opN );
+            auto testOpName = AMP::Utilities::stringf( "testOperator%d", opN );
             AMP_INSIST( innerInput_db->keyExists( testOpName ),
                         "key missing!  " + innerInput_file );
 

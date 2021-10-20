@@ -91,10 +91,8 @@ void test_interp( UnitTest &ut, const std::vector<size_t> &N )
     Array<TYPE> A( N );
     std::vector<size_t> N2( N );
     N2.resize( 3, 1 );
-    char buf[100];
-    std::sprintf(
-        buf, "interp<%s,%i,%i,%i>", typeid( TYPE ).name(), (int) N2[0], (int) N2[1], (int) N2[2] );
-    std::string testname( buf );
+    auto testname = AMP::Utilities::stringf(
+        "interp<%s,%i,%i,%i>", typeid( TYPE ).name(), (int) N2[0], (int) N2[1], (int) N2[2] );
 
     // Fill A
     A.fill( 0 );
