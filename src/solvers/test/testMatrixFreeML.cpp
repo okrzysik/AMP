@@ -122,8 +122,7 @@ int myGetRow( ML_Operator *data,
 void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 {
     std::string input_file = "input_" + exeName;
-    char log_file[200];
-    sprintf( log_file, "output_%s_%d", exeName.c_str(), type );
+    auto log_file          = "output_" + exeName + "_" + std::to_string( type );
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -210,11 +209,11 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         std::cout << "Matrix-Free ML Type-1: " << std::endl;
         fusedSolVec->zero();
 
-        ML_Comm *comm;
-        ML_Comm_Create( &comm );
-        ML_Comm_Set_UsrComm( comm, globalComm.getCommunicator() );
+        ML_Comm *MLcomm;
+        ML_Comm_Create( &MLcomm );
+        ML_Comm_Set_UsrComm( MLcomm, globalComm.getCommunicator() );
 
-        ML_Operator *ml_op = ML_Operator_Create( comm );
+        ML_Operator *ml_op = ML_Operator_Create( MLcomm );
         ML_Operator_Set_ApplyFuncData(
             ml_op, localSize, localSize, fusedOperator.get(), localSize, myMatVec, 0 );
         ML_Operator_Set_Getrow( ml_op, localSize, myGetRow );
@@ -255,7 +254,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         ML_Operator_Destroy( &ml_op );
 
-        ML_Comm_Destroy( &comm );
+        ML_Comm_Destroy( &MLcomm );
     }
 
     // Matrix-free-2
@@ -370,8 +369,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
         std::cout << std::endl;
     }
 
-    char outFile[200];
-    sprintf( outFile, "%s-%d", exeName.c_str(), type );
+    auto outFile = exeName + "-" + std::to_string( type );
     printSolution( fusedMeshAdapter, fusedSolVec, outFile );
 
     ut->passes( exeName );
@@ -380,12 +378,10 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
 {
     std::string input_file = "input_" + exeName;
-    char log_file[200];
-    int type = 4;
-    if ( useTwoMeshes ) {
+    int type               = 4;
+    if ( useTwoMeshes )
         type = 5;
-    } // end if
-    sprintf( log_file, "output_%s_%d", exeName.c_str(), type );
+    auto log_file = "output" + exeName + "_" + std::to_string( type );
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
@@ -529,8 +525,7 @@ int main( int argc, char *argv[] )
         exeNames.emplace_back( "testMatrixFreeML-1" );
     } else {
         for ( int i = 1; i < argc; i++ ) {
-            char inpName[100];
-            sprintf( inpName, "testMatrixFreeML-%s", argv[i] );
+            auto inpName = AMP::Utilities::stringf( "testMatrixFreeML-%s", argv[i] );
             exeNames.emplace_back( inpName );
         } // end for i
     }

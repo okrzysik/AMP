@@ -17,7 +17,7 @@ PelletContactConductanceModel::PelletContactConductanceModel(
 
     for ( unsigned int i = 0; i < d_nTransportModels; i++ ) {
         char key[100];
-        sprintf( key, "DiffusionTransportModel_%d", (int) i );
+        snprintf( key, sizeof key, "DiffusionTransportModel_%d", (int) i );
         std::shared_ptr<Database> transportModel_db = params->d_db->getDatabase( key );
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );

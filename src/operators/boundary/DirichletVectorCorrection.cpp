@@ -37,11 +37,11 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
 
         char key[100];
         for ( int j = 0; j < numIds; j++ ) {
-            sprintf( key, "id_%d", j );
+            snprintf( key, sizeof key, "id_%d", j );
             AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
             d_boundaryIds[j] = params->d_db->getScalar<int>( key );
 
-            sprintf( key, "number_of_dofs_%d", j );
+            snprintf( key, sizeof key, "number_of_dofs_%d", j );
             AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
             int numDofIds = params->d_db->getScalar<int>( key );
 
@@ -51,12 +51,12 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
                 d_dirichletValues1[j].resize( numDofIds );
             }
             for ( int i = 0; i < numDofIds; i++ ) {
-                sprintf( key, "dof_%d_%d", j, i );
+                snprintf( key, sizeof key, "dof_%d_%d", j, i );
                 AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
                 d_dofIds[j][i] = params->d_db->getScalar<int>( key );
 
                 if ( d_valuesType == 1 ) {
-                    sprintf( key, "value_%d_%d", j, i );
+                    snprintf( key, sizeof key, "value_%d_%d", j, i );
                     d_dirichletValues1[j][i] = params->d_db->getWithDefault<double>( key, 0.0 );
                 }
             } // end for i

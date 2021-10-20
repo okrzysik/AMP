@@ -1,6 +1,7 @@
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Database.hpp"
 #include "AMP/utils/Utilities.h"
 
 
@@ -321,60 +322,82 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     FUN( std::string );          \
     FUN( std::_Bit_reference );  \
     FUN( AMP::DatabaseBox )
-#define instantiateConvert( TYPE )                                             \
-    template AMP::Array<TYPE> convert( const Array<bool> &x );                 \
-    template AMP::Array<TYPE> convert( const Array<char> &x );                 \
-    template AMP::Array<TYPE> convert( const Array<int8_t> &x );               \
-    template AMP::Array<TYPE> convert( const Array<int16_t> &x );              \
-    template AMP::Array<TYPE> convert( const Array<int32_t> &x );              \
-    template AMP::Array<TYPE> convert( const Array<int64_t> &x );              \
-    template AMP::Array<TYPE> convert( const Array<uint8_t> &x );              \
-    template AMP::Array<TYPE> convert( const Array<uint16_t> &x );             \
-    template AMP::Array<TYPE> convert( const Array<uint32_t> &x );             \
-    template AMP::Array<TYPE> convert( const Array<uint64_t> &x );             \
-    template AMP::Array<TYPE> convert( const Array<float> &x );                \
-    template AMP::Array<TYPE> convert( const Array<double> &x );               \
-    template AMP::Array<TYPE> convert( const Array<long double> &x );          \
-    template AMP::Array<TYPE> convert( const Array<std::complex<float>> &x );  \
-    template AMP::Array<TYPE> convert( const Array<std::complex<double>> &x ); \
-    template AMP::Array<TYPE> convert( const Array<std::string> &x );          \
-    template AMP::Array<TYPE> convert( const Array<std::_Bit_reference> &x );  \
-    template AMP::Array<TYPE> convert( const Array<AMP::DatabaseBox> &x )
+#define instantiateConvert( TYPE )                                            \
+    template AMP::Array<TYPE> convert( const Array<bool> & );                 \
+    template AMP::Array<TYPE> convert( const Array<char> & );                 \
+    template AMP::Array<TYPE> convert( const Array<int8_t> & );               \
+    template AMP::Array<TYPE> convert( const Array<int16_t> & );              \
+    template AMP::Array<TYPE> convert( const Array<int32_t> & );              \
+    template AMP::Array<TYPE> convert( const Array<int64_t> & );              \
+    template AMP::Array<TYPE> convert( const Array<uint8_t> & );              \
+    template AMP::Array<TYPE> convert( const Array<uint16_t> & );             \
+    template AMP::Array<TYPE> convert( const Array<uint32_t> & );             \
+    template AMP::Array<TYPE> convert( const Array<uint64_t> & );             \
+    template AMP::Array<TYPE> convert( const Array<float> & );                \
+    template AMP::Array<TYPE> convert( const Array<double> & );               \
+    template AMP::Array<TYPE> convert( const Array<long double> & );          \
+    template AMP::Array<TYPE> convert( const Array<std::complex<float>> & );  \
+    template AMP::Array<TYPE> convert( const Array<std::complex<double>> & ); \
+    template AMP::Array<TYPE> convert( const Array<std::string> & );          \
+    template AMP::Array<TYPE> convert( const Array<std::_Bit_reference> & );  \
+    template AMP::Array<TYPE> convert( const Array<AMP::DatabaseBox> & )
 #define instantiateScaleData( TYPE )                             \
     template void scaleData<TYPE>( TYPE & data, double factor ); \
     template void scaleData<TYPE>( AMP::Array<TYPE> & data, double factor )
 #define instantiateKeyDataScalar( TYPE ) template class KeyDataScalar<TYPE>
 #define instantiateKeyDataArray( TYPE ) template class KeyDataArray<TYPE>
-instantiate( instantiateConvert );       // convert
-instantiate( instantiateScaleData );     // scaleData
-instantiate( instantiateKeyDataScalar ); // KeyDataScalar
-instantiate( instantiateKeyDataArray );  // KeyDataArray
+#define instantiateIsType( TYPE ) \
+    template bool AMP::Database::isType<TYPE>( const std::string_view & ) const
+#define instantiatePutScalar( TYPE )              \
+    template void AMP::Database::putScalar<TYPE>( \
+        const std::string_view &, TYPE, AMP::Units, AMP::Database::Check )
+#define instantiateGetScalar( TYPE ) \
+    template TYPE AMP::Database::getScalar<TYPE>( const std::string_view &, AMP::Units ) const
+#define instantiateGetArray( TYPE ) \
+    template Array<TYPE> AMP::Database::getArray( const std::string_view &, Units unit ) const
+#define instantiateGetVector( TYPE )                                                            \
+    template std::vector<TYPE> AMP::Database::getVector( const std::string_view &, Units unit ) \
+        const
+#define instantiatePutVector( TYPE )              \
+    template void AMP::Database::putVector<TYPE>( \
+        const std::string_view &, const std::vector<TYPE> &, AMP::Units, AMP::Database::Check )
+#define instantiatePutArray( TYPE )              \
+    template void AMP::Database::putArray<TYPE>( \
+        const std::string_view &, AMP::Array<TYPE>, AMP::Units, AMP::Database::Check )
+#define instantiateGetWithDefault( TYPE )                                                       \
+    template TYPE AMP::Database::getWithDefault<TYPE>(                                          \
+        const std::string_view &, AMP::Database::IdentityType<TYPE const &>::type, AMP::Units ) \
+        const;                                                                                  \
+    template std::vector<TYPE> AMP::Database::getWithDefault<std::vector<TYPE>>(                \
+        const std::string_view &,                                                               \
+        AMP::Database::IdentityType<std::vector<TYPE> const &>::type,                           \
+        AMP::Units ) const;                                                                     \
+    template AMP::Array<TYPE> AMP::Database::getWithDefault<AMP::Array<TYPE>>(                  \
+        const std::string_view &,                                                               \
+        AMP::Database::IdentityType<AMP::Array<TYPE> const &>::type,                            \
+        AMP::Units ) const
+instantiate( instantiateConvert );        // convert
+instantiate( instantiateScaleData );      // scaleData
+instantiate( instantiateKeyDataScalar );  // KeyDataScalar
+instantiate( instantiateKeyDataArray );   // KeyDataArray
+instantiate( instantiateIsType );         // Database::isType
+instantiate( instantiateGetScalar );      // Database::getScalar
+instantiate( instantiateGetVector );      // Database::getVector
+instantiate( instantiateGetArray );       // Database::getArray
+instantiate( instantiatePutScalar );      // Database::putScalar
+instantiate( instantiatePutVector );      // Database::putVector
+instantiate( instantiatePutArray );       // Database::putArray
+instantiate( instantiateGetWithDefault ); // Database::getWithDefault
+template void AMP::Database::putScalar<const char *>( const std::string_view &,
+                                                      const char *,
+                                                      AMP::Units,
+                                                      AMP::Database::Check );
 
 
 /********************************************************
  *  Explicit instantiations of Array<DatabaseBox>        *
  ********************************************************/
-template Array<DatabaseBox, FunctionTable>::Array();
-template Array<DatabaseBox, FunctionTable>::~Array();
-template Array<DatabaseBox, FunctionTable>::Array( size_t );
-template Array<DatabaseBox, FunctionTable>::Array( size_t, size_t );
-template Array<DatabaseBox, FunctionTable>::Array( size_t, size_t, size_t );
-template Array<DatabaseBox, FunctionTable>::Array( size_t, size_t, size_t, size_t );
-template Array<DatabaseBox, FunctionTable>::Array( size_t, size_t, size_t, size_t, size_t );
-template Array<DatabaseBox, FunctionTable>::Array( const Array<DatabaseBox, FunctionTable> & );
-template Array<DatabaseBox, FunctionTable>::Array( Array<DatabaseBox, FunctionTable> && );
-template Array<DatabaseBox, FunctionTable> &
-Array<DatabaseBox, FunctionTable>::operator=( const Array<DatabaseBox, FunctionTable> & );
-template Array<DatabaseBox, FunctionTable> &
-Array<DatabaseBox, FunctionTable>::operator=( Array<DatabaseBox, FunctionTable> && );
-template Array<DatabaseBox, FunctionTable> &
-Array<DatabaseBox, FunctionTable>::operator=( const std::vector<DatabaseBox> & );
-template void Array<DatabaseBox, FunctionTable>::clear();
-template void
-Array<DatabaseBox, FunctionTable>::viewRaw( ArraySize const &, DatabaseBox *, bool, bool );
-template bool
-Array<DatabaseBox, FunctionTable>::operator==( Array<DatabaseBox, FunctionTable> const & ) const;
-template void Array<DatabaseBox, FunctionTable>::resize( ArraySize const & );
+instantiateArrayConstructors( DatabaseBox );
 
 
 } // namespace AMP

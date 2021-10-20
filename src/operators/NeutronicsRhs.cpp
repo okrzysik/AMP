@@ -34,7 +34,7 @@ NeutronicsRhs::NeutronicsRhs( SP_Parameters parameters ) : Operator( parameters 
         d_values.resize( d_numTimeSteps, std::vector( numValues, 0.0 ) );
         char key[100];
         for ( int step = 0; step < d_numTimeSteps; step++ ) {
-            sprintf( key, "value_%d", step );
+            snprintf( key, sizeof key, "value_%d", step );
             AMP_INSIST( parameters->d_db->keyExists( key ), "Key is missing!" );
             d_values[step] = parameters->d_db->getVector<double>( key );
         }
@@ -142,7 +142,7 @@ void NeutronicsRhs::reset( std::shared_ptr<const OperatorParameters> parameters 
         d_values.resize( d_numTimeSteps, std::vector( numValues, 0.0 ) );
         char key[100];
         for ( int step = 0; step < d_numTimeSteps; step++ ) {
-            sprintf( key, "value_%d", step );
+            snprintf( key, sizeof key, "value_%d", step );
             AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
             d_values[step] = params->d_db->getVector<double>( key );
             AMP_ASSERT( numValues == (int) d_values.size() );

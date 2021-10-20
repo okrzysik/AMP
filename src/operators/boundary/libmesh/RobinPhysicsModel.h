@@ -44,7 +44,7 @@ public:
         d_activeVariableNames.resize( d_numActiveVariables );
         for ( unsigned int var = 0; var < d_numActiveVariables; var++ ) {
             char key[100];
-            sprintf( key, "ActiveVariable_%u", var );
+            snprintf( key, sizeof( key ), "ActiveVariable_%u", var );
             auto varName               = activeDb->getString( key );
             d_activeVariableNames[var] = varName;
         }

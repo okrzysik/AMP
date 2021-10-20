@@ -5,10 +5,8 @@ static void createNodeSet( AMP::Mesh::MeshManager::Adapter::shared_ptr meshAdapt
                            const unsigned int bndId,
                            std::vector<PointAndId> &nodeSet )
 {
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator bnd =
-        meshAdapter->beginOwnedBoundary( bndId );
-    AMP::Mesh::MeshManager::Adapter::OwnedBoundaryNodeIterator end_bnd =
-        meshAdapter->endOwnedBoundary( bndId );
+    auto bnd     = meshAdapter->beginOwnedBoundary( bndId );
+    auto end_bnd = meshAdapter->endOwnedBoundary( bndId );
 
     nodeSet.clear();
 
@@ -61,19 +59,18 @@ static void createMasterSlaveMap( AMP::Mesh::MeshManager::Adapter::shared_ptr ma
         double sZ        = slaveContactSet[i].d_pt[2];
         unsigned int mId = masterContactSet[i].d_id;
         unsigned int sId = slaveContactSet[i].d_id;
-        char msg[300];
-        sprintf( msg,
-                 "Master point (%g, %g, %g) and Slave point (%g, %g, %g) differ.\n Master ID = %u "
-                 "and Slave ID = %u.\n",
-                 mX,
-                 mY,
-                 mZ,
-                 sX,
-                 sY,
-                 sZ,
-                 mId,
-                 sId );
-        AMP_INSIST( ( masterContactSet[i].pointEquals( slaveContactSet[i] ) ), msg );
+        auto msg         = AMP::Utilities::stringf(
+            "Master point (%g, %g, %g) and Slave point (%g, %g, %g) differ.\n Master ID = %u "
+            "and Slave ID = %u.\n",
+            mX,
+            mY,
+            mZ,
+            sX,
+            sY,
+            sZ,
+            mId,
+            sId );
+        AMP_INSIST( masterContactSet[i].pointEquals( slaveContactSet[i] ), msg );
     }
 
     masterContactNodes.resize( numContactNodes );

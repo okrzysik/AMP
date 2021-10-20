@@ -26,21 +26,6 @@
 
 #define NDIM_MAX 3 // The maximum number of dimensions supported (currently 3)
 
-#define ASSERT( EXP )                                                     \
-    do {                                                                  \
-        if ( !( EXP ) ) {                                                 \
-            char tmp[1000];                                               \
-            sprintf( tmp,                                                 \
-                     "Failed assertion: %s\n   File: %s\n:   Line: %i\n", \
-                     #EXP,                                                \
-                     __FILE__,                                            \
-                     __LINE__ );                                          \
-            throw std::logic_error( tmp );                                \
-        }                                                                 \
-                                                                          \
-    } while ( 0 )
-
-
 // Helper function to check if two numbers are approximately equal
 inline bool approx_equal( double x, double y, double tol = 1e-8 )
 {
@@ -96,25 +81,24 @@ void writePoints<int>( const char *filename, const AMP::Array<int> &x )
 AMP::Array<double> readPoints( const char *filename )
 {
     auto fid = fopen( filename, "rb" );
-    if ( fid == nullptr )
-        throw std::logic_error( "Input file not found" );
+    AMP_INSIST( fid, "Input file not found" );
     char tline[200];
     char *tmp1 = fgets( tline, 200, fid );
-    ASSERT( tmp1 == tline );
+    AMP_ASSERT( tmp1 == tline );
     std::string header( tline );
     size_t i = header.find( " points in " );
-    ASSERT( i != std::string::npos );
+    AMP_ASSERT( i != std::string::npos );
     std::string tmp = header.substr( 0, i );
     int N           = atoi( tmp.c_str() );
     i               = header.find( "D in " );
-    ASSERT( i != std::string::npos );
+    AMP_ASSERT( i != std::string::npos );
     tmp   = header.substr( i - 2, 2 );
     int D = atoi( tmp.c_str() );
-    ASSERT( N > 0 && D > 0 );
+    AMP_ASSERT( N > 0 && D > 0 );
     AMP::Array<double> x( D, N );
     x.fill( 0.0 );
     size_t tmp2 = fread( x.data(), sizeof( double ), N * D, fid );
-    ASSERT( tmp2 == (size_t) N * D );
+    AMP_ASSERT( tmp2 == (size_t) N * D );
     fclose( fid );
     return x;
 }
@@ -164,21 +148,19 @@ void testPointSearch( AMP::UnitTest *ut, const AMP::Array<TYPE> &x )
         dist2 += tmp * tmp;
     }
     PROFILE_STOP( "Test point search 2" );
-    char msg[100];
-    sprintf( msg, "Test point search (%i,%i,%s)", ndim, (int) N, getName<TYPE>() );
+    auto msg =
+        AMP::Utilities::stringf( "Test point search (%i,%i,%s)", ndim, (int) N, getName<TYPE>() );
     if ( approx_equal( dist1, dist2, 1e-12 ) ) {
         ut->passes( msg );
     } else {
-        char msg2[200];
-        sprintf( msg2,
-                 "%s:  (%i,%i,%e) - (%i,%i,%e)",
-                 msg,
-                 index1.first,
-                 index1.second,
-                 dist1,
-                 index2.first,
-                 index2.second,
-                 dist2 );
+        auto msg2 = AMP::Utilities::stringf( "%s:  (%i,%i,%e) - (%i,%i,%e)",
+                                             msg,
+                                             index1.first,
+                                             index1.second,
+                                             dist1,
+                                             index2.first,
+                                             index2.second,
+                                             dist2 );
         ut->failure( msg2 );
         writePoints( "failed_points", x );
     }
@@ -585,14 +567,11 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
             p, x2, xrange, f2, g2, tol_grad, tol_linear, tol_cubic, tol_c_grad, tol_ce1, tol_ce2 );
         problem = initialize_problem(
             p, x, xrange, f, g, tol_grad, tol_linear, tol_cubic, tol_c_grad, tol_ce1, tol_ce2 );
-        char tmp[256];
-        sprintf( tmp,
-                 "%s (%i,%i,%s)",
-                 problem.c_str(),
-                 (int) x.size( 0 ),
-                 (int) x.size( 1 ),
-                 getName<TYPE>() );
-        std::string msg( tmp );
+        auto msg = AMP::Utilities::stringf( "%s (%i,%i,%s)",
+                                            problem.c_str(),
+                                            (int) x.size( 0 ),
+                                            (int) x.size( 1 ),
+                                            getName<TYPE>() );
 
         // Test the gradient
         PROFILE_START( "test gradient", 1 );
@@ -609,14 +588,12 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
             }
             err               = sqrt( err / N );
             error[method - 1] = err;
-            char message[512];
-            sprintf( message,
-                     "calc_gradient (%i,%s) (%i,%i) (%e)",
-                     method,
-                     problem.c_str(),
-                     (int) x.size( 0 ),
-                     (int) x.size( 1 ),
-                     err );
+            auto message      = AMP::Utilities::stringf( "calc_gradient (%i,%s) (%i,%i) (%e)",
+                                                    method,
+                                                    problem.c_str(),
+                                                    (int) x.size( 0 ),
+                                                    (int) x.size( 1 ),
+                                                    err );
             if ( err <= tol_grad )
                 ut->passes( message );
             else
@@ -838,16 +815,16 @@ AMP::Array<TYPE> createProblem( int problem )
     } else if ( problem == 6 ) {
         // A set of points that caused the nearest-neighbor point search to fail (01/18/13)
         if ( typeid( TYPE ) == typeid( double ) ) {
-            double const_points[30] = { 0.228134639925963, 0.107455922361451, 0.865652664047092,
-                                        0.184470611307978, 0.838401675869785, 0.668757150119921,
-                                        0.369538598042889, 0.123727772818859, 0.640994658126969,
-                                        0.499916995230264, 0.448223924105178, 0.071055349040041,
-                                        0.234558133130565, 0.459801521022238, 0.439658494159647,
-                                        0.053472364370121, 0.256549138105335, 0.295241277565778,
-                                        0.375079637861114, 0.623130377070684, 0.385421525726560,
-                                        0.965203651821110, 0.545386155470929, 0.355259056526340,
-                                        0.034658433895993, 0.917076353750111, 0.761392645215632,
-                                        0.350240130632096, 0.309851148106666, 0.654482311175926 };
+            const double const_points[30] = {
+                0.228134639925963, 0.107455922361451, 0.865652664047092, 0.184470611307978,
+                0.838401675869785, 0.668757150119921, 0.369538598042889, 0.123727772818859,
+                0.640994658126969, 0.499916995230264, 0.448223924105178, 0.071055349040041,
+                0.234558133130565, 0.459801521022238, 0.439658494159647, 0.053472364370121,
+                0.256549138105335, 0.295241277565778, 0.375079637861114, 0.623130377070684,
+                0.385421525726560, 0.965203651821110, 0.545386155470929, 0.355259056526340,
+                0.034658433895993, 0.917076353750111, 0.761392645215632, 0.350240130632096,
+                0.309851148106666, 0.654482311175926
+            };
             points.resize( 3, 10 );
             for ( int i = 0; i < 30; i++ )
                 points( i ) = const_points[i];
@@ -875,11 +852,8 @@ void testRandomNumber( AMP::UnitTest *ut, size_t N )
     if ( N_dup == 0 ) {
         ut->passes( "No duplicate random numbers" );
     } else {
-        char message[100];
-        sprintf( message,
-                 "Found %i duplicates, expected %e\n",
-                 static_cast<int>( N_dup ),
-                 N * 2.2204e-16 );
+        auto message = AMP::Utilities::stringf(
+            "Found %i duplicates, expected %e\n", static_cast<int>( N_dup ), N * 2.2204e-16 );
         if ( N_dup < 5 )
             ut->expected_failure( message );
         else
@@ -948,8 +922,7 @@ int main( int argc, char *argv[] )
     // Run some predefined tests
     for ( int i = 1; i <= 6; i++ ) {
         printp( "Running predefined test %i\n", i );
-        char tmp[100];
-        sprintf( tmp, "Problem %i", i );
+        auto tmp = AMP::Utilities::stringf( "Problem %i", i );
         PROFILE_START( tmp );
         testInterpolation( &ut, createProblem<int>( i ) );
         testInterpolation( &ut, createProblem<double>( i ) );

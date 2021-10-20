@@ -434,8 +434,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
     siloWriter->registerVector(
         columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-    char outFileName[256];
-    sprintf( outFileName, "MPC_%d", 0 );
+    auto outFileName = "MPC_0";
     siloWriter->writeFile( outFileName, 0 );
 #endif
     fout.close();

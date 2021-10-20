@@ -186,8 +186,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 #ifdef USE_EXT_SILO
         siloWriter->registerVector(
             mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-        char outFileName[256];
-        sprintf( outFileName, "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step );
+        auto outFileName = AMP::Utilities::stringf(
+            "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step );
         siloWriter->writeFile( outFileName, 0 );
 #endif
     }

@@ -9,8 +9,10 @@
 #endif
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
+
+
+using AMP::Utilities::stringf;
 
 
 BandedSolver::BandedSolver( std::shared_ptr<SolverStrategyParameters> parameters )
@@ -79,15 +81,13 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
                 AMP_ERROR( "Matrix has entries that are non-local" );
             int j = cols[k] - col_begin;
             if ( j < i - KL || j > i + KU || j < 0 || j >= N ) {
-                char tmp[100];
-                sprintf( tmp, "Banded entry is out of bounds (%i,%i,%e)", i, j, values[k] );
-                AMP_ERROR( tmp );
+                auto msg = stringf( "Banded entry is out of bounds (%i,%i,%e)", i, j, values[k] );
+                AMP_ERROR( msg );
             }
             AB[KL + KU + i - j + j * K] = values[k];
         }
         if ( AB[KL + KU + i * K] == 0 ) {
-            char msg[100];
-            sprintf( msg, "Error diagonal entry M(%i,%i) = 0", i + 1, i + 1 );
+            auto msg = stringf( "Error diagonal entry M(%i,%i) = 0", i + 1, i + 1 );
             AMP_ERROR( msg );
         }
     }
@@ -97,8 +97,7 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
     int error = 0;
     Lapack<double>::gbtrf( M, N, KL, KU, AB, K, IPIV, error );
     if ( error != 0 ) {
-        char msg[100];
-        sprintf( msg, "Error factoring matrix (%i)", error );
+        auto msg = stringf( "Error factoring matrix (%i)", error );
         AMP_ERROR( msg );
     }
 #else
@@ -135,8 +134,7 @@ void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     Lapack<double>::gbtrs( 'N', N, KL, KU, 1, AB, 2 * KL + KU + 1, IPIV, B, N, error );
     d_iNumberIterations = 1;
     if ( error != 0 ) {
-        char msg[100];
-        sprintf( msg, "Error solving matrix (%i)", error );
+        auto msg = stringf( "Error solving matrix (%i)", error );
         AMP_ERROR( msg );
     }
 #else
@@ -152,5 +150,4 @@ void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

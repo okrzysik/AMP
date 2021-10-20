@@ -29,7 +29,7 @@ static void ElementOperationFactoryTest( AMP::UnitTest *ut )
 
     for ( int i = 0; i < numTests; i++ ) {
         char key[256];
-        sprintf( key, "test_%d", i );
+        snprintf( key, sizeof key, "test_%d", i );
 
         AMP_INSIST( outerInput_db->keyExists( key ), "key missing!" );
         auto inputFile     = outerInput_db->getString( key );

@@ -44,9 +44,6 @@
 #ifndef SSCANF
 #define SSCANF sscanf_s
 #endif
-#ifndef SPRINTF
-#define SPRINTF sprintf_s
-#endif
 #else // Linux Includes
 #include <string.h>
 #include <strings.h>
@@ -69,9 +66,6 @@
 #endif
 #ifndef SSCANF
 #define SSCANF sscanf
-#endif
-#ifndef SPRINTF
-#define SPRINTF sprintf
 #endif
 #endif
 

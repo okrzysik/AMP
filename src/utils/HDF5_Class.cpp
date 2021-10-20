@@ -354,10 +354,10 @@ HDF5_group::HDF5_group( hid_t fid, const std::string_view &name, int type ) : HD
             if ( ( d_names[i] == "N" ||
                    d_names[i].compare( 0, 2 + d_name.size(), "N_" + d_name ) == 0 ) &&
                  d_data( i )->getDataSize().length() == 1 ) {
-                AMP::Array<int> data;
-                d_data( i )->getData( data );
-                AMP_ASSERT( data.length() == 1u );
-                N       = std::max<int>( N, data( 0 ) );
+                AMP::Array<int> tmp;
+                d_data( i )->getData( tmp );
+                AMP_ASSERT( tmp.length() == 1u );
+                N       = std::max<int>( N, tmp( 0 ) );
                 test[i] = false;
             } else if ( d_names[i].compare( 0, d_name.size(), d_name ) == 0 ) {
                 size_t index = getIndex( d_names[i] );

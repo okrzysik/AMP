@@ -155,8 +155,10 @@ libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string
 libmeshMesh::~libmeshMesh()
 {
     // First we need to destroy the elements, surface sets, and boundary sets
-    d_localElements.clear();
-    d_ghostElements.clear();
+    for ( int i = 0; i < 4; i++ ) {
+        d_localElements[i].reset();
+        d_ghostElements[i].reset();
+    }
     d_localSurfaceElements.clear();
     d_ghostSurfaceElements.clear();
     d_boundarySets.clear();
@@ -198,9 +200,11 @@ void libmeshMesh::initialize()
             // We are counting the nodes
             n_local[i]  = d_libMesh->n_local_nodes();
             n_global[i] = d_libMesh->parallel_n_nodes();
-            auto pos    = d_libMesh->nodes_begin();
-            auto end    = d_libMesh->nodes_end();
-            int N       = 0;
+            n_ghost[i] =
+                std::distance( d_libMesh->nodes_begin(), d_libMesh->nodes_end() ) - n_local[i];
+            auto pos = d_libMesh->nodes_begin();
+            auto end = d_libMesh->nodes_end();
+            int N    = 0;
             while ( pos != end ) {
                 N++;
                 ++pos;
@@ -211,14 +215,8 @@ void libmeshMesh::initialize()
             // We are counting the elements
             n_local[i]  = d_libMesh->n_local_elem();
             n_global[i] = d_libMesh->parallel_n_elem();
-            auto pos    = d_libMesh->elements_begin();
-            auto end    = d_libMesh->elements_end();
-            int N       = 0;
-            while ( pos != end ) {
-                N++;
-                ++pos;
-            }
-            n_ghost[i] = N - n_local[i];
+            n_ghost[i]  = std::distance( d_libMesh->elements_begin(), d_libMesh->elements_end() ) -
+                         n_local[i];
             AMP_INSIST( n_local[i] > 0,
                         "We currently require at least 1 element on each processor" );
         } else {
@@ -341,13 +339,11 @@ void libmeshMesh::initialize()
         }
         AMP::Utilities::quicksort( *local_elements ); // Sort elements for searching
         AMP::Utilities::quicksort( *ghost_elements ); // Sort elements for searching
-        auto local_pair = std::make_pair( type, local_elements );
-        auto ghost_pair = std::make_pair( type, ghost_elements );
-        d_localElements.insert( local_pair );
-        d_ghostElements.insert( ghost_pair );
-        n_local[i]  = local_elements->size();
-        n_global[i] = d_comm.sumReduce( n_local[i] );
-        n_ghost[i]  = ghost_elements->size();
+        d_localElements[i] = local_elements;
+        d_ghostElements[i] = ghost_elements;
+        n_local[i]         = local_elements->size();
+        n_global[i]        = d_comm.sumReduce( n_local[i] );
+        n_ghost[i]         = ghost_elements->size();
     }
     /*for (int i=0; i<=(int)GeomDim; i++) {
         for (int j=0; j<d_comm.getSize(); j++) {
@@ -638,16 +634,17 @@ size_t libmeshMesh::numGhostElements( const GeomType type, int gcw ) const
 MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) const
 {
     MeshIterator it;
+    int i = static_cast<int>( type );
     if ( static_cast<int>( type ) == PhysicalDim ) {
         // This is a libMesh element
         if ( gcw == 0 ) {
             auto begin = d_libMesh->local_elements_begin();
             auto end   = d_libMesh->local_elements_end();
-            it         = libmeshElemIterator( this, gcw, begin, end, begin );
+            it         = libmeshElemIterator( this, gcw, begin, end, begin, n_local[i], 0 );
         } else if ( gcw == 1 ) {
             auto begin = d_libMesh->elements_begin();
             auto end   = d_libMesh->elements_end();
-            it         = libmeshElemIterator( this, gcw, begin, end, begin );
+            it = libmeshElemIterator( this, gcw, begin, end, begin, n_local[i] + n_ghost[i], 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }
@@ -656,29 +653,22 @@ MeshIterator libmeshMesh::getIterator( const GeomType type, const int gcw ) cons
         if ( gcw == 0 ) {
             auto begin = d_libMesh->local_nodes_begin();
             auto end   = d_libMesh->local_nodes_end();
-            it         = libmeshNodeIterator( this, gcw, begin, end, begin );
+            it         = libmeshNodeIterator( this, gcw, begin, end, begin, n_local[i], 0 );
         } else if ( gcw == 1 ) {
             auto begin = d_libMesh->nodes_begin();
             auto end   = d_libMesh->nodes_end();
-            it         = libmeshNodeIterator( this, gcw, begin, end, begin );
+            it = libmeshNodeIterator( this, gcw, begin, end, begin, n_local[i] + n_ghost[i], 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
         }
     } else {
         // All other types require a pre-constructed list
         if ( gcw == 0 ) {
-            auto it1 = d_localElements.find( type );
-            if ( it1 == d_localElements.end() )
-                AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
-            it = MultiVectorIterator( it1->second, 0 );
+            it = MultiVectorIterator( d_localElements[i], 0 );
         } else if ( gcw == 1 ) {
-            auto it1 = d_localElements.find( type );
-            auto it2 = d_ghostElements.find( type );
-            if ( it1 == d_localElements.end() || it2 == d_ghostElements.end() )
-                AMP_ERROR( "Internal error in libmeshMesh::getIterator" );
             std::vector<MeshIterator> iterators( 2 );
-            iterators[0] = MultiVectorIterator( it1->second, 0 );
-            iterators[1] = MultiVectorIterator( it2->second, 0 );
+            iterators[0] = MultiVectorIterator( d_localElements[i], 0 );
+            iterators[1] = MultiVectorIterator( d_ghostElements[i], 0 );
             it           = MultiIterator( iterators, 0 );
         } else {
             AMP_ERROR( "Unsupported ghost cell width" );
@@ -796,9 +786,9 @@ MeshElement libmeshMesh::getElement( const MeshElementID &elem_id ) const
     // All other types are stored in sorted lists
     std::shared_ptr<std::vector<MeshElement>> list;
     if ( (int) elem_id.owner_rank() == d_comm.getRank() )
-        list = ( d_localElements.find( elem_id.type() ) )->second;
+        list = d_localElements[static_cast<int>( elem_id.type() )];
     else
-        list = ( d_ghostElements.find( elem_id.type() ) )->second;
+        list = d_ghostElements[static_cast<int>( elem_id.type() )];
     size_t n = list->size();
     AMP_ASSERT( n > 0 );
     auto x = &( list->operator[]( 0 ) ); // Use the pointer for speed

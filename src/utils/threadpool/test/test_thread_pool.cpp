@@ -19,6 +19,7 @@
 
 
 using namespace AMP;
+using AMP::Utilities::stringf;
 
 
 #define to_ns( x ) std::chrono::duration_cast<std::chrono::nanoseconds>( x ).count()
@@ -93,8 +94,7 @@ void print_processor( ThreadPool *tpool )
     int rank      = comm.getRank();
     int thread    = tpool->getThreadNumber();
     int processor = ThreadPool::getCurrentProcessor();
-    char tmp[100];
-    sprintf( tmp, "%i:  Thread,proc = %i,%i\n", rank, thread, processor );
+    auto tmp      = stringf( "%i:  Thread,proc = %i,%i\n", rank, thread, processor );
     sleep_ms( 10 * rank );
     print_processor_mutex.lock();
     pout << tmp;
@@ -570,11 +570,9 @@ void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
         if ( procs == cpus ) {
             ut.passes( "getThreadAffinity() matches procs" );
         } else {
-            char msg[100];
-            sprintf( msg,
-                     "getThreadAffinity() does not match procs (%i,%i)",
-                     static_cast<int>( procs.size() ),
-                     static_cast<int>( cpus.size() ) );
+            auto msg = stringf( "getThreadAffinity() does not match procs (%i,%i)",
+                                static_cast<int>( procs.size() ),
+                                static_cast<int>( cpus.size() ) );
             ut.failure( msg );
         }
         auto pass = true;
@@ -846,9 +844,9 @@ void run_tests( UnitTest &ut )
     PROFILE_START( "Dependency test" );
     for ( int i = 0; i < 10; i++ ) {
         char msg[3][100];
-        sprintf( msg[0], "Item %i-%i", i, 0 );
-        sprintf( msg[1], "Item %i-%i", i, 1 );
-        sprintf( msg[2], "Item %i-%i", i, 2 );
+        snprintf( msg[0], 100, "Item %i-%i", i, 0 );
+        snprintf( msg[1], 100, "Item %i-%i", i, 1 );
+        snprintf( msg[2], 100, "Item %i-%i", i, 2 );
         auto work  = ThreadPool::createWork( sleep_msg, 0.5, msg[0] );
         auto work1 = ThreadPool::createWork( sleep_msg, 0.1, msg[1] );
         auto work2 = ThreadPool::createWork( sleep_msg, 0.1, msg[2] );

@@ -200,9 +200,9 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr m
                 }
             }
         }
-        char msg[100];
-        sprintf(msg,"Matrix entries set by processor %i read correctly on processor
-        %i",p,comm.getRank());
+        auto msg = AMP::Utilities::stringf(
+            "Matrix entries set by processor %i read correctly on processor %i",
+            p,comm.getRank());
         if ( passes )
             ut.passes( msg );
         else

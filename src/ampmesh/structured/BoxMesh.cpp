@@ -386,7 +386,7 @@ MeshElement BoxMesh::getElement( const MeshElementID &id ) const
     MeshElementIndex index = convert( id );
     // Create the element
     structuredMeshElement elem( index, this );
-    AMP_ASSERT( elem.globalID() == id );
+    AMP_CHECK_ASSERT( elem.globalID() == id );
     return std::move( elem );
 }
 MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
@@ -550,17 +550,18 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
 {
     AMP_ASSERT( type <= GeomDim );
     // Get the range of cells we care about
-    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-        range[2 * d + 0] -= gcw;
-        range[2 * d + 1] += gcw;
-        if ( !d_isPeriodic[d] ) {
-            range[2 * d + 0] = std::max( range[2 * d + 0], 0 );
-            range[2 * d + 1] = std::min( range[2 * d + 1], d_globalSize[d] - 1 );
+    if ( gcw != 0 ) {
+        for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
+            range[2 * d + 0] -= gcw;
+            range[2 * d + 1] += gcw;
+            if ( !d_isPeriodic[d] ) {
+                range[2 * d + 0] = std::max( range[2 * d + 0], 0 );
+                range[2 * d + 1] = std::min( range[2 * d + 1], d_globalSize[d] - 1 );
+            }
         }
     }
     // Get the element blocks we want to process
     ElementBlocks blocks;
-    blocks.reserve( 3 );
     if ( type == GeomDim ) {
         blocks.emplace_back( MeshElementIndex( type, 0, range[0], range[2], range[4] ),
                              MeshElementIndex( type, 0, range[1], range[3], range[5] ) );
@@ -643,7 +644,6 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
 BoxMesh::ElementBlocks BoxMesh::intersect( const ElementBlocks &set1, const ElementBlocks &set2 )
 {
     ElementBlocks set;
-    set.reserve( set1.size() * set2.size() );
     for ( const auto &v1 : set1 ) {
         for ( const auto &v2 : set2 ) {
             if ( v1.first.type() != v2.first.type() || v1.first.side() != v2.first.side() )
@@ -723,8 +723,7 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
         }
     }
     // Create the iterator
-    std::shared_ptr<std::vector<MeshElementIndex>> elements(
-        new std::vector<MeshElementIndex>( set.begin(), set.end() ) );
+    auto elements = std::make_shared<std::vector<MeshElementIndex>>( set.begin(), set.end() );
     return structuredMeshIterator( elements, this, 0 );
 }
 
@@ -772,8 +771,7 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
         }
     }
     // Create the iterator
-    std::shared_ptr<std::vector<MeshElementIndex>> elements(
-        new std::vector<MeshElementIndex>( set.begin(), set.end() ) );
+    auto elements = std::make_shared<std::vector<MeshElementIndex>>( set.begin(), set.end() );
     return structuredMeshIterator( elements, this, 0 );
 }
 std::vector<int> BoxMesh::getBlockIDs() const { return std::vector<int>( 1, 0 ); }
@@ -868,13 +866,14 @@ std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x 
 {
     const char *type[] = { "Vertex", "Edge", "Face", "Volume" };
     char tmp[128];
-    sprintf( tmp,
-             "(%i,%i,%i,%s,%i)",
-             x.index( 0 ),
-             x.index( 1 ),
-             x.index( 2 ),
-             type[static_cast<int>( x.type() )],
-             x.side() );
+    snprintf( tmp,
+              sizeof tmp,
+              "(%i,%i,%i,%s,%i)",
+              x.index( 0 ),
+              x.index( 1 ),
+              x.index( 2 ),
+              type[static_cast<int>( x.type() )],
+              x.side() );
     out << tmp;
     return out;
 }
