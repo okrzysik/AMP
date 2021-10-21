@@ -226,7 +226,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class SaturatedLiquidEnthalpyProp : public Property
@@ -242,7 +242,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class SaturatedVaporEnthalpyProp : public Property
@@ -258,7 +258,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class SpecificVolumeProp : public Property
@@ -274,7 +274,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class ThermalConductivityProp : public Property
@@ -290,7 +290,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class ConvectiveHeatProp : public Property
@@ -306,7 +306,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DynamicViscosityProp : public Property
@@ -322,7 +322,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class EnthalpyProp : public Property
@@ -338,7 +338,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 
 private:
     double MfpSolve( double, double, double, double );
@@ -356,7 +356,7 @@ const unsigned int EnthalpyProp::Mfp_maxIter = 1000; // maximum number of iterat
 
 //=================== Functions =====================================================
 
-inline double TemperatureProp::eval( std::vector<double> &args )
+inline double TemperatureProp::eval( const std::vector<double> &args )
 {
     double H = args[0]; // local enthalpy in J/kg
     double P = args[1]; // local pressure in Pa
@@ -450,7 +450,7 @@ inline double TemperatureProp::eval( std::vector<double> &args )
     return T;
 }
 
-inline double SaturatedLiquidEnthalpyProp::eval( std::vector<double> &args )
+inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args )
 {
     double P = args[0]; // local pressure in Pa
     double Hf;          // saturated liquid enthalpy [J/kg]
@@ -497,7 +497,7 @@ inline double SaturatedLiquidEnthalpyProp::eval( std::vector<double> &args )
     return Hf;
 }
 
-inline double SaturatedVaporEnthalpyProp::eval( std::vector<double> &args )
+inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args )
 {
     double P = args[0]; // local pressure in Pa
     double Hf;          // saturated liquid enthalpy [J/kg]
@@ -548,7 +548,7 @@ inline double SaturatedVaporEnthalpyProp::eval( std::vector<double> &args )
     return Hf;
 }
 
-inline double SpecificVolumeProp::eval( std::vector<double> &args )
+inline double SpecificVolumeProp::eval( const std::vector<double> &args )
 {
     double H = args[0]; // local enthalpy in J/kg
     double P = args[1]; // local pressure in Pa
@@ -769,7 +769,7 @@ inline double SpecificVolumeProp::eval( std::vector<double> &args )
     return V;
 }
 
-inline double ThermalConductivityProp::eval( std::vector<double> &args )
+inline double ThermalConductivityProp::eval( const std::vector<double> &args )
 {
     double T   = args[0]; // local temperature in Kelvin
     double rho = args[1]; // local density in kg/m3
@@ -831,7 +831,7 @@ inline double ThermalConductivityProp::eval( std::vector<double> &args )
 }
 
 // Compute the turbulent heat transfer coefficient
-inline double ConvectiveHeatProp::eval( std::vector<double> &args )
+inline double ConvectiveHeatProp::eval( const std::vector<double> &args )
 {
     double T   = args[0]; // local temperature in Kelvin
     double rho = args[1]; // local density in kg/m3
@@ -874,7 +874,7 @@ inline double ConvectiveHeatProp::eval( std::vector<double> &args )
     return h;
 }
 
-inline double DynamicViscosityProp::eval( std::vector<double> &args )
+inline double DynamicViscosityProp::eval( const std::vector<double> &args )
 {
     double T   = args[0]; // local temperature in Kelvin
     double rho = args[1]; // local density in kg/m3
@@ -917,7 +917,7 @@ inline double DynamicViscosityProp::eval( std::vector<double> &args )
     return u;
 }
 
-inline double EnthalpyProp::eval( std::vector<double> &args )
+inline double EnthalpyProp::eval( const std::vector<double> &args )
 {
     double T = args[0]; // local temperature in Kelvin
     double P = args[1]; // local pressure in Pa

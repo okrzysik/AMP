@@ -205,7 +205,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return scalar value of property
      */
-    virtual double eval( std::vector<double> &args ) = 0;
+    virtual double eval( const std::vector<double> &args ) = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of return values
