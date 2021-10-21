@@ -111,7 +111,6 @@ protected:
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
 private:
-
     bool d_bUsesPreconditioner = false;
 
     std::string d_preconditioner_side;

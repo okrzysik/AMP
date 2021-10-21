@@ -132,7 +132,6 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
-
     bool d_bRestart = false; //! whether to restart
 
     int d_iMaxKrylovDimension = 50; //! maximum dimension of the Krylov subspace before a restart or

@@ -101,7 +101,6 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
-
     double d_dDivergenceTolerance;
 
     bool d_bUsesPreconditioner;
