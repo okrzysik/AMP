@@ -37,8 +37,6 @@ void GMRESSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
 {
     auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
-    d_comm = parameters->d_comm;
-    AMP_ASSERT( !d_comm.isNull() );
 
     getFromInput( parameters->d_db );
 

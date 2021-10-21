@@ -34,8 +34,6 @@ void CGSolver::initialize( std::shared_ptr<const SolverStrategyParameters> param
 {
     auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
-    d_comm = parameters->d_comm;
-    AMP_ASSERT( !d_comm.isNull() );
 
     d_pPreconditioner = parameters->d_pPreconditioner;
 
