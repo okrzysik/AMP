@@ -214,8 +214,8 @@ use_cf_interpolant = TRUE
 SNESSolver{
 
 name = "SNESSolver"
-use_preconditioner = TRUE
-        //    use_preconditioner              =  FALSE
+uses_preconditioner = TRUE
+        //    uses_preconditioner              =  FALSE
         uses_explicit_jacobian = FALSE
             //   print_linear_residuals  =  TRUE
             //   print_nonlinear_residuals  =  TRUE

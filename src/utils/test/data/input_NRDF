@@ -194,7 +194,7 @@ NKASolver{
    angle_tolerance                  = .01
    absolute_tolerance               = 1.0e-12
    relative_tolerance = 1.0e-08
-   use_preconditioner                           = TRUE
+   uses_preconditioner                           = TRUE
    freeze_pc                        = FALSE
    plot_data                        = FALSE
 }
@@ -202,8 +202,8 @@ NKASolver{
 
 SNESSolver{
    name = "SNESSolver"
-    use_preconditioner              =  TRUE
-//    use_preconditioner              =  FALSE
+    uses_preconditioner              =  TRUE
+//    uses_preconditioner              =  FALSE
     uses_explicit_jacobian           =  FALSE
 //   print_linear_residuals  =  TRUE
 //   print_nonlinear_residuals  =  TRUE

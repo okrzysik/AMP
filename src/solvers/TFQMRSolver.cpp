@@ -51,10 +51,7 @@ void TFQMRSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
 // Function to get values from input
 void TFQMRSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
-
-    d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
-
-    d_bUsesPreconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {

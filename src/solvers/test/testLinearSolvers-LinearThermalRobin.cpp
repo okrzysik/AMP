@@ -54,10 +54,10 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
              ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ) {
 
             // check if we need to construct a preconditioner
-            auto use_preconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
+            auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
             std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
 
-            if ( use_preconditioner ) {
+            if ( uses_preconditioner ) {
 
                 auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
 
@@ -205,10 +205,10 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        auto solver_db          = input_db->getDatabase( "LinearSolver" );
-        auto solver_combo_name  = solver_db->getString( "name" );
-        auto use_preconditioner = solver_db->getWithDefault<bool>( "use_preconditioner", false );
-        if ( use_preconditioner ) {
+        auto solver_db           = input_db->getDatabase( "LinearSolver" );
+        auto solver_combo_name   = solver_db->getString( "name" );
+        auto uses_preconditioner = solver_db->getWithDefault<bool>( "uses_preconditioner", false );
+        if ( uses_preconditioner ) {
             std::string pc_name =
                 solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
             solver_combo_name = solver_combo_name + "+" + pc_name;

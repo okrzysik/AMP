@@ -112,7 +112,7 @@ VolumeIntegralOperator{
 
 LinearSolver{
   name = "TFQMRSolver"
-  use_preconditioner = FALSE
+  uses_preconditioner = FALSE
   print_info_level = 1
   max_iterations = 150
   relative_tolerance = 1e-10
