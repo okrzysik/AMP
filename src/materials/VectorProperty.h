@@ -69,7 +69,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return vector of property values of dimension get_dimensions()[0]
      */
-    virtual std::vector<double> evalVector( std::vector<double> &args ) = 0;
+    virtual std::vector<double> evalVector( const std::vector<double> &args ) = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of vectors of return values
@@ -120,7 +120,7 @@ public:
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    double eval( std::vector<double> & ) override
+    double eval( const std::vector<double> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
         return 0;
