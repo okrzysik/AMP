@@ -44,10 +44,10 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ) {
 
             // check if we need to construct a preconditioner
-            auto use_preconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
+            auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
             std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
 
-            if ( use_preconditioner ) {
+            if ( uses_preconditioner ) {
 
                 auto pc_name = db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
 

@@ -51,9 +51,7 @@ void QMRCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 // Function to get values from input
 void QMRCGSTABSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
-    d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
-
-    d_bUsesPreconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {

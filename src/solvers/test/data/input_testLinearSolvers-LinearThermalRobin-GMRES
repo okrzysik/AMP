@@ -112,7 +112,7 @@ VolumeIntegralOperator{
 
 LinearSolver{
   name = "GMRESSolver"
-  use_preconditioner = FALSE
+  uses_preconditioner = FALSE
   print_info_level = 1
   max_iterations = 30
   max_error = 1e-10

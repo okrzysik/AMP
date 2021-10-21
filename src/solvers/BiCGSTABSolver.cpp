@@ -50,8 +50,6 @@ void BiCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParameters>
 // Function to get values from input
 void BiCGSTABSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
-
-    d_iMaxIterations      = db->getWithDefault<double>( "max_iterations", 1000 );
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 }
 
@@ -140,6 +138,8 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     p->zero();
     v->zero();
 
+    std::shared_ptr<AMP::LinearAlgebra::Vector> p_hat, s, s_hat, t;
+
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
         rho[1] = static_cast<double>( r_tilde->dot( *res ) );
@@ -159,7 +159,7 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             break;
         }
 
-        if ( iter == 1 ) {
+        if ( iter == 0 ) {
 
             p->copyVector( res );
         } else {
@@ -169,7 +169,10 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             p->axpy( beta, *p, *res );
         }
 
-        auto p_hat = u->cloneVector();
+        if ( !p_hat ) {
+            p_hat = u->cloneVector();
+            p_hat->zero();
+        }
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
@@ -184,7 +187,9 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         AMP_ASSERT( alpha != 0.0 );
         alpha = rho[1] / alpha;
 
-        auto s = res->cloneVector();
+        if ( !s ) {
+            s = res->cloneVector();
+        }
         s->axpy( -alpha, *v, *res );
 
         const double s_norm = static_cast<double>( s->L2Norm() );
@@ -196,7 +201,10 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             break;
         }
 
-        auto s_hat = u->cloneVector();
+        if ( !s_hat ) {
+            s_hat = u->cloneVector();
+            s_hat->zero();
+        }
 
         // apply the preconditioner if it exists
         if ( d_bUsesPreconditioner ) {
@@ -205,7 +213,10 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             s_hat->copyVector( s );
         }
 
-        auto t = res->cloneVector();
+
+        if ( !t ) {
+            t = res->cloneVector();
+        }
         d_pOperator->apply( s_hat, t );
 
         double t_sqnorm = static_cast<double>( t->dot( *t ) );
