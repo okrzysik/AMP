@@ -49,7 +49,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class FickCoefficientProp : public Property
@@ -63,7 +63,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class SoretCoefficientProp : public Property
@@ -77,7 +77,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DensityProp : public Property
@@ -91,7 +91,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class ThermalExpansionProp : public Property
@@ -105,7 +105,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class HeatCapacityPressureProp : public Property
@@ -119,7 +119,7 @@ public:
     {
     } // Number of arguments
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class YoungsModulusProp : public Property
@@ -133,7 +133,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class PoissonRatioProp : public Property
@@ -147,7 +147,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DTThermalConductivityProp : public Property
@@ -161,7 +161,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DTFickCoefficientProp : public Property
@@ -175,7 +175,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DTSoretCoefficientProp : public Property
@@ -189,7 +189,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DxThermalConductivityProp : public Property
@@ -203,7 +203,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DxFickCoefficientProp : public Property
@@ -217,7 +217,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class DxSoretCoefficientProp : public Property
@@ -231,7 +231,7 @@ public:
     {
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class VectorFickCoefficientProp : public VectorProperty
@@ -258,7 +258,7 @@ public:
         Property::set_parameters_and_number( params );
     }
 
-    std::vector<double> evalVector( std::vector<double> &args ) override;
+    std::vector<double> evalVector( const std::vector<double> &args ) override;
 };
 
 class TensorFickCoefficientProp : public TensorProperty
@@ -287,7 +287,7 @@ public:
         Property::set_parameters_and_number( params );
     }
 
-    std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) override;
+    std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) override;
 };
 
 static std::initializer_list<double> thermalDiffusionParams = { 1., 1. };
@@ -300,38 +300,50 @@ static std::vector<std::array<double, 2>> thermDiffRanges   = {};
 
 //  =================== Functions =====================================================
 
-inline double ThermalConductivityProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double FickCoefficientProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double SoretCoefficientProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double DTThermalConductivityProp::eval( std::vector<double> & ) { return 0.; }
-
-inline double DxThermalConductivityProp::eval( std::vector<double> & ) { return 0.; }
-
-inline double DTFickCoefficientProp::eval( std::vector<double> & ) { return 0.; }
-
-inline double DxFickCoefficientProp::eval( std::vector<double> & ) { return 0.; }
-
-inline double DTSoretCoefficientProp::eval( std::vector<double> & ) { return 0.; }
-
-inline double DxSoretCoefficientProp::eval( std::vector<double> & ) { return 0.; }
-
-inline double DensityProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double ThermalExpansionProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double HeatCapacityPressureProp::eval( std::vector<double> & )
+inline double ThermalConductivityProp::eval( const std::vector<double> & )
 {
     return get_parameters()[0];
 }
 
-inline double YoungsModulusProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
+inline double FickCoefficientProp::eval( const std::vector<double> & )
+{
+    return get_parameters()[0];
+}
 
-inline double PoissonRatioProp::eval( std::vector<double> & ) { return get_parameters()[0]; }
+inline double SoretCoefficientProp::eval( const std::vector<double> & )
+{
+    return get_parameters()[0];
+}
 
-std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double> & )
+inline double DTThermalConductivityProp::eval( const std::vector<double> & ) { return 0.; }
+
+inline double DxThermalConductivityProp::eval( const std::vector<double> & ) { return 0.; }
+
+inline double DTFickCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
+
+inline double DxFickCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
+
+inline double DTSoretCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
+
+inline double DxSoretCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
+
+inline double DensityProp::eval( const std::vector<double> & ) { return get_parameters()[0]; }
+
+inline double ThermalExpansionProp::eval( const std::vector<double> & )
+{
+    return get_parameters()[0];
+}
+
+inline double HeatCapacityPressureProp::eval( const std::vector<double> & )
+{
+    return get_parameters()[0];
+}
+
+inline double YoungsModulusProp::eval( const std::vector<double> & ) { return get_parameters()[0]; }
+
+inline double PoissonRatioProp::eval( const std::vector<double> & ) { return get_parameters()[0]; }
+
+std::vector<double> VectorFickCoefficientProp::evalVector( const std::vector<double> & )
 {
     std::vector<double> result( d_dimension );
     for ( size_t i = 0; i < d_dimension; i++ )
@@ -339,7 +351,8 @@ std::vector<double> VectorFickCoefficientProp::evalVector( std::vector<double> &
     return result;
 }
 
-std::vector<std::vector<double>> TensorFickCoefficientProp::evalTensor( std::vector<double> & )
+std::vector<std::vector<double>>
+TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
 {
     std::vector<std::vector<double>> result( d_dimensions[0],
                                              std::vector<double>( d_dimensions[1] ) );

@@ -52,7 +52,7 @@ public:
     {
     } // Range of variables
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 class SoretCoefficientProp : public Property
@@ -67,12 +67,12 @@ public:
     {
     } // Range of variables
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 //=================== Functions =====================================================
 
-inline double FickCoefficientProp::eval( std::vector<double> &args )
+inline double FickCoefficientProp::eval( const std::vector<double> &args )
 {
     double T = args[0];
     double u = args[1];
@@ -90,7 +90,7 @@ inline double FickCoefficientProp::eval( std::vector<double> &args )
     return fick;
 }
 
-inline double SoretCoefficientProp::eval( std::vector<double> &args )
+inline double SoretCoefficientProp::eval( const std::vector<double> &args )
 {
     double T = args[0];
     double u = args[1];

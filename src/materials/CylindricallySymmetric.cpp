@@ -89,7 +89,7 @@ public:
     /** returns property and derivative wrto r
      * \return [0]=property, [1]=property derivative wrto r
      */
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 /** radial diffusion coefficient */
@@ -109,7 +109,7 @@ public:
     /** returns property and derivative wrto r
      * \return [0]=property, [1]=property derivative wrto r
      */
-    std::vector<double> evalVector( std::vector<double> &args ) override;
+    std::vector<double> evalVector( const std::vector<double> &args ) override;
 };
 
 /** longitudinal diffusion coefficient */
@@ -126,7 +126,7 @@ public:
         d_variableNumberParameters = true;
     }
 
-    std::vector<double> evalVector( std::vector<double> &args ) override;
+    std::vector<double> evalVector( const std::vector<double> &args ) override;
 };
 
 /** full cylindrically symmetric tensor diffusion coefficient
@@ -172,7 +172,7 @@ public:
         d_longitudinalK.set_parameters_and_number( paramsLongitudinal );
     }
 
-    std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) override;
+    std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) override;
 
 private:
     RadialFickProp d_radialK;
@@ -183,7 +183,7 @@ private:
 
 //=================== Functions =====================================================
 
-inline double ScalarRadialFickProp::eval( std::vector<double> &args )
+inline double ScalarRadialFickProp::eval( const std::vector<double> &args )
 {
     AMP_ASSERT( !args.empty() );
     double result;
@@ -194,7 +194,7 @@ inline double ScalarRadialFickProp::eval( std::vector<double> &args )
     return result;
 }
 
-inline std::vector<double> RadialFickProp::evalVector( std::vector<double> &args )
+inline std::vector<double> RadialFickProp::evalVector( const std::vector<double> &args )
 {
     AMP_ASSERT( !args.empty() );
     std::vector<double> result( 2 );
@@ -209,7 +209,7 @@ inline std::vector<double> RadialFickProp::evalVector( std::vector<double> &args
     return result;
 }
 
-inline std::vector<double> LongitudinalFickProp::evalVector( std::vector<double> &args )
+inline std::vector<double> LongitudinalFickProp::evalVector( const std::vector<double> &args )
 {
     AMP_ASSERT( !args.empty() );
     std::vector<double> result( 2 );
@@ -224,7 +224,7 @@ inline std::vector<double> LongitudinalFickProp::evalVector( std::vector<double>
     return result;
 }
 
-std::vector<std::vector<double>> TensorFickProp::evalTensor( std::vector<double> &args )
+std::vector<std::vector<double>> TensorFickProp::evalTensor( const std::vector<double> &args )
 {
     AMP_ASSERT( args.size() > 2 );
     std::vector<std::vector<double>> result( 3, std::vector<double>( 3, 0. ) );

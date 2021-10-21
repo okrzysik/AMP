@@ -142,7 +142,7 @@ void Property::evalvActual( RETURN_VTYPE &r,
 /************************************************************************
  *  evalv                                                                *
  ************************************************************************/
-double Property::eval( std::vector<double> & )
+double Property::eval( const std::vector<double> & )
 {
     AMP_INSIST( false, "function is not implemented for this property" );
     return 0;
