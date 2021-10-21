@@ -71,7 +71,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return tensor of property values with dimensions get_dimensions()
      */
-    virtual std::vector<std::vector<double>> evalTensor( std::vector<double> &args ) = 0;
+    virtual std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r tensor vector of return values
@@ -123,7 +123,7 @@ public:
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
 
     // disable scalar evaluator
-    double eval( std::vector<double> & ) override
+    double eval( const std::vector<double> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
         return 0;

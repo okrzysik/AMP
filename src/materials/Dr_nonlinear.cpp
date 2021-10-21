@@ -44,12 +44,12 @@ public:
     {
     } // Range of variables
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 };
 
 //=================== Functions =====================================================
 
-inline double FickCoefficientProp::eval( std::vector<double> &args )
+inline double FickCoefficientProp::eval( const std::vector<double> &args )
 {
     double T = args[0];
     double u = args[1];

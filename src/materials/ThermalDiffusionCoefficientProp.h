@@ -47,10 +47,10 @@ public:
         d_SoretProp.set_parameters( std::move( soretParams ) );
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 
 protected:
-    virtual void getExtraParameters( std::vector<double> &args )
+    virtual void getExtraParameters( const std::vector<double> &args )
     {
         d_ExtraParams[0] = d_FickProp.eval( args );
         d_ExtraParams[1] = d_SoretProp.eval( args );
@@ -93,10 +93,10 @@ public:
         d_SoretProp.set_parameters( std::move( soretParams ) );
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 
 protected:
-    virtual void getExtraParameters( std::vector<double> &args )
+    virtual void getExtraParameters( const std::vector<double> &args )
     {
         d_ExtraParams[0] = d_FickProp.eval( args );
         d_ExtraParams[1] = d_SoretProp.eval( args );
@@ -139,10 +139,10 @@ public:
         d_SoretProp.set_parameters( std::move( soretParams ) );
     }
 
-    double eval( std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override;
 
 protected:
-    virtual void getExtraParameters( std::vector<double> &args )
+    virtual void getExtraParameters( const std::vector<double> &args )
     {
         d_ExtraParams[0] = d_FickProp.eval( args );
         d_ExtraParams[1] = d_SoretProp.eval( args );
@@ -162,7 +162,7 @@ private:
 
 //=================== Functions =====================================================
 
-inline double ThermalDiffusionCoefficientProp::eval( std::vector<double> &args )
+inline double ThermalDiffusionCoefficientProp::eval( const std::vector<double> &args )
 {
     this->getExtraParameters( args );
     double fick  = d_ExtraParams[0];
@@ -172,7 +172,7 @@ inline double ThermalDiffusionCoefficientProp::eval( std::vector<double> &args )
 
 #ifdef THERMAL_DIFFUSION_DERIVATIVE
 
-inline double DxThermalDiffusionCoefficientProp::eval( std::vector<double> &args )
+inline double DxThermalDiffusionCoefficientProp::eval( const std::vector<double> &args )
 {
     this->getExtraParameters( args );
     double fick    = d_ExtraParams[0];
@@ -182,7 +182,7 @@ inline double DxThermalDiffusionCoefficientProp::eval( std::vector<double> &args
     return fickDx * soret + fick * soretDx;
 }
 
-inline double DTThermalDiffusionCoefficientProp::eval( std::vector<double> &args )
+inline double DTThermalDiffusionCoefficientProp::eval( const std::vector<double> &args )
 {
     this->getExtraParameters( args );
     double fick    = d_ExtraParams[0];

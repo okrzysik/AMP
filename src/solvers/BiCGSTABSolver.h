@@ -113,8 +113,6 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
-    AMP_MPI d_comm;
-
     int d_restarts = 0; //! number of times the solver is restarted
 
     bool d_bUsesPreconditioner = false;

@@ -37,8 +37,6 @@ void GMRESSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
 {
     auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
-    d_comm = parameters->d_comm;
-    AMP_ASSERT( !d_comm.isNull() );
 
     getFromInput( parameters->d_db );
 
@@ -363,11 +361,7 @@ void GMRESSolver::backwardSolve( void )
 void GMRESSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
-
     d_pOperator = op;
-
-    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator );
 }
 
 void GMRESSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
