@@ -132,7 +132,6 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
-    AMP_MPI d_comm;
 
     bool d_bRestart = false; //! whether to restart
 

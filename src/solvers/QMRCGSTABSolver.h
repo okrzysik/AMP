@@ -109,7 +109,6 @@ protected:
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
 private:
-    AMP_MPI d_comm;
 
     bool d_bUsesPreconditioner = false;
 

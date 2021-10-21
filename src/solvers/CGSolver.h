@@ -101,7 +101,6 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
-    AMP_MPI d_comm;
 
     double d_dDivergenceTolerance;
 
