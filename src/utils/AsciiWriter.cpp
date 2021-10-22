@@ -48,12 +48,14 @@ AsciiWriter::~AsciiWriter() = default;
 Writer::WriterProperties AsciiWriter::getProperties() const
 {
     WriterProperties properties;
-    properties.type                   = "Ascii";
-    properties.extension              = "ascii";
-    properties.registerMesh           = false;
-    properties.registerVector         = true;
-    properties.registerVectorWithMesh = false;
-    properties.registerMatrix         = true;
+    properties.type      = "Ascii";
+    properties.extension = "ascii";
+#ifdef USE_AMP_VECTORS
+    properties.registerVector = true;
+#endif
+#ifdef USE_AMP_MATRICES
+    properties.registerMatrix = true;
+#endif
     return properties;
 }
 

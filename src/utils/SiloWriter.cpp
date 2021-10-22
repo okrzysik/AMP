@@ -70,12 +70,14 @@ SiloIO::~SiloIO() = default;
 Writer::WriterProperties SiloIO::getProperties() const
 {
     WriterProperties properties;
-    properties.type                   = "Silo";
-    properties.extension              = "silo";
-    properties.registerMesh           = true;
-    properties.registerVector         = false;
+    properties.type      = "Silo";
+    properties.extension = "silo";
+#if defined( USE_EXT_SILO ) && defined( USE_AMP_MESH )
+    properties.registerMesh = true;
+#ifdef USE_AMP_VECTORS
     properties.registerVectorWithMesh = true;
-    properties.registerMatrix         = false;
+#endif
+#endif
     return properties;
 }
 

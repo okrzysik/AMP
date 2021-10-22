@@ -56,12 +56,13 @@ HDF5writer::~HDF5writer() = default;
 Writer::WriterProperties HDF5writer::getProperties() const
 {
     WriterProperties properties;
-    properties.type                   = "HDF5";
-    properties.extension              = "hdf";
-    properties.registerMesh           = false;
-    properties.registerVector         = true;
-    properties.registerVectorWithMesh = false;
-    properties.registerMatrix         = false;
+    properties.type      = "HDF5";
+    properties.extension = "hdf5";
+#ifdef USE_EXT_HDF5
+#ifdef USE_AMP_VECTORS
+    properties.registerVector = true;
+#endif
+#endif
     return properties;
 }
 
@@ -81,28 +82,42 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
  ************************************************************/
 void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
-    NULL_USE( fname_in );
-    NULL_USE( cycle );
-    NULL_USE( time );
 #ifdef USE_EXT_HDF5
     AMP_ASSERT( d_comm.getSize() == 1 );
     // Create the file
     auto filename = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
     auto fid      = openHDF5( filename, "w", Compression::GZIP );
     writeHDF5( fid, "time", time );
+    // Add the mesh
+#ifdef USE_AMP_MESH
+    for ( size_t i = 0; i < d_mesh.size(); i++ ) {
+        AMP_ERROR( "Not finished" );
+    }
+#endif
     // Add the vectors
 #ifdef USE_AMP_VECTORS
-    for ( size_t i = 0; i < d_vec.size(); i++ ) {
-        auto arrayData = getArrayData( d_vec[i].vec );
+    for ( auto vec : d_vec ) {
+        auto arrayData = getArrayData( vec.vec );
         if ( arrayData ) {
-            writeHDF5( fid, d_vec[i].name, arrayData->getArray() );
+            writeHDF5( fid, vec.name, arrayData->getArray() );
         } else {
             AMP_ERROR( "Not finished" );
         }
     }
 #endif
+    // Add the matricies
+#ifdef USE_AMP_MESH
+    for ( size_t i = 0; i < d_mat.size(); i++ ) {
+        AMP_ERROR( "Not finished" );
+    }
+#endif
     // Close the file
     closeHDF5( fid );
+#else
+    // No HDF5
+    NULL_USE( fname_in );
+    NULL_USE( cycle );
+    NULL_USE( time );
 #endif
 }
 
@@ -114,10 +129,16 @@ void HDF5writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                int level,
                                const std::string &path )
 {
-    NULL_USE( mesh );
-    NULL_USE( level );
-    NULL_USE( path );
-    AMP_ERROR( "Meshes are not supported yet" );
+    /*    d_mesh
+          \param level How many sub meshes do we want?
+                       0: Only register the local base meshes (advanced users only)
+                       1: Register current mesh only (default)
+                       2: Register all meshes (do not seperate for the ranks)
+                       3: Register all mesh pieces including the individual ranks
+          \param path  The directory path for the mesh.  Default is an empty string.
+        void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                           int level               = 1,
+                           const std::string &path = std::string() ) override;*/
 }
 
 

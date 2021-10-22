@@ -11,6 +11,18 @@ namespace AMP::Utilities {
 
 
 /************************************************************
+ * WriterProperties                                          *
+ ************************************************************/
+Writer::WriterProperties::WriterProperties()
+    : registerMesh( false ),
+      registerVector( false ),
+      registerVectorWithMesh( false ),
+      registerMatrix( false )
+{
+}
+
+
+/************************************************************
  * Builder                                                   *
  ************************************************************/
 std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type, AMP_MPI comm )

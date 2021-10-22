@@ -57,7 +57,7 @@ public:
     };
 
     struct MeshData {
-        std::string name;          // Name of mesh
+        std::string name;          // Name of mesh domain
         TopologyType type;         // Type of mesh
         ArraySize size;            // Size of mesh (meaning depends on mesh type)
         double range[6];           // Range of the mesh (only used for UniformMesh2D/UniformMesh3D)
@@ -113,7 +113,7 @@ public:
 
     /*!
      * @brief  Add an unstructured mesh
-     * @details  This function adds an unstructerd mesh to the class to write.
+     * @details  This function adds an unstructured mesh to the class to write.
      *    The mesh may be one of several unsupported unstructured mesh types.
      *    This function does not support mixed elements.
      * @param[in] name          The name of the mesh
