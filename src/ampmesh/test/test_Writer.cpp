@@ -70,7 +70,7 @@ void printMeshNames( const std::string &filename )
     auto database = input_db->getDatabase( "Mesh" );
     auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
-    auto mesh        = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
     if ( globalComm.getRank() == 0 ) {
         std::cout << "Mesh names (rank 0):\n";
         printMeshNames( mesh, "   " );
@@ -206,7 +206,7 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
 #endif
 
     // Register the data
-    int level   = 1; // How much detail do we want to register
+    int level = 1; // How much detail do we want to register
     writer->registerMesh( mesh, level );
     if ( submesh )
         writer->registerMesh( submesh, level );
@@ -286,7 +286,8 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
     double t5 = AMP::AMP_MPI::time();
 
     // Write a single output file
-    std::string fname = "test_Writer-" + input_file + "-" + writerName + "-" + std::to_string( globalComm.getSize() );
+    std::string fname = "test_Writer-" + input_file + "-" + writerName + "-" +
+                        std::to_string( globalComm.getSize() );
     if ( globalComm.getSize() <= 20 ) {
         globalComm.barrier();
         writer->setDecomposition( 1 );
@@ -338,23 +339,21 @@ int main( int argc, char **argv )
         testWriter( ut, "Ascii", "input_SiloIO-1" );
 
     } else {
-        
+
         // Test the provided input files
-        for ( int i=1; i<argc; i++) {
+        for ( int i = 1; i < argc; i++ ) {
+
+            if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() == 0 )
+                std::cout << "Testing " << argv[i] << std::endl;
 
             // Print the mesh names (rank 0)
-            if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() == 0 ) {
-                std::cout << "Testing " << argv[i] << std::endl;
-                std::cout << "Mesh names (rank 0):\n";
-                printMeshNames( argv[i] );
-            }
+            printMeshNames( argv[i] );
 
             // Run the tests
             testWriter( ut, "Silo", argv[i] );
             testWriter( ut, "HDF5", argv[i] );
             testWriter( ut, "Ascii", argv[i] );
         }
-
     }
 
     int N_failed = ut.NumFailGlobal();
