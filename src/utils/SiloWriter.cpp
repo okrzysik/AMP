@@ -70,14 +70,10 @@ SiloIO::~SiloIO() = default;
 Writer::WriterProperties SiloIO::getProperties() const
 {
     WriterProperties properties;
-    properties.type      = "Silo";
-    properties.extension = "silo";
-#if defined( USE_EXT_SILO ) && defined( USE_AMP_MESH )
-    properties.registerMesh = true;
-#ifdef USE_AMP_VECTORS
+    properties.type                   = "Silo";
+    properties.extension              = "silo";
+    properties.registerMesh           = true;
     properties.registerVectorWithMesh = true;
-#endif
-#endif
     return properties;
 }
 
@@ -337,59 +333,60 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     DBAddOption( optlist, DBOPT_TIME, &ftime );
     DBAddOption( optlist, DBOPT_DTIME, &time );
     // DBAddOption(optlist, DBOPT_UNITS, (void *)units);
-    for ( size_t i = 0; i < data.varName.size(); ++i ) {
-        auto DOFs     = data.vec[i]->getDOFManager();
+    for ( const auto &vector : data.vectors ) {
+        int varSize   = vector.numDOFs;
+        auto varType  = vector.type;
+        auto DOFs     = vector.vec->getDOFManager();
         int nvar      = 0;
         int centering = 0;
-        auto var      = new double *[data.varSize[i]];
-        for ( int j = 0; j < data.varSize[i]; ++j )
+        auto var      = new double *[varSize];
+        for ( int j = 0; j < varSize; ++j )
             var[j] = nullptr;
         const char *varnames[] = { "1", "2", "3" };
-        if ( data.varType[i] > mesh->getGeomType() ) {
+        if ( varType > mesh->getGeomType() ) {
             // We have a mixed mesh type and there will be no data of the given type for this mesh
             continue;
-        } else if ( data.varType[i] == AMP::Mesh::GeomType::Vertex ) {
+        } else if ( varType == AMP::Mesh::GeomType::Vertex ) {
             // We are saving node-centered data
             centering = DB_NODECENT;
             nvar      = (int) nodelist_ids.size();
-            for ( int j = 0; j < data.varSize[i]; ++j )
+            for ( int j = 0; j < varSize; ++j )
                 var[j] = new double[nvar];
-            std::vector<size_t> dofs( data.varSize[i] );
-            std::vector<double> vals( data.varSize[i] );
+            std::vector<size_t> dofs( varSize );
+            std::vector<double> vals( varSize );
             for ( int j = 0; j < nvar; ++j ) {
                 DOFs->getDOFs( nodelist_ids[j], dofs );
-                AMP_ASSERT( (int) dofs.size() == data.varSize[i] );
-                data.vec[i]->getValuesByGlobalID( data.varSize[i], &dofs[0], &vals[0] );
-                for ( int k = 0; k < data.varSize[i]; ++k )
+                AMP_ASSERT( (int) dofs.size() == varSize );
+                vector.vec->getValuesByGlobalID( varSize, &dofs[0], &vals[0] );
+                for ( int k = 0; k < varSize; ++k )
                     var[k][j] = vals[k];
             }
-        } else if ( data.varType[i] == mesh->getGeomType() ) {
+        } else if ( varType == mesh->getGeomType() ) {
             // We are saving cell-centered data
             centering = DB_ZONECENT;
             nvar      = (int) num_elems;
-            for ( int j = 0; j < data.varSize[i]; ++j )
+            for ( int j = 0; j < varSize; ++j )
                 var[j] = new double[nvar];
-            std::vector<size_t> dofs( data.varSize[i] );
-            std::vector<double> vals( data.varSize[i] );
+            std::vector<size_t> dofs( varSize );
+            std::vector<double> vals( varSize );
             auto it = element_iterator.begin();
             for ( int j = 0; j < nvar; ++j, ++it ) {
                 DOFs->getDOFs( it->globalID(), dofs );
-                data.vec[i]->getValuesByGlobalID( data.varSize[i], &dofs[0], &vals[0] );
-                for ( int k = 0; k < data.varSize[i]; ++k )
+                vector.vec->getValuesByGlobalID( varSize, &dofs[0], &vals[0] );
+                for ( int k = 0; k < varSize; ++k )
                     var[k][j] = vals[k];
             }
         } else {
             // We are storing edge or face data
             AMP_ERROR( "The silo writer currently only supports GeomType::Vertex and Cell data" );
         }
-        std::string varNameRank = data.varName[i] + "P" + std::to_string( data.rank );
-        if ( data.varSize[i] == 1 || data.varSize[i] == d_dim ||
-             data.varSize[i] == d_dim * d_dim ) {
+        std::string varNameRank = vector.name + "P" + std::to_string( data.rank );
+        if ( varSize == 1 || varSize == d_dim || varSize == d_dim * d_dim ) {
             // We are writing a scalar, vector, or tensor variable
             DBPutUcdvar( FileHandle,
                          varNameRank.c_str(),
                          meshName.c_str(),
-                         data.varSize[i],
+                         varSize,
                          (char **) varnames,
                          var,
                          nvar,
@@ -400,7 +397,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
                          optlist );
         } else {
             // Write each component
-            for ( int j = 0; j < data.varSize[i]; ++j ) {
+            for ( int j = 0; j < varSize; ++j ) {
                 auto vname = varNameRank + "_" + std::to_string( j );
                 DBPutUcdvar( FileHandle,
                              vname.c_str(),
@@ -416,7 +413,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
                              optlist );
             }
         }
-        for ( int j = 0; j < data.varSize[i]; ++j ) {
+        for ( int j = 0; j < varSize; ++j ) {
             if ( var[j] )
                 delete[] var[j];
         }
@@ -733,9 +730,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                     vartypes[i] = DB_UCDVAR;
                 }
                 int varSize = 0;
-                for ( size_t i = 0; i < data.meshes[0].varName.size(); ++i ) {
-                    if ( data.meshes[0].varName[i] == varName ) {
-                        varSize = data.meshes[0].varSize[i];
+                for ( size_t i = 0; i < data.meshes[0].vectors.size(); ++i ) {
+                    if ( data.meshes[0].vectors[i].name == varName ) {
+                        varSize = data.meshes[0].vectors[i].numDOFs;
                         break;
                     }
                 }

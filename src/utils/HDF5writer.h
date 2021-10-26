@@ -47,29 +47,9 @@ public:
      */
     void writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
-private:
-    typedef std::shared_ptr<AMP::Mesh::Mesh> MeshData;
-
-    struct VectorData {
-        std::string name;
-        std::shared_ptr<AMP::LinearAlgebra::Vector> vec;
-        AMP::Mesh::GeomType type;
-        MeshData *mesh;
-        VectorData() : type( static_cast<AMP::Mesh::GeomType>( 0xFF ) ), mesh( nullptr ) {}
-    };
-
-    struct MatrixData {
-        std::string name;
-        std::shared_ptr<AMP::LinearAlgebra::Matrix> mat;
-    };
 
 private:
-    void writeMesh( MeshData );
-
-
-private:
-    std::vector<VectorData> d_vec;
-    std::vector<MatrixData> d_mat;
+    // void writeMesh( MeshData );
 };
 
 } // namespace AMP::Utilities

@@ -64,6 +64,15 @@ public:
 };
 
 
+//! Checks whether T is an initializer_list
+template<typename T>
+struct is_initializer_list : std::false_type {
+};
+template<typename T>
+struct is_initializer_list<std::initializer_list<T>> : std::true_type {
+};
+
+
 } // namespace AMP
 
 

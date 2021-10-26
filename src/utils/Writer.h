@@ -165,6 +165,24 @@ public:
                          const std::string &name = "" );
 
 protected: // Protected structures
+    // Structure to hold vector data
+    struct VectorData {
+        std::string name;                                // Vector name to store
+        int numDOFs;                                     // Number of unknowns per point
+        std::shared_ptr<AMP::LinearAlgebra::Vector> vec; // AMP vector
+        AMP::Mesh::GeomType type;                        // Types of variables
+        VectorData() : numDOFs( 0 ), type( static_cast<AMP::Mesh::GeomType>( 0xFF ) ) {}
+        VectorData( std::shared_ptr<AMP::LinearAlgebra::Vector>, const std::string & );
+    };
+
+    // Structure to hold matrix data
+    struct MatrixData {
+        std::string name;                                // Matrix name to store
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> mat; // AMP matrix
+        MatrixData() = default;
+        MatrixData( std::shared_ptr<AMP::LinearAlgebra::Matrix>, const std::string & );
+    };
+
     // Structure used to hold data for a base mesh
     struct baseMeshData {
         uint64_t id; // Unique ID to identify the mesh (will use the mesh id)
@@ -174,10 +192,7 @@ protected: // Protected structures
         std::string meshName;                  // Name of the mesh
         std::string path;                      // Path to the mesh
         std::string file;                      // File that will contain the mesh
-        std::vector<std::string> varName;      // Names of variables for each mesh
-        std::vector<AMP::Mesh::GeomType> varType; // Types of variables for each mesh
-        std::vector<int> varSize;                 // Number of unknowns per point
-        std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> vec; // Vectors for each mesh
+        std::vector<VectorData> vectors;       // Vectors for each mesh
         // Function to count the number of bytes needed to pack the data
         size_t size() const;
         // Function to pack the data to a byte array (note: some info may be lost)
@@ -228,10 +243,10 @@ protected: // Internal data
     std::map<uint64_t, multiMeshData> d_multiMeshes;
 
     // List of all independent vectors that have been registered
-    std::map<uint64_t, std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vectors;
+    std::map<uint64_t, VectorData> d_vectors;
 
     // List of all independent matrices that have been registered
-    std::map<uint64_t, std::shared_ptr<AMP::LinearAlgebra::Matrix>> d_matrices;
+    std::map<uint64_t, MatrixData> d_matrices;
 
     // List of all variables (work on removing)
     std::set<std::string> d_varNames;

@@ -22,8 +22,7 @@
 #endif
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -199,7 +198,6 @@ std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable )
 #endif
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

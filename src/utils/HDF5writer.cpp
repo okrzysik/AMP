@@ -57,16 +57,10 @@ HDF5writer::~HDF5writer() = default;
 Writer::WriterProperties HDF5writer::getProperties() const
 {
     WriterProperties properties;
-    properties.type      = "HDF5";
-    properties.extension = "hdf5";
-#ifdef USE_EXT_HDF5
-#ifdef USE_AMP_VECTORS
+    properties.type           = "HDF5";
+    properties.extension      = "hdf5";
     properties.registerVector = true;
-#endif
-#ifdef USE_AMP_MESH
-    properties.registerMesh = false;
-#endif
-#endif
+    properties.registerMesh   = false;
     return properties;
 }
 
@@ -99,10 +93,11 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
 #endif
         // Add the vectors
 #ifdef USE_AMP_VECTORS
-    for ( auto vec : d_vec ) {
-        auto arrayData = getArrayData( vec.vec );
+    for ( const auto &[id, data] : d_vectors ) {
+        NULL_USE( id );
+        auto arrayData = getArrayData( data.vec );
         if ( arrayData ) {
-            writeHDF5( fid, vec.name, arrayData->getArray() );
+            writeHDF5( fid, data.name, arrayData->getArray() );
         } else {
             AMP_ERROR( "Not finished" );
         }
@@ -110,7 +105,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
 #endif
     // Add the matricies
 #ifdef USE_AMP_MESH
-    for ( size_t i = 0; i < d_mat.size(); i++ ) {
+    for ( size_t i = 0; i < d_matrices.size(); i++ ) {
         AMP_ERROR( "Not finished" );
     }
 #endif
@@ -123,7 +118,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     NULL_USE( time );
 #endif
 }
-void HDF5writer::writeMesh( MeshData data )
+/*void HDF5writer::writeMesh( MeshData data )
 {
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( data );
     if ( multimesh ) {
@@ -133,7 +128,7 @@ void HDF5writer::writeMesh( MeshData data )
     } else {
         AMP_ERROR( "Not finished" );
     }
-}
+}*/
 
 
 } // namespace AMP::Utilities

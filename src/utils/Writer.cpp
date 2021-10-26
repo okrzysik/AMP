@@ -87,6 +87,37 @@ Writer::WriterProperties::WriterProperties()
 
 
 /************************************************************
+ * Writer::VectorData                                        *
+ ************************************************************/
+Writer::VectorData::VectorData( std::shared_ptr<AMP::LinearAlgebra::Vector> vec_,
+                                const std::string &name_ )
+    : name( name_ ), numDOFs( 0 ), vec( vec_ ), type( static_cast<AMP::Mesh::GeomType>( 0xFF ) )
+{
+    if ( !vec )
+        return;
+    if ( name.empty() )
+        name = vec->getVariable()->getName();
+    if ( name.empty() )
+        name = vec->type();
+}
+
+
+/************************************************************
+ * Writer::MatrixData                                        *
+ ************************************************************/
+Writer::MatrixData::MatrixData( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat_,
+                                const std::string &name_ )
+    : name( name_ ), mat( mat_ )
+{
+    if ( !mat )
+        return;
+    if ( name.empty() )
+        name = mat->getLeftVector()->getVariable()->getName() + " - " +
+               mat->getRightVector()->getVariable()->getName();
+}
+
+
+/************************************************************
  * Builder                                                   *
  ************************************************************/
 std::shared_ptr<AMP::Utilities::Writer> Writer::buildWriter( std::string type, AMP_MPI comm )
@@ -215,13 +246,17 @@ void Writer::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, const st
 void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                              const std::string &name )
 {
-    NULL_USE( vec );
-    NULL_USE( name );
 #ifdef USE_AMP_VECTORS
     auto id = getID( vec->getComm(), d_comm );
-    d_vectors.insert( std::make_pair( id, vec ) );
+    VectorData data( vec, name );
+    d_vectors.insert( std::make_pair( id, std::move( data ) ) );
+#else
+    NULL_USE( vec );
+    NULL_USE( name );
 #endif
 }
+
+
 /************************************************************
  * Register a vector with a mesh                             *
  ************************************************************/
@@ -257,28 +292,24 @@ void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
         AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
     }
     // Register the vector with the appropriate base meshes
-    std::string name = vec->type();
-    if ( !name.empty() ) {
-        name = name_in;
-    }
-    auto ids = getMeshIDs( mesh );
+    VectorData data( vec, name_in );
+    data.type    = type;
+    data.numDOFs = DOFsPerPoint;
+    auto ids     = getMeshIDs( mesh );
     for ( auto id : ids ) {
         const auto &it = d_baseMeshes.find( id.getData() );
         if ( it == d_baseMeshes.end() )
             continue;
-        it->second.varName.push_back( name );
-        it->second.varType.push_back( type );
-        it->second.varSize.push_back( DOFsPerPoint );
-        it->second.vec.push_back( vec );
+        it->second.vectors.push_back( data );
     }
     // Register the vector with the appropriate multi-meshes
     auto it = d_multiMeshes.find( mesh->meshID().getData() );
     AMP_ASSERT( it != d_multiMeshes.end() );
-    it->second.varName.push_back( name );
+    it->second.varName.push_back( data.name );
     // Add the vector to the list of vectors so we can perform makeConsistent
     d_vectorsMesh.push_back( vec );
     // Add the variable name to the list of variables
-    d_varNames.insert( name );
+    d_varNames.insert( data.name );
 }
 #endif
 
@@ -289,11 +320,13 @@ void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
 void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
                              const std::string &name )
 {
-    NULL_USE( mat );
-    NULL_USE( name );
 #ifdef USE_AMP_MATRICES
     auto id = getID( mat->getLeftVector()->getComm(), d_comm );
-    d_matrices.insert( std::make_pair( id, mat ) );
+    MatrixData data( mat, name );
+    d_matrices.insert( std::make_pair( id, std::move( data ) ) );
+#else
+    NULL_USE( mat );
+    NULL_USE( name );
 #endif
 }
 
@@ -337,8 +370,8 @@ size_t Writer::baseMeshData::size() const
     N_bytes += path.size() + 1;          // Store the mesh path
     N_bytes += file.size() + 1;          // Store the mesh file
     N_bytes += sizeof( int );            // Store the number of variables
-    for ( auto &elem : varName ) {
-        N_bytes += elem.size() + 1;               // Store the variable name
+    for ( auto &vec : vectors ) {
+        N_bytes += vec.name.size() + 1;           // Store the variable name
         N_bytes += sizeof( AMP::Mesh::GeomType ); // Store the variable type
         N_bytes += sizeof( int );                 // Store the number of unknowns per point
     }
@@ -353,11 +386,11 @@ void Writer::baseMeshData::pack( char *ptr ) const
     packData<std::string>( ptr, pos, meshName );
     packData<std::string>( ptr, pos, path );
     packData<std::string>( ptr, pos, file );
-    packData<int>( ptr, pos, varName.size() );
-    for ( size_t i = 0; i < varName.size(); ++i ) {
-        packData<std::string>( ptr, pos, varName[i] );
-        packData<AMP::Mesh::GeomType>( ptr, pos, varType[i] );
-        packData<int>( ptr, pos, varSize[i] );
+    packData<int>( ptr, pos, vectors.size() );
+    for ( auto &vec : vectors ) {
+        packData<std::string>( ptr, pos, vec.name );
+        packData<AMP::Mesh::GeomType>( ptr, pos, vec.type );
+        packData<int>( ptr, pos, vec.numDOFs );
     }
     AMP_ASSERT( pos == size() );
 }
@@ -373,16 +406,11 @@ Writer::baseMeshData Writer::baseMeshData::unpack( const char *ptr )
     data.file      = unpackData<std::string>( ptr, pos );
     // Store the variables
     size_t N_var = unpackData<int>( ptr, pos );
-    data.varName.resize( N_var );
-    data.varType.resize( N_var );
-    data.varSize.resize( N_var );
-#ifdef USE_AMP_VECTORS
-    data.vec.resize( N_var );
-#endif
+    data.vectors.resize( N_var );
     for ( size_t i = 0; i < N_var; ++i ) {
-        data.varName[i] = unpackData<std::string>( ptr, pos );
-        data.varType[i] = unpackData<AMP::Mesh::GeomType>( ptr, pos );
-        data.varSize[i] = unpackData<int>( ptr, pos );
+        data.vectors[i].name    = unpackData<std::string>( ptr, pos );
+        data.vectors[i].type    = unpackData<AMP::Mesh::GeomType>( ptr, pos );
+        data.vectors[i].numDOFs = unpackData<int>( ptr, pos );
     }
     AMP_ASSERT( pos == data.size() );
     return data;

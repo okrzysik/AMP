@@ -32,14 +32,10 @@ AsciiWriter::~AsciiWriter() = default;
 Writer::WriterProperties AsciiWriter::getProperties() const
 {
     WriterProperties properties;
-    properties.type      = "Ascii";
-    properties.extension = "ascii";
-#ifdef USE_AMP_VECTORS
+    properties.type           = "Ascii";
+    properties.extension      = "ascii";
     properties.registerVector = true;
-#endif
-#ifdef USE_AMP_MATRICES
     properties.registerMatrix = true;
-#endif
     return properties;
 }
 
@@ -84,7 +80,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         d_comm.barrier();
         AMP::LinearAlgebra::Vector::shared_ptr src_vec;
         if ( d_vectors.find( vec_id ) != d_vectors.end() )
-            src_vec = d_vectors[vec_id];
+            src_vec = d_vectors[vec_id].vec;
         auto dst_vec = sendVecToRoot( src_vec, d_comm );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
@@ -104,14 +100,12 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     for ( const auto &mat_id : mat_ids ) {
         // Send the header data to rank 0
         d_comm.barrier();
-        AMP::LinearAlgebra::Matrix::shared_ptr mat;
-        if ( d_matrices.find( mat_id ) != d_matrices.end() )
-            mat = d_matrices[mat_id];
         std::string name;
         size_t size[2] = { 0, 0 };
-        if ( mat ) {
-            name = mat->getLeftVector()->getVariable()->getName() + " - " +
-                   mat->getRightVector()->getVariable()->getName();
+        AMP::LinearAlgebra::Matrix::shared_ptr mat;
+        if ( d_matrices.find( mat_id ) != d_matrices.end() ) {
+            mat     = d_matrices[mat_id].mat;
+            name    = d_matrices[mat_id].name;
             size[0] = mat->getLeftVector()->getGlobalSize();
             size[1] = mat->getRightVector()->getGlobalSize();
         }
