@@ -4,6 +4,7 @@
 
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
 #else
 namespace AMP::Mesh {
 enum class GeomType : uint8_t { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
@@ -56,12 +57,10 @@ HDF5writer::~HDF5writer() = default;
 Writer::WriterProperties HDF5writer::getProperties() const
 {
     WriterProperties properties;
-    properties.type                   = "HDF5";
-    properties.extension              = "hdf";
-    properties.registerMesh           = false;
-    properties.registerVector         = true;
-    properties.registerVectorWithMesh = false;
-    properties.registerMatrix         = false;
+    properties.type           = "HDF5";
+    properties.extension      = "hdf5";
+    properties.registerVector = true;
+    properties.registerMesh   = false;
     return properties;
 }
 
@@ -74,81 +73,62 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
 
 /************************************************************
  * Function to write the hdf5 file                           *
- * Note: it appears that only one prcoessor may write to a   *
+ * Note: it appears that only one processor may write to a   *
  * file at a time, and that once a processor closes the file *
  * it cannot reopen it (or at least doing this on the        *
  * processor that created the file creates problems).        *
  ************************************************************/
 void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
-    NULL_USE( fname_in );
-    NULL_USE( cycle );
-    NULL_USE( time );
 #ifdef USE_EXT_HDF5
     AMP_ASSERT( d_comm.getSize() == 1 );
     // Create the file
     auto filename = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
     auto fid      = openHDF5( filename, "w", Compression::GZIP );
     writeHDF5( fid, "time", time );
-    // Add the vectors
+    // Add the mesh
+#ifdef USE_AMP_MESH
+    if ( !d_baseMeshes.empty() || !d_multiMeshes.empty() )
+        AMP_ERROR( "Not finished" );
+#endif
+        // Add the vectors
 #ifdef USE_AMP_VECTORS
-    for ( size_t i = 0; i < d_vec.size(); i++ ) {
-        auto arrayData = getArrayData( d_vec[i].vec );
+    for ( const auto &[id, data] : d_vectors ) {
+        NULL_USE( id );
+        auto arrayData = getArrayData( data.vec );
         if ( arrayData ) {
-            writeHDF5( fid, d_vec[i].name, arrayData->getArray() );
+            writeHDF5( fid, data.name, arrayData->getArray() );
         } else {
             AMP_ERROR( "Not finished" );
         }
     }
 #endif
+    // Add the matricies
+#ifdef USE_AMP_MESH
+    for ( size_t i = 0; i < d_matrices.size(); i++ ) {
+        AMP_ERROR( "Not finished" );
+    }
+#endif
     // Close the file
     closeHDF5( fid );
+#else
+    // No HDF5
+    NULL_USE( fname_in );
+    NULL_USE( cycle );
+    NULL_USE( time );
 #endif
 }
-
-
-/************************************************************
- * Function to register a mesh with silo                     *
- ************************************************************/
-void HDF5writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                               int level,
-                               const std::string &path )
+/*void HDF5writer::writeMesh( MeshData data )
 {
-    NULL_USE( mesh );
-    NULL_USE( level );
-    NULL_USE( path );
-    AMP_ERROR( "Meshes are not supported yet" );
-}
-
-
-/************************************************************
- * Function to register a vector with silo                   *
- ************************************************************/
-void HDF5writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
-                                 std::shared_ptr<AMP::Mesh::Mesh>,
-                                 AMP::Mesh::GeomType,
-                                 const std::string & )
-{
-    AMP_ERROR( "Meshes are not supported yet" );
-}
-void HDF5writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
-                                 const std::string &name )
-{
-    VectorData data;
-    data.name = name;
-    data.vec  = vec;
-    data.type = AMP::Mesh::GeomType::null;
-    data.mesh = nullptr;
-    d_vec.push_back( data );
-}
-void HDF5writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
-                                 const std::string &name )
-{
-    MatrixData data;
-    data.name = name;
-    data.mat  = mat;
-    d_mat.push_back( data );
-}
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( data );
+    if ( multimesh ) {
+        for ( auto mesh : multimesh->getMeshes() )
+            writeMesh( mesh );
+        AMP_ERROR( "Not finished" );
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+}*/
 
 
 } // namespace AMP::Utilities

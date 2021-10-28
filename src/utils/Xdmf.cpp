@@ -395,6 +395,8 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
  ****************************************************************/
 void Xdmf::write( const std::string &filename ) const
 {
+    if ( d_meshData.empty() )
+        return;
     // Create XDMF file
     auto fid = fopen( filename.data(), "w" );
     fprintf( fid, "<?xml version=\"1.0\" ?>\n" );

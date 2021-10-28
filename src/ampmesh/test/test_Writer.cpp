@@ -1,6 +1,7 @@
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -16,6 +17,9 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
 #endif
+#ifdef USE_AMP_MATRICES
+#include "AMP/matrices/MatrixBuilder.h"
+#endif
 
 #include "ProfilerApp.h"
 
@@ -23,6 +27,7 @@
 #include <string>
 
 
+// Get the surface element type given the volume type
 inline AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 {
     AMP_ASSERT( volume != AMP::Mesh::GeomType::null );
@@ -32,6 +37,7 @@ inline AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 }
 
 
+// Calculate the volume of each element
 AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr mesh )
 {
     auto DOF =
@@ -50,37 +56,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 }
 
 
-void test_HDF5( AMP::UnitTest &ut )
-{
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    if ( globalComm.getRank() != 0 )
-        return;
-
-#ifdef USE_AMP_VECTORS
-    // Create the writer
-    auto writer = AMP::Utilities::Writer::buildWriter( "hdf5", AMP_COMM_SELF );
-
-    // Create and register the vector
-    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "vec" );
-    auto vec = AMP::LinearAlgebra::createArrayVector<double>( AMP::ArraySize( 5, 4, 3 ), var );
-    vec->setRandomValues();
-    writer->registerVector( vec, "vec" );
-
-    // Write the file
-    writer->writeFile( "test_HDF5", 0, 0.0 );
-
-#ifdef USE_EXT_HDF5
-    if ( AMP::Utilities::fileExists( "test_HDF5_0.hdf5" ) )
-        ut.passes( "Wrote HDF5 file" );
-    else
-        ut.failure( "Wrote HDF5 file" );
-#else
-    ut.expected_failure( "HDF5 not installed" );
-#endif
-#endif
-}
-
-
+// Print the mesh names
 void printMeshNames( AMP::Mesh::Mesh::shared_ptr mesh, const std::string &prefix = "" )
 {
     std::cout << prefix << mesh->getName() << std::endl;
@@ -90,17 +66,161 @@ void printMeshNames( AMP::Mesh::Mesh::shared_ptr mesh, const std::string &prefix
             printMeshNames( mesh2, prefix + "   " );
     }
 }
-
-
-void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::string &input_file )
+void printMeshNames( const std::string &filename )
 {
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    auto input_db = AMP::Database::parseInputFile( filename );
+    input_db->print( AMP::plog );
+    auto database = input_db->getDatabase( "Mesh" );
+    auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
+    params->setComm( globalComm );
+    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    if ( globalComm.getRank() == 0 ) {
+        std::cout << "Mesh names (rank 0):\n";
+        printMeshNames( mesh, "   " );
+    }
+}
+
+
+// Function to build a vector using a mesh
+#if defined( USE_AMP_MESH ) && defined( USE_AMP_VECTORS )
+template<int SIZE_X, int SIZE_Y, int SIZE_Z>
+AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variable::shared_ptr var,
+                                                     AMP::AMP_MPI comm )
+{
+    // Create an AMP mesh
+    auto size     = { SIZE_X, SIZE_Y, SIZE_Z };
+    auto range    = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 };
+    auto database = AMP::Database::create(
+        "dim", 3, "MeshName", "mesh", "Generator", "cube", "Size", size, "Range", range );
+    auto params = std::make_shared<AMP::Mesh::MeshParameters>( std::move( database ) );
+    params->setComm( comm );
+    // Create an AMP mesh
+    auto mesh = AMP::Mesh::BoxMesh::generate( params );
+    // Create the DOF Manager
+    auto DOF = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    // Create the vector
+    return AMP::LinearAlgebra::createVector( DOF, var, true );
+}
+#endif
+
+
+/***************************************************************
+ * Test the writer with a simple vector                         *
+ ***************************************************************/
+void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
+{
+#ifdef USE_AMP_VECTORS
+
+    // Create the writer and get it's properties
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    auto writer     = AMP::Utilities::Writer::buildWriter( writerName, comm );
+    auto properties = writer->getProperties();
+    if ( !properties.registerVector ) {
+        ut.expected_failure( writerName + " does not support registering an independent vector" );
+        return;
+    }
+
+    // Create and register the vectors
+    AMP::ArraySize block( 0, 0, comm.getRank() );
+    auto var1 = std::make_shared<AMP::LinearAlgebra::Variable>( "vec1" );
+    auto var2 = std::make_shared<AMP::LinearAlgebra::Variable>( "vec2" );
+    auto var3 = std::make_shared<AMP::LinearAlgebra::Variable>( "vec3" );
+    auto vec1 = AMP::LinearAlgebra::createArrayVector<double>( { 5, 4, 3 }, block, comm, var1 );
+    auto vec2 = AMP::LinearAlgebra::createSimpleVector<double>( 20, var2, comm );
+    auto vec3 = AMP::LinearAlgebra::createSimpleVector<double>( 50, var3, AMP_COMM_SELF );
+    vec1->setRandomValues();
+    vec2->setRandomValues();
+    vec3->setRandomValues();
+    writer->registerVector( vec1, "vec1" );
+    writer->registerVector( vec2, "vec2" );
+    writer->registerVector( vec3, "vec3" );
+
+    // Write the file
+    auto rankStr         = std::to_string( comm.getRank() + 1 );
+    std::string filename = "output_test_Writer/vector-" + writerName + "-" + rankStr + "proc";
+    writer->writeFile( filename, 0, 0.0 );
+    if ( AMP::Utilities::fileExists( filename + "_0." + properties.extension ) )
+        ut.passes( writerName + " registered independent vector" );
+    else
+        ut.failure( writerName + " registered independent vector" );
+
+#endif
+}
+
+
+/***************************************************************
+ * Test the writer with a simple matrix                         *
+ ***************************************************************/
+void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
+{
+#ifdef USE_AMP_MATRICES
+
+    // Create the writer and get it's properties
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    auto writer     = AMP::Utilities::Writer::buildWriter( writerName, comm );
+    auto properties = writer->getProperties(); // Function to build a vector using a mesh
+    if ( !properties.registerMatrix ) {
+        ut.expected_failure( writerName + " does not support registering a matrix" );
+        return;
+    }
+#if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
+    ut.expected_failure( writerName + "  - no parallel matrix to test" );
+    return;
+#endif
+
+    // Create and register a matrix
+    auto rankStr = std::to_string( comm.getRank() + 1 );
+    auto var1    = std::make_shared<AMP::LinearAlgebra::Variable>( "vec_global" );
+    auto var2    = std::make_shared<AMP::LinearAlgebra::Variable>( "vec_" + rankStr );
+    auto vec1    = createVector<2, 3, 4>( var1, comm );
+    auto vec2    = createVector<3, 2, 1>( var2, AMP_COMM_SELF );
+    auto mat1    = AMP::LinearAlgebra::createMatrix( vec1, vec1 );
+    auto mat2    = AMP::LinearAlgebra::createMatrix( vec2, vec2 );
+    writer->registerVector( vec1, "vec1" );
+    writer->registerVector( vec2, "vec2" );
+    writer->registerMatrix( mat1 );
+    writer->registerMatrix( mat2 );
+    mat1->setScalar( 1.0 );
+    mat2->setScalar( comm.getRank() + 1 );
+
+    // Write the file
+    std::string filename = "output_test_Writer/matrix-" + writerName + "-" + rankStr + "proc";
+    writer->setDecomposition( 1 );
+    writer->writeFile( filename, 0, 0.0 );
+    if ( AMP::Utilities::fileExists( filename + "_0." + properties.extension ) )
+        ut.passes( writerName + " registered matrix" );
+    else
+        ut.failure( writerName + " registered matrix" );
+#endif
+}
+
+
+/***************************************************************
+ * Test the writer with an input file                           *
+ ***************************************************************/
+void testWriterMesh( AMP::UnitTest &ut,
+                     const std::string &writerName,
+                     const std::string &input_file )
+{
+    // Create the writer and get it's properties
+    auto writer     = AMP::Utilities::Writer::buildWriter( writerName, AMP_COMM_WORLD );
+    auto properties = writer->getProperties();
+
+    // Check that we have valid work to do
+    if ( !properties.registerMesh ) {
+        ut.expected_failure( writerName + " does not support registering a mesh" );
+        return;
+    }
+
+    // Start the timer
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     globalComm.barrier();
     double t1 = AMP::AMP_MPI::time();
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );
-    input_db->print( AMP::plog );
 
     // Get the Mesh database and create the mesh parameters
     auto database = input_db->getDatabase( "Mesh" );
@@ -116,12 +236,6 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
     globalComm.barrier();
     PROFILE_STOP( "Load Mesh" );
     double t2 = AMP::AMP_MPI::time();
-
-    // Print the mesh names (rank 0)
-    if ( globalComm.getRank() == 0 ) {
-        std::cout << "Mesh names (rank 0):\n";
-        printMeshNames( mesh, "   " );
-    }
 
     // Create a surface mesh
     auto submesh = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
@@ -156,7 +270,7 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
     AMP::Mesh::Mesh::shared_ptr clad;
     AMP::LinearAlgebra::Vector::shared_ptr z_surface;
     AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
-    if ( submesh != nullptr ) {
+    if ( submesh ) {
         AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( pointType, 1 ),
                                                           submesh->getComm() );
         AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
@@ -173,24 +287,24 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
     }
 #endif
 
-    // Create the writer and register the data
-    auto writer = AMP::Utilities::Writer::buildWriter( writerName );
-    int level   = 1; // How much detail do we want to register
+    // Register the data
+    int level = 1; // How much detail do we want to register
     writer->registerMesh( mesh, level );
-    if ( submesh != nullptr )
+    if ( submesh )
         writer->registerMesh( submesh, level );
 #ifdef USE_AMP_VECTORS
-    writer->registerVector( meshID_vec, mesh, pointType, "MeshID" );
-    writer->registerVector( block_vec, mesh, volumeType, "BlockID" );
-    writer->registerVector( rank_vec, mesh, pointType, "rank" );
-    writer->registerVector( position, mesh, pointType, "position" );
-    writer->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
-    if ( submesh != nullptr ) {
-        writer->registerVector( z_surface, submesh, pointType, "z_surface" );
+    if ( properties.registerVectorWithMesh ) {
+        writer->registerVector( meshID_vec, mesh, pointType, "MeshID" );
+        writer->registerVector( block_vec, mesh, volumeType, "BlockID" );
+        writer->registerVector( rank_vec, mesh, pointType, "rank" );
+        writer->registerVector( position, mesh, pointType, "position" );
+        writer->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
+        if ( submesh )
+            writer->registerVector( z_surface, submesh, pointType, "z_surface" );
+        // Register a vector over the clad
+        if ( clad )
+            writer->registerVector( cladPosition, clad, pointType, "clad_position" );
     }
-    // Register a vector over the clad
-    if ( clad )
-        writer->registerVector( cladPosition, clad, pointType, "clad_position" );
 #endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
@@ -199,20 +313,22 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
     auto meshIDs = mesh->getBaseMeshIDs();
     for ( size_t i = 0; i < meshIDs.size(); i++ ) {
         auto mesh2 = mesh->Subset( meshIDs[i] );
-        if ( mesh2 != nullptr ) {
+        if ( mesh2 ) {
             auto volume = calcVolume( mesh2 );
             AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2 );
             auto meshID_vec2 = meshID_vec->select( meshSelector, "mesh subset" );
             meshID_vec2->setToScalar( i + 1 );
             writer->registerMesh( mesh2, level );
-            writer->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
+            if ( properties.registerVectorWithMesh )
+                writer->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
             // Get the surface
             auto surfaceMesh = mesh2->Subset( mesh2->getSurfaceIterator( surfaceType, 1 ) );
             if ( surfaceMesh ) {
                 auto DOF_surface = AMP::Discretization::simpleDOFManager::create(
                     surfaceMesh, surfaceType, 0, 1, true );
                 auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
-                writer->registerVector( id_vec, surfaceMesh, surfaceType, "surface_ids" );
+                if ( properties.registerVectorWithMesh )
+                    writer->registerVector( id_vec, surfaceMesh, surfaceType, "surface_ids" );
                 id_vec->setToScalar( -1 );
                 std::vector<size_t> dofs;
                 for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
@@ -252,28 +368,28 @@ void testWriter( AMP::UnitTest &ut, const std::string &writerName, const std::st
     double t5 = AMP::AMP_MPI::time();
 
     // Write a single output file
+    std::string fname = "output_test_Writer/" + input_file + "-" + writerName + "-" +
+                        std::to_string( globalComm.getSize() );
     if ( globalComm.getSize() <= 20 ) {
-        std::stringstream fname1;
-        fname1 << input_file << "_" << globalComm.getSize() << "proc_single";
         globalComm.barrier();
         writer->setDecomposition( 1 );
-        writer->writeFile( fname1.str(), 0 );
+        writer->writeFile( fname + "proc_single", 0 );
         globalComm.barrier();
     }
     double t6 = AMP::AMP_MPI::time();
 
-    // Write a seperate output file for each rank
-    std::stringstream fname2;
-    fname2 << input_file << "_" << globalComm.getSize() << "proc_multiple";
-    globalComm.barrier();
-    writer->setDecomposition( 2 );
-    writer->writeFile( fname2.str(), 0 );
-    globalComm.barrier();
+    // Write a separate output file for each rank
+    {
+        globalComm.barrier();
+        writer->setDecomposition( 2 );
+        writer->writeFile( fname + "proc_multiple", 0 );
+        globalComm.barrier();
+    }
     double t7 = AMP::AMP_MPI::time();
 
     if ( globalComm.getRank() == 0 ) {
         std::cout << writerName << ":" << std::endl;
-        std::cout << "  Read in meshes: " << t2 - t1 << std::endl;
+        std::cout << "  Create meshes: " << t2 - t1 << std::endl;
         std::cout << "  Allocate vectors: " << t3 - t2 << std::endl;
         std::cout << "  Register data: " << t4 - t3 << std::endl;
         std::cout << "  Initialize vectors: " << t5 - t4 << std::endl;
@@ -294,14 +410,33 @@ int main( int argc, char **argv )
     PROFILE_ENABLE();
     AMP::logOnlyNodeZero( "output_test_SiloIO" );
 
-    std::string filename = "input_SiloIO-1";
-    if ( argc == 2 )
-        filename = argv[1];
+    const auto writers = { "Silo", "HDF5", "Ascii" };
 
-    testWriter( ut, "Silo", filename );
-    // testWriter( ut, "HDF5", filename );
+    if ( argc == 1 ) {
 
-    // test_HDF5( ut );
+        // Run basic tests
+        for ( auto writer : writers ) {
+            testWriterVector( ut, writer );
+            testWriterMatrix( ut, writer );
+            testWriterMesh( ut, writer, "input_SiloIO-1" );
+        }
+
+    } else {
+
+        // Test the provided input files
+        for ( int i = 1; i < argc; i++ ) {
+
+            if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() == 0 )
+                std::cout << "Testing " << argv[i] << std::endl;
+
+            // Print the mesh names (rank 0)
+            printMeshNames( argv[i] );
+
+            // Run the tests
+            for ( auto writer : writers )
+                testWriterMesh( ut, writer, argv[i] );
+        }
+    }
 
     int N_failed = ut.NumFailGlobal();
     ut.report();
