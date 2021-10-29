@@ -410,7 +410,8 @@ int main( int argc, char **argv )
     PROFILE_ENABLE();
     AMP::logOnlyNodeZero( "output_test_SiloIO" );
 
-    const auto writers = { "Silo", "HDF5", "Ascii" };
+    // const auto writers = { "Silo", "HDF5", "Ascii" };
+    const auto writers = { "HDF5" };
 
     if ( argc == 1 ) {
 

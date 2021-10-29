@@ -6,7 +6,15 @@
 #include <string>
 #include <vector>
 
+#include "AMP/utils/HDF5_IO.h"
 #include "AMP/utils/Writer.h"
+#include "AMP/utils/Xdmf.h"
+
+
+// Forward declerations
+namespace AMP::Mesh {
+class BoxMesh;
+}
 
 
 namespace AMP::Utilities {
@@ -49,7 +57,15 @@ public:
 
 
 private:
-    // void writeMesh( MeshData );
+    Xdmf::MeshData writeMesh( hid_t fid, const baseMeshData &mesh, const std::string &path );
+    Xdmf::MeshData writeDefaultMesh( hid_t fid,
+                                     std::shared_ptr<const AMP::Mesh::Mesh> mesh,
+                                     const std::string &name,
+                                     const std::string &path );
+    Xdmf::MeshData writeBoxMesh( hid_t fid,
+                                 std::shared_ptr<const AMP::Mesh::BoxMesh> mesh,
+                                 const std::string &name,
+                                 const std::string &path );
 };
 
 } // namespace AMP::Utilities

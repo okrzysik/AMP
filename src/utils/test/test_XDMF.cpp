@@ -51,7 +51,7 @@ void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &
 
 
 // 2D uniform mesh
-void write_uniform( size_t Nx, size_t Ny, hid_t fid, AMP::Xdmf &xmf )
+void write_uniform( size_t Nx, size_t Ny, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
 {
     // Create the scalar data
     AMP::Array<double> pressure( Nx, Ny );
@@ -85,23 +85,24 @@ void write_uniform( size_t Nx, size_t Ny, hid_t fid, AMP::Xdmf &xmf )
                       pressure.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Cell,
-                      "test_XDMF.h5:/Uniform_Pressure" );
+                      filename + ":/Uniform_Pressure" );
     mesh.addVariable( "VelocityX",
                       velocityx.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Uniform_VelocityX" );
+                      filename + ":/Uniform_VelocityX" );
     mesh.addVariable( "Velocity",
                       velocity.size(),
                       AMP::Xdmf::RankType::Vector,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Uniform_Velocity" );
+                      filename + ":/Uniform_Velocity" );
     xmf.addMesh( "uniform", mesh );
 }
 
 
 // 2D curvilinear mesh
-void write_curvilinear( size_t Nx, size_t Ny, hid_t fid, AMP::Xdmf &xmf )
+void write_curvilinear(
+    size_t Nx, size_t Ny, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
 {
     // Create the coordinate data
     AMP::Array<double> x( Nx + 1, Ny + 1 ), y( Nx + 1, Ny + 1 );
@@ -147,28 +148,29 @@ void write_curvilinear( size_t Nx, size_t Ny, hid_t fid, AMP::Xdmf &xmf )
 
     // Register the data with XDMF
     auto mesh = AMP::Xdmf::createCurvilinearMesh(
-        "curvilinear", { Nx, Ny }, "test_XDMF.h5:/2D_X", "test_XDMF.h5:/2D_Y" );
+        "curvilinear", { Nx, Ny }, filename + ":/2D_X", filename + ":/2D_Y" );
     mesh.addVariable( "Pressure",
                       pressure.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Cell,
-                      "test_XDMF.h5:/2D_Pressure" );
+                      filename + ":/2D_Pressure" );
     mesh.addVariable( "VelocityX",
                       velocityx.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/2D_VelocityX" );
+                      filename + ":/2D_VelocityX" );
     mesh.addVariable( "Velocity",
                       velocity.size(),
                       AMP::Xdmf::RankType::Vector,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/2D_Velocity" );
+                      filename + ":/2D_Velocity" );
     xmf.addMesh( "curvilinear", mesh );
 }
 
 
 // 2D unstructured mesh
-void write_unstructured( int NumElements, int NumNodes, hid_t fid, AMP::Xdmf &xmf )
+void write_unstructured(
+    int NumElements, int NumNodes, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
 {
     // Connectivity data
     AMP::Array<int> connectivity( 4, NumElements );
@@ -222,29 +224,29 @@ void write_unstructured( int NumElements, int NumNodes, hid_t fid, AMP::Xdmf &xm
                                                    2,
                                                    AMP::Xdmf::TopologyType::Quadrilateral,
                                                    NumElements,
-                                                   "test_XDMF.h5:/Unstructured_Quadrilaterals",
+                                                   filename + ":/Unstructured_Quadrilaterals",
                                                    NumNodes,
-                                                   "test_XDMF.h5:/Unstructured_XY" );
+                                                   filename + ":/Unstructured_XY" );
     mesh.addVariable( "ScalarInt",
                       scalarInt.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Unstructured_ScalarInt" );
+                      filename + ":/Unstructured_ScalarInt" );
     mesh.addVariable( "ScalarFloat",
                       scalarFloat.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Unstructured_ScalarFloat" );
+                      filename + ":/Unstructured_ScalarFloat" );
     mesh.addVariable( "ScalarDouble",
                       scalarDouble.size(),
                       AMP::Xdmf::RankType::Scalar,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Unstructured_ScalarDouble" );
+                      filename + ":/Unstructured_ScalarDouble" );
     mesh.addVariable( "VectorDouble",
                       xyz.size(),
                       AMP::Xdmf::RankType::Vector,
                       AMP::Xdmf::Center::Node,
-                      "test_XDMF.h5:/Unstructured_XY" );
+                      filename + ":/Unstructured_XY" );
     xmf.addMesh( "2D Unstructured Mesh", mesh );
 }
 
@@ -262,13 +264,16 @@ void writeTime( int i )
 
     // Write the serial meshes
     if ( rank == 0 ) {
-        write_uniform( 16, 32, fid, xmf );
-        write_curvilinear( 32, 20, fid, xmf );
-        write_unstructured( 3, 6, fid, xmf );
+        write_uniform( 16, 32, fid, filename, xmf );
+        write_curvilinear( 32, 20, fid, filename, xmf );
+        write_unstructured( 3, 6, fid, filename, xmf );
     }
 
     // Write the parallel meshes
     write_points<2>( 256, fid, filename, xmf );
+
+    // Write the multimesh
+    xmf.addMultiMesh( "all", { "uniform", "curvilinear", "2D Unstructured Mesh" } );
 
     // Close the HDF5 file
     AMP::closeHDF5( fid );

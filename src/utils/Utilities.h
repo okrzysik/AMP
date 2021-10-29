@@ -103,6 +103,9 @@ void recursiveMkdir( const std::string &path,
 //! Return the path to the file
 std::string path( const std::string &filename );
 
+//! Return the filename (strip the path)
+std::string filename( const std::string &filename );
+
 
 //! Check if a file exists and return true if it does
 bool fileExists( const std::string &filename );

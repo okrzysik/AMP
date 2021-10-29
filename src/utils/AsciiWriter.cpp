@@ -52,10 +52,10 @@ void AsciiWriter::readFile( const std::string & )
 /************************************************************
  * Function to write an ascii file                           *
  ************************************************************/
-template<class TYPE>
-std::set<uint64_t> getKeys( const std::map<uint64_t, TYPE> &local_map, const AMP_MPI &comm )
+template<class ID, class TYPE>
+std::set<ID> getKeys( const std::map<ID, TYPE> &local_map, const AMP_MPI &comm )
 {
-    std::set<uint64_t> ids;
+    std::set<ID> ids;
     for ( auto it = local_map.begin(); it != local_map.end(); ++it )
         ids.insert( it->first );
     comm.setGather( ids );

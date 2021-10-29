@@ -197,6 +197,22 @@ void Xdmf::addMesh( const std::string &meshName, const MeshData &domain )
         AMP_ASSERT( domain2.name != domain.name );
     domains.push_back( domain );
 }
+void Xdmf::addMultiMesh( const std::string &meshName, const std::vector<std::string> &submeshes )
+{
+    std::vector<MeshData> domains;
+    for ( const auto &name : submeshes ) {
+        if ( d_meshData.find( name ) != d_meshData.end() ) {
+            auto &tmp = d_meshData[name];
+            domains.insert( domains.end(), tmp.begin(), tmp.end() );
+        }
+    }
+    addMultiMesh( meshName, std::move( domains ) );
+}
+void Xdmf::addMultiMesh( const std::string &meshName, std::vector<MeshData> submeshes )
+{
+    AMP_ASSERT( d_meshData.find( meshName ) == d_meshData.end() );
+    d_meshData[meshName] = std::move( submeshes );
+}
 
 
 /****************************************************************
@@ -302,10 +318,18 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
                  s,
                  mesh.size[1] + 1,
                  mesh.size[0] + 1 );
-        fprintf( fid, "%s  <Geometry GeometryType=\"X_Y\">\n", s );
-        addDataItem( fid, indent + "    ", mesh.size + 1, mesh.x );
-        addDataItem( fid, indent + "    ", mesh.size + 1, mesh.y );
-        fprintf( fid, "%s  </Geometry>\n", s );
+        if ( mesh.z.empty() ) {
+            fprintf( fid, "%s  <Geometry GeometryType=\"X_Y\">\n", s );
+            addDataItem( fid, indent + "    ", mesh.size + 1, mesh.x );
+            addDataItem( fid, indent + "    ", mesh.size + 1, mesh.y );
+            fprintf( fid, "%s  </Geometry>\n", s );
+        } else {
+            fprintf( fid, "%s  <Geometry GeometryType=\"X_Y_Z\">\n", s );
+            addDataItem( fid, indent + "    ", mesh.size + 1, mesh.x );
+            addDataItem( fid, indent + "    ", mesh.size + 1, mesh.y );
+            addDataItem( fid, indent + "    ", mesh.size + 1, mesh.z );
+            fprintf( fid, "%s  </Geometry>\n", s );
+        }
         break;
     case Xdmf::TopologyType::CurvilinearMesh3D:
         // Write a 3D curvillinear mesh
@@ -386,7 +410,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
     // Write the variables
     for ( const auto &var : mesh.vars )
         writeVariable( fid, var, indent + "  " );
-    fprintf( fid, "%s  </Grid>\n", s );
+    fprintf( fid, "%s</Grid>\n", s );
 }
 
 
@@ -413,6 +437,7 @@ void Xdmf::write( const std::string &filename ) const
             continue;
         if ( domains.size() == 1u && name == domains[0].name ) {
             writeMeshGrid( fid, domains[0], "  " );
+            fprintf( fid, "\n" );
         } else {
             fprintf( fid, "  <Grid Name=\"%s\" GridType=\"Collection\">\n", name.data() );
             for ( const auto &domain : domains )
