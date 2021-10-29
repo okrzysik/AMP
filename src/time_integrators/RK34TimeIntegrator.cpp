@@ -112,27 +112,23 @@ int RK34TimeIntegrator::advanceSolution( const double dt,
     d_solution_vector = in;
     d_current_dt      = dt;
 
-    d_operator->makeConsistent( d_solution_vector );
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
     // u* = un+k1*dt/2
     d_new_solution->axpy( 0.5 * dt, *d_k1_vec, *d_solution_vector );
 
-    d_operator->makeConsistent( d_new_solution );
     // k2 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
 
     // u* = un+k2*dt/2
     d_new_solution->axpy( 0.5 * dt, *d_k2_vec, *d_solution_vector );
 
-    d_operator->makeConsistent( d_new_solution );
     // k3 = f(t+dt/2, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
 
     // u* = un+k3*dt
     d_new_solution->axpy( dt, *d_k3_vec, *d_solution_vector );
 
-    d_operator->makeConsistent( d_new_solution );
     // k3 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k4_vec );
 
@@ -140,7 +136,6 @@ int RK34TimeIntegrator::advanceSolution( const double dt,
     d_new_solution->axpy( -dt, *d_k1_vec, *d_solution_vector );
     d_new_solution->axpy( 2.0 * dt, *d_k2_vec, *d_new_solution );
 
-    d_operator->makeConsistent( d_new_solution );
     // z3 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_z3_vec );
 

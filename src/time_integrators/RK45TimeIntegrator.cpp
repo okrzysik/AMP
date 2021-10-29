@@ -115,13 +115,11 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
     d_solution_vector = in;
     d_current_dt      = dt;
 
-    d_operator->makeConsistent( d_solution_vector );
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
     // u* = un+k1/4
     d_new_solution->axpy( 0.25 * dt, *d_k1_vec, *d_solution_vector );
 
-    d_operator->makeConsistent( d_new_solution );
     // k2 = f(t+dt/4, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
 
@@ -129,7 +127,6 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
     d_new_solution->axpy( 3.0 * dt / 32.0, *d_k1_vec, *d_solution_vector );
     d_new_solution->axpy( 9.0 * dt / 32.0, *d_k2_vec, *d_new_solution );
 
-    d_operator->makeConsistent( d_new_solution );
     // k3 = f(t+3*dt/8, u*)
     d_operator->apply( d_new_solution, d_k3_vec );
 
@@ -138,7 +135,6 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
     d_new_solution->axpy( -7200.0 * dt / 2197.0, *d_k2_vec, *d_new_solution );
     d_new_solution->axpy( 7296.0 * dt / 2197.0, *d_k3_vec, *d_new_solution );
 
-    d_operator->makeConsistent( d_new_solution );
     // k4 = f(t+12*dt/13, u*)
     d_operator->apply( d_new_solution, d_k4_vec );
 
@@ -148,7 +144,6 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
     d_new_solution->axpy( 3680.0 * dt / 513.0, *d_k3_vec, *d_new_solution );
     d_new_solution->axpy( -845.0 * dt / 4104.0, *d_k4_vec, *d_new_solution );
 
-    d_operator->makeConsistent( d_new_solution );
     // k5 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k5_vec );
 
@@ -159,7 +154,6 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
     d_new_solution->axpy( 1859.0 * dt / 4104.0, *d_k4_vec, *d_new_solution );
     d_new_solution->axpy( -11.0 * dt / 40.0, *d_k5_vec, *d_new_solution );
 
-    d_operator->makeConsistent( d_new_solution );
     // k6 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k6_vec );
 

@@ -93,18 +93,13 @@ int RK2TimeIntegrator::advanceSolution( const double dt,
     PROFILE_START( "advanceSolution" );
 
     d_solution_vector = in;
-    d_operator->makeConsistent( d_solution_vector );
 
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
     // u* = un+dt*k1
     d_new_solution->axpy( dt, *d_k1_vec, *d_solution_vector );
-
-    d_operator->makeConsistent( d_new_solution );
-
     // k2 = f(t+dt, u*)
     d_operator->apply( d_new_solution, d_k2_vec );
-
     // u_new = un+ dt*(k1+k2)/2
     d_k2_vec->add( *d_k1_vec, *d_k2_vec );
     d_new_solution->axpy( dt / 2.0, *d_k2_vec, *d_solution_vector );
