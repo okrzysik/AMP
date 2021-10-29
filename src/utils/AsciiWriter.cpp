@@ -16,23 +16,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Utilities {
-
-
-/************************************************************
- * Helper function to get a unique id for each vector        *
- ************************************************************/
-static unsigned int localID = 0;
-AsciiWriter::global_id AsciiWriter::getID( const AMP_MPI &local_comm, const AMP_MPI &global_comm )
-{
-    AsciiWriter::global_id id( 0, 0 );
-    if ( local_comm.getRank() == 0 ) {
-        unsigned int id2 = localID++;
-        id               = AsciiWriter::global_id( global_comm.getRank(), id2 );
-    }
-    return local_comm.bcast<AsciiWriter::global_id>( id, 0 );
-}
+namespace AMP::Utilities {
 
 
 /************************************************************
@@ -48,12 +32,10 @@ AsciiWriter::~AsciiWriter() = default;
 Writer::WriterProperties AsciiWriter::getProperties() const
 {
     WriterProperties properties;
-    properties.type                   = "Ascii";
-    properties.extension              = "ascii";
-    properties.registerMesh           = false;
-    properties.registerVector         = true;
-    properties.registerVectorWithMesh = false;
-    properties.registerMatrix         = true;
+    properties.type           = "Ascii";
+    properties.extension      = "ascii";
+    properties.registerVector = true;
+    properties.registerMatrix = true;
     return properties;
 }
 
@@ -71,12 +53,10 @@ void AsciiWriter::readFile( const std::string & )
  * Function to write an ascii file                           *
  ************************************************************/
 template<class TYPE>
-std::set<AsciiWriter::global_id> getKeys( const std::map<AsciiWriter::global_id, TYPE> &local_map,
-                                          const AMP_MPI &comm )
+std::set<uint64_t> getKeys( const std::map<uint64_t, TYPE> &local_map, const AMP_MPI &comm )
 {
-    std::set<AsciiWriter::global_id> ids;
-    typename std::map<AsciiWriter::global_id, TYPE>::const_iterator it;
-    for ( it = local_map.begin(); it != local_map.end(); ++it )
+    std::set<uint64_t> ids;
+    for ( auto it = local_map.begin(); it != local_map.end(); ++it )
         ids.insert( it->first );
     comm.setGather( ids );
     return ids;
@@ -88,11 +68,9 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     // Open the file for writing
     FILE *fid = nullptr;
     if ( d_comm.getRank() == 0 ) {
-        std::stringstream tmp;
-        tmp << fname_in << "_" << iteration_count << "." << getExtension();
-        std::string fname = tmp.str();
-        fid               = fopen( fname.c_str(), "w" );
-        AMP_ASSERT( fid != nullptr );
+        auto fname = fname_in + "_" + std::to_string( iteration_count ) + "." + getExtension();
+        fid        = fopen( fname.c_str(), "w" );
+        AMP_ASSERT( fid );
     }
 // Get the ids for the vectors and save the data
 #ifdef USE_AMP_VECTORS
@@ -102,8 +80,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         d_comm.barrier();
         AMP::LinearAlgebra::Vector::shared_ptr src_vec;
         if ( d_vectors.find( vec_id ) != d_vectors.end() )
-            src_vec = d_vectors[vec_id];
-        auto dst_vec = sendVecToRoot( src_vec, vec_id.first, d_comm );
+            src_vec = d_vectors[vec_id].vec;
+        auto dst_vec = sendVecToRoot( src_vec, d_comm );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
             fprintf( fid,
@@ -122,20 +100,18 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     for ( const auto &mat_id : mat_ids ) {
         // Send the header data to rank 0
         d_comm.barrier();
-        AMP::LinearAlgebra::Matrix::shared_ptr mat;
-        if ( d_matrices.find( mat_id ) != d_matrices.end() )
-            mat = d_matrices[mat_id];
         std::string name;
         size_t size[2] = { 0, 0 };
-        if ( mat != nullptr ) {
-            name = mat->getLeftVector()->getVariable()->getName() + " - " +
-                   mat->getRightVector()->getVariable()->getName();
+        AMP::LinearAlgebra::Matrix::shared_ptr mat;
+        if ( d_matrices.find( mat_id ) != d_matrices.end() ) {
+            mat     = d_matrices[mat_id].mat;
+            name    = d_matrices[mat_id].name;
             size[0] = mat->getLeftVector()->getGlobalSize();
             size[1] = mat->getRightVector()->getGlobalSize();
         }
-        name    = d_comm.bcast( name, mat_id.first );
-        size[0] = d_comm.bcast( size[0], mat_id.first );
-        size[1] = d_comm.bcast( size[1], mat_id.first );
+        name    = d_comm.bcast( name, 0 );
+        size[0] = d_comm.bcast( size[0], 0 );
+        size[1] = d_comm.bcast( size[1], 0 );
         // Write the data
         if ( d_comm.getRank() == 0 ) {
             fprintf( fid,
@@ -160,50 +136,9 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     }
 #endif
     // Close the file
-    if ( fid != nullptr )
+    if ( fid )
         fclose( fid );
     PROFILE_STOP( "writeFile" );
-}
-
-
-/************************************************************
- * Function to register a mesh                               *
- ************************************************************/
-void AsciiWriter::registerMesh( std::shared_ptr<AMP::Mesh::Mesh>, int, const std::string & )
-{
-    AMP_ERROR( "registerMesh is not implimented yet" );
-}
-
-
-/************************************************************
- * Function to register a vector                             *
- ************************************************************/
-void AsciiWriter::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector>,
-                                  std::shared_ptr<AMP::Mesh::Mesh>,
-                                  AMP::Mesh::GeomType,
-                                  const std::string & )
-{
-    AMP_ERROR( "Mesh support is not implimented yet" );
-}
-void AsciiWriter::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
-                                  const std::string &name )
-{
-    NULL_USE( vec );
-    NULL_USE( name );
-#ifdef USE_AMP_VECTORS
-    global_id id = getID( vec->getComm(), d_comm );
-    d_vectors.insert( std::pair<global_id, AMP::LinearAlgebra::Vector::shared_ptr>( id, vec ) );
-#endif
-}
-void AsciiWriter::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
-                                  const std::string &name )
-{
-    NULL_USE( mat );
-    NULL_USE( name );
-#ifdef USE_AMP_MATRICES
-    global_id id = getID( mat->getLeftVector()->getComm(), d_comm );
-    d_matrices.insert( std::pair<global_id, AMP::LinearAlgebra::Matrix::shared_ptr>( id, mat ) );
-#endif
 }
 
 
@@ -211,17 +146,21 @@ void AsciiWriter::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> ma
  * Function to copy a vector to rank 0                       *
  ************************************************************/
 #ifdef USE_AMP_VECTORS
-AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
-    AMP::LinearAlgebra::Vector::const_shared_ptr src_vec, int vec_root, const AMP_MPI &comm )
+AMP::LinearAlgebra::Vector::const_shared_ptr
+AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec,
+                            const AMP_MPI &comm )
 {
-    int rank = comm.getRank();
-    // Boradcast the local vector size and name to all processors for simplicity
+
+    int rank      = comm.getRank();
+    int ownerRank = src_vec ? comm.getRank() : 1e9;
+    ownerRank     = comm.minReduce( ownerRank );
+    // Broadcast the local vector size and name to all processors for simplicity
     std::string name;
-    if ( rank == vec_root )
+    if ( rank == ownerRank )
         name = src_vec->getVariable()->getName();
-    name              = comm.bcast( name, vec_root );
+    name              = comm.bcast( name, ownerRank );
     size_t local_size = 0;
-    if ( src_vec != nullptr )
+    if ( src_vec )
         local_size = src_vec->getLocalSize();
     std::vector<size_t> size( comm.getSize(), 0 );
     comm.allGather( local_size, &size[0] );
@@ -229,7 +168,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr AsciiWriter::sendVecToRoot(
     for ( int i = 0; i < comm.getSize(); i++ )
         global_size += size[i];
     // If we are not rank 0 and do not have a copy of the vector we are done
-    if ( src_vec == nullptr && rank != 0 )
+    if ( !src_vec && rank != 0 )
         return AMP::LinearAlgebra::Vector::const_shared_ptr();
     // Send the local data to rank 0
     std::vector<MPI_Request> requests;
@@ -277,7 +216,7 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
     data.clear();
     // Determine who "owns" the row
     int own_rank = 0;
-    if ( mat != nullptr ) {
+    if ( mat ) {
         auto DOF = mat->getLeftDOFManager();
         if ( row >= (int) DOF->beginDOF() && row < (int) DOF->endDOF() )
             own_rank = rank;
@@ -314,5 +253,4 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
 #endif
 
 
-} // namespace Utilities
-} // namespace AMP
+} // namespace AMP::Utilities

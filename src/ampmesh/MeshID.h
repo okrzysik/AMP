@@ -5,8 +5,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
@@ -205,8 +204,7 @@ std::ostream &operator<<( std::ostream &out, AMP::Mesh::ElementID x );
 std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x );
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 
 #endif

@@ -12,6 +12,7 @@
 // Declare some classes
 namespace AMP::Mesh {
 class Mesh;
+class MeshID;
 enum class GeomType : uint8_t;
 } // namespace AMP::Mesh
 namespace AMP::LinearAlgebra {
@@ -19,6 +20,7 @@ class Vector;
 class Matrix;
 } // namespace AMP::LinearAlgebra
 
+class dummy;
 
 namespace AMP::Utilities {
 
@@ -39,6 +41,7 @@ public:
         bool registerVector;         // Does the writer support registering a vector
         bool registerVectorWithMesh; // Does the writer support registering a vector with a mesh
         bool registerMatrix;         // Does the writer support registering a matrix
+        WriterProperties();
     };
 
 public:
@@ -113,9 +116,9 @@ public:
 
      * \param path  The directory path for the mesh.  Default is an empty string.
      */
-    virtual void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                               int level               = 1,
-                               const std::string &path = std::string() );
+    void registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                       int level               = 1,
+                       const std::string &path = std::string() );
 
     /**
      * \brief    Function to register a vector
@@ -147,8 +150,8 @@ public:
      * \param vec   The vector we want to write
      * \param name  Optional name for the vector.
      */
-    virtual void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
-                                 const std::string &name = "" );
+    void registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                         const std::string &name = "" );
 
     /**
      * \brief    Function to register a matrix
@@ -158,14 +161,75 @@ public:
      * \param mat   The matrix we want to write
      * \param name  Optional name for the vector.
      */
-    virtual void registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
-                                 const std::string &name = "" );
+    void registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
+                         const std::string &name = "" );
 
+protected: // Protected structures
+    // Structure to hold vector data
+    struct VectorData {
+        std::string name;                                // Vector name to store
+        int numDOFs;                                     // Number of unknowns per point
+        std::shared_ptr<AMP::LinearAlgebra::Vector> vec; // AMP vector
+        AMP::Mesh::GeomType type;                        // Types of variables
+        VectorData() : numDOFs( 0 ), type( static_cast<AMP::Mesh::GeomType>( 0xFF ) ) {}
+        VectorData( std::shared_ptr<AMP::LinearAlgebra::Vector>, const std::string & );
+    };
+
+    // Structure to hold matrix data
+    struct MatrixData {
+        std::string name;                                // Matrix name to store
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> mat; // AMP matrix
+        MatrixData() = default;
+        MatrixData( std::shared_ptr<AMP::LinearAlgebra::Matrix>, const std::string & );
+    };
+
+    // Structure used to hold data for a base mesh
+    struct baseMeshData {
+        uint64_t id; // Unique ID to identify the mesh (will use the mesh id)
+        std::shared_ptr<AMP::Mesh::Mesh> mesh; // Pointer to the mesh
+        int rank;                              // Rank of the current processor on the mesh
+        int ownerRank;                         // Global rank of the processor that "owns" the mesh
+        std::string meshName;                  // Name of the mesh
+        std::string path;                      // Path to the mesh
+        std::string file;                      // File that will contain the mesh
+        std::vector<VectorData> vectors;       // Vectors for each mesh
+        // Function to count the number of bytes needed to pack the data
+        size_t size() const;
+        // Function to pack the data to a byte array (note: some info may be lost)
+        void pack( char * ) const;
+        // Function to unpack the data from a byte array (note: some info may be lost)
+        static baseMeshData unpack( const char * );
+    };
+
+    // Structure used to hold data for a multimesh
+    struct multiMeshData {
+        uint64_t id; // Unique ID to identify the mesh (will use the mesh id)
+        std::shared_ptr<AMP::Mesh::Mesh> mesh; // Pointer to the mesh
+        int ownerRank;                         // Global rank of the processor that "owns" the mesh
+                                               // (usually rank 0 on the mesh comm)
+        std::string name;                      // Name of the multimesh
+        std::vector<baseMeshData> meshes;      // Base mesh info needed to construct the mesh data
+        std::vector<std::string> varName;      // Vectors for each mesh
+        // Function to count the number of bytes needed to pack the data
+        size_t size() const;
+        // Function to pack the data to a byte array
+        void pack( char * ) const;
+        // Function to unpack the data from a byte array
+        static multiMeshData unpack( const char * );
+        // Constructors
+        multiMeshData() : id(), ownerRank( -1 ) {}
+        multiMeshData( const multiMeshData & );
+        multiMeshData &operator=( const multiMeshData & );
+        // Destructor
+        ~multiMeshData() {}
+    };
 
 protected: // Protected member functions
     // Given a filename, strip the directory information and create the directories if needed
     void createDirectories( const std::string &filename );
 
+    // Function to determine which base mesh ids to register a vector with
+    static std::vector<AMP::Mesh::MeshID> getMeshIDs( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 protected: // Internal data
     // The comm of the writer
@@ -173,6 +237,22 @@ protected: // Internal data
 
     // The decomposition to use
     int d_decomposition;
+
+    // List of all meshes and their ids
+    std::map<uint64_t, baseMeshData> d_baseMeshes;
+    std::map<uint64_t, multiMeshData> d_multiMeshes;
+
+    // List of all independent vectors that have been registered
+    std::map<uint64_t, VectorData> d_vectors;
+
+    // List of all independent matrices that have been registered
+    std::map<uint64_t, MatrixData> d_matrices;
+
+    // List of all variables (work on removing)
+    std::set<std::string> d_varNames;
+
+    // List of all vectors that have been registered (work on removing)
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vectorsMesh;
 };
 
 

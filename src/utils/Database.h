@@ -588,7 +588,7 @@ inline void Database::addArgs( const std::string_view &key, TYPE value, Args... 
     } else if constexpr ( std::is_same<TYPE, std::string>::value ||
                           std::is_same<TYPE, std::string_view>::value ) {
         putScalar( key, value );
-    } else if constexpr ( has_size<TYPE>::value ) {
+    } else if constexpr ( has_size<TYPE>::value || is_initializer_list<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
         typedef typename std::remove_reference<TYPE2>::type TYPE3;
         typedef typename std::remove_cv<TYPE3>::type TYPE4;
@@ -613,7 +613,7 @@ inline void Database::addArgsWithUnits( const std::string_view &key,
     } else if constexpr ( std::is_same<TYPE, std::string>::value ||
                           std::is_same<TYPE, std::string_view>::value ) {
         putScalar( key, value, unit );
-    } else if constexpr ( has_size<TYPE>::value ) {
+    } else if constexpr ( has_size<TYPE>::value || is_initializer_list<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
         typedef typename std::remove_reference<TYPE2>::type TYPE3;
         typedef typename std::remove_cv<TYPE3>::type TYPE4;

@@ -12,7 +12,8 @@ template<std::size_t NDIM>
 void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
 {
     std::string meshname = NDIM == 2 ? "Points_2D" : "Points_3D";
-    auto gid             = AMP::createGroup( fid, meshname );
+    meshname += "_" + std::to_string( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() );
+    auto gid = AMP::createGroup( fid, meshname );
 
     // Create the coordinate data
     std::random_device rd;
@@ -248,13 +249,12 @@ void write_unstructured( int NumElements, int NumNodes, hid_t fid, AMP::Xdmf &xm
 }
 
 
-int main( int argc, char *argv[] )
+void writeTime( int i )
 {
-    AMP::AMPManager::startup( argc, argv );
-    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
 
     // Open HDF5 file(s)
-    auto filename = "test_XDMF." + std::to_string( rank ) + ".h5";
+    int rank      = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
+    auto filename = "test_XDMF_" + std::to_string( i ) + "." + std::to_string( rank ) + ".h5";
     auto fid      = AMP::openHDF5( filename, "w", AMP::Compression::GZIP );
 
     // Create the Xdmf writer
@@ -262,21 +262,34 @@ int main( int argc, char *argv[] )
 
     // Write the serial meshes
     if ( rank == 0 ) {
-        write_points<2>( 256, fid, filename, xmf );
         write_uniform( 16, 32, fid, xmf );
         write_curvilinear( 32, 20, fid, xmf );
         write_unstructured( 3, 6, fid, xmf );
     }
 
     // Write the parallel meshes
+    write_points<2>( 256, fid, filename, xmf );
 
     // Close the HDF5 file
     AMP::closeHDF5( fid );
 
     // Gather the Xdmf info for all ranks and write the results
     xmf.gather( AMP_COMM_WORLD );
-    xmf.write( "test_XDMF.xmf" );
+    xmf.write( "test_XDMF_" + std::to_string( i ) + ".xmf" );
     xmf.clear();
+}
+
+
+int main( int argc, char *argv[] )
+{
+    AMP::AMPManager::startup( argc, argv );
+
+    writeTime( 0 );
+    writeTime( 1 );
+    auto fid = fopen( "test_XDMF.visit", "w" );
+    fprintf( fid, "test_XDMF_0.xmf\n" );
+    fprintf( fid, "test_XDMF_1.xmf\n" );
+    fclose( fid );
 
     // Finished
     AMP::AMPManager::shutdown();
