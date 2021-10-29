@@ -118,10 +118,6 @@ int ExplicitEuler::advanceSolution( const double dt,
         d_new_solution->axpy( d_current_dt, *d_f_vec, *d_solution_vector );
         PROFILE_STOP( "ExplicitEuler::advanceSolution axby" );
 
-        PROFILE_START( "ExplicitEuler::advanceSolution make consistent" );
-        d_operator->makeConsistent( d_new_solution );
-        PROFILE_STOP( "ExplicitEuler::advanceSolution make consistent" );
-
         if ( d_iDebugPrintInfoLevel > 0 ) {
             AMP::pout << "L2 Norm of d_new_solution " << d_new_solution->L2Norm() << std::endl;
         }

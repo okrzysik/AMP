@@ -115,21 +115,18 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
     // while we could swap with k4 this does not work if a step is
     // rejected - could be fixed
     // k1 = f(tn,un)
-    d_operator->makeConsistent( d_solution_vector );
     d_operator->apply( d_solution_vector, d_k1_vec );
 
     // u* = un+k1*dt/2
     d_new_solution->axpy( 0.5 * dt, *d_k1_vec, *d_solution_vector );
 
     // k2 = f(t+dt/2, u*)
-    d_operator->makeConsistent( d_new_solution );
     d_operator->apply( d_new_solution, d_k2_vec );
 
     // u* = un+0.75*k2*dt
     d_new_solution->axpy( 0.75 * dt, *d_k2_vec, *d_solution_vector );
 
     // k3 = f(t+0.75dt, u*)
-    d_operator->makeConsistent( d_new_solution );
     d_operator->apply( d_new_solution, d_k3_vec );
 
     // first we calculate the 3rd order solution in d_new_solution
@@ -139,7 +136,6 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
     d_new_solution->axpy( dt / 9.0, *d_new_solution, *d_solution_vector );
 
     // k4 = f(t+dt, u*)
-    d_operator->makeConsistent( d_new_solution );
     d_operator->apply( d_new_solution, d_k4_vec );
 
     // now we calculate the estimated error in d_z_vec for adapting the

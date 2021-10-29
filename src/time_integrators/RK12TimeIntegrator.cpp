@@ -108,8 +108,6 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
         AMP::pout << "*****************************************" << std::endl;
     }
 
-    d_operator->makeConsistent( d_solution_vector );
-
     // k1 = f(tn,un)
     d_operator->apply( d_solution_vector, d_k1_vec );
 
@@ -131,7 +129,6 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
                   << std::endl;
     }
 
-    d_operator->makeConsistent( d_z_vec );
     // k2 = f(t+dt, u*)
     d_operator->apply( d_z_vec, d_k2_vec );
 
