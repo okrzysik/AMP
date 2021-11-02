@@ -126,9 +126,8 @@ void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     rho[0] = rho[1];
 
     auto p = z->cloneVector();
+    auto w = r->cloneVector();
     p->copyVector( z );
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> w;
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
@@ -153,6 +152,10 @@ void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // compute the current residual norm
         current_res = static_cast<double>( r->L2Norm() );
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            std::cout << "CG: iteration " << ( iter + 1 ) << ", residual " << current_res
+                      << std::endl;
+        }
         // check if converged
         if ( current_res < terminate_tol ) {
             // set a convergence reason

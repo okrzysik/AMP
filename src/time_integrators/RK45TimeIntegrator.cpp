@@ -64,7 +64,7 @@ void RK45TimeIntegrator::initialize(
 }
 
 void RK45TimeIntegrator::reset(
-    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters )
+    std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> )
 {
     //    AMP_ASSERT( parameters != nullptr );
     d_new_solution->getVectorData()->reset();
