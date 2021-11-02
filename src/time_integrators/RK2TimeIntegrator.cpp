@@ -86,7 +86,7 @@ void RK2TimeIntegrator::setupVectors( void )
 }
 
 int RK2TimeIntegrator::advanceSolution( const double dt,
-                                        const bool first_step,
+                                        const bool,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> out )
 {
