@@ -55,17 +55,23 @@ public:
      */
     void writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
+    //! Register arbitrary data
+    void registerData( std::function<void( hid_t, Xdmf & )> fun );
+
 
 private:
-    Xdmf::MeshData writeMesh( hid_t fid, const baseMeshData &mesh, const std::string &path );
+    Xdmf::MeshData writeMesh( hid_t fid, const baseMeshData &mesh, std::string path );
     Xdmf::MeshData writeDefaultMesh( hid_t fid,
-                                     std::shared_ptr<const AMP::Mesh::Mesh> mesh,
+                                     const baseMeshData &mesh,
                                      const std::string &name,
-                                     const std::string &path );
+                                     const std::string &path ) const;
     Xdmf::MeshData writeBoxMesh( hid_t fid,
-                                 std::shared_ptr<const AMP::Mesh::BoxMesh> mesh,
+                                 const baseMeshData &mesh,
                                  const std::string &name,
-                                 const std::string &path );
+                                 const std::string &path ) const;
+
+private:
+    std::vector<std::function<void( hid_t, Xdmf & )>> d_fun;
 };
 
 } // namespace AMP::Utilities

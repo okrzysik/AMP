@@ -69,12 +69,12 @@ HDF5writer::~HDF5writer() = default;
 Writer::WriterProperties HDF5writer::getProperties() const
 {
     WriterProperties properties;
-    properties.type           = "HDF5";
-    properties.extension      = "hdf5";
-    properties.registerVector = true;
-    properties.registerMesh   = true;
-    // properties.registerVectorWithMesh = true;
-    // properties.registerMatrix = true;
+    properties.type                   = "HDF5";
+    properties.extension              = "hdf5";
+    properties.registerVector         = true;
+    properties.registerMesh           = true;
+    properties.registerVectorWithMesh = true;
+    properties.registerMatrix         = false;
     return properties;
 }
 
@@ -82,7 +82,7 @@ Writer::WriterProperties HDF5writer::getProperties() const
 /************************************************************
  * Function to read a silo file                              *
  ************************************************************/
-void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not implimented yet" ); }
+void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not implemented yet" ); }
 
 
 /************************************************************
@@ -94,6 +94,7 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
  ************************************************************/
 void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
+    PROFILE_SCOPED( timer, "writeFile" );
 #ifdef USE_EXT_HDF5
     Xdmf xmf;
     AMP_ASSERT( d_comm.getSize() == 1 );
@@ -101,6 +102,8 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     auto filename = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
     auto fid      = openHDF5( filename, "w", Compression::GZIP );
     writeHDF5( fid, "time", time );
+    // Synchronize the vectors
+    syncVectors();
     // Add the mesh
 #ifdef USE_AMP_MESH
     std::map<GlobalID, Xdmf::MeshData> baseMeshData;
@@ -133,6 +136,9 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
         AMP_ERROR( "Not finished" );
     }
 #endif
+    // Add user data
+    for ( auto fun : d_fun )
+        fun( fid, xmf );
     // Close the file
     closeHDF5( fid );
     // Write the Xdmf file
@@ -153,19 +159,42 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
 /************************************************************
  * Function to write a base mesh                             *
  ************************************************************/
-Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
-                                             std::shared_ptr<const AMP::Mesh::Mesh> mesh,
-                                             const std::string &name,
-                                             const std::string &path )
+static AMP::Xdmf::RankType getRankType( int numDOFs, int ndim )
 {
+    if ( numDOFs == 1 )
+        return AMP::Xdmf::RankType::Scalar;
+    if ( numDOFs == ndim )
+        return AMP::Xdmf::RankType::Vector;
+    if ( numDOFs == 9 )
+        return AMP::Xdmf::RankType::Tensor;
+    return AMP::Xdmf::RankType::Matrix;
+}
+static AMP::Xdmf::Center getCenter( AMP::Mesh::GeomType type )
+{
+    if ( type == AMP::Mesh::GeomType::Vertex )
+        return AMP::Xdmf::Center::Node;
+    if ( type == AMP::Mesh::GeomType::Edge )
+        return AMP::Xdmf::Center::Edge;
+    if ( type == AMP::Mesh::GeomType::Face )
+        return AMP::Xdmf::Center::Face;
+    if ( type == AMP::Mesh::GeomType::Volume )
+        return AMP::Xdmf::Center::Cell;
+    return AMP::Xdmf::Center::Null;
+}
+Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
+                                             const baseMeshData &mesh,
+                                             const std::string &name,
+                                             const std::string &path ) const
+{
+    PROFILE_SCOPED( timer, "writeDefaultMesh", 1 );
     // Treat the mesh as an unstructured mesh
-    const int ndim      = mesh->getDim();
-    const auto type     = mesh->getGeomType();
-    const auto elements = mesh->getIterator( type, 0 );
+    const int ndim      = mesh.mesh->getDim();
+    const auto type     = mesh.mesh->getGeomType();
+    const auto elements = mesh.mesh->getIterator( type, 0 );
     AMP::Array<double> x[3];
     AMP::Array<int> nodelist;
     std::vector<AMP::Mesh::MeshElementID> nodelist_ids;
-    getNodeElemList( mesh, elements, x, nodelist, nodelist_ids );
+    getNodeElemList( mesh.mesh, elements, x, nodelist, nodelist_ids );
     auto shapetype = AMP::Xdmf::TopologyType::Null;
     int shapesize  = nodelist.size( 0 );
     if ( shapesize == 8 && type == AMP::Mesh::GeomType::Volume )
@@ -188,83 +217,189 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
     }
     writeHDF5( fid, "type", static_cast<int>( type ) );
     writeHDF5( fid, "elements", nodelist );
-    return AMP::Xdmf::createUnstructuredMesh( name,
-                                              ndim,
-                                              shapetype,
-                                              elements.size(),
-                                              path + "/elements",
-                                              x[0].length(),
-                                              x_path[0],
-                                              x_path[1],
-                                              x_path[2] );
+    auto name2    = mesh.mesh->getName() + "_" + name;
+    auto XdmfData = AMP::Xdmf::createUnstructuredMesh( name2,
+                                                       ndim,
+                                                       shapetype,
+                                                       elements.size(),
+                                                       path + "/elements",
+                                                       x[0].length(),
+                                                       x_path[0],
+                                                       x_path[1],
+                                                       x_path[2] );
+    // Write the vectors
+    for ( const auto &vec : mesh.vectors ) {
+        auto DOFs = vec.vec->getDOFManager();
+        AMP::Array<double> data;
+        std::vector<size_t> dofs;
+        if ( vec.type == AMP::Mesh::GeomType::Vertex ) {
+            data.resize( vec.numDOFs, nodelist_ids.size() );
+            data.fill( 0 );
+            for ( size_t i = 0; i < nodelist_ids.size(); i++ ) {
+                DOFs->getDOFs( nodelist_ids[i], dofs );
+                AMP_ASSERT( (int) dofs.size() == vec.numDOFs );
+                vec.vec->getValuesByGlobalID( vec.numDOFs, dofs.data(), &data( 0, i ) );
+            }
+        } else {
+            auto it  = mesh.mesh->getIterator( vec.type, 0 );
+            size_t N = it.size();
+            data.resize( vec.numDOFs, N );
+            data.fill( 0 );
+            auto DOFs = vec.vec->getDOFManager();
+            for ( size_t i = 0; i < N; i++, ++it ) {
+                DOFs->getDOFs( it->globalID(), dofs );
+                AMP_ASSERT( (int) dofs.size() == vec.numDOFs );
+                vec.vec->getValuesByGlobalID( vec.numDOFs, dofs.data(), &data( 0, i ) );
+            }
+        }
+        if ( vec.numDOFs == 1 )
+            data.reshape( data.length() );
+        writeHDF5( fid, vec.name, data );
+        AMP::Xdmf::VarData var;
+        var.name     = vec.name;
+        var.rankType = getRankType( vec.numDOFs, mesh.mesh->getDim() );
+        var.center   = getCenter( vec.type );
+        var.size     = data.size();
+        var.data     = path + "/" + vec.name;
+        XdmfData.vars.push_back( var );
+    }
+    return XdmfData;
 }
 Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
-                                         std::shared_ptr<const AMP::Mesh::BoxMesh> mesh,
+                                         const baseMeshData &mesh,
                                          const std::string &name,
-                                         const std::string &path )
+                                         const std::string &path ) const
 {
+    PROFILE_SCOPED( timer, "writeBoxMesh", 1 );
+    using AMP::Mesh::GeomType;
+    using MeshElementIndex = AMP::Mesh::BoxMesh::MeshElementIndex;
+    auto mesh2             = std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh.mesh );
     Xdmf::MeshData XdmfData;
-    AMP::ArraySize size( mesh->size() );
-    if ( size.ndim() != mesh->getDim() )
+    AMP::ArraySize size( mesh2->size() );
+    if ( size.ndim() != mesh2->getDim() )
         return writeDefaultMesh( fid, mesh, name, path ); // We have issues with surface meshes
-    auto size2 = size;
-    for ( int d = 0; d < size.ndim(); d++ )
-        size2.resize( d, size[d] + 1 );
+    auto size2 = size + (size_t) 1;
+    int ndim   = size2.ndim();
     AMP::Array<double> x( size2 ), y( size2 ), z( size2 );
     for ( size_t k = 0; k < size2[2]; k++ ) {
         for ( size_t j = 0; j < size2[1]; j++ ) {
             for ( size_t i = 0; i < size2[0]; i++ ) {
                 double pos[3] = { 0 };
-                auto index =
-                    AMP::Mesh::BoxMesh::MeshElementIndex( AMP::Mesh::GeomType::Vertex, 0, i, j, k );
-                mesh->coord( index, pos );
+                auto index    = MeshElementIndex( GeomType::Vertex, 0, i, j, k );
+                mesh2->coord( index, pos );
                 x( i, j, k ) = pos[0];
                 y( i, j, k ) = pos[1];
                 z( i, j, k ) = pos[2];
             }
         }
     }
-    if ( mesh->getDim() == 1 ) {
+    auto name2 = mesh2->getName() + "_" + name;
+    if ( mesh2->getDim() == 1 ) {
         writeHDF5( fid, "x", x );
-        XdmfData = AMP::Xdmf::createCurvilinearMesh( name, size, path + "/x" );
-    } else if ( mesh->getDim() == 2 ) {
+        XdmfData = AMP::Xdmf::createCurvilinearMesh( name2, size, path + "/x" );
+    } else if ( mesh2->getDim() == 2 ) {
         writeHDF5( fid, "x", x );
         writeHDF5( fid, "y", y );
-        XdmfData = AMP::Xdmf::createCurvilinearMesh( name, size, path + "/x", path + "/y" );
-    } else if ( mesh->getDim() == 3 ) {
+        XdmfData = AMP::Xdmf::createCurvilinearMesh( name2, size, path + "/x", path + "/y" );
+    } else if ( mesh2->getDim() == 3 ) {
         writeHDF5( fid, "x", x );
         writeHDF5( fid, "y", y );
         writeHDF5( fid, "z", z );
         XdmfData =
-            AMP::Xdmf::createCurvilinearMesh( name, size, path + "/x", path + "/y", path + "/z" );
+            AMP::Xdmf::createCurvilinearMesh( name2, size, path + "/x", path + "/y", path + "/z" );
     } else {
         AMP_ERROR( "Not finished" );
     }
+    // Write the vectors
+    for ( const auto &vec : mesh.vectors ) {
+        auto DOFs = vec.vec->getDOFManager();
+        AMP::Array<double> data;
+        std::vector<size_t> dofs;
+        AMP::ArraySize size0;
+        if ( vec.type == GeomType::Vertex ) {
+            size2         = size + 1;
+            size0         = size;
+            auto periodic = mesh2->periodic();
+            for ( size_t d = 0; d < periodic.size(); d++ )
+                size0.resize( d, periodic[d] ? size[d] : size2[d] );
+        } else if ( vec.type == mesh2->getGeomType() ) {
+            size2 = size;
+            size0 = size;
+        } else {
+            AMP_ERROR( "Not finished" );
+        }
+        data.resize(
+            ArraySize( { (uint8_t) vec.numDOFs, size2[0], size2[1], size2[2] }, ndim + 1 ) );
+        data.fill( 0 );
+        for ( size_t k = 0; k < size2[2]; k++ ) {
+            size_t k2 = k % size0[2];
+            for ( size_t j = 0; j < size2[1]; j++ ) {
+                size_t j2 = j % size0[1];
+                for ( size_t i = 0; i < size2[0]; i++ ) {
+                    size_t i2  = i % size0[0];
+                    auto index = MeshElementIndex( vec.type, 0, i2, j2, k2 );
+                    auto id    = mesh2->convert( index );
+                    DOFs->getDOFs( id, dofs );
+                    AMP_ASSERT( (int) dofs.size() == vec.numDOFs );
+                    vec.vec->getValuesByGlobalID( vec.numDOFs, dofs.data(), &data( 0, i, j, k ) );
+                }
+            }
+        }
+        if ( vec.numDOFs == 1 )
+            data.reshape( size2 );
+        writeHDF5( fid, vec.name, data );
+        AMP::Xdmf::VarData var;
+        var.name     = vec.name;
+        var.rankType = getRankType( vec.numDOFs, mesh.mesh->getDim() );
+        var.center   = getCenter( vec.type );
+        var.size     = data.size();
+        var.data     = path + "/" + vec.name;
+        XdmfData.vars.push_back( var );
+    }
     return XdmfData;
 }
-Xdmf::MeshData HDF5writer::writeMesh( hid_t fid, const baseMeshData &mesh, const std::string &path )
+static std::vector<std::string> splitPath( const std::string &path )
+{
+    if ( path.empty() )
+        return std::vector<std::string>();
+    std::vector<std::string> data;
+    for ( size_t i = 0; i < path.size(); ) {
+        size_t j = std::min( { path.find( '/', i ), path.find( 92, i ), path.size() } );
+        data.push_back( path.substr( i, j - i ) );
+        i = j + 1;
+    }
+    return data;
+}
+Xdmf::MeshData HDF5writer::writeMesh( hid_t fid, const baseMeshData &mesh, std::string path )
 {
     Xdmf::MeshData XdmfData;
     if ( !mesh.mesh )
         return XdmfData;
-    // Write the mesh
-    auto name  = mesh.mesh->getName();
-    auto gid   = createGroup( fid, name );
-    auto path2 = path + "/" + name;
-    auto name2 = name + "_" + mesh.meshName;
+    // Update the path
+    auto gid = fid;
+    std::vector<hid_t> groups;
+    for ( auto dir : splitPath( mesh.path ) ) {
+        if ( H5Gexists( gid, dir ) )
+            gid = openGroup( gid, dir );
+        else
+            gid = createGroup( gid, dir );
+        path = path + "/" + dir;
+        groups.push_back( gid );
+    }
+    // Write the mesh and variables
     writeHDF5( gid, "ndim", (int) mesh.mesh->getDim() );
     writeHDF5( gid, "meshClass", mesh.mesh->meshClass() );
     if ( std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh.mesh ) ) {
         // We are dealing with a box mesh
-        auto mesh2 = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh.mesh );
-        XdmfData   = writeBoxMesh( gid, mesh2, name2, path2 );
+        XdmfData = writeBoxMesh( gid, mesh, mesh.meshName, path );
     } else {
-        XdmfData = writeDefaultMesh( gid, mesh.mesh, name2, path2 );
+        XdmfData = writeDefaultMesh( gid, mesh, mesh.meshName, path );
     }
-
     // Write the geometry (if it exists)
 
-    closeGroup( gid );
+    // Close the groups
+    for ( int i = static_cast<int>( groups.size() ) - 1; i >= 0; i-- )
+        closeGroup( groups[i] );
     return XdmfData;
 }
 

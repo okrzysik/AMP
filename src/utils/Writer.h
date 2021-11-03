@@ -253,11 +253,11 @@ protected: // Protected member functions
     static std::vector<AMP::Mesh::MeshID> getMeshIDs( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     // Get the node coordinates and elements for a mesh
-    void getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
-                          const AMP::Mesh::MeshIterator &elements,
-                          AMP::Array<double> *x,
-                          AMP::Array<int> &nodelist,
-                          std::vector<AMP::Mesh::MeshElementID> &nodelist_ids );
+    static void getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
+                                 const AMP::Mesh::MeshIterator &elements,
+                                 AMP::Array<double> *x,
+                                 AMP::Array<int> &nodelist,
+                                 std::vector<AMP::Mesh::MeshElementID> &nodelist_ids );
 
     // Register the mesh returning the ids of all registered base meshes
     void registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -271,6 +271,8 @@ protected: // Protected member functions
     // Get id from a communicator
     GlobalID getID( const AMP_MPI &comm ) const;
 
+    // Synchronize the vectors (call makeConsistent)
+    void syncVectors();
 
 protected: // Internal data
     // The comm of the writer

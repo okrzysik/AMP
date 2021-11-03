@@ -119,18 +119,8 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
     AMP_INSIST( d_dim == dim, "All meshes must have the same number of physical dimensions" );
     d_comm.barrier();
     PROFILE_STOP( "sync dim", 1 );
-// Syncronize all vectors
-#ifdef USE_AMP_VECTORS
-    PROFILE_START( "makeConsistent", 1 );
-    for ( auto &elem : d_vectorsMesh ) {
-        auto localState = elem->getUpdateStatus();
-        if ( localState == AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
-            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
-        else
-            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    }
-    PROFILE_STOP( "makeConsistent", 1 );
-#endif
+    // Synchronize the vectors
+    syncVectors();
     // Write the data for each base mesh
     if ( d_decomposition == 1 ) {
         // Write all mesh data to the main file

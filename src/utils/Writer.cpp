@@ -1,11 +1,10 @@
 #include "AMP/utils/Writer.h"
-#include "AMP/utils/Utilities.h"
-
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AsciiWriter.h"
 #include "AMP/utils/HDF5writer.h"
 #include "AMP/utils/NullWriter.h"
 #include "AMP/utils/SiloWriter.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
@@ -13,6 +12,7 @@
 #endif
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorSelector.h"
 #endif
 #ifdef USE_AMP_MATRICES
 #include "AMP/matrices/Matrix.h"
@@ -192,6 +192,13 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         AMP_ERROR( "registerMesh is not supported for " + getProperties().type );
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( !multimesh ) {
+        // Check if we previously registered the mesh
+        for ( const auto &[id, mesh2] : d_baseMeshes ) {
+            if ( mesh2.mesh->meshID() == mesh->meshID() )
+                return;
+            if ( mesh2.mesh->getName() == mesh->getName() && mesh2.path == path )
+                AMP_WARNING( "Registering multiple meshes with the same name: " + mesh->getName() );
+        }
         // Create a unique id for each rank
         GlobalID id( mesh->meshID().getData(), d_comm.getRank() );
         base_ids.insert( id );
@@ -230,6 +237,13 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             d_multiMeshes.insert( std::make_pair( data2.id, data2 ) );
         }
     } else {
+        // Check if we previously registered the mesh
+        for ( const auto &[id, mesh2] : d_multiMeshes ) {
+            if ( mesh2.mesh->meshID() == mesh->meshID() )
+                return;
+            if ( mesh2.mesh->getName() == mesh->getName() )
+                AMP_WARNING( "Registering multiple meshes with the same name: " + mesh->getName() );
+        }
         // We are dealing with a multimesh, register the current mesh and sub meshes
         GlobalID id( mesh->meshID().getData(), 0 );
         int level2 = level;
@@ -275,8 +289,25 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
  * Register a vector with a mesh                             *
  ************************************************************/
 #ifdef USE_AMP_VECTORS
-void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                             AMP::Mesh::Mesh::shared_ptr mesh,
+static int getDOFsPerPoint( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                            std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                            AMP::Mesh::GeomType type )
+{
+    std::vector<size_t> dofs;
+    auto DOFs = vec->getDOFManager();
+    auto it1  = mesh->getIterator( type, 0 );
+    DOFs->getDOFs( it1->globalID(), dofs );
+    int DOFsPerPoint = dofs.size();
+    if ( type == AMP::Mesh::GeomType::Vertex )
+        it1 = mesh->getIterator( type, 1 );
+    for ( const auto &elem : DOFs->getIterator() ) {
+        DOFs->getDOFs( elem.globalID(), dofs );
+        AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
+    }
+    return DOFsPerPoint;
+}
+void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                             std::shared_ptr<AMP::Mesh::Mesh> mesh,
                              AMP::Mesh::GeomType type,
                              const std::string &name_in )
 {
@@ -297,27 +328,24 @@ void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
         return;
     if ( it1.size() != it3.size() )
         AMP_WARNING( "vector does not cover the entire mesh for the given entity type" );
-    std::vector<size_t> dofs;
-    DOFs->getDOFs( it1->globalID(), dofs );
-    int DOFsPerPoint = dofs.size();
-    if ( type == AMP::Mesh::GeomType::Vertex )
-        it1 = mesh->getIterator( type, 1 );
-    for ( const auto &elem : DOFs->getIterator() ) {
-        DOFs->getDOFs( elem.globalID(), dofs );
-        AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
-    }
     // Register the vector with the appropriate base meshes
-    VectorData data( vec, name_in );
-    data.type    = type;
-    data.numDOFs = DOFsPerPoint;
-    auto ids     = getMeshIDs( mesh );
+    auto ids = getMeshIDs( mesh );
     for ( auto id : ids ) {
         for ( auto &[id0, mesh2] : d_baseMeshes ) {
-            if ( id0.objID == id.getData() )
-                mesh2.vectors.push_back( data );
+            if ( id0.objID == id.getData() ) {
+                AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2.mesh );
+                auto vec2 = vec->select( meshSelector, vec->getVariable()->getName() );
+                if ( vec2 ) {
+                    VectorData data( vec2, name_in );
+                    data.type    = type;
+                    data.numDOFs = getDOFsPerPoint( vec2, mesh2.mesh, type );
+                    mesh2.vectors.push_back( data );
+                }
+            }
         }
     }
     // Register the vector with the appropriate multi-meshes
+    VectorData data( vec, name_in );
     for ( auto &[id0, mesh2] : d_multiMeshes ) {
         if ( id0.objID == mesh->meshID().getData() )
             mesh2.varName.push_back( data.name );
@@ -341,6 +369,26 @@ void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
 #else
     NULL_USE( mat );
     NULL_USE( name );
+#endif
+}
+
+
+/****************************************************
+ * Synchronize all vectors                           *
+ ****************************************************/
+void Writer::syncVectors()
+{
+// Syncronize all vectors
+#ifdef USE_AMP_VECTORS
+    PROFILE_START( "makeConsistent", 1 );
+    for ( auto &elem : d_vectorsMesh ) {
+        auto localState = elem->getUpdateStatus();
+        if ( localState == AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
+            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+        else
+            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    }
+    PROFILE_STOP( "makeConsistent", 1 );
 #endif
 }
 
@@ -469,6 +517,7 @@ size_t Writer::multiMeshData::size() const
 }
 void Writer::multiMeshData::pack( char *ptr ) const
 {
+    AMP_ERROR( "Not finished" );
     /*size_t pos = 0;
     packData<GlobalID>( ptr, pos, id );
     packData<int>( ptr, pos, ownerRank );
@@ -487,6 +536,8 @@ void Writer::multiMeshData::pack( char *ptr ) const
 }
 Writer::multiMeshData Writer::multiMeshData::unpack( const char *ptr )
 {
+    AMP_ERROR( "Not finished" );
+
     /*size_t pos = 0;
     multiMeshData data;
     data.id        = unpackData<GlobalID>( ptr, pos );
@@ -526,7 +577,7 @@ void Writer::syncMultiMeshData( std::map<GlobalID, multiMeshData> &data, int roo
         auto tmp = it.second;
         tmp.meshes.resize( 0 );
         for ( auto &elem : it.second.meshes ) {
-            if ( elem.ownerRank == myRank )
+            if ( (int) elem.ownerRank == myRank )
                 tmp.meshes.push_back( elem );
         }
         // Only the owner rank will send the variable list
