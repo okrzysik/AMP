@@ -178,11 +178,21 @@ protected: // Protected structures
         {
             return objID == rhs.objID && ownerRank == rhs.ownerRank;
         }
+        bool operator!=( const GlobalID &rhs ) const
+        {
+            return objID != rhs.objID || ownerRank != rhs.ownerRank;
+        }
         bool operator<( const GlobalID &rhs ) const
         {
             if ( objID == rhs.objID )
                 return ownerRank < rhs.ownerRank;
             return objID < rhs.objID;
+        }
+        bool operator>( const GlobalID &rhs ) const
+        {
+            if ( objID == rhs.objID )
+                return ownerRank > rhs.ownerRank;
+            return objID > rhs.objID;
         }
     };
 
@@ -220,6 +230,8 @@ protected: // Protected structures
         void pack( char * ) const;
         // Function to unpack the data from a byte array (note: some info may be lost)
         static baseMeshData unpack( const char * );
+        // Constructor
+        baseMeshData() : rank( -1 ), ownerRank( -1 ) {}
     };
 
     // Structure used to hold data for a multimesh
@@ -237,12 +249,8 @@ protected: // Protected structures
         void pack( char * ) const;
         // Function to unpack the data from a byte array
         static multiMeshData unpack( const char * );
-        // Constructors
-        multiMeshData() : id(), ownerRank( -1 ) {}
-        multiMeshData( const multiMeshData & );
-        multiMeshData &operator=( const multiMeshData & );
-        // Destructor
-        ~multiMeshData() {}
+        // Constructor
+        multiMeshData() : ownerRank( -1 ) {}
     };
 
 protected: // Protected member functions
@@ -266,13 +274,18 @@ protected: // Protected member functions
                         std::set<GlobalID> &base_ids );
 
     // Function to syncronize multimesh data
-    void syncMultiMeshData( std::map<GlobalID, multiMeshData> &data, int root = -1 ) const;
+    std::tuple<std::vector<multiMeshData>, std::map<GlobalID, baseMeshData>>
+    syncMultiMeshData( int root = -1 ) const;
 
     // Get id from a communicator
     GlobalID getID( const AMP_MPI &comm ) const;
 
     // Synchronize the vectors (call makeConsistent)
     void syncVectors();
+
+    // Synchronize mesh data
+    template<class TYPE>
+    void syncData( std::vector<TYPE> &data, int root ) const;
 
 protected: // Internal data
     // The comm of the writer

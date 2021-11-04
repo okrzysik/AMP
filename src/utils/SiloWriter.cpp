@@ -391,37 +391,9 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
 {
     PROFILE_START( "writeSummary", 1 );
     AMP_ASSERT( !filename.empty() );
-    // Add the baseMeshData to the multimeshes
-    auto multiMeshes = d_multiMeshes;
-    /*for ( auto &tmp : multiMeshes ) {
-        auto mesh     = tmp.second.mesh;
-        auto base_ids = getMeshIDs( mesh );
-        for ( auto id : base_ids ) {
-            const auto &it = d_baseMeshes.find( id.getData() );
-            if ( it != d_baseMeshes.end() ) {
-                baseMeshData data = it->second;
-                AMP_ASSERT( it->first == data.id );
-                tmp.second.meshes.push_back( data );
-            }
-        }
-    }*/
-    // Add the whole mesh
-    /*if ( multiMeshes.size()==0 ) {
-        multiMeshData wholemesh;
-        wholemesh.id = AMP::Mesh::MeshID((unsigned int)-1,0);
-        wholemesh.name = "whole_mesh";
-        for (auto it=d_baseMeshes.begin(); it!=d_baseMeshes.end(); ++it) {
-            baseMeshData data = it->second;
-            AMP_ASSERT(it->first==data.id);
-            wholemesh.meshes.push_back(data);
-        }
-        wholemesh.owner_rank = 0;
-        multimeshes.insert( std::make_pair(wholemesh.id,wholemesh)
-    );
-    }*/
     // Gather the results
     // Note: we only need to guarantee that rank 0 has all the data
-    syncMultiMeshData( multiMeshes, 0 );
+    const auto [multiMeshes, baseMeshes] = syncMultiMeshData( 0 );
     // Write the multimeshes and multivariables
     std::string base_path;
     if ( find_slash( filename ) != std::string::npos )
@@ -431,8 +403,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         // Create the subdirectories
         PROFILE_START( "create directories", 2 );
         std::set<std::string> subdirs;
-        for ( const auto &tmp : d_multiMeshes ) {
-            auto data  = tmp.second;
+        for ( const auto &data : multiMeshes ) {
             auto file  = getFile( data.name, base_path );
             size_t pos = find_slash( file );
             if ( pos != std::string::npos )
@@ -443,12 +414,13 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         PROFILE_STOP( "create directories", 2 );
         // Create the multimeshes
         PROFILE_START( "write multimeshes", 2 );
-        for ( const auto &tmp : d_multiMeshes ) {
-            const auto &data = tmp.second;
-            size_t N         = data.meshes.size();
+        for ( const auto &data : multiMeshes ) {
+            size_t N = data.meshes.size();
             std::vector<std::string> meshNames( N );
             for ( size_t i = 0; i < N; ++i ) {
-                const auto &base = d_baseMeshes[data.meshes[i]];
+                auto it = baseMeshes.find( data.meshes[i] );
+                AMP_ASSERT( it != baseMeshes.end() );
+                const auto &base = it->second;
                 auto file        = getFile( base.file, base_path );
                 meshNames[i]     = file + ":" + base.path + "/" + base.meshName;
                 strrep( meshNames[i], "//", "/" );
@@ -471,17 +443,16 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
         PROFILE_STOP( "write multimeshes", 2 );
         // Generate the multi-variables
         PROFILE_START( "write multivariables", 2 );
-        for ( const auto &tmp : multiMeshes ) {
-            const auto &data = tmp.second;
-            size_t N         = data.meshes.size();
+        for ( const auto &data : multiMeshes ) {
+            size_t N = data.meshes.size();
             // std::cout << data.name << std::endl;
             for ( const auto &varName : data.varName ) {
                 std::vector<std::string> varNames( N );
                 auto varnames = new char *[N];
                 auto vartypes = new int[N];
                 for ( size_t i = 0; i < N; ++i ) {
-                    auto it = d_baseMeshes.find( data.meshes[i] );
-                    AMP_ASSERT( it != d_baseMeshes.end() );
+                    auto it = baseMeshes.find( data.meshes[i] );
+                    AMP_ASSERT( it != baseMeshes.end() );
                     auto base    = it->second;
                     auto rankStr = std::to_string( base.rank );
                     auto file    = getFile( base.file, base_path );
@@ -490,8 +461,8 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                     varnames[i] = (char *) varNames[i].c_str();
                     vartypes[i] = DB_UCDVAR;
                 }
-                auto it = d_baseMeshes.find( data.meshes[0] );
-                AMP_ASSERT( it != d_baseMeshes.end() );
+                auto it = baseMeshes.find( data.meshes[0] );
+                AMP_ASSERT( it != baseMeshes.end() );
                 auto base   = it->second;
                 int varSize = 0;
                 for ( size_t i = 0; i < base.vectors.size(); ++i ) {

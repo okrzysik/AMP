@@ -1,4 +1,3 @@
-#include "AMP/utils/Writer.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AsciiWriter.h"
 #include "AMP/utils/HDF5writer.h"
@@ -17,6 +16,8 @@
 #ifdef USE_AMP_MATRICES
 #include "AMP/matrices/Matrix.h"
 #endif
+
+#include <algorithm>
 
 
 namespace AMP::Utilities {
@@ -300,7 +301,7 @@ static int getDOFsPerPoint( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
     int DOFsPerPoint = dofs.size();
     if ( type == AMP::Mesh::GeomType::Vertex )
         it1 = mesh->getIterator( type, 1 );
-    for ( const auto &elem : DOFs->getIterator() ) {
+    for ( const auto &elem : it1 ) {
         DOFs->getDOFs( elem.globalID(), dofs );
         AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
     }
@@ -482,30 +483,9 @@ Writer::baseMeshData Writer::baseMeshData::unpack( const char *ptr )
 /************************************************************
  * Functions for multiMeshData                               *
  ************************************************************/
-Writer::multiMeshData::multiMeshData( const Writer::multiMeshData &rhs )
-    : id( rhs.id ),
-      mesh( rhs.mesh ),
-      ownerRank( rhs.ownerRank ),
-      name( rhs.name ),
-      meshes( rhs.meshes ),
-      varName( rhs.varName )
-{
-}
-Writer::multiMeshData &Writer::multiMeshData::operator=( const Writer::multiMeshData &rhs )
-{
-    if ( this == &rhs ) // protect against invalid self-assignment
-        return *this;
-    this->id        = rhs.id;
-    this->mesh      = rhs.mesh;
-    this->ownerRank = rhs.ownerRank;
-    this->name      = rhs.name;
-    this->meshes    = rhs.meshes;
-    this->varName   = rhs.varName;
-    return *this;
-}
 size_t Writer::multiMeshData::size() const
 {
-    size_t N_bytes = sizeof( uint64_t );           // Store the mesh id
+    size_t N_bytes = sizeof( id );                 // Store the mesh id
     N_bytes += sizeof( int );                      // Store the owner rank
     N_bytes += name.size() + 1;                    // Store the mesh name
     N_bytes += sizeof( int );                      // Store the number of sub meshes
@@ -517,46 +497,35 @@ size_t Writer::multiMeshData::size() const
 }
 void Writer::multiMeshData::pack( char *ptr ) const
 {
-    AMP_ERROR( "Not finished" );
-    /*size_t pos = 0;
+    size_t pos = 0;
     packData<GlobalID>( ptr, pos, id );
     packData<int>( ptr, pos, ownerRank );
     packData<std::string>( ptr, pos, name );
-    // Store the base meshes
     packData<int>( ptr, pos, meshes.size() );
-    for ( const auto &mesh : meshes ) {
-        mesh.pack( &ptr[pos] );
-        pos += mesh.size();
-    }
-    // Store the variables
+    for ( auto &mesh : meshes )
+        packData<GlobalID>( ptr, pos, mesh );
     packData<int>( ptr, pos, varName.size() );
-    for ( const auto &name : varName )
-        packData<std::string>( ptr, pos, name );
-    AMP_ASSERT( pos == size() );*/
+    for ( auto &var : varName )
+        packData<std::string>( ptr, pos, var );
+    AMP_ASSERT( pos == size() );
 }
 Writer::multiMeshData Writer::multiMeshData::unpack( const char *ptr )
 {
-    AMP_ERROR( "Not finished" );
-
-    /*size_t pos = 0;
-    multiMeshData data;
+    Writer::multiMeshData data;
+    size_t pos     = 0;
     data.id        = unpackData<GlobalID>( ptr, pos );
     data.ownerRank = unpackData<int>( ptr, pos );
     data.name      = unpackData<std::string>( ptr, pos );
-    // Store the base meshes
-    int N_meshes = unpackData<int>( ptr, pos );
+    int N_meshes   = unpackData<int>( ptr, pos );
     data.meshes.resize( N_meshes );
-    for ( int i = 0; i < N_meshes; ++i ) {
-        data.meshes[i] = baseMeshData::unpack( &ptr[pos] );
-        pos += data.meshes[i].size();
-    }
-    // Store the variables
-    int N_var    = unpackData<int>( ptr, pos );
-    data.varName = std::vector<std::string>( N_var );
-    for ( auto &name : data.varName )
-        name = unpackData<std::string>( ptr, pos );
+    for ( auto &mesh : data.meshes )
+        mesh = unpackData<GlobalID>( ptr, pos );
+    int N_vars = unpackData<int>( ptr, pos );
+    data.varName.resize( N_vars );
+    for ( auto &var : data.varName )
+        var = unpackData<std::string>( ptr, pos );
     AMP_ASSERT( pos == data.size() );
-    return data;*/
+    return data;
 }
 
 
@@ -564,116 +533,81 @@ Writer::multiMeshData Writer::multiMeshData::unpack( const char *ptr )
  * Function to synchronize the multimesh data                *
  * If root==-1, the data will be synced across all procs     *
  ************************************************************/
-void Writer::syncMultiMeshData( std::map<GlobalID, multiMeshData> &data, int root ) const
+template<class TYPE>
+void Writer::syncData( std::vector<TYPE> &data, int root ) const
 {
     if ( d_comm.getSize() == 1 )
         return;
-    // Convert the data to vectors
-    std::vector<GlobalID> ids;
-    std::vector<multiMeshData> meshdata;
-    int myRank = d_comm.getRank();
-    for ( const auto &it : data ) {
-        // Only send the base meshes that I own
-        auto tmp = it.second;
-        tmp.meshes.resize( 0 );
-        for ( auto &elem : it.second.meshes ) {
-            if ( (int) elem.ownerRank == myRank )
-                tmp.meshes.push_back( elem );
-        }
-        // Only the owner rank will send the variable list
-        if ( tmp.ownerRank != myRank )
-            tmp.varName.resize( 0 );
-        // Only send the multimesh if there are base meshes that need to be sent or I own the mesh
-        if ( !tmp.meshes.empty() || tmp.ownerRank == myRank ) {
-            ids.push_back( it.first );
-            meshdata.push_back( it.second );
-        }
-    }
     // Create buffers to store the data
-    size_t send_size = 0;
-    for ( size_t i = 0; i < meshdata.size(); ++i ) {
-        AMP_ASSERT( ids[i] == meshdata[i].id );
-        send_size += meshdata[i].size();
-    }
-    auto send_buf = new char[send_size];
-    char *ptr     = send_buf;
-    for ( auto &elem : meshdata ) {
+    size_t sendcount = 0;
+    for ( size_t i = 0; i < data.size(); ++i )
+        sendcount += data[i].size();
+    std::vector<char> sendbuf( sendcount );
+    char *ptr = sendbuf.data();
+    for ( auto &elem : data ) {
         elem.pack( ptr );
         ptr = &ptr[elem.size()];
     }
     // Send the data and unpack the buffer to a vector
-    size_t tot_num = d_comm.sumReduce( meshdata.size() );
+    std::vector<char> recvbuf;
     if ( root == -1 ) {
-        // Everybody gets a copy
-        size_t tot_size = d_comm.sumReduce( send_size );
-        auto recv_buf   = new char[tot_size];
-        meshdata.resize( tot_num );
-        d_comm.allGather( send_buf, send_size, recv_buf );
-        ptr = recv_buf;
-        for ( size_t i = 0; i < tot_num; ++i ) {
-            meshdata[i] = multiMeshData::unpack( ptr );
-            ptr         = &ptr[meshdata[i].size()];
-        }
-        delete[] recv_buf;
+        recvbuf = d_comm.allGather( sendbuf );
     } else {
-        AMP_ASSERT( root >= 0 && root < d_comm.getSize() );
-        // Only the root gets a copy
-        // Note: the root already has his own data
-        size_t max_size = d_comm.maxReduce( send_size );
-        std::vector<int> recv_num( d_comm.getSize() );
-        d_comm.allGather( (int) meshdata.size(), &recv_num[0] );
-        if ( root == d_comm.getRank() ) {
-            // Recieve all data
-            meshdata.resize( 0 );
-            meshdata.reserve( tot_num );
-            auto recv_buf = new char[max_size];
-            for ( int i = 0; i < d_comm.getSize(); ++i ) {
-                if ( i == root )
-                    continue;
-                int recv_size = d_comm.probe( i, 24987 );
-                AMP_ASSERT( recv_size <= (int) max_size );
-                d_comm.recv( recv_buf, recv_size, i, false, 24987 );
-                char *cptr = recv_buf;
-                for ( int j = 0; j < recv_num[i]; ++j ) {
-                    auto tmp = multiMeshData::unpack( cptr );
-                    cptr     = &cptr[tmp.size()];
-                    meshdata.push_back( tmp );
-                }
-            }
-            delete[] recv_buf;
+        recvbuf = d_comm.gather( sendbuf, root );
+    }
+    // Unpack the data
+    ptr          = recvbuf.data();
+    auto end_ptr = ptr + recvbuf.size();
+    data.clear();
+    while ( ptr < end_ptr ) {
+        data.push_back( TYPE::unpack( ptr ) );
+        ptr += data.back().size();
+    }
+}
+std::tuple<std::vector<Writer::multiMeshData>, std::map<Writer::GlobalID, Writer::baseMeshData>>
+Writer::syncMultiMeshData( int root ) const
+{
+    // Convert the data to vectors
+    std::vector<multiMeshData> multiMesh;
+    multiMesh.reserve( d_multiMeshes.size() );
+    for ( const auto &tmp : d_multiMeshes )
+        multiMesh.push_back( tmp.second );
+    // Convert the data to vectors
+    std::vector<baseMeshData> baseMesh;
+    baseMesh.reserve( d_baseMeshes.size() );
+    for ( const auto &tmp : d_baseMeshes )
+        baseMesh.push_back( tmp.second );
+    // Sync the data
+    syncData( baseMesh, root );
+    syncData( multiMesh, root );
+    // Create the map for base meshes
+    std::map<GlobalID, baseMeshData> baseMeshMap;
+    for ( const auto &tmp : baseMesh ) {
+        AMP_ASSERT( baseMeshMap.find( tmp.id ) == baseMeshMap.end() );
+        baseMeshMap[tmp.id] = tmp;
+    }
+    // Combine the multimesh data
+    std::vector<multiMeshData> multiMesh2;
+    multiMesh2.reserve( multiMesh.size() );
+    for ( auto mesh : multiMesh ) {
+        auto id  = mesh.id;
+        auto fun = [id]( const multiMeshData &data ) { return data.id == id; };
+        auto it  = std::find_if( multiMesh2.begin(), multiMesh2.end(), fun );
+        if ( it == multiMesh2.end() ) {
+            multiMesh2.push_back( mesh );
         } else {
-            // Send my data
-            d_comm.send( send_buf, send_size, root, 24987 );
+            it->meshes.insert( it->meshes.end(), mesh.meshes.begin(), mesh.meshes.end() );
+            it->varName.insert( it->varName.end(), mesh.varName.begin(), mesh.varName.end() );
         }
     }
-    delete[] send_buf;
-    // Add the meshes from other processors (keeping the existing meshes)
-    /*    for ( auto &multimesh : meshdata ) {
-            auto iterator = data.find( multimesh.id );
-            if ( iterator == data.end() ) {
-                // Add the multimesh
-                data.insert( std::make_pair( multimesh.id, multimesh ) );
-            } else {
-                // Add the submeshes
-                for ( auto &id : multimesh.meshes ) {
-                    bool found = false;
-                    for ( auto &id2 : iterator->second.meshes ) {
-                        if ( id == _k.id && meshe.meshName == _k.meshName &&
-                             meshe.path == _k.path && meshe.path == _k.file )
-                            found = true;
-                    }
-                    if ( !found )
-                        iterator->second.meshes.push_back( meshe );
-                }
-                // Add the variables if we don't have them yet
-                if ( multimesh.varName.size() > 0 ) {
-                    if ( !iterator->second.varName.empty() )
-                        AMP_ASSERT( iterator->second.varName.size() == multimesh.varName.size() );
-                    iterator->second.varName = multimesh.varName;
-                }
-            }
-        }*/
-    AMP_ERROR( "Not finished" );
+    std::swap( multiMesh, multiMesh2 );
+    for ( auto &mesh : multiMesh ) {
+        AMP::Utilities::unique( mesh.meshes );
+        AMP::Utilities::unique( mesh.varName );
+        for ( auto id : mesh.meshes )
+            AMP_ASSERT( baseMeshMap.find( id ) != baseMeshMap.end() );
+    }
+    return std::tie( multiMesh, baseMeshMap );
 }
 
 

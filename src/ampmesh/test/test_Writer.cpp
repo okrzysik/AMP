@@ -415,7 +415,9 @@ int main( int argc, char **argv )
     PROFILE_START( "test_Writer" );
     AMP::logOnlyNodeZero( "output_test_SiloIO" );
 
-    const auto writers = { "Silo", "HDF5", "Ascii" };
+    std::vector<std::string> writers = { "Silo" };
+    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
+        writers = { "Silo", "HDF5", "Ascii" }; // HDF5 does not support parallel yet
 
     if ( argc == 1 ) {
 
@@ -446,6 +448,7 @@ int main( int argc, char **argv )
     int N_failed = ut.NumFailGlobal();
     ut.report();
     ut.reset();
+    writers = std::vector<std::string>();
     PROFILE_STOP( "test_Writer" );
     PROFILE_SAVE( "test_Writer", true );
     AMP::AMPManager::shutdown();

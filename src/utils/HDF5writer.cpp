@@ -245,7 +245,6 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
             size_t N = it.size();
             data.resize( vec.numDOFs, N );
             data.fill( 0 );
-            auto DOFs = vec.vec->getDOFManager();
             for ( size_t i = 0; i < N; i++, ++it ) {
                 DOFs->getDOFs( it->globalID(), dofs );
                 AMP_ASSERT( (int) dofs.size() == vec.numDOFs );
