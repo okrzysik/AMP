@@ -37,8 +37,6 @@ void GMRESSolver::initialize( std::shared_ptr<const SolverStrategyParameters> pa
 {
     auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
-    d_comm = parameters->d_comm;
-    AMP_ASSERT( !d_comm.isNull() );
 
     getFromInput( parameters->d_db );
 
@@ -64,19 +62,16 @@ void GMRESSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     // the max iterations could be larger than the max Krylov dimension
     // in the case of restarted GMRES so we allow specification separately
-    d_iMaxKrylovDimension = db->getWithDefault<double>( "max_dimension", 100 );
-    d_iMaxIterations      = db->getWithDefault<double>( "max_iterations", d_iMaxKrylovDimension );
-
+    d_iMaxKrylovDimension      = db->getWithDefault<double>( "max_dimension", 100 );
     d_sOrthogonalizationMethod = db->getWithDefault<std::string>( "ortho_method", "MGS" );
 
     // default is right preconditioning, options are right, left, both
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
     if ( d_bUsesPreconditioner ) {
         d_preconditioner_side = db->getWithDefault<std::string>( "preconditioner_side", "right" );
     }
 
-    d_bRestart            = db->getWithDefault<bool>( "gmres_restart", false );
-    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
-    d_bRestart            = db->getWithDefault<bool>( "gmres_restart", false );
+    d_bRestart = db->getWithDefault<bool>( "gmres_restart", false );
 }
 
 /****************************************************************
@@ -363,11 +358,7 @@ void GMRESSolver::backwardSolve( void )
 void GMRESSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
-
     d_pOperator = op;
-
-    auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator );
 }
 
 void GMRESSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )

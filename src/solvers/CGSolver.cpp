@@ -34,8 +34,6 @@ void CGSolver::initialize( std::shared_ptr<const SolverStrategyParameters> param
 {
     auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
-    d_comm = parameters->d_comm;
-    AMP_ASSERT( !d_comm.isNull() );
 
     d_pPreconditioner = parameters->d_pPreconditioner;
 
@@ -50,9 +48,7 @@ void CGSolver::initialize( std::shared_ptr<const SolverStrategyParameters> param
 void CGSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );
-    d_iMaxIterations       = db->getWithDefault<double>( "max_iterations", 1000 );
-
-    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
+    d_bUsesPreconditioner  = db->getWithDefault<bool>( "uses_preconditioner", false );
 }
 
 /****************************************************************
@@ -130,9 +126,8 @@ void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     rho[0] = rho[1];
 
     auto p = z->cloneVector();
+    auto w = r->cloneVector();
     p->copyVector( z );
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> w;
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
@@ -157,6 +152,10 @@ void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         // compute the current residual norm
         current_res = static_cast<double>( r->L2Norm() );
+        if ( d_iDebugPrintInfoLevel > 0 ) {
+            std::cout << "CG: iteration " << ( iter + 1 ) << ", residual " << current_res
+                      << std::endl;
+        }
         // check if converged
         if ( current_res < terminate_tol ) {
             // set a convergence reason
@@ -190,12 +189,7 @@ void CGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 void CGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
-
     d_pOperator = op;
-
-    std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator );
 }
 void CGSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {

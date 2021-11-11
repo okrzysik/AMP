@@ -38,8 +38,6 @@ void QMRCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 {
     auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
-    d_comm = parameters->d_comm;
-    AMP_ASSERT( !d_comm.isNull() );
 
     d_pPreconditioner = parameters->d_pPreconditioner;
 
@@ -53,9 +51,7 @@ void QMRCGSTABSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 // Function to get values from input
 void QMRCGSTABSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
-    d_iMaxIterations = db->getWithDefault<double>( "max_iterations", 1000 );
-
-    d_bUsesPreconditioner = db->getWithDefault<bool>( "use_preconditioner", false );
+    d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
     // default is right preconditioning, options are right, left, both
     if ( d_bUsesPreconditioner ) {
@@ -303,12 +299,7 @@ void QMRCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 void QMRCGSTABSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
 {
     AMP_ASSERT( op );
-
     d_pOperator = op;
-
-    std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator );
 }
 void QMRCGSTABSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
