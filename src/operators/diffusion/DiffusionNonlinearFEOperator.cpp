@@ -15,7 +15,7 @@ namespace AMP {
 namespace Operator {
 
 
-AMP::LinearAlgebra::Variable::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Variable>
 DiffusionNonlinearFEOperator::createInputVariable( const std::string &name, int varId )
 {
     if ( varId == -1 ) {
@@ -26,7 +26,7 @@ DiffusionNonlinearFEOperator::createInputVariable( const std::string &name, int 
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Variable>
 DiffusionNonlinearFEOperator::createOutputVariable( const std::string &name, int varId )
 {
     (void) varId;
@@ -34,20 +34,20 @@ DiffusionNonlinearFEOperator::createOutputVariable( const std::string &name, int
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getInputVariable()
 {
     return d_inpVariables;
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr DiffusionNonlinearFEOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> DiffusionNonlinearFEOperator::getOutputVariable()
 {
     return d_outVariable;
 }
 
 unsigned int DiffusionNonlinearFEOperator::numberOfDOFMaps() { return 1; }
 
-AMP::LinearAlgebra::Variable::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Variable>
 DiffusionNonlinearFEOperator::getVariableForDOFMap( unsigned int id )
 {
     (void) id;
@@ -145,7 +145,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 
     d_inpVariables.reset( new AMP::LinearAlgebra::MultiVariable( "InputVariables" ) );
     for ( unsigned int i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
         d_inpVariables->add( dummyVar );
     } // end for i
 
@@ -161,7 +161,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
                                 AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
             }
         } else {
-            AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+            std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
             d_inpVariables->add( dummyVar );
         }
     }

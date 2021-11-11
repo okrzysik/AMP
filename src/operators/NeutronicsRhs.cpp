@@ -242,7 +242,7 @@ void NeutronicsRhs::setOutputVariableName( const std::string &name, int varId )
     d_outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( name );
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr NeutronicsRhs::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> NeutronicsRhs::getOutputVariable()
 {
     return d_outputVariable;
 }

@@ -69,11 +69,11 @@ public:
 
     //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left
     //!  vector )
-    AMP::LinearAlgebra::Variable::shared_ptr d_VariableLeft;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableLeft;
 
     //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right
     //!  vector )
-    AMP::LinearAlgebra::Variable::shared_ptr d_VariableRight;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
 
 protected:
     MatrixParameters(){};

@@ -61,7 +61,7 @@ protected:
         getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr ) override;
 
     // input variable for the unkown rhs
-    AMP::LinearAlgebra::Variable::shared_ptr d_srcVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_srcVariable;
 
     double d_hef; // Convective Coefficient
 

@@ -17,7 +17,7 @@ public:
 
     virtual ~FlowFrapconJacobianParameters() {}
 
-    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 };

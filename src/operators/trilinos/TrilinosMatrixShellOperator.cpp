@@ -39,13 +39,13 @@ void TrilinosMatrixShellOperator::reset( std::shared_ptr<const OperatorParameter
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr TrilinosMatrixShellOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> TrilinosMatrixShellOperator::getOutputVariable()
 {
     return d_operator->getOutputVariable();
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr TrilinosMatrixShellOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> TrilinosMatrixShellOperator::getInputVariable()
 {
     return d_operator->getInputVariable();
 }

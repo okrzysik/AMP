@@ -116,7 +116,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
 
         // create vectors for initial conditions (IC) and time derivative at IC
-        // AMP::LinearAlgebra::Variable::shared_ptr inputVar = IDARhsOperator->getInputVariable();
+        // std::shared_ptr<AMP::LinearAlgebra::Variable> inputVar =
+        // IDARhsOperator->getInputVariable();
         auto outputVar = IDARhsOperator->getOutputVariable();
 
         auto initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );

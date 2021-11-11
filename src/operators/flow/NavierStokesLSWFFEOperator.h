@@ -38,16 +38,22 @@ public:
 
     /*
             void setVector(unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec) {
-              AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
+              std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable(id);
               d_inVec[id] = mySubsetVector(frozenVec, var);
               (d_inVec[id])->makeConsistent(
        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET
        );
             }
     */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariables; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariables;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariables; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariables;
+    }
 
 protected:
     std::shared_ptr<OperatorParameters>
@@ -55,11 +61,11 @@ protected:
 
     AMP::LinearAlgebra::Vector::shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     AMP::LinearAlgebra::Vector::const_shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     void getDofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );
 

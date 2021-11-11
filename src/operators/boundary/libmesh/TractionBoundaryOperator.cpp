@@ -123,7 +123,7 @@ void TractionBoundaryOperator::computeCorrection()
 
 AMP::LinearAlgebra::Vector::shared_ptr
 TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                          AMP::LinearAlgebra::Variable::shared_ptr var )
+                                          std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( vec != nullptr ) {
         if ( d_Mesh ) {

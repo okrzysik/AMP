@@ -55,9 +55,15 @@ public:
         d_auxVariables = var;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariables; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariables;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariable;
+    }
 
     std::shared_ptr<SourcePhysicsModel> getSourcePhysicsModel() { return d_sourcePhysicsModel; }
 

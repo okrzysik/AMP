@@ -43,7 +43,7 @@ true);
     d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
     d_outVariables.reset(new AMP::LinearAlgebra::MultiVariable("myOutVar"));
     for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {
-      AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+      std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
       d_inpVariables->add(dummyVar);
     }//end for i
 
@@ -73,7 +73,7 @@ unsigned int NavierStokesGalWFFEOperator :: numberOfDOFMaps() {
   return 1;
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr NavierStokesGalWFFEOperator ::
+std::shared_ptr<AMP::LinearAlgebra::Variable> NavierStokesGalWFFEOperator ::
 getVariableForDOFMap(unsigned int id) {
   AMP_ASSERT( id < (this->numberOfDOFMaps()) );
   if(id == 0) {
@@ -88,10 +88,10 @@ getVariableForDOFMap(unsigned int id) {
   }
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr NavierStokesGalWFFEOperator ::
+std::shared_ptr<AMP::LinearAlgebra::Variable> NavierStokesGalWFFEOperator ::
 createInputVariable(const std::string &
 name, int varId) {
-  AMP::LinearAlgebra::Variable::shared_ptr inpVar;
+  std::shared_ptr<AMP::LinearAlgebra::Variable> inpVar;
   switch(varId) {
     case NavierStokes::VELOCITY : {
                                     inpVar.reset(new AMP::LinearAlgebra::Variable(name) );
@@ -117,7 +117,7 @@ void NavierStokesGalWFFEOperator :: preAssembly(AMP::LinearAlgebra::Vector::cons
     init();
   }
 
-  AMP::LinearAlgebra::Variable::shared_ptr tempVar;
+  std::shared_ptr<AMP::LinearAlgebra::Variable> tempVar;
   AMP::LinearAlgebra::Vector::shared_ptr tempVector;
 
   tempVar = d_inpVariables->getVariable(NavierStokes::VELOCITY);
@@ -262,7 +262,7 @@ std::shared_ptr<OperatorParameters> NavierStokesGalWFFEOperator ::
       if (d_isFrozen[NavierStokes::TEMPERATURE]) {
         outParams->d_frozenVec[NavierStokes::TEMPERATURE] = d_inVec[NavierStokes::TEMPERATURE];
       } else {
-        AMP::LinearAlgebra::Variable::shared_ptr tvar =
+        std::shared_ptr<AMP::LinearAlgebra::Variable> tvar =
 d_inpVariables->getVariable(NavierStokes::TEMPERATURE);
         AMP::LinearAlgebra::Vector::shared_ptr temperature = u->subsetVectorForVariable(tvar);
         outParams->d_frozenVec[NavierStokes::TEMPERATURE] = temperature;
@@ -295,7 +295,7 @@ std::vector<size_t> & dofIds) {
 AMP::LinearAlgebra::Vector::shared_ptr
 frozenVec) {
 
-      AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(id);
+      std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable(id);
 
       if(d_Mesh.get() != NULL) {
         AMP::LinearAlgebra::VS_Mesh meshSelector(var->getName(), d_Mesh);

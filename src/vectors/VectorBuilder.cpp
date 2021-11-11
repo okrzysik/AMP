@@ -29,7 +29,7 @@ namespace LinearAlgebra {
  * Vector builder                                        *
  ********************************************************/
 Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
-                                 Variable::shared_ptr variable,
+                                 std::shared_ptr<Variable> variable,
                                  bool split )
 {
     if ( DOFs.get() == nullptr )
@@ -121,7 +121,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
  ********************************************************/
 #if defined( USE_EXT_PETSC )
 std::shared_ptr<Vector>
-createVector( Vec v, bool deleteable, AMP_MPI comm, Variable::shared_ptr var )
+createVector( Vec v, bool deleteable, AMP_MPI comm, std::shared_ptr<Variable> var )
 {
     if ( !var )
         var = std::make_shared<Variable>( "vec" );
@@ -139,7 +139,7 @@ createVector( Vec v, bool deleteable, AMP_MPI comm, Variable::shared_ptr var )
 std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
                                       size_t local,
                                       AMP_MPI comm,
-                                      Variable::shared_ptr var )
+                                      std::shared_ptr<Variable> var )
 {
     if ( !var )
         var = std::make_shared<Variable>( "vec" );

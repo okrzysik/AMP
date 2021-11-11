@@ -1247,7 +1247,7 @@ std::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator::getJacobi
 AMP::LinearAlgebra::Vector::shared_ptr
 SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -1263,7 +1263,7 @@ SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector
 AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::subsetInputVector(
     AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -1279,7 +1279,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
 AMP::LinearAlgebra::Vector::shared_ptr
 SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -1295,7 +1295,7 @@ SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vecto
 AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::subsetOutputVector(
     AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {

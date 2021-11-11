@@ -1,11 +1,9 @@
-
 #include "Variable.h"
 
 #include <utility>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 Variable::Variable( const std::string &name ) : d_VariableName( name ) {}
@@ -14,7 +12,7 @@ Variable::Variable( const std::string &name ) : d_VariableName( name ) {}
 Variable::~Variable() = default;
 
 
-Variable::shared_ptr Variable::cloneVariable( const std::string &name ) const
+std::shared_ptr<Variable> Variable::cloneVariable( const std::string &name ) const
 {
     return std::make_shared<Variable>( name );
 }
@@ -29,11 +27,11 @@ bool Variable::operator==( const Variable &rhs ) const
 }
 
 
-bool Variable::operator!=( const Variable &rhs ) const { return ( !( ( *this ) == rhs ) ); }
+bool Variable::operator!=( const Variable &rhs ) const { return !( *this == rhs ); }
 
-void Variable::setUnits( const std::string &t ) { d_Units = t; }
+void Variable::setUnits( const Units &t ) { d_Units = t; }
 
 
-const std::string &Variable::getUnits() const { return d_Units; }
-} // namespace LinearAlgebra
-} // namespace AMP
+const Units &Variable::getUnits() const { return d_Units; }
+
+} // namespace AMP::LinearAlgebra

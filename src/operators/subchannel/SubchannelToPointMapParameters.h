@@ -37,7 +37,7 @@ public:
 
     // Output variable (may be null on processors where x is empty)
     // Valid variables are: "Density", "Temperature"
-    AMP::LinearAlgebra::Variable::shared_ptr d_outputVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVar;
 };
 } // namespace Operator
 } // namespace AMP

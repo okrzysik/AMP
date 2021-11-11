@@ -74,7 +74,7 @@ public:
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
 
     void setTimeStep( int tStep ) { d_timeStep = tStep; }
     void setTimeInSeconds( double seconds );
@@ -98,7 +98,7 @@ protected:
     std::vector<double> d_fixedValues;
     int d_timeStep;
     double d_timeStepInSeconds;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
     std::vector<std::vector<double>> d_values;
     double d_secondsPerDay;
     SourceType str2id( const std::string &str );

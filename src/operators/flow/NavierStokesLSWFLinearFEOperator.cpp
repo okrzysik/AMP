@@ -37,7 +37,7 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
        params->d_db->getDatabase("ActiveInputVariables");
             for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
                 std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
-                AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new
+                std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar(new
        AMP::LinearAlgebra::Variable(varName) );
                 d_inpVariables->setVariable(i, dummyVar);
                 d_outVariables->setVariable(i, dummyVar);
@@ -76,7 +76,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
     }
     /*
           for(unsigned int i = 0; i < d_inpVariables->numVariables() ; i++) {
-            AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(i);
+            std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable(i);
             AMP::LinearAlgebra::Vector::shared_ptr vector = mySubsetVector(params->d_frozenVec[i],
        var);
             if((d_inVec[i].get() == NULL) and (vector.get() != NULL)) {
@@ -191,9 +191,8 @@ void NavierStokesLSWFLinearFEOperator::getDofIndicesForCurrentElement(
     } // end of j
 }
 
-AMP::LinearAlgebra::Vector::shared_ptr
-NavierStokesLSWFLinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                                  AMP::LinearAlgebra::Variable::shared_ptr var )
+AMP::LinearAlgebra::Vector::shared_ptr NavierStokesLSWFLinearFEOperator::mySubsetVector(
+    AMP::LinearAlgebra::Vector::shared_ptr vec, std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );

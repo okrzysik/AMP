@@ -48,18 +48,19 @@ public:
 
     void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &, int )
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> createInputVariable( const std::string &,
+                                                                               int )
     {
         // Implemented in derived classes
-        AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> emptyPointer;
         return emptyPointer;
     }
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &,
-                                                                           int )
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &,
+                                                                                int )
     {
         // Implemented in derived classes
-        AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> emptyPointer;
         return emptyPointer;
     }
 

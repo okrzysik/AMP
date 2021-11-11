@@ -594,11 +594,11 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
     auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     std::string name;
-    AMP::LinearAlgebra::Variable::shared_ptr tVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> tVar;
     AMP::LinearAlgebra::Vector::shared_ptr tVec;
-    AMP::LinearAlgebra::Variable::shared_ptr cVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> cVar;
     AMP::LinearAlgebra::Vector::shared_ptr cVec;
-    AMP::LinearAlgebra::Variable::shared_ptr bVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> bVar;
     AMP::LinearAlgebra::Vector::shared_ptr bVec;
     name = active_db->getWithDefault<std::string>( "Temperature", "not_specified" );
     if ( name != "not_specified" ) {

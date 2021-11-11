@@ -32,12 +32,12 @@ void PetscMatrixShellOperator::reset( std::shared_ptr<const OperatorParameters> 
     d_operator->reset( params );
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr PetscMatrixShellOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> PetscMatrixShellOperator::getOutputVariable()
 {
     return d_operator->getOutputVariable();
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr PetscMatrixShellOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> PetscMatrixShellOperator::getInputVariable()
 {
     return d_operator->getInputVariable();
 }

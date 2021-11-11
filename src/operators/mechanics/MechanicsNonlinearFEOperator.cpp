@@ -59,7 +59,7 @@ MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
 
     d_inpVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myInpVar" ) );
     for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
         d_inpVariables->add( dummyVar );
     } // end for i
 
@@ -133,7 +133,8 @@ void MechanicsNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
     for ( unsigned int i = 0; i < Mechanics::TOTAL_NUMBER_OF_VARIABLES; i++ ) {
         if ( d_isActive[i] ) {
             if ( !( d_isFrozen[i] ) ) {
-                AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable( i );
+                std::shared_ptr<AMP::LinearAlgebra::Variable> var =
+                    d_inpVariables->getVariable( i );
                 AMP::LinearAlgebra::Vector::const_shared_ptr vector = mySubsetVector( u, var );
                 setVector( i, vector );
             }
@@ -531,7 +532,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain(
 
     auto fp = fopen( fname.c_str(), "w" );
 
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar =
+    std::shared_ptr<AMP::LinearAlgebra::Variable> dispVar =
         d_inpVariables->getVariable( Mechanics::DISPLACEMENT );
     auto dispVector = mySubsetVector( u, dispVar );
     setVector( Mechanics::DISPLACEMENT, dispVector );
@@ -729,8 +730,8 @@ void MechanicsNonlinearFEOperator::getDofIndicesForCurrentElement(
 void MechanicsNonlinearFEOperator::setVector(
     unsigned int id, AMP::LinearAlgebra::Vector::const_shared_ptr frozenVec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable( id );
-    d_inVec[id]                                  = mySubsetVector( frozenVec, var );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable( id );
+    d_inVec[id]                                       = mySubsetVector( frozenVec, var );
     AMP_ASSERT( d_inVec[id]->getUpdateStatus() ==
                 AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 }
@@ -738,7 +739,7 @@ void MechanicsNonlinearFEOperator::setVector(
 void MechanicsNonlinearFEOperator::setReferenceTemperature(
     AMP::LinearAlgebra::Vector::const_shared_ptr refTemp )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var =
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var =
         d_inpVariables->getVariable( Mechanics::TEMPERATURE );
     d_referenceTemperature = mySubsetVector( refTemp, var );
     AMP_ASSERT( d_referenceTemperature->getUpdateStatus() ==
@@ -752,7 +753,7 @@ void MechanicsNonlinearFEOperator::setReferenceTemperature(
 
 AMP::LinearAlgebra::Vector::shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                              AMP::LinearAlgebra::Variable::shared_ptr var )
+                                              std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
@@ -766,7 +767,7 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared
 
 AMP::LinearAlgebra::Vector::const_shared_ptr
 MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                                              AMP::LinearAlgebra::Variable::shared_ptr var )
+                                              std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );

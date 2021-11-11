@@ -38,7 +38,7 @@ NavierStokesLSWFFEOperator::NavierStokesLSWFFEOperator(
     /*
     d_inpVariables.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
     for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {
-      AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+      std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
       d_inpVariables->add(dummyVar);
     }//end for i
     AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
@@ -77,7 +77,7 @@ void NavierStokesLSWFFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_
           for(unsigned int i = 0; i < NavierStokes::TOTAL_NUMBER_OF_VARIABLES; i++) {
             if(d_isActive[i]) {
               if(!(d_isFrozen[i])) {
-                AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(i);
+                std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable(i);
                 AMP::LinearAlgebra::Vector::shared_ptr vector = mySubsetVector(u, d_inpVariables);
     */
     d_inVec = mySubsetVector( u, d_inpVariables );
@@ -231,7 +231,7 @@ void NavierStokesLSWFFEOperator::getDofIndicesForCurrentElement(
 
 AMP::LinearAlgebra::Vector::shared_ptr
 NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                            AMP::LinearAlgebra::Variable::shared_ptr var )
+                                            std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
@@ -245,7 +245,7 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_p
 
 AMP::LinearAlgebra::Vector::const_shared_ptr
 NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                                            AMP::LinearAlgebra::Variable::shared_ptr var )
+                                            std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );

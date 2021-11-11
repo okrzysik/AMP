@@ -25,7 +25,7 @@ public:
         }
     }
 
-    bool operator()( const Variable::shared_ptr left, const Variable::shared_ptr right )
+    bool operator()( const std::shared_ptr<Variable> left, const std::shared_ptr<Variable> right )
     {
         std::string lname = left->getName();
         std::string rname = right->getName();
@@ -38,7 +38,7 @@ public:
  * Constructors/Destructors                                      *
  ****************************************************************/
 MultiVariable::MultiVariable( const std::string &name,
-                              const std::vector<Variable::shared_ptr> &vars )
+                              const std::vector<std::shared_ptr<Variable>> &vars )
     : Variable( name ), d_vVariables( vars )
 {
 }
@@ -48,22 +48,22 @@ MultiVariable::~MultiVariable() = default;
 /****************************************************************
  * Get/set a variable                                            *
  ****************************************************************/
-Variable::shared_ptr MultiVariable::getVariable( size_t which )
+std::shared_ptr<Variable> MultiVariable::getVariable( size_t which )
 {
     AMP_ASSERT( which < d_vVariables.size() );
     return d_vVariables[which];
 }
-Variable::const_shared_ptr MultiVariable::getVariable( size_t which ) const
+std::shared_ptr<const Variable> MultiVariable::getVariable( size_t which ) const
 {
     AMP_ASSERT( which < d_vVariables.size() );
     return d_vVariables[which];
 }
-void MultiVariable::setVariable( size_t i, Variable::shared_ptr &p )
+void MultiVariable::setVariable( size_t i, std::shared_ptr<Variable> &p )
 {
     AMP_ASSERT( i < d_vVariables.size() );
     d_vVariables[i] = p;
 }
-void MultiVariable::add( Variable::shared_ptr newVar )
+void MultiVariable::add( std::shared_ptr<Variable> newVar )
 {
     std::shared_ptr<MultiVariable> multivariable =
         std::dynamic_pointer_cast<MultiVariable>( newVar );
@@ -117,7 +117,7 @@ bool MultiVariable::operator==( const Variable &rhs ) const
 }
 
 
-Variable::shared_ptr MultiVariable::cloneVariable( const std::string &name ) const
+std::shared_ptr<Variable> MultiVariable::cloneVariable( const std::string &name ) const
 {
     std::shared_ptr<MultiVariable> retVal( new MultiVariable( name ) );
     retVal->d_vVariables.resize( d_vVariables.size() );
@@ -139,12 +139,12 @@ void MultiVariable::removeDuplicateVariables()
     // Next remove any duplicate entries
     // Note: while it would be faster to sort, then remove duplicate entires,
     // this requires the < operator to be overloaded for the base class
-    std::vector<Variable::shared_ptr> unique_list;
+    std::vector<std::shared_ptr<Variable>> unique_list;
     unique_list.reserve( d_vVariables.size() );
     for ( auto &elem : d_vVariables ) {
         bool found = false;
         for ( auto &unique_list_j : unique_list ) {
-            if ( elem->operator==( *( unique_list_j ) ) )
+            if ( elem->operator==( *unique_list_j ) )
                 found = true;
         }
         if ( !found )
@@ -154,7 +154,7 @@ void MultiVariable::removeDuplicateVariables()
 }
 
 
-void MultiVariable::setUnits( const std::string &units )
+void MultiVariable::setUnits( const Units &units )
 {
     Variable::setUnits( units );
     auto curVar = beginVariable();

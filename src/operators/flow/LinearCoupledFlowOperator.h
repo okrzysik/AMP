@@ -32,9 +32,9 @@ public:
 
     virtual void append( std::shared_ptr<Operator> op );
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable();
 
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable( int varId = -1 );
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable( int varId = -1 );
 
 protected:
     std::vector<std::shared_ptr<Operator>> d_Operators;

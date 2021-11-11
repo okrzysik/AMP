@@ -140,7 +140,7 @@ public:
      * Currently
      * this is the output variable associated with the rhs operator.
      */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_pRhsOperator->getOutputVariable();
     }

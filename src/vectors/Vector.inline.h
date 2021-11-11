@@ -75,9 +75,9 @@ void Vector::registerView( std::shared_ptr<VIEW_TYPE> v ) const
 /****************************************************************
  * Misc functions                                                *
  ****************************************************************/
-inline const Variable::shared_ptr Vector::getVariable() const { return d_pVariable; }
-inline Variable::shared_ptr Vector::getVariable() { return d_pVariable; }
-inline void Vector::setVariable( const Variable::shared_ptr name )
+inline const std::shared_ptr<Variable> Vector::getVariable() const { return d_pVariable; }
+inline std::shared_ptr<Variable> Vector::getVariable() { return d_pVariable; }
+inline void Vector::setVariable( const std::shared_ptr<Variable> name )
 {
     AMP_ASSERT( name );
     d_pVariable = name;

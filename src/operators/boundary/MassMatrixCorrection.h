@@ -41,7 +41,10 @@ public:
     /**
       Set the variable for the vector that will used with this operator.
       */
-    void setVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var ) { d_variable = var; }
+    void setVariable( const std::shared_ptr<AMP::LinearAlgebra::Variable> &var )
+    {
+        d_variable = var;
+    }
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                 AMP::LinearAlgebra::Vector::shared_ptr ) override
@@ -60,7 +63,7 @@ public:
 
 protected:
     // This must be a simple variable not a dual or multivariable
-    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 
     bool d_bSetIdentityOnDiagonal;
 

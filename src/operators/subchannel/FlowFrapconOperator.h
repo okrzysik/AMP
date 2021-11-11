@@ -48,23 +48,29 @@ public:
             return (*one)(2) < (*two)(2);
           }
     */
-    AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &name,
-                                                                  int varId = -1 )
+    std::shared_ptr<AMP::LinearAlgebra::Variable> createInputVariable( const std::string &name,
+                                                                       int varId = -1 )
     {
         (void) varId;
         return d_inpVariable->cloneVariable( name );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
-                                                                   int varId = -1 )
+    std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &name,
+                                                                        int varId = -1 )
     {
         (void) varId;
         return d_outVariable->cloneVariable( name );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariable;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariable;
+    }
 
     virtual AMP::LinearAlgebra::Vector::shared_ptr
     subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec ) override;

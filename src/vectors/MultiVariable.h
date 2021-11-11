@@ -18,31 +18,25 @@ namespace LinearAlgebra {
 class MultiVariable : public Variable
 {
 public:
-    //! A typedef for an iterator for a MultiVariable
-    typedef std::vector<Variable::shared_ptr>::iterator iterator;
-
-    //! A typedef for an iterator for a MultiVariable
-    typedef std::vector<Variable::shared_ptr>::const_iterator const_iterator;
-
     /** \brief Get the first variable in the MultiVariable
      * \return An iterator pointing to the first variable
      */
-    inline iterator beginVariable() { return d_vVariables.begin(); }
+    inline auto beginVariable() { return d_vVariables.begin(); }
 
     /** \brief Get end of the MultiVariable array
      * \return An iterator pointing to the end
      */
-    inline iterator endVariable() { return d_vVariables.end(); }
+    inline auto endVariable() { return d_vVariables.end(); }
 
     /** \brief Get the first variable in the MultiVariable
      * \return An iterator pointing to the first variable
      */
-    inline const_iterator beginVariable() const { return d_vVariables.begin(); }
+    inline auto beginVariable() const { return d_vVariables.begin(); }
 
     /** \brief Get end of the MultiVariable array
      * \return An iterator pointing to the end
      */
-    inline const_iterator endVariable() const { return d_vVariables.end(); }
+    inline auto endVariable() const { return d_vVariables.end(); }
 
     /** \brief If there are multiple matching variables in the list, this
      *  will remove them.  Note that may change the etnry order and will remove any null entries.
@@ -62,9 +56,9 @@ public:
      * \param[in] vars  Optional list of variables in the MultiVariable
      *
      */
-    explicit MultiVariable(
-        const std::string &name,
-        const std::vector<Variable::shared_ptr> &vars = std::vector<Variable::shared_ptr>() );
+    explicit MultiVariable( const std::string &name,
+                            const std::vector<std::shared_ptr<Variable>> &vars =
+                                std::vector<std::shared_ptr<Variable>>() );
 
     /** \brief Destructor
      *
@@ -79,7 +73,7 @@ public:
         \endcode It is bounds checked in
       * debug builds.
       */
-    virtual Variable::shared_ptr getVariable( size_t which );
+    virtual std::shared_ptr<Variable> getVariable( size_t which );
 
     /** \brief  Get a particular variable from the list of variables
       * \param  which  the index of the variable sought
@@ -89,7 +83,7 @@ public:
         \endcode It is bounds checked in
       * debug builds.
       */
-    virtual Variable::const_shared_ptr getVariable( size_t which ) const;
+    virtual std::shared_ptr<const Variable> getVariable( size_t which ) const;
 
     /** \brief Returns the number of variables in the list
       *
@@ -111,7 +105,7 @@ public:
         heirarchies to a minimum, the members of newVar are added
         instead of newVar itself.
       */
-    virtual void add( Variable::shared_ptr newVar );
+    virtual void add( std::shared_ptr<Variable> newVar );
 
     /** \brief Set a particular variable in the list
       * \param i    index into the list
@@ -123,16 +117,16 @@ public:
         \endcode
         * This is bounds checked in debug builds
       */
-    virtual void setVariable( size_t i, Variable::shared_ptr &var );
+    virtual void setVariable( size_t i, std::shared_ptr<Variable> &var );
 
     // These are adequately documented elsewhere.
     virtual bool operator==( const Variable &rhs ) const override;
-    virtual Variable::shared_ptr cloneVariable( const std::string &name ) const override;
-    virtual void setUnits( const std::string &units ) override;
+    virtual std::shared_ptr<Variable> cloneVariable( const std::string &name ) const override;
+    virtual void setUnits( const Units &units ) override;
 
 protected:
     //! List of variables comprising the MultiVariable
-    std::vector<Variable::shared_ptr> d_vVariables;
+    std::vector<std::shared_ptr<Variable>> d_vVariables;
 };
 
 

@@ -51,7 +51,10 @@ public:
     /**
       Set the variable for the vector that will used with this operator
       */
-    void setVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var ) { d_variable = var; }
+    void setVariable( const std::shared_ptr<AMP::LinearAlgebra::Variable> &var )
+    {
+        d_variable = var;
+    }
 
     /**
      * Function to pass a vector of dirichlet values.
@@ -100,11 +103,11 @@ public:
 protected:
     AMP::LinearAlgebra::Vector::shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     AMP::LinearAlgebra::Vector::const_shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     /**
       This function returns a parameter object that can be used to reset the corresponding
@@ -122,7 +125,7 @@ protected:
     AMP::LinearAlgebra::Vector::shared_ptr d_dirichletValues2;
 
     // This must be a simple variable not a dual or multivariable
-    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 
     bool d_isAttachedToVolumeOperator;
 

@@ -24,7 +24,7 @@ namespace Operator {
         d_inpVariable.reset(new AMP::LinearAlgebra::MultiVariable("myInpVar"));
         d_outVariable.reset(new AMP::LinearAlgebra::MultiVariable("myOutVar"));
         for(unsigned int i = 0; i < 2; i++) {
-          AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+          std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
           d_inpVariable->add(dummyVar);
           d_outVariable->add(dummyVar);
         }//end for i
@@ -37,13 +37,13 @@ namespace Operator {
         AMP_INSIST(activeInpVar_db->keyExists("PRESSURE"), "VELOCITY must be active");
 
         std::string tempVarName = activeInpVar_db->getString("VELOCITY");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar(new
+        std::shared_ptr<AMP::LinearAlgebra::Variable> tempVar(new
    AMP::LinearAlgebra::Variable(tempVarName) );
         d_inpVariable->setVariable(NavierStokes::VELOCITY, tempVar);
         d_outVariable->setVariable(NavierStokes::VELOCITY, tempVar);
 
         tempVarName = activeInpVar_db->getString("PRESSURE");
-        AMP::LinearAlgebra::Variable::shared_ptr tempVar2(new
+        std::shared_ptr<AMP::LinearAlgebra::Variable> tempVar2(new
    AMP::LinearAlgebra::Variable(tempVarName) );
         d_inpVariable->setVariable(NavierStokes::PRESSURE, tempVar2);
         d_outVariable->setVariable(NavierStokes::PRESSURE, tempVar2);

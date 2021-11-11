@@ -23,12 +23,12 @@ public:
         d_operators[2]->reset( params );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
         return d_operators[4]->getOutputVariable();
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_operators[4]->getOutputVariable();
     }

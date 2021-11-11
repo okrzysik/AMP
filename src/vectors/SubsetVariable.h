@@ -58,7 +58,7 @@ public:
      *        vec2.copyVector( vec3 );
      *    \endcode
      */
-    static Vector::shared_ptr view( Vector::shared_ptr, Variable::shared_ptr );
+    static Vector::shared_ptr view( Vector::shared_ptr, std::shared_ptr<Variable> );
 
     /** \brief  This vector is a subset of an AMP Vector
      *  \details  Given an AMP Vector, this will create a view of a subset of the vector.
@@ -87,7 +87,7 @@ public:
      *        vec2.copyVector( vec3 );
      *    \endcode
      */
-    static Vector::const_shared_ptr view( Vector::const_shared_ptr, Variable::shared_ptr );
+    static Vector::const_shared_ptr view( Vector::const_shared_ptr, std::shared_ptr<Variable> );
 };
 
 

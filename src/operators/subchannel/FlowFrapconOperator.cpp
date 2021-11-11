@@ -145,7 +145,7 @@ FlowFrapconOperator::getJacobianParameters( AMP::LinearAlgebra::Vector::const_sh
 AMP::LinearAlgebra::Vector::shared_ptr
 FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -162,7 +162,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr 
 AMP::LinearAlgebra::Vector::shared_ptr
 FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -179,7 +179,7 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr v
 AMP::LinearAlgebra::Vector::const_shared_ptr
 FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -196,7 +196,7 @@ FlowFrapconOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
 AMP::LinearAlgebra::Vector::const_shared_ptr
 FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
