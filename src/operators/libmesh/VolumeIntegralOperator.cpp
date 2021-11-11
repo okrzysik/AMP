@@ -3,6 +3,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include "ProfilerApp.h"
 

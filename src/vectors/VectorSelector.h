@@ -9,8 +9,7 @@
 #endif
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \brief A class used by Vector::select and Vector::selectInto to create
@@ -19,8 +18,8 @@ namespace LinearAlgebra {
  * gross and fine.  The isSelected method will determine if a Vector should
  * be considered for fine selection.  The subset method can be used to create
  * a fine subset of the Vector.  These methods are
- * meant to be used solely in Vector::selectInto ().  Subclasses of Vector
- * are encouraged to call Vector::selectInto () rather than use these methods.
+ * meant to be used solely in Vector::selectInto().  Subclasses of Vector
+ * are encouraged to call Vector::selectInto() rather than use these methods.
  */
 class VectorSelector
 {
@@ -60,14 +59,13 @@ public:
   * \details  This can be used in the Vector::select or Vector::selectInto interface:
   * \code
        // Create a vector of all data in the simulation
-       Vector::shared_ptr   data = meshManager->createVector ( complexVariable );
+       auto data = meshManager->createVector( complexVariable );
 
        // Extract all data called "Temperature"
-       Vector::shared_ptr   temperature = data->select ( VS_ByVariableName ( "Temperature" ) ,
-  "Temperature" );
+       auto temperature = data->select ( VS_ByVariableName( "Temperature" ), "Temperature" );
 
        // Add displacement data to a vector results
-       data->select ( VS_ByBariableName ( "Displacement" ) , results );
+       data->select ( VS_ByBariableName( "Displacement" ), results );
        \endcode
   */
 class VS_ByVariableName : public VectorSelector
@@ -229,8 +227,9 @@ protected:
     const Mesh::MeshIterator d_iterator; //  MeshIterator
 };
 #endif
-} // namespace LinearAlgebra
-} // namespace AMP
+
+
+} // namespace AMP::LinearAlgebra
 
 
 #endif

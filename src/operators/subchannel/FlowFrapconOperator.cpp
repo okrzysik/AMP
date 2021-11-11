@@ -1,6 +1,7 @@
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <string>
 
@@ -26,8 +27,8 @@ void FlowFrapconOperator::reset( std::shared_ptr<const OperatorParameters> param
 {
     auto myparams = std::dynamic_pointer_cast<const FlowFrapconOperatorParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( myparams, "NULL parameters" );
+    AMP_INSIST( myparams->d_db, "NULL database" );
 
     AMP_INSIST( myparams->d_db->keyExists( "numpoints" ), "Key ''numpoints'' is missing!" );
     d_numpoints = myparams->d_db->getScalar<int>( "numpoints" );

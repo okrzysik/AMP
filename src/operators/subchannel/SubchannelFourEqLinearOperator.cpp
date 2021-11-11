@@ -1,13 +1,13 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
-
-#include "AMP/ampmesh/StructuredMeshHelper.h"
-#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 #include <string>

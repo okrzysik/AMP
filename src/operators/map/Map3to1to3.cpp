@@ -2,6 +2,7 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "Map3to1to3Parameters.h"
 
 #include "ProfilerApp.h"

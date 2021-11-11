@@ -24,7 +24,7 @@ public:
      *    and generates the appropriate multimesh
      * \param geom      Sub-geometries
      */
-    explicit MultiGeometry( const std::vector<Geometry::shared_ptr> &geom );
+    explicit MultiGeometry( const std::vector<std::shared_ptr<Geometry>> &geom );
 
 
     //! Destructor
@@ -54,7 +54,7 @@ private:
     //! Empty constructor for a mesh
     MultiGeometry() = delete;
 
-    std::vector<Geometry::shared_ptr> d_geom;
+    std::vector<std::shared_ptr<Geometry>> d_geom;
 };
 
 } // namespace Geometry

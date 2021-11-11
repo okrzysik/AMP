@@ -7,7 +7,6 @@
 
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorSelector.h"
 
 #include <string>
 

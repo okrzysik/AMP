@@ -27,13 +27,13 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
+#include "AMP/vectors/VectorSelector.h"
 
 #include "libmesh/mesh_communication.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
-
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
@@ -135,7 +135,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // We need to reset the linear operator before the solve since TrilinosML does
     // the factorization of the matrix during construction and so the matrix must
-    // be correct before constructing the TrilinosML object.
+    // be correct before constructing the TrilinosML
+    // obje/projects/AMP/AMP/src/solvers/test/mechanics/testElementLevel_VonMisesPlasticity_LoadingUnloading.cppct.
     nonlinearMechanicsBVPoperator->apply( solVec, resVec );
     linearMechanicsBVPoperator->reset(
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
@@ -214,7 +215,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else {
             ut->passes( "Nonlinear solve for current loading step" );
         }
-
         AMP::pout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
 
         auto mechUvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );

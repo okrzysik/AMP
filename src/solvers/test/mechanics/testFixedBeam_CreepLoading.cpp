@@ -28,6 +28,7 @@
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <iostream>
 #include <memory>

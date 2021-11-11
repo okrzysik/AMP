@@ -18,8 +18,7 @@
 #include "AMP/utils/Database.h"
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /********************************************************
@@ -87,7 +86,7 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
         auto mesh      = AMP::Mesh::Mesh::buildMesh( params );
         auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
         if ( multimesh ) {
-            std::vector<Geometry::shared_ptr> geoms;
+            std::vector<std::shared_ptr<Geometry>> geoms;
             for ( const auto &mesh2 : multimesh->getMeshes() )
                 geoms.push_back( std::make_shared<MeshGeometry>( mesh2 ) );
             geom = std::make_shared<MultiGeometry>( geoms );
@@ -111,5 +110,4 @@ AMP::Mesh::GeomType Geometry::getGeomType() const
 }
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry

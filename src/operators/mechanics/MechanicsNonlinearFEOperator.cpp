@@ -1,8 +1,8 @@
-
 #include "MechanicsNonlinearFEOperator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "MechanicsLinearFEOperatorParameters.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"

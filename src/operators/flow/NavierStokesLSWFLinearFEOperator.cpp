@@ -1,7 +1,7 @@
-
 #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "libmesh/cell_hex27.h"
 #include "libmesh/node.h"
 
@@ -26,22 +26,20 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( varName ) );
 
     /*
-            std::vector<std::string> InternalVariableNames(4);
-            InternalVariableNames[NavierStokes::PRESSURE]= "PRESSURE";
-            InternalVariableNames[NavierStokes::VELOCITY]= "VELOCITY";
-            InternalVariableNames[NavierStokes::PRINCIPALSTRESS]= "PRINCIPALSTRESS";
-            InternalVariableNames[NavierStokes::SHEARSTRESS]= "SHEARSTRESS";
+    std::vector<std::string> InternalVariableNames(4);
+    InternalVariableNames[NavierStokes::PRESSURE]= "PRESSURE";
+    InternalVariableNames[NavierStokes::VELOCITY]= "VELOCITY";
+    InternalVariableNames[NavierStokes::PRINCIPALSTRESS]= "PRINCIPALSTRESS";
+    InternalVariableNames[NavierStokes::SHEARSTRESS]= "SHEARSTRESS";
 
-            AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-            std::shared_ptr<AMP::Database> activeInpVar_db =
-       params->d_db->getDatabase("ActiveInputVariables");
-            for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
-                std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
-                std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar(new
-       AMP::LinearAlgebra::Variable(varName) );
-                d_inpVariables->setVariable(i, dummyVar);
-                d_outVariables->setVariable(i, dummyVar);
-            }//end for i
+    AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
+    auto activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
+    for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
+        std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
+        auto dummyVar = std::make_shared<AMP::LinearAlgebra::Variable>(varName);
+        d_inpVariables->setVariable(i, dummyVar);
+        d_outVariables->setVariable(i, dummyVar);
+    }//end for i
     */
 
     bool isAttachedToNonlinearOperator =
