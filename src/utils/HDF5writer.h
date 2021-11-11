@@ -56,7 +56,7 @@ public:
     void writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
     //! Register arbitrary data
-    void registerData( std::function<void( hid_t, Xdmf & )> fun );
+    void registerData( std::function<void( hid_t, std::string, Xdmf & )> fun );
 
 
 private:
@@ -71,7 +71,7 @@ private:
                                  const std::string &path ) const;
 
 private:
-    std::vector<std::function<void( hid_t, Xdmf & )>> d_fun;
+    std::vector<std::function<void( hid_t, std::string, Xdmf & )>> d_fun;
 };
 
 } // namespace AMP::Utilities

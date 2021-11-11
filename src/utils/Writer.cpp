@@ -193,29 +193,28 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         AMP_ERROR( "registerMesh is not supported for " + getProperties().type );
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( !multimesh ) {
-        // Check if we previously registered the mesh
-        for ( const auto &[id, mesh2] : d_baseMeshes ) {
-            if ( mesh2.mesh->meshID() == mesh->meshID() )
-                return;
-            if ( mesh2.mesh->getName() == mesh->getName() && mesh2.path == path )
-                AMP_WARNING( "Registering multiple meshes with the same name: " + mesh->getName() );
-        }
         // Create a unique id for each rank
-        GlobalID id( mesh->meshID().getData(), d_comm.getRank() );
-        base_ids.insert( id );
-        if ( d_baseMeshes.find( id ) != d_baseMeshes.end() )
-            return;
-        // We are dealing with a single mesh
         int rank = d_comm.getRank();
-        baseMeshData data;
-        data.id        = id;
-        data.mesh      = mesh;
-        data.rank      = rank;
-        data.ownerRank = rank;
-        data.meshName  = "rank_" + std::to_string( data.rank );
-        data.path      = path + mesh->getName() + "_/";
-        if ( d_baseMeshes.find( id ) == d_baseMeshes.end() )
-            d_baseMeshes.insert( std::make_pair( id, data ) );
+        GlobalID id( mesh->meshID().getData(), rank );
+        base_ids.insert( id );
+        // Register the base mesh
+        auto it = d_baseMeshes.find( id );
+        if ( it == d_baseMeshes.end() ) {
+            for ( const auto &[id2, mesh2] : d_baseMeshes ) {
+                if ( mesh2.mesh->getName() == mesh->getName() && mesh2.path == path )
+                    AMP_WARNING( "Registering multiple meshes with the same name: " +
+                                 mesh->getName() );
+            }
+            baseMeshData data;
+            data.id        = id;
+            data.mesh      = mesh;
+            data.rank      = rank;
+            data.ownerRank = rank;
+            data.meshName  = "rank_" + std::to_string( data.rank );
+            data.path      = path + mesh->getName() + "_/";
+            if ( d_baseMeshes.find( id ) == d_baseMeshes.end() )
+                d_baseMeshes.insert( std::make_pair( id, data ) );
+        }
         // Create and register a multimesh for the current mesh
         if ( level > -1 ) {
             multiMeshData data2;
@@ -228,7 +227,7 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         }
         // Create and register a multimesh for the rank
         if ( level == 3 ) {
-            // Create a unique id for each rank
+            const auto &data = d_baseMeshes[id];
             multiMeshData data2;
             data2.id        = id;
             data2.mesh      = mesh;
@@ -317,7 +316,7 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
         return;
     // Make sure the mesh has been registered
     std::set<GlobalID> base_ids;
-    registerMesh2( mesh, -1, "", base_ids );
+    registerMesh2( mesh, 1, "", base_ids );
     // Perform some error checking
     auto DOFs = vec->getDOFManager();
     if ( !DOFs )

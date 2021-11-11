@@ -966,7 +966,8 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     auto boundaryOperator_db         = input_db->getDatabase( boundaryOperatorName );
     AMP_INSIST( boundaryOperator_db, "NULL database object passed for boundary operator" );
 
-    boundaryOperator_db->putScalar( "isAttachedToVolumeOperator", true );
+    boundaryOperator_db->putScalar(
+        "isAttachedToVolumeOperator", true, Units(), Database::Check::Overwrite );
 
     std::shared_ptr<ElementPhysicsModel> boundaryLocalModel;
 
@@ -1023,7 +1024,8 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     auto boundaryOperator_db         = input_db->getDatabase( boundaryOperatorName );
     AMP_INSIST( boundaryOperator_db, "NULL database object passed for boundary operator" );
 
-    boundaryOperator_db->putScalar( "isAttachedToVolumeOperator", true );
+    boundaryOperator_db->putScalar(
+        "isAttachedToVolumeOperator", true, Units(), Database::Check::Overwrite );
 
     std::shared_ptr<ElementPhysicsModel> boundaryLocalModel;
 

@@ -80,7 +80,16 @@ Writer::WriterProperties HDF5writer::getProperties() const
 
 
 /************************************************************
- * Function to read a silo file                              *
+ * Register arbitrary user data                              *
+ ************************************************************/
+void HDF5writer::registerData( std::function<void( hid_t, std::string, Xdmf & )> fun )
+{
+    d_fun.push_back( fun );
+}
+
+
+/************************************************************
+ * Function to read a file                                   *
  ************************************************************/
 void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not implemented yet" ); }
 
@@ -99,8 +108,9 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     Xdmf xmf;
     AMP_ASSERT( d_comm.getSize() == 1 );
     // Create the file
-    auto filename = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
-    auto fid      = openHDF5( filename, "w", Compression::GZIP );
+    auto filename  = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
+    auto fid       = openHDF5( filename, "w", Compression::GZIP );
+    auto filename2 = AMP::Utilities::filename( filename );
     writeHDF5( fid, "time", time );
     // Synchronize the vectors
     syncVectors();
@@ -109,7 +119,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     std::map<GlobalID, Xdmf::MeshData> baseMeshData;
     auto gid = createGroup( fid, "meshes" );
     for ( const auto &[id, mesh] : d_baseMeshes )
-        baseMeshData[id] = writeMesh( gid, mesh, Utilities::filename( filename ) + ":/meshes" );
+        baseMeshData[id] = writeMesh( gid, mesh, filename2 + ":/meshes" );
     for ( const auto &[id, mesh] : d_multiMeshes ) {
         NULL_USE( id );
         std::vector<Xdmf::MeshData> data;
@@ -138,15 +148,25 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
 #endif
     // Add user data
     for ( auto fun : d_fun )
-        fun( fid, xmf );
+        fun( fid, filename2 + ":", xmf );
     // Close the file
     closeHDF5( fid );
+    // Open summary file
     // Write the Xdmf file
     xmf.gather( d_comm );
     if ( !xmf.empty() ) {
         auto fname = fname_in + "_" + std::to_string( cycle ) + ".xmf";
         xmf.write( fname );
+        auto sname = fname_in + ".visit";
+        FILE *sid  = nullptr;
+        if ( cycle == 0 )
+            sid = fopen( sname.data(), "w" );
+        else
+            sid = fopen( sname.data(), "a" );
+        fprintf( sid, "%s\n", AMP::Utilities::filename( fname ).data() );
+        fclose( sid );
     }
+
 #else
     // No HDF5
     NULL_USE( fname_in );

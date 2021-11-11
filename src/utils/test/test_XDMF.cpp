@@ -50,6 +50,57 @@ void write_points( size_t N, hid_t fid, const std::string &filename, AMP::Xdmf &
 }
 
 
+// Ray based mesh
+void write_rays(
+    size_t N_elem, size_t nodesPerElement, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
+{
+    std::string meshname = "rays";
+    meshname += "_" + std::to_string( AMP::AMP_MPI( AMP_COMM_WORLD ).getRank() );
+    auto gid = AMP::createGroup( fid, meshname );
+
+    // Create the coordinate data
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<double> dis;
+    AMP::Array<float> x( 3, nodesPerElement, N_elem );
+    x.fill( 0 );
+    for ( size_t i = 0; i < N_elem; i++ ) {
+        x( 0, 0, i ) = dis( gen );
+        x( 1, 0, i ) = dis( gen );
+        x( 2, 0, i ) = 0;
+        for ( size_t j = 1; j < nodesPerElement; j++ ) {
+            double z     = static_cast<double>( j ) / ( nodesPerElement - 1 );
+            x( 0, j, i ) = ( 1 - 0.5 * z ) * x( 0, 0, i );
+            x( 1, j, i ) = ( 1 - 0.5 * z ) * x( 1, 0, i );
+            x( 2, j, i ) = z;
+        }
+    }
+
+    // Create the scalar data
+    AMP::Array<double> distance( nodesPerElement, N_elem );
+    for ( size_t i = 0; i < distance.length(); i++ )
+        distance( i ) =
+            sqrt( x( 0, i ) * x( 0, i ) + x( 1, i ) * x( 1, i ) + x( 2, i ) * x( 2, i ) );
+
+    // Write the data to HDF5
+    writeHDF5( gid, "XYZ", x );
+    writeHDF5( gid, "dist", distance );
+
+    // Register the data with XDMF
+    auto center = AMP::Xdmf::Center::Node;
+    auto prefix = filename + ":/" + meshname + "/";
+    AMP::Xdmf::MeshData mesh;
+    mesh.name = "rays";
+    mesh.type = AMP::Xdmf::TopologyType::Polyline;
+    mesh.size = { 3, N_elem, nodesPerElement };
+    mesh.x    = prefix + "XYZ";
+    mesh.addVariable(
+        "distance", distance.size(), AMP::Xdmf::RankType::Scalar, center, prefix + "dist" );
+    xmf.addMesh( "rays", mesh );
+    AMP::closeGroup( gid );
+}
+
+
 // 2D uniform mesh
 void write_uniform( size_t Nx, size_t Ny, hid_t fid, const std::string &filename, AMP::Xdmf &xmf )
 {
@@ -271,6 +322,7 @@ void writeTime( int i )
 
     // Write the parallel meshes
     write_points<2>( 256, fid, filename, xmf );
+    write_rays( 12, 32, fid, filename, xmf );
 
     // Write the multimesh
     xmf.addMultiMesh( "all", { "uniform", "curvilinear", "2D Unstructured Mesh" } );

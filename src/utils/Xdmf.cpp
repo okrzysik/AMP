@@ -266,13 +266,14 @@ static void writeVariable( FILE *fid, const Xdmf::VarData &var, const std::strin
  ****************************************************************/
 static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::string &indent )
 {
-    const char *s = indent.data();
-    double x0[3]  = { mesh.range[0], mesh.range[2], mesh.range[4] };
-    double dx[3]  = { ( mesh.range[1] - mesh.range[0] ) / mesh.size[0],
+    using Topology = AMP::Xdmf::TopologyType;
+    auto type      = mesh.type;
+    const char *s  = indent.data();
+    double x0[3]   = { mesh.range[0], mesh.range[2], mesh.range[4] };
+    double dx[3]   = { ( mesh.range[1] - mesh.range[0] ) / mesh.size[0],
                      ( mesh.range[3] - mesh.range[2] ) / mesh.size[1],
                      ( mesh.range[5] - mesh.range[4] ) / mesh.size[2] };
-    switch ( mesh.type ) {
-    case Xdmf::TopologyType::UniformMesh2D:
+    if ( type == Topology::UniformMesh2D ) {
         // Write a uniform 2d mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
@@ -290,8 +291,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         fprintf( fid, "%s       %0.12e  %0.12e\n", s, dx[0], dx[1] );
         fprintf( fid, "%s    </DataItem>\n", s );
         fprintf( fid, "%s  </Geometry>\n", s );
-        break;
-    case Xdmf::TopologyType::UniformMesh3D:
+    } else if ( type == Topology::UniformMesh3D ) {
         // Write a uniform 3d mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
@@ -309,8 +309,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         fprintf( fid, "%s       %0.12e  %0.12e  %0.12e\n", s, dx[0], dx[1], dx[2] );
         fprintf( fid, "%s    </DataItem>\n", s );
         fprintf( fid, "%s  </Geometry>\n", s );
-        break;
-    case Xdmf::TopologyType::CurvilinearMesh2D:
+    } else if ( type == Topology::CurvilinearMesh2D ) {
         // Write a 2D curvillinear mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
@@ -330,8 +329,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
             addDataItem( fid, indent + "    ", mesh.size + 1, mesh.z );
             fprintf( fid, "%s  </Geometry>\n", s );
         }
-        break;
-    case Xdmf::TopologyType::CurvilinearMesh3D:
+    } else if ( type == Topology::CurvilinearMesh3D ) {
         // Write a 3D curvillinear mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
@@ -345,73 +343,91 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         addDataItem( fid, indent + "    ", mesh.size + 1, mesh.y );
         addDataItem( fid, indent + "    ", mesh.size + 1, mesh.z );
         fprintf( fid, "%s  </Geometry>\n", s );
-        break;
-    case Xdmf::TopologyType::Polyvertex:
-    case Xdmf::TopologyType::Polyline:
-    case Xdmf::TopologyType::Polygon:
-    case Xdmf::TopologyType::Triangle:
-    case Xdmf::TopologyType::Quadrilateral:
-    case Xdmf::TopologyType::Tetrahedron:
-    case Xdmf::TopologyType::Pyramid:
-    case Xdmf::TopologyType::Wedge:
-    case Xdmf::TopologyType::Hexahedron:
-    case Xdmf::TopologyType::Edge_3:
-    case Xdmf::TopologyType::Triangle_6:
-    case Xdmf::TopologyType::Quadrilateral_8:
-    case Xdmf::TopologyType::Tetrahedron_10:
-    case Xdmf::TopologyType::Pyramid_13:
-    case Xdmf::TopologyType::Wedge_15:
-    case Xdmf::TopologyType::Hexahedron_20:
-        // Write an unstructured mesh
-        {
-            int NDIM      = mesh.size[0];
-            size_t Nelem  = mesh.size[1];
-            size_t Nnode  = mesh.size[2];
-            uint8_t Ndofs = TopologyTypeDOFs[static_cast<int>( mesh.type )];
-            auto type     = TopologyTypeNames[static_cast<int>( mesh.type )];
-            fprintf( fid, "%s<Grid Name=\"%s\">\n", s, mesh.name.data() );
-            fprintf( fid, "%s  <Topology TopologyType=\"%s\"", s, type );
-            fprintf(
-                fid, " NumberOfElements=\"%llu\">\n", static_cast<unsigned long long>( Nelem ) );
-            if ( !mesh.dofMap.empty() )
-                addDataItem( fid, indent + "    ", { Ndofs, Nelem }, mesh.dofMap );
-            fprintf( fid, "%s  </Topology>\n", s );
-            if ( NDIM == 2 ) {
-                if ( mesh.y.empty() ) {
-                    fprintf( fid, "%s  <Geometry GeometryType=\"XY\">\n", s );
-                    addDataItem( fid, indent + "    ", { 2, Nnode }, mesh.x );
-                } else {
-                    fprintf( fid, "%s  <Geometry GeometryType=\"X_Y\">\n", s );
-                    addDataItem( fid, indent + "    ", Nnode, mesh.x );
-                    addDataItem( fid, indent + "    ", Nnode, mesh.y );
-                }
-            } else if ( NDIM == 3 ) {
-                if ( mesh.y.empty() ) {
-                    fprintf( fid, "%s  <Geometry GeometryType=\"XYZ\">\n", s );
-                    addDataItem( fid, indent + "    ", { 2, Nnode }, mesh.x );
-                } else {
-                    fprintf( fid, "%s  <Geometry GeometryType=\"X_Y_Z\">\n", s );
-                    addDataItem( fid, indent + "    ", Nnode, mesh.x );
-                    addDataItem( fid, indent + "    ", Nnode, mesh.y );
-                    addDataItem( fid, indent + "    ", Nnode, mesh.z );
-                }
+    } else if ( type == Topology::Polyline && mesh.dofMap.empty() ) {
+        // Write a polyline
+        int NDIM     = mesh.size[0];
+        size_t Nelem = mesh.size[1];
+        size_t Nnode = mesh.size[2];
+        fprintf( fid, "%s<Grid Name=\"%s\">\n", s, mesh.name.data() );
+        fprintf( fid, "%s  <Topology TopologyType=\"Polyline\" ", s );
+        fprintf( fid, "NodesPerElement=\"%lu\" NumberOfElements=\"%lu\">\n", Nnode, Nelem );
+        fprintf( fid, "%s  </Topology>\n", s );
+        if ( NDIM == 2 ) {
+            if ( mesh.y.empty() ) {
+                fprintf( fid, "%s  <Geometry GeometryType=\"XY\">\n", s );
+                addDataItem( fid, indent + "    ", mesh.size, mesh.x );
             } else {
-                AMP_ERROR( "Dimensions other than 2 or 3 are not supported" );
+                fprintf( fid, "%s  <Geometry GeometryType=\"X_Y\">\n", s );
+                addDataItem( fid, indent + "    ", { Nelem, Nnode }, mesh.x );
+                addDataItem( fid, indent + "    ", { Nelem, Nnode }, mesh.y );
             }
-            fprintf( fid, "%s  </Geometry>\n", s );
+        } else if ( NDIM == 3 ) {
+            if ( mesh.y.empty() ) {
+                fprintf( fid, "%s  <Geometry GeometryType=\"XYZ\">\n", s );
+                addDataItem( fid, indent + "    ", mesh.size, mesh.x );
+            } else {
+                fprintf( fid, "%s  <Geometry GeometryType=\"X_Y_Z\">\n", s );
+                addDataItem( fid, indent + "    ", { Nelem, Nnode }, mesh.x );
+                addDataItem( fid, indent + "    ", { Nelem, Nnode }, mesh.y );
+                addDataItem( fid, indent + "    ", { Nelem, Nnode }, mesh.z );
+            }
+        } else {
+            AMP_ERROR( "Dimensions other than 2 or 3 are not supported" );
         }
-        break;
-    default: {
-        auto msg = "Invalid mesh type: " + std::to_string( static_cast<int>( mesh.type ) ) + " - " +
-                   mesh.name;
+        fprintf( fid, "%s  </Geometry>\n", s );
+    } else if ( type == Topology::Polyline || type == Topology::Polyvertex ||
+                type == Topology::Polygon || type == Topology::Triangle ||
+                type == Topology::Quadrilateral || type == Topology::Tetrahedron ||
+                type == Topology::Pyramid || type == Topology::Wedge ||
+                type == Topology::Hexahedron || type == Topology::Edge_3 ||
+                type == Topology::Triangle_6 || type == Topology::Quadrilateral_8 ||
+                type == Topology::Tetrahedron_10 || type == Topology::Pyramid_13 ||
+                type == Topology::Wedge_15 || type == Topology::Hexahedron_20 ) {
+        // Write an unstructured mesh
+        int NDIM      = mesh.size[0];
+        size_t Nelem  = mesh.size[1];
+        size_t Nnode  = mesh.size[2];
+        uint8_t Ndofs = TopologyTypeDOFs[static_cast<int>( type )];
+        auto typeName = TopologyTypeNames[static_cast<int>( type )];
+        fprintf( fid, "%s<Grid Name=\"%s\">\n", s, mesh.name.data() );
+        fprintf( fid, "%s  <Topology TopologyType=\"%s\"", s, typeName );
+        fprintf( fid, " NumberOfElements=\"%llu\">\n", static_cast<unsigned long long>( Nelem ) );
+        if ( !mesh.dofMap.empty() )
+            addDataItem( fid, indent + "    ", { Ndofs, Nelem }, mesh.dofMap );
+        fprintf( fid, "%s  </Topology>\n", s );
+        if ( NDIM == 2 ) {
+            if ( mesh.y.empty() ) {
+                fprintf( fid, "%s  <Geometry GeometryType=\"XY\">\n", s );
+                addDataItem( fid, indent + "    ", { 2, Nnode }, mesh.x );
+            } else {
+                fprintf( fid, "%s  <Geometry GeometryType=\"X_Y\">\n", s );
+                addDataItem( fid, indent + "    ", Nnode, mesh.x );
+                addDataItem( fid, indent + "    ", Nnode, mesh.y );
+            }
+        } else if ( NDIM == 3 ) {
+            if ( mesh.y.empty() ) {
+                fprintf( fid, "%s  <Geometry GeometryType=\"XYZ\">\n", s );
+                addDataItem( fid, indent + "    ", { 3, Nnode }, mesh.x );
+            } else {
+                fprintf( fid, "%s  <Geometry GeometryType=\"X_Y_Z\">\n", s );
+                addDataItem( fid, indent + "    ", Nnode, mesh.x );
+                addDataItem( fid, indent + "    ", Nnode, mesh.y );
+                addDataItem( fid, indent + "    ", Nnode, mesh.z );
+            }
+        } else {
+            AMP_ERROR( "Dimensions other than 2 or 3 are not supported" );
+        }
+        fprintf( fid, "%s  </Geometry>\n", s );
+    } else {
+        auto msg =
+            "Invalid mesh type: " + std::to_string( static_cast<int>( type ) ) + " - " + mesh.name;
         AMP_ERROR( msg );
-    }
     }
     // Write the variables
     for ( const auto &var : mesh.vars )
         writeVariable( fid, var, indent + "  " );
     fprintf( fid, "%s</Grid>\n", s );
-}
+} // namespace AMP
 
 
 /****************************************************************
