@@ -377,13 +377,12 @@ public: // Virtual functions
       * \details To use, we recommend the following pattern
       \code
       // Vector to be "view"ed
-      Vector::shared_ptr   data;
+      Vector::shared_ptr data;
 
       // .. set up all the data storage in data
 
       // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ),
-      "displacement view" );
+      auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
       \endcode
       */
     shared_ptr select( const VectorSelector &criterion, const std::string &variable_name );
@@ -399,8 +398,7 @@ public: // Virtual functions
       // .. set up all the data storage in data
 
       // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ),
-      "displacement view" );
+      auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
       \endcode
       */
     const_shared_ptr constSelect( const VectorSelector &criterion,

@@ -19,19 +19,19 @@ addDataItem( FILE *xmf, const std::string &indent, ArraySize size, const std::st
 {
     size = squeeze( size );
     if ( size.ndim() == 1 ) {
-        fprintf( xmf, "%s<DataItem Dimensions=\"%lu\"", indent.data(), size[0] );
+        fprintf( xmf, "%s<DataItem Dimensions=\"%zu\"", indent.data(), size[0] );
     } else if ( size.ndim() == 2 ) {
-        fprintf( xmf, "%s<DataItem Dimensions=\"%lu %lu\"", indent.data(), size[1], size[0] );
+        fprintf( xmf, "%s<DataItem Dimensions=\"%zu %zu\"", indent.data(), size[1], size[0] );
     } else if ( size.ndim() == 3 ) {
         fprintf( xmf,
-                 "%s<DataItem Dimensions=\"%lu %lu %lu\"",
+                 "%s<DataItem Dimensions=\"%zu %zu %zu\"",
                  indent.data(),
                  size[2],
                  size[1],
                  size[0] );
     } else if ( size.ndim() == 4 ) {
         fprintf( xmf,
-                 "%s<DataItem Dimensions=\"%lu %lu %lu %lu\"",
+                 "%s<DataItem Dimensions=\"%zu %zu %zu %zu\"",
                  indent.data(),
                  size[3],
                  size[2],
@@ -277,7 +277,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         // Write a uniform 2d mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
-                 "%s  <Topology TopologyType=\"2DCoRectMesh\" NumberOfElements=\"%lu %lu\"/>\n",
+                 "%s  <Topology TopologyType=\"2DCoRectMesh\" NumberOfElements=\"%zu %zu\"/>\n",
                  s,
                  mesh.size[1] + 1,
                  mesh.size[0] + 1 );
@@ -295,7 +295,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         // Write a uniform 3d mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
-                 "%s  <Topology TopologyType=\"3DCoRectMesh\" NumberOfElements=\"%lu %lu\"/>\n",
+                 "%s  <Topology TopologyType=\"3DCoRectMesh\" NumberOfElements=\"%zu %zu\"/>\n",
                  s,
                  mesh.size[1] + 1,
                  mesh.size[0] + 1 );
@@ -313,7 +313,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         // Write a 2D curvillinear mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
-                 "%s  <Topology TopologyType=\"2DSMesh\" NumberOfElements=\"%lu %lu\"/>\n",
+                 "%s  <Topology TopologyType=\"2DSMesh\" NumberOfElements=\"%zu %zu\"/>\n",
                  s,
                  mesh.size[1] + 1,
                  mesh.size[0] + 1 );
@@ -333,7 +333,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         // Write a 3D curvillinear mesh
         fprintf( fid, "%s<Grid Name=\"%s\" GridType=\"Uniform\">\n", s, mesh.name.data() );
         fprintf( fid,
-                 "%s  <Topology TopologyType=\"3DSMesh\" NumberOfElements=\"%lu %lu %lu\"/>\n",
+                 "%s  <Topology TopologyType=\"3DSMesh\" NumberOfElements=\"%zu %zu %zu\"/>\n",
                  s,
                  mesh.size[2] + 1,
                  mesh.size[1] + 1,
@@ -350,7 +350,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         size_t Nnode = mesh.size[2];
         fprintf( fid, "%s<Grid Name=\"%s\">\n", s, mesh.name.data() );
         fprintf( fid, "%s  <Topology TopologyType=\"Polyline\" ", s );
-        fprintf( fid, "NodesPerElement=\"%lu\" NumberOfElements=\"%lu\">\n", Nnode, Nelem );
+        fprintf( fid, "NodesPerElement=\"%zu\" NumberOfElements=\"%zu\">\n", Nnode, Nelem );
         fprintf( fid, "%s  </Topology>\n", s );
         if ( NDIM == 2 ) {
             if ( mesh.y.empty() ) {
@@ -391,7 +391,7 @@ static void writeMeshGrid( FILE *fid, const Xdmf::MeshData &mesh, const std::str
         auto typeName = TopologyTypeNames[static_cast<int>( type )];
         fprintf( fid, "%s<Grid Name=\"%s\">\n", s, mesh.name.data() );
         fprintf( fid, "%s  <Topology TopologyType=\"%s\"", s, typeName );
-        fprintf( fid, " NumberOfElements=\"%llu\">\n", static_cast<unsigned long long>( Nelem ) );
+        fprintf( fid, " NumberOfElements=\"%zu\">\n", Nelem );
         if ( !mesh.dofMap.empty() )
             addDataItem( fid, indent + "    ", { Ndofs, Nelem }, mesh.dofMap );
         fprintf( fid, "%s  </Topology>\n", s );
