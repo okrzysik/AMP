@@ -28,12 +28,11 @@ namespace Operator {
 class MoabBasedOperatorParameters : public AMP::Operator::OperatorParameters
 {
 public:
-    // Typedefs
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-    typedef AMP::Operator::OperatorParameters Base;
-
     // Constructor
-    explicit MoabBasedOperatorParameters( const SP_Database &db ) : Base( db ) {}
+    explicit MoabBasedOperatorParameters( std::shared_ptr<AMP::Database> db )
+        : OperatorParameters( db )
+    {
+    }
 };
 
 } // namespace Operator

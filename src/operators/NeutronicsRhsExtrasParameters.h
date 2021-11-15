@@ -17,9 +17,8 @@ namespace Operator {
 class NeutronicsRhsExtrasParameters : public OperatorParameters
 {
 public:
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-
-    explicit NeutronicsRhsExtrasParameters( const SP_Database &db ) : OperatorParameters( db )
+    explicit NeutronicsRhsExtrasParameters( std::shared_ptr<AMP::Database> db )
+        : OperatorParameters( db )
     {
         d_numExtras = 0;
     }

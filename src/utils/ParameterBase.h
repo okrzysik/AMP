@@ -1,10 +1,8 @@
-
 #ifndef included_AMP_ParameterBase
 #define included_AMP_ParameterBase
 
 #include <string>
 
-#include <memory>
 
 namespace AMP {
 
@@ -14,8 +12,6 @@ namespace AMP {
 class ParameterBase
 {
 public:
-    typedef std::shared_ptr<ParameterBase> shared_ptr;
-
     ParameterBase();
     virtual ~ParameterBase();
 
@@ -24,6 +20,7 @@ public:
 protected:
 private:
 };
+
 } // namespace AMP
 
 #endif

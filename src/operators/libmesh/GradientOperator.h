@@ -15,8 +15,6 @@ namespace AMP::Operator {
 class GradientOperator : public Operator
 {
 public:
-    typedef std::shared_ptr<AMP::Operator::Operator> shared_ptr;
-
     //! Default constructor
     GradientOperator( void );
 

@@ -27,95 +27,70 @@
 #include "Coupler.hpp"
 #include "moab/ParallelComm.hpp"
 
-// Libmesh Includes
-#include "elem.h"
-#include "fe_base.h"
-#include "fe_type.h"
-#include "quadrature_gauss.h"
-#include "string_to_enum.h"
 
-
-namespace AMP {
-namespace Operator {
-//---------------------------------------------------------------------------//
-/*!
- *\class MoabMapOperator
- *\brief Map Operator for mapping quantity from Moab mesh onto AMP mesh.
- */
-//---------------------------------------------------------------------------//
-class MoabMapOperator : public AMP::Operator::Operator
+namespace AMP : Operator
 {
-public:
-    // Typedefs
-    typedef AMP::Operator::Operator Base;
-    typedef AMP::Database Database;
-    typedef AMP::Database InpDatabase;
-    typedef AMP::Mesh::Mesh MeshManager;
-    typedef AMP::Operator::ElementPhysicsModel ElemPhysModel;
-    typedef AMP::Operator::VolumeIntegralOperator VolIntOp;
 
-    typedef std::shared_ptr<Base> SP_Base;
-    typedef std::shared_ptr<Database> SP_Database;
-    typedef std::shared_ptr<InpDatabase> SP_InpDatabase;
-    typedef std::shared_ptr<ElemPhysModel> SP_ElemPhysModel;
-    typedef std::shared_ptr<VolIntOp> SP_VolIntOp;
-    typedef std::shared_ptr<libMesh::FEBase> SP_FEBase;
-    typedef std::shared_ptr<MoabBasedOperator> SP_MoabOp;
-    typedef std::shared_ptr<MoabMapOperatorParameters> SP_MoabMapParams;
-    typedef std::shared_ptr<moab::Coupler> SP_Coupler;
+    //---------------------------------------------------------------------------//
+    /*!
+     *\class MoabMapOperator
+     *\brief Map Operator for mapping quantity from Moab mesh onto AMP mesh.
+     */
+    //---------------------------------------------------------------------------//
+    class MoabMapOperator : public AMP::Operator::Operator
+    {
+    public:
+        // Constructor
+        explicit MoabMapOperator( const std::shared_ptr<MoabMapOperatorParameters> &params );
 
-    typedef std::vector<double> Vec_Dbl;
+        // Apply
+        void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                    AMP::LinearAlgebra::Vector::shared_ptr r,
+                    const double a,
+                    const double b );
 
-    // Constructor
-    explicit MoabMapOperator( const SP_MoabMapParams &params );
+    private:
+        // Where do we want solution
+        enum { NODES, GAUSS_POINTS };
 
-    // Apply
-    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                AMP::LinearAlgebra::Vector::shared_ptr r,
-                const double a,
-                const double b );
+        // Build Moab Coupler
+        void buildMoabCoupler();
 
-private:
-    // Where do we want solution
-    enum { NODES, GAUSS_POINTS };
+        // Get GP Coordinates on mesh
+        void getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz );
 
-    // Build Moab Coupler
-    void buildMoabCoupler();
+        // Get Node Coordinates on mesh
+        void getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz );
 
-    // Get GP Coordinates on mesh
-    void getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz );
+        // Build GeomType::Volume integral operator
+        void buildGeomType::VolumeIntOp(
+            std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
+            AMP::Mesh::Mesh::shared_ptr &mesh );
 
-    // Get Node Coordinates on mesh
-    void getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz );
+        // Parameters
+        std::shared_ptr<MoabMapOperatorParameters> d_params;
 
-    // Build GeomType::Volume integral operator
-    void buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp, AMP::Mesh::Mesh::shared_ptr &mesh );
+        // Interpolation type
+        int d_interpType;
 
-    // Parameters
-    SP_MoabMapParams d_params;
+        // Moab operator object
+        std::shared_ptr<MoabBasedOperator> d_moab;
 
-    // Interpolation type
-    int d_interpType;
+        // Mesh adapter
+        AMP::Mesh::Mesh::shared_ptr d_meshMgr;
 
-    // Moab operator object
-    SP_MoabOp d_moab;
+        // Variable name to be mapped
+        std::string d_mapVar;
 
-    // Mesh adapter
-    AMP::Mesh::Mesh::shared_ptr d_meshMgr;
+        // Moab Interface
+        moab::Interface *d_moabInterface;
 
-    // Variable name to be mapped
-    std::string d_mapVar;
-
-    // Moab Interface
-    moab::Interface *d_moabInterface;
-
-    // Moab Coupler
-    SP_Coupler d_coupler;
-};
+        // Moab Coupler
+        SP_Coupler d_coupler;
+    };
 
 
 } // namespace Operator
-} // namespace AMP
 
 #endif // MOABMAPOPERATOR_H_

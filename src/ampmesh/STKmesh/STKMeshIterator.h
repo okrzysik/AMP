@@ -12,8 +12,6 @@ namespace Mesh {
 class STKMeshIterator : public MeshIterator
 {
 public:
-    typedef std::shared_ptr<std::vector<stk::mesh::Entity *>> MeshPtr;
-
     //! Empty MeshIterator constructor
     STKMeshIterator();
 
@@ -82,7 +80,9 @@ protected:
     STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
                      int gcw,
                      std::vector<stk::mesh::Entity *> &entities );
-    STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entities );
+    STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
+                     int gcw,
+                     std::shared_ptr<std::vector<stk::mesh::Entity *>> entities );
 
     //! Clone the iterator
     MeshIterator *clone() const override;
@@ -96,7 +96,7 @@ private:
     int d_rank;
     MeshID d_meshID;
     const AMP::Mesh::STKMesh *d_mesh;
-    MeshPtr d_entries;
+    std::shared_ptr<std::vector<stk::mesh::Entity *>> d_entries;
     std::vector<stk::mesh::Entity *>::iterator d_pos;
     MeshElement d_cur_element;
 

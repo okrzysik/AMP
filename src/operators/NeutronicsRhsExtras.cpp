@@ -19,7 +19,8 @@ namespace Operator {
  * from the parameters.                                                           *
  ***********************************************************************************
  */
-NeutronicsRhsExtras::NeutronicsRhsExtras( SP_Parameters parameters )
+NeutronicsRhsExtras::NeutronicsRhsExtras(
+    std::shared_ptr<NeutronicsRhsExtrasParameters> parameters )
     : Operator( parameters ), d_timeStep( 0 ), d_extrasId( 0 )
 {
     AMP_ASSERT( parameters );
@@ -32,8 +33,8 @@ NeutronicsRhsExtras::NeutronicsRhsExtras( SP_Parameters parameters )
     if ( !d_useFixedValue ) {
         int numValues;
         numValues = parameters->d_db->getScalar<int>( "numValues" );
-        Vec_Dbl1 tmp1( numValues, 0 );
-        Vec_Dbl2 tmp2( d_numTimeSteps, tmp1 );
+        std::vector<double> tmp1( numValues, 0 );
+        std::vector<std::vector<double>> tmp2( d_numTimeSteps, tmp1 );
         d_values.resize( d_numExtras, tmp2 );
 
         for ( int extras = 0; extras < d_numExtras; extras++ ) {
@@ -61,7 +62,7 @@ NeutronicsRhsExtras::~NeutronicsRhsExtras() = default;
  * with those found in input.                                            *
  *************************************************************************
  */
-void NeutronicsRhsExtras::getFromInput( SP_Database db )
+void NeutronicsRhsExtras::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
 
@@ -108,7 +109,7 @@ void NeutronicsRhsExtras::getFromInput( SP_Database db )
  * Write out class version number and data members to database.          *
  *************************************************************************
  */
-void NeutronicsRhsExtras::putToDatabase( SP_Database db )
+void NeutronicsRhsExtras::putToDatabase( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( !db.use_count() );
     db->putScalar( "numTimeSteps", d_numTimeSteps );
@@ -145,7 +146,9 @@ void NeutronicsRhsExtras::reset( std::shared_ptr<const OperatorParameters> param
     if ( !d_useFixedValue ) {
         int numValues;
         numValues = params->d_db->getScalar<int>( "numValues" );
-        d_values.resize( d_numExtras, Vec_Dbl2( d_numTimeSteps, Vec_Dbl1( numValues, 0 ) ) );
+        d_values.resize( d_numExtras,
+                         std::vector<std::vector<double>>( d_numTimeSteps,
+                                                           std::vector<double>( numValues, 0 ) ) );
 
         for ( int extras = 0; extras < d_numExtras; extras++ ) {
             for ( int t = 0; t < d_numTimeSteps; t++ ) {
@@ -215,5 +218,49 @@ NeutronicsRhsExtras::SourceType NeutronicsRhsExtras::str2id( const std::string &
     }
     return NUM_SOURCE_TYPES;
 }
+
+
+/*
+ *************************************************************************
+ * Set the time
+ *************************************************************************
+ */
+void NeutronicsRhsExtras::setTimeInSeconds( double setSeconds )
+{
+    AMP_ASSERT( setSeconds >= 0. );
+    // first assume time does not go backwards.
+    int timeStep   = d_timeStep;
+    double seconds = d_timeStepInSeconds;
+    if ( setSeconds >= d_timeStepInSeconds ) {
+        for ( int i = d_timeStep; i < d_numTimeSteps; i++ ) {
+            seconds += d_timeStepsInDays[i] * d_secondsPerDay;
+            if ( setSeconds > seconds ) {
+                timeStep = i + 1;
+            } else {
+                AMP_ASSERT( timeStep < d_numTimeSteps );
+                d_timeStep          = timeStep;
+                d_timeStepInSeconds = seconds - d_timeStepsInDays[d_timeStep];
+                return;
+            }
+        }
+    } else {
+        seconds  = 0.;
+        timeStep = 0;
+        for ( int i = 0; i < d_numTimeSteps; i++ ) {
+            seconds += d_timeStepsInDays[i] * d_secondsPerDay;
+            if ( setSeconds > seconds ) {
+                timeStep = i + 1;
+            } else {
+                AMP_ASSERT( timeStep < d_numTimeSteps );
+                d_timeStep          = timeStep;
+                d_timeStepInSeconds = seconds - d_timeStepsInDays[d_timeStep] * d_secondsPerDay;
+                return;
+            }
+        }
+    }
+    AMP_INSIST( false, "Could not find the appropriate time." );
+}
+
+
 } // namespace Operator
 } // namespace AMP

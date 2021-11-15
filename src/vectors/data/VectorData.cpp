@@ -14,14 +14,14 @@ VectorData::VectorData()
     *d_UpdateState = UpdateState::UNCHANGED;
 }
 
-VectorData::VectorData( CommunicationList::shared_ptr comm )
+VectorData::VectorData( std::shared_ptr<CommunicationList> comm )
     : d_UpdateState{ std::make_shared<UpdateState>() }
 {
     setCommunicationList( comm );
     *d_UpdateState = UpdateState::UNCHANGED;
 }
 
-void VectorData::setCommunicationList( CommunicationList::shared_ptr comm )
+void VectorData::setCommunicationList( std::shared_ptr<CommunicationList> comm )
 {
     AMP_ASSERT( comm );
     d_CommList = comm;

@@ -17,8 +17,8 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
+
 //---------------------------------------------------------------------------//
 /*!
  *\class MoabMapOperatorParameters
@@ -29,29 +29,23 @@ namespace Operator {
 class MoabMapOperatorParameters : public AMP::Operator::OperatorParameters
 {
 public:
-    typedef AMP::Operator::OperatorParameters Base;
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-
-    typedef AMP::Operator::MoabBasedOperator MoabOp;
-    typedef std::shared_ptr<MoabOp> SP_MoabOp;
-
     // Constructor
-    explicit MoabMapOperatorParameters( const SP_Database &db ) : Base( db )
+    explicit MoabMapOperatorParameters( std::shared_ptr<AMP::Database> db )
+        : OperatorParameters( db )
     { /* ... */
     }
 
     // Moab Operator
-    SP_MoabOp d_moabOp;
+    std::shared_ptr<MoabBasedOperator> d_moabOp;
 
     // Set functions
-    void setMoabOperator( SP_MoabOp &moabOp ) { d_moabOp = moabOp; }
+    void setMoabOperator( std::shared_ptr<MoabBasedOperator> &moabOp ) { d_moabOp = moabOp; }
     void setMesh( AMP::Mesh::Mesh::shared_ptr &mesh ) { d_mesh = mesh; }
 
     // Mesh Manager
     AMP::Mesh::Mesh::shared_ptr d_mesh;
 };
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif // MOABMAPOPERATORPARAMS_H_

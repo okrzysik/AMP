@@ -4,8 +4,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class Vector;
 
@@ -23,8 +22,6 @@ class Vector;
 class VectorIndexer
 {
 public:
-    typedef std::shared_ptr<VectorIndexer> shared_ptr;
-
     /** \brief Destructor */
     virtual ~VectorIndexer() {}
 
@@ -63,8 +60,7 @@ public:
     virtual size_t getNumLocalElements( std::shared_ptr<Vector> v ) const = 0;
 };
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif
