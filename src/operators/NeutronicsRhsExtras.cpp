@@ -21,7 +21,11 @@ namespace Operator {
  */
 NeutronicsRhsExtras::NeutronicsRhsExtras(
     std::shared_ptr<NeutronicsRhsExtrasParameters> parameters )
-    : Operator( parameters ), d_timeStep( 0 ), d_extrasId( 0 )
+    : Operator( parameters ),
+      d_useFixedValue( false ),
+      d_type( SourceType::Isotopes ),
+      d_timeStep( 0 ),
+      d_extrasId( 0 )
 {
     AMP_ASSERT( parameters );
     d_Mesh              = parameters->d_Mesh;
