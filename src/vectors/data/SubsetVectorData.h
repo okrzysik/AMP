@@ -16,7 +16,7 @@ class SubsetVectorParameters
 {
 public:
     //! The CommunicationList for a vector
-    CommunicationList::shared_ptr d_CommList = nullptr;
+    std::shared_ptr<CommunicationList> d_CommList = nullptr;
 
     //! The DOF_Manager for a vector
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager = nullptr;

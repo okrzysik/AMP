@@ -11,8 +11,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -65,7 +64,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
 
     auto remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
-    AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
+    std::shared_ptr<CommunicationList> commList;
     if ( !ghosts ) {
         commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(),
                                                                        subsetDOF->getComm() );
@@ -90,5 +89,4 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

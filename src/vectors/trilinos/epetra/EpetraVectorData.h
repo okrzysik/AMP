@@ -48,7 +48,7 @@ public:
     inline AMP_MPI getComm() const { return d_comm; }
 
     //! The CommunicationList for a vector
-    CommunicationList::shared_ptr d_CommList = nullptr;
+    std::shared_ptr<CommunicationList> d_CommList = nullptr;
 
 private:
     size_t d_begin  = 0;                          // Starting DOF

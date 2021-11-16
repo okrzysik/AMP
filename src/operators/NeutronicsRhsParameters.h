@@ -17,12 +17,11 @@ namespace Operator {
 class NeutronicsRhsParameters : public OperatorParameters
 {
 public:
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-
-    explicit NeutronicsRhsParameters( const SP_Database &db ) : OperatorParameters( db ) {}
-
-    //      std::shared_ptr<AMP::MeshUtils> d_MeshUtils;
+    explicit NeutronicsRhsParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db )
+    {
+    }
 };
+
 } // namespace Operator
 } // namespace AMP
 

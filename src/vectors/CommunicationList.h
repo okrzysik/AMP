@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class VectorData;
 class VectorIndexer;
@@ -22,9 +21,6 @@ class VectorIndexer;
 class CommunicationListParameters : public ParameterBase
 {
 public:
-    //! Short hand name for the shared pointer for a communication list
-    typedef std::shared_ptr<CommunicationListParameters> shared_ptr;
-
     //! The communicator over which the communication list is computed
     AMP_MPI d_comm;
 
@@ -58,9 +54,6 @@ public:
 class CommunicationList
 {
 public:
-    //! Short hand for shared point to CommunicationList
-    typedef std::shared_ptr<CommunicationList> shared_ptr;
-
     /**
      * \brief Construct a communication list
      * \param[in] params  A shared pointer to parameters for constructing the list
@@ -68,7 +61,7 @@ public:
      * compute the communication lists.  Derived classes are expected to call
      * buildCommunicationArrays with appropriate data to compute the communication list
      */
-    explicit CommunicationList( CommunicationListParameters::shared_ptr params );
+    explicit CommunicationList( std::shared_ptr<CommunicationListParameters> params );
 
     /**
      * \brief Destroy the communication list
@@ -85,7 +78,7 @@ public:
      * \brief Subset a communication list based on a VectorIndexer
      * \param[in] sub  A VectorIndexer pointer that describes a subset
      */
-    CommunicationList::shared_ptr subset( std::shared_ptr<VectorIndexer> sub );
+    std::shared_ptr<CommunicationList> subset( std::shared_ptr<VectorIndexer> sub );
 
     /**
      * \brief Retrieve list of global indices stored here and shared elsewhere
@@ -223,7 +216,7 @@ public:
      * \param[in]  comm   The AMP_MPI for the vector.
      * \details  Create a communication list with no communication.
      */
-    static CommunicationList::shared_ptr createEmpty( size_t local, AMP_MPI comm );
+    static std::shared_ptr<CommunicationList> createEmpty( size_t local, AMP_MPI comm );
 
 protected:
     /**
@@ -258,7 +251,7 @@ private:
 
     CommunicationList();
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+
+} // namespace AMP::LinearAlgebra
 
 #endif

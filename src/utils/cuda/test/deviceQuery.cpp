@@ -187,9 +187,9 @@ int main( int argc, char **argv )
                 deviceProp.maxGridSize[0],
                 deviceProp.maxGridSize[1],
                 deviceProp.maxGridSize[2] );
-        printf( "  Maximum memory pitch:                          %lz bytes\n",
+        printf( "  Maximum memory pitch:                          %zu bytes\n",
                 deviceProp.memPitch );
-        printf( "  Texture alignment:                             %lz bytes\n",
+        printf( "  Texture alignment:                             %zu bytes\n",
                 deviceProp.textureAlignment );
         printf( "  Concurrent copy and kernel execution:          %s with %d copy engine(s)\n",
                 ( deviceProp.deviceOverlap ? "Yes" : "No" ),

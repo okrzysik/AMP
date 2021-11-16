@@ -36,13 +36,6 @@ namespace Operator {
 
 class PowerShape : public Operator
 {
-
-public:
-    typedef std::shared_ptr<PowerShapeParameters> SP_Parameters;
-    typedef std::vector<double> Vec_Dbl;
-    typedef std::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-
 private:
     // Defines fission data types.
     enum class PowerShape_Types { LINEAR, QUADRATIC, CUBIC, NUM_POWER_SHAPES };
@@ -103,7 +96,7 @@ public:
     /*
      * A class for representing the neutronics source operator.
      */
-    explicit PowerShape( SP_Parameters parameters );
+    explicit PowerShape( std::shared_ptr<PowerShapeParameters> parameters );
 
     /**
      * Empty destructor for PowerShape
@@ -123,7 +116,7 @@ public:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void putToDatabase( SP_Database db );
+    void putToDatabase( std::shared_ptr<AMP::Database> db );
 
     /**
       The function that computes the residual.
@@ -164,9 +157,9 @@ protected:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void getFromDatabase( SP_Database db );
+    void getFromDatabase( std::shared_ptr<AMP::Database> db );
 
-    SP_Database d_db;
+    std::shared_ptr<AMP::Database> d_db;
 
     // SP_HexGaussPointVariable d_Variable;
 

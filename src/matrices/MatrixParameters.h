@@ -61,11 +61,11 @@ public:
 
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
-    CommunicationList::shared_ptr d_CommListLeft;
+    std::shared_ptr<CommunicationList> d_CommListLeft;
 
     //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
     //!  right vector )
-    CommunicationList::shared_ptr d_CommListRight;
+    std::shared_ptr<CommunicationList> d_CommListRight;
 
     //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left
     //!  vector )

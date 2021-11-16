@@ -8,8 +8,15 @@
 
 #include "MoabMapOperator.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+
+
+// Libmesh Includes
 #include "cell_hex8.h"
 #include "elem.h"
+#include "fe_base.h"
+#include "fe_type.h"
+#include "quadrature_gauss.h"
+#include "string_to_enum.h"
 
 namespace AMP {
 namespace Operator {
@@ -19,8 +26,8 @@ namespace Operator {
  *\brief Constructor
  */
 //---------------------------------------------------------------------------//
-MoabMapOperator::MoabMapOperator( const SP_MoabMapParams &params )
-    : Base( params ), d_params( params ), d_moab( params->d_moabOp )
+MoabMapOperator::MoabMapOperator( const std::shared_ptr<MoabMapOperatorParameters> &params )
+    : Operator( params ), d_params( params ), d_moab( params->d_moabOp )
 {
     // Get parameters from DB
     d_mapVar = params->d_db->getString( "MoabMapVariable" );
@@ -73,7 +80,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     auto meshIDs = d_meshMgr->getBaseMeshIDs();
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
         // this is an accessor to all the mesh info.
-        AMP::Mesh::Mesh::shared_ptr currentMesh = d_meshMgr->Subset( meshIDs[meshIndex] );
+        auto currentMesh = d_meshMgr->Subset( meshIDs[meshIndex] );
         if ( currentMesh.get() == nullptr )
             continue;
 
@@ -107,7 +114,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     //                           relTol,       absTol );
 
     // Interpolate
-    Vec_Dbl outputVar( numCoords, 0.0 );
+    std::vector<double> outputVar( numCoords, 0.0 );
     d_coupler->interpolate( moab::Coupler::LINEAR_FE, d_mapVar, &outputVar[0] );
 
     // This block was here for debugging, not ready to abandon it yet
@@ -157,7 +164,7 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
  *\brief Get vector of Gauss points for single mesh
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz )
+void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz )
 {
     AMP_INSIST( mesh, "Must have a mesh" );
     AMP_INSIST( d_interpType == GAUSS_POINTS, "Wrong interpolation type" );
@@ -179,12 +186,12 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
     double m_to_cm = 100.0;
 
     // Build GeomType::Volume Integral Operator
-    SP_VolIntOp volIntOp;
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> volIntOp;
     buildGeomType::VolumeIntOp( volIntOp, mesh );
     AMP_ASSERT( volIntOp );
 
     // Get FE Base from volume integral operator
-    SP_FEBase fe_ptr = volIntOp->getSourceElement()->getFEBase();
+    auto fe_ptr = volIntOp->getSourceElement()->getFEBase();
 
     // Extract coordinates of each Gauss point
     unsigned int zeroGhostWidth = 0;
@@ -230,7 +237,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &x
  *\brief Get vector of node coordinates for single mesh
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl &xyz )
+void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz )
 {
     AMP_INSIST( mesh, "Must have Mesh Adapter" );
     AMP_INSIST( d_interpType == NODES, "Wrong interpolation type" );
@@ -261,8 +268,9 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, Vec_Dbl 
  *\brief Build volume integral operator
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
-                                                  AMP::Mesh::Mesh::shared_ptr &mesh )
+void MoabMapOperator::buildGeomType::VolumeIntOp(
+    std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
+    AMP::Mesh::Mesh::shared_ptr &mesh )
 {
     using AMP::Operator::OperatorBuilder;
 
@@ -270,7 +278,7 @@ void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
     d_params->d_db->putDatabase( name );
 
     // Create volume database
-    SP_Database volume_db = d_params->d_db->getDatabase( name );
+    auto volume_db = d_params->d_db->getDatabase( name );
     volume_db->putScalar( "name", "VolumeIntegralOperator" );
     volume_db->putScalar( "InputVariableType", "IntegrationPointScalar" );
     volume_db->putScalar( "Number_Active_Variables", 1 );
@@ -282,11 +290,11 @@ void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
     volume_db->putDatabase( "SourceElement" );
 
     // Source db
-    SP_Database source_db = volume_db->getDatabase( "SourceElement" );
+    auto source_db = volume_db->getDatabase( "SourceElement" );
     source_db->putScalar( "name", "SourceNonlinearElement" );
 
     // Active variable db
-    SP_Database act_db;
+    auto act_db;
     act_db = volume_db->getDatabase( "ActiveInputVariables" );
 
     // Define active variable as Specific Power
@@ -294,13 +302,13 @@ void MoabMapOperator::buildGeomType::VolumeIntOp( SP_VolIntOp &volIntOp,
     act_db->putScalar( "ActiveVariable_0", interfaceVarName );
 
     // Global DB
-    SP_InpDatabase global_db = std::dynamic_pointer_cast<InpDatabase>( d_params->d_db );
+    auto global_db = std::dynamic_pointer_cast<InpDatabase>( d_params->d_db );
 
     // We just need a dummy Element Physics Model
-    SP_ElemPhysModel emptyModel;
+    std::shared_ptr<AMP::Operator::ElementPhysicsModel> emptyModel;
 
     // Create the operator
-    volIntOp = std::dynamic_pointer_cast<VolIntOp>(
+    volIntOp = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
         OperatorBuilder::createOperator( mesh, name, global_db, emptyModel ) );
 
     AMP_ASSERT( volIntOp );
@@ -326,13 +334,13 @@ void MoabMapOperator::buildMoabCoupler()
 
     // Get source elements
     moab::Range srcElems;
-    moab::ErrorCode moabError = moabParComm->get_part_entities( srcElems, 3 );
+    auto moabError = moabParComm->get_part_entities( srcElems, 3 );
     AMP_ASSERT( moabError == moab::MB_SUCCESS );
 
     // Build Coupler
     int couplerID = 0;
     AMP::plog << "Calling Coupler constructor" << std::endl;
-    d_coupler = =
+    d_coupler =
         std::make_shared<moab::Coupler>( d_moabInterface, moabParComm, srcElems, couplerID );
 }
 

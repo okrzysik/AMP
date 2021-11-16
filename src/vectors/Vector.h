@@ -667,11 +667,11 @@ public:
         d_VectorData->makeConsistent( t );
     }
     //! Get the CommunicationList for this Vector
-    inline CommunicationList::shared_ptr getCommunicationList() const
+    inline std::shared_ptr<CommunicationList> getCommunicationList() const
     {
         return d_VectorData->getCommunicationList();
     }
-    inline void setCommunicationList( CommunicationList::shared_ptr comm )
+    inline void setCommunicationList( std::shared_ptr<CommunicationList> comm )
     {
         d_VectorData->setCommunicationList( comm );
     }
