@@ -243,7 +243,8 @@ constexpr Units::SI_type Units::combine( const SI_type &a, const SI_type &b )
  ********************************************************************/
 constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcept
 {
-    UnitPrefix value = UnitPrefix::unknown;
+    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
+    UnitPrefix value       = UnitPrefix::unknown;
     if ( str.empty() ) {
         value = UnitPrefix::none;
     } else if ( str == "yotta" || str == "Y" ) {
@@ -272,7 +273,7 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
         value = UnitPrefix::centi;
     } else if ( str == "milli" || str == "m" ) {
         value = UnitPrefix::milli;
-    } else if ( str == "micro" || str == "u" || str == "μ" ) {
+    } else if ( str == "micro" || str == "u" || str == micro ) {
         value = UnitPrefix::micro;
     } else if ( str == "nano" || str == "n" ) {
         value = UnitPrefix::nano;
@@ -291,8 +292,9 @@ constexpr UnitPrefix Units::getUnitPrefix( const std::string_view &str ) noexcep
 }
 inline std::vector<std::string> Units::getAllPrefixes()
 {
-    return { "Y", "Z", "E", "P", "T", "G", "M", "k", "h", "da", "",
-             "d", "c", "m", "u", "μ", "n", "p", "f", "a", "z",  "y" };
+    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
+    return { "Y", "Z", "E", "P", "T",   "G", "M", "k", "h", "da", "",
+             "d", "c", "m", "u", micro, "n", "p", "f", "a", "z",  "y" };
 }
 
 
@@ -301,6 +303,7 @@ inline std::vector<std::string> Units::getAllPrefixes()
  ********************************************************************/
 constexpr Units Units::read2( std::string_view str )
 {
+    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
     // Check for special prefixes
     if ( str.substr( 0, 2 ) == "da" ) {
         Units u = readUnit( str.substr( 2 ), false );
@@ -308,7 +311,7 @@ constexpr Units Units::read2( std::string_view str )
         if ( u.d_scale != 0 )
             return u;
     }
-    if ( str.substr( 0, 2 ) == "μ" ) {
+    if ( str.substr( 0, 2 ) == micro ) {
         Units u = readUnit( str.substr( 2 ), false );
         u.d_scale *= 1e-6;
         if ( u.d_scale != 0 )
@@ -331,6 +334,7 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         auto u = getSI( type );
         return Units( u, s );
     };
+    constexpr char ohm[] = { (char) 206, (char) 169, (char) 0 }; // Ohm symbol in UTF-16
     // Check base SI units
     if ( str == "second" || str == "s" )
         return create( UnitType::time );
@@ -369,7 +373,7 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
         return create( UnitType::electricalPotential );
     if ( str == "farad" || str == "F" )
         return create( UnitType::capacitance );
-    if ( str == "ohm" || str == "Ω" )
+    if ( str == "ohm" || str == ohm )
         return create( UnitType::resistance );
     if ( str == "siemens" || str == "S" )
         return create( UnitType::electricalConductance );
@@ -477,13 +481,14 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 }
 inline std::vector<std::string> Units::getAllUnits()
 {
+    constexpr char ohm[] = { (char) 206, (char) 169, (char) 0 }; // Ohm symbol in UTF-16
     return { "second",   "s",           "meter",      "m",         "gram",    "g",
              "ampere",   "A",           "kelvin",     "K",         "mole",    "mol",
              "candela",  "cd",          "radian",     "radians",   "rad",     "steradian",
              "sr",       "degree",      "degrees",    "joule",     "J",       "watt",
              "W",        "hertz",       "Hz",         "newton",    "N",       "pascal",
              "Pa",       "coulomb",     "C",          "volt",      "V",       "farad",
-             "F",        "ohm",         "Ω",          "siemens",   "S",       "weber",
+             "F",        "ohm",         ohm,          "siemens",   "S",       "weber",
              "Wb",       "tesla",       "T",          "henry",     "H",       "lumen",
              "lm",       "lux",         "lx",         "becquerel", "Bq",      "gray",
              "Gy",       "sievert",     "Sv",         "katal",     "kat",     "litre",

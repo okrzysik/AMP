@@ -55,15 +55,15 @@ public:
             return (*one)(2) < (*two)(2);
           }
     */
-    AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &name,
-                                                                  int varId = -1 );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> createInputVariable( const std::string &name,
+                                                                       int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
-                                                                   int varId = -1 );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &name,
+                                                                        int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
 
     void setInputVariableName( const std::string &name, int varId = -1 );
 

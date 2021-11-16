@@ -33,7 +33,7 @@ public:
      * @return          Return the item that matches the criteria,
      *                  or the default item if no item matches
      * @param compare   Comparison function object (i.e. an object that satisfies
-     *                  the requirements of Compare) which returns ​true if the
+     *                  the requirements of Compare) which returns true if the
      *                  given value meets the selection criteria.
      *                  The signature of the comparison function should be equivalent to:
      *                      bool cmp( const TYPE& value, ... );
@@ -91,7 +91,7 @@ public:
      * \brief   Check the list
      * \details Perform a series of checks to verify the list is in a stable state.
      *    Note: This function is only partially thread-safe: it will block all other
-     *    operations on the list, but check may fail if we caught a thread modifing the list.
+     *    operations on the list, but check may fail if we caught a thread modifying the list.
      *    It is intended for debugging purposes only!
      * @return          This function returns true if the list is in a good working state
      */

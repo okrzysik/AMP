@@ -139,7 +139,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
     }
     const int *ijk = d_index.d_index;
     if ( type == GeomType::Vertex ) {
-        // We want to get the verticies composing the elements
+        // We want to get the vertices composing the elements
         if ( d_index.type() == d_meshType ) {
             // We are dealing with a entity of type dim and want the verticies
             if ( d_meshType == GeomType::Edge ) {
@@ -198,7 +198,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
         } else if ( d_index.type() == GeomType::Volume ) {
             AMP_ERROR( "Not ready for dimensions > 3" );
         } else {
-            AMP_ERROR( "Not finsihed" );
+            AMP_ERROR( "Not finished" );
         }
     } else if ( type == GeomType::Edge ) {
         if ( d_meshType == GeomType::Face ) {
@@ -667,8 +667,8 @@ double structuredMeshElement::volume() const
     } else if ( d_index.type() == GeomType::Volume ) {
         // Compute the volume of the tri-linear hex by splitting it
         // into 6 sub-pyramids and applying the formula in:
-        // "Calculation of the GeomType::Volume of a General Hexahedron
-        // for Flow Predictions", AIAA Journal v.23, no.6, 1984, p.954-
+        //   "Calculation of the Volume of a General Hexahedron for Flow Predictions",
+        //    IAA Journal v.23, no.6, 1984, p.954-
         constexpr uint8_t sub_pyr[6][4] = { { 0, 3, 2, 1 }, { 6, 7, 4, 5 }, { 0, 1, 5, 4 },
                                             { 3, 7, 6, 2 }, { 0, 4, 7, 3 }, { 1, 2, 6, 5 } };
         // Get the verticies

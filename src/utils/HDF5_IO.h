@@ -73,7 +73,7 @@ hid_t createChunk( const std::vector<hsize_t> &dims, Compression compress );
 /**
  * \brief Write a structure to HDF5
  * \details This function writes a C++ class/struct to HDF5.
- *    This is a templated function and users can impliment their own data
+ *    This is a templated function and users can implement their own data
  *    types by creating explicit instantiations for a given type.
  *    There is no default instantiation except when compiled without HDF5 which is a no-op.
  * @param[in] fid       File or group to write to
@@ -87,7 +87,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, const T &data );
 /**
  * \brief Read a structure from HDF5
  * \details This function reads a C++ class/struct from HDF5.
- *    This is a templated function and users can impliment their own data
+ *    This is a templated function and users can implement their own data
  *    types by creating explicit instantiations for a given type.
  *    There is no default instantiation except when compiled without HDF5 which is a no-op.
  * @param[in] fid       File or group to read from

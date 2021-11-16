@@ -1,13 +1,13 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
+#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
-
-#include "AMP/ampmesh/StructuredMeshHelper.h"
-#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 #include <string>
@@ -1316,7 +1316,7 @@ std::shared_ptr<OperatorParameters> SubchannelFourEqLinearOperator::getJacobianP
 AMP::LinearAlgebra::Vector::shared_ptr
 SubchannelFourEqLinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -1332,7 +1332,7 @@ SubchannelFourEqLinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::s
 AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::subsetInputVector(
     AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -1348,7 +1348,7 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
 AMP::LinearAlgebra::Vector::shared_ptr
 SubchannelFourEqLinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -1364,7 +1364,7 @@ SubchannelFourEqLinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::
 AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::subsetOutputVector(
     AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {

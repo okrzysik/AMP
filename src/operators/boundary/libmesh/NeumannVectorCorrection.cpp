@@ -3,6 +3,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorSelector.h"
 
 // Libmesh files
 DISABLE_WARNINGS

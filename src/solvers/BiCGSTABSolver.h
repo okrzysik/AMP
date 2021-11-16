@@ -13,11 +13,9 @@ namespace Solver {
 /**
  * The BiCGSTABSolver class implements the BiCGSTAB method for non-symmetric linear systems
  * introduced by H. van der Vorst
- * Van der Vorst, H. A. (1992).
- * "Bi-CGSTAB: A Fast and Smoothly Converging Variant of Bi-CG for the Solution of Nonsymmetric
- * Linear Systems".
- * SIAM J. Sci. and Stat. Comput. 13 (2): 631–644.
- * doi:10.1137/0913035.
+ *    Van der Vorst, H. A., "Bi-CGSTAB: A Fast and Smoothly Converging Variant of
+ *    Bi-CG for the Solution of Nonsymmetric Linear Systems". SIAM J. Sci. and Stat. Comput.
+ *    13 (2): 631-644 (1992). doi:10.1137/0913035.
  * If a preconditioner is provided right preconditioning is done
  */
 class BiCGSTABSolver : public SolverStrategy

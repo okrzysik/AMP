@@ -25,8 +25,8 @@ using Point3D = std::array<double, 3>;
  * \details  This function will map logical coordinates in [0,1] to (x,y) coordinates
  *   in a circle.  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  *   There are 3 methods to choose from:
  *      1 - D(d) = r*d/sqrt(2), R(d) = r*d
  *      2 - D(d) = r*d/sqrt(2), R(d) = r
@@ -45,8 +45,8 @@ std::pair<double, double> map_logical_circle( double R, int method, double x, do
  * \details  This function will map physical coordinates (x,y) coordinates
  *   in a circle to [0,1] logical coordinates.  It uses the inverse of the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  *   There are 3 methods to choose from:
  *      1 - D(d) = r*d/sqrt(2), R(d) = r*d
  *      2 - D(d) = r*d/sqrt(2), R(d) = r
@@ -102,8 +102,8 @@ std::vector<Point2D> get_poly_verticies( int N, double R );
  * \details  This function will map logical coordinates in [0,1] to (x,y,z) coordinates
  *   in a sphere.  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  * \param[in] R         Radius of sphere
  * \param[in] x         Logical x coordinate
  * \param[in] y         Logical y coordinate
@@ -118,8 +118,8 @@ Point3D map_logical_sphere( double R, double x, double y, double z );
  * \details  This function will map physical coordinates in (x,y,z) to [0,1] locial
  *   coordinates in a sphere.  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  * \param[in] R         Radius of sphere
  * \param[in] x         Physical x coordinate
  * \param[in] y         Physical y coordinate
@@ -134,8 +134,8 @@ Point3D map_sphere_logical( double R, double x, double y, double z );
  * \details  This function will map logical coordinates in [0,1] to (x,y,z) coordinates
  *   on the surface of a sphere.  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  * \param[in] R         Radius of sphere
  * \param[in] x         Logical x coordinate
  * \param[in] y         Logical y coordinate
@@ -148,8 +148,8 @@ Point3D map_logical_sphere_surface( double R, double x, double y );
  * \details  This function will map the (x,y,z) coordinates on the surface of a
  *   sphere to logical coordinates in [0,1].  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  * \param[in] R         Radius of sphere
  * \param[in] x         Physical x coordinate
  * \param[in] y         Physical y coordinate
@@ -164,8 +164,8 @@ std::pair<double, double> map_sphere_surface_logical( double R, double x, double
  * \details  This function will map logical coordinates in [0,1] to (x,y,z) coordinates
  *   in a shell.  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  * \param[in] r1        Inner radius of shell
  * \param[in] r2        Outer radius of shell
  * \param[in] x         Logical x coordinate
@@ -181,8 +181,8 @@ Point3D map_logical_shell( double r1, double r2, double x, double y, double z );
  * \details  This function will map (x,y,z) coordinates
  *   in a shell to logical coordinates in [0,1].  It uses the mapping by:
  *   Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
- *      and Finite GeomType::Volume Methods for PDEs in Circular and Spherical Domains",
- *      SIAM REVIEW, Vol. 50, No. 4, pp. 723–752 (2008)
+ *      and Finite Volume Methods for PDEs in Circular and Spherical Domains",
+ *      SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
  * \param[in] r1        Inner radius of shell
  * \param[in] r2        Outer radius of shell
  * \param[in] x         Logical x coordinate

@@ -172,7 +172,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto workVar                = std::make_shared<AMP::LinearAlgebra::Variable>( "work" );
     auto nonPrincIds            = diffOp->getNonPrincipalVariableIds();
     unsigned int numNonPrincIds = nonPrincIds.size();
-    std::vector<AMP::LinearAlgebra::Variable::shared_ptr> nonPrincVars( numNonPrincIds );
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> nonPrincVars( numNonPrincIds );
     auto inputVar = diffOp->getInputVariable();
     for ( size_t i = 0; i < numNonPrincIds; i++ ) {
         // nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);

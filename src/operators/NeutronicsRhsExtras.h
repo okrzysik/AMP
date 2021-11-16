@@ -73,7 +73,7 @@ public:
       */
     void reset( std::shared_ptr<const OperatorParameters> parameters ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_outputVariable;
     }
@@ -103,7 +103,7 @@ protected:
     int d_numExtras;
     std::vector<std::string> d_extrasName;
     double d_timeStepInSeconds;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
     Vec_Dbl3 d_values;
     double d_secondsPerDay;
     SourceType str2id( const std::string &str );

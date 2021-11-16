@@ -42,7 +42,7 @@ public:
      * \param[in] vecs  Optional list of vectors in the MultiVector
      */
     static std::shared_ptr<MultiVector>
-    create( Variable::shared_ptr name,
+    create( std::shared_ptr<Variable> name,
             const AMP_MPI &comm,
             const std::vector<Vector::shared_ptr> &vecs = std::vector<Vector::shared_ptr>() );
 
@@ -62,7 +62,7 @@ public:
      * \param[in] vecs  Optional list of vectors in the MultiVector
      */
     static std::shared_ptr<const MultiVector>
-    const_create( Variable::shared_ptr name,
+    const_create( std::shared_ptr<Variable> name,
                   const AMP_MPI &comm,
                   const std::vector<Vector::const_shared_ptr> &vecs =
                       std::vector<Vector::const_shared_ptr>() );
@@ -156,10 +156,10 @@ public:
     virtual ~MultiVector();
     std::string type() const override;
 
-    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name ) override;
     Vector::const_shared_ptr
-    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
-    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr name ) const override;
+    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const override;
+    std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> name ) const override;
     void swapVectors( Vector &other ) override;
 
 protected:

@@ -7,7 +7,6 @@
 
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorSelector.h"
 
 #include <string>
 
@@ -109,18 +108,18 @@ public:
     virtual void setDebugPrintInfoLevel( int print_level ) { d_iDebugPrintInfoLevel = print_level; }
 
     //! Return the output variable
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable()
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable()
     {
         // Implemented in derived classes
-        AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> emptyPointer;
         return emptyPointer;
     }
 
     //! Return the input variable
-    virtual AMP::LinearAlgebra::Variable::shared_ptr getInputVariable()
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable()
     {
         // Implemented in derived classes
-        AMP::LinearAlgebra::Variable::shared_ptr emptyPointer;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> emptyPointer;
         return emptyPointer;
     }
 

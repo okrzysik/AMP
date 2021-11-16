@@ -107,9 +107,9 @@ int main( int argc, char **argv )
         char msg[256];
         snprintf( msg,
                   sizeof msg,
-                  "  Total amount of global memory:                 %.0f MBytes (%llu bytes)\n",
-                  (float) deviceProp.totalGlobalMem / 1048576.0f,
-                  (unsigned long long) deviceProp.totalGlobalMem );
+                  "  Total amount of global memory:                 %.0f MBytes (%zu bytes)\n",
+                  deviceProp.totalGlobalMem / 1048576.0f,
+                  deviceProp.totalGlobalMem );
         printf( "%s", msg );
 
         printf( "  (%2d) Multiprocessors, (%3d) CUDA Cores/MP:     %d CUDA Cores\n",
@@ -169,9 +169,9 @@ int main( int argc, char **argv )
                 deviceProp.maxTexture2DLayered[2] );
 
 
-        printf( "  Total amount of constant memory:               %lu bytes\n",
+        printf( "  Total amount of constant memory:               %zu bytes\n",
                 deviceProp.totalConstMem );
-        printf( "  Total amount of shared memory per block:       %lu bytes\n",
+        printf( "  Total amount of shared memory per block:       %zu bytes\n",
                 deviceProp.sharedMemPerBlock );
         printf( "  Total number of registers available per block: %d\n", deviceProp.regsPerBlock );
         printf( "  Warp size:                                     %d\n", deviceProp.warpSize );
@@ -187,9 +187,9 @@ int main( int argc, char **argv )
                 deviceProp.maxGridSize[0],
                 deviceProp.maxGridSize[1],
                 deviceProp.maxGridSize[2] );
-        printf( "  Maximum memory pitch:                          %lu bytes\n",
+        printf( "  Maximum memory pitch:                          %lz bytes\n",
                 deviceProp.memPitch );
-        printf( "  Texture alignment:                             %lu bytes\n",
+        printf( "  Texture alignment:                             %lz bytes\n",
                 deviceProp.textureAlignment );
         printf( "  Concurrent copy and kernel execution:          %s with %d copy engine(s)\n",
                 ( deviceProp.deviceOverlap ? "Yes" : "No" ),

@@ -54,13 +54,13 @@ public:
     void setMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> in_mat ) override;
 
     //! Set the input variable
-    virtual void setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr var )
+    virtual void setInputVariable( std::shared_ptr<AMP::LinearAlgebra::Variable> var )
     {
         d_inputVariable = var;
     }
 
     //! Set the output variable
-    virtual void setOutputVariable( AMP::LinearAlgebra::Variable::shared_ptr var )
+    virtual void setOutputVariable( std::shared_ptr<AMP::LinearAlgebra::Variable> var )
     {
         d_outputVariable = var;
     }

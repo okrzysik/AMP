@@ -7,8 +7,7 @@
 #include <utility>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -98,7 +97,7 @@ AMP_MPI VS_Mesh::communicator( Vector::const_shared_ptr p ) const
 }
 Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
 {
-    if ( d_mesh == nullptr )
+    if ( !d_mesh )
         return Vector::shared_ptr();
     auto variable =
         std::make_shared<MeshVariable>( p->getVariable()->getName(), d_mesh, d_useMeshComm );
@@ -107,7 +106,7 @@ Vector::shared_ptr VS_Mesh::subset( Vector::shared_ptr p ) const
 }
 Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
 {
-    if ( d_mesh == nullptr )
+    if ( !d_mesh )
         return Vector::shared_ptr();
     auto variable =
         std::make_shared<MeshVariable>( p->getVariable()->getName(), d_mesh, d_useMeshComm );
@@ -141,5 +140,5 @@ Vector::const_shared_ptr VS_MeshIterator::subset( Vector::const_shared_ptr p ) c
     return vector;
 }
 #endif
-} // namespace LinearAlgebra
-} // namespace AMP
+
+} // namespace AMP::LinearAlgebra

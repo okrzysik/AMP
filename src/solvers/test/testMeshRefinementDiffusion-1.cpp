@@ -27,6 +27,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 // Libmesh headers
 DISABLE_WARNINGS
@@ -51,10 +52,10 @@ ENABLE_WARNINGS
 #include <vector>
 
 
+// Manufactured Solution
 static inline double fun( double x, double y, double )
 {
-    return ( 800 + ( ( 0.00004 - 20 * pow( x, 2 ) - 20 * pow( y, 2 ) ) *
-                     pow( 10, 6 ) ) ); // Manufactured Solution
+    return 800 + ( ( 0.00004 - 20 * pow( x, 2 ) - 20 * pow( y, 2 ) ) * pow( 10, 6 ) );
 }
 static inline double __dTdn__( double, double, double, double ) { return 0; }
 static inline double __FsnK__() { return 80000000; }

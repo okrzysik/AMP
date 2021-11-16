@@ -37,9 +37,9 @@ OperatorFactory<OPERATOR>::getOperator( std::shared_ptr<AMP::Database> input_db,
         new OperatorParameters( input_db->getDatabase( Operator_t::DBName() ) ) );
     params->d_MeshAdapter = mesh;
     Operator::shared_ptr retVal( new Operator_t( params ) );
-    retVal->setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr(
+    retVal->setInputVariable( std::shared_ptr<AMP::LinearAlgebra::Variable>(
         new typename Operator_t::InputVariable( "factory input" ) ) );
-    retVal->setOutputVariable( AMP::LinearAlgebra::Variable::shared_ptr(
+    retVal->setOutputVariable( std::shared_ptr<AMP::LinearAlgebra::Variable>(
         new typename Operator_t::OutputVariable( "factory output" ) ) );
     return retVal;
 }
@@ -54,9 +54,9 @@ OperatorFactory<OPERATOR>::getJacobian( Operator::shared_ptr oper,
         std::dynamic_pointer_cast<JacobianParameters>( oper->getJacobianParameters( vec ) );
     params->d_MeshAdapter = mesh;
     Operator::shared_ptr retVal( new Jacobian_t( params ) );
-    retVal->setInputVariable( AMP::LinearAlgebra::Variable::shared_ptr(
+    retVal->setInputVariable( std::shared_ptr<AMP::LinearAlgebra::Variable>(
         new typename Jacobian_t::InputVariable( "factory jacobian input" ) ) );
-    retVal->setOutputVariable( AMP::LinearAlgebra::Variable::shared_ptr(
+    retVal->setOutputVariable( std::shared_ptr<AMP::LinearAlgebra::Variable>(
         new typename Jacobian_t::OutputVariable( "factory jacobian output" ) ) );
     return retVal;
 }

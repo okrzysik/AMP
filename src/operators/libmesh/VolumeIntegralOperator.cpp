@@ -3,6 +3,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include "ProfilerApp.h"
 
@@ -37,7 +38,7 @@ VolumeIntegralOperator::VolumeIntegralOperator(
     d_auxVariables.reset( new AMP::LinearAlgebra::MultiVariable( "myAuxVar" ) );
 
     for ( int i = 0; i < numPrimaryVariables; i++ ) {
-        AMP::LinearAlgebra::Variable::shared_ptr dummyVar;
+        std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
         d_inpVariables->add( dummyVar );
     }
 

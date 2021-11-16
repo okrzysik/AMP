@@ -22,12 +22,12 @@ void VectorCopyOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     d_copyVector->copyVector( vecToCopy );
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr VectorCopyOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> VectorCopyOperator::getOutputVariable()
 {
     return d_copyVariable;
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr VectorCopyOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> VectorCopyOperator::getInputVariable()
 {
     return d_copyVariable;
 }

@@ -1,8 +1,8 @@
 #include "AMP/operators/subchannel/SubchannelToPointMap.h"
-
 #include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 
@@ -108,8 +108,7 @@ void SubchannelToPointMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
 
     // Perform tri-linear interpolation to fill the output
     AMP::LinearAlgebra::VS_Comm commSelector( d_comm );
-    AMP::LinearAlgebra::Vector::shared_ptr outputVec =
-        r->select( commSelector, u->getVariable()->getName() );
+    auto outputVec = r->select( commSelector, u->getVariable()->getName() );
     if ( outputVec != nullptr )
         outputVec = outputVec->subsetVectorForVariable( getOutputVariable() );
     std::vector<double> localOutput( d_point_x.size(), 0.0 );

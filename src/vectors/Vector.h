@@ -84,7 +84,7 @@ public: // Constructor/destructors
      */
     Vector( std::shared_ptr<VectorData> data,
             std::shared_ptr<VectorOperations> ops,
-            Variable::shared_ptr var,
+            std::shared_ptr<Variable> var,
             std::shared_ptr<AMP::Discretization::DOFManager> DOFManager );
 
     /** \brief Destructor
@@ -328,7 +328,7 @@ public: // Virtual functions
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    std::shared_ptr<Vector> cloneVector( const Variable::shared_ptr name ) const;
+    std::shared_ptr<Vector> cloneVector( const std::shared_ptr<Variable> name ) const;
 
     //! \name Vector memory manipulation
     //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
@@ -342,7 +342,7 @@ public: // Virtual functions
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    virtual std::unique_ptr<Vector> rawClone( const Variable::shared_ptr name ) const;
+    virtual std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> name ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other  Vector to swap data with
@@ -361,7 +361,7 @@ public: // Virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    virtual Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name );
+    virtual Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name );
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
@@ -369,7 +369,7 @@ public: // Virtual functions
      * \see MultiVector
      */
     virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const;
+    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const;
 
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
@@ -377,13 +377,12 @@ public: // Virtual functions
       * \details To use, we recommend the following pattern
       \code
       // Vector to be "view"ed
-      Vector::shared_ptr   data;
+      Vector::shared_ptr data;
 
       // .. set up all the data storage in data
 
       // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ),
-      "displacement view" );
+      auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
       \endcode
       */
     shared_ptr select( const VectorSelector &criterion, const std::string &variable_name );
@@ -399,8 +398,7 @@ public: // Virtual functions
       // .. set up all the data storage in data
 
       // Get a view on the data tagged displacement
-      Vector::shared_ptr  displacement = data->select ( VS_ByVariableName ( "displacement" ),
-      "displacement view" );
+      auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
       \endcode
       */
     const_shared_ptr constSelect( const VectorSelector &criterion,
@@ -440,17 +438,17 @@ public: // Non-virtual functions
     /** \brief Change the variable associated with this vector
      * \param[in] name  The new variable
      */
-    void setVariable( const Variable::shared_ptr name );
+    void setVariable( const std::shared_ptr<Variable> name );
 
     /** \brief  Get the variable associated with this vector
      * \return  A shared point to the Variable associated with this Vector
      */
-    const Variable::shared_ptr getVariable() const;
+    const std::shared_ptr<Variable> getVariable() const;
 
     /** \brief  Get the variable associated with this vector
      * \return  A shared point to the Variable associated with this Vector
      */
-    Variable::shared_ptr getVariable();
+    std::shared_ptr<Variable> getVariable();
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
@@ -771,7 +769,7 @@ private:
 
 protected:                                                         // Internal data
     static std::shared_ptr<RNG> d_DefaultRNG;                      // default RNG
-    Variable::shared_ptr d_pVariable;                              // Variable
+    std::shared_ptr<Variable> d_pVariable;                         // Variable
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // The DOF_Manager
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
     std::shared_ptr<VectorOperations> d_VectorOps;                 // Pointer to a VectorOperations

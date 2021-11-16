@@ -95,12 +95,12 @@ public:
     /**
       @return The variable for the input vector.
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable();
 
     /**
       @return The variable for the output vector
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable();
 
     // deprecated
     void applyResidualCorrection( AMP::LinearAlgebra::Vector::shared_ptr r );

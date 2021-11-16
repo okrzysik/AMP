@@ -63,7 +63,7 @@ ManagedSundialsVector::~ManagedSundialsVector()
 /************************************************************************
  * Clone the vector                                                      *
  ************************************************************************/
-std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const Variable::shared_ptr var ) const
+std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const std::shared_ptr<Variable> var ) const
 {
     auto vec    = getVectorEngine( getVectorData() );
     auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
@@ -76,7 +76,8 @@ std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const Variable::shared_
 /********************************************************
  * Subset                                                *
  ********************************************************/
-Vector::shared_ptr ManagedSundialsVector::subsetVectorForVariable( Variable::const_shared_ptr name )
+Vector::shared_ptr
+ManagedSundialsVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
 {
     Vector::shared_ptr retVal;
     if ( !retVal )
@@ -89,7 +90,7 @@ Vector::shared_ptr ManagedSundialsVector::subsetVectorForVariable( Variable::con
     return retVal;
 }
 Vector::const_shared_ptr
-ManagedSundialsVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
+ManagedSundialsVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
 {
     Vector::const_shared_ptr retVal;
     if ( !retVal )

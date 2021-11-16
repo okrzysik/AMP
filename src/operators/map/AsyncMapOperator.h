@@ -44,8 +44,14 @@ public:
      */
     AMP::Mesh::Mesh::shared_ptr getMesh( int which );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariable;
+    }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariable;
+    }
 
 protected:
     // Communicator for the Map
@@ -55,8 +61,8 @@ protected:
     AMP::Mesh::Mesh::shared_ptr d_mesh1;
     AMP::Mesh::Mesh::shared_ptr d_mesh2;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager;
-    AMP::LinearAlgebra::Variable::shared_ptr d_inpVariable;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
     // Frozen vector for the output results
     AMP::LinearAlgebra::Vector::shared_ptr d_OutputVector;

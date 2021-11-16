@@ -980,6 +980,50 @@ public: // Member functions
 
 
     /*!
+     * Each processor sends a value to root
+     * @param[in] x      Input value to send
+     * @param[in] root   The processor receiving the data
+     * @return           Output array for gather (empty if not root)
+     */
+    template<class type>
+    std::vector<type> gather( const type &x, int root ) const;
+
+
+    /*!
+     * Each processor sends every other processor an array
+     * @param[in] x      Input array to send
+     * @param[in] root   The processor receiving the data
+     * @return           Output array for gather (empty if not root)
+     */
+    template<class type>
+    std::vector<type> gather( const std::vector<type> &x, int root ) const;
+
+
+    /*!
+     * Each processor sends multiple values to root
+     * @param[in] send_data     Input array
+     * @param[in] send_cnt      The number of values to send
+
+
+     * @param[in] send_data     Input array
+     * @param[in] send_cnt      The number of values to send
+     * @param[in] recv_data     Output array of received values
+     * @param[in] recv_cnt      The number of values to receive from each processor (N).
+     *                          If known, this should be provided as an input.
+     * @param[in] recv_disp     The displacement (relative to the start of the array)
+     *                          from which to store the data received from processor i.
+     *                          If known, this should be provided as an input.
+     */
+    template<class type>
+    void gather( const type *sendbuf,
+                 int sendcount,
+                 type *recvbuf,
+                 const int *recv_cnt,
+                 const int *recv_disp,
+                 int root ) const;
+
+
+    /*!
      * Each processor sends an array of n values to each processor.
      * Each processor sends an array of n values to each processor.
      * The jth block of data is sent from processor i to processor j and placed
@@ -1184,6 +1228,8 @@ private: // Private helper functions for templated MPI operations
     void call_allGather( const type &, type * ) const;
     template<class type>
     void call_allGather( const type *, int, type *, int *, int * ) const;
+    template<class type>
+    void call_gatherv( const type *, int, type *, const int *, const int *, int ) const;
 #endif
 
 

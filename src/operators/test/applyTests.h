@@ -49,7 +49,7 @@ inline void applyTests( AMP::UnitTest *ut,
                         const double *scale,
                         const size_t nshift )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr testOperatorVariable =
+    std::shared_ptr<AMP::LinearAlgebra::Variable> testOperatorVariable =
         testOperator->getOutputVariable();
     AMP_ASSERT( testOperatorVariable );
     // first test for apply - random values in all three input vectors

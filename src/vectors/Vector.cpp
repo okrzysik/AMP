@@ -47,7 +47,7 @@ Vector::Vector( const std::string &name )
 }
 Vector::Vector( std::shared_ptr<VectorData> data,
                 std::shared_ptr<VectorOperations> ops,
-                Variable::shared_ptr var,
+                std::shared_ptr<Variable> var,
                 std::shared_ptr<AMP::Discretization::DOFManager> DOFManager )
     : d_pVariable( var ),
       d_DOFManager( DOFManager ),
@@ -159,7 +159,7 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
     }
     return retVal;
 }
-Vector::shared_ptr Vector::subsetVectorForVariable( Variable::const_shared_ptr name )
+Vector::shared_ptr Vector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
 {
     Vector::shared_ptr retVal;
     if ( d_pVariable ) { // If there is a variable...
@@ -169,7 +169,7 @@ Vector::shared_ptr Vector::subsetVectorForVariable( Variable::const_shared_ptr n
     return retVal;
 }
 Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
+Vector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
 {
     Vector::const_shared_ptr retVal;
     if ( d_pVariable ) { // If there is a variable...
@@ -194,11 +194,11 @@ std::shared_ptr<Vector> Vector::cloneVector( const std::string &name ) const
     }
     return retVal;
 }
-Vector::shared_ptr Vector::cloneVector( const Variable::shared_ptr name ) const
+Vector::shared_ptr Vector::cloneVector( const std::shared_ptr<Variable> name ) const
 {
     return rawClone( name );
 }
-std::unique_ptr<Vector> Vector::rawClone( const Variable::shared_ptr name ) const
+std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name ) const
 {
     auto vec             = std::make_unique<Vector>();
     vec->d_pVariable     = name;

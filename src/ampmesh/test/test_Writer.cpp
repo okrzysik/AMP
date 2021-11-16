@@ -85,8 +85,8 @@ void printMeshNames( const std::string &filename )
 // Function to build a vector using a mesh
 #if defined( USE_AMP_MESH ) && defined( USE_AMP_VECTORS )
 template<int SIZE_X, int SIZE_Y, int SIZE_Z>
-AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variable::shared_ptr var,
-                                                     AMP::AMP_MPI comm )
+AMP::LinearAlgebra::Vector::shared_ptr
+createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, AMP::AMP_MPI comm )
 {
     // Create an AMP mesh
     auto size     = { SIZE_X, SIZE_Y, SIZE_Z };
@@ -112,6 +112,7 @@ AMP::LinearAlgebra::Vector::shared_ptr createVector( AMP::LinearAlgebra::Variabl
 void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
 {
 #ifdef USE_AMP_VECTORS
+    PROFILE_SCOPED( timer, "testWriterVector-" + writerName );
 
     // Create the writer and get it's properties
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
@@ -156,6 +157,7 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
 void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
 {
 #ifdef USE_AMP_MATRICES
+    PROFILE_SCOPED( timer, "testWriterMatrix-" + writerName );
 
     // Create the writer and get it's properties
     AMP::AMP_MPI comm( AMP_COMM_WORLD );
@@ -204,6 +206,8 @@ void testWriterMesh( AMP::UnitTest &ut,
                      const std::string &writerName,
                      const std::string &input_file )
 {
+    PROFILE_SCOPED( timer, "testWriterMesh-" + writerName );
+
     // Create the writer and get it's properties
     auto writer     = AMP::Utilities::Writer::buildWriter( writerName, AMP_COMM_WORLD );
     auto properties = writer->getProperties();
@@ -238,7 +242,7 @@ void testWriterMesh( AMP::UnitTest &ut,
     double t2 = AMP::AMP_MPI::time();
 
     // Create a surface mesh
-    auto submesh = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
+    auto surface = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
 
 #ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
@@ -270,9 +274,9 @@ void testWriterMesh( AMP::UnitTest &ut,
     AMP::Mesh::Mesh::shared_ptr clad;
     AMP::LinearAlgebra::Vector::shared_ptr z_surface;
     AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
-    if ( submesh ) {
-        AMP::LinearAlgebra::VS_MeshIterator meshSelector( submesh->getIterator( pointType, 1 ),
-                                                          submesh->getComm() );
+    if ( surface ) {
+        AMP::LinearAlgebra::VS_MeshIterator meshSelector( surface->getIterator( pointType, 1 ),
+                                                          surface->getComm() );
         AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
         auto vec_meshSubset = position->select( meshSelector, "mesh subset" );
         AMP_ASSERT( vec_meshSubset );
@@ -290,8 +294,8 @@ void testWriterMesh( AMP::UnitTest &ut,
     // Register the data
     int level = 1; // How much detail do we want to register
     writer->registerMesh( mesh, level );
-    if ( submesh )
-        writer->registerMesh( submesh, level );
+    if ( surface )
+        writer->registerMesh( surface, level );
 #ifdef USE_AMP_VECTORS
     if ( properties.registerVectorWithMesh ) {
         writer->registerVector( meshID_vec, mesh, pointType, "MeshID" );
@@ -299,8 +303,8 @@ void testWriterMesh( AMP::UnitTest &ut,
         writer->registerVector( rank_vec, mesh, pointType, "rank" );
         writer->registerVector( position, mesh, pointType, "position" );
         writer->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
-        if ( submesh )
-            writer->registerVector( z_surface, submesh, pointType, "z_surface" );
+        if ( surface )
+            writer->registerVector( z_surface, surface, pointType, "z_surface" );
         // Register a vector over the clad
         if ( clad )
             writer->registerVector( cladPosition, clad, pointType, "clad_position" );
@@ -407,10 +411,13 @@ int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    PROFILE_ENABLE();
+    PROFILE_ENABLE( 1 );
+    PROFILE_START( "test_Writer" );
     AMP::logOnlyNodeZero( "output_test_SiloIO" );
 
-    const auto writers = { "Silo", "HDF5", "Ascii" };
+    std::vector<std::string> writers = { "Silo" };
+    if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
+        writers = { "Silo", "HDF5", "Ascii" }; // HDF5 does not support parallel yet
 
     if ( argc == 1 ) {
 
@@ -441,7 +448,9 @@ int main( int argc, char **argv )
     int N_failed = ut.NumFailGlobal();
     ut.report();
     ut.reset();
-    PROFILE_SAVE( "test_Silo" );
+    writers = std::vector<std::string>();
+    PROFILE_STOP( "test_Writer" );
+    PROFILE_SAVE( "test_Writer", true );
     AMP::AMPManager::shutdown();
     return N_failed;
 }

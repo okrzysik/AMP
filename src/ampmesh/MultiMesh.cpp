@@ -162,7 +162,7 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
         }
     }
     // Construct the geometry object for the multimesh
-    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    std::vector<std::shared_ptr<AMP::Geometry::Geometry>> geom;
     for ( auto &mesh : d_meshes ) {
         auto tmp = mesh->getGeometry();
         if ( tmp )
@@ -224,7 +224,7 @@ MultiMesh::MultiMesh( const std::string &name,
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
     // Construct the geometry object for the multimesh
-    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    std::vector<std::shared_ptr<AMP::Geometry::Geometry>> geom;
     for ( auto &mesh : d_meshes ) {
         auto tmp = mesh->getGeometry();
         if ( tmp )
@@ -236,7 +236,7 @@ MultiMesh::MultiMesh( const MultiMesh &rhs ) : Mesh( rhs )
 {
     for ( const auto &mesh : rhs.d_meshes )
         d_meshes.push_back( mesh->clone() );
-    std::vector<AMP::Geometry::Geometry::shared_ptr> geom;
+    std::vector<std::shared_ptr<AMP::Geometry::Geometry>> geom;
     for ( auto &mesh : d_meshes ) {
         auto tmp = mesh->getGeometry();
         if ( tmp )

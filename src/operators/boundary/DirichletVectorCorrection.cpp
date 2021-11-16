@@ -1,7 +1,7 @@
-
 #include "DirichletVectorCorrection.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "DirichletMatrixCorrectionParameters.h"
 
 namespace AMP {
@@ -181,7 +181,7 @@ std::shared_ptr<OperatorParameters>
 
 AMP::LinearAlgebra::Vector::shared_ptr
 DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                           AMP::LinearAlgebra::Variable::shared_ptr var )
+                                           std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
@@ -195,7 +195,7 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::shared_pt
 
 AMP::LinearAlgebra::Vector::const_shared_ptr
 DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                                           AMP::LinearAlgebra::Variable::shared_ptr var )
+                                           std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );

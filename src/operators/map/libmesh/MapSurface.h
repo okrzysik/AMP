@@ -32,9 +32,15 @@ public:
         return ( u->subsetVectorForVariable( d_outVariable ) );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariable;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariable;
+    }
 
     void setVector( AMP::LinearAlgebra::Vector::shared_ptr scratchVec )
     {

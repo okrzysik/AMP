@@ -96,7 +96,7 @@ void Flow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr Flow1DSolver::getInputVariable( int )
+std::shared_ptr<AMP::LinearAlgebra::Variable> Flow1DSolver::getInputVariable( int )
 {
     return d_inpVariable;
 }

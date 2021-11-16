@@ -47,24 +47,31 @@ public:
 
     void setVector( unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec );
 
-    static AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &name,
-                                                                         int varId = -1 );
+    static std::shared_ptr<AMP::LinearAlgebra::Variable>
+    createInputVariable( const std::string &name, int varId = -1 );
 
-    static AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
-                                                                          int varId = -1 )
+    static std::shared_ptr<AMP::LinearAlgebra::Variable>
+    createOutputVariable( const std::string &name, int varId = -1 )
     {
         (void) varId;
-        AMP::LinearAlgebra::Variable::shared_ptr outVar( new AMP::LinearAlgebra::Variable( name ) );
+        std::shared_ptr<AMP::LinearAlgebra::Variable> outVar(
+            new AMP::LinearAlgebra::Variable( name ) );
         return outVar;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariables; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariables;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariables; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariables;
+    }
 
     unsigned int numberOfDOFMaps();
 
-    AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap( unsigned int id );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getVariableForDOFMap( unsigned int id );
 
 protected:
     void gettype0DofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );

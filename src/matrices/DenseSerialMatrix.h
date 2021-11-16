@@ -236,8 +236,8 @@ protected:
     void multiply( shared_ptr other_op, shared_ptr &result ) override;
 
     // AMP variables and DOFManagers for the left and right vectors
-    AMP::LinearAlgebra::Variable::shared_ptr d_VariableLeft;
-    AMP::LinearAlgebra::Variable::shared_ptr d_VariableRight;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableLeft;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
 

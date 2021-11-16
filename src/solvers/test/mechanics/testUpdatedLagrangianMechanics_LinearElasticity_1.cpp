@@ -24,6 +24,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "libmesh/mesh_communication.h"
 
 #include <iostream>
@@ -82,7 +83,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mechanicsNonlinearVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
-    AMP::LinearAlgebra::Variable::shared_ptr dispVar =
+    std::shared_ptr<AMP::LinearAlgebra::Variable> dispVar =
         mechanicsNonlinearVolumeOperator->getOutputVariable();
 
     // For RHS (Point Forces)

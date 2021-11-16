@@ -40,7 +40,7 @@ class EpetraVectorEngineParameters;
  */
 AMP::LinearAlgebra::Vector::shared_ptr
 createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
-              AMP::LinearAlgebra::Variable::shared_ptr variable,
+              std::shared_ptr<AMP::LinearAlgebra::Variable> variable,
               bool split = true );
 
 
@@ -55,8 +55,8 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
  */
 std::shared_ptr<Vector> createVector( Vec v,
                                       bool deleteable,
-                                      AMP_MPI comm             = AMP_MPI(),
-                                      Variable::shared_ptr var = nullptr );
+                                      AMP_MPI comm                  = AMP_MPI(),
+                                      std::shared_ptr<Variable> var = nullptr );
 #endif
 
 
@@ -84,7 +84,7 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
 std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
                                       size_t local,
                                       AMP_MPI comm,
-                                      Variable::shared_ptr var = nullptr );
+                                      std::shared_ptr<Variable> var = nullptr );
 #endif
 
 
@@ -107,7 +107,7 @@ Vector::shared_ptr createSimpleVector( size_t localSize, const std::string &var 
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
          typename VecData = VectorDataCPU<TYPE>>
-Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr var );
+Vector::shared_ptr createSimpleVector( size_t localSize, std::shared_ptr<Variable> var );
 
 
 /** \brief   Create a simple AMP vector
@@ -119,7 +119,8 @@ Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr va
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
          typename VecData = VectorDataCPU<TYPE>>
-Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr var, AMP_MPI comm );
+Vector::shared_ptr
+createSimpleVector( size_t localSize, std::shared_ptr<Variable> var, AMP_MPI comm );
 
 
 /** \brief   Create a simple AMP vector
@@ -132,7 +133,7 @@ Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr va
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
          typename VecData = VectorDataCPU<TYPE>>
-Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
+Vector::shared_ptr createSimpleVector( std::shared_ptr<Variable> var,
                                        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                        AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 
@@ -144,7 +145,7 @@ Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
  * \param    var The variable associated with the new vector
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
-Vector::shared_ptr createArrayVector( const ArraySize &localSize, Variable::shared_ptr var );
+Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_ptr<Variable> var );
 
 
 /** \brief    Create a ArrayVector
@@ -157,7 +158,7 @@ template<typename T, typename FUN = FunctionTable, typename Allocator = std::all
 Vector::shared_ptr createArrayVector( const ArraySize &localSize,
                                       const ArraySize &blockIndex,
                                       const AMP_MPI &comm,
-                                      Variable::shared_ptr var );
+                                      std::shared_ptr<Variable> var );
 
 
 /** \brief    Create a ArrayVector
@@ -168,7 +169,7 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize,
  * \param    commlist The communication list
  */
 template<typename T, typename FUN = FunctionTable, typename Allocator = std::allocator<T>>
-Vector::shared_ptr createArrayVector( Variable::shared_ptr var,
+Vector::shared_ptr createArrayVector( std::shared_ptr<Variable> var,
                                       std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist );
 

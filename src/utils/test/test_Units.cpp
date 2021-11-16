@@ -190,6 +190,9 @@ void testPrefixUnits( AMP::UnitTest &ut )
 // Main
 int main( int argc, char *argv[] )
 {
+    constexpr char ohm[]   = { (char) 206, (char) 169, (char) 0 }; // Ohm symbol in UTF-16
+    constexpr char micro[] = { (char) 206, (char) 188, (char) 0 }; // micro symbol in UTF-16
+
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
@@ -203,10 +206,11 @@ int main( int argc, char *argv[] )
 
     // Test some simple types and conversions
     check( ut, "meter" );
+    check( ut, "um", std::string( micro ) + "m" );
     check( ut, "uW/mm^2" );
     check( ut, "kg^-1*m^-2*s^3*A^2" );
     check( ut, "1.2e-6", " ", 1.2e-6 );
-    check( ut, "3.2 x 10^4 μL", "L", 0.032 );
+    check( ut, "3.2 x 10^4 uL", "L", 0.032 );
     check( ut, "W/m^2", "uW/mm^2" );
     check( ut, "radian", "rad" );
     check( ut, "steradian", "sr" );
@@ -220,8 +224,8 @@ int main( int argc, char *argv[] )
     check( ut, "coulomb", "C", "s*A" );
     check( ut, "volt", "V", "J/C" );
     check( ut, "farad", "F", "C/V" );
-    check( ut, "ohm", "Ω", "V/A" );
-    check( ut, "siemens", "S", "Ω^-1" );
+    check( ut, "ohm", ohm, "V/A" );
+    check( ut, "siemens", "S", "ohm^-1" );
     check( ut, "weber", "Wb", "V*s" );
     check( ut, "tesla", "T", "Wb/m^2" );
     check( ut, "henry", "H", "Wb/A" );

@@ -1,6 +1,7 @@
 #include "AMP/operators/map/StridedZAxisMap.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/PIO.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 

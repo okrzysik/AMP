@@ -27,12 +27,13 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
+#include "AMP/vectors/VectorSelector.h"
 
 #include "libmesh/mesh_communication.h"
 
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <string>
 
 

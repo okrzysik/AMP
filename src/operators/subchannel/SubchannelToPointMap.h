@@ -39,20 +39,23 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
-        return AMP::LinearAlgebra::Variable::shared_ptr(
+        return std::shared_ptr<AMP::LinearAlgebra::Variable>(
             new AMP::LinearAlgebra::Variable( "Flow" ) );
     }
 
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outputVar; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outputVar;
+    }
 
 
 private:
     AMP_MPI d_comm;
     std::vector<double> d_point_x, d_point_y, d_point_z;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outputVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVar;
 
     // Create the subchannel grid for all processors
     size_t N_subchannels;
