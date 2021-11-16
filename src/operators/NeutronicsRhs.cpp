@@ -22,7 +22,7 @@ namespace Operator {
  *************************************************************************
  */
 NeutronicsRhs::NeutronicsRhs( std::shared_ptr<NeutronicsRhsParameters> parameters )
-    : Operator( parameters ), d_useFixedValue( false ), d_timeStep( 0 ), d_type( SourceType::Power )
+    : Operator( parameters ), d_useFixedValue( false ), d_type( SourceType::Power ), d_timeStep( 0 )
 {
     AMP_ASSERT( parameters );
     d_Mesh              = parameters->d_Mesh;
