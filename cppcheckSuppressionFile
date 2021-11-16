@@ -69,6 +69,7 @@ useInitializationList:*/src/ampmesh/structured/BoxMesh.cpp
 useInitializationList:*/src/ampmesh/structured/StructuredGeometryMesh.cpp
 useInitializationList:*/src/operators/VectorCopyOperator.cpp
 useInitializationList:*/src/operators/map/AsyncMapOperator.cpp
+useInitializationList:*/src/operators/moab/MoabMapOperator.cpp
 useInitializationList:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
 useInitializationList:*/src/time_integrators/ColumnTimeOperator.cpp
 useInitializationList:*/src/time_integrators/LinearTimeOperator.cpp

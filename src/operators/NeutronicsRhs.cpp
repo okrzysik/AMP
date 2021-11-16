@@ -21,7 +21,8 @@ namespace Operator {
  * from the parameters.                                                  *
  *************************************************************************
  */
-NeutronicsRhs::NeutronicsRhs( SP_Parameters parameters ) : Operator( parameters ), d_timeStep( 0 )
+NeutronicsRhs::NeutronicsRhs( std::shared_ptr<NeutronicsRhsParameters> parameters )
+    : Operator( parameters ), d_useFixedValue( false ), d_type( SourceType::Power ), d_timeStep( 0 )
 {
     AMP_ASSERT( parameters );
     d_Mesh              = parameters->d_Mesh;
@@ -55,7 +56,7 @@ NeutronicsRhs::~NeutronicsRhs() = default;
  * with those found in input.                                            *
  *************************************************************************
  */
-void NeutronicsRhs::getFromInput( SP_Database db )
+void NeutronicsRhs::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( db );
 
@@ -102,7 +103,7 @@ void NeutronicsRhs::getFromInput( SP_Database db )
  * Write out class version number and data members to database.          *
  *************************************************************************
  */
-void NeutronicsRhs::putToDatabase( SP_Database db )
+void NeutronicsRhs::putToDatabase( std::shared_ptr<AMP::Database> db )
 {
     AMP_ASSERT( !db.use_count() );
     db->putScalar( "numTimeSteps", d_numTimeSteps );
@@ -255,5 +256,50 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> NeutronicsRhs::getOutputVariable()
   SP_HexGaussPointVariable var( new HexGaussPointVariable (name) );
   return var;
   }*/
+
+
+/*
+ *************************************************************************
+ * Set the time
+ *************************************************************************
+ */
+void NeutronicsRhs::setTimeInSeconds( double setSeconds )
+{
+    AMP_ASSERT( setSeconds >= 0. );
+    // first assume time does not go backwards.
+    int timeStep   = d_timeStep;
+    double seconds = d_timeStepInSeconds;
+    if ( setSeconds >= d_timeStepInSeconds ) {
+        for ( int i = d_timeStep; i < d_numTimeSteps; i++ ) {
+            seconds += d_timeStepsInDays[i] * d_secondsPerDay;
+            if ( setSeconds > seconds ) {
+                timeStep = i + 1;
+            } else {
+                AMP_ASSERT( timeStep < d_numTimeSteps );
+                d_timeStep          = timeStep;
+                d_timeStepInSeconds = seconds - d_timeStepsInDays[d_timeStep];
+                return;
+            }
+        }
+    } else {
+        seconds  = 0.;
+        timeStep = 0;
+        for ( int i = 0; i < d_numTimeSteps; i++ ) {
+            seconds += d_timeStepsInDays[i] * d_secondsPerDay;
+            if ( setSeconds > seconds ) {
+                timeStep = i + 1;
+            } else {
+                AMP_ASSERT( timeStep < d_numTimeSteps );
+                d_timeStep          = timeStep;
+                d_timeStepInSeconds = seconds - d_timeStepsInDays[d_timeStep] * d_secondsPerDay;
+                return;
+            }
+        }
+    }
+    AMP_INSIST( false, "Could not find the appropriate time." );
+}
+void NeutronicsRhs::setTimeInDays( double days ) { setTimeInSeconds( days * d_secondsPerDay ); }
+
+
 } // namespace Operator
 } // namespace AMP

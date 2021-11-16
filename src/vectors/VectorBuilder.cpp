@@ -93,7 +93,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
         comm.barrier();
-        CommunicationList::shared_ptr comm_list;
+        std::shared_ptr<CommunicationList> comm_list;
         auto remote_DOFs = DOFs->getRemoteDOFs();
         bool ghosts      = comm.anyReduce( !remote_DOFs.empty() );
         if ( !ghosts ) {

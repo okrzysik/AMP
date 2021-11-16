@@ -685,7 +685,7 @@ void MPI_CLASS::gather( const TYPE *sendbuf,
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t N = sizeof( TYPE );
         std::vector<int> recv_cnt2( comm_size );
-        std::vector<int> recv_disp2( recv_disp );
+        std::vector<int> recv_disp2( comm_size );
         for ( int i = 0; i < comm_size; i++ ) {
             recv_cnt2[i]  = N * recv_cnt[i];
             recv_disp2[i] = N * recv_disp[i];

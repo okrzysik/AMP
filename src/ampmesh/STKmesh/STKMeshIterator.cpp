@@ -46,7 +46,9 @@ STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
     iterator = NULL;
     typeID   = getTypeID();
 }
-STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh, int gcw, MeshPtr entries )
+STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
+                                  int gcw,
+                                  std::shared_ptr<std::vector<stk::mesh::Entity *>> entries )
     : MeshIterator(),
       d_gcw( gcw ),
       d_dim( mesh->getSTKMeshMeta()->spatial_dimension() ),

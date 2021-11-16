@@ -7,8 +7,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /************************************************************************
@@ -48,7 +47,7 @@ CommunicationList::CommunicationList()
     : d_iBegin( 0 ), d_iNumRows( 0 ), d_iTotalRows( 0 ), d_bFinalized( false )
 {
 }
-CommunicationList::CommunicationList( CommunicationListParameters::shared_ptr params )
+CommunicationList::CommunicationList( std::shared_ptr<CommunicationListParameters> params )
     : d_comm( params->d_comm ), d_iNumRows( params->d_localsize ), d_bFinalized( false )
 {
     // Check the input parameters
@@ -66,7 +65,7 @@ CommunicationList::CommunicationList( CommunicationListParameters::shared_ptr pa
     // Construct the communication arrays
     buildCommunicationArrays( params->d_remote_DOFs, partition, d_comm.getRank() );
 }
-CommunicationList::shared_ptr CommunicationList::createEmpty( size_t local, AMP_MPI comm )
+std::shared_ptr<CommunicationList> CommunicationList::createEmpty( size_t local, AMP_MPI comm )
 {
     int size    = comm.getSize();
     auto retVal = new CommunicationList;
@@ -86,14 +85,14 @@ CommunicationList::shared_ptr CommunicationList::createEmpty( size_t local, AMP_
     retVal->d_iTotalRows = comm.bcast( lastRow, size - 1 );
     retVal->d_bFinalized = true;
 
-    return CommunicationList::shared_ptr( retVal );
+    return std::shared_ptr<CommunicationList>( retVal );
 }
 
 
 /************************************************************************
  * All other functions                                                   *
  ************************************************************************/
-CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_ptr ndx )
+std::shared_ptr<CommunicationList> CommunicationList::subset( std::shared_ptr<VectorIndexer> ndx )
 {
     auto retVal = new CommunicationList;
 
@@ -147,7 +146,7 @@ CommunicationList::shared_ptr CommunicationList::subset( VectorIndexer::shared_p
 
     retVal->d_bFinalized = true;
 
-    return CommunicationList::shared_ptr( retVal );
+    return std::shared_ptr<CommunicationList>( retVal );
 }
 
 void CommunicationList::packReceiveBuffer( std::vector<double> &recv, const VectorData &vec ) const
@@ -329,5 +328,5 @@ size_t CommunicationList::getVectorSendBufferSize() const { return d_SendDOFList
 size_t CommunicationList::getStartGID() const { return d_iBegin; }
 
 const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
-} // namespace LinearAlgebra
-} // namespace AMP
+
+} // namespace AMP::LinearAlgebra
