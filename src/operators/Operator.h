@@ -53,8 +53,8 @@ public:
       \param u: shared pointer to const input vector u
       \param f: shared pointer to output vector storing result of applying this operator
       */
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) = 0;
+    virtual void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> f ) = 0;
 
     /**
      * Default base class implementation of the residual: f-L(u)
@@ -62,9 +62,9 @@ public:
      * \param u: shared pointer to const vector u
      * \param r: shared pointer to vector residual
      */
-    virtual void residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
-                           AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                           AMP::LinearAlgebra::Vector::shared_ptr r );
+    virtual void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                           std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                           std::shared_ptr<AMP::LinearAlgebra::Vector> r );
 
     /**
      * This function returns a OperatorParameters object
@@ -82,7 +82,7 @@ public:
      */
     virtual std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
-                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                   std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                    std::shared_ptr<OperatorParameters> params = nullptr )
     {
 
@@ -123,19 +123,29 @@ public:
         return emptyPointer;
     }
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
+    //! Subset output vector
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector>
+    subsetOutputVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
 
-    virtual AMP::LinearAlgebra::Vector::shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec );
-    virtual AMP::LinearAlgebra::Vector::const_shared_ptr
-    subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec );
+    //! Subset output vector
+    virtual std::shared_ptr<const AMP::LinearAlgebra::Vector>
+    subsetOutputVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec );
+
+    //! Subset input vector
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector>
+    subsetInputVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
+
+    //! Subset input vector
+    virtual std::shared_ptr<const AMP::LinearAlgebra::Vector>
+    subsetInputVector( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec );
 
     virtual bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) { return true; }
 
-    AMP::Mesh::Mesh::shared_ptr getMesh() { return d_Mesh; }
+    //! Return the mesh
+    std::shared_ptr<AMP::Mesh::Mesh> getMesh() { return d_Mesh; }
+
+    //! Return the mesh
+    std::shared_ptr<const AMP::Mesh::Mesh> getMesh() const { return d_Mesh; }
 
     /**
      * virtual interface used to make a vector consistent in an operator defined
@@ -167,7 +177,7 @@ protected:
      * to give users more flexibility.
      */
     virtual std::shared_ptr<OperatorParameters>
-    getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr u )
+    getJacobianParameters( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
     {
         NULL_USE( u );
         // Implemented in derived class.

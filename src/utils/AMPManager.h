@@ -36,7 +36,10 @@ public:
     //! Print version information upon startup (default is false)
     bool print_startup = false;
 
-    //! associate each accelerator with a single MPI rank (default is true)
+    //! Initialize CUDA (default is true)
+    bool initialize_CUDA = true;
+
+    //! Associate each accelerator with a single MPI rank (default is true)
     bool bind_process_to_accelerator = true;
 
     //! The default level for the MPI timers.  Default is 2

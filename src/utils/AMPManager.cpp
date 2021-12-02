@@ -486,6 +486,8 @@ std::vector<char *> AMPManager::getPetscArgs()
 double AMPManager::start_CUDA()
 {
 #ifdef USE_CUDA
+    if ( !properties.initialize_CUDA )
+        return 0;
     if ( properties.bind_process_to_accelerator ) {
         auto nodeComm = comm_world.splitByNode();
         auto nodeRank = nodeComm.getRank();
