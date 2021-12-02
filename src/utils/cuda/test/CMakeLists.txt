@@ -9,3 +9,6 @@ ADD_RESOURCE( testGPUAllocators GPU )
 
 ADD_AMP_TEST( testGPUFunctionTable )
 ADD_RESOURCE( testGPUFunctionTable GPU )
+
+ADD_AMP_TEST( testHelperCuda )
+ADD_RESOURCE( testHelperCuda GPU )
