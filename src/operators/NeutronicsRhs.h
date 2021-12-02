@@ -23,18 +23,13 @@ namespace Operator {
 
 class NeutronicsRhs : public Operator
 {
-
 public:
-    typedef std::shared_ptr<NeutronicsRhsParameters> SP_Parameters;
-    typedef std::shared_ptr<std::vector<double>> SP_Vec_Dbl;
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-
     //! Neutronics Input Types
     enum SourceType { Power, Oxygen, Metal, FissionGas, Isotopes, NUM_SOURCE_TYPES };
 
 private:
 public:
-    explicit NeutronicsRhs( SP_Parameters parameters );
+    explicit NeutronicsRhs( std::shared_ptr<NeutronicsRhsParameters> parameters );
 
     /**
      * Empty destructor for NeutronicsRhs
@@ -54,7 +49,7 @@ public:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void putToDatabase( SP_Database db );
+    void putToDatabase( std::shared_ptr<AMP::Database> db );
 
     /**
       The function that computes the residual.
@@ -74,7 +69,7 @@ public:
 
     void setOutputVariableName( const std::string &name, int varId = -1 );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
 
     void setTimeStep( int tStep ) { d_timeStep = tStep; }
     void setTimeInSeconds( double seconds );
@@ -88,9 +83,9 @@ protected:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void getFromInput( SP_Database db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
-    SP_Database d_db;
+    std::shared_ptr<AMP::Database> d_db;
     bool d_useFixedValue;
     int d_numTimeSteps;
     std::vector<double> d_timeStepsInDays;
@@ -98,7 +93,7 @@ protected:
     std::vector<double> d_fixedValues;
     int d_timeStep;
     double d_timeStepInSeconds;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
     std::vector<std::vector<double>> d_values;
     double d_secondsPerDay;
     SourceType str2id( const std::string &str );
@@ -106,6 +101,5 @@ protected:
 } // namespace Operator
 } // namespace AMP
 
-#include "NeutronicsRhs.i.h"
 
 #endif

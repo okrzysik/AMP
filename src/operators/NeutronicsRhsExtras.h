@@ -23,22 +23,12 @@ namespace Operator {
 
 class NeutronicsRhsExtras : public Operator
 {
-
 public:
-    typedef std::shared_ptr<NeutronicsRhsExtrasParameters> SP_Parameters;
-    typedef std::vector<double> Vec_Dbl;
-    typedef std::shared_ptr<Vec_Dbl> SP_Vec_Dbl;
-    typedef std::shared_ptr<AMP::Database> SP_Database;
-    typedef std::vector<double> Vec_Dbl1;
-    typedef std::vector<Vec_Dbl1> Vec_Dbl2;
-    typedef std::vector<Vec_Dbl2> Vec_Dbl3;
-
     //! Neutronics Input Types
     enum SourceType { Isotopes, Elements, NUM_SOURCE_TYPES };
 
-private:
 public:
-    explicit NeutronicsRhsExtras( SP_Parameters parameters );
+    explicit NeutronicsRhsExtras( std::shared_ptr<NeutronicsRhsExtrasParameters> parameters );
 
     /**
      * Empty destructor for NeutronicsRhsExtras
@@ -58,7 +48,7 @@ public:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void putToDatabase( SP_Database db );
+    void putToDatabase( std::shared_ptr<AMP::Database> db );
 
     /**
       The function that computes the residual.
@@ -73,7 +63,7 @@ public:
       */
     void reset( std::shared_ptr<const OperatorParameters> parameters ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_outputVariable;
     }
@@ -90,27 +80,25 @@ protected:
      *
      * When assertion checking is active, the database pointer must be non-null.
      */
-    void getFromInput( SP_Database db );
+    void getFromInput( std::shared_ptr<AMP::Database> db );
 
-    SP_Database d_db;
+    std::shared_ptr<AMP::Database> d_db;
     bool d_useFixedValue;
     int d_numTimeSteps;
-    Vec_Dbl d_timeStepsInDays;
+    std::vector<double> d_timeStepsInDays;
     SourceType d_type;
-    Vec_Dbl d_fixedValues;
+    std::vector<double> d_fixedValues;
     int d_timeStep;
     int d_extrasId;
     int d_numExtras;
     std::vector<std::string> d_extrasName;
     double d_timeStepInSeconds;
-    AMP::LinearAlgebra::Variable::shared_ptr d_outputVariable;
-    Vec_Dbl3 d_values;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVariable;
+    std::vector<std::vector<std::vector<double>>> d_values;
     double d_secondsPerDay;
     SourceType str2id( const std::string &str );
 };
 } // namespace Operator
 } // namespace AMP
-
-#include "NeutronicsRhsExtras.i.h"
 
 #endif

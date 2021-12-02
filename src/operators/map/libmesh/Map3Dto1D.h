@@ -48,21 +48,27 @@ public:
     void apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                       AMP::LinearAlgebra::Vector::shared_ptr f );
 
-    AMP::LinearAlgebra::Variable::shared_ptr createInputVariable( const std::string &name,
-                                                                  int = -1 ) override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> createInputVariable( const std::string &name,
+                                                                       int = -1 ) override
     {
         return d_inpVariable->cloneVariable( name );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr createOutputVariable( const std::string &name,
-                                                                   int = -1 ) override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &name,
+                                                                        int = -1 ) override
     {
         return d_outVariable->cloneVariable( name );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariable;
+    }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariable;
+    }
 
     /**
       This member function is used to set the 1D Z locations std vector.

@@ -95,7 +95,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // initialize the input multi-variable
     auto inputMultiVariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         mechanicsVolumeOperator->getInputVariable() );
-    std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> inputVariables;
     std::vector<AMP::Discretization::DOFManager::shared_ptr> inputDOFs;
     for ( size_t i = 0; i < inputMultiVariable->numVariables(); i++ ) {
         inputVariables.push_back( inputMultiVariable->getVariable( i ) );

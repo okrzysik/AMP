@@ -14,12 +14,12 @@ void ConstraintsEliminationOperator::reset( std::shared_ptr<const OperatorParame
     AMP_INSIST( ( ( params->d_db ) != nullptr ), "NULL database" );
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr ConstraintsEliminationOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> ConstraintsEliminationOperator::getInputVariable()
 {
     return d_InputVariable;
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr ConstraintsEliminationOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> ConstraintsEliminationOperator::getOutputVariable()
 {
     return d_OutputVariable;
 }

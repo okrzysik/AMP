@@ -2,7 +2,6 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -42,6 +41,7 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <memory>
 #include <string>

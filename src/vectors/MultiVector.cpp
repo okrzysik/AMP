@@ -28,7 +28,7 @@ MultiVector::MultiVector( const std::string &name, const AMP_MPI &comm ) : Vecto
     d_pVariable.reset( new MultiVariable( name ) );
 }
 
-std::shared_ptr<MultiVector> MultiVector::create( Variable::shared_ptr variable,
+std::shared_ptr<MultiVector> MultiVector::create( std::shared_ptr<Variable> variable,
                                                   const AMP_MPI &comm,
                                                   const std::vector<Vector::shared_ptr> &vecs )
 {
@@ -44,7 +44,7 @@ std::shared_ptr<MultiVector> MultiVector::create( const std::string &name,
     return MultiVector::create( variable, comm, vecs );
 }
 std::shared_ptr<const MultiVector>
-MultiVector::const_create( Variable::shared_ptr variable,
+MultiVector::const_create( std::shared_ptr<Variable> variable,
                            const AMP_MPI &comm,
                            const std::vector<Vector::const_shared_ptr> &vecs )
 {
@@ -315,7 +315,7 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
 /****************************************************************
  * Subset                                                        *
  ****************************************************************/
-Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_ptr name )
+Vector::shared_ptr MultiVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
 {
     // Subset a multivector for a variable
     /* A variable used to contain a mesh and a name, now it only contains a name
@@ -379,7 +379,7 @@ Vector::shared_ptr MultiVector::subsetVectorForVariable( Variable::const_shared_
     return retVal;
 }
 Vector::const_shared_ptr
-MultiVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
+MultiVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
 {
     auto *tmp = const_cast<MultiVector *>( this );
     return tmp->subsetVectorForVariable( name );
@@ -394,7 +394,7 @@ void MultiVector::swapVectors( Vector &other )
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
         d_vVectors[i]->swapVectors( getVector( other, i ) );
 }
-std::unique_ptr<Vector> MultiVector::rawClone( const Variable::shared_ptr name ) const
+std::unique_ptr<Vector> MultiVector::rawClone( const std::shared_ptr<Variable> name ) const
 {
     std::unique_ptr<MultiVector> retVec( new MultiVector( name->getName(), getComm() ) );
     retVec->d_DOFManager = d_DOFManager;

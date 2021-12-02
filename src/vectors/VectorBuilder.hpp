@@ -24,13 +24,14 @@ Vector::shared_ptr createSimpleVector( size_t localSize, const std::string &name
 }
 
 template<typename TYPE, typename OPS, typename DATA>
-Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr var )
+Vector::shared_ptr createSimpleVector( size_t localSize, std::shared_ptr<Variable> var )
 {
     AMP_MPI comm( AMP_COMM_SELF );
     return createSimpleVector<TYPE, OPS, DATA>( localSize, var, comm );
 }
 template<typename TYPE, typename OPS, typename DATA>
-Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr var, AMP_MPI comm )
+Vector::shared_ptr
+createSimpleVector( size_t localSize, std::shared_ptr<Variable> var, AMP_MPI comm )
 {
     auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( localSize, comm );
     auto ops  = std::make_shared<OPS>();
@@ -41,9 +42,9 @@ Vector::shared_ptr createSimpleVector( size_t localSize, Variable::shared_ptr va
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 template<typename TYPE, typename OPS, typename DATA>
-Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
+Vector::shared_ptr createSimpleVector( std::shared_ptr<Variable> var,
                                        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
-                                       AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
+                                       std::shared_ptr<CommunicationList> commlist )
 {
     auto ops = std::make_shared<OPS>();
     auto data =
@@ -57,7 +58,7 @@ Vector::shared_ptr createSimpleVector( Variable::shared_ptr var,
  * ArrayVector                                                  *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-Vector::shared_ptr createArrayVector( const ArraySize &localSize, Variable::shared_ptr var )
+Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_ptr<Variable> var )
 {
     return createArrayVector<T, FUN, Allocator>( localSize, { 0, 0, 0 }, AMP_COMM_SELF, var );
 }
@@ -65,7 +66,7 @@ template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize,
                                       const ArraySize &blockIndex,
                                       const AMP_MPI &comm,
-                                      Variable::shared_ptr var )
+                                      std::shared_ptr<Variable> var )
 {
     size_t N  = localSize.length();
     auto ops  = std::make_shared<VectorOperationsDefault<T>>();
@@ -74,9 +75,9 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize,
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 template<typename T, typename FUN, typename Allocator>
-Vector::shared_ptr createArrayVector( Variable::shared_ptr var,
+Vector::shared_ptr createArrayVector( std::shared_ptr<Variable> var,
                                       std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
-                                      AMP::LinearAlgebra::CommunicationList::shared_ptr commlist )
+                                      std::shared_ptr<CommunicationList> commlist )
 {
     auto ops  = std::make_shared<VectorOperationsDefault<T>>();
     auto data = ArrayVectorData<T, FUN, Allocator>::create( commlist );

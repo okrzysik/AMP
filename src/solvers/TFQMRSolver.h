@@ -10,9 +10,8 @@ namespace Solver {
 /**
  * The TFQMRSolver class implements the TFQMR method for non-symmetric linear systems
  * introduced by R. W. Freund
- * Freund, R. W. (1993).
- * "A Transpose-Free Quasi-Minimal Residual Algorithm for Non-Hermitian Linear Systems".
- * SIAM J. Sci. and Stat. Comput. 14 (2): 470–482.
+ *    Freund, R. W., "A Transpose-Free Quasi-Minimal Residual Algorithm for Non-Hermitian
+ *    Linear Systems", SIAM J. Sci. and Stat. Comput. 14 (2): 490-482, (1993).
  * The implementation here is mostly based on the MATLAB code by C. T. Kelley
  * http://www4.ncsu.edu/~ctk/roots/tfqmr.m
  * If a preconditioner is provided right preconditioning is done

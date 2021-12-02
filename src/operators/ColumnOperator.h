@@ -72,9 +72,9 @@ public:
      * should be called only after all column operators have been appended.
      * no checks to do this right now.
      */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
 
     bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> u ) override;
 

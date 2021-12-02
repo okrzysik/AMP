@@ -139,14 +139,14 @@ public:
     private:
         uint8_t d_type; //!<  Mesh element type
         uint8_t d_side; //!<  Are we dealing with x, y, or z faces/edges
-        int d_index[3]; //!<  Global x, y, z index (may be negitive with periodic boundaries)
+        int d_index[3]; //!<  Global x, y, z index (may be negative with periodic boundaries)
         friend class structuredMeshElement;
     };
 
 public:
     /**
      * \brief Read in mesh files, partition domain, and prepare environment for simulation
-     * \details  For trivial parallelsim, this method reads in the meshes on each processor.  Each
+     * \details  For trivial parallelism, this method reads in the meshes on each processor.  Each
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params  Parameters for constructing a mesh from an input database
@@ -345,7 +345,7 @@ public:
     /**
      * \brief    Return a mesh element's coordinates given it's id.
      * \details  This function queries the mesh to get an element's coordinates given the mesh id.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to
+     *    Ideally, this should be done in O(1) time, but the implementation is up to
      *    the underlying mesh.
      * \param[in] index     Mesh element index we are requesting.
      * \param[out] pos      Mesh element coordinates

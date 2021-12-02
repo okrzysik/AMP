@@ -11,7 +11,7 @@ namespace Operator {
 class EpetraMatrixOperator : public LinearOperator
 {
 private:
-    AMP::LinearAlgebra::Variable::shared_ptr d_Input, d_Output;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_Input, d_Output;
 
 public:
     explicit EpetraMatrixOperator( std::shared_ptr<EpetraMatrixOperatorParameters> params )

@@ -61,19 +61,19 @@ public:
 
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
-    CommunicationList::shared_ptr d_CommListLeft;
+    std::shared_ptr<CommunicationList> d_CommListLeft;
 
     //!  The communication list of a right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
     //!  right vector )
-    CommunicationList::shared_ptr d_CommListRight;
+    std::shared_ptr<CommunicationList> d_CommListRight;
 
     //!  The variable for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a left
     //!  vector )
-    AMP::LinearAlgebra::Variable::shared_ptr d_VariableLeft;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableLeft;
 
     //!  The variable for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a right
     //!  vector )
-    AMP::LinearAlgebra::Variable::shared_ptr d_VariableRight;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
 
 protected:
     MatrixParameters(){};

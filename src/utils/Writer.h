@@ -2,6 +2,7 @@
 #define included_AMP_Writer
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Array.h"
 #include "AMP/utils/Database.h"
 
 #include <memory>
@@ -13,6 +14,8 @@
 namespace AMP::Mesh {
 class Mesh;
 class MeshID;
+class MeshIterator;
+class MeshElementID;
 enum class GeomType : uint8_t;
 } // namespace AMP::Mesh
 namespace AMP::LinearAlgebra {
@@ -111,7 +114,7 @@ public:
      * \param level How many sub meshes do we want?
      *              0: Only register the local base meshes (advanced users only)
      *              1: Register current mesh only (default)
-     *              2: Register all meshes (do not seperate for the ranks)
+     *              2: Register all meshes (do not separate for the ranks)
      *              3: Register all mesh pieces including the individual ranks
 
      * \param path  The directory path for the mesh.  Default is an empty string.
@@ -165,6 +168,34 @@ public:
                          const std::string &name = "" );
 
 protected: // Protected structures
+    // Structure to hold id
+    struct GlobalID {
+        uint64_t objID;     // Object id
+        uint32_t ownerRank; // Global rank of the processor that "owns" the data
+        GlobalID() : objID( 0 ), ownerRank( 0 ) {}
+        GlobalID( uint64_t obj, uint32_t rank ) : objID( obj ), ownerRank( rank ) {}
+        bool operator==( const GlobalID &rhs ) const
+        {
+            return objID == rhs.objID && ownerRank == rhs.ownerRank;
+        }
+        bool operator!=( const GlobalID &rhs ) const
+        {
+            return objID != rhs.objID || ownerRank != rhs.ownerRank;
+        }
+        bool operator<( const GlobalID &rhs ) const
+        {
+            if ( objID == rhs.objID )
+                return ownerRank < rhs.ownerRank;
+            return objID < rhs.objID;
+        }
+        bool operator>( const GlobalID &rhs ) const
+        {
+            if ( objID == rhs.objID )
+                return ownerRank > rhs.ownerRank;
+            return objID > rhs.objID;
+        }
+    };
+
     // Structure to hold vector data
     struct VectorData {
         std::string name;                                // Vector name to store
@@ -185,7 +216,7 @@ protected: // Protected structures
 
     // Structure used to hold data for a base mesh
     struct baseMeshData {
-        uint64_t id; // Unique ID to identify the mesh (will use the mesh id)
+        GlobalID id;                           // Unique ID to identify the mesh
         std::shared_ptr<AMP::Mesh::Mesh> mesh; // Pointer to the mesh
         int rank;                              // Rank of the current processor on the mesh
         int ownerRank;                         // Global rank of the processor that "owns" the mesh
@@ -199,16 +230,18 @@ protected: // Protected structures
         void pack( char * ) const;
         // Function to unpack the data from a byte array (note: some info may be lost)
         static baseMeshData unpack( const char * );
+        // Constructor
+        baseMeshData() : rank( -1 ), ownerRank( -1 ) {}
     };
 
     // Structure used to hold data for a multimesh
     struct multiMeshData {
-        uint64_t id; // Unique ID to identify the mesh (will use the mesh id)
+        GlobalID id;                           // Unique ID to identify the mesh
         std::shared_ptr<AMP::Mesh::Mesh> mesh; // Pointer to the mesh
         int ownerRank;                         // Global rank of the processor that "owns" the mesh
                                                // (usually rank 0 on the mesh comm)
         std::string name;                      // Name of the multimesh
-        std::vector<baseMeshData> meshes;      // Base mesh info needed to construct the mesh data
+        std::vector<GlobalID> meshes;          // Base mesh ids needed to construct the mesh data
         std::vector<std::string> varName;      // Vectors for each mesh
         // Function to count the number of bytes needed to pack the data
         size_t size() const;
@@ -216,12 +249,8 @@ protected: // Protected structures
         void pack( char * ) const;
         // Function to unpack the data from a byte array
         static multiMeshData unpack( const char * );
-        // Constructors
-        multiMeshData() : id(), ownerRank( -1 ) {}
-        multiMeshData( const multiMeshData & );
-        multiMeshData &operator=( const multiMeshData & );
-        // Destructor
-        ~multiMeshData() {}
+        // Constructor
+        multiMeshData() : ownerRank( -1 ) {}
     };
 
 protected: // Protected member functions
@@ -231,6 +260,33 @@ protected: // Protected member functions
     // Function to determine which base mesh ids to register a vector with
     static std::vector<AMP::Mesh::MeshID> getMeshIDs( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
+    // Get the node coordinates and elements for a mesh
+    static void getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
+                                 const AMP::Mesh::MeshIterator &elements,
+                                 AMP::Array<double> *x,
+                                 AMP::Array<int> &nodelist,
+                                 std::vector<AMP::Mesh::MeshElementID> &nodelist_ids );
+
+    // Register the mesh returning the ids of all registered base meshes
+    void registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                        int level,
+                        const std::string &path,
+                        std::set<GlobalID> &base_ids );
+
+    // Function to syncronize multimesh data
+    std::tuple<std::vector<multiMeshData>, std::map<GlobalID, baseMeshData>>
+    syncMultiMeshData( int root = -1 ) const;
+
+    // Get id from a communicator
+    GlobalID getID( const AMP_MPI &comm ) const;
+
+    // Synchronize the vectors (call makeConsistent)
+    void syncVectors();
+
+    // Synchronize mesh data
+    template<class TYPE>
+    void syncData( std::vector<TYPE> &data, int root ) const;
+
 protected: // Internal data
     // The comm of the writer
     AMP_MPI d_comm;
@@ -239,17 +295,14 @@ protected: // Internal data
     int d_decomposition;
 
     // List of all meshes and their ids
-    std::map<uint64_t, baseMeshData> d_baseMeshes;
-    std::map<uint64_t, multiMeshData> d_multiMeshes;
+    std::map<GlobalID, baseMeshData> d_baseMeshes;
+    std::map<GlobalID, multiMeshData> d_multiMeshes;
 
     // List of all independent vectors that have been registered
-    std::map<uint64_t, VectorData> d_vectors;
+    std::map<GlobalID, VectorData> d_vectors;
 
     // List of all independent matrices that have been registered
-    std::map<uint64_t, MatrixData> d_matrices;
-
-    // List of all variables (work on removing)
-    std::set<std::string> d_varNames;
+    std::map<GlobalID, MatrixData> d_matrices;
 
     // List of all vectors that have been registered (work on removing)
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_vectorsMesh;

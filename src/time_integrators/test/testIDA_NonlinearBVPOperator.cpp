@@ -72,7 +72,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearOperator", input_db, elementModel ) );
 
-    AMP::LinearAlgebra::Variable::shared_ptr outputVar = nonlinearOperator->getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> outputVar =
+        nonlinearOperator->getOutputVariable();
     // create a linear BVP operator
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(

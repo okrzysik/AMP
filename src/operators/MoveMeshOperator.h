@@ -16,15 +16,15 @@ public:
 
     std::string type() const override { return "MoveMeshOperator"; }
 
-    void setVariable( AMP::LinearAlgebra::Variable::shared_ptr var );
+    void setVariable( std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override;
 
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
 protected:
-    AMP::LinearAlgebra::Variable::shared_ptr d_var;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_var;
     AMP::LinearAlgebra::Vector::shared_ptr d_prevDisp;
 };
 } // namespace Operator

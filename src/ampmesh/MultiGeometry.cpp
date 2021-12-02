@@ -7,7 +7,7 @@ namespace AMP {
 namespace Geometry {
 
 
-MultiGeometry::MultiGeometry( const std::vector<Geometry::shared_ptr> &geom )
+MultiGeometry::MultiGeometry( const std::vector<std::shared_ptr<Geometry>> &geom )
     : Geometry(), d_geom( geom )
 {
     d_physicalDim = 0;
@@ -109,7 +109,7 @@ void MultiGeometry::displace( const double *x )
 }
 std::unique_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
 {
-    std::vector<Geometry::shared_ptr> geom2;
+    std::vector<std::shared_ptr<Geometry>> geom2;
     for ( const auto &geom : d_geom )
         geom2.push_back( geom->clone() );
     return std::make_unique<MultiGeometry>( geom2 );

@@ -361,13 +361,13 @@ public: // Virtual functions dealing with the update status
     virtual bool hasComm( void ) const { return ( d_CommList != nullptr ); }
 
     //! Get the CommunicationList for this Vector
-    virtual CommunicationList::shared_ptr getCommunicationList() const;
+    virtual std::shared_ptr<CommunicationList> getCommunicationList() const;
 
     /**\brief Set the CommunicationList for this Vector
      *\details  Setting the CommunicationList for a Vector may involve
      * reallocating ghost storage.
      */
-    virtual void setCommunicationList( CommunicationList::shared_ptr comm );
+    virtual void setCommunicationList( std::shared_ptr<CommunicationList> comm );
 
     virtual void
     print( std::ostream &os, const std::string &name = "A", const std::string &prefix = "" ) const;
@@ -490,7 +490,7 @@ public: // Non virtual functions
 
 protected: // Internal data
     //! The communication list for this vector
-    CommunicationList::shared_ptr d_CommList = nullptr;
+    std::shared_ptr<CommunicationList> d_CommList = nullptr;
 
     /** \brief  The current update state for a vector
      * \details A Vector can be in one of three states.

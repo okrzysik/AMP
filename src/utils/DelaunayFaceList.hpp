@@ -769,7 +769,7 @@ inline void calc_surface_normal( const ETYPE x[3][3], ETYPE norm[3] )
 
 /********************************************************************
  * This function calculates distance between a hyperplane and a      *
- *   point.  The distance can be determined from  D_i=n·(x_0-x_i),   *
+ *   point. The distance can be determined from  D_i=dot(n,x_0-x_i), *
  *   while the sign can be determined by comparing to a known point  *
  *   inside the convex hull (xc).                                    *
  * Note: this uses a mixture of exact and inexact math, but should   *

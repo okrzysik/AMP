@@ -15,8 +15,6 @@ namespace AMP::Operator {
 class GradientOperator : public Operator
 {
 public:
-    typedef std::shared_ptr<AMP::Operator::Operator> shared_ptr;
-
     //! Default constructor
     GradientOperator( void );
 
@@ -48,14 +46,17 @@ public:
 
 
     //! Return the output variable
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outputVar; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outputVar;
+    }
 
     //! Return the input variable
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inputVar; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override { return d_inputVar; }
 
 private:
     std::shared_ptr<AMP::Database> d_db;
-    AMP::LinearAlgebra::Variable::shared_ptr d_inputVar, d_outputVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inputVar, d_outputVar;
     AMP::Discretization::createLibmeshElements d_elem;
     std::vector<AMP::Mesh::MeshElementID> d_nodes;
     std::vector<int> d_elementsPerNode;

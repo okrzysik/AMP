@@ -30,7 +30,7 @@ void BlockOperator::reset( std::shared_ptr<const OperatorParameters> params )
     }
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr BlockOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getOutputVariable()
 {
     std::shared_ptr<AMP::LinearAlgebra::MultiVariable> var(
         new AMP::LinearAlgebra::MultiVariable( "BlockVariable" ) );
@@ -42,7 +42,7 @@ AMP::LinearAlgebra::Variable::shared_ptr BlockOperator::getOutputVariable()
     return var;
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr BlockOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> BlockOperator::getInputVariable()
 {
     std::shared_ptr<AMP::LinearAlgebra::MultiVariable> var(
         new AMP::LinearAlgebra::MultiVariable( "BlockVariable" ) );
@@ -98,7 +98,7 @@ void BlockOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                            AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
-    AMP::LinearAlgebra::Variable::shared_ptr tmpOutVar = getOutputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> tmpOutVar = getOutputVariable();
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal = r->subsetVectorForVariable( tmpOutVar );
 

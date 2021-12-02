@@ -9,8 +9,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 using Point = AMP::Mesh::MeshPoint<double>;
@@ -29,13 +28,6 @@ public:
 
     //! Get the name of the geometry
     virtual std::string getName() const = 0;
-
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a geometry object.
-     */
-    typedef std::shared_ptr<AMP::Geometry::Geometry> shared_ptr;
 
     /**
      *\typedef const_shared_ptr
@@ -188,7 +180,6 @@ protected: // Internal data
 };
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry
 
 #endif

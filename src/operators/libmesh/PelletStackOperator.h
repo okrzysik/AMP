@@ -59,7 +59,7 @@ protected:
     short int d_slaveId;
     std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
     std::vector<unsigned int> d_pelletIds;
-    AMP::LinearAlgebra::Variable::shared_ptr d_var;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_var;
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVectorForMaps;
     bool d_frozenVectorSet;
     AMP_MPI d_pelletStackComm;

@@ -43,9 +43,9 @@ void run_test( size_t message_size, int N_messages, double sleep_duration, Threa
     int recv_proc = ( size + rank + 1 ) % size;
     std::vector<MPI_Request> requests( 2 * N_messages );
     if ( rank == 0 ) {
-        printf( "Running test with %i messages of size of %llu bytes, waiting %0.2e s\n",
+        printf( "Running test with %i messages of size of %zu bytes, waiting %0.2e s\n",
                 N_messages,
-                static_cast<long long unsigned int>( message_size ),
+                message_size,
                 sleep_duration );
     }
     auto ms_sleep_duration = static_cast<int>( 1000 * sleep_duration );

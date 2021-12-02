@@ -94,12 +94,18 @@ public:
       it
       returns the multivariable for the entire vector.
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override { return d_inpVariables; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
+    {
+        return d_inpVariables;
+    }
 
     /**
       @return The variable for the output vector
       */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override { return d_outVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
+    {
+        return d_outVariable;
+    }
 
     /**
       Writes the stress and strain at each Gauss point to a file.
@@ -161,11 +167,11 @@ protected:
 
     AMP::LinearAlgebra::Vector::shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     AMP::LinearAlgebra::Vector::const_shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     template<MechanicsNonlinearElement::MaterialUpdateType updateType>
     void updateMaterialForElement( const AMP::Mesh::MeshElement & );

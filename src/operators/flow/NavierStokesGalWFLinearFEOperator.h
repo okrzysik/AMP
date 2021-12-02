@@ -34,7 +34,7 @@ public:
 
     unsigned int numberOfDOFMaps() { return 1; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getVariableForDOFMap( unsigned int )
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getVariableForDOFMap( unsigned int )
     {
         return d_inputVariable;
     }

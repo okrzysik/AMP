@@ -34,7 +34,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_Operators[0]->getOutputVariable();
     }
@@ -58,7 +58,7 @@ protected:
     bool getAllJacobian;
 
 private:
-    AMP::LinearAlgebra::Variable::shared_ptr d_OutputVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable;
 };
 
 

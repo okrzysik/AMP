@@ -8,7 +8,7 @@ namespace LinearAlgebra {
 
 AMP::LinearAlgebra::Vector::shared_ptr
 subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
-                         AMP::LinearAlgebra::Variable::shared_ptr var )
+                         std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     auto outVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>(
         AMP::LinearAlgebra::MultiVector::create( "MultiVariable", AMP_COMM_SELF ) );

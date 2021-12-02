@@ -128,7 +128,8 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
     PROFILE_START( "getGaussPoints" );
     std::shared_ptr<AMP::Discretization::DOFManager> GpDofMap =
         AMP::Discretization::simpleDOFManager::create( iterator, 4 );
-    AMP::LinearAlgebra::Variable::shared_ptr var( new AMP::LinearAlgebra::Variable( "gauss_z" ) );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var(
+        new AMP::LinearAlgebra::Variable( "gauss_z" ) );
     AMP::LinearAlgebra::Vector::shared_ptr z_pos =
         AMP::LinearAlgebra::createVector( GpDofMap, var );
     AMP::Mesh::MeshIterator cur = iterator.begin();

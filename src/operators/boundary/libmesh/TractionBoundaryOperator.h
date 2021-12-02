@@ -26,11 +26,11 @@ public:
 protected:
     AMP::LinearAlgebra::Vector::shared_ptr
     mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                    AMP::LinearAlgebra::Variable::shared_ptr var );
+                    std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
     void computeCorrection();
 
-    AMP::LinearAlgebra::Variable::shared_ptr d_var;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_var;
     AMP::LinearAlgebra::Vector::shared_ptr d_correction;
     std::vector<double> d_traction;
     std::vector<double> d_volumeElements;

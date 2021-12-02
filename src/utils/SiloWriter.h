@@ -54,12 +54,6 @@ public:
     void writeFile( const std::string &fname, size_t iteration, double time = 0 ) override;
 
 private:
-    // Function to syncronize multimesh data
-    void syncMultiMeshData( std::map<uint64_t, multiMeshData> &data, int root = -1 ) const;
-
-    // Function to syncronize variable lists
-    void syncVariableList( std::set<std::string> &data, int root = -1 ) const;
-
 // Function to write a single mesh
 #ifdef USE_EXT_SILO
     void writeMesh( DBfile *file, const baseMeshData &data, int cycle, double time );

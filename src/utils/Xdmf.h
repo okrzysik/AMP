@@ -108,7 +108,7 @@ public:
     static MeshData createCurvilinearMesh( const std::string &name,
                                            const ArraySize &size,
                                            const std::string &x,
-                                           const std::string &y,
+                                           const std::string &y = "",
                                            const std::string &z = "" );
 
     /*!
@@ -136,10 +136,15 @@ public:
                                             const std::string &y = "",
                                             const std::string &z = "" );
 
-
 public:
-    //! Add a sub-domain
+    //! Add a mesh domain
     void addMesh( const std::string &meshName, const MeshData &domain );
+
+    //! Add a multi-mesh
+    void addMultiMesh( const std::string &meshName, const std::vector<std::string> &submeshes );
+
+    //! Add a multi-mesh
+    void addMultiMesh( const std::string &meshName, std::vector<MeshData> submeshes );
 
     //! Gather all data to rank 0
     void gather( const AMP::AMP_MPI &comm );
@@ -149,6 +154,9 @@ public:
 
     //! Clear the internal data
     void clear();
+
+    //! Check if the class is empty
+    bool empty() const { return d_meshData.empty(); }
 
 private:
     std::map<std::string, std::vector<MeshData>> d_meshData;

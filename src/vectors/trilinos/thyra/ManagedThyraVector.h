@@ -37,13 +37,13 @@ public:
     // These methods are adequately documented in a base class
     std::string type() const override;
 
-    std::unique_ptr<Vector> rawClone( const Variable::shared_ptr var ) const override;
+    std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> var ) const override;
     void swapVectors( Vector &other ) override;
     void copyVector( Vector::const_shared_ptr vec ) override;
 
-    Vector::shared_ptr subsetVectorForVariable( Variable::const_shared_ptr name ) override;
+    Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name ) override;
     Vector::const_shared_ptr
-    constSubsetVectorForVariable( Variable::const_shared_ptr name ) const override;
+    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const override;
 
     std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
     std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }

@@ -28,7 +28,7 @@ public:
 
     void resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable( int varId = -1 );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable( int varId = -1 );
 
 protected:
     int d_numpoints; /**< Number of points in z direction */

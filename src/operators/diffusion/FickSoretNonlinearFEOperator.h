@@ -37,12 +37,12 @@ public:
         return d_FickOperator->getParameters( type, u, params );
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_OutputVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
         return d_FickOperator->getInputVariable();
     }

@@ -46,7 +46,8 @@ static void myTest( AMP::UnitTest *ut )
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager =
         AMP::Discretization::simpleDOFManager::create(
             mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
-    AMP::LinearAlgebra::Variable::shared_ptr variable( new AMP::LinearAlgebra::Variable( "var" ) );
+    std::shared_ptr<AMP::LinearAlgebra::Variable> variable(
+        new AMP::LinearAlgebra::Variable( "var" ) );
     AMP::LinearAlgebra::Vector::shared_ptr ampVector =
         AMP::LinearAlgebra::createVector( dofManager, variable, split );
     std::vector<std::size_t> dofIndices;

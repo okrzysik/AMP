@@ -625,6 +625,89 @@ void MPI_CLASS::sendrecv( const TYPE *sendbuf,
 
 
 /************************************************************************
+ *  gather                                                            *
+ ************************************************************************/
+template<class TYPE>
+std::vector<TYPE> MPI_CLASS::gather( const TYPE &x, int root ) const
+{
+    if ( comm_size == 1 )
+        return { x };
+    std::vector<int> recv_cnt, recv_disp;
+    if ( comm_rank == root ) {
+        recv_cnt.resize( comm_size, 1 );
+        recv_disp.resize( comm_size, 0 );
+        for ( int i = 0; i < comm_size; i++ )
+            recv_disp[i] = i;
+    }
+    std::vector<TYPE> y( comm_size );
+    gather( &x, 1, y.data(), recv_cnt.data(), recv_disp.data(), root );
+    return y;
+}
+template<class TYPE>
+std::vector<TYPE> MPI_CLASS::gather( const std::vector<TYPE> &x, int root ) const
+{
+    if ( comm_size == 1 )
+        return x;
+    auto recv_cnt = gather<int>( x.size(), root );
+    std::vector<int> recv_disp( recv_cnt.size(), 0 );
+    for ( size_t i = 1; i < recv_cnt.size(); i++ )
+        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
+    std::vector<TYPE> y;
+    if ( comm_rank == root ) {
+        size_t N = 0;
+        for ( auto s : recv_cnt )
+            N += s;
+        y.resize( N );
+    }
+    gather<TYPE>( x.data(), x.size(), y.data(), recv_cnt.data(), recv_disp.data(), root );
+    return y;
+}
+template<class TYPE>
+void MPI_CLASS::gather( const TYPE *sendbuf,
+                        int sendcount,
+                        TYPE *recvbuf,
+                        const int *recv_cnt,
+                        const int *recv_disp,
+                        int root ) const
+{
+    if ( comm_size == 1 ) {
+        MPI_CLASS_ASSERT( sendcount == recv_cnt[0] );
+        for ( int i = 0; i < sendcount; i++ )
+            recvbuf[i + recv_disp[0]] = sendbuf[i];
+        return;
+    }
+#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+    PROFILE_START( "gather", profile_level );
+    if constexpr ( isMPItype<TYPE>() ) {
+        auto type = MPI_getType<TYPE>();
+        MPI_Gatherv(
+            sendbuf, sendcount, type, recvbuf, recv_cnt, recv_disp, type, root, communicator );
+    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        size_t N = sizeof( TYPE );
+        std::vector<int> recv_cnt2( comm_size );
+        std::vector<int> recv_disp2( comm_size );
+        for ( int i = 0; i < comm_size; i++ ) {
+            recv_cnt2[i]  = N * recv_cnt[i];
+            recv_disp2[i] = N * recv_disp[i];
+        }
+        MPI_Gatherv( sendbuf,
+                     N * sendcount,
+                     MPI_BYTE,
+                     recvbuf,
+                     recv_cnt2.data(),
+                     recv_disp2.data(),
+                     MPI_BYTE,
+                     root,
+                     communicator );
+    } else {
+        call_gatherv( sendbuf, sendcount, recvbuf, recv_cnt, recv_disp, root );
+    }
+    PROFILE_STOP( "gather", profile_level );
+#endif
+}
+
+
+/************************************************************************
  *  allGather                                                            *
  ************************************************************************/
 template<class TYPE>

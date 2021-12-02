@@ -142,6 +142,18 @@ std::string Utilities::path( const std::string &filename )
     return filename.substr( 0, pos );
 }
 
+std::string Utilities::filename( const std::string &filename )
+{
+    size_t pos = 0;
+    if ( filename.find_last_of( 47 ) != std::string::npos )
+        pos = filename.find_last_of( 47 );
+    if ( filename.find_last_of( 92 ) != std::string::npos )
+        pos = std::max( pos, filename.find_last_of( 92 ) );
+    if ( pos != 0 )
+        return filename.substr( pos + 1 );
+    return filename;
+}
+
 void Utilities::renameFile( const std::string &old_filename, const std::string &new_filename )
 {
     AMP_ASSERT( !old_filename.empty() );

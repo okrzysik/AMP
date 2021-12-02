@@ -17,7 +17,7 @@ public:
 
     std::string type() const override { return "RobinVectorCorrectionParameters"; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr d_variable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 };
 } // namespace Operator
 } // namespace AMP

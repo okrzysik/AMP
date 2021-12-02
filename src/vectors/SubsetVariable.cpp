@@ -11,20 +11,19 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
  * Contructors                                                   *
  ****************************************************************/
-Vector::shared_ptr SubsetVariable::view( Vector::shared_ptr v, Variable::shared_ptr var_in )
+Vector::shared_ptr SubsetVariable::view( Vector::shared_ptr v, std::shared_ptr<Variable> var_in )
 {
     return std::const_pointer_cast<Vector>(
         SubsetVariable::view( Vector::const_shared_ptr( v ), var_in ) );
 }
 Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
-                                               Variable::shared_ptr var_in )
+                                               std::shared_ptr<Variable> var_in )
 {
     PROFILE_START( "view", 2 );
     auto var = std::dynamic_pointer_cast<SubsetVariable>( var_in );
@@ -65,7 +64,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
 
     auto remote_DOFs = subsetDOF->getRemoteDOFs();
     bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
-    AMP::LinearAlgebra::CommunicationList::shared_ptr commList;
+    std::shared_ptr<CommunicationList> commList;
     if ( !ghosts ) {
         commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(),
                                                                        subsetDOF->getComm() );
@@ -90,5 +89,4 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

@@ -64,7 +64,7 @@ public:
     }
 
     unsigned int d_inputBoundaryId;
-    AMP::LinearAlgebra::Variable::shared_ptr d_inpVar;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVar;
     AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
     AMP::AMP_MPI d_comm;
 };

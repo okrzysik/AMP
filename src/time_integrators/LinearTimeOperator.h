@@ -58,7 +58,7 @@ public:
     void setScalingFactor( double scalingFactor ) { d_dScalingFactor = scalingFactor; }
 
     // added by JL //correction by RS
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
         return d_pRhsOperator->getInputVariable();
     }
@@ -66,7 +66,7 @@ public:
     /**
      * returns a Variable object corresponding to the rhs operator
      */
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_pRhsOperator->getOutputVariable();
     }

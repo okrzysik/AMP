@@ -22,6 +22,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <iostream>
 #include <string>

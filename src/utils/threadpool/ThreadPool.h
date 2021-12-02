@@ -1,4 +1,4 @@
-// Copyright © 2004 Mark Berrill. All Rights Reserved. This work is distributed with permission,
+// Copyright 2004 Mark Berrill. All Rights Reserved. This work is distributed with permission,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 // PARTICULAR PURPOSE.
 #ifndef included_AMP_ThreadPool
@@ -591,7 +591,7 @@ private:
 
     /* This is the function that controls the individual thread and allows it to do work.
      * Note: this version uses a last in - first out work scheduling.
-     * param thread_init - Structure address contining the startup information for the thread */
+     * param thread_init - Structure address containing the startup information for the thread */
     void tpool_thread( int id );
 
     // Function to check if the current thread is a member of the thread pool

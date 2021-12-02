@@ -31,13 +31,8 @@ namespace Operator {
 class MoabBasedOperator : public AMP::Operator::Operator
 {
 public:
-    // Typedefs
-    typedef std::shared_ptr<MoabBasedOperatorParameters> SP_Params;
-
     // Constructor
-    explicit MoabBasedOperator( const SP_Params &params )
-    { /* ... */
-    }
+    explicit MoabBasedOperator( std::shared_ptr<MoabBasedOperatorParameters> params ) {}
 
     //------------------------------//
     // Required Inherited Interface //

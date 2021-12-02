@@ -318,12 +318,12 @@ void NodeToSegmentConstraintsOperator::getVectorIndicesFromGlobalIDs(
     AMP_ASSERT( vectorIndicesIterator == vectorIndices.end() );
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr NodeToSegmentConstraintsOperator::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> NodeToSegmentConstraintsOperator::getInputVariable()
 {
     return d_InputVariable;
 }
 
-AMP::LinearAlgebra::Variable::shared_ptr NodeToSegmentConstraintsOperator::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> NodeToSegmentConstraintsOperator::getOutputVariable()
 {
     return d_OutputVariable;
 }

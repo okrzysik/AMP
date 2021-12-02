@@ -1,5 +1,6 @@
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/VectorSelector.h"
 
 
 #include <string>
@@ -24,7 +25,7 @@ FlowFrapconJacobian::FlowFrapconJacobian(
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Variable>
 FlowFrapconJacobian::createInputVariable( const std::string &name, int varId )
 {
     (void) varId;
@@ -32,7 +33,7 @@ FlowFrapconJacobian::createInputVariable( const std::string &name, int varId )
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Variable>
 FlowFrapconJacobian::createOutputVariable( const std::string &name, int varId )
 {
     (void) varId;
@@ -40,13 +41,13 @@ FlowFrapconJacobian::createOutputVariable( const std::string &name, int varId )
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getInputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getInputVariable()
 {
     return d_inpVariable;
 }
 
 
-AMP::LinearAlgebra::Variable::shared_ptr FlowFrapconJacobian::getOutputVariable()
+std::shared_ptr<AMP::LinearAlgebra::Variable> FlowFrapconJacobian::getOutputVariable()
 {
     return d_outVariable;
 }
@@ -172,7 +173,7 @@ void FlowFrapconJacobian::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 AMP::LinearAlgebra::Vector::shared_ptr
 FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -189,7 +190,7 @@ FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr 
 AMP::LinearAlgebra::Vector::shared_ptr
 FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -206,7 +207,7 @@ FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr v
 AMP::LinearAlgebra::Vector::const_shared_ptr
 FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
@@ -223,7 +224,7 @@ FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
 AMP::LinearAlgebra::Vector::const_shared_ptr
 FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    AMP::LinearAlgebra::Variable::shared_ptr var = getInputVariable();
+    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {

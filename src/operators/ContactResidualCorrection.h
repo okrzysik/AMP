@@ -29,12 +29,12 @@ public:
 
     void reset( std::shared_ptr<const OperatorParameters> ) override {}
 
-    void setMasterVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var )
+    void setMasterVariable( const std::shared_ptr<AMP::LinearAlgebra::Variable> &var )
     {
         d_masterVariable = var;
     }
 
-    void setSlaveVariable( const AMP::LinearAlgebra::Variable::shared_ptr &var )
+    void setSlaveVariable( const std::shared_ptr<AMP::LinearAlgebra::Variable> &var )
     {
         d_slaveVariable = var;
     }
@@ -49,7 +49,7 @@ public:
 
     void setDofs( const std::vector<std::vector<unsigned int>> &vec ) { d_dofs = vec; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
@@ -58,7 +58,7 @@ public:
         return retVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
         std::shared_ptr<AMP::LinearAlgebra::MultiVariable> retVariable(
             new AMP::LinearAlgebra::MultiVariable( "ContactVariable" ) );
@@ -67,9 +67,9 @@ public:
         return retVariable;
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getMasterVariable() { return d_masterVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getMasterVariable() { return d_masterVariable; }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getSlaveVariable() { return d_slaveVariable; }
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getSlaveVariable() { return d_slaveVariable; }
 
     std::vector<AMP::Mesh::MeshElementID> getMasterNodes() { return d_masterNodes; }
 
@@ -78,8 +78,8 @@ public:
     std::vector<std::vector<unsigned int>> getDofs() { return d_dofs; }
 
 private:
-    AMP::LinearAlgebra::Variable::shared_ptr d_masterVariable;
-    AMP::LinearAlgebra::Variable::shared_ptr d_slaveVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_masterVariable;
+    std::shared_ptr<AMP::LinearAlgebra::Variable> d_slaveVariable;
 
     std::vector<AMP::Mesh::MeshElementID> d_masterNodes;
     std::vector<AMP::Mesh::MeshElementID> d_slaveNodes;

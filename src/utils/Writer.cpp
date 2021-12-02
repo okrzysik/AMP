@@ -1,10 +1,9 @@
-#include "AMP/utils/Writer.h"
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AsciiWriter.h"
 #include "AMP/utils/HDF5writer.h"
 #include "AMP/utils/NullWriter.h"
 #include "AMP/utils/SiloWriter.h"
+#include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
@@ -12,10 +11,13 @@
 #endif
 #ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorSelector.h"
 #endif
 #ifdef USE_AMP_MATRICES
 #include "AMP/matrices/Matrix.h"
 #endif
+
+#include <algorithm>
 
 
 namespace AMP::Utilities {
@@ -25,52 +27,49 @@ namespace AMP::Utilities {
  * Functions to pack/unpack data to a char array             *
  ************************************************************/
 template<class TYPE>
-static inline void packData( char *ptr, size_t &pos, const TYPE &data );
-template<class TYPE>
-static inline TYPE unpackData( const char *ptr, size_t &pos );
-template<>
-inline void packData<std::string>( char *ptr, size_t &pos, const std::string &data )
-{
-    int N = data.size();
-    memcpy( &ptr[pos], data.c_str(), N + 1 );
-    pos += N + 1;
-}
-template<>
-inline std::string unpackData<std::string>( const char *ptr, size_t &pos )
-{
-    std::string data( &ptr[pos] );
-    pos += data.size() + 1;
-    return data;
-}
-template<class TYPE>
 static inline void packData( char *ptr, size_t &pos, const TYPE &data )
 {
-    memcpy( &ptr[pos], &data, sizeof( TYPE ) );
-    pos += sizeof( TYPE );
+    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+        memcpy( &ptr[pos], &data, sizeof( TYPE ) );
+        pos += sizeof( TYPE );
+    } else if constexpr ( std::is_same<TYPE, std::string>::value ) {
+        int N = data.size();
+        memcpy( &ptr[pos], data.c_str(), N + 1 );
+        pos += N + 1;
+    } else {
+        throw std::logic_error( "Error packing data" );
+    }
 }
 template<class TYPE>
 static inline TYPE unpackData( const char *ptr, size_t &pos )
 {
-    TYPE data;
-    memcpy( &data, &ptr[pos], sizeof( TYPE ) );
-    pos += sizeof( TYPE );
-    return data;
+    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+        TYPE data;
+        memcpy( &data, &ptr[pos], sizeof( TYPE ) );
+        pos += sizeof( TYPE );
+        return data;
+    } else if constexpr ( std::is_same<TYPE, std::string>::value ) {
+        std::string data( &ptr[pos] );
+        pos += data.size() + 1;
+        return data;
+    } else {
+        throw std::logic_error( "Error packing data" );
+    }
 }
 
 
 /************************************************************
  * Helper function to get a unique id for each vector        *
  ************************************************************/
-static uint32_t localID = 0;
-uint64_t getID( const AMP_MPI &local_comm, const AMP_MPI &global_comm )
+Writer::GlobalID Writer::getID( const AMP_MPI &comm ) const
 {
-    uint64_t id = 0;
-    if ( local_comm.getRank() == 0 ) {
-        uint64_t id1 = static_cast<uint64_t>( global_comm.getRank() ) << 32;
-        uint64_t id2 = localID++;
-        id           = id1 + id2;
+    GlobalID id;
+    if ( comm.getRank() == 0 ) {
+        static uint64_t localID = 0;
+        id.objID                = localID++;
+        id.ownerRank            = d_comm.getRank();
     }
-    return local_comm.bcast( id, 0 );
+    return comm.bcast( id, 0 );
 }
 
 
@@ -179,61 +178,92 @@ void Writer::createDirectories( const std::string &filename )
  ************************************************************/
 void Writer::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, const std::string &path )
 {
+    AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
+    std::set<GlobalID> base_ids;
+    registerMesh2( mesh, level, path, base_ids );
+}
+void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                            int level,
+                            const std::string &path,
+                            std::set<GlobalID> &base_ids )
+{
     if ( !mesh )
         return;
     if ( !getProperties().registerMesh )
         AMP_ERROR( "registerMesh is not supported for " + getProperties().type );
-    AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( !multimesh ) {
-        uint64_t id = mesh->meshID().getData();
-        // We are dealing with a single mesh
-        baseMeshData data;
-        data.id        = id;
-        data.mesh      = mesh;
-        data.rank      = mesh->getComm().getRank() + 1;
-        data.ownerRank = d_comm.getRank();
-        data.meshName  = "rank_" + std::to_string( data.rank );
-        data.path      = path + mesh->getName() + "_/";
-        if ( d_baseMeshes.find( id ) == d_baseMeshes.end() )
-            d_baseMeshes.insert( std::make_pair( id, data ) );
+        // Create a unique id for each rank
+        int rank = d_comm.getRank();
+        GlobalID id( mesh->meshID().getData(), rank );
+        base_ids.insert( id );
+        // Register the base mesh
+        auto it = d_baseMeshes.find( id );
+        if ( it == d_baseMeshes.end() ) {
+            for ( const auto &[id2, mesh2] : d_baseMeshes ) {
+                NULL_USE( id2 );
+                if ( mesh2.mesh->getName() == mesh->getName() && mesh2.path == path )
+                    AMP_WARNING( "Registering multiple meshes with the same name: " +
+                                 mesh->getName() );
+            }
+            baseMeshData data;
+            data.id        = id;
+            data.mesh      = mesh;
+            data.rank      = rank;
+            data.ownerRank = rank;
+            data.meshName  = "rank_" + std::to_string( data.rank );
+            data.path      = path + mesh->getName() + "_/";
+            if ( d_baseMeshes.find( id ) == d_baseMeshes.end() )
+                d_baseMeshes.insert( std::make_pair( id, data ) );
+        }
         // Create and register a multimesh for the current mesh
-        if ( level > 0 ) {
+        if ( level > -1 ) {
             multiMeshData data2;
-            data2.id       = id;
-            data2.mesh     = mesh;
-            data2.name     = path + mesh->getName();
-            data.ownerRank = mesh->getComm().bcast( d_comm.getRank(), 0 );
+            data2.id        = GlobalID( mesh->meshID().getData(), 0 );
+            data2.mesh      = mesh;
+            data2.name      = path + mesh->getName();
+            data2.meshes    = { id };
+            data2.ownerRank = mesh->getComm().bcast<int>( rank, 0 );
             d_multiMeshes.insert( std::make_pair( data2.id, data2 ) );
         }
         // Create and register a multimesh for the rank
         if ( level == 3 ) {
-            // Create a unique id for each rank
-            uint64_t tmp_id = id;
-            uint64_t root2  = d_comm.getRank() + 1;
-            tmp_id          = ( root2 << 48 ) + tmp_id;
+            const auto &data = d_baseMeshes[id];
             multiMeshData data2;
-            data2.id       = tmp_id;
-            data2.mesh     = mesh;
-            data2.name     = path + mesh->getName() + "_/rank_" + std::to_string( data.rank );
-            data.ownerRank = d_comm.getRank();
+            data2.id        = id;
+            data2.mesh      = mesh;
+            data2.name      = path + mesh->getName() + "_/rank_" + std::to_string( data.rank );
+            data2.meshes    = { id };
+            data2.ownerRank = rank;
             d_multiMeshes.insert( std::make_pair( data2.id, data2 ) );
         }
     } else {
+        // Check if we previously registered the mesh
+        for ( const auto &[id, mesh2] : d_multiMeshes ) {
+            NULL_USE( id );
+            if ( mesh2.mesh->meshID() == mesh->meshID() )
+                return;
+            if ( mesh2.mesh->getName() == mesh->getName() )
+                AMP_WARNING( "Registering multiple meshes with the same name: " + mesh->getName() );
+        }
         // We are dealing with a multimesh, register the current mesh and sub meshes
+        GlobalID id( mesh->meshID().getData(), 0 );
         int level2 = level;
         if ( level == 1 )
-            level2 = 0;
+            level2 = -1;
         auto new_path  = path + mesh->getName() + "_/";
         auto submeshes = multimesh->getMeshes();
+        std::set<GlobalID> ids;
         for ( auto &submesh : submeshes )
-            registerMesh( submesh, level2, new_path );
+            registerMesh2( submesh, level2, new_path, ids );
+        base_ids.insert( ids.begin(), ids.end() );
         if ( level > 0 ) {
             multiMeshData data;
-            data.id        = mesh->meshID().getData();
+            data.id        = id;
             data.mesh      = mesh;
             data.name      = path + mesh->getName();
-            data.ownerRank = mesh->getComm().bcast( d_comm.getRank(), 0 );
+            data.ownerRank = mesh->getComm().bcast<int>( d_comm.getRank(), 0 );
+            data.meshes.insert( data.meshes.begin(), ids.begin(), ids.end() );
             d_multiMeshes.insert( std::make_pair( data.id, data ) );
         }
     }
@@ -247,7 +277,7 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                              const std::string &name )
 {
 #ifdef USE_AMP_VECTORS
-    auto id = getID( vec->getComm(), d_comm );
+    auto id = getID( vec->getComm() );
     VectorData data( vec, name );
     d_vectors.insert( std::make_pair( id, std::move( data ) ) );
 #else
@@ -261,8 +291,25 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
  * Register a vector with a mesh                             *
  ************************************************************/
 #ifdef USE_AMP_VECTORS
-void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                             AMP::Mesh::Mesh::shared_ptr mesh,
+static int getDOFsPerPoint( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                            std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                            AMP::Mesh::GeomType type )
+{
+    std::vector<size_t> dofs;
+    auto DOFs = vec->getDOFManager();
+    auto it1  = mesh->getIterator( type, 0 );
+    DOFs->getDOFs( it1->globalID(), dofs );
+    int DOFsPerPoint = dofs.size();
+    if ( type == AMP::Mesh::GeomType::Vertex )
+        it1 = mesh->getIterator( type, 1 );
+    for ( const auto &elem : it1 ) {
+        DOFs->getDOFs( elem.globalID(), dofs );
+        AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
+    }
+    return DOFsPerPoint;
+}
+void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
+                             std::shared_ptr<AMP::Mesh::Mesh> mesh,
                              AMP::Mesh::GeomType type,
                              const std::string &name_in )
 {
@@ -270,7 +317,8 @@ void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
     if ( !vec || !mesh )
         return;
     // Make sure the mesh has been registered
-    registerMesh( mesh );
+    std::set<GlobalID> base_ids;
+    registerMesh2( mesh, 1, "", base_ids );
     // Perform some error checking
     auto DOFs = vec->getDOFManager();
     if ( !DOFs )
@@ -282,34 +330,30 @@ void Writer::registerVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
         return;
     if ( it1.size() != it3.size() )
         AMP_WARNING( "vector does not cover the entire mesh for the given entity type" );
-    std::vector<size_t> dofs;
-    DOFs->getDOFs( it1->globalID(), dofs );
-    int DOFsPerPoint = dofs.size();
-    if ( type == AMP::Mesh::GeomType::Vertex )
-        it1 = mesh->getIterator( type, 1 );
-    for ( const auto &elem : DOFs->getIterator() ) {
-        DOFs->getDOFs( elem.globalID(), dofs );
-        AMP_ASSERT( (int) dofs.size() == DOFsPerPoint );
-    }
     // Register the vector with the appropriate base meshes
-    VectorData data( vec, name_in );
-    data.type    = type;
-    data.numDOFs = DOFsPerPoint;
-    auto ids     = getMeshIDs( mesh );
+    auto ids = getMeshIDs( mesh );
     for ( auto id : ids ) {
-        const auto &it = d_baseMeshes.find( id.getData() );
-        if ( it == d_baseMeshes.end() )
-            continue;
-        it->second.vectors.push_back( data );
+        for ( auto &[id0, mesh2] : d_baseMeshes ) {
+            if ( id0.objID == id.getData() ) {
+                AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2.mesh );
+                auto vec2 = vec->select( meshSelector, vec->getVariable()->getName() );
+                if ( vec2 ) {
+                    VectorData data( vec2, name_in );
+                    data.type    = type;
+                    data.numDOFs = getDOFsPerPoint( vec2, mesh2.mesh, type );
+                    mesh2.vectors.push_back( data );
+                }
+            }
+        }
     }
     // Register the vector with the appropriate multi-meshes
-    auto it = d_multiMeshes.find( mesh->meshID().getData() );
-    AMP_ASSERT( it != d_multiMeshes.end() );
-    it->second.varName.push_back( data.name );
+    VectorData data( vec, name_in );
+    for ( auto &[id0, mesh2] : d_multiMeshes ) {
+        if ( id0.objID == mesh->meshID().getData() )
+            mesh2.varName.push_back( data.name );
+    }
     // Add the vector to the list of vectors so we can perform makeConsistent
     d_vectorsMesh.push_back( vec );
-    // Add the variable name to the list of variables
-    d_varNames.insert( data.name );
 }
 #endif
 
@@ -321,12 +365,32 @@ void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
                              const std::string &name )
 {
 #ifdef USE_AMP_MATRICES
-    auto id = getID( mat->getLeftVector()->getComm(), d_comm );
+    auto id = getID( mat->getLeftVector()->getComm() );
     MatrixData data( mat, name );
     d_matrices.insert( std::make_pair( id, std::move( data ) ) );
 #else
     NULL_USE( mat );
     NULL_USE( name );
+#endif
+}
+
+
+/****************************************************
+ * Synchronize all vectors                           *
+ ****************************************************/
+void Writer::syncVectors()
+{
+// Syncronize all vectors
+#ifdef USE_AMP_VECTORS
+    PROFILE_START( "makeConsistent", 1 );
+    for ( auto &elem : d_vectorsMesh ) {
+        auto localState = elem->getUpdateStatus();
+        if ( localState == AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
+            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+        else
+            elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    }
+    PROFILE_STOP( "makeConsistent", 1 );
 #endif
 }
 
@@ -343,7 +407,7 @@ std::vector<AMP::Mesh::MeshID> Writer::getMeshIDs( std::shared_ptr<AMP::Mesh::Me
         // We are dealing with a single mesh
         ids = std::vector<AMP::Mesh::MeshID>( 1, mesh->meshID() );
     } else {
-        // We are dealining with a multimesh
+        // We are dealing with a multimesh
         auto meshes = multimesh->getMeshes();
         for ( auto &meshe : meshes ) {
             auto ids2 = getMeshIDs( meshe );
@@ -363,13 +427,13 @@ std::vector<AMP::Mesh::MeshID> Writer::getMeshIDs( std::shared_ptr<AMP::Mesh::Me
  ************************************************************/
 size_t Writer::baseMeshData::size() const
 {
-    size_t N_bytes = sizeof( uint64_t ); // Store the mesh id
-    N_bytes += sizeof( int );            // Store the processor rank
-    N_bytes += sizeof( int );            // Store the owner rank
-    N_bytes += meshName.size() + 1;      // Store the mesh name
-    N_bytes += path.size() + 1;          // Store the mesh path
-    N_bytes += file.size() + 1;          // Store the mesh file
-    N_bytes += sizeof( int );            // Store the number of variables
+    size_t N_bytes = sizeof( id );  // Store the mesh id
+    N_bytes += sizeof( int );       // Store the processor rank
+    N_bytes += sizeof( int );       // Store the owner rank
+    N_bytes += meshName.size() + 1; // Store the mesh name
+    N_bytes += path.size() + 1;     // Store the mesh path
+    N_bytes += file.size() + 1;     // Store the mesh file
+    N_bytes += sizeof( int );       // Store the number of variables
     for ( auto &vec : vectors ) {
         N_bytes += vec.name.size() + 1;           // Store the variable name
         N_bytes += sizeof( AMP::Mesh::GeomType ); // Store the variable type
@@ -380,7 +444,7 @@ size_t Writer::baseMeshData::size() const
 void Writer::baseMeshData::pack( char *ptr ) const
 {
     size_t pos = 0;
-    packData<uint64_t>( ptr, pos, id );
+    packData<GlobalID>( ptr, pos, id );
     packData<int>( ptr, pos, rank );
     packData<int>( ptr, pos, ownerRank );
     packData<std::string>( ptr, pos, meshName );
@@ -398,7 +462,7 @@ Writer::baseMeshData Writer::baseMeshData::unpack( const char *ptr )
 {
     baseMeshData data;
     size_t pos     = 0;
-    data.id        = unpackData<uint64_t>( ptr, pos );
+    data.id        = unpackData<GlobalID>( ptr, pos );
     data.rank      = unpackData<int>( ptr, pos );
     data.ownerRank = unpackData<int>( ptr, pos );
     data.meshName  = unpackData<std::string>( ptr, pos );
@@ -418,38 +482,16 @@ Writer::baseMeshData Writer::baseMeshData::unpack( const char *ptr )
 
 
 /************************************************************
- * Functions for multiMeshData                           *
+ * Functions for multiMeshData                               *
  ************************************************************/
-Writer::multiMeshData::multiMeshData( const Writer::multiMeshData &rhs )
-    : id( rhs.id ),
-      mesh( rhs.mesh ),
-      ownerRank( rhs.ownerRank ),
-      name( rhs.name ),
-      meshes( rhs.meshes ),
-      varName( rhs.varName )
-{
-}
-Writer::multiMeshData &Writer::multiMeshData::operator=( const Writer::multiMeshData &rhs )
-{
-    if ( this == &rhs ) // protect against invalid self-assignment
-        return *this;
-    this->id        = rhs.id;
-    this->mesh      = rhs.mesh;
-    this->ownerRank = rhs.ownerRank;
-    this->name      = rhs.name;
-    this->meshes    = rhs.meshes;
-    this->varName   = rhs.varName;
-    return *this;
-}
 size_t Writer::multiMeshData::size() const
 {
-    size_t N_bytes = sizeof( uint64_t ); // Store the mesh id
-    N_bytes += sizeof( int );            // Store the owner rank
-    N_bytes += name.size() + 1;          // Store the mesh name
-    N_bytes += sizeof( int );            // Store the number of sub meshes
-    for ( const auto &mesh : meshes )
-        N_bytes += mesh.size(); // Store the sub meshes
-    N_bytes += sizeof( int );   // Store the number of variables
+    size_t N_bytes = sizeof( id );                 // Store the mesh id
+    N_bytes += sizeof( int );                      // Store the owner rank
+    N_bytes += name.size() + 1;                    // Store the mesh name
+    N_bytes += sizeof( int );                      // Store the number of sub meshes
+    N_bytes += meshes.size() * sizeof( GlobalID ); // Store the sub meshes
+    N_bytes += sizeof( int );                      // Store the number of variables
     for ( const auto &name : varName )
         N_bytes += name.size() + 1; // Store the variable name
     return N_bytes;
@@ -457,42 +499,170 @@ size_t Writer::multiMeshData::size() const
 void Writer::multiMeshData::pack( char *ptr ) const
 {
     size_t pos = 0;
-    packData<uint64_t>( ptr, pos, id );
+    packData<GlobalID>( ptr, pos, id );
     packData<int>( ptr, pos, ownerRank );
     packData<std::string>( ptr, pos, name );
-    // Store the base meshes
     packData<int>( ptr, pos, meshes.size() );
-    for ( const auto &mesh : meshes ) {
-        mesh.pack( &ptr[pos] );
-        pos += mesh.size();
-    }
-    // Store the variables
+    for ( auto &mesh : meshes )
+        packData<GlobalID>( ptr, pos, mesh );
     packData<int>( ptr, pos, varName.size() );
-    for ( const auto &name : varName )
-        packData<std::string>( ptr, pos, name );
+    for ( auto &var : varName )
+        packData<std::string>( ptr, pos, var );
     AMP_ASSERT( pos == size() );
 }
 Writer::multiMeshData Writer::multiMeshData::unpack( const char *ptr )
 {
-    size_t pos = 0;
-    multiMeshData data;
-    data.id        = unpackData<uint64_t>( ptr, pos );
+    Writer::multiMeshData data;
+    size_t pos     = 0;
+    data.id        = unpackData<GlobalID>( ptr, pos );
     data.ownerRank = unpackData<int>( ptr, pos );
     data.name      = unpackData<std::string>( ptr, pos );
-    // Store the base meshes
-    int N_meshes = unpackData<int>( ptr, pos );
+    int N_meshes   = unpackData<int>( ptr, pos );
     data.meshes.resize( N_meshes );
-    for ( int i = 0; i < N_meshes; ++i ) {
-        data.meshes[i] = baseMeshData::unpack( &ptr[pos] );
-        pos += data.meshes[i].size();
-    }
-    // Store the variables
-    int N_var    = unpackData<int>( ptr, pos );
-    data.varName = std::vector<std::string>( N_var );
-    for ( auto &name : data.varName )
-        name = unpackData<std::string>( ptr, pos );
+    for ( auto &mesh : data.meshes )
+        mesh = unpackData<GlobalID>( ptr, pos );
+    int N_vars = unpackData<int>( ptr, pos );
+    data.varName.resize( N_vars );
+    for ( auto &var : data.varName )
+        var = unpackData<std::string>( ptr, pos );
     AMP_ASSERT( pos == data.size() );
     return data;
+}
+
+
+/************************************************************
+ * Function to synchronize the multimesh data                *
+ * If root==-1, the data will be synced across all procs     *
+ ************************************************************/
+template<class TYPE>
+void Writer::syncData( std::vector<TYPE> &data, int root ) const
+{
+    if ( d_comm.getSize() == 1 )
+        return;
+    // Create buffers to store the data
+    size_t sendcount = 0;
+    for ( size_t i = 0; i < data.size(); ++i )
+        sendcount += data[i].size();
+    std::vector<char> sendbuf( sendcount );
+    char *ptr = sendbuf.data();
+    for ( auto &elem : data ) {
+        elem.pack( ptr );
+        ptr = &ptr[elem.size()];
+    }
+    // Send the data and unpack the buffer to a vector
+    std::vector<char> recvbuf;
+    if ( root == -1 ) {
+        recvbuf = d_comm.allGather( sendbuf );
+    } else {
+        recvbuf = d_comm.gather( sendbuf, root );
+    }
+    // Unpack the data
+    ptr          = recvbuf.data();
+    auto end_ptr = ptr + recvbuf.size();
+    data.clear();
+    while ( ptr < end_ptr ) {
+        data.push_back( TYPE::unpack( ptr ) );
+        ptr += data.back().size();
+    }
+}
+std::tuple<std::vector<Writer::multiMeshData>, std::map<Writer::GlobalID, Writer::baseMeshData>>
+Writer::syncMultiMeshData( int root ) const
+{
+    // Convert the data to vectors
+    std::vector<multiMeshData> multiMesh;
+    multiMesh.reserve( d_multiMeshes.size() );
+    for ( const auto &tmp : d_multiMeshes )
+        multiMesh.push_back( tmp.second );
+    // Convert the data to vectors
+    std::vector<baseMeshData> baseMesh;
+    baseMesh.reserve( d_baseMeshes.size() );
+    for ( const auto &tmp : d_baseMeshes )
+        baseMesh.push_back( tmp.second );
+    // Sync the data
+    syncData( baseMesh, root );
+    syncData( multiMesh, root );
+    // Create the map for base meshes
+    std::map<GlobalID, baseMeshData> baseMeshMap;
+    for ( const auto &tmp : baseMesh ) {
+        AMP_ASSERT( baseMeshMap.find( tmp.id ) == baseMeshMap.end() );
+        baseMeshMap[tmp.id] = tmp;
+    }
+    // Combine the multimesh data
+    std::vector<multiMeshData> multiMesh2;
+    multiMesh2.reserve( multiMesh.size() );
+    for ( auto mesh : multiMesh ) {
+        auto id  = mesh.id;
+        auto fun = [id]( const multiMeshData &data ) { return data.id == id; };
+        auto it  = std::find_if( multiMesh2.begin(), multiMesh2.end(), fun );
+        if ( it == multiMesh2.end() ) {
+            multiMesh2.push_back( mesh );
+        } else {
+            it->meshes.insert( it->meshes.end(), mesh.meshes.begin(), mesh.meshes.end() );
+            it->varName.insert( it->varName.end(), mesh.varName.begin(), mesh.varName.end() );
+        }
+    }
+    std::swap( multiMesh, multiMesh2 );
+    for ( auto &mesh : multiMesh ) {
+        AMP::Utilities::unique( mesh.meshes );
+        AMP::Utilities::unique( mesh.varName );
+        for ( auto id : mesh.meshes )
+            AMP_ASSERT( baseMeshMap.find( id ) != baseMeshMap.end() );
+    }
+    return std::tie( multiMesh, baseMeshMap );
+}
+
+
+/************************************************************
+ * Helper function to get node and element lists for a mesh  *
+ ************************************************************/
+void Writer::getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
+                              const AMP::Mesh::MeshIterator &elements,
+                              AMP::Array<double> *x,
+                              AMP::Array<int> &nodelist,
+                              std::vector<AMP::Mesh::MeshElementID> &nodelist_ids )
+{
+    AMP_ASSERT( elements.size() > 0 );
+    int ndim = mesh->getDim();
+    // Get the element list
+    auto elem_iterator = elements.begin();
+    auto nodes         = elem_iterator->getElements( AMP::Mesh::GeomType::Vertex );
+    int shapesize      = nodes.size();
+    // Get the node list (unique integer for each node) and coordinates
+    auto node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
+    nodelist_ids.resize( node_iterator.size() );
+    for ( size_t i = 0; i < node_iterator.size(); ++i, ++node_iterator )
+        nodelist_ids[i] = node_iterator->globalID();
+    AMP::Utilities::quicksort( nodelist_ids );
+    double *coord[3] = { nullptr };
+    for ( int d = 0; d < ndim; ++d ) {
+        x[d].resize( node_iterator.size() );
+        coord[d] = x[d].data();
+    }
+    node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
+    for ( size_t i = 0; i < node_iterator.size(); ++i ) {
+        size_t index = AMP::Utilities::findfirst( nodelist_ids, node_iterator->globalID() );
+        AMP_ASSERT( nodelist_ids[index] == node_iterator->globalID() );
+        auto elem_coord = node_iterator->coord();
+        for ( int d = 0; d < ndim; ++d )
+            coord[d][index] = elem_coord[d];
+        ++node_iterator;
+    }
+    elem_iterator = elements.begin();
+    nodelist.resize( shapesize, elem_iterator.size() );
+    std::vector<AMP::Mesh::MeshElementID> nodeids;
+    size_t i = 0;
+    for ( const auto &elem : elem_iterator ) {
+        elem.getElementsID( AMP::Mesh::GeomType::Vertex, nodeids );
+        AMP_INSIST( (int) nodeids.size() == shapesize,
+                    "Mixed element types is currently not supported" );
+        for ( auto &nodeid : nodeids ) {
+            int index = AMP::Utilities::findfirst( nodelist_ids, nodeid );
+            AMP_ASSERT( nodelist_ids[index] == nodeid );
+            nodelist( i++ ) = index;
+        }
+        ++elem_iterator;
+    }
+    AMP_ASSERT( i == nodelist.length() );
 }
 
 

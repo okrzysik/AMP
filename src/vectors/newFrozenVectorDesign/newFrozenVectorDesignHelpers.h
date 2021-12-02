@@ -9,7 +9,7 @@ namespace LinearAlgebra {
 
 AMP::LinearAlgebra::Vector::shared_ptr
 subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
-                         AMP::LinearAlgebra::Variable::shared_ptr var );
+                         std::shared_ptr<AMP::LinearAlgebra::Variable> var );
 
 AMP::LinearAlgebra::Vector::shared_ptr joinVectors( AMP::LinearAlgebra::Vector::shared_ptr vec1,
                                                     AMP::LinearAlgebra::Vector::shared_ptr vec2 );

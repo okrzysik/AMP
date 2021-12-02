@@ -70,12 +70,12 @@ public:
 
     void modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr sol );
 
-    AMP::LinearAlgebra::Variable::shared_ptr getInputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
         return d_volumeOperator->getInputVariable();
     }
 
-    AMP::LinearAlgebra::Variable::shared_ptr getOutputVariable() override
+    std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() override
     {
         return d_volumeOperator->getOutputVariable();
     }

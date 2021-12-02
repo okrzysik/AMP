@@ -55,7 +55,7 @@ std::string ManagedThyraVector::ManagedThyraVector::type() const
 /****************************************************************
  * Clone the vector                                              *
  ****************************************************************/
-std::unique_ptr<Vector> ManagedThyraVector::rawClone( const Variable::shared_ptr var ) const
+std::unique_ptr<Vector> ManagedThyraVector::rawClone( const std::shared_ptr<Variable> var ) const
 {
     auto vec    = getVectorEngine( getVectorData() );
     auto vec2   = vec->cloneVector( "ManagedThyraVectorClone" );
@@ -83,7 +83,8 @@ void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 /********************************************************
  * Subset                                                *
  ********************************************************/
-Vector::shared_ptr ManagedThyraVector::subsetVectorForVariable( Variable::const_shared_ptr name )
+Vector::shared_ptr
+ManagedThyraVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
 {
     Vector::shared_ptr retVal;
     if ( !retVal )
@@ -96,7 +97,7 @@ Vector::shared_ptr ManagedThyraVector::subsetVectorForVariable( Variable::const_
     return retVal;
 }
 Vector::const_shared_ptr
-ManagedThyraVector::constSubsetVectorForVariable( Variable::const_shared_ptr name ) const
+ManagedThyraVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
 {
     Vector::const_shared_ptr retVal;
     if ( !retVal )

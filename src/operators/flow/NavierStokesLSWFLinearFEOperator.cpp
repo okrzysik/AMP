@@ -1,7 +1,7 @@
-
 #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/VectorSelector.h"
 #include "libmesh/cell_hex27.h"
 #include "libmesh/node.h"
 
@@ -26,22 +26,20 @@ NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( varName ) );
 
     /*
-            std::vector<std::string> InternalVariableNames(4);
-            InternalVariableNames[NavierStokes::PRESSURE]= "PRESSURE";
-            InternalVariableNames[NavierStokes::VELOCITY]= "VELOCITY";
-            InternalVariableNames[NavierStokes::PRINCIPALSTRESS]= "PRINCIPALSTRESS";
-            InternalVariableNames[NavierStokes::SHEARSTRESS]= "SHEARSTRESS";
+    std::vector<std::string> InternalVariableNames(4);
+    InternalVariableNames[NavierStokes::PRESSURE]= "PRESSURE";
+    InternalVariableNames[NavierStokes::VELOCITY]= "VELOCITY";
+    InternalVariableNames[NavierStokes::PRINCIPALSTRESS]= "PRINCIPALSTRESS";
+    InternalVariableNames[NavierStokes::SHEARSTRESS]= "SHEARSTRESS";
 
-            AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
-            std::shared_ptr<AMP::Database> activeInpVar_db =
-       params->d_db->getDatabase("ActiveInputVariables");
-            for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
-                std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
-                AMP::LinearAlgebra::Variable::shared_ptr dummyVar(new
-       AMP::LinearAlgebra::Variable(varName) );
-                d_inpVariables->setVariable(i, dummyVar);
-                d_outVariables->setVariable(i, dummyVar);
-            }//end for i
+    AMP_INSIST( params->d_db->keyExists("ActiveInputVariables"), "key not found" );
+    auto activeInpVar_db = params->d_db->getDatabase("ActiveInputVariables");
+    for(unsigned int i = 0; i < InternalVariableNames.size(); i++) {
+        std::string varName = activeInpVar_db->getString(InternalVariableNames[i]);
+        auto dummyVar = std::make_shared<AMP::LinearAlgebra::Variable>(varName);
+        d_inpVariables->setVariable(i, dummyVar);
+        d_outVariables->setVariable(i, dummyVar);
+    }//end for i
     */
 
     bool isAttachedToNonlinearOperator =
@@ -76,7 +74,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
     }
     /*
           for(unsigned int i = 0; i < d_inpVariables->numVariables() ; i++) {
-            AMP::LinearAlgebra::Variable::shared_ptr var = d_inpVariables->getVariable(i);
+            std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable(i);
             AMP::LinearAlgebra::Vector::shared_ptr vector = mySubsetVector(params->d_frozenVec[i],
        var);
             if((d_inVec[i].get() == NULL) and (vector.get() != NULL)) {
@@ -191,9 +189,8 @@ void NavierStokesLSWFLinearFEOperator::getDofIndicesForCurrentElement(
     } // end of j
 }
 
-AMP::LinearAlgebra::Vector::shared_ptr
-NavierStokesLSWFLinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                                  AMP::LinearAlgebra::Variable::shared_ptr var )
+AMP::LinearAlgebra::Vector::shared_ptr NavierStokesLSWFLinearFEOperator::mySubsetVector(
+    AMP::LinearAlgebra::Vector::shared_ptr vec, std::shared_ptr<AMP::LinearAlgebra::Variable> var )
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );

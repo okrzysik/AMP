@@ -125,7 +125,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     unsigned int dofsPerElem = ( dim * numGaussPtsPerElem );
 
-    AMP::LinearAlgebra::Variable::shared_ptr variable(
+    std::shared_ptr<AMP::LinearAlgebra::Variable> variable(
         new AMP::LinearAlgebra::Variable( "GaussPoints" ) );
 
     std::vector<AMP::Mesh::Mesh::shared_ptr> meshesForMap( 2 );

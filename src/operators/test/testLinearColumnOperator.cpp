@@ -73,7 +73,7 @@ static void myTest( AMP::UnitTest *ut )
         // create a column operator object
         auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
 
-        std::vector<AMP::LinearAlgebra::Variable::shared_ptr> inputVariables;
+        std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> inputVariables;
         std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;
 
         double defTemp = -1.0;
@@ -97,7 +97,7 @@ static void myTest( AMP::UnitTest *ut )
 
             columnOperator->append( testOperator );
 
-            AMP::LinearAlgebra::Variable::shared_ptr opVar = myLinOp->getInputVariable();
+            std::shared_ptr<AMP::LinearAlgebra::Variable> opVar = myLinOp->getInputVariable();
 
             inputVariables.push_back( opVar );
 
