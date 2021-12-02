@@ -175,8 +175,8 @@ static const char *_cudaGetErrorEnum( cudaError_t error )
         return "cudaErrorJitCompilerNotFound";
     case cudaErrorCooperativeLaunchTooLarge:
         return "cudaErrorCooperativeLaunchTooLarge";
-    case cudaErrorDeviceUninitilialized:
-        return "cudaErrorDeviceUninitilialized";
+    case cudaErrorDeviceUninitialized:
+        return "cudaErrorDeviceUninitialized";
     case cudaErrorArrayIsMapped:
         return "cudaErrorArrayIsMapped";
     case cudaErrorAlreadyMapped:
