@@ -4,10 +4,11 @@
 #include <cuda_runtime.h>
 
 
-// CUDA Runtime error messages
-#ifdef __DRIVER_TYPES_H__
-static const char *_cudaGetErrorEnum( cudaError_t error )
+// Check
+template<typename T>
+void check( T result, char const *const func, const char *const file, int const line )
 {
+<<<<<<< HEAD
     switch ( error ) {
     case cudaSuccess:
         return "cudaSuccess";
@@ -225,179 +226,47 @@ static const char *_cudaGetErrorEnum( cudaError_t error )
         return "cudaErrorCapturedEvent";
     case cudaErrorStreamCaptureWrongThread:
         return "cudaErrorStreamCaptureWrongThread";
+=======
+    if ( result ) {
+        fprintf( stderr,
+                 "CUDA error at %s:%d code=%d(%s) \"%s\" \n",
+                 file,
+                 line,
+                 static_cast<int>( result ),
+                 cudaGetName( result ),
+                 func );
+        // Make sure we call CUDA Device Reset before exiting
+        DEVICE_RESET
+        exit( EXIT_FAILURE );
+>>>>>>> 4c89191beaa0059acd51b51869ace29bbd4f0d32
     }
-    return "<unknown>";
 }
-#else
-enum cudaError_t {};
-static const char *_cudaGetErrorEnum( cudaError_t ) { return "<unknown>"; }
-#endif
 
-#ifdef __cuda_cuda_h__
-// CUDA Driver API errors
-DISABLE_WARNINGS
-static const char *_cudaGetErrorEnum( CUresult error )
+
+// CUDA Runtime error messages
+template<>
+const char *cudaGetName<cudaError_t>( cudaError_t error )
 {
-    switch ( error ) {
-    case CUDA_SUCCESS:
-        return "CUDA_SUCCESS";
-    case CUDA_ERROR_INVALID_VALUE:
-        return "CUDA_ERROR_INVALID_VALUE";
-    case CUDA_ERROR_OUT_OF_MEMORY:
-        return "CUDA_ERROR_OUT_OF_MEMORY";
-    case CUDA_ERROR_NOT_INITIALIZED:
-        return "CUDA_ERROR_NOT_INITIALIZED";
-    case CUDA_ERROR_DEINITIALIZED:
-        return "CUDA_ERROR_DEINITIALIZED";
-    case CUDA_ERROR_PROFILER_DISABLED:
-        return "CUDA_ERROR_PROFILER_DISABLED";
-    case CUDA_ERROR_PROFILER_NOT_INITIALIZED:
-        return "CUDA_ERROR_PROFILER_NOT_INITIALIZED";
-    case CUDA_ERROR_PROFILER_ALREADY_STARTED:
-        return "CUDA_ERROR_PROFILER_ALREADY_STARTED";
-    case CUDA_ERROR_PROFILER_ALREADY_STOPPED:
-        return "CUDA_ERROR_PROFILER_ALREADY_STOPPED";
-    case CUDA_ERROR_NO_DEVICE:
-        return "CUDA_ERROR_NO_DEVICE";
-    case CUDA_ERROR_INVALID_DEVICE:
-        return "CUDA_ERROR_INVALID_DEVICE";
-    case CUDA_ERROR_INVALID_IMAGE:
-        return "CUDA_ERROR_INVALID_IMAGE";
-    case CUDA_ERROR_INVALID_CONTEXT:
-        return "CUDA_ERROR_INVALID_CONTEXT";
-    case CUDA_ERROR_CONTEXT_ALREADY_CURRENT:
-        return "CUDA_ERROR_CONTEXT_ALREADY_CURRENT";
-    case CUDA_ERROR_MAP_FAILED:
-        return "CUDA_ERROR_MAP_FAILED";
-    case CUDA_ERROR_UNMAP_FAILED:
-        return "CUDA_ERROR_UNMAP_FAILED";
-    case CUDA_ERROR_ARRAY_IS_MAPPED:
-        return "CUDA_ERROR_ARRAY_IS_MAPPED";
-    case CUDA_ERROR_ALREADY_MAPPED:
-        return "CUDA_ERROR_ALREADY_MAPPED";
-    case CUDA_ERROR_NO_BINARY_FOR_GPU:
-        return "CUDA_ERROR_NO_BINARY_FOR_GPU";
-    case CUDA_ERROR_ALREADY_ACQUIRED:
-        return "CUDA_ERROR_ALREADY_ACQUIRED";
-    case CUDA_ERROR_NOT_MAPPED:
-        return "CUDA_ERROR_NOT_MAPPED";
-    case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
-        return "CUDA_ERROR_NOT_MAPPED_AS_ARRAY";
-    case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
-        return "CUDA_ERROR_NOT_MAPPED_AS_POINTER";
-    case CUDA_ERROR_ECC_UNCORRECTABLE:
-        return "CUDA_ERROR_ECC_UNCORRECTABLE";
-    case CUDA_ERROR_UNSUPPORTED_LIMIT:
-        return "CUDA_ERROR_UNSUPPORTED_LIMIT";
-    case CUDA_ERROR_CONTEXT_ALREADY_IN_USE:
-        return "CUDA_ERROR_CONTEXT_ALREADY_IN_USE";
-    case CUDA_ERROR_PEER_ACCESS_UNSUPPORTED:
-        return "CUDA_ERROR_PEER_ACCESS_UNSUPPORTED";
-    case CUDA_ERROR_INVALID_PTX:
-        return "CUDA_ERROR_INVALID_PTX";
-    case CUDA_ERROR_INVALID_GRAPHICS_CONTEXT:
-        return "CUDA_ERROR_INVALID_GRAPHICS_CONTEXT";
-    case CUDA_ERROR_INVALID_SOURCE:
-        return "CUDA_ERROR_INVALID_SOURCE";
-    case CUDA_ERROR_FILE_NOT_FOUND:
-        return "CUDA_ERROR_FILE_NOT_FOUND";
-    case CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND:
-        return "CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND";
-    case CUDA_ERROR_SHARED_OBJECT_INIT_FAILED:
-        return "CUDA_ERROR_SHARED_OBJECT_INIT_FAILED";
-    case CUDA_ERROR_OPERATING_SYSTEM:
-        return "CUDA_ERROR_OPERATING_SYSTEM";
-    case CUDA_ERROR_INVALID_HANDLE:
-        return "CUDA_ERROR_INVALID_HANDLE";
-    case CUDA_ERROR_NOT_FOUND:
-        return "CUDA_ERROR_NOT_FOUND";
-    case CUDA_ERROR_NOT_READY:
-        return "CUDA_ERROR_NOT_READY";
-    case CUDA_ERROR_ILLEGAL_ADDRESS:
-        return "CUDA_ERROR_ILLEGAL_ADDRESS";
-    case CUDA_ERROR_LAUNCH_FAILED:
-        return "CUDA_ERROR_LAUNCH_FAILED";
-    case CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES:
-        return "CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES";
-    case CUDA_ERROR_LAUNCH_TIMEOUT:
-        return "CUDA_ERROR_LAUNCH_TIMEOUT";
-    case CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING:
-        return "CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING";
-    case CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED:
-        return "CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED";
-    case CUDA_ERROR_PEER_ACCESS_NOT_ENABLED:
-        return "CUDA_ERROR_PEER_ACCESS_NOT_ENABLED";
-    case CUDA_ERROR_PRIMARY_CONTEXT_ACTIVE:
-        return "CUDA_ERROR_PRIMARY_CONTEXT_ACTIVE";
-    case CUDA_ERROR_CONTEXT_IS_DESTROYED:
-        return "CUDA_ERROR_CONTEXT_IS_DESTROYED";
-    case CUDA_ERROR_ASSERT:
-        return "CUDA_ERROR_ASSERT";
-    case CUDA_ERROR_TOO_MANY_PEERS:
-        return "CUDA_ERROR_TOO_MANY_PEERS";
-    case CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED:
-        return "CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED";
-    case CUDA_ERROR_HOST_MEMORY_NOT_REGISTERED:
-        return "CUDA_ERROR_HOST_MEMORY_NOT_REGISTERED";
-    case CUDA_ERROR_HARDWARE_STACK_ERROR:
-        return "CUDA_ERROR_HARDWARE_STACK_ERROR";
-    case CUDA_ERROR_ILLEGAL_INSTRUCTION:
-        return "CUDA_ERROR_ILLEGAL_INSTRUCTION";
-    case CUDA_ERROR_MISALIGNED_ADDRESS:
-        return "CUDA_ERROR_MISALIGNED_ADDRESS";
-    case CUDA_ERROR_INVALID_ADDRESS_SPACE:
-        return "CUDA_ERROR_INVALID_ADDRESS_SPACE";
-    case CUDA_ERROR_INVALID_PC:
-        return "CUDA_ERROR_INVALID_PC";
-    case CUDA_ERROR_NOT_PERMITTED:
-        return "CUDA_ERROR_NOT_PERMITTED";
-    case CUDA_ERROR_NOT_SUPPORTED:
-        return "CUDA_ERROR_NOT_SUPPORTED";
-    case CUDA_ERROR_UNKNOWN:
-        return "CUDA_ERROR_UNKNOWN";
-    case CUDA_ERROR_NVLINK_UNCORRECTABLE:
-        return "CUDA_ERROR_NVLINK_UNCORRECTABLE";
-    case CUDA_ERROR_JIT_COMPILER_NOT_FOUND:
-        return "CUDA_ERROR_JIT_COMPILER_NOT_FOUND";
-    case CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE:
-        return "CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE";
-    case CUDA_ERROR_ILLEGAL_STATE:
-        return "CUDA_ERROR_ILLEGAL_STATE";
-    case CUDA_ERROR_SYSTEM_NOT_READY:
-        return "CUDA_ERROR_SYSTEM_NOT_READY";
-    case CUDA_ERROR_SYSTEM_DRIVER_MISMATCH:
-        return "CUDA_ERROR_SYSTEM_DRIVER_MISMATCH";
-    case CUDA_ERROR_COMPAT_NOT_SUPPORTED_ON_DEVICE:
-        return "CUDA_ERROR_COMPAT_NOT_SUPPORTED_ON_DEVICE";
-    case CUDA_ERROR_STREAM_CAPTURE_UNSUPPORTED:
-        return "CUDA_ERROR_STREAM_CAPTURE_UNSUPPORTED";
-    case CUDA_ERROR_STREAM_CAPTURE_INVALIDATED:
-        return "CUDA_ERROR_STREAM_CAPTURE_INVALIDATED";
-    case CUDA_ERROR_STREAM_CAPTURE_MERGE:
-        return "CUDA_ERROR_STREAM_CAPTURE_MERGE";
-    case CUDA_ERROR_STREAM_CAPTURE_UNMATCHED:
-        return "CUDA_ERROR_STREAM_CAPTURE_UNMATCHED";
-    case CUDA_ERROR_STREAM_CAPTURE_UNJOINED:
-        return "CUDA_ERROR_STREAM_CAPTURE_UNJOINED";
-    case CUDA_ERROR_STREAM_CAPTURE_ISOLATION:
-        return "CUDA_ERROR_STREAM_CAPTURE_ISOLATION";
-    case CUDA_ERROR_STREAM_CAPTURE_IMPLICIT:
-        return "CUDA_ERROR_STREAM_CAPTURE_IMPLICIT";
-    case CUDA_ERROR_CAPTURED_EVENT:
-        return "CUDA_ERROR_CAPTURED_EVENT";
-    case CUDA_ERROR_STREAM_CAPTURE_WRONG_THREAD:
-        return "CUDA_ERROR_STREAM_CAPTURE_WRONG_THREAD";
-    }
-    return "<unknown>";
+    return cudaGetErrorName( error );
 }
-#else
-enum CUresult {};
-static const char *_cudaGetErrorEnum( CUresult ) { return "<unknown>"; }
-#endif
+template void check<cudaError_t>( cudaError_t, char const *const, const char *const, int const );
 
-#ifdef CUBLAS_API_H_
+
+// CUDA Driver API errors
+template<>
+const char *cudaGetName<CUresult>( CUresult error )
+{
+    const char *str = nullptr;
+    cuGetErrorName( error, &str );
+    return str;
+}
+template void check<CUresult>( CUresult, char const *const, const char *const, int const );
+
+
 // cuBLAS API errors
-static const char *_cudaGetErrorEnum( cublasStatus_t error )
+#ifdef CUBLAS_API_H_
+template<>
+const char *cudaGetName<cublasStatus_t>( cublasStatus_t error )
 {
     switch ( error ) {
     case CUBLAS_STATUS_SUCCESS:
@@ -423,15 +292,15 @@ static const char *_cudaGetErrorEnum( cublasStatus_t error )
     }
     return "<unknown>";
 }
-ENABLE_WARNINGS
-#else
-enum cublasStatus_t {};
-static const char *_cudaGetErrorEnum( cublasStatus_t ) { return "<unknown>"; }
+template void
+check<cublasStatus_t>( cublasStatus_t, char const *const, const char *const, int const );
 #endif
 
-#ifdef _CUFFT_H_
+
 // cuFFT API errors
-static const char *_cudaGetErrorEnum( cufftResult error )
+#ifdef _CUFFT_H_
+template<>
+const char *cudaGetName<cufftResult>( cufftResult error )
 {
     switch ( error ) {
     case CUFFT_SUCCESS:
@@ -469,15 +338,14 @@ static const char *_cudaGetErrorEnum( cufftResult error )
     }
     return "<unknown>";
 }
-#else
-enum cufftResult {};
-static const char *_cudaGetErrorEnum( cufftResult ) { return "<unknown>"; }
+template void check<cufftResult>( cufftResult, char const *const, const char *const, int const );
 #endif
 
 
-#ifdef CUSPARSEAPI
 // cuSPARSE API errors
-static const char *_cudaGetErrorEnum( cusparseStatus_t error )
+#ifdef CUSPARSEAPI
+template<>
+const char *cudaGetName<cusparseStatus_t>( cusparseStatus_t error )
 {
     switch ( error ) {
     case CUSPARSE_STATUS_SUCCESS:
@@ -501,14 +369,15 @@ static const char *_cudaGetErrorEnum( cusparseStatus_t error )
     }
     return "<unknown>";
 }
-#else
-enum cusparseStatus_t {};
-static const char *_cudaGetErrorEnum( cusparseStatus_t ) { return "<unknown>"; }
+template void
+check<cusparseStatus_t>( cufftResult, char const *const, const char *const, int const );
 #endif
 
-#ifdef CUSOLVER_COMMON_H_
+
 // cuSOLVER API errors
-static const char *_cudaGetErrorEnum( cusolverStatus_t error )
+#ifdef CUSOLVER_COMMON_H_
+template<>
+const char *cudaGetName<cusolverStatus_t>( cusolverStatus_t error )
 {
     switch ( error ) {
     case CUSOLVER_STATUS_SUCCESS:
@@ -539,14 +408,15 @@ static const char *_cudaGetErrorEnum( cusolverStatus_t error )
 
     return "<unknown>";
 }
-#else
-enum cusolverStatus_t {};
-static const char *_cudaGetErrorEnum( cusolverStatus_t ) { return "<unknown>"; }
+template void
+check<cusolverStatus_t>( cufftResult, char const *const, const char *const, int const );
 #endif
 
-#ifdef CURAND_H_
+
 // cuRAND API errors
-static const char *_cudaGetErrorEnum( curandStatus_t error )
+#ifdef CURAND_H_
+template<>
+const char *cudaGetName<curandStatus_t>( curandStatus_t error )
 {
     switch ( error ) {
     case CURAND_STATUS_SUCCESS:
@@ -578,14 +448,14 @@ static const char *_cudaGetErrorEnum( curandStatus_t error )
     }
     return "<unknown>";
 }
-#else
-enum curandStatus_t {};
-static const char *_cudaGetErrorEnum( curandStatus_t ) { return "<unknown>"; }
+template void check<curandStatus_t>( cufftResult, char const *const, const char *const, int const );
 #endif
 
-#ifdef NV_NPPIDEFS_H
+
 // NPP API errors
-static const char *_cudaGetErrorEnum( NppStatus error )
+#ifdef NV_NPPIDEFS_H
+template<>
+const char *cudaGetName<NppStatus>( NppStatus error )
 {
     switch ( error ) {
     case NPP_NOT_SUPPORTED_MODE_ERROR:
@@ -711,44 +581,11 @@ static const char *_cudaGetErrorEnum( NppStatus error )
     case NPP_ERROR_RESERVED:
         return "NPP_ERROR_RESERVED";
     case NPP_NO_OPERATION_WARNING:
-        return "NPP_NO_OPERATION_WARNING";
+        cudaGetName return "NPP_NO_OPERATION_WARNING";
     case NPP_DIVIDE_BY_ZERO_WARNING:
         return "NPP_DIVIDE_BY_ZERO_WARNING";
     }
-
     return "<unknown>";
 }
-#else
-enum NppStatus {};
-static const char *_cudaGetErrorEnum( NppStatus ) { return "<unknown>"; }
+template void check<curandStatus_t>( NppStatus, char const *const, const char *const, int const );
 #endif
-
-
-template<typename T>
-void check( T result, char const *const func, const char *const file, int const line )
-{
-    if ( result ) {
-        fprintf( stderr,
-                 "CUDA error at %s:%d code=%d(%s) \"%s\" \n",
-                 file,
-                 line,
-                 static_cast<int>( result ),
-                 _cudaGetErrorEnum( result ),
-                 func );
-        DEVICE_RESET
-        // Make sure we call CUDA Device Reset before exiting
-        exit( EXIT_FAILURE );
-    }
-}
-template void check<cudaError_t>( cudaError_t, char const *const, const char *const, int const );
-template void check<CUresult>( CUresult, char const *const, const char *const, int const );
-template void
-check<cublasStatus_t>( cublasStatus_t, char const *const, const char *const, int const );
-template void check<cufftResult>( cufftResult, char const *const, const char *const, int const );
-template void
-check<cusparseStatus_t>( cusparseStatus_t, char const *const, const char *const, int const );
-template void
-check<cusolverStatus_t>( cusolverStatus_t, char const *const, const char *const, int const );
-template void
-check<curandStatus_t>( curandStatus_t, char const *const, const char *const, int const );
-template void check<NppStatus>( NppStatus, char const *const, const char *const, int const );
