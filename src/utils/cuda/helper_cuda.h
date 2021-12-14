@@ -26,6 +26,12 @@
 #endif
 #endif
 
+
+// Get the name of a return code
+template<typename T>
+const char *cudaGetName( T result );
+
+// Check the return code
 template<typename T>
 void check( T result, char const *const func, const char *const file, int const line );
 
@@ -40,7 +46,6 @@ void check( T result, char const *const func, const char *const file, int const 
 inline void __getLastCudaError( const char *errorMessage, const char *file, const int line )
 {
     cudaError_t err = cudaGetLastError();
-
     if ( cudaSuccess != err ) {
         fprintf( stderr,
                  "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
