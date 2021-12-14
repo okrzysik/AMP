@@ -15,4 +15,4 @@ IF ( USE_CUDA )
     ADD_RESOURCE( test_Vector_4procs GPU )
 ENDIF()
 
-ADD_SUBDIRECTORY ( extra_tests )
+ADD_SUBDIRECTORY( extra_tests )

@@ -200,15 +200,18 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
  * Helper function to get the size of an Array                           *
  * Note that HDF5 uses C ordered arrays so we need to flip the dimensions*
  ************************************************************************/
-template<class T>
-inline std::vector<hsize_t> arraySize( const AMP::Array<T> &x )
+inline std::vector<hsize_t> arraySize( const AMP::ArraySize &s1 )
 {
-    int N   = x.ndim();
-    auto s1 = x.size();
+    int N = s1.ndim();
     std::vector<hsize_t> s2( std::max( N, 1 ), 0 );
     for ( int i = 0; i < N; i++ )
         s2[N - i - 1] = static_cast<hsize_t>( s1[i] );
     return s2;
+}
+template<class T>
+inline std::vector<hsize_t> arraySize( const AMP::Array<T> &x )
+{
+    return arraySize( x.size() );
 }
 inline std::vector<size_t> convertSize( int N, const hsize_t *dims )
 {
@@ -297,7 +300,7 @@ void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::
         AMP_ASSERT( status == 0 );
     } else {
         // Use compression if availible
-        plist = createChunk( dim, defaultCompression( fid ) );
+        plist = createChunk( data.size(), defaultCompression( fid ), sizeof( T ) );
     }
     hid_t dataspace = H5Screate_simple( dim.size(), dim.data(), NULL );
     hid_t datatype  = getHDF5datatype<T>();

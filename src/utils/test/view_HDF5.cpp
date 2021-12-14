@@ -28,6 +28,10 @@ int main( int argc, char *argv[] )
     // Loop through the input files loading and printing the variables
     for ( int i = 1; i < argc; i++ ) {
         std::cout << argv[i] << ":\n";
+        if ( !AMP::Utilities::fileExists( argv[i] ) ) {
+            std::cerr << "File does not exist\n";
+            return -1;
+        }
         auto fid  = AMP::openHDF5( argv[i], "r" );
         auto data = AMP::readHDF5( fid, "/" );
         AMP::closeHDF5( fid );
