@@ -79,7 +79,6 @@ knownConditionTrueFalse:*/src/ampmesh/testHelpers/meshTestLoop.cpp
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
-syntaxError:*/src/utils/cuda/helper_cuda.cpp
 uninitMemberVar:*/src/matrices/petsc/NativePetscMatrix.cpp
 uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
 uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cpp
@@ -102,6 +101,7 @@ exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
 passedByValue:*/src/operators/subchannel/SubchannelHelpers.cpp
 syntaxError:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
 redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
+syntaxError:*/src/utils/cuda/helper_cuda.cpp
 copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
 invalidPointerCast:*/src/utils/threadpool/atomic_helpers.cpp
 nullPointer:*/src/utils/Scanner.cpp
