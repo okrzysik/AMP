@@ -401,7 +401,7 @@ public:
     const TYPE *end() const { return d_data + d_size; }
     const TYPE &back() const { return d_data[d_size - 1]; }
     template<class... Args>
-    void emplace_back( Args &&... args )
+    void emplace_back( Args &&...args )
     {
         if ( d_size == CAPACITY )
             throw std::bad_alloc();

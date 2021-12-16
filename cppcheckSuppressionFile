@@ -101,6 +101,7 @@ exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
 passedByValue:*/src/operators/subchannel/SubchannelHelpers.cpp
 syntaxError:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
 redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
+syntaxError:*/src/utils/cuda/helper_cuda.cpp
 copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
 invalidPointerCast:*/src/utils/threadpool/atomic_helpers.cpp
 nullPointer:*/src/utils/Scanner.cpp

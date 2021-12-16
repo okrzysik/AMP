@@ -40,7 +40,7 @@ public:
      * @param args      Additional arguments for the comparison
      */
     template<typename Compare, class... Args>
-    inline TYPE remove( Compare compare, const Args &... args );
+    inline TYPE remove( Compare compare, const Args &...args );
 
     //! Remove the first from the list
     inline TYPE remove_first();
