@@ -15,6 +15,17 @@ namespace AMP {
 #ifdef USE_HDF5 // USE HDF5
 
 
+// Function to round up/down to the nearest power of 2
+static size_t ceil2( size_t x )
+{
+    size_t y = 2;
+    while ( y < x )
+        y <<= 1;
+    return y;
+}
+static size_t floor2( size_t x ) { return ceil2( x ) >> 1; }
+
+
 /************************************************************************
  * HDF5 helper routines                                                  *
  ************************************************************************/
@@ -58,21 +69,24 @@ void closeGroup( hid_t gid ) { H5Gclose( gid ); }
 /************************************************************************
  * Complex struct that is compatible with HDF5                           *
  ************************************************************************/
-typedef struct {
-    double re;
-    double im;
-} complex_t;
-inline void convert( size_t N, const std::complex<double> *x, complex_t *y )
+template<class TYPE>
+struct complex_t {
+    TYPE re;
+    TYPE im;
+};
+template<class TYPE>
+inline void convert( size_t N, const std::complex<TYPE> *x, complex_t<TYPE> *y )
 {
     for ( size_t i = 0; i < N; i++ ) {
         y[i].re = x[i].real();
         y[i].im = x[i].imag();
     }
 }
-inline void convert( size_t N, const complex_t *x, std::complex<double> *y )
+template<class TYPE>
+inline void convert( size_t N, const complex_t<TYPE> *x, std::complex<TYPE> *y )
 {
     for ( size_t i = 0; i < N; i++ ) {
-        y[i] = std::complex<double>( x[i].re, x[i].im );
+        y[i] = std::complex<TYPE>( x[i].re, x[i].im );
     }
 }
 
@@ -141,11 +155,19 @@ hid_t getHDF5datatype<double>()
     return H5Tcopy( H5T_NATIVE_DOUBLE );
 }
 template<>
+hid_t getHDF5datatype<std::complex<float>>()
+{
+    hid_t datatype = H5Tcreate( H5T_COMPOUND, sizeof( complex_t<float> ) );
+    H5Tinsert( datatype, "real", HOFFSET( complex_t<float>, re ), H5T_NATIVE_FLOAT );
+    H5Tinsert( datatype, "imag", HOFFSET( complex_t<float>, im ), H5T_NATIVE_FLOAT );
+    return datatype;
+}
+template<>
 hid_t getHDF5datatype<std::complex<double>>()
 {
-    hid_t datatype = H5Tcreate( H5T_COMPOUND, sizeof( complex_t ) );
-    H5Tinsert( datatype, "real", HOFFSET( complex_t, re ), H5T_NATIVE_DOUBLE );
-    H5Tinsert( datatype, "imag", HOFFSET( complex_t, im ), H5T_NATIVE_DOUBLE );
+    hid_t datatype = H5Tcreate( H5T_COMPOUND, sizeof( complex_t<double> ) );
+    H5Tinsert( datatype, "real", HOFFSET( complex_t<double>, re ), H5T_NATIVE_DOUBLE );
+    H5Tinsert( datatype, "imag", HOFFSET( complex_t<double>, im ), H5T_NATIVE_DOUBLE );
     return datatype;
 }
 template<>
@@ -204,10 +226,9 @@ void readHDF5<AMP::Array<std::string_view>>( hid_t,
 {
     AMP_ERROR( "Reading data to a string view is not supported" );
 }
-template<>
-void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
-                                                 const std::string_view &name,
-                                                 AMP::Array<std::complex<double>> &data )
+template<class TYPE>
+static void
+readHDF5complex( hid_t fid, const std::string_view &name, AMP::Array<std::complex<TYPE>> &data )
 {
     if ( !H5Dexists( fid, name ) ) {
         // Dataset does not exist
@@ -221,7 +242,7 @@ void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
     int ndim  = H5Sget_simple_extent_dims( dataspace, dims0, nullptr );
     auto dims = convertSize( ndim, dims0 );
     data.resize( dims );
-    hid_t datatype2 = getHDF5datatype<std::complex<double>>();
+    hid_t datatype2 = getHDF5datatype<std::complex<TYPE>>();
     if ( data.empty() ) {
         // The data is empty
     } else if ( H5Tequal( datatype, datatype2 ) ) {
@@ -234,6 +255,20 @@ void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
     H5Tclose( datatype );
     H5Tclose( datatype2 );
     H5Sclose( dataspace );
+}
+template<>
+void readHDF5<AMP::Array<std::complex<float>>>( hid_t fid,
+                                                const std::string_view &name,
+                                                AMP::Array<std::complex<float>> &data )
+{
+    readHDF5complex( fid, name, data );
+}
+template<>
+void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
+                                                 const std::string_view &name,
+                                                 AMP::Array<std::complex<double>> &data )
+{
+    readHDF5complex( fid, name, data );
 }
 // clang-format off
 #define readWriteHDF5Array( TYPE )                                                          \
@@ -328,6 +363,7 @@ readWriteHDF5Scalar( uint32_t )
 readWriteHDF5Scalar( uint64_t )
 readWriteHDF5Scalar( float )
 readWriteHDF5Scalar( double )
+readWriteHDF5Scalar( std::complex<float> )
 readWriteHDF5Scalar( std::complex<double> )
     // clang-format on
 
@@ -465,17 +501,23 @@ Compression defaultCompression( hid_t fid )
 /************************************************************************
  * Create a default chunk size                                           *
  ************************************************************************/
-hid_t createChunk( const std::vector<hsize_t> &dims, Compression compress )
+hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize )
 {
-    if ( compress == Compression::None || dims.empty() )
+    if ( compress == Compression::None || dims.length() < 512 )
         return H5P_DEFAULT;
-    hsize_t length = 1;
-    for ( auto d : dims )
-        length *= d;
-    if ( length < 512 )
-        return H5P_DEFAULT;
+    if ( objSize == 0 )
+        objSize = 512;
+    int d = dims.ndim() - 1;
+    while ( dims.length() * objSize > 0x100000000 ) {
+        // Maximum chunk size is 4GB (limit to 2GB)
+        if ( dims[d] == 1 ) {
+            d--;
+        } else {
+            dims.resize( d, floor2( dims[d] ) );
+        }
+    }
     hid_t plist = H5Pcreate( H5P_DATASET_CREATE );
-    auto status = H5Pset_chunk( plist, dims.size(), dims.data() );
+    auto status = H5Pset_chunk( plist, dims.ndim(), arraySize( dims ).data() );
     AMP_ASSERT( status == 0 );
     if ( compress == Compression::GZIP ) {
         status = H5Pset_deflate( plist, 7 );
@@ -491,17 +533,17 @@ hid_t createChunk( const std::vector<hsize_t> &dims, Compression compress )
 /************************************************************************
  * Write Array                                                           *
  ************************************************************************/
-template<>
-void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
-                                                  const std::string_view &name,
-                                                  const AMP::Array<std::complex<double>> &data )
+template<class TYPE>
+static void writeHDF5complex( hid_t fid,
+                              const std::string_view &name,
+                              const AMP::Array<std::complex<TYPE>> &data )
 {
-    hid_t datatype = getHDF5datatype<std::complex<double>>();
+    hid_t datatype = getHDF5datatype<std::complex<TYPE>>();
     // Create the storage properties
-    hid_t plist = createChunk( arraySize( data ), defaultCompression( fid ) );
+    hid_t plist = createChunk( data.size(), defaultCompression( fid ), sizeof( TYPE ) );
     // Copy the data
     size_t N = data.length();
-    auto *y  = new complex_t[N];
+    auto *y  = new complex_t<TYPE>[N];
     convert( N, data.data(), y );
     // Save the array
     auto dim        = arraySize( data );
@@ -514,6 +556,20 @@ void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
     H5Pclose( plist );
     H5Tclose( datatype );
     delete[] y;
+}
+template<>
+void writeHDF5<AMP::Array<std::complex<float>>>( hid_t fid,
+                                                 const std::string_view &name,
+                                                 const AMP::Array<std::complex<float>> &data )
+{
+    writeHDF5complex( fid, name, data );
+}
+template<>
+void writeHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
+                                                  const std::string_view &name,
+                                                  const AMP::Array<std::complex<double>> &data )
+{
+    writeHDF5complex( fid, name, data );
 }
 template<>
 void writeHDF5<AMP::Array<std::string>>( hid_t fid,

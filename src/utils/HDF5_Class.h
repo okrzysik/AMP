@@ -39,6 +39,9 @@ public:
     //! Get the data ith block and jth child
     virtual std::shared_ptr<HDF5data> getData( size_t i, const std::string_view &name ) = 0;
 
+    //! Get the data ith block and jth child
+    std::shared_ptr<const HDF5data> getData( size_t i, const std::string_view &name ) const;
+
     //! Get the variable names
     virtual std::vector<std::string> getNames() const = 0;
 
