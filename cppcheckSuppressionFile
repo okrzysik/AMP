@@ -79,6 +79,7 @@ knownConditionTrueFalse:*/src/ampmesh/testHelpers/meshTestLoop.cpp
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+syntaxError:*/src/utils/cuda/helper_cuda.cpp
 uninitMemberVar:*/src/matrices/petsc/NativePetscMatrix.cpp
 uninitMemberVar:*/src/operators/boundary/libmesh/RobinMatrixCorrection.cpp
 uninitMemberVar:*/src/operators/boundary/libmesh/TractionBoundaryOperator.cpp
