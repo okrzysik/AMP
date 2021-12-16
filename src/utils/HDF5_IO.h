@@ -65,9 +65,10 @@ Compression defaultCompression( hid_t fid );
  * \details This function create a chunk for HDF5
  * @param[in] dims      Chunk size
  * @param[in] compress  Compression to use
+ * @param[in] objSize   Optional number of bytes of an object
  * @return              Return a handle to the file.
  */
-hid_t createChunk( const std::vector<hsize_t> &dims, Compression compress );
+hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize = 0 );
 
 
 /**
