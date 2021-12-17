@@ -16,8 +16,7 @@ namespace AMP {
 class RNG;
 }
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 class VectorSelector;
@@ -356,21 +355,6 @@ public: // Virtual functions
      */
     virtual void swapVectors( Vector &other );
 
-    /** \brief Retrieve a sub-vector associated with a particular Variable
-     * \param[in] name  Variable by which to retrieve a subvector
-     * \return  A Vector shared pointer
-     * \see MultiVector
-     */
-    virtual Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name );
-
-    /** \brief Retrieve a sub-vector associated with a particular Variable
-     * \param[in] name  Variable by which to retrieve a subvector
-     * \return  A Vector shared pointer
-     * \see MultiVector
-     */
-    virtual Vector::const_shared_ptr
-    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const;
-
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
       * \param[in]  variable_name  The name of the vector to be created
@@ -405,7 +389,7 @@ public: // Virtual functions
                                   const std::string &variable_name ) const;
 
     //! Get the DOFManager for this Vector
-    std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
+    inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
 
 
     /** \brief  Selects a portion of this vector and puts a view into a vector
@@ -457,13 +441,27 @@ public: // Non-virtual functions
      */
     Vector::shared_ptr subsetVectorForVariable( const std::string &name );
 
-
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
      * \see MultiVector
      */
     Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
+
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+     * \param[in] var  Variable by which to retrieve a subvector
+     * \return  A Vector shared pointer
+     * \see MultiVector
+     */
+    Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var );
+
+    /** \brief Retrieve a sub-vector associated with a particular Variable
+     * \param[in] var  Variable by which to retrieve a subvector
+     * \return  A Vector shared pointer
+     * \see MultiVector
+     */
+    Vector::const_shared_ptr
+    constSubsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
@@ -784,8 +782,7 @@ std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr );
 std::ostream &operator<<( std::ostream &out, const Vector & );
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #include "Vector.inline.h"
 

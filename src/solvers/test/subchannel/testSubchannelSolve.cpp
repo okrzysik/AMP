@@ -50,10 +50,10 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#include <memory>
 
 #include "ProfilerApp.h"
 
+#include <memory>
 #include <string>
 
 
@@ -644,8 +644,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         std::cout << "Enthalpy Solution:" << hin << std::endl;
         std::cout << "Outlet pressure:" << Pout << std::endl;
 
-        auto subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-        auto subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
+        AMP::LinearAlgebra::VS_Mesh meshSelector( subchannelMesh );
+        auto tmpVec             = flowSolVec->selectInto( meshSelector );
+        auto subchannelEnthalpy = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
+        auto subchannelPressure = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
 
         subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin );
         subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout );

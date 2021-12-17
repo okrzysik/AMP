@@ -41,10 +41,6 @@ public:
     void swapVectors( Vector &other ) override;
     void copyVector( Vector::const_shared_ptr vec ) override;
 
-    Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name ) override;
-    Vector::const_shared_ptr
-    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const override;
-
     std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
     std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 };

@@ -80,9 +80,8 @@ void VectorTests::Bug_728( AMP::UnitTest *ut )
     if ( !var1 )
         return;
     auto var2 = var1->cloneVariable( var1->getName() );
-    PASS_FAIL( vector->subsetVectorForVariable( var1 ), "Found vector for same variable pointer" );
-    PASS_FAIL( vector->subsetVectorForVariable( var2 ),
-               "Found vector for cloned variable pointer" );
+    PASS_FAIL( vector->subsetVectorForVariable( var1 ), "Found vector for same variable" );
+    PASS_FAIL( vector->subsetVectorForVariable( var2 ), "Found vector for cloned variable" );
 }
 
 

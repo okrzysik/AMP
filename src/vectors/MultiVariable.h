@@ -1,11 +1,13 @@
 #ifndef included_AMP_MultiVariable_h
 #define included_AMP_MultiVariable_h
 
+#include "AMP/vectors/VectorSelector.h"
 #include "Variable.h"
+
 #include <vector>
 
-namespace AMP {
-namespace LinearAlgebra {
+
+namespace AMP::LinearAlgebra {
 
 
 /** \brief  A class for combining variables.
@@ -21,33 +23,27 @@ public:
     /** \brief Get the first variable in the MultiVariable
      * \return An iterator pointing to the first variable
      */
-    inline auto beginVariable() { return d_vVariables.begin(); }
+    inline auto begin() { return d_vVariables.begin(); }
 
     /** \brief Get end of the MultiVariable array
      * \return An iterator pointing to the end
      */
-    inline auto endVariable() { return d_vVariables.end(); }
+    inline auto end() { return d_vVariables.end(); }
 
     /** \brief Get the first variable in the MultiVariable
      * \return An iterator pointing to the first variable
      */
-    inline auto beginVariable() const { return d_vVariables.begin(); }
+    inline auto begin() const { return d_vVariables.begin(); }
 
     /** \brief Get end of the MultiVariable array
      * \return An iterator pointing to the end
      */
-    inline auto endVariable() const { return d_vVariables.end(); }
+    inline auto end() const { return d_vVariables.end(); }
 
     /** \brief If there are multiple matching variables in the list, this
      *  will remove them.  Note that may change the etnry order and will remove any null entries.
      */
     void removeDuplicateVariables();
-
-    /** \brief Given a vector of strings, this will sort the MultiVariable
-     * to the given order
-     * \param[in] v A list of names by which to sort the MultiVariable
-     */
-    void sortVariablesByName( const std::vector<std::string> &v );
 
     /** \brief Constructor
      * \details Because a MultiVariable is a Variable, it must have a name.  This does
@@ -124,14 +120,40 @@ public:
     virtual std::shared_ptr<Variable> cloneVariable( const std::string &name ) const override;
     virtual void setUnits( const Units &units ) override;
 
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 protected:
     //! List of variables comprising the MultiVariable
     std::vector<std::shared_ptr<Variable>> d_vVariables;
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+/** \brief  A class for selecting multi-variables.
+ * \details  This class provides a selector for a multivariable
+ */
+class VS_MultiVariable : public VectorSelector
+{
+
+public:
+    /** \brief Constructor
+     * \param[in] name  The name of the variable to subset on
+     */
+    explicit VS_MultiVariable( const std::shared_ptr<MultiVariable> &var );
+
+    std::string getName() const;
+
+public: // Functions inherited from VectorSelector
+    bool isSelected( Vector::const_shared_ptr ) const override;
+    Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
+    Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
+
+protected:
+    std::shared_ptr<MultiVariable> d_var;
+};
+
+
+} // namespace AMP::LinearAlgebra
 
 
 #endif

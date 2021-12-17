@@ -63,8 +63,8 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
             "The multivariable has a different number of varaibles on different processors" );
         // Create the Vector for each variable, then combine
         std::vector<Vector::shared_ptr> vectors;
-        for ( auto it = multiVariable->beginVariable(); it != multiVariable->endVariable(); ++it )
-            vectors.push_back( createVector( DOFs, *it, split ) );
+        for ( auto var : *multiVariable )
+            vectors.push_back( createVector( DOFs, var, split ) );
         // Create the multivector
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );

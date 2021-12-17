@@ -55,6 +55,7 @@
 #include <memory>
 #include <string>
 
+
 // Function to get an arbitrary power profile (W/kg) assuming a density of 1 kg/m^3 for the volume
 // integral
 // P is the total power of the pin, V is the volume of the pin
@@ -580,7 +581,6 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );
 
-
     // Initialize the pin temperatures
     PROFILE_START( "Initialize" );
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -642,8 +642,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         std::cout << "Enthalpy Solution:" << hin << std::endl;
         std::cout << "Outlet pressure:" << Pout << std::endl;
 
-        auto subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-        auto subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
+        AMP::LinearAlgebra::VS_Mesh meshSelector( subchannelMesh );
+        auto tmpVec             = flowSolVec->selectInto( meshSelector );
+        auto subchannelEnthalpy = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
+        auto subchannelPressure = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
 
         subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin );
         subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout );

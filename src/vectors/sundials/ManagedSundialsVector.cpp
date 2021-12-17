@@ -73,37 +73,6 @@ std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const std::shared_ptr<V
 }
 
 
-/********************************************************
- * Subset                                                *
- ********************************************************/
-Vector::shared_ptr
-ManagedSundialsVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
-{
-    Vector::shared_ptr retVal;
-    if ( !retVal )
-        retVal = Vector::subsetVectorForVariable( name );
-    if ( !retVal ) {
-        auto vec = getVectorEngine( getVectorData() );
-        if ( vec )
-            retVal = vec->subsetVectorForVariable( name );
-    }
-    return retVal;
-}
-Vector::const_shared_ptr
-ManagedSundialsVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
-{
-    Vector::const_shared_ptr retVal;
-    if ( !retVal )
-        retVal = Vector::constSubsetVectorForVariable( name );
-    if ( !retVal ) {
-        auto const vec = getVectorEngine( getVectorData() );
-        if ( vec )
-            retVal = vec->constSubsetVectorForVariable( name );
-    }
-    return retVal;
-}
-
-
 /**
  * Creates ops, the structure of vector operations which gets attached to the member N_Vector
  * Functions with no_impl in their names are not implemented at the moment
