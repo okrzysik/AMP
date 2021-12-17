@@ -5,7 +5,7 @@
 #include "AMP/matrices/ManagedMatrixParameters.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef USE_EXT_TRILINOS
+#ifdef USE_EXT_PETSC
     #include "AMP/matrices/petsc/NativePetscMatrix.h"
     #include "AMP/vectors/petsc/PetscHelpers.h"
 #endif
