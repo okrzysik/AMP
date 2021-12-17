@@ -211,11 +211,11 @@ template<class type>
 int testScan( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testScan" );
-    auto x = ( type )( comm.getRank() + 1 );
+    auto x = (type) ( comm.getRank() + 1 );
     type y;
     auto msg = stringf( "sumScan (%s)", typeid( type ).name() );
     comm.sumScan<type>( &x, &y, 1 );
-    auto N = ( type )( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
+    auto N = (type) ( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
     if ( y == N )
         ut->passes( msg );
     else

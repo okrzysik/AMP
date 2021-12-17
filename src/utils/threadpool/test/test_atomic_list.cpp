@@ -25,7 +25,7 @@ class AtomicList2 final
 public:
     AtomicList2() : d_lock( 1 ) {}
     template<typename Compare, class... Args>
-    inline TYPE remove( Compare compare, const Args &... args )
+    inline TYPE remove( Compare compare, const Args &...args )
     {
         lock();
         auto it = d_data.begin();
