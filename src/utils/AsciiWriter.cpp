@@ -1,17 +1,11 @@
 #include "AMP/utils/AsciiWriter.h"
-#include "AMP/utils/AMP_MPI.I"
-#include "ProfilerApp.h"
-
-#ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
-#endif
-#ifdef USE_AMP_VECTORS
+#include "AMP/matrices/Matrix.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
-#endif
+
+#include "ProfilerApp.h"
 
 #include <vector>
 
@@ -72,8 +66,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         fid        = fopen( fname.c_str(), "w" );
         AMP_ASSERT( fid );
     }
-// Get the ids for the vectors and save the data
-#ifdef USE_AMP_VECTORS
+    // Get the ids for the vectors and save the data
     auto vec_ids = getKeys( d_vectors, d_comm );
     for ( const auto &vec_id : vec_ids ) {
         // Send the data to rank 0
@@ -93,9 +86,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
             fprintf( fid, "\n\n" );
         }
     }
-#endif
-// Get the ids for the matricies and save the data
-#ifdef USE_AMP_MATRICES
+    // Get the ids for the matricies and save the data
     auto mat_ids = getKeys( d_matrices, d_comm );
     for ( const auto &mat_id : mat_ids ) {
         // Send the header data to rank 0
@@ -134,7 +125,6 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
             fprintf( fid, "\n\n" );
         }
     }
-#endif
     // Close the file
     if ( fid )
         fclose( fid );
@@ -145,7 +135,6 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 /************************************************************
  * Function to copy a vector to rank 0                       *
  ************************************************************/
-#ifdef USE_AMP_VECTORS
 AMP::LinearAlgebra::Vector::const_shared_ptr
 AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec,
                             const AMP_MPI &comm )
@@ -198,13 +187,11 @@ AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec
         comm.waitAll( requests.size(), &requests[0] );
     return dst_vec;
 }
-#endif
 
 
 /************************************************************
  * Function to copy a row to rank 0                          *
  ************************************************************/
-#ifdef USE_AMP_MATRICES
 void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
                                  const AMP_MPI &comm,
                                  int row,
@@ -250,7 +237,6 @@ void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr ma
     if ( !requests.empty() )
         comm.waitAll( requests.size(), &requests[0] );
 }
-#endif
 
 
 } // namespace AMP::Utilities

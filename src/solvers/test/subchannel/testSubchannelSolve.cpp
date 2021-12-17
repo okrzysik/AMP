@@ -829,7 +829,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     }
 
 
-#ifdef USE_EXT_SILO
+    #ifdef USE_EXT_SILO
     // Rescale the solution to get the correct units
     const double h_scale = 1.0 / AMP::Operator::Subchannel::scaleEnthalpy;
     const double P_scale = 1.0 / AMP::Operator::Subchannel::scalePressure;
@@ -858,7 +858,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             specificPowerGpVec, pinMesh, AMP::Mesh::GeomType::Volume, "Power" );
     }
     siloWriter->writeFile( exeName, 0 );
-#endif
+    #endif
     ut->passes( "test runs to completion" );
 #else
     ut->expected_failure( "Solve disabled because it does not converge (requires debugging)" );

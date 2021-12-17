@@ -6,16 +6,13 @@
 #include "AMP/ampmesh/structured/StructuredGeometryMesh.h"
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/structured/structuredMeshIterator.h"
-#include "AMP/utils/Utilities.h"
-
-#ifdef USE_AMP_VECTORS
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -812,7 +809,6 @@ bool BoxMesh::isOnBoundary( const MeshElementIndex &index, int id ) const
 /****************************************************************
  * Create an ArrayVector over the mesh                           *
  ****************************************************************/
-#ifdef USE_AMP_VECTORS
 std::shared_ptr<AMP::LinearAlgebra::Vector> BoxMesh::createVector( const std::string &name,
                                                                    int gcw )
 {
@@ -828,7 +824,6 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> BoxMesh::createVector( const std::st
     AMP_ASSERT( vec->getLocalSize() == getIterator( type ).size() );
     return vec;
 }
-#endif
 
 
 /****************************************************************

@@ -46,7 +46,7 @@ AtomicList<TYPE, COMPARE>::~AtomicList()
  ******************************************************************/
 template<class TYPE, class COMPARE>
 template<class Compare, class... Args>
-inline TYPE AtomicList<TYPE, COMPARE>::remove( Compare compare, const Args &... args )
+inline TYPE AtomicList<TYPE, COMPARE>::remove( Compare compare, const Args &...args )
 {
     // Acquiring temporary ownership
     int pos   = 0;

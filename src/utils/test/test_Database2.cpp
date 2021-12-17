@@ -16,8 +16,8 @@
 #include <vector>
 
 #ifdef USE_SAMRAI
-#include "SAMRAI/tbox/InputManager.h"
-#include "SAMRAI/tbox/MemoryDatabase.h"
+    #include "SAMRAI/tbox/InputManager.h"
+    #include "SAMRAI/tbox/MemoryDatabase.h"
 #endif
 
 

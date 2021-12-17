@@ -164,6 +164,8 @@ void MultiVector::resetVectorData()
         managers[i] = d_vVectors[i]->getDOFManager();
         AMP_INSIST( managers[i],
                     "All vectors must have a DOFManager for MultiVector to work properly" );
+        AMP_ASSERT( managers[i]->numGlobalDOF() == d_vVectors[i]->getGlobalSize() );
+        AMP_ASSERT( managers[i]->numLocalDOF() == d_vVectors[i]->getLocalSize() );
     }
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
 
@@ -272,14 +274,14 @@ Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
         // Subset the individual vector
         auto retVec2 = d_vVectors[i]->selectInto( s );
         if ( retVec2 ) {
-            if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
+            if ( retVec2->getGlobalSize() > 0 )
                 subvectors.push_back( retVec2 );
         }
     }
     // Add the subsets to the multivector
     AMP_MPI comm = s.communicator( shared_from_this() );
     auto retVec  = MultiVector::create( "tmp_vector", comm, subvectors );
-    if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
+    if ( retVec->getGlobalSize() == 0 )
         retVec.reset();
     return retVec;
 }

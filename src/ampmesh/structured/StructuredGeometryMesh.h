@@ -41,9 +41,7 @@ public: // Functions derived from BoxMesh
     Mesh::Movable isMeshMovable() const override;
     uint64_t positionHash() const override;
     void displaceMesh( const std::vector<double> &x ) override;
-#ifdef USE_AMP_VECTORS
     void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> ) override;
-#endif
     AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
     void coord( const MeshElementIndex &index, double *pos ) const override;
     std::unique_ptr<Mesh> clone() const override;

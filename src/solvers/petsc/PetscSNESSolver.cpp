@@ -19,7 +19,7 @@ namespace Solver {
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
-#error AMP only supports PETSc 3.7.5 or greater
+    #error AMP only supports PETSc 3.7.5 or greater
 #endif
 
 

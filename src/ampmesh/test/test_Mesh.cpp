@@ -46,7 +46,7 @@ void testMeshGenerators( AMP::UnitTest &ut )
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     // Test the libmesh reader generator
-#ifdef USE_AMP_DATA
+    #ifdef USE_AMP_DATA
     generator = std::make_shared<AMP::unit_test::ExodusReaderGenerator<>>();
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
@@ -62,7 +62,7 @@ void testMeshGenerators( AMP::UnitTest &ut )
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshVectorTestLoop( ut, generator->getMesh() );
-#endif
+    #endif
 #endif
     PROFILE_STOP( "testMeshGenerators" );
 }

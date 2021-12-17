@@ -9,11 +9,6 @@
   and the order of the options for cmake does not matter.
 
   \par AMP internal package options
-  All amp packages are optional and can be included or disabled using the "-D USE_AMP_PACKAGE="
-  flags.  Some of the packages have dependencies and may be automatically disabled if certain other
-  packages are not included.  For example all packages require UTILS, and DISCRETIZATION requires
-  MESH.  The packages
-  are: <BR>
   \ref AMP::Utilities "UTILS": The UTILS package provides all of the utility
       functions used throughout AMP and is required to build AMP. <BR>
   \ref AMP::Mesh "MESH": The Mesh package provides all of the mesh interface routines and is

@@ -61,7 +61,7 @@ protected:
     AMP::Mesh::Point d_n_bc; // Normal to the plane defined by b-c
 
 private:
-    // Private constuctor
+    // Private constructor
     Parallelepiped();
 };
 

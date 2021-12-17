@@ -99,7 +99,6 @@ Vector::const_shared_ptr VS_Comm::subset( Vector::const_shared_ptr p ) const
 /********************************************************
  * VS_Mesh                                               *
  ********************************************************/
-#ifdef USE_AMP_MESH
 VS_Mesh::VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
     : d_useMeshComm( useMeshComm ), d_mesh( mesh )
 {
@@ -132,13 +131,11 @@ Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
     auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
-#endif
 
 
 /********************************************************
  * VS_MeshIterator                                       *
  ********************************************************/
-#ifdef USE_AMP_MESH
 VS_MeshIterator::VS_MeshIterator( const AMP::Mesh::MeshIterator &iterator,
                                   const AMP::AMP_MPI &comm )
     : d_comm( comm ), d_iterator( iterator )
@@ -159,6 +156,6 @@ Vector::const_shared_ptr VS_MeshIterator::subset( Vector::const_shared_ptr p ) c
     auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
-#endif
+
 
 } // namespace AMP::LinearAlgebra

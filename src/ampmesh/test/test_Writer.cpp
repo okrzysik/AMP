@@ -2,6 +2,9 @@
 #include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -9,17 +12,10 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
-#ifdef USE_AMP_VECTORS
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/MatrixBuilder.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -83,7 +79,6 @@ void printMeshNames( const std::string &filename )
 
 
 // Function to build a vector using a mesh
-#if defined( USE_AMP_MESH ) && defined( USE_AMP_VECTORS )
 template<int SIZE_X, int SIZE_Y, int SIZE_Z>
 AMP::LinearAlgebra::Vector::shared_ptr
 createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, AMP::AMP_MPI comm )
@@ -103,7 +98,6 @@ createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, AMP::AMP_MPI co
     // Create the vector
     return AMP::LinearAlgebra::createVector( DOF, var, true );
 }
-#endif
 
 
 /***************************************************************
@@ -111,7 +105,6 @@ createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, AMP::AMP_MPI co
  ***************************************************************/
 void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
 {
-#ifdef USE_AMP_VECTORS
     PROFILE_SCOPED( timer, "testWriterVector-" + writerName );
 
     // Create the writer and get it's properties
@@ -146,8 +139,6 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
         ut.passes( writerName + " registered independent vector" );
     else
         ut.failure( writerName + " registered independent vector" );
-
-#endif
 }
 
 
@@ -156,7 +147,6 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
  ***************************************************************/
 void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
 {
-#ifdef USE_AMP_MATRICES
     PROFILE_SCOPED( timer, "testWriterMatrix-" + writerName );
 
     // Create the writer and get it's properties
@@ -195,7 +185,6 @@ void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
         ut.passes( writerName + " registered matrix" );
     else
         ut.failure( writerName + " registered matrix" );
-#endif
 }
 
 
@@ -244,7 +233,6 @@ void testWriterMesh( AMP::UnitTest &ut,
     // Create a surface mesh
     auto surface = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
 
-#ifdef USE_AMP_VECTORS
     // Create a simple DOFManager
     auto DOFparams  = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
@@ -266,11 +254,9 @@ void testWriterMesh( AMP::UnitTest &ut,
     auto block_vec    = AMP::LinearAlgebra::createVector( DOF_volume, block_var, true );
     gauss_pt->setToScalar( 100 );
     globalComm.barrier();
-#endif
     double t3 = AMP::AMP_MPI::time();
 
-// Create a view of a vector
-#ifdef USE_AMP_VECTORS
+    // Create a view of a vector
     AMP::Mesh::Mesh::shared_ptr clad;
     AMP::LinearAlgebra::Vector::shared_ptr z_surface;
     AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
@@ -289,14 +275,12 @@ void testWriterMesh( AMP::UnitTest &ut,
             cladPosition = position->select( cladMeshSelector, "cladPosition" );
         }
     }
-#endif
 
     // Register the data
     int level = 1; // How much detail do we want to register
     writer->registerMesh( mesh, level );
     if ( surface )
         writer->registerMesh( surface, level );
-#ifdef USE_AMP_VECTORS
     if ( properties.registerVectorWithMesh ) {
         writer->registerVector( meshID_vec, mesh, pointType, "MeshID" );
         writer->registerVector( block_vec, mesh, volumeType, "BlockID" );
@@ -309,7 +293,6 @@ void testWriterMesh( AMP::UnitTest &ut,
         if ( clad )
             writer->registerVector( cladPosition, clad, pointType, "clad_position" );
     }
-#endif
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
 
@@ -347,8 +330,7 @@ void testWriterMesh( AMP::UnitTest &ut,
         }
     }
 
-// Initialize the data
-#ifdef USE_AMP_VECTORS
+    // Initialize the data
     rank_vec->setToScalar( globalComm.getRank() );
     rank_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     std::vector<size_t> dofs;
@@ -368,7 +350,6 @@ void testWriterMesh( AMP::UnitTest &ut,
     }
     block_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     globalComm.barrier();
-#endif
     double t5 = AMP::AMP_MPI::time();
 
     // Write a single output file

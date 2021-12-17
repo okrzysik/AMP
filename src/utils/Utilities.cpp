@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 
 #ifdef USE_TIMER
-#include "MemoryApp.h"
+    #include "MemoryApp.h"
 #endif
 
 
@@ -517,8 +517,8 @@ void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
 // Function to demangle a string (e.g. from typeid)
 #ifdef __GNUC__
-#define USE_ABI
-#include <cxxabi.h>
+    #define USE_ABI
+    #include <cxxabi.h>
 #endif
 std::string Utilities::demangle( const std::string &name )
 {

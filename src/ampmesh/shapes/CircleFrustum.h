@@ -65,7 +65,7 @@ protected:              // Internal data
     double d_theta;     // Apex angle
 
 private:
-    // Private constuctor
+    // Private constructor
     CircleFrustum();
 };
 

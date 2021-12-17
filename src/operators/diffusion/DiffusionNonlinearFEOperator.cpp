@@ -179,7 +179,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
 {
     AMP_INSIST( ( u != nullptr ), "NULL Input Vector!" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->constSelect( meshSelector, "u_mesh" );
+    auto u_meshVec = u->select( meshSelector, "u_mesh" );
 
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::preAssembly, entering" << std::endl;
@@ -192,7 +192,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
                 d_inVec[var] = d_Frozen[var];
             } else {
                 auto tvar    = d_inpVariables->getVariable( var );
-                d_inVec[var] = u_meshVec->constSubsetVectorForVariable( tvar );
+                d_inVec[var] = u_meshVec->subsetVectorForVariable( tvar );
                 if ( !d_inVec[var] )
                     AMP_ERROR( "Unable to subset for " + tvar->getName() );
             }
@@ -340,7 +340,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
 {
     auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->constSelect( meshSelector, "u_mesh" );
+    auto u_meshVec = u->select( meshSelector, "u_mesh" );
 
     // set up a database for the linear operator params
     tmp_db->putScalar( "name", "DiffusionLinearFEOperator" );
@@ -370,7 +370,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
             outParams->d_temperature = d_Frozen[Diffusion::TEMPERATURE];
         } else {
             auto tvar        = d_inpVariables->getVariable( Diffusion::TEMPERATURE );
-            auto temperature = u_meshVec->constSubsetVectorForVariable( tvar );
+            auto temperature = u_meshVec->subsetVectorForVariable( tvar );
             outParams->d_temperature =
                 std::const_pointer_cast<AMP::LinearAlgebra::Vector>( temperature );
             outParams->d_temperature->makeConsistent(
@@ -383,7 +383,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
             outParams->d_concentration = d_Frozen[Diffusion::CONCENTRATION];
         } else {
             auto cvar          = d_inpVariables->getVariable( Diffusion::CONCENTRATION );
-            auto concentration = u_meshVec->constSubsetVectorForVariable( cvar );
+            auto concentration = u_meshVec->subsetVectorForVariable( cvar );
             outParams->d_concentration =
                 std::const_pointer_cast<AMP::LinearAlgebra::Vector>( concentration );
             outParams->d_concentration->makeConsistent(
@@ -396,7 +396,7 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
             outParams->d_burnup = d_Frozen[Diffusion::BURNUP];
         } else {
             auto bvar           = d_inpVariables->getVariable( Diffusion::BURNUP );
-            auto burnup         = u_meshVec->constSubsetVectorForVariable( bvar );
+            auto burnup         = u_meshVec->subsetVectorForVariable( bvar );
             outParams->d_burnup = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( burnup );
             outParams->d_burnup->makeConsistent(
                 AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -452,9 +452,9 @@ bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::con
 
     bool result = true;
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto u_meshVec = u->constSelect( meshSelector, "u_mesh" );
+    auto u_meshVec = u->select( meshSelector, "u_mesh" );
     if ( found ) {
-        auto uinp = u_meshVec->constSubsetVectorForVariable(
+        auto uinp = u_meshVec->subsetVectorForVariable(
             d_inpVariables->getVariable( d_PrincipalVariable ) );
         std::vector<double> vals( uinp->getLocalSize() );
         size_t nit = 0;

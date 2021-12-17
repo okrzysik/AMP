@@ -63,7 +63,7 @@ void Flow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP::LinearAlgebra::Vector::shared_ptr flowInputVec =
         u->subsetVectorForVariable( d_inpVariable );
     AMP::LinearAlgebra::Vector::const_shared_ptr flowRhsVec =
-        f->constSubsetVectorForVariable( d_inpVariable );
+        f->subsetVectorForVariable( d_inpVariable );
 
     d_numpoints = zPoints.size();
 

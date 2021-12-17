@@ -1,19 +1,14 @@
 #include "AMP/ampmesh/moab/moabMesh.h"
 #include "AMP/ampmesh/MeshElementVectorIterator.h"
 #include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-
-#ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#endif
 
 
 // moab includes
@@ -130,16 +125,10 @@ moabMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gc
  * Displace a mesh                                       *
  ********************************************************/
 void moabMesh::displaceMesh( std::vector<double> x_in ) { AMP_ERROR( "Not finished" ); }
-#ifdef USE_AMP_VECTORS
 void moabMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-#ifdef USE_AMP_DISCRETIZATION
     AMP_ERROR( "Not finished" );
-#else
-    AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
-#endif
 }
-#endif
 
 
 } // namespace Mesh

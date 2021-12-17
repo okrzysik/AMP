@@ -8,11 +8,9 @@
 #include "AMP/utils/ArraySize.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef USE_AMP_VECTORS
 namespace AMP::LinearAlgebra {
 class Vector;
 }
-#endif
 
 #include <array>
 #include <map>
@@ -396,11 +394,9 @@ public: // BoxMesh specific functionality
     inline MeshElementIndex convert( const MeshElementID &id ) const;
 
 
-#ifdef USE_AMP_VECTORS
     //! Create an ArrayVector over the mesh
     std::shared_ptr<AMP::LinearAlgebra::Vector> createVector( const std::string &name,
                                                               int gcw = 0 );
-#endif
 
 
 protected: // Convenience typedef

@@ -6,18 +6,14 @@
 #include "AMP/ampmesh/libmesh/libmeshElemIterator.h"
 #include "AMP/ampmesh/libmesh/libmeshMeshElement.h"
 #include "AMP/ampmesh/libmesh/libmeshNodeIterator.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -33,8 +29,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -845,10 +840,8 @@ void libmeshMesh::displaceMesh( const std::vector<double> &x_in )
     }
     d_pos_hash++;
 }
-#ifdef USE_AMP_VECTORS
 void libmeshMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-#ifdef USE_AMP_DISCRETIZATION
     // Create the position vector with the necessary ghost nodes
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
         shared_from_this(),
@@ -919,11 +912,7 @@ void libmeshMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_p
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
     d_pos_hash++;
-#else
-    AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
-#endif
 }
-#endif
 
 
 /****************************************************************
@@ -944,5 +933,4 @@ bool libmeshMesh::operator==( const Mesh &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

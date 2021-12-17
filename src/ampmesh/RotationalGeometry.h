@@ -71,7 +71,7 @@ private: // Internal data
     std::shared_ptr<LogicalGeometry> d_geom;
 
 private:
-    // Private constuctor
+    // Private constructor
     RotationalGeometry();
 
     // Rotate coordinates

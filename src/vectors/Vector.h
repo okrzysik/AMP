@@ -385,8 +385,8 @@ public: // Virtual functions
       auto displacement = data->select( VS_ByVariableName( "displacement" ), "displacement view" );
       \endcode
       */
-    const_shared_ptr constSelect( const VectorSelector &criterion,
-                                  const std::string &variable_name ) const;
+    const_shared_ptr select( const VectorSelector &criterion,
+                             const std::string &variable_name ) const;
 
     //! Get the DOFManager for this Vector
     inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
@@ -446,7 +446,7 @@ public: // Non-virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    Vector::const_shared_ptr constSubsetVectorForVariable( const std::string &name ) const;
+    Vector::const_shared_ptr subsetVectorForVariable( const std::string &name ) const;
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] var  Variable by which to retrieve a subvector
@@ -460,8 +460,7 @@ public: // Non-virtual functions
      * \return  A Vector shared pointer
      * \see MultiVector
      */
-    Vector::const_shared_ptr
-    constSubsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
+    Vector::const_shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with

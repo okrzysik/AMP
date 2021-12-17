@@ -10,7 +10,7 @@
 #ifdef USE_EXT_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail
 extern "C" {
-#include "ida/ida_spils.h"
+    #include "ida/ida_spils.h"
 }
 
 
@@ -48,9 +48,9 @@ IDATimeIntegrator::~IDATimeIntegrator()
  ************************************************************************/
 void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-#ifdef DEBUG_CHECK_ASSERTIONS
+    #ifdef DEBUG_CHECK_ASSERTIONS
     AMP_ASSERT( parameters.get() != NULL );
-#endif
+    #endif
     getFromInput( parameters->d_db );
 
     std::shared_ptr<IDATimeIntegratorParameters> params =

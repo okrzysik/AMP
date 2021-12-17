@@ -225,7 +225,6 @@ public:
     inline std::shared_ptr<libMesh::Mesh> getlibMesh() const { return d_libMesh; }
 
 
-#ifdef USE_AMP_VECTORS
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by displacing
@@ -235,7 +234,6 @@ public:
      *           is the physical dimension of the mesh.
      */
     void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
-#endif
 
 
 protected:

@@ -5,11 +5,9 @@
 #include "AMP/ampmesh/triangle/TriangleMeshIterator.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
-#ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -1132,11 +1130,9 @@ void TriangleMesh<NG, NP>::displaceMesh( const std::vector<double> &x )
     }
     d_pos_hash++;
 }
-#ifdef USE_AMP_VECTORS
 template<uint8_t NG, uint8_t NP>
 void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
 {
-#ifdef USE_AMP_DISCRETIZATION
     // Update the local coordinates
     int rank  = d_comm.getRank();
     auto DOFs = x->getDOFManager();
@@ -1157,11 +1153,7 @@ void TriangleMesh<NG, NP>::displaceMesh( std::shared_ptr<const AMP::LinearAlgebr
     // Update the bounding box
     initializeBoundingBox();
     d_pos_hash++;
-#else
-    AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
-#endif
 }
-#endif
 
 
 /****************************************************************

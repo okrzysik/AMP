@@ -2,15 +2,12 @@
 #define included_AMP_MeshTests
 
 #include "AMP/ampmesh/Mesh.h"
-#include "AMP/utils/UnitTest.h"
-
-#ifdef USE_AMP_VECTORS
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#endif
 
 
 namespace AMP {
@@ -239,7 +236,6 @@ public: // Geometry based tests
 
 
 public: // Vector based tests
-#ifdef USE_AMP_VECTORS
         //! Factory to create a vector from a mesh
     class MeshVectorFactory : public AMP::LinearAlgebra::VectorFactory
     {
@@ -268,7 +264,6 @@ public: // Vector based tests
         std::shared_ptr<AMP::Discretization::DOFManager> d_dofManager;
         bool SPLIT;
     };
-#endif
 
     /**
      * \brief Simple nodal vector tests
@@ -334,12 +329,8 @@ private: // Private data
 } // namespace AMP
 
 // Extra includes
-#ifdef USE_AMP_VECTORS
-#include "AMP/ampmesh/testHelpers/meshVectorTests.inline.h"
-#endif
-#ifdef USE_AMP_MATRICES
 #include "AMP/ampmesh/testHelpers/meshMatrixTests.inline.h"
-#endif
+#include "AMP/ampmesh/testHelpers/meshVectorTests.inline.h"
 
 
 #endif

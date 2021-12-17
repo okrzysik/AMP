@@ -8,10 +8,8 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#ifdef USE_AMP_VECTORS
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
-#endif
 
 #include <iostream>
 #include <set>
@@ -801,7 +799,6 @@ void MultiMesh::displaceMesh( const std::vector<double> &x_in )
         d_box_local[2 * i + 1] += x[i];
     }
 }
-#ifdef USE_AMP_VECTORS
 void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
     // Displace the individual meshes
@@ -826,7 +823,6 @@ void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
 }
-#endif
 
 
 /****************************************************************

@@ -1,24 +1,17 @@
-#ifdef USE_AMP_VECTORS
-
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
 #include "AMP/matrices/ManagedMatrix.h"
 #include "AMP/matrices/ManagedMatrixParameters.h"
-#include "AMP/utils/Utilities.h"
-
-#ifdef USE_EXT_TRILINOS
-#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
-#endif
-#ifdef USE_EXT_PETSC
 #include "AMP/matrices/petsc/NativePetscMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
-#endif
 
 #include <functional>
 
 #ifdef USE_EXT_TRILINOS
-#include <Epetra_CrsMatrix.h>
+    #include <Epetra_CrsMatrix.h>
 #endif
 
 
@@ -199,5 +192,3 @@ std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable )
 
 
 } // namespace AMP::LinearAlgebra
-
-#endif

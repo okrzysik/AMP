@@ -5,9 +5,7 @@
 #include "AMP/ampmesh/MultiIterator.h"
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/utils/AMP_MPI.I"
-#ifdef USE_AMP_VECTORS
 #include "AMP/vectors/Vector.h"
-#endif
 
 namespace AMP {
 namespace Mesh {
@@ -515,12 +513,10 @@ void SubsetMesh::displaceMesh( const std::vector<double> & )
 {
     AMP_ERROR( "displaceMesh by a constant value does not work for subset mesh" );
 }
-#ifdef USE_AMP_VECTORS
 void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
     AMP_ERROR( "displaceMesh is not implimented for subset mesh" );
 }
-#endif
 
 
 /****************************************************************

@@ -1,26 +1,15 @@
 #include "AMP/utils/HDF5writer.h"
-#include "AMP/utils/HDF5_IO.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/utils/Xdmf.h"
-
-#ifdef USE_AMP_MESH
 #include "AMP/ampmesh/Mesh.h"
 #include "AMP/ampmesh/MeshIterator.h"
 #include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/ampmesh/structured/BoxMesh.h"
-#else
-namespace AMP::Mesh {
-enum class GeomType : uint8_t { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
-}
-#endif
-#ifdef USE_AMP_VECTORS
+#include "AMP/matrices/Matrix.h"
+#include "AMP/utils/HDF5_IO.h"
+#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Xdmf.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
-#endif
-#ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -33,7 +22,6 @@ namespace AMP::Utilities {
 /************************************************************
  * Helper functions                                          *
  ************************************************************/
-#ifdef USE_AMP_VECTORS
 AMP::Array<double> getArrayData( std::shared_ptr<const AMP::LinearAlgebra::Vector> vec )
 {
     auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( vec );
@@ -53,7 +41,6 @@ AMP::Array<double> getArrayData( std::shared_ptr<const AMP::LinearAlgebra::Vecto
         data2( i ) = *it;
     return data2;
 }
-#endif
 
 
 /************************************************************
@@ -115,7 +102,6 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     // Synchronize the vectors
     syncVectors();
     // Add the mesh
-#ifdef USE_AMP_MESH
     std::map<GlobalID, Xdmf::MeshData> baseMeshData;
     auto gid = createGroup( fid, "meshes" );
     for ( const auto &[id, mesh] : d_baseMeshes )
@@ -131,21 +117,16 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
         xmf.addMultiMesh( mesh.name, data );
     }
     closeGroup( gid );
-#endif
     // Add the vectors
-#ifdef USE_AMP_VECTORS
     for ( const auto &[id, data] : d_vectors ) {
         NULL_USE( id );
         auto data2 = getArrayData( data.vec );
         writeHDF5( fid, data.name, data2 );
     }
-#endif
     // Add the matricies
-#ifdef USE_AMP_MATRICES
     for ( size_t i = 0; i < d_matrices.size(); i++ ) {
         AMP_ERROR( "Not finished" );
     }
-#endif
     // Add user data
     for ( auto fun : d_fun )
         fun( fid, filename2 + ":", xmf );

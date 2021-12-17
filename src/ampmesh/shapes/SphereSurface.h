@@ -60,7 +60,7 @@ protected:
     double d_offset[3];
 
 private:
-    // Private constuctor
+    // Private constructor
     SphereSurface();
 };
 

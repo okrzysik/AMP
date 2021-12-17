@@ -225,8 +225,8 @@ void Map1Dto3D::apply_Gauss( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Subset the input vector, it is a simple vector and we need to subset for the current comm
     // before the variable
     AMP::LinearAlgebra::VS_Comm commSelector( d_MapComm );
-    auto commSubsetVec = u->constSelect( commSelector, d_inpVariable->getName() );
-    auto inputVec      = commSubsetVec->constSubsetVectorForVariable( d_inpVariable );
+    auto commSubsetVec = u->select( commSelector, d_inpVariable->getName() );
+    auto inputVec      = commSubsetVec->subsetVectorForVariable( d_inpVariable );
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT( inputVec != nullptr );
@@ -316,8 +316,8 @@ void Map1Dto3D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Subset the input vector, it is a simple vector and we need to subset for the current comm
     // before the variable
     AMP::LinearAlgebra::VS_Comm commSelector( d_MapComm );
-    auto commSubsetVec = u->constSelect( commSelector, d_inpVariable->getName() );
-    auto inputVec      = commSubsetVec->constSubsetVectorForVariable( d_inpVariable );
+    auto commSubsetVec = u->select( commSelector, d_inpVariable->getName() );
+    auto inputVec      = commSubsetVec->subsetVectorForVariable( d_inpVariable );
 
     // AMP::LinearAlgebra::Vector::shared_ptr outputVec =  subsetOutputVector( r );
     AMP_ASSERT( inputVec != nullptr );

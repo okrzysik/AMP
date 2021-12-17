@@ -141,8 +141,8 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
     }
     return retVal;
 }
-Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
-                                              const std::string &variable_name ) const
+Vector::const_shared_ptr Vector::select( const VectorSelector &s,
+                                         const std::string &variable_name ) const
 {
     if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
         std::string name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
@@ -163,7 +163,7 @@ Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
     VS_ByVariableName selector( name );
     return selectInto( selector );
 }
-Vector::const_shared_ptr Vector::constSubsetVectorForVariable( const std::string &name ) const
+Vector::const_shared_ptr Vector::subsetVectorForVariable( const std::string &name ) const
 {
     VS_ByVariableName selector( name );
     return selectInto( selector );
@@ -177,7 +177,7 @@ Vector::shared_ptr Vector::subsetVectorForVariable( std::shared_ptr<const Variab
     return selectInto( *selector );
 }
 Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( std::shared_ptr<const Variable> var ) const
+Vector::subsetVectorForVariable( std::shared_ptr<const Variable> var ) const
 {
     if ( !var )
         return nullptr;

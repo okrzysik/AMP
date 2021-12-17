@@ -25,12 +25,12 @@ namespace AMP {
 class Database;
 
 #ifdef _MSC_VER
-#include <direct.h>
+    #include <direct.h>
 typedef int mode_t;
-#define S_ISDIR( m ) ( ( (m) &S_IFMT ) == S_IFDIR )
-#define S_IRUSR 0
-#define S_IWUSR 0
-#define S_IXUSR 0
+    #define S_ISDIR( m ) ( ( (m) &S_IFMT ) == S_IFDIR )
+    #define S_IRUSR 0
+    #define S_IWUSR 0
+    #define S_IXUSR 0
 #endif
 
 
@@ -401,7 +401,7 @@ public:
     const TYPE *end() const { return d_data + d_size; }
     const TYPE &back() const { return d_data[d_size - 1]; }
     template<class... Args>
-    void emplace_back( Args &&... args )
+    void emplace_back( Args &&...args )
     {
         if ( d_size == CAPACITY )
             throw std::bad_alloc();

@@ -5,17 +5,17 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_SUNDIALS
-#include "AMP/vectors/sundials/SundialsVector.h"
-#include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
+    #include "AMP/vectors/sundials/SundialsVector.h"
+    #include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
 #endif
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
-#include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+    #include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
 #endif
 #ifdef USE_TRILINOS_EPETRA
-#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
-#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.h"
+    #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
+    #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.h"
 #endif
 
 namespace AMP {

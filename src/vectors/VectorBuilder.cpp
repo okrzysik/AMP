@@ -1,21 +1,19 @@
-#ifdef USE_AMP_DISCRETIZATION
-
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/NativePetscVectorData.h"
-#include "AMP/vectors/petsc/NativePetscVectorOperations.h"
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "petscvec.h"
+    #include "AMP/vectors/petsc/NativePetscVectorData.h"
+    #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "petscvec.h"
 #endif
 #ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
+    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
+    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
 #endif
 
 #include <iostream>
@@ -170,5 +168,3 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
 
 } // namespace LinearAlgebra
 } // namespace AMP
-
-#endif

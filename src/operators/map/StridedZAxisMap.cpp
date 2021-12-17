@@ -41,10 +41,10 @@ void StridedZAxisMap::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 {
 
     auto inpVar = getInputVariable();
-    auto inpVec = u->constSubsetVectorForVariable( inpVar );
+    auto inpVec = u->subsetVectorForVariable( inpVar );
     if ( d_inpDofs != 1 ) {
-        auto strided = inpVec->constSelect( AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs ),
-                                            inpVar->getName() );
+        auto strided = inpVec->select( AMP::LinearAlgebra::VS_Stride( d_inpStride, d_inpDofs ),
+                                       inpVar->getName() );
         AMP_ASSERT( strided );
         AMP::Operator::AsyncMapOperator::apply( strided, r );
     } else {

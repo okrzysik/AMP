@@ -6,6 +6,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
 
+#include <cstddef>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -22,11 +23,11 @@ static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
 {
     char *cname = H5Tget_member_name( id, idx );
     std::string name( cname );
-#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
+    #if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
     free( cname );
-#else
+    #else
     H5free_memory( cname );
-#endif
+    #endif
     return name;
 }
 
@@ -573,13 +574,13 @@ HDF5_compound::HDF5_compound( hid_t fid, const std::string_view &name ) : HDF5da
  ************************************************************************/
 std::unique_ptr<HDF5data> readHDF5( hid_t fid, const std::string_view &name )
 {
-#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
+    #if H5_VERS_MAJOR == 1 && H5_VERS_MINOR <= 8
     H5O_info_t object_info;
     H5Oget_info_by_name( fid, name.data(), &object_info, H5P_DEFAULT );
-#else
+    #else
     H5O_info1_t object_info;
     H5Oget_info_by_name1( fid, name.data(), &object_info, H5P_DEFAULT );
-#endif
+    #endif
     std::unique_ptr<HDF5data> data;
     if ( object_info.type == H5O_TYPE_GROUP ) {
         data.reset( new HDF5_group( fid, name ) );

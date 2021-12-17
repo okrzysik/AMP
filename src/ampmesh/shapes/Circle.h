@@ -59,7 +59,7 @@ protected:
     double d_offset[2];
 
 private:
-    // Private constuctor
+    // Private constructor
     Circle();
 };
 

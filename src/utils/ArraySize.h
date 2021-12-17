@@ -12,39 +12,39 @@
 
 
 #if defined( __CUDA_ARCH__ )
-#include <cuda.h>
-#define HOST_DEVICE __host__ __device__
+    #include <cuda.h>
+    #define HOST_DEVICE __host__ __device__
 #else
-#define HOST_DEVICE
+    #define HOST_DEVICE
 #endif
 #if defined( __NVCC__ )
-#define CONSTEXPR inline
-#define CONSTEXPR_IF
+    #define CONSTEXPR inline
+    #define CONSTEXPR_IF
 #else
-#define CONSTEXPR constexpr
-#define CONSTEXPR_IF constexpr
+    #define CONSTEXPR constexpr
+    #define CONSTEXPR_IF constexpr
 #endif
 #if defined( USING_GCC ) || defined( USING_CLANG )
-#define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
+    #define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
 #else
-#define ARRAY_ATTRIBUTE HOST_DEVICE
+    #define ARRAY_ATTRIBUTE HOST_DEVICE
 #endif
 
 
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-#define CHECK_ARRAY_LENGTH( i, length )                              \
-    do {                                                             \
-        if ( i >= length )                                           \
-            throw std::out_of_range( "Index exceeds array bounds" ); \
-    } while ( 0 )
+    #define CHECK_ARRAY_LENGTH( i, length )                              \
+        do {                                                             \
+            if ( i >= length )                                           \
+                throw std::out_of_range( "Index exceeds array bounds" ); \
+        } while ( 0 )
 #else
-#define CHECK_ARRAY_LENGTH( i, length ) \
-    do {                                \
-    } while ( 0 )
+    #define CHECK_ARRAY_LENGTH( i, length ) \
+        do {                                \
+        } while ( 0 )
 #endif
 
 #if defined( USING_ICC )
-#include "AMP/utils/UtilityMacros.h"
+    #include "AMP/utils/UtilityMacros.h"
 DISABLE_WARNINGS
 #endif
 

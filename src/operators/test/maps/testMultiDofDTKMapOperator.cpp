@@ -259,13 +259,13 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
         std::string meshName = adapter->getName();
         AMP::LinearAlgebra::VS_Mesh meshSelector( adapter );
 
-        auto commSubsetPVec = potentialMapVec->constSelect( meshSelector, "Potential" );
-        auto commSubsetEVec = ElectrodeMapVec->constSelect( meshSelector, "V4" );
+        auto commSubsetPVec = potentialMapVec->select( meshSelector, "Potential" );
+        auto commSubsetEVec = ElectrodeMapVec->select( meshSelector, "V4" );
 
         if ( meshName.compare( "CathodeCC_3_1" ) == 0 ) {
             node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3, 0 );
             end_node = node.end();
-            errorVec = commSubsetPVec->constSelect(
+            errorVec = commSubsetPVec->select(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
             tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
             whatAmIChecking = "interface between cellSandwich and cathodeCC - cathodeCC side";
@@ -286,7 +286,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
         } else if ( meshName.compare( "AnodeCC_1_1" ) == 0 ) {
             node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 5, 0 );
             end_node = node.end();
-            errorVec = commSubsetPVec->constSelect(
+            errorVec = commSubsetPVec->select(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
             tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
             whatAmIChecking = "interface between cellSandwich and anodeCC - anodeCC side";
@@ -307,7 +307,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
         } else if ( meshName.compare( "CellSandwich_2_1" ) == 0 ) {
             node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2, 0 );
             end_node = node.end();
-            errorVec = commSubsetEVec->constSelect(
+            errorVec = commSubsetEVec->select(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
             tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
             whatAmIChecking = "interface between cellSandwich and cathodeCC - cellSandwich side";
@@ -327,7 +327,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
             ////########################################
             node     = adapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 1, 0 );
             end_node = node.end();
-            errorVec = commSubsetEVec->constSelect(
+            errorVec = commSubsetEVec->select(
                 AMP::LinearAlgebra::VS_MeshIterator( node.begin(), adapter->getComm() ), "error" );
             tolerance       = absoluteTolerance + relativeTolerance * errorVec->L2Norm();
             whatAmIChecking = "interface between cellSandwich and anodeCC - cellSandwich side";
