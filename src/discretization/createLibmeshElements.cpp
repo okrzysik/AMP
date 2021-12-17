@@ -29,11 +29,11 @@ namespace AMP {
 namespace Discretization {
 
 
-// Default constuctor
+// Default constructor
 createLibmeshElements::createLibmeshElements() = default;
 
 
-// De-constuctor
+// De-constructor
 createLibmeshElements::~createLibmeshElements()
 {
     reinit( AMP::Mesh::MeshIterator(),

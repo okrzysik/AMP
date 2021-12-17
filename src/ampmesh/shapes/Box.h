@@ -109,7 +109,7 @@ protected:
     std::array<std::vector<double>, NDIM> d_coord; // Coordinates
 
 private:
-    // Private constuctor
+    // Private constructor
     Grid();
 };
 

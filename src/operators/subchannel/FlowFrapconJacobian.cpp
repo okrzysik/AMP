@@ -213,10 +213,10 @@ FlowFrapconJacobian::subsetOutputVector( AMP::LinearAlgebra::Vector::const_share
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->constSelect( commSelector, var->getName() );
-        return commVec->constSubsetVectorForVariable( var );
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 
@@ -230,10 +230,10 @@ FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->constSelect( commSelector, var->getName() );
-        return commVec->constSubsetVectorForVariable( var );
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 } // namespace Operator

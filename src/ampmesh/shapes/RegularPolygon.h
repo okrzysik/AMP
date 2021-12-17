@@ -69,7 +69,7 @@ protected:
 
 
 private:
-    // Private constuctor
+    // Private constructor
     RegularPolygon();
 };
 

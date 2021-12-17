@@ -66,7 +66,7 @@ protected:
     Point d_normal[6];  // Normal to each face
 
 private:
-    // Private constuctor
+    // Private constructor
     SquareFrustum();
     // Initialize the data
     void initialize( const std::vector<double> &range, int dir, double height );
