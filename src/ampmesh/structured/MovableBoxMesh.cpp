@@ -4,16 +4,11 @@
 #include "AMP/ampmesh/structured/BoxMesh.h"
 #include "AMP/ampmesh/structured/structuredMeshElement.h"
 #include "AMP/ampmesh/structured/structuredMeshIterator.h"
-
-#ifdef USE_AMP_VECTORS
-    #include "AMP/vectors/Variable.h"
-    #include "AMP/vectors/Vector.h"
-    #include "AMP/vectors/VectorBuilder.h"
-#endif
-#ifdef USE_AMP_DISCRETIZATION
-    #include "AMP/discretization/DOF_Manager.h"
-    #include "AMP/discretization/simpleDOF_Manager.h"
-#endif
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/vectors/Variable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 
 namespace AMP {
 namespace Mesh {
@@ -69,10 +64,8 @@ void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
         d_geometry->displace( x.data() );
     d_pos_hash++;
 }
-#ifdef USE_AMP_VECTORS
 void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-    #ifdef USE_AMP_DISCRETIZATION
     // Clear the geometry if it exists to ensure consistency
     d_geometry.reset();
     // Create the position vector with the necessary ghost nodes
@@ -127,11 +120,7 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
     d_pos_hash++;
-    #else
-    AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
-    #endif
 }
-#endif
 
 
 /********************************************************

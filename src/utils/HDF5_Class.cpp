@@ -6,6 +6,7 @@
 #include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
 
+#include <cstddef>
 #include <set>
 #include <sstream>
 #include <utility>

@@ -10,18 +10,16 @@
 #include <memory>
 
 
-// Forward declerations
+// Forward declarations
 namespace AMP::Mesh {
 class MeshParameters;
 }
 namespace AMP::Geometry {
 class Geometry;
 }
-#ifdef USE_AMP_VECTORS
 namespace AMP::LinearAlgebra {
 class Vector;
 }
-#endif
 
 
 namespace AMP::Mesh {
@@ -476,7 +474,6 @@ public:
     virtual void displaceMesh( const std::vector<double> &x ) = 0;
 
 
-#ifdef USE_AMP_VECTORS
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by displacing
@@ -497,7 +494,6 @@ public:
      */
     virtual std::shared_ptr<AMP::LinearAlgebra::Vector>
     getPositionVector( std::string name, const int gcw = 0 ) const;
-#endif
 
     std::shared_ptr<AMP::Database> DB() const { return d_db; }
 

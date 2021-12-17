@@ -6,14 +6,6 @@
 #include "AMP/ampmesh/MeshID.h"
 #include "AMP/ampmesh/MeshIterator.h"
 
-#ifdef USE_AMP_VECTORS
-namespace AMP {
-namespace LinearAlgebra {
-class Vector;
-}
-} // namespace AMP
-#endif
-
 #include <array>
 #include <map>
 #include <memory>
@@ -328,7 +320,6 @@ public:
     void displaceMesh( const std::vector<double> &x ) override;
 
 
-#ifdef USE_AMP_VECTORS
     /**
      * \brief    Displace the entire mesh
      * \details  This function will displace the entire mesh by displacing
@@ -338,7 +329,6 @@ public:
      *           is the physical dimension of the mesh.
      */
     void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
-#endif
 
 
 protected:

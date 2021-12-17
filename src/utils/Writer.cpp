@@ -1,21 +1,14 @@
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/matrices/Matrix.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AsciiWriter.h"
 #include "AMP/utils/HDF5writer.h"
 #include "AMP/utils/NullWriter.h"
 #include "AMP/utils/SiloWriter.h"
 #include "AMP/utils/Utilities.h"
-
-#ifdef USE_AMP_MESH
-    #include "AMP/ampmesh/Mesh.h"
-    #include "AMP/ampmesh/MultiMesh.h"
-#endif
-#ifdef USE_AMP_VECTORS
-    #include "AMP/vectors/Vector.h"
-    #include "AMP/vectors/VectorSelector.h"
-#endif
-#ifdef USE_AMP_MATRICES
-    #include "AMP/matrices/Matrix.h"
-#endif
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorSelector.h"
 
 #include <algorithm>
 
@@ -276,21 +269,15 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                              const std::string &name )
 {
-#ifdef USE_AMP_VECTORS
     auto id = getID( vec->getComm() );
     VectorData data( vec, name );
     d_vectors.insert( std::make_pair( id, std::move( data ) ) );
-#else
-    NULL_USE( vec );
-    NULL_USE( name );
-#endif
 }
 
 
 /************************************************************
  * Register a vector with a mesh                             *
  ************************************************************/
-#ifdef USE_AMP_VECTORS
 static int getDOFsPerPoint( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
                             std::shared_ptr<AMP::Mesh::Mesh> mesh,
                             AMP::Mesh::GeomType type )
@@ -355,7 +342,6 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
     // Add the vector to the list of vectors so we can perform makeConsistent
     d_vectorsMesh.push_back( vec );
 }
-#endif
 
 
 /************************************************************
@@ -364,14 +350,9 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
 void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
                              const std::string &name )
 {
-#ifdef USE_AMP_MATRICES
     auto id = getID( mat->getLeftVector()->getComm() );
     MatrixData data( mat, name );
     d_matrices.insert( std::make_pair( id, std::move( data ) ) );
-#else
-    NULL_USE( mat );
-    NULL_USE( name );
-#endif
 }
 
 
@@ -380,8 +361,7 @@ void Writer::registerMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat,
  ****************************************************/
 void Writer::syncVectors()
 {
-// Syncronize all vectors
-#ifdef USE_AMP_VECTORS
+    // Syncronize all vectors
     PROFILE_START( "makeConsistent", 1 );
     for ( auto &elem : d_vectorsMesh ) {
         auto localState = elem->getUpdateStatus();
@@ -391,7 +371,6 @@ void Writer::syncVectors()
             elem->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     }
     PROFILE_STOP( "makeConsistent", 1 );
-#endif
 }
 
 
@@ -400,7 +379,6 @@ void Writer::syncVectors()
  ************************************************************/
 std::vector<AMP::Mesh::MeshID> Writer::getMeshIDs( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
-#ifdef USE_AMP_MESH
     std::vector<AMP::Mesh::MeshID> ids;
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     if ( !multimesh ) {
@@ -416,9 +394,6 @@ std::vector<AMP::Mesh::MeshID> Writer::getMeshIDs( std::shared_ptr<AMP::Mesh::Me
         }
     }
     return ids;
-#else
-    return std::vector<AMP::Mesh::MeshID>();
-#endif
 }
 
 

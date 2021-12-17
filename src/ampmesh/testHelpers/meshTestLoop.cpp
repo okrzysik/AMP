@@ -59,8 +59,7 @@ void meshTests::MeshVectorTestLoop( AMP::UnitTest &ut,
                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast )
 {
-// Run the vector tests
-#ifdef USE_AMP_VECTORS
+    // Run the vector tests
     PROFILE_START( "MeshVectorTestLoop" );
     VerifyGetVectorTest<1, true>( ut, mesh );
     if ( !fast ) {
@@ -69,7 +68,6 @@ void meshTests::MeshVectorTestLoop( AMP::UnitTest &ut,
         VerifyGetVectorTest<3, false>( ut, mesh );
     }
     PROFILE_STOP( "MeshVectorTestLoop" );
-#endif
 }
 
 
@@ -77,15 +75,14 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                     bool fast )
 {
-// Run the matrix tests
-#ifdef USE_AMP_MATRICES
+    // Run the matrix tests
     bool run_tests = true;
-    #if !defined( USE_EXT_TRILINOS )
+#if !defined( USE_EXT_TRILINOS )
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() > 1 ) {
         ut.expected_failure( "No parallel matrix to test" );
         run_tests = false;
     }
-    #endif
+#endif
     if ( run_tests ) {
         PROFILE_START( "MeshMatrixTestLoop" );
         VerifyGetMatrixTrivialTest<1, true>( ut, mesh );
@@ -100,7 +97,6 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
         }
         PROFILE_STOP( "MeshMatrixTestLoop" );
     }
-#endif
 }
 
 

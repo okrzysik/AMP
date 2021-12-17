@@ -12,9 +12,7 @@ IF ( AMP_DATA )
 ENDIF()
 
 # Add tests
-IF ( USE_AMP_MESH AND AMP_DATA )
-    ADD_AMP_TEST_1_2_4( test_Discretization )
-    IF ( USE_EXT_LIBMESH )
-        ADD_AMP_TEST_1_2_4( test_libmeshElement )
-    ENDIF()
+ADD_AMP_TEST_1_2_4( test_Discretization )
+IF ( USE_EXT_LIBMESH )
+    ADD_AMP_TEST_1_2_4( test_libmeshElement )
 ENDIF()

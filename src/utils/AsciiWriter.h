@@ -40,17 +40,14 @@ public:
     writeFile( const std::string &fname, size_t iteration_count, double time = 0 ) override;
 
 private:
-#ifdef USE_AMP_VECTORS
     static std::shared_ptr<const AMP::LinearAlgebra::Vector>
     sendVecToRoot( std::shared_ptr<const AMP::LinearAlgebra::Vector> src_vec, const AMP_MPI &comm );
-#endif
-#ifdef USE_AMP_MATRICES
+
     static void sendRowToRoot( std::shared_ptr<const AMP::LinearAlgebra::Matrix> mat,
                                const AMP_MPI &d_comm,
                                int row,
                                std::vector<size_t> &col,
                                std::vector<double> &data );
-#endif
 };
 
 } // namespace AMP::Utilities

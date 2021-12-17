@@ -1,4 +1,4 @@
-#if defined( USE_AMP_MESH ) && defined( USE_EXT_LIBMESH )
+#ifdef USE_EXT_LIBMESH
     #include "ReadTestMesh.h"
 
 // LibMesh include

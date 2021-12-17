@@ -1,11 +1,10 @@
-#ifdef USE_AMP_DISCRETIZATION
-    #ifndef included_AMP_VectorBuider_hpp
-        #define included_AMP_VectorBuider_hpp
+#ifndef included_AMP_VectorBuider_hpp
+#define included_AMP_VectorBuider_hpp
 
-        #include "AMP/discretization/DOF_Manager.h"
-        #include "AMP/vectors/data/ArrayVectorData.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/data/ArrayVectorData.h"
 
-        #include "math.h"
+#include "math.h"
 
 
 namespace AMP {
@@ -88,5 +87,4 @@ Vector::shared_ptr createArrayVector( std::shared_ptr<Variable> var,
 } // namespace LinearAlgebra
 } // namespace AMP
 
-    #endif
 #endif

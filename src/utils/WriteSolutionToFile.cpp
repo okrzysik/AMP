@@ -1,6 +1,4 @@
-#ifdef USE_AMP_MESH
-    #ifdef USE_AMP_VECTORS
-        #include "WriteSolutionToFile.h"
+#include "WriteSolutionToFile.h"
 
 void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
                     AMP::LinearAlgebra::Vector::shared_ptr solVec,
@@ -33,6 +31,3 @@ void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
 
     fclose( fp );
 }
-
-    #endif
-#endif

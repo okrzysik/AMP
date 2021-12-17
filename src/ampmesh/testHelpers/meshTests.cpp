@@ -9,10 +9,7 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-
-#ifdef USE_AMP_VECTORS
-    #include "AMP/vectors/Vector.h"
-#endif
+#include "AMP/vectors/Vector.h"
 
 #include <set>
 #include <vector>
@@ -894,8 +891,7 @@ void meshTests::DisplaceMeshScalar( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_p
 }
 void meshTests::DisplaceMeshVector( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-// Test displacement vector
-#ifdef USE_AMP_VECTORS
+    // Test displacement vector
     // Get the volume of each element
     size_t numElements = mesh->numLocalElements( mesh->getGeomType() );
     std::vector<double> orig_vol( numElements, 0.0 );
@@ -941,7 +937,6 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_p
     for ( auto &tmp : *dispVec )
         tmp = -tmp;
     mesh->displaceMesh( dispVec );
-#endif
 }
 
 

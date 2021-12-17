@@ -1,17 +1,14 @@
 #ifndef included_AMP_SiloIO
 #define included_AMP_SiloIO
 
+#include "AMP/ampmesh/Mesh.h"
+#include "AMP/utils/Writer.h"
+
 #include <map>
 #include <set>
 #include <sstream>
 #include <string.h>
 #include <vector>
-
-#include "AMP/utils/Writer.h"
-
-#ifdef USE_AMP_MESH
-    #include "AMP/ampmesh/Mesh.h"
-#endif
 
 #ifdef USE_EXT_SILO
     #include <silo.h>

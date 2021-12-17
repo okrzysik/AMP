@@ -1,12 +1,11 @@
-#ifdef USE_AMP_VECTORS
-    #ifndef included_AMP_MatrixBuider
-        #define included_AMP_MatrixBuider
+#ifndef included_AMP_MatrixBuider
+#define included_AMP_MatrixBuider
 
-        #include "AMP/matrices/Matrix.h"
-        #include "AMP/vectors/Vector.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/vectors/Vector.h"
 
-        #include <functional>
-        #include <string>
+#include <functional>
+#include <string>
 
 
 extern "C" {
@@ -42,7 +41,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr right,
                   std::function<std::vector<size_t>( size_t )>() );
 
 
-        #if defined( USE_EXT_PETSC )
+#if defined( USE_EXT_PETSC )
 /**
  * \brief  Create a matrix from an arbitrary PETSc Mat
  * \details  This function creates a matrix from an arbitrary PETSc Mat
@@ -50,11 +49,10 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr right,
  * \param[in] deleteable    If true, ~Matrix() will call MatDestroy()
  */
 std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable );
-        #endif
+#endif
 
 
 } // namespace LinearAlgebra
 } // namespace AMP
 
-    #endif
 #endif

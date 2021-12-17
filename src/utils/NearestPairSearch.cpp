@@ -1,16 +1,11 @@
 #include "AMP/utils/NearestPairSearch.h"
+#include "AMP/ampmesh/Mesh.h"
 #include "AMP/utils/NearestPairSearch.hpp"
-
-
-#if USE_AMP_MESH
-    #include "AMP/ampmesh/Mesh.h"
-#endif
 
 namespace AMP {
 
 
 // Calculate the closest pair of points in a list
-#if USE_AMP_MESH
 std::pair<int, int> find_min_dist( const std::vector<AMP::Mesh::MeshPoint<double>> &x )
 {
     std::pair<int, int> index( 0, 0 );
@@ -32,7 +27,6 @@ std::pair<int, int> find_min_dist( const std::vector<AMP::Mesh::MeshPoint<double
         AMP_ERROR( "Not programmed" );
     return index;
 }
-#endif
 
 
 } // namespace AMP
