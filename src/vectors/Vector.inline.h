@@ -17,21 +17,6 @@ inline std::shared_ptr<AMP::Discretization::DOFManager> Vector::getDOFManager() 
     return d_DOFManager;
 }
 
-/****************************************************************
- * Subset for variable name                                      *
- ****************************************************************/
-inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
-{
-    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-    return subsetVectorForVariable( var );
-}
-inline Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( const std::string &name ) const
-{
-    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-    return constSubsetVectorForVariable( var );
-}
-
 
 /****************************************************************
  * getView/hasView                                               *

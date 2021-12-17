@@ -15,8 +15,7 @@
 #include <typeinfo>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 std::shared_ptr<RNG> Vector::d_DefaultRNG;
@@ -102,7 +101,7 @@ Vector::shared_ptr Vector::selectInto( const VectorSelector &s )
     if ( s.isSelected( shared_from_this() ) ) {
         // Subset the vector
         subvector = s.subset( shared_from_this() );
-        if ( subvector != nullptr ) {
+        if ( subvector ) {
             // Check the global size of the new vector to make sure it is <= the current size
             size_t N1 = this->getGlobalSize();
             size_t N2 = subvector->getGlobalSize();
@@ -117,7 +116,7 @@ Vector::const_shared_ptr Vector::selectInto( const VectorSelector &s ) const
     if ( s.isSelected( shared_from_this() ) ) {
         // Subset the vector
         subvector = s.subset( shared_from_this() );
-        if ( subvector != nullptr ) {
+        if ( subvector ) {
             // Check the global size of the new vector to make sure it is <= the current size
             size_t N1 = this->getGlobalSize();
             size_t N2 = subvector->getGlobalSize();
@@ -134,8 +133,8 @@ Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &v
             return shared_from_this();
     }
     Vector::shared_ptr retVal = this->selectInto( s );
-    if ( retVal != nullptr ) {
-        if ( std::dynamic_pointer_cast<MultiVector>( retVal ) == nullptr )
+    if ( retVal ) {
+        if ( !std::dynamic_pointer_cast<MultiVector>( retVal ) )
             retVal = MultiVector::view( retVal, retVal->getComm() );
         auto var = std::make_shared<Variable>( variable_name );
         retVal->setVariable( var );
@@ -151,32 +150,39 @@ Vector::const_shared_ptr Vector::constSelect( const VectorSelector &s,
             return shared_from_this();
     }
     Vector::const_shared_ptr retVal = this->selectInto( s );
-    if ( retVal != nullptr ) {
-        if ( std::dynamic_pointer_cast<const MultiVector>( retVal ) == nullptr )
+    if ( retVal ) {
+        if ( !std::dynamic_pointer_cast<const MultiVector>( retVal ) )
             retVal = MultiVector::constView( retVal, retVal->getComm() );
         auto var = std::make_shared<Variable>( variable_name );
         std::const_pointer_cast<Vector>( retVal )->setVariable( var );
     }
     return retVal;
 }
-Vector::shared_ptr Vector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
+Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
 {
-    Vector::shared_ptr retVal;
-    if ( d_pVariable ) { // If there is a variable...
-        if ( *d_pVariable == *name )
-            retVal = shared_from_this();
-    }
-    return retVal;
+    VS_ByVariableName selector( name );
+    return selectInto( selector );
+}
+Vector::const_shared_ptr Vector::constSubsetVectorForVariable( const std::string &name ) const
+{
+    VS_ByVariableName selector( name );
+    return selectInto( selector );
+}
+
+Vector::shared_ptr Vector::subsetVectorForVariable( std::shared_ptr<const Variable> var )
+{
+    if ( !var )
+        return nullptr;
+    auto selector = var->createVectorSelector();
+    return selectInto( *selector );
 }
 Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
+Vector::constSubsetVectorForVariable( std::shared_ptr<const Variable> var ) const
 {
-    Vector::const_shared_ptr retVal;
-    if ( d_pVariable ) { // If there is a variable...
-        if ( *d_pVariable == *name )
-            retVal = shared_from_this();
-    }
-    return retVal;
+    if ( !var )
+        return nullptr;
+    auto selector = var->createVectorSelector();
+    return selectInto( *selector );
 }
 
 
@@ -252,5 +258,4 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

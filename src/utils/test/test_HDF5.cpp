@@ -248,8 +248,8 @@ void testLarge( AMP::UnitTest &ut )
     printf( "Allocating large array\n" );
     AMP::Array<int> data( 40000, 40000 );
     data.fill( 0 );
-    std::default_random_engine gen;
-    std::uniform_int_distribution<int> dist( 0, 10000 );
+    // std::default_random_engine gen;
+    // std::uniform_int_distribution<int> dist( 0, 10000 );
     // for ( size_t i=0; i<data.length(); i++)
     //    data(i) = dist(gen);
     printf( "Writing large array\n" );

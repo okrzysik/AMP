@@ -229,6 +229,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PROFILE_DISABLE();
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
+    StackTrace::Utilities::setAbortBehavior( !AMPManager::use_MPI_Abort, 3 );
     // Initialize MPI
     double MPI_start = Utilities::time();
     AMP_MPI::start_MPI( argc, argv, properties.profile_MPI_level );
@@ -294,6 +295,7 @@ void AMPManager::shutdown()
     clearHandlers();
     // Disable MPI_Abort
     AMPManager::use_MPI_Abort = false;
+    StackTrace::Utilities::setAbortBehavior( true, 2 );
     // Shutdown the parallel IO
     stopLogging();
     // Shutdown the profiler

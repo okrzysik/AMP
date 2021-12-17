@@ -80,36 +80,5 @@ void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 }
 
 
-/********************************************************
- * Subset                                                *
- ********************************************************/
-Vector::shared_ptr
-ManagedThyraVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
-{
-    Vector::shared_ptr retVal;
-    if ( !retVal )
-        retVal = Vector::subsetVectorForVariable( name );
-    if ( !retVal ) {
-        auto vec = getVectorEngine( getVectorData() );
-        if ( vec )
-            retVal = vec->subsetVectorForVariable( name );
-    }
-    return retVal;
-}
-Vector::const_shared_ptr
-ManagedThyraVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
-{
-    Vector::const_shared_ptr retVal;
-    if ( !retVal )
-        retVal = Vector::constSubsetVectorForVariable( name );
-    if ( !retVal ) {
-        auto const vec = getVectorEngine( getVectorData() );
-        if ( vec )
-            retVal = vec->constSubsetVectorForVariable( name );
-    }
-    return retVal;
-}
-
-
 } // namespace LinearAlgebra
 } // namespace AMP
