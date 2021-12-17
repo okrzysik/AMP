@@ -1,37 +1,39 @@
-#include "MultiVariable.h"
+#include "AMP/vectors/MultiVariable.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorSelector.h"
+
 #include <algorithm>
 #include <map>
-#include <utility>
+#include <string>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
-class MVSortByName
+/****************************************************************
+ * VectorSelector for multivariable                              *
+ ****************************************************************/
+VS_MultiVariable::VS_MultiVariable( const std::shared_ptr<MultiVariable> &var ) : d_var( var ) {}
+std::string VS_MultiVariable::getName() const { return d_var->getName(); }
+bool VS_MultiVariable::isSelected( Vector::const_shared_ptr ) const { return true; }
+Vector::shared_ptr VS_MultiVariable::subset( Vector::shared_ptr vec ) const
 {
-private:
-    std::map<std::string, int> new_order;
-
-public:
-    explicit MVSortByName( const std::vector<std::string> &in )
-    {
-        auto cur = in.begin();
-        int i    = 0;
-        while ( cur != in.end() ) {
-            new_order[*cur] = i++;
-            ++cur;
+    auto var = vec->getVariable();
+    if ( var ) {
+        if ( var->getName() == d_var->getName() )
+            return vec;
+        for ( auto var2 : *d_var ) {
+            if ( var->getName() == var2->getName() )
+                return vec;
         }
     }
-
-    bool operator()( const std::shared_ptr<Variable> left, const std::shared_ptr<Variable> right )
-    {
-        std::string lname = left->getName();
-        std::string rname = right->getName();
-        return new_order[lname] < new_order[rname];
-    }
-};
+    return Vector::shared_ptr();
+}
+Vector::const_shared_ptr VS_MultiVariable::subset( Vector::const_shared_ptr vec ) const
+{
+    return subset( std::const_pointer_cast<Vector>( vec ) );
+}
 
 
 /****************************************************************
@@ -48,6 +50,7 @@ MultiVariable::~MultiVariable() = default;
 /****************************************************************
  * Get/set a variable                                            *
  ****************************************************************/
+size_t MultiVariable::numVariables() const { return d_vVariables.size(); }
 std::shared_ptr<Variable> MultiVariable::getVariable( size_t which )
 {
     AMP_ASSERT( which < d_vVariables.size() );
@@ -65,14 +68,10 @@ void MultiVariable::setVariable( size_t i, std::shared_ptr<Variable> &p )
 }
 void MultiVariable::add( std::shared_ptr<Variable> newVar )
 {
-    std::shared_ptr<MultiVariable> multivariable =
-        std::dynamic_pointer_cast<MultiVariable>( newVar );
+    auto multivariable = std::dynamic_pointer_cast<MultiVariable>( newVar );
     if ( multivariable ) {
-        auto curVar = multivariable->beginVariable();
-        while ( curVar != multivariable->endVariable() ) {
-            add( *curVar );
-            ++curVar;
-        }
+        for ( auto var : *multivariable )
+            add( var );
     } else {
         d_vVariables.push_back( newVar );
     }
@@ -80,24 +79,14 @@ void MultiVariable::add( std::shared_ptr<Variable> newVar )
 
 
 /****************************************************************
- * Misc                                                          *
+ * Comparison operator                                           *
  ****************************************************************/
-size_t MultiVariable::numVariables() const { return d_vVariables.size(); }
-
-void MultiVariable::sortVariablesByName( const std::vector<std::string> &order )
-{
-    MVSortByName sorter( order );
-    std::sort( beginVariable(), endVariable(), sorter );
-}
-
-
 bool MultiVariable::operator==( const Variable &rhs ) const
 {
     const auto *multivariable = dynamic_cast<const MultiVariable *>( &rhs );
     if ( multivariable == nullptr ) {
         // We are comparing a multi variable to another variable
-        // The two variables match if the variable equals all sub-variable and
-        // the names match
+        // Two variables match if the variable equals all sub-variable and the names match
         if ( rhs.getName() != this->getName() )
             return false;
         for ( size_t i = 0; i != d_vVariables.size(); i++ ) {
@@ -117,6 +106,9 @@ bool MultiVariable::operator==( const Variable &rhs ) const
 }
 
 
+/****************************************************************
+ * cloneVariable                                                 *
+ ****************************************************************/
 std::shared_ptr<Variable> MultiVariable::cloneVariable( const std::string &name ) const
 {
     std::shared_ptr<MultiVariable> retVal( new MultiVariable( name ) );
@@ -126,6 +118,9 @@ std::shared_ptr<Variable> MultiVariable::cloneVariable( const std::string &name 
 }
 
 
+/****************************************************************
+ * removeDuplicateVariables                                      *
+ ****************************************************************/
 void MultiVariable::removeDuplicateVariables()
 {
     // First remove any NULL pointers
@@ -154,15 +149,25 @@ void MultiVariable::removeDuplicateVariables()
 }
 
 
+/****************************************************************
+ * setUnits                                                      *
+ ****************************************************************/
 void MultiVariable::setUnits( const Units &units )
 {
     Variable::setUnits( units );
-    auto curVar = beginVariable();
-    while ( curVar != endVariable() ) {
-        ( *curVar )->setUnits( units );
-        ++curVar;
-    }
+    for ( auto var : *this )
+        var->setUnits( units );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+
+/****************************************************************
+ * createVectorSelector                                          *
+ ****************************************************************/
+std::shared_ptr<VectorSelector> MultiVariable::createVectorSelector() const
+{
+    auto multivar = std::dynamic_pointer_cast<MultiVariable>( cloneVariable( getName() ) );
+    return std::make_shared<VS_MultiVariable>( multivar );
+}
+
+
+} // namespace AMP::LinearAlgebra

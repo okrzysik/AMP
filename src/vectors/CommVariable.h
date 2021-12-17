@@ -24,6 +24,9 @@ public:
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 private:
     CommVariable();
     AMP_MPI d_comm;

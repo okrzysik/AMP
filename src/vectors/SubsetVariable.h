@@ -88,6 +88,9 @@ public:
      *    \endcode
      */
     static Vector::const_shared_ptr view( Vector::const_shared_ptr, std::shared_ptr<Variable> );
+
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
 };
 
 

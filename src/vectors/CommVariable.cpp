@@ -1,8 +1,8 @@
-#include "CommVariable.h"
+#include "AMP/vectors/CommVariable.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/vectors/VectorSelector.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 CommVariable::CommVariable( const std::string &name, const AMP_MPI &comm ) : SubsetVariable( name )
@@ -17,5 +17,11 @@ CommVariable::getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> par
 {
     return parentDOF->subset( d_comm );
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+
+
+std::shared_ptr<VectorSelector> CommVariable::createVectorSelector() const
+{
+    return std::make_shared<VS_Comm>( d_comm );
+}
+
+} // namespace AMP::LinearAlgebra
