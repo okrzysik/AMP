@@ -3,8 +3,8 @@
 
 #include "AMP/vectors/Vector.h"
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshIterator.h"
 
 
 namespace AMP::LinearAlgebra {

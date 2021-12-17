@@ -4,7 +4,7 @@
 
 
     // AMP headers
-    #include "AMP/ampmesh/MeshIterator.h"
+    #include "AMP/mesh/MeshIterator.h"
     #include "AMP/utils/Utilities.h"
 
 

@@ -2,7 +2,7 @@
 #define included_AMP_ConstructLinearMechanicsRHSVector
 
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/Vector.h"
 #include <memory>

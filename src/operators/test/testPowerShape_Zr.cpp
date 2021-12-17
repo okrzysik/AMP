@@ -1,13 +1,13 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/libmesh/PowerShape.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -50,7 +50,7 @@ static void test_with_shape( AMP::UnitTest *ut )
 #ifdef USE_EXT_SILO
     auto shapeVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "PowerShape" );
     auto shapeVec   = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::GeomType::Volume, "PowerShape" );
 #endif

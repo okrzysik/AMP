@@ -1,9 +1,11 @@
 // This test checks the verification problem in SubChannelFlow.tex
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
@@ -15,10 +17,8 @@
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -343,7 +343,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     enthalpy->scale( h_scale );
     pressure->scale( P_scale );
     // Register the quantities to plot
-    auto siloWriter         = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter         = AMP::IO::Writer::buildWriter( "Silo" );
     auto subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     auto subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
     subchannelEnthalpy->scale( h_scale );

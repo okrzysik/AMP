@@ -1,7 +1,7 @@
 
 #include "AMP/operators/contact/NodeToSegmentConstraintsOperator.h"
-#include "AMP/ampmesh/MeshID.h"
-#include "AMP/ampmesh/dendro/DendroSearch.h"
+#include "AMP/mesh/MeshID.h"
+#include "AMP/mesh/dendro/DendroSearch.h"
 
 #include <algorithm>
 #include <cmath>

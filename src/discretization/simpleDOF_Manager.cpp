@@ -1,6 +1,6 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #include <set>

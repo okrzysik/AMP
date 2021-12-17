@@ -1,5 +1,5 @@
 #include "AMP/utils/NearestPairSearch.h"
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/NearestPairSearch.hpp"
 
 namespace AMP {

@@ -1,7 +1,7 @@
 
 #include "AMP/operators/map/libmesh/GaussPointToGaussPointMap.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 // Libmesh files

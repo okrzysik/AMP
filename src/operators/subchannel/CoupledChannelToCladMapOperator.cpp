@@ -3,7 +3,7 @@
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/utils/Utilities.h"
 
 

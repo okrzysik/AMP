@@ -1,6 +1,6 @@
 #include "AMP/operators/map/NodeToNodeMap.h"
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/map/NodeToNodeMapParameters.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"

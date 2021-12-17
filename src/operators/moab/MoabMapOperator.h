@@ -13,7 +13,7 @@
 #include <vector>
 
 // AMP Includes
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"

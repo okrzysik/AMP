@@ -3,16 +3,18 @@
 #include "AMP/matrices/DenseSerialMatrix.h"
 #include "AMP/matrices/ManagedMatrix.h"
 #include "AMP/matrices/ManagedMatrixParameters.h"
-#include "AMP/matrices/petsc/NativePetscMatrix.h"
-#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/petsc/PetscHelpers.h"
 
-#include <functional>
-
+#ifdef USE_EXT_PETSC
+    #include "AMP/matrices/petsc/NativePetscMatrix.h"
+    #include "AMP/vectors/petsc/PetscHelpers.h"
+#endif
 #ifdef USE_EXT_TRILINOS
+    #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
     #include <Epetra_CrsMatrix.h>
 #endif
+
+#include <functional>
 
 
 namespace AMP::LinearAlgebra {

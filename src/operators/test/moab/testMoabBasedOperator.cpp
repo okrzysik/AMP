@@ -13,15 +13,15 @@
 #include <vector>
 
 // AMP Moab Includes
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/operators/moab/MoabBasedOperator.h"
 #include "AMP/operators/moab/MoabMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 // MOAB Includes
@@ -262,7 +262,7 @@ static void moabInterface( AMP::UnitTest *ut )
         // Useful for making sure everything looks right
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::GeomType::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );

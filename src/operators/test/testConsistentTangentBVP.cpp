@@ -1,8 +1,8 @@
 
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -10,8 +10,8 @@
 #include <iostream>
 #include <string>
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/VectorBuilder.h"

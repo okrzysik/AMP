@@ -9,11 +9,11 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 

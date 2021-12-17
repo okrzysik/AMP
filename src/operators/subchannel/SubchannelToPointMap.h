@@ -1,7 +1,7 @@
 #ifndef included_AMP_SubchannelToPointMapMap
 #define included_AMP_SubchannelToPointMapMap
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 #include "AMP/operators/subchannel/SubchannelToPointMapParameters.h"

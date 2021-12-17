@@ -2,8 +2,8 @@
 #ifndef included_AMP_DTK_AMPMeshManager
 #define included_AMP_DTK_AMPMeshManager
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 
 #include "AMP/utils/AMP_MPI.h"
 

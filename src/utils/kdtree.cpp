@@ -1,5 +1,5 @@
 #include "AMP/utils/kdtree.h"
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.h"
 
