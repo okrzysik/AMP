@@ -9,8 +9,8 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/MultiVector.h"
+    #include "AMP/vectors/Vector.h"
 #endif
 
 #include <iostream>

@@ -10,12 +10,12 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree.h"
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/simpleDOF_Manager.h"
+    #include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
 #include <cmath>
@@ -177,7 +177,7 @@ std::vector<MeshElement> Mesh::getElementParents( const MeshElement &, const Geo
 AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name,
                                                                 const int gcw ) const
 {
-#ifdef USE_AMP_DISCRETIZATION
+    #ifdef USE_AMP_DISCRETIZATION
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
         std::const_pointer_cast<Mesh>( shared_from_this() ),
         AMP::Mesh::GeomType::Vertex,
@@ -194,10 +194,10 @@ AMP::LinearAlgebra::Vector::shared_ptr Mesh::getPositionVector( std::string name
         position->setValuesByGlobalID( dofs.size(), &dofs[0], &coord[0] );
     }
     return position;
-#else
+    #else
     AMP_ERROR( "getPositionVector requires DISCRETIZATION" );
     return AMP::LinearAlgebra::Vector::shared_ptr();
-#endif
+    #endif
 }
 #endif
 

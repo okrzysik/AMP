@@ -1,29 +1,29 @@
 // \cond HIDDEN_SYMBOLS
 #ifndef DENDRO_SEARCH
-#define DENDRO_SEARCH
+    #define DENDRO_SEARCH
 
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Utilities.h"
+    #include "AMP/utils/AMP_MPI.h"
+    #include "AMP/utils/Utilities.h"
 
-#include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/Vector.h"
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
-#include "AMP/ampmesh/hex8_element_t.h"
+    #include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/MeshElement.h"
+    #include "AMP/ampmesh/hex8_element_t.h"
 
-#include <cmath>
-#include <cstdlib>
-#include <iostream>
-#include <string>
-#include <vector>
+    #include <cmath>
+    #include <cstdlib>
+    #include <iostream>
+    #include <string>
+    #include <vector>
 
-#include "binOps/binUtils.h"
-#include "dendro.h"
-#include "oct/TreeNode.h"
-#include "oct/nodeAndRanks.h"
-#include "oct/nodeAndValues.h"
-#include "oct/octUtils.h"
-#include "par/parUtils.h"
+    #include "binOps/binUtils.h"
+    #include "dendro.h"
+    #include "oct/TreeNode.h"
+    #include "oct/nodeAndRanks.h"
+    #include "oct/nodeAndValues.h"
+    #include "oct/octUtils.h"
+    #include "par/parUtils.h"
 
 
 namespace AMP {

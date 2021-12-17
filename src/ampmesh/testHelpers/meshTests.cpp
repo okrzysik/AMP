@@ -11,7 +11,7 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/Vector.h"
 #endif
 
 #include <set>

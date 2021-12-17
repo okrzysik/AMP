@@ -6,14 +6,14 @@
 #include <chrono>
 
 #ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MultiMesh.h"
+    #include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/MultiMesh.h"
 #endif
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/Vector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
+    #include "AMP/matrices/Matrix.h"
 #endif
 
 namespace AMP::Utilities {
@@ -56,9 +56,9 @@ SiloIO::SiloIO() : AMP::Utilities::Writer()
 {
 #ifdef USE_AMP_MESH
     d_dim = -1;
-#ifdef USE_EXT_SILO
+    #ifdef USE_EXT_SILO
     DBSetAllowEmptyObjects( true );
-#endif
+    #endif
 #endif
 }
 SiloIO::~SiloIO() = default;
@@ -275,7 +275,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     PROFILE_STOP( "writeMesh - mesh", 2 );
     // Write the variables
     PROFILE_START( "writeMesh - variables", 2 );
-#ifdef USE_AMP_VECTORS
+    #ifdef USE_AMP_VECTORS
     float ftime        = time;
     DBoptlist *optlist = DBMakeOptlist( 10 );
     DBAddOption( optlist, DBOPT_CYCLE, &cycle );
@@ -370,7 +370,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     }
     DBFreeOptlist( optlist );
     PROFILE_STOP( "writeMesh - variables", 2 );
-#endif
+    #endif
     // Change the directory back to root
     DBSetDir( FileHandle, "/" );
     PROFILE_STOP( "writeMesh", 1 );

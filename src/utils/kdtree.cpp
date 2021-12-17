@@ -3,7 +3,7 @@
 #include "AMP/utils/kdtree2.h"
 
 #if USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/Mesh.h"
 #endif
 
 #include "ProfilerApp.h"

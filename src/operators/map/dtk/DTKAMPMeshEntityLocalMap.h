@@ -1,12 +1,12 @@
 //! @cond Doxygen_Suppress
 #ifndef included_AMP_DTK_AMPMeshEntityLocalMap
-#define included_AMP_DTK_AMPMeshEntityLocalMap
+    #define included_AMP_DTK_AMPMeshEntityLocalMap
 
-#include "AMP/utils/AMP_MPI.h"
+    #include "AMP/utils/AMP_MPI.h"
 
-#include <DTK_EntityLocalMap.hpp>
+    #include <DTK_EntityLocalMap.hpp>
 
-#include <Intrepid_FieldContainer.hpp>
+    #include <Intrepid_FieldContainer.hpp>
 
 namespace AMP {
 namespace Operator {

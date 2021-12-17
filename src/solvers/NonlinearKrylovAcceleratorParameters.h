@@ -8,7 +8,7 @@
 #include "AMP/utils/ParameterBase.h"
 
 #ifndef included_AMP_SolverStrategy
-#include "SolverStrategy.h"
+    #include "SolverStrategy.h"
 #endif
 
 #include "AMP/vectors/Vector.h"

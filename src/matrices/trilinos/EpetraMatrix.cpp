@@ -8,9 +8,9 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 #ifdef USE_EXT_MPI
-#include <Epetra_MpiComm.h>
+    #include <Epetra_MpiComm.h>
 #else
-#include <Epetra_SerialComm.h>
+    #include <Epetra_SerialComm.h>
 #endif
 
 

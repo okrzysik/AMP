@@ -6,11 +6,11 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #ifdef USE_EXT_SUNDIALS
-#include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/sundials/SundialsVector.h"
+    #include "AMP/vectors/sundials/ManagedSundialsVector.h"
+    #include "AMP/vectors/sundials/SundialsVector.h"
 #endif
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
 #endif
 
 #include <algorithm>

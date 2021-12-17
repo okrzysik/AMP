@@ -8,12 +8,12 @@
 #include "AMP/utils/UnitTest.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/MeshVariable.h"
-#include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/VectorSelector.h"
+    #include "AMP/vectors/MeshVariable.h"
+    #include "AMP/vectors/MultiVector.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/VectorSelector.h"
 #endif
 
 

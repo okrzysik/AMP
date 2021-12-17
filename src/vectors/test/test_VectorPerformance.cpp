@@ -4,11 +4,11 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 #ifdef USE_OPENMP
-#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+    #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-#include "AMP/vectors/data/cuda/VectorDataGPU.h"
-#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
+    #include "AMP/vectors/data/cuda/VectorDataGPU.h"
+    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
 #include "ProfilerApp.h"

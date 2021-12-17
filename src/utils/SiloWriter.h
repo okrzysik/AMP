@@ -10,11 +10,11 @@
 #include "AMP/utils/Writer.h"
 
 #ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/Mesh.h"
 #endif
 
 #ifdef USE_EXT_SILO
-#include <silo.h>
+    #include <silo.h>
 #endif
 
 

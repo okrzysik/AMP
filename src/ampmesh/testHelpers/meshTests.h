@@ -5,11 +5,11 @@
 #include "AMP/utils/UnitTest.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/testHelpers/VectorTests.h"
+    #include "AMP/discretization/simpleDOF_Manager.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/testHelpers/VectorTests.h"
 #endif
 
 
@@ -335,10 +335,10 @@ private: // Private data
 
 // Extra includes
 #ifdef USE_AMP_VECTORS
-#include "AMP/ampmesh/testHelpers/meshVectorTests.inline.h"
+    #include "AMP/ampmesh/testHelpers/meshVectorTests.inline.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "AMP/ampmesh/testHelpers/meshMatrixTests.inline.h"
+    #include "AMP/ampmesh/testHelpers/meshMatrixTests.inline.h"
 #endif
 
 

@@ -6,7 +6,7 @@
 #include "AMP/ampmesh/SubsetMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/Vector.h"
 #endif
 
 namespace AMP {

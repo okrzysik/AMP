@@ -10,13 +10,13 @@
 #include "ProfilerApp.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
+    #include "AMP/discretization/DOF_Manager.h"
+    #include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
 
@@ -791,7 +791,7 @@ void STKMesh::displaceMesh( std::vector<double> x_in )
 #ifdef USE_AMP_VECTORS
 void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-#ifdef USE_AMP_DISCRETIZATION
+    #ifdef USE_AMP_DISCRETIZATION
     // Create the position vector with the necessary ghost nodes
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
         shared_from_this(),
@@ -862,9 +862,9 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
         d_box[2 * i + 0] = d_comm.minReduce( d_box_local[2 * i + 0] );
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
-#else
+    #else
     AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
-#endif
+    #endif
 }
 #endif
 

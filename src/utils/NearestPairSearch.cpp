@@ -3,7 +3,7 @@
 
 
 #if USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/Mesh.h"
 #endif
 
 namespace AMP {

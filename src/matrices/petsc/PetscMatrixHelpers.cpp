@@ -10,7 +10,7 @@
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
-#error AMP only supports PETSc 3.7.5 or greater
+    #error AMP only supports PETSc 3.7.5 or greater
 #endif
 
 
@@ -163,7 +163,7 @@ void reset_mat_ops( Mat M )
 #elif PETSC_VERSION_LE( 3, 7, 5 )
     MatShellSetOperation( M, MATOP_GET_VECS, (void ( * )()) _AMP_GetVecs );
 #else
-#error Not programmed for this version of petsc
+    #error Not programmed for this version of petsc
 #endif
     MatShellSetOperation( M, MATOP_GET_DIAGONAL, (void ( * )()) _AMP_GetDiagonal );
     MatShellSetOperation( M, MATOP_MULT_ADD, (void ( * )()) _AMP_Mult_add );

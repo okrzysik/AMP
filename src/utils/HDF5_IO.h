@@ -10,8 +10,8 @@
 
 // Include the headers and define some basic types
 #ifdef USE_HDF5
-// Using HDF5
-#include "hdf5.h"
+    // Using HDF5
+    #include "hdf5.h"
 #else
 // Not using HDF5
 typedef int hid_t;

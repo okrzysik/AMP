@@ -13,7 +13,7 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 #ifdef USE_EXT_SILO
-#include "AMP/utils/Writer.h"
+    #include "AMP/utils/Writer.h"
 #endif
 
 

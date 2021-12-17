@@ -1,24 +1,24 @@
 #ifdef USE_AMP_DISCRETIZATION
 
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/vectors/MultiVariable.h"
-#include "AMP/vectors/MultiVector.h"
-#ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/NativePetscVectorData.h"
-#include "AMP/vectors/petsc/NativePetscVectorOperations.h"
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "petscvec.h"
-#endif
-#ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
-#endif
+    #include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/discretization/MultiDOF_Manager.h"
+    #include "AMP/vectors/MultiVariable.h"
+    #include "AMP/vectors/MultiVector.h"
+    #ifdef USE_EXT_PETSC
+        #include "AMP/vectors/petsc/NativePetscVectorData.h"
+        #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
+        #include "AMP/vectors/petsc/PetscVector.h"
+        #include "petscvec.h"
+    #endif
+    #ifdef USE_EXT_TRILINOS
+        #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+        #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
+        #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
+        #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
+        #include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
+    #endif
 
-#include <iostream>
+    #include <iostream>
 
 
 namespace AMP {
@@ -116,10 +116,10 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 }
 
 
-/********************************************************
- * create vector from PETSc Vec                          *
- ********************************************************/
-#if defined( USE_EXT_PETSC )
+    /********************************************************
+     * create vector from PETSc Vec                          *
+     ********************************************************/
+    #if defined( USE_EXT_PETSC )
 std::shared_ptr<Vector>
 createVector( Vec v, bool deleteable, AMP_MPI comm, std::shared_ptr<Variable> var )
 {
@@ -129,13 +129,13 @@ createVector( Vec v, bool deleteable, AMP_MPI comm, std::shared_ptr<Variable> va
     auto data = std::make_shared<NativePetscVectorData>( v, deleteable, comm );
     return std::make_shared<Vector>( data, ops, var, nullptr );
 }
-#endif
+    #endif
 
 
-/********************************************************
- * create vector from Trilinos Thyra vector              *
- ********************************************************/
-#if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_THYRA )
+    /********************************************************
+     * create vector from Trilinos Thyra vector              *
+     ********************************************************/
+    #if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_THYRA )
 std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
                                       size_t local,
                                       AMP_MPI comm,
@@ -147,13 +147,13 @@ std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> ve
     auto data = std::make_shared<NativeThyraVectorData>( vec, local, comm );
     return std::make_shared<Vector>( data, ops, var, nullptr );
 }
-#endif
+    #endif
 
 
-/********************************************************
- * create Trilinos Epetra vector                         *
- ********************************************************/
-#if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_EPETRA )
+    /********************************************************
+     * create Trilinos Epetra vector                         *
+     ********************************************************/
+    #if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_EPETRA )
 std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> commList,
                                             std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                             std::shared_ptr<VectorData> buf )
@@ -165,7 +165,7 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
     auto data = EpetraVectorData::create( params, buf );
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
-#endif
+    #endif
 
 
 } // namespace LinearAlgebra

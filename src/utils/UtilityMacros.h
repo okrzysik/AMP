@@ -118,16 +118,16 @@ extern std::ostream plog;
  *  \param EXP  Expression to evaluate
  */
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-#define AMP_CHECK_ASSERT( EXP )                                               \
-    do {                                                                      \
-        if ( !( EXP ) ) {                                                     \
-            std::ostringstream stream;                                        \
-            stream << "Failed assertion: " << #EXP;                           \
-            StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-        }                                                                     \
-    } while ( 0 )
+    #define AMP_CHECK_ASSERT( EXP )                                               \
+        do {                                                                      \
+            if ( !( EXP ) ) {                                                     \
+                std::ostringstream stream;                                        \
+                stream << "Failed assertion: " << #EXP;                           \
+                StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
+            }                                                                     \
+        } while ( 0 )
 #else
-#define AMP_CHECK_ASSERT( EXP )
+    #define AMP_CHECK_ASSERT( EXP )
 #endif
 
 

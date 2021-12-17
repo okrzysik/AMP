@@ -4,8 +4,8 @@
 #include "AMP/vectors/Vector.h"
 
 #ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshIterator.h"
+    #include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/MeshIterator.h"
 #endif
 
 

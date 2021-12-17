@@ -6,15 +6,15 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MultiMesh.h"
+    #include "AMP/ampmesh/Mesh.h"
+    #include "AMP/ampmesh/MultiMesh.h"
 #endif
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorSelector.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorSelector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "AMP/matrices/Matrix.h"
+    #include "AMP/matrices/Matrix.h"
 #endif
 
 #include <algorithm>

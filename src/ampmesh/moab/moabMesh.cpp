@@ -6,13 +6,13 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
 #endif
 #ifdef USE_AMP_DISCRETIZATION
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
+    #include "AMP/discretization/DOF_Manager.h"
+    #include "AMP/discretization/simpleDOF_Manager.h"
 #endif
 
 
@@ -133,11 +133,11 @@ void moabMesh::displaceMesh( std::vector<double> x_in ) { AMP_ERROR( "Not finish
 #ifdef USE_AMP_VECTORS
 void moabMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
-#ifdef USE_AMP_DISCRETIZATION
+    #ifdef USE_AMP_DISCRETIZATION
     AMP_ERROR( "Not finished" );
-#else
+    #else
     AMP_ERROR( "displaceMesh requires DISCRETIZATION" );
-#endif
+    #endif
 }
 #endif
 

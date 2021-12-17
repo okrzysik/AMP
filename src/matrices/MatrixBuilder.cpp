@@ -1,25 +1,25 @@
 #ifdef USE_AMP_VECTORS
 
-#include "AMP/matrices/MatrixBuilder.h"
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/DenseSerialMatrix.h"
-#include "AMP/matrices/ManagedMatrix.h"
-#include "AMP/matrices/ManagedMatrixParameters.h"
-#include "AMP/utils/Utilities.h"
+    #include "AMP/matrices/MatrixBuilder.h"
+    #include "AMP/discretization/DOF_Manager.h"
+    #include "AMP/matrices/DenseSerialMatrix.h"
+    #include "AMP/matrices/ManagedMatrix.h"
+    #include "AMP/matrices/ManagedMatrixParameters.h"
+    #include "AMP/utils/Utilities.h"
 
-#ifdef USE_EXT_TRILINOS
-#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
-#endif
-#ifdef USE_EXT_PETSC
-#include "AMP/matrices/petsc/NativePetscMatrix.h"
-#include "AMP/vectors/petsc/PetscHelpers.h"
-#endif
+    #ifdef USE_EXT_TRILINOS
+        #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
+    #endif
+    #ifdef USE_EXT_PETSC
+        #include "AMP/matrices/petsc/NativePetscMatrix.h"
+        #include "AMP/vectors/petsc/PetscHelpers.h"
+    #endif
 
-#include <functional>
+    #include <functional>
 
-#ifdef USE_EXT_TRILINOS
-#include <Epetra_CrsMatrix.h>
-#endif
+    #ifdef USE_EXT_TRILINOS
+        #include <Epetra_CrsMatrix.h>
+    #endif
 
 
 namespace AMP::LinearAlgebra {
@@ -66,13 +66,13 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     // Create the matrix
     std::shared_ptr<AMP::LinearAlgebra::ManagedMatrix> newMatrix;
     if ( type == "ManagedEpetraMatrix" ) {
-#if defined( USE_EXT_TRILINOS )
+    #if defined( USE_EXT_TRILINOS )
         auto mat = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( params );
         mat->setEpetraMaps( leftVec, rightVec );
         newMatrix = mat;
-#else
+    #else
         AMP_ERROR( "Unable to build ManagedEpetraMatrix without Trilinos" );
-#endif
+    #endif
     } else {
         AMP_ERROR( "Unknown ManagedMatrix type" );
     }
@@ -155,11 +155,11 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     // Determine the type of matrix to build
     std::string type2 = type;
     if ( type == "auto" ) {
-#if defined( USE_EXT_TRILINOS )
+    #if defined( USE_EXT_TRILINOS )
         type2 = "ManagedEpetraMatrix";
-#else
+    #else
         type2 = "DenseSerialMatrix";
-#endif
+    #endif
     }
     // Create the default getRow function (if not provided)
     if ( !getRow ) {
@@ -185,17 +185,17 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
 }
 
 
-/********************************************************
- * Create Matrix from PETSc Mat                          *
- ********************************************************/
-#if defined( USE_EXT_PETSC )
+    /********************************************************
+     * Create Matrix from PETSc Mat                          *
+     ********************************************************/
+    #if defined( USE_EXT_PETSC )
 std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable )
 {
     auto matrix = std::make_shared<NativePetscMatrix>( M, deleteable );
     AMP_ASSERT( !matrix->getComm().isNull() );
     return matrix;
 }
-#endif
+    #endif
 
 
 } // namespace AMP::LinearAlgebra

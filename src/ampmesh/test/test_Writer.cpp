@@ -10,15 +10,15 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/Writer.h"
 #ifdef USE_AMP_VECTORS
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/VectorSelector.h"
+    #include "AMP/discretization/DOF_Manager.h"
+    #include "AMP/discretization/simpleDOF_Manager.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/VectorSelector.h"
 #endif
 #ifdef USE_AMP_MATRICES
-#include "AMP/matrices/MatrixBuilder.h"
+    #include "AMP/matrices/MatrixBuilder.h"
 #endif
 
 #include "ProfilerApp.h"
@@ -167,10 +167,10 @@ void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
         ut.expected_failure( writerName + " does not support registering a matrix" );
         return;
     }
-#if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
+    #if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
     ut.expected_failure( writerName + "  - no parallel matrix to test" );
     return;
-#endif
+    #endif
 
     // Create and register a matrix
     auto rankStr = std::to_string( comm.getRank() + 1 );

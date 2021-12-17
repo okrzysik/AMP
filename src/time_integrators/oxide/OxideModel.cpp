@@ -2,7 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_LAPACK_WRAPPERS
-#include "LapackWrappers.h"
+    #include "LapackWrappers.h"
 #endif
 
 #include <algorithm>

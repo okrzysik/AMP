@@ -164,9 +164,9 @@ void AMPManager::exitFun()
  *  Function to PETSc errors                                                 *
  ****************************************************************************/
 #ifdef USE_EXT_PETSC
-#if PETSC_VERSION_LT( 3, 7, 5 )
-#error AMP only supports PETSc 3.7.5 or greater
-#endif
+    #if PETSC_VERSION_LT( 3, 7, 5 )
+        #error AMP only supports PETSc 3.7.5 or greater
+    #endif
 PetscErrorCode petsc_err_handler( MPI_Comm,
                                   int line,
                                   const char *dir,
@@ -375,11 +375,11 @@ double AMPManager::start_SAMRAI()
     double time = 0;
 #ifdef USE_EXT_SAMRAI
     double start = Utilities::time();
-#ifdef USE_MPI
+    #ifdef USE_MPI
     SAMRAI::tbox::SAMRAI_MPI::init( AMP_MPI( AMP_COMM_WORLD ).getCommunicator() );
-#else
+    #else
     SAMRAI::tbox::SAMRAI_MPI::initMPIDisabled();
-#endif
+    #endif
     SAMRAI::tbox::SAMRAIManager::initialize();
     SAMRAI::tbox::SAMRAIManager::startup();
     SAMRAI::tbox::SAMRAIManager::setMaxNumberPatchDataEntries( 2048 );
@@ -440,10 +440,10 @@ double AMPManager::start_PETSc()
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
-#ifndef USE_MPI
+    #ifndef USE_MPI
     // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
     AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
-#endif
+    #endif
     time = Utilities::time() - start;
 #endif
     return time;
@@ -583,19 +583,19 @@ void AMPManager::setMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
     StackTrace::setMPIErrorHandler( comm_world.getCommunicator() );
-#ifdef USE_EXT_SAMRAI
+    #ifdef USE_EXT_SAMRAI
     StackTrace::setMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
-#endif
+    #endif
 #endif
 }
 void AMPManager::clearMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
     StackTrace::clearMPIErrorHandler( comm_world.getCommunicator() );
-#ifdef USE_EXT_SAMRAI
+    #ifdef USE_EXT_SAMRAI
     StackTrace::clearMPIErrorHandler(
         SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
-#endif
+    #endif
 #endif
 }
 
@@ -667,11 +667,11 @@ std::string AMPManager::info()
     out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
 #endif
 #ifdef USE_EXT_SUNDIALS
-#ifdef SUNDIALS_PACKAGE_VERSION
+    #ifdef SUNDIALS_PACKAGE_VERSION
     out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
-#elif defined( SUNDIALS_VERSION )
+    #elif defined( SUNDIALS_VERSION )
     out << "Sundials: " << SUNDIALS_VERSION << std::endl;
-#endif
+    #endif
 #endif
 #ifdef HYPRE_RELEASE_VERSION
     out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;

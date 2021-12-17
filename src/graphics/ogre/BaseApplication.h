@@ -38,22 +38,23 @@ DISABLE_WARNINGS
 #include <SdkTrays.h>
 
 #ifdef OGRE_STATIC_LIB
-#define OGRE_STATIC_GL
-#define OGRE_STATIC_ParticleFX
-#define OGRE_STATIC_BSPSceneManager
-//#define OGRE_STATIC_CgProgramManager
-#define OGRE_STATIC_OctreeZone
-#define OGRE_STATIC_OctreeSceneManager
-#include "OgreStaticPluginLoader.h"
+    #define OGRE_STATIC_GL
+    #define OGRE_STATIC_ParticleFX
+    #define OGRE_STATIC_BSPSceneManager
+    //#define OGRE_STATIC_CgProgramManager
+    #define OGRE_STATIC_OctreeZone
+    #define OGRE_STATIC_OctreeSceneManager
+    #include "OgreStaticPluginLoader.h"
 #endif
 
 ENABLE_WARNINGS
 
-class BaseApplication : public Ogre::FrameListener,
-                        public Ogre::WindowEventListener,
-                        public OIS::KeyListener,
-                        public OIS::MouseListener,
-                        OgreBites::SdkTrayListener
+class BaseApplication :
+    public Ogre::FrameListener,
+    public Ogre::WindowEventListener,
+    public OIS::KeyListener,
+    public OIS::MouseListener,
+    OgreBites::SdkTrayListener
 {
 public:
     BaseApplication( void );

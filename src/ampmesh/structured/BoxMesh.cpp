@@ -9,12 +9,12 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_AMP_VECTORS
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/data/ArrayVectorData.h"
-#include "AMP/vectors/operations/VectorOperationsDefault.h"
+    #include "AMP/discretization/simpleDOF_Manager.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/data/ArrayVectorData.h"
+    #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #endif
 
 #include "ProfilerApp.h"
