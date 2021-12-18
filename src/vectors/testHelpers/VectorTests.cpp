@@ -1,16 +1,16 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #ifdef USE_EXT_SUNDIALS
-#include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/sundials/SundialsVector.h"
+    #include "AMP/vectors/sundials/ManagedSundialsVector.h"
+    #include "AMP/vectors/sundials/SundialsVector.h"
 #endif
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
 #endif
 
 #include <algorithm>

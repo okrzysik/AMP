@@ -1,14 +1,14 @@
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -50,7 +50,7 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
 
     auto thermalMapVec = AMP::LinearAlgebra::createVector( nodalDofMap, thermalVariable, true );
 
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( manager );
     siloWriter->registerVector( SolutionVec, manager, AMP::Mesh::GeomType::Vertex, "SolutionVec" );
     siloWriter->registerVector( thermalMapVec, manager, AMP::Mesh::GeomType::Vertex, "MapVec" );

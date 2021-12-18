@@ -1,3 +1,4 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
@@ -7,7 +8,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include <memory>

@@ -86,7 +86,7 @@ void CoupledFlow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     d_outVariable = d_flowInternal1to3->getOutputVariable();
 
     d_Sol = u->subsetVectorForVariable( d_outVariable );
-    d_Rhs = f->constSubsetVectorForVariable( d_outVariable );
+    d_Rhs = f->subsetVectorForVariable( d_outVariable );
     AMP_ASSERT( d_Rhs->getUpdateStatus() ==
                 AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 

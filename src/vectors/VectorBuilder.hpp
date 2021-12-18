@@ -1,4 +1,3 @@
-#ifdef USE_AMP_DISCRETIZATION
 #ifndef included_AMP_VectorBuider_hpp
 #define included_AMP_VectorBuider_hpp
 
@@ -88,5 +87,4 @@ Vector::shared_ptr createArrayVector( std::shared_ptr<Variable> var,
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#endif
 #endif

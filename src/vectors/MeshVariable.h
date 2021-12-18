@@ -1,6 +1,5 @@
 #ifndef included_AMP_MeshVariable_H
 #define included_AMP_MeshVariable_H
-#ifdef USE_AMP_MESH
 
 #include "SubsetVariable.h"
 
@@ -67,5 +66,4 @@ private:
 
 } // namespace AMP::LinearAlgebra
 
-#endif
 #endif

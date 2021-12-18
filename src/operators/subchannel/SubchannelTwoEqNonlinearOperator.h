@@ -6,7 +6,7 @@
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 
 namespace AMP {
 namespace Operator {

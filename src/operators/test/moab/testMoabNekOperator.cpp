@@ -16,14 +16,14 @@
 #include <string>
 #include <vector>
 
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "AMP/operators/moab/MoabMapOperator.h"
@@ -159,13 +159,13 @@ static void nekPipeOperator( AMP::UnitTest *ut )
 
         // How about some output?
 
-#ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    #ifdef USE_EXT_SILO
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Volume, "AllGaussPointPressures" );
     siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );
     siloWriter->writeFile( "Nek_Pressure", 0 );
-#endif
+    #endif
 
 
     // Finalize Nek Operator

@@ -1,5 +1,5 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -14,7 +14,7 @@
 #include <vector>
 
 #ifdef __USE_GNU
-#include <unistd.h>
+    #include <unistd.h>
 #endif
 
 

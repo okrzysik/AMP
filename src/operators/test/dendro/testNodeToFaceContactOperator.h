@@ -1,8 +1,8 @@
 #ifndef TESTNODETOFACECONTACTOPERATOR_H
 #define TESTNODETOFACECONTACTOPERATOR_H
 
-#include "AMP/ampmesh/euclidean_geometry_tools.h"
-#include "AMP/ampmesh/latex_visualization_tools.h"
+#include "AMP/mesh/euclidean_geometry_tools.h"
+#include "AMP/mesh/latex_visualization_tools.h"
 #include "newton_solver.h"
 
 class my_problem_parameters_t

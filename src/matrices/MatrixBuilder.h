@@ -1,4 +1,3 @@
-#ifdef USE_AMP_VECTORS
 #ifndef included_AMP_MatrixBuider
 #define included_AMP_MatrixBuider
 
@@ -56,5 +55,4 @@ std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable );
 } // namespace LinearAlgebra
 } // namespace AMP
 
-#endif
 #endif

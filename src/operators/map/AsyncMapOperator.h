@@ -1,7 +1,7 @@
 #ifndef included_AMP_AsyncMapOperator
 #define included_AMP_AsyncMapOperator
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/AsynchronousOperator.h"
 
 namespace AMP {

@@ -5,28 +5,28 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
 #ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-#ifdef USE_TRILINOS_THYRA
-#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
-#endif
+    #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+    #ifdef USE_TRILINOS_THYRA
+        #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
+    #endif
 #endif
 
 #ifdef USE_EXT_SUNDIALS
-#include "AMP/vectors/testHelpers/sundials/SundialsVectorFactory.h"
+    #include "AMP/vectors/testHelpers/sundials/SundialsVectorFactory.h"
 #endif
 
 #ifdef USE_OPENMP
-#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+    #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-#include "AMP/vectors/data/cuda/VectorDataGPU.h"
-#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
+    #include "AMP/vectors/data/cuda/VectorDataGPU.h"
+    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
 #include <string>

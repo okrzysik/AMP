@@ -1,4 +1,3 @@
-#ifdef USE_AMP_MESH
 #include "AMP/vectors/MeshVariable.h"
 #include "AMP/vectors/VectorSelector.h"
 
@@ -50,4 +49,3 @@ std::shared_ptr<VectorSelector> MeshIteratorVariable::createVectorSelector() con
 
 
 } // namespace AMP::LinearAlgebra
-#endif

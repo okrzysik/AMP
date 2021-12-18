@@ -7,7 +7,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
-#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/mesh/MeshIterator.h"
 
 #include "DTKAMPMeshEntity.h"
 #include <DTK_EntityIterator.hpp>

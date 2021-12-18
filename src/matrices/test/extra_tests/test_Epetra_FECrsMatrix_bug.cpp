@@ -12,9 +12,9 @@
 #include <Epetra_Map.h>
 
 #ifdef USE_MPI
-#include <Epetra_MpiComm.h>
+    #include <Epetra_MpiComm.h>
 #else
-#include <Epetra_SerialComm.h>
+    #include <Epetra_SerialComm.h>
 #endif
 
 int main( int argc, char *argv[] )
@@ -31,7 +31,7 @@ int main( int argc, char *argv[] )
 // Create the matrix
 #ifdef USE_MPI
     Epetra_MpiComm comm = MPI_COMM_WORLD;
-#include <Epetra_MpiComm.h>
+    #include <Epetra_MpiComm.h>
 #else
     Epetra_SerialComm comm;
 #endif

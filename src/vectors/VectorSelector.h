@@ -3,10 +3,8 @@
 
 #include "AMP/vectors/Vector.h"
 
-#ifdef USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshIterator.h"
-#endif
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshIterator.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -140,7 +138,6 @@ protected:
 };
 
 
-#ifdef USE_AMP_MESH
 /** \brief  Create a subset based on a mesh
  * \details  This will select the portion of a vector that is on the given mesh
  */
@@ -187,7 +184,6 @@ protected:
     const AMP_MPI d_comm;                // comm for the subset
     const Mesh::MeshIterator d_iterator; //  MeshIterator
 };
-#endif
 
 
 } // namespace AMP::LinearAlgebra

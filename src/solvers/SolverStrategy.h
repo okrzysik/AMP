@@ -9,13 +9,12 @@
 
 
 // Declare some classes
-namespace AMP::Utilities {
+namespace AMP::IO {
 class Writer;
-} // namespace AMP::Utilities
+} // namespace AMP::IO
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * Class SolverStrategy is a base class for methods to solve
@@ -135,10 +134,7 @@ public:
      *  may then register any vector components it "owns" with the writer.
      * \param writer   The writer to register
      */
-    virtual void registerWriter( std::shared_ptr<AMP::Utilities::Writer> writer )
-    {
-        d_writer = writer;
-    }
+    virtual void registerWriter( std::shared_ptr<AMP::IO::Writer> writer ) { d_writer = writer; }
 
     /**
      * Resets the operator registered with the solver with new parameters if necessary
@@ -217,12 +213,12 @@ protected:
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
-    std::shared_ptr<AMP::Utilities::Writer> d_writer = nullptr;
+    std::shared_ptr<AMP::IO::Writer> d_writer = nullptr;
 
 
 private:
 };
-} // namespace Solver
-} // namespace AMP
+
+} // namespace AMP::Solver
 
 #endif

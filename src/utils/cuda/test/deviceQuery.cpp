@@ -26,8 +26,8 @@ char **pArgv = NULL;
 
 #if CUDART_VERSION < 5000
 
-// CUDA-C includes
-#include <cuda.h>
+    // CUDA-C includes
+    #include <cuda.h>
 
 // This function wraps the CUDA Driver API into a template function
 template<class T>
