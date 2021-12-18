@@ -3,8 +3,8 @@
 #define included_AMP_NonlinearFEOperator
 
 // AMP headers
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/libmesh/FEOperatorParameters.h"
 

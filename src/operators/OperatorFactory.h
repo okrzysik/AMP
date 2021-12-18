@@ -2,7 +2,7 @@
 #define included_AMP_OperatorFactory
 
 /* AMP files */
-#include "AMP/ampmesh/MeshManager.h"
+#include "AMP/mesh/MeshManager.h"
 #include "AMP/utils/Database.h"
 
 namespace AMP {

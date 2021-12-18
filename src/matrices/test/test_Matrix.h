@@ -1,11 +1,11 @@
-#include "../../ampmesh/test/meshGenerators.h"
+#include "../../mesh/test/meshGenerators.h"
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/testHelpers/MatrixTests.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"

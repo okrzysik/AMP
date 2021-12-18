@@ -1,7 +1,7 @@
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"

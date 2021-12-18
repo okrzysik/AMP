@@ -4,7 +4,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/MeshElement.h"
 
 #include "DTKAMPMeshEntityExtraData.h"
 #include <DTK_EntityImpl.hpp>

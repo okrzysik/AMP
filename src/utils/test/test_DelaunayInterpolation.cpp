@@ -1,8 +1,8 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/DelaunayInterpolation.h"
 #include "AMP/utils/DelaunayTessellation.h"
 #include "AMP/utils/NearestPairSearch.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 
 #include "test_DelaunayInterpolation.h"

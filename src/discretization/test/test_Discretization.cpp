@@ -1,5 +1,5 @@
 #include "test_Discretization.h"
-#include "../../ampmesh/test/meshGenerators.h"
+#include "../../mesh/test/meshGenerators.h"
 
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"

@@ -3,8 +3,8 @@
 #define included_AMP_NavierStokesGalWFFEOperator
 
 // AMP files
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"

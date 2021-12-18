@@ -1,6 +1,6 @@
 #include "AsyncMapOperator.h"
 
-#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AsyncMapOperatorParameters.h"
 #include "ProfilerApp.h"
 

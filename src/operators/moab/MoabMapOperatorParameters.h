@@ -13,7 +13,7 @@
 #include <string>
 
 // AMP Includes
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
 

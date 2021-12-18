@@ -1,6 +1,6 @@
 #include "NodeToGaussPointOperator.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/mesh/Mesh.h"
 #include "ProfilerApp.h"
 
 

@@ -1,6 +1,6 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"

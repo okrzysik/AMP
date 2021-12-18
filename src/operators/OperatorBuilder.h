@@ -1,7 +1,7 @@
 #ifndef included_AMP_OperatorBuilder
 #define included_AMP_OperatorBuilder
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/boundary/BoundaryOperator.h"
 #include "AMP/utils/Database.h"

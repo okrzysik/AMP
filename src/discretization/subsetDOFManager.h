@@ -1,8 +1,8 @@
 #ifndef included_AMP_subsetDOF_Manager
 #define included_AMP_subsetDOF_Manager
 
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include <memory>
 
 

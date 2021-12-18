@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "AMP/ampmesh/MeshIterator.h"
+#include "AMP/mesh/MeshIterator.h"
 #include "AMP/operators/map/AsyncMapOperator.h"
 #include "AMP/operators/map/AsyncMapOperatorParameters.h"
 

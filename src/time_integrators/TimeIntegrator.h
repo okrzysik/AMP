@@ -11,13 +11,12 @@
 
 
 // Declare some classes
-namespace AMP::Utilities {
+namespace AMP::IO {
 class Writer;
-} // namespace AMP::Utilities
+} // namespace AMP::IO
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /*!
   @brief Abstract base class for time integration
@@ -215,10 +214,7 @@ public:
      *  may then register any vector components it "owns" with the writer.
      * \param writer   The writer to register
      */
-    virtual void registerWriter( std::shared_ptr<AMP::Utilities::Writer> writer )
-    {
-        d_writer = writer;
-    }
+    virtual void registerWriter( std::shared_ptr<AMP::IO::Writer> writer ) { d_writer = writer; }
 
     /**
      * Print out all members of integrator instance to given output stream.
@@ -334,7 +330,7 @@ protected:
     int d_total_steprejects = 0; //! keeps track of total number of step rejections
 
     // Writer for internal data
-    std::shared_ptr<AMP::Utilities::Writer> d_writer;
+    std::shared_ptr<AMP::IO::Writer> d_writer;
 
     TimeIntegrator() = default;
 
@@ -343,8 +339,8 @@ private:
     explicit TimeIntegrator( const TimeIntegrator & ) = delete;
     void operator=( const TimeIntegrator & ) = delete;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+
+} // namespace AMP::TimeIntegrator
 
 #endif
 

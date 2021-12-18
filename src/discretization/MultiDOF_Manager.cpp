@@ -1,5 +1,5 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 

@@ -1,6 +1,6 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #include "AMP/utils/threadpool/ThreadPool.h"
-#include "AMP/utils/PIO.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
