@@ -1,7 +1,8 @@
-#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/libmesh/initializeLibMesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -21,7 +22,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -216,9 +216,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             AMP_ASSERT( solVec->getUpdateStatus() ==
                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-            auto mechUvec = solVec->constSelect( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
-            auto mechVvec = solVec->constSelect( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
-            auto mechWvec = solVec->constSelect( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
+            auto mechUvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "U" );
+            auto mechVvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "V" );
+            auto mechWvec = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "W" );
             AMP_ASSERT( solVec->getUpdateStatus() ==
                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 

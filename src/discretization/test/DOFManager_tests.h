@@ -6,15 +6,12 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/utils/UnitTest.h"
-
-#ifdef USE_AMP_VECTORS
 #include "AMP/vectors/MeshVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#endif
 
 
 // Function to test getting the DOFs for a mesh iterator
@@ -208,7 +205,6 @@ void testMultiDOFMap( AMP::UnitTest *ut,
 
 
 // Function to test that a multivector with a DOFManager repeated correctly sets the values
-#ifdef USE_AMP_VECTORS
 void testMultiDOFVector( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization::DOFManager> DOF )
 {
     // Create the individual vectors
@@ -257,7 +253,6 @@ void testMultiDOFVector( AMP::UnitTest *ut, std::shared_ptr<AMP::Discretization:
     else
         ut->failure( "MultiVector with repeated DOFs sets values correctly" );
 }
-#endif
 
 
 #endif

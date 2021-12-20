@@ -1,13 +1,13 @@
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include <memory>
 
@@ -74,7 +74,7 @@ static void myTest( AMP::UnitTest *ut )
     }
 #ifdef USE_EXT_SILO
     {
-        auto siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
+        auto siloWriter = AMP::IO::Writer::buildWriter( "silo" );
         siloWriter->setDecomposition( 1 );
         siloWriter->registerVector(
             sourceVector, sourceMesh, AMP::Mesh::GeomType::Vertex, "vector" );
@@ -120,7 +120,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "source vector l2 norm = " << sourceVector->L2Norm() << std::endl;
     AMP::pout << "target vector l2 norm = " << targetVector->L2Norm() << std::endl;
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "silo" );
     siloWriter->setDecomposition( 1 );
     siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::GeomType::Vertex, "vector" );
     siloWriter->writeFile( "target", 0 );

@@ -24,11 +24,11 @@ namespace LinearAlgebra {
 class ThyraVectorSpaceWrapper : public Thyra::VectorSpaceBase<double>
 {
 public:
-    //! Default constuctor
+    //! Default constructor
     explicit ThyraVectorSpaceWrapper( std::shared_ptr<const ThyraVectorWrapper> thyra_vec,
                                       bool is_range = true );
 
-    // Deleted constuctors
+    // Deleted constructors
     ThyraVectorSpaceWrapper()                                  = delete;
     ThyraVectorSpaceWrapper( const ThyraVectorSpaceWrapper & ) = delete;
     ThyraVectorSpaceWrapper &operator=( const ThyraVectorSpaceWrapper & ) = delete;

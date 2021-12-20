@@ -1,5 +1,5 @@
 #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
@@ -1269,10 +1269,10 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->constSelect( commSelector, var->getName() );
-        return commVec->constSubsetVectorForVariable( var );
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 
@@ -1301,10 +1301,10 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->constSelect( commSelector, var->getName() );
-        return commVec->constSubsetVectorForVariable( var );
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 

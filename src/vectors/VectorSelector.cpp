@@ -1,10 +1,8 @@
 #include "AMP/vectors/VectorSelector.h"
-
 #include "AMP/vectors/CommVariable.h"
 #include "AMP/vectors/MeshVariable.h"
 #include "AMP/vectors/StridedVariable.h"
 #include "AMP/vectors/SubsetVariable.h"
-#include <utility>
 
 
 namespace AMP::LinearAlgebra {
@@ -28,12 +26,31 @@ bool VS_ByVariableName::isSelected( Vector::const_shared_ptr v ) const
 {
     return v->getVariable()->getName() == d_VecName;
 }
+Vector::shared_ptr VS_ByVariableName::subset( Vector::shared_ptr vec ) const
+{
+    auto var = vec->getVariable();
+    if ( var ) {
+        if ( var->getName() == d_VecName )
+            return vec;
+    }
+    return Vector::shared_ptr();
+}
+Vector::const_shared_ptr VS_ByVariableName::subset( Vector::const_shared_ptr vec ) const
+{
+    auto var = vec->getVariable();
+    if ( var ) {
+        if ( var->getName() == d_VecName )
+            return vec;
+    }
+    return Vector::const_shared_ptr();
+}
 
 
 /********************************************************
  * VS_Stride                                             *
  ********************************************************/
 VS_Stride::VS_Stride( size_t a, size_t b ) : d_Offset( a ), d_Stride( b ) {}
+bool VS_Stride::isSelected( Vector::const_shared_ptr ) const { return true; }
 Vector::shared_ptr VS_Stride::subset( Vector::shared_ptr p ) const
 {
     auto variable =
@@ -58,6 +75,7 @@ VS_Comm::VS_Comm( const AMP_MPI &comm )
     AMP_ASSERT( !comm.isNull() );
     d_comm = comm;
 }
+bool VS_Comm::isSelected( Vector::const_shared_ptr ) const { return true; }
 AMP_MPI VS_Comm::communicator( Vector::const_shared_ptr p ) const
 {
     return AMP_MPI::intersect( d_comm, p->getComm() );
@@ -81,11 +99,11 @@ Vector::const_shared_ptr VS_Comm::subset( Vector::const_shared_ptr p ) const
 /********************************************************
  * VS_Mesh                                               *
  ********************************************************/
-#ifdef USE_AMP_MESH
 VS_Mesh::VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
     : d_useMeshComm( useMeshComm ), d_mesh( mesh )
 {
 }
+bool VS_Mesh::isSelected( Vector::const_shared_ptr ) const { return true; }
 AMP_MPI VS_Mesh::communicator( Vector::const_shared_ptr p ) const
 {
     if ( d_useMeshComm ) {
@@ -113,18 +131,17 @@ Vector::const_shared_ptr VS_Mesh::subset( Vector::const_shared_ptr p ) const
     auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
-#endif
 
 
 /********************************************************
  * VS_MeshIterator                                       *
  ********************************************************/
-#ifdef USE_AMP_MESH
 VS_MeshIterator::VS_MeshIterator( const AMP::Mesh::MeshIterator &iterator,
                                   const AMP::AMP_MPI &comm )
     : d_comm( comm ), d_iterator( iterator )
 {
 }
+bool VS_MeshIterator::isSelected( Vector::const_shared_ptr ) const { return true; }
 Vector::shared_ptr VS_MeshIterator::subset( Vector::shared_ptr p ) const
 {
     auto variable =
@@ -139,6 +156,6 @@ Vector::const_shared_ptr VS_MeshIterator::subset( Vector::const_shared_ptr p ) c
     auto vector = SubsetVariable::view( p, variable );
     return vector;
 }
-#endif
+
 
 } // namespace AMP::LinearAlgebra

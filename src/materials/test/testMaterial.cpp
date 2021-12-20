@@ -25,7 +25,7 @@
 // Note: this includes 1 additional include header that is passed from the command line:
 //   Ex:  -D EXTRA_MATERIAL_HEADER='"materials/FuelMaterial.h"'
 #ifdef EXTRA_MATERIAL_HEADER
-#include EXTRA_MATERIAL_HEADER
+    #include EXTRA_MATERIAL_HEADER
 #endif
 
 

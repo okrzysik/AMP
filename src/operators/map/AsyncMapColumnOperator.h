@@ -4,7 +4,7 @@
 #include "AMP/operators/AsynchronousColumnOperator.h"
 #include "AMP/operators/AsynchronousColumnOperatorParameters.h"
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 
 namespace AMP {
 namespace Operator {

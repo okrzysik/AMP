@@ -1,7 +1,7 @@
 /* AMP Files */
 #include "NeutronicsRhs.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/Vector.h"

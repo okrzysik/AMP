@@ -31,7 +31,7 @@
 
 // Make sure USE_MPI is set properly
 #if !defined( USE_MPI ) && defined( USE_EXT_MPI )
-#define USE_MPI
+    #define USE_MPI
 #endif
 
 
@@ -124,7 +124,7 @@ std::string MPI_CLASS::info()
 {
     std::string MPI_info;
 #ifdef USE_MPI
-#if MPI_VERSION >= 3
+    #if MPI_VERSION >= 3
     int MPI_version_length = 0;
     char MPI_version_string[MPI_MAX_LIBRARY_VERSION_STRING];
     MPI_Get_library_version( MPI_version_string, &MPI_version_length );
@@ -136,10 +136,10 @@ std::string MPI_CLASS::info()
             pos = MPI_info.find( '\n', pos + 1 );
         }
     }
-#else
+    #else
     auto tmp = version();
     MPI_info = std::to_string( tmp[0] ) + "." + std::to_string( tmp[0] );
-#endif
+    #endif
     size_t pos = MPI_info.find( "\n\n" );
     while ( pos != std::string::npos ) {
         MPI_info.erase( pos + 1, 1 );

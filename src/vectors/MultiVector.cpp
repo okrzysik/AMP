@@ -164,6 +164,8 @@ void MultiVector::resetVectorData()
         managers[i] = d_vVectors[i]->getDOFManager();
         AMP_INSIST( managers[i],
                     "All vectors must have a DOFManager for MultiVector to work properly" );
+        AMP_ASSERT( managers[i]->numGlobalDOF() == d_vVectors[i]->getGlobalSize() );
+        AMP_ASSERT( managers[i]->numLocalDOF() == d_vVectors[i]->getLocalSize() );
     }
     d_DOFManager = std::make_shared<AMP::Discretization::multiDOFManager>( getComm(), managers );
 
@@ -259,43 +261,33 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
  ****************************************************************/
 Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
 {
+    // Check if this vector matches (only need to deal with select by name for now)
+    if ( dynamic_cast<const VS_ByVariableName *>( &s ) ||
+         dynamic_cast<const VS_MultiVariable *>( &s ) ) {
+        auto retVec = Vector::selectInto( s );
+        if ( retVec )
+            return retVec;
+    }
     // Subset each vector
     std::vector<Vector::shared_ptr> subvectors;
     for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
         // Subset the individual vector
         auto retVec2 = d_vVectors[i]->selectInto( s );
-        AMP_ASSERT( std::dynamic_pointer_cast<MultiVector>( retVec2 ) == nullptr );
-        if ( retVec2 != nullptr ) {
-            if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
+        if ( retVec2 ) {
+            if ( retVec2->getGlobalSize() > 0 )
                 subvectors.push_back( retVec2 );
         }
     }
     // Add the subsets to the multivector
     AMP_MPI comm = s.communicator( shared_from_this() );
     auto retVec  = MultiVector::create( "tmp_vector", comm, subvectors );
-    if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
+    if ( retVec->getGlobalSize() == 0 )
         retVec.reset();
     return retVec;
 }
 Vector::const_shared_ptr MultiVector::selectInto( const VectorSelector &s ) const
 {
-    // Subset each vector
-    std::vector<Vector::const_shared_ptr> subvectors;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        // Subset the individual vector
-        auto retVec2 = d_vVectors[i]->selectInto( s );
-        AMP_ASSERT( std::dynamic_pointer_cast<const MultiVector>( retVec2 ) == nullptr );
-        if ( retVec2 != nullptr ) {
-            if ( retVec2->getDOFManager()->numGlobalDOF() > 0 )
-                subvectors.push_back( retVec2 );
-        }
-    }
-    // Add the subsets to the multivector
-    auto comm   = s.communicator( shared_from_this() );
-    auto retVec = MultiVector::const_create( "tmp_vector", comm, subvectors );
-    if ( retVec->getDOFManager()->numGlobalDOF() == 0 )
-        retVec.reset();
-    return retVec;
+    return const_cast<MultiVector *>( this )->selectInto( s );
 }
 
 
@@ -310,79 +302,6 @@ bool MultiVector::containsPointer( const Vector::shared_ptr p ) const
         }
     }
     return false;
-}
-
-/****************************************************************
- * Subset                                                        *
- ****************************************************************/
-Vector::shared_ptr MultiVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
-{
-    // Subset a multivector for a variable
-    /* A variable used to contain a mesh and a name, now it only contains a name
-     * as a result we need to subset for the variable name (there may be many)
-     * and then create a new multivector if necessary */
-    AMP_ASSERT( name );
-
-    // Check if the variable matches the variable of the multivector
-    if ( *d_pVariable == *name )
-        return shared_from_this();
-
-    // Get a list of all sub vectors matching the variable
-    std::vector<Vector::shared_ptr> subvectors;
-    for ( size_t i = 0; i != d_vVectors.size(); i++ ) {
-        auto subset = d_vVectors[i]->subsetVectorForVariable( name );
-        if ( subset )
-            subvectors.push_back( subset );
-    }
-
-    // If no vectors were found, check if the variable is actually a multivariable and subset on it
-    const AMP_MPI &comm = getComm();
-    AMP_ASSERT( !comm.isNull() );
-    if ( comm.sumReduce( subvectors.size() ) == 0 ) {
-        auto multivariable = std::dynamic_pointer_cast<const MultiVariable>( name );
-        if ( multivariable ) {
-            bool all_found = true;
-            std::vector<Vector::shared_ptr> sub_subvectors( multivariable->numVariables() );
-            for ( size_t i = 0; i != multivariable->numVariables(); i++ ) {
-                auto t = subsetVectorForVariable( multivariable->getVariable( i ) );
-                if ( !t ) {
-                    all_found = false;
-                    break;
-                }
-                sub_subvectors[i] = t;
-            }
-            if ( all_found ) {
-                for ( size_t i = 0; i != multivariable->numVariables(); i++ )
-                    subvectors.push_back( sub_subvectors[i] );
-            }
-        }
-    }
-
-    // Create the new vector
-    auto N_procs = comm.sumReduce<int>( subvectors.empty() ? 0 : 1 );
-    if ( N_procs == 0 )
-        return Vector::shared_ptr();
-    auto variable = name->cloneVariable( name->getName() );
-    std::shared_ptr<MultiVector> retVal;
-    if ( N_procs == comm.getSize() ) {
-        // All processor have a variable
-        retVal = create( variable, getComm() );
-        retVal->addVector( subvectors );
-    } else {
-        // Only a subset of processors have a variable
-        auto new_comm = comm.split( subvectors.empty() ? -1 : 0, comm.getRank() );
-        if ( new_comm.isNull() )
-            new_comm = AMP_MPI( AMP_COMM_SELF );
-        retVal = create( variable, new_comm );
-        retVal->addVector( subvectors );
-    }
-    return retVal;
-}
-Vector::const_shared_ptr
-MultiVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
-{
-    auto *tmp = const_cast<MultiVector *>( this );
-    return tmp->subsetVectorForVariable( name );
 }
 
 

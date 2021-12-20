@@ -1,5 +1,5 @@
 
-#include "AMP/ampmesh/MeshID.h"
+#include "AMP/mesh/MeshID.h"
 
 #include "DTKAMPMeshEntity.h"
 #include "DTKAMPMeshEntityExtraData.h"
@@ -7,9 +7,9 @@
 #include "DTKAMPMeshEntitySet.h"
 
 #ifdef USE_EXT_MPI
-#include "Teuchos_DefaultMpiComm.hpp"
+    #include "Teuchos_DefaultMpiComm.hpp"
 #else
-#include "Teuchos_DefaultSerialComm.hpp"
+    #include "Teuchos_DefaultSerialComm.hpp"
 #endif
 
 namespace AMP {

@@ -2,7 +2,7 @@
 #ifndef included_AMP_DTK_MultiDofDTKMapOperator
 #define included_AMP_DTK_MultiDofDTKMapOperator
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 

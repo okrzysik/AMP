@@ -1,10 +1,7 @@
 #include "AMP/utils/kdtree.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.h"
-
-#if USE_AMP_MESH
-#include "AMP/ampmesh/Mesh.h"
-#endif
 
 #include "ProfilerApp.h"
 
@@ -61,7 +58,6 @@ kdtree::kdtree( const int N_dim, const size_t N, const double *const *x )
     else
         AMP_ERROR( "Not finished" );
 }
-#if USE_AMP_MESH
 kdtree::kdtree( const std::vector<AMP::Mesh::MeshPoint<double>> &x )
     : d_dim( 0 ), d_N( x.size() ), d_tree( nullptr )
 {
@@ -90,7 +86,6 @@ kdtree::kdtree( const std::vector<AMP::Mesh::MeshPoint<double>> &x )
     for ( int d = 0; d < d_dim; d++ )
         delete[] x2[d];
 }
-#endif
 kdtree::kdtree( kdtree &&rhs )
 {
     d_dim      = rhs.d_dim;
@@ -209,7 +204,6 @@ void kdtree::add( const double *x )
 /********************************************************
  * Nearest neighbor search                               *
  ********************************************************/
-#if USE_AMP_MESH
 AMP::Mesh::MeshPoint<double> kdtree::find_nearest( const AMP::Mesh::MeshPoint<double> &p ) const
 {
     auto p2      = p;
@@ -217,7 +211,6 @@ AMP::Mesh::MeshPoint<double> kdtree::find_nearest( const AMP::Mesh::MeshPoint<do
     find_nearest2( p.data(), dist2, p2.data() );
     return p2;
 }
-#endif
 size_t kdtree::find_nearest( const double *x, double *dist, double *pos ) const
 {
     PROFILE_START( "find_nearest single", 5 );

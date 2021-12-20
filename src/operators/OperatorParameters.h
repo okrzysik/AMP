@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
 

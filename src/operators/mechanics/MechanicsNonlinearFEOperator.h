@@ -3,8 +3,8 @@
 #define included_AMP_MechanicsNonlinearFEOperator
 
 /* AMP files */
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/libmesh/NonlinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearElement.h"

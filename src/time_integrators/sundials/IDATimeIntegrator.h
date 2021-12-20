@@ -18,10 +18,10 @@
  */
 #ifdef USE_EXT_SUNDIALS
 extern "C" {
-#include "ida/ida.h"
-#include "ida/ida_spgmr.h"
-#include "sundials/sundials_nvector.h"
-#include "sundials/sundials_types.h"
+    #include "ida/ida.h"
+    #include "ida/ida_spgmr.h"
+    #include "sundials/sundials_nvector.h"
+    #include "sundials/sundials_types.h"
 }
 
 

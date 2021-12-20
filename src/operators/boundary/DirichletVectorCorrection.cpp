@@ -199,11 +199,11 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
 {
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->constSelect( meshSelector, ( vec->getVariable() )->getName() );
-        auto varSubsetVec  = meshSubsetVec->constSubsetVectorForVariable( var );
+        auto meshSubsetVec = vec->select( meshSelector, ( vec->getVariable() )->getName() );
+        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         return varSubsetVec;
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 } // namespace Operator

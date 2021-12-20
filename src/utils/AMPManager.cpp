@@ -1,7 +1,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_Version.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
 
@@ -164,9 +164,9 @@ void AMPManager::exitFun()
  *  Function to PETSc errors                                                 *
  ****************************************************************************/
 #ifdef USE_EXT_PETSC
-#if PETSC_VERSION_LT( 3, 7, 5 )
-#error AMP only supports PETSc 3.7.5 or greater
-#endif
+    #if PETSC_VERSION_LT( 3, 7, 5 )
+        #error AMP only supports PETSc 3.7.5 or greater
+    #endif
 PetscErrorCode petsc_err_handler( MPI_Comm,
                                   int line,
                                   const char *dir,
@@ -229,6 +229,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     PROFILE_DISABLE();
     // Set the abort method
     AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
+    StackTrace::Utilities::setAbortBehavior( !AMPManager::use_MPI_Abort, 3 );
     // Initialize MPI
     double MPI_start = Utilities::time();
     AMP_MPI::start_MPI( argc, argv, properties.profile_MPI_level );
@@ -294,6 +295,7 @@ void AMPManager::shutdown()
     clearHandlers();
     // Disable MPI_Abort
     AMPManager::use_MPI_Abort = false;
+    StackTrace::Utilities::setAbortBehavior( true, 2 );
     // Shutdown the parallel IO
     stopLogging();
     // Shutdown the profiler
@@ -373,11 +375,11 @@ double AMPManager::start_SAMRAI()
     double time = 0;
 #ifdef USE_EXT_SAMRAI
     double start = Utilities::time();
-#ifdef USE_MPI
+    #ifdef USE_MPI
     SAMRAI::tbox::SAMRAI_MPI::init( AMP_MPI( AMP_COMM_WORLD ).getCommunicator() );
-#else
+    #else
     SAMRAI::tbox::SAMRAI_MPI::initMPIDisabled();
-#endif
+    #endif
     SAMRAI::tbox::SAMRAIManager::initialize();
     SAMRAI::tbox::SAMRAIManager::startup();
     SAMRAI::tbox::SAMRAIManager::setMaxNumberPatchDataEntries( 2048 );
@@ -438,10 +440,10 @@ double AMPManager::start_PETSc()
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
-#ifndef USE_MPI
+    #ifndef USE_MPI
     // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
     AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
-#endif
+    #endif
     time = Utilities::time() - start;
 #endif
     return time;
@@ -581,19 +583,19 @@ void AMPManager::setMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
     StackTrace::setMPIErrorHandler( comm_world.getCommunicator() );
-#ifdef USE_EXT_SAMRAI
+    #ifdef USE_EXT_SAMRAI
     StackTrace::setMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
-#endif
+    #endif
 #endif
 }
 void AMPManager::clearMPIErrorHandler()
 {
 #ifdef USE_EXT_MPI
     StackTrace::clearMPIErrorHandler( comm_world.getCommunicator() );
-#ifdef USE_EXT_SAMRAI
+    #ifdef USE_EXT_SAMRAI
     StackTrace::clearMPIErrorHandler(
         SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
-#endif
+    #endif
 #endif
 }
 
@@ -665,11 +667,11 @@ std::string AMPManager::info()
     out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
 #endif
 #ifdef USE_EXT_SUNDIALS
-#ifdef SUNDIALS_PACKAGE_VERSION
+    #ifdef SUNDIALS_PACKAGE_VERSION
     out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
-#elif defined( SUNDIALS_VERSION )
+    #elif defined( SUNDIALS_VERSION )
     out << "Sundials: " << SUNDIALS_VERSION << std::endl;
-#endif
+    #endif
 #endif
 #ifdef HYPRE_RELEASE_VERSION
     out << "Hypre: " << HYPRE_RELEASE_VERSION << std::endl;

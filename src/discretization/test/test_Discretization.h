@@ -1,16 +1,16 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 
 #include "DOFManager_tests.h"
 
-#include "../../ampmesh/test/meshGenerators.h"
+#include "../../mesh/test/meshGenerators.h"
 
 
 using namespace AMP::unit_test;
@@ -53,8 +53,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     else
         ut->failure( "Subset DOF on surface mesh iterator: " + GENERATOR::name() );
 
-// Subset using VectorSelector
-#ifdef USE_AMP_VECTORS
+    // Subset using VectorSelector
     auto submesh = mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 1 ) );
     AMP::LinearAlgebra::MeshIteratorVariable meshSubsetVariable(
         "surfaceSubset",
@@ -62,7 +61,6 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
         submesh->getComm() );
     subsetDOF = meshSubsetVariable.getSubsetDOF( DOF );
     testGetDOFIterator( ut, submesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 ), subsetDOF );
-#endif
 
     // Test subsetting for a subset mesh
     if ( mesh->getGeomType() == AMP::Mesh::GeomType::Volume ) {
@@ -202,12 +200,8 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     testSubsetComm( DOFs, ut );
     testSubsetMesh( mesh, DOFs, true, 1, 1, ut );
 
-// Test a multivector that contains multiple vectors with the same DOFManager
-#ifdef USE_AMP_VECTORS
+    // Test a multivector that contains multiple vectors with the same DOFManager
     testMultiDOFVector( ut, DOFs );
-#else
-    ut->expected_failure( "Can't test multivector without vectors: " + GENERATOR::name() );
-#endif
 
     // Create a multiDOFManager with repeated mesh elements and make sure the iterator only iterates
     // once through each element

@@ -1,10 +1,10 @@
 #include "AMP/vectors/StridedVariable.h"
 #include "AMP/discretization/subsetDOFManager.h"
-#include "StridedVariable.h"
+#include "AMP/vectors/StridedVariable.h"
+#include "AMP/vectors/VectorSelector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 StridedVariable::StridedVariable( const std::string &name, size_t offset, size_t stride )
@@ -28,11 +28,17 @@ StridedVariable::getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> 
             i++;
         }
     }
-    AMP::Mesh::MeshIterator iterator = parentDOF->getIterator();
-    std::shared_ptr<AMP::Discretization::DOFManager> subsetDOF;
-    subsetDOF = AMP::Discretization::subsetDOFManager::create(
+    auto iterator  = parentDOF->getIterator();
+    auto subsetDOF = AMP::Discretization::subsetDOFManager::create(
         parentDOF, dofs, iterator, parentDOF->getComm() );
     return subsetDOF;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+
+
+std::shared_ptr<VectorSelector> StridedVariable::createVectorSelector() const
+{
+    return std::make_shared<VS_Stride>( d_offset, d_stride );
+}
+
+
+} // namespace AMP::LinearAlgebra

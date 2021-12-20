@@ -1,9 +1,11 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MultiMesh.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MultiMesh.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CoupledOperator.h"
 #include "AMP/operators/CoupledOperatorParameters.h"
@@ -41,19 +43,17 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
-#include <memory>
 
 #include "ProfilerApp.h"
 
+#include <memory>
 #include <string>
 
 
@@ -644,8 +644,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         std::cout << "Enthalpy Solution:" << hin << std::endl;
         std::cout << "Outlet pressure:" << Pout << std::endl;
 
-        auto subchannelEnthalpy = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
-        auto subchannelPressure = flowSolVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
+        AMP::LinearAlgebra::VS_Mesh meshSelector( subchannelMesh );
+        auto tmpVec             = flowSolVec->selectInto( meshSelector );
+        auto subchannelEnthalpy = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
+        auto subchannelPressure = tmpVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
 
         subchannelEnthalpy->setToScalar( AMP::Operator::Subchannel::scaleEnthalpy * hin );
         subchannelPressure->setToScalar( AMP::Operator::Subchannel::scalePressure * Pout );
@@ -827,7 +829,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     }
 
 
-#ifdef USE_EXT_SILO
+    #ifdef USE_EXT_SILO
     // Rescale the solution to get the correct units
     const double h_scale = 1.0 / AMP::Operator::Subchannel::scaleEnthalpy;
     const double P_scale = 1.0 / AMP::Operator::Subchannel::scalePressure;
@@ -838,7 +840,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         pressure->scale( P_scale );
     }
     // Register the quantities to plot
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     if ( xyFaceMesh != nullptr ) {
         siloWriter->registerVector(
             flowSolVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "SubchannelFlow" );
@@ -856,7 +858,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             specificPowerGpVec, pinMesh, AMP::Mesh::GeomType::Volume, "Power" );
     }
     siloWriter->writeFile( exeName, 0 );
-#endif
+    #endif
     ut->passes( "test runs to completion" );
 #else
     ut->expected_failure( "Solve disabled because it does not converge (requires debugging)" );

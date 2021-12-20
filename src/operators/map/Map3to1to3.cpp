@@ -93,8 +93,8 @@ void Map3to1to3::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     PROFILE_START( "subset" );
     auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
-    auto commVec = u->constSelect( commSelector, u->getVariable()->getName() );
-    auto vec     = commVec->constSubsetVectorForVariable( var );
+    auto commVec = u->select( commSelector, u->getVariable()->getName() );
+    auto vec     = commVec->subsetVectorForVariable( var );
     PROFILE_STOP( "subset" );
 
     // Build the local maps

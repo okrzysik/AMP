@@ -18,7 +18,7 @@
 
 
 #ifndef USE_LAPACK
-#define USE_LAPACK 0
+    #define USE_LAPACK 0
 #endif
 
 

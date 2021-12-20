@@ -1,5 +1,5 @@
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/PIO.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/Utilities.h"
 
 #include <cstring>

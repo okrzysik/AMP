@@ -1,11 +1,10 @@
 #ifndef included_AMP_MeshVariable_H
 #define included_AMP_MeshVariable_H
-#ifdef USE_AMP_MESH
 
 #include "SubsetVariable.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+
+namespace AMP::LinearAlgebra {
 
 
 /** \class MeshVariable
@@ -16,22 +15,24 @@ class MeshVariable : public SubsetVariable
 {
 public:
     /** \brief Constructor
-     * \param[in] name  The name of the new variable
-     * \param[in] mesh  The mesh to subset for
-     * \param[in] useMeshComm  Use the comm of the mesh (otherwise use the comm of the parent
-     * DOFManager)
+     * \param[in] name         The name of the new variable
+     * \param[in] mesh         The mesh to subset for
+     * \param[in] useMeshComm  Use the comm of the mesh (otherwise use comm of parent)
      */
     MeshVariable( const std::string &name,
-                  AMP::Mesh::Mesh::shared_ptr mesh,
+                  std::shared_ptr<AMP::Mesh::Mesh> mesh,
                   bool useMeshComm = true );
 
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 private:
     MeshVariable();
     bool d_useMeshComm;
-    AMP::Mesh::Mesh::shared_ptr d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
 };
 
 
@@ -54,13 +55,15 @@ public:
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 private:
     MeshIteratorVariable();
     const AMP::AMP_MPI d_comm;
     const AMP::Mesh::MeshIterator d_iterator;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
 
-#endif
+} // namespace AMP::LinearAlgebra
+
 #endif
