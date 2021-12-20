@@ -101,10 +101,8 @@ int writeCookMesh( int argc, char **argv )
         } // end for yi
     }     // end for zi
     fprintf( fp, "\n\n" );
-
     fprintf( fp, "NumberOfBoundarySideIds = 0 \n\n" );
-
     fprintf( fp, "} \n" );
-
     fclose( fp );
+    return 0;
 }
