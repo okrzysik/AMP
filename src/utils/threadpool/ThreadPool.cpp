@@ -1,6 +1,6 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #include "AMP/utils/threadpool/ThreadPool.h"
-#include "AMP/utils/PIO.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -213,7 +213,7 @@ int ThreadPool::getCurrentProcessor()
 #elif defined( USE_WINDOWS )
     return GetCurrentProcessorNumber() + 1;
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
 }
 
@@ -225,7 +225,7 @@ std::vector<int> ThreadPool::getProcessAffinity()
 {
     std::vector<int> procs;
 #ifdef USE_LINUX
-#ifdef _GNU_SOURCE
+    #ifdef _GNU_SOURCE
     cpu_set_t mask;
     int error = sched_getaffinity( getpid(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
@@ -234,10 +234,10 @@ std::vector<int> ThreadPool::getProcessAffinity()
         if ( CPU_ISSET( i, &mask ) )
             procs.push_back( i );
     }
-#else
-#warning sched_getaffinity is not supported for this compiler/OS
+    #else
+        #warning sched_getaffinity is not supported for this compiler/OS
     OS_warning( "sched_getaffinity is not supported for this compiler/OS" );
-#endif
+    #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     OS_warning( "MAC does not support getting the process affinity" );
@@ -254,14 +254,14 @@ std::vector<int> ThreadPool::getProcessAffinity()
         procMask >>= 1;
     }
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
     return procs;
 }
 void ThreadPool::setProcessAffinity( const std::vector<int> &procs )
 {
 #ifdef USE_LINUX
-#ifdef _GNU_SOURCE
+    #ifdef _GNU_SOURCE
     cpu_set_t mask;
     CPU_ZERO( &mask );
     for ( size_t i = 0; i < procs.size(); i++ )
@@ -269,10 +269,10 @@ void ThreadPool::setProcessAffinity( const std::vector<int> &procs )
     int error = sched_setaffinity( getpid(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
         throw std::logic_error( "Error setting process affinity" );
-#else
-#warning sched_setaffinity is not supported for this compiler/OS
+    #else
+        #warning sched_setaffinity is not supported for this compiler/OS
     OS_warning( "sched_setaffinity is not supported for this compiler/OS" );
-#endif
+    #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     OS_warning( "MAC does not support setting the process affinity" );
@@ -283,7 +283,7 @@ void ThreadPool::setProcessAffinity( const std::vector<int> &procs )
     HANDLE hProc = GetCurrentProcess();
     SetProcessAffinityMask( hProc, mask );
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
 }
 
@@ -315,7 +315,7 @@ std::vector<int> ThreadPool::getThreadAffinity()
 {
     std::vector<int> procs;
 #ifdef USE_LINUX
-#ifdef _GNU_SOURCE
+    #ifdef _GNU_SOURCE
     cpu_set_t mask;
     int error = pthread_getaffinity_np( pthread_self(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
@@ -324,10 +324,10 @@ std::vector<int> ThreadPool::getThreadAffinity()
         if ( CPU_ISSET( i, &mask ) )
             procs.push_back( i );
     }
-#else
-#warning pthread_getaffinity_np is not supported
+    #else
+        #warning pthread_getaffinity_np is not supported
     OS_warning( "pthread does not support pthread_getaffinity_np" );
-#endif
+    #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     OS_warning( "MAC does not support getting the thread affinity" );
@@ -339,7 +339,7 @@ std::vector<int> ThreadPool::getThreadAffinity()
         procMask >>= 1;
     }
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
     return procs;
 }
@@ -349,7 +349,7 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
         std::logic_error( "Invalid thread number" );
     std::vector<int> procs;
 #ifdef USE_LINUX
-#ifdef _GNU_SOURCE
+    #ifdef _GNU_SOURCE
     auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
     cpu_set_t mask;
     int error = pthread_getaffinity_np( handle, sizeof( cpu_set_t ), &mask );
@@ -359,10 +359,10 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
         if ( CPU_ISSET( i, &mask ) )
             procs.push_back( i );
     }
-#else
-#warning pthread_getaffinity_np is not supported
+    #else
+        #warning pthread_getaffinity_np is not supported
     OS_warning( "pthread does not support pthread_getaffinity_np" );
-#endif
+    #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     OS_warning( "MAC does not support getting the thread affinity" );
@@ -375,7 +375,7 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
         procMask >>= 1;
     }
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
     return procs;
 }
@@ -387,7 +387,7 @@ std::vector<int> ThreadPool::getThreadAffinity( int thread ) const
 void ThreadPool::setThreadAffinity( const std::vector<int> &procs )
 {
 #ifdef USE_LINUX
-#ifdef _GNU_SOURCE
+    #ifdef _GNU_SOURCE
     cpu_set_t mask;
     CPU_ZERO( &mask );
     for ( size_t i = 0; i < procs.size(); i++ )
@@ -395,10 +395,10 @@ void ThreadPool::setThreadAffinity( const std::vector<int> &procs )
     int error = pthread_setaffinity_np( pthread_self(), sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
         throw std::logic_error( "Error setting thread affinity" );
-#else
-#warning pthread_getaffinity_np is not supported
+    #else
+        #warning pthread_getaffinity_np is not supported
     OS_warning( "pthread does not support pthread_setaffinity_np" );
-#endif
+    #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     NULL_USE( procs );
@@ -409,7 +409,7 @@ void ThreadPool::setThreadAffinity( const std::vector<int> &procs )
         mask |= ( (DWORD) 1 ) << procs[i];
     SetThreadAffinityMask( GetCurrentThread(), mask );
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
 }
 void ThreadPool::setThreadAffinity( int thread, const std::vector<int> &procs ) const
@@ -417,7 +417,7 @@ void ThreadPool::setThreadAffinity( int thread, const std::vector<int> &procs ) 
     if ( thread >= getNumThreads() )
         std::logic_error( "Invalid thread number" );
 #ifdef USE_LINUX
-#ifdef __USE_GNU
+    #ifdef __USE_GNU
     cpu_set_t mask;
     CPU_ZERO( &mask );
     for ( size_t i = 0; i < procs.size(); i++ )
@@ -426,10 +426,10 @@ void ThreadPool::setThreadAffinity( int thread, const std::vector<int> &procs ) 
     int error   = pthread_setaffinity_np( handle, sizeof( cpu_set_t ), &mask );
     if ( error != 0 )
         throw std::logic_error( "Error setting thread affinity" );
-#else
-#warning pthread_getaffinity_np is not supported
+    #else
+        #warning pthread_getaffinity_np is not supported
     OS_warning( "pthread does not support pthread_setaffinity_np" );
-#endif
+    #endif
 #elif defined( USE_MAC )
     // MAC does not support getting or setting the affinity
     NULL_USE( procs );
@@ -441,7 +441,7 @@ void ThreadPool::setThreadAffinity( int thread, const std::vector<int> &procs ) 
     auto handle = const_cast<std::thread &>( d_thread[thread] ).native_handle();
     SetThreadAffinityMask( handle, mask );
 #else
-#error Unknown OS
+    #error Unknown OS
 #endif
 }
 

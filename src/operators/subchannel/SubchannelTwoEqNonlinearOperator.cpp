@@ -3,7 +3,7 @@
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"

@@ -1,14 +1,14 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/libmesh/GradientOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <memory>
@@ -81,7 +81,7 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
     auto errVec = AMP::LinearAlgebra::createVector( nodalVectorDofMap, outputVar, true );
 
     // Create the writer
-    auto writer = AMP::Utilities::Writer::buildWriter( "silo" );
+    auto writer = AMP::IO::Writer::buildWriter( "silo" );
     writer->registerMesh( mesh );
     writer->registerVector( rhsVec, mesh, AMP::Mesh::GeomType::Vertex, "f" );
     writer->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "g" );

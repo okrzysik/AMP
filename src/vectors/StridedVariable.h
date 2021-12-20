@@ -25,6 +25,8 @@ public:
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 private:
     StridedVariable();
     size_t d_offset;

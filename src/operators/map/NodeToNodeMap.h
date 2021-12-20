@@ -8,8 +8,8 @@
 #include "AMP/operators/map/AsyncMapOperator.h"
 #include "AMP/operators/map/NodeToNodeMapParameters.h"
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/Vector.h"
 

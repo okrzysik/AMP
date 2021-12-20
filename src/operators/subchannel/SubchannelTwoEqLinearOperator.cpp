@@ -3,9 +3,9 @@
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"

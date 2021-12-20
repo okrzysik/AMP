@@ -1,7 +1,7 @@
 
 #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"

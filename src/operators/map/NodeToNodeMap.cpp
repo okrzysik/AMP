@@ -1,6 +1,6 @@
 #include "AMP/operators/map/NodeToNodeMap.h"
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/map/NodeToNodeMapParameters.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
@@ -101,8 +101,8 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     PROFILE_START( "subset", 1 );
     auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
-    auto commSubsetVec = u->constSelect( commSelector, u->getVariable()->getName() );
-    auto curPhysics    = commSubsetVec->constSubsetVectorForVariable( var );
+    auto commSubsetVec = u->select( commSelector, u->getVariable()->getName() );
+    auto curPhysics    = commSubsetVec->subsetVectorForVariable( var );
     PROFILE_STOP( "subset", 1 );
     AMP_INSIST( curPhysics, "apply received bogus stuff" );
 

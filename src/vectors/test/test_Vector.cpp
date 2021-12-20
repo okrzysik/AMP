@@ -11,7 +11,7 @@
 #include "test_ArrayVector.h"
 
 #ifdef USE_TRILINOS_THYRA
-#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
+    #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
 
 #include <iostream>

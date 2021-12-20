@@ -1,8 +1,8 @@
 #ifndef included_AMP_AsyncMapOperatorParameters
 #define included_AMP_AsyncMapOperatorParameters
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/AsynchronousOperatorParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 

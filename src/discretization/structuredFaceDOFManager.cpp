@@ -1,8 +1,8 @@
 #include "AMP/discretization/structuredFaceDOFManager.h"
-#include "AMP/ampmesh/MultiIterator.h"
-#include "AMP/ampmesh/MultiMesh.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/mesh/MultiIterator.h"
+#include "AMP/mesh/MultiMesh.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/utils/Utilities.h"
 #include <algorithm>
 #include <set>

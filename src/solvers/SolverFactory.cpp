@@ -21,19 +21,19 @@ responsibility for the use of this software.
 #include "AMP/solvers/SolverStrategyParameters.h"
 
 #ifdef USE_EXT_HYPRE
-#include "AMP/solvers/hypre/BoomerAMGSolver.h"
+    #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #endif
 
 #ifdef USE_TRILINOS_ML
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+    #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #endif
 
 #ifdef USE_TRILINOS_MUELU
-#include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
+    #include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #endif
 
 #ifdef USE_EXT_PETSC
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+    #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
 #include "AMP/solvers/BiCGSTABSolver.h"

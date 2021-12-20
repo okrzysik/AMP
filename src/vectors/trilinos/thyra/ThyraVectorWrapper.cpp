@@ -7,9 +7,9 @@ DISABLE_WARNINGS
 #include "RTOpPack_SPMD_apply_op_def.hpp"
 #include "RTOpPack_Types.hpp"
 #ifdef USE_EXT_MPI
-#include "Teuchos_DefaultMpiComm.hpp"
+    #include "Teuchos_DefaultMpiComm.hpp"
 #else
-#include "Teuchos_DefaultSerialComm.hpp"
+    #include "Teuchos_DefaultSerialComm.hpp"
 #endif
 #include "Thyra_DefaultMultiVectorProductVectorSpace.hpp"
 #include "Thyra_DefaultSpmdVectorSpace.hpp"

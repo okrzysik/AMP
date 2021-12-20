@@ -14,34 +14,34 @@
 // Macros to define 3 levels of profilers
 //#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
 #if 0
-#define PROFILE_START_L2( MSG ) PROFILE_START( MSG, 4 )
-#define PROFILE_STOP_L2( MSG ) PROFILE_STOP( MSG, 4 )
-#define PROFILE_STOP2_L2( MSG ) PROFILE_STOP2( MSG, 4 )
+    #define PROFILE_START_L2( MSG ) PROFILE_START( MSG, 4 )
+    #define PROFILE_STOP_L2( MSG ) PROFILE_STOP( MSG, 4 )
+    #define PROFILE_STOP2_L2( MSG ) PROFILE_STOP2( MSG, 4 )
 #else
-#define PROFILE_START_L2( MSG ) \
-    do {                        \
-    } while ( 0 )
-#define PROFILE_STOP_L2( MSG ) \
-    do {                       \
-    } while ( 0 )
-#define PROFILE_STOP2_L2( MSG ) \
-    do {                        \
-    } while ( 0 )
+    #define PROFILE_START_L2( MSG ) \
+        do {                        \
+        } while ( 0 )
+    #define PROFILE_STOP_L2( MSG ) \
+        do {                       \
+        } while ( 0 )
+    #define PROFILE_STOP2_L2( MSG ) \
+        do {                        \
+        } while ( 0 )
 #endif
 #if 0
-#define PROFILE_START_L3( MSG ) PROFILE_START( MSG, 5 )
-#define PROFILE_STOP_L3( MSG ) PROFILE_STOP( MSG, 5 )
-#define PROFILE_STOP2_L3( MSG ) PROFILE_STOP2( MSG, 5 )
+    #define PROFILE_START_L3( MSG ) PROFILE_START( MSG, 5 )
+    #define PROFILE_STOP_L3( MSG ) PROFILE_STOP( MSG, 5 )
+    #define PROFILE_STOP2_L3( MSG ) PROFILE_STOP2( MSG, 5 )
 #else
-#define PROFILE_START_L3( MSG ) \
-    do {                        \
-    } while ( 0 )
-#define PROFILE_STOP_L3( MSG ) \
-    do {                       \
-    } while ( 0 )
-#define PROFILE_STOP2_L3( MSG ) \
-    do {                        \
-    } while ( 0 )
+    #define PROFILE_START_L3( MSG ) \
+        do {                        \
+        } while ( 0 )
+    #define PROFILE_STOP_L3( MSG ) \
+        do {                       \
+        } while ( 0 )
+    #define PROFILE_STOP2_L3( MSG ) \
+        do {                        \
+        } while ( 0 )
 #endif
 
 

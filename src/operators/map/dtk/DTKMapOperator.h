@@ -6,7 +6,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 
 #include "AMP/vectors/Vector.h"
 

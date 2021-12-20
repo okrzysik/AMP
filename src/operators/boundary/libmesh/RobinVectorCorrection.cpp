@@ -84,14 +84,14 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
             if ( d_Frozen ) {
                 if ( d_Frozen->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ),
                                        cview ) != nullptr ) {
-                    d_elementInputVec[i + 1] = d_Frozen->constSelect(
+                    d_elementInputVec[i + 1] = d_Frozen->select(
                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
                 } else {
-                    d_elementInputVec[i + 1] = uInternal->constSelect(
+                    d_elementInputVec[i + 1] = uInternal->select(
                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
                 }
             } else {
-                d_elementInputVec[i + 1] = uInternal->constSelect(
+                d_elementInputVec[i + 1] = uInternal->select(
                     AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
             }
             AMP_INSIST( d_elementInputVec[i + 1],

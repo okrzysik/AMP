@@ -9,11 +9,11 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #if defined( USE_EXT_PETSC )
-#include "AMP/matrices/petsc/PetscMatrix.h"
-#include "AMP/vectors/petsc/PetscHelpers.h"
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
-#include "petscmat.h"
+    #include "AMP/matrices/petsc/PetscMatrix.h"
+    #include "AMP/vectors/petsc/PetscHelpers.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+    #include "petscmat.h"
 #endif
 
 #include "ProfilerApp.h"

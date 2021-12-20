@@ -42,11 +42,11 @@ For log = natural log uncomment the next line. */
 #include <string.h>
 
 #ifndef NAN
-#define NAN ( 0.0 / 0.0 )
+    #define NAN ( 0.0 / 0.0 )
 #endif
 
 #ifndef INFINITY
-#define INFINITY ( 1.0 / 0.0 )
+    #define INFINITY ( 1.0 / 0.0 )
 #endif
 
 

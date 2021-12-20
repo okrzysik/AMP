@@ -1,15 +1,15 @@
 // \cond HIDDEN_SYMBOLS
 #ifndef included_AMP_NoteToGeomType::FaceContactOperator
-#define included_AMP_NoteToGeomType ::FaceContactOperator
+    #define included_AMP_NoteToGeomType ::FaceContactOperator
 
 
-#include "AMP/matrices/Matrix.h"
-#include "AMP/operators/contact/ContactOperator.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/Variable.h"
-#include "AMP/vectors/Vector.h"
-#include <fstream>
-#include <memory>
+    #include "AMP/matrices/Matrix.h"
+    #include "AMP/operators/contact/ContactOperator.h"
+    #include "AMP/utils/Utilities.h"
+    #include "AMP/vectors/Variable.h"
+    #include "AMP/vectors/Vector.h"
+    #include <fstream>
+    #include <memory>
 
 namespace AMP {
 namespace Operator {

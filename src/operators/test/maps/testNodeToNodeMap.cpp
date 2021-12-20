@@ -1,19 +1,19 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/map/AsyncMapColumnOperator.h"
 #include "AMP/operators/map/NodeToNodeMap.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 #ifdef USE_EXT_SILO
-#include "AMP/utils/Writer.h"
+    #include "AMP/IO/Writer.h"
 #endif
 
 
@@ -147,7 +147,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
 
 // Save the results
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( v1, mesh, AMP::Mesh::GeomType::Vertex, "v1" );
     siloWriter->registerVector( v2, mesh, AMP::Mesh::GeomType::Vertex, "v2" );
     siloWriter->registerVector( id_vec, surfaceMesh, AMP::Mesh::GeomType::Face, "id" );

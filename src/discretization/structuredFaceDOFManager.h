@@ -1,9 +1,9 @@
 #ifndef included_AMP_structuredFaceDOFManager
 #define included_AMP_structuredFaceDOFManager
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include <memory>
 
 

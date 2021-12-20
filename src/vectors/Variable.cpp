@@ -1,6 +1,5 @@
 #include "Variable.h"
-
-#include <utility>
+#include "VectorSelector.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -29,9 +28,17 @@ bool Variable::operator==( const Variable &rhs ) const
 
 bool Variable::operator!=( const Variable &rhs ) const { return !( *this == rhs ); }
 
+
 void Variable::setUnits( const Units &t ) { d_Units = t; }
 
 
 const Units &Variable::getUnits() const { return d_Units; }
+
+
+std::shared_ptr<VectorSelector> Variable::createVectorSelector() const
+{
+    return std::make_shared<VS_ByVariableName>( d_VariableName );
+}
+
 
 } // namespace AMP::LinearAlgebra

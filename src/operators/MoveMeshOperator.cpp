@@ -21,7 +21,7 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> MoveMeshOperator::getInputVariable
 void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                               AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr dispVec = u->constSubsetVectorForVariable( d_var );
+    AMP::LinearAlgebra::Vector::const_shared_ptr dispVec = u->subsetVectorForVariable( d_var );
 
     if ( d_prevDisp == nullptr ) {
         d_prevDisp = dispVec->cloneVector();
