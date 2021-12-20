@@ -1,4 +1,4 @@
-BEGIN_EXAMPLE_CONFIG( ampmesh )
+BEGIN_EXAMPLE_CONFIG( mesh )
 
 # Copy meshes and input files
 COPY_EXAMPLE_DATA_FILE( input_createMesh-cube )
@@ -16,5 +16,5 @@ ADD_AMP_EXAMPLE( createMesh  1  input_createMesh-Multimesh )
 
 
 # Install the examples
-INSTALL_AMP_EXAMPLE( ampmesh )
+INSTALL_AMP_EXAMPLE( mesh )
 
