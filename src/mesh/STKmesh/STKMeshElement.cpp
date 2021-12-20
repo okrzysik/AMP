@@ -187,13 +187,13 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
 /****************************************************************
  * Function to get the neighboring elements                      *
  ****************************************************************/
-std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
+std::vector<std::shared_ptr<MeshElement>> STKMeshElement::getNeighbors() const
 {
-    std::vector<MeshElement::shared_ptr> neighbors( 0 );
+    std::vector<std::shared_ptr<MeshElement>> neighbors( 0 );
     if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         std::vector<stk::mesh::Entity *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
-        neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
+        neighbors.resize( neighbor_nodes.size(), std::shared_ptr<MeshElement>() );
         for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
             // There are no NULL neighbors
             std::shared_ptr<STKMeshElement> neighbor(

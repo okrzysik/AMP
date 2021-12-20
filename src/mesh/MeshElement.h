@@ -22,13 +22,6 @@ namespace Mesh {
 class MeshElement
 {
 public:
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<MeshElement> shared_ptr;
-
     //! Empty constructor for a MeshElement
     inline MeshElement();
 
@@ -89,7 +82,7 @@ public: // non-virtual functions
      *  For Verticies, a list of all verticies that share an element is returned.
      *  This list is in unsorted order.
      */
-    inline std::vector<MeshElement::shared_ptr> getNeighbors() const;
+    inline std::vector<std::shared_ptr<MeshElement>> getNeighbors() const;
 
     /**
      * \brief     Return the coordinate of the vertex
@@ -205,7 +198,7 @@ public: // Advanced functions
      *  For Verticies, a list of all verticies that share an element is returned.
      *  This list is in unsorted order.
      */
-    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const;
+    virtual void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const;
 
 
 protected:

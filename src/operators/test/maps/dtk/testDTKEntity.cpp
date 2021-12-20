@@ -31,14 +31,14 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
+    auto meshDatabase = input_db->getDatabase( "Mesh" );
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get iterators
-    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
 
     // map the volume ids to dtk ids
     int counter = 0;
@@ -69,11 +69,10 @@ static void myTest( AMP::UnitTest *ut )
     for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
           ++vol_iterator ) {
         // Create a dtk entity.
-        DataTransferKit::Entity dtk_entity =
-            AMP::Operator::AMPMeshEntity( *vol_iterator, rank_map, vol_id_map );
+        auto dtk_entity = AMP::Operator::AMPMeshEntity( *vol_iterator, rank_map, vol_id_map );
 
         // Check the id.
-        DataTransferKit::EntityId element_id = vol_id_map.find( vol_iterator->globalID() )->second;
+        auto element_id = vol_id_map.find( vol_iterator->globalID() )->second;
         AMP_ASSERT( dtk_entity.id() == element_id );
 
         // Check the entity.
@@ -82,8 +81,7 @@ static void myTest( AMP::UnitTest *ut )
         AMP_ASSERT( dtk_entity.physicalDimension() == 3 );
 
         // Check the bounding box.
-        std::vector<AMP::Mesh::MeshElement> vertices =
-            vol_iterator->getElements( AMP::Mesh::GeomType::Vertex );
+        auto vertices = vol_iterator->getElements( AMP::Mesh::GeomType::Vertex );
         AMP_ASSERT( 8 == vertices.size() );
         std::vector<double> box( 6 );
         Teuchos::Tuple<double, 6> element_box;

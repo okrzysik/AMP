@@ -740,7 +740,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    bottomPelletCor,
                                                    bottomPelletMeshAdapter,
                                                    bottomPelletConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
                 AMP_ASSERT( bottomPelletCor.get() != NULL );
 
@@ -758,7 +758,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    topPelletCor,
                                                    topPelletMeshAdapter,
                                                    topPelletConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
                 AMP_ASSERT( topPelletCor.get() != NULL );
 
@@ -773,7 +773,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    cladCor,
                                                    cladMeshAdapter,
                                                    cladConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
                 AMP_ASSERT( topPelletCor.get() != NULL );
             }

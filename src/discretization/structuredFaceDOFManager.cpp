@@ -240,7 +240,7 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     // Temporarily add neighbor elements
     size_t p_size = parents.size();
     for ( size_t i = 0; i < p_size; i++ ) {
-        std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = parents[i].getNeighbors();
+        std::vector<std::shared_ptr<AMP::Mesh::MeshElement>> neighbors = parents[i].getNeighbors();
         for ( auto &neighbor : neighbors ) {
             if ( neighbor != nullptr )
                 parents.push_back( *neighbor );

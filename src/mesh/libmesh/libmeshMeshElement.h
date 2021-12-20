@@ -47,7 +47,7 @@ public:
                               std::vector<MeshElement> &elements ) const override;
 
     //! Return the elements neighboring the current element
-    void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
+    void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const override;
 
     //! Return the volume of the current element (does not apply to verticies)
     double volume() const override;

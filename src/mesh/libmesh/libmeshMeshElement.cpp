@@ -216,7 +216,7 @@ void libmeshMeshElement::getElements( const GeomType type,
 /****************************************************************
  * Function to get the neighboring elements                      *
  ****************************************************************/
-void libmeshMeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const
+void libmeshMeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
 {
     neighbors.clear();
     if ( d_globalID.type() == GeomType::Vertex ) {

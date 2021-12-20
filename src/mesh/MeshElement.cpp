@@ -67,7 +67,7 @@ void MeshElement::getElementsID( const GeomType type, std::vector<MeshElementID>
     for ( size_t i = 0; i < elements.size(); i++ )
         ID[i] = elements[i].globalID();
 }
-void MeshElement::getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const
+void MeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
 {
     if ( element == nullptr )
         AMP_ERROR( "getNeighbors is not implimented for the base class (" + elementClass() + ")" );

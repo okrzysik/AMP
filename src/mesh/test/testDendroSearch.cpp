@@ -244,7 +244,7 @@ void run( const std::string &meshFileName,
         numRandomPts *= static_cast<size_t>( npes );
 
         mesh_db->putDatabase( "Mesh_1" );
-        std::shared_ptr<AMP::Database> meshArray_db = mesh_db->getDatabase( "Mesh_1" );
+        auto meshArray_db = mesh_db->getDatabase( "Mesh_1" );
         meshArray_db->putScalar( "MeshName", "Cylinder_1" );
         meshArray_db->putScalar( "MeshType", "AMP" );
         meshArray_db->putScalar( "dim", 3 );

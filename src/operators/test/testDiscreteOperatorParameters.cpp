@@ -32,7 +32,7 @@ static void runTest( AMP::UnitTest *ut )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Database> test_db = input_db->getDatabase( "Test" );
+    auto test_db = input_db->getDatabase( "Test" );
 
     if ( ( test_db.get() ) == NULL ) {
         ut->failure( "Testing getDatabase" );

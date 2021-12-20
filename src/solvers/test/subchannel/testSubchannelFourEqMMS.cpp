@@ -401,10 +401,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Print final solution
-    AMP::Mesh::Mesh::shared_ptr channel0 =
-        AMP::Operator::Subchannel::subsetForSubchannel( subchannelMesh, 0, 0 );
-    face        = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( channel0, 0 );
-    int N_print = std::max( 1, (int) face.size() / 10 );
+    auto channel0 = AMP::Operator::Subchannel::subsetForSubchannel( subchannelMesh, 0, 0 );
+    face          = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( channel0, 0 );
+    int N_print   = std::max( 1, (int) face.size() / 10 );
     for ( int i = 0; i < (int) face.size(); i++ ) {
         if ( i % N_print == 0 ) {
             subchannelDOFManager->getDOFs( face->globalID(), axialDofs );

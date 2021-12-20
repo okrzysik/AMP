@@ -18,7 +18,7 @@ public:
 
     virtual ~LinearBoundaryOperatorParameters() {}
 
-    AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_inputMatrix;
 };
 } // namespace Operator
 } // namespace AMP

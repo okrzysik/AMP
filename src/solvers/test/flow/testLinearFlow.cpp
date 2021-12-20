@@ -171,7 +171,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto pressureUpdateVec = pressureSolVec->cloneVector();
     auto velocityUpdateVec = velocitySolVec->cloneVector();
 
-    AMP::LinearAlgebra::Vector::shared_ptr velocityPrimeVec = velocitySolVec->cloneVector();
+    auto velocityPrimeVec = velocitySolVec->cloneVector();
 
     // SIMPLE(Semi Implicit Method for Pressure Linked Equations) ALGORITHM
 

@@ -71,7 +71,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
     for ( const auto &vec_id : vec_ids ) {
         // Send the data to rank 0
         d_comm.barrier();
-        AMP::LinearAlgebra::Vector::shared_ptr src_vec;
+        std::shared_ptr<AMP::LinearAlgebra::Vector> src_vec;
         if ( d_vectors.find( vec_id ) != d_vectors.end() )
             src_vec = d_vectors[vec_id].vec;
         auto dst_vec = sendVecToRoot( src_vec, d_comm );
@@ -93,7 +93,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         d_comm.barrier();
         std::string name;
         size_t size[2] = { 0, 0 };
-        AMP::LinearAlgebra::Matrix::shared_ptr mat;
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> mat;
         if ( d_matrices.find( mat_id ) != d_matrices.end() ) {
             mat     = d_matrices[mat_id].mat;
             name    = d_matrices[mat_id].name;
@@ -135,8 +135,8 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
 /************************************************************
  * Function to copy a vector to rank 0                       *
  ************************************************************/
-AMP::LinearAlgebra::Vector::const_shared_ptr
-AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec,
+std::shared_ptr<const AMP::LinearAlgebra::Vector>
+AsciiWriter::sendVecToRoot( std::shared_ptr<const AMP::LinearAlgebra::Vector> src_vec,
                             const AMP_MPI &comm )
 {
 
@@ -158,7 +158,7 @@ AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec
         global_size += size[i];
     // If we are not rank 0 and do not have a copy of the vector we are done
     if ( !src_vec && rank != 0 )
-        return AMP::LinearAlgebra::Vector::const_shared_ptr();
+        return nullptr;
     // Send the local data to rank 0
     std::vector<MPI_Request> requests;
     std::vector<double> local_data( local_size, 0 );
@@ -168,7 +168,7 @@ AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec
         requests.push_back( comm.Isend( &local_data[0], local_size, 0, 123 ) );
     }
     // Rank 0 needs to create the vector and recv all data
-    AMP::LinearAlgebra::Vector::shared_ptr dst_vec;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> dst_vec;
     if ( rank == 0 ) {
         auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
         dst_vec  = AMP::LinearAlgebra::createSimpleVector<double>(
@@ -192,7 +192,7 @@ AsciiWriter::sendVecToRoot( AMP::LinearAlgebra::Vector::const_shared_ptr src_vec
 /************************************************************
  * Function to copy a row to rank 0                          *
  ************************************************************/
-void AsciiWriter::sendRowToRoot( AMP::LinearAlgebra::Matrix::const_shared_ptr mat,
+void AsciiWriter::sendRowToRoot( std::shared_ptr<const AMP::LinearAlgebra::Matrix> mat,
                                  const AMP_MPI &comm,
                                  int row,
                                  std::vector<size_t> &cols,

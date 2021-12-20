@@ -1,16 +1,15 @@
-
 #include "ColumnSolver.h"
 #include "AMP/operators/ColumnOperatorParameters.h"
 
-namespace AMP {
-namespace Solver {
+
+namespace AMP::Solver {
 
 
 ColumnSolver::ColumnSolver( std::shared_ptr<const SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
     AMP_ASSERT( parameters );
-    std::shared_ptr<AMP::Database> db = parameters->d_db;
+    auto db               = parameters->d_db;
     d_IterationType       = db->getWithDefault<std::string>( "IterationType", "GaussSeidel" );
     d_resetColumnOperator = db->getWithDefault<bool>( "ResetColumnOperator", false );
 }
@@ -34,12 +33,12 @@ void ColumnSolver::GaussSeidel( std::shared_ptr<const AMP::LinearAlgebra::Vector
 {
     for ( int it = 0; it < d_iMaxIterations; it++ ) {
         for ( auto &elem : d_Solvers ) {
-            std::shared_ptr<AMP::Operator::Operator> op = elem->getOperator();
+            auto op = elem->getOperator();
             AMP_INSIST( op, "EROR: NULL Operator returned by SolverStrategy::getOperator" );
 
-            std::shared_ptr<const AMP::LinearAlgebra::Vector> sf = op->subsetOutputVector( f );
+            auto sf = op->subsetOutputVector( f );
             AMP_INSIST( sf, "ERROR: subset on rhs f yields NULL vector in ColumnSolver::solve" );
-            std::shared_ptr<AMP::LinearAlgebra::Vector> su = op->subsetInputVector( u );
+            auto su = op->subsetInputVector( u );
             AMP_INSIST( su,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
@@ -53,12 +52,12 @@ void ColumnSolver::SymmetricGaussSeidel( std::shared_ptr<const AMP::LinearAlgebr
 {
     for ( int it = 0; it < d_iMaxIterations; it++ ) {
         for ( auto &elem : d_Solvers ) {
-            std::shared_ptr<AMP::Operator::Operator> op = elem->getOperator();
+            auto op = elem->getOperator();
             AMP_INSIST( op, "EROR: NULL Operator returned by SolverStrategy::getOperator" );
 
-            std::shared_ptr<const AMP::LinearAlgebra::Vector> sf = op->subsetOutputVector( f );
+            auto sf = op->subsetOutputVector( f );
             AMP_INSIST( sf, "ERROR: subset on rhs f yields NULL vector in ColumnSolver::solve" );
-            std::shared_ptr<AMP::LinearAlgebra::Vector> su = op->subsetInputVector( u );
+            auto su = op->subsetInputVector( u );
             AMP_INSIST( su,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
@@ -66,12 +65,12 @@ void ColumnSolver::SymmetricGaussSeidel( std::shared_ptr<const AMP::LinearAlgebr
         }
 
         for ( int i = (int) d_Solvers.size() - 1; i >= 0; i-- ) {
-            std::shared_ptr<AMP::Operator::Operator> op = d_Solvers[i]->getOperator();
+            auto op = d_Solvers[i]->getOperator();
             AMP_INSIST( op, "EROR: NULL Operator returned by SolverStrategy::getOperator" );
 
-            std::shared_ptr<const AMP::LinearAlgebra::Vector> sf = op->subsetOutputVector( f );
+            auto sf = op->subsetOutputVector( f );
             AMP_INSIST( sf, "ERROR: subset on rhs f yields NULL vector in ColumnSolver::solve" );
-            std::shared_ptr<AMP::LinearAlgebra::Vector> su = op->subsetInputVector( u );
+            auto su = op->subsetInputVector( u );
             AMP_INSIST( su,
                         "ERROR: subset on solution u yields NULL vector in ColumnSolver::solve" );
 
@@ -113,5 +112,5 @@ void ColumnSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorP
         }
     }
 }
-} // namespace Solver
-} // namespace AMP
+
+} // namespace AMP::Solver

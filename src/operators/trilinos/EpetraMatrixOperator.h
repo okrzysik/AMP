@@ -17,7 +17,7 @@ public:
     explicit EpetraMatrixOperator( std::shared_ptr<EpetraMatrixOperatorParameters> params )
         : LinearOperator( params )
     {
-        AMP::LinearAlgebra::Matrix::shared_ptr t(
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> t(
             new AMP::LinearAlgebra::ManagedEpetraMatrix( params->d_Matrix ) );
         setMatrix( t );
     }

@@ -82,10 +82,9 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 
     // now construct the linear BVP operator for fick
     AMP_INSIST( input_db->keyExists( "testLinearFickOperator" ), "key missing!" );
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearFickOperator =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter, "testLinearFickOperator", input_db, fickTransportModel ) );
+    auto linearFickOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter, "testLinearFickOperator", input_db, fickTransportModel ) );
 
     // Initial guess
     solVec->setToScalar( .05 );

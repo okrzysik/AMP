@@ -10,7 +10,7 @@
 namespace AMP::LinearAlgebra {
 
 
-static void fillWithPseudoLaplacian( AMP::LinearAlgebra::Matrix::shared_ptr matrix,
+static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
                                      std::shared_ptr<const MatrixFactory> factory )
 {
     auto dofmap = factory->getDOFMap();

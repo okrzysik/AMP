@@ -10,11 +10,11 @@ namespace LinearAlgebra {
 /****************************************************************
  * view                                                          *
  ****************************************************************/
-std::shared_ptr<const PetscMatrix> PetscMatrix::constView( Matrix::const_shared_ptr inMat )
+std::shared_ptr<const PetscMatrix> PetscMatrix::constView( std::shared_ptr<const Matrix> inMat )
 {
     return view( std::const_pointer_cast<Matrix>( inMat ) );
 }
-std::shared_ptr<PetscMatrix> PetscMatrix::view( Matrix::shared_ptr inMat )
+std::shared_ptr<PetscMatrix> PetscMatrix::view( std::shared_ptr<Matrix> inMat )
 {
     // Check if we have an existing view
     if ( std::dynamic_pointer_cast<PetscMatrix>( inMat ) )

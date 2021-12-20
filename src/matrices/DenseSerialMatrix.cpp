@@ -30,7 +30,7 @@ DenseSerialMatrix::~DenseSerialMatrix() { delete[] d_M; }
 /********************************************************
  * Copy/transpose the matrix                             *
  ********************************************************/
-Matrix::shared_ptr DenseSerialMatrix::transpose() const
+std::shared_ptr<Matrix> DenseSerialMatrix::transpose() const
 {
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
@@ -47,7 +47,7 @@ Matrix::shared_ptr DenseSerialMatrix::transpose() const
     }
     return newMatrix;
 }
-Matrix::shared_ptr DenseSerialMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> DenseSerialMatrix::cloneMatrix() const
 {
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
@@ -314,7 +314,8 @@ double DenseSerialMatrix::L1Norm() const
  * result = this * other_op                              *
  * C(N,M) = A(N,K)*B(K,M)
  ********************************************************/
-void DenseSerialMatrix::multiply( Matrix::shared_ptr other_op, Matrix::shared_ptr &result )
+void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
+                                  std::shared_ptr<Matrix> &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );

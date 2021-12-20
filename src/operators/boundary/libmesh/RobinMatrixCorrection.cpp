@@ -1,4 +1,3 @@
-
 #include "RobinMatrixCorrection.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -56,10 +55,10 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
     auto myparams = std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( myparams.get(), "NULL parameters" );
+    AMP_INSIST( myparams->d_db, "NULL database" );
 
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( myparams->d_db, "NULL database" );
     bool skipParams = myparams->d_db->getWithDefault<bool>( "skip_params", true );
 
     bool d_isFluxGaussPtVector =
@@ -111,12 +110,11 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
     d_robinPhysicsModel = myparams->d_robinPhysicsModel;
 
-    ( d_NeumannParams->d_db )
-        ->putScalar( "constant_flux",
-                     myparams->d_db->getWithDefault<bool>( "constant_flux", true ) );
+    d_NeumannParams->d_db->putScalar(
+        "constant_flux", myparams->d_db->getWithDefault<bool>( "constant_flux", true ) );
     d_NeumannParams->d_variableFlux      = myparams->d_variableFlux;
     d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-    ( d_NeumannParams->d_db )->putScalar( "gamma", d_gamma );
+    d_NeumannParams->d_db->putScalar( "gamma", d_gamma );
     d_NeumannCorrection->reset( d_NeumannParams );
 
     bool skipMatrixCorrection =
@@ -125,17 +123,16 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
         // Create the libmesh elements
         AMP::Mesh::MeshIterator iterator;
         for ( auto &elem : d_boundaryIds ) {
-            AMP::Mesh::MeshIterator iterator2 =
-                d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, elem, 0 );
+            auto iterator2 = d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, elem, 0 );
             iterator = AMP::Mesh::Mesh::getIterator( AMP::Mesh::SetOP::Union, iterator, iterator2 );
         }
         libmeshElements.reinit( iterator );
 
-        AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myparams->d_inputMatrix;
+        auto inputMatrix = myparams->d_inputMatrix;
         AMP_INSIST( ( ( inputMatrix.get() ) != nullptr ), "NULL matrix" );
 
-        AMP::LinearAlgebra::Vector::shared_ptr inVec = inputMatrix->getRightVector();
-        d_dofManager                                 = inVec->getDOFManager();
+        auto inVec   = inputMatrix->getRightVector();
+        d_dofManager = inVec->getDOFManager();
 
         /*
             std::vector<std::string> variableNames;
@@ -166,8 +163,7 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
                 AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 
-                    std::shared_ptr<libMesh::FEType> d_feType(
-                        new libMesh::FEType( d_feTypeOrder, d_feFamily ) );
+                    auto d_feType = std::make_shared<libMesh::FEType>( d_feTypeOrder, d_feFamily );
                     std::shared_ptr<libMesh::FEBase> d_fe(
                         ( libMesh::FEBase::build( 2, ( *d_feType ) ) ).release() );
 
@@ -181,8 +177,7 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
                         ( libMesh::QBase::build( d_qruleType, 2, d_qruleOrder ) ).release() );
 
                     // Get the nodes for the element and their global ids
-                    std::vector<AMP::Mesh::MeshElement> currNodes =
-                        bnd1->getElements( AMP::Mesh::GeomType::Vertex );
+                    auto currNodes = bnd1->getElements( AMP::Mesh::GeomType::Vertex );
                     dofIndices.resize( currNodes.size() );
                     std::vector<AMP::Mesh::MeshElementID> globalIDs( currNodes.size() );
                     for ( size_t j = 0; j < currNodes.size(); j++ )
@@ -211,9 +206,9 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
                     d_fe->reinit( currElemPtr );
 
-                    const std::vector<libMesh::Real> &JxW              = ( *d_JxW );
-                    const std::vector<std::vector<libMesh::Real>> &phi = ( *d_phi );
-                    unsigned int numGaussPts                           = d_qrule->n_points();
+                    const auto &JxW          = *d_JxW;
+                    const auto &phi          = *d_phi;
+                    unsigned int numGaussPts = d_qrule->n_points();
 
                     std::vector<std::vector<double>> inputArgs(
                         elementInputVec.size(), std::vector<double>( currNodes.size() ) );

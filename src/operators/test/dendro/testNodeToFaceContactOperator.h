@@ -161,9 +161,9 @@ makeConstraintsOnClad( AMP::Mesh::MeshIterator it,
                        double cladHeight,
                        std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> &constraints )
 {
-    AMP::Mesh::MeshIterator it_begin = it.begin();
-    AMP::Mesh::MeshIterator it_end   = it.end();
-    double epsilon                   = 1.0e-10, radius;
+    auto it_begin  = it.begin();
+    auto it_end    = it.end();
+    double epsilon = 1.0e-10, radius;
     std::vector<double> coord;
     std::map<size_t, double> tmp;
     for ( it = it_begin; it != it_end; ++it ) {
@@ -199,7 +199,7 @@ static void applyCustomDirichletCondition(
     AMP::LinearAlgebra::Vector::shared_ptr &cor,
     AMP::Mesh::Mesh::shared_ptr meshAdapter,
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> const &constraints,
-    AMP::LinearAlgebra::Matrix::shared_ptr mat )
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> mat )
 {
     auto dofManager = rhs->getDOFManager();
     std::vector<size_t> dofIndices;
@@ -213,9 +213,7 @@ static void applyCustomDirichletCondition(
             AMP_ASSERT( ( meshAdapter->getElement( it->first ) ).isOnSurface() );
             dofManager->getDOFs( it->first, dofIndices );
             coord = ( meshAdapter->getElement( it->first ) ).coord();
-            for ( std::map<size_t, double>::const_iterator jt = it->second.begin();
-                  jt != it->second.end();
-                  ++jt ) {
+            for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
                 std::cout << ++count << " (" << coord[0] << ", " << coord[1] << ", " << coord[2]
                           << ") " << jt->second << "  " << xyz[jt->first] << "\n";
                 dir->setLocalValueByGlobalID( dofIndices[jt->first], jt->second );
@@ -225,9 +223,7 @@ static void applyCustomDirichletCondition(
         mat->mult( dir, cor );
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
             dofManager->getDOFs( it->first, dofIndices );
-            for ( std::map<size_t, double>::const_iterator jt = it->second.begin();
-                  jt != it->second.end();
-                  ++jt ) {
+            for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
                 for ( size_t k = 0; k < dofIndices.size(); ++k ) {
                     if ( jt->first == k ) {
                         mat->setValueByGlobalID( dofIndices[k], dofIndices[k], 1.0 );
@@ -242,9 +238,7 @@ static void applyCustomDirichletCondition(
             for ( size_t n = 0; n < neighbors.size(); ++n ) {
                 dofManager->getDOFs( neighbors[n]->globalID(), neighborsDofIndices );
                 for ( size_t k = 0; k < neighborsDofIndices.size(); ++k ) {
-                    for ( std::map<size_t, double>::const_iterator jt = it->second.begin();
-                          jt != it->second.end();
-                          ++jt ) {
+                    for ( auto jt = it->second.begin(); jt != it->second.end(); ++jt ) {
                         mat->setValueByGlobalID(
                             dofIndices[jt->first], neighborsDofIndices[k], 0.0 );
                         mat->setValueByGlobalID(

@@ -154,7 +154,7 @@ void SubchannelFourEqNonlinearOperator::reset( std::shared_ptr<const OperatorPar
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
         auto center = el->centroid();
         int index   = getSubchannelIndex( center[0], center[1] );
@@ -169,11 +169,9 @@ void SubchannelFourEqNonlinearOperator::reset( std::shared_ptr<const OperatorPar
     for ( size_t i = 0; i < d_numSubchannels; i++ ) {
         if ( !d_ownSubChannel[i] )
             continue;
-        AMP::Mesh::MeshIterator localSubchannelIt =
-            AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
-        AMP::Mesh::MeshIterator face =
-            AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
+        auto localSubchannelIt = AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
+        auto localSubchannel   = d_Mesh->Subset( localSubchannelIt, false );
+        auto face = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {
             d_subchannelFace[i].push_back( *face );
             ++face;
@@ -476,10 +474,10 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     const double w_scale = 1.0 / Subchannel::scaleLateralMassFlowRate;
 
     // Subset the vectors
-    AMP::LinearAlgebra::Vector::const_shared_ptr inputVec = subsetInputVector( u );
-    AMP::LinearAlgebra::Vector::shared_ptr outputVec      = subsetOutputVector( r );
+    auto inputVec  = subsetInputVector( u );
+    auto outputVec = subsetOutputVector( r );
 
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_manager = inputVec->getDOFManager();
+    auto dof_manager = inputVec->getDOFManager();
     std::shared_ptr<AMP::Discretization::DOFManager> cladDofManager;
     if ( d_source == "averageCladdingTemperature" ) {
         cladDofManager = d_cladTemperature->getDOFManager();
@@ -505,11 +503,10 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     for ( size_t j = 0; j < d_z.size() - 1; ++j )
         zMid[j] = d_z[j] + 0.5 * ( d_z[j + 1] - d_z[j] );
 
-    AMP::Mesh::MeshIterator cell =
-        d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ); // iterator for cells of mesh
+    auto cell = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ); // iterator for cells of mesh
 
     std::vector<std::vector<AMP::Mesh::MeshElement>> d_elem(
-        d_numSubchannels ); // array of array of elements for each subchannel
+        d_numSubchannels ); // elements for each subchannel
     std::vector<bool> d_ownSubChannel( d_numSubchannels );
 
     // for each cell,
@@ -535,7 +532,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
         for ( const auto &ielem : d_elem[isub] ) {
             subchannelElements->push_back( ielem );
         }
-        AMP::Mesh::MeshIterator localSubchannelCell = AMP::Mesh::MultiVectorIterator(
+        auto localSubchannelCell = AMP::Mesh::MultiVectorIterator(
             subchannelElements ); // iterator over elements of current subchannel
         // get subchannel index
         auto subchannelCentroid = localSubchannelCell->centroid();
@@ -729,8 +726,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
             energy_heatflux_sum = ( 1 + d_gamma ) * pi * d_rodDiameter[isub] * flux[j];
 
             // loop over gap faces
-            std::vector<AMP::Mesh::MeshElement> cellFaces =
-                localSubchannelCell->getElements( AMP::Mesh::GeomType::Face );
+            auto cellFaces = localSubchannelCell->getElements( AMP::Mesh::GeomType::Face );
             for ( auto &cellFace : cellFaces ) {
                 auto faceCentroid        = cellFace.centroid();
                 auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
@@ -742,7 +738,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
                     dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
                     double w = w_scale * inputVec->getValueByGlobalID( gapDofs[0] );
                     // get index of neighboring subchannel
-                    std::vector<AMP::Mesh::MeshElement> adjacentCells =
+                    auto adjacentCells =
                         d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Volume );
                     AMP_INSIST( adjacentCells.size() == 2,
                                 "There were not 2 adjacent cells to a lateral gap face" );
@@ -955,8 +951,7 @@ void SubchannelFourEqNonlinearOperator::apply( AMP::LinearAlgebra::Vector::const
     }     // end loop over subchannels
 
     // loop over lateral faces
-    AMP::Mesh::MeshIterator face =
-        d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
+    auto face = d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
     for ( ; face != face.end(); ++face ) {
         auto faceCentroid        = face->centroid();
         auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
@@ -1247,13 +1242,12 @@ std::shared_ptr<OperatorParameters> SubchannelFourEqNonlinearOperator::getJacobi
 AMP::LinearAlgebra::Vector::shared_ptr
 SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
+    auto var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1263,13 +1257,12 @@ SubchannelFourEqNonlinearOperator::subsetInputVector( AMP::LinearAlgebra::Vector
 AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::subsetInputVector(
     AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getInputVariable();
+    auto var = getInputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1279,13 +1272,12 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::
 AMP::LinearAlgebra::Vector::shared_ptr
 SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
-    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getOutputVariable();
+    auto var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -1295,13 +1287,12 @@ SubchannelFourEqNonlinearOperator::subsetOutputVector( AMP::LinearAlgebra::Vecto
 AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqNonlinearOperator::subsetOutputVector(
     AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    std::shared_ptr<AMP::LinearAlgebra::Variable> var = getOutputVariable();
+    auto var = getOutputVariable();
     // Subset the vectors, they are simple vectors and we need to subset for the current comm
     // instead of the mesh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
-        AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->select( commSelector, var->getName() );
+        auto commVec = vec->select( commSelector, var->getName() );
         return commVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

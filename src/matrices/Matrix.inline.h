@@ -3,10 +3,10 @@ namespace AMP {
 namespace LinearAlgebra {
 
 
-inline Matrix::shared_ptr Matrix::transpose() const
+inline std::shared_ptr<Matrix> Matrix::transpose() const
 {
     AMP_ERROR( "not implemented" );
-    return Matrix::shared_ptr();
+    return std::shared_ptr<Matrix>();
 }
 
 inline void Matrix::addValueByGlobalID( size_t row, size_t col, double value )
@@ -26,7 +26,7 @@ inline double Matrix::getValueByGlobalID( size_t row, size_t col ) const
     return rtn;
 }
 
-inline std::ostream &operator<<( std::ostream &out, const Matrix::shared_ptr p )
+inline std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
 {
     return operator<<( out, *p );
 }

@@ -123,8 +123,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     columnMassOperator->append( massOxygenOp );
 
     // create a  time operator for use in the preconditioner
-    std::shared_ptr<AMP::Database> timeOperator_db =
-        std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
     timeOperator_db->putScalar( "CurrentDt", 0.01 );
     timeOperator_db->putScalar( "name", "TimeOperator" );
     timeOperator_db->putScalar( "bLinearMassOperator", true );

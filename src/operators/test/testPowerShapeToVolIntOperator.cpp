@@ -40,7 +40,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     //  Construct PowerShape
     AMP_INSIST( input_db->keyExists( "PowerShape" ), "Key ''PowerShape'' is missing!" );
-    std::shared_ptr<AMP::Database> shape_db = input_db->getDatabase( "PowerShape" );
+    auto shape_db        = input_db->getDatabase( "PowerShape" );
     auto shape_params    = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
     shape_params->d_Mesh = meshAdapter;
     auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );

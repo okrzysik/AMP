@@ -46,31 +46,31 @@ void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> para
 
     auto myParams = std::dynamic_pointer_cast<const MassMatrixCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myParams.get() ) != nullptr ), "NULL parameters" );
+    AMP_INSIST( myParams, "NULL parameters" );
 
     resetBoundaryIds( myParams );
 
     double diagVal = d_bSetIdentityOnDiagonal ? 1.0 : 0.0;
 
-    AMP::LinearAlgebra::Matrix::shared_ptr inputMatrix = myParams->d_inputMatrix;
-    AMP_INSIST( ( ( inputMatrix.get() ) != nullptr ), "NULL matrix" );
+    auto inputMatrix = myParams->d_inputMatrix;
+    AMP_INSIST( inputMatrix, "NULL matrix" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec             = inputMatrix->getRightVector();
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = inVec->getDOFManager();
+    auto inVec   = inputMatrix->getRightVector();
+    auto dof_map = inVec->getDOFManager();
 
     unsigned int numIds = d_boundaryIds.size();
 
     for ( unsigned int k = 0; k < numIds; k++ ) {
 
-        AMP::Mesh::MeshIterator bnd =
+        auto bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[k], 0 );
-        AMP::Mesh::MeshIterator end_bnd = bnd.end();
+        auto end_bnd = bnd.end();
 
         for ( ; bnd != end_bnd; ++bnd ) {
             std::vector<size_t> bndGlobalIds;
             dof_map->getDOFs( bnd->globalID(), bndGlobalIds );
 
-            std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = bnd->getNeighbors();
+            auto neighbors = bnd->getNeighbors();
 
             for ( auto &neighbor : neighbors ) {
                 AMP_ASSERT( ( *( neighbor ) ) != ( *bnd ) );

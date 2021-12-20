@@ -80,7 +80,7 @@ public:
         return vector;
     }
 
-    AMP::LinearAlgebra::Matrix::shared_ptr getMatrix() const override
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix() const override
     {
         PROFILE_START( "getMatrix" );
         auto variable_a = std::make_shared<AMP::LinearAlgebra::Variable>( "a" );

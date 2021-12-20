@@ -26,7 +26,7 @@ namespace LinearAlgebra {
 class AmpInterfaceLeftVectorFactory : public VectorFactory
 {
 public:
-    explicit AmpInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit AmpInterfaceLeftVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -44,14 +44,14 @@ public:
     }
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 
 class AmpInterfaceRightVectorFactory : public VectorFactory
 {
 public:
-    explicit AmpInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit AmpInterfaceRightVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -69,7 +69,7 @@ public:
     }
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 
@@ -78,7 +78,7 @@ private:
 class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {
 public:
-    explicit PETScInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit PETScInterfaceLeftVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -105,14 +105,14 @@ public:
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 
 class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {
 public:
-    explicit PETScInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit PETScInterfaceRightVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -139,7 +139,7 @@ public:
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 #endif

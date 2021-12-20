@@ -48,7 +48,7 @@ public:
                                 std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
-    void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
+    void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const override;
 
     /**
      * \brief     Return the centroid of the element

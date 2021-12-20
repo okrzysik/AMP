@@ -142,8 +142,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else if ( type == 2 ) {
             std::cout << "Solving using Jacobi preconditioned CG algorithm..." << std::endl;
 
-            std::shared_ptr<AMP::Database> linearSolver_db =
-                input_db->getDatabase( "JacobiCGsolver" );
+            auto linearSolver_db = input_db->getDatabase( "JacobiCGsolver" );
 
             // initialize the linear solver
             auto linearSolverParams =

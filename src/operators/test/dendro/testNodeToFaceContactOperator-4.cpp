@@ -417,9 +417,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( bis && useALittleHelp ) {
-        //    AMP::LinearAlgebra::Vector::shared_ptr zDispVec =
-        //    columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,
-        //    3), "help");
+        // auto zDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,3), "help");
         auto it       = slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 );
         auto it_begin = it.begin();
         auto it_end   = it.end();
@@ -512,13 +510,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     matrixShellOperator->setMatLocalColumnSize( matLocalSize );
     matrixShellOperator->setOperator( columnOperator );
 
-    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams =
+    auto linearSolverParams =
         std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = matrixShellOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = columnPreconditioner;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );
 
@@ -595,7 +592,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    masterCor,
                                                    meshAdapter,
                                                    masterConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
                 AMP_ASSERT( masterCor.get() != NULL );
             }
@@ -611,22 +608,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    slaveCor,
                                                    meshAdapter,
                                                    slaveConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
                 AMP_ASSERT( slaveCor.get() != NULL );
             }
 
             // get d
-            //    AMP::LinearAlgebra::Vector::shared_ptr contactShiftVec =
-            //    createVector(dispDofManager, columnVar,
-            //    split);
+            // auto contactShiftVec = createVector(dispDofManager, columnVar, split);
             contactShiftVec->zero();
             contactOperator->addShiftToSlave( contactShiftVec );
             //  contactOperator->addShiftToSlave(columnSolVec);
 
             // compute - Kd
-            AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec =
-                createVector( dispDofManager, columnVar, split );
+            auto rhsCorrectionVec = createVector( dispDofManager, columnVar, split );
             rhsCorrectionVec->zero();
             masterBVPOperator->apply( nullVec, contactShiftVec, rhsCorrectionVec, -1.0, 0.0 );
             slaveBVPOperator->apply( nullVec, contactShiftVec, rhsCorrectionVec, -1.0, 0.0 );

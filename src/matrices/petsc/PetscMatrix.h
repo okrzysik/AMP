@@ -56,7 +56,7 @@ public:
      *     It will never copy data.  If the matrix cannot be wrapped it wll return an error.
      *  \param  AmpMatrix  a shared pointer to a Matrix
      */
-    static std::shared_ptr<PetscMatrix> view( Matrix::shared_ptr AmpMatrix );
+    static std::shared_ptr<PetscMatrix> view( std::shared_ptr<Matrix> AmpMatrix );
 
     /**
      *  \brief  If needed, create a PETSc wrapper for AmpMatrix.  Otherwise, return AmpMatrix.
@@ -64,7 +64,7 @@ public:
      *     It will never copy data.  If the matrix cannot be wrapped it wll return an error.
      *  \param  AmpMatrix  a shared pointer to a Matrix
      */
-    static std::shared_ptr<const PetscMatrix> constView( Matrix::const_shared_ptr AmpMatrix );
+    static std::shared_ptr<const PetscMatrix> constView( std::shared_ptr<const Matrix> AmpMatrix );
 
 
 public:

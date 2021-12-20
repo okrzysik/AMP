@@ -30,14 +30,6 @@ public:
     virtual std::string getName() const = 0;
 
     /**
-     *\typedef const_shared_ptr
-     *\brief  Name for the const shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a geometry object.
-     */
-    typedef std::shared_ptr<const AMP::Geometry::Geometry> const_shared_ptr;
-
-
-    /**
      * \brief    Get the number of dimensions for the object
      * \details  This function returns the number of physical dimensions for the geometry
      * @return      Returns the number of physical dimensions

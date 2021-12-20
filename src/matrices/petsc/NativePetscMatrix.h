@@ -42,7 +42,7 @@ public:
      * \param[in] m  The matrix to duplicate
      * \return A new matrix with the same non-zero structure
      */
-    static Matrix::shared_ptr duplicateMat( Mat m );
+    static std::shared_ptr<Matrix> duplicateMat( Mat m );
 
     /** \brief Copy data from a PETSc Mat
      * \param[in] m  The matrix with the data

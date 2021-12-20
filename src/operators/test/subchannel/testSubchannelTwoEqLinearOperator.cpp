@@ -150,8 +150,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // create linear operator
     // get linear operator database
-    std::shared_ptr<AMP::Database> subchannelOperator_db =
-        input_db->getDatabase( "SubchannelTwoEqLinearOperator" );
+    auto subchannelOperator_db = input_db->getDatabase( "SubchannelTwoEqLinearOperator" );
     // set operator parameters
     auto subchannelOpParams =
         std::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );

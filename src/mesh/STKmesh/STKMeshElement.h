@@ -40,7 +40,7 @@ public:
     std::vector<MeshElement> getElements( const GeomType type ) const override;
 
     //! Return the elements neighboring the current element
-    std::vector<MeshElement::shared_ptr> getNeighbors() const override;
+    std::vector<std::shared_ptr<MeshElement>> getNeighbors() const override;
 
     //! Return the volume of the current element (does not apply to verticies)
     double volume() const override;

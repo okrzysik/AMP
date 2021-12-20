@@ -26,8 +26,8 @@ static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    auto mgrParams                         = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto manager = std::make_shared<AMP::Mesh::Mesh::buildMesh>( mgrParams );
     AMP::pout << "Finished loading meshes" << std::endl;

@@ -180,7 +180,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     // Get the mesh
     GENERATOR mesh_generator;
     mesh_generator.build_mesh();
-    AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
+    auto mesh = mesh_generator.getMesh();
 
     // Create a simple DOF manager and check if it is a multiDOF manager
     auto DOFs = AMP::Discretization::simpleDOFManager::create(
@@ -207,8 +207,8 @@ void testMultiDOFManager( AMP::UnitTest *ut )
     // once through each element
     std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( 2, DOFs );
     auto DOF2 = std::make_shared<AMP::Discretization::multiDOFManager>( DOFs->getComm(), managers );
-    AMP::Mesh::MeshIterator iterator1 = DOFs->getIterator();
-    AMP::Mesh::MeshIterator iterator2 = DOF2->getIterator();
+    auto iterator1 = DOFs->getIterator();
+    auto iterator2 = DOF2->getIterator();
     if ( iterator1.size() == iterator2.size() )
         ut->passes( "multiDOFManager iterates once through each element: " + GENERATOR::name() );
     else
@@ -228,7 +228,7 @@ void testStructureDOFManager( AMP::UnitTest *ut )
     // Get the mesh
     GENERATOR mesh_generator;
     mesh_generator.build_mesh();
-    AMP::Mesh::Mesh::shared_ptr mesh = mesh_generator.getMesh();
+    auto mesh = mesh_generator.getMesh();
 
     // Create a simple DOF manager and check if it is a multiDOF manager
     int dofsPerFace[3] = { Nx, Ny, Nz };

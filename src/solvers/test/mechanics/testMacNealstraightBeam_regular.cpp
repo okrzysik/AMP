@@ -90,7 +90,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     double initResidualNorm = static_cast<double>( mechResVec->L2Norm() );
     AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-    std::shared_ptr<AMP::Database> linearSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto linearSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
     auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );

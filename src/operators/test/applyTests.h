@@ -22,7 +22,7 @@ inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
         size_t nvecs = mvec->getNumberOfSubvectors();
         AMP_INSIST( nshift <= nvecs, "not enough subvectors" );
         for ( size_t i = 0; i < nshift; i++ ) {
-            AMP::LinearAlgebra::Vector::shared_ptr subvec = mvec->getVector( i );
+            auto subvec = mvec->getVector( i );
             subvec->scale( scale[i] );
             subvec->addScalar( *subvec, shift[i] );
         }
@@ -48,8 +48,7 @@ inline void applyTests( AMP::UnitTest *ut,
                         const double *scale,
                         const size_t nshift )
 {
-    std::shared_ptr<AMP::LinearAlgebra::Variable> testOperatorVariable =
-        testOperator->getOutputVariable();
+    auto testOperatorVariable = testOperator->getOutputVariable();
     AMP_ASSERT( testOperatorVariable );
     // first test for apply - random values in all three input vectors
     // An exception is considered a failure and will crash the application

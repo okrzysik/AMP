@@ -559,8 +559,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 cor = rhs->cloneVector();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
             } else {
-                applyCustomDirichletCondition(
-                    rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr() );
+                applyCustomDirichletCondition( rhs,
+                                               cor,
+                                               meshAdapter,
+                                               constraints,
+                                               std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
             } // end if
             AMP_ASSERT( cor.get() != NULL );
 

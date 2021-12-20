@@ -43,10 +43,10 @@ Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() { return *d_epetraMatrix; 
 
 const Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() const { return *d_epetraMatrix; }
 
-Matrix::shared_ptr EpetraMatrix::transpose() const
+std::shared_ptr<Matrix> EpetraMatrix::transpose() const
 {
     EpetraExt::RowMatrix_Transpose transposer;
-    return Matrix::shared_ptr( new ManagedEpetraMatrix(
+    return std::shared_ptr<Matrix>( new ManagedEpetraMatrix(
         dynamic_cast<Epetra_CrsMatrix *>( &transposer( *d_epetraMatrix ) ), true ) );
 }
 

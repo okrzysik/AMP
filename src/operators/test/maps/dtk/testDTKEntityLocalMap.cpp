@@ -34,20 +34,20 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
+    auto meshDatabase = input_db->getDatabase( "Mesh" );
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get the volume iterator
-    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
 
     // get the vertex iterator
-    AMP::Mesh::MeshIterator vert_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto vert_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
 
     // map the volume ids to dtk ids
-    std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
+    auto vol_id_map =
         std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     {
         int counter = 0;
@@ -69,7 +69,7 @@ static void myTest( AMP::UnitTest *ut )
     }
 
     // map the vertex ids to dtk ids
-    std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vert_id_map =
+    auto vert_id_map =
         std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     {
         int counter = 0;
@@ -91,20 +91,18 @@ static void myTest( AMP::UnitTest *ut )
     }
 
     // make the rank map.
-    std::shared_ptr<std::unordered_map<int, int>> rank_map =
-        std::make_shared<std::unordered_map<int, int>>();
+    auto rank_map     = std::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = mesh->getComm().globalRanks();
     int size          = mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {
         rank_map->emplace( global_ranks[n], n );
     }
 
-    DataTransferKit::EntityIterator dtk_iterator =
+    auto dtk_iterator =
         AMP::Operator::AMPMeshEntityIterator( rank_map, vol_id_map, vol_iterator, selectAll );
 
     // Create and test a local map.
-    std::shared_ptr<DataTransferKit::EntityLocalMap> dtk_local_map(
-        new AMP::Operator::AMPMeshEntityLocalMap() );
+    auto dtk_local_map = std::make_shared<AMP::Operator::AMPMeshEntityLocalMap>();
 
     int num_points = 10;
 
@@ -173,11 +171,10 @@ static void myTest( AMP::UnitTest *ut )
     }
 
     // Test the local map with nodes.
-    AMP::Mesh::MeshIterator node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto node_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( node_iterator = node_iterator.begin(); node_iterator != node_iterator.end();
           ++node_iterator ) {
-        DataTransferKit::Entity dtk_node =
-            AMP::Operator::AMPMeshEntity( *node_iterator, *rank_map, *vert_id_map );
+        auto dtk_node = AMP::Operator::AMPMeshEntity( *node_iterator, *rank_map, *vert_id_map );
         Teuchos::Array<double> centroid( 3 );
         dtk_local_map->centroid( dtk_node, centroid() );
         std::vector<double> coords = node_iterator->coord();

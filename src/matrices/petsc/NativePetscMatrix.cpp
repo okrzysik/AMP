@@ -214,18 +214,18 @@ void NativePetscMatrix::setValuesByGlobalID(
 /********************************************************
  * Clone the matrix                                      *
  ********************************************************/
-Matrix::shared_ptr NativePetscMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> NativePetscMatrix::cloneMatrix() const
 {
     Mat new_mat;
     MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );
     AMP_ERROR( "not quite implemented" );
     return shared_ptr( new NativePetscMatrix( new_mat, true ) );
 }
-Matrix::shared_ptr NativePetscMatrix::duplicateMat( Mat m )
+std::shared_ptr<Matrix> NativePetscMatrix::duplicateMat( Mat m )
 {
     Mat newMat;
     MatDuplicate( m, MAT_DO_NOT_COPY_VALUES, &newMat );
-    return Matrix::shared_ptr( new NativePetscMatrix( newMat, true ) );
+    return std::shared_ptr<Matrix>( new NativePetscMatrix( newMat, true ) );
 }
 
 

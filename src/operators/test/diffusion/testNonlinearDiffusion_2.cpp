@@ -148,7 +148,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
     auto nonPrincIds    = diffOp->getNonPrincipalVariableIds();
     auto numNonPrincIds = nonPrincIds.size();
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> nonPrincVars( numNonPrincIds );
-    std::shared_ptr<AMP::LinearAlgebra::Variable> inputVar = diffOp->getInputVariable();
+    auto inputVar = diffOp->getInputVariable();
     for ( size_t i = 0; i < numNonPrincIds; i++ ) {
         // nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
         nonPrincVars[i] = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( inputVar )
