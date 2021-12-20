@@ -116,7 +116,7 @@ std::shared_ptr<AMP::IO::Writer> Writer::buildWriter( std::string type, AMP_MPI 
 {
     std::for_each( type.begin(), type.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::IO::Writer> writer;
-    if ( type == "none" ) {
+    if ( type == "none" || type == "null" ) {
         writer.reset( new AMP::IO::NullWriter() );
     } else if ( type == "silo" ) {
         writer.reset( new AMP::IO::SiloIO() );
