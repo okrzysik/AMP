@@ -180,12 +180,8 @@ noOperatorEq:*/src/utils/Utilities.cpp
 
 
 //***********************************************************
-// Suppress warnings for graphics (still in development)    *
+// Suppress warnings for ogre                               *
 //***********************************************************
-*:/*/graphics/ogre/*
+*:/*/IO/ogre/*
 
-//***********************************************************
-// Suppress warnings for graphics (still in development)    *
-//***********************************************************
-*:/*/graphics/ogre/*
 
