@@ -1,7 +1,7 @@
 #ifndef included_AMP_PureLogicalMesh
 #define included_AMP_PureLogicalMesh
 
-#include "AMP/mesh/LogicalGeometry.h"
+#include "AMP/geometry/LogicalGeometry.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 
 #include <array>

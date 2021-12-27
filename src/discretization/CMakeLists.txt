@@ -1,6 +1,5 @@
-BEGIN_PACKAGE_CONFIG ( discretization )
+BEGIN_PACKAGE_CONFIG( discretization )
+INSTALL_AMP_TARGET( discretization )
 
-INSTALL_AMP_TARGET ( discretization )
-
-ADD_SUBDIRECTORY ( test )
+ADD_SUBDIRECTORY( test )
 

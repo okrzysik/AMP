@@ -1,7 +1,7 @@
 #ifndef included_AMP_kdtree2_hpp
 #define included_AMP_kdtree2_hpp
 
-#include "AMP/mesh/shapes/GeometryHelpers.h"
+#include "AMP/geometry/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.h"
 
@@ -545,7 +545,7 @@ void kdtree2<NDIM, TYPE>::findNearestRay(
             auto pi = intersect( x, dir, p ); // Find the intersection with the ray
             auto d2 = norm( pi, p );          // Distance: ray-nearest
             if ( d2 <= dist2 ) {
-                double d = sqrt( d2 );
+                d = sqrt( d2 );
                 nearest.push_back( std::tie( p, d_data->data[i], pi, d ) );
             }
         }

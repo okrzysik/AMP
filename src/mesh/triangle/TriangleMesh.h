@@ -1,7 +1,7 @@
 #ifndef included_AMP_TriangleMesh
 #define included_AMP_TriangleMesh
 
-#include "AMP/mesh/Geometry.h"
+#include "AMP/geometry/Geometry.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshID.h"
 #include "AMP/mesh/MeshIterator.h"

@@ -1,6 +1,6 @@
 #include "AMP/mesh/structured/structuredMeshElement.h"
+#include "AMP/geometry/shapes/GeometryHelpers.h"
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/mesh/shapes/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 

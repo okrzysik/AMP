@@ -1,7 +1,7 @@
 #ifndef included_AMP_TriangleMeshHelpers
 #define included_AMP_TriangleMeshHelpers
 
-#include "AMP/mesh/Geometry.h"
+#include "AMP/geometry/Geometry.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 

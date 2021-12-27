@@ -2,7 +2,7 @@
 #define included_AMP_MeshUtilities
 
 
-#include "AMP/mesh/Geometry.h"
+#include "AMP/geometry/Geometry.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/MeshPoint.h"
@@ -52,7 +52,7 @@ class ElementFinder
 {
 public:
     //! Empty constructor
-    ElementFinder() : d_pos_hash( 0 ) {}
+    ElementFinder() : d_pos_hash( 0 ), d_dist( 0 ) {}
 
     //! Empty constructor
     ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh );

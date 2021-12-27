@@ -1,7 +1,7 @@
-#include "AMP/mesh/Geometry.h"
-#include "AMP/mesh/LogicalGeometry.h"
+#include "AMP/geometry/Geometry.h"
+#include "AMP/geometry/LogicalGeometry.h"
+#include "AMP/geometry/testHelpers/geometryTests.h"
 #include "AMP/mesh/MultiMesh.h"
-#include "AMP/mesh/testHelpers/geometryTests.h"
 #include "AMP/mesh/testHelpers/meshTests.h"
 #include "AMP/utils/UnitTest.h"
 

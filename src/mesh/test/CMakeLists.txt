@@ -23,7 +23,7 @@ COPY_TEST_FILE( CRYSTAL_FINAL_2mm.STL )
 COPY_TEST_FILE( input_testMultiMeshOwnerRank )
 COPY_TEST_FILE( input_testMultiMeshSubset )
 COPY_TEST_FILE( input_LogicalMesh )
-COPY_TEST_FILE( input_geometry_zoo )
+
 
 # Copy meshes
 IF ( AMP_DATA )
@@ -51,8 +51,6 @@ ENDIF()
 
 
 # Add mesh tests
-ADD_AMP_PROVISIONAL_TEST( test_Geometry )
-#ADD_AMP_TEST( test_Geometry input_geometry_zoo )
 ADD_AMP_TEST_1_2_4( test_Mesh )
 ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_1D )
 IF ( USE_MPI OR USE_EXT_MPI )
@@ -68,7 +66,6 @@ IF ( AMP_DATA )
     ADD_AMP_TEST( test_Mesh input_stl )  # triangle mesh (1 rank only)
     # ADD_AMP_TEST( test_Mesh input_crystal_triangle )  # triangle mesh (1 rank only)
 ENDIF()
-ADD_AMP_TEST( test_GeometryHelpers )
 ADD_AMP_TEST( testMeshPerformance )
 ADD_AMP_TEST( compare_Mesh input_compare )
 ADD_AMP_TEST( view_STL CRYSTAL_FINAL_2mm.STL )

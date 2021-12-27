@@ -21,10 +21,10 @@ preprocessorErrorDirective:* // Suppress #error messages (may be valid and will 
 // Keeping these separate is useful for downstream packages *
 //***********************************************************
 noExplicitConstructor:*/ProfilerApp.h
+noExplicitConstructor:*/AMP/geometry/MeshGeometry.h
 noExplicitConstructor:*/AMP/mesh/loadBalance/loadBalanceSimulator.h
 noExplicitConstructor:*/AMP/mesh/MeshID.h
 noExplicitConstructor:*/AMP/mesh/MeshPoint.h
-noExplicitConstructor:*/AMP/mesh/MeshGeometry.h
 noExplicitConstructor:*/AMP/mesh/MeshElement.h
 noExplicitConstructor:*/AMP/mesh/MeshUtilities.h
 noExplicitConstructor:*/AMP/utils/Array.h
@@ -126,7 +126,7 @@ shiftTooManyBits:*/src/utils/extended_int.cpp
 *:*/src/mesh/dendro/*
 *:*/src/mesh/hex8_element_t.cpp
 objectIndex:*/src/mesh/libmesh/initializeLibMesh.cpp
-ignoredReturnValue:*/src/mesh/shapes/GeometryHelpers.cpp
+ignoredReturnValue:*/src/geometry/shapes/GeometryHelpers.cpp
 unassignedVariable:*/src/mesh/triangle/TriangleMesh.cpp
 duplicateExpression:*/src/utils/DatabaseKeyData.cpp
 invalidscanf:*/src/utils/ReadTestMesh.cpp
