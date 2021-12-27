@@ -152,8 +152,8 @@ bool are_tri_neighbors( const int ndim, const int tri1[], const int tri2[], int 
  * Note: This can be an expensive test and should only be used when  *
  *    debugging.                                                     *
  * Inputs:                                                           *
- *    N         The number of verticies                              *
- *    x         The coordinates of the verticies (NDIMxN)            *
+ *    N         The number of vertices                              *
+ *    x         The coordinates of the vertices (NDIMxN)            *
  *    N_tri     The number of triangles                              *
  *    tri       The current list of triangles (NDIM+1xN_tri)         *
  *    tri_nab   The current list of triangle neighbors (NDIM+1xN_tri)*
@@ -649,7 +649,7 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
             }
         }
     }
-    // Update the faces whose triangle number and face number did not change (the verticies might
+    // Update the faces whose triangle number and face number did not change (the vertices might
     // have changed)
     for ( int i = 0; i < N_update; i++ ) {
         // Find the face

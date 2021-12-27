@@ -31,40 +31,22 @@ std::unique_ptr<AMP::Geometry::Geometry> MeshGeometry::clone() const
 /********************************************************
  * Get the distance to the surface                       *
  ********************************************************/
-Point MeshGeometry::nearest( const Point &pos ) const { return d_find.nearest( pos ).second; }
+Point MeshGeometry::nearest( const Point &pos ) const
+{
+    if ( inside( pos ) )
+        return pos;
+    return d_find.nearest( pos ).second;
+}
 double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 {
     return d_find.distance( pos, dir );
 }
 bool MeshGeometry::inside( const Point &pos ) const
 {
-    // Get the nearest element
-    auto [elem, p] = d_find.nearest( pos );
-    if ( p == pos )
-        return true;
-    //
-    NULL_USE( elem );
-    AMP_ERROR( "Not finished" );
-    /*// If the nearest element is a surface, add the neighbors
-    if ( elems.size() == 1 ) {
-        auto neighbors = elems[0].getNeighbors();
-        for ( const auto &tmp : neighbors )
-            elems.push_back( *tmp );
-    }
-    // Search each element to determine if it is behind the plane
-    bool test = true;
-    for ( const auto &elem : elems ) {
-        // Get the element normal
-        auto n = elem.norm();
-        // Get a vector to the surface
-        auto vec = elem.centroid() - pos;
-        // Check if the vector to intersection is in the same direction as the normal
-        double t = dot( vec, n );
-        test     = test && t >= -1e-12;
-    }
-
-    return test;*/
-    return false;
+    // Should really just cache internal/external points for performance
+    constexpr Point dir = { 0.999999500000375, 0.0009999995, 0 };
+    double d            = d_find.distance( pos, dir );
+    return d <= 0;
 }
 
 
@@ -153,7 +135,7 @@ bool MeshGeometry::isConvex() const
         auto n = elem.norm();
         // Get a point in the plane
         auto a = elem.centroid();
-        // Check the verticies of the neighboring elements to ensure they are not behind the plane
+        // Check the vertices of the neighboring elements to ensure they are not behind the plane
         for ( const auto &neighbor : elem.getNeighbors() ) {
             for ( const auto &node : neighbor->getElements( AMP::Mesh::GeomType::Vertex ) ) {
                 auto p    = node.coord();

@@ -1271,7 +1271,7 @@ bool flip_3D_22( const std::array<TYPE, 3> x[],
                  int *new_tri_nab,
                  const double TOL_VOL )
 {
-    // The 2-2 fip is only valid when 4 of the verticies lie on a plane on the convex hull
+    // The 2-2 fip is only valid when 4 of the vertices lie on a plane on the convex hull
     // This is likely for structured grids
     for ( int i1 = 0; i1 < 4; i1++ ) {
         if ( tri_nab[i1 + 4 * t1] != -1 ) {
@@ -1287,7 +1287,7 @@ bool flip_3D_22( const std::array<TYPE, 3> x[],
                 // The 5th vertex does not match for the two triangles
                 continue;
             }
-            // Get the list of the 4 verticies on the convex hull
+            // Get the list of the 4 vertices on the convex hull
             int v1, v2, v3, v4;
             v1 = tri[s1 + 4 * t1];
             v2 = tri[s2 + 4 * t2];
@@ -1301,7 +1301,7 @@ bool flip_3D_22( const std::array<TYPE, 3> x[],
                 else
                     v4 = tri[j + 4 * t1];
             }
-            // Check if the 4 verticies are coplanar (the resulting simplex will have a volume of 0)
+            // Check if the 4 vertices are coplanar (the resulting simplex will have a volume of 0)
             std::array<TYPE, 3> x2[4] = { x[v1], x[v2], x[v3], x[v4] };
             double vol                = fabs( DelaunayHelpers::calcVolume<3, TYPE, ETYPE>( x2 ) );
             if ( vol > TOL_VOL ) {
@@ -1434,7 +1434,7 @@ bool flip_3D_32( const std::array<TYPE, 3> x[],
         return false;
     }
     for ( int i = 0; i < N_nab; i++ ) {
-        // The nodes that are common to all 3 triangles are the unique verticies on the 3 new
+        // The nodes that are common to all 3 triangles are the unique vertices on the 3 new
         // triangles
         int nodes[4];
         for ( int j = 0; j < 4; j++ )

@@ -229,9 +229,15 @@ Point Grid<NDIM>::physical( const Point &pos ) const
 {
     Point point( NDIM );
     for ( size_t d = 0; d < NDIM; d++ ) {
-        double p = pos[d] * ( d_coord[d].size() - 1 );
-        int i    = std::min<int>( p, d_coord[d].size() - 2 );
-        point[d] = d_coord[d][i] + ( p - i ) * ( d_coord[d][i + 1] - d_coord[d][i] );
+        double x = pos[d];
+        if ( x < 0.0 || x > 1.0 ) {
+            // We are outside the box
+            point[d] = d_coord[d][0] + x * ( d_coord[d].back() - d_coord[d][0] );
+        } else {
+            double p = x * ( d_coord[d].size() - 1 );
+            int i    = std::min<int>( p, d_coord[d].size() - 2 );
+            point[d] = d_coord[d][i] + ( p - i ) * ( d_coord[d][i + 1] - d_coord[d][i] );
+        }
     }
     return point;
 }
@@ -263,12 +269,18 @@ Point Grid<NDIM>::logical( const Point &pos ) const
 {
     Point logical( NDIM );
     for ( size_t d = 0; d < NDIM; d++ ) {
-        int i = AMP::Utilities::findfirst( d_coord[d], pos[d] );
-        i     = std::max<int>( i, 1 );
-        i     = std::min<int>( i, d_coord[d].size() - 1 );
-        logical[d] =
-            ( i - 1 ) + ( pos[d] - d_coord[d][i - 1] ) / ( d_coord[d][i] - d_coord[d][i - 1] );
-        logical[d] /= ( d_coord[d].size() - 1 );
+        int i    = AMP::Utilities::findfirst( d_coord[d], pos[d] );
+        i        = std::max<int>( i, 1 );
+        i        = std::min<int>( i, d_coord[d].size() - 1 );
+        double x = pos[d];
+        if ( x < d_coord[d][0] || x > d_coord[d].back() ) {
+            // We are outside the box
+            logical[d] = ( x - d_coord[d][0] ) / ( d_coord[d].back() - d_coord[d][0] );
+        } else {
+            logical[d] =
+                ( i - 1 ) + ( pos[d] - d_coord[d][i - 1] ) / ( d_coord[d][i] - d_coord[d][i - 1] );
+            logical[d] /= ( d_coord[d].size() - 1 );
+        }
     }
     return logical;
 }

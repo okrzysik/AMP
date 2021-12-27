@@ -207,12 +207,12 @@ std::vector<std::array<std::array<double, 3>, 3>> readSTL( const std::string &fi
 
 
 /****************************************************************
- * Create triangles/verticies from a set of triangles specified  *
+ * Create triangles/vertices from a set of triangles specified  *
  * by their coordinates                                          *
  ****************************************************************/
 template<size_t NG, size_t NP>
 void createTriangles( const std::vector<std::array<std::array<double, NP>, NG + 1>> &tri_list,
-                      std::vector<std::array<double, NP>> &verticies,
+                      std::vector<std::array<double, NP>> &vertices,
                       std::vector<std::array<int64_t, NG + 1>> &triangles,
                       double tol )
 {
@@ -233,8 +233,8 @@ void createTriangles( const std::vector<std::array<std::array<double, NP>, NG + 
     std::array<double, NP> tol2;
     for ( size_t d = 0; d < NP; d++ )
         tol2[d] = tol * ( range[2 * d + 1] - range[2 * d + 0] );
-    // Get the unique verticies and create triangle indicies
-    verticies.clear();
+    // Get the unique vertices and create triangle indicies
+    vertices.clear();
     triangles.clear();
     constexpr auto null_tri = make_array<int64_t, NG + 1>( -1 );
     triangles.resize( tri_list.size(), null_tri );
@@ -242,13 +242,13 @@ void createTriangles( const std::vector<std::array<std::array<double, NP>, NG + 
         for ( size_t j = 0; j < NG + 1; j++ ) {
             auto &point   = tri_list[i][j];
             int64_t index = -1;
-            for ( size_t k = 0; k < verticies.size() && index == -1; k++ ) {
-                if ( approx_equal( point, verticies[k], tol2 ) )
+            for ( size_t k = 0; k < vertices.size() && index == -1; k++ ) {
+                if ( approx_equal( point, vertices[k], tol2 ) )
                     index = k;
             }
             if ( index == -1 ) {
-                index = verticies.size();
-                verticies.push_back( point );
+                index = vertices.size();
+                vertices.push_back( point );
             }
             triangles[i][j] = index;
         }
@@ -279,7 +279,7 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
         return tri_nab;
     }
     PROFILE_START( "create_tri_neighbors", 1 );
-    // Get the number of verticies
+    // Get the number of vertices
     size_t N_vertex = 0;
     for ( const auto &t : tri ) {
         for ( size_t i = 0; i < NG + 1; i++ )
@@ -363,7 +363,7 @@ create_tri_neighbors( const std::vector<std::array<int64_t, NG + 1>> &tri )
 
 
 /****************************************************************
- * Create triangles/verticies from a set of triangles specified  *
+ * Create triangles/vertices from a set of triangles specified  *
  * by their coordinates                                          *
  ****************************************************************/
 static inline std::array<double, 3> calcNorm( const std::vector<std::array<double, 3>> &x,
@@ -376,7 +376,7 @@ static inline double dot( const std::array<double, 3> &x, const std::array<doubl
     return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
 template<size_t NG, size_t NP>
-static std::vector<int> createBlockIDs( const std::vector<std::array<double, NP>> &verticies,
+static std::vector<int> createBlockIDs( const std::vector<std::array<double, NP>> &vertices,
                                         const std::vector<std::array<int64_t, NG + 1>> &tri,
                                         const std::vector<std::array<int64_t, NG + 1>> &tri_nab )
 {
@@ -386,7 +386,7 @@ static std::vector<int> createBlockIDs( const std::vector<std::array<double, NP>
     typedef std::array<double, NP> Point;
     std::vector<Point> norm( tri.size() );
     for ( size_t i = 0; i < tri.size(); i++ )
-        norm[i] = calcNorm( verticies, tri[i] );
+        norm[i] = calcNorm( vertices, tri[i] );
     // Identify different blocks by the change in the normal
     int nextBlockID = 0;
     std::vector<int> blockID( tri.size(), -1 );
@@ -474,7 +474,6 @@ template<size_t NG>
 static std::vector<std::array<int64_t, NG + 1>>
 removeSubDomain( std::vector<std::array<int64_t, NG + 1>> &tri )
 {
-    printf( "removeSubDomain: %i\n", (int) tri.size() );
     // For each triangle get a hash id for each face
     std::multimap<uint64_t, int64_t> faceMap;
     for ( size_t i = 0, k = 0; i < tri.size(); i++ ) {
@@ -566,7 +565,6 @@ splitDomains( std::vector<std::array<int64_t, NG + 1>> tri )
 {
     std::vector<std::vector<std::array<int64_t, NG + 1>>> tri_sets;
     while ( !tri.empty() ) {
-        std::cout << tri.size() << std::endl;
         tri_sets.emplace_back( removeSubDomain<NG>( tri ) );
     }
     return tri_sets;
@@ -1015,7 +1013,7 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
     int ndim         = geom->getDim();
     auto meshGeom    = std::dynamic_pointer_cast<AMP::Geometry::MeshGeometry>( geom );
     auto logicalGeom = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( geom );
-    // Create the grid verticies
+    // Create the grid vertices
     std::vector<Point> points;
     if ( logicalGeom ) {
         // We are dealing with a logical geometry

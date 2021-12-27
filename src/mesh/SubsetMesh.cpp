@@ -515,7 +515,7 @@ void SubsetMesh::displaceMesh( const std::vector<double> & )
 }
 void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP_ERROR( "displaceMesh is not implimented for subset mesh" );
+    AMP_ERROR( "displaceMesh is not implemented for subset mesh" );
 }
 
 

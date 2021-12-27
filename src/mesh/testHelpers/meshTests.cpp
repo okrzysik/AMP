@@ -287,17 +287,18 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
         else
             ut.passes( name + "-elements nearest failed" );
     } catch ( const StackTrace::abort_error &e ) {
-        auto pos = e.message.find( "nearest is not implimented" );
+        std::string msg = e.message;
+        auto pos        = msg.find( "nearest is not implemented" );
         if ( pos != std::string::npos )
-            ut.expected_failure( name + "-elements " + e.message );
+            ut.expected_failure( name + "-elements " + msg );
         else
-            ut.failure( name + "-elements nearest exception: " + e.message );
+            ut.failure( name + "-elements nearest exception: " + msg );
     } catch ( ... ) {
         ut.failure( name + "-nearest distance unknown exception" );
     }
     // Check distance
     try {
-        ut.expected_failure( name + "-elements distance test not implimented yet" );
+        ut.expected_failure( name + "-elements distance test not implemented yet" );
         /*bool pass  = true;
         for ( const auto &element : iterator ) {
             auto centroid = element.centroid();
@@ -308,11 +309,12 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
         else
             ut.passes( name + "-elements distance failed" );*/
     } catch ( const StackTrace::abort_error &e ) {
-        auto pos = e.message.find( "distance is not implimented" );
+        std::string msg = e.message;
+        auto pos        = msg.find( "distance is not implemented" );
         if ( pos != std::string::npos )
-            ut.passes( name + "-elements " + e.message );
+            ut.passes( name + "-elements " + msg );
         else
-            ut.failure( name + "-elements distance exception: " + e.message );
+            ut.failure( name + "-elements distance exception: " + msg );
     } catch ( ... ) {
         ut.failure( name + "-elements distance unknown exception" );
     }

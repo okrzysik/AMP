@@ -48,7 +48,7 @@ public:
     //! Function to construct the tessellation
     /*!
      * This function creates the tessellation using the given points.
-     * @param x         The coordinates of the verticies( ndim x N )
+     * @param x         The coordinates of the vertices( ndim x N )
      */
     void create_tessellation( const AMP::Array<TYPE> &x );
 
@@ -56,10 +56,10 @@ public:
     //! Function to construct the tessellation
     /*!
      * This function creates the tessellation using the given points.
-     * @param N         The number of verticies
-     * @param x         The coordinates of the x verticies
-     * @param y         The coordinates of the y verticies (may be NULL for 1D)
-     * @param z         The coordinates of the z verticies (may be NULL for 1D/2D)
+     * @param N         The number of vertices
+     * @param x         The coordinates of the x vertices
+     * @param y         The coordinates of the y vertices (may be NULL for 1D)
+     * @param z         The coordinates of the z vertices (may be NULL for 1D/2D)
      */
     void create_tessellation( size_t N, const TYPE *x, const TYPE *y, const TYPE *z );
 
@@ -70,8 +70,8 @@ public:
      * It does not check if the provided tessellation is valid.  It allows the user to
      * provide their own tesselation if desired.
      * If sucessful, this routine returns 0.
-     * @param N         The number of verticies
-     * @param x         The coordinates of the verticies( ndim x N )
+     * @param N         The number of vertices
+     * @param x         The coordinates of the vertices( ndim x N )
      *                  or to update the coordinate pointers before each call.
      *                  See update_coordinates for more information.
      * @param N_tri     The number of simplexes (triangles in 2D)
@@ -120,7 +120,7 @@ public:
     //! Subroutine to calculate the gradient at each node
     /*!
      * This function gets a list of the nodes that connect to each node
-     * @param f         Function values at the verticies( ndim )
+     * @param f         Function values at the vertices( ndim )
      * @param method    Gradient method to use
      *                  1 - Use a simple least squares method using only the local nodes.
      *                      This method is relatively fast, but only first order in the gradient,
@@ -132,7 +132,7 @@ public:
      *                      has truncation error O(x^4), but requires soving a sparse 2nx2n system.
      *                      This can be reasonably fast for most systems, but is memory limited
      *                      for large systems (it can grow as O(n^2*ndim^2)).
-     *                      Currently this method is NOT implimented in the C++ version.
+     *                      Currently this method is NOT implemented in the C++ version.
      *                 3 - Least squares method that uses the matrix computed by method 2 and block
      *                      Gauss-Seidel iteration to improve the gradient calculated by method 1.
      *                      Usually only a finite number of iterations are needed to significantly
@@ -158,7 +158,7 @@ public:
     //! Subroutine to perform nearest-neighbor interpoaltion
     /*!
      * This function performs nearest-neighbor interpoaltion.
-     * @param f         Function values at the triangle verticies( 1 x N )
+     * @param f         Function values at the triangle vertices( 1 x N )
      * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param nearest   The nearest-neighbor points (see find_nearest)( 1 x Ni)
@@ -175,7 +175,7 @@ public:
      * This function performs linear interpoaltion.
      * If a valid triangle index is not given, NaN will be returned.
      * If extrap is false and the point is not within the triangle, NaN will be returned.
-     * @param f         Function values at the triangle verticies( 1 x N )
+     * @param f         Function values at the triangle vertices( 1 x N )
      * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
      * @param index     The index of the triangle containing the point (see find_tri)
@@ -197,8 +197,8 @@ public:
     /*!
      * This function performs cubic interpoaltion.
      * Note: If the point is not contained within a triangle NaN will be returned.
-     * @param f         Function values at the triangle verticies( 1 x N )
-     * @param g         Gradient of f(x) at the triangle verticies( ndim x N ) (see
+     * @param f         Function values at the triangle vertices( 1 x N )
+     * @param g         Gradient of f(x) at the triangle vertices( ndim x N ) (see
      * calc_node_gradient if unknown)
      * @param Ni        Number of points to perform the interpolation
      * @param xi        Coordinates of the query points( ndim x Ni )
@@ -226,7 +226,7 @@ public:
      * This function computes the Barycentric coordinates and the matrix T to convert
      * from Barycentric coordinates to cartesian (x=T*L).
      * @param ndim  Number of dimensions
-     * @param x     Coordinates of the triangle verticies( ndim x ndim+1 )
+     * @param x     Coordinates of the triangle vertices( ndim x ndim+1 )
      * @param xi    Coordinates of the desired point( ndim x 1 )
      * @param L     (output) The Barycentric coordinates of the point( ndim+1 x 1 )
      */

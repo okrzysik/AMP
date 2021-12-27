@@ -53,18 +53,18 @@ public:
     /**
      * \brief     Return the centroid of the element
      * \details   This function returns the centroid of the element.  The
-     *   centroid is defined as the average of the coordinates of the verticies.
+     *   centroid is defined as the average of the coordinates of the vertices.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
     Point centroid() const override;
 
-    //! Return the volume of the current element (does not apply to verticies)
+    //! Return the volume of the current element (does not apply to vertices)
     double volume() const override;
 
     //! Return the normal to the current element (does not apply to all elements)
     Point norm() const override;
 
-    //! Return the coordinates of the vertex (only applies to verticies)
+    //! Return the coordinates of the vertex (only applies to vertices)
     Point coord() const override final
     {
         Point x;

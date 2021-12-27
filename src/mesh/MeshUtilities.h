@@ -91,6 +91,7 @@ private:
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
     mutable uint64_t d_pos_hash;
     AMP::Mesh::MeshIterator d_elements;
+    mutable double d_dist;
     mutable kdtree2<3, AMP::Mesh::MeshElementID> d_tree;
 };
 

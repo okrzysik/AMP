@@ -105,7 +105,7 @@ public:
      * \details  Create a triangle mesh from the local triangle coordinates.
      *    Note: Triangle list should be unique for each rank,
      *          load balance will be automatically adjusted.
-     * \param verticies  List of verticies
+     * \param vertices  List of vertices
      * \param triangles  List of triangles (each rank may contribute a unique list)
      * \param tri_nab    List of triangles neighbors
      * \param comm       Communicator to use (load balance wil be automatically generated on this
@@ -113,7 +113,7 @@ public:
      * vector with the block id for each triangle
      */
     static std::shared_ptr<TriangleMesh<NG, NP>>
-    generate( std::vector<std::array<double, NP>> verticies,
+    generate( std::vector<std::array<double, NP>> vertices,
               std::vector<std::array<int64_t, NG + 1>> triangles,
               std::vector<std::array<int64_t, NG + 1>> tri_nab,
               const AMP_MPI &comm,
@@ -335,7 +335,7 @@ protected:
     // Constructors
     TriangleMesh();
     explicit TriangleMesh( std::shared_ptr<const MeshParameters> );
-    explicit TriangleMesh( std::vector<std::array<double, NP>> verticies,
+    explicit TriangleMesh( std::vector<std::array<double, NP>> vertices,
                            std::vector<std::array<int64_t, NG + 1>> triangles,
                            std::vector<std::array<int64_t, NG + 1>> tri_nab,
                            const AMP_MPI &comm,

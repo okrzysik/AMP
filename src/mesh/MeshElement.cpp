@@ -54,7 +54,7 @@ Point MeshElement::centroid() const
 void MeshElement::getElements( const GeomType type, std::vector<MeshElement> &elements ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "getElements is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "getElements is not implemented for the base class (" + elementClass() + ")" );
     element->getElements( type, elements );
 }
 void MeshElement::getElementsID( const GeomType type, std::vector<MeshElementID> &ID ) const
@@ -70,7 +70,7 @@ void MeshElement::getElementsID( const GeomType type, std::vector<MeshElementID>
 void MeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "getNeighbors is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "getNeighbors is not implemented for the base class (" + elementClass() + ")" );
     element->getNeighbors( neighbors );
 }
 
@@ -129,60 +129,60 @@ std::string MeshElement::print( uint8_t indent_N ) const
 }
 
 /********************************************************
- * Functions that aren't implimented for the base class  *
+ * Functions that aren't implemented for the base class  *
  ********************************************************/
 Point MeshElement::coord() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "coord is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "coord is not implemented for the base class (" + elementClass() + ")" );
     return element->coord();
 }
 double MeshElement::volume() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "volume is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "volume is not implemented for the base class (" + elementClass() + ")" );
     return element->volume();
 }
 Point MeshElement::norm() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "norm is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "norm is not implemented for the base class (" + elementClass() + ")" );
     return element->norm();
 }
 Point MeshElement::nearest( const Point &pos ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "nearest is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "nearest is not implemented for the base class (" + elementClass() + ")" );
     return element->nearest( pos );
 }
 double MeshElement::distance( const Point &pos, const Point &dir ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "distance is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "distance is not implemented for the base class (" + elementClass() + ")" );
     return element->distance( pos, dir );
 }
 bool MeshElement::isOnSurface() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "isOnSurface is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "isOnSurface is not implemented for the base class (" + elementClass() + ")" );
     return element->isOnSurface();
 }
 bool MeshElement::isOnBoundary( int id ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "isOnBoundary is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "isOnBoundary is not implemented for the base class (" + elementClass() + ")" );
     return element->isOnBoundary( id );
 }
 bool MeshElement::isInBlock( int id ) const
 {
     if ( element == nullptr )
-        AMP_ERROR( "isInBlock is not implimented for the base class (" + elementClass() + ")" );
+        AMP_ERROR( "isInBlock is not implemented for the base class (" + elementClass() + ")" );
     return element->isInBlock( id );
 }
 unsigned int MeshElement::globalOwnerRank() const
 {
     if ( element == nullptr )
-        AMP_ERROR( "globalOwnerRank is not implimented for the base class (" + elementClass() +
+        AMP_ERROR( "globalOwnerRank is not implemented for the base class (" + elementClass() +
                    ")" );
     return element->globalOwnerRank();
 }

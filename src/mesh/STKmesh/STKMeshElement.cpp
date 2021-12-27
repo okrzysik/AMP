@@ -306,7 +306,7 @@ double STKMeshElement::volume() const
     const double v = volume( 0 );
     return v;
 }
-Point STKMeshElement::norm() const { AMP_ERROR( "norm not implimented yet" ); }
+Point STKMeshElement::norm() const { AMP_ERROR( "norm not implemented yet" ); }
 std::vector<double> STKMeshElement::coord() const
 {
     if ( d_globalID.type() != GeomType::Vertex )
@@ -386,14 +386,14 @@ bool STKMeshElement::isInBlock( int id ) const
     bool in_block = false;
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
-        AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
+        AMP_ERROR( "isInBlock is not currently implemented for anything but elements" );
     } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
         // stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
         in_block = false; // elem->subdomain_id() == id;
     } else {
-        // All other entities are on the boundary iff all of their verticies are on the surface
-        AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
+        // All other entities are on the boundary iff all of their vertices are on the surface
+        AMP_ERROR( "isInBlock is not currently implemented for anything but elements" );
     }
     return in_block;
 }

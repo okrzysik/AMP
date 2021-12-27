@@ -135,8 +135,8 @@ Point Cylinder::surfaceNorm( const Point &pos ) const
 Point Cylinder::physical( const Point &pos ) const
 {
     auto tmp = GeometryHelpers::map_logical_circle( d_r, 2, pos[0], pos[1] );
-    double x = tmp.first + d_offset[0];
-    double y = tmp.second + d_offset[1];
+    double x = tmp[0] + d_offset[0];
+    double y = tmp[1] + d_offset[1];
     double z = d_z_min + pos[2] * ( d_z_max - d_z_min ) + d_offset[2];
     return { x, y, z };
 }
@@ -150,7 +150,7 @@ Point Cylinder::logical( const Point &pos ) const
     auto tmp =
         GeometryHelpers::map_circle_logical( d_r, 2, pos[0] - d_offset[0], pos[1] - d_offset[1] );
     double z = ( pos[2] - d_z_min - d_offset[2] ) / ( d_z_max - d_z_min );
-    return Point( tmp.first, tmp.second, z );
+    return Point( tmp[0], tmp[1], z );
 }
 
 

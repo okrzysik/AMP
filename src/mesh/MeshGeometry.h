@@ -135,10 +135,10 @@ public:
     bool operator==( const Geometry &rhs ) const override;
 
 
-private: // Internal data
-    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
-    std::vector<int> d_surfaceIds;
-    AMP::Mesh::ElementFinder d_find;
+private:                                     // Internal data
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh; // Underlying mesh
+    std::vector<int> d_surfaceIds;           // Surface ids
+    AMP::Mesh::ElementFinder d_find;         // Nearest element finder
 };
 
 

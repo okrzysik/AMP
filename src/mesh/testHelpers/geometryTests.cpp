@@ -49,6 +49,42 @@ static bool addSurfacePoints( const AMP::Geometry::Geometry &geom,
 }
 
 
+// Run logical geometry specific tests
+static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP::UnitTest &ut )
+{
+    bool pass = true;
+    auto name = geom.getName();
+    int ndim  = geom.getDim();
+    // Test logical/physical transformations
+    PROFILE_START( "testGeometry-logical " + name );
+    auto [lb, ub] = geom.box();
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<> dis[3];
+    for ( int d = 0; d < geom.getDim(); d++ ) {
+        double dx = ub[d] - lb[d];
+        dis[d]    = std::uniform_real_distribution<>( lb[d] - 0.2 * dx, ub[d] + 0.2 * dx );
+    }
+    auto p     = lb;
+    size_t N   = 10000;
+    bool pass2 = true;
+    for ( size_t i = 0; i < N; i++ ) {
+        for ( int d = 0; d < geom.getDim(); d++ )
+            p[d] = dis[d]( gen );
+        auto p2 = geom.logical( p );
+        auto p3 = geom.physical( p2 );
+        for ( int d = 0; d < ndim; d++ )
+            pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
+    }
+    pass = pass && pass2;
+    if ( !pass2 && geom.getLogicalDim() == ndim )
+        ut.failure( "testGeometry physical-logical-physical: " + name );
+    else if ( !pass2 )
+        ut.expected_failure( "testGeometry physical-logical-physical: " + name );
+    PROFILE_STOP( "testGeometry-logical " + name );
+    return pass;
+}
+
 // Run all geometry based tests
 void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
 {
@@ -60,7 +96,14 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Get the physical dimension
     int ndim  = geom.getDim();
     auto name = geom.getName();
-    PROFILE_START( "testGeometry " + name );
+    PROFILE_SCOPED( timer, "testGeometry " + name );
+    // Test logical geometries
+    auto logicalGeom = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );
+    if ( logicalGeom ) {
+        bool pass2 = testLogicalGeometry( *logicalGeom, ut );
+        if ( !pass2 )
+            return;
+    }
     // First get the centroid and the range
     auto center = geom.centroid();
     auto box    = geom.box();
@@ -167,49 +210,34 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     PROFILE_START( "testGeometry-nearest " + name );
     bool pass_nearest = true;
     for ( const auto &p0 : surfacePoints ) {
-        auto p       = geom.nearest( p0 );
-        double d     = ( p - p0 ).abs();
-        pass_nearest = pass_nearest && d < 1e-8;
+        auto p   = geom.nearest( p0 );
+        double d = ( p - p0 ).abs();
+        if ( d > 1e-8 ) {
+            bool test = geom.inside(p0);
+            p = geom.nearest( p0 );
+            NULL_USE( p );
+            NULL_USE( test );
+            pass_nearest = false;
+        }
     }
     for ( const auto &p0 : interiorPoints ) {
-        auto p       = geom.nearest( p0 );
-        double d     = ( p - p0 ).abs();
-        pass_nearest = pass_nearest && d < 1e-8;
+        auto p   = geom.nearest( p0 );
+        double d = ( p - p0 ).abs();
+        if ( d > 1e-8 ) {
+            p = geom.nearest( p0 );
+            NULL_USE( p );
+            pass_nearest = false;
+        }
     }
     pass = pass && pass_nearest;
     if ( !pass_nearest )
         ut.failure( "testGeometry-nearest: " + name );
     PROFILE_STOP( "testGeometry-nearest " + name );
-    // Test logical transformation (if valid)
-    PROFILE_START( "testGeometry-logical " + name );
-    auto geom2 = dynamic_cast<const AMP::Geometry::LogicalGeometry *>( &geom );
-    if ( geom2 ) {
-        bool pass2 = true;
-        for ( const auto &p : surfacePoints ) {
-            auto p2 = geom2->logical( p );
-            auto p3 = geom2->physical( p2 );
-            for ( int d = 0; d < ndim; d++ ) {
-                pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
-                if ( fabs( p[d] - p3[d] ) >= 1e-6 )
-                    std::cout << p << "  " << p2 << "  " << p3 << std::endl;
-            }
-        }
-        for ( const auto &p : interiorPoints ) {
-            auto p2 = geom2->logical( p );
-            auto p3 = geom2->physical( p2 );
-            for ( int d = 0; d < ndim; d++ )
-                pass2 = pass2 && fabs( p[d] - p3[d] ) < 1e-6;
-        }
-        pass = pass && pass2;
-        if ( !pass_inside )
-            ut.failure( "testGeometry physical-logical-physical: " + geom2->getName() );
-    }
-    PROFILE_STOP( "testGeometry-logical " + name );
     // Test getting surface normals
-    if ( geom2 ) {
+    if ( !multigeom ) {
         bool passNorm = true;
         for ( const auto &p : surfacePoints ) {
-            auto norm = geom2->surfaceNorm( p );
+            auto norm = geom.surfaceNorm( p );
             double n  = sqrt( norm.x() * norm.x() + norm.y() * norm.y() + norm.z() * norm.z() );
             // auto p1   = p - 1e-5 * norm;
             // auto p2   = p + 1e-5 * norm;
@@ -218,7 +246,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         }
         pass = pass && passNorm;
         if ( !passNorm )
-            ut.failure( "testGeometry surfaceNorm: " + geom2->getName() );
+            ut.failure( "testGeometry surfaceNorm: " + name );
     }
     // Test getting the volume
     {
@@ -265,7 +293,6 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Finished with all tests
     if ( pass )
         ut.passes( "testGeometry: " + name );
-    PROFILE_STOP( "testGeometry " + name );
 }
 
 

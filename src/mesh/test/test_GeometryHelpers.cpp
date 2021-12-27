@@ -3,6 +3,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -41,7 +42,7 @@ static inline Point3D normalize( const Point3D &x )
     double tmp = 1.0 / sqrt( dot( x, x ) );
     return { tmp * x[0], tmp * x[1], tmp * x[2] };
 }
-
+static inline Point2D convert2( const Point &x ) { return { x.x(), x.y() }; }
 
 // Test the mapping to/from a logical circle
 void test_dist_line( int N, AMP::UnitTest &ut )
@@ -61,10 +62,10 @@ void test_dist_line( int N, AMP::UnitTest &ut )
         Point p   = { dis( gen ), dis( gen ) };
         Point dir = normalize( pi - p );
         double d  = ( pi.x() - p.x() ) / dir.x();
-        double d1 = distanceToLine( p, dir, p0, p1 );
-        double d2 = distanceToLine( p, dir, p0, p2 );
-        double d3 = distanceToLine( p, -dir, p0, p2 );
-        double d4 = distanceToLine( p, dir, p1, p0 );
+        double d1 = distanceToLine( convert2( p ), dir, p0, p1 );
+        double d2 = distanceToLine( convert2( p ), dir, p0, p2 );
+        double d3 = distanceToLine( convert2( p ), -dir, p0, p2 );
+        double d4 = distanceToLine( convert2( p ), dir, p1, p0 );
         pass      = pass && fabs( d - d1 ) < 1e-8;
         pass      = pass && d2 == std::numeric_limits<double>::infinity();
         pass      = pass && d3 == std::numeric_limits<double>::infinity();
@@ -85,32 +86,51 @@ void test_dist_line( int N, AMP::UnitTest &ut )
 // Test the mapping to/from a logical circle
 void test_map_logical_circle( int N, AMP::UnitTest &ut )
 {
+    auto distance = []( double x, double y, std::array<double, 2> xy ) {
+        return sqrt( ( x - xy[0] ) * ( x - xy[0] ) + ( y - xy[1] ) * ( y - xy[1] ) );
+    };
     std::random_device rd;
     std::mt19937 gen( rd() );
-    std::uniform_real_distribution<> dis( 0, 1 );
-    const double r = 2.0;
     for ( int method = 1; method <= 3; method++ ) {
+        const double r = 2.0;
+        std::uniform_real_distribution<> dis( 0, 1 );
         bool pass = true;
         auto t1   = std::chrono::high_resolution_clock::now();
         for ( int i = 0; i < N; i++ ) {
             double x  = dis( gen );
             double y  = dis( gen );
             auto p    = map_logical_circle( r, method, x, y );
-            auto p2   = map_circle_logical( r, method, p.first, p.second );
-            double r2 = sqrt( p.first * p.first + p.second * p.second );
+            auto p2   = map_circle_logical( r, method, p[0], p[1] );
+            double r2 = sqrt( p[0] * p[0] + p[1] * p[1] );
             pass      = pass && r2 < r + 1e-15;
-            pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
-            if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )
-                printf(
-                    "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
+            pass      = pass && distance( x, y, p2 ) < 1e-10;
+            if ( !( distance( x, y, p2 ) < 1e-10 ) )
+                printf( "%e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
         }
         auto t2    = std::chrono::high_resolution_clock::now();
         int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
         printf( "map_logical_circle - %i: %i ns\n", method, static_cast<int>( ns / ( 4 * N ) ) );
         if ( pass )
-            ut.passes( "map_logical_circle - " + std::to_string( method ) );
+            ut.passes( "circle logical-physical-logical - " + std::to_string( method ) );
         else
-            ut.failure( "map_logical_circle - " + std::to_string( method ) );
+            ut.failure( "circle logical-physical-logical - " + std::to_string( method ) );
+    }
+    for ( int method = 1; method <= 3; method++ ) {
+        std::uniform_real_distribution<> dis( -3.0, 3.0 );
+        bool pass = true;
+        for ( int i = 0; i < N; i++ ) {
+            double x = dis( gen );
+            double y = dis( gen );
+            auto p   = map_circle_logical( 1.0, method, x, y );
+            auto p2  = map_logical_circle( 1.0, method, p[0], p[1] );
+            pass     = pass && distance( x, y, p2 ) < 1e-10;
+            if ( !( distance( x, y, p2 ) < 1e-10 ) )
+                printf( "%e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
+        }
+        if ( pass )
+            ut.passes( "circle physical-logical-physical - " + std::to_string( method ) );
+        else
+            ut.failure( "circle physical-logical-physical - " + std::to_string( method ) );
     }
 }
 
@@ -129,13 +149,12 @@ void test_map_logical_poly( int N, AMP::UnitTest &ut )
             double x  = dis( gen );
             double y  = dis( gen );
             auto p    = map_logical_poly( Np, r, x, y );
-            auto p2   = map_poly_logical( Np, r, p.first, p.second );
-            double r2 = sqrt( p.first * p.first + p.second * p.second );
+            auto p2   = map_poly_logical( Np, r, p[0], p[1] );
+            double r2 = sqrt( p[0] * p[0] + p[1] * p[1] );
             pass      = pass && r2 < r + 1e-15;
-            pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
-            if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )
-                printf(
-                    "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
+            pass      = pass && fabs( p2[0] - x ) < 1e-10 && fabs( p2[1] - y ) < 1e-10;
+            if ( fabs( p2[0] - x ) > 1e-10 || fabs( p2[1] - y ) > 1e-10 )
+                printf( "%e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
         }
         auto t2    = std::chrono::high_resolution_clock::now();
         int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
@@ -164,9 +183,9 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
         auto p2   = map_sphere_surface_logical( r, p[0], p[1], p[2] );
         double r2 = sqrt( p[0] * p[0] + p[1] * p[1] + p[2] * p[2] );
         pass      = pass && r2 < r + 1e-15;
-        pass      = pass && fabs( p2.first - x ) < 1e-10 && fabs( p2.second - y ) < 1e-10;
-        if ( fabs( p2.first - x ) > 1e-10 || fabs( p2.second - y ) > 1e-10 )
-            printf( "%e %e %e %e %e %e\n", x, y, p2.first, p2.second, p2.first - x, p2.second - y );
+        pass      = pass && fabs( p2[0] - x ) < 1e-10 && fabs( p2[1] - y ) < 1e-10;
+        if ( fabs( p2[0] - x ) > 1e-10 || fabs( p2[1] - y ) > 1e-10 )
+            printf( "%e %e %e %e %e %e\n", x, y, p2[0], p2[1], p2[0] - x, p2[1] - y );
     }
     int N2 = 100;
     for ( int i = 0; i < N2; i++ ) {
@@ -179,6 +198,17 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
             pass = false;
         }
     }
+    auto testMap = []( const Point &p0 ) {
+        auto p2 = map_sphere_surface_logical( 1.0, p0[0], p0[1], p0[2] );
+        auto p  = map_logical_sphere_surface( 1.0, p2[0], p2[1] );
+        return ( p0 - Point( p ) ).abs() < 1e-12;
+    };
+    pass       = pass && testMap( { 0, 0, -1 } );
+    pass       = pass && testMap( { 0, 0, 1 } );
+    pass       = pass && testMap( { 0, -1, 0 } );
+    pass       = pass && testMap( { 0, 1, 0 } );
+    pass       = pass && testMap( { -1, 0, 0 } );
+    pass       = pass && testMap( { 1, 0, 0 } );
     auto t2    = std::chrono::high_resolution_clock::now();
     int64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
     printf( "map_logical_sphere_surface: %i ns\n", static_cast<int>( ns / N ) );

@@ -47,7 +47,7 @@ namespace DelaunayTessellation {
  * Currently only 2D and 3D are supported.  If successful, it will return the number of
  * triangles, if unsuccessful it will throw a std::exception.  Additionally, there are
  * several optional stuctures.
- * @param x         The coordinates of the verticies (ndim x N)
+ * @param x         The coordinates of the vertices (ndim x N)
  * @return          Returns the triangles and triangle neighbors <tri,tri_nab>
  *                  tri - The returned pointer where the triangles are stored (ndim+1,N)
  *                  tri_nab - The returned pointer where the triangle neighbors are stored
@@ -65,7 +65,7 @@ std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation( const Array<TY
  * Note:  If the volume is zero, then the simplex is invalid.
  *   Eg. a line in 2D or a plane in 3D.
  * @param ndim      The number of dimensions (currently only 2D and 3D are supported)
- * @param x         The coordinates of the verticies of the simplex ( NDIM x NDIM+1 )
+ * @param x         The coordinates of the vertices of the simplex ( NDIM x NDIM+1 )
  */
 double calc_volume( int ndim, const double x[] );
 
@@ -81,7 +81,7 @@ double calc_volume( int ndim, const double x[] );
  *    (have a positive, non-zero volume), it is suffcient to check the vertix of 1 volume
  *    against the circumcircle of the other.  We do not need to perform both checks.
  * @param ndim      The number of dimensions
- * @param x         The coordinates of the verticies of the simplex
+ * @param x         The coordinates of the vertices of the simplex
  * @param xi        The coordinates of the vertex to check
  * @param TOL_VOL   A tolerance on the volume to use
  */
@@ -96,7 +96,7 @@ int test_in_circumsphere( const int ndim, const int x[], const int xi[], const d
 /*!
  * This function computes the circumsphere that contains a simplex
  * @param[in]  ndim     The number of dimensions
- * @param[in]  x        The coordinates of the verticies of the simplex
+ * @param[in]  x        The coordinates of the vertices of the simplex
  * @param[out] R        The radius of the circumsphere
  * @param[out] c        The center of the circumsphere
  */
@@ -108,7 +108,7 @@ void get_circumsphere( const int ndim, const int x[], double &R, double *c );
 /**
  * This function computes the Barycentric coordinates.
  * @param[in]  ndim     The number of dimensions
- * @param x     Coordinates of the triangle verticies ( NDIM x NDIM+1 )
+ * @param x     Coordinates of the triangle vertices ( NDIM x NDIM+1 )
  * @param xi    Coordinates of the desired point ( NDIM )
  * @param L     (output) The Barycentric coordinates of the point ( NDIM+1 )
  */

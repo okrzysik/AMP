@@ -240,7 +240,7 @@ void TriangleMeshElement<NG, NP, TYPE>::getNeighbors(
 
 
 /****************************************************************
- * Get the coordinates of the verticies                          *
+ * Get the coordinates of the vertices                          *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 inline std::array<std::array<double, NP>, TYPE + 1>
@@ -308,7 +308,7 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::coord() const
         auto x = d_mesh->getPos( d_globalID.elemID() );
         return MeshPoint<double>( NP, x.data() );
     } else {
-        AMP_ERROR( "coord is only valid for verticies: " + std::to_string( (int) TYPE ) );
+        AMP_ERROR( "coord is only valid for vertices: " + std::to_string( (int) TYPE ) );
         return MeshPoint<double>();
     }
 }

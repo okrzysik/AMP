@@ -64,6 +64,7 @@ CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double he
  ********************************************************/
 Point CircleFrustum::nearest( const Point &pos ) const
 {
+#if 1
     auto L = logical( pos );
     L.x()  = std::max( L.x(), 0.0 );
     L.x()  = std::min( L.x(), 1.0 );
@@ -71,6 +72,36 @@ Point CircleFrustum::nearest( const Point &pos ) const
     L.y()  = std::min( L.y(), 1.0 );
     L.z()  = std::max( L.z(), 0.0 );
     L.z()  = std::min( L.z(), 1.0 );
+#else
+    // Get the logical coordinates
+    auto L   = logical( pos );
+    auto tmp = physical( L );
+    if ( L.z() < 0.0 || L.z() > 1.0 ) {
+        // Get the radius and z-position
+        double z  = d_h * L.z();
+        double rz = d_r[0] * ( 1.0 - z ) + d_r[1] * z;
+        auto pl   = GeometryHelpers::map_logical_circle( rz, 2, L.x(), L.y() );
+        double r  = sqrt( pl[0] * pl[0] + pl[1] * pl[1] );
+        if ( L.z() < 0.0 && r < d_r[0] ) {
+            // Closest point is on the bottom surface
+            L.z() = 0.0;
+        } else if ( L.z() > 1.0 && r < d_r[1] ) {
+            // Closest point is on the top surface
+            L.z() = 1.0;
+        } else {
+            // Closest point is on the outer surface
+            // Determine the closest point on the line of the radius
+            std::array<double, 2> A = { 0.5 * d_r[0], 0.0 };
+            std::array<double, 2> B = { 0.5 * d_r[1], d_h };
+            auto p                  = GeometryHelpers::nearest( A, B, { r, z } );
+            L.z()                   = p[1] / d_h;
+        }
+    }
+    L.x() = std::max( L.x(), 0.0 );
+    L.x() = std::min( L.x(), 1.0 );
+    L.y() = std::max( L.y(), 0.0 );
+    L.y() = std::min( L.y(), 1.0 );
+#endif
     return physical( L );
 }
 
@@ -218,11 +249,11 @@ Point CircleFrustum::physical( const Point &pos ) const
     if ( swap )
         p0.z() = 1.0 - p0.z();
     // Get the height and current radius
-    Point p  = { 0, 0, 0 };
-    p.z()    = d_h * p0.z();
     double r = d_r[0] * ( 1.0 - p0.z() ) + d_r[1] * p0.z();
+    double z = d_h * p0.z();
     // Map the x/y coordinates to a circle
-    std::tie( p.x(), p.y() ) = GeometryHelpers::map_logical_circle( r, 2, p0.x(), p0.y() );
+    auto pl = GeometryHelpers::map_logical_circle( r, 2, p0.x(), p0.y() );
+    Point p = { pl[0], pl[1], z };
     // Rotate the coordinates
     if ( d_dir == 0 ) {
         p = { -p.z(), p.x(), p.y() };
@@ -270,11 +301,11 @@ Point CircleFrustum::logical( const Point &pos ) const
         p0 = { p0.x(), p0.y(), p0.z() };
     }
     // Get the logical height and current radius
-    Point p  = { 0, 0, 0 };
-    p.z()    = p0.z() / d_h;
-    double r = d_r[0] * ( 1.0 - p.z() ) + d_r[1] * p.z();
+    double z = p0.z() / d_h;
+    double r = d_r[0] * ( 1.0 - z ) + d_r[1] * z;
     // Map the x/y coordinates from a circle
-    std::tie( p.x(), p.y() ) = GeometryHelpers::map_circle_logical( r, 2, p0.x(), p0.y() );
+    auto pl = GeometryHelpers::map_circle_logical( r, 2, p0.x(), p0.y() );
+    Point p = { pl[0], pl[1], z };
     // Swap directions to preserve positive volume
     bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
     if ( swap )

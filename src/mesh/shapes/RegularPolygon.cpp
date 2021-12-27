@@ -31,9 +31,9 @@ RegularPolygon::RegularPolygon( int N, double R ) : LogicalGeometry(), d_N( N ),
 }
 void RegularPolygon::computeNorms()
 {
-    // Get the verticies
-    d_verticies = GeometryHelpers::get_poly_verticies( d_N, d_R );
-    for ( auto &p : d_verticies ) {
+    // Get the vertices
+    d_vertices = GeometryHelpers::get_poly_vertices( d_N, d_R );
+    for ( auto &p : d_vertices ) {
         p[0] += d_offset[0];
         p[1] += d_offset[1];
     }
@@ -47,9 +47,9 @@ void RegularPolygon::computeNorms()
         return n;
     };
     d_norm.resize( d_N );
-    d_norm[0] = calcNorm( d_verticies.back(), d_verticies[0] );
-    for ( size_t i = 1; i < d_verticies.size(); i++ )
-        d_norm[i] = calcNorm( d_verticies[i - 1], d_verticies[i] );
+    d_norm[0] = calcNorm( d_vertices.back(), d_vertices[0] );
+    for ( size_t i = 1; i < d_vertices.size(); i++ )
+        d_norm[i] = calcNorm( d_vertices[i - 1], d_vertices[i] );
 }
 
 
@@ -60,11 +60,11 @@ std::tuple<Point, double, int> RegularPolygon::nearest2( const Point &pos ) cons
 {
     std::array<double, 2> p0 = { pos.x(), pos.y() };
     // Check the intersection with each line segment (keeping the closest)
-    Point p  = GeometryHelpers::nearest( d_verticies[0], d_verticies.back(), p0 );
+    Point p  = GeometryHelpers::nearest( d_vertices[0], d_vertices.back(), p0 );
     double d = ( p - pos ).norm();
     int k    = 0;
-    for ( size_t i = 1; i < d_verticies.size(); i++ ) {
-        Point p2  = GeometryHelpers::nearest( d_verticies[i], d_verticies[i - 1], p0 );
+    for ( size_t i = 1; i < d_vertices.size(); i++ ) {
+        Point p2  = GeometryHelpers::nearest( d_vertices[i], d_vertices[i - 1], p0 );
         double d2 = ( p2 - pos ).norm();
         if ( d2 < d ) {
             d = d2;
@@ -89,9 +89,9 @@ Point RegularPolygon::nearest( const Point &pos ) const
 double RegularPolygon::distance( const Point &pos, const Point &ang ) const
 {
     // Check the intersection with each line segment (keeping the closest)
-    double d = GeometryHelpers::distanceToLine( pos, ang, d_verticies[0], d_verticies.back() );
-    for ( size_t i = 1; i < d_verticies.size(); i++ ) {
-        double d2 = GeometryHelpers::distanceToLine( pos, ang, d_verticies[i], d_verticies[i - 1] );
+    double d = GeometryHelpers::distanceToLine( pos, ang, d_vertices[0], d_vertices.back() );
+    for ( size_t i = 1; i < d_vertices.size(); i++ ) {
+        double d2 = GeometryHelpers::distanceToLine( pos, ang, d_vertices[i], d_vertices[i - 1] );
         if ( d2 < d )
             d = d2;
     }
@@ -137,8 +137,8 @@ Point RegularPolygon::surfaceNorm( const Point &pos ) const
 Point RegularPolygon::physical( const Point &pos ) const
 {
     auto tmp = GeometryHelpers::map_logical_poly( d_N, d_R, pos.x(), pos.y() );
-    double x = tmp.first + d_offset[0];
-    double y = tmp.second + d_offset[1];
+    double x = tmp[0] + d_offset[0];
+    double y = tmp[1] + d_offset[1];
     return { x, y };
 }
 
@@ -151,7 +151,7 @@ Point RegularPolygon::logical( const Point &pos ) const
     double x = pos.x() - d_offset[0];
     double y = pos.y() - d_offset[1];
     auto tmp = GeometryHelpers::map_poly_logical( d_N, d_R, x, y );
-    return Point( tmp.first, tmp.second );
+    return Point( tmp[0], tmp[1] );
 }
 
 
@@ -203,8 +203,8 @@ void RegularPolygon::displace( const double *x )
     d_offset[0] += x[0];
     d_offset[1] += x[1];
     // Get the offsets
-    d_verticies = GeometryHelpers::get_poly_verticies( d_N, d_R );
-    for ( auto &p : d_verticies ) {
+    d_vertices = GeometryHelpers::get_poly_vertices( d_N, d_R );
+    for ( auto &p : d_vertices ) {
         p[0] += d_offset[0];
         p[1] += d_offset[1];
     }
@@ -229,7 +229,7 @@ bool RegularPolygon::operator==( const Geometry &rhs ) const
     if ( !geom )
         return false;
     return d_N == geom->d_N && d_R == geom->d_R && d_offset == geom->d_offset &&
-           d_verticies == geom->d_verticies && d_norm == geom->d_norm;
+           d_vertices == geom->d_vertices && d_norm == geom->d_norm;
 }
 
 

@@ -3,7 +3,6 @@
 
 
 #include <array>
-#include <set>
 #include <vector>
 
 
@@ -37,7 +36,7 @@ using Point3D = std::array<double, 3>;
  * \param[in] y         Logical y coordinate
  * @return              Returns a pair with the (x,y) value
  */
-std::pair<double, double> map_logical_circle( double R, int method, double x, double y );
+std::array<double, 2> map_logical_circle( double R, int method, double x, double y );
 
 
 /**
@@ -57,7 +56,7 @@ std::pair<double, double> map_logical_circle( double R, int method, double x, do
  * \param[in] y         Physical y coordinate
  * @return              Returns a pair with the logical (x,y) value
  */
-std::pair<double, double> map_circle_logical( double R, int method, double x, double y );
+std::array<double, 2> map_circle_logical( double R, int method, double x, double y );
 
 
 /**
@@ -70,7 +69,7 @@ std::pair<double, double> map_circle_logical( double R, int method, double x, do
  * \param[in] y         Logical y coordinate
  * @return              Returns a pair with the (x,y) value
  */
-std::pair<double, double> map_logical_poly( int N, double R, double x, double y );
+std::array<double, 2> map_logical_poly( int N, double R, double x, double y );
 
 
 /**
@@ -83,18 +82,18 @@ std::pair<double, double> map_logical_poly( int N, double R, double x, double y 
  * \param[in] y         Physical y coordinate
  * @return              Returns a pair with the logical (x,y) value
  */
-std::pair<double, double> map_poly_logical( int N, double R, double x, double y );
+std::array<double, 2> map_poly_logical( int N, double R, double x, double y );
 
 
 /**
- * \brief   Get the verticies of a regular polygon
- * \details  This function will return the verticies of a N-sided polygon
+ * \brief   Get the Vertices of a regular polygon
+ * \details  This function will return the Vertices of a N-sided polygon
  *    that is compatible with the functions map_logical_poly and map_poly_logical.
  * \param[in] N         Number of faces
  * \param[in] R         Radius of circumcircle
- * @return              Returns the verticies clockwise (physical coordinates)
+ * @return              Returns the Vertices clockwise (physical coordinates)
  */
-std::vector<Point2D> get_poly_verticies( int N, double R );
+std::vector<Point2D> get_poly_vertices( int N, double R );
 
 
 /**
@@ -156,7 +155,7 @@ Point3D map_logical_sphere_surface( double R, double x, double y );
  * \param[in] z         Physical z coordinate
  * @return              Returns a pair with the logical (x,y) values
  */
-std::pair<double, double> map_sphere_surface_logical( double R, double x, double y, double z );
+std::array<double, 2> map_sphere_surface_logical( double R, double x, double y, double z );
 
 
 /**
@@ -194,6 +193,16 @@ Point3D map_shell_logical( double r1, double r2, double x, double y, double z );
 
 
 /**
+ * \brief   Compute the distance between two points
+ * \details  This function will compute the distance between two points
+ * \param[in] x1       First point
+ * \param[in] x2       Second point
+ * @return             Returns the distance
+ */
+double distance( const Point3D &x1, const Point3D &x2 );
+
+
+/**
  * \brief   Compute the intersection of a ray and a line segment
  * \details  This function will compute the intersection of a ray with a line segment.
  *    If the ray will never intersect the object, this distance is inf.
@@ -205,6 +214,20 @@ Point3D map_shell_logical( double r1, double r2, double x, double y, double z );
  */
 double
 distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &v1, const Point2D &v2 );
+
+
+/**
+ * \brief   Compute the intersection of a ray and a line segment
+ * \details  This function will compute the intersection of a ray with a line segment.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * \param[in] v1        First vertex
+ * \param[in] v2        Second vertex
+ * @return              Returns the distance
+ */
+double
+distanceToLine( const Point3D &pos, const Point3D &ang, const Point3D &v1, const Point3D &v2 );
 
 
 /**
@@ -357,10 +380,40 @@ distanceToTetrahedron( const std::array<Point3D, 4> &tet, const Point3D &pos, co
 
 
 /**
+ * \brief   Compute the intersection of a ray and quadrilateral
+ * \details  This function will compute the intersection of a ray with a quadrilateral.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] tri       Triangle coordinates
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToQuadrilateral( const std::array<Point2D, 4> &quad,
+                                const Point2D &pos,
+                                const Point2D &ang );
+
+
+/**
+ * \brief   Compute the intersection of a ray and quadrilateral
+ * \details  This function will compute the intersection of a ray with a quadrilateral.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] tri       Triangle coordinates
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double distanceToQuadrilateral( const std::array<Point3D, 4> &quad,
+                                const Point3D &pos,
+                                const Point3D &ang );
+
+
+/**
  * \brief   Compute the barycentric coordinates
  * \details  This function will compute the barycentric coordinates
  *    determine the normal.
- * \param[in] x         Verticies
+ * \param[in] x         Vertices
  * \param[in] p         Point of interest
  * @return              Returns the barycentric coordinates
  */
@@ -408,7 +461,7 @@ Point3D nearest( const Point3D &v1, const Point3D &v2, const Point3D &p );
  * \brief   Find the nearest point to a triangle
  * \details  This function will compute the nearest point to a triangle
  *    defined by three points in 3D.
- * \param[in] v         Verticies
+ * \param[in] v         Vertices
  * \param[in] p         Point of interest
  * @return              Returns the normal
  */
@@ -417,9 +470,9 @@ Point3D nearest( const std::array<Point3D, 3> &v, const Point3D &p );
 
 /**
  * \brief   Find the nearest point to a tetrahedron
- * \details  This function will compute the nearest point to a triangle
+ * \details  This function will compute the nearest point to a tetrahedron
  *    defined by three points in 3D.
- * \param[in] v         Verticies
+ * \param[in] v         Vertices
  * \param[in] p         Point of interest
  * @return              Returns the normal
  */
@@ -428,13 +481,61 @@ Point3D nearest( const std::array<Point3D, 4> &v, const Point3D &p );
 
 /**
  * \brief   Subdivide a triangle
- * \details  Given the verticies of a triangle, sub-divide the triangle
+ * \details  Given the Vertices of a triangle, sub-divide the triangle
  *     recursively until it is with the resolution, returning the new set of points
- * \param[in] v         Verticies
+ * \param[in] v         Vertices
  * \param[in] res       Desired resolution
- * @return              Returns the new points (excluding the verticies)
+ * @return              Returns the new points (excluding the Vertices)
  */
 std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &v, double res );
+
+
+/**
+ * \brief   Sample a line
+ * \details  Compute points on a line such that no point along the line is farther
+ *    than d0 from a sample point
+ * \param[in] v         Vertices
+ * \param[in] d0        Maximum distance between points
+ * \param[in] interior  Choose interior points (default) or include the Vertices
+ * @return              Returns the new points
+ */
+std::vector<Point3D> sampleLine( const std::array<Point3D, 2> &v, double d0, bool interior = true );
+
+
+/**
+ * \brief   Sample a line
+ * \details  Compute points on a triangle such that no point within the triangle is farther
+ *    than d0 from a sample point
+ * \param[in] v         Vertices
+ * \param[in] d0        Maximum distance between points
+ * \param[in] interior  Choose interior points (default) or include the Vertices
+ * @return              Returns the new points
+ */
+std::vector<Point3D> sampleTri( const std::array<Point3D, 3> &v, double d0, bool interior = true );
+
+
+/**
+ * \brief   Sample a line
+ * \details  Compute points on a line such that no point within a quadrilateral is farther
+ *    than d0 from a sample point
+ * \param[in] v         Vertices
+ * \param[in] d0        Maximum distance between points
+ * \param[in] interior  Choose interior points (default) or include the Vertices
+ * @return              Returns the new points
+ */
+std::vector<Point3D> sampleQuad( const std::array<Point3D, 4> &v, double d0, bool interior = true );
+
+
+/**
+ * \brief   Sample a line
+ * \details  Compute points on a line such that no point within a tetrahedron is farther
+ *    than d0 from a sample point
+ * \param[in] v         Vertices
+ * \param[in] d0        Maximum distance between points
+ * \param[in] interior  Choose interior points (default) or include the Vertices
+ * @return              Returns the new points
+ */
+std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &v, double d0, bool interior = true );
 
 
 //! Compute the normal to the plane formed by 3 points

@@ -33,7 +33,7 @@ DOFManager::~DOFManager() = default;
  ****************************************************************/
 void DOFManager::getDOFs( const AMP::Mesh::MeshElementID &, std::vector<size_t> & ) const
 {
-    AMP_ERROR( "getDOFs is not implimented for the base class" );
+    AMP_ERROR( "getDOFs is not implemented for the base class" );
 }
 void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
                           std::vector<size_t> &dofs ) const
@@ -58,7 +58,7 @@ void DOFManager::getDOFs( const std::vector<AMP::Mesh::MeshElementID> &ids,
  ****************************************************************/
 AMP::Mesh::MeshElement DOFManager::getElement( size_t ) const
 {
-    AMP_ERROR( "getElement is not implimented for the base class" );
+    AMP_ERROR( "getElement is not implemented for the base class" );
     return AMP::Mesh::MeshElement();
 }
 
@@ -103,7 +103,7 @@ std::vector<size_t> DOFManager::getRemoteDOFs() const { return std::vector<size_
  ****************************************************************/
 std::vector<size_t> DOFManager::getRowDOFs( const AMP::Mesh::MeshElement & ) const
 {
-    AMP_ERROR( "getRowDOFs(element) is not implimented for the base class" );
+    AMP_ERROR( "getRowDOFs(element) is not implemented for the base class" );
     return std::vector<size_t>();
 }
 

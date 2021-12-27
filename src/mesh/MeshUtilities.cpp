@@ -406,7 +406,7 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
             }
         }
     } else {
-        AMP_ERROR( "Not implimented for this dimension" );
+        AMP_ERROR( "Not implemented for this dimension" );
     }
     return volume;
 }
@@ -416,43 +416,69 @@ Array<double> volumeOverlap( const AMP::Geometry::Geometry &geom, const std::vec
  * ElementFinder                                         *
  ********************************************************/
 ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh )
-    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( mesh->getIterator( mesh->getGeomType() ) )
+    : d_mesh( mesh ),
+      d_pos_hash( -1 ),
+      d_elements( mesh->getIterator( mesh->getGeomType() ) ),
+      d_dist( std::numeric_limits<double>::quiet_NaN() )
 {
     initialize();
 }
 ElementFinder::ElementFinder( std::shared_ptr<AMP::Mesh::Mesh> mesh, AMP::Mesh::MeshIterator it )
-    : d_mesh( mesh ), d_pos_hash( -1 ), d_elements( std::move( it ) )
+    : d_mesh( mesh ),
+      d_pos_hash( -1 ),
+      d_elements( std::move( it ) ),
+      d_dist( std::numeric_limits<double>::quiet_NaN() )
 {
     initialize();
 }
 void ElementFinder::initialize() const
 {
+    AMP_ASSERT( d_mesh->getDim() == 3u );
+    // Choose the approximate spacing between points
+    double volume = 0.0;
+    auto type     = d_elements->globalID().type();
+    for ( auto elem : d_elements ) {
+        AMP_ASSERT( elem.globalID().type() == type );
+        volume += elem.volume();
+    }
+    volume /= d_elements.size();
+    d_dist = 0.5 * pow( volume, 1.0 / static_cast<int>( type ) );
     // Create a list of points in each element and the mesh ids
     std::vector<AMP::Mesh::MeshElementID> ids;
     std::vector<std::array<double, 3>> points;
-    auto add = [&ids, &points]( const AMP::Mesh::Point &p, const AMP::Mesh::MeshElementID &id ) {
-        points.push_back( { p.x(), p.y(), p.z() } );
-        ids.push_back( id );
-    };
     std::vector<MeshElement> children;
-    for ( auto elem : d_elements ) {
+    std::vector<std::array<double, 3>> nodes;
+    for ( const auto &elem : d_elements ) {
         auto id = elem.globalID();
-        // Get the centroid
-        auto p0 = elem.centroid();
-        add( p0, id );
-        // Add points on the children elements (adjusting so they are within the element)
-        int elemType = static_cast<int>( id.type() );
-        for ( int type = 0; type < elemType; type++ ) {
-            elem.getElements( static_cast<GeomType>( type ), children );
-            for ( const auto &child : children )
-                add( 0.95 * child.centroid() + 0.05 * p0, id );
+        // Get the nodes for the current element
+        elem.getElements( AMP::Mesh::GeomType::Vertex, children );
+        nodes.resize( children.size() );
+        for ( size_t i = 0; i < children.size(); i++ ) {
+            auto p      = children[i].coord();
+            nodes[i][0] = p.x();
+            nodes[i][1] = p.y();
+            nodes[i][2] = p.z();
         }
-    }
-    // Check the ids
-    AMP_ASSERT( ids.size() == points.size() );
-    for ( auto id : ids ) {
-        AMP_ASSERT( !id.isNull() );
-        AMP_ASSERT( id.type() != GeomType::Vertex );
+        // Choose points within the element such that they completely overlap the element
+        using namespace AMP::Geometry::GeometryHelpers;
+        std::vector<std::array<double, 3>> data;
+        if ( nodes.size() == 2u ) {
+            data = sampleLine( { nodes[0], nodes[1] }, d_dist, true );
+        } else if ( nodes.size() == 3u ) {
+            data = sampleTri( { nodes[0], nodes[1], nodes[2] }, d_dist, true );
+        } else if ( type == AMP::Mesh::GeomType::Face && nodes.size() == 4u ) {
+            data = sampleQuad( { nodes[0], nodes[1], nodes[2], nodes[3] }, d_dist, true );
+        } else if ( type == AMP::Mesh::GeomType::Volume && nodes.size() == 4u ) {
+            data = sampleTet( { nodes[0], nodes[1], nodes[2], nodes[3] }, d_dist, true );
+        } else {
+            printf( "type = %i\n", static_cast<int>( type ) );
+            printf( "nodes = %i\n", static_cast<int>( nodes.size() ) );
+            AMP_ERROR( "Not finished" );
+        }
+        for ( auto p : data ) {
+            points.push_back( p );
+            ids.push_back( id );
+        }
     }
     // Update the internal hash
     d_pos_hash = d_mesh->positionHash();
@@ -480,17 +506,24 @@ double ElementFinder::distance( const Point &pos, const Point &dir ) const
     if ( d_pos_hash != d_mesh->positionHash() )
         initialize();
     // Get a list of ids to check
-    double dist = std::numeric_limits<double>::infinity();
     std::set<AMP::Mesh::MeshElementID> ids;
-    for ( const auto &tmp : d_tree.findNearestRay( pos, dir ) )
+    for ( const auto &tmp : d_tree.findNearestRay( pos, dir, d_dist ) )
         ids.insert( std::get<1>( tmp ) );
     // Check each element for the closest intersection
+    int count = 0;
+    double d  = std::numeric_limits<double>::infinity();
     for ( const auto &id : ids ) {
         auto elem = d_mesh->getElement( id );
-        auto d    = elem.distance( pos, dir );
-        dist      = std::min( dist, d );
+        auto d2   = elem.distance( pos, dir );
+        d2        = std::max( d2, 0.0 );
+        if ( d2 < std::numeric_limits<double>::infinity() ) {
+            d = std::min( d, d2 );
+            count++;
+        }
     }
-    return dist;
+    if ( count % 2 == 1 )
+        d = -d;
+    return d;
 }
 
 } // namespace AMP::Mesh

@@ -42,19 +42,19 @@ public:
     //! Return the elements neighboring the current element
     std::vector<std::shared_ptr<MeshElement>> getNeighbors() const override;
 
-    //! Return the volume of the current element (does not apply to verticies)
+    //! Return the volume of the current element (does not apply to vertices)
     double volume() const override;
 
     //! Return the normal to the current element (does not apply to all elements)
     Point norm() const override;
 
-    //! Return the coordinates of all verticies composing the element
+    //! Return the coordinates of all vertices composing the element
     std::vector<double> coord() const override;
 
     /**
      * \brief     Return the centroid of the element
      * \details   This function returns the centroid of the element.  The
-     *   centroid is defined as the average of the coordinates of the verticies.
+     *   centroid is defined as the average of the coordinates of the vertices.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
     std::vector<double> centroid() const override;

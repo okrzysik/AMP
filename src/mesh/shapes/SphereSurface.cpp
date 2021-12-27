@@ -117,7 +117,7 @@ Point SphereSurface::logical( const Point &pos ) const
     double y0 = pos[1] - d_offset[1];
     double z0 = pos[2] - d_offset[2];
     auto tmp  = GeometryHelpers::map_sphere_surface_logical( d_r, x0, y0, z0 );
-    return Point( tmp.first, tmp.second );
+    return Point( tmp[0], tmp[1] );
 }
 
 
@@ -157,7 +157,7 @@ std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<double> &r
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, true }; }
+std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, false }; }
 std::vector<int> SphereSurface::getLogicalSurfaceIds() const { return { -1, -1, -1, -1 }; }
 
 

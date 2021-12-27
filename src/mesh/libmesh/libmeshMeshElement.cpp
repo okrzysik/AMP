@@ -260,7 +260,7 @@ double libmeshMeshElement::volume() const
 }
 Point libmeshMeshElement::norm() const
 {
-    AMP_ERROR( "norm not implimented yet" );
+    AMP_ERROR( "norm not implemented yet" );
     return Point();
 }
 Point libmeshMeshElement::coord() const
@@ -346,7 +346,7 @@ bool libmeshMeshElement::isOnBoundary( int id ) const
         if ( side != static_cast<unsigned int>( -1 ) )
             on_boundary = true;
     } else {
-        // All other entities are on the boundary iff all of their verticies are on the surface
+        // All other entities are on the boundary iff all of their vertices are on the surface
         std::vector<MeshElement> nodes;
         this->getElements( GeomType::Vertex, nodes );
         on_boundary = true;
@@ -361,14 +361,14 @@ bool libmeshMeshElement::isInBlock( int id ) const
     bool in_block = false;
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
-        AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
+        AMP_ERROR( "isInBlock is not currently implemented for anything but elements" );
     } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
         auto *elem = (libMesh::Elem *) ptr_element;
         in_block   = (int) elem->subdomain_id() == id;
     } else {
-        // All other entities are on the boundary iff all of their verticies are on the surface
-        AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
+        // All other entities are on the boundary iff all of their vertices are on the surface
+        AMP_ERROR( "isInBlock is not currently implemented for anything but elements" );
     }
     return in_block;
 }

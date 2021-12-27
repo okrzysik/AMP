@@ -4,8 +4,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Function to evaluate the magnitude of a cross product in 3d
@@ -141,7 +140,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
     if ( type == GeomType::Vertex ) {
         // We want to get the vertices composing the elements
         if ( d_index.type() == d_meshType ) {
-            // We are dealing with a entity of type dim and want the verticies
+            // We are dealing with a entity of type dim and want the vertices
             if ( d_meshType == GeomType::Edge ) {
                 N = 2;
                 index[0].reset( GeomType::Vertex, 0, ijk[0] );
@@ -583,7 +582,7 @@ Point structuredMeshElement::centroid() const
     auto type = d_index.type();
     if ( type == GeomType::Vertex )
         return this->coord();
-    // Get the number of verticies and their indicies
+    // Get the number of vertices and their indicies
     int N = 0;
     BoxMesh::MeshElementIndex nodes[8];
     getElementIndex( GeomType::Vertex, N, nodes );
@@ -672,7 +671,7 @@ double structuredMeshElement::volume() const
         //    IAA Journal v.23, no.6, 1984, p.954-
         constexpr uint8_t sub_pyr[6][4] = { { 0, 3, 2, 1 }, { 6, 7, 4, 5 }, { 0, 1, 5, 4 },
                                             { 3, 7, 6, 2 }, { 0, 4, 7, 3 }, { 1, 2, 6, 5 } };
-        // Get the verticies
+        // Get the vertices
         AMP_ASSERT( N == 8 );
         double x[8][3];
         for ( int i = 0; i < 8; i++ )
@@ -723,7 +722,7 @@ double structuredMeshElement::volume() const
  ****************************************************************/
 Point structuredMeshElement::norm() const
 {
-    AMP_ERROR( "norm not implimented yet" );
+    AMP_ERROR( "norm not implemented yet" );
     return Point();
 }
 
@@ -781,37 +780,132 @@ bool structuredMeshElement::isInBlock( int id ) const
 /****************************************************************
  * Calculate the nearest point on the element                    *
  ****************************************************************/
-MeshPoint<double> structuredMeshElement::nearest( const MeshPoint<double> &pos ) const
+MeshPoint<double> structuredMeshElement::nearest( const MeshPoint<double> &pos0 ) const
 {
+    using AMP::Geometry::GeometryHelpers::nearest;
+    using AMP::Geometry::GeometryHelpers::Point2D;
+    using AMP::Geometry::GeometryHelpers::Point3D;
     // Get the vertex coordinates
-    if ( d_meshType == GeomType::Vertex ) {
-        AMP_ASSERT( d_physicalDim <= 3 );
-        int N = 0;
-        BoxMesh::MeshElementIndex nodes[2];
-        getElementIndex( GeomType::Vertex, N, nodes );
-        std::array<double, 3> x[2];
-        d_mesh->coord( nodes[0], x[0].data() );
-        d_mesh->coord( nodes[1], x[1].data() );
-        return AMP::Geometry::GeometryHelpers::nearest( x[0], x[1], pos );
-    } else {
-        AMP_ERROR( "nearest is not implimented for arbitrary types" );
+    int N                      = 0;
+    std::array<double, 3> x[8] = { { 0, 0, 0 } };
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    std::array<double, 3> centroid = { { 0, 0, 0 } };
+    for ( int i = 0; i < N; i++ ) {
+        d_mesh->coord( nodes[i], x[i].data() );
+        centroid[0] += x[i][0];
+        centroid[1] += x[i][1];
+        centroid[2] += x[i][2];
     }
-    return MeshPoint<double>();
+    centroid[0] /= N;
+    centroid[1] /= N;
+    centroid[2] /= N;
+    // Get the nearest point
+    std::array<double, 3> pos = { pos0.x(), pos0.y(), pos0.z() };
+    std::array<double, 3> y   = { 0, 0, 0 };
+    if ( d_index.type() == GeomType::Vertex ) {
+        AMP_ASSERT( N == 1 );
+        y = x[0];
+    } else if ( d_index.type() == GeomType::Edge ) {
+        AMP_ASSERT( N == 2 );
+        y = nearest( x[0], x[1], pos );
+    } else if ( d_index.type() == GeomType::Face ) {
+        AMP_ASSERT( N == 4 );
+        using TRI = std::array<Point3D, 3>;
+        auto y1   = nearest( TRI( { x[0], x[1], centroid } ), pos );
+        auto y2   = nearest( TRI( { x[1], x[2], centroid } ), pos );
+        auto y3   = nearest( TRI( { x[2], x[3], centroid } ), pos );
+        auto y4   = nearest( TRI( { x[3], x[0], centroid } ), pos );
+        double d1 = distance( pos, y1 );
+        double d2 = distance( pos, y2 );
+        double d3 = distance( pos, y3 );
+        double d4 = distance( pos, y4 );
+        if ( d1 <= std::min( { d2, d3, d4 } ) )
+            y = y1;
+        else if ( d2 <= std::min( d3, d4 ) )
+            y = y2;
+        else if ( d3 <= d4 )
+            y = y3;
+        else
+            y = y4;
+    } else if ( d_index.type() == GeomType::Volume ) {
+        AMP_ASSERT( N == 8 );
+        AMP_ERROR( "structuredMeshElement::nearest is not implemented for Volume" );
+    } else {
+        AMP_ERROR( "Internal error in structuredMeshElement::nearest" );
+    }
+    return MeshPoint<double>( pos0.ndim(), y.data() );
 }
 
 
 /****************************************************************
  * Calculate the distance to the element                         *
  ****************************************************************/
+template<std::size_t N>
+static inline std::array<double, N> point( const double *x )
+{
+    std::array<double, N> y;
+    for ( size_t i = 0; i < N; i++ )
+        y[i] = x[i];
+    return y;
+}
+template<std::size_t N>
+static inline std::array<double, N> point( const MeshPoint<double> &x )
+{
+    return point<N>( x.data() );
+}
 double structuredMeshElement::distance( const MeshPoint<double> &pos,
                                         const MeshPoint<double> &dir ) const
 {
-    NULL_USE( pos );
-    NULL_USE( dir );
-    AMP_ERROR( "distance is not implimented for structuredMeshElement" );
+    using AMP::Geometry::GeometryHelpers::distanceToLine;
+    using AMP::Geometry::GeometryHelpers::distanceToQuadrilateral;
+    using AMP::Geometry::GeometryHelpers::Point2D;
+    using AMP::Geometry::GeometryHelpers::Point3D;
+    // Get the vertex coordinates
+    int N          = 0;
+    double x[8][3] = { { 0, 0, 0 } };
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    for ( int i = 0; i < N; i++ )
+        d_mesh->coord( nodes[i], x[i] );
+    // Compute the distance
+    if ( d_index.type() == GeomType::Vertex ) {
+        AMP_ASSERT( N == 1 );
+        AMP_ERROR( "structuredMeshElement::distance is not implemented for node" );
+    } else if ( d_index.type() == GeomType::Edge ) {
+        AMP_ASSERT( N == 2 );
+        if ( d_physicalDim == 2 ) {
+            return distanceToLine(
+                point<2>( pos ), point<2>( dir ), point<2>( x[0] ), point<2>( x[0] ) );
+        } else if ( d_physicalDim == 3 ) {
+            return distanceToLine(
+                point<3>( pos ), point<3>( dir ), point<3>( x[0] ), point<3>( x[0] ) );
+        } else {
+            AMP_ERROR( "Not finished" );
+        }
+    } else if ( d_index.type() == GeomType::Face ) {
+        AMP_ASSERT( N == 4 );
+        if ( d_physicalDim == 2 ) {
+            std::array<Point2D, 4> quad = {
+                point<2>( x[0] ), point<2>( x[1] ), point<2>( x[2] ), point<2>( x[3] )
+            };
+            return distanceToQuadrilateral( quad, point<2>( pos ), point<2>( dir ) );
+        } else if ( d_physicalDim == 3 ) {
+            std::array<Point3D, 4> quad = {
+                point<3>( x[0] ), point<3>( x[1] ), point<3>( x[2] ), point<3>( x[3] )
+            };
+            return distanceToQuadrilateral( quad, point<3>( pos ), point<3>( dir ) );
+        } else {
+            AMP_ERROR( "Not finished" );
+        }
+    } else if ( d_index.type() == GeomType::Volume ) {
+        AMP_ASSERT( N == 8 );
+        AMP_ERROR( "Not finished" );
+    } else {
+        AMP_ERROR( "Internal error in structuredMeshElement::distance" );
+    }
     return 0;
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

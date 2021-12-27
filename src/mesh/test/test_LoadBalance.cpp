@@ -44,7 +44,7 @@ int run( int N_procs, const std::string &filename, double ratio )
 
     // Print the errors and return
     int N_errors = 0;
-    if ( t1 - t0 > 10 || t2 - t1 > 10 ) {
+    if ( t1 - t0 > 15 || t2 - t1 > 15 ) {
         N_errors++;
         std::cout << "load balance failed run time limits" << std::endl;
     }

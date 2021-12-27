@@ -59,7 +59,7 @@ protected:
     int d_N;
     double d_R;
     double d_offset[2];
-    std::vector<std::array<double, 2>> d_verticies;
+    std::vector<std::array<double, 2>> d_vertices;
     std::vector<Point> d_norm;
 
 protected:

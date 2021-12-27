@@ -11,7 +11,7 @@ namespace Operator {
  * A map operation involves two meshes and a communicator spanning those meshes.
  * For some processors one of the meshes may be NULL.
  * The constructor may require syncronous communication, but the apply calls
- * should be implimented asynchronously.
+ * should be implemented asynchronously.
  * Note: Maps may impose a serial thread or even deadlock in parallel if
  * implemented synchronously without great care.
  */

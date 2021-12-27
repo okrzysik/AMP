@@ -67,6 +67,7 @@ static inline Point3D cross( const Point3D &x, const Point3D &y )
 {
     return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
 }
+static inline double norm( const Point3D &x ) { return x[0] * x[0] + x[1] * x[1] + x[2] * x[2]; }
 template<std::size_t N>
 static inline std::array<double, N> normalize( const std::array<double, N> &x )
 {
@@ -81,13 +82,18 @@ static inline std::array<double, N> normalize( const std::array<double, N> &x )
 /****************************************************************
  * Map the logical coordinates to a circle                       *
  ****************************************************************/
-static inline std::pair<double, double> map_c2p( int method, double xc, double yc )
+static inline std::array<double, 2> map_c2p( int method, double xc, double yc )
 {
     if ( fabs( xc ) < 1e-12 && fabs( yc ) < 1e-12 )
-        return std::make_pair( 0.0, 0.0 );
+        return { 0.0, 0.0 };
     if ( fabs( yc ) > fabs( xc ) ) {
         auto [yp, xp] = map_c2p( method, yc, xc );
-        return std::make_pair( xp, yp );
+        return { xp, yp };
+    }
+    double scale = std::max( { 1.0, xc, yc } );
+    if ( scale > 1.0 ) {
+        xc /= scale;
+        yc /= scale;
     }
     // map xc > 0 and |yc| < xc = d to (xp,yp) in r=1 using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
@@ -111,16 +117,21 @@ static inline std::pair<double, double> map_c2p( int method, double xc, double y
     } else {
         AMP_ERROR( "Invalid method" );
     }
-    return std::make_pair( xp, yp );
+    return { scale * xp, scale * yp };
 }
-static inline std::pair<double, double> map_p2c( int method, double xp, double yp )
+static inline std::array<double, 2> map_p2c( int method, double xp, double yp )
 {
     // Perform the inverse mapping as map_c2p
     if ( fabs( xp ) < 1e-12 && fabs( yp ) < 1e-12 )
-        return std::make_pair( 0.0, 0.0 );
+        return { 0.0, 0.0 };
     if ( fabs( yp ) > fabs( xp ) ) {
         auto [yc, xc] = map_p2c( method, yp, xp );
-        return std::make_pair( xc, yc );
+        return { xc, yc };
+    }
+    double scale = std::max( sqrt( xp * xp + yp * yp ), 1.0 );
+    if ( scale > 1.0 ) {
+        xp /= scale;
+        yp /= scale;
     }
     double xc             = 0;
     double yc             = 0;
@@ -141,11 +152,11 @@ static inline std::pair<double, double> map_p2c( int method, double xp, double y
     } else {
         AMP_ERROR( "Invalid method" );
     }
-    return std::make_pair( xc, yc );
+    return { scale * xc, scale * yc };
 }
-std::pair<double, double> map_logical_circle( double r, int method, double x, double y )
+std::array<double, 2> map_logical_circle( double r, int method, double x, double y )
 {
-    // This maps from a a logically rectangular 3D mesh to a sphere mesh using the mapping by:
+    // This maps from a logically rectangular 3D mesh to a sphere mesh using the mapping by:
     //    Dona Calhoun, Christiane Helzel, Randall LeVeque, "Logically Rectangular Grids
     //       and Finite Volume Methods for PDEs in Circular and Spherical Domains",
     //       SIAM Review, Vol. 50, No. 4, pp. 723-752 (2008)
@@ -156,9 +167,9 @@ std::pair<double, double> map_logical_circle( double r, int method, double x, do
         xp = -xp;
     if ( yc < 0.0 )
         yp = -yp;
-    return std::make_pair( r * xp, r * yp );
+    return { r * xp, r * yp };
 }
-std::pair<double, double> map_circle_logical( double r, int method, double x, double y )
+std::array<double, 2> map_circle_logical( double r, int method, double x, double y )
 {
     // Get the points in the unit circle
     double xp = x / r;
@@ -170,7 +181,7 @@ std::pair<double, double> map_circle_logical( double r, int method, double x, do
     if ( yp < 0.0 )
         yc = -yc;
     // Change domain to [0,1]
-    return std::make_pair( 0.5 * ( xc + 1 ), 0.5 * ( yc + 1 ) );
+    return { 0.5 * ( xc + 1 ), 0.5 * ( yc + 1 ) };
 }
 
 
@@ -188,7 +199,7 @@ static double inline get_m( int N )
     constexpr double pi = 3.14159265358979323;
     return tan( pi * ( N - 2 ) / ( 2 * N ) );
 }
-std::pair<double, double> map_poly_logical( int N, double R, double x, double y )
+std::array<double, 2> map_poly_logical( int N, double R, double x, double y )
 {
     constexpr double pi = 3.14159265358979323;
     // Map the coordinates from a polygon to a circle
@@ -210,7 +221,7 @@ std::pair<double, double> map_poly_logical( int N, double R, double x, double y 
     // Map the coordinates to a circle
     return map_circle_logical( R, 2, x2, y2 );
 }
-std::pair<double, double> map_logical_poly( int N, double R, double x, double y )
+std::array<double, 2> map_logical_poly( int N, double R, double x, double y )
 {
     constexpr double pi = 3.14159265358979323;
     // Map the coordinates to a circle
@@ -233,19 +244,19 @@ std::pair<double, double> map_logical_poly( int N, double R, double x, double y 
     y2 *= r;
     return { x2, y2 };
 }
-std::vector<Point2D> get_poly_verticies( int N, double R )
+std::vector<Point2D> get_poly_vertices( int N, double R )
 {
     // Get the starting angle
     constexpr double pi = 3.14159265358979323;
     double theta        = 0.5 * pi - pi / N;
     double d_theta      = 2.0 * pi / N;
-    // Create the verticies
-    std::vector<Point2D> verticies( N );
+    // Create the vertices
+    std::vector<Point2D> vertices( N );
     for ( int i = 0; i < N; i++ ) {
-        verticies[i] = { R * cos( theta ), R * sin( theta ) };
+        vertices[i] = { R * cos( theta ), R * sin( theta ) };
         theta -= d_theta;
     }
-    return verticies;
+    return vertices;
 }
 
 
@@ -321,8 +332,8 @@ Point3D map_logical_sphere_surface( double R, double x, double y )
     double x3 = fabs( x2 ); // We need to make x go from 1:0:1
     // Map x,y to the unit circle
     auto point = map_logical_circle( 1.0, 3, x3, y );
-    double xp  = point.first;
-    double yp  = point.second;
+    double xp  = point[0];
+    double yp  = point[1];
     double zp  = sqrt( fabs( 1.0 - ( xp * xp + yp * yp ) ) );
     if ( zp < 1e-7 )
         zp = 0;
@@ -333,13 +344,13 @@ Point3D map_logical_sphere_surface( double R, double x, double y )
     zp *= R;
     return { xp, yp, zp };
 }
-std::pair<double, double> map_sphere_surface_logical( double R, double x, double y, double z )
+std::array<double, 2> map_sphere_surface_logical( double R, double x, double y, double z )
 {
     double xp  = x / R;
     double yp  = y / R;
     auto point = map_circle_logical( 1.0, 3, xp, yp );
-    double x2  = z < 0 ? -point.first : point.first;
-    return { 0.5 + 0.5 * x2, point.second };
+    double x2  = z < 0 ? -point[0] : point[0];
+    return { 0.5 + 0.5 * x2, point[1] };
 }
 
 
@@ -370,6 +381,17 @@ Point3D map_shell_logical( double r1, double r2, double x0, double y0, double z0
 
 
 /****************************************************************
+ * Compute the distance between the points                       *
+ ****************************************************************/
+static inline double dist2( const Point3D &x, const Point3D &y )
+{
+    return ( x[0] - y[0] ) * ( x[0] - y[0] ) + ( x[1] - y[1] ) * ( x[1] - y[1] ) +
+           ( x[2] - y[2] ) * ( x[2] - y[2] );
+}
+double distance( const Point3D &x, const Point3D &y ) { return sqrt( dist2( x, y ) ); }
+
+
+/****************************************************************
  * Compute the distance to the line segment                      *
  ****************************************************************/
 double
@@ -386,6 +408,28 @@ distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &p1, const
     if ( t1 >= 0.0 && t2 >= -1e-10 && t2 <= 1.0 + 1e-10 )
         return t1;
     return std::numeric_limits<double>::infinity();
+}
+double
+distanceToLine( const Point3D &pos, const Point3D &ang, const Point3D &p1, const Point3D &p2 )
+{
+    // Check if the vertex is within the line
+    auto p = nearest( p1, p2, pos );
+    if ( fabs( dist2( p, pos ) ) < 1e-16 )
+        return 0;
+    // Check if the ray lies in the plane of the line and vertex
+    auto n = normal( pos, p1, p2 );
+    auto c = cross( n, ang );
+    if ( fabs( norm( c ) ) > 1e-16 ) {
+        // lines are skew
+        return std::numeric_limits<double>::infinity();
+    }
+    printf( "n   = (%f,%f,%f)\n", n[0], n[1], n[2] );
+    printf( "pos = (%f,%f,%f)\n", pos[0], pos[1], pos[2] );
+    printf( "ang = (%f,%f,%f)\n", ang[0], ang[1], ang[2] );
+    printf( "p1  = (%f,%f,%f)\n", p1[0], p1[1], p1[2] );
+    printf( "p2  = (%f,%f,%f)\n", p2[0], p2[1], p2[2] );
+    AMP_ERROR( "Not finished" );
+    return 0;
 }
 
 
@@ -693,6 +737,11 @@ static bool containsPoint( const std::array<Point2D, 3> &x, const Point2D &pos, 
 }
 static bool containsPoint( const std::array<Point3D, 3> &x, const Point3D &pos, double TOL )
 {
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+    auto p0 = 1.0 / 3.0 * ( x[0] + x[1] + x[2] );
+    auto L0 = barycentric<3, 3>( x, p0 );
+    AMP_ASSERT( L0[0] > 0 && L0[1] > 0 && L0[2] > 0 );
+#endif
     auto L = barycentric<3, 3>( x, pos );
     return ( L[0] >= -TOL ) && ( L[1] >= -TOL ) && ( L[2] >= -TOL );
 }
@@ -776,6 +825,60 @@ distanceToTetrahedron( const std::array<Point3D, 4> &x, const Point3D &pos, cons
 
 
 /****************************************************************
+ * Compute the distance to a quadrilateral in 2D/3D              *
+ ****************************************************************/
+double
+distanceToQuadrilateral( const std::array<Point2D, 4> &x, const Point2D &pos, const Point2D &ang )
+{
+    // Get the centroid for the quadralateral and split into 4 triangles
+    Point2D p = { 0, 0 };
+    for ( int i = 0; i < 4; i++ ) {
+        p[0] += x[i][0];
+        p[1] += x[i][1];
+    }
+    double d1 = distanceToTriangle( { x[0], x[1], p }, pos, ang );
+    double d2 = distanceToTriangle( { x[1], x[2], p }, pos, ang );
+    double d3 = distanceToTriangle( { x[2], x[3], p }, pos, ang );
+    double d4 = distanceToTriangle( { x[3], x[0], p }, pos, ang );
+    double d  = std::min( { d1, d2, d3, d4 } );
+    if ( d <= 0 ) {
+        // We are inside a triangle, check each edge
+        d1 = std::abs( distanceToLine( pos, ang, x[0], x[1] ) );
+        d2 = std::abs( distanceToLine( pos, ang, x[1], x[2] ) );
+        d3 = std::abs( distanceToLine( pos, ang, x[2], x[3] ) );
+        d4 = std::abs( distanceToLine( pos, ang, x[3], x[0] ) );
+        return -std::min( { d1, d2, d3, d4 } );
+    }
+    return d;
+}
+double
+distanceToQuadrilateral( const std::array<Point3D, 4> &x, const Point3D &pos, const Point3D &ang )
+{
+    // Get the centroid for the quadralateral and split into 4 triangles
+    Point3D p = { 0, 0, 0 };
+    for ( int i = 0; i < 4; i++ ) {
+        p[0] += x[i][0];
+        p[1] += x[i][1];
+        p[2] += x[i][2];
+    }
+    double d1 = distanceToTriangle( { x[0], x[1], p }, pos, ang );
+    double d2 = distanceToTriangle( { x[1], x[2], p }, pos, ang );
+    double d3 = distanceToTriangle( { x[2], x[3], p }, pos, ang );
+    double d4 = distanceToTriangle( { x[3], x[0], p }, pos, ang );
+    double d  = std::min( { d1, d2, d3, d4 } );
+    if ( d <= 0 ) {
+        // We are inside a triangle, check each edge
+        d1 = std::abs( distanceToLine( pos, ang, x[0], x[1] ) );
+        d2 = std::abs( distanceToLine( pos, ang, x[1], x[2] ) );
+        d3 = std::abs( distanceToLine( pos, ang, x[2], x[3] ) );
+        d4 = std::abs( distanceToLine( pos, ang, x[3], x[0] ) );
+        return -std::min( { d1, d2, d3, d4 } );
+    }
+    return d;
+}
+
+
+/****************************************************************
  * Compute the normal to a plane                                 *
  ****************************************************************/
 Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 )
@@ -831,13 +934,13 @@ Point3D nearest( const std::array<Point3D, 3> &v, const Point3D &p0 )
         // Point is closest to the third vertex
         return v[2];
     } else if ( L[0] <= 0 ) {
-        // Point is closest to line between second and third verticies
+        // Point is closest to line between second and third vertices
         return nearest( v[1], v[2], p0 );
     } else if ( L[1] <= 0 ) {
-        // Point is closest to line between first and third verticies
+        // Point is closest to line between first and third vertices
         return nearest( v[0], v[2], p0 );
     } else {
-        // Point is closest to line between first and second verticies
+        // Point is closest to line between first and second vertices
         return nearest( v[0], v[1], p0 );
     }
 }
@@ -899,6 +1002,83 @@ std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &
             s1.push_back( p );
     }
     return s1;
+}
+
+
+/****************************************************************
+ * Sample points                                                 *
+ ****************************************************************/
+std::vector<Point3D> sampleLine( const std::array<Point3D, 2> &v, double d0, bool interior )
+{
+    double d = distance( v[0], v[1] );
+    int N    = ceil( d / d0 );
+    auto dx  = ( 1.0 / N ) * ( v[1] - v[0] );
+    if ( interior ) {
+        std::vector<std::array<double, 3>> p( N );
+        for ( int i = 0; i < N; i++ )
+            p[i] = v[0] + ( 0.5 + i ) * dx;
+        return p;
+    } else {
+        std::vector<std::array<double, 3>> p( N + 1 );
+        p[0] = v[0];
+        for ( int i = 1; i < N; i++ )
+            p[i] = v[0] + i * dx;
+        p[N] = v[1];
+        return p;
+    }
+}
+std::vector<Point3D> sampleTri( const std::array<Point3D, 3> &v, double d0, bool interior )
+{
+    NULL_USE( v );
+    NULL_USE( d0 );
+    NULL_USE( interior );
+    AMP_ERROR( "sampleTri: Not finished" );
+    return {};
+}
+std::vector<Point3D> sampleQuad( const std::array<Point3D, 4> &v, double d0, bool interior )
+{
+    double d1 = distance( v[0], v[1] );
+    double d2 = distance( v[1], v[2] );
+    double d3 = distance( v[2], v[3] );
+    double d4 = distance( v[3], v[0] );
+    int Nx    = ceil( 1.732050807568877 * std::max( d1, d3 ) / d0 );
+    int Ny    = ceil( 1.732050807568877 * std::max( d2, d4 ) / d0 );
+    auto fun  = [&v]( double x, double y ) {
+        auto v1 = v[0] + x * ( v[1] - v[0] );
+        auto v2 = v[3] + x * ( v[2] - v[3] );
+        return v1 + y * ( v2 - v1 );
+    };
+    if ( interior ) {
+        std::vector<std::array<double, 3>> p;
+        p.reserve( Nx * Ny );
+        for ( int i = 0; i < Nx; i++ ) {
+            double x = ( 0.5 + i ) / static_cast<double>( Nx );
+            for ( int j = 0; j < Ny; j++ ) {
+                double y = ( 0.5 + j ) / static_cast<double>( Ny );
+                p.push_back( fun( x, y ) );
+            }
+        }
+        return p;
+    } else {
+        std::vector<std::array<double, 3>> p;
+        p.reserve( ( Nx + 1 ) * ( Ny + 1 ) );
+        for ( int i = 0; i <= Nx; i++ ) {
+            double x = static_cast<double>( i ) / static_cast<double>( Nx );
+            for ( int j = 0; j <= Ny; j++ ) {
+                double y = static_cast<double>( j ) / static_cast<double>( Ny );
+                p.push_back( fun( x, y ) );
+            }
+        }
+        return p;
+    }
+}
+std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &v, double d0, bool interior )
+{
+    NULL_USE( v );
+    NULL_USE( d0 );
+    NULL_USE( interior );
+    AMP_ERROR( "sampleTet: Not finished" );
+    return {};
 }
 
 
