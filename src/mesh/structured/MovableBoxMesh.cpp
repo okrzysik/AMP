@@ -49,9 +49,9 @@ uint64_t MovableBoxMesh::positionHash() const { return d_pos_hash; }
 void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
-    for ( size_t i = 0; i < d_coord.size(); i++ ) {
+    for ( auto &i : d_coord ) {
         for ( int d = 0; d < PhysicalDim; d++ )
-            d_coord[i][d] += x[d];
+            i[d] += x[d];
     }
     for ( int d = 0; d < PhysicalDim; d++ ) {
         d_box[2 * d + 0] += x[d];
@@ -107,10 +107,10 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         d_box_local[2 * d + 0] = 1e100;
         d_box_local[2 * d + 1] = -1e100;
     }
-    for ( size_t i = 0; i < d_coord.size(); i++ ) {
+    for ( auto &i : d_coord ) {
         for ( int d = 0; d < PhysicalDim; d++ ) {
-            d_box_local[2 * d + 0] = std::min( d_box_local[2 * d + 0], d_coord[i][d] );
-            d_box_local[2 * d + 1] = std::max( d_box_local[2 * d + 1], d_coord[i][d] );
+            d_box_local[2 * d + 0] = std::min( d_box_local[2 * d + 0], i[d] );
+            d_box_local[2 * d + 1] = std::max( d_box_local[2 * d + 1], i[d] );
         }
     }
     d_box = std::vector<double>( PhysicalDim * 2 );

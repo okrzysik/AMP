@@ -106,9 +106,9 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
 
     // get dof manager
-    int DOFsPerFace[3] = { 0, 0, 2 };
-    auto faceDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    int DOFsPerFace[3]  = { 0, 0, 2 };
+    auto faceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 1 );
 
     // get input and output variables
     auto inputVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );

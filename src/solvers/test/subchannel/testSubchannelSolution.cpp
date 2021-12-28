@@ -111,9 +111,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto inputVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
     auto outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
     // get dof manager
-    int DOFsPerFace[3] = { 0, 0, 2 };
-    auto faceDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+    int DOFsPerFace[3]  = { 0, 0, 2 };
+    auto faceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 0 );
 
     // create solution, rhs, and residual vectors
     auto manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
@@ -253,8 +253,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Compute the flow temperature
     int tempDOFsPerFace[3] = { 0, 0, 1 };
-    auto tempDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, tempDOFsPerFace, 0 );
+    auto tempDOFManager    = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, tempDOFsPerFace, 0 );
     auto tempVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
     auto tempVec      = AMP::LinearAlgebra::createVector( tempDOFManager, tempVariable, true );
     face              = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );

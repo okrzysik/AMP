@@ -792,10 +792,10 @@ void meshTests::getNodeNeighbors( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr
     {
         bool contains_self      = false;
         bool contains_duplicate = false;
-        for ( auto it = neighbor_list.begin(); it != neighbor_list.end(); ++it ) {
-            auto neighbors = it->second;
+        for ( auto &it : neighbor_list ) {
+            auto neighbors = it.second;
             for ( size_t i = 0; i < neighbors.size(); i++ ) {
-                if ( neighbors[i] == it->first )
+                if ( neighbors[i] == it.first )
                     contains_self = true;
                 for ( size_t j = 0; j < i; j++ ) {
                     if ( neighbors[j] == neighbors[i] )
@@ -815,8 +815,8 @@ void meshTests::getNodeNeighbors( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr
     // If there are ghost nodes, then some of them must be neighbors
     if ( mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, 1 ) > 0 ) {
         bool ghost_neighbors = false;
-        for ( auto it = neighbor_list.begin(); it != neighbor_list.end(); ++it ) {
-            auto neighbors = it->second;
+        for ( auto &it : neighbor_list ) {
+            auto neighbors = it.second;
             for ( auto &neighbor : neighbors ) {
                 if ( !neighbor.is_local() )
                     ghost_neighbors = true;

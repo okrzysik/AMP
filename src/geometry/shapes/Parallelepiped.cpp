@@ -53,8 +53,8 @@ Parallelepiped::Parallelepiped( std::shared_ptr<const AMP::Database> db )
     d_M_inv[7] = d_c[0] * d_a[1] - d_a[0] * d_c[1];
     d_M_inv[8] = d_a[0] * d_b[1] - d_b[0] * d_a[1];
     double det = d_a[0] * d_M_inv[0] + d_b[0] * d_M_inv[1] + d_c[0] * d_M_inv[2];
-    for ( int i = 0; i < 9; i++ )
-        d_M_inv[i] = d_M_inv[i] / det;
+    for ( auto &x : d_M_inv )
+        x /= det;
     // Compute the volume: abs(det(M))
     d_V = std::abs( det );
     // Compute the normals to the surface (pointing out from the center)

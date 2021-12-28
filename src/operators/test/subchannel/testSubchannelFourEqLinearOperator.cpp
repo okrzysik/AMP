@@ -468,9 +468,9 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // get dof manager
     std::shared_ptr<AMP::Discretization::DOFManager> subchannelDOFManager;
-    int DOFsPerFace[3] = { 1, 1, 3 };
-    subchannelDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    int DOFsPerFace[3]   = { 1, 1, 3 };
+    subchannelDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 1 );
     // check number of DOFs
     if ( subchannelDOFManager->numGlobalDOF() == num_dofs_AMP )
         ut->passes( exeName + ": number of DOFs" );

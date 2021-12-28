@@ -759,8 +759,8 @@ void ThreadPool::tpool_thread( int thread_id )
             ++d_N_finished;
             // Check if any threads are waiting on the current work item
             // This can be done without blocking
-            for ( int i = 0; i < MAX_WAIT; i++ ) {
-                auto wait = d_wait[i].load();
+            for ( auto &i : d_wait ) {
+                auto wait = i.load();
                 if ( wait != nullptr )
                     wait->id_finished( work_id );
             }

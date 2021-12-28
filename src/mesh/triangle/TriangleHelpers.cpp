@@ -824,8 +824,8 @@ static inline std::vector<Point> combineSurfaceVolumePoints( const std::vector<P
     }
     // Add the surface points
     points.resize( k );
-    for ( size_t i = 0; i < surface.size(); i++ )
-        points.push_back( surface[i] );
+    for ( const auto &s : surface )
+        points.push_back( s );
     // Check the distance
     check_nearest( points );
     return points;

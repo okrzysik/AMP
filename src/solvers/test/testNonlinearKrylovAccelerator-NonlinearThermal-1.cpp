@@ -172,8 +172,8 @@ int main( int argc, char *argv[] )
     exeNames.push_back( "testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_kIsOne" );
     exeNames.push_back( "testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_MATPRO" );
 
-    for ( unsigned int i = 0; i < exeNames.size(); i++ )
-        myTest( &ut, exeNames[i] );
+    for ( auto &exeName : exeNames )
+        myTest( &ut, exeName );
 
     ut.report();
 

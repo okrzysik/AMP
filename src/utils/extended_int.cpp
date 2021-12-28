@@ -218,9 +218,9 @@ static constexpr bool testMult()
     double ans[] = { -1e18, 1e36,   -1e54, 1e72,   -1e90, 1e108,  -1e126, 1e144, -1e162,
                      1e180, -1e198, 1e216, -1e234, 1e252, -1e270, 1e288,  -1e306 };
     bool test    = true;
-    for ( int i = 0; i < 17; i++ ) {
+    for ( double an : ans ) {
         x2   = x2 * x;
-        test = test && compare( x2, ans[i] );
+        test = test && compare( x2, an );
     }
     // Test multiplication of large integers
     constexpr auto y1 = createShift<eint2048>( 1, 76 );

@@ -144,8 +144,8 @@ std::vector<Point> sample( const MeshElement &elem, double dx )
         // Choose the furthest point for the first vector
         Point v1;
         double tmp = 0;
-        for ( size_t i = 0; i < x.size(); i++ ) {
-            auto v = x[i] - center;
+        for ( auto &p : x ) {
+            auto v = p - center;
             auto d = v.norm();
             if ( d > tmp ) {
                 v1  = normalize( v );
@@ -156,9 +156,9 @@ std::vector<Point> sample( const MeshElement &elem, double dx )
         auto v2 = normalize( cross( n, v1 ) );
         // Get the range in the unit vectors
         double range[4] = { 0, 0, 0, 0 };
-        for ( size_t i = 0; i < x.size(); i++ ) {
-            double d1 = dot( x[i] - center, v1 );
-            double d2 = dot( x[i] - center, v2 );
+        for ( auto &p : x ) {
+            double d1 = dot( p - center, v1 );
+            double d2 = dot( p - center, v2 );
             range[0]  = std::min( range[0], d1 );
             range[1]  = std::max( range[1], d1 );
             range[2]  = std::min( range[2], d2 );

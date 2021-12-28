@@ -81,9 +81,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get dof manager
-    int DOFsPerFace[3] = { 1, 1, 3 };
-    auto subchannelDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    int DOFsPerFace[3]        = { 1, 1, 3 };
+    auto subchannelDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 1 );
 
     //=============================================================================
     // physics model, parameters, and operator creation

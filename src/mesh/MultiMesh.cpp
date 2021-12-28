@@ -80,27 +80,27 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
     if ( !d_meshes.empty() )
         PhysicalDim = d_meshes[0]->getDim();
     PhysicalDim = d_comm.maxReduce( PhysicalDim );
-    for ( size_t i = 0; i < d_meshes.size(); i++ )
-        AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
+    for ( auto &mesh : d_meshes )
+        AMP_INSIST( PhysicalDim == mesh->getDim(),
                     "Physical dimension must match for all meshes in multimesh" );
     // Get the highest geometric type
     GeomDim   = AMP::Mesh::GeomType::Vertex;
     d_max_gcw = 0;
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) {
-        AMP_INSIST( PhysicalDim == d_meshes[i]->getDim(),
+    for ( auto &mesh : d_meshes ) {
+        AMP_INSIST( PhysicalDim == mesh->getDim(),
                     "Physical dimension must match for all meshes in multimesh" );
-        if ( d_meshes[i]->getGeomType() > GeomDim )
-            GeomDim = d_meshes[i]->getGeomType();
-        if ( d_meshes[i]->getMaxGhostWidth() > d_max_gcw )
-            d_max_gcw = d_meshes[i]->getMaxGhostWidth();
+        if ( mesh->getGeomType() > GeomDim )
+            GeomDim = mesh->getGeomType();
+        if ( mesh->getMaxGhostWidth() > d_max_gcw )
+            d_max_gcw = mesh->getMaxGhostWidth();
     }
     GeomDim   = (GeomType) d_comm.maxReduce( (int) GeomDim );
     d_max_gcw = d_comm.maxReduce( d_max_gcw );
     // Compute the bounding box of the multimesh
     d_box_local = { 1e200, -1e200, 1e200, -1e200, 1e200, -1e200 };
     d_box_local.resize( 2 * PhysicalDim );
-    for ( size_t i = 0; i < d_meshes.size(); i++ ) {
-        auto meshBox = d_meshes[i]->getBoundingBox();
+    for ( auto &mesh : d_meshes ) {
+        auto meshBox = mesh->getBoundingBox();
         for ( int j = 0; j < PhysicalDim; j++ ) {
             if ( meshBox[2 * j + 0] < d_box_local[2 * j + 0] ) {
                 d_box_local[2 * j + 0] = meshBox[2 * j + 0];
@@ -177,16 +177,16 @@ MultiMesh::MultiMesh( const std::string &name,
     this->setMeshID();
     // Get the list of non-null meshes
     d_meshes = std::vector<Mesh::shared_ptr>();
-    for ( auto &meshe : meshes ) {
-        if ( meshe )
-            d_meshes.push_back( meshe );
+    for ( auto &mesh : meshes ) {
+        if ( mesh )
+            d_meshes.push_back( mesh );
     }
     if ( d_comm.sumReduce( d_meshes.size() ) == 0 ) {
         AMP_ERROR( "Empty multimeshes have not been tested yet" );
     }
     // Check the comm (note: the order for the comparison matters)
-    for ( auto &elem : d_meshes ) {
-        AMP_ASSERT( elem->getComm() <= d_comm );
+    for ( auto &mesh : d_meshes ) {
+        AMP_ASSERT( mesh->getComm() <= d_comm );
     }
     // Get the physical dimension and the highest geometric type
     PhysicalDim = d_meshes[0]->getDim();
@@ -312,8 +312,8 @@ size_t MultiMesh::maxProcs( std::shared_ptr<const MeshParameters> params_in )
     // Get the approximate number of elements for each mesh
     size_t totalMaxSize = 0;
     int method          = db->getWithDefault<int>( "LoadBalanceMethod", 1 );
-    for ( auto &elem : params ) {
-        size_t localMaxSize = AMP::Mesh::Mesh::maxProcs( elem );
+    for ( auto &param : params ) {
+        size_t localMaxSize = AMP::Mesh::Mesh::maxProcs( param );
         AMP_ASSERT( localMaxSize > 0 );
         if ( method == 1 ) {
             totalMaxSize += localMaxSize;
@@ -362,9 +362,9 @@ MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
     }
     // Create the basic databases for each mesh
     std::vector<std::shared_ptr<AMP::Database>> meshDatabases;
-    for ( auto &meshe : meshes ) {
+    for ( auto &mesh : meshes ) {
         // We are dealing with a single mesh object, use the existing database
-        auto database2 = database->getDatabase( meshe )->cloneDatabase();
+        auto database2 = database->getDatabase( mesh )->cloneDatabase();
         meshDatabases.push_back( std::move( database2 ) );
     }
     for ( auto &meshArray : meshArrays ) {
@@ -424,8 +424,8 @@ size_t MultiMesh::numLocalElements( const GeomType type ) const
 {
     // Should we cache this?
     size_t N = 0;
-    for ( auto &elem : d_meshes )
-        N += elem->numLocalElements( type );
+    for ( auto &mesh : d_meshes )
+        N += mesh->numLocalElements( type );
     return N;
 }
 size_t MultiMesh::numGlobalElements( const GeomType type ) const
@@ -438,8 +438,8 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
 {
     // Should we cache this?
     size_t N = 0;
-    for ( auto &elem : d_meshes )
-        N += elem->numGhostElements( type, gcw );
+    for ( auto &mesh : d_meshes )
+        N += mesh->numGhostElements( type, gcw );
     return N;
 }
 std::vector<Mesh::shared_ptr> MultiMesh::getMeshes() { return d_meshes; }
@@ -473,8 +473,8 @@ std::vector<int> MultiMesh::getBoundaryIDs() const
 {
     // Get all local id sets
     std::set<int> ids_set;
-    for ( auto &elem : d_meshes ) {
-        std::vector<int> mesh_idSet = elem->getBoundaryIDs();
+    for ( auto &mesh : d_meshes ) {
+        std::vector<int> mesh_idSet = mesh->getBoundaryIDs();
         ids_set.insert( mesh_idSet.begin(), mesh_idSet.end() );
     }
     std::vector<int> local_ids( ids_set.begin(), ids_set.end() );
@@ -494,8 +494,8 @@ std::vector<int> MultiMesh::getBoundaryIDs() const
         ptr = &local_ids[0];
     d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
     // Get the unique set
-    for ( auto &elem : global_id_list )
-        ids_set.insert( elem );
+    for ( auto &id : global_id_list )
+        ids_set.insert( id );
     // Return the final vector of ids
     return std::vector<int>( ids_set.begin(), ids_set.end() );
 }
@@ -504,8 +504,8 @@ MultiMesh::getBoundaryIDIterator( const GeomType type, const int id, const int g
 {
     std::vector<MeshIterator> iterators;
     iterators.reserve( d_meshes.size() );
-    for ( auto &elem : d_meshes ) {
-        MeshIterator it = elem->getBoundaryIDIterator( type, id, gcw );
+    for ( auto &mesh : d_meshes ) {
+        MeshIterator it = mesh->getBoundaryIDIterator( type, id, gcw );
         if ( it.size() > 0 )
             iterators.push_back( it );
     }
@@ -515,8 +515,8 @@ std::vector<int> MultiMesh::getBlockIDs() const
 {
     // Get all local id sets
     std::set<int> ids_set;
-    for ( auto &elem : d_meshes ) {
-        std::vector<int> mesh_idSet = elem->getBlockIDs();
+    for ( auto &mesh : d_meshes ) {
+        std::vector<int> mesh_idSet = mesh->getBlockIDs();
         ids_set.insert( mesh_idSet.begin(), mesh_idSet.end() );
     }
     std::vector<int> local_ids( ids_set.begin(), ids_set.end() );
@@ -536,8 +536,8 @@ std::vector<int> MultiMesh::getBlockIDs() const
         ptr = &local_ids[0];
     d_comm.allGather( ptr, N_id_local, &global_id_list[0], &count[0], &disp[0], true );
     // Get the unique set
-    for ( auto &elem : global_id_list )
-        ids_set.insert( elem );
+    for ( auto &mesh : global_id_list )
+        ids_set.insert( mesh );
     // Return the final vector of ids
     return std::vector<int>( ids_set.begin(), ids_set.end() );
 }
@@ -545,8 +545,8 @@ MeshIterator MultiMesh::getBlockIDIterator( const GeomType type, const int id, c
 {
     std::vector<MeshIterator> iterators;
     iterators.reserve( d_meshes.size() );
-    for ( auto &elem : d_meshes ) {
-        MeshIterator it = elem->getBlockIDIterator( type, id, gcw );
+    for ( auto &mesh : d_meshes ) {
+        auto it = mesh->getBlockIDIterator( type, id, gcw );
         if ( it.size() > 0 )
             iterators.push_back( it );
     }
@@ -575,20 +575,18 @@ std::vector<MeshID> MultiMesh::getLocalMeshIDs() const
 {
     std::set<MeshID> ids;
     ids.insert( d_meshID );
-    for ( auto &elem : d_meshes ) {
-        std::vector<MeshID> mesh_ids = elem->getLocalMeshIDs();
-        for ( auto &mesh_id : mesh_ids )
-            ids.insert( mesh_id );
+    for ( auto &mesh : d_meshes ) {
+        for ( auto &id : mesh->getLocalMeshIDs() )
+            ids.insert( id );
     }
     return std::vector<MeshID>( ids.begin(), ids.end() );
 }
 std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
 {
     std::set<MeshID> ids;
-    for ( auto &elem : d_meshes ) {
-        std::vector<MeshID> mesh_ids = elem->getLocalBaseMeshIDs();
-        for ( auto &mesh_id : mesh_ids )
-            ids.insert( mesh_id );
+    for ( auto &mesh : d_meshes ) {
+        for ( auto &id : mesh->getLocalBaseMeshIDs() )
+            ids.insert( id );
     }
     return std::vector<MeshID>( ids.begin(), ids.end() );
 }
@@ -599,8 +597,8 @@ std::vector<MeshID> MultiMesh::getLocalBaseMeshIDs() const
  ********************************************************/
 bool MultiMesh::isMember( const MeshElementID &id ) const
 {
-    for ( auto &elem : d_meshes ) {
-        if ( elem->isMember( id ) )
+    for ( auto &mesh : d_meshes ) {
+        if ( mesh->isMember( id ) )
             return true;
     }
     return false;
@@ -613,15 +611,15 @@ bool MultiMesh::isMember( const MeshElementID &id ) const
 MeshElement MultiMesh::getElement( const MeshElementID &elem_id ) const
 {
     MeshID mesh_id = elem_id.meshID();
-    for ( auto &elem : d_meshes ) {
-        auto ids        = elem->getLocalBaseMeshIDs();
+    for ( auto &mesh : d_meshes ) {
+        auto ids        = mesh->getLocalBaseMeshIDs();
         bool mesh_found = false;
         for ( auto &id : ids ) {
             if ( id == mesh_id )
                 mesh_found = true;
         }
         if ( mesh_found )
-            return elem->getElement( elem_id );
+            return mesh->getElement( elem_id );
     }
     AMP_ERROR( "A mesh matching the element's mesh id was not found" );
     return MeshElement();
@@ -635,15 +633,15 @@ std::vector<MeshElement> MultiMesh::getElementParents( const MeshElement &elem,
                                                        const GeomType type ) const
 {
     MeshID mesh_id = elem.globalID().meshID();
-    for ( auto &_i : d_meshes ) {
-        std::vector<MeshID> ids = _i->getLocalBaseMeshIDs();
-        bool mesh_found         = false;
+    for ( auto &mesh : d_meshes ) {
+        auto ids        = mesh->getLocalBaseMeshIDs();
+        bool mesh_found = false;
         for ( auto &id : ids ) {
             if ( id == mesh_id )
                 mesh_found = true;
         }
         if ( mesh_found )
-            return _i->getElementParents( elem, type );
+            return mesh->getElementParents( elem, type );
     }
     AMP_ERROR( "A mesh matching the element's mesh id was not found" );
     return std::vector<MeshElement>();
@@ -657,12 +655,12 @@ std::shared_ptr<Mesh> MultiMesh::Subset( MeshID meshID ) const
 {
     if ( d_meshID == meshID )
         return std::const_pointer_cast<Mesh>( shared_from_this() );
-    for ( auto &elem : d_meshes ) {
-        std::shared_ptr<Mesh> mesh = elem->Subset( meshID );
-        if ( mesh )
-            return mesh;
+    for ( auto &mesh : d_meshes ) {
+        auto mesh2 = mesh->Subset( meshID );
+        if ( mesh2 )
+            return mesh2;
     }
-    return std::shared_ptr<Mesh>();
+    return nullptr;
 }
 
 
@@ -687,17 +685,17 @@ std::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
     // Subset for the iterator in each submesh
     std::vector<Mesh::shared_ptr> subset;
     std::set<MeshID> subsetID;
-    for ( auto &elem : d_meshes ) {
+    for ( auto &mesh : d_meshes ) {
         MeshIterator iterator;
         if ( iterator_in.size() > 0 ) {
             iterator = Mesh::getIterator( SetOP::Intersection,
                                           iterator_in,
-                                          elem->getIterator( type, elem->getMaxGhostWidth() ) );
+                                          mesh->getIterator( type, mesh->getMaxGhostWidth() ) );
         }
-        auto mesh = elem->Subset( iterator, isGlobal );
-        if ( mesh ) {
-            subset.push_back( mesh );
-            subsetID.insert( mesh->meshID() );
+        auto mesh2 = mesh->Subset( iterator, isGlobal );
+        if ( mesh2 ) {
+            subset.push_back( mesh2 );
+            subsetID.insert( mesh2->meshID() );
         }
     }
     // Count the number of globally unique sub-meshes
@@ -734,11 +732,11 @@ std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     // Subset for the name in each submesh
     std::vector<Mesh::shared_ptr> subset;
     std::set<MeshID> subsetID;
-    for ( auto &elem : d_meshes ) {
-        Mesh::shared_ptr mesh = elem->Subset( name );
-        if ( mesh ) {
-            subset.push_back( mesh );
-            subsetID.insert( mesh->meshID() );
+    for ( auto &mesh : d_meshes ) {
+        auto mesh2 = mesh->Subset( name );
+        if ( mesh2 ) {
+            subset.push_back( mesh2 );
+            subsetID.insert( mesh2->meshID() );
         }
     }
     // Count the number of globally unique sub-meshes
@@ -765,8 +763,8 @@ std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
 Mesh::Movable MultiMesh::isMeshMovable() const
 {
     int value = 2;
-    for ( auto &elem : d_meshes )
-        value = std::min( value, static_cast<int>( elem->isMeshMovable() ) );
+    for ( auto &mesh : d_meshes )
+        value = std::min( value, static_cast<int>( mesh->isMeshMovable() ) );
     return static_cast<Mesh::Movable>( value );
 }
 uint64_t MultiMesh::positionHash() const
@@ -801,8 +799,8 @@ void MultiMesh::displaceMesh( const std::vector<double> &x_in )
 void MultiMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x )
 {
     // Displace the individual meshes
-    for ( auto &elem : d_meshes )
-        elem->displaceMesh( x );
+    for ( auto &mesh : d_meshes )
+        mesh->displaceMesh( x );
     // Compute the bounding box of the multimesh
     d_box_local = d_meshes[0]->getBoundingBox();
     for ( size_t i = 1; i < d_meshes.size(); i++ ) {
@@ -890,8 +888,8 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
                 copyKey( subDatabase1, subDatabase2, subKey, false, iterator, index2 );
         }
     } else if ( !select ) {
-        for ( size_t i = 0; i < database2.size(); i++ )
-            database2[i]->putData( key, database1->getData( key )->clone() );
+        for ( auto &db : database2 )
+            db->putData( key, database1->getData( key )->clone() );
     } else if ( database1->isType<bool>( key ) ) {
         // Copy a bool
         putEntry<bool>( database1, database2, key );
@@ -920,8 +918,8 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
                 database2[i]->putScalar( key, data2 );
             }
         } else {
-            for ( size_t i = 0; i < database2.size(); i++ )
-                database2[i]->putVector( key, data );
+            for ( auto &db : database2 )
+                db->putVector( key, data );
         }
     } else {
         AMP_ERROR( "Unknown key type" );
@@ -939,8 +937,8 @@ std::vector<AMP_MPI> MultiMesh::createComms( const AMP_MPI &comm,
     std::vector<AMP_MPI> comms( groups.size() );
     for ( size_t i = 0; i < groups.size(); i++ ) {
         int color = -1;
-        for ( auto &elem : groups[i] ) {
-            if ( elem == myRank )
+        for ( auto &group : groups[i] ) {
+            if ( group == myRank )
                 color = 0;
         }
         comms[i] = comm.split( color, comm.getRank() );

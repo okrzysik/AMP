@@ -1,4 +1,5 @@
 #include "AMP/mesh/structured/structuredMeshElement.h"
+
 #include "AMP/geometry/shapes/GeometryHelpers.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/utils/Utilities.h"
@@ -680,10 +681,10 @@ double structuredMeshElement::volume() const
         // The centroid is a convenient point to use
         // for the apex of all the pyramids
         double R[3] = { 0, 0, 0 };
-        for ( int i = 0; i < 8; i++ ) {
-            R[0] += x[i][0];
-            R[1] += x[i][1];
-            R[2] += x[i][2];
+        for ( auto &y : x ) {
+            R[0] += y[0];
+            R[1] += y[1];
+            R[2] += y[2];
         }
         R[0] *= 0.125;
         R[1] *= 0.125;

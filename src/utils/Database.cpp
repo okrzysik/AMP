@@ -598,8 +598,7 @@ static class_type getType( std::string_view value0,
     // Check if we could be an int or float
     bool is_int   = true;
     bool is_float = true;
-    for ( size_t j = 0; j < value.size(); j++ ) {
-        char c = value[j];
+    for ( char c : value ) {
         if ( c < 42 || c == 46 || c >= 58 )
             is_int = false;
         if ( ( c < 42 || c >= 58 ) && ( c != 69 && c != 101 ) )
@@ -640,10 +639,10 @@ createKeyData( const std::string_view &key,
         data.reset( new EmptyKeyData() );
     } else if ( data_type == class_type::STRING ) {
         // We are dealing with strings
-        for ( size_t i = 0; i < values.size(); i++ ) {
-            if ( values[i][0] != '"' || values[i].back() != '"' )
+        for ( auto &value : values ) {
+            if ( value[0] != '"' || value.back() != '"' )
                 throw std::logic_error( "Error parsing string for key: " + std::string( key ) );
-            values[i] = values[i].substr( 1, values[i].size() - 2 );
+            value = value.substr( 1, value.size() - 2 );
         }
         if ( values.size() == 1 ) {
             std::string str( values[0] );

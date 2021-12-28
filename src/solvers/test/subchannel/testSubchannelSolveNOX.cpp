@@ -95,9 +95,9 @@ static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
 
     AMP::LinearAlgebra::Vector::shared_ptr flowVec;
     if ( subchannelMesh ) {
-        int DOFsPerFace[3] = { 0, 0, 2 };
-        auto faceDOFManager =
-            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+        int DOFsPerFace[3]  = { 0, 0, 2 };
+        auto faceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+            subchannelMesh, DOFsPerFace, 0 );
         // create solution, rhs, and residual vectors
         flowVec = AMP::LinearAlgebra::createVector( faceDOFManager, flowVariable, true );
     }
@@ -237,9 +237,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp;
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
     if ( subchannelMesh ) {
-        int DOFsPerFace[3] = { 0, 0, 1 };
-        auto scalarFaceDOFManager =
-            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+        int DOFsPerFace[3]        = { 0, 0, 1 };
+        auto scalarFaceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+            subchannelMesh, DOFsPerFace, 0 );
         subchannelFuelTemp =
             AMP::LinearAlgebra::createVector( scalarFaceDOFManager, thermalVariable );
         subchannelFlowTemp =
@@ -290,9 +290,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                             subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
                 // subchannelLinearOperator.reset( new AMP::Operator::IdentityOperator(
                 // nonlinearOpParams ) );
-                int DOFsPerFace[3]  = { 0, 0, 2 };
-                auto flowDOFManager = AMP::Discretization::structuredFaceDOFManager::create(
-                    subchannelMesh, DOFsPerFace, 0 );
+                int DOFsPerFace[3] = { 0, 0, 2 };
+                auto flowDOFManager =
+                    std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+                        subchannelMesh, DOFsPerFace, 0 );
                 auto subchannelFlow =
                     AMP::LinearAlgebra::createVector( flowDOFManager, flowVariable );
                 subchannelNonlinearOperator->setVector( subchannelFuelTemp );

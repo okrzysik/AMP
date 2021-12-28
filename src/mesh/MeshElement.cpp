@@ -41,8 +41,8 @@ Point MeshElement::centroid() const
         for ( size_t j = 0; j < center.size(); j++ )
             center[j] += pos[j];
     }
-    for ( size_t j = 0; j < center.size(); j++ )
-        center[j] /= nodes.size();
+    for ( auto &x : center )
+        x /= nodes.size();
     return center;
 }
 
