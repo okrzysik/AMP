@@ -36,7 +36,7 @@ AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
 }
 } // namespace
 
-typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
+using CartesianField = stk::mesh::Field<double, stk::mesh::Cartesian>;
 
 
 /********************************************************

@@ -33,7 +33,7 @@ public:
     PetscVectorWrapper()                             = delete;
     PetscVectorWrapper( const PetscVectorWrapper & ) = delete;
     explicit PetscVectorWrapper( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
-    ~PetscVectorWrapper();
+    ~PetscVectorWrapper() override;
     inline Vec &getVec() { return d_petscVec; }
     inline auto getAMP() { return d_vec; }
     inline bool check() const { return hash == globalHash; }

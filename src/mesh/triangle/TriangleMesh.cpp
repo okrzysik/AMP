@@ -19,9 +19,9 @@
 namespace AMP::Mesh {
 
 
-typedef std::array<ElementID, 2> Edge;
-typedef std::array<ElementID, 3> Triangle;
-typedef std::array<ElementID, 4> Tetrahedron;
+using Edge        = std::array<ElementID, 2>;
+using Triangle    = std::array<ElementID, 3>;
+using Tetrahedron = std::array<ElementID, 4>;
 
 
 // Helper function to create constexpr std::array with a single value

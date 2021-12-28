@@ -1,3 +1,4 @@
+
 #include "AMP/mesh/STKmesh/STKMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -28,7 +29,7 @@
 
 namespace AMP::Mesh {
 
-typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
+using CartesianField = stk::mesh::Field<double, stk::mesh::Cartesian>;
 
 struct NullDeleter {
     template<typename T>

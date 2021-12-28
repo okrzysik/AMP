@@ -381,7 +381,7 @@ static std::vector<int> createBlockIDs( const std::vector<std::array<double, NP>
     if ( tri.empty() )
         return std::vector<int>();
     // Calculate the normal for each triangle face
-    typedef std::array<double, NP> Point;
+    using Point = std::array<double, NP>;
     std::vector<Point> norm( tri.size() );
     for ( size_t i = 0; i < tri.size(); i++ )
         norm[i] = calcNorm( vertices, tri[i] );
@@ -579,7 +579,7 @@ std::vector<std::vector<std::array<int64_t, 2>>>
 /********************************************************
  *  Generate mesh for STL file                           *
  ********************************************************/
-typedef std::vector<std::array<int64_t, 3>> triset;
+using triset = std::vector<std::array<int64_t, 3>>;
 static std::vector<AMP::AMP_MPI>
 loadbalance( const std::vector<triset> &tri, const AMP_MPI &comm, int method )
 {
@@ -1054,15 +1054,15 @@ generate( std::shared_ptr<AMP::Geometry::Geometry> geom, const AMP_MPI &comm, do
  *  Explicit instantiations                              *
  ********************************************************/
 // clang-format off
-typedef std::array<double,1> point1D;
-typedef std::array<double,2> point2D;
-typedef std::array<double,3> point3D;
-typedef std::vector<point1D> pointset1D;
-typedef std::vector<point2D> pointset2D;
-typedef std::vector<point3D> pointset3D;
-typedef std::vector<std::array<int64_t,2>> triset1D;
-typedef std::vector<std::array<int64_t,3>> triset2D;
-typedef std::vector<std::array<int64_t,4>> triset3D;
+using point1D = std::array<double, 1>;
+using point2D = std::array<double, 2>;
+using point3D = std::array<double, 3>;
+using pointset1D = std::vector<point1D>;
+using pointset2D = std::vector<point2D>;
+using pointset3D = std::vector<point3D>;
+using triset1D = std::vector<std::array<int64_t, 2>>;
+using triset2D = std::vector<std::array<int64_t, 3>>;
+using triset3D = std::vector<std::array<int64_t, 4>>;
 template size_t count<1>( const triset1D & );
 template size_t count<2>( const triset2D & );
 template size_t count<3>( const triset3D & );

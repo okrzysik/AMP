@@ -1906,7 +1906,7 @@ static int intersect_sorted( const int N_lists,
 
 // Explicit instantiations
 // clang-format off
-typedef std::tuple<AMP::Array<double>,AMP::Array<double>> FG;
+using FG = std::tuple<AMP::Array<double>, AMP::Array<double>>;
 
 template class DelaunayInterpolation<int>;
 template class DelaunayInterpolation<double>;

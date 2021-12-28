@@ -413,8 +413,8 @@ public:
     {
         AMP::Utilities::abort( msg, file, line );
     }
-    SAMRAIAbortAppender()          = default;
-    virtual ~SAMRAIAbortAppender() = default;
+    SAMRAIAbortAppender()           = default;
+    ~SAMRAIAbortAppender() override = default;
 };
 #endif
 

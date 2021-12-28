@@ -507,7 +507,7 @@ std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x )
  * Instantiate communication of MeshElementID            *
  ********************************************************/
 namespace AMP {
-typedef AMP::Mesh::MeshElementID ID;
+using ID = AMP::Mesh::MeshElementID;
 template ID AMP_MPI::bcast<ID>( ID, int ) const;
 template void AMP_MPI::bcast<ID>( ID *, int, int ) const;
 template void AMP_MPI::send<ID>( const ID *, int, int, int ) const;
