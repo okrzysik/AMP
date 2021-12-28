@@ -333,7 +333,7 @@ void GMRESSolver::computeGivensRotation( const int k )
     d_dsin[k] = s;
 }
 
-void GMRESSolver::backwardSolve( void )
+void GMRESSolver::backwardSolve()
 {
     // lower corner
     d_dy[d_nr] = d_dw[d_nr] / d_dHessenberg( d_nr, d_nr );

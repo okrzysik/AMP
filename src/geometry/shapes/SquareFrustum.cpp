@@ -339,10 +339,10 @@ void SquareFrustum::displace( const double *x )
     d_range[4] += x[2];
     d_range[5] += x[2];
     for ( auto &face : d_face ) {
-        for ( int j = 0; j < 4; j++ ) {
-            face[j].x() += x[0];
-            face[j].y() += x[1];
-            face[j].z() += x[2];
+        for ( auto &v : face ) {
+            v.x() += x[0];
+            v.y() += x[1];
+            v.z() += x[2];
         }
     }
 }

@@ -69,7 +69,7 @@ DataTransferKit::EntityIterator &AMPMeshEntityIterator::operator++()
 
 //---------------------------------------------------------------------------//
 // Dereference operator.
-DataTransferKit::Entity &AMPMeshEntityIterator::operator*( void )
+DataTransferKit::Entity &AMPMeshEntityIterator::operator*()
 {
     this->operator->();
     return d_current_entity;
@@ -77,7 +77,7 @@ DataTransferKit::Entity &AMPMeshEntityIterator::operator*( void )
 
 //---------------------------------------------------------------------------//
 // Dereference operator.
-DataTransferKit::Entity *AMPMeshEntityIterator::operator->( void )
+DataTransferKit::Entity *AMPMeshEntityIterator::operator->()
 {
     d_current_entity = AMPMeshEntity( *d_amp_iterator, *d_rank_map, *d_id_map );
     return &d_current_entity;

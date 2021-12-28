@@ -78,7 +78,7 @@ void RK34TimeIntegrator::reset(
     abort();
 }
 
-void RK34TimeIntegrator::setupVectors( void )
+void RK34TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -163,7 +163,7 @@ int RK34TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK34TimeIntegrator::checkNewSolution( void )
+bool RK34TimeIntegrator::checkNewSolution()
 {
     bool retcode = false;
 
@@ -193,7 +193,7 @@ bool RK34TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK34TimeIntegrator::updateSolution( void )
+void RK34TimeIntegrator::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;

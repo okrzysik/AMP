@@ -389,7 +389,7 @@ void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Mat
     HYPRE_DescribeError( ierr, hypre_mesg );
 }
 
-void BoomerAMGSolver::createHYPREVectors( void )
+void BoomerAMGSolver::createHYPREVectors()
 {
     char hypre_mesg[100];
 
@@ -499,7 +499,7 @@ void BoomerAMGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator>
     d_bCreationPhase = false;
 }
 
-void BoomerAMGSolver::setParameters( void ) {}
+void BoomerAMGSolver::setParameters() {}
 
 void BoomerAMGSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )

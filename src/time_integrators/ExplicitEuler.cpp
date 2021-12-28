@@ -68,7 +68,7 @@ void ExplicitEuler::reset(
     abort();
 }
 
-void ExplicitEuler::setupVectors( void )
+void ExplicitEuler::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -135,7 +135,7 @@ int ExplicitEuler::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool ExplicitEuler::checkNewSolution( void )
+bool ExplicitEuler::checkNewSolution()
 {
     bool retcode = true;
     /*
@@ -160,7 +160,7 @@ bool ExplicitEuler::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void ExplicitEuler::updateSolution( void )
+void ExplicitEuler::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;

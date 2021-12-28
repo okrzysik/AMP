@@ -8,6 +8,7 @@
 #include <cstring>
 #include <iomanip>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -634,9 +635,9 @@ createKeyData( const std::string_view &key,
 {
     std::unique_ptr<KeyData> data;
     if ( values.empty() ) {
-        data.reset( new EmptyKeyData() );
+        data = std::make_unique<EmptyKeyData>();
     } else if ( values.size() == 1 && values[0].empty() ) {
-        data.reset( new EmptyKeyData() );
+        data = std::make_unique<EmptyKeyData>();
     } else if ( data_type == class_type::STRING ) {
         // We are dealing with strings
         for ( auto &value : values ) {

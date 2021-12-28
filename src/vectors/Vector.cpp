@@ -85,7 +85,7 @@ std::shared_ptr<RNG> Vector::getDefaultRNG()
     }
     return d_DefaultRNG;
 }
-void Vector::setRandomValues( void ) { d_VectorOps->setRandomValues( *getVectorData() ); }
+void Vector::setRandomValues() { d_VectorOps->setRandomValues( *getVectorData() ); }
 void Vector::setRandomValues( std::shared_ptr<RNG> rng )
 {
     d_VectorOps->setRandomValues( rng, *getVectorData() );

@@ -250,7 +250,7 @@ void VectorData::copyGhostValues( const VectorData &rhs )
 /****************************************************************
  * reset a vector                                               *
  ****************************************************************/
-void VectorData::reset( void ) { AMP_ERROR( "Not implemented" ); }
+void VectorData::reset() { AMP_ERROR( "Not implemented" ); }
 
 void VectorData::print( std::ostream &os, const std::string &name, const std::string &prefix ) const
 {

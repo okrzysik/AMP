@@ -69,7 +69,7 @@ void RK2TimeIntegrator::reset(
     abort();
 }
 
-void RK2TimeIntegrator::setupVectors( void )
+void RK2TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -117,7 +117,7 @@ int RK2TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK2TimeIntegrator::checkNewSolution( void )
+bool RK2TimeIntegrator::checkNewSolution()
 {
     bool retcode = true;
 
@@ -143,7 +143,7 @@ bool RK2TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK2TimeIntegrator::updateSolution( void )
+void RK2TimeIntegrator::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;

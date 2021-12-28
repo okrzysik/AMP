@@ -73,7 +73,7 @@ void RK23TimeIntegrator::reset(
     d_z_vec->getVectorData()->reset();
 }
 
-void RK23TimeIntegrator::setupVectors( void )
+void RK23TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -163,7 +163,7 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK23TimeIntegrator::checkNewSolution( void )
+bool RK23TimeIntegrator::checkNewSolution()
 {
     bool retcode = false;
 
@@ -193,7 +193,7 @@ bool RK23TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK23TimeIntegrator::updateSolution( void )
+void RK23TimeIntegrator::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;
