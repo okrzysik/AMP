@@ -4,8 +4,7 @@
 #include "AMP/geometry/LogicalGeometry.h"
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /**
@@ -57,7 +56,6 @@ private:
     std::vector<std::shared_ptr<Geometry>> d_geom;
 };
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry
 
 #endif

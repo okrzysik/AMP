@@ -3,8 +3,7 @@
 #include <map>
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void DiffusionNonlinearElement::initTransportModel()
 {
@@ -163,5 +162,4 @@ void DiffusionNonlinearElement::apply()
 
     d_transportModel->postNonlinearAssemblyElementOperation();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

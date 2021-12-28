@@ -13,8 +13,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
  *  Class Map3Dto1D is used to map the solution on the boundary of the 3D mesh to
@@ -96,7 +95,6 @@ protected:
 private:
     Discretization::createLibmeshElements libmeshElements;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

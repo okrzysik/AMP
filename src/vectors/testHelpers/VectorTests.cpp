@@ -25,8 +25,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
@@ -796,5 +795,4 @@ void VectorTests::TestMultivectorDuplicate( AMP::UnitTest *ut )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

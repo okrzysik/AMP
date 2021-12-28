@@ -14,8 +14,7 @@
 #include "petscsnes.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
@@ -493,5 +492,4 @@ void PetscSNESSolver::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vecto
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

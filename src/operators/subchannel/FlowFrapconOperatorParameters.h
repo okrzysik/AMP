@@ -5,8 +5,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/operators/subchannel/FlowFrapconJacobianParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class FlowFrapconOperatorParameters : public OperatorParameters
 {
@@ -20,7 +19,6 @@ public:
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

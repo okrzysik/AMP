@@ -4,8 +4,7 @@
 
 #include "AMP/operators/Operator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MoveMeshOperator : public Operator
 {
@@ -27,7 +26,6 @@ protected:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_var;
     AMP::LinearAlgebra::Vector::shared_ptr d_prevDisp;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

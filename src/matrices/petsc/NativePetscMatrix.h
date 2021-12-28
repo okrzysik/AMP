@@ -5,8 +5,7 @@
 // AMP files
 #include "AMP/matrices/petsc/PetscMatrix.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /** \class NativePetscMatrix
  * \brief  This is a thin wrapper around PETSc Mat
@@ -97,8 +96,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

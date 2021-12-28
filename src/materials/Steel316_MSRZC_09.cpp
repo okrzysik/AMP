@@ -12,8 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace Steel316_MSRZC_09_NS {
 
@@ -197,5 +196,4 @@ Steel316_MSRZC_09::Steel316_MSRZC_09()
     INSERT_PROPERTY_IN_MAP( YoungsModulus, Steel316_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( PoissonRatio, Steel316_MSRZC_09_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

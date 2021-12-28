@@ -3,8 +3,7 @@
 
 #include <algorithm>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 VectorProperty::VectorProperty( std::string name,
@@ -163,5 +162,4 @@ void VectorProperty::evalv(
     evalvActual( r, args );
 }
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

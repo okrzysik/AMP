@@ -5,8 +5,7 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/trilinos/EpetraMatrixOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class EpetraMatrixOperator : public LinearOperator
 {
@@ -24,7 +23,6 @@ public:
 
     virtual ~EpetraMatrixOperator() {}
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -12,8 +12,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
@@ -72,5 +71,4 @@ MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParame
 
     d_iDebugPrintInfoLevel = params->d_db->getWithDefault<int>( "print_info_level", 0 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

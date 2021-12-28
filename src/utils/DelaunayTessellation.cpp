@@ -27,8 +27,7 @@ DISABLE_WARNINGS
 #endif
 
 
-namespace AMP {
-namespace DelaunayTessellation {
+namespace AMP::DelaunayTessellation {
 
 
 // Templated form of test_in_circumsphere
@@ -2481,8 +2480,7 @@ template std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation<long d
 // clang-format on
 
 
-} // namespace DelaunayTessellation
-} // namespace AMP
+} // namespace AMP::DelaunayTessellation
 
 
 #if defined( USING_ICC )

@@ -4,8 +4,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
@@ -204,5 +203,4 @@ void CGSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParam
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

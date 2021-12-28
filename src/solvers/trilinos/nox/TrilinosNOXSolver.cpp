@@ -32,8 +32,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -268,5 +267,4 @@ void TrilinosNOXSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     u->copyVector( thyraVec->getVec( 0 ) );
     // PROFILE_STOP("solve");
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

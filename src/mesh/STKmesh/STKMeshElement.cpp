@@ -14,8 +14,7 @@
 #include "Intrepid_Types.hpp"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Create a unique id for this class
@@ -399,5 +398,4 @@ bool STKMeshElement::isInBlock( int id ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

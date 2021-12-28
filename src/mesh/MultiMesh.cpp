@@ -16,8 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Function to check if a string contains another string as the prefix
@@ -952,5 +951,4 @@ std::vector<AMP_MPI> MultiMesh::createComms( const AMP_MPI &comm,
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

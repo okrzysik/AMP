@@ -16,8 +16,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -121,7 +120,6 @@ protected:
     Teuchos::RCP<::Thyra::LinearOpWithSolveFactoryBase<double>> d_lowsFactory;
     Teuchos::RCP<NOX::StatusTest::Combo> d_status;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

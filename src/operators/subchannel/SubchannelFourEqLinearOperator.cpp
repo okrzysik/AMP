@@ -13,8 +13,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -1515,5 +1514,4 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
     AMP_INSIST( axiallyAdjacentLateralFaceFound, "Axially adjacent lateral face was not found." );
     return axiallyAdjacentLateralFace;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

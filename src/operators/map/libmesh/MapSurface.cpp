@@ -3,8 +3,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 MapSurface::MapSurface( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
@@ -56,5 +55,4 @@ void MapSurface::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     mapMaster->apply( inpVec, nullVec );
     mapTarget->apply( gap1DVec, nullVec );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

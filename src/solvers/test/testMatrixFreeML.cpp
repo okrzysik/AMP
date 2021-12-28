@@ -24,8 +24,13 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "libmesh/mesh_communication.h"
 
+DISABLE_WARNINGS
+#include "Epetra_CrsMatrix.h"
+#include "Trilinos_version.h"
+#include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
 #include <Trilinos_version.h>
+ENABLE_WARNINGS
 
 #include <iostream>
 #include <string>

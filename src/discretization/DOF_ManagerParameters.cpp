@@ -1,7 +1,6 @@
 #include "AMP/discretization/DOF_ManagerParameters.h"
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /************************************************************************
@@ -14,5 +13,4 @@ DOFManagerParameters::DOFManagerParameters( std::shared_ptr<AMP::Mesh::Mesh> mes
 }
 
 
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

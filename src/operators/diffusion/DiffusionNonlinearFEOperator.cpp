@@ -12,8 +12,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<AMP::LinearAlgebra::Variable>
@@ -468,5 +467,4 @@ bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::con
     return result;
 }
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -9,8 +9,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DiffusionNonlinearFEOperatorParameters : public FEOperatorParameters
 {
@@ -33,7 +32,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

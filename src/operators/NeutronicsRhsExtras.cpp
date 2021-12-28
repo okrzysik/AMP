@@ -10,8 +10,7 @@
 #include <cmath>
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /*
  ***********************************************************************************
@@ -266,5 +265,4 @@ void NeutronicsRhsExtras::setTimeInSeconds( double setSeconds )
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

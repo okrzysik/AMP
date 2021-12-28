@@ -11,8 +11,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DiffusionNonlinearFEOperator : public NonlinearFEOperator
 {
@@ -114,7 +113,6 @@ private:
 
     void resetFrozen( std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

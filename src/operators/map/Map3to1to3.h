@@ -9,8 +9,7 @@
 #include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /** \brief  For problems with a great deal of symmetry, it is possible
  * to move data from one mesh to another by generating a 1D appoximation
@@ -143,7 +142,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

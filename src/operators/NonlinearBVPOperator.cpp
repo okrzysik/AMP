@@ -4,8 +4,7 @@
 #include "ProfilerApp.h"
 #include <stdexcept>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 NonlinearBVPOperator::NonlinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> params )
     : Operator( params ),
@@ -99,5 +98,4 @@ void NonlinearBVPOperator::modifyInitialSolutionVector( AMP::LinearAlgebra::Vect
 {
     ( this->getBoundaryOperator() )->modifyInitialSolutionVector( sol );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

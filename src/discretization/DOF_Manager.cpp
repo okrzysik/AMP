@@ -7,8 +7,7 @@
 #include <utility>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /****************************************************************
@@ -223,5 +222,4 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
         return std::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, intersection, comm );
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

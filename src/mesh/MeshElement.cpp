@@ -5,8 +5,7 @@
 #include <cstring>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -202,5 +201,4 @@ std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x )
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

@@ -10,8 +10,7 @@
 #include <limits>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -462,5 +461,4 @@ ENABLE_WARNINGS
 #endif
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

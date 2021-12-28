@@ -3,8 +3,7 @@
 #include "AMP/utils/UtilityMacros.h"
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 MultiGeometry::MultiGeometry( const std::vector<std::shared_ptr<Geometry>> &geom )
@@ -128,5 +127,4 @@ bool MultiGeometry::operator==( const Geometry &rhs ) const
 }
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry

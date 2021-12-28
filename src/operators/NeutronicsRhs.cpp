@@ -12,8 +12,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /*
  *************************************************************************
@@ -301,5 +300,4 @@ void NeutronicsRhs::setTimeInSeconds( double setSeconds )
 void NeutronicsRhs::setTimeInDays( double days ) { setTimeInSeconds( days * d_secondsPerDay ); }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

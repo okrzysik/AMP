@@ -5,8 +5,7 @@
 #include "ElementPhysicsModelParameters.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing the physics (material) models in
@@ -41,7 +40,6 @@ protected:
                                   diagnostic information that gets
                                   printed within this material model. */
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

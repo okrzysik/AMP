@@ -6,8 +6,7 @@
 #include "petsc/private/vecimpl.h"
 #include "petscvec.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
 {
@@ -198,5 +197,4 @@ void NativePetscVectorData::assemble()
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

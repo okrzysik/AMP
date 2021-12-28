@@ -11,8 +11,7 @@
 #include <map>
 #include <sstream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 SubchannelPhysicsModel::SubchannelPhysicsModel(
     std::shared_ptr<const ElementPhysicsModelParameters> params )
@@ -143,5 +142,4 @@ void SubchannelPhysicsModel::getProperty(
     AMP_INSIST( it != d_properties.end(), "Model does not have property (" + property + ")" );
     d_properties.find( property )->second->evalv( result, args );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

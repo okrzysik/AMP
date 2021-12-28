@@ -7,8 +7,7 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -539,5 +538,4 @@ bool SubsetMesh::operator==( const Mesh &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

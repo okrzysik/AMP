@@ -8,8 +8,7 @@
 #include <tuple>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /************************************************************
@@ -203,5 +202,4 @@ AMP::Mesh::MeshIterator StructuredMeshHelper::getGapFaceIterator( AMP::Mesh::Mes
     AMP_ERROR( "Not finished" );
     return AMP::Mesh::MeshIterator();
 }
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

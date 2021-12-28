@@ -8,8 +8,7 @@
 // AMP files
 #include "AMP/operators/libmesh/MassElement.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class MassLinearElement : public MassElement
@@ -54,7 +53,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

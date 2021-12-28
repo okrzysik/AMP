@@ -2,8 +2,7 @@
 #define included_AMP_VectorIterators_inline
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -41,8 +40,7 @@ inline bool VectorDataIterator<TYPE>::operator>=( const VectorDataIterator<TYPE>
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

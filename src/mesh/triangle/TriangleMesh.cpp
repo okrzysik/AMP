@@ -16,8 +16,7 @@
 #include <iostream>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 typedef std::array<ElementID, 2> Edge;
@@ -1417,5 +1416,4 @@ template class TriangleMesh<2, 3>;
 template class TriangleMesh<3, 3>;
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

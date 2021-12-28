@@ -4,8 +4,7 @@
 #include "SubsetVariable.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class RandomSubsetVariable : public SubsetVariable
 {
@@ -21,7 +20,6 @@ public:
     virtual VectorIndexer::shared_ptr getIndexer() { return d_Indexer; }
     virtual size_t DOFsPerObject() const { return 0; }
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

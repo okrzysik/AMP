@@ -14,8 +14,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing a linear finite element (FE) operator.
@@ -90,7 +89,6 @@ protected:
     std::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
     std::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -5,8 +5,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NodeToSegmentConstraintsOperatorParameters : public OperatorParameters
 {
@@ -32,7 +31,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

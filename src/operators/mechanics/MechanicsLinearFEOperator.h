@@ -12,8 +12,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class for representing the linear operator for linear/nonlinear mechanics.
@@ -111,7 +110,6 @@ protected:
 
     bool d_useUpdatedLagrangian;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -2,9 +2,7 @@
 #ifndef included_AMP_MechanicsConstants
 #define included_AMP_MechanicsConstants
 
-namespace AMP {
-namespace Operator {
-namespace Mechanics {
+namespace AMP::Operator::Mechanics {
 const unsigned int DISPLACEMENT =
     0; /**< Global constant used to identify displacement variables within mechanics operators. */
 const unsigned int TEMPERATURE =
@@ -20,8 +18,6 @@ const unsigned int LHGR = 4; /**< Global constant used to identify Linear Heat G
 const unsigned int TOTAL_NUMBER_OF_VARIABLES =
     5; /**< Global constant that equals the number of
          different types of variables used within mechanics operators. */
-} // namespace Mechanics
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator::Mechanics
 
 #endif

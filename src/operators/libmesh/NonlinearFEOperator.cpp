@@ -5,8 +5,7 @@
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 NonlinearFEOperator::NonlinearFEOperator( std::shared_ptr<const FEOperatorParameters> params )
@@ -88,5 +87,4 @@ void NonlinearFEOperator::destroyLibMeshElementList()
     } // end for i
     d_currElemPtrs.clear();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

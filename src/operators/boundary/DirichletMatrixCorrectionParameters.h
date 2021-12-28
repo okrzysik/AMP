@@ -4,8 +4,7 @@
 
 #include "AMP/operators/boundary/LinearBoundaryOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DirichletMatrixCorrectionParameters : public LinearBoundaryOperatorParameters
 {
@@ -20,7 +19,6 @@ public:
     // This must be a simple variable not a dual or multivariable
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

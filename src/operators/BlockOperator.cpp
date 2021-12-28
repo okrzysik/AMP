@@ -5,8 +5,7 @@
 
 #include <algorithm>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 BlockOperator::BlockOperator() : Operator()
 {
@@ -241,5 +240,4 @@ void BlockOperator::getRowForBlock( int locRow,
         getRow( blockOp.get(), locRow, locCols, values );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -4,8 +4,7 @@
 
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 AMP::LinearAlgebra::Vector::shared_ptr
 subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
@@ -13,7 +12,6 @@ subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
 
 AMP::LinearAlgebra::Vector::shared_ptr joinVectors( AMP::LinearAlgebra::Vector::shared_ptr vec1,
                                                     AMP::LinearAlgebra::Vector::shared_ptr vec2 );
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

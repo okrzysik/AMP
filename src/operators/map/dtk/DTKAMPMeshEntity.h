@@ -11,8 +11,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -32,7 +31,6 @@ public:
     //! Destructor
     ~AMPMeshEntity() {}
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

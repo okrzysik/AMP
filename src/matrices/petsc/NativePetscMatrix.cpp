@@ -9,8 +9,7 @@
 #include "petscvec.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Get vector
@@ -312,5 +311,4 @@ double NativePetscMatrix::L1Norm() const
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

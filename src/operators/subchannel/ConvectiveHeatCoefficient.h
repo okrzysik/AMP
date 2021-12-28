@@ -10,8 +10,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class ConvectiveHeatCoefficient : public RobinPhysicsModel
 {
@@ -38,7 +37,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

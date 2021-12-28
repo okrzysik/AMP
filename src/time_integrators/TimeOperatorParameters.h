@@ -5,8 +5,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include <memory>
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 class TimeOperatorParameters : public AMP::Operator::OperatorParameters
 {
@@ -66,7 +65,6 @@ public:
      */
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

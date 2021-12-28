@@ -5,8 +5,7 @@
 
 #include <numeric>
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -352,5 +351,4 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

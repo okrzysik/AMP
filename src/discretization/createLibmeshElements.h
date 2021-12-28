@@ -17,8 +17,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -105,8 +104,7 @@ private:
     std::vector<libMesh::FEBase *> d_base_element;
     std::vector<libMesh::QBase *> d_rule_element;
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif
 #endif

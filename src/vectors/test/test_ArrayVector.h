@@ -3,8 +3,7 @@
 
 /// \cond UNDOCUMENTED
 
-namespace AMP {
-namespace unit_test {
+namespace AMP::unit_test {
 
 template<typename T>
 static void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest &ut )
@@ -20,5 +19,4 @@ static void testArrayVectorDimensions( std::vector<size_t> &dims, AMP::UnitTest 
     else
         ut.failure( "ArrayVector does not correctly returns dimensions" );
 }
-} // namespace unit_test
-} // namespace AMP
+} // namespace AMP::unit_test

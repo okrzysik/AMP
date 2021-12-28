@@ -5,8 +5,7 @@
 #include "libmesh/boundary_info.h"
 #include "libmesh/elem.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Functions to create new ids by mixing existing ids
@@ -406,5 +405,4 @@ unsigned int generate_id( const std::vector<unsigned int> &ids )
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

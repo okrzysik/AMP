@@ -6,8 +6,7 @@
 #include "AMP/utils/UnitTest.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // This runs the geometry only tests
@@ -100,5 +99,4 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_s
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

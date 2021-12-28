@@ -3,8 +3,7 @@
 
 #include "AssemblyParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MassAssemblyParameters : public AssemblyParameters
 {
@@ -19,7 +18,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

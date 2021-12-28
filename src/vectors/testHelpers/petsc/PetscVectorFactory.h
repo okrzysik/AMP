@@ -13,8 +13,7 @@
 
 /// \cond UNDOCUMENTED
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 //! Helper deleter class
@@ -123,8 +122,7 @@ public:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 #endif

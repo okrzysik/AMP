@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -51,8 +50,7 @@ protected: // Functions derived from BoxMesh
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 
 #endif

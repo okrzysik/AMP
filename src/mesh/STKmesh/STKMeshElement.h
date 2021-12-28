@@ -7,8 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -124,7 +123,6 @@ protected:
 private:
     static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "STKMeshElement" ); }
 };
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

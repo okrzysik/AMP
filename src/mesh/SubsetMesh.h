@@ -7,8 +7,7 @@
 
 #include <map>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -308,7 +307,6 @@ protected:
     std::map<map_id_struct, std::shared_ptr<std::vector<MeshElement>>> d_blockSets;
 };
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

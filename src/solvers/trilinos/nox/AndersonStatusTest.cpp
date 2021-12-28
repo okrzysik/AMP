@@ -11,8 +11,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -112,5 +111,4 @@ std::ostream &AndersonStatusTest::print( std::ostream &stream, int indent ) cons
 
     return stream;
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

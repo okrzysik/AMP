@@ -5,8 +5,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 int Operator::d_iInstance_id = 0;
@@ -159,5 +158,4 @@ void Operator::makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

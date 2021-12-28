@@ -6,8 +6,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /********************************************************
@@ -372,5 +371,4 @@ bool SquareFrustum::operator==( const Geometry &rhs ) const
 }
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry

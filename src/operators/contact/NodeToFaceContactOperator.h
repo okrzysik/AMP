@@ -11,8 +11,7 @@
     #include <fstream>
     #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -187,8 +186,7 @@ struct GeomType::FaceData {
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
 

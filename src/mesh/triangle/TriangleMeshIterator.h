@@ -7,8 +7,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 template<uint8_t NG, uint8_t NP>
@@ -98,7 +97,6 @@ private:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

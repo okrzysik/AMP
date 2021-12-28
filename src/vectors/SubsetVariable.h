@@ -6,8 +6,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class SubsetVariable
@@ -94,8 +93,7 @@ public: // Functions inherited from Variable
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

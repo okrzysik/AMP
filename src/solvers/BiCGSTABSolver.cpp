@@ -7,8 +7,7 @@
 #include <cmath>
 #include <limits>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
@@ -285,5 +284,4 @@ void BiCGSTABSolver::resetOperator(
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

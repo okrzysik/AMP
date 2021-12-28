@@ -15,8 +15,7 @@
 #include <stdexcept>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /****************************************************************
  * Constructors                                                  *
@@ -353,5 +352,4 @@ Vector::shared_ptr &MultiVector::getVector( Vector &rhs, size_t which ) const
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

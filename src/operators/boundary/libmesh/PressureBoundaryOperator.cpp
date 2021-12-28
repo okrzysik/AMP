@@ -20,8 +20,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 PressureBoundaryOperator::PressureBoundaryOperator(
     std::shared_ptr<const OperatorParameters> params )
@@ -236,5 +235,4 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
     d_tractionOp.reset( new TractionBoundaryOperator( tracOpParams ) );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

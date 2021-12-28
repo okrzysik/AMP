@@ -3,13 +3,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
-
-/**
- * Namespace for all of the diffusion operator code.
- */
-namespace Diffusion {
+namespace AMP::Operator::Diffusion {
 //// These constants define indices in an array of standard material parameters used as an argument
 /// to a material
 /// property evaluation function
@@ -23,8 +17,6 @@ const unsigned int NUMBER_VARIABLES = 3; //< Total number of material parameters
 /// ASCI names of the standard material parameters appearing as arguments to material property
 /// evaluation functions.
 const std::string names[NUMBER_VARIABLES] = { "temperature", "concentration", "burnup" };
-} // namespace Diffusion
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator::Diffusion
 
 #endif

@@ -12,8 +12,7 @@ class RNG;
 }
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 class VectorData;
@@ -315,7 +314,6 @@ protected:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

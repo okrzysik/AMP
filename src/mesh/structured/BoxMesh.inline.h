@@ -7,8 +7,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -247,7 +246,6 @@ inline BoxMesh::MeshElementIndex BoxMesh::convert( const MeshElementID &id ) con
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

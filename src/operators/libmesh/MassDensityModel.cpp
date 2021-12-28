@@ -12,8 +12,7 @@
 #include <limits>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParameters> params )
     : ElementPhysicsModel( params )
@@ -428,5 +427,4 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

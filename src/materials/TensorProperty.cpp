@@ -3,8 +3,7 @@
 
 #include <algorithm>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 TensorProperty::TensorProperty( std::string name,
@@ -181,5 +180,4 @@ void TensorProperty::evalv(
     evalvActual( r, args );
 }
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

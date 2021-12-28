@@ -2,8 +2,7 @@
 #include "TrilinosMatrixShellOperator.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 TrilinosMatrixShellOperator::TrilinosMatrixShellOperator(
@@ -157,5 +156,4 @@ void TrilinosMatrixShellOperator::getColumn( int column,
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

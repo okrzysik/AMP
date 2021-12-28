@@ -9,8 +9,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -123,5 +122,4 @@ void ThyraVectorSpaceWrapper::scalarProdsImpl( const Thyra::MultiVectorBase<doub
     NULL_USE( scalarProds );
     AMP_ERROR( "Not finished" );
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

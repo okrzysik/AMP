@@ -5,8 +5,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 DataChangeFirer::DataChangeFirer() {}
 
@@ -46,5 +45,4 @@ void DataChangeFirer::fireDataChange()
     for ( auto &x : d_listeners )
         x->receiveDataChanged();
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

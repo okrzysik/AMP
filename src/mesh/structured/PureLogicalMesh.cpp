@@ -2,8 +2,7 @@
 #include "AMP/mesh/MeshParameters.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -122,5 +121,4 @@ bool PureLogicalMesh::operator==( const Mesh &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

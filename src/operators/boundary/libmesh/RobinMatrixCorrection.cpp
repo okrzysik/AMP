@@ -16,8 +16,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 RobinMatrixCorrection::RobinMatrixCorrection(
     std::shared_ptr<const RobinMatrixCorrectionParameters> params )
@@ -260,5 +259,4 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
     } // skip matrix
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

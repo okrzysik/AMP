@@ -6,13 +6,15 @@
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 
+// Forward declares
 namespace AMP {
 class Database;
-namespace Solver {
+}
+namespace AMP::Solver {
 class SolverStrategy;
 }
 
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /*!
  * @brief Manage implicit time integration
@@ -279,6 +281,7 @@ private:
     //! time integrators
     virtual void integratorSpecificInitialize( void );
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+
+} // namespace AMP::TimeIntegrator
+
 #endif

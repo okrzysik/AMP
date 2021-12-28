@@ -15,8 +15,7 @@
         } while ( 0 )
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline N_Vector getVec( AMP::LinearAlgebra::Vector::shared_ptr vector )
@@ -304,8 +303,7 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *ut )
     PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VMinQuotient" );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 #endif

@@ -3,8 +3,7 @@
 
 #include "AMP/utils/UtilityMacros.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -148,8 +147,7 @@ inline std::vector<std::shared_ptr<MeshElement>> MeshElement::getNeighbors() con
 std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x );
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 
 #endif

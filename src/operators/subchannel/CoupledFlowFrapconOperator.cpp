@@ -4,8 +4,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 CoupledFlowFrapconOperator::CoupledFlowFrapconOperator(
     std::shared_ptr<const OperatorParameters> params )
@@ -81,5 +80,4 @@ void CoupledFlowFrapconOperator::apply( AMP::LinearAlgebra::Vector::const_shared
     // d_operators[3]->apply(nullVec, d_flowInput, nullVec, a, b);  // Is this necessary
     d_operators[4]->apply( d_flowOutput, nullVec );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

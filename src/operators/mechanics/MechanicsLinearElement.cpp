@@ -2,8 +2,7 @@
 #include "MechanicsLinearElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void MechanicsLinearElement::computeStressAndStrain( const std::vector<double> &dispVec,
                                                      std::vector<double> &stressVec,
@@ -573,5 +572,4 @@ void MechanicsLinearElement::apply_Normal()
 
     d_materialModel->postLinearElementOperation();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

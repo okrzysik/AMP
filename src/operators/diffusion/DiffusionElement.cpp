@@ -12,8 +12,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 DiffusionElement::DiffusionElement( std::shared_ptr<const ElementOperationParameters> params )
@@ -74,5 +73,4 @@ void DiffusionElement::initializeForCurrentElement(
     d_elem           = elem;
     d_transportModel = transportModel;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -1,7 +1,6 @@
 #include "TimeIntegratorParameters.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 TimeIntegratorParameters::TimeIntegratorParameters( std::shared_ptr<AMP::Database> db )
     : Operator::OperatorParameters( db )
@@ -9,5 +8,4 @@ TimeIntegratorParameters::TimeIntegratorParameters( std::shared_ptr<AMP::Databas
 }
 
 TimeIntegratorParameters::~TimeIntegratorParameters() = default;
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

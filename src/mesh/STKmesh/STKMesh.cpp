@@ -26,8 +26,7 @@
 #include "Ionit_Initializer.h"
 #include "Ioss_SubSystem.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
 
@@ -858,5 +857,4 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

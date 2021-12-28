@@ -9,8 +9,7 @@
 #include <numeric>
 #include <set>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 DendroSearch::DendroSearch( AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream &oStream )
@@ -1207,5 +1206,4 @@ void DendroSearch::reportTiming( size_t n,
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

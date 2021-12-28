@@ -18,8 +18,7 @@
 using namespace AMP::unit_test;
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Class to create a matrix from a simpleDOFManager
@@ -102,5 +101,4 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

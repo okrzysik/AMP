@@ -3,8 +3,7 @@
 #include "AMP/mesh/triangle/TriangleMeshElement.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // unused global variable to prevent compiler warning
@@ -235,5 +234,4 @@ template class TriangleMeshIterator<3, 3, 2>;
 template class TriangleMeshIterator<3, 3, 3>;
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

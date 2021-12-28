@@ -13,8 +13,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 SourceNonlinearElement::SourceNonlinearElement(
     std::shared_ptr<const ElementOperationParameters> params )
@@ -160,5 +159,4 @@ void SourceNonlinearElement::apply()
 
     PROFILE_STOP( "apply", 5 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

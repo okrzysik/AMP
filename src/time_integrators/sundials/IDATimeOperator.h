@@ -13,8 +13,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 typedef TimeOperatorParameters IDATimeOperatorParameters;
 
@@ -94,7 +93,6 @@ protected:
 
 private:
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

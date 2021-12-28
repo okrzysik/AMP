@@ -9,8 +9,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /********************************************************
@@ -425,5 +424,4 @@ template class Grid<2>;
 template class Grid<3>;
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry

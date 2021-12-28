@@ -15,8 +15,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class used for representing the nonlinear mechanics operator.
@@ -262,7 +261,6 @@ void MechanicsNonlinearFEOperator::updateMaterialForUpdatedLagrangianElement(
     d_mechNULElem->updateMaterialModel<updateType>( elementInputVectors2,
                                                     elementInputVectors_pre2 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

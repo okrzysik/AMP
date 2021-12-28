@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class Matrix
@@ -299,8 +298,7 @@ protected:
 std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> );
 //! Stream operator
 std::ostream &operator<<( std::ostream &out, const Matrix & );
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #include "Matrix.inline.h"
 #endif

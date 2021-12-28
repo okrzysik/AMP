@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // unused global variable to prevent compiler warning
@@ -273,5 +272,4 @@ MeshIterator &MeshIterator::operator-=( const MeshIterator &it )
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

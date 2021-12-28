@@ -20,8 +20,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 Map3Dto1D::Map3Dto1D( std::shared_ptr<const OperatorParameters> params ) : MapOperator( params )
@@ -336,5 +335,4 @@ void Map3Dto1D::apply_Nodal( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << outputVec << std::endl;
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

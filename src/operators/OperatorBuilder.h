@@ -8,8 +8,7 @@
 #include "ElementPhysicsModel.h"
 #include "ElementPhysicsModelFactory.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -255,7 +254,6 @@ protected:
                                     std::shared_ptr<AMP::Database> input_db,
                                     std::shared_ptr<AMP::Operator::ElementPhysicsModel> );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

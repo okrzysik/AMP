@@ -12,8 +12,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
@@ -55,5 +54,4 @@ FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> para
 
     d_fe->attach_quadrature_rule( ( d_qrule ).get() );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

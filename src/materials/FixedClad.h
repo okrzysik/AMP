@@ -13,15 +13,13 @@
 
 
 // Define the material
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 class FixedClad : public Material
 {
 public:
     FixedClad();
 };
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 
 // Add static initialize to force symbols to be included

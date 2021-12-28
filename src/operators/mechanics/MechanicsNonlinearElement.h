@@ -10,8 +10,7 @@
 #include "MechanicsConstants.h"
 #include "MechanicsElement.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -349,7 +348,6 @@ void MechanicsNonlinearElement::updateMaterialModel(
 
     materialModelPostNonlinearElementOperation<type>();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

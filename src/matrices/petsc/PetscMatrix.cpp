@@ -3,8 +3,7 @@
 #include "petsc/private/petscimpl.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -35,5 +34,4 @@ PetscMatrix::PetscMatrix( std::shared_ptr<Matrix> mat )
 PetscMatrix::~PetscMatrix() { PETSC::matDestroy( &d_Mat ); }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

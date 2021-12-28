@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 int SolverStrategy::d_iInstanceId = 0;
@@ -77,5 +76,4 @@ void SolverStrategy::reset( std::shared_ptr<SolverStrategyParameters> ) {}
 
 void SolverStrategy::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

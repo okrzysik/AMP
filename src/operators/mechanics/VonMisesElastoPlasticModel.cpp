@@ -6,8 +6,7 @@
 #include "AMP/utils/Utilities.h"
 #include <iostream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 VonMisesElastoPlasticModel::VonMisesElastoPlasticModel(
@@ -955,5 +954,4 @@ void VonMisesElastoPlasticModel::postNonlinearAssembly()
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

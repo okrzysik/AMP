@@ -13,8 +13,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class to impose Neumann (Flux) Boundary Conditions for both Linear and Nonlinear operator.
@@ -134,7 +133,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

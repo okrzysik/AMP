@@ -7,8 +7,7 @@
 #include <set>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class     ManagedMatrixParameters
@@ -100,7 +99,6 @@ protected:
     //!  The set of columns this processor has
     std::set<int> d_sColumns;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

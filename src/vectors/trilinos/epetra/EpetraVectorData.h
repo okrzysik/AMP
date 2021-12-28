@@ -7,8 +7,7 @@
 #include "AMP/vectors/data/VectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /** \class EpetraVectorEngineParameters
  * \brief Class that details how to construct an EpetraVectorEngine
@@ -137,8 +136,7 @@ protected:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

@@ -9,8 +9,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /****************************************************************
@@ -405,5 +404,4 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

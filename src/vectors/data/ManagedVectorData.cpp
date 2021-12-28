@@ -10,8 +10,7 @@
 #include <typeinfo>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Helper functions
@@ -323,5 +322,4 @@ Vector::shared_ptr ManagedVectorData::getVectorEngine( void ) { return d_Engine;
 Vector::const_shared_ptr ManagedVectorData::getVectorEngine( void ) const { return d_Engine; }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

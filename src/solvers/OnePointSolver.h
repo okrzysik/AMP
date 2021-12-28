@@ -6,8 +6,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/vectors/newFrozenVectorDesign/newFrozenVectorDesignHelpers.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 class OnePointSolver : public SolverStrategy
 {
@@ -41,7 +40,6 @@ public:
 protected:
     std::shared_ptr<AMP::Operator::OnePointOperator> d_onePointOp;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

@@ -18,8 +18,7 @@
 
 #include "ProfilerApp.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Classes to serve as the vector factories
@@ -144,7 +143,6 @@ private:
 
 #endif
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

@@ -5,8 +5,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class RowOperatorParameters : public OperatorParameters
 {
@@ -24,7 +23,6 @@ public:
 
     std::vector<double> scalea;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

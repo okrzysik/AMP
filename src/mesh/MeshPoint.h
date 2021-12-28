@@ -11,8 +11,7 @@
 #include <stdexcept>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -358,8 +357,7 @@ std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshPoint<TYPE> &x
     return out;
 }
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 
 #endif

@@ -3,8 +3,7 @@
 
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 class EpetraMatrixOperatorParameters : public OperatorParameters
 {
 public:
@@ -15,7 +14,6 @@ public:
     {
     }
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -9,8 +9,7 @@
 #include <iomanip>
 #include <numeric>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -600,5 +599,4 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_STOP( "solve" );
 }
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

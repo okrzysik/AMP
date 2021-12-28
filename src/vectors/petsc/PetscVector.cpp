@@ -5,8 +5,7 @@
 #include "petsc/private/petscimpl.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -44,5 +43,4 @@ PetscVector::PetscVector( std::shared_ptr<Vector> vec )
 PetscVector::~PetscVector() { PETSC::vecDestroy( &d_Vec ); }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

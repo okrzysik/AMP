@@ -4,8 +4,7 @@
 
 #include "ProfilerApp.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 size_t globalMapTagOffset = 0; // Initialize the global map tag offset
@@ -148,5 +147,4 @@ AsyncMapColumnOperator::createDatabases( std::shared_ptr<AMP::Database> database
     }
     return meshDatabases;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

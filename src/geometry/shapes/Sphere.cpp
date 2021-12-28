@@ -4,8 +4,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /********************************************************
@@ -190,5 +189,4 @@ bool Sphere::operator==( const Geometry &rhs ) const
 }
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry

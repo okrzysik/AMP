@@ -10,35 +10,7 @@
 #include "AMP/utils/Array.h"
 
 
-namespace AMP {
-
-
-/** \namespace DelaunayTessellation
- *
- * This namespace provides Delaunay Tessellation.
- * Note:  The functions are not threaded, but are thread safe.
- * Note:  Currently these functions have not been tested (and likely do not work) with more than
- *    2^31 elements per array.  This limits the number of triangles to 2^31/(ndim+1).
- *    In 3d, this limit is 536,870,912 triangles and ~65,000,000 nodes.
- *    In 2d, this limit is 715,827,882 triangles and 357,913,941 nodes.
- *    It should be a relatively simple matter to increase the number of triangle to 2^31
- *        regardless of dimension.
- *    Moving beyond 2^31 triangles will require a different storage for the triangle ids (tri_nab).
- *    Moving beyond 2^31 nodes will require all data structures to be 64-bit.
- *    Moving to 64-bit storage for the arrays will have a significant impact on memory (2x).
- *    Assuming ~500M triangles and 65M nodes in 3d, the current memory requirements is ~24 GB for
- *        the internal data, with peak memory usage as high as 32GB.
- * Note:  MATLAB's delaunay3 command with 1M nodes in R3 in [0 1] requires ~200 MB to store tri,
- *    peak memory usage of ~3.5 GB (excluding MATLAB and x), and ~200 s to process (on euv).
- *    Using 10M nodes in R2 in [0 1] requires a peak memory usage of ~10GB and ~600 s
- *       to process (oneuv).
- *    Currently with 1M nodes in R3 in [0 1], the program requires a peak memory usage of ~350 MB
- *        and ~ 135 s (on laptop).
- *    In 2D with 10M nodes in [0,1], it requires ~750 MB and ~110 s to process (on laptop).
- *    Running with 1M nodes in R3 in a structured grid takes ~756s (on laptop).
- *    Most of this time is spent in add_node.
- */
-namespace DelaunayTessellation {
+namespace AMP::DelaunayTessellation {
 
 
 //! Function that creates the Delaunay Tessellation
@@ -115,7 +87,6 @@ void get_circumsphere( const int ndim, const int x[], double &R, double *c );
 void compute_Barycentric( const int ndim, const double *x, const double *xi, double *L );
 
 
-} // namespace DelaunayTessellation
-} // namespace AMP
+} // namespace AMP::DelaunayTessellation
 
 #endif

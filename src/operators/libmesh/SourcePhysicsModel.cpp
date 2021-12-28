@@ -13,8 +13,7 @@
 #include <cstring>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 SourcePhysicsModel::SourcePhysicsModel( std::shared_ptr<const SourcePhysicsModelParameters> params )
@@ -177,5 +176,4 @@ void SourcePhysicsModel::getConstitutiveProperty( std::vector<double> &result,
     }
     PROFILE_STOP( "getConstitutiveProperty", 6 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

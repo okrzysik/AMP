@@ -3,8 +3,7 @@
 #include "AMP/utils/ParameterBase.h"
 #include <iomanip>
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -135,5 +134,4 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

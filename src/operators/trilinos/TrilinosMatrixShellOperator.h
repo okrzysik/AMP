@@ -8,8 +8,7 @@
 #include <functional>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class TrilinosMatrixShellOperator : public LinearOperator
@@ -67,7 +66,6 @@ private:
 
     std::function<void( void *, int, std::vector<size_t> &, std::vector<double> & )> d_getRow;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

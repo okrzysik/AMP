@@ -28,8 +28,7 @@
 #include <cmath>
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /*!
  *************************************************************************
@@ -1064,8 +1063,7 @@ double PowerShape::getGaussianF( double x, double y )
                                pow( y - d_muY, 2 ) / ( 2 * pow( d_sigmaY, 2.0 ) ) ) );
     return gaussianF;
 }
-} // namespace Operator
-} // end namespace AMP
+} // namespace AMP::Operator
 
 //---------------------------------------------------------------------------//
 //                 end of PowerShape.cc

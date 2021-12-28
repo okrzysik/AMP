@@ -4,8 +4,7 @@
 
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class FlowFrapconJacobianParameters : public OperatorParameters
 {
@@ -21,7 +20,6 @@ public:
 
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenSolution;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -11,8 +11,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -1466,5 +1465,4 @@ AMP::Mesh::MeshElement SubchannelFourEqNonlinearOperator::getAxiallyAdjacentLate
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -1,6 +1,5 @@
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 inline std::shared_ptr<Matrix> Matrix::transpose() const
@@ -30,5 +29,4 @@ inline std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix
 {
     return operator<<( out, *p );
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

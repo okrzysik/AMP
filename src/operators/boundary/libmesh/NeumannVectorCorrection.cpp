@@ -18,8 +18,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -301,5 +300,4 @@ void NeumannVectorCorrection::setVariableFlux( const AMP::LinearAlgebra::Vector:
         d_variableFlux = flux->subsetVectorForVariable( d_variable );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

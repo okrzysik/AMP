@@ -6,8 +6,7 @@
 #include "AMP/operators/subchannel/FlowFrapconOperatorParameters.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class to represent Frapcon Flow operator. This operator acts as a heat sink and
@@ -158,7 +157,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

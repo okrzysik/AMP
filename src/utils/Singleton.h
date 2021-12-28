@@ -7,8 +7,7 @@
  */
 
 
-namespace AMP {
-namespace voodoo {
+namespace AMP::voodoo {
 
 
 template<class Object>
@@ -31,7 +30,6 @@ private: // emphasize the following members are private
 };
 
 
-} // namespace voodoo
-} // namespace AMP
+} // namespace AMP::voodoo
 
 #endif // SINGLETON_H

@@ -6,8 +6,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /**
@@ -73,7 +72,6 @@ private:
 };
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry
 
 #endif

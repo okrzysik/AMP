@@ -13,8 +13,7 @@
 #include "petscksp.h"
 #include "petscpc.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
@@ -402,5 +401,4 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

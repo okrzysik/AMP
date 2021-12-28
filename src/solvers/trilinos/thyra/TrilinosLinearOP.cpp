@@ -4,8 +4,7 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -97,5 +96,4 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         }
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

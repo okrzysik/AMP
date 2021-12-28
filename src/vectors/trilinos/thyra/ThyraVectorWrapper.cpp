@@ -16,8 +16,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Some function definitions
@@ -655,5 +654,4 @@ getConstPtr( std::vector<size_t> block_size,
     }
     return ptr;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

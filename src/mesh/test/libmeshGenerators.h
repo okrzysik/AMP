@@ -13,8 +13,7 @@
 #include "libmesh/point.h"
 
 
-namespace AMP {
-namespace unit_test {
+namespace AMP::unit_test {
 
 
 // Class to create a cube in Libmesh
@@ -242,8 +241,7 @@ protected:
 };
 
 
-} // namespace unit_test
-} // namespace AMP
+} // namespace AMP::unit_test
 
 
 #endif

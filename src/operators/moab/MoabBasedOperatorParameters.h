@@ -16,8 +16,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //---------------------------------------------------------------------------//
 /*!
@@ -35,7 +34,6 @@ public:
     }
 };
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif // MOABBASEDOPERATORPARAMETERS_H_

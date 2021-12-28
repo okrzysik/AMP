@@ -1,8 +1,7 @@
 
 #include "AMP/operators/MoveMeshOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MoveMeshOperator::MoveMeshOperator( std::shared_ptr<const OperatorParameters> params )
     : Operator( params )
@@ -35,5 +34,4 @@ void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     d_prevDisp->copyVector( dispVec );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

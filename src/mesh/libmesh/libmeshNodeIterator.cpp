@@ -5,8 +5,7 @@
 // libMesh includes
 #include "libmesh/elem.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // unused global variable to prevent compiler warning
@@ -239,5 +238,4 @@ void libmeshNodeIterator::setCurrentElement()
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

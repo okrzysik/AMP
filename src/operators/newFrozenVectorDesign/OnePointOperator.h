@@ -4,8 +4,7 @@
 
 #include "AMP/operators/Operator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class OnePointOperator : public Operator
 {
@@ -25,7 +24,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -1,8 +1,7 @@
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -34,5 +33,4 @@ std::shared_ptr<AMP::Database> MeshParameters::getDatabase() { return d_db; }
 std::shared_ptr<const AMP::Database> MeshParameters::getDatabase() const { return d_db; }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

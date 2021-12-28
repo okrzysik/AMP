@@ -5,8 +5,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/operators/libmesh/FEOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class LinearFEOperatorParameters : public FEOperatorParameters
 {
@@ -30,7 +29,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

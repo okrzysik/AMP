@@ -3,8 +3,7 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 //**********************************************************************
 // Static functions that operate on VectorData objects
@@ -284,5 +283,4 @@ Scalar NativePetscVectorOperations::localDot( const VectorData &vx, const Vector
     return static_cast<double>( ans );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

@@ -17,8 +17,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 typedef ElementPhysicsModelParameters DiffusionTransportModelParameters;
 
@@ -186,7 +185,6 @@ protected: // used to be private
 
     bool d_IsTensor;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

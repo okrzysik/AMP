@@ -1,8 +1,7 @@
 
 #include "DTKAMPMeshEntityIterator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -129,5 +128,4 @@ std::unique_ptr<DataTransferKit::EntityIterator> AMPMeshEntityIterator::clone() 
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

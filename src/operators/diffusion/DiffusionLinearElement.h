@@ -8,8 +8,7 @@
 /* AMP files */
 #include "AMP/operators/diffusion/DiffusionElement.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DiffusionLinearElement : public DiffusionElement
 {
@@ -53,7 +52,6 @@ protected:
 private:
     unsigned int d_num_dofs;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

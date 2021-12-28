@@ -4,8 +4,7 @@
 #include "AMP/geometry/Geometry.h"
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /**
@@ -23,27 +22,18 @@ public:
     explicit RotationalGeometry( std::shared_ptr<LogicalGeometry> geom ) : d_geom( geom ) {}
 
 public: // Functions inherited from Geometry
-    std::string getName() const override final
-    {
-        return "RotationalGeometry<" + d_geom->getName() + ">";
-    }
-    bool isConvex() const override final { return d_geom->isConvex(); }
-    Point nearest( const Point &x ) const override final
-    {
-        return out( d_geom->nearest( to( x ) ) );
-    }
-    double distance( const Point &x, const Point &dir ) const override final
+    std::string getName() const { return "RotationalGeometry<" + d_geom->getName() + ">"; }
+    bool isConvex() const { return d_geom->isConvex(); }
+    Point nearest( const Point &x ) const { return out( d_geom->nearest( to( x ) ) ); }
+    double distance( const Point &x, const Point &dir ) const
     {
         return d_geom->distance( to( x ), rotateDir( dir ) );
     }
-    bool inside( const Point &x ) const override final { return d_geom->inside( to( x ) ); }
-    int NSurface() const override final { return d_geom->NSurface(); }
-    int surface( const Point &x ) const override final { return d_geom->surface( to( x ) ); }
-    Point surfaceNorm( const Point &x ) const override final
-    {
-        return out( d_geom->surfaceNorm( to( x ) ) );
-    }
-    Point logical( const Point &x ) const override final {return out( d_geom->logical( to( x ) ); }
+    bool inside( const Point &x ) const { return d_geom->inside( to( x ) ); }
+    int NSurface() const { return d_geom->NSurface(); }
+    int surface( const Point &x ) const { return d_geom->surface( to( x ) ); }
+    Point surfaceNorm( const Point &x ) const { return out( d_geom->surfaceNorm( to( x ) ) ); }
+    Point logical( const Point &x ) const final {return out( d_geom->logical( to( x ) ); }
     Point physical( const Point &x ) const override final
     { return out( d_geom->physical( to( x ) );
     }
@@ -81,7 +71,6 @@ private:
 };
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry
 
 #endif

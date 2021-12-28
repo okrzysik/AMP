@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /*!
   @brief base class for operator class associated with ImplicitTimeIntegrator
@@ -211,7 +210,6 @@ protected:
 
 private:
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

@@ -5,8 +5,7 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /**  \class EpetraVector
@@ -116,8 +115,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

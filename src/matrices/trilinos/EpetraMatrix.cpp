@@ -14,8 +14,7 @@ ENABLE_WARNINGS
 #endif
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 void EpetraMatrix::VerifyEpetraReturn( int err, const char *func ) const
@@ -105,5 +104,4 @@ void EpetraMatrix::fillComplete()
         d_epetraMatrix->FillComplete();
     }
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

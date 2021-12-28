@@ -20,8 +20,7 @@ ENABLE_WARNINGS
     #include <Epetra_SerialComm.h>
 #endif
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline auto createEpetraMap( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
@@ -466,5 +465,4 @@ void ManagedEpetraMatrix::makeConsistent()
 
 void ManagedEpetraMatrix::FillComplete() { d_epetraMatrix->FillComplete(); }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

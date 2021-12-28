@@ -4,8 +4,7 @@
 #include "AMP/geometry/Geometry.h"
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /**
@@ -94,7 +93,6 @@ protected: // Internal data
 };
 
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry
 
 #endif

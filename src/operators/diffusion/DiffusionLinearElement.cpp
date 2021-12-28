@@ -1,8 +1,7 @@
 #include "DiffusionLinearElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void DiffusionLinearElement::apply()
 {
@@ -147,5 +146,4 @@ void DiffusionLinearElement::apply()
 
     d_transportModel->postLinearElementOperation();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

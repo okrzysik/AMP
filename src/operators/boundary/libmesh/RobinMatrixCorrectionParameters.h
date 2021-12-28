@@ -6,8 +6,7 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class RobinMatrixCorrectionParameters : public LinearBoundaryOperatorParameters
 {
@@ -29,7 +28,6 @@ public:
 
     std::shared_ptr<AMP::Discretization::DOFManager> d_DofMap;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

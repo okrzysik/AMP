@@ -6,8 +6,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace Geometry {
+namespace AMP::Geometry {
 
 
 /********************************************************
@@ -261,5 +260,4 @@ bool Tube::operator==( const Geometry &rhs ) const
            d_offset[1] == geom->d_offset[1] && d_offset[2] == geom->d_offset[2];
 }
 
-} // namespace Geometry
-} // namespace AMP
+} // namespace AMP::Geometry

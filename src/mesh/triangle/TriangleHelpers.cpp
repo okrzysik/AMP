@@ -24,9 +24,7 @@
 #include <random>
 
 
-namespace AMP {
-namespace Mesh {
-namespace TriangleHelpers {
+namespace AMP::Mesh::TriangleHelpers {
 
 
 // Helper function to create constexpr std::array with a single value
@@ -1081,6 +1079,4 @@ template std::vector<triset2D> splitDomains<2>( triset2D );
 template std::vector<triset3D> splitDomains<3>( triset3D );
 // clang-format on
 
-} // namespace TriangleHelpers
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh::TriangleHelpers

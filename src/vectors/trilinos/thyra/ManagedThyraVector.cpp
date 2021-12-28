@@ -5,8 +5,7 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline auto getVectorEngine( std::shared_ptr<VectorData> data )
@@ -80,5 +79,4 @@ void ManagedThyraVector::copyVector( Vector::const_shared_ptr vec )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

@@ -14,8 +14,7 @@ ENABLE_WARNINGS
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef ElementPhysicsModelParameters ManufacturedSourceModel1Parameters;
@@ -61,7 +60,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

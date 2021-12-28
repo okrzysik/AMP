@@ -7,8 +7,7 @@
 #include "AMP/vectors/Vector.h"
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   u^s = C u^m + d
@@ -97,7 +96,6 @@ private:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_InputVariable;  /**< Input variable */
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable; /**< Output variable */
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

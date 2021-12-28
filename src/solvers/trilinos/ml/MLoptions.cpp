@@ -2,8 +2,7 @@
 #include "MLoptions.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 MLoptions::MLoptions( std::shared_ptr<AMP::Database> db )
     : d_problemType( db->getWithDefault<std::string>( "problem_type", "SA" ) )
@@ -110,5 +109,4 @@ void MLoptions::addDefaults( const std::string &problemType, std::shared_ptr<AMP
         AMP_ERROR( "The option, problem_type = \"" << problemType << "\" , is not supported." );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

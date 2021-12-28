@@ -5,8 +5,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 DataChangeListener::DataChangeListener() {}
 
@@ -29,5 +28,4 @@ void DataChangeListener::deregisterFromFirer( DataChangeFirer *firer )
     AMP_ASSERT( std::find( d_firers.begin(), d_firers.end(), firer ) != d_firers.end() );
     d_firers.erase( std::find( d_firers.begin(), d_firers.end(), firer ) );
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

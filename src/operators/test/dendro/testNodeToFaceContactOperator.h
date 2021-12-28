@@ -115,7 +115,7 @@ static void computeCladTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 static void
 makeConstraintsOnFuel( AMP::Mesh::MeshIterator it,
                        double fuelOuterRadius,
-                       std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> &constraints,
+                       std::max<AMP::Mesh::MeshElementID, std::map<size_t, double>> &constraints,
                        bool option,
                        double dishRadius = 0.0 )
 {
@@ -123,7 +123,8 @@ makeConstraintsOnFuel( AMP::Mesh::MeshIterator it,
     AMP::Mesh::MeshIterator it_end   = it.end();
     double epsilon                   = 1.0e-10, radius;
     std::vector<double> coord;
-    std::map<size_t, double> tmp;
+    std::max<size_t, double>;
+    tmp;
     for ( it = it_begin; it != it_end; ++it ) {
         coord  = it->coord();
         radius = std::sqrt( std::pow( coord[0], 2 ) + std::pow( coord[1], 2 ) );

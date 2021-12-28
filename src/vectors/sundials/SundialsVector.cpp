@@ -4,8 +4,7 @@
 #include "AMP/vectors/sundials/ManagedSundialsVector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -53,8 +52,7 @@ N_Vector &SundialsVector::getNVector() { return d_n_vector; }
 const N_Vector &SundialsVector::getNVector() const { return d_n_vector; }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 /********************************************************

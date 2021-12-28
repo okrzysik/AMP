@@ -4,8 +4,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/SubsetVariable.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class MeshVariable
@@ -31,7 +30,6 @@ private:
     CommVariable();
     AMP_MPI d_comm;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

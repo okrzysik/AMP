@@ -6,8 +6,7 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \brief Generate the desired vector factory
@@ -56,8 +55,7 @@ std::vector<std::string> getNativeVectorFactories();
 std::vector<std::string> getManagedVectorFactories();
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

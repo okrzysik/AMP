@@ -7,8 +7,7 @@
 #include "math.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -84,7 +83,6 @@ Vector::shared_ptr createArrayVector( std::shared_ptr<Variable> var,
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

@@ -6,8 +6,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 static double interp_linear( const std::vector<double> &, const std::vector<double> &, double );
@@ -354,5 +353,4 @@ double interp_linear( const std::vector<double> &x, const std::vector<double> &f
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

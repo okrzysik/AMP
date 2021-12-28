@@ -2,8 +2,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void MassMatrixCorrection::resetBoundaryIds(
     std::shared_ptr<const MassMatrixCorrectionParameters> params )
@@ -106,5 +105,4 @@ void MassMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> para
     // This does consistent for both "Sum-into" and "set".
     inputMatrix->makeConsistent();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

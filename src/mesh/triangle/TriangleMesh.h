@@ -12,8 +12,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
@@ -426,8 +425,7 @@ private: // Internal data
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 
 #endif

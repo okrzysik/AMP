@@ -14,8 +14,7 @@
 #include <set>
 #include <vector>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Some global variables
@@ -1318,5 +1317,4 @@ void meshTests::MeshPerformance( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr 
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

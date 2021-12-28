@@ -5,8 +5,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef ElementPhysicsModelParameters ManufacturedSourceModel2Parameters;
@@ -51,7 +50,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

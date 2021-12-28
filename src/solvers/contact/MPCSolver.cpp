@@ -1,8 +1,7 @@
 #include "AMP/solvers/contact/MPCSolver.h"
 #include "AMP/operators/contact/NodeToSegmentConstraintsOperator.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 void MPCSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
                        std::shared_ptr<AMP::LinearAlgebra::Vector> u )
@@ -13,5 +12,4 @@ void MPCSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
 
     op->applySolutionCorrection( u );
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

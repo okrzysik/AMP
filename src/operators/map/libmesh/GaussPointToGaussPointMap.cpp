@@ -21,8 +21,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -249,5 +248,4 @@ void GaussPointToGaussPointMap::createIdxMap(
         elem = nullptr;
     } // end for i
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

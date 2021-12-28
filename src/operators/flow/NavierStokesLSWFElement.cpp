@@ -2,8 +2,7 @@
 #include "NavierStokesLSWFElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void NavierStokesLSWFElement::initTransportModel() { d_fe->reinit( d_elem ); }
 
@@ -254,5 +253,4 @@ void NavierStokesLSWFElement::apply()
         }
     } // end for qp
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

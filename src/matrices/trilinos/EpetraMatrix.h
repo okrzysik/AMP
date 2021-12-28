@@ -8,8 +8,7 @@
 class Epetra_Map;
 class Epetra_CrsMatrix;
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /** \brief  Parameters class for creating an EpetraMatrix
  */
@@ -115,8 +114,7 @@ public:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

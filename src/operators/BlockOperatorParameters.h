@@ -6,8 +6,7 @@
 
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class BlockOperatorParameters : public OperatorParameters
 {
@@ -20,7 +19,6 @@ public:
 
     std::vector<std::vector<std::shared_ptr<OperatorParameters>>> d_blockParams;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

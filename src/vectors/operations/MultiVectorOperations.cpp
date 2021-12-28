@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/MultiVectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -538,5 +537,4 @@ void MultiVectorOperations::resetVectorOperations(
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

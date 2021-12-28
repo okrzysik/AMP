@@ -19,8 +19,7 @@
 #include <cmath>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 std::map<std::string, AMP::Mesh::Mesh::generatorType> AMP::Mesh::Mesh::d_generators;
@@ -228,5 +227,4 @@ size_t Mesh::maxProcs( std::shared_ptr<const MeshParameters> params )
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

@@ -9,8 +9,7 @@
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class ManagedEpetraMatrix
@@ -103,7 +102,6 @@ protected:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

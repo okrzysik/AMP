@@ -7,8 +7,7 @@
 #include <cmath>
 #include <limits>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
@@ -374,5 +373,4 @@ void GMRESSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorPa
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

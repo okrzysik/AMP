@@ -2,8 +2,7 @@
 #include "AMP/IO/PIO.h"
 
 
-namespace AMP {
-namespace MechanicsManufacturedSolution {
+namespace AMP::MechanicsManufacturedSolution {
 
 
 // Default constructor
@@ -551,5 +550,4 @@ std::shared_ptr<MMS> MMSBuilder::createMMS( std::shared_ptr<AMP::Database> mmsDa
 }
 
 
-} // end namespace MechanicsManufacturedSolution
-} // end namespace AMP
+} // namespace AMP::MechanicsManufacturedSolution

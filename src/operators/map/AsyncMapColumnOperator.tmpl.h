@@ -3,8 +3,7 @@
 #include "AMP/utils/Database.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 enum class MapDominance { Master, Slave };
@@ -84,5 +83,5 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
 
     return newMapColumn;
 }
-} // namespace Operator
-} // namespace AMP
+
+} // namespace AMP::Operator

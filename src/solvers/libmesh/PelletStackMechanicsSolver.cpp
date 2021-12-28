@@ -1,7 +1,6 @@
 #include "AMP/solvers/libmesh/PelletStackMechanicsSolver.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 PelletStackMechanicsSolver::PelletStackMechanicsSolver(
@@ -104,5 +103,4 @@ void PelletStackMechanicsSolver::solveScan( std::shared_ptr<const AMP::LinearAlg
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
