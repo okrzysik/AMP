@@ -189,9 +189,9 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
 
-    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN" );
-    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-cylinder" );
-    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-shell" );
+    exeNames.emplace_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN" );
+    exeNames.emplace_back( "testBoomerAMGSolver-LinearThermalOperator-cylinder" );
+    exeNames.emplace_back( "testBoomerAMGSolver-LinearThermalOperator-shell" );
     //    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN_clad" );
 
     for ( auto &exeName : exeNames )

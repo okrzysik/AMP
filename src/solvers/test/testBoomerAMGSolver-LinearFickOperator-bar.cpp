@@ -187,7 +187,7 @@ void linearFickTest( AMP::UnitTest *ut )
                     if ( iNode < numNodes - 1 )
                         file << "," << std::endl;
                     if ( fabs( cal - sol ) > cal * 1e-3 ) {
-                        passes = 0;
+                        passes = false;
                         ut->failure( "Error" );
                     }
                     iNode++;

@@ -7,7 +7,7 @@
 
 namespace AMP::LinearAlgebra {
 
-DataChangeFirer::DataChangeFirer() {}
+DataChangeFirer::DataChangeFirer() = default;
 
 DataChangeFirer::~DataChangeFirer()
 {

@@ -40,7 +40,7 @@ RK34TimeIntegrator::RK34TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK34TimeIntegrator::~RK34TimeIntegrator() {}
+RK34TimeIntegrator::~RK34TimeIntegrator() = default;
 
 /*
 ************************************************************************

@@ -13,7 +13,7 @@ namespace AMP::Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-TFQMRSolver::TFQMRSolver() {}
+TFQMRSolver::TFQMRSolver() = default;
 
 TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -28,7 +28,7 @@ TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-TFQMRSolver::~TFQMRSolver() {}
+TFQMRSolver::~TFQMRSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

@@ -40,7 +40,7 @@ RK12TimeIntegrator::RK12TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK12TimeIntegrator::~RK12TimeIntegrator() {}
+RK12TimeIntegrator::~RK12TimeIntegrator() = default;
 
 /*
 ************************************************************************

@@ -27,7 +27,7 @@ GMRESSolver::GMRESSolver( std::shared_ptr<SolverStrategyParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-GMRESSolver::~GMRESSolver() {}
+GMRESSolver::~GMRESSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

@@ -13,7 +13,7 @@ namespace AMP::Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-QMRCGSTABSolver::QMRCGSTABSolver() {}
+QMRCGSTABSolver::QMRCGSTABSolver() = default;
 
 QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -28,7 +28,7 @@ QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> para
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-QMRCGSTABSolver::~QMRCGSTABSolver() {}
+QMRCGSTABSolver::~QMRCGSTABSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

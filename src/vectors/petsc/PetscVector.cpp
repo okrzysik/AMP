@@ -35,7 +35,7 @@ std::shared_ptr<PetscVector> PetscVector::view( Vector::shared_ptr inVector )
     return ptr;
 }
 
-PetscVector::PetscVector() {}
+PetscVector::PetscVector() = default;
 PetscVector::PetscVector( std::shared_ptr<Vector> vec )
     : d_Vec( PETSC::getVec( vec ) ), d_vector( vec )
 {

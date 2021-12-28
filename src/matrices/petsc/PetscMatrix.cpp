@@ -26,7 +26,7 @@ std::shared_ptr<PetscMatrix> PetscMatrix::view( std::shared_ptr<Matrix> inMat )
     return ptr;
 }
 
-PetscMatrix::PetscMatrix() {}
+PetscMatrix::PetscMatrix() = default;
 PetscMatrix::PetscMatrix( std::shared_ptr<Matrix> mat )
     : d_Mat( PETSC::getMat( mat ) ), d_matrix( mat )
 {

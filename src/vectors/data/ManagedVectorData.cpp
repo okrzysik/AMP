@@ -88,7 +88,7 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
     vec2->getVectorData()->registerListener( listener );
 }
 
-ManagedVectorData::~ManagedVectorData() {}
+ManagedVectorData::~ManagedVectorData() = default;
 
 /********************************************************
  * Subset                                                *

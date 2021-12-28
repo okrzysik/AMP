@@ -40,7 +40,7 @@ RK45TimeIntegrator::RK45TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK45TimeIntegrator::~RK45TimeIntegrator() {}
+RK45TimeIntegrator::~RK45TimeIntegrator() = default;
 
 /*
 ************************************************************************

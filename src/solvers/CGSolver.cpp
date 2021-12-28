@@ -9,7 +9,7 @@ namespace AMP::Solver {
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-CGSolver::CGSolver() {}
+CGSolver::CGSolver() = default;
 
 CGSolver::CGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -24,7 +24,7 @@ CGSolver::CGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-CGSolver::~CGSolver() {}
+CGSolver::~CGSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *

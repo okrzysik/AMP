@@ -44,7 +44,7 @@ std::shared_ptr<SundialsVector> SundialsVector::view( Vector::shared_ptr inVecto
     return retVal;
 }
 
-SundialsVector::SundialsVector() {}
+SundialsVector::SundialsVector() = default;
 
 
 N_Vector &SundialsVector::getNVector() { return d_n_vector; }

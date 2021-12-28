@@ -38,7 +38,7 @@ RK2TimeIntegrator::RK2TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK2TimeIntegrator::~RK2TimeIntegrator() {}
+RK2TimeIntegrator::~RK2TimeIntegrator() = default;
 
 /*
 ************************************************************************

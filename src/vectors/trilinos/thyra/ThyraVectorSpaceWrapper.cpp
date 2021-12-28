@@ -26,7 +26,7 @@ ThyraVectorSpaceWrapper::ThyraVectorSpaceWrapper(
 /****************************************************************
  * Destructor                                                    *
  ****************************************************************/
-ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() {}
+ThyraVectorSpaceWrapper::~ThyraVectorSpaceWrapper() = default;
 
 
 /****************************************************************

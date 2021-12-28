@@ -36,7 +36,7 @@ NativeThyraVectorData::NativeThyraVectorData( Teuchos::RCP<Thyra::VectorBase<dou
 /************************************************************************
  * Destructor                                                            *
  ************************************************************************/
-NativeThyraVectorData::~NativeThyraVectorData() {}
+NativeThyraVectorData::~NativeThyraVectorData() = default;
 
 /************************************************************************
  * Vector functions                                                      *

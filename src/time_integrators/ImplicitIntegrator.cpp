@@ -41,7 +41,7 @@ ImplicitIntegrator::ImplicitIntegrator(
     d_solver                = AMP::Solver::SolverFactory::create( nnl_params );
 }
 
-ImplicitIntegrator::~ImplicitIntegrator() {}
+ImplicitIntegrator::~ImplicitIntegrator() = default;
 
 /*
  *************************************************************************

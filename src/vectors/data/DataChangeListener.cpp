@@ -7,7 +7,7 @@
 
 namespace AMP::LinearAlgebra {
 
-DataChangeListener::DataChangeListener() {}
+DataChangeListener::DataChangeListener() = default;
 
 DataChangeListener::~DataChangeListener()
 {

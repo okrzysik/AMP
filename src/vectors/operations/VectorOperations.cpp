@@ -9,7 +9,7 @@ namespace AMP::LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-VectorOperations::VectorOperations() {}
+VectorOperations::VectorOperations() = default;
 
 /****************************************************************
  * equals                                                        *

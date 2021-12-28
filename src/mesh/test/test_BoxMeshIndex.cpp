@@ -199,12 +199,12 @@ int main( int argc, char **argv )
     int N_procs[]             = { 2, 3, 4, 5, 8, 12, 13, 16, 64, 87 };
     for ( auto s : size ) {
         for ( auto N : N_procs ) {
-            pass = pass && run( s, { 0, 0, 0 }, N );
+            pass = pass && run( s, { false, false, false }, N );
         }
     }
 
     // Run some specific problems
-    pass = pass && run( { 20, 20, 20 }, { 1, 0, 0 }, 2 );
+    pass = pass && run( { 20, 20, 20 }, { true, false, false }, 2 );
 
     // Shutdown AMP
     if ( pass )

@@ -37,7 +37,7 @@ ExplicitEuler::ExplicitEuler(
 *                                                                      *
 ************************************************************************
 */
-ExplicitEuler::~ExplicitEuler() {}
+ExplicitEuler::~ExplicitEuler() = default;
 
 /*
 ************************************************************************

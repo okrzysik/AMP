@@ -49,7 +49,7 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
     BoxMesh::initialize();
     BoxMesh::finalize();
 }
-PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) : BoxMesh( mesh ) {}
+PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) = default;
 
 
 /********************************************************

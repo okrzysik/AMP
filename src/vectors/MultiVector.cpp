@@ -333,7 +333,7 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 
 std::string MultiVector::type() const { return "MultiVector"; }
 
-MultiVector::~MultiVector() {}
+MultiVector::~MultiVector() = default;
 
 const Vector::shared_ptr &MultiVector::getVector( const Vector &rhs, size_t which ) const
 {

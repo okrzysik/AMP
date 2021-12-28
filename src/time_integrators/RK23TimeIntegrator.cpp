@@ -38,7 +38,7 @@ RK23TimeIntegrator::RK23TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK23TimeIntegrator::~RK23TimeIntegrator() {}
+RK23TimeIntegrator::~RK23TimeIntegrator() = default;
 
 /*
 ************************************************************************

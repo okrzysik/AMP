@@ -583,7 +583,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             {
                 auto masterMat = masterBVPOperator->getMatrix();
                 auto masterRhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( masterCor.get() == NULL ) {
+                if ( masterCor.get() == nullptr ) {
                     masterCor = masterRhs->cloneVector();
                     applyCustomDirichletCondition(
                         masterRhs, masterCor, meshAdapter, masterConstraints, masterMat );
@@ -594,12 +594,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    masterConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( masterCor.get() != NULL );
+                AMP_ASSERT( masterCor.get() != nullptr );
             }
             {
                 auto slaveMat = slaveBVPOperator->getMatrix();
                 auto slaveRhs = slaveBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( slaveCor.get() == NULL ) {
+                if ( slaveCor.get() == nullptr ) {
                     slaveCor = slaveRhs->cloneVector();
                     applyCustomDirichletCondition(
                         slaveRhs, slaveCor, meshAdapter, slaveConstraints, slaveMat );
@@ -610,7 +610,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    slaveConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( slaveCor.get() != NULL );
+                AMP_ASSERT( slaveCor.get() != nullptr );
             }
 
             // get d
