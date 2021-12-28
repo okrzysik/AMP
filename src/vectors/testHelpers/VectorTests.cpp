@@ -650,7 +650,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
 
     // Add values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        const double val = double( i );
+        const auto val = double( i );
         vector->addValuesByGlobalID( 1, &i, &val );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
@@ -729,7 +729,7 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
 
     // Set values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        const double val = double( i );
+        const auto val = double( i );
         vector->setValuesByGlobalID( 1, &i, &val );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED &&

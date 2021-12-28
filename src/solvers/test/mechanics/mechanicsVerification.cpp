@@ -230,7 +230,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     }
     NULL_USE( libmeshInit );
 
-    double scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
+    auto scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator

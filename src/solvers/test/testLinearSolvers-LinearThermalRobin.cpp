@@ -209,8 +209,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
         auto solver_combo_name   = solver_db->getString( "name" );
         auto uses_preconditioner = solver_db->getWithDefault<bool>( "uses_preconditioner", false );
         if ( uses_preconditioner ) {
-            std::string pc_name =
-                solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
+            auto pc_name = solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
             solver_combo_name = solver_combo_name + "+" + pc_name;
         }
 

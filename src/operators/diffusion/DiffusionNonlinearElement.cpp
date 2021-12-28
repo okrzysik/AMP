@@ -39,7 +39,7 @@ void DiffusionNonlinearElement::apply()
             std::dynamic_pointer_cast<DiffusionTransportTensorModel>( d_transportModel );
         for ( int i = 0; i < 3; i++ )
             for ( int j = 0; j < 3; j++ ) {
-                std::vector<double> *vec = new std::vector<double>( d_qrule->n_points() );
+                auto *vec = new std::vector<double>( d_qrule->n_points() );
                 transportCoeffTensor[i][j].reset( vec );
             }
     }
@@ -110,7 +110,7 @@ void DiffusionNonlinearElement::apply()
         } else {
             for ( int i = 0; i < 3; i++ )
                 for ( int j = 0; j < 3; j++ ) {
-                    std::vector<double> *vec( new std::vector<double>( num_nodes ) );
+                    auto *vec( new std::vector<double>( num_nodes ) );
                     nodalTransportCoeffTensor[i][j].reset( vec );
                 }
             d_transportTensorModel->getTensorTransport(

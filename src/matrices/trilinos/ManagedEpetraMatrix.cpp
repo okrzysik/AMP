@@ -80,8 +80,8 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele )
 }
 std::shared_ptr<Matrix> ManagedEpetraMatrix::cloneMatrix() const
 {
-    ManagedEpetraMatrix *r = new ManagedEpetraMatrix( *this );
-    r->d_DeleteMatrix      = true;
+    auto *r           = new ManagedEpetraMatrix( *this );
+    r->d_DeleteMatrix = true;
     return std::shared_ptr<Matrix>( r );
 }
 

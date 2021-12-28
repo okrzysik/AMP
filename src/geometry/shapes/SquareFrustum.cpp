@@ -14,9 +14,9 @@ namespace AMP::Geometry {
  ********************************************************/
 SquareFrustum::SquareFrustum( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
 {
-    auto dir      = db->getString( "Dir" );
-    double height = db->getScalar<double>( "Height" );
-    auto range    = db->getVector<double>( "Range" );
+    auto dir    = db->getString( "Dir" );
+    auto height = db->getScalar<double>( "Height" );
+    auto range  = db->getVector<double>( "Range" );
     AMP_INSIST( range.size() == 6u, "Range must be an array of length 6" );
     int dir2 = 0;
     if ( dir == "-x" )

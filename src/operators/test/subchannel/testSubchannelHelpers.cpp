@@ -117,8 +117,8 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     auto subchannel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
     auto params = std::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannel_db );
     auto subchannelPhysicsModel = std::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
-    double reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
-    double prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
+    auto reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
+    auto prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
     AMP::LinearAlgebra::Vector::shared_ptr flowVec, cladTemp;
     if ( subchannelMesh ) {
         int DOFsPerFace[3] = { 0, 0, 2 };

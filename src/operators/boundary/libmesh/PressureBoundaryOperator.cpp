@@ -181,7 +181,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
         ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP_ASSERT( params->d_db->keyExists( "Value" ) );
-    const double val = params->d_db->getScalar<double>( "Value" );
+    const auto val = params->d_db->getScalar<double>( "Value" );
 
     std::vector<double> pressure( 12 * ( recvSideList.size() ) );
 

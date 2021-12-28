@@ -89,7 +89,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto TemperatureVar = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
 
-    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
+    auto intguess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
 
     auto TemperatureInKelvin = AMP::LinearAlgebra::createVector( nodalDofMap, TemperatureVar );
     TemperatureInKelvin->setToScalar( intguess );
@@ -187,7 +187,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "GapOperator" ), "Key ''GapOperator'' is missing!" );
     auto gapDatabase = input_db->getDatabase( "GapOperator" );
 
-    double heff      = ( gapDatabase )->getScalar<double>( "Convective_Coefficient" );
+    auto heff        = ( gapDatabase )->getScalar<double>( "Convective_Coefficient" );
     auto gapVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Gap" );
 
     // CREATE THE LINEAR THERMAL OPERATOR 2

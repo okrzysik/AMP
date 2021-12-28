@@ -577,7 +577,7 @@ size_t libmeshMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> para
     }
     // Adjust the number of elements by a weight if desired
     if ( database->keyExists( "Weight" ) ) {
-        double weight    = database->getScalar<double>( "Weight" );
+        auto weight      = database->getScalar<double>( "Weight" );
         NumberOfElements = (size_t) ceil( weight * ( (double) NumberOfElements ) );
     }
     return NumberOfElements;

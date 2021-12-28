@@ -194,8 +194,8 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
     }
     auto diag         = matrix->extractDiagonal();
     double l1norm     = static_cast<double>( diag->L1Norm() );
-    double numRows    = static_cast<double>( matrix->numGlobalRows() );
-    double numCols    = static_cast<double>( matrix->numGlobalColumns() );
+    auto numRows      = static_cast<double>( matrix->numGlobalRows() );
+    auto numCols      = static_cast<double>( matrix->numGlobalColumns() );
     double compareVal = std::min( numRows, numCols );
     compareVal        = compareVal * ( 1. + compareVal ) / 2.;
     if ( fabs( l1norm - compareVal ) < 0.000001 )

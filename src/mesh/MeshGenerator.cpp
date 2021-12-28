@@ -110,8 +110,8 @@ size_t Mesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
         meshSize = (size_t) db->getScalar<int>( "NumberOfElements" );
         // Adjust the number of elements by a weight if desired
         if ( db->keyExists( "Weight" ) ) {
-            double weight = db->getScalar<double>( "Weight" );
-            meshSize      = (size_t) ceil( weight * ( (double) meshSize ) );
+            auto weight = db->getScalar<double>( "Weight" );
+            meshSize    = (size_t) ceil( weight * ( (double) meshSize ) );
         }
         return meshSize;
     }

@@ -145,11 +145,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
     double H             = box[5] - box[4];
-    double m_in          = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
-    double w_in          = nonlinearOperator_db->getScalar<double>( "Inlet_Lateral_Flow_Rate" );
-    double Q             = nonlinearOperator_db->getScalar<double>( "Max_Rod_Power" );
-    double Pout          = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
-    double Tin           = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
+    auto m_in            = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
+    auto w_in            = nonlinearOperator_db->getScalar<double>( "Inlet_Lateral_Flow_Rate" );
+    auto Q               = nonlinearOperator_db->getScalar<double>( "Max_Rod_Power" );
+    auto Pout            = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
+    auto Tin             = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
     size_t N_subchannels = AMP::Operator::Subchannel::getNumberOfSubchannels( subchannelMesh );
     m_in                 = m_in / N_subchannels;
 
@@ -393,7 +393,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );
 
     // check that norm of relative error is less than tolerance
-    double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
+    auto tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
     } else {

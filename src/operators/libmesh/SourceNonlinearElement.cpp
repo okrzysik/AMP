@@ -43,8 +43,7 @@ SourceNonlinearElement::SourceNonlinearElement(
     d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
     d_fe->get_xyz();
 
-    std::string qruleOrderName =
-        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto qruleOrderName = params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 

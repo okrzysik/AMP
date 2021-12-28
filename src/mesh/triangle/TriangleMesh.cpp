@@ -964,8 +964,8 @@ template<uint8_t NG, uint8_t NP>
 std::pair<const ElementID *, const ElementID *>
 TriangleMesh<NG, NP>::getElementParents( const ElementID &id, const GeomType type ) const
 {
-    size_t type1 = static_cast<size_t>( id.type() );
-    size_t type2 = static_cast<size_t>( type );
+    auto type1 = static_cast<size_t>( id.type() );
+    auto type2 = static_cast<size_t>( type );
     // Perform some initial checks
     if ( !id.is_local() )
         AMP_ERROR( "Getting parents for non-owned elements is not supported" );

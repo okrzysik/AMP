@@ -512,7 +512,7 @@ std::vector<double> MMSTrigonometric::getStressTensor( double x, double y, doubl
 std::shared_ptr<MMS> MMSBuilder::createMMS( std::shared_ptr<AMP::Database> mmsDatabase )
 {
     std::shared_ptr<MMS> mms;
-    std::string name = mmsDatabase->getWithDefault<std::string>( "name", "One" );
+    auto name = mmsDatabase->getWithDefault<std::string>( "name", "One" );
     if ( name == "Trigonometric" ) {
         mms = std::shared_ptr<MMS>( new MMSTrigonometric );
     } else if ( name == "Linear" ) {

@@ -130,7 +130,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "RHS min after corrections = " << precision << rhsVec->min() << "\n";
 
     // Initial guess
-    double initGuess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
+    auto initGuess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
     solVec->setToScalar( initGuess );
     AMP::pout << "initial guess L2 norm before corrections = " << solVec->L2Norm() << "\n";
     AMP::pout << "initial guess max before corrections = " << solVec->max() << "\n";

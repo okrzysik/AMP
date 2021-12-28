@@ -167,8 +167,8 @@ bool RK34TimeIntegrator::checkNewSolution( void )
 {
     bool retcode = false;
 
-    auto l2Norm                   = d_z_vec->L2Norm();
-    double l2NormOfEstimatedError = l2Norm.get<double>();
+    auto l2Norm                 = d_z_vec->L2Norm();
+    auto l2NormOfEstimatedError = l2Norm.get<double>();
 
     // we flag the solution as being acceptable if the l2 norm of the error
     // is less than the required tolerance or we are at the minimum time step
@@ -231,7 +231,7 @@ double RK34TimeIntegrator::getNextDt( const bool good_solution )
         next_dt = std::min( d_current_dt, d_final_time - d_current_time );
     } else {
 
-        double l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
+        auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
         next_dt = 0.84 * d_current_dt * pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 4.0 );
         // check to make sure the timestep is not too small or large
         next_dt = std::min( std::max( next_dt, d_min_dt ), d_max_dt );

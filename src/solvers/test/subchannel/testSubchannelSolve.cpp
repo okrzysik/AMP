@@ -598,8 +598,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     root_subchannel = globalComm.maxReduce( root_subchannel );
     globalComm.bcast( &range[0], 6, root_subchannel );
     // Desired power of the fuel pin (W)
-    double P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                   ->getScalar<double>( "Rod_Power" );
+    auto P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
+                 ->getScalar<double>( "Rod_Power" );
     // GeomType::Volume of fuel in a 3.81m pin
     if ( pinMesh ) {
         const double V = 1.939e-4;
@@ -628,11 +628,11 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
     if ( subchannelMesh ) {
         // get exit pressure
-        double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                          ->getScalar<double>( "Exit_Pressure" );
+        auto Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
+                        ->getScalar<double>( "Exit_Pressure" );
         // get inlet temperature
-        double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                         ->getScalar<double>( "Inlet_Temperature" );
+        auto Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
+                       ->getScalar<double>( "Inlet_Temperature" );
         // compute inlet enthalpy
         std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(

@@ -80,7 +80,7 @@ static_assert( std::numeric_limits<eint128>::traps );
 template<class TYPE>
 static constexpr bool compare( const TYPE &x, double y )
 {
-    double x2  = static_cast<double>( x );
+    auto x2    = static_cast<double>( x );
     double err = ( x2 - y ) / y;
     if ( err < 0 )
         err = -err;

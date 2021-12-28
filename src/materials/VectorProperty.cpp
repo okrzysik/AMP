@@ -72,7 +72,7 @@ void VectorProperty::evalvActual( std::vector<std::shared_ptr<RETURN_VTYPE>> &r,
     AMP_INSIST( rdim0 == d_dimension, "incorrect dimensionality for output vector" );
 
     // Make a vector of iterators for the results vector
-    typename RETURN_VTYPE::iterator dummy_iter = r[0]->begin(); // for idiosyncracy of AMP::Vector
+    auto dummy_iter = r[0]->begin(); // for idiosyncracy of AMP::Vector
     std::vector<typename RETURN_VTYPE::iterator> r_iter( rdim0, dummy_iter );
 
     // Make a vector of iterators - one for each d_arguments

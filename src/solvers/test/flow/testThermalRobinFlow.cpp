@@ -80,7 +80,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
+    auto intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
     // CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );

@@ -86,9 +86,8 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     std::string linearSolverType = linear_db->getString( "linearSolverType" );
     std::string linearSolver     = linear_db->getString( "linearSolver" );
     int maxLinearIterations      = linear_db->getWithDefault<int>( "max_iterations", 100 );
-    double linearRelativeTolerance =
-        linear_db->getWithDefault<double>( "relative_tolerance", 1e-3 );
-    bool flexGmres = linear_db->getWithDefault<bool>( "flexibleGmres", true );
+    auto linearRelativeTolerance = linear_db->getWithDefault<double>( "relative_tolerance", 1e-3 );
+    bool flexGmres               = linear_db->getWithDefault<bool>( "flexibleGmres", true );
     p->set( "Linear Solver Type", linearSolverType );
     p->set( "Preconditioner Type", "None" );
     p->sublist( "Linear Solver Types" )
@@ -155,8 +154,8 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
         d_nlParams->set( "Nonlinear Solver", "Line Search Based" );
     } else if ( solverType == "Anderson" ) {
         d_nlParams->set( "Nonlinear Solver", "Anderson Accelerated Fixed-Point" );
-        int depth     = nonlinear_db->getWithDefault<int>( "StorageDepth", 5 );
-        double mixing = nonlinear_db->getWithDefault<double>( "MixingParameter", 1.0 );
+        int depth   = nonlinear_db->getWithDefault<int>( "StorageDepth", 5 );
+        auto mixing = nonlinear_db->getWithDefault<double>( "MixingParameter", 1.0 );
         d_nlParams->sublist( "Anderson Parameters" ).set( "Storage Depth", depth );
         d_nlParams->sublist( "Anderson Parameters" ).set( "Mixing Parameter", mixing );
         d_nlParams->sublist( "Anderson Parameters" )
@@ -169,7 +168,7 @@ void TrilinosNOXSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             new AMP::Solver::AndersonStatusTest( nonlinear_db ) );
         d_status->addStatusTest( andersonTest );
     }
-    std::string lineSearchMethod =
+    auto lineSearchMethod =
         nonlinear_db->getWithDefault<std::string>( "lineSearchMethod", "Polynomial" );
     d_nlParams->sublist( "Line Search" ).set( "Method", lineSearchMethod );
     d_nlParams->sublist( "Direction" )

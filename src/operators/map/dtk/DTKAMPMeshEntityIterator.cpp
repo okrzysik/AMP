@@ -88,7 +88,7 @@ DataTransferKit::Entity *AMPMeshEntityIterator::operator->( void )
 bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &rhs ) const
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
-    const AMPMeshEntityIterator *rhs_it_impl =
+    const auto *rhs_it_impl =
         static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator == d_amp_iterator );
 }
@@ -98,7 +98,7 @@ bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &r
 bool AMPMeshEntityIterator::operator!=( const DataTransferKit::EntityIterator &rhs ) const
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
-    const AMPMeshEntityIterator *rhs_it_impl =
+    const auto *rhs_it_impl =
         static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator != d_amp_iterator );
 }

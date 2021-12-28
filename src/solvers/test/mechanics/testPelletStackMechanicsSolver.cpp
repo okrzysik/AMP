@@ -65,7 +65,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( useThermalLoad ) {
-        double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
+        auto initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
         initialTemperatureVec->setToScalar( initialTemp );
         helperSetReferenceTemperatureForPelletMechanics( coupledOp, initialTemperatureVec );
     }
@@ -104,8 +104,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         scaledRhsVec->scale( scaleValue, *rhsVec );
 
         if ( useThermalLoad ) {
-            double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
-            double finalTemp   = global_input_db->getScalar<double>( "FinalTemperature" );
+            auto initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
+            auto finalTemp   = global_input_db->getScalar<double>( "FinalTemperature" );
             double deltaTemp =
                 initialTemp + ( ( static_cast<double>( step + 1 ) ) * ( finalTemp - initialTemp ) /
                                 ( static_cast<double>( NumberOfLoadingSteps ) ) );

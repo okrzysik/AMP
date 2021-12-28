@@ -167,7 +167,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 }
 void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
-    std::string petscOptions = db->getWithDefault<std::string>( "SNESOptions", "" );
+    auto petscOptions = db->getWithDefault<std::string>( "SNESOptions", "" );
     d_PetscMonitor.reset();
     if ( petscOptions.find( "monitor" ) != std::string::npos ) {
         petscOptions = PetscMonitor::removeMonitor( petscOptions );

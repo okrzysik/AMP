@@ -60,10 +60,10 @@ void NeutronicsRhs::getFromInput( std::shared_ptr<AMP::Database> db )
     AMP_ASSERT( db );
 
     // define the source type and create the output variable.
-    std::string str = db->getWithDefault<std::string>( "type", "Power" );
-    d_type          = str2id( str );
+    auto str = db->getWithDefault<std::string>( "type", "Power" );
+    d_type   = str2id( str );
 
-    std::string outVarName = db->getWithDefault<std::string>( "OutputVariable", str );
+    auto outVarName = db->getWithDefault<std::string>( "OutputVariable", str );
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
 
     // number of time steps

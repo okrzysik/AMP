@@ -295,18 +295,18 @@ void PowerShape::getFromDatabase( std::shared_ptr<AMP::Database> db )
     // create a shape function.
     {
         // std::string feTypeOrderName = d_db->getWithDefault<std::string>("FE_ORDER", "SECOND");
-        std::string feTypeOrderName = d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+        auto feTypeOrderName = d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
         auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
-        std::string feFamilyName = d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+        auto feFamilyName = d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
         auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
-        std::string qruleTypeName = d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+        auto qruleTypeName = d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
         auto qruleType =
             libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
         const unsigned int dimension = 3;
         d_feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
         d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
         d_fe->get_xyz();
-        std::string qruleOrderName = d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+        auto qruleOrderName = d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
         libMeshEnums::Order qruleOrder;
         if ( qruleOrderName == "DEFAULT" ) {
             qruleOrder = d_feType->default_quadrature_order();

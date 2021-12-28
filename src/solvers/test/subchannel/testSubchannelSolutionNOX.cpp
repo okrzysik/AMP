@@ -121,11 +121,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // Get the problem parameters
     auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
-    double H    = box[5] - box[4];
-    double m    = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
-    double Q    = nonlinearOperator_db->getScalar<double>( "Rod_Power" );
-    double Pout = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
-    double Tin  = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
+    double H  = box[5] - box[4];
+    auto m    = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
+    auto Q    = nonlinearOperator_db->getScalar<double>( "Rod_Power" );
+    auto Pout = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
+    auto Tin  = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
 
     // compute inlet enthalpy
     double Pin = Pout;
@@ -299,7 +299,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );
 
     // check that norm of relative error is less than tolerance
-    double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
+    auto tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
     } else {

@@ -259,7 +259,7 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
 {
     const MultiIterator *rhs2 = nullptr;
     // Convert rhs to a MultiIterator* so we can access the base class members
-    const MultiIterator *tmp = reinterpret_cast<const MultiIterator *>( &rhs );
+    const auto *tmp = reinterpret_cast<const MultiIterator *>( &rhs );
     if ( tmp->d_typeID == getTypeID() ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiIterator
     } else if ( tmp->d_iterator != nullptr ) {

@@ -291,7 +291,7 @@ size_t MultiMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params
     }
     // Adjust the number of elements by a weight if desired
     if ( db->keyExists( "Weight" ) ) {
-        double weight = db->getScalar<double>( "Weight" );
+        auto weight   = db->getScalar<double>( "Weight" );
         totalMeshSize = (size_t) ceil( weight * ( (double) totalMeshSize ) );
     }
     return totalMeshSize;
