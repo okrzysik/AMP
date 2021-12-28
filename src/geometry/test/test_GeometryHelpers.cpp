@@ -198,10 +198,11 @@ void test_map_logical_sphere_surface( int N, AMP::UnitTest &ut )
             pass = false;
         }
     }
-    auto testMap = []( const Point &p0 ) {
+    auto testMap = []( const AMP::Mesh::Point &p0 ) {
         auto p2 = map_sphere_surface_logical( 1.0, p0[0], p0[1], p0[2] );
         auto p  = map_logical_sphere_surface( 1.0, p2[0], p2[1] );
-        return ( p0 - Point( p ) ).abs() < 1e-12;
+        auto d  = p0 - AMP::Mesh::Point( p );
+        return d.abs() < 1e-12;
     };
     pass       = pass && testMap( { 0, 0, -1 } );
     pass       = pass && testMap( { 0, 0, 1 } );
