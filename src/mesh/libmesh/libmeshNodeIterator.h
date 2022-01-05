@@ -9,8 +9,7 @@
 #include "libmesh/elem.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class libmeshNodeIterator : public MeshIterator
@@ -104,7 +103,6 @@ private:
         return AMP::Utilities::hash_char( "libmeshNodeIterator" );
     }
 };
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

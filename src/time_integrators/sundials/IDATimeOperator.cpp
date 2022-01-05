@@ -1,8 +1,7 @@
 #include "AMP/time_integrators/sundials/IDATimeOperator.h"
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 IDATimeOperator::IDATimeOperator( std::shared_ptr<AMP::Operator::OperatorParameters> in_params )
     : TimeOperator( in_params ), d_current_time( 0 )
@@ -69,5 +68,4 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << r << std::endl;
     }
 }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

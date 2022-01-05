@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class Matrix
@@ -92,7 +91,7 @@ public:
      * \param[in] X matrix
      * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
      */
-    void axpy( double alpha, Matrix::const_shared_ptr X );
+    void axpy( double alpha, std::shared_ptr<const Matrix> X );
 
 
     /** \brief  Add values to those in the matrix
@@ -296,11 +295,10 @@ protected:
 
 
 //! Stream operator
-std::ostream &operator<<( std::ostream &out, const Matrix::shared_ptr );
+std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> );
 //! Stream operator
 std::ostream &operator<<( std::ostream &out, const Matrix & );
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #include "Matrix.inline.h"
 #endif

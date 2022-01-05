@@ -72,9 +72,9 @@ static void linearTest( AMP::UnitTest *ut,
 
     // set up defaults for materials arguments and create transport model
     auto transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-    double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
-    double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
-    double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
+    auto defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
+    auto defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
+    auto defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
     auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     auto transportModel =

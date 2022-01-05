@@ -49,7 +49,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -112,7 +112,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     AMP::Operator::Operator::shared_ptr boundaryOp;
     boundaryOp = diffusionOperator->getBoundaryOperator();
 
-    ( std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp ) )
+    std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp )
         ->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
@@ -126,7 +126,7 @@ static void linearThermalTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     // Read the input file onto a database.
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
     auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );

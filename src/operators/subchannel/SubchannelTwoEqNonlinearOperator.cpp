@@ -11,8 +11,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -568,5 +567,4 @@ int SubchannelTwoEqNonlinearOperator::getSubchannelIndex( double x, double y )
         return ( i - 1 ) + ( j - 1 ) * ( d_x.size() - 1 );
     return -1;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

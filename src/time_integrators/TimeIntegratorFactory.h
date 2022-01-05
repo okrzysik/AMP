@@ -23,8 +23,7 @@ responsibility for the use of this software.
 #include "TimeIntegratorParameters.h"
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /**\class TimeIntegratorFactory
  *
@@ -55,7 +54,6 @@ public:
 protected:
 private:
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

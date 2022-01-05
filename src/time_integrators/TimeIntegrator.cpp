@@ -9,8 +9,7 @@
 #include <fstream>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /************************************************************************
  *                                                                       *
@@ -214,5 +213,4 @@ void TimeIntegrator::printClassData( std::ostream &os ) const
     os << "d_integrator_step = " << d_integrator_step << std::endl;
     os << "d_max_integrator_steps = " << d_max_integrator_steps << std::endl;
 }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

@@ -3,8 +3,7 @@
 
 #include "AMP/vectors/MultiVector.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 AMP::LinearAlgebra::Vector::shared_ptr
 subsetExceptForVariable( AMP::LinearAlgebra::Vector::shared_ptr inVec,
@@ -31,5 +30,4 @@ AMP::LinearAlgebra::Vector::shared_ptr joinVectors( AMP::LinearAlgebra::Vector::
     outVec->addVector( vec2 );
     return outVec;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

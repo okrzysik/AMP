@@ -6,8 +6,7 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 template<typename VIEWER>
@@ -119,8 +118,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

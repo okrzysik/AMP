@@ -8,8 +8,7 @@ extern "C" {
 #include "sundials/sundials_nvector.h"
 }
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /**
@@ -74,7 +73,6 @@ private:
     static booleantype constrmask_no_impl( N_Vector c, N_Vector x, N_Vector m );
     static realtype minquotient_AMP( N_Vector num, N_Vector denom );
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

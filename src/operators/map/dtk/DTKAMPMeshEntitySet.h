@@ -11,8 +11,7 @@
     #include <map>
     #include <unordered_map>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -98,8 +97,7 @@ private:
     std::vector<std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>>
         d_id_maps;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
 //! @endcond

@@ -7,8 +7,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 static void create_map( const std::vector<std::pair<double, double>> &,
@@ -374,5 +373,4 @@ double interp_linear( const std::vector<double> &x, const std::vector<double> &f
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -85,9 +85,8 @@ static void myTest( AMP::UnitTest *ut )
             std::make_shared<AMP::Operator::ElementOperationParameters>( elemOp_db );
         auto mechLinElem = std::make_shared<AMP::Operator::MechanicsLinearElement>( elemOpParams );
 
-        std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
-            AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        auto dofMap = AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );

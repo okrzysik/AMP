@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(
     std::shared_ptr<const DiffusionLinearFEOperatorParameters> params )
@@ -216,5 +215,4 @@ std::shared_ptr<DiffusionTransportModel> DiffusionLinearFEOperator::getTransport
 {
     return d_transportModel;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

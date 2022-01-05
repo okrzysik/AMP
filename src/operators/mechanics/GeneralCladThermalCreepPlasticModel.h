@@ -8,8 +8,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   \brief Non-linear elasto-plastic mechanics with only isotropic options for thermal and creep
@@ -384,7 +383,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

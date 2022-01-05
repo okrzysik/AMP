@@ -392,7 +392,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     columnSolVec->zero();
     columnRhsVec->zero();
     AMP::LinearAlgebra::Vector::shared_ptr cor;
-    AMP_ASSERT( cor.get() == NULL );
+    AMP_ASSERT( cor.get() == nullptr );
 
     auto tempVar        = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
@@ -555,14 +555,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             auto mat = masterBVPOperator->getMatrix();
             auto rhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-            if ( cor.get() == NULL ) {
+            if ( cor.get() == nullptr ) {
                 cor = rhs->cloneVector();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
             } else {
-                applyCustomDirichletCondition(
-                    rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr() );
+                applyCustomDirichletCondition( rhs,
+                                               cor,
+                                               meshAdapter,
+                                               constraints,
+                                               std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
             } // end if
-            AMP_ASSERT( cor.get() != NULL );
+            AMP_ASSERT( cor.get() != nullptr );
 
             // get d
             contactOperator->addShiftToSlave( columnSolVec );

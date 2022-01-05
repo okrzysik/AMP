@@ -171,17 +171,17 @@ loadBalanceSimulator::loadBalanceSimulator( const std::vector<loadBalanceSimulat
       d_allEqual( true ),
       d_submeshes( meshes )
 {
-    for ( size_t i = 0; i < d_submeshes.size(); i++ )
-        d_cost += d_submeshes[i].d_cost;
+    for ( auto &d_submeshe : d_submeshes )
+        d_cost += d_submeshe.d_cost;
     d_maxCostRank = d_cost;
     if ( d_method == 0 ) {
         d_max_procs = std::numeric_limits<decltype( d_max_procs )>::max();
-        for ( size_t i = 0; i < d_submeshes.size(); i++ )
-            d_max_procs = std::min( d_max_procs, d_submeshes[i].d_max_procs );
+        for ( auto &d_submeshe : d_submeshes )
+            d_max_procs = std::min( d_max_procs, d_submeshe.d_max_procs );
     } else {
         d_max_procs = 0;
-        for ( size_t i = 0; i < d_submeshes.size(); i++ )
-            d_max_procs += d_submeshes[i].d_max_procs;
+        for ( auto &d_submeshe : d_submeshes )
+            d_max_procs += d_submeshe.d_max_procs;
     }
 }
 

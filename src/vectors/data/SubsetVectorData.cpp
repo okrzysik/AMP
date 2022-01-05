@@ -8,8 +8,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -193,5 +192,4 @@ std::shared_ptr<VectorData> SubsetVectorData::cloneData() const
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

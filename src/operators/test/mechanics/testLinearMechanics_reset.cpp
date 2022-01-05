@@ -34,7 +34,7 @@ static void myTest( AMP::UnitTest *ut )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     AMP_INSIST( input_db->keyExists( "Isotropic_Model" ), "Key ''Isotropic_Model'' is missing!" );
     auto matModel_db = input_db->getDatabase( "Isotropic_Model" );
@@ -64,8 +64,7 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );
-        std::shared_ptr<AMP::Database> mechAssembly_db =
-            input_db->getDatabase( "Mechanics_Assembly" );
+        auto mechAssembly_db = input_db->getDatabase( "Mechanics_Assembly" );
         auto mechOpParams =
             std::make_shared<AMP::Operator::MechanicsLinearFEOperatorParameters>( mechAssembly_db );
         mechOpParams->d_materialModel = isotropicModel;

@@ -13,8 +13,7 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Simple nodal vector tests
@@ -93,7 +92,6 @@ void meshTests::VerifyGetVectorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

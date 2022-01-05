@@ -1,8 +1,7 @@
 
 #include "NonlinearKrylovAcceleratorParameters.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters() = default;
 
@@ -13,5 +12,4 @@ NonlinearKrylovAcceleratorParameters::NonlinearKrylovAcceleratorParameters(
 }
 
 NonlinearKrylovAcceleratorParameters::~NonlinearKrylovAcceleratorParameters() = default;
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

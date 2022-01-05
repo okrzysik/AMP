@@ -6,8 +6,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class GaussPointToGaussPointMap : public NodeToNodeMap
 {
@@ -40,7 +39,6 @@ protected:
 
     std::vector<std::vector<unsigned int>> d_idxMap;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

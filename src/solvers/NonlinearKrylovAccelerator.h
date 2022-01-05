@@ -8,8 +8,7 @@
 #include "SolverStrategy.h"
 #include <memory>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * The NonlinearKrylovAccelerator class provides a C++ implementation of the NLKAIN (Nonlinear
@@ -177,7 +176,6 @@ private:
     bool d_bSolverInitialized;
     bool d_bFreezePc;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

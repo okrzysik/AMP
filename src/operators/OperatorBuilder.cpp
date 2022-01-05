@@ -489,7 +489,7 @@ Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto diffusionOp = std::make_shared<DiffusionLinearFEOperator>( diffusionOpParams );
 
-    AMP::LinearAlgebra::Matrix::shared_ptr matrix = diffusionOp->getMatrix();
+    auto matrix = diffusionOp->getMatrix();
     matrix->makeConsistent();
 
     return diffusionOp;

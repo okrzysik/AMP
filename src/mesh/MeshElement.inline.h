@@ -3,8 +3,7 @@
 
 #include "AMP/utils/UtilityMacros.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -134,9 +133,9 @@ inline std::vector<MeshElement> MeshElement::getElements( const GeomType type ) 
     ( element != nullptr ? element : this )->getElements( type, elements );
     return elements;
 }
-inline std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
+inline std::vector<std::shared_ptr<MeshElement>> MeshElement::getNeighbors() const
 {
-    std::vector<MeshElement::shared_ptr> neighbors;
+    std::vector<std::shared_ptr<MeshElement>> neighbors;
     ( element != nullptr ? element : this )->getNeighbors( neighbors );
     return neighbors;
 }
@@ -148,8 +147,7 @@ inline std::vector<MeshElement::shared_ptr> MeshElement::getNeighbors() const
 std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x );
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 
 #endif

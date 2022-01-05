@@ -5,8 +5,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \brief A collection of AMP Vectors that appear as one vector
@@ -200,8 +199,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

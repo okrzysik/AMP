@@ -12,8 +12,7 @@
 #include "AMP/utils/Utilities.h"
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 typedef ElementPhysicsModelParameters DiffusionCylindricalTransportModelParameters;
 
 class DiffusionCylindricalTransportModel : public DiffusionTransportTensorModel
@@ -36,7 +35,6 @@ public:
 private:
     std::string d_RadiusArgument;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif /* DIFFUSIONCYLINDRICALTRANSPORTMODEL_H_ */

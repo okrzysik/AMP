@@ -4,8 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void ConstraintsEliminationOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
@@ -49,5 +48,4 @@ void ConstraintsEliminationOperator::addShiftToSlave( AMP::LinearAlgebra::Vector
     } // end if
 }
 
-} // end namespace Operator
-} // end namespace AMP
+} // namespace AMP::Operator

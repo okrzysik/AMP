@@ -2,8 +2,7 @@
 #include "AMP/mesh/MeshParameters.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -119,5 +118,4 @@ bool StructuredGeometryMesh::operator==( const Mesh &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

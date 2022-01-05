@@ -2,8 +2,7 @@
 #include "MechanicsNonlinearUpdatedLagrangianElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void MechanicsNonlinearUpdatedLagrangianElement::computeStressAndStrain(
     const std::vector<std::vector<double>> &elementInputVectors,
@@ -1392,5 +1391,4 @@ void MechanicsNonlinearUpdatedLagrangianElement::preNonlinearElementInit()
 
     d_gaussPtCnt = 0;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

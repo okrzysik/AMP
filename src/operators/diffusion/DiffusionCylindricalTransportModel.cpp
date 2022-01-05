@@ -9,8 +9,7 @@ DISABLE_WARNINGS
 #include "libmesh/point.h"
 ENABLE_WARNINGS
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 DiffusionCylindricalTransportModel::DiffusionCylindricalTransportModel(
     std::shared_ptr<const DiffusionCylindricalTransportModelParameters> params )
@@ -100,5 +99,4 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
         ( *result[1][1] )[k] = radialCoefficient[k] * y * y / r2;
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

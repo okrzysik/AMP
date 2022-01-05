@@ -38,7 +38,7 @@ RK23TimeIntegrator::RK23TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK23TimeIntegrator::~RK23TimeIntegrator() {}
+RK23TimeIntegrator::~RK23TimeIntegrator() = default;
 
 /*
 ************************************************************************
@@ -73,7 +73,7 @@ void RK23TimeIntegrator::reset(
     d_z_vec->getVectorData()->reset();
 }
 
-void RK23TimeIntegrator::setupVectors( void )
+void RK23TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -163,12 +163,12 @@ int RK23TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK23TimeIntegrator::checkNewSolution( void )
+bool RK23TimeIntegrator::checkNewSolution()
 {
     bool retcode = false;
 
-    auto l2Norm                   = d_z_vec->L2Norm();
-    double l2NormOfEstimatedError = l2Norm.get<double>();
+    auto l2Norm                 = d_z_vec->L2Norm();
+    auto l2NormOfEstimatedError = l2Norm.get<double>();
 
     // we flag the solution as being acceptable if the l2 norm of the error
     // is less than the required tolerance or we are at the minimum time step
@@ -193,7 +193,7 @@ bool RK23TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK23TimeIntegrator::updateSolution( void )
+void RK23TimeIntegrator::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;
@@ -233,7 +233,7 @@ double RK23TimeIntegrator::getNextDt( const bool good_solution )
         next_dt = std::min( d_current_dt, d_final_time - d_current_time );
     } else {
 
-        double l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
+        auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
         next_dt =
             d_safety_factor * d_current_dt * pow( d_atol / l2NormOfEstimatedError, 1.0 / 3.0 );

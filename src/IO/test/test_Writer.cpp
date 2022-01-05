@@ -398,7 +398,7 @@ int main( int argc, char **argv )
 
     std::vector<std::string> writers = { "Silo" };
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() == 1 )
-        writers = { "Silo", "HDF5", "Ascii" }; // HDF5 does not support parallel yet
+        writers = { "NULL", "Silo", "HDF5", "Ascii" }; // HDF5 does not support parallel yet
 
     if ( argc == 1 ) {
 

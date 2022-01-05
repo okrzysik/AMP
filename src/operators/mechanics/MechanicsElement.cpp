@@ -12,8 +12,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
@@ -36,15 +35,15 @@ MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParame
             "Flanagan Taylor element formulation can only be used with Green-Naghdi stress rate." );
     }
 
-    std::string feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
 
     auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    auto qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
 
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
@@ -55,8 +54,7 @@ MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParame
 
     d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
-    std::string qruleOrderName =
-        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto qruleOrderName = params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 
@@ -72,5 +70,4 @@ MechanicsElement::MechanicsElement( std::shared_ptr<const ElementOperationParame
 
     d_iDebugPrintInfoLevel = params->d_db->getWithDefault<int>( "print_info_level", 0 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

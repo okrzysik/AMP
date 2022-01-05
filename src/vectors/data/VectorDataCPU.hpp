@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/VectorDataCPU.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Define some specializations
@@ -220,7 +219,6 @@ void VectorDataCPU<TYPE>::swapData( VectorData &rhs )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

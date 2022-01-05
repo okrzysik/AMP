@@ -1,13 +1,12 @@
-#include "AMP/mesh/Geometry.h"
-#include "AMP/mesh/LogicalGeometry.h"
+#include "AMP/geometry/Geometry.h"
+#include "AMP/geometry/LogicalGeometry.h"
+#include "AMP/geometry/testHelpers/geometryTests.h"
 #include "AMP/mesh/MultiMesh.h"
-#include "AMP/mesh/testHelpers/geometryTests.h"
 #include "AMP/mesh/testHelpers/meshTests.h"
 #include "AMP/utils/UnitTest.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // This runs the geometry only tests
@@ -100,5 +99,4 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_s
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

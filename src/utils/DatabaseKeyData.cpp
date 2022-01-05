@@ -51,7 +51,7 @@ Array<TYPE2> convert( const Array<TYPE1> &x )
         Array<TYPE2> y( x.size() );
         y.fill( 0 );
         bool pass = true;
-        TYPE1 tol = getTol<TYPE1>();
+        auto tol  = getTol<TYPE1>();
         for ( size_t i = 0; i < x.length(); i++ ) {
             y( i ) = static_cast<TYPE2>( x( i ) );
             pass   = pass && abs( static_cast<TYPE1>( y( i ) - x( i ) ) ) <= tol * x( i );

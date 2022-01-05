@@ -12,8 +12,7 @@ DISABLE_WARNINGS
 #include "libmesh/quadrature.h"
 ENABLE_WARNINGS
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class to represent Frapcon Flow operator. This operator acts as a heat sink and
@@ -170,7 +169,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

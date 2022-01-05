@@ -9,8 +9,7 @@
 
 #include <cstring>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 VolumeIntegralOperator::VolumeIntegralOperator(
@@ -242,5 +241,4 @@ void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement()
         d_dofIndices[j] = dofs[0];
     } // end of j
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

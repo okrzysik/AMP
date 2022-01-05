@@ -1,8 +1,7 @@
 #include "MapOperator.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 void MapOperator::reset( std::shared_ptr<const OperatorParameters> params )
@@ -19,5 +18,4 @@ void MapOperator::reset( std::shared_ptr<const OperatorParameters> params )
     d_MapComm = myparams->d_MapComm;
     d_MapMesh = myparams->d_MapMesh;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

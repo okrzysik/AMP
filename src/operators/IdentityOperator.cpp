@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 IdentityOperator::IdentityOperator() : LinearOperator() {}
@@ -50,5 +49,4 @@ void IdentityOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

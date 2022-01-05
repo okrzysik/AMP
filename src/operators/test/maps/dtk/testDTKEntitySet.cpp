@@ -31,25 +31,24 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
+    auto meshDatabase = input_db->getDatabase( "Mesh" );
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
-    int gcw                               = 0;
-    AMP::Mesh::MeshIterator mesh_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, gcw );
+    int gcw            = 0;
+    auto mesh_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, gcw );
 
     // Make an entity set.
-    std::shared_ptr<DataTransferKit::EntitySet> dtk_entity_set(
-        new AMP::Operator::AMPMeshEntitySet( mesh ) );
+    auto dtk_entity_set = std::make_shared<AMP::Operator::AMPMeshEntitySet>( mesh );
     AMP_ASSERT( 3 == dtk_entity_set->physicalDimension() );
     AMP_ASSERT( mesh->getComm().getRank() == dtk_entity_set->communicator()->getRank() );
     AMP_ASSERT( mesh->getComm().getSize() == dtk_entity_set->communicator()->getSize() );
 
     // Check the mesh with an iterator.
-    DataTransferKit::EntityIterator dtk_iterator = dtk_entity_set->entityIterator( 3 );
-    bool caught_exception                        = false;
+    auto dtk_iterator     = dtk_entity_set->entityIterator( 3 );
+    bool caught_exception = false;
     AMP_ASSERT( dtk_iterator.size() == mesh_iterator.size() );
     for ( dtk_iterator = dtk_iterator.begin(), mesh_iterator = mesh_iterator.begin();
           dtk_iterator != dtk_iterator.end();

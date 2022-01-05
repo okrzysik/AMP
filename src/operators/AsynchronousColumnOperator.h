@@ -3,8 +3,7 @@
 
 #include "ColumnOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /** \brief  A column operator of asynchronous operators.  The apply method will start the list
     of operators then finalize the list of operators
@@ -36,7 +35,6 @@ public:
     // Append the given operator
     void append( std::shared_ptr<Operator> op ) override;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

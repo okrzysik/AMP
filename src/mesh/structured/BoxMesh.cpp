@@ -21,8 +21,7 @@
 #include <iostream>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -874,5 +873,4 @@ std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x 
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

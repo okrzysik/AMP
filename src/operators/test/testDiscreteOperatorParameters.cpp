@@ -32,9 +32,9 @@ static void runTest( AMP::UnitTest *ut )
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Database> test_db = input_db->getDatabase( "Test" );
+    auto test_db = input_db->getDatabase( "Test" );
 
-    if ( ( test_db.get() ) == NULL ) {
+    if ( ( test_db.get() ) == nullptr ) {
         ut->failure( "Testing getDatabase" );
     } else {
         ut->passes( "Testing getDatabase" );
@@ -48,7 +48,7 @@ static void runTest( AMP::UnitTest *ut )
 
     auto discreteOpParams = std::make_shared<AMP::Operator::OperatorParameters>( test_db );
 
-    if ( ( discreteOpParams.get() ) == NULL ) {
+    if ( ( discreteOpParams.get() ) == nullptr ) {
         ut->failure( "Testing OperatorParameters' Constructor" );
     } else {
         ut->passes( "Testing OperatorParameters' Constructor" );
@@ -68,7 +68,7 @@ static void runTest( AMP::UnitTest *ut )
 
     auto testParams = std::make_shared<TestParameters>( test_db );
 
-    if ( ( testParams.get() ) == NULL ) {
+    if ( ( testParams.get() ) == nullptr ) {
         ut->failure( "Testing TestParameters' Constructor" );
     } else {
         ut->passes( "Testing TestParameters' Constructor" );
@@ -88,7 +88,7 @@ static void runTest( AMP::UnitTest *ut )
 
     std::shared_ptr<AMP::Operator::OperatorParameters> testParamCopy( testParams );
 
-    if ( ( testParamCopy.get() ) == NULL ) {
+    if ( ( testParamCopy.get() ) == nullptr ) {
         ut->failure( "Testing Copy-1" );
     } else {
         ut->passes( "Testing Copy-1" );
@@ -110,7 +110,7 @@ static void runTest( AMP::UnitTest *ut )
         std::dynamic_pointer_cast<TestParameters, AMP::Operator::OperatorParameters>(
             testParamCopy );
 
-    if ( ( secondTestParam.get() ) == NULL ) {
+    if ( ( secondTestParam.get() ) == nullptr ) {
         ut->failure( "Testing Dynamic Cast-1" );
     } else {
         ut->passes( "Testing Dynamic Cast-1" );

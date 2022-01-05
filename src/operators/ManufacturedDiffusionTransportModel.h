@@ -13,8 +13,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class ManufacturedDiffusionTransportModel : public DiffusionTransportModel
 {
@@ -50,7 +49,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

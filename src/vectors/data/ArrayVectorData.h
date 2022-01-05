@@ -9,9 +9,7 @@
 #include "AMP/vectors/data/VectorData.h"
 
 
-namespace AMP {
-
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /** \brief A core-local vector
  * \details This is a Vector that implements the Vector interface for a std::vector<double>.
@@ -199,8 +197,7 @@ protected:
     std::shared_ptr<VectorData> cloneData( void ) const override;
 };
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #include "AMP/vectors/data/ArrayVectorData.hpp"
 

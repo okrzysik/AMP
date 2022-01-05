@@ -6,8 +6,7 @@
 #include "petsc/private/vecimpl.h"
 #include "petscvec.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI comm ) : VectorData()
 {
@@ -85,7 +84,7 @@ void NativePetscVectorData::resetArray()
 {
     if ( d_pArray ) {
         VecRestoreArray( d_petscVec, &d_pArray );
-        d_pArray = 0;
+        d_pArray = nullptr;
     }
 }
 
@@ -93,7 +92,7 @@ void NativePetscVectorData::resetArray() const
 {
     if ( d_pArray ) {
         VecRestoreArray( d_petscVec, &d_pArray );
-        d_pArray = 0;
+        d_pArray = nullptr;
     }
 }
 
@@ -158,8 +157,8 @@ size_t NativePetscVectorData::getGlobalSize() const
 void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 {
     if ( i > 0 )
-        return 0;
-    if ( d_pArray == 0 ) {
+        return nullptr;
+    if ( d_pArray == nullptr ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
     return d_pArray;
@@ -168,8 +167,8 @@ void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
 {
     if ( i > 0 )
-        return 0;
-    if ( d_pArray == 0 ) {
+        return nullptr;
+    if ( d_pArray == nullptr ) {
         VecGetArray( d_petscVec, &d_pArray );
     }
     return d_pArray;
@@ -198,5 +197,4 @@ void NativePetscVectorData::assemble()
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

@@ -19,8 +19,7 @@
 // Moab Includes
 #include "moab/Interface.hpp"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //---------------------------------------------------------------------------//
 /*!
@@ -53,7 +52,6 @@ protected:
     moab::Interface *d_moabInterface;
 };
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif // MOABBASEDOPERATOR_H_

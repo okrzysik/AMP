@@ -22,8 +22,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /************************************************************************
@@ -238,5 +237,4 @@ void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

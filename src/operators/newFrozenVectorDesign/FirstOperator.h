@@ -4,8 +4,7 @@
 
 #include "AMP/operators/newFrozenVectorDesign/OnePointOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class FirstOperator : public OnePointOperator
 {
@@ -36,7 +35,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

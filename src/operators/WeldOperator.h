@@ -16,8 +16,7 @@
 
 #endif
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class WeldOperator : public Operator
 {
@@ -68,7 +67,6 @@ public:
     AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
     AMP::AMP_MPI d_comm;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

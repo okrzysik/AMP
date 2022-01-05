@@ -7,8 +7,7 @@
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/utils/Database.h"
 
-namespace AMP {
-namespace unit_test {
+namespace AMP::unit_test {
 
 
 // Base class for Mesh Generators
@@ -202,8 +201,7 @@ public:
 };
 
 
-} // namespace unit_test
-} // namespace AMP
+} // namespace AMP::unit_test
 
 
 // Include libmesh generators

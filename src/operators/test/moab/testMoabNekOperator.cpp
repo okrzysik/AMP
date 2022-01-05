@@ -63,7 +63,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     nekOp->apply( nullVec, nullVec, nullVec, 0.0, 0.0 );
 
     // Read AMP pellet mesh from file
-    std::shared_ptr<AMP::Database> meshDB = nekDB->putDatabase( "Mesh" );
+    auto meshDB = nekDB->putDatabase( "Mesh" );
     meshDB->putScalar<std::string>( "FileName", "pellet_1x.e" );
     meshDB->putScalar<std::string>( "MeshName", "fuel" );
     meshDB->putScalar<std::string>( "MeshType", "libMesh" );

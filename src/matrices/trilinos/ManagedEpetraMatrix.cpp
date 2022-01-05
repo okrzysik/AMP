@@ -20,8 +20,7 @@ ENABLE_WARNINGS
     #include <Epetra_SerialComm.h>
 #endif
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline auto createEpetraMap( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
@@ -79,18 +78,18 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele )
     : EpetraMatrix( m, dele ), ManagedMatrix( nullptr )
 {
 }
-Matrix::shared_ptr ManagedEpetraMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> ManagedEpetraMatrix::cloneMatrix() const
 {
-    ManagedEpetraMatrix *r = new ManagedEpetraMatrix( *this );
-    r->d_DeleteMatrix      = true;
-    return Matrix::shared_ptr( r );
+    auto *r           = new ManagedEpetraMatrix( *this );
+    r->d_DeleteMatrix = true;
+    return std::shared_ptr<Matrix>( r );
 }
 
 
 /********************************************************
  * Get the left/right Vector/DOFManager                  *
  ********************************************************/
-Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
+std::shared_ptr<Vector> ManagedEpetraMatrix::getRightVector() const
 {
     int localSize  = d_pParameters->getLocalNumberOfColumns();
     int globalSize = d_pParameters->getGlobalNumberOfColumns();
@@ -101,7 +100,7 @@ Vector::shared_ptr ManagedEpetraMatrix::getRightVector() const
     vec->setVariable( d_pParameters->d_VariableRight );
     return vec;
 }
-Vector::shared_ptr ManagedEpetraMatrix::getLeftVector() const
+std::shared_ptr<Vector> ManagedEpetraMatrix::getLeftVector() const
 {
     int localSize  = d_pParameters->getLocalNumberOfRows();
     int globalSize = d_pParameters->getGlobalNumberOfRows();
@@ -127,7 +126,7 @@ size_t ManagedEpetraMatrix::numGlobalColumns() const { return d_epetraMatrix->Nu
 /********************************************************
  * Multiply two matricies                                *
  ********************************************************/
-void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
+void ManagedEpetraMatrix::multiply( shared_ptr other_op, std::shared_ptr<Matrix> &result )
 {
     if ( this->numGlobalColumns() != other_op->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
@@ -157,14 +156,14 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, shared_ptr &result )
         true );
     AMP_ASSERT( ierr == 0 );
     PROFILE_STOP( "Epetra::MatrixMultiply" );
-    result = Matrix::shared_ptr( res );
+    result = std::shared_ptr<Matrix>( res );
 }
 
 
 /********************************************************
  * Multiply the matrix by a vector                       *
  ********************************************************/
-void ManagedEpetraMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr out )
+void ManagedEpetraMatrix::mult( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out )
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == numGlobalRows() );
@@ -175,7 +174,8 @@ void ManagedEpetraMatrix::mult( Vector::const_shared_ptr in, Vector::shared_ptr 
     int err                     = d_epetraMatrix->Multiply( false, in_vec, out_vec );
     VerifyEpetraReturn( err, "mult" );
 }
-void ManagedEpetraMatrix::multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out )
+void ManagedEpetraMatrix::multTranspose( std::shared_ptr<const Vector> in,
+                                         std::shared_ptr<Vector> out )
 {
     AMP_ASSERT( in->getGlobalSize() == numGlobalColumns() );
     AMP_ASSERT( out->getGlobalSize() == numGlobalRows() );
@@ -292,7 +292,7 @@ void ManagedEpetraMatrix::fillComplete() { EpetraMatrix::fillComplete(); }
 /********************************************************
  * Get/set the diagonal                                  *
  ********************************************************/
-Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr vec ) const
+std::shared_ptr<Vector> ManagedEpetraMatrix::extractDiagonal( std::shared_ptr<Vector> vec ) const
 {
     if ( !vec )
         vec = getRightVector();
@@ -301,7 +301,7 @@ Vector::shared_ptr ManagedEpetraMatrix::extractDiagonal( Vector::shared_ptr vec 
                         "extractDiagonal" );
     return vec;
 }
-void ManagedEpetraMatrix::setDiagonal( Vector::const_shared_ptr in )
+void ManagedEpetraMatrix::setDiagonal( std::shared_ptr<const Vector> in )
 {
     auto vec = EpetraVector::constView( in );
     VerifyEpetraReturn( d_epetraMatrix->ReplaceDiagonalValues( vec->getEpetra_Vector() ),
@@ -465,5 +465,4 @@ void ManagedEpetraMatrix::makeConsistent()
 
 void ManagedEpetraMatrix::FillComplete() { d_epetraMatrix->FillComplete(); }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

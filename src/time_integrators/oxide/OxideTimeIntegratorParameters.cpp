@@ -1,7 +1,6 @@
 #include "AMP/time_integrators/oxide/OxideTimeIntegratorParameters.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /************************************************************************
@@ -12,5 +11,4 @@ OxideTimeIntegratorParameters::OxideTimeIntegratorParameters( std::shared_ptr<AM
 {
     depth = -1.0;
 }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

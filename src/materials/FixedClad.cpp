@@ -15,8 +15,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace FixedClad_NS {
 
@@ -388,5 +387,4 @@ FixedClad::FixedClad()
     INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, FixedClad_NS );
     INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, FixedClad_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

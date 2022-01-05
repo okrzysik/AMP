@@ -17,8 +17,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 TractionBoundaryOperator::TractionBoundaryOperator(
     std::shared_ptr<const TractionBoundaryOperatorParameters> params )
@@ -139,5 +138,4 @@ TractionBoundaryOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared_ptr
         return vec;
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

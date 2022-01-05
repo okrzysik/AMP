@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 template<typename TYPE>
@@ -516,8 +515,7 @@ public:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #include "AMP/vectors/data/VectorData.inline.h"

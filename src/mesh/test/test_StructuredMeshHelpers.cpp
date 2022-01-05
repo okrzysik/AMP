@@ -14,7 +14,7 @@ void runTest( AMP::UnitTest *ut )
     size_t N_faces_tot = 227;
     AMP::unit_test::AMPCubeGenerator3<3, 4, 5> generator;
     generator.build_mesh();
-    AMP::Mesh::Mesh::shared_ptr mesh = generator.getMesh();
+    auto mesh = generator.getMesh();
 
     // Get iterators over each of the face types
     auto faces       = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );

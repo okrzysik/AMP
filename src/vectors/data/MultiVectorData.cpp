@@ -9,8 +9,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *manager,
                                             const std::vector<VectorData *> &data )
@@ -516,7 +515,6 @@ void MultiVectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

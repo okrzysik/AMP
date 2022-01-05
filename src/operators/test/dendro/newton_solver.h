@@ -99,7 +99,7 @@ double newton_solver_t<double>::compute_norm( double const &x )
 }
 
 template<>
-static void newton_solver_t<double>::update_solution( double const &dx, double &x )
+void newton_solver_t<double>::update_solution( double const &dx, double &x )
 {
     x += dx;
 }

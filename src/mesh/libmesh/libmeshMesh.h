@@ -12,8 +12,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class libmeshMeshElement;
@@ -284,7 +283,6 @@ private:
     std::vector<int> d_block_ids;
 };
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

@@ -75,6 +75,8 @@ AMP consists of the following components.  Click on the links to
 find documentation about each component.<BR>
 \ref AMP::LinearAlgebra "Linear Algebra"<BR>
 \ref AMP::Discretization "Discretization"<BR>
+\ref AMP::Geometry "Geometry"<BR>
+\ref AMP::IO "IO"<BR>
 \ref AMP::Materials "Materials"<BR>
 \ref AMP::Mesh "Mesh"<BR>
 \ref AMP::Operator "Operators"<BR>

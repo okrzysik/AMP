@@ -577,7 +577,7 @@ size_t libmeshMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> para
     }
     // Adjust the number of elements by a weight if desired
     if ( database->keyExists( "Weight" ) ) {
-        double weight    = database->getScalar<double>( "Weight" );
+        auto weight      = database->getScalar<double>( "Weight" );
         NumberOfElements = (size_t) ceil( weight * ( (double) NumberOfElements ) );
     }
     return NumberOfElements;
@@ -600,14 +600,14 @@ size_t libmeshMesh::numLocalElements( const GeomType type ) const
 {
     auto n = n_local[static_cast<int>( type )];
     if ( n == static_cast<size_t>( -1 ) )
-        AMP_ERROR( "numLocalElements is not implimented for this type" );
+        AMP_ERROR( "numLocalElements is not implemented for this type" );
     return n;
 }
 size_t libmeshMesh::numGlobalElements( const GeomType type ) const
 {
     auto n = n_global[static_cast<int>( type )];
     if ( n == static_cast<size_t>( -1 ) )
-        AMP_ERROR( "numLocalElements is not implimented for this type" );
+        AMP_ERROR( "numLocalElements is not implemented for this type" );
     return n;
 }
 size_t libmeshMesh::numGhostElements( const GeomType type, int gcw ) const
@@ -618,7 +618,7 @@ size_t libmeshMesh::numGhostElements( const GeomType type, int gcw ) const
         AMP_ERROR( "Libmesh only supports a ghost cell width of 1" );
     auto n = n_ghost[static_cast<int>( type )];
     if ( n == static_cast<size_t>( -1 ) )
-        AMP_ERROR( "numLocalElements is not implimented for this type" );
+        AMP_ERROR( "numLocalElements is not implemented for this type" );
     return n;
 }
 
@@ -739,7 +739,7 @@ libmeshMesh::getBlockIDIterator( const GeomType type, const int id, const int gc
         else
             return MeshIterator();
     } else {
-        AMP_ERROR( "getBlockIDIterator is not implimented yet" );
+        AMP_ERROR( "getBlockIDIterator is not implemented yet" );
     }
     return MeshIterator();
 }

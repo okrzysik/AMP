@@ -15,8 +15,7 @@
 #include <stdexcept>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /****************************************************************
  * Constructors                                                  *
@@ -334,7 +333,7 @@ size_t MultiVector::getNumberOfSubvectors() const { return d_vVectors.size(); }
 
 std::string MultiVector::type() const { return "MultiVector"; }
 
-MultiVector::~MultiVector() {}
+MultiVector::~MultiVector() = default;
 
 const Vector::shared_ptr &MultiVector::getVector( const Vector &rhs, size_t which ) const
 {
@@ -353,5 +352,4 @@ Vector::shared_ptr &MultiVector::getVector( Vector &rhs, size_t which ) const
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

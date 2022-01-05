@@ -230,7 +230,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     }
     NULL_USE( libmeshInit );
 
-    double scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
+    auto scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator
@@ -320,9 +320,9 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         bvpOperator->getBoundaryOperator() );
     auto dirichletBoundaryIds = dirichletMatOp->getBoundaryIds();
     std::vector<size_t> dofs;
-    for ( unsigned int i = 0; i < dirichletBoundaryIds.size(); i++ ) {
-        auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
-                                                       dirichletBoundaryIds[i] );
+    for ( short dirichletBoundaryId : dirichletBoundaryIds ) {
+        auto bnd =
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, dirichletBoundaryId );
         for ( const auto &node : bnd ) {
             auto p       = node.coord();
             auto bndVals = manufacturedSolution->getExactSolutions( p.x(), p.y(), p.z() );
@@ -337,9 +337,9 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
             meshAdapter, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
-    for ( unsigned int i = 0; i < neumannBoundaryIds.size(); i++ ) {
-        auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
-                                                       neumannBoundaryIds[i] );
+    for ( short neumannBoundaryId : neumannBoundaryIds ) {
+        auto bnd =
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, neumannBoundaryId );
         for ( const auto &node : bnd ) {
             std::vector<double> dummyNormal( 3, 0.0 );
             std::vector<double> gradientX( 3, 1.0 );

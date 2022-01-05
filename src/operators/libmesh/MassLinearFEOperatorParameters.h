@@ -5,8 +5,7 @@
 
 #include "AMP/operators/libmesh/MassDensityModel.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MassLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
@@ -23,7 +22,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

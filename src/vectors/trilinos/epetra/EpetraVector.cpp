@@ -7,8 +7,7 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -58,5 +57,4 @@ EpetraVector::EpetraVector( std::shared_ptr<Vector> vec )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

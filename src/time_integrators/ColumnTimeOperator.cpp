@@ -4,8 +4,7 @@
 #include "LinearTimeOperator.h"
 #include "TimeOperatorParameters.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 ColumnTimeOperator::ColumnTimeOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
@@ -153,5 +152,4 @@ void ColumnTimeOperator::append( std::shared_ptr<Operator> /* op */ )
         << "Error: ColumnTimeOperator::append(): this routine is disabled for ColumnTimeOperators"
         << std::endl;
 }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

@@ -4,8 +4,7 @@
 
 #include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class PressureBoundaryOperator : public BoundaryOperator
 {
@@ -32,7 +31,6 @@ public:
 protected:
     std::shared_ptr<AMP::Operator::TractionBoundaryOperator> d_tractionOp;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

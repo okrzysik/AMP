@@ -5,8 +5,7 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class LinearBoundaryOperatorParameters : public OperatorParameters
 {
@@ -18,9 +17,8 @@ public:
 
     virtual ~LinearBoundaryOperatorParameters() {}
 
-    AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_inputMatrix;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

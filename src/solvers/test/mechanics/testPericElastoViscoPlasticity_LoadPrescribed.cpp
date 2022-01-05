@@ -132,9 +132,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         static_cast<double>(
             ( ( linearMechanicsBVPoperator->getMatrix() )->extractDiagonal() )->L1Norm() );
 
-    std::shared_ptr<AMP::Database> nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
-    std::shared_ptr<AMP::Database> linearSolver_db =
-        nonlinearSolver_db->getDatabase( "LinearSolver" );
+    auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
+    auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
     auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
@@ -151,8 +150,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearSolverParams->d_pOperator       = linearMechanicsBVPoperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =

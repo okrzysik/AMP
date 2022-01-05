@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -88,7 +87,6 @@ private:
         return AMP::Utilities::hash_char( "MultiVectorIterator" );
     }
 };
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

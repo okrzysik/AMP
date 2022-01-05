@@ -6,8 +6,7 @@
 #include "LinearCoupledFlowOperatorParameters.h"
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class LinearCoupledFlowOperator : public Operator
 {
@@ -41,7 +40,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

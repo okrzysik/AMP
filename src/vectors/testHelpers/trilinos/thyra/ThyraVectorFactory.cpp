@@ -31,8 +31,7 @@ ENABLE_WARNINGS
 /// \cond UNDOCUMENTED
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -130,8 +129,7 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 
 
     #endif
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

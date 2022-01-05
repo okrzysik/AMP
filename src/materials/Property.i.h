@@ -4,8 +4,7 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorDataIterator.h"
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 /************************************************************************
@@ -44,5 +43,4 @@ inline bool Property::in_range( const std::map<std::string, std::shared_ptr<INPU
 }
 
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

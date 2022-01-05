@@ -16,8 +16,7 @@
         std::string( #name ), std::shared_ptr<space::name##Prop>( new space::name##Prop ) ) );
 
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 /**
@@ -56,8 +55,7 @@ namespace																\
 }*/
 
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 
 #endif

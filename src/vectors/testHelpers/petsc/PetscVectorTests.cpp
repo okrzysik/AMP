@@ -12,8 +12,7 @@
     #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
     #define PASS_FAIL( test, MSG )                                                    \
@@ -832,8 +831,7 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *ut )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

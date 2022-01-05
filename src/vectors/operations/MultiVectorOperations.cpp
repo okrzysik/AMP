@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/MultiVectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -257,12 +256,12 @@ void MultiVectorOperations::linearSum( const Scalar &alpha_in,
         AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
         AMP_ASSERT( x.getLocalSize() == z.getLocalSize() );
         if ( x.isType<double>() && y.isType<double>() ) {
-            auto xit     = x.begin<double>();
-            auto yit     = y.begin<double>();
-            auto zit     = z.begin<double>();
-            auto xend    = x.end<double>();
-            double alpha = alpha_in.get<double>();
-            double beta  = beta_in.get<double>();
+            auto xit   = x.begin<double>();
+            auto yit   = y.begin<double>();
+            auto zit   = z.begin<double>();
+            auto xend  = x.end<double>();
+            auto alpha = alpha_in.get<double>();
+            auto beta  = beta_in.get<double>();
             while ( xit != xend ) {
                 *zit = alpha * ( *xit ) + beta * ( *yit );
                 ++xit;
@@ -270,12 +269,12 @@ void MultiVectorOperations::linearSum( const Scalar &alpha_in,
                 ++zit;
             }
         } else if ( x.isType<float>() && y.isType<float>() ) {
-            auto xit    = x.begin<float>();
-            auto yit    = y.begin<float>();
-            auto zit    = z.begin<float>();
-            auto xend   = x.end<float>();
-            float alpha = alpha_in.get<float>();
-            float beta  = beta_in.get<float>();
+            auto xit   = x.begin<float>();
+            auto yit   = y.begin<float>();
+            auto zit   = z.begin<float>();
+            auto xend  = x.end<float>();
+            auto alpha = alpha_in.get<float>();
+            auto beta  = beta_in.get<float>();
             while ( xit != xend ) {
                 *zit = alpha * ( *xit ) + beta * ( *yit );
                 ++xit;
@@ -538,5 +537,4 @@ void MultiVectorOperations::resetVectorOperations(
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

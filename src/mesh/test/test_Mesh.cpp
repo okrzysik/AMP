@@ -73,8 +73,7 @@ void testAMPMesh( AMP::UnitTest &ut )
 {
     PROFILE_START( "testAMPMesh" );
     // Create the AMP mesh
-    std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
-    generator = std::make_shared<AMP::unit_test::AMPCubeGenerator<5>>();
+    auto generator = std::make_shared<AMP::unit_test::AMPCubeGenerator<5>>();
     generator->build_mesh();
     auto mesh = generator->getMesh();
 
@@ -273,12 +272,12 @@ void testSubsetMesh( AMP::UnitTest &ut )
     NULL_USE( ut );
     PROFILE_START( "testSubsetMesh" );
 #if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
-    // Subset a mesh for a surface without ghost cells and test
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
+    // Subset a mesh for a surface without ghost cells and test
     generator = std::make_shared<
         AMP::unit_test::SurfaceSubsetGenerator<AMP::unit_test::ExodusReaderGenerator<>, 0>>();
     generator->build_mesh();
-    AMP::Mesh::Mesh::shared_ptr mesh = generator->getMesh();
+    auto mesh = generator->getMesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, mesh );
     // MeshVectorTestLoop( ut, mesh );
     // MeshMatrixTestLoop( ut, mesh );

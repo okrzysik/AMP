@@ -4,8 +4,7 @@
 
 #include "AMP/operators/map/AsyncMapColumnOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class PelletStackOperatorParameters : public OperatorParameters
 {
@@ -22,8 +21,7 @@ public:
     AMP_MPI d_pelletStackComm;
     std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 
 #endif

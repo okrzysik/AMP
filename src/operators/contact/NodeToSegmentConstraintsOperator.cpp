@@ -12,8 +12,7 @@ bool compare_absolute_values( const double &first, const double &second )
     return ( abs( first ) < abs( second ) );
 }
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void NodeToSegmentConstraintsOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
@@ -476,5 +475,4 @@ size_t NodeToSegmentConstraintsOperator::numGlobalConstraints()
     return d_GlobalComm.sumReduce( d_SlaveVerticesGlobalIDs.size() );
 }
 
-} // end namespace Operator
-} // end namespace AMP
+} // namespace AMP::Operator

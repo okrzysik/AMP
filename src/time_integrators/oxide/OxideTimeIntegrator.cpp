@@ -10,8 +10,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /************************************************************************
@@ -248,5 +247,4 @@ void OxideTimeIntegrator::updateSolution() {}
  * Return time increment for next solution advance.                      *
  ************************************************************************/
 double OxideTimeIntegrator::getNextDt( const bool ) { return 1e10; }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

@@ -8,8 +8,7 @@
 
 #include <DTK_EntityExtraData.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -31,7 +30,6 @@ public:
     // Underlying mesh element.
     AMP::Mesh::MeshElement d_element;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

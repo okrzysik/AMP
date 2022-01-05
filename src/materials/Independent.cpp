@@ -14,8 +14,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace Independent_NS {
 
@@ -386,5 +385,4 @@ Independent::Independent()
     INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, Independent_NS );
     INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, Independent_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

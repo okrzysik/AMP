@@ -4,8 +4,7 @@
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/operators/map/ScalarZAxisMap.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef AsyncMapOperatorParameters CladToSubchannelMapParameters;
@@ -92,5 +91,4 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

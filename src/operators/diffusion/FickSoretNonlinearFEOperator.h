@@ -9,8 +9,7 @@
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   Class to add the output of the Fick and Soret operators.
@@ -65,7 +64,6 @@ private:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable;
     bool d_AddSoretTerm;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

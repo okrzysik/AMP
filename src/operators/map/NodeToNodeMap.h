@@ -14,8 +14,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /** \brief  A class for mapping a vector from one surface to another where the
@@ -115,8 +114,7 @@ protected:
     std::vector<AMP::Mesh::MeshElementID> d_sendList;
     std::vector<AMP::Mesh::MeshElementID> d_recvList;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 
 #endif

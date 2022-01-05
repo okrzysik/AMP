@@ -5,8 +5,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MapOperatorParameters : public OperatorParameters
 {
@@ -21,7 +20,6 @@ public:
     AMP_MPI d_MapComm;
     AMP::Mesh::Mesh::shared_ptr d_MapMesh;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

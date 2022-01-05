@@ -7,8 +7,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /** \brief  A class that allows for overlapped communication
@@ -115,8 +114,7 @@ public:
     virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                         AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 
 #endif

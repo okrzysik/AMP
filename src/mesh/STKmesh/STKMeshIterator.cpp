@@ -5,8 +5,7 @@
 
 #include "stk_mesh/base/BulkData.hpp"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // unused global variable to prevent compiler warning
@@ -223,5 +222,4 @@ MeshElement *STKMeshIterator::operator->()
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

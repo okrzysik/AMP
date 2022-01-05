@@ -7,8 +7,7 @@
 #include "moab/Core.hpp"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class moabMeshElement;
@@ -166,7 +165,6 @@ private:
     std::shared_ptr<moab::Core> d_core;
 };
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

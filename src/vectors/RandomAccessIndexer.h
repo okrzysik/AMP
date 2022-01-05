@@ -6,8 +6,7 @@
 #include "VectorIndexer.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class RandomAccessIndexer : public VectorIndexer
 {
@@ -67,7 +66,6 @@ public:
         return d_SuperToSub.size() - i;
     }
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

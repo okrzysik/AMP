@@ -5,8 +5,7 @@
 #include <utility>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // unused global variable to prevent compiler warning
@@ -315,5 +314,4 @@ structuredMeshIterator::getElements() const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

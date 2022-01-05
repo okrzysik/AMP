@@ -6,8 +6,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -126,7 +125,6 @@ private:
     //! The iterator for the subset
     AMP::Mesh::MeshIterator d_iterator;
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

@@ -6,8 +6,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace MechanicsManufacturedSolution {
+namespace AMP::MechanicsManufacturedSolution {
 
 /**
  * This is a base class for mechanics manufactured solutions
@@ -294,5 +293,4 @@ public:
 }; // end class MMSBuilder
 
 
-} // end namespace MechanicsManufacturedSolution
-} // end namespace AMP
+} // namespace AMP::MechanicsManufacturedSolution

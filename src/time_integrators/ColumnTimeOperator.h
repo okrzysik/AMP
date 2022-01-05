@@ -3,8 +3,7 @@
 
 #include "AMP/operators/ColumnOperator.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /**
  * The ColumnTimeOperator class is meant to handle the case where
@@ -153,7 +152,6 @@ private:
 
     double d_dCurrentDt;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

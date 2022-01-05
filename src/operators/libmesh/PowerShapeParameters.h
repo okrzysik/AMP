@@ -6,8 +6,7 @@
 #include "AMP/vectors/Vector.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class for encapsulating the parameters that are required for constructing the
@@ -19,7 +18,6 @@ class PowerShapeParameters : public OperatorParameters
 public:
     explicit PowerShapeParameters( std::shared_ptr<AMP::Database> db ) : OperatorParameters( db ) {}
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

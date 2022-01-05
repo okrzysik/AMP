@@ -5,8 +5,7 @@
 #include "AMP/operators/boundary/BoundaryOperator.h"
 #include "AMP/operators/boundary/libmesh/TractionBoundaryOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class TractionBoundaryOperator : public BoundaryOperator
 {
@@ -38,7 +37,6 @@ protected:
     std::vector<AMP::Mesh::MeshElementID> d_nodeID;
     bool d_residualMode;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

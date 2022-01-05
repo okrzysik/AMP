@@ -113,8 +113,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     linearSolverParams->d_pOperator       = bvpOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     linearSolver->setZeroInitialGuess( false );
 

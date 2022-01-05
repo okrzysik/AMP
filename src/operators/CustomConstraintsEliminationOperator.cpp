@@ -1,7 +1,6 @@
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 CustomConstraintsEliminationOperator::CustomConstraintsEliminationOperator(
     std::shared_ptr<const OperatorParameters> params )
@@ -74,5 +73,4 @@ void CustomConstraintsEliminationOperator::initialize(
     d_MasterIndices      = masterIndices;
     d_MasterCoefficients = masterCoefficients;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

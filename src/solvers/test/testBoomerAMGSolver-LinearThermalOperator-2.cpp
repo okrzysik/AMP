@@ -118,7 +118,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     // Read the input file onto a database.
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters fo the class with the info on the database.
     auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
@@ -189,9 +189,9 @@ int main( int argc, char *argv[] )
 
     std::vector<std::string> exeNames;
 
-    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN" );
-    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-cylinder" );
-    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-shell" );
+    exeNames.emplace_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN" );
+    exeNames.emplace_back( "testBoomerAMGSolver-LinearThermalOperator-cylinder" );
+    exeNames.emplace_back( "testBoomerAMGSolver-LinearThermalOperator-shell" );
     //    exeNames.push_back( "testBoomerAMGSolver-LinearThermalOperator-2_HALDEN_clad" );
 
     for ( auto &exeName : exeNames )

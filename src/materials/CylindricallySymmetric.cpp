@@ -21,8 +21,7 @@
 
 static inline int round_zero( double x ) { return x >= 0.0 ? ceil( x ) : floor( x ); }
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 /**
  * This is a nearly generic analytic model for the cylindrically symmetric diffusion in 3D.
@@ -278,5 +277,4 @@ CylindricallySymmetric::CylindricallySymmetric()
     INSERT_PROPERTY_IN_MAP( LongitudinalFick, CylindricallySymmetric_NS );
     INSERT_PROPERTY_IN_MAP( TensorFick, CylindricallySymmetric_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

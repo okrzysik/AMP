@@ -6,8 +6,7 @@
 
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing the element level computation
@@ -37,7 +36,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

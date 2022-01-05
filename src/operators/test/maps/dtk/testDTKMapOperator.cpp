@@ -36,14 +36,12 @@ static void myTest( AMP::UnitTest *ut )
     auto input_db          = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
-    auto sourceMeshParams = std::make_shared<AMP::Mesh::MeshParameters>( sourceMeshDatabase );
+    auto sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
+    auto sourceMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( sourceMeshDatabase );
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
-    std::size_t const numVerticesOnSourceMesh =
-        sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
-    std::size_t const numElementsOnSourceMesh =
-        sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    auto sourceMesh                = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
+    size_t numVerticesOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
+    size_t numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "source mesh contains " << numVerticesOnSourceMesh << " vertices\n";
     AMP::pout << "source mesh contains " << numElementsOnSourceMesh << " elements\n";
 
@@ -52,18 +50,15 @@ static void myTest( AMP::UnitTest *ut )
     bool const split      = true;
     int const ghostWidth  = 1;
     int const dofsPerNode = 1;
-    std::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
-    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
-    AMP::LinearAlgebra::Vector::shared_ptr sourceVector =
-        AMP::LinearAlgebra::createVector( sourceDofManager, variable, split );
+    auto sourceDofManager = AMP::Discretization::simpleDOFManager::create(
+        sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
+    auto variable     = std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
+    auto sourceVector = AMP::LinearAlgebra::createVector( sourceDofManager, variable, split );
     // and fill it
     std::vector<std::size_t> dofIndices;
     double value;
     AMP::pout << "Filling source vector" << std::endl;
-    AMP::Mesh::MeshIterator sourceMeshIterator =
-        sourceMesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto sourceMeshIterator = sourceMesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( sourceMeshIterator = sourceMeshIterator.begin();
           sourceMeshIterator != sourceMeshIterator.end();
           ++sourceMeshIterator ) {
@@ -87,11 +82,9 @@ static void myTest( AMP::UnitTest *ut )
     auto targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
     auto targetMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( targetMeshDatabase );
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto targetMesh = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
-    std::size_t const numVerticesOnTargetMesh =
-        targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
-    std::size_t const numElementsOnTargetMesh =
-        targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    auto targetMesh                = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
+    size_t numVerticesOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
+    size_t numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "target mesh contains " << numVerticesOnTargetMesh << " vertices\n";
     AMP::pout << "target mesh contains " << numElementsOnTargetMesh << " elements\n";
 

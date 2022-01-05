@@ -11,8 +11,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 typedef NeumannVectorCorrectionParameters RobinVectorCorrectionParameters;
 
@@ -77,7 +76,6 @@ protected:
 private:
     int d_InstanceID;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

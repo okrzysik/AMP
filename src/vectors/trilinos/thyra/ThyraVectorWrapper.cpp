@@ -16,8 +16,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Some function definitions
@@ -64,9 +63,9 @@ void ThyraVectorWrapper::initialize(
         }*/
     }
     // Check that the DOFs are compatible for all copies of the vector
-    std::shared_ptr<AMP::Discretization::DOFManager> dofs1 = vecs[0]->getDOFManager();
+    auto dofs1 = vecs[0]->getDOFManager();
     for ( size_t i = 1; i < vecs.size(); i++ ) {
-        std::shared_ptr<AMP::Discretization::DOFManager> dofs2 = vecs[i]->getDOFManager();
+        auto dofs2 = vecs[i]->getDOFManager();
         if ( dofs1 == dofs2 )
             continue;
         if ( *dofs1 != *dofs2 )
@@ -189,7 +188,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
         AMP_ASSERT( y != nullptr );
         AMP_ASSERT( M_dim[1] == X_dim[0] && M_dim[0] == Y_dim[0] && X_dim[1] == Y_dim[1] );
         AMP_ASSERT( M_dim[1] == d_vecs.size() && Y_dim[1] == y->d_vecs.size() );
-        AMP::LinearAlgebra::Vector::shared_ptr tmp = d_vecs[0]->cloneVector();
+        auto tmp = d_vecs[0]->cloneVector();
         for ( size_t i = 0; i < X_dim[1]; i++ ) { // Loop over the columns of y
             // We are performing a series of axpby operations:
             //    y(:,i) = alpha*sum(M(:,j)*X(j,i)) + beta*Y(:,i)
@@ -655,5 +654,4 @@ getConstPtr( std::vector<size_t> block_size,
     }
     return ptr;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

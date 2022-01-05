@@ -9,8 +9,7 @@
 #include <array>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class structuredMeshIterator final : public MeshIterator
@@ -109,7 +108,6 @@ private:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

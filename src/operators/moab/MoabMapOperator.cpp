@@ -18,8 +18,7 @@
 #include "quadrature_gauss.h"
 #include "string_to_enum.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //---------------------------------------------------------------------------//
 /*!
@@ -345,8 +344,7 @@ void MoabMapOperator::buildMoabCoupler()
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 //---------------------------------------------------------------------------//
 //       end of MoabMapOperator.cc

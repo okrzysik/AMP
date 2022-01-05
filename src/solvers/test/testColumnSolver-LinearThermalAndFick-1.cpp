@@ -39,8 +39,8 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //   Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    auto mgrParams                         = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 

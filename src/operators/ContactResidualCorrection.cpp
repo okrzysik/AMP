@@ -1,8 +1,7 @@
 
 #include "ContactResidualCorrection.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void ContactResidualCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr,
                                        AMP::LinearAlgebra::Vector::shared_ptr r )
@@ -27,5 +26,4 @@ void ContactResidualCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
         } // end for j
     }     // end for i
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

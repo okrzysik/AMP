@@ -10,9 +10,7 @@
 #include <array>
 #include <cmath>
 
-namespace AMP {
-namespace Operator {
-namespace Subchannel {
+namespace AMP::Operator::Subchannel {
 
 
 // Get the number of subchannels from the mesh
@@ -423,6 +421,4 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     diameter->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     return diameter;
 }
-} // namespace Subchannel
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator::Subchannel

@@ -46,12 +46,11 @@ void BandedSolver::reset( std::shared_ptr<SolverStrategyParameters> parameters )
     }
 
     // Get the linear operator
-    std::shared_ptr<AMP::Operator::LinearOperator> linear_op =
-        std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
+    auto linear_op = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linear_op, "ERROR: BandedSolver requires a linear operator" );
 
     // Get the matrix
-    AMP::LinearAlgebra::Matrix::shared_ptr matrix = linear_op->getMatrix();
+    auto matrix = linear_op->getMatrix();
     AMP_INSIST( matrix, "ERROR: BandedSolver requires a matrix" );
     rightDOF = matrix->getRightDOFManager();
     leftDOF  = matrix->getLeftDOFManager();

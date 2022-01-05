@@ -8,8 +8,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class PericElastoViscoPlasticModel : public MechanicsMaterialModel
 {
@@ -165,7 +164,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

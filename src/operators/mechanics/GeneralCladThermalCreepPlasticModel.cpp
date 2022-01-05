@@ -5,8 +5,7 @@
 
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 GeneralCladThermalCreepPlasticModel::GeneralCladThermalCreepPlasticModel(
     std::shared_ptr<MechanicsMaterialModelParameters> params )
@@ -906,5 +905,4 @@ void GeneralCladThermalCreepPlasticModel::postNonlinearAssembly()
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

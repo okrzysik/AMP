@@ -11,8 +11,7 @@
 #include <DTK_FunctionSpace.hpp>
 #include <DTK_Types.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -89,7 +88,6 @@ private:
     // The function space over which the mesh and its fields are defined.
     Teuchos::RCP<DataTransferKit::FunctionSpace> d_function_space;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

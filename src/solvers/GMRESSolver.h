@@ -6,8 +6,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Array.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * The GMRESSolver class implements the GMRES method for non-symmetric linear systems
@@ -178,7 +177,6 @@ private:
     //! we do not preallocate by default
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vBasis;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

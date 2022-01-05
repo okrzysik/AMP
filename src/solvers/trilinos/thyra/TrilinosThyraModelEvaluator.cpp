@@ -13,8 +13,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -202,5 +201,4 @@ TrilinosThyraModelEvaluator::view( Teuchos::RCP<Thyra::LinearOpBase<double>> op 
     return std::shared_ptr<AMP::Solver::TrilinosLinearOP>(
         tmp, nullDeleter<AMP::Solver::TrilinosLinearOP> );
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

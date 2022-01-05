@@ -9,8 +9,7 @@
 #include <typeinfo>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 static inline const ManagedVectorData *getManagedVectorData( const VectorData &x )
 {
@@ -238,5 +237,4 @@ Scalar ManagedVectorOperations::maxNorm( const VectorData &x ) const
     return x2->getVectorEngine()->maxNorm();
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

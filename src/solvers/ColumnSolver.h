@@ -5,8 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 typedef SolverStrategyParameters ColumnSolverParameters;
 
@@ -91,7 +90,6 @@ protected:
 
 private:
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

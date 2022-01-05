@@ -8,8 +8,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /********************************************************
@@ -335,5 +334,4 @@ void Map3to1to3::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr,
 {
     AMP_ERROR( "buildReturn should never be called for the BaseClass" );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

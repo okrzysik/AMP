@@ -12,8 +12,7 @@
 #include <set>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /********************************************************
@@ -416,5 +415,4 @@ bool NodeToNodeMap::Point::operator>=( const Point &rhs ) const { return !operat
 bool NodeToNodeMap::Point::operator>( const Point &rhs ) const { return !operator<=( rhs ); }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

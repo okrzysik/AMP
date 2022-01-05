@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef ElementPhysicsModelParameters FlowTransportModelParameters;
@@ -57,7 +56,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

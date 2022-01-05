@@ -24,8 +24,7 @@ ENABLE_WARNINGS
     #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //===========================================================================//
 /*!
@@ -177,8 +176,7 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
 

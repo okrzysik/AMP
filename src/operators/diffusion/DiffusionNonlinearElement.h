@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DiffusionNonlinearElement : public DiffusionElement
 {
@@ -71,7 +70,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

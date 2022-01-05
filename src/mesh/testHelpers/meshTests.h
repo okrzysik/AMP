@@ -10,8 +10,7 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -325,8 +324,7 @@ private: // Private data
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 // Extra includes
 #include "AMP/mesh/testHelpers/meshMatrixTests.inline.h"

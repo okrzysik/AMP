@@ -4,8 +4,7 @@
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /**
    \brief Class used to control data and kernels of various vector libraries
@@ -77,8 +76,7 @@ public: // Pull VectorOperations into the current scope
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

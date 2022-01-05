@@ -65,7 +65,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -80,7 +80,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
+    auto intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
     // CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );

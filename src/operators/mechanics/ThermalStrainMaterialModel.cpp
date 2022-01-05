@@ -6,8 +6,7 @@
 
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 ThermalStrainMaterialModel::ThermalStrainMaterialModel(
     std::shared_ptr<MechanicsMaterialModelParameters> params )
@@ -550,5 +549,4 @@ void ThermalStrainMaterialModel::Thermal_Strain_Gauss_Point(
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

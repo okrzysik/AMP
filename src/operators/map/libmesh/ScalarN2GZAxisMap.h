@@ -6,8 +6,7 @@
 #include "AMP/operators/map/Map3to1to3Parameters.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef AMP::Operator::Map3to1to3Parameters ScalarN2GZAxisMapParameters;
@@ -72,7 +71,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

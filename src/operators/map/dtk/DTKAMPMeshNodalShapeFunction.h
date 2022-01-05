@@ -8,8 +8,7 @@
 
 #include <DTK_EntityShapeFunction.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -67,7 +66,6 @@ private:
     // DOF manager.
     std::shared_ptr<AMP::Discretization::DOFManager> d_dof_manager;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

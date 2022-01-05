@@ -92,9 +92,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     auto dispVar = mechanicsNonlinearVolumeOperator->getOutputVariable();
 
-    // std::shared_ptr<AMP::Operator::MechanicsLinearFEOperator> mechanicsLinearVolumeOperator =
-    //  std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
-    //      linearMechanicsBVPoperator->getVolumeOperator());
+    // auto mechanicsLinearVolumeOperator =
+    //    std::dynamic_pointer_cast<AMP::Operator::MechanicsLinearFEOperator>(
+    //       linearMechanicsBVPoperator->getVolumeOperator());
 
     // For RHS (Point Forces)
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> dummyModel;

@@ -63,7 +63,7 @@ class PointAndId
 public:
     double d_pt[3];
     unsigned int d_id;
-    static double const PRECISION = 1.0e-12;
+    constexpr static double const PRECISION = 1.0e-12;
 
     bool idEquals( PointAndId const &other ) const
     {

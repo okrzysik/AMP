@@ -23,8 +23,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<ElementOperation>
@@ -56,5 +55,4 @@ ElementOperationFactory::createElementOperation( std::shared_ptr<Database> eleme
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

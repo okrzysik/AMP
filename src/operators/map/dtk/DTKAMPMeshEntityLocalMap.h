@@ -8,8 +8,7 @@
 
     #include <Intrepid_FieldContainer.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -116,8 +115,7 @@ private:
     // Point inclusion tolerance.
     double d_inclusion_tol;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
 //! @endcond

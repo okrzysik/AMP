@@ -7,8 +7,7 @@
 #include "AMP/utils/Utilities.h"
 #include <iostream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void polarDecomposeRU( double A[3][3], double R[3][3], double U[3][3] )
 {
@@ -986,5 +985,4 @@ void jaumannToCauchy( double Om[3][3], double Sg[3][3] )
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

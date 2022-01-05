@@ -4,8 +4,7 @@
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/operators/map/SubchannelToCladMap.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef SubchannelToCladMapParameters SubchannelToCladGPMapParameters;
@@ -58,7 +57,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

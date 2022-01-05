@@ -1,0 +1,29 @@
+// Mesh based Geometries
+MeshGeometry {
+    Generator = "Mesh"
+    Mesh{
+		MeshName = "sphere_surface"
+		MeshType = "AMP"
+		dim = 3
+		Generator = "sphere_surface"
+		Size = 40
+		Range = 1
+        static = TRUE
+    }
+}
+
+/*MeshGeometrySTL {
+    Generator = "Mesh"
+    Mesh{
+        MeshName = "crystal_geom"
+        MeshType = "AMP"
+        FileName = "CRYSTAL_FINAL_2mm.STL"
+        dim = 3
+        scale = 0.0393701
+        x_offset = -21.3681
+        y_offset = -14.4062
+        z_offset = -21.4308
+    }
+}*/
+
+

@@ -3,14 +3,13 @@
 #include "AMP/vectors/data/VectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-VectorOperations::VectorOperations() {}
+VectorOperations::VectorOperations() = default;
 
 /****************************************************************
  * equals                                                        *
@@ -102,5 +101,4 @@ Scalar VectorOperations::wrmsNormMask( const VectorData &x,
     return ans;
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

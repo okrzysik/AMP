@@ -1,7 +1,6 @@
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
@@ -193,5 +192,4 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     d_multiDofDTKMapOpParams->d_TargetVector->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

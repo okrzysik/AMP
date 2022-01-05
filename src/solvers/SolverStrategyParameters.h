@@ -7,8 +7,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**\class SolverStrategyParameters
  *
@@ -59,7 +58,6 @@ public:
 protected:
 private:
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

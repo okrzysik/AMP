@@ -2,8 +2,7 @@
 #include "NavierStokesGalWFLinearElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void NavierStokesGalWFLinearElement::apply()
 {
@@ -130,5 +129,4 @@ void NavierStokesGalWFLinearElement::apply()
 
     } // end for qp
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

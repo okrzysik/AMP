@@ -1,9 +1,9 @@
 #include "AMP/mesh/testHelpers/meshTests.h"
+#include "AMP/geometry/MultiGeometry.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/MeshIterator.h"
-#include "AMP/mesh/MultiGeometry.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/SubsetMesh.h"
 #include "AMP/utils/AMP_MPI.I"
@@ -14,8 +14,7 @@
 #include <set>
 #include <vector>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Some global variables
@@ -287,17 +286,18 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
         else
             ut.passes( name + "-elements nearest failed" );
     } catch ( const StackTrace::abort_error &e ) {
-        auto pos = e.message.find( "nearest is not implimented" );
+        std::string msg = e.message;
+        auto pos        = msg.find( "nearest is not implemented" );
         if ( pos != std::string::npos )
-            ut.expected_failure( name + "-elements " + e.message );
+            ut.expected_failure( name + "-elements " + msg );
         else
-            ut.failure( name + "-elements nearest exception: " + e.message );
+            ut.failure( name + "-elements nearest exception: " + msg );
     } catch ( ... ) {
         ut.failure( name + "-nearest distance unknown exception" );
     }
     // Check distance
     try {
-        ut.expected_failure( name + "-elements distance test not implimented yet" );
+        ut.expected_failure( name + "-elements distance test not implemented yet" );
         /*bool pass  = true;
         for ( const auto &element : iterator ) {
             auto centroid = element.centroid();
@@ -308,11 +308,12 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
         else
             ut.passes( name + "-elements distance failed" );*/
     } catch ( const StackTrace::abort_error &e ) {
-        auto pos = e.message.find( "distance is not implimented" );
+        std::string msg = e.message;
+        auto pos        = msg.find( "distance is not implemented" );
         if ( pos != std::string::npos )
-            ut.passes( name + "-elements " + e.message );
+            ut.passes( name + "-elements " + msg );
         else
-            ut.failure( name + "-elements distance exception: " + e.message );
+            ut.failure( name + "-elements distance exception: " + msg );
     } catch ( ... ) {
         ut.failure( name + "-elements distance unknown exception" );
     }
@@ -791,10 +792,10 @@ void meshTests::getNodeNeighbors( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr
     {
         bool contains_self      = false;
         bool contains_duplicate = false;
-        for ( auto it = neighbor_list.begin(); it != neighbor_list.end(); ++it ) {
-            auto neighbors = it->second;
+        for ( auto &it : neighbor_list ) {
+            auto neighbors = it.second;
             for ( size_t i = 0; i < neighbors.size(); i++ ) {
-                if ( neighbors[i] == it->first )
+                if ( neighbors[i] == it.first )
                     contains_self = true;
                 for ( size_t j = 0; j < i; j++ ) {
                     if ( neighbors[j] == neighbors[i] )
@@ -814,8 +815,8 @@ void meshTests::getNodeNeighbors( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr
     // If there are ghost nodes, then some of them must be neighbors
     if ( mesh->numGhostElements( AMP::Mesh::GeomType::Vertex, 1 ) > 0 ) {
         bool ghost_neighbors = false;
-        for ( auto it = neighbor_list.begin(); it != neighbor_list.end(); ++it ) {
-            auto neighbors = it->second;
+        for ( auto &it : neighbor_list ) {
+            auto neighbors = it.second;
             for ( auto &neighbor : neighbors ) {
                 if ( !neighbor.is_local() )
                     ghost_neighbors = true;
@@ -1316,5 +1317,4 @@ void meshTests::MeshPerformance( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr 
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

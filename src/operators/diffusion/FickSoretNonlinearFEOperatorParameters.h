@@ -13,8 +13,7 @@
 #include "AMP/vectors/Variable.h"
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class FickSoretNonlinearFEOperator;
 
@@ -32,7 +31,6 @@ public:
     std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_SoretParameters;
     std::string d_name; // the name of the FickSoretOperator
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif /* FICKSORETNONLINEARFEOPERATORPARAMETERS_H_ */

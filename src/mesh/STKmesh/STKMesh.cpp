@@ -1,3 +1,4 @@
+
 #include "AMP/mesh/STKmesh/STKMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -26,10 +27,9 @@
 #include "Ionit_Initializer.h"
 #include "Ioss_SubSystem.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
-typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
+using CartesianField = stk::mesh::Field<double, stk::mesh::Cartesian>;
 
 struct NullDeleter {
     template<typename T>
@@ -564,13 +564,13 @@ size_t STKMesh::maxProcs( std::shared_ptr<const MeshParameters> params )
 size_t STKMesh::numLocalElements( const GeomType type ) const
 {
     if ( n_local[type] == static_cast<size_t>( -1 ) )
-        AMP_ERROR( "numLocalElements is not implimented for this type" );
+        AMP_ERROR( "numLocalElements is not implemented for this type" );
     return n_local[type];
 }
 size_t STKMesh::numGlobalElements( const GeomType type ) const
 {
     if ( n_global[type] == static_cast<size_t>( -1 ) )
-        AMP_ERROR( "numLocalElements is not implimented for this type" );
+        AMP_ERROR( "numLocalElements is not implemented for this type" );
     return n_global[type];
 }
 size_t STKMesh::numGhostElements( const GeomType type, int gcw ) const
@@ -580,7 +580,7 @@ size_t STKMesh::numGhostElements( const GeomType type, int gcw ) const
     if ( gcw > 1 )
         AMP_ERROR( "STKmesh only supports a ghost cell width of 1" );
     if ( n_ghost[type] == static_cast<size_t>( -1 ) )
-        AMP_ERROR( "numLocalElements is not implimented for this type" );
+        AMP_ERROR( "numLocalElements is not implemented for this type" );
     return n_ghost[type];
 }
 
@@ -683,7 +683,7 @@ STKMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
 std::vector<int> STKMesh::getBlockIDs() const { return d_block_ids; }
 MeshIterator STKMesh::getBlockIDIterator( const GeomType type, const int id, const int gcw ) const
 {
-    AMP_ERROR( "getBlockIDIterator is not implimented yet" );
+    AMP_ERROR( "getBlockIDIterator is not implemented yet" );
     return MeshIterator();
 }
 
@@ -858,5 +858,4 @@ void STKMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr x
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

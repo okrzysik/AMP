@@ -3,8 +3,7 @@
 
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class AsynchronousOperatorParameters : public OperatorParameters
@@ -18,7 +17,6 @@ public:
     {
     }
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

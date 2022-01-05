@@ -7,8 +7,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 //! Parameters used to instantiate a Vector
@@ -108,8 +107,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

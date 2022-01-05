@@ -42,16 +42,13 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     std::shared_ptr<libMesh::FEBase> fe;
     std::shared_ptr<libMesh::QBase> qrule;
 
-    std::string feTypeOrderName =
-        elementRhsDatabase->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto feTypeOrderName = elementRhsDatabase->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feTypeOrder     = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName =
-        elementRhsDatabase->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamilyName = elementRhsDatabase->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamily     = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName =
-        elementRhsDatabase->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    auto qruleTypeName = elementRhsDatabase->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
@@ -60,7 +57,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     feType.reset( new libMesh::FEType( feTypeOrder, feFamily ) );
     fe.reset( ( libMesh::FEBase::build( dimension, ( *feType ) ) ).release() );
 
-    std::string qruleOrderName =
+    auto qruleOrderName =
         elementRhsDatabase->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
     libMeshEnums::Order qruleOrder;
     if ( qruleOrderName == "DEFAULT" ) {

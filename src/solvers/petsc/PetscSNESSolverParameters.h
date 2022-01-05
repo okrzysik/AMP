@@ -8,8 +8,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * Class PetscSNESSolverParameters provides a uniform mechanism to pass
@@ -34,7 +33,6 @@ private:
 };
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

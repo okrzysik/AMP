@@ -12,8 +12,7 @@
 #include <iterator>
 #include <numeric>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void NodeToGeomType::FaceContactOperator::initialize()
 {
@@ -932,5 +931,4 @@ void NodeToGeomType::FaceContactOperator::addShiftToSlave(
     } // end if
 }
 
-} // end namespace Operator
-} // end namespace AMP
+} // namespace AMP::Operator

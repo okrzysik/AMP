@@ -5,8 +5,7 @@
 #include "AMP/vectors/Vector.h"
 #include <memory>
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class DenseSerialMatrix
@@ -246,8 +245,7 @@ protected:
     size_t d_cols;
     double *d_M;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

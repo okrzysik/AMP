@@ -41,7 +41,7 @@ void run( AMP::UnitTest &ut )
 
     std::cout << "Constructed Operators." << std::endl;
 
-    std::shared_ptr<AMP::Database> solver_db = input_db->getDatabase( "Solver" );
+    auto solver_db = input_db->getDatabase( "Solver" );
 
     auto firstSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     firstSolverParams->d_pOperator = firstOp;

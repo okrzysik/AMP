@@ -42,7 +42,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     auto temp_var = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto temp_vec = AMP::LinearAlgebra::createVector( DOF, temp_var, true );
     auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
-    double T0     = input_db->getWithDefault<double>( "T0", 650 );
+    auto T0       = input_db->getWithDefault<double>( "T0", 650 );
     std::vector<size_t> dofs;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         auto coord = iterator->coord();

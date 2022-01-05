@@ -14,8 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace UO2_MSRZC_09_NS {
 
@@ -343,5 +342,4 @@ UO2_MSRZC_09::UO2_MSRZC_09()
     INSERT_PROPERTY_IN_MAP( DxThermalConductivity, UO2_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( DTThermalConductivity, UO2_MSRZC_09_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

@@ -6,8 +6,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 FlowFrapconOperator::FlowFrapconOperator(
@@ -209,5 +208,4 @@ FlowFrapconOperator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
         return vec->subsetVectorForVariable( var );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

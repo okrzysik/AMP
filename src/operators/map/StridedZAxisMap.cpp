@@ -5,8 +5,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /************************************************************************
@@ -67,5 +66,4 @@ void StridedZAxisMap::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

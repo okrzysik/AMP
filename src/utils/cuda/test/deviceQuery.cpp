@@ -21,8 +21,8 @@
 #include <cuda_runtime.h>
 
 
-int *pArgc   = NULL;
-char **pArgv = NULL;
+int *pArgc   = nullptr;
+char **pArgv = nullptr;
 
 #if CUDART_VERSION < 5000
 
@@ -225,7 +225,7 @@ int main( int argc, char **argv )
             "Exclusive Process (many threads in one process is able to use ::cudaSetDevice() "
             "with this device)",
             "Unknown",
-            NULL
+            nullptr
         };
         printf( "  Compute Mode:\n" );
         printf( "     < %s >\n", sComputeMode[deviceProp.computeMode] );

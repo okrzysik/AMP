@@ -6,8 +6,7 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/vectors/MultiVariable.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 typedef OperatorParameters ContactResidualCorrectionParameters;
 
@@ -88,7 +87,6 @@ private:
 
     AMP::Mesh::Mesh::shared_ptr d_slaveMesh;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

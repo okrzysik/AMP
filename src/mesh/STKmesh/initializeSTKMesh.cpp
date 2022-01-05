@@ -9,8 +9,7 @@
 #include "AMP/mesh/Mesh.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Initialize static variables
@@ -74,5 +73,4 @@ bool initializeSTKMesh::canBeInitialized( AMP_MPI comm )
 bool initializeSTKMesh::isInitialized() { return !N_copies(); }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

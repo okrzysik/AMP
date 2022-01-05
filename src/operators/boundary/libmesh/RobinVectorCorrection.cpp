@@ -16,8 +16,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 RobinVectorCorrection::RobinVectorCorrection(
@@ -263,5 +262,4 @@ std::shared_ptr<OperatorParameters>
 
     return outParams;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

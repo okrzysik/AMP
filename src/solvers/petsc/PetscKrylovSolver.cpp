@@ -13,8 +13,7 @@
 #include "petscksp.h"
 #include "petscpc.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
@@ -176,7 +175,7 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
 void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     // fill this in
-    std::string petscOptions = db->getWithDefault<std::string>( "KSPOptions", "" );
+    auto petscOptions = db->getWithDefault<std::string>( "KSPOptions", "" );
     if ( petscOptions.find( "monitor" ) != std::string::npos ) {
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
@@ -402,5 +401,4 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

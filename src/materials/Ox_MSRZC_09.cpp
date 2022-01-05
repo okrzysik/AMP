@@ -15,8 +15,7 @@
 #include <cmath>
 #include <string>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace Ox_MSRZC_09_NS {
 
@@ -133,5 +132,4 @@ Ox_MSRZC_09::Ox_MSRZC_09()
     INSERT_PROPERTY_IN_MAP( SoretCoefficient, Ox_MSRZC_09_NS );
     INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, Ox_MSRZC_09_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

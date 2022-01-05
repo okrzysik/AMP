@@ -204,8 +204,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto preconditioner = std::make_shared<AMP::Solver::TrilinosMLSolver>( preconditionerParams );
 
     // Register the preconditioner with the Jacobian free Krylov solver
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        nonlinearSolver->getKrylovSolver();
+    auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( preconditioner );
 
     // Get initial residual

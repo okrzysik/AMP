@@ -43,8 +43,7 @@ class PetscVector;
 }
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -215,7 +214,6 @@ private:
 
     std::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

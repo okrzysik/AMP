@@ -4,8 +4,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 typedef SolverStrategyParameters Flow1DSolverParameters;
 
@@ -58,7 +57,6 @@ private:
     AMP::LinearAlgebra::Vector::shared_ptr d_Rhs;
     AMP::LinearAlgebra::Vector::shared_ptr d_Sol;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

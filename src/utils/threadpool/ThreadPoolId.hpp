@@ -185,7 +185,7 @@ inline bool ThreadPoolID::ready() const
     bool ready = true;
     if ( !isNull() ) {
         auto tmp = getWork();
-        for ( size_t i = 0; i < tmp->d_N_ids; i++ )
+        for ( std::size_t i = 0; i < tmp->d_N_ids; i++ )
             ready = ready && tmp->d_ids[i].finished();
     }
     return ready;

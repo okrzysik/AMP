@@ -8,8 +8,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -25,7 +24,6 @@ public:
     std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner;   //!< The preconditioner
     std::shared_ptr<AMP::Solver::PrePostOperator> d_prePostOperator; //!< The pre-post operator
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

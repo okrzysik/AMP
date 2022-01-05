@@ -3,8 +3,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /****************************************************************
@@ -264,5 +263,4 @@ void DirichletMatrixCorrection::setRHScorrection( AMP::LinearAlgebra::Vector::sh
         d_rhsCorrectionSet->apply( emptyVec, rhs );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

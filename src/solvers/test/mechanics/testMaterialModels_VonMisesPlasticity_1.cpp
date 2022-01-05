@@ -35,10 +35,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     std::shared_ptr<AMP::Operator::VonMisesElastoPlasticModel> vmepModel;
-    // std::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
 
-    std::shared_ptr<AMP::Database> matModelDatabase =
-        input_db->getDatabase( "MechanicsMaterialModel" );
+    auto matModelDatabase = input_db->getDatabase( "MechanicsMaterialModel" );
     elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
     vmepModel =

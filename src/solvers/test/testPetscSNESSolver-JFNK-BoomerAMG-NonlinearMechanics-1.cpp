@@ -172,7 +172,7 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.push_back( "testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal" );
+    exeNames.emplace_back( "testPetscSNESSolver-JFNK-ML-NonlinearMechanics-1-normal" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

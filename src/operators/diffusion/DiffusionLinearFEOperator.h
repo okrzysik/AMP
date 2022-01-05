@@ -11,8 +11,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class DiffusionLinearFEOperator : public LinearFEOperator
@@ -52,7 +51,6 @@ protected:
 
     std::shared_ptr<DiffusionTransportModel> d_transportModel;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

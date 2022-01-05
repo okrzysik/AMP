@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -81,7 +80,6 @@ public:
 protected:
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenGaussPointVector;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -13,8 +13,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -106,7 +105,6 @@ protected:
 private:
     Discretization::createLibmeshElements libmeshElements;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

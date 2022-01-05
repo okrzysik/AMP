@@ -6,8 +6,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/libmesh/PelletStackMechanicsSolverParameters.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 class PelletStackMechanicsSolver : public SolverStrategy
@@ -36,7 +35,6 @@ protected:
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer1;
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_fbuffer2;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

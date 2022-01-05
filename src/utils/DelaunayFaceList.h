@@ -26,7 +26,7 @@ public:
 
     /*! @brief  Standard constructor
      *  @details  Default constructor to be used
-     * @param N         The number of verticies
+     * @param N         The number of vertices
      * @param x         The coordinates of the nodes (NDIM x N)
      *                  Note: coordinates must not change or be deleted during lifetime of
      *                  FaceList.
@@ -110,14 +110,14 @@ private:
         int next;
         int tri_id;      // Triangle id
         int face_id;     // Face id
-        int index[NDIM]; // Indicies of the face verticies
-        Point x[NDIM];   // Coordinates of the face verticies
+        int index[NDIM]; // Indicies of the face vertices
+        Point x[NDIM];   // Coordinates of the face vertices
         // Function to reset data to a NULL state
         void reset();
     };
 
     // Data members
-    const int Nx; // The number of verticies
+    const int Nx; // The number of vertices
     int N_face;   // The number of faces on the convex hull
     int size;
     int hash_table[1024]; // Internal hash table to improve performance when search for a given face

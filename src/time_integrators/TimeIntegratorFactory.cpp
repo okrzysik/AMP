@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 TimeIntegratorFactory::TimeIntegratorFactory() = default;
 
@@ -33,5 +32,4 @@ std::shared_ptr<TimeIntegrator> TimeIntegratorFactory::createTimeIntegrator(
 
     return timeIntegrator;
 }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

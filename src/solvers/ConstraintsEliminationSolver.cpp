@@ -1,8 +1,7 @@
 #include "AMP/solvers/ConstraintsEliminationSolver.h"
 #include "AMP/operators/ConstraintsEliminationOperator.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 ConstraintsEliminationSolver::ConstraintsEliminationSolver(
     std::shared_ptr<ConstraintsEliminationSolverParameters> params )
@@ -18,5 +17,4 @@ void ConstraintsEliminationSolver::apply( std::shared_ptr<const AMP::LinearAlgeb
     op->copyMasterToSlave( u );
 }
 
-} // end namespace Solver
-} // end namespace AMP
+} // namespace AMP::Solver

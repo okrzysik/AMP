@@ -5,8 +5,7 @@
 #include "libmesh/cell_hex27.h"
 #include "libmesh/node.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 NavierStokesLSWFLinearFEOperator::NavierStokesLSWFLinearFEOperator(
     std::shared_ptr<const NavierStokesLinearFEOperatorParameters> params )
@@ -201,5 +200,4 @@ AMP::LinearAlgebra::Vector::shared_ptr NavierStokesLSWFLinearFEOperator::mySubse
         return vec->subsetVectorForVariable( var );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

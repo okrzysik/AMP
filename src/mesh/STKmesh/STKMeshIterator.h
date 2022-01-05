@@ -5,8 +5,7 @@
 #include "AMP/mesh/STKmesh/STKMesh.h"
 #include <memory>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class STKMeshIterator : public MeshIterator
@@ -103,7 +102,6 @@ private:
 private:
     static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "STKMeshIterator" ); }
 };
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

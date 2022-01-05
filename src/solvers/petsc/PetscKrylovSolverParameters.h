@@ -7,8 +7,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -32,7 +31,6 @@ private:
 };
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

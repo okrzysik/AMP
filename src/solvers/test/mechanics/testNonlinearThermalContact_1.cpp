@@ -89,7 +89,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto TemperatureVar = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
 
-    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
+    auto intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
     auto TemperatureInKelvin = AMP::LinearAlgebra::createVector( nodalDofMap, TemperatureVar );
     TemperatureInKelvin->setToScalar( intguess );
@@ -118,10 +118,9 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // CREATE THE LINEAR THERMAL OPERATOR 1
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel1;
-    std::shared_ptr<AMP::Operator::LinearBVPOperator> linearThermalOperator1 =
-        std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
-            AMP::Operator::OperatorBuilder::createOperator(
-                meshAdapter1, "LinearThermalOperator1", input_db, thermalTransportModel1 ) );
+    auto linearThermalOperator1 = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
+        AMP::Operator::OperatorBuilder::createOperator(
+            meshAdapter1, "LinearThermalOperator1", input_db, thermalTransportModel1 ) );
 
     // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
@@ -177,8 +176,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams1 );
 
     // register the preconditioner with the Jacobian free Krylov solver
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver1 =
-        nonlinearSolver1->getKrylovSolver();
+    auto linearSolver1 = nonlinearSolver1->getKrylovSolver();
     linearSolver1->setPreconditioner( linearThermalPreconditioner1 );
     nonlinearThermalOperator1->residual( RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
@@ -186,7 +184,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP_INSIST( input_db->keyExists( "GapOperator" ), "Key ''GapOperator'' is missing!" );
     auto gapDatabase = input_db->getDatabase( "GapOperator" );
 
-    double heff      = ( gapDatabase )->getScalar<double>( "Convective_Coefficient" );
+    auto heff        = ( gapDatabase )->getScalar<double>( "Convective_Coefficient" );
     auto gapVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Gap" );
 
     // CREATE THE LINEAR THERMAL OPERATOR 2
@@ -212,8 +210,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mlSolverParams2 =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db1 );
     mlSolverParams2->d_pOperator = linearThermalOperator2;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> mlSolver2 =
-        std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams2 );
+    auto mlSolver2 = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams2 );
     mlSolver2->setZeroInitialGuess( true );
 
     //-------------------------------------

@@ -5,8 +5,7 @@
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline auto getVectorEngine( std::shared_ptr<VectorData> data )
@@ -311,5 +310,4 @@ void ManagedSundialsVector::swapVectors( Vector &other )
     d_VectorData->swapData( *other.getVectorData() );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

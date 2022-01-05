@@ -2,8 +2,7 @@
 
 #include "AsynchronousOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 AsynchronousOperator::AsynchronousOperator( std::shared_ptr<const OperatorParameters> params )
@@ -66,5 +65,4 @@ void AsynchronousOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
     applyStart( u, f );
     applyFinish( u, f );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

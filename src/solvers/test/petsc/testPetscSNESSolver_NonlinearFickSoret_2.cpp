@@ -110,7 +110,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto fickFrozen  = fickOp->getFrozen();
     auto soretFrozen = soretOp->getFrozen();
 
-    double lenscale = input_db->getScalar<double>( "LengthScale" );
+    auto lenscale = input_db->getScalar<double>( "LengthScale" );
     soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(
         300. ); // Fill in manufactured solution
     const int zeroGhostWidth = 0;
@@ -129,7 +129,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     }
 
     // Initial guess
-    double initialValue = input_db->getScalar<double>( "InitialValue" );
+    auto initialValue = input_db->getScalar<double>( "InitialValue" );
     solVec->setToScalar( initialValue );
     std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
 

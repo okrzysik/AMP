@@ -18,8 +18,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -123,7 +122,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
     AMP::LinearAlgebra::Vector::shared_ptr myRhs = subsetInputVector( rhsCorrection );
 
-    double gammaValue = ( d_params->d_db )->getWithDefault<double>( "gamma", 1.0 );
+    auto gammaValue = ( d_params->d_db )->getWithDefault<double>( "gamma", 1.0 );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal            = myRhs->cloneVector();
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager = rInternal->getDOFManager();
@@ -301,5 +300,4 @@ void NeumannVectorCorrection::setVariableFlux( const AMP::LinearAlgebra::Vector:
         d_variableFlux = flux->subsetVectorForVariable( d_variable );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

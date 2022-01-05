@@ -15,8 +15,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace FixedFuel_NS {
 
@@ -386,5 +385,4 @@ FixedFuel::FixedFuel()
     INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, FixedFuel_NS );
     INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, FixedFuel_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

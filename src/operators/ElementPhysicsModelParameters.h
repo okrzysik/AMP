@@ -8,8 +8,7 @@
 
 #include "AMP/utils/ParameterBase.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class that encapsulates the parameters used to
@@ -36,7 +35,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

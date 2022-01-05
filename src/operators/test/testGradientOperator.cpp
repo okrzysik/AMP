@@ -96,15 +96,15 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
     std::vector<double> tol;
 
     // Add a linear function
-    name.push_back( "linear" );
-    f.push_back( []( Point p ) { return 1.1 + 2.2 * p.x() + 3.3 * p.y() + 4.4 * p.z(); } );
-    g.push_back( []( Point ) { return Point( 2.2, 3.3, 4.4 ); } );
+    name.emplace_back( "linear" );
+    f.emplace_back( []( Point p ) { return 1.1 + 2.2 * p.x() + 3.3 * p.y() + 4.4 * p.z(); } );
+    g.emplace_back( []( Point ) { return Point( 2.2, 3.3, 4.4 ); } );
     tol.push_back( 1e-12 );
 
     // Add a simple quadratic function
-    name.push_back( "quadratic" );
-    f.push_back( []( Point p ) { return p.x() * p.x() + p.y() * p.y() + p.z() * p.z(); } );
-    g.push_back( []( Point p ) { return Point( 2 * p.x(), 2 * p.y(), 2 * p.z() ); } );
+    name.emplace_back( "quadratic" );
+    f.emplace_back( []( Point p ) { return p.x() * p.x() + p.y() * p.y() + p.z() * p.z(); } );
+    g.emplace_back( []( Point p ) { return Point( 2 * p.x(), 2 * p.y(), 2 * p.z() ); } );
     tol.push_back( 0.05 );
 
     // Run the tests

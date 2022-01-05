@@ -1,10 +1,9 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
@@ -116,8 +115,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
 
         // create vectors for initial conditions (IC) and time derivative at IC
-        // std::shared_ptr<AMP::LinearAlgebra::Variable> inputVar =
-        // IDARhsOperator->getInputVariable();
+        // auto inputVar = IDARhsOperator->getInputVariable();
         auto outputVar = IDARhsOperator->getOutputVariable();
 
         auto initialCondition      = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
@@ -169,8 +167,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
         }
 
-        std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver =
-            std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
+        auto pcSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
         if ( pcSolver.get() == nullptr ) {
             ut->failure( "Testing TrilinosMLSolver's constructor: FAIL" );

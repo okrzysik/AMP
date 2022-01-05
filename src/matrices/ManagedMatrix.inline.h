@@ -1,7 +1,6 @@
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 inline ManagedMatrix::ManagedMatrix() {}
 
@@ -12,5 +11,4 @@ inline ManagedMatrix::ManagedMatrix( std::shared_ptr<ManagedMatrixParameters> p 
     AMP_ASSERT( !d_comm.isNull() );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

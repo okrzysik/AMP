@@ -25,8 +25,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 // Default constructor
@@ -231,8 +230,7 @@ const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElem
     PROFILE_STOP( "getQBase", 2 );
     return result;
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 
 #endif

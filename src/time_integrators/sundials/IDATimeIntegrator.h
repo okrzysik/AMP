@@ -25,8 +25,7 @@ extern "C" {
 }
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /** \class IDATimeIntegrator
@@ -285,8 +284,7 @@ private:
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif
 #endif

@@ -11,8 +11,7 @@
 #include "MechanicsElement.h"
 #include "UpdatedLagrangianUtils.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -145,7 +144,6 @@ protected:
 private:
 };
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

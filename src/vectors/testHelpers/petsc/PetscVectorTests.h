@@ -10,8 +10,7 @@
         #include "AMP/vectors/petsc/PetscVector.h"
         #include "AMP/vectors/testHelpers/VectorTests.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class PetscVectorFactory;
 
@@ -88,8 +87,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
     /// \endcond
 

@@ -4,8 +4,7 @@
 
 #include "AMP/operators/libmesh/PelletStackOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class PelletStackOperator : public Operator
 {
@@ -65,7 +64,6 @@ protected:
     AMP_MPI d_pelletStackComm;
     std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> d_n2nMaps;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
