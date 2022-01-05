@@ -11,8 +11,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace voodoo {
+namespace AMP::voodoo {
 /**
  * \brief	Given a map that is referenced by a key value, takes the keys and
  *			shoves them into a vector that is returned
@@ -34,8 +33,7 @@ std::vector<key> getKeys( const std::map<key, T> &keyMap )
     return keyVector;
 }
 
-} // namespace voodoo
-} // namespace AMP
+} // namespace AMP::voodoo
 
 
 #endif // DETAILS_H

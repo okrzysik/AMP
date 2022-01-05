@@ -7,8 +7,7 @@
 #include "AMP/operators/subchannel/SubchannelToPointMapParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -66,7 +65,6 @@ private:
 
     std::shared_ptr<SubchannelPhysicsModel> d_subchannelPhysicsModel;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -3,8 +3,7 @@
 
 #include "DTKAMPMeshEntityImpl.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -151,5 +150,4 @@ Teuchos::RCP<DataTransferKit::EntityExtraData> AMPMeshEntityImpl::extraData() co
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

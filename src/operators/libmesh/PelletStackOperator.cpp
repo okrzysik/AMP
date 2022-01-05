@@ -4,8 +4,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 PelletStackOperator::PelletStackOperator(
     std::shared_ptr<const PelletStackOperatorParameters> params )
@@ -299,5 +298,4 @@ void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared
         finalMaxZdispsList[i] += finalMaxZdispsList[i - 1];
     } // end for i
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

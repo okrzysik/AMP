@@ -10,8 +10,7 @@ ENABLE_WARNINGS
 #include <memory>
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * Class TrilinosNOXSolverParameters provides a uniform mechanism to pass
@@ -38,7 +37,6 @@ public:
 protected:
 private:
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

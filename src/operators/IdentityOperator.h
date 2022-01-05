@@ -5,8 +5,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -67,7 +66,6 @@ public:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

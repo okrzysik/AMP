@@ -3,8 +3,7 @@
 #include <utility>
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 SolverStrategyParameters::SolverStrategyParameters() { d_name = "SolverStrategyParameters"; }
 
@@ -15,5 +14,4 @@ SolverStrategyParameters::SolverStrategyParameters( std::shared_ptr<AMP::Databas
 }
 
 SolverStrategyParameters::~SolverStrategyParameters() = default;
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

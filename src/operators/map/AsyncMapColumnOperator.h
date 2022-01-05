@@ -6,8 +6,7 @@
 
 #include "AMP/mesh/Mesh.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /** \brief   AsyncMapColumnOperator does not require parameters beyond those of
  * AsynchronousColumnOperator
@@ -74,8 +73,8 @@ private:
     static std::vector<std::shared_ptr<AMP::Database>>
     createDatabases( std::shared_ptr<AMP::Database> database );
 };
-} // namespace Operator
-} // namespace AMP
+
+} // namespace AMP::Operator
 
 #include "AsyncMapColumnOperator.tmpl.h"
 

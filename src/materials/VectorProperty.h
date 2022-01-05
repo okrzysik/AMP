@@ -3,8 +3,7 @@
 
 #include "Property.h"
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 class VectorProperty : public Property
 {
@@ -150,8 +149,7 @@ public:
 };
 
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 
 #endif /* included_AMP_VectorProperty */

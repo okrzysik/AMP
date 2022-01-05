@@ -149,7 +149,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     auto el                        = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = TemperatureVec->getDOFManager();
+    auto dof_map = TemperatureVec->getDOFManager();
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
     auto feFamily    = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( "LAGRANGE" );
@@ -414,7 +414,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     //------------------------------------------
 
     auto bottomAdapter = manager->Subset( "Bottom" );
-    // AMP::Mesh::Mesh::shared_ptr  topAdapter = manager->Subset( "Top" );
+    // auto topAdapter = manager->Subset( "Top" );
 
     auto tmp_db       = std::make_shared<AMP::Database>( "Dummy" );
     auto columnParams = std::make_shared<AMP::Operator::OperatorParameters>( tmp_db );
@@ -531,15 +531,15 @@ void multiMeshLoop( AMP::UnitTest *ut, const std::string &exeName )
 
 
     std::string str1 = "butterfly_pellet_1x.e";
-    //  std::string str2="cube64.with.boundary.labels.e";
-    //  std::string str3="cube256.with.boundary.labels.e";
+    // std::string str2="cube64.with.boundary.labels.e";
+    // std::string str3="cube256.with.boundary.labels.e";
 
     auto mesh_db       = input_db->getDatabase( "Mesh" );
     auto bottomMesh_db = mesh_db->getDatabase( "Mesh_1" );
-    //  std::shared_ptr<AMP::Database> topMesh_db = mesh_db->getDatabase( "Mesh_2" );
+    // auto topMesh_db = mesh_db->getDatabase( "Mesh_2" );
 
     bottomMesh_db->putScalar( "FileName", str1 );
-    //  topMesh_db->putScalar("FileName",str1);
+    // topMesh_db->putScalar("FileName",str1);
 
     myTest( ut, input_db, globalComm );
 }

@@ -5,8 +5,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class DataChangeListener;
 
@@ -90,8 +89,7 @@ private:
     std::vector<DataChangeListener *> d_listeners;
 };
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

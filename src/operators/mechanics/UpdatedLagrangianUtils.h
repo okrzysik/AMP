@@ -4,8 +4,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 bool softEquals( double a, double b );
 
@@ -139,7 +138,6 @@ void computeGradient( double dN_dxnp1o2[8],
 
 // This function is called for converting the jaumann rate to cauchy rate.
 void jaumannToCauchy( double Om[3][3], double Sg[3][3] );
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

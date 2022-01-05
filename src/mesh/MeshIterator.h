@@ -5,8 +5,7 @@
 #include <iterator>
 #include <memory>
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -239,8 +238,7 @@ private:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #include "AMP/mesh/MeshIterator.inline.h"
 

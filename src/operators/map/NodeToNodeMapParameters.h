@@ -4,8 +4,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NodeToNodeMapParameters : public AMP::Operator::AsyncMapOperatorParameters
 {
@@ -21,7 +20,6 @@ public:
     {
     }
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

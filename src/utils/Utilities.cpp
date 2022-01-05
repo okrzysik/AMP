@@ -388,8 +388,8 @@ std::vector<uint64_t> Utilities::primes( uint64_t n )
         }
     }
     // Store the prime numbers (note: this takes longer than computing them)
-    size_t M = static_cast<size_t>( n / log2( n ) );
-    M        = 1UL << static_cast<int>( round( log2( M ) ) );
+    auto M = static_cast<size_t>( n / log2( n ) );
+    M      = 1UL << static_cast<int>( round( log2( M ) ) );
     std::vector<uint64_t> p2;
     p2.reserve( M );
     p2.push_back( 2 );

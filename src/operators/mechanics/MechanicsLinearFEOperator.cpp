@@ -4,8 +4,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MechanicsLinearFEOperator::MechanicsLinearFEOperator(
     std::shared_ptr<const MechanicsLinearFEOperatorParameters> params )
@@ -225,5 +224,4 @@ void MechanicsLinearFEOperator::getDofIndicesForCurrentElement()
         d_inDofMap->getDOFs( d_currNodes[j].globalID(), d_dofIndices[j] );
     } // end of j
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -6,8 +6,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -122,7 +121,6 @@ const TYPE *VectorData::getRawDataBlock( size_t i ) const
     return static_cast<const TYPE *>( this->getRawDataBlockAsVoid( i ) );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

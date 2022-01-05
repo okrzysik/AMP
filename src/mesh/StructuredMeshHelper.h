@@ -4,8 +4,7 @@
 #include "AMP/mesh/Mesh.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -86,6 +85,5 @@ public:
 
 protected:
 };
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 #endif

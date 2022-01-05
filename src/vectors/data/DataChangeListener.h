@@ -5,8 +5,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 class DataChangeFirer;
@@ -80,7 +79,6 @@ public:
 private:
     std::vector<DataChangeFirer *> d_firers;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

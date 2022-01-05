@@ -8,8 +8,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 #define PASS_FAIL( test, MSG )                                                    \
@@ -49,7 +48,6 @@ void EpetraVectorTests::VerifyNorms( AMP::UnitTest *ut )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond

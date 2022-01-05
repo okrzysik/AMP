@@ -1,6 +1,6 @@
 #include "AMP/mesh/triangle/TriangleMeshElement.h"
+#include "AMP/geometry/shapes/GeometryHelpers.h"
 #include "AMP/mesh/MeshPoint.h"
-#include "AMP/mesh/shapes/GeometryHelpers.h"
 #include "AMP/mesh/triangle/TriangleMesh.h"
 #include "AMP/mesh/triangle/TriangleMeshIterator.h"
 #include "AMP/utils/DelaunayHelpers.h"
@@ -10,8 +10,7 @@
 #include <limits>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -228,7 +227,7 @@ void TriangleMeshElement<NG, NP, TYPE>::getElements( const GeomType type,
  ****************************************************************/
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 void TriangleMeshElement<NG, NP, TYPE>::getNeighbors(
-    std::vector<MeshElement::shared_ptr> &neighbors ) const
+    std::vector<std::shared_ptr<MeshElement>> &neighbors ) const
 {
     std::vector<ElementID> neighborIDs;
     d_mesh->getNeighborIDs( d_globalID.elemID(), neighborIDs );
@@ -240,7 +239,7 @@ void TriangleMeshElement<NG, NP, TYPE>::getNeighbors(
 
 
 /****************************************************************
- * Get the coordinates of the verticies                          *
+ * Get the coordinates of the vertices                          *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 inline std::array<std::array<double, NP>, TYPE + 1>
@@ -308,7 +307,7 @@ MeshPoint<double> TriangleMeshElement<NG, NP, TYPE>::coord() const
         auto x = d_mesh->getPos( d_globalID.elemID() );
         return MeshPoint<double>( NP, x.data() );
     } else {
-        AMP_ERROR( "coord is only valid for verticies: " + std::to_string( (int) TYPE ) );
+        AMP_ERROR( "coord is only valid for vertices: " + std::to_string( (int) TYPE ) );
         return MeshPoint<double>();
     }
 }
@@ -462,5 +461,4 @@ ENABLE_WARNINGS
 #endif
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

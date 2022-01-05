@@ -6,8 +6,7 @@
 #include "AMP/vectors/Vector.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class for encapsulating the parameters that are required for constructing the
@@ -27,7 +26,6 @@ public:
     int d_numExtras;
     std::vector<std::string> d_extrasName;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

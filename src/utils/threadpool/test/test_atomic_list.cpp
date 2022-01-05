@@ -92,8 +92,7 @@ private:
 template<class LIST>
 static void modify_list( LIST &list, const std::vector<int> &rnd )
 {
-    for ( size_t i = 0; i < rnd.size(); i++ ) {
-        int r   = rnd[i];
+    for ( int r : rnd ) {
         auto v1 = list.remove_first();
         auto v2 = list.remove( []( int ) { return true; } );
         auto v3 = list.remove( [r]( int v ) { return v >= ( r / 8 ); } );

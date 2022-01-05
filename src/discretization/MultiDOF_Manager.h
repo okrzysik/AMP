@@ -7,8 +7,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -198,7 +197,6 @@ private:
     std::vector<DOFMapStruct> d_dofMap;
     const size_t neg_one = ~( (size_t) 0 );
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

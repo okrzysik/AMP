@@ -7,8 +7,7 @@
 #include "AMP/utils/AMP_MPI.h"
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -186,7 +185,6 @@ protected:
 };
 
 
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

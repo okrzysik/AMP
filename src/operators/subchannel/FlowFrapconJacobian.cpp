@@ -5,8 +5,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 FlowFrapconJacobian::FlowFrapconJacobian(
@@ -236,5 +235,4 @@ FlowFrapconJacobian::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared
         return vec->subsetVectorForVariable( var );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -3,8 +3,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -57,7 +56,6 @@ private:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

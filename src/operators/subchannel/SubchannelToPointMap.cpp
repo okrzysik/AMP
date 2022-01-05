@@ -6,8 +6,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -178,5 +177,4 @@ void SubchannelToPointMap::createGrid()
     N_subchannels = Nx * Ny;
     PROFILE_STOP( "createGrid" );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -7,8 +7,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -159,7 +158,6 @@ private:
     std::vector<AMP::Mesh::MeshElementID> d_remote_id;
     std::vector<size_t> d_remote_dof;
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

@@ -7,8 +7,7 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -515,7 +514,7 @@ void SubsetMesh::displaceMesh( const std::vector<double> & )
 }
 void SubsetMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    AMP_ERROR( "displaceMesh is not implimented for subset mesh" );
+    AMP_ERROR( "displaceMesh is not implemented for subset mesh" );
 }
 
 
@@ -539,5 +538,4 @@ bool SubsetMesh::operator==( const Mesh &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

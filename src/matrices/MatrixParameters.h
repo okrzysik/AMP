@@ -4,8 +4,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class MatrixParameters
@@ -87,7 +86,6 @@ protected:
     // The comm of the matrix
     AMP_MPI d_comm;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

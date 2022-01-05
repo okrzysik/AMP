@@ -4,8 +4,7 @@
 #include "AMP/vectors/VectorSelector.h"
 #include "DirichletMatrixCorrectionParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> tmpParams )
 {
@@ -206,5 +205,4 @@ DirichletVectorCorrection::mySubsetVector( AMP::LinearAlgebra::Vector::const_sha
         return vec->subsetVectorForVariable( var );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

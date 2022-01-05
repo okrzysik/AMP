@@ -5,8 +5,7 @@
 #include "AMP/operators/Operator.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NodeToGaussPointOperator : public Operator
 {
@@ -41,7 +40,6 @@ protected:
     std::vector<unsigned short int> d_N_quad;
     std::vector<std::vector<double>> d_phi;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

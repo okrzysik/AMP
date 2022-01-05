@@ -12,8 +12,7 @@
     #include "Teuchos_DefaultSerialComm.hpp"
 #endif
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -164,5 +163,4 @@ AMPMeshEntitySet::getGeomTypeFromEntityType( const int topological_dimension ) c
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

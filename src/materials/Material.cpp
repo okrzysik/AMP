@@ -12,8 +12,7 @@
 #include "WaterLibrary.h"
 
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 // check if a property exists in the material
@@ -45,5 +44,4 @@ std::vector<std::string> Material::list()
     }
     return result;
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

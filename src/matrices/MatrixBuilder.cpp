@@ -23,7 +23,7 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Build a ManagedPetscMatrix                             *
  ********************************************************/
-AMP::LinearAlgebra::Matrix::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                      AMP::LinearAlgebra::Vector::shared_ptr rightVec,
                      const std::function<std::vector<size_t>( size_t )> &getRow,
@@ -87,7 +87,7 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 /********************************************************
  * Build a DenseSerialMatrix                             *
  ********************************************************/
-AMP::LinearAlgebra::Matrix::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                          AMP::LinearAlgebra::Vector::shared_ptr rightVec )
 {
@@ -118,7 +118,7 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
 /********************************************************
  * Test the matrix to ensure it is valid                 *
  ********************************************************/
-static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+static void test( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
     auto leftDOF         = matrix->getLeftDOFManager();
     auto rightDOF        = matrix->getRightDOFManager();
@@ -141,7 +141,7 @@ static void test( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
 /********************************************************
  * Matrix builder                                        *
  ********************************************************/
-AMP::LinearAlgebra::Matrix::shared_ptr
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
 createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
               AMP::LinearAlgebra::Vector::shared_ptr leftVec,
               const std::string &type,
@@ -166,7 +166,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
         };
     }
     // Build the matrix
-    AMP::LinearAlgebra::Matrix::shared_ptr matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
     if ( type2 == "ManagedEpetraMatrix" ) {
         matrix = createManagedMatrix( leftVec, rightVec, getRow, type2 );
         test( matrix );

@@ -14,8 +14,7 @@
 #include "Intrepid_Types.hpp"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Create a unique id for this class
@@ -37,7 +36,7 @@ AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
 }
 } // namespace
 
-typedef stk::mesh::Field<double, stk::mesh::Cartesian> CartesianField;
+using CartesianField = stk::mesh::Field<double, stk::mesh::Cartesian>;
 
 
 /********************************************************
@@ -187,13 +186,13 @@ std::vector<MeshElement> STKMeshElement::getElements( const GeomType type ) cons
 /****************************************************************
  * Function to get the neighboring elements                      *
  ****************************************************************/
-std::vector<MeshElement::shared_ptr> STKMeshElement::getNeighbors() const
+std::vector<std::shared_ptr<MeshElement>> STKMeshElement::getNeighbors() const
 {
-    std::vector<MeshElement::shared_ptr> neighbors( 0 );
+    std::vector<std::shared_ptr<MeshElement>> neighbors( 0 );
     if ( d_globalID.type() == GeomType::Vertex ) {
         // Return the neighbors of the current node
         std::vector<stk::mesh::Entity *> neighbor_nodes = d_mesh->getNeighborNodes( d_globalID );
-        neighbors.resize( neighbor_nodes.size(), MeshElement::shared_ptr() );
+        neighbors.resize( neighbor_nodes.size(), std::shared_ptr<MeshElement>() );
         for ( size_t i = 0; i < neighbor_nodes.size(); i++ ) {
             // There are no NULL neighbors
             std::shared_ptr<STKMeshElement> neighbor(
@@ -306,7 +305,7 @@ double STKMeshElement::volume() const
     const double v = volume( 0 );
     return v;
 }
-Point STKMeshElement::norm() const { AMP_ERROR( "norm not implimented yet" ); }
+Point STKMeshElement::norm() const { AMP_ERROR( "norm not implemented yet" ); }
 std::vector<double> STKMeshElement::coord() const
 {
     if ( d_globalID.type() != GeomType::Vertex )
@@ -386,18 +385,17 @@ bool STKMeshElement::isInBlock( int id ) const
     bool in_block = false;
     if ( type == GeomType::Vertex ) {
         // Entity is a libmesh node
-        AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
+        AMP_ERROR( "isInBlock is not currently implemented for anything but elements" );
     } else if ( (int) type == d_dim ) {
         // Entity is a libmesh node
         // stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;
         in_block = false; // elem->subdomain_id() == id;
     } else {
-        // All other entities are on the boundary iff all of their verticies are on the surface
-        AMP_ERROR( "isInBlock is not currently implimented for anything but elements" );
+        // All other entities are on the boundary iff all of their vertices are on the surface
+        AMP_ERROR( "isInBlock is not currently implemented for anything but elements" );
     }
     return in_block;
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

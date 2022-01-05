@@ -12,8 +12,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<AMP::LinearAlgebra::Variable>
@@ -113,10 +112,10 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
         params->d_db->getDatabase( "ActiveInputVariables" );
 
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        std::string namespec = activeVariables_db->getWithDefault<std::string>(
-            Diffusion::names[var], "not_specified" );
-        bool isthere           = namespec != "not_specified";
-        d_isActive[var]        = isthere;
+        auto namespec   = activeVariables_db->getWithDefault<std::string>( Diffusion::names[var],
+                                                                         "not_specified" );
+        bool isthere    = namespec != "not_specified";
+        d_isActive[var] = isthere;
         std::string frozenName = "Freeze" + Diffusion::names[var];
         d_isFrozen[var]        = params->d_db->getWithDefault<bool>( frozenName, false );
         if ( d_isFrozen[var] )
@@ -468,5 +467,4 @@ bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::con
     return result;
 }
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

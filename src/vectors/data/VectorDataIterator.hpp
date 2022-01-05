@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/VectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -290,8 +289,7 @@ TYPE &VectorDataIterator<TYPE>::operator[]( int i )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

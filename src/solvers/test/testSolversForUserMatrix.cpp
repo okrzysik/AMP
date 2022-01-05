@@ -204,16 +204,16 @@ int main( int argc, char *argv[] )
 
     if ( argc > 1 ) {
 
-        files.push_back( argv[1] );
+        files.emplace_back( argv[1] );
 
     } else {
 
-        files.push_back( "input_testSolversForUserMatrix-ML" );
+        files.emplace_back( "input_testSolversForUserMatrix-ML" );
 #ifdef USE_EXT_HYPRE
-        files.push_back( "input_testSolversForUserMatrix-BoomerAMG" );
+        files.emplace_back( "input_testSolversForUserMatrix-BoomerAMG" );
 #endif
 #ifdef USE_TRILINOS_MUELU
-        files.push_back( "input_testSolversForUserMatrix-MueLu" );
+        files.emplace_back( "input_testSolversForUserMatrix-MueLu" );
 #endif
     }
 

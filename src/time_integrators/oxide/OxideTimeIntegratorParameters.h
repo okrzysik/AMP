@@ -4,8 +4,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /*!
@@ -25,7 +24,6 @@ public:
     // Surface thickness (m)
     double depth;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

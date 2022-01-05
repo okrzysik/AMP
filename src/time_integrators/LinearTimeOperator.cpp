@@ -3,8 +3,7 @@
 #include "TimeOperatorParameters.h"
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 LinearTimeOperator::LinearTimeOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> in_params )
@@ -113,5 +112,4 @@ LinearTimeOperator::getParameters( const std::string &type,
 
     return timeOperatorParameters;
 }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

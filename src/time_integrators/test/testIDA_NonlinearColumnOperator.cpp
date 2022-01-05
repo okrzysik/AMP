@@ -203,8 +203,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
                 "Key ''IDATimeIntegrator'' is missing!" );
     auto ida_db = input_db->getDatabase( "IDATimeIntegrator" );
     // initialize the column preconditioner which is a diagonal block preconditioner
-    std::shared_ptr<AMP::Database> columnPreconditioner_db =
-        ida_db->getDatabase( "Preconditioner" );
+    auto columnPreconditioner_db = ida_db->getDatabase( "Preconditioner" );
     auto columnPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
     if ( columnPreconditionerParams.get() == nullptr ) {

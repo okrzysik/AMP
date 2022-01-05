@@ -88,7 +88,7 @@ void linearFickTest( AMP::UnitTest *ut )
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
     // Read the input file onto a database.
-    std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+    auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
     // Fill in the parameters for the class with the info on the database
     auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
@@ -187,7 +187,7 @@ void linearFickTest( AMP::UnitTest *ut )
                     if ( iNode < numNodes - 1 )
                         file << "," << std::endl;
                     if ( fabs( cal - sol ) > cal * 1e-3 ) {
-                        passes = 0;
+                        passes = false;
                         ut->failure( "Error" );
                     }
                     iNode++;

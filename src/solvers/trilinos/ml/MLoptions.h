@@ -6,8 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 class MLoptions
 {
@@ -43,7 +42,6 @@ public:
     int d_nullSpaceDimension;
     bool d_nullSpaceAddDefaultVectors;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

@@ -9,34 +9,27 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-structuredFaceDOFManager::structuredFaceDOFManager() : d_gcw( 0 )
+structuredFaceDOFManager::structuredFaceDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                    int DOFsPerFace[3],
+                                                    int gcw )
+    : d_DOFsPerFace{ 0, 0, 0 }, d_gcw( 0 )
 {
+    AMP_ASSERT( mesh );
+    AMP_INSIST( mesh->getDim() == 3, "The mesh must be a 3D mesh" );
+    AMP_INSIST( mesh->getGeomType() == AMP::Mesh::GeomType::Volume,
+                "The mesh must be a volume mesh" );
+    d_comm = mesh->getComm();
+    d_mesh = mesh;
+    d_gcw  = gcw;
     for ( int i = 0; i < 3; i++ )
-        d_DOFsPerFace[i] = 0;
-}
-DOFManager::shared_ptr structuredFaceDOFManager::create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                                         int DOFsPerFace[3],
-                                                         int gcw )
-{
-    if ( mesh.get() == nullptr )
-        return DOFManager::shared_ptr();
-    if ( mesh->getGeomType() != AMP::Mesh::GeomType::Volume || mesh->getDim() != 3 )
-        AMP_ERROR( "The mesh must be a volume/3d mesh for structuredFaceDOFManager" );
-    std::shared_ptr<structuredFaceDOFManager> manager( new structuredFaceDOFManager() );
-    manager->d_comm = mesh->getComm();
-    manager->d_mesh = mesh;
-    manager->d_gcw  = gcw;
-    for ( int i = 0; i < 3; i++ )
-        manager->d_DOFsPerFace[i] = DOFsPerFace[i];
-    manager->initialize();
-    return manager;
+        d_DOFsPerFace[i] = DOFsPerFace[i];
+    initialize();
 }
 
 
@@ -57,13 +50,11 @@ void structuredFaceDOFManager::initialize()
         d_remote_ids[d].resize( 0 );
         if ( d_DOFsPerFace[d] == 0 )
             continue;
-        const AMP::Mesh::MeshIterator localIterator =
-            AMP::Mesh::StructuredMeshHelper::getFaceIterator( d_mesh, 0, d );
-        const AMP::Mesh::MeshIterator ghostIterator =
-            AMP::Mesh::StructuredMeshHelper::getFaceIterator( d_mesh, d_gcw, d );
+        auto localIterator = AMP::Mesh::StructuredMeshHelper::getFaceIterator( d_mesh, 0, d );
+        auto ghostIterator = AMP::Mesh::StructuredMeshHelper::getFaceIterator( d_mesh, d_gcw, d );
         d_local_ids[d].resize( localIterator.size() );
         d_local_dofs[d].resize( localIterator.size() );
-        AMP::Mesh::MeshIterator it = localIterator.begin();
+        auto it = localIterator.begin();
         for ( size_t i = 0; i < localIterator.size(); ++i, ++it ) {
             d_local_ids[d][i]  = it->globalID();
             d_local_dofs[d][i] = i;
@@ -240,7 +231,7 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     // Temporarily add neighbor elements
     size_t p_size = parents.size();
     for ( size_t i = 0; i < p_size; i++ ) {
-        std::vector<AMP::Mesh::MeshElement::shared_ptr> neighbors = parents[i].getNeighbors();
+        auto neighbors = parents[i].getNeighbors();
         for ( auto &neighbor : neighbors ) {
             if ( neighbor != nullptr )
                 parents.push_back( *neighbor );
@@ -288,13 +279,12 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     if ( d_comm.sumReduce<size_t>( remote_ids.size() ) == 0 )
         return std::vector<size_t>(); // There are no remote DOFs
     // Get the set of mesh ids (must match on all processors)
-    std::vector<AMP::Mesh::MeshID> meshIDs = d_mesh->getBaseMeshIDs();
+    auto meshIDs = d_mesh->getBaseMeshIDs();
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank( remote_ids.size(), -1 );
     for ( auto meshID : meshIDs ) {
         // Get the mesh with the given meshID
-
-        AMP::Mesh::Mesh::shared_ptr submesh = d_mesh->Subset( meshID );
+        auto submesh = d_mesh->Subset( meshID );
         // Create a map from the rank of the submesh to the current mesh
         int rank_submesh = -1;
         int root_submesh = d_comm.getSize();
@@ -333,7 +323,7 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     for ( size_t i = 0; i < remote_ids.size(); i++ )
         AMP_ASSERT( owner_rank[i] >= 0 && owner_rank[i] < commSize );
     // Resort the remote ids according the the owner rank
-    std::vector<AMP::Mesh::MeshElementID> remote_ids2 = remote_ids;
+    auto remote_ids2 = remote_ids;
     AMP::Utilities::quicksort( owner_rank, remote_ids2 );
     // Determine the send count and displacements for each processor
     std::vector<int> send_cnt( d_comm.getSize(), 0 );
@@ -405,5 +395,4 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
         AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

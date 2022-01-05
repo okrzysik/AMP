@@ -80,9 +80,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
 
-    double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
-    double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
-    double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
+    auto defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
+    auto defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
+    auto defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
 
     std::string property = transportModel_db->getString( "Property" );
 

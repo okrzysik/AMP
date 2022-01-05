@@ -7,8 +7,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /*!
   @brief Parameter class for implicit time integrators
@@ -42,7 +41,6 @@ private:
     explicit ImplicitTimeIntegratorParameters( const ImplicitTimeIntegratorParameters & );
     void operator=( const ImplicitTimeIntegratorParameters & );
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

@@ -8,8 +8,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class EpetraVectorFactory;
 
@@ -34,8 +33,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

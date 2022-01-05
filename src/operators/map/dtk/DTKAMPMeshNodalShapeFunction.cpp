@@ -6,8 +6,7 @@
 #include <Intrepid_FieldContainer.hpp>
 #include <Intrepid_HGRAD_HEX_C1_FEM.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -106,5 +105,4 @@ void AMPMeshNodalShapeFunction::evaluateGradient(
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -7,8 +7,7 @@
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 extern template class VectorOperationsDefault<double>; // Suppresses implicit instantiation below --
@@ -493,7 +492,6 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

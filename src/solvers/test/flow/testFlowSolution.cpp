@@ -143,7 +143,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto JacobianSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( jacobianSolverParams );
 
     // initialize the nonlinear solver
-    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
+    auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out

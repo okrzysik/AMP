@@ -8,8 +8,7 @@
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 LinearFEOperator::LinearFEOperator( std::shared_ptr<const LinearFEOperatorParameters> params )
@@ -85,5 +84,4 @@ void LinearFEOperator::destroyCurrentLibMeshElement()
     delete d_currElemPtr;
     d_currElemPtr = nullptr;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

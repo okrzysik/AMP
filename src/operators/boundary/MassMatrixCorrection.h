@@ -6,8 +6,7 @@
 
 #include "AMP/vectors/Variable.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef DirichletMatrixCorrectionParameters MassMatrixCorrectionParameters;
@@ -74,7 +73,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

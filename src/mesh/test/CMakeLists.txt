@@ -24,6 +24,7 @@ COPY_TEST_FILE( input_testMultiMeshOwnerRank )
 COPY_TEST_FILE( input_testMultiMeshSubset )
 COPY_TEST_FILE( input_LogicalMesh )
 
+
 # Copy meshes
 IF ( AMP_DATA )
     COPY_MESH_FILE( pellet_1x.e )
@@ -65,7 +66,6 @@ IF ( AMP_DATA )
     ADD_AMP_TEST( test_Mesh input_stl )  # triangle mesh (1 rank only)
     # ADD_AMP_TEST( test_Mesh input_crystal_triangle )  # triangle mesh (1 rank only)
 ENDIF()
-ADD_AMP_TEST( test_GeometryHelpers )
 ADD_AMP_TEST( testMeshPerformance )
 ADD_AMP_TEST( compare_Mesh input_compare )
 ADD_AMP_TEST( view_STL CRYSTAL_FINAL_2mm.STL )

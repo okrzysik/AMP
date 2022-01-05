@@ -11,8 +11,7 @@
 #include <map>
 #include <sstream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 SubchannelPhysicsModel::SubchannelPhysicsModel(
     std::shared_ptr<const ElementPhysicsModelParameters> params )
@@ -88,8 +87,8 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
         for ( auto &defaultkey : defaultkeys ) {
             std::string insist_string =
                 "Default argument '" + defaultkey + "' was not found as a property argument";
-            std::map<std::string, bool>::const_iterator it = defaults_found.find( defaultkey );
-            bool found                                     = false;
+            auto it    = defaults_found.find( defaultkey );
+            bool found = false;
             if ( it != defaults_found.end() ) {
                 found = it->second;
             }
@@ -143,5 +142,4 @@ void SubchannelPhysicsModel::getProperty(
     AMP_INSIST( it != d_properties.end(), "Model does not have property (" + property + ")" );
     d_properties.find( property )->second->evalv( result, args );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

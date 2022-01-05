@@ -88,7 +88,7 @@ static void myTest( AMP::UnitTest *ut )
     double Temp_1 = 2000.0;
     initTempVec->setToScalar( Temp_0 );
     initTempVec->abs( *initTempVec );
-    double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 1.0 );
+    auto initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 1.0 );
     initTempVec->scale( initTempConst );
     initTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -101,7 +101,7 @@ static void myTest( AMP::UnitTest *ut )
         double Temp_n = Temp_0 + ( ( Temp_1 - Temp_0 ) / ( (double) ( NumberOfLoadingSteps ) ) );
         AMP::pout << "Temp_n = " << Temp_n << std::endl;
         finalTempVec->setToScalar( Temp_n );
-        double finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 1.0 );
+        auto finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 1.0 );
         finalTempVec->scale( finalTempConst );
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );

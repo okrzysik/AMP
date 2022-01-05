@@ -2,8 +2,7 @@
 #include "MechanicsLinearUpdatedLagrangianElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void MechanicsLinearUpdatedLagrangianElement::computeStressAndStrain(
     const std::vector<double> &dispVec,
@@ -854,5 +853,4 @@ void MechanicsLinearUpdatedLagrangianElement::initializeReferenceXYZ(
         elementRefXYZ[( 3 * ijk ) + 2] = xyz[ijk]( 2 );
     } // end of ijk.
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

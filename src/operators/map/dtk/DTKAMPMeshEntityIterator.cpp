@@ -1,8 +1,7 @@
 
 #include "DTKAMPMeshEntityIterator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -70,7 +69,7 @@ DataTransferKit::EntityIterator &AMPMeshEntityIterator::operator++()
 
 //---------------------------------------------------------------------------//
 // Dereference operator.
-DataTransferKit::Entity &AMPMeshEntityIterator::operator*( void )
+DataTransferKit::Entity &AMPMeshEntityIterator::operator*()
 {
     this->operator->();
     return d_current_entity;
@@ -78,7 +77,7 @@ DataTransferKit::Entity &AMPMeshEntityIterator::operator*( void )
 
 //---------------------------------------------------------------------------//
 // Dereference operator.
-DataTransferKit::Entity *AMPMeshEntityIterator::operator->( void )
+DataTransferKit::Entity *AMPMeshEntityIterator::operator->()
 {
     d_current_entity = AMPMeshEntity( *d_amp_iterator, *d_rank_map, *d_id_map );
     return &d_current_entity;
@@ -89,7 +88,7 @@ DataTransferKit::Entity *AMPMeshEntityIterator::operator->( void )
 bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &rhs ) const
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
-    const AMPMeshEntityIterator *rhs_it_impl =
+    const auto *rhs_it_impl =
         static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator == d_amp_iterator );
 }
@@ -99,7 +98,7 @@ bool AMPMeshEntityIterator::operator==( const DataTransferKit::EntityIterator &r
 bool AMPMeshEntityIterator::operator!=( const DataTransferKit::EntityIterator &rhs ) const
 {
     const AMPMeshEntityIterator *rhs_it = static_cast<const AMPMeshEntityIterator *>( &rhs );
-    const AMPMeshEntityIterator *rhs_it_impl =
+    const auto *rhs_it_impl =
         static_cast<const AMPMeshEntityIterator *>( rhs_it->b_iterator_impl.get() );
     return ( rhs_it_impl->d_amp_iterator != d_amp_iterator );
 }
@@ -129,5 +128,4 @@ std::unique_ptr<DataTransferKit::EntityIterator> AMPMeshEntityIterator::clone() 
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

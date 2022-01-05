@@ -7,8 +7,7 @@
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -155,7 +154,6 @@ private:
     int getSubchannelIndex( double x, double y );
     size_t d_numSubchannels;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

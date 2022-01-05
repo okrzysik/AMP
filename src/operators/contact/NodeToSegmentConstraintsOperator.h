@@ -13,8 +13,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing a linear operator. This class
@@ -161,7 +160,6 @@ private:
 
     std::fstream d_fout;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

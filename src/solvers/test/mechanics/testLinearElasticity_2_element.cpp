@@ -66,7 +66,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "Load_Boundary", input_db, dummyModel ) );
 
-        std::shared_ptr<AMP::LinearAlgebra::Variable> var = bvpOperator->getOutputVariable();
+        auto var = bvpOperator->getOutputVariable();
 
         // This has an in-place apply. So, it has an empty input variable and
         // the output variable is the same as what it is operating on.

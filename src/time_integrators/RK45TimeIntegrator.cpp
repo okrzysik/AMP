@@ -40,7 +40,7 @@ RK45TimeIntegrator::RK45TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK45TimeIntegrator::~RK45TimeIntegrator() {}
+RK45TimeIntegrator::~RK45TimeIntegrator() = default;
 
 /*
 ************************************************************************
@@ -79,7 +79,7 @@ void RK45TimeIntegrator::reset(
     abort();
 }
 
-void RK45TimeIntegrator::setupVectors( void )
+void RK45TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -185,12 +185,12 @@ int RK45TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK45TimeIntegrator::checkNewSolution( void )
+bool RK45TimeIntegrator::checkNewSolution()
 {
     bool retcode = false;
 
-    auto l2Norm                   = d_z_vec->L2Norm();
-    double l2NormOfEstimatedError = l2Norm.get<double>();
+    auto l2Norm                 = d_z_vec->L2Norm();
+    auto l2NormOfEstimatedError = l2Norm.get<double>();
 
     // we flag the solution as being acceptable if the l2 norm of the error
     // is less than the required tolerance or we are at the minimum time step
@@ -215,7 +215,7 @@ bool RK45TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK45TimeIntegrator::updateSolution( void )
+void RK45TimeIntegrator::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;
@@ -254,7 +254,7 @@ double RK45TimeIntegrator::getNextDt( const bool good_solution )
     } else {
 
         if ( good_solution ) {
-            double l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
+            auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
             next_dt = 0.84 * d_current_dt * pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 5.0 );
 

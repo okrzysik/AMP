@@ -4,8 +4,7 @@
 #include "DTKAMPMeshEntitySet.h"
 #include "DTKAMPMeshNodalShapeFunction.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -34,5 +33,4 @@ DTKAMPMeshManager::DTKAMPMeshManager(
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

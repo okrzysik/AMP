@@ -6,8 +6,7 @@
 
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /** A class encapsulating all the parameters that the material model
  * requires to evaluate the stress and/or tangent  */
@@ -27,7 +26,6 @@ public:
      * compute the stress and/or tangent. */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

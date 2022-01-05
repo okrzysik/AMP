@@ -8,8 +8,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -22,13 +21,6 @@ namespace Mesh {
 class MeshElement
 {
 public:
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<MeshElement> shared_ptr;
-
     //! Empty constructor for a MeshElement
     inline MeshElement();
 
@@ -86,15 +78,15 @@ public: // non-virtual functions
      *  Return the elements neighboring the current element.
      *  One neighbor is returned for each side of the element.
      *  If the side is on the surface, then it's neighbor is null.
-     *  For Verticies, a list of all verticies that share an element is returned.
+     *  For Verticies, a list of all vertices that share an element is returned.
      *  This list is in unsorted order.
      */
-    inline std::vector<MeshElement::shared_ptr> getNeighbors() const;
+    inline std::vector<std::shared_ptr<MeshElement>> getNeighbors() const;
 
     /**
      * \brief     Return the coordinate of the vertex
      * \details   This function returns the coordinates of the vertex
-     *   in the given direction (only applies to verticies).
+     *   in the given direction (only applies to vertices).
      * \param i     The direction requested.  Equivalent to coord()[i]
      */
     inline double coord( int i ) const { return coord()[i]; }
@@ -129,18 +121,18 @@ public: // Virtual functions
     //! Return the element class
     virtual std::string elementClass() const;
 
-    //! Return the coordinates of the vertex (only applies to verticies)
+    //! Return the coordinates of the vertex (only applies to vertices)
     virtual Point coord() const;
 
     /**
      * \brief     Return the centroid of the element
      * \details   This function returns the centroid of the element.  The
-     *   centroid is defined as the average of the coordinates of the verticies.
+     *   centroid is defined as the average of the coordinates of the vertices.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
     virtual Point centroid() const;
 
-    //! Return the volume of the current element (does not apply to verticies)
+    //! Return the volume of the current element (does not apply to vertices)
     virtual double volume() const;
 
     //! Return the normal to the current element (does not apply to all elements)
@@ -202,10 +194,10 @@ public: // Advanced functions
      *  Return the elements neighboring the current element.
      *  One neighbor is returned for each side of the element.
      *  If the side is on the surface, then it's neighbor is null.
-     *  For Verticies, a list of all verticies that share an element is returned.
+     *  For Verticies, a list of all vertices that share an element is returned.
      *  This list is in unsorted order.
      */
-    virtual void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const;
+    virtual void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const;
 
 
 protected:
@@ -223,8 +215,7 @@ private:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #include "AMP/mesh/MeshElement.inline.h"
 

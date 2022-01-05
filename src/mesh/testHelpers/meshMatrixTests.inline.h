@@ -10,8 +10,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 template<int DOF_PER_NODE, bool SPLIT>
@@ -212,7 +211,6 @@ void meshTests::GhostWriteTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr m
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

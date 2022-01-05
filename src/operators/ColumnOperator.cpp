@@ -3,8 +3,7 @@
 #include "AMP/vectors/MultiVariable.h"
 #include "ProfilerApp.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /********************************************************
@@ -138,5 +137,4 @@ std::vector<std::shared_ptr<Operator>> ColumnOperator::find( const std::string &
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

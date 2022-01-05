@@ -1236,7 +1236,7 @@ template<>
 void MPI_CLASS::call_allGather<std::string>(
     const std::string *, int, std::string *, int *, int * ) const
 {
-    throw std::logic_error( "Implimentation of allgatherv for std::string not implimented yet" );
+    throw std::logic_error( "Implimentation of allgatherv for std::string not implemented yet" );
 }
 #endif
 

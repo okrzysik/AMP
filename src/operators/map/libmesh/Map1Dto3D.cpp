@@ -21,8 +21,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -383,5 +382,4 @@ void Map1Dto3D::setVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
 {
     outputVec = subsetOutputVector( vec );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

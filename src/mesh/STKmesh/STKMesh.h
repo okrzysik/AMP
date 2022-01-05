@@ -11,8 +11,7 @@
 #include "stk_mesh/fem/FEMMetaData.hpp"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class STKMeshElement;
@@ -267,7 +266,6 @@ private:
     std::vector<int> d_block_ids;
 };
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

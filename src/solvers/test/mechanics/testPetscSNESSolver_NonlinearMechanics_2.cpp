@@ -75,7 +75,7 @@ static void myTest( AMP::UnitTest *ut )
 
     initTempVec->setRandomValues();
     initTempVec->abs( *initTempVec );
-    double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
+    auto initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
     initTempVec->scale( initTempConst );
     initTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -86,7 +86,7 @@ static void myTest( AMP::UnitTest *ut )
         finalTempVec->copyVector( initTempVec );
     } else {
         finalTempVec->setRandomValues();
-        double finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 12.0 );
+        auto finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 12.0 );
         finalTempVec->scale( finalTempConst );
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -115,9 +115,8 @@ static void myTest( AMP::UnitTest *ut )
             meshAdapter, "Displacement_Boundary", input_db, dummyModel ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
-    std::shared_ptr<AMP::Discretization::DOFManager> dispDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dispDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechNlSolVec = AMP::LinearAlgebra::createVector( dispDofMap, displacementVariable, true );

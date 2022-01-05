@@ -3,8 +3,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 void meshTests::MeshTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
@@ -100,5 +99,4 @@ void meshTests::MeshMatrixTestLoop( AMP::UnitTest &ut,
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

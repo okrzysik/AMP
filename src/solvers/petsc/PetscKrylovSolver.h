@@ -15,8 +15,7 @@ typedef struct _p_KSP *KSP;
 typedef struct _p_PC *PC;
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * The PetscKrylovSolver class is a wrapper to the PETSc KSP Krylov solver which provides
@@ -187,7 +186,6 @@ private:
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

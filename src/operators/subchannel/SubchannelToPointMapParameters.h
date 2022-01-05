@@ -6,8 +6,7 @@
 #include "AMP/utils/AMP_MPI.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -39,7 +38,6 @@ public:
     // Valid variables are: "Density", "Temperature"
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_outputVar;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

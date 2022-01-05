@@ -15,8 +15,7 @@ ENABLE_WARNINGS
 #include <valarray>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef ElementPhysicsModelParameters MassDensityModelParameters;
@@ -118,7 +117,6 @@ private:
     std::string d_PropertyName;
     std::vector<double> d_Parameters;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

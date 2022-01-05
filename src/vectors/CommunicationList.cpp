@@ -315,7 +315,7 @@ void CommunicationList::finalize()
 size_t CommunicationList::getTotalSize() const { return d_iTotalRows; }
 
 
-CommunicationList::~CommunicationList() {}
+CommunicationList::~CommunicationList() = default;
 
 const std::vector<size_t> &CommunicationList::getGhostIDList() const { return d_ReceiveDOFList; }
 

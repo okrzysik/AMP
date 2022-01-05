@@ -1,8 +1,7 @@
 #include "DiffusionLinearElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void DiffusionLinearElement::apply()
 {
@@ -31,7 +30,7 @@ void DiffusionLinearElement::apply()
             std::dynamic_pointer_cast<DiffusionTransportTensorModel>( d_transportModel );
         for ( int i = 0; i < 3; i++ )
             for ( int j = 0; j < 3; j++ ) {
-                std::vector<double> *vd = new std::vector<double>( d_qrule->n_points() );
+                auto *vd = new std::vector<double>( d_qrule->n_points() );
                 conductivityTensor[i][j].reset( vd );
             }
     }
@@ -39,7 +38,7 @@ void DiffusionLinearElement::apply()
     if ( d_transportAtGauss ) {
         std::map<std::string, std::shared_ptr<std::vector<double>>> args;
         if ( !d_LocalTemperature.empty() ) {
-            std::vector<double> *temperature = new std::vector<double>( d_qrule->n_points() );
+            auto *temperature = new std::vector<double>( d_qrule->n_points() );
             for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
                 ( *temperature )[qp] = 0.0;
                 for ( unsigned int j = 0; j < num_local_dofs; j++ ) {
@@ -50,7 +49,7 @@ void DiffusionLinearElement::apply()
                                          std::shared_ptr<std::vector<double>>( temperature ) ) );
         }
         if ( !d_LocalConcentration.empty() ) {
-            std::vector<double> *concentration = new std::vector<double>( d_qrule->n_points() );
+            auto *concentration = new std::vector<double>( d_qrule->n_points() );
             for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
                 ( *concentration )[qp] = 0.0;
                 for ( unsigned int j = 0; j < num_local_dofs; j++ ) {
@@ -61,7 +60,7 @@ void DiffusionLinearElement::apply()
                                          std::shared_ptr<std::vector<double>>( concentration ) ) );
         }
         if ( !d_LocalBurnup.empty() ) {
-            std::vector<double> *burnup = new std::vector<double>( d_qrule->n_points() );
+            auto *burnup = new std::vector<double>( d_qrule->n_points() );
             for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
                 ( *burnup )[qp] = 0.0;
                 for ( unsigned int j = 0; j < num_local_dofs; j++ ) {
@@ -95,7 +94,7 @@ void DiffusionLinearElement::apply()
         } else {
             for ( int i = 0; i < 3; i++ )
                 for ( int j = 0; j < 3; j++ ) {
-                    std::vector<double> *vec( new std::vector<double>( num_local_dofs ) );
+                    auto *vec( new std::vector<double>( num_local_dofs ) );
                     nodalConductivityTensor[i][j].reset( vec );
                 }
             d_transportTensorModel->getTensorTransport( nodalConductivityTensor, args, q_point );
@@ -147,5 +146,4 @@ void DiffusionLinearElement::apply()
 
     d_transportModel->postLinearElementOperation();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

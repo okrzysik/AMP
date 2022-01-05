@@ -75,13 +75,13 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //  MANUFACTURE THE INPUT SOLUTION FROM PRESCRIBED FLOW SOLUTION
     double Tin  = 300;
-    double Cp   = flowDatabase->getScalar<double>( "Heat_Capacity" );
-    double De   = flowDatabase->getScalar<double>( "Channel_Diameter" );
-    double G    = flowDatabase->getScalar<double>( "Mass_Flux" );
-    double K    = flowDatabase->getScalar<double>( "Conductivity" );
-    double Re   = flowDatabase->getScalar<double>( "Reynolds" );
-    double Pr   = flowDatabase->getScalar<double>( "Prandtl" );
-    double nP   = flowDatabase->getScalar<double>( "numpoints" );
+    auto Cp     = flowDatabase->getScalar<double>( "Heat_Capacity" );
+    auto De     = flowDatabase->getScalar<double>( "Channel_Diameter" );
+    auto G      = flowDatabase->getScalar<double>( "Mass_Flux" );
+    auto K      = flowDatabase->getScalar<double>( "Conductivity" );
+    auto Re     = flowDatabase->getScalar<double>( "Reynolds" );
+    auto Pr     = flowDatabase->getScalar<double>( "Prandtl" );
+    auto nP     = flowDatabase->getScalar<double>( "numpoints" );
     double heff = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
     double dz   = 2. / nP;
 

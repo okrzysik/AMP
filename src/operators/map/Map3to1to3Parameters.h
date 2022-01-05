@@ -4,8 +4,7 @@
 #include "AMP/operators/map/AsyncMapOperatorParameters.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class Map3to1to3Parameters : public AsyncMapOperatorParameters
@@ -19,7 +18,6 @@ public:
     {
     }
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

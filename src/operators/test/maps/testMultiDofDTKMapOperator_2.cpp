@@ -59,9 +59,8 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
     auto phiDofMap       = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 1, split );
 
-    //    std::shared_ptr<AMP::Discretization::DOFManager> eectDofMap =
-    //        AMP::Discretization::simpleDOFManager::create(
-    //            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 5, split );
+    // auto eectDofMap = AMP::Discretization::simpleDOFManager::create(
+    //     mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, 5, split );
 
     // Construct Vectors
     AMP::pout << "------------------------------------\n";
@@ -254,7 +253,7 @@ int runTest( const std::string &exeName, AMP::UnitTest *ut )
 
     auto meshIDs = mesh->getBaseMeshIDs();
     for ( size_t meshIndex = 0; meshIndex < meshIDs.size(); meshIndex++ ) {
-        AMP::Mesh::Mesh::shared_ptr adapter = mesh->Subset( meshIDs[meshIndex] );
+        auto adapter = mesh->Subset( meshIDs[meshIndex] );
         if ( adapter.get() == NULL )
             continue;
 

@@ -6,8 +6,7 @@
 #include "AMP/utils/Utilities.h"
 #include <iostream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 PericElastoViscoPlasticModel::PericElastoViscoPlasticModel(
@@ -1013,5 +1012,4 @@ void PericElastoViscoPlasticModel::postNonlinearAssembly()
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

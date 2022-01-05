@@ -26,8 +26,7 @@
     #include "par/parUtils.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 class DendroSearch
@@ -129,8 +128,7 @@ struct DendroSearch::ProjectOnBoundaryData {
     size_t d_GeomType::FaceLocalIndex;
     AMP::Mesh::MeshElementID d_GeomType::VolumeID;
 };
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif // DENDRO_SEARCH
 

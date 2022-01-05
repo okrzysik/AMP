@@ -194,8 +194,7 @@ void run_kdtree2_test( AMP::UnitTest &ut, size_t N )
     auto tree = AMP::kdtree2<DIM, int>( N, x.data(), index.data() );
 
     // Check for ray intersections
-    auto result = tree.findNearestRay( { 10, 20, 20 }, { -1, -2, -2 } );
-    AMP_ASSERT( !result.empty() );
+    auto result = tree.findNearestRay( { 10, 20, 20 }, { -1, -2, -2 }, 0.01 );
     std::cout << "Ray-point intersection:\n";
     for ( auto tmp : result ) {
         auto p  = std::get<0>( tmp );

@@ -11,8 +11,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /*!
   @brief TimeIntegratorParameters is a base class for providing
@@ -85,7 +84,6 @@ private:
     explicit TimeIntegratorParameters( const TimeIntegratorParameters & ) = delete;
     void operator=( const TimeIntegratorParameters & ) = delete;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

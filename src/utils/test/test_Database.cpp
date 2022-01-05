@@ -231,10 +231,10 @@ void runBasicTests( UnitTest &ut )
     db8.putScalar<double>( "I1", 2.3, "W/cm^2" );
     db8.putScalar<double>( "I2", 2.3e4, "J/(s*m^2)" );
     db8.putScalar<double>( "I3", 2.3e7, "ergs/(s*cm^2)" );
-    double I1 = db8.getScalar<double>( "I1", "W/cm^2" );
-    double I2 = db8.getScalar<double>( "I2", "W/cm^2" );
-    double I3 = db8.getScalar<double>( "I3", "W/cm^2" );
-    pass      = equal( I1, 2.3 ) && equal( I2, 2.3 ) && equal( I3, 2.3 );
+    auto I1 = db8.getScalar<double>( "I1", "W/cm^2" );
+    auto I2 = db8.getScalar<double>( "I2", "W/cm^2" );
+    auto I3 = db8.getScalar<double>( "I3", "W/cm^2" );
+    pass    = equal( I1, 2.3 ) && equal( I2, 2.3 ) && equal( I3, 2.3 );
     checkResult( ut, pass, "Database::units" );
 
     // Run some extra Units tests

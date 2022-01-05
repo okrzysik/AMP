@@ -95,9 +95,9 @@ static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
 
     AMP::LinearAlgebra::Vector::shared_ptr flowVec;
     if ( subchannelMesh ) {
-        int DOFsPerFace[3] = { 0, 0, 2 };
-        auto faceDOFManager =
-            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+        int DOFsPerFace[3]  = { 0, 0, 2 };
+        auto faceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+            subchannelMesh, DOFsPerFace, 0 );
         // create solution, rhs, and residual vectors
         flowVec = AMP::LinearAlgebra::createVector( faceDOFManager, flowVariable, true );
     }
@@ -237,9 +237,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFuelTemp;
     AMP::LinearAlgebra::Vector::shared_ptr subchannelFlowTemp;
     if ( subchannelMesh ) {
-        int DOFsPerFace[3] = { 0, 0, 1 };
-        auto scalarFaceDOFManager =
-            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+        int DOFsPerFace[3]        = { 0, 0, 1 };
+        auto scalarFaceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+            subchannelMesh, DOFsPerFace, 0 );
         subchannelFuelTemp =
             AMP::LinearAlgebra::createVector( scalarFaceDOFManager, thermalVariable );
         subchannelFlowTemp =
@@ -290,9 +290,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                             subchannelNonlinearOperator->getSubchannelPhysicsModel() ) );
                 // subchannelLinearOperator.reset( new AMP::Operator::IdentityOperator(
                 // nonlinearOpParams ) );
-                int DOFsPerFace[3]  = { 0, 0, 2 };
-                auto flowDOFManager = AMP::Discretization::structuredFaceDOFManager::create(
-                    subchannelMesh, DOFsPerFace, 0 );
+                int DOFsPerFace[3] = { 0, 0, 2 };
+                auto flowDOFManager =
+                    std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+                        subchannelMesh, DOFsPerFace, 0 );
                 auto subchannelFlow =
                     AMP::LinearAlgebra::createVector( flowDOFManager, flowVariable );
                 subchannelNonlinearOperator->setVector( subchannelFuelTemp );
@@ -595,8 +596,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     root_subchannel = globalComm.maxReduce( root_subchannel );
     globalComm.bcast( &range[0], 6, root_subchannel );
     // Desired power of the fuel pin (W)
-    double P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                   ->getScalar<double>( "Rod_Power" );
+    auto P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
+                 ->getScalar<double>( "Rod_Power" );
     // GeomType::Volume of fuel in a 3.81m pin
     if ( pinMesh ) {
         const double V = 1.939e-4;
@@ -625,11 +626,11 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
     if ( subchannelMesh ) {
         // get exit pressure
-        double Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                          ->getScalar<double>( "Exit_Pressure" );
+        auto Pout = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
+                        ->getScalar<double>( "Exit_Pressure" );
         // get inlet temperature
-        double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
-                         ->getScalar<double>( "Inlet_Temperature" );
+        auto Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
+                       ->getScalar<double>( "Inlet_Temperature" );
         // compute inlet enthalpy
         std::map<std::string, std::shared_ptr<std::vector<double>>> enthalpyArgMap;
         enthalpyArgMap.insert(

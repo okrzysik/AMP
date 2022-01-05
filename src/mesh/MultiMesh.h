@@ -4,8 +4,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -352,7 +351,6 @@ private:
     std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
 };
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

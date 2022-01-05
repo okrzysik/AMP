@@ -30,8 +30,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPhysicsModel(
@@ -74,5 +73,4 @@ std::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPh
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

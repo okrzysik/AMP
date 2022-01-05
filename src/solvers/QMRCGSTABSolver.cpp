@@ -8,13 +8,12 @@
 #include <cmath>
 #include <limits>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-QMRCGSTABSolver::QMRCGSTABSolver() {}
+QMRCGSTABSolver::QMRCGSTABSolver() = default;
 
 QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -29,7 +28,7 @@ QMRCGSTABSolver::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> para
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-QMRCGSTABSolver::~QMRCGSTABSolver() {}
+QMRCGSTABSolver::~QMRCGSTABSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *
@@ -315,5 +314,4 @@ void QMRCGSTABSolver::resetOperator(
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

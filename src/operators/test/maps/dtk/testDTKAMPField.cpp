@@ -33,7 +33,7 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
+    auto meshDatabase = input_db->getDatabase( "Mesh" );
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
@@ -43,16 +43,12 @@ static void myTest( AMP::UnitTest *ut )
     bool const split      = true;
     int const ghostWidth  = 0;
     int const dofsPerNode = 1;
-    std::shared_ptr<AMP::Discretization::DOFManager> dofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
-    std::shared_ptr<AMP::LinearAlgebra::Variable> variable(
-        new AMP::LinearAlgebra::Variable( "var" ) );
-    AMP::LinearAlgebra::Vector::shared_ptr ampVector =
-        AMP::LinearAlgebra::createVector( dofManager, variable, split );
+    auto dofManager       = AMP::Discretization::simpleDOFManager::create(
+        mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
+    auto variable  = std::make_shared<AMP::LinearAlgebra::Variable>( "var" );
+    auto ampVector = AMP::LinearAlgebra::createVector( dofManager, variable, split );
     std::vector<std::size_t> dofIndices;
-    AMP::Mesh::MeshIterator meshIterator =
-        mesh->getIterator( AMP::Mesh::GeomType::Vertex, ghostWidth );
+    auto meshIterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex, ghostWidth );
     for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
           ++meshIterator ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );
@@ -66,9 +62,8 @@ static void myTest( AMP::UnitTest *ut )
     AMP_ASSERT( 1 == dtk_field.dimension() );
 
     // Check the support ids.
-    Teuchos::ArrayView<const DataTransferKit::SupportId> support_ids =
-        dtk_field.getLocalSupportIds();
-    int counter = 0;
+    auto support_ids = dtk_field.getLocalSupportIds();
+    int counter      = 0;
     for ( meshIterator = meshIterator.begin(); meshIterator != meshIterator.end();
           ++meshIterator, ++counter ) {
         dofManager->getDOFs( meshIterator->globalID(), dofIndices );

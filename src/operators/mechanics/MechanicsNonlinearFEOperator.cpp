@@ -7,8 +7,7 @@
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MechanicsNonlinearFEOperator::MechanicsNonlinearFEOperator(
     std::shared_ptr<const MechanicsNonlinearFEOperatorParameters> params )
@@ -778,5 +777,4 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_
         return vec->subsetVectorForVariable( var );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

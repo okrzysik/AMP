@@ -6,8 +6,7 @@
 #include <iterator>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Forward deceleration
@@ -256,8 +255,7 @@ public:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #include "AMP/vectors/data/VectorDataIterator.inline.h"

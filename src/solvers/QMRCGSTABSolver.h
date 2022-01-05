@@ -4,8 +4,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/AMP_MPI.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * The QMRCGSTABSolver class implements the QMRCGSTAB method for non-symmetric linear systems
@@ -115,7 +114,6 @@ private:
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

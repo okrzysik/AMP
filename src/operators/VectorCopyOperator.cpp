@@ -1,7 +1,6 @@
 #include "AMP/operators/VectorCopyOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 VectorCopyOperator::VectorCopyOperator( std::shared_ptr<const VectorCopyOperatorParameters> params )
     : AMP::Operator::Operator( params )
@@ -31,5 +30,4 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> VectorCopyOperator::getInputVariab
 {
     return d_copyVariable;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

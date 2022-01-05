@@ -11,8 +11,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -54,7 +53,6 @@ protected:
     // map of property identifier strings and property pointers
     std::map<std::string, std::shared_ptr<AMP::Materials::Property>> d_properties;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

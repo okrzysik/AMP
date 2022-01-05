@@ -1,8 +1,8 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/mesh/Geometry.h"
+#include "AMP/geometry/Geometry.h"
+#include "AMP/geometry/MeshGeometry.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
-#include "AMP/mesh/MeshGeometry.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MeshUtilities.h"
 #include "AMP/mesh/MultiMesh.h"
@@ -161,7 +161,7 @@ MeshElement Mesh::getElement( const MeshElementID &elem_id ) const
  ********************************************************/
 std::vector<MeshElement> Mesh::getElementParents( const MeshElement &, const GeomType ) const
 {
-    AMP_ERROR( "getElementParents is not implimented: " + meshClass() );
+    AMP_ERROR( "getElementParents is not implemented: " + meshClass() );
     return std::vector<MeshElement>();
 }
 
@@ -198,56 +198,56 @@ bool Mesh::isMember( const MeshElementID &id ) const { return id.meshID() == d_m
 
 
 /********************************************************
- * Functions that aren't implimented for the base class  *
+ * Functions that aren't implemented for the base class  *
  ********************************************************/
 std::shared_ptr<Mesh> Mesh::Subset( Mesh & ) const
 {
-    AMP_ERROR( "Subset is not implimented: " + meshClass() );
+    AMP_ERROR( "Subset is not implemented: " + meshClass() );
     return std::shared_ptr<Mesh>();
 }
 MeshIterator Mesh::getIterator( const GeomType, const int ) const
 {
-    AMP_ERROR( "getIterator is not implimented: " + meshClass() );
+    AMP_ERROR( "getIterator is not implemented: " + meshClass() );
     return MeshIterator();
 }
 MeshIterator Mesh::getSurfaceIterator( const GeomType, const int ) const
 {
-    AMP_ERROR( "getSurfaceIterator is not implimented: " + meshClass() );
+    AMP_ERROR( "getSurfaceIterator is not implemented: " + meshClass() );
     return MeshIterator();
 }
 std::vector<int> Mesh::getBoundaryIDs() const
 {
-    AMP_ERROR( "getBoundaryIDs is not implimented: " + meshClass() );
+    AMP_ERROR( "getBoundaryIDs is not implemented: " + meshClass() );
     return std::vector<int>();
 }
 MeshIterator Mesh::getBoundaryIDIterator( const GeomType, const int, const int ) const
 {
-    AMP_ERROR( "getBoundaryIDIterator is not implimented: " + meshClass() );
+    AMP_ERROR( "getBoundaryIDIterator is not implemented: " + meshClass() );
     return MeshIterator();
 }
 std::vector<int> Mesh::getBlockIDs() const
 {
-    AMP_ERROR( "getBlockIDs is not implimented: " + meshClass() );
+    AMP_ERROR( "getBlockIDs is not implemented: " + meshClass() );
     return std::vector<int>();
 }
 MeshIterator Mesh::getBlockIDIterator( const GeomType, const int, const int ) const
 {
-    AMP_ERROR( "getBlockIDIterator is not implimented: " + meshClass() );
+    AMP_ERROR( "getBlockIDIterator is not implemented: " + meshClass() );
     return MeshIterator();
 }
 size_t Mesh::numLocalElements( const GeomType ) const
 {
-    AMP_ERROR( "numLocalElements is not implimented: " + meshClass() );
+    AMP_ERROR( "numLocalElements is not implemented: " + meshClass() );
     return 0;
 }
 size_t Mesh::numGlobalElements( const GeomType ) const
 {
-    AMP_ERROR( "numGlobalElements is not implimented: " + meshClass() );
+    AMP_ERROR( "numGlobalElements is not implemented: " + meshClass() );
     return 0;
 }
 size_t Mesh::numGhostElements( const GeomType, int ) const
 {
-    AMP_ERROR( "numGhostElements is not implimented: " + meshClass() );
+    AMP_ERROR( "numGhostElements is not implemented: " + meshClass() );
     return 0;
 }
 
@@ -507,7 +507,7 @@ std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x )
  * Instantiate communication of MeshElementID            *
  ********************************************************/
 namespace AMP {
-typedef AMP::Mesh::MeshElementID ID;
+using ID = AMP::Mesh::MeshElementID;
 template ID AMP_MPI::bcast<ID>( ID, int ) const;
 template void AMP_MPI::bcast<ID>( ID *, int, int ) const;
 template void AMP_MPI::send<ID>( const ID *, int, int, int ) const;

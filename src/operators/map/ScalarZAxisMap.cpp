@@ -6,8 +6,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /************************************************************************
@@ -160,5 +159,4 @@ void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr v
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

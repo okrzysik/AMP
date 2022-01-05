@@ -193,8 +193,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Solver::ColumnSolver>( columnPreconditionerParams );
 
     // Get the mechanics material model for the contact operator
-    std::shared_ptr<AMP::Database> model_db =
-        input_db->getDatabase( "MasterMechanicsMaterialModel" );
+    auto model_db = input_db->getDatabase( "MasterMechanicsMaterialModel" );
     auto masterMechanicsMaterialModelParams =
         std::make_shared<AMP::Operator::MechanicsModelParameters>( model_db );
     auto masterMechanicsMaterialModel = std::make_shared<AMP::Operator::IsotropicElasticModel>(
@@ -209,7 +208,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Build the contact operator
     AMP_INSIST( input_db->keyExists( "ContactOperator" ), "Key ''ContactOperator'' is missing!" );
-    std::shared_ptr<AMP::Database> contact_db = input_db->getDatabase( "ContactOperator" );
+    auto contact_db = input_db->getDatabase( "ContactOperator" );
     auto contactOperatorParams =
         std::make_shared<AMP::Operator::ContactOperatorParameters>( contact_db );
     contactOperatorParams->d_DOFsPerNode                  = dofsPerNode;
@@ -363,7 +362,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     columnSolVec->zero();
     columnRhsVec->zero();
     AMP::LinearAlgebra::Vector::shared_ptr cor;
-    AMP_ASSERT( cor.get() == NULL );
+    AMP_ASSERT( cor.get() == nullptr );
 
     auto tempVar        = std::make_shared<MP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
@@ -507,14 +506,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             auto mat = masterBVPOperator->getMatrix();
             auto rhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-            if ( cor.get() == NULL ) {
+            if ( cor.get() == nullptr ) {
                 cor = rhs->cloneVector();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
             } else {
-                applyCustomDirichletCondition(
-                    rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr() );
+                applyCustomDirichletCondition( rhs,
+                                               cor,
+                                               meshAdapter,
+                                               constraints,
+                                               std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
             } // end if
-            AMP_ASSERT( cor.get() != NULL );
+            AMP_ASSERT( cor.get() != nullptr );
 
             // get d
             contactOperator->addShiftToSlave( columnSolVec );

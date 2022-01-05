@@ -68,7 +68,7 @@ static void myTest( AMP::UnitTest *ut )
         AMP_INSIST( numberOfOperators >= 1, "more than zero operators need to be specified" );
 
         AMP_INSIST( innerInput_db->keyExists( "dofsPerNode" ), "key missing!  " + innerInput_file );
-        std::vector<int> dofsPerNodeArr = innerInput_db->getVector<int>( "dofsPerNode" );
+        auto dofsPerNodeArr = innerInput_db->getVector<int>( "dofsPerNode" );
 
         // create a column operator object
         auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
@@ -97,7 +97,7 @@ static void myTest( AMP::UnitTest *ut )
 
             columnOperator->append( testOperator );
 
-            std::shared_ptr<AMP::LinearAlgebra::Variable> opVar = myLinOp->getInputVariable();
+            auto opVar = myLinOp->getInputVariable();
 
             inputVariables.push_back( opVar );
 
@@ -126,7 +126,7 @@ static void myTest( AMP::UnitTest *ut )
             // Create the vectors
             auto tmp_var =
                 std::make_shared<AMP::LinearAlgebra::MultiVariable>( "columnInputVariable" );
-            std::shared_ptr<AMP::LinearAlgebra::MultiVector> solVec =
+            auto solVec =
                 AMP::LinearAlgebra::MultiVector::create( tmp_var, meshAdapter->getComm() );
             for ( size_t iv = 0; iv < inputVariables.size(); iv++ ) {
                 if ( inputVariables[iv] )
@@ -156,7 +156,7 @@ static void myTest( AMP::UnitTest *ut )
     // test getJacobianParameters
     msgPrefix=exeName + " : " + innerInput_file;
     std::shared_ptr<AMP::LinearAlgebra::Vector> nullGuess;
-    std::shared_ptr<AMP::Operator::OperatorParameters> jacobianParameters = testOperator->getParameters("Jacobian", nullGuess);
+    auto jacobianParameters = testOperator->getParameters("Jacobian", nullGuess);
     if(jacobianParameters.get()!=NULL)
     {
       ut.passes(msgPrefix + "getJacobianParameters (should return NULL for now)");

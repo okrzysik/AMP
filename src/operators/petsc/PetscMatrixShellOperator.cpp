@@ -4,8 +4,7 @@
 
 #include "petsc/private/vecimpl.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 PetscMatrixShellOperator::PetscMatrixShellOperator(
     std::shared_ptr<const OperatorParameters> params )
@@ -70,5 +69,4 @@ PetscErrorCode PetscMatrixShellOperator::mult( Mat mat, Vec in, Vec out )
 
     return ( 0 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

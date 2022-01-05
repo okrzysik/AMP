@@ -19,8 +19,7 @@ class MultiVector;
 } // namespace AMP::LinearAlgebra
 
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 /**
@@ -254,8 +253,7 @@ public:
 };
 
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 #include "Property.i.h"
 

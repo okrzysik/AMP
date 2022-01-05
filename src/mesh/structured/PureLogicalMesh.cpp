@@ -2,8 +2,7 @@
 #include "AMP/mesh/MeshParameters.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /****************************************************************
@@ -50,7 +49,7 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
     BoxMesh::initialize();
     BoxMesh::finalize();
 }
-PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) : BoxMesh( mesh ) {}
+PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) = default;
 
 
 /********************************************************
@@ -122,5 +121,4 @@ bool PureLogicalMesh::operator==( const Mesh &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

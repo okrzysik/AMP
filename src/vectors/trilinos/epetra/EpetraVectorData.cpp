@@ -2,8 +2,7 @@
 #include "AMP/vectors/data/VectorDataCPU.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 static inline double *getBufferPtr( std::shared_ptr<VectorData> buf )
 {
@@ -163,5 +162,4 @@ void EpetraVectorData::swapData( VectorData &rhs )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

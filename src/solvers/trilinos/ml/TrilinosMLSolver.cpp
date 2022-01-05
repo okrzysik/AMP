@@ -1,7 +1,4 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
-
-#include <Trilinos_version.h>
-
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/operators/LinearOperator.h"
@@ -10,12 +7,15 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "ProfilerApp.h"
 
+DISABLE_WARNINGS
+#include "Epetra_CrsMatrix.h"
+#include "Trilinos_version.h"
+#include "ml_MultiLevelPreconditioner.h"
+#include "ml_include.h"
+ENABLE_WARNINGS
 
-#include <Epetra_CrsMatrix.h>
 
-
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -512,5 +512,4 @@ void TrilinosMLSolver::computeNullSpace( std::shared_ptr<AMP::Operator::Operator
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

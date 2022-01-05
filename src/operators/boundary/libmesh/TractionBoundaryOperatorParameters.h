@@ -4,8 +4,7 @@
 
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class TractionBoundaryOperatorParameters : public OperatorParameters
 {
@@ -22,7 +21,6 @@ public:
     std::vector<unsigned int> d_sideNumbers;
     std::vector<AMP::Mesh::MeshElementID> d_nodeID;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

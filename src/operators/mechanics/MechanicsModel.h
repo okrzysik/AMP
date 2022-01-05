@@ -10,8 +10,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MechanicsModel : public ElementPhysicsModel
 {
@@ -57,7 +56,6 @@ protected:
      * stress and/or tangent. */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_deformationGradient;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

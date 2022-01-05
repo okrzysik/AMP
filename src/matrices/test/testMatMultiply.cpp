@@ -63,8 +63,7 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     mat2->zero();
     mat2->setDiagonal( vec1 );
 
-    AMP::LinearAlgebra::Matrix::shared_ptr mat3 =
-        AMP::LinearAlgebra::Matrix::matMultiply( mat1, mat2 );
+    auto mat3 = AMP::LinearAlgebra::Matrix::matMultiply( mat1, mat2 );
 
     std::vector<size_t> cols1;
     std::vector<double> vals1;

@@ -3,8 +3,7 @@
 #include "AMP/vectors/data/DataChangeListener.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 VectorData::VectorData()
     : d_UpdateState{ std::make_shared<UpdateState>() },
@@ -251,7 +250,7 @@ void VectorData::copyGhostValues( const VectorData &rhs )
 /****************************************************************
  * reset a vector                                               *
  ****************************************************************/
-void VectorData::reset( void ) { AMP_ERROR( "Not implemented" ); }
+void VectorData::reset() { AMP_ERROR( "Not implemented" ); }
 
 void VectorData::print( std::ostream &os, const std::string &name, const std::string &prefix ) const
 {
@@ -261,5 +260,4 @@ void VectorData::print( std::ostream &os, const std::string &name, const std::st
     AMP_ERROR( "Not implemented" );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

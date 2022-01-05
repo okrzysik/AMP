@@ -1,20 +1,29 @@
-
 #ifndef included_AMP_TrilinosMLSolver
 #define included_AMP_TrilinosMLSolver
 
-#include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/trilinos/ml/MLoptions.h"
 
 DISABLE_WARNINGS
-#include "ml_MultiLevelPreconditioner.h"
-#include "ml_include.h"
+#include "Teuchos_ParameterList.hpp"
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+// Forward declare Trilinos classes
+typedef struct ML_Struct ML;
+typedef struct ML_Aggregate_Struct ML_Aggregate;
+namespace ML_Epetra {
+class MultiLevelPreconditioner;
+}
+
+
+// Forward declare EpetraMatrix
+namespace AMP::LinearAlgebra {
+class EpetraMatrix;
+}
+
+namespace AMP::Solver {
 
 
 typedef SolverStrategyParameters TrilinosMLSolverParameters;
@@ -145,7 +154,8 @@ public:
     }
 
     /**
-     * Initialize the solution vector and potentially create internal vectors needed for solution
+     * Initialize the solution ve#include <Teuchos_ParameterList.hpp>ctor and potentially create
+     internal vectors needed for solution
      @param [in] parameters The parameters object
      contains a database object. Refer to the documentation for the constructor to see what fields
      are required.
@@ -212,7 +222,7 @@ private:
     std::vector<double> d_z_values;
     std::vector<double> d_null_space;
 };
-} // namespace Solver
-} // namespace AMP
+
+} // namespace AMP::Solver
 
 #endif

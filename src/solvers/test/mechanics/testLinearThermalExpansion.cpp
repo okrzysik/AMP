@@ -69,8 +69,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     currTempVec->setToScalar( 500.0 );
     prevTempVec->setToScalar( 300.0 );
 
-    std::shared_ptr<AMP::Database> temperatureRhsDatabase =
-        input_db->getDatabase( "TemperatureRHS" );
+    auto temperatureRhsDatabase = input_db->getDatabase( "TemperatureRHS" );
 
     computeTemperatureRhsVector( meshAdapter,
                                  temperatureRhsDatabase,

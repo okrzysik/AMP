@@ -3,8 +3,7 @@
 #include "AMP/utils/ParameterBase.h"
 #include <iomanip>
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -66,7 +65,7 @@ size_t Matrix::endRow() const
 /********************************************************
  * multiply                                             *
  ********************************************************/
-Matrix::shared_ptr Matrix::matMultiply( shared_ptr A, shared_ptr B )
+std::shared_ptr<Matrix> Matrix::matMultiply( shared_ptr A, shared_ptr B )
 {
     if ( A->numGlobalColumns() != B->numGlobalRows() )
         AMP_ERROR( "Inner matrix dimensions must agree" );
@@ -79,7 +78,7 @@ Matrix::shared_ptr Matrix::matMultiply( shared_ptr A, shared_ptr B )
 /********************************************************
  * axpy                                                  *
  ********************************************************/
-void Matrix::axpy( double alpha, Matrix::const_shared_ptr x )
+void Matrix::axpy( double alpha, std::shared_ptr<const Matrix> x )
 {
     AMP_ASSERT( x );
     size_t N1 = x->numGlobalColumns();
@@ -135,5 +134,4 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

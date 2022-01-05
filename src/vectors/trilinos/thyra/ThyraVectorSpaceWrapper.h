@@ -12,8 +12,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class ThyraVectorSpaceWrapper
@@ -68,7 +67,6 @@ protected:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

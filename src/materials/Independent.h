@@ -5,15 +5,13 @@
 
 
 // Define the material
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 class Independent : public Material
 {
 public:
     Independent();
 };
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 
 // Add static initialize to force symbols to be included

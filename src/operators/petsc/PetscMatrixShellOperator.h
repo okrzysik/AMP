@@ -30,8 +30,7 @@
 #endif
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class PetscMatrixShellOperator : public LinearOperator
@@ -67,7 +66,6 @@ private:
     Mat d_mat;
     AMP_MPI d_comm;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

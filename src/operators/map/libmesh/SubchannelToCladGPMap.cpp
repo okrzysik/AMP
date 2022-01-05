@@ -18,8 +18,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 static double
@@ -132,5 +131,4 @@ SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

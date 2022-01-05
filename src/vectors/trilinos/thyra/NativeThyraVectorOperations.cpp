@@ -12,8 +12,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /************************************************************************
  * Destructor                                                            *
@@ -181,5 +180,4 @@ Scalar NativeThyraVectorOperations::dot( const VectorData &x, const VectorData &
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

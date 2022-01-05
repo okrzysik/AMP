@@ -4,8 +4,7 @@
 
 #define EOL -1
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
     std::shared_ptr<NonlinearKrylovAcceleratorParameters> params )
@@ -487,5 +486,4 @@ void NonlinearKrylovAccelerator::putToDatabase( std::shared_ptr<AMP::Database> &
     db->putScalar( "d_dAbsoluteTolerance", d_dAbsoluteTolerance );
     db->putScalar( "d_dRelativeTolerance", d_dRelativeTolerance );
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

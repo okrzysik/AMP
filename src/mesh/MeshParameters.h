@@ -5,8 +5,7 @@
 #include "AMP/utils/Database.h"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /**
@@ -63,7 +62,6 @@ protected:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

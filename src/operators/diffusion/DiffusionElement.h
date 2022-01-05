@@ -23,8 +23,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DiffusionElement : public ElementOperation
 {
@@ -56,7 +55,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

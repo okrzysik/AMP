@@ -7,8 +7,7 @@
 #include "AMP/operators/boundary/libmesh/RobinPhysicsModel.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //! Parameter class to provide parameters to all subchannel classes
 class SubchannelOperatorParameters : public OperatorParameters
@@ -35,7 +34,6 @@ public:
     // Clad properties
     std::vector<double> clad_x, clad_y, clad_d;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

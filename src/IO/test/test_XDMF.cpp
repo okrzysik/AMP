@@ -90,7 +90,7 @@ void write_rays(
     auto center = AMP::Xdmf::Center::Node;
     auto prefix = filename + ":/" + meshname + "/";
     AMP::Xdmf::MeshData mesh;
-    mesh.name = "rays";
+    mesh.name = meshname;
     mesh.type = AMP::Xdmf::TopologyType::Polyline;
     mesh.size = { 3, N_elem, nodesPerElement };
     mesh.x    = prefix + "XYZ";

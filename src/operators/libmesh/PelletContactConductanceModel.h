@@ -9,8 +9,7 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class PelletContactConductanceModel : public RobinPhysicsModel
 {
@@ -30,7 +29,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -2,8 +2,7 @@
 #include "MechanicsNonlinearElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void MechanicsNonlinearElement::computeStressAndStrain(
     const std::vector<std::vector<double>> &elementInputVectors,
@@ -895,5 +894,4 @@ void MechanicsNonlinearElement::apply_Reduced()
 
     d_materialModel->postNonlinearAssemblyElementOperation();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

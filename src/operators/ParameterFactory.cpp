@@ -15,8 +15,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<OperatorParameters>
@@ -46,5 +45,4 @@ ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

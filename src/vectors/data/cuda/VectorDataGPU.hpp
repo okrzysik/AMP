@@ -9,8 +9,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -232,7 +231,6 @@ void VectorDataGPU<TYPE>::swapData( VectorData &rhs )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

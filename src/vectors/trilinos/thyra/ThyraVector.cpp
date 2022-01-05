@@ -7,8 +7,7 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -136,5 +135,4 @@ ThyraVector::constView( const Thyra::VectorBase<double> *vec )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

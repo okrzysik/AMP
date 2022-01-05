@@ -14,8 +14,7 @@ extern "C" {
 }
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /************************************************************************
@@ -496,7 +495,6 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm()
     return d_pSourceTerm;
 }
 
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

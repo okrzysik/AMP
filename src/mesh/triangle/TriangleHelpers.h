@@ -1,7 +1,7 @@
 #ifndef included_AMP_TriangleMeshHelpers
 #define included_AMP_TriangleMeshHelpers
 
-#include "AMP/mesh/Geometry.h"
+#include "AMP/geometry/Geometry.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 
@@ -26,10 +26,10 @@ std::vector<std::array<std::array<double, 3>, 3>> readSTL( const std::string &fi
 size_t readSTLHeader( const std::string &filename );
 
 
-//! Create triangles/verticies from a set of triangles specified by their coordinates
+//! Create triangles/vertices from a set of triangles specified by their coordinates
 template<size_t NG, size_t NP>
 void createTriangles( const std::vector<std::array<std::array<double, NP>, NG + 1>> &tri_list,
-                      std::vector<std::array<double, NP>> &verticies,
+                      std::vector<std::array<double, NP>> &vertices,
                       std::vector<std::array<int64_t, NG + 1>> &triangles,
                       double tol );
 

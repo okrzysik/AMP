@@ -24,8 +24,7 @@
     #include "AMP/solvers/SolverStrategy.h"
 #endif
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /*!
@@ -77,7 +76,6 @@ private:
     explicit IDATimeIntegratorParameters( const IDATimeIntegratorParameters & );
     void operator=( const IDATimeIntegratorParameters & );
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

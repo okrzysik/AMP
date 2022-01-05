@@ -14,8 +14,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NavierStokesLSWFFEOperator : public NonlinearFEOperator
 {
@@ -97,7 +96,6 @@ protected:
 
     std::vector<std::vector<size_t>> d_type1DofIndices;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

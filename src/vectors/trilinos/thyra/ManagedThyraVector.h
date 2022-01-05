@@ -5,8 +5,7 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class ManagedThyraVector
@@ -45,7 +44,6 @@ public:
     std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
 };
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

@@ -41,7 +41,7 @@ ImplicitIntegrator::ImplicitIntegrator(
     d_solver                = AMP::Solver::SolverFactory::create( nnl_params );
 }
 
-ImplicitIntegrator::~ImplicitIntegrator() {}
+ImplicitIntegrator::~ImplicitIntegrator() = default;
 
 /*
  *************************************************************************
@@ -60,7 +60,7 @@ ImplicitIntegrator::~ImplicitIntegrator() {}
 void ImplicitIntegrator::initialize() { integratorSpecificInitialize(); }
 
 // default implementation
-void ImplicitIntegrator::integratorSpecificInitialize( void )
+void ImplicitIntegrator::integratorSpecificInitialize()
 {
     AMP_ERROR( "This should be defined in the derived class!!" );
 }
@@ -182,7 +182,7 @@ double ImplicitIntegrator::integratorSpecificGetNextDt( const bool, const int )
  *************************************************************************
  */
 
-bool ImplicitIntegrator::checkNewSolution( void )
+bool ImplicitIntegrator::checkNewSolution()
 {
     bool good_solution = integratorSpecificCheckNewSolution( d_solver_retcode );
 
@@ -216,7 +216,7 @@ bool ImplicitIntegrator::integratorSpecificCheckNewSolution( const int )
  *************************************************************************
  */
 
-void ImplicitIntegrator::updateSolution( void )
+void ImplicitIntegrator::updateSolution()
 {
     d_current_time += d_current_dt;
     d_integrator_step++;
@@ -245,7 +245,7 @@ void ImplicitIntegrator::reset(
     abort();
 }
 
-void ImplicitIntegrator::reset( void )
+void ImplicitIntegrator::reset()
 {
     d_current_dt      = getInitialDt();
     d_old_dt          = 0.0;

@@ -63,7 +63,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     auto id_vec = AMP::LinearAlgebra::createVector( idDOFs, id_var );
     std::vector<size_t> dofs;
     for ( auto &id : surfaceMesh->getBoundaryIDs() ) {
-        double val = double( id );
+        auto val = double( id );
         for ( auto elem : surfaceMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Face, id, 0 ) ) {
             idDOFs->getDOFs( elem.globalID(), dofs );
             AMP_ASSERT( dofs.size() == 1 );

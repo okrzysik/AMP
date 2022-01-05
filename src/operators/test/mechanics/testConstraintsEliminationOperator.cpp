@@ -115,10 +115,9 @@ static void myTest( AMP::UnitTest *ut )
             } // end for
             AMP_ASSERT( p == numDOFs );
             dirOp->initialize( slaveIndices, slaveValues );
-            //    colOp->append(dirOp);
+            // colOp->append(dirOp);
 
-            //    std::shared_ptr<AMP::Database> dummySolver_db =
-            //    preconditioner_db->getDatabase("ContactPreconditioner");
+            // auto dummySolver_db = preconditioner_db->getDatabase("ContactPreconditioner");
             auto dummySolver_db = std::make_shared<AMP::Database>( "DummySolver" );
             dummySolver_db->putScalar( "print_info_level", 1 );
             dummySolver_db->putScalar( "max_iterations", 1 );

@@ -5,8 +5,7 @@
 #include "AMP/operators/ConstraintsEliminationOperator.h"
 #include "AMP/operators/contact/ContactOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing a linear operator. This class
@@ -85,7 +84,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

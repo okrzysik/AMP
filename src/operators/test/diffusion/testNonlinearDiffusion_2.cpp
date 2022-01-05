@@ -78,9 +78,9 @@ static void nonlinearTest( AMP::UnitTest *ut,
     auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
 
-    double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
-    double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
-    double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
+    auto defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
+    auto defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
+    auto defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
 
     // create parameters
     auto diffOpParams =
@@ -148,7 +148,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
     auto nonPrincIds    = diffOp->getNonPrincipalVariableIds();
     auto numNonPrincIds = nonPrincIds.size();
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> nonPrincVars( numNonPrincIds );
-    std::shared_ptr<AMP::LinearAlgebra::Variable> inputVar = diffOp->getInputVariable();
+    auto inputVar = diffOp->getInputVariable();
     for ( size_t i = 0; i < numNonPrincIds; i++ ) {
         // nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
         nonPrincVars[i] = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( inputVar )

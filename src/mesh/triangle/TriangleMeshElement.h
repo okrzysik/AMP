@@ -7,8 +7,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 template<uint8_t NG, uint8_t NP>
@@ -61,21 +60,21 @@ public:
                                 std::vector<MeshElementID> &ID ) const override;
 
     //! Return the elements neighboring the current element
-    void getNeighbors( std::vector<MeshElement::shared_ptr> &neighbors ) const override;
+    void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const override;
 
-    //! Return the volume of the current element (does not apply to verticies)
+    //! Return the volume of the current element (does not apply to vertices)
     double volume() const override;
 
     //! Return the normal to the current element (does not apply to all elements)
     MeshPoint<double> norm() const override;
 
-    //! Return the coordinates of all verticies composing the element
+    //! Return the coordinates of all vertices composing the element
     MeshPoint<double> coord() const override;
 
     /**
      * \brief     Return the centroid of the element
      * \details   This function returns the centroid of the element.  The
-     *   centroid is defined as the average of the coordinates of the verticies.
+     *   centroid is defined as the average of the coordinates of the vertices.
      *   The centroid of a vertex is the vertex and will return the same result as coord().
      */
     MeshPoint<double> centroid() const override;
@@ -139,7 +138,7 @@ protected:
     //! Clone the iterator
     MeshElement *clone() const override;
 
-    //! Get the verticies composing the element
+    //! Get the vertices composing the element
     inline std::array<std::array<double, NP>, TYPE + 1> getVertexCoord() const;
 
     // The pointer to the current mesh
@@ -155,7 +154,6 @@ private:
 };
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh
 
 #endif

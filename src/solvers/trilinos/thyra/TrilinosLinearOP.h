@@ -12,8 +12,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -50,7 +49,6 @@ private:
     std::shared_ptr<AMP::Operator::Operator> d_operator;
     std::shared_ptr<AMP::Solver::SolverStrategy> d_solver;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

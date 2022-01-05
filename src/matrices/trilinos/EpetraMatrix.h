@@ -8,8 +8,7 @@
 class Epetra_Map;
 class Epetra_CrsMatrix;
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /** \brief  Parameters class for creating an EpetraMatrix
  */
@@ -111,12 +110,11 @@ public:
      */
     virtual void fillComplete();
 
-    Matrix::shared_ptr transpose() const override;
+    std::shared_ptr<Matrix> transpose() const override;
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

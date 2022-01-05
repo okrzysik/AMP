@@ -94,7 +94,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto solVec = AMP::LinearAlgebra::createVector( dofMap, dispVar, true );
     auto rhsVec = solVec->cloneVector();
     auto resVec = solVec->cloneVector();
-    // AMP::LinearAlgebra::Vector::shared_ptr scaledRhsVec = meshAdapter->createVector( dispVar );
 
     // Initial guess
     solVec->zero();
@@ -112,7 +111,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     linearMechanicsBVPoperator->reset(
         nonlinearMechanicsBVPoperator->getParameters( "Jacobian", solVec ) );
 
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> mechMat = linearMechanicsBVPoperator->getMatrix();
+    auto mechMat = linearMechanicsBVPoperator->getMatrix();
 
     for ( int i = 0; i < 24; i++ ) {
         std::vector<size_t> matCols;

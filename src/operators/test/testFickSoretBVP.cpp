@@ -151,8 +151,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
         adjust( solVec, shift, scale, 2 );
         rhsVec->setRandomValues();
         resVec->setRandomValues();
-        std::shared_ptr<AMP::Operator::OperatorParameters> jacparams =
-            nlinBVPOp->getParameters( "Jacobian", solVec );
+        auto jacparams = nlinBVPOp->getParameters( "Jacobian", solVec );
         linBVPOp->reset( jacparams );
     } // end for i
 

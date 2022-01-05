@@ -7,8 +7,7 @@
 #include "petscvec.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /**
@@ -117,7 +116,6 @@ protected:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

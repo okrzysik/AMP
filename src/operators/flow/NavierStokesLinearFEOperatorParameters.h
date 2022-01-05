@@ -7,8 +7,7 @@
 #include "AMP/operators/libmesh/LinearFEOperatorParameters.h"
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NavierStokesLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
@@ -29,7 +28,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

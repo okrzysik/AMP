@@ -6,8 +6,7 @@
 #include "AMP/operators/libmesh/FEOperatorParameters.h"
 #include "AMP/operators/libmesh/SourcePhysicsModel.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class VolumeIntegralOperatorParameters : public FEOperatorParameters
@@ -30,7 +29,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

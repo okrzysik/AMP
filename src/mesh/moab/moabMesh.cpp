@@ -15,8 +15,7 @@
 #include "moab/Core.hpp"
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -131,5 +130,4 @@ void moabMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_shared_ptr 
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

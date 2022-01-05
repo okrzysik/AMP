@@ -3,8 +3,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 Flow1DSolver::Flow1DSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -100,5 +99,4 @@ std::shared_ptr<AMP::LinearAlgebra::Variable> Flow1DSolver::getInputVariable( in
 {
     return d_inpVariable;
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

@@ -17,8 +17,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace voodoo {
+namespace AMP::voodoo {
 
 /**
  *    \class        RegistrationBase
@@ -122,8 +121,7 @@ private:
 };
 
 
-} // namespace voodoo
-} // namespace AMP
+} // namespace AMP::voodoo
 
 
 #endif // FACTORY_H

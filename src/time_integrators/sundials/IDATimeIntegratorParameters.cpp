@@ -1,7 +1,6 @@
 #include "AMP/time_integrators/sundials/IDATimeIntegratorParameters.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 IDATimeIntegratorParameters::IDATimeIntegratorParameters( std::shared_ptr<AMP::Database> db )
     : TimeIntegratorParameters( db )
@@ -17,5 +16,4 @@ IDATimeIntegratorParameters::IDATimeIntegratorParameters( std::shared_ptr<AMP::D
 }
 
 IDATimeIntegratorParameters::~IDATimeIntegratorParameters() = default;
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

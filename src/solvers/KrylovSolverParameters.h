@@ -6,8 +6,7 @@
 #include "AMP/utils/Database.h"
 #include <memory>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * Class KrylovSolverParameters provides a uniform mechanism to pass
@@ -29,7 +28,6 @@ public:
 protected:
 private:
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

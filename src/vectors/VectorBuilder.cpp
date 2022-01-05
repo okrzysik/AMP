@@ -19,8 +19,7 @@
 #include <iostream>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -166,5 +165,4 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
 #endif
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

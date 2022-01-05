@@ -7,8 +7,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -26,6 +25,10 @@ public:
     using DOFManager::subset;
 
 
+    //! Empty Constructor
+    structuredFaceDOFManager() = delete;
+
+
     /**
      * \brief Create a new DOF manager object
      * \details  This is the standard constructor for creating a new DOF manager object.
@@ -33,8 +36,7 @@ public:
      * \param DOFsPerFace   The desired number of DOFs per face (x,y,z)
      * \param gcw           The desired ghost width (based on the volumes)
      */
-    static DOFManager::shared_ptr
-    create( std::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw );
+    structuredFaceDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh, int DOFsPerFace[3], int gcw );
 
 
     //! Deconstructor
@@ -92,11 +94,6 @@ public:
 
 
 private:
-    // Empty constructor
-    structuredFaceDOFManager();
-
-
-private:
     // Function to find the remote DOF given a set of mesh element IDs
     std::vector<size_t>
     getRemoteDOF( const std::vector<AMP::Mesh::MeshElementID> &remote_ids ) const;
@@ -117,7 +114,6 @@ private:
     std::vector<size_t> d_local_dofs[3];
     std::vector<size_t> d_remote_dofs[3];
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

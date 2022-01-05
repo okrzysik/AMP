@@ -1,7 +1,6 @@
 #include "AsyncMapOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 AsyncMapOperatorParameters::AsyncMapOperatorParameters( std::shared_ptr<AMP::Database> db )
@@ -15,5 +14,4 @@ AsyncMapOperatorParameters::AsyncMapOperatorParameters( std::shared_ptr<AMP::Dat
 
 
 AsyncMapOperatorParameters::~AsyncMapOperatorParameters() = default;
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

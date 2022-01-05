@@ -8,8 +8,7 @@
 
 #include "AMP/vectors/Variable.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
  *  A class used to impose Dirichlet boundary conditions for a linear operator. For a linear
@@ -111,11 +110,10 @@ protected:
 
     bool d_applyMatrixCorrectionWasCalled;
 
-    AMP::LinearAlgebra::Matrix::shared_ptr d_inputMatrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_inputMatrix;
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

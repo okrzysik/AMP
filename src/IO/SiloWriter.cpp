@@ -80,7 +80,7 @@ static void createSiloDirectory( DBfile *FileHandle, const std::string &path );
 /************************************************************
  * Function to read a silo file                              *
  ************************************************************/
-void SiloIO::readFile( const std::string & ) { AMP_ERROR( "readFile is not implimented yet" ); }
+void SiloIO::readFile( const std::string & ) { AMP_ERROR( "readFile is not implemented yet" ); }
 
 
 /************************************************************

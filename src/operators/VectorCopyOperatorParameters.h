@@ -7,8 +7,7 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class VectorCopyOperatorParameters : public OperatorParameters
 {
@@ -27,7 +26,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

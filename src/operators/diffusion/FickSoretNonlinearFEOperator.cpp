@@ -5,8 +5,7 @@
 #include "FickSoretNonlinearFEOperatorParameters.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 FickSoretNonlinearFEOperator::FickSoretNonlinearFEOperator(
     std::shared_ptr<const OperatorParameters> params )
@@ -118,5 +117,4 @@ void FickSoretNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
     d_SoretOperator->reset( fsParams->d_SoretParameters );
 }
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

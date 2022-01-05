@@ -16,8 +16,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NavierStokesGalWFFEOperator : public NonlinearFEOperator
 {
@@ -112,7 +111,6 @@ private:
 
     std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

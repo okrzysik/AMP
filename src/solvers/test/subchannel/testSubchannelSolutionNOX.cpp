@@ -108,9 +108,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto outputVariable = nonlinearOperator->getOutputVariable();
 
     // get dof manager
-    int DOFsPerFace[3] = { 0, 0, 2 };
-    auto faceDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
+    int DOFsPerFace[3]  = { 0, 0, 2 };
+    auto faceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 0 );
 
     // create solution, rhs, and residual vectors
     auto manufacturedVec = AMP::LinearAlgebra::createVector( faceDOFManager, inputVariable, true );
@@ -121,11 +121,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // Get the problem parameters
     auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
-    double H    = box[5] - box[4];
-    double m    = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
-    double Q    = nonlinearOperator_db->getScalar<double>( "Rod_Power" );
-    double Pout = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
-    double Tin  = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
+    double H  = box[5] - box[4];
+    auto m    = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
+    auto Q    = nonlinearOperator_db->getScalar<double>( "Rod_Power" );
+    auto Pout = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
+    auto Tin  = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
 
     // compute inlet enthalpy
     double Pin = Pout;
@@ -232,8 +232,8 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Compute the flow temperature
     int tempDOFsPerFace[3] = { 0, 0, 1 };
-    auto tempDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, tempDOFsPerFace, 0 );
+    auto tempDOFManager    = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, tempDOFsPerFace, 0 );
     auto tempVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
     auto tempVec      = AMP::LinearAlgebra::createVector( tempDOFManager, tempVariable, true );
     face              = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
@@ -299,7 +299,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );
 
     // check that norm of relative error is less than tolerance
-    double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
+    auto tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
     } else {

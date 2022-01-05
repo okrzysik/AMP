@@ -7,8 +7,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 CoupledOperator::CoupledOperator( std::shared_ptr<const OperatorParameters> params )
@@ -66,5 +65,4 @@ void CoupledOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
 
     r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

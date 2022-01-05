@@ -10,8 +10,7 @@
 /// \cond UNDOCUMENTED
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 class NativeEpetraFactory : public VectorFactory
@@ -35,8 +34,7 @@ public:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

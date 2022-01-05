@@ -12,8 +12,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> params )
     : ElementOperation( params ), d_elem( nullptr )
@@ -22,17 +21,16 @@ FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> para
 
     AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
 
-    const unsigned int dimension = params->d_db->getWithDefault<unsigned>( "DIMENSION", 3 );
+    const auto dimension = params->d_db->getWithDefault<unsigned>( "DIMENSION", 3 );
     // int numApprox = (params->d_db)->getScalar<int>WithDefault("NUM_APPROX", 2);
 
-    std::string U_feTypeOrderName =
-        params->d_db->getWithDefault<std::string>( "FE_ORDER", "SECOND" );
+    auto U_feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "SECOND" );
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( U_feTypeOrderName );
 
-    std::string feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamilyName = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamily     = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    auto qruleTypeName = params->d_db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
@@ -40,8 +38,7 @@ FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> para
 
     d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
 
-    std::string qruleOrderName =
-        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto qruleOrderName = params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 
@@ -55,5 +52,4 @@ FlowElement::FlowElement( std::shared_ptr<const ElementOperationParameters> para
 
     d_fe->attach_quadrature_rule( ( d_qrule ).get() );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -40,7 +40,7 @@ RK12TimeIntegrator::RK12TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK12TimeIntegrator::~RK12TimeIntegrator() {}
+RK12TimeIntegrator::~RK12TimeIntegrator() = default;
 
 /*
 ************************************************************************
@@ -73,7 +73,7 @@ void RK12TimeIntegrator::reset(
     d_z_vec->getVectorData()->reset();
 }
 
-void RK12TimeIntegrator::setupVectors( void )
+void RK12TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -159,12 +159,12 @@ int RK12TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK12TimeIntegrator::checkNewSolution( void )
+bool RK12TimeIntegrator::checkNewSolution()
 {
     bool retcode = false;
 
-    auto l2Norm                   = d_z_vec->L2Norm();
-    double l2NormOfEstimatedError = l2Norm.get<double>();
+    auto l2Norm                 = d_z_vec->L2Norm();
+    auto l2NormOfEstimatedError = l2Norm.get<double>();
 
     // we flag the solution as being acceptable if the l2 norm of the error
     // is less than the required tolerance or we are at the minimum time step
@@ -189,7 +189,7 @@ bool RK12TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK12TimeIntegrator::updateSolution( void )
+void RK12TimeIntegrator::updateSolution()
 {
     d_solution_vector->copyVector( d_new_solution );
     d_current_time += d_current_dt;
@@ -230,7 +230,7 @@ double RK12TimeIntegrator::getNextDt( const bool good_solution )
     } else {
 
         if ( good_solution ) {
-            double l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
+            auto l2NormOfEstimatedError = d_z_vec->L2Norm().get<double>();
 
             next_dt = d_safety_factor * d_current_dt *
                       pow( ( d_atol / l2NormOfEstimatedError ), 1.0 / 2.0 );

@@ -16,13 +16,12 @@
 #include <iostream>
 
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
-typedef std::array<ElementID, 2> Edge;
-typedef std::array<ElementID, 3> Triangle;
-typedef std::array<ElementID, 4> Tetrahedron;
+using Edge        = std::array<ElementID, 2>;
+using Triangle    = std::array<ElementID, 3>;
+using Tetrahedron = std::array<ElementID, 4>;
 
 
 // Helper function to create constexpr std::array with a single value
@@ -132,29 +131,29 @@ static void getChildren( const std::vector<std::array<ElementID, N1 + 1>> &tri,
 
 
 /****************************************************************
- * Remove unused verticies                                       *
+ * Remove unused vertices                                       *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-static void removeUnusedVerticies( std::vector<std::array<double, NP>> &verticies,
+static void removeUnusedVerticies( std::vector<std::array<double, NP>> &vertices,
                                    std::vector<std::array<int64_t, NG + 1>> &tri )
 {
-    // Check which verticies are used
-    std::vector<bool> used( verticies.size() );
+    // Check which vertices are used
+    std::vector<bool> used( vertices.size() );
     for ( auto &t : tri ) {
         for ( auto i : t )
             used[i] = true;
     }
-    // Create a map to renumber and remove unused verticies
+    // Create a map to renumber and remove unused vertices
     std::vector<size_t> map( used.size(), -1 );
     size_t N = 0;
     for ( size_t i = 0; i < used.size(); i++ ) {
         if ( used[i] ) {
-            map[i]       = N;
-            verticies[N] = verticies[i];
+            map[i]      = N;
+            vertices[N] = vertices[i];
             N++;
         }
     }
-    verticies.resize( N );
+    vertices.resize( N );
     // Renumber triangles
     for ( auto &t : tri ) {
         for ( auto &i : t )
@@ -167,7 +166,7 @@ static void removeUnusedVerticies( std::vector<std::array<double, NP>> &verticie
  * Perform load balancing                                        *
  * At exit:                                                      *
  *    only local data will remain                                *
- *    local verticies will be stored in sorted order             *
+ *    local vertices will be stored in sorted order             *
  *    indexing is the global                                     *
  ****************************************************************/
 template<size_t NP>
@@ -228,7 +227,7 @@ sendData( const std::vector<TYPE> &data, const std::vector<size_t> &rank, const 
     return out;
 }
 template<uint8_t NG, uint8_t NP>
-static void loadBalance( std::vector<std::array<double, NP>> &verticies,
+static void loadBalance( std::vector<std::array<double, NP>> &vertices,
                          std::vector<std::array<int64_t, NG + 1>> &tri,
                          std::vector<std::array<int64_t, NG + 1>> &tri_nab,
                          std::vector<int> &block,
@@ -239,7 +238,7 @@ static void loadBalance( std::vector<std::array<double, NP>> &verticies,
         return;
     // Check that only rank 0 has data (may relax this in the future)
     if ( comm.getRank() != 0 )
-        AMP_ASSERT( verticies.empty() && tri.empty() && tri_nab.empty() );
+        AMP_ASSERT( vertices.empty() && tri.empty() && tri_nab.empty() );
     // Get the number of subdomains in each direction
     auto factors    = AMP::Utilities::factor( comm.getSize() );
     int N_domain[3] = { 1, 1, 1 };
@@ -255,7 +254,7 @@ static void loadBalance( std::vector<std::array<double, NP>> &verticies,
     std::vector<std::array<double, NP>> center( tri.size(), make_array<double, NP>( 0 ) );
     for ( size_t i = 0; i < tri.size(); i++ ) {
         for ( size_t j = 0; j < NG + 1; j++ ) {
-            const auto &point = verticies[tri[i][j]];
+            const auto &point = vertices[tri[i][j]];
             for ( size_t d = 0; d < NP; d++ )
                 center[i][d] += point[d] / NP;
         }
@@ -279,10 +278,10 @@ static void loadBalance( std::vector<std::array<double, NP>> &verticies,
                 v = map_tri[v];
     }
     // Move the data
-    verticies = sendData( verticies, rank_node, comm );
-    tri       = sendData( tri, rank_node, comm );
-    tri_nab   = sendData( tri_nab, rank_node, comm );
-    block     = sendData( block, rank_node, comm );
+    vertices = sendData( vertices, rank_node, comm );
+    tri      = sendData( tri, rank_node, comm );
+    tri_nab  = sendData( tri_nab, rank_node, comm );
+    block    = sendData( block, rank_node, comm );
 }
 template<size_t NDIM, class TYPE>
 static void sortData( std::vector<TYPE> &data,
@@ -396,13 +395,13 @@ std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
 {
     // Get the global list of tri_list
     auto global_list = comm.allGather( tri_list );
-    std::vector<std::array<double, NP>> verticies;
+    std::vector<std::array<double, NP>> vertices;
     std::vector<std::array<int64_t, NG + 1>> triangles;
     std::vector<std::array<int64_t, NG + 1>> neighbors;
 
     if ( comm.getRank() == 0 ) {
         // Create triangles from the points
-        TriangleHelpers::createTriangles<NG, NP>( global_list, verticies, triangles, tol );
+        TriangleHelpers::createTriangles<NG, NP>( global_list, vertices, triangles, tol );
         // Find the number of unique triangles (duplicates may indicate multiple objects
         size_t N2 = TriangleHelpers::count<NG>( triangles );
         if ( N2 == tri_list.size() ) {
@@ -426,7 +425,7 @@ std::shared_ptr<TriangleMesh<NG, NP>> TriangleMesh<NG, NP>::generate(
         }
     }
     // Create the mesh
-    std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>( std::move( verticies ),
+    std::shared_ptr<TriangleMesh<NG, NP>> mesh( new TriangleMesh<NG, NP>( std::move( vertices ),
                                                                           std::move( triangles ),
                                                                           std::move( neighbors ),
                                                                           comm,
@@ -465,7 +464,7 @@ createGlobalIDs( const std::vector<std::array<int64_t, NG + 1>> &index,
     return ids;
 }
 template<uint8_t NG, uint8_t NP>
-TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticies,
+TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> vertices,
                                     std::vector<std::array<int64_t, NG + 1>> tri,
                                     std::vector<std::array<int64_t, NG + 1>> tri_nab,
                                     const AMP_MPI &comm,
@@ -491,16 +490,16 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> verticie
     d_name      = "NULL";
     d_geometry  = std::move( geom_in );
     setMeshID();
-    // Remove verticies that are not used
+    // Remove vertices that are not used
     if ( comm.getRank() == 0 )
-        removeUnusedVerticies<NG, NP>( verticies, tri );
+        removeUnusedVerticies<NG, NP>( vertices, tri );
     else
-        AMP_ASSERT( tri.empty() && verticies.empty() );
+        AMP_ASSERT( tri.empty() && vertices.empty() );
     // Perform the load balancing
-    loadBalance<NG, NP>( verticies, tri, tri_nab, block, comm );
-    sortData( verticies, tri, comm );
+    loadBalance<NG, NP>( vertices, tri, tri_nab, block, comm );
+    sortData( vertices, tri, comm );
     // Create the global ids
-    d_vert    = std::move( verticies );
+    d_vert    = std::move( vertices );
     auto tri2 = createGlobalIDs<NG>( tri, d_vert.size(), GeomType::Vertex, comm );
     sortData( tri2, tri_nab, block, comm );
     check( tri2 );
@@ -965,8 +964,8 @@ template<uint8_t NG, uint8_t NP>
 std::pair<const ElementID *, const ElementID *>
 TriangleMesh<NG, NP>::getElementParents( const ElementID &id, const GeomType type ) const
 {
-    size_t type1 = static_cast<size_t>( id.type() );
-    size_t type2 = static_cast<size_t>( type );
+    auto type1 = static_cast<size_t>( id.type() );
+    auto type2 = static_cast<size_t>( type );
     // Perform some initial checks
     if ( !id.is_local() )
         AMP_ERROR( "Getting parents for non-owned elements is not supported" );
@@ -1417,5 +1416,4 @@ template class TriangleMesh<2, 3>;
 template class TriangleMesh<3, 3>;
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

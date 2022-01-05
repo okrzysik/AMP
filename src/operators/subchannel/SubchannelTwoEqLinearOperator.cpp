@@ -14,8 +14,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -688,5 +687,4 @@ double SubchannelTwoEqLinearOperator::dfdp_upper(
     // calculate derivative
     return ( f_pert - f ) / pert;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

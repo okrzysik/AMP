@@ -2,8 +2,7 @@
 #include "AMP/operators/ColumnOperatorParameters.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -109,5 +108,4 @@ RowOperator::getParameters( const std::string &type,
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

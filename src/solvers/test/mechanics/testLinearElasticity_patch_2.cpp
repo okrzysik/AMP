@@ -77,7 +77,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-        std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+        auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
         auto mlSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );

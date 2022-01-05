@@ -5,8 +5,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /*!
@@ -127,7 +126,6 @@ private:
                                            double *C1,
                                            double *x1 );
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

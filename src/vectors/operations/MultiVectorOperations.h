@@ -5,8 +5,7 @@
 #include "AMP/vectors/operations/VectorOperations.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class MultiVectorData;
 
@@ -103,7 +102,6 @@ public: // Pull VectorOperations into the current scope
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

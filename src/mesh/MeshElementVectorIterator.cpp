@@ -2,8 +2,7 @@
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 /********************************************************
@@ -201,5 +200,4 @@ bool MultiVectorIterator::operator!=( const MeshIterator &rhs ) const
 }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

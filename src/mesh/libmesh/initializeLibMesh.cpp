@@ -14,8 +14,7 @@
     #include "petscsys.h"
 #endif
 
-namespace AMP {
-namespace Mesh {
+namespace AMP::Mesh {
 
 
 // Initialize static member variables
@@ -155,5 +154,4 @@ bool initializeLibMesh::canBeInitialized( AMP_MPI comm )
 bool initializeLibMesh::isInitialized() { return N_copies > 0; }
 
 
-} // namespace Mesh
-} // namespace AMP
+} // namespace AMP::Mesh

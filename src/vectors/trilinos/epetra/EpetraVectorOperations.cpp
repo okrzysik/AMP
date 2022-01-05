@@ -1,8 +1,7 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 static inline const Epetra_Vector &getEpetraVector( const VectorData &vec )
 {
@@ -139,5 +138,4 @@ Scalar EpetraVectorOperations::maxNorm( const VectorData &x ) const
     return retVal;
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

@@ -2,8 +2,7 @@
 #include "NavierStokesLSWFLinearElement.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void NavierStokesLSWFLinearElement::apply()
 {
@@ -290,5 +289,4 @@ void NavierStokesLSWFLinearElement::apply()
 
     } // end for qp
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
