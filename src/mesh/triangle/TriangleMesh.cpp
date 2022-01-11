@@ -125,8 +125,8 @@ static void getChildren( const std::vector<std::array<ElementID, N1 + 1>> &tri,
                 remote.push_back( child );
         }
     }
-    std::sort( local.begin(), local.end() );
-    std::sort( remote.begin(), remote.end() );
+    AMP::Utilities::unique( local );
+    AMP::Utilities::unique( remote );
 }
 
 
@@ -639,6 +639,9 @@ computeNodeParents( size_t N_points,
                 parents[node_id.local_id()].push_back( tri_id );
         }
     }
+    // Check that every node has a parent
+    for ( size_t i = 0; i < N_points; i++ )
+        AMP_ASSERT( !parents[i].empty() );
     // Return the parents
     return StoreCompressedList<ElementID>( parents );
 }
@@ -670,6 +673,8 @@ getParents( const std::vector<std::array<ElementID, N1 + 1>> &elements,
             const std::map<ElementID, std::array<ElementID, N2 + 1>> &ghosts,
             int rank )
 {
+    AMP_ASSERT( std::is_sorted( elements.begin(), elements.end() ) );
+    // Construct a parent list
     std::vector<std::vector<ElementID>> parents( elements.size() );
     for ( size_t i = 0; i < objects.size(); i++ ) {
         const auto &obj = objects[i];
@@ -687,6 +692,10 @@ getParents( const std::vector<std::array<ElementID, N1 + 1>> &elements,
                 parents[k].push_back( id );
         }
     }
+    // Check that every element has a parent
+    for ( size_t i = 0; i < elements.size(); i++ )
+        AMP_ASSERT( !parents[i].empty() );
+    // Return the parents
     return StoreCompressedList<ElementID>( parents );
 }
 template<std::size_t N1, std::size_t N2>
@@ -1299,7 +1308,8 @@ bool TriangleMesh<NG, NP>::isOnSurface( const ElementID &id ) const
     } else if ( static_cast<uint8_t>( id.type() ) == NG - 1 ) {
         // Face is on the surface if it has one parent
         auto parents = getElementParents( id, static_cast<GeomType>( NG ) );
-        return parents.second - parents.first == 1;
+        size_t N     = parents.second - parents.first;
+        return N == 1;
     } else {
         // Node/edge is on the surface if any face is on the surface
         auto parents = getElementParents( id, static_cast<GeomType>( NG - 1 ) );

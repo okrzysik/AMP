@@ -60,9 +60,10 @@ protected:
     double d_range[6];        // The bounding box size
     double d_pyramid_size[3]; // The underlying rotated pyramid size
     double d_scale_height;    // Ratio of frustum to pyramid height
-    double d_volume;
-    Point d_face[6][4]; // Points forming each face
-    Point d_normal[6];  // Normal to each face
+    double d_volume;          // Volume
+    Point d_centroid;         // Centroid
+    Point d_face[6][4];       // Points forming each face
+    Point d_normal[6];        // Normal to each face
 
 private:
     // Private constructor

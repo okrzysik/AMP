@@ -1,6 +1,6 @@
 #include "AMP/mesh/structured/structuredMeshElement.h"
 
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/utils/Utilities.h"
 
@@ -17,7 +17,7 @@ double cross3magnitude( double a[3], double b[3] )
     v[2] = a[0] * b[1] - a[1] * b[0];
     return std::sqrt( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
 }
-// Function to evaluate the dot produce of a vector anda cross product in 3d ( a . ( b X c ) )
+// Function to evaluate the dot produce of a vector and a cross product in 3d ( a . ( b X c ) )
 double dot3cross( double a[3], double b[3], double c[3] )
 {
     double v[3];
@@ -609,13 +609,13 @@ Point structuredMeshElement::centroid() const
  ****************************************************************/
 double structuredMeshElement::volume() const
 {
-    if ( d_index.type() == GeomType::Vertex ) {
+    auto type = d_index.type();
+    if ( type == GeomType::Vertex )
         AMP_ERROR( "volume is is not defined Nodes" );
-    }
     int N = 0;
     BoxMesh::MeshElementIndex nodes[8];
     getElementIndex( GeomType::Vertex, N, nodes );
-    if ( d_index.type() == GeomType::Edge ) {
+    if ( type == GeomType::Edge ) {
         AMP_ASSERT( N == 2 );
         double x[2][3];
         d_mesh->coord( nodes[0], x[0] );
@@ -624,7 +624,7 @@ double structuredMeshElement::volume() const
         for ( int i = 0; i < d_physicalDim; i++ )
             dist2 += ( x[0][i] - x[1][i] ) * ( x[0][i] - x[1][i] );
         return sqrt( dist2 );
-    } else if ( d_index.type() == GeomType::Face ) {
+    } else if ( type == GeomType::Face ) {
         // Use 2x2 quadrature to approximate the surface area. See for example,
         // Y. Zhang, C. Bajaj, G. Xu. Surface Smoothing and Quality Improvement
         // of Quadrilateral/Hexahedral Meshes with Geometric Flow. The special
@@ -665,7 +665,7 @@ double structuredMeshElement::volume() const
             }
             return 0.25 * vol;
         }
-    } else if ( d_index.type() == GeomType::Volume ) {
+    } else if ( type == GeomType::Volume ) {
         // Compute the volume of the tri-linear hex by splitting it
         // into 6 sub-pyramids and applying the formula in:
         //   "Calculation of the Volume of a General Hexahedron for Flow Predictions",
@@ -723,8 +723,39 @@ double structuredMeshElement::volume() const
  ****************************************************************/
 Point structuredMeshElement::norm() const
 {
-    AMP_ERROR( "norm not implemented yet" );
-    return Point();
+    auto type = d_index.type();
+    if ( type == GeomType::Vertex )
+        AMP_ERROR( "norm is is not defined Nodes" );
+    if ( static_cast<int>( type ) + 1 != static_cast<int>( d_physicalDim ) )
+        AMP_ERROR( "norm is not valid" );
+    int N = 0;
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    if ( type == GeomType::Edge ) {
+        AMP_ASSERT( N == 2 );
+        Point p1 = { 0, 0 }, p2 = { 0, 0 };
+        d_mesh->coord( nodes[0], p1.data() );
+        d_mesh->coord( nodes[1], p2.data() );
+        Point n = { -( p2.y() - p1.y() ), p2.x() - p1.x() };
+        return normalize( n );
+    } else if ( d_index.type() == GeomType::Face ) {
+        // Approximate normal for a quadrilateral
+        //     [ (y4-y1)*(z3-z2) - (z4-z1)*(y3-y2) ]
+        // n = [ (z4-z1)*(x3-x2) - (x4-x1)*(z3-z2) ] = (p4-p1) x (p3-p2)
+        //     [ (x4-x1)*(y3-y2) - (y4-y1)*(x3-x2) ]
+        AMP_ASSERT( N == 4 );
+        Point p1 = { 0, 0, 0 }, p2 = { 0, 0, 0 }, p3 = { 0, 0, 0 }, p4 = { 0, 0, 0 };
+        d_mesh->coord( nodes[0], p1.data() );
+        d_mesh->coord( nodes[1], p2.data() );
+        d_mesh->coord( nodes[2], p3.data() );
+        d_mesh->coord( nodes[3], p4.data() );
+        auto n = cross( p4 - p1, p3 - p2 );
+        return normalize( n );
+    } else if ( d_index.type() == GeomType::Volume ) {
+        AMP_ERROR( "Not finished (dimension>3)" );
+    }
+    AMP_ERROR( "Internal error" );
+    return {};
 }
 
 

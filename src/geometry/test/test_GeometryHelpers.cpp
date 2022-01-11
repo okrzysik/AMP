@@ -1,4 +1,4 @@
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"

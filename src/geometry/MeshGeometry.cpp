@@ -1,9 +1,11 @@
 #include "AMP/geometry/MeshGeometry.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/MeshUtilities.h"
 #include "AMP/utils/kdtree2.h"
+
+#include <random>
 
 
 namespace AMP::Geometry {
@@ -43,9 +45,25 @@ double MeshGeometry::distance( const Point &pos, const Point &dir ) const
 }
 bool MeshGeometry::inside( const Point &pos ) const
 {
+    // Choose a random point inside the geometry to use for ray-cast tests
+    // Helps to ensure we don't hit edges
+    if ( d_inside.ndim() == 0 ) {
+        static std::random_device rd;
+        static std::mt19937 gen( rd() );
+        static std::uniform_real_distribution<double> dis( 0, 1 );
+        auto box    = d_mesh->getBoundingBox();
+        d_inside    = Point( d_physicalDim, { 0, 0, 0 } );
+        double dist = 1.0;
+        while ( dist >= 0 ) {
+            for ( int d = 0; d < d_physicalDim; d++ )
+                d_inside[d] = box[2 * d] + dis( gen ) * ( box[2 * d + 1] - box[2 * d] );
+            auto dir = normalize( d_inside );
+            dist     = d_find.distance( pos, dir );
+        }
+    }
     // Should really just cache internal/external points for performance
-    constexpr Point dir = { 0.999999500000375, 0.0009999995, 0 };
-    double d            = d_find.distance( pos, dir );
+    Point dir = normalize( pos - d_inside );
+    double d  = d_find.distance( pos, dir );
     return d <= 0;
 }
 
@@ -119,6 +137,7 @@ void MeshGeometry::displace( const double *x )
 {
     std::vector<double> x2( x, x + d_mesh->getDim() );
     d_mesh->displaceMesh( x2 );
+    d_inside += Point( d_inside.ndim(), x );
 }
 
 

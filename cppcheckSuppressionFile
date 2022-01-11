@@ -126,7 +126,7 @@ shiftTooManyBits:*/src/utils/extended_int.cpp
 *:*/src/mesh/dendro/*
 *:*/src/mesh/hex8_element_t.cpp
 objectIndex:*/src/mesh/libmesh/initializeLibMesh.cpp
-ignoredReturnValue:*/src/geometry/shapes/GeometryHelpers.cpp
+ignoredReturnValue:*/src/geometry/GeometryHelpers.cpp
 unassignedVariable:*/src/mesh/triangle/TriangleMesh.cpp
 duplicateExpression:*/src/utils/DatabaseKeyData.cpp
 invalidscanf:*/src/utils/ReadTestMesh.cpp

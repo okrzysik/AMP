@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/CircleFrustum.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -318,9 +318,13 @@ Point CircleFrustum::logical( const Point &pos ) const
  ********************************************************/
 Point CircleFrustum::centroid() const
 {
-    auto dir2 = d_dir / 2;
-    Point p   = { 0, 0, 0 };
-    p[dir2]   = ( d_dir % 2 == 0 ? -1 : 1 ) * d_h / 2;
+    double R11 = d_r[0] * d_r[0];
+    double R12 = d_r[0] * d_r[1];
+    double R22 = d_r[1] * d_r[1];
+    double z   = 0.25 * d_h * ( R11 + 2 * R12 + 3 * R22 ) / ( R11 + R12 + R22 );
+    auto dir2  = d_dir / 2;
+    Point p    = { 0, 0, 0 };
+    p[dir2]    = ( d_dir % 2 == 0 ? -1 : 1 ) * z;
     p.x() += d_offset[0];
     p.y() += d_offset[1];
     p.z() += d_offset[2];

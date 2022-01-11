@@ -1,82 +1,14 @@
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/geometry/Geometry.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/arrayHelpers.h"
 
 #include <algorithm>
 #include <cmath>
 
 
 namespace AMP::Geometry::GeometryHelpers {
-
-
-// Output array
-template<std::size_t N>
-std::ostream &operator<<( std::ostream &out, const std::array<double, N> &x )
-{
-    out << "(" << x[0];
-    for ( size_t i = 1; i < N; i++ )
-        out << "," << x[i];
-    out << ")";
-    return out;
-}
-
-
-/****************************************************************
- * Vector operations                                             *
- ****************************************************************/
-template<std::size_t N>
-static inline std::array<double, N> operator+( const std::array<double, N> &x,
-                                               const std::array<double, N> &y )
-{
-    auto z = x;
-    for ( size_t i = 0; i < N; i++ )
-        z[i] += y[i];
-    return z;
-}
-template<std::size_t N>
-static inline std::array<double, N> operator-( const std::array<double, N> &x,
-                                               const std::array<double, N> &y )
-{
-    auto z = x;
-    for ( size_t i = 0; i < N; i++ )
-        z[i] -= y[i];
-    return z;
-}
-template<std::size_t N>
-static inline std::array<double, N> operator*( double x, const std::array<double, N> &y )
-{
-    auto z = y;
-    for ( size_t i = 0; i < N; i++ )
-        z[i] *= x;
-    return z;
-}
-template<std::size_t N>
-static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
-{
-    double d = 0;
-    for ( size_t i = 0; i < N; i++ )
-        d += x[i] * y[i];
-    return d;
-}
-static inline double cross( const Point2D &x, const Point2D &y )
-{
-    return x[0] * y[1] - x[1] * y[0];
-}
-static inline Point3D cross( const Point3D &x, const Point3D &y )
-{
-    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
-}
-static inline double norm( const Point3D &x ) { return x[0] * x[0] + x[1] * x[1] + x[2] * x[2]; }
-template<std::size_t N>
-static inline std::array<double, N> normalize( const std::array<double, N> &x )
-{
-    double tmp = 1.0 / sqrt( dot( x, x ) );
-    auto y     = x;
-    for ( size_t i = 0; i < N; i++ )
-        y[i] *= tmp;
-    return y;
-}
 
 
 /****************************************************************
@@ -454,36 +386,53 @@ distanceToPlane( const Point3D &n, const Point3D &p0, const Point3D &pos, const 
  * Compute the distance to a box                                 *
  ****************************************************************/
 template<std::size_t NDIM>
+static constexpr bool inside( const std::array<double, NDIM> &p,
+                      const std::array<double, NDIM> &lb,
+                      const std::array<double, NDIM> &ub )
+{
+    // Check if the intersection of each surface is within the bounds of the box
+    if constexpr ( NDIM == 1 ) {
+        return ( p[0] >= lb[0] - 1e-12 ) && ( p[0] <= ub[0] + 1e-12 );
+    } else if constexpr ( NDIM == 2 ) {
+        return ( p[0] >= lb[0] - 1e-12 ) && ( p[0] <= ub[0] + 1e-12 ) &&
+               ( p[1] >= lb[1] - 1e-12 ) && ( p[1] <= ub[1] + 1e-12 );
+    } else if constexpr ( NDIM == 3 ) {
+        return ( p[0] >= lb[0] - 1e-12 ) && ( p[0] <= ub[0] + 1e-12 ) &&
+               ( p[1] >= lb[1] - 1e-12 ) && ( p[1] <= ub[1] + 1e-12 ) &&
+               ( p[2] >= lb[2] - 1e-12 ) && ( p[2] <= ub[2] + 1e-12 );
+    } else {
+        bool in = true;
+        for ( size_t d = 0; d < NDIM; d++ )
+            in = in && ( p[d] >= lb[d] - 1e-12 ) && ( p[d] <= ub[d] + 1e-12 );
+        return in;
+    }
+}
+template<std::size_t NDIM>
 double distanceToBox( const std::array<double, NDIM> &pos,
                       const std::array<double, NDIM> &ang,
                       const std::array<double, NDIM> &lb,
                       const std::array<double, NDIM> &ub )
 {
-    double d = std::numeric_limits<double>::infinity();
-    // Check if the intersection of each surface is within the bounds of the box
-    auto inside = [&lb, &ub]( const std::array<double, NDIM> &p ) {
-        bool in = true;
-        for ( size_t d = 0; d < NDIM; d++ )
-            in = in && ( p[d] >= lb[d] - 1e-12 ) && ( p[d] <= ub[d] + 1e-12 );
-        return in;
-    };
     // Compute the distance to each surface and check if it is closer
+    double d = std::numeric_limits<double>::infinity();
     for ( size_t i = 0; i < NDIM; i++ ) {
         double d1 = ( lb[i] - pos[i] ) / ang[i];
         double d2 = ( ub[i] - pos[i] ) / ang[i];
         if ( d1 >= 0 ) {
             auto p = pos + d1 * ang;
-            if ( inside( p ) )
+            if ( inside( p, lb, ub ) )
                 d = std::min( d, d1 );
         }
         if ( d2 >= 0 ) {
             auto p = pos + d2 * ang;
-            if ( inside( p ) )
+            if ( inside( p, lb, ub ) )
                 d = std::min( d, d2 );
         }
     }
     // Return the distance
-    if ( inside( pos ) && d < 1e100 )
+    if ( d == std::numeric_limits<double>::infinity() )
+        return d;
+    if ( inside( pos, lb, ub ) )
         d = -d;
     return d;
 }
@@ -831,11 +780,8 @@ double
 distanceToQuadrilateral( const std::array<Point2D, 4> &x, const Point2D &pos, const Point2D &ang )
 {
     // Get the centroid for the quadralateral and split into 4 triangles
-    Point2D p = { 0, 0 };
-    for ( int i = 0; i < 4; i++ ) {
-        p[0] += x[i][0];
-        p[1] += x[i][1];
-    }
+    Point2D p = { 0.25 * ( x[0][0] + x[1][0] + x[2][0] + x[3][0] ),
+                  0.25 * ( x[0][1] + x[1][1] + x[2][1] + x[3][1] ) };
     double d1 = distanceToTriangle( { x[0], x[1], p }, pos, ang );
     double d2 = distanceToTriangle( { x[1], x[2], p }, pos, ang );
     double d3 = distanceToTriangle( { x[2], x[3], p }, pos, ang );
@@ -855,12 +801,9 @@ double
 distanceToQuadrilateral( const std::array<Point3D, 4> &x, const Point3D &pos, const Point3D &ang )
 {
     // Get the centroid for the quadralateral and split into 4 triangles
-    Point3D p = { 0, 0, 0 };
-    for ( int i = 0; i < 4; i++ ) {
-        p[0] += x[i][0];
-        p[1] += x[i][1];
-        p[2] += x[i][2];
-    }
+    Point3D p = { 0.25 * ( x[0][0] + x[1][0] + x[2][0] + x[3][0] ),
+                  0.25 * ( x[0][1] + x[1][1] + x[2][1] + x[3][1] ),
+                  0.25 * ( x[0][2] + x[1][2] + x[2][2] + x[3][2] ) };
     double d1 = distanceToTriangle( { x[0], x[1], p }, pos, ang );
     double d2 = distanceToTriangle( { x[1], x[2], p }, pos, ang );
     double d3 = distanceToTriangle( { x[2], x[3], p }, pos, ang );
@@ -1037,39 +980,29 @@ std::vector<Point3D> sampleTri( const std::array<Point3D, 3> &v, double d0, bool
 }
 std::vector<Point3D> sampleQuad( const std::array<Point3D, 4> &v, double d0, bool interior )
 {
-    double d1 = distance( v[0], v[1] );
-    double d2 = distance( v[1], v[2] );
-    double d3 = distance( v[2], v[3] );
-    double d4 = distance( v[3], v[0] );
-    int Nx    = ceil( 1.732050807568877 * std::max( d1, d3 ) / d0 );
-    int Ny    = ceil( 1.732050807568877 * std::max( d2, d4 ) / d0 );
-    auto fun  = [&v]( double x, double y ) {
-        auto v1 = v[0] + x * ( v[1] - v[0] );
-        auto v2 = v[3] + x * ( v[2] - v[3] );
-        return v1 + y * ( v2 - v1 );
-    };
     if ( interior ) {
-        std::vector<std::array<double, 3>> p;
-        p.reserve( Nx * Ny );
-        for ( int i = 0; i < Nx; i++ ) {
-            double x = ( 0.5 + i ) / static_cast<double>( Nx );
-            for ( int j = 0; j < Ny; j++ ) {
-                double y = ( 0.5 + j ) / static_cast<double>( Ny );
-                p.push_back( fun( x, y ) );
-            }
-        }
-        return p;
+        auto p = 0.25 * ( v[0] + v[1] + v[2] + v[3] );
+        double d1 = distance( p, v[0] );
+        double d2 = distance( p, v[1] );
+        double d3 = distance( p, v[2] );
+        double d4 = distance( p, v[3] );
+        if ( std::max( { d1, d2, d3, d4 } ) < d0 )
+            return { p };
+        auto v01 = 0.5 * ( v[0] + v[1] );
+        auto v12 = 0.5 * ( v[1] + v[2] );
+        auto v23 = 0.5 * ( v[2] + v[3] );
+        auto v03 = 0.5 * ( v[0] + v[3] );
+        auto p1 = sampleQuad( { v[0], v01, p, v03 }, d0, true );
+        auto p2 = sampleQuad( { v01, v[1], v12, p }, d0, true );
+        auto p3 = sampleQuad( { p, v12, v[2], v23 }, d0, true );
+        auto p4 = sampleQuad( { v03, p, v23, v[3] }, d0, true );
+        p1.insert( p1.end(), p2.begin(), p2.end() );
+        p1.insert( p1.end(), p3.begin(), p3.end() );
+        p1.insert( p1.end(), p4.begin(), p4.end() );
+        return p1;
     } else {
-        std::vector<std::array<double, 3>> p;
-        p.reserve( ( Nx + 1 ) * ( Ny + 1 ) );
-        for ( int i = 0; i <= Nx; i++ ) {
-            double x = static_cast<double>( i ) / static_cast<double>( Nx );
-            for ( int j = 0; j <= Ny; j++ ) {
-                double y = static_cast<double>( j ) / static_cast<double>( Ny );
-                p.push_back( fun( x, y ) );
-            }
-        }
-        return p;
+        AMP_ERROR("Not finished" );
+        return {};
     }
 }
 std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &v, double d0, bool interior )

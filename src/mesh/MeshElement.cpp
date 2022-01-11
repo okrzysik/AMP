@@ -1,5 +1,5 @@
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 #include <cstring>

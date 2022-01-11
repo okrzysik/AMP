@@ -103,7 +103,7 @@ public:
      * \param[in] dir     The direction vector (NDIM)
      * @return            Returns a vector of candidates for the nearest points to a ray.
      */
-    std::vector<std::tuple<Point, TYPE, Point, double>>
+    std::vector<std::tuple<Point, TYPE>>
     findNearestRay( const Point &x, const Point &dir, double dist ) const;
 
 
@@ -134,12 +134,11 @@ private: // Internal functions
                       std::vector<std::tuple<Point, TYPE>> &nearest ) const;
     void findNearestRay( const Point &x,
                          const Point &dir,
+                         const Point &n_inv,
                          double dist2,
-                         std::vector<std::tuple<Point, TYPE, Point, double>> &nearest ) const;
+                         std::vector<std::tuple<Point, TYPE>> &nearest ) const;
     void
     checkNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
-    static constexpr double norm( const Point &x, const Point &y );
-    static constexpr double dot( const Point &x, const Point &y );
     static double distanceToBox( const std::array<double, NDIM> &pos,
                                  const std::array<double, NDIM> &ang,
                                  const std::array<double, NDIM> &lb,

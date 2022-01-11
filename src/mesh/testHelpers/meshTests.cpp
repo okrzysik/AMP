@@ -667,22 +667,19 @@ void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh
 // This tests loops over the boundary
 void meshTests::VerifyBoundaryIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    bool is_surfaceMesh = static_cast<int>( mesh->getGeomType() ) < mesh->getDim();
+    if ( static_cast<int>( mesh->getGeomType() ) < mesh->getDim() )
+        return;
     for ( int gcw = 0; gcw <= 0; gcw++ ) {
         for ( int type2 = 0; type2 <= (int) mesh->getGeomType(); type2++ ) {
             auto type = (AMP::Mesh::GeomType) type2;
             // Get the iterator over the current boundary id
             auto iterator      = mesh->getSurfaceIterator( type, gcw );
             size_t global_size = mesh->getComm().sumReduce( iterator.size() );
-            bool passes        = global_size > 0;
-            if ( std::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() == nullptr ) {
-                if ( mesh->numGlobalElements( type ) >= 100 )
-                    passes = passes && ( global_size < mesh->numGlobalElements( type ) );
-            }
-            if ( passes )
+            if ( global_size > 0 && global_size < mesh->numGlobalElements( type ) )
                 ut.passes( "Non-trivial surface iterator created" );
-            else if ( is_surfaceMesh )
-                ut.expected_failure( "Non-trivial surface iterator created: " + mesh->getName() );
+            else if ( global_size == mesh->numGlobalElements( type ) )
+                ut.expected_failure( "Surface iterator created (no interior points): " +
+                                     mesh->getName() );
             else
                 ut.failure( "Non-trivial surface iterator created: " + mesh->getName() );
         }

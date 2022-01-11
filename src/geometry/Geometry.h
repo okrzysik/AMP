@@ -108,7 +108,8 @@ public:
 
     /**
      * \brief    Return the centroid
-     * \details  This function will return centroid of the object
+     * \details  This function will return the centroid of the object.
+     *   The centroid is equivalent to the center of mass of object of uniform density.
      * @return          Returns the physical coordinates
      */
     virtual Point centroid() const = 0;
