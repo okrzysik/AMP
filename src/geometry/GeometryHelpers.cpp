@@ -344,24 +344,45 @@ distanceToLine( const Point2D &pos, const Point2D &ang, const Point2D &p1, const
 double
 distanceToLine( const Point3D &pos, const Point3D &ang, const Point3D &p1, const Point3D &p2 )
 {
-    // Check if the vertex is within the line
-    auto p = nearest( p1, p2, pos );
-    if ( fabs( dist2( p, pos ) ) < 1e-16 )
-        return 0;
-    // Check if the ray lies in the plane of the line and vertex
-    auto n = normal( pos, p1, p2 );
-    auto c = cross( n, ang );
-    if ( fabs( norm( c ) ) > 1e-16 ) {
-        // lines are skew
-        return std::numeric_limits<double>::infinity();
+    // Find the intersection in 2D
+    double tmp[3] = { fabs( ang[0] ), fabs( ang[1] ), fabs( ang[2] ) };
+    int i         = 0;
+    Point2D pos2, ang2, p3, p4;
+    if ( tmp[2] <= std::min( tmp[0], tmp[1] ) ) {
+        i    = 2;
+        pos2 = { pos[0], pos[1] };
+        ang2 = { ang[0], ang[1] };
+        p3   = { p1[0], p1[1] };
+        p4   = { p2[0], p2[1] };
+    } else if ( tmp[1] <= tmp[0] ) {
+        i    = 1;
+        pos2 = { pos[0], pos[2] };
+        ang2 = { ang[0], ang[2] };
+        p3   = { p1[0], p1[2] };
+        p4   = { p2[0], p2[2] };
+    } else {
+        i    = 0;
+        pos2 = { pos[1], pos[2] };
+        ang2 = { ang[1], ang[2] };
+        p3   = { p1[1], p1[2] };
+        p4   = { p2[1], p2[2] };
     }
-    printf( "n   = (%f,%f,%f)\n", n[0], n[1], n[2] );
-    printf( "pos = (%f,%f,%f)\n", pos[0], pos[1], pos[2] );
-    printf( "ang = (%f,%f,%f)\n", ang[0], ang[1], ang[2] );
-    printf( "p1  = (%f,%f,%f)\n", p1[0], p1[1], p1[2] );
-    printf( "p2  = (%f,%f,%f)\n", p2[0], p2[1], p2[2] );
-    AMP_ERROR( "Not finished" );
-    return 0;
+    Point2D v1 = pos2 - p3;
+    Point2D v2 = p4 - p3;
+    Point2D v3 = { -ang2[1], ang2[0] };
+    double d23 = dot( v2, v3 );
+    if ( fabs( d23 ) < 1e-12 )
+        return std::numeric_limits<double>::infinity();
+    double t1 = cross( v2, v1 ) / d23;
+    double t2 = dot( v1, v3 ) / d23;
+    if ( t1 < 0.0 || t2 < -1e-10 || t2 > 1.0 + 1e-10 )
+        return std::numeric_limits<double>::infinity();
+    // Check if the intersection point matches for the final coordinate
+    double a = pos[i] + t1 * ang[i];
+    double b = p1[i] + t2 * ( p2[i] - p1[i] );
+    if ( fabs( a - b ) < 1e-10 )
+        return t1;
+    return std::numeric_limits<double>::infinity();
 }
 
 
@@ -387,8 +408,8 @@ distanceToPlane( const Point3D &n, const Point3D &p0, const Point3D &pos, const 
  ****************************************************************/
 template<std::size_t NDIM>
 static constexpr bool inside( const std::array<double, NDIM> &p,
-                      const std::array<double, NDIM> &lb,
-                      const std::array<double, NDIM> &ub )
+                              const std::array<double, NDIM> &lb,
+                              const std::array<double, NDIM> &ub )
 {
     // Check if the intersection of each surface is within the bounds of the box
     if constexpr ( NDIM == 1 ) {
@@ -776,6 +797,18 @@ distanceToTetrahedron( const std::array<Point3D, 4> &x, const Point3D &pos, cons
 /****************************************************************
  * Compute the distance to a quadrilateral in 2D/3D              *
  ****************************************************************/
+Point3D normalToQuadrilateral( const std::array<Point3D, 4> &x )
+{
+    // Get the centroid for the quadralateral and split into 4 triangles
+    Point3D p = { 0.25 * ( x[0][0] + x[1][0] + x[2][0] + x[3][0] ),
+                  0.25 * ( x[0][1] + x[1][1] + x[2][1] + x[3][1] ),
+                  0.25 * ( x[0][2] + x[1][2] + x[2][2] + x[3][2] ) };
+    auto n1   = normal( x[0], x[1], p );
+    auto n2   = normal( x[1], x[2], p );
+    auto n3   = normal( x[2], x[3], p );
+    auto n4   = normal( x[3], x[0], p );
+    return normalize( 0.25 * ( n1 + n2 + n3 + n4 ) );
+}
 double
 distanceToQuadrilateral( const std::array<Point2D, 4> &x, const Point2D &pos, const Point2D &ang )
 {
@@ -822,11 +855,16 @@ distanceToQuadrilateral( const std::array<Point3D, 4> &x, const Point3D &pos, co
 
 
 /****************************************************************
- * Compute the normal to a plane                                 *
+ * Compute the normal to a line/plane                            *
  ****************************************************************/
-Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 )
+Point2D normal( const Point2D &a, const Point2D &b )
 {
-    return normalize( cross( v1 - v2, v1 - v3 ) );
+    Point2D n = { a[1] - b[1], b[0] - a[0] };
+    return normalize( n );
+}
+Point3D normal( const Point3D &a, const Point3D &b, const Point3D &c )
+{
+    return normalize( cross( a - b, a - c ) );
 }
 
 
@@ -953,6 +991,7 @@ std::vector<AMP::Mesh::Point> subdivide( const std::array<AMP::Mesh::Point, 3> &
  ****************************************************************/
 std::vector<Point3D> sampleLine( const std::array<Point3D, 2> &v, double d0, bool interior )
 {
+    // Sample a line
     double d = distance( v[0], v[1] );
     int N    = ceil( d / d0 );
     auto dx  = ( 1.0 / N ) * ( v[1] - v[0] );
@@ -970,40 +1009,89 @@ std::vector<Point3D> sampleLine( const std::array<Point3D, 2> &v, double d0, boo
         return p;
     }
 }
+static void
+sampleTri( const std::array<Point3D, 3> &v, double d0, bool interior, std::vector<Point3D> &points )
+{
+    // Sample a triangle
+    // Get the distance between each vertex and check if they are all within d0
+    double d01 = distance( v[0], v[1] );
+    double d12 = distance( v[1], v[2] );
+    double d03 = distance( v[2], v[0] );
+    if ( interior ) {
+        // Get the centroid for the triangle and check if all points are within that distance
+        constexpr double inv3 = 1.0 / 3.0;
+        Point3D p             = inv3 * ( v[0] + v[1] + v[2] );
+        double d1             = distance( p, v[0] );
+        double d2             = distance( p, v[1] );
+        double d3             = distance( p, v[2] );
+        if ( std::max( { d1, d2, d3 } ) < d0 ) {
+            points.push_back( p );
+            return;
+        }
+    } else {
+        // Check if all points are within d0 of a vertex
+        if ( std::max( { d01, d12, d03 } ) < d0 ) {
+            points.push_back( v[0] );
+            points.push_back( v[1] );
+            points.push_back( v[2] );
+            return;
+        }
+    }
+    // Split the triangle along the longest edge
+    if ( d01 >= std::max( d12, d03 ) ) {
+        sampleTri( { v[0], 0.5 * ( v[0] + v[1] ), v[2] }, d0, interior, points );
+        sampleTri( { 0.5 * ( v[0] + v[1] ), v[1], v[2] }, d0, interior, points );
+    } else if ( d12 >= d03 ) {
+        sampleTri( { v[0], v[1], 0.5 * ( v[1] + v[2] ) }, d0, interior, points );
+        sampleTri( { v[0], 0.5 * ( v[1] + v[2] ), v[2] }, d0, interior, points );
+    } else {
+        sampleTri( { v[0], v[1], 0.5 * ( v[0] + v[2] ) }, d0, interior, points );
+        sampleTri( { v[1], v[2], 0.5 * ( v[0] + v[2] ) }, d0, interior, points );
+    }
+}
 std::vector<Point3D> sampleTri( const std::array<Point3D, 3> &v, double d0, bool interior )
 {
-    NULL_USE( v );
-    NULL_USE( d0 );
-    NULL_USE( interior );
-    AMP_ERROR( "sampleTri: Not finished" );
-    return {};
+    std::vector<Point3D> p;
+    sampleTri( v, d0, interior, p );
+    if ( !interior )
+        AMP::Utilities::unique( p );
+    return p;
 }
 std::vector<Point3D> sampleQuad( const std::array<Point3D, 4> &v, double d0, bool interior )
 {
+    // Sample a quadrilateral
+    // Note: we want to preserve the surface defined is distanceToQuadrilateral
+    // Get the centroid for the quadrilateral
+    Point3D p0 = { 0.25 * ( v[0][0] + v[1][0] + v[2][0] + v[3][0] ),
+                   0.25 * ( v[0][1] + v[1][1] + v[2][1] + v[3][1] ),
+                   0.25 * ( v[0][2] + v[1][2] + v[2][2] + v[3][2] ) };
     if ( interior ) {
-        auto p = 0.25 * ( v[0] + v[1] + v[2] + v[3] );
-        double d1 = distance( p, v[0] );
-        double d2 = distance( p, v[1] );
-        double d3 = distance( p, v[2] );
-        double d4 = distance( p, v[3] );
+        // Get the distance to each vertex and check if they are all within d0
+        double d1 = distance( p0, v[0] );
+        double d2 = distance( p0, v[1] );
+        double d3 = distance( p0, v[2] );
+        double d4 = distance( p0, v[3] );
         if ( std::max( { d1, d2, d3, d4 } ) < d0 )
-            return { p };
-        auto v01 = 0.5 * ( v[0] + v[1] );
-        auto v12 = 0.5 * ( v[1] + v[2] );
-        auto v23 = 0.5 * ( v[2] + v[3] );
-        auto v03 = 0.5 * ( v[0] + v[3] );
-        auto p1 = sampleQuad( { v[0], v01, p, v03 }, d0, true );
-        auto p2 = sampleQuad( { v01, v[1], v12, p }, d0, true );
-        auto p3 = sampleQuad( { p, v12, v[2], v23 }, d0, true );
-        auto p4 = sampleQuad( { v03, p, v23, v[3] }, d0, true );
-        p1.insert( p1.end(), p2.begin(), p2.end() );
-        p1.insert( p1.end(), p3.begin(), p3.end() );
-        p1.insert( p1.end(), p4.begin(), p4.end() );
-        return p1;
+            return { p0 };
     } else {
-        AMP_ERROR("Not finished" );
-        return {};
+        // Get the distance between each vertex and check if they are all within d0
+        double d1 = distance( v[0], v[1] );
+        double d2 = distance( v[1], v[2] );
+        double d3 = distance( v[2], v[3] );
+        double d4 = distance( v[3], v[0] );
+        if ( std::max( { d1, d2, d3, d4 } ) < d0 )
+            return { v[0], v[1], v[2], v[3] };
     }
+    // Split the quadrilateral into 4 triangles and sample the triangles
+    std::vector<Point3D> p;
+    sampleTri( { v[0], v[1], p0 }, d0, interior, p );
+    sampleTri( { v[1], v[2], p0 }, d0, interior, p );
+    sampleTri( { v[2], v[3], p0 }, d0, interior, p );
+    sampleTri( { v[3], v[0], p0 }, d0, interior, p );
+    // Remove duplicate points
+    if ( !interior )
+        AMP::Utilities::unique( p );
+    return p;
 }
 std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &v, double d0, bool interior )
 {

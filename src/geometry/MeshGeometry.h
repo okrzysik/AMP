@@ -134,12 +134,18 @@ public:
     //! Check if two geometries are equal
     bool operator==( const Geometry &rhs ) const override;
 
+private:
+    void updateCache() const; // Update cached data if underlying mesh has moved
 
 private:                                     // Internal data
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh; // Underlying mesh
     std::vector<int> d_surfaceIds;           // Surface ids
+    mutable uint64_t d_pos_hash;             // Position hash to update cached data
+    mutable bool d_isConvex;                 // Check if the mesh is convex
+    mutable double d_volume;                 // Cached value for the volume
+    mutable Point d_centroid;                // Cached value for the centroid
     AMP::Mesh::ElementFinder d_find;         // Nearest element finder
-    mutable Point d_inside;                  // A random point inside the object
+    mutable kdtree2<3, bool> d_inside;       // Lookup to find points inside/outside
 };
 
 

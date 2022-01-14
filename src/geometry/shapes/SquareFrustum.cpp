@@ -42,6 +42,7 @@ SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double 
 }
 void SquareFrustum::initialize( const std::vector<double> &range, int dir, double height )
 {
+    d_isPeriodic  = { false, false, false };
     d_dir         = dir;
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -323,8 +324,6 @@ std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<double> &r
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> SquareFrustum::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> SquareFrustum::getLogicalSurfaceIds() const { return { 1, 2, 3, 4, 5, 6 }; }
 
 
 /********************************************************

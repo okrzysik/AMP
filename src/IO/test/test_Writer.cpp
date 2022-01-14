@@ -234,17 +234,20 @@ void testWriterMesh( AMP::UnitTest &ut,
     auto surface = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
 
     // Create a simple DOFManager
+    uint8_t ndim    = mesh->getDim();
     auto DOFparams  = std::make_shared<AMP::Discretization::DOFManagerParameters>( mesh );
     auto DOF_scalar = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 1, true );
     auto DOF_volume = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 1, true );
-    auto DOF_vector = AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, 3, true );
-    auto DOF_gauss  = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
+    auto DOF_vector =
+        AMP::Discretization::simpleDOFManager::create( mesh, pointType, 1, ndim, true );
+    auto DOF_gauss = AMP::Discretization::simpleDOFManager::create( mesh, volumeType, 1, 8, true );
 
     // Create the vectors
     auto rank_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "rank" );
     auto position_var = std::make_shared<AMP::LinearAlgebra::Variable>( "position" );
     auto gp_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "gp_var" );
     auto id_var       = std::make_shared<AMP::LinearAlgebra::Variable>( "ids" );
+    auto norm_var     = std::make_shared<AMP::LinearAlgebra::Variable>( "normal" );
     auto meshID_var   = std::make_shared<AMP::LinearAlgebra::Variable>( "MeshID" );
     auto block_var    = std::make_shared<AMP::LinearAlgebra::Variable>( "block" );
     auto rank_vec     = AMP::LinearAlgebra::createVector( DOF_scalar, rank_var, true );
@@ -258,16 +261,16 @@ void testWriterMesh( AMP::UnitTest &ut,
 
     // Create a view of a vector
     AMP::Mesh::Mesh::shared_ptr clad;
-    AMP::LinearAlgebra::Vector::shared_ptr z_surface;
+    AMP::LinearAlgebra::Vector::shared_ptr x_surface;
     AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
     if ( surface ) {
         AMP::LinearAlgebra::VS_MeshIterator meshSelector( surface->getIterator( pointType, 1 ),
                                                           surface->getComm() );
-        AMP::LinearAlgebra::VS_Stride zSelector( 2, 3 );
+        AMP::LinearAlgebra::VS_Stride xSelector( 0, ndim );
         auto vec_meshSubset = position->select( meshSelector, "mesh subset" );
         AMP_ASSERT( vec_meshSubset );
-        z_surface = vec_meshSubset->select( zSelector, "z surface" );
-        AMP_ASSERT( z_surface );
+        x_surface = vec_meshSubset->select( xSelector, "x surface" );
+        AMP_ASSERT( x_surface );
         clad = mesh->Subset( "clad" );
         if ( clad ) {
             clad->setName( "clad" );
@@ -288,7 +291,7 @@ void testWriterMesh( AMP::UnitTest &ut,
         writer->registerVector( position, mesh, pointType, "position" );
         writer->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
         if ( surface )
-            writer->registerVector( z_surface, surface, pointType, "z_surface" );
+            writer->registerVector( x_surface, surface, pointType, "x_surface" );
         // Register a vector over the clad
         if ( clad )
             writer->registerVector( cladPosition, clad, pointType, "clad_position" );
@@ -296,7 +299,7 @@ void testWriterMesh( AMP::UnitTest &ut,
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
 
-    // For each submesh, store the mesh id, surface ids, and volume
+    // For each submesh, store the mesh id, surface ids, surface normal, and volume
     auto meshIDs = mesh->getBaseMeshIDs();
     for ( size_t i = 0; i < meshIDs.size(); i++ ) {
         auto mesh2 = mesh->Subset( meshIDs[i] );
@@ -311,6 +314,7 @@ void testWriterMesh( AMP::UnitTest &ut,
             // Get the surface
             auto surfaceMesh = mesh2->Subset( mesh2->getSurfaceIterator( surfaceType, 1 ) );
             if ( surfaceMesh ) {
+                // Store the surface id
                 auto DOF_surface = AMP::Discretization::simpleDOFManager::create(
                     surfaceMesh, surfaceType, 0, 1, true );
                 auto id_vec = AMP::LinearAlgebra::createVector( DOF_surface, id_var, true );
@@ -323,7 +327,41 @@ void testWriterMesh( AMP::UnitTest &ut,
                     for ( auto elem : surfaceMesh->getBoundaryIDIterator( surfaceType, id, 0 ) ) {
                         DOF_surface->getDOFs( elem.globalID(), dofs );
                         AMP_ASSERT( dofs.size() == 1 );
-                        id_vec->setValuesByGlobalID( 1, &dofs[0], &val );
+                        id_vec->setValuesByGlobalID( 1, dofs.data(), &val );
+                    }
+                }
+                // Store the surface normal
+                auto DOF_surfaceVec = AMP::Discretization::simpleDOFManager::create(
+                    surfaceMesh, surfaceType, 0, ndim, true );
+                try {
+                    auto norm_vec =
+                        AMP::LinearAlgebra::createVector( DOF_surfaceVec, norm_var, true );
+                    if ( properties.registerVectorWithMesh )
+                        writer->registerVector(
+                            norm_vec, surfaceMesh, surfaceType, "surface_normal" );
+                    norm_vec->setToScalar( 0 );
+                    for ( auto elem : surfaceMesh->getSurfaceIterator( surfaceType, 0 ) ) {
+                        auto norm = elem.norm();
+                        DOF_surfaceVec->getDOFs( elem.globalID(), dofs );
+                        AMP_ASSERT( dofs.size() == ndim );
+                        norm_vec->setValuesByGlobalID( ndim, dofs.data(), norm.data() );
+                    }
+                } catch ( ... ) {
+                }
+                // Store the surface normal given by the geometry
+                auto geom = mesh2->getGeometry();
+                if ( geom ) {
+                    auto norm_vec =
+                        AMP::LinearAlgebra::createVector( DOF_surfaceVec, norm_var, true );
+                    if ( properties.registerVectorWithMesh )
+                        writer->registerVector(
+                            norm_vec, surfaceMesh, surfaceType, "geometry_normal" );
+                    norm_vec->setToScalar( 0 );
+                    for ( auto elem : surfaceMesh->getSurfaceIterator( surfaceType, 0 ) ) {
+                        auto norm = geom->surfaceNorm( elem.centroid() );
+                        DOF_surfaceVec->getDOFs( elem.globalID(), dofs );
+                        AMP_ASSERT( dofs.size() == ndim );
+                        norm_vec->setValuesByGlobalID( ndim, dofs.data(), norm.data() );
                     }
                 }
             }

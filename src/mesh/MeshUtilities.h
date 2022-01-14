@@ -84,6 +84,12 @@ public:
      */
     double distance( const Point &pos, const Point &dir ) const;
 
+    //! Return the underlying tree
+    inline const auto &getTree() const { return d_tree; }
+
+    //! Ensure the tree is up-to-date
+    void update() const;
+
 private:
     void initialize() const;
 

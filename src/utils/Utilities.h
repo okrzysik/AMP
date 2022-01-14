@@ -376,6 +376,13 @@ class stackVector final
 {
 public:
     stackVector() : d_size( 0 ) {}
+    stackVector( std::initializer_list<TYPE> x ) : d_size( 0 )
+    {
+        if ( x.size() > CAPACITY )
+            throw std::bad_alloc();
+        for ( const auto &y : x )
+            d_data[d_size++] = y;
+    }
     size_t size() const { return d_size; }
     bool empty() const { return d_size == 0; }
     void push_back( const TYPE &v )

@@ -12,6 +12,8 @@ namespace AMP::Geometry {
  ********************************************************/
 RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { 1, 1, 1, 1 };
+    d_isPeriodic  = { false, false };
     d_physicalDim = 2;
     d_logicalDim  = 2;
     d_offset[0]   = 0;
@@ -22,6 +24,8 @@ RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db )
 }
 RegularPolygon::RegularPolygon( int N, double R ) : LogicalGeometry(), d_N( N ), d_R( R )
 {
+    d_ids         = { 1, 1, 1, 1 };
+    d_isPeriodic  = { false, false };
     d_physicalDim = 2;
     d_logicalDim  = 2;
     d_offset[0]   = 0;
@@ -37,18 +41,10 @@ void RegularPolygon::computeNorms()
         p[1] += d_offset[1];
     }
     // Calculate the normals
-    auto p0       = centroid();
-    auto calcNorm = [p0]( const Point &v1, const Point &v2 ) {
-        auto v  = normalize( v2 - v1 );
-        Point n = { v.x(), -v.y() };
-        if ( dot( n, v2 - p0 ) < 0 )
-            return -n;
-        return n;
-    };
     d_norm.resize( d_N );
-    d_norm[0] = calcNorm( d_vertices.back(), d_vertices[0] );
+    d_norm[0] = GeometryHelpers::normal( d_vertices.back(), d_vertices[0] );
     for ( size_t i = 1; i < d_vertices.size(); i++ )
-        d_norm[i] = calcNorm( d_vertices[i - 1], d_vertices[i] );
+        d_norm[i] = GeometryHelpers::normal( d_vertices[i - 1], d_vertices[i] );
 }
 
 
@@ -189,8 +185,6 @@ std::vector<int> RegularPolygon::getLogicalGridSize( const std::vector<double> &
     AMP_INSIST( res.size() == 2u, "Resolution must be an array of length 2" );
     return { (int) ( d_R / res[0] ), (int) ( d_R / res[1] ) };
 }
-std::vector<bool> RegularPolygon::getPeriodicDim() const { return { false, false }; }
-std::vector<int> RegularPolygon::getLogicalSurfaceIds() const { return { 1, 1, 1, 1 }; }
 
 
 /********************************************************

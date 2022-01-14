@@ -34,6 +34,7 @@ noExplicitConstructor:*/AMP/utils/Database.h
 noExplicitConstructor:*/AMP/utils/kdtree.h
 noExplicitConstructor:*/AMP/utils/extended_int.h
 noExplicitConstructor:*/AMP/utils/Units.h
+noExplicitConstructor:*/AMP/utils/Utilities.h
 noExplicitConstructor:*/AMP/vectors/Scalar.h
 noExplicitConstructor:*/AMP/vectors/Vector.h
 noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h

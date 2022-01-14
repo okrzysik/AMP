@@ -12,6 +12,8 @@ namespace AMP::Geometry {
  ********************************************************/
 SphereSurface::SphereSurface( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { -1, -1, -1, -1 };
+    d_isPeriodic  = { true, false };
     d_physicalDim = 3;
     d_logicalDim  = 2;
     d_offset[0]   = 0;
@@ -23,6 +25,8 @@ SphereSurface::SphereSurface( std::shared_ptr<const AMP::Database> db )
 }
 SphereSurface::SphereSurface( double r ) : LogicalGeometry(), d_r( r )
 {
+    d_ids         = { -1, -1, -1, -1 };
+    d_isPeriodic  = { true, false };
     d_physicalDim = 3;
     d_logicalDim  = 2;
     d_offset[0]   = 0;
@@ -156,8 +160,6 @@ std::vector<int> SphereSurface::getLogicalGridSize( const std::vector<double> &r
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> SphereSurface::getPeriodicDim() const { return { true, false }; }
-std::vector<int> SphereSurface::getLogicalSurfaceIds() const { return { -1, -1, -1, -1 }; }
 
 
 /********************************************************

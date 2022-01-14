@@ -100,6 +100,20 @@ unsigned int structuredMeshElement::globalOwnerRank() const
 }
 
 
+/********************************************************
+ * Return the vertices                                   *
+ ********************************************************/
+void structuredMeshElement::getVertices( std::vector<Point> &vertices ) const
+{
+    int N = 0;
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    vertices.resize( N, Point( d_physicalDim, { 0, 0, 0 } ) );
+    for ( int i = 0; i < N; i++ )
+        d_mesh->coord( nodes[i], vertices[i].data() );
+}
+
+
 /****************************************************************
  * Function to get the elements composing the current element    *
  * We use a Canonical numbering system                           *
@@ -166,15 +180,10 @@ void structuredMeshElement::getElementIndex( const GeomType type,
                 AMP_ERROR( "Dimension not supported yet" );
             }
         } else if ( d_index.type() == GeomType::Edge ) {
-            N                                = 2;
-            index[0]                         = d_index;
-            index[1]                         = d_index;
-            index[0].d_type                  = 0;
-            index[1].d_type                  = 0;
-            index[0].d_side                  = 0;
-            index[1].d_side                  = 0;
-            index[0].d_index[d_index.d_side] = ijk[d_index.d_side];
-            index[1].d_index[d_index.d_side] = ijk[d_index.d_side] + 1;
+            N = 2;
+            index[0].reset( GeomType::Vertex, 0, ijk[0], ijk[1], ijk[2] );
+            index[1].reset( GeomType::Vertex, 0, ijk[0], ijk[1], ijk[2] );
+            index[1].d_index[d_index.d_side]++;
         } else if ( d_index.type() == GeomType::Face ) {
             N = 4;
             if ( d_index.d_side == 0 ) {
@@ -421,9 +430,8 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         // We are looking for the current element
         return std::vector<MeshElement>( 1, MeshElement( *this ) );
     } else if ( static_cast<int>( type ) == d_index.d_type + 1 && type == d_meshType ) {
-        // We have an entity that is the geometric type-1 and we want to get the parents of the
-        // geometric type of the
-        // mesh
+        // We have an entity that is the geometric type-1 and we want to get the
+        // parents of the geometric type of the mesh
         BoxMesh::MeshElementIndex index( type, 0, ijk[0], ijk[1], ijk[2] );
         index_list.emplace_back( index );
         index.d_index[d_index.d_side]--;
@@ -739,18 +747,13 @@ Point structuredMeshElement::norm() const
         Point n = { -( p2.y() - p1.y() ), p2.x() - p1.x() };
         return normalize( n );
     } else if ( d_index.type() == GeomType::Face ) {
-        // Approximate normal for a quadrilateral
-        //     [ (y4-y1)*(z3-z2) - (z4-z1)*(y3-y2) ]
-        // n = [ (z4-z1)*(x3-x2) - (x4-x1)*(z3-z2) ] = (p4-p1) x (p3-p2)
-        //     [ (x4-x1)*(y3-y2) - (y4-y1)*(x3-x2) ]
         AMP_ASSERT( N == 4 );
-        Point p1 = { 0, 0, 0 }, p2 = { 0, 0, 0 }, p3 = { 0, 0, 0 }, p4 = { 0, 0, 0 };
-        d_mesh->coord( nodes[0], p1.data() );
-        d_mesh->coord( nodes[1], p2.data() );
-        d_mesh->coord( nodes[2], p3.data() );
-        d_mesh->coord( nodes[3], p4.data() );
-        auto n = cross( p4 - p1, p3 - p2 );
-        return normalize( n );
+        std::array<std::array<double, 3>, 4> p = { { 0 } };
+        d_mesh->coord( nodes[0], p[0].data() );
+        d_mesh->coord( nodes[1], p[1].data() );
+        d_mesh->coord( nodes[2], p[2].data() );
+        d_mesh->coord( nodes[3], p[3].data() );
+        return AMP::Geometry::GeometryHelpers::normalToQuadrilateral( p );
     } else if ( d_index.type() == GeomType::Volume ) {
         AMP_ERROR( "Not finished (dimension>3)" );
     }

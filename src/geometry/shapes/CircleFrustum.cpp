@@ -13,38 +13,46 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db ) : d_offset{ 0, 0, 0 }
+CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db )
+    : d_dir( 0 ), d_r{ 0, 0 }, d_h( 0 ), d_offset{ 0, 0, 0 }
 {
-    d_r[0]   = db->getScalar<double>( "BaseRadius" );
-    d_r[1]   = db->getScalar<double>( "TopRadius" );
-    d_h      = db->getScalar<double>( "Height" );
-    auto dir = db->getString( "Dir" );
+    double r1 = db->getScalar<double>( "BaseRadius" );
+    double r2 = db->getScalar<double>( "TopRadius" );
+    double h  = db->getScalar<double>( "Height" );
+    auto dir  = db->getString( "Dir" );
+    int dir2  = 0;
     if ( dir == "-x" )
-        d_dir = 0;
+        dir2 = 0;
     else if ( dir == "+x" )
-        d_dir = 1;
+        dir2 = 1;
     else if ( dir == "-y" )
-        d_dir = 2;
+        dir2 = 2;
     else if ( dir == "+y" )
-        d_dir = 3;
+        dir2 = 3;
     else if ( dir == "-z" )
-        d_dir = 4;
+        dir2 = 4;
     else if ( dir == "+z" )
-        d_dir = 5;
+        dir2 = 5;
     else
         AMP_ERROR( "Invalid value for Dir" );
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    AMP_INSIST( d_r[0] > d_r[1] && d_r[1] > 0, "Invalid value for r" );
-    // Compute the apex of the underlying cone
-    double h2      = d_h * d_r[0] / ( d_r[0] - d_r[1] );
-    d_C            = { 0, 0, 0 };
-    d_C[d_dir / 2] = d_dir % 2 == 0 ? -h2 : h2;
-    d_theta        = atan( d_r[0] / h2 );
+    initialize( dir2, { r1, r2 }, h );
 }
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
-    : LogicalGeometry(), d_dir( dir ), d_r{ r[0], r[1] }, d_h( height ), d_offset{ 0, 0, 0 }
+    : LogicalGeometry(), d_dir( 0 ), d_r{ 0, 0 }, d_h( 0 ), d_offset{ 0, 0, 0 }
 {
+    initialize( dir, r, height );
+}
+void CircleFrustum::initialize( int dir, const std::array<double, 2> &r, double h )
+{
+    d_ids         = { 2, 2, 2, 2, 0, 1 };
+    d_isPeriodic  = { false, false, false };
+    d_dir         = dir;
+    d_r[0]        = r[0];
+    d_r[1]        = r[1];
+    d_h           = h;
+    d_offset[0]   = 0;
+    d_offset[1]   = 0;
+    d_offset[2]   = 0;
     d_physicalDim = 3;
     d_logicalDim  = 3;
     AMP_INSIST( d_r[0] > d_r[1] && d_r[1] > 0, "Invalid value for r" );
@@ -372,8 +380,6 @@ std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<double> &r
     double R = std::max( d_r[0], d_r[1] );
     return { (int) ( R / res[0] ), (int) ( R / res[1] ), (int) ( d_h / res[2] ) };
 }
-std::vector<bool> CircleFrustum::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> CircleFrustum::getLogicalSurfaceIds() const { return { 2, 2, 2, 2, 0, 1 }; }
 
 
 /********************************************************

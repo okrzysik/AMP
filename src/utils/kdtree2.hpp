@@ -77,13 +77,42 @@ kdtree2<NDIM, TYPE>::kdtree2()
 }
 template<uint8_t NDIM, class TYPE>
 kdtree2<NDIM, TYPE>::kdtree2( size_t N, const std::array<double, NDIM> *x, const TYPE *data )
-    : d_N( N ),
+    : d_N( 0 ),
       d_split_dim( 0 ),
       d_split( 0 ),
       d_left( nullptr ),
       d_right( nullptr ),
       d_data( nullptr )
 {
+    initialize( N, x, data );
+}
+template<uint8_t NDIM, class TYPE>
+kdtree2<NDIM, TYPE>::kdtree2( const std::vector<std::array<double, NDIM>> &x,
+                              const std::vector<TYPE> &data )
+    : d_N( 0 ),
+      d_split_dim( 0 ),
+      d_split( 0 ),
+      d_left( nullptr ),
+      d_right( nullptr ),
+      d_data( nullptr )
+{
+    AMP_ASSERT( x.size() == data.size() );
+    if constexpr ( std::is_same<TYPE, bool>::value ) {
+        auto data2 = new bool[x.size()];
+        for ( size_t i = 0; i < x.size(); i++ )
+            data2[i] = data[i];
+        initialize( x.size(), x.data(), data2 );
+        delete[] data2;
+    } else {
+        initialize( x.size(), x.data(), data.data() );
+    }
+}
+template<uint8_t NDIM, class TYPE>
+void kdtree2<NDIM, TYPE>::initialize( size_t N,
+                                      const std::array<double, NDIM> *x,
+                                      const TYPE *data )
+{
+    d_N = N;
     // Update the box
     d_lb.fill( 1e100 );
     d_ub.fill( -1e100 );
@@ -235,6 +264,28 @@ std::array<double, 2 * NDIM> kdtree2<NDIM, TYPE>::box() const
 
 
 /********************************************************
+ * Return the points in the domain                       *
+ ********************************************************/
+template<uint8_t NDIM, class TYPE>
+std::vector<std::array<double, NDIM>> kdtree2<NDIM, TYPE>::getPoints() const
+{
+    std::vector<Point> x;
+    getPoints( x );
+    return x;
+}
+template<uint8_t NDIM, class TYPE>
+void kdtree2<NDIM, TYPE>::getPoints( std::vector<Point> &x ) const
+{
+    if ( d_left ) {
+        d_left->getPoints( x );
+        d_right->getPoints( x );
+    } else {
+        x.insert( x.end(), d_data->x.begin(), d_data->x.end() );
+    }
+}
+
+
+/********************************************************
  * Find the ideal point to split such that we divide     *
  *   both the space and points as much as possible       *
  ********************************************************/
@@ -321,7 +372,7 @@ void kdtree2<NDIM, TYPE>::findNearest( const Point &x,
             double d = norm( x - d_data->x[i] );
             if ( d < dist[N - 1] ) {
                 dist[N - 1]    = d;
-                nearest[N - 1] = std::tie( d_data->x[i], d_data->data[i] );
+                nearest[N - 1] = std::tuple<Point, TYPE>( d_data->x[i], d_data->data[i] );
                 for ( size_t j = N - 1; j > 0; j-- ) {
                     if ( dist[j] < dist[j - 1] ) {
                         std::swap( dist[j], dist[j - 1] );
@@ -352,7 +403,7 @@ void kdtree2<NDIM, TYPE>::checkNearest( const Point &x,
         double dist2 = norm( x - d_data->x[i] );
         if ( dist2 < dist[N - 1] ) {
             dist[N - 1]    = dist2;
-            nearest[N - 1] = std::tie( d_data->x[i], d_data->data[i] );
+            nearest[N - 1] = std::tuple<Point, TYPE>( d_data->x[i], d_data->data[i] );
             for ( size_t j = N - 1; j > 0; j-- ) {
                 if ( dist[j] < dist[j - 1] ) {
                     std::swap( dist[j], dist[j - 1] );

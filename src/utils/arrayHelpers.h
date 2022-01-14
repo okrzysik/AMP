@@ -173,10 +173,6 @@ constexpr double norm( const std::array<double, N> &x )
         return n;
     }
 }
-constexpr double norm( const std::array<double, 3> &x )
-{
-    return x[0] * x[0] + x[1] * x[1] + x[2] * x[2];
-}
 template<std::size_t N>
 constexpr std::array<double, N> normalize( const std::array<double, N> &x )
 {

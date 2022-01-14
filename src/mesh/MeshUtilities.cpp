@@ -442,7 +442,7 @@ void ElementFinder::initialize() const
         volume += elem.volume();
     }
     volume /= d_elements.size();
-    d_dist = 0.2 * pow( volume, 1.0 / static_cast<int>( type ) );
+    d_dist = 0.5 * pow( volume, 1.0 / static_cast<int>( type ) );
     // Create a list of points in each element and the mesh ids
     std::vector<AMP::Mesh::MeshElementID> ids;
     std::vector<std::array<double, 3>> points;
@@ -484,6 +484,12 @@ void ElementFinder::initialize() const
     d_pos_hash = d_mesh->positionHash();
     // Create a kdtree with the points
     d_tree = AMP::kdtree2<3, AMP::Mesh::MeshElementID>( ids.size(), points.data(), ids.data() );
+}
+void ElementFinder::update() const
+{
+    // Update cached data if position moved
+    if ( d_pos_hash != d_mesh->positionHash() )
+        initialize();
 }
 std::pair<AMP::Mesh::MeshElement, Point> ElementFinder::nearest( const Point &x ) const
 {

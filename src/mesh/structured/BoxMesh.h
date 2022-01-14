@@ -138,6 +138,7 @@ public:
         uint8_t d_type; //!<  Mesh element type
         uint8_t d_side; //!<  Are we dealing with x, y, or z faces/edges
         int d_index[3]; //!<  Global x, y, z index (may be negative with periodic boundaries)
+        friend class BoxMesh;
         friend class structuredMeshElement;
     };
 
@@ -421,6 +422,9 @@ protected:
     // Function to finalize the mesh data once the coordinates have been set
     void finalize();
 
+    // Get the surface set for a given surface/type
+    ElementBlocks getSurface( int surface, GeomType type ) const;
+
     // Function to finalize the mesh data once the coordinates have been set
     virtual void createBoundingBox();
 
@@ -430,7 +434,7 @@ protected:
     // Helper functions to identify the iterator blocks
     ElementBlocks
     getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const;
-    static ElementBlocks intersect( const ElementBlocks &v1, const ElementBlocks &v2 );
+    ElementBlocks intersect( const ElementBlocks &v1, const ElementBlocks &v2 ) const;
 
     // Helper function to create an iterator from an ElementBlocks list
     inline MeshIterator createIterator( const ElementBlocks &list ) const;
@@ -452,7 +456,6 @@ protected:                            // Internal data
     std::array<int, 6> d_localIndex;  // Local index range (cached for performance)
     std::array<int, 3> d_indexSize;   // Local index size (local box + 2) (cached for performance)
     std::array<int, 6> d_surfaceId;   // ID of each surface (if any, -1 if not)
-    ElementBlocks d_globalSurfaceList[6][4]; // List of logical surface elements (surface/type)
 
 protected: // Friend functions to access protected functions
     friend class structuredMeshElement;

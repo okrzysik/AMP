@@ -12,6 +12,8 @@ namespace AMP::Geometry {
  ********************************************************/
 Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { 4, 4, 4, 4, 2, 1 };
+    d_isPeriodic  = { false, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -26,6 +28,8 @@ Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db )
 Cylinder::Cylinder( double r, double z_min, double z_max )
     : LogicalGeometry(), d_r( r ), d_z_min( z_min ), d_z_max( z_max )
 {
+    d_ids         = { 4, 4, 4, 4, 2, 1 };
+    d_isPeriodic  = { false, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -193,8 +197,6 @@ std::vector<int> Cylinder::getLogicalGridSize( const std::vector<double> &res ) 
              (int) ( 2 * d_r / res[1] ),
              (int) ( ( d_z_max - d_z_min ) / res[2] ) };
 }
-std::vector<bool> Cylinder::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> Cylinder::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }
 
 
 /********************************************************

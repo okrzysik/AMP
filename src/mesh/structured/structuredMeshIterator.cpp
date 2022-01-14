@@ -70,6 +70,7 @@ structuredMeshIterator::structuredMeshIterator( const BoxMesh::MeshElementIndex 
       d_last( last ),
       d_mesh( mesh )
 {
+    AMP_ASSERT( first.side() == last.side() && first.type() == last.type() );
     d_typeID        = getTypeID();
     d_iterator      = nullptr;
     d_pos           = pos;

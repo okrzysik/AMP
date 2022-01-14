@@ -75,6 +75,25 @@ void MeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neigh
 
 
 /********************************************************
+ * Return the vertices                                  *
+ ********************************************************/
+void MeshElement::getVertices( std::vector<Point> &vertices ) const
+{
+    if ( element )
+        AMP_ERROR( "getNeighbors is not implemented for the base class (" + elementClass() + ")" );
+    if ( globalID().type() == GeomType::Vertex ) {
+        vertices.resize( 1 );
+        vertices[0] = coord();
+    } else {
+        auto elems = getElements( GeomType::Vertex );
+        vertices.resize( elems.size() );
+        for ( size_t i = 0; i < elems.size(); i++ )
+            vertices[i] = elems[i].coord();
+    }
+}
+
+
+/********************************************************
  * Function to check if a point is within an element     *
  ********************************************************/
 bool MeshElement::containsPoint( const Point &pos, double TOL ) const
