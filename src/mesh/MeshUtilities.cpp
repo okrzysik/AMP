@@ -1,5 +1,5 @@
 #include "AMP/mesh/MeshUtilities.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/kdtree.h"
@@ -484,6 +484,12 @@ void ElementFinder::initialize() const
     d_pos_hash = d_mesh->positionHash();
     // Create a kdtree with the points
     d_tree = AMP::kdtree2<3, AMP::Mesh::MeshElementID>( ids.size(), points.data(), ids.data() );
+}
+void ElementFinder::update() const
+{
+    // Update cached data if position moved
+    if ( d_pos_hash != d_mesh->positionHash() )
+        initialize();
 }
 std::pair<AMP::Mesh::MeshElement, Point> ElementFinder::nearest( const Point &x ) const
 {

@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/Shell.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -12,6 +12,8 @@ namespace AMP::Geometry {
  ********************************************************/
 Shell::Shell( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { -1, -1, -1, -1, 3, 4 };
+    d_isPeriodic  = { true, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -24,6 +26,8 @@ Shell::Shell( std::shared_ptr<const AMP::Database> db )
 }
 Shell::Shell( double r_min, double r_max ) : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max )
 {
+    d_ids         = { -1, -1, -1, -1, 3, 4 };
+    d_isPeriodic  = { true, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -167,7 +171,7 @@ double Shell::volume() const
 std::vector<int> Shell::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
-    return { 2 * x[0], 2 * x[0], x[1] };
+    return { 4 * x[0], 2 * x[0], x[1] };
 }
 std::vector<int> Shell::getLogicalGridSize( const std::vector<double> &res ) const
 {
@@ -175,8 +179,6 @@ std::vector<int> Shell::getLogicalGridSize( const std::vector<double> &res ) con
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> Shell::getPeriodicDim() const { return { true, false, false }; }
-std::vector<int> Shell::getLogicalSurfaceIds() const { return { -1, -1, 1, 2, 3, 4 }; }
 
 
 /********************************************************

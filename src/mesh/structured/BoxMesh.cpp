@@ -110,10 +110,6 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
         d_endIndex[d]   = mesh.d_endIndex[d];
     }
     d_surfaceId = mesh.d_surfaceId;
-    for ( int d = 0; d < 4; d++ ) {
-        for ( int i = 0; i < 6; i++ )
-            d_globalSurfaceList[i][d] = mesh.d_globalSurfaceList[i][d];
-    }
 }
 
 
@@ -210,83 +206,6 @@ void BoxMesh::initialize()
             d_localIndex[2 * d + 1] = d_globalSize[d];
         d_localIndex[2 * d + 1]++;
     }
-    // Create the list of elements on each surface
-    const std::array<int, 6> globalRange = { 0, std::max( d_globalSize[0] - 1, 0 ),
-                                             0, std::max( d_globalSize[1] - 1, 0 ),
-                                             0, std::max( d_globalSize[2] - 1, 0 ) };
-    for ( int d = 0; d < static_cast<int>( GeomDim ); d++ ) {
-        // Loop through the different geometry types;
-        for ( int t = 0; t <= static_cast<int>( GeomDim ); t++ ) {
-            auto type         = static_cast<GeomType>( t );
-            auto range1       = globalRange;
-            auto range2       = globalRange;
-            range1[2 * d + 0] = 0;
-            range1[2 * d + 1] = 0;
-            range2[2 * d + 0] = d_globalSize[d] - 1;
-            range2[2 * d + 1] = d_globalSize[d] - 1;
-            auto set1         = getIteratorRange( range1, type, 0 );
-            auto set2         = getIteratorRange( range2, type, 0 );
-            // Create the surface list
-            if ( type == GeomDim ) {
-                AMP_ASSERT( set1.size() == 1u && set2.size() == 1u );
-                d_globalSurfaceList[2 * d + 0][t].push_back( set1[0] );
-                d_globalSurfaceList[2 * d + 1][t].push_back( set2[0] );
-            } else if ( type == GeomType::Vertex ) {
-                AMP_ASSERT( set1.size() == 1u && set2.size() == 1u );
-                set1[0].first.index( d )  = 0;
-                set1[0].second.index( d ) = 0;
-                set2[0].first.index( d )  = d_globalSize[d];
-                set2[0].second.index( d ) = d_globalSize[d];
-                d_globalSurfaceList[2 * d + 0][t].push_back( set1[0] );
-                d_globalSurfaceList[2 * d + 1][t].push_back( set2[0] );
-            } else if ( type == GeomType::Edge && GeomDim == GeomType::Face ) {
-                AMP_ASSERT( set1.size() == 2u && set2.size() == 2u );
-                for ( size_t i = 0; i < set1.size(); i++ ) {
-                    if ( set1[i].first.side() == d ) {
-                        set1[i].first.index( d )  = 0;
-                        set1[i].second.index( d ) = 0;
-                        set2[i].first.index( d )  = d_globalSize[d];
-                        set2[i].second.index( d ) = d_globalSize[d];
-                        d_globalSurfaceList[2 * d + 0][t].push_back( set1[i] );
-                        d_globalSurfaceList[2 * d + 1][t].push_back( set2[i] );
-                    }
-                }
-            } else if ( type == GeomType::Edge && GeomDim == GeomType::Volume ) {
-                AMP_ASSERT( set1.size() == 3u && set2.size() == 3u );
-                for ( size_t i = 0; i < set1.size(); i++ ) {
-                    if ( set1[i].first.side() == d ) {
-                        set1[i].first.index( d )  = 0;
-                        set1[i].second.index( d ) = 0;
-                        set2[i].first.index( d )  = d_globalSize[d];
-                        set2[i].second.index( d ) = d_globalSize[d];
-                        d_globalSurfaceList[2 * d + 0][t].push_back( set1[i] );
-                        d_globalSurfaceList[2 * d + 1][t].push_back( set2[i] );
-                    }
-                }
-            } else if ( type == GeomType::Face && GeomDim == GeomType::Volume ) {
-                AMP_ASSERT( set1.size() == 3u && set2.size() == 3u );
-                for ( size_t i = 0; i < set1.size(); i++ ) {
-                    if ( set1[i].first.side() == d ) {
-                        set1[i].first.index( d )  = 0;
-                        set1[i].second.index( d ) = 0;
-                        set2[i].first.index( d )  = d_globalSize[d];
-                        set2[i].second.index( d ) = d_globalSize[d];
-                        d_globalSurfaceList[2 * d + 0][t].push_back( set1[i] );
-                        d_globalSurfaceList[2 * d + 1][t].push_back( set2[i] );
-                    }
-                }
-            } else {
-                AMP_ERROR( "Unknown type" );
-            }
-        }
-    }
-    for ( int i = 0; i < 6; i++ ) {
-        if ( d_surfaceId[i] == -1 ) {
-            for ( int j = 0; j < static_cast<int>( GeomDim ); j++ )
-                d_globalSurfaceList[i][j].clear();
-        }
-    }
-    // Create the initial boundary info
 }
 void BoxMesh::createBoundingBox()
 {
@@ -342,9 +261,116 @@ void BoxMesh::finalize()
 
 
 /****************************************************************
- * De-constructor                                                *
+ * Destructor                                                    *
  ****************************************************************/
 BoxMesh::~BoxMesh() = default;
+
+
+/****************************************************************
+ * Get the surface element ranges                                *
+ ****************************************************************/
+BoxMesh::ElementBlocks BoxMesh::getSurface( int s, GeomType type ) const
+{
+    // Check if we are keeping the given surface
+    int d     = s / 2;
+    int s_max = 2 * static_cast<int>( GeomDim );
+    if ( d_surfaceId[s] == -1 || s > s_max || d_isPeriodic[d] )
+        return {};
+    // Initialize some basic info
+    bool left                   = s % 2 == 0;
+    std::array<int, 3> lastCell = { std::max( d_globalSize[0] - 1, 0 ),
+                                    std::max( d_globalSize[1] - 1, 0 ),
+                                    std::max( d_globalSize[2] - 1, 0 ) };
+    auto lastNode               = lastCell;
+    for ( int d2 = 0; d2 < static_cast<int>( GeomDim ); d2++ ) {
+        if ( !d_isPeriodic[d2] )
+            lastNode[d2]++;
+    }
+    // Create the surface list
+    if ( type == GeomDim ) {
+        // We are dealing with the desired geometric type (e.g. Volume)
+        MeshElementIndex first( GeomDim, 0, 0, 0, 0 );
+        MeshElementIndex last( GeomDim, 0, lastCell[0], lastCell[1], lastCell[2] );
+        if ( left )
+            last.d_index[d] = first.d_index[d];
+        else
+            first.d_index[d] = last.d_index[d];
+        return { std::make_pair( first, last ) };
+    } else if ( type == GeomType::Vertex ) {
+        // We are dealing with a vertex
+        MeshElementIndex first( GeomType::Vertex, 0, 0, 0, 0 );
+        MeshElementIndex last( GeomType::Vertex, 0, lastNode[0], lastNode[1], lastNode[2] );
+        if ( left )
+            last.d_index[d] = first.d_index[d];
+        else
+            first.d_index[d] = last.d_index[d];
+        return { std::make_pair( first, last ) };
+    } else if ( type == GeomType::Edge && GeomDim == GeomType::Face ) {
+        // We are dealing with the Edges of Face data
+        MeshElementIndex first( GeomType::Edge, 0, 0, 0, 0 );
+        MeshElementIndex last( GeomType::Edge, 0, lastCell[0], lastCell[1], lastCell[2] );
+        last.d_index[d] = lastNode[d];
+        if ( left )
+            last.d_index[d] = first.d_index[d];
+        else
+            first.d_index[d] = last.d_index[d];
+        if ( d == 0 ) {
+            first.d_side = 1;
+            last.d_side  = 1;
+            return { std::make_pair( first, last ) };
+        } else if ( d == 1 ) {
+            first.d_side = 0;
+            last.d_side  = 0;
+            return { std::make_pair( first, last ) };
+        }
+    } else if ( type == GeomType::Edge && GeomDim == GeomType::Volume ) {
+        // We are dealing with the Edges of Volume data
+        MeshElementIndex first( GeomType::Edge, 0, 0, 0, 0 );
+        MeshElementIndex last( GeomType::Edge, 0, lastCell[0], lastCell[1], lastCell[2] );
+        last.d_index[d] = lastNode[d];
+        if ( left )
+            last.d_index[d] = first.d_index[d];
+        else
+            first.d_index[d] = last.d_index[d];
+        ElementBlocks list;
+        if ( d == 0 ) {
+            first.d_side = 1;
+            last.d_side  = 1;
+            list.push_back( std::make_pair( first, last ) );
+            first.d_side = 2;
+            last.d_side  = 2;
+            list.push_back( std::make_pair( first, last ) );
+        } else if ( d == 1 ) {
+            first.d_side = 0;
+            last.d_side  = 0;
+            list.push_back( std::make_pair( first, last ) );
+            first.d_side = 2;
+            last.d_side  = 2;
+            list.push_back( std::make_pair( first, last ) );
+        } else {
+            first.d_side = 0;
+            last.d_side  = 0;
+            list.push_back( std::make_pair( first, last ) );
+            first.d_side = 1;
+            last.d_side  = 1;
+            list.push_back( std::make_pair( first, last ) );
+        }
+        return list;
+    } else if ( type == GeomType::Face && GeomDim == GeomType::Volume ) {
+        // We are dealing with the Faces of Volume data
+        MeshElementIndex first( GeomType::Face, d, 0, 0, 0 );
+        MeshElementIndex last( GeomType::Face, d, lastCell[0], lastCell[1], lastCell[2] );
+        last.d_index[d] = lastNode[d];
+        if ( left )
+            last.d_index[d] = first.d_index[d];
+        else
+            first.d_index[d] = last.d_index[d];
+        return { std::make_pair( first, last ) };
+    } else {
+        AMP_ERROR( "Unknown type" );
+    }
+    return {};
+}
 
 
 /****************************************************************
@@ -637,13 +663,15 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
     }
     return blocks;
 }
-BoxMesh::ElementBlocks BoxMesh::intersect( const ElementBlocks &set1, const ElementBlocks &set2 )
+BoxMesh::ElementBlocks BoxMesh::intersect( const ElementBlocks &set1,
+                                           const ElementBlocks &set2 ) const
 {
     ElementBlocks set;
-    for ( const auto &v1 : set1 ) {
-        for ( const auto &v2 : set2 ) {
+    for ( auto v1 : set1 ) {
+        for ( auto v2 : set2 ) {
             if ( v1.first.type() != v2.first.type() || v1.first.side() != v2.first.side() )
                 continue;
+            // Perform the intersection
             auto v              = v1;
             v.first.index( 0 )  = std::max( v1.first.index( 0 ), v2.first.index( 0 ) );
             v.first.index( 1 )  = std::max( v1.first.index( 1 ), v2.first.index( 1 ) );
@@ -696,9 +724,20 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     // Include each surface as needed
     ElementBlocks sufaceSet;
     for ( int i = 0; i < 2 * static_cast<int>( GeomDim ); i++ ) {
-        if ( d_surfaceId[i] != -1 ) {
-            for ( const auto &item : d_globalSurfaceList[i][static_cast<int>( type )] )
-                sufaceSet.emplace_back( item );
+        auto surface = getSurface( i, type );
+        for ( const auto &item : surface )
+            sufaceSet.emplace_back( item );
+    }
+    // Expand the periodic dimensions of the surface sets
+    if ( gcw > 0 ) {
+        for ( auto &data : sufaceSet ) {
+            for ( int d = 0; d < 3; d++ ) {
+                if ( d_isPeriodic[d] && data.first.index( d ) == 0 &&
+                     data.second.index( d ) == d_globalSize[d] - 1 ) {
+                    data.first.index( d ) -= gcw;
+                    data.second.index( d ) += gcw;
+                }
+            }
         }
     }
     // Intersect with the local ghost box
@@ -706,20 +745,29 @@ MeshIterator BoxMesh::getSurfaceIterator( const GeomType type, const int gcw ) c
     auto range        = getIteratorRange( box, type, gcw );
     auto intersection = intersect( sufaceSet, range );
     // Create a list if elements removing any duplicate elements
-    std::set<MeshElementIndex> set;
+    auto elements = std::make_shared<std::vector<MeshElementIndex>>();
     for ( auto block : intersection ) {
         auto itype = block.first.type();
         auto side  = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
+            int k2 = k;
+            if ( d_isPeriodic[2] )
+                k2 = ( k + d_globalSize[2] ) % d_globalSize[2];
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
+                int j2 = j;
+                if ( d_isPeriodic[1] )
+                    j2 = ( j + d_globalSize[1] ) % d_globalSize[1];
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {
-                    set.emplace( MeshElementIndex( itype, side, i, j, k ) );
+                    int i2 = i;
+                    if ( d_isPeriodic[0] )
+                        i2 = ( i + d_globalSize[0] ) % d_globalSize[0];
+                    elements->emplace_back( itype, side, i2, j2, k2 );
                 }
             }
         }
     }
+    AMP::Utilities::unique( *elements );
     // Create the iterator
-    auto elements = std::make_shared<std::vector<MeshElementIndex>>( set.begin(), set.end() );
     return structuredMeshIterator( elements, this, 0 );
 }
 
@@ -745,8 +793,21 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     ElementBlocks sufaceSet;
     for ( int i = 0; i < 2 * static_cast<int>( GeomDim ); i++ ) {
         if ( d_surfaceId[i] == id ) {
-            for ( auto item : d_globalSurfaceList[i][static_cast<int>( type )] )
+            auto surface = getSurface( i, type );
+            for ( const auto &item : surface )
                 sufaceSet.emplace_back( item );
+        }
+    }
+    // Expand the periodic dimensions of the surface sets
+    if ( gcw > 0 ) {
+        for ( auto &data : sufaceSet ) {
+            for ( int d = 0; d < 3; d++ ) {
+                if ( d_isPeriodic[d] && data.first.index( d ) == 0 &&
+                     data.second.index( d ) == d_globalSize[d] - 1 ) {
+                    data.first.index( d ) -= gcw;
+                    data.second.index( d ) += gcw;
+                }
+            }
         }
     }
     // Intersect with the local ghost box
@@ -754,20 +815,20 @@ BoxMesh::getBoundaryIDIterator( const GeomType type, const int id, const int gcw
     auto range        = getIteratorRange( box, type, gcw );
     auto intersection = intersect( sufaceSet, range );
     // Create a list if elements removing any duplicate elements
-    std::set<MeshElementIndex> set;
+    auto elements = std::make_shared<std::vector<MeshElementIndex>>();
     for ( auto block : intersection ) {
         auto itype = block.first.type();
         auto side  = block.first.side();
         for ( int k = block.second.index( 2 ); k >= block.first.index( 2 ); k-- ) {
             for ( int j = block.second.index( 1 ); j >= block.first.index( 1 ); j-- ) {
                 for ( int i = block.second.index( 0 ); i >= block.first.index( 0 ); i-- ) {
-                    set.emplace( MeshElementIndex( itype, side, i, j, k ) );
+                    elements->emplace_back( itype, side, i, j, k );
                 }
             }
         }
     }
+    AMP::Utilities::unique( *elements );
     // Create the iterator
-    auto elements = std::make_shared<std::vector<MeshElementIndex>>( set.begin(), set.end() );
     return structuredMeshIterator( elements, this, 0 );
 }
 std::vector<int> BoxMesh::getBlockIDs() const { return std::vector<int>( 1, 0 ); }

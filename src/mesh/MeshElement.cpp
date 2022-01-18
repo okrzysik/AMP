@@ -1,5 +1,5 @@
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Utilities.h"
 
 #include <cstring>
@@ -71,6 +71,25 @@ void MeshElement::getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neigh
     if ( element == nullptr )
         AMP_ERROR( "getNeighbors is not implemented for the base class (" + elementClass() + ")" );
     element->getNeighbors( neighbors );
+}
+
+
+/********************************************************
+ * Return the vertices                                  *
+ ********************************************************/
+void MeshElement::getVertices( std::vector<Point> &vertices ) const
+{
+    if ( element )
+        AMP_ERROR( "getNeighbors is not implemented for the base class (" + elementClass() + ")" );
+    if ( globalID().type() == GeomType::Vertex ) {
+        vertices.resize( 1 );
+        vertices[0] = coord();
+    } else {
+        auto elems = getElements( GeomType::Vertex );
+        vertices.resize( elems.size() );
+        for ( size_t i = 0; i < elems.size(); i++ )
+            vertices[i] = elems[i].coord();
+    }
 }
 
 

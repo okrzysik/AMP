@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/Sphere.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -12,6 +12,8 @@ namespace AMP::Geometry {
  ********************************************************/
 Sphere::Sphere( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { 4, 4, 4, 4, 2, 1 };
+    d_isPeriodic  = { false, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -23,6 +25,8 @@ Sphere::Sphere( std::shared_ptr<const AMP::Database> db )
 }
 Sphere::Sphere( double r ) : LogicalGeometry(), d_r( r )
 {
+    d_ids         = { 4, 4, 4, 4, 2, 1 };
+    d_isPeriodic  = { false, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -153,8 +157,6 @@ std::vector<int> Sphere::getLogicalGridSize( const std::vector<double> &res ) co
     int N       = std::max<int>( 2 * d_r / res2, 1 );
     return { N, N, N };
 }
-std::vector<bool> Sphere::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> Sphere::getLogicalSurfaceIds() const { return { 4, 4, 4, 4, 2, 1 }; }
 
 
 /********************************************************

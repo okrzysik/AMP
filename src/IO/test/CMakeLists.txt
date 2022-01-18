@@ -6,6 +6,7 @@ COPY_TEST_FILE( input_SiloIO-2        ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( input_AMP_mesh_zoo_1D ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( input_AMP_mesh_zoo_2D ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( input_AMP_mesh_zoo_3D ${AMP_SOURCE_DIR}/mesh/test/data )
+COPY_TEST_FILE( input_crystal_circular_tri ${AMP_SOURCE_DIR}/mesh/test/data )
 COPY_TEST_FILE( CRYSTAL_FINAL_2mm.STL ${AMP_SOURCE_DIR}/mesh/test/data )
 # Copy meshes
 IF ( AMP_DATA )

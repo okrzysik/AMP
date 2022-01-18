@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/Parallelepiped.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -13,6 +13,8 @@ namespace AMP::Geometry {
 Parallelepiped::Parallelepiped( std::shared_ptr<const AMP::Database> db )
 {
     // Fill some basic properties
+    d_ids         = { 4, 4, 4, 4, 2, 1 };
+    d_isPeriodic  = { false, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -250,8 +252,6 @@ std::vector<int> Parallelepiped::getLogicalGridSize( const std::vector<double> &
     int N3   = std::max<int>( c / res[2], 1 );
     return { N1, N2, N3 };
 }
-std::vector<bool> Parallelepiped::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> Parallelepiped::getLogicalSurfaceIds() const { return { 0, 1, 2, 3, 4, 5 }; }
 
 
 /********************************************************

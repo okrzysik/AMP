@@ -667,26 +667,67 @@ void meshTests::VerifyBoundaryIDNodeIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh
 // This tests loops over the boundary
 void meshTests::VerifyBoundaryIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    bool is_surfaceMesh = static_cast<int>( mesh->getGeomType() ) < mesh->getDim();
-    for ( int gcw = 0; gcw <= 0; gcw++ ) {
-        for ( int type2 = 0; type2 <= (int) mesh->getGeomType(); type2++ ) {
-            auto type = (AMP::Mesh::GeomType) type2;
-            // Get the iterator over the current boundary id
-            auto iterator      = mesh->getSurfaceIterator( type, gcw );
-            size_t global_size = mesh->getComm().sumReduce( iterator.size() );
-            bool passes        = global_size > 0;
-            if ( std::dynamic_pointer_cast<AMP::Mesh::SubsetMesh>( mesh ).get() == nullptr ) {
-                if ( mesh->numGlobalElements( type ) >= 100 )
-                    passes = passes && ( global_size < mesh->numGlobalElements( type ) );
+    // Test all meshes within a multimesh
+    auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
+    if ( multimesh ) {
+        for ( auto mesh2 : multimesh->getMeshes() )
+            meshTests::VerifyBoundaryIterator( ut, mesh2 );
+    }
+    // Surface meshes may not have their own surfaces
+    if ( static_cast<int>( mesh->getGeomType() ) < mesh->getDim() )
+        return;
+    // Check that we can create surface iterators
+    bool passCreated  = true;
+    bool passInterior = true;
+    bool passUnique   = true;
+    for ( int type2 = 0; type2 <= (int) mesh->getGeomType(); type2++ ) {
+        auto type = (AMP::Mesh::GeomType) type2;
+        // Get the iterator over the current boundary id
+        auto iterator      = mesh->getSurfaceIterator( type, 0 );
+        size_t global_size = mesh->getComm().sumReduce( iterator.size() );
+        passCreated        = passCreated && global_size > 0;
+        passInterior       = passInterior && global_size < mesh->numGlobalElements( type );
+        // Check for duplicate elements
+        std::vector<AMP::Mesh::MeshElementID> ids;
+        ids.reserve( iterator.size() );
+        for ( const auto &elem : iterator )
+            ids.push_back( elem.globalID() );
+        AMP::Utilities::unique( ids );
+        passUnique = passUnique && ids.size() == iterator.size();
+    }
+    if ( !passCreated ) {
+        ut.failure( "Non-trivial surface iterator created: " + mesh->getName() );
+        return;
+    }
+    if ( !passInterior )
+        ut.expected_failure( "Surface iterator created (no interior points): " + mesh->getName() );
+    if ( !passUnique )
+        ut.failure( "Surface iterator has duplicate points: " + mesh->getName() );
+    if ( passCreated && passInterior && passUnique )
+        ut.passes( "Non-trivial surface iterator created: " + mesh->getName() );
+    // Check that the nodes of surface elements < physical dim are on the surface
+    std::vector<AMP::Mesh::MeshElementID> nodes;
+    for ( auto &elem : mesh->getSurfaceIterator( AMP::Mesh::GeomType::Vertex, 1 ) )
+        nodes.push_back( elem.globalID() );
+    AMP::Utilities::unique( nodes );
+    AMP_ASSERT( !nodes.empty() );
+    bool pass = true;
+    std::vector<AMP::Mesh::MeshElementID> tmp;
+    for ( int type2 = 1; type2 <= (int) mesh->getGeomType() && type2 < mesh->getDim(); type2++ ) {
+        auto type = (AMP::Mesh::GeomType) type2;
+        for ( auto &elem : mesh->getSurfaceIterator( type, 0 ) ) {
+            elem.getElementsID( AMP::Mesh::GeomType::Vertex, tmp );
+            for ( auto id : tmp ) {
+                size_t i = std::min( AMP::Utilities::findfirst( nodes, id ), nodes.size() - 1 );
+                if ( nodes[i] != id )
+                    pass = false;
             }
-            if ( passes )
-                ut.passes( "Non-trivial surface iterator created" );
-            else if ( is_surfaceMesh )
-                ut.expected_failure( "Non-trivial surface iterator created: " + mesh->getName() );
-            else
-                ut.failure( "Non-trivial surface iterator created: " + mesh->getName() );
         }
     }
+    if ( pass )
+        ut.passes( "Surface elements have all nodes on surface: " + mesh->getName() );
+    else
+        ut.failure( "Surface elements have all nodes on surface: " + mesh->getName() );
 }
 
 
@@ -1082,7 +1123,7 @@ void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::
             meshTests::VerifyBoundaryIteratorTest( ut, mesh2 );
     } else if ( mesh->meshClass().find( "libmeshMesh" ) != std::string::npos ) {
         // libmeshMesh does not currently support getElementParents
-        ut.expected_failure( "VerifyElementForNode" + mesh->getName() );
+        ut.expected_failure( "VerifyElementForNode: " + mesh->getName() );
         return;
     } else {
         auto isBoundaryElement = []( const AMP::Mesh::MeshElement &elem ) {
@@ -1105,12 +1146,12 @@ void meshTests::VerifyBoundaryIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::
             for ( const auto &node :
                   mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, bid ) ) {
                 if ( !isNodeOnBoundary( node, mesh ) ) {
-                    ut.expected_failure( "Verify Boundary iterator" );
+                    ut.expected_failure( "Verify Boundary iterator: " + mesh->getName() );
                     return;
                 }
             }
         }
-        ut.passes( "Verify Boundary iterator" );
+        ut.passes( "Verify Boundary iterator: " + mesh->getName() );
     }
 }
 

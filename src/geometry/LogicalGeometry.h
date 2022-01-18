@@ -66,7 +66,7 @@ public:
      *    dimensions are periodic.
      * @return          Return the periodic dimensions
      */
-    virtual std::vector<bool> getPeriodicDim() const = 0;
+    std::vector<bool> getPeriodicDim() const;
 
     /**
      * \brief    Return the surface ids for the logical boundaries
@@ -74,12 +74,16 @@ public:
      *    If a logical boundary does not map to a surface, it will return -1.
      * @return          Return the logical boundary ids (2*logicalDim)
      */
-    virtual std::vector<int> getLogicalSurfaceIds() const = 0;
+    std::vector<int> getLogicalSurfaceIds() const;
 
 
 protected:
     //!  Empty constructor for the base class
-    LogicalGeometry() : Geometry(), d_logicalDim( 0 ) {}
+    LogicalGeometry()
+        : Geometry(), d_logicalDim( 0 ), d_isPeriodic{ false, false, false }, d_ids{ 1, 2, 3,
+                                                                                     4, 5, 6 }
+    {
+    }
 
     // Delete copy constructors
     LogicalGeometry( LogicalGeometry && )      = delete;
@@ -88,8 +92,10 @@ protected:
     LogicalGeometry &operator=( const LogicalGeometry & ) = delete;
 
 
-protected: // Internal data
-    uint8_t d_logicalDim;
+protected:                            // Internal data
+    uint8_t d_logicalDim;             // Logical dimension
+    std::array<bool, 3> d_isPeriodic; // Periodic dimensions
+    std::array<int, 6> d_ids;         // Logical surface ids
 };
 
 

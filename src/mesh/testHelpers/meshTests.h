@@ -233,6 +233,14 @@ public: // Geometry based tests
      */
     static void TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
 
+    /**
+     * \brief Checks noraml
+     * \details  This test checks that the mesh and geometry normals match
+     * \param[in,out] ut        Unit test class to report the results
+     * \param[in] mesh          Mesh to test
+     */
+    static void TestNormalGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+
 
 public: // Vector based tests
         //! Factory to create a vector from a mesh

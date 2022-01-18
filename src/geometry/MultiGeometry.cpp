@@ -70,8 +70,19 @@ Point MultiGeometry::surfaceNorm( const Point & ) const
 }
 Point MultiGeometry::centroid() const
 {
-    auto range = box();
-    return 0.5 * ( range.first + range.second );
+    Point p( d_physicalDim, { 0, 0, 0 } );
+    double V = 0;
+    for ( size_t i = 0; i < d_geom.size(); i++ ) {
+        if ( d_geom[i]->getGeomType() < getGeomType() ) {
+            // Surfaces do not contribute to the centroid
+            continue;
+        }
+        double Vi = d_geom[i]->volume();
+        V += Vi;
+        p += Vi * d_geom[i]->centroid();
+    }
+    p *= 1.0 / V;
+    return p;
 }
 std::pair<Point, Point> MultiGeometry::box() const
 {

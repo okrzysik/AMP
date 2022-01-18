@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/Circle.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -12,6 +12,8 @@ namespace AMP::Geometry {
  ********************************************************/
 Circle::Circle( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { 1, 1, 1, 1 };
+    d_isPeriodic  = { false, false };
     d_physicalDim = 2;
     d_logicalDim  = 2;
     d_offset[0]   = 0;
@@ -22,6 +24,8 @@ Circle::Circle( std::shared_ptr<const AMP::Database> db )
 }
 Circle::Circle( double R ) : LogicalGeometry(), d_R( R )
 {
+    d_ids         = { 1, 1, 1, 1 };
+    d_isPeriodic  = { false, false };
     d_physicalDim = 2;
     d_logicalDim  = 2;
     d_offset[0]   = 0;
@@ -147,8 +151,6 @@ std::vector<int> Circle::getLogicalGridSize( const std::vector<double> &res ) co
     AMP_INSIST( res.size() == 2u, "Resolution must be an array of length 2" );
     return { (int) ( d_R / res[0] ), (int) ( d_R / res[1] ) };
 }
-std::vector<bool> Circle::getPeriodicDim() const { return { false, false }; }
-std::vector<int> Circle::getLogicalSurfaceIds() const { return { 1, 1, 1, 1 }; }
 
 
 /********************************************************

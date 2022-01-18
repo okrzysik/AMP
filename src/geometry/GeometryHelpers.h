@@ -380,11 +380,22 @@ distanceToTetrahedron( const std::array<Point3D, 4> &tet, const Point3D &pos, co
 
 
 /**
+ * \brief   Compute the normal to a quadrilateral
+ * \details  This function will compute the normal to a quadrilateral.
+ *    Since the points within the quadrilateral may not be co-planer, this
+ *    will approximate the normal by dividing the quadrilateral into 4 triangles,
+ *    computing the normal to each triangle, and then averaging the normal.
+ * \param[in] quad       Triangle coordinates
+ * @return              Returns the distance
+ */
+Point3D normalToQuadrilateral( const std::array<Point3D, 4> &quad );
+
+/**
  * \brief   Compute the intersection of a ray and quadrilateral
  * \details  This function will compute the intersection of a ray with a quadrilateral.
  *    If the ray is inside the cone the distance is negative.
  *    If the ray will never intersect the object, this distance is inf.
- * \param[in] tri       Triangle coordinates
+ * \param[in] quad       Triangle coordinates
  * \param[in] pos       Starting point of ray
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
@@ -399,7 +410,7 @@ double distanceToQuadrilateral( const std::array<Point2D, 4> &quad,
  * \details  This function will compute the intersection of a ray with a quadrilateral.
  *    If the ray is inside the cone the distance is negative.
  *    If the ray will never intersect the object, this distance is inf.
- * \param[in] tri       Triangle coordinates
+ * \param[in] quad       Triangle coordinates
  * \param[in] pos       Starting point of ray
  * \param[in] ang       Direction of ray
  * @return              Returns the distance
@@ -423,16 +434,28 @@ std::array<double, NP> barycentric( const std::array<std::array<double, NDIM>, N
 
 
 /**
+ * \brief   Compute the normal to a line defined by 2 points
+ * \details  This function will compute the normal to a line
+ *    defined by two points.  The order of the points will
+ *    determine the normal.
+ * \param[in] a        First point
+ * \param[in] b        Second point
+ * @return             Returns the normal
+ */
+Point2D normal( const Point2D &a, const Point2D &b );
+
+
+/**
  * \brief   Compute the normal to a plane defined by 3 points
  * \details  This function will compute the normal to a plane
  *    defined by three points.  The order of the points will
  *    determine the normal.
- * \param[in] v1        First vertex
- * \param[in] v2        Second vertex
- * \param[in] v3        Third vertex
- * @return              Returns the normal
+ * \param[in] a        First point
+ * \param[in] b        Second point
+ * \param[in] c        Third point
+ * @return             Returns the normal
  */
-Point3D normal( const Point3D &v1, const Point3D &v2, const Point3D &v3 );
+Point3D normal( const Point3D &a, const Point3D &b, const Point3D &c );
 
 
 /**
@@ -536,10 +559,6 @@ std::vector<Point3D> sampleQuad( const std::array<Point3D, 4> &v, double d0, boo
  * @return              Returns the new points
  */
 std::vector<Point3D> sampleTet( const std::array<Point3D, 4> &v, double d0, bool interior = true );
-
-
-//! Compute the normal to the plane formed by 3 points
-Point3D normal( const Point3D &a, const Point3D &b, const Point3D &c );
 
 
 } // namespace AMP::Geometry::GeometryHelpers

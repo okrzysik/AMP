@@ -1,5 +1,5 @@
 #include "AMP/mesh/triangle/TriangleMeshElement.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/triangle/TriangleMesh.h"
 #include "AMP/mesh/triangle/TriangleMeshIterator.h"

@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/SquareFrustum.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -42,6 +42,7 @@ SquareFrustum::SquareFrustum( const std::vector<double> &range, int dir, double 
 }
 void SquareFrustum::initialize( const std::vector<double> &range, int dir, double height )
 {
+    d_isPeriodic  = { false, false, false };
     d_dir         = dir;
     d_physicalDim = 3;
     d_logicalDim  = 3;
@@ -93,31 +94,37 @@ void SquareFrustum::initialize( const std::vector<double> &range, int dir, doubl
         if ( t < 0 )
             d_normal[i] = -d_normal[i];
     }
-    // Compute the volume
+    // Compute the height / surface areas
     double h, S1, S2;
     if ( dir / 2 == 0 ) {
         h  = ( physical( { 1, 0, 0 } ) - physical( { 0, 0, 0 } ) ).x(); // Height
         S1 = ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y() *
-             ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Surface area 2
+             ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Surface area 1
         S2 = ( physical( { 1, 1, 0 } ) - physical( { 1, 0, 0 } ) ).y() *
              ( physical( { 1, 0, 1 } ) - physical( { 1, 0, 0 } ) ).z(); // Surface area 2
     } else if ( dir / 2 == 1 ) {
         h  = ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y(); // Height
         S1 = ( physical( { 1, 0, 0 } ) - physical( { 0, 0, 0 } ) ).x() *
-             ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Surface area 2
+             ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Surface area 1
         S2 = ( physical( { 1, 1, 0 } ) - physical( { 0, 1, 0 } ) ).x() *
              ( physical( { 0, 1, 1 } ) - physical( { 0, 1, 0 } ) ).z(); // Surface area 2
     } else {
         h  = ( physical( { 0, 0, 1 } ) - physical( { 0, 0, 0 } ) ).z(); // Height
         S1 = ( physical( { 1, 0, 0 } ) - physical( { 0, 0, 0 } ) ).x() *
-             ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y(); // Surface area 2
+             ( physical( { 0, 1, 0 } ) - physical( { 0, 0, 0 } ) ).y(); // Surface area 1
         S2 = ( physical( { 1, 0, 1 } ) - physical( { 0, 0, 1 } ) ).x() *
              ( physical( { 0, 1, 1 } ) - physical( { 0, 0, 1 } ) ).y(); // Surface area 2
     }
-    h        = fabs( h );
-    S1       = fabs( S1 );
-    S2       = fabs( S2 );
+    h  = fabs( h );
+    S1 = fabs( S1 );
+    S2 = fabs( S2 );
+    // Compute the volume
     d_volume = h / 3.0 * ( S1 + S2 + sqrt( S1 * S2 ) );
+    // Compute the centroid
+    if ( S2 > S1 )
+        std::swap( S1, S2 );
+    double z   = 0.25 * ( S1 + 2 * sqrt( S1 * S2 ) + 3 * S2 ) / ( S1 + sqrt( S1 * S2 ) * S2 );
+    d_centroid = physical( { 0.5, 0.5, z } );
 }
 
 
@@ -288,13 +295,7 @@ Point SquareFrustum::logical( const Point &pos ) const
 /********************************************************
  * Return the centroid and bounding box                  *
  ********************************************************/
-Point SquareFrustum::centroid() const
-{
-    Point p = { 0.5 * ( d_range[0] + d_range[1] ),
-                0.5 * ( d_range[2] + d_range[3] ),
-                0.5 * ( d_range[4] + d_range[5] ) };
-    return p;
-}
+Point SquareFrustum::centroid() const { return d_centroid; }
 std::pair<Point, Point> SquareFrustum::box() const
 {
     Point lb = { d_range[0], d_range[2], d_range[4] };
@@ -323,8 +324,6 @@ std::vector<int> SquareFrustum::getLogicalGridSize( const std::vector<double> &r
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> SquareFrustum::getPeriodicDim() const { return { false, false, false }; }
-std::vector<int> SquareFrustum::getLogicalSurfaceIds() const { return { 1, 2, 3, 4, 5, 6 }; }
 
 
 /********************************************************
@@ -345,6 +344,7 @@ void SquareFrustum::displace( const double *x )
             v.z() += x[2];
         }
     }
+    d_centroid += Point( 3, x );
 }
 
 

@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/Box.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -19,6 +19,7 @@ template<std::size_t NDIM>
 Box<NDIM>::Box() : LogicalGeometry()
 {
     static_assert( NDIM >= 0 && NDIM <= 3, "Invalid number of dimensions" );
+    d_isPeriodic  = { false, false, false };
     d_physicalDim = NDIM;
     d_logicalDim  = NDIM;
     d_range.fill( 0 );
@@ -336,19 +337,6 @@ std::vector<int> Box<NDIM>::getLogicalGridSize( const std::vector<double> &res )
     for ( size_t d = 0; d < NDIM; d++ )
         size[d] = ( d_range[2 * d + 1] - d_range[2 * d] ) / res[d];
     return size;
-}
-template<std::size_t NDIM>
-std::vector<bool> Box<NDIM>::getPeriodicDim() const
-{
-    return std::vector<bool>( NDIM, false );
-}
-template<std::size_t NDIM>
-std::vector<int> Box<NDIM>::getLogicalSurfaceIds() const
-{
-    std::vector<int> ids( 2 * NDIM );
-    for ( size_t i = 0; i < ids.size(); i++ )
-        ids[i] = i;
-    return ids;
 }
 
 

@@ -17,8 +17,7 @@ namespace AMP::Geometry {
 // Generate a random direction
 static inline Point genRandDir( int ndim )
 {
-    static std::random_device rd;
-    static std::mt19937 gen( rd() );
+    static std::mt19937 gen( 47253 );
     static std::uniform_real_distribution<double> dis( -1, 1 );
     return normalize( Point( ndim, { dis( gen ), dis( gen ), dis( gen ) } ) );
 }
@@ -57,8 +56,7 @@ static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP
     // Test logical/physical transformations
     PROFILE_START( "testGeometry-logical " + name );
     auto [lb, ub] = geom.box();
-    std::random_device rd;
-    std::mt19937 gen( rd() );
+    std::mt19937 gen( 54612 );
     std::uniform_real_distribution<> dis[3];
     for ( int d = 0; d < geom.getDim(); d++ ) {
         double dx = ub[d] - lb[d];
@@ -84,6 +82,60 @@ static bool testLogicalGeometry( const AMP::Geometry::LogicalGeometry &geom, AMP
     return pass;
 }
 
+
+// Test the centroid of an object
+static bool testCentroid( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
+{
+    auto name = geom.getName();
+    int ndim  = geom.getDim();
+    // Get the centroid
+    auto centroid = geom.centroid();
+    // Check that the centroid is within the bounding box
+    auto box  = geom.box();
+    bool pass = centroid.ndim() == ndim;
+    for ( int d = 0; d < ndim; d++ )
+        pass = pass && centroid[d] >= box.first[d] && centroid[d] <= box.second[d];
+    if ( !pass ) {
+        ut.failure( "testGeometry centroid/box: " + name );
+        return false;
+    }
+    // Check if we are dealing with a surface in a volume
+    if ( ndim != static_cast<int>( geom.getGeomType() ) ) {
+        ut.expected_failure( "testGeometry-centroid is not complete for ndim()!=geomType(): " +
+                             name );
+        return false;
+    }
+    // Estimate the centroid by randomly sampling space if it is inside the object
+    // Note we use a non-random seed to ensure test doesn't fail periodically due to tolerances
+    Point p( ndim, { 0, 0, 0 } );
+    static std::mt19937 gen( 56871 );
+    std::uniform_real_distribution<double> dist[3];
+    for ( int d = 0; d < ndim; d++ )
+        dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );
+    size_t N = 100000;
+    for ( size_t i = 0; i < N; ) {
+        Point pos( ndim, { 0, 0, 0 } );
+        for ( int d = 0; d < ndim; d++ )
+            pos[d] = dist[d]( gen );
+        if ( geom.inside( pos ) ) {
+            p += pos;
+            i++;
+        }
+    }
+    p *= 1.0 / N;
+    double err = 0;
+    for ( int d = 0; d < ndim; d++ ) {
+        double dx = box.second[d] - box.first[d];
+        err       = std::max( err, fabs( p[d] - centroid[d] ) / dx );
+    }
+    pass = err < 0.01;
+    using AMP::Utilities::stringf;
+    if ( !pass )
+        ut.failure( stringf( "testGeometry centroid: %s (%f)", name.data(), err ) );
+    return pass;
+}
+
+
 // Run all geometry based tests
 void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
 {
@@ -103,14 +155,10 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         if ( !pass2 )
             return;
     }
+    // Test the centroid of the object
+    bool pass = testCentroid( geom, ut );
     // First get the centroid and the range
     auto center = geom.centroid();
-    auto box    = geom.box();
-    bool pass   = center.ndim() == ndim;
-    for ( int d = 0; d < ndim; d++ )
-        pass = pass && center[d] >= box.first[d] && center[d] <= box.second[d];
-    if ( !pass )
-        ut.failure( "testGeometry centroid/box: " + name );
     // Use a series of rays projecting from the centroid to get points on the surface
     PROFILE_START( "testGeometry-surface " + name );
     size_t N = 10000;
@@ -130,7 +178,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Add points propagating from box surface
     if ( ndim == 3 && !multigeom ) {
         int n         = 11;
-        auto [lb, ub] = box;
+        auto [lb, ub] = geom.box();
         auto dx       = 1.0 / n * ( ub - lb );
         for ( int i = 0; i < n; i++ ) {
             for ( int j = 0; j < n; j++ ) {
@@ -158,6 +206,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         if ( !inside ) {
             pass_inside = false;
             std::cout << "testGeometry-inside: " << tmp << std::endl;
+            break;
         }
     }
     pass = pass && pass_inside;
@@ -167,6 +216,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
     // Project each surface point in a random direction and back propagate to get the same point
     PROFILE_START( "testGeometry-distance " + name );
     bool pass_projection = true;
+    auto box             = geom.box();
     auto length          = box.second - box.first;
     const double d0      = 0.2 * std::max( { length.x(), length.y(), length.z() } );
     for ( const auto &tmp : surfacePoints ) {
@@ -183,6 +233,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
             std::cout << "testGeometry-distance: " << d0 << " " << d << " " << tmp << " " << pos
                       << std::endl;
             pass_projection = false;
+            break;
         }
     }
     pass = pass && pass_projection;
@@ -190,9 +241,9 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
         ut.failure( "testGeometry distances do not match: " + name );
     PROFILE_STOP( "testGeometry-distance " + name );
     // Get a set of interior points by randomly sampling the space
+    // Note we use a non-random seed to ensure test doesn't fail periodically due to tolerances
     PROFILE_START( "testGeometry-sample " + name );
-    static std::random_device rd;
-    static std::mt19937 gen( rd() );
+    static std::mt19937 gen( 84397 );
     std::uniform_real_distribution<double> dist[3];
     for ( int d = 0; d < ndim; d++ )
         dist[d] = std::uniform_real_distribution<double>( box.first[d], box.second[d] );

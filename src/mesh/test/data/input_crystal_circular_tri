@@ -39,14 +39,4 @@ Mesh{
         Resolution = 0.1
     }
 
-    Mesh_3 {
-        MeshName = "FarField"
-        MeshType = "AMP"
-        dim = 3
-        Generator = "sphere_surface"
-        Size = 150
-        Range = 1
-        static = TRUE
-    }
-
 }

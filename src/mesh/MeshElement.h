@@ -199,6 +199,15 @@ public: // Advanced functions
      */
     virtual void getNeighbors( std::vector<std::shared_ptr<MeshElement>> &neighbors ) const;
 
+    /**
+     *  Return the vertex coordinates composing the current element.
+     *  For a node, this will return the equivalent to coord().
+     *  For an element, this will return the equivalent to getElements(Vertex)->coord().
+     *  Note the default implementation will call getElements followed by coord,
+     *  derived classes may implement a more efficient alternative
+     */
+    virtual void getVertices( std::vector<Point> &vertices ) const;
+
 
 protected:
     // Unique (per class) ID for identifing the underlying iterator

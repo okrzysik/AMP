@@ -48,8 +48,6 @@ public: // Functions inherited from Geometry
     double volume() const override final;
     void displace( const double *x ) override final;
     std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
-    std::vector<bool> getPeriodicDim() const override final;
-    std::vector<int> getLogicalSurfaceIds() const override final;
     virtual std::vector<int>
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
@@ -66,6 +64,8 @@ protected:              // Internal data
 private:
     // Private constructor
     CircleFrustum();
+    // Initialize the data
+    void initialize( int dir, const std::array<double, 2> &r, double h );
 };
 
 

@@ -1,6 +1,6 @@
 #include "AMP/mesh/structured/structuredMeshElement.h"
 
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/utils/Utilities.h"
 
@@ -17,7 +17,7 @@ double cross3magnitude( double a[3], double b[3] )
     v[2] = a[0] * b[1] - a[1] * b[0];
     return std::sqrt( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
 }
-// Function to evaluate the dot produce of a vector anda cross product in 3d ( a . ( b X c ) )
+// Function to evaluate the dot produce of a vector and a cross product in 3d ( a . ( b X c ) )
 double dot3cross( double a[3], double b[3], double c[3] )
 {
     double v[3];
@@ -100,6 +100,20 @@ unsigned int structuredMeshElement::globalOwnerRank() const
 }
 
 
+/********************************************************
+ * Return the vertices                                   *
+ ********************************************************/
+void structuredMeshElement::getVertices( std::vector<Point> &vertices ) const
+{
+    int N = 0;
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    vertices.resize( N, Point( d_physicalDim, { 0, 0, 0 } ) );
+    for ( int i = 0; i < N; i++ )
+        d_mesh->coord( nodes[i], vertices[i].data() );
+}
+
+
 /****************************************************************
  * Function to get the elements composing the current element    *
  * We use a Canonical numbering system                           *
@@ -166,15 +180,10 @@ void structuredMeshElement::getElementIndex( const GeomType type,
                 AMP_ERROR( "Dimension not supported yet" );
             }
         } else if ( d_index.type() == GeomType::Edge ) {
-            N                                = 2;
-            index[0]                         = d_index;
-            index[1]                         = d_index;
-            index[0].d_type                  = 0;
-            index[1].d_type                  = 0;
-            index[0].d_side                  = 0;
-            index[1].d_side                  = 0;
-            index[0].d_index[d_index.d_side] = ijk[d_index.d_side];
-            index[1].d_index[d_index.d_side] = ijk[d_index.d_side] + 1;
+            N = 2;
+            index[0].reset( GeomType::Vertex, 0, ijk[0], ijk[1], ijk[2] );
+            index[1].reset( GeomType::Vertex, 0, ijk[0], ijk[1], ijk[2] );
+            index[1].d_index[d_index.d_side]++;
         } else if ( d_index.type() == GeomType::Face ) {
             N = 4;
             if ( d_index.d_side == 0 ) {
@@ -421,9 +430,8 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         // We are looking for the current element
         return std::vector<MeshElement>( 1, MeshElement( *this ) );
     } else if ( static_cast<int>( type ) == d_index.d_type + 1 && type == d_meshType ) {
-        // We have an entity that is the geometric type-1 and we want to get the parents of the
-        // geometric type of the
-        // mesh
+        // We have an entity that is the geometric type-1 and we want to get the
+        // parents of the geometric type of the mesh
         BoxMesh::MeshElementIndex index( type, 0, ijk[0], ijk[1], ijk[2] );
         index_list.emplace_back( index );
         index.d_index[d_index.d_side]--;
@@ -609,13 +617,13 @@ Point structuredMeshElement::centroid() const
  ****************************************************************/
 double structuredMeshElement::volume() const
 {
-    if ( d_index.type() == GeomType::Vertex ) {
+    auto type = d_index.type();
+    if ( type == GeomType::Vertex )
         AMP_ERROR( "volume is is not defined Nodes" );
-    }
     int N = 0;
     BoxMesh::MeshElementIndex nodes[8];
     getElementIndex( GeomType::Vertex, N, nodes );
-    if ( d_index.type() == GeomType::Edge ) {
+    if ( type == GeomType::Edge ) {
         AMP_ASSERT( N == 2 );
         double x[2][3];
         d_mesh->coord( nodes[0], x[0] );
@@ -624,7 +632,7 @@ double structuredMeshElement::volume() const
         for ( int i = 0; i < d_physicalDim; i++ )
             dist2 += ( x[0][i] - x[1][i] ) * ( x[0][i] - x[1][i] );
         return sqrt( dist2 );
-    } else if ( d_index.type() == GeomType::Face ) {
+    } else if ( type == GeomType::Face ) {
         // Use 2x2 quadrature to approximate the surface area. See for example,
         // Y. Zhang, C. Bajaj, G. Xu. Surface Smoothing and Quality Improvement
         // of Quadrilateral/Hexahedral Meshes with Geometric Flow. The special
@@ -665,7 +673,7 @@ double structuredMeshElement::volume() const
             }
             return 0.25 * vol;
         }
-    } else if ( d_index.type() == GeomType::Volume ) {
+    } else if ( type == GeomType::Volume ) {
         // Compute the volume of the tri-linear hex by splitting it
         // into 6 sub-pyramids and applying the formula in:
         //   "Calculation of the Volume of a General Hexahedron for Flow Predictions",
@@ -723,8 +731,34 @@ double structuredMeshElement::volume() const
  ****************************************************************/
 Point structuredMeshElement::norm() const
 {
-    AMP_ERROR( "norm not implemented yet" );
-    return Point();
+    auto type = d_index.type();
+    if ( type == GeomType::Vertex )
+        AMP_ERROR( "norm is is not defined Nodes" );
+    if ( static_cast<int>( type ) + 1 != static_cast<int>( d_physicalDim ) )
+        AMP_ERROR( "norm is not valid" );
+    int N = 0;
+    BoxMesh::MeshElementIndex nodes[8];
+    getElementIndex( GeomType::Vertex, N, nodes );
+    if ( type == GeomType::Edge ) {
+        AMP_ASSERT( N == 2 );
+        Point p1 = { 0, 0 }, p2 = { 0, 0 };
+        d_mesh->coord( nodes[0], p1.data() );
+        d_mesh->coord( nodes[1], p2.data() );
+        Point n = { -( p2.y() - p1.y() ), p2.x() - p1.x() };
+        return normalize( n );
+    } else if ( d_index.type() == GeomType::Face ) {
+        AMP_ASSERT( N == 4 );
+        std::array<std::array<double, 3>, 4> p = { { 0 } };
+        d_mesh->coord( nodes[0], p[0].data() );
+        d_mesh->coord( nodes[1], p[1].data() );
+        d_mesh->coord( nodes[2], p[2].data() );
+        d_mesh->coord( nodes[3], p[3].data() );
+        return AMP::Geometry::GeometryHelpers::normalToQuadrilateral( p );
+    } else if ( d_index.type() == GeomType::Volume ) {
+        AMP_ERROR( "Not finished (dimension>3)" );
+    }
+    AMP_ERROR( "Internal error" );
+    return {};
 }
 
 

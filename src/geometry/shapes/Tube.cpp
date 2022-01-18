@@ -1,5 +1,5 @@
 #include "AMP/geometry/shapes/Tube.h"
-#include "AMP/geometry/shapes/GeometryHelpers.h"
+#include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -14,6 +14,8 @@ namespace AMP::Geometry {
  ********************************************************/
 Tube::Tube( std::shared_ptr<const AMP::Database> db )
 {
+    d_ids         = { 8, 4, -1, -1, 2, 1 };
+    d_isPeriodic  = { false, true, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -29,6 +31,8 @@ Tube::Tube( std::shared_ptr<const AMP::Database> db )
 Tube::Tube( double r_min, double r_max, double z_min, double z_max )
     : LogicalGeometry(), d_r_min( r_min ), d_r_max( r_max ), d_z_min( z_min ), d_z_max( z_max )
 {
+    d_ids         = { 8, 4, -1, -1, 2, 1 };
+    d_isPeriodic  = { false, true, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     d_offset[0]   = 0;
@@ -223,8 +227,6 @@ std::vector<int> Tube::getLogicalGridSize( const std::vector<double> &res ) cons
     AMP_ERROR( "Not finished" );
     return {};
 }
-std::vector<bool> Tube::getPeriodicDim() const { return { false, true, false }; }
-std::vector<int> Tube::getLogicalSurfaceIds() const { return { 8, 4, -1, -1, 2, 1 }; }
 
 
 /********************************************************

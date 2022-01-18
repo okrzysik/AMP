@@ -49,8 +49,6 @@ public: // Functions inherited from Geometry
     std::vector<int> getLogicalGridSize( const std::vector<int> &x ) const override final;
     virtual std::vector<int>
     getLogicalGridSize( const std::vector<double> &res ) const override final;
-    std::vector<bool> getPeriodicDim() const override final;
-    std::vector<int> getLogicalSurfaceIds() const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
 
@@ -60,9 +58,10 @@ protected:
     double d_range[6];        // The bounding box size
     double d_pyramid_size[3]; // The underlying rotated pyramid size
     double d_scale_height;    // Ratio of frustum to pyramid height
-    double d_volume;
-    Point d_face[6][4]; // Points forming each face
-    Point d_normal[6];  // Normal to each face
+    double d_volume;          // Volume
+    Point d_centroid;         // Centroid
+    Point d_face[6][4];       // Points forming each face
+    Point d_normal[6];        // Normal to each face
 
 private:
     // Private constructor
