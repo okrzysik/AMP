@@ -1,5 +1,7 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -17,11 +19,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -154,12 +154,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
     // ---- first initialize the preconditioner
-    std::shared_ptr<AMP::Database> pcSolver_db = linearSolver_db->getDatabase( "Preconditioner" );
-    std::shared_ptr<AMP::Solver::TrilinosMLSolverParameters> pcSolverParams =
-        std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
+    auto pcSolver_db    = linearSolver_db->getDatabase( "Preconditioner" );
+    auto pcSolverParams = std::make_shared<AMP::Solver::TrilinosMLSolverParameters>( pcSolver_db );
     pcSolverParams->d_pOperator = linearMechanicsBVPoperator;
-    std::shared_ptr<AMP::Solver::TrilinosMLSolver> pcSolver =
-        std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
+    auto pcSolver               = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
     // HACK to prevent a double delete on Petsc Vec
     std::shared_ptr<AMP::Solver::PetscSNESSolver> nonlinearSolver;
@@ -236,7 +234,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector(
         burnVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialDamageThreshold" );

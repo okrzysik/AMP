@@ -1,11 +1,10 @@
 #ifndef included_AMP_SubchannelToCladMap
 #define included_AMP_SubchannelToCladMap
 
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/operators/map/ScalarZAxisMap.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef AsyncMapOperatorParameters SubchannelToCladMapParameters;
@@ -108,7 +107,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

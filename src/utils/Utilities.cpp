@@ -1,9 +1,9 @@
 #define NOMINMAX
 #include "AMP/utils/Utilities.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 
 #include "StackTrace/StackTrace.h"
 
@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 
 #ifdef USE_TIMER
-#include "MemoryApp.h"
+    #include "MemoryApp.h"
 #endif
 
 
@@ -388,8 +388,8 @@ std::vector<uint64_t> Utilities::primes( uint64_t n )
         }
     }
     // Store the prime numbers (note: this takes longer than computing them)
-    size_t M = static_cast<size_t>( n / log2( n ) );
-    M        = 1UL << static_cast<int>( round( log2( M ) ) );
+    auto M = static_cast<size_t>( n / log2( n ) );
+    M      = 1UL << static_cast<int>( round( log2( M ) ) );
     std::vector<uint64_t> p2;
     p2.reserve( M );
     p2.push_back( 2 );
@@ -517,8 +517,8 @@ void Utilities::nullUse( void *data ) { NULL_USE( data ); }
 
 // Function to demangle a string (e.g. from typeid)
 #ifdef __GNUC__
-#define USE_ABI
-#include <cxxabi.h>
+    #define USE_ABI
+    #include <cxxabi.h>
 #endif
 std::string Utilities::demangle( const std::string &name )
 {

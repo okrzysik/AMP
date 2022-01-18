@@ -1,4 +1,3 @@
-#ifdef USE_AMP_VECTORS
 #ifndef included_AMP_MatrixBuider
 #define included_AMP_MatrixBuider
 
@@ -14,8 +13,7 @@ typedef struct _p_Mat *Mat;
 }
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /**
@@ -53,8 +51,6 @@ std::shared_ptr<Matrix> createMatrix( Mat M, bool deleteable );
 #endif
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
-#endif
 #endif

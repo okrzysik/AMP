@@ -4,8 +4,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/SubsetVariable.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class MeshVariable
@@ -24,11 +23,13 @@ public:
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 private:
     CommVariable();
     AMP_MPI d_comm;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

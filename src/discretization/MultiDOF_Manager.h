@@ -1,14 +1,13 @@
 #ifndef included_AMP_MultiDOF_Manager
 #define included_AMP_MultiDOF_Manager
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include <memory>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -198,7 +197,6 @@ private:
     std::vector<DOFMapStruct> d_dofMap;
     const size_t neg_one = ~( (size_t) 0 );
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

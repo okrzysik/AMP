@@ -1,15 +1,14 @@
 #ifndef included_AMP_OperatorBuilder
 #define included_AMP_OperatorBuilder
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/boundary/BoundaryOperator.h"
 #include "AMP/utils/Database.h"
 #include "ElementPhysicsModel.h"
 #include "ElementPhysicsModelFactory.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -255,7 +254,6 @@ protected:
                                     std::shared_ptr<AMP::Database> input_db,
                                     std::shared_ptr<AMP::Operator::ElementPhysicsModel> );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -12,8 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 namespace WaterLibrary_NS {
 
 //=================== Constants =====================================================
@@ -998,5 +997,4 @@ WaterLibrary::WaterLibrary()
     INSERT_PROPERTY_IN_MAP( Enthalpy, WaterLibrary_NS );
     INSERT_PROPERTY_IN_MAP( ConvectiveHeat, WaterLibrary_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

@@ -1,12 +1,12 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/map/StridedZAxisMap.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -33,17 +33,15 @@ static void project( AMP::Mesh::MeshIterator const &meshIterator,
                      std::function<double( AMP::Mesh::Point const & )> functionOfSpace )
 {
     AMP_INSIST( dof < dofsPerNode, "WRONG!" );
-    auto dofManager         = vector->getDOFManager();
-    auto meshIterator_begin = meshIterator.begin();
-    auto meshIterator_end   = meshIterator.end();
+    auto dofManager = vector->getDOFManager();
     std::vector<size_t> dofIndices;
-    for ( auto iterator = meshIterator_begin; iterator != meshIterator_end; ++iterator ) {
-        dofManager->getDOFs( iterator->globalID(), dofIndices );
+    for ( auto elem : meshIterator ) {
+        dofManager->getDOFs( elem.globalID(), dofIndices );
         AMP_ASSERT( dofIndices.size() == dofsPerNode );
-        auto coord   = iterator->coord();
+        auto coord   = elem.coord();
         double value = functionOfSpace( coord );
         vector->setValuesByGlobalID( 1, &dofIndices[dof], &value );
-    } // end for iterator
+    }
 }
 
 
@@ -93,8 +91,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     srcVector->zero();
     ansVector->zero();
     dstVector->zero();
-    int fooBoundaryID = 1;
-    int barBoundaryID = 0;
+    int fooBoundaryID = 2;
+    int barBoundaryID = 1;
     auto fooMeshIterator =
         fooMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, fooBoundaryID );
     auto barMeshIterator =
@@ -119,7 +117,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     mapOperator->apply( srcVector, dummyVector );
 
     // Create the writer
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
     siloWriter->registerVector( srcVector, mesh, AMP::Mesh::GeomType::Vertex, "src" );
     siloWriter->registerVector( ansVector, mesh, AMP::Mesh::GeomType::Vertex, "foo_bar" );
@@ -132,11 +130,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     double errNorm = static_cast<double>( dstVector->L2Norm() );
     AMP::pout << "errNorm  " << errNorm << std::endl;
 
-    if ( errNorm < tolerance ) {
+    if ( errNorm < tolerance )
         ut->passes( exeName );
-    } else {
+    else
         ut->failure( exeName );
-    }
 }
 
 

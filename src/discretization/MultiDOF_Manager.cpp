@@ -1,11 +1,10 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /****************************************************************
@@ -317,5 +316,4 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     // Create the new multiDOFManager
     return std::make_shared<multiDOFManager>( comm, sub_managers );
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

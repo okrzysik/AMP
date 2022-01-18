@@ -107,7 +107,7 @@ void lock_MPI_Mutex( Mutex &mutex, const AMP_MPI &comm )
         PROFILE_STOP2( "lock_MPI_Mutex", 5 );
         return;
     }
-#if 1
+    #if 1
     // First create a barrier to syncronize all processes
     comm.barrier();
     // Next, let rank 0 acquire the mutex
@@ -117,16 +117,16 @@ void lock_MPI_Mutex( Mutex &mutex, const AMP_MPI &comm )
     if ( comm.getRank() != 0 )
         mutex.lock();
     comm.barrier();
-/*// Let all other ranks try an acquire the lock
-bool success = true;
-if ( comm.getRank()!=0 )
-    success = mutex.tryLock();
-// If all processes own the lock we are done, otherwise we can two or more communicators
-// with different ranks trying to acquire the same lock
-if ( comm.allReduce(success) )
-    return;
-AMP_ERROR("Not finished");*/
-#else
+    /*// Let all other ranks try an acquire the lock
+    bool success = true;
+    if ( comm.getRank()!=0 )
+        success = mutex.tryLock();
+    // If all processes own the lock we are done, otherwise we can two or more communicators
+    // with different ranks trying to acquire the same lock
+    if ( comm.allReduce(success) )
+        return;
+    AMP_ERROR("Not finished");*/
+    #else
     /*int result;
     MPI_Comm_compare( comm.getCommunicator(), MPI_COMM_WORLD, &result );
     if ( result==MPI_UNEQUAL )
@@ -142,7 +142,7 @@ AMP_ERROR("Not finished");*/
     // Note: this should not be necessary, but simplifies debugging and should not create any
     // problems
     comm.barrier();
-#endif
+    #endif
     PROFILE_STOP( "lock_MPI_Mutex", 5 );
 #endif
 }

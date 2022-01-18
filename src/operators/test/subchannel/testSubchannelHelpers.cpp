@@ -1,14 +1,14 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -117,16 +117,16 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     auto subchannel_db = input_db->getDatabase( "SubchannelPhysicsModel" );
     auto params = std::make_shared<AMP::Operator::ElementPhysicsModelParameters>( subchannel_db );
     auto subchannelPhysicsModel = std::make_shared<AMP::Operator::SubchannelPhysicsModel>( params );
-    double reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
-    double prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
+    auto reynolds = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "reynolds" );
+    auto prandtl  = subchannel_db->getDatabase( "Defaults" )->getScalar<double>( "prandtl" );
     AMP::LinearAlgebra::Vector::shared_ptr flowVec, cladTemp;
     if ( subchannelMesh ) {
         int DOFsPerFace[3] = { 0, 0, 2 };
-        auto flowDOF =
-            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+        auto flowDOF       = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+            subchannelMesh, DOFsPerFace, 1 );
         DOFsPerFace[2] = 1;
-        auto cladDOF =
-            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+        auto cladDOF   = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+            subchannelMesh, DOFsPerFace, 1 );
         auto flowVariable    = std::make_shared<AMP::LinearAlgebra::Variable>( "Flow" );
         auto thermalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
         flowVec              = AMP::LinearAlgebra::createVector( flowDOF, flowVariable );

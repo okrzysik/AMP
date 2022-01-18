@@ -18,15 +18,14 @@
  */
 #ifdef USE_EXT_SUNDIALS
 extern "C" {
-#include "ida/ida.h"
-#include "ida/ida_spgmr.h"
-#include "sundials/sundials_nvector.h"
-#include "sundials/sundials_types.h"
+    #include "ida/ida.h"
+    #include "ida/ida_spgmr.h"
+    #include "sundials/sundials_nvector.h"
+    #include "sundials/sundials_types.h"
 }
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /** \class IDATimeIntegrator
@@ -285,8 +284,7 @@ private:
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif
 #endif

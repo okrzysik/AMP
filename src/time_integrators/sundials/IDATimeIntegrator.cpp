@@ -10,12 +10,11 @@
 #ifdef USE_EXT_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail
 extern "C" {
-#include "ida/ida_spils.h"
+    #include "ida/ida_spils.h"
 }
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /************************************************************************
@@ -48,9 +47,9 @@ IDATimeIntegrator::~IDATimeIntegrator()
  ************************************************************************/
 void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> parameters )
 {
-#ifdef DEBUG_CHECK_ASSERTIONS
+    #ifdef DEBUG_CHECK_ASSERTIONS
     AMP_ASSERT( parameters.get() != NULL );
-#endif
+    #endif
     getFromInput( parameters->d_db );
 
     std::shared_ptr<IDATimeIntegratorParameters> params =
@@ -496,7 +495,6 @@ std::shared_ptr<AMP::LinearAlgebra::Vector> IDATimeIntegrator::getSourceTerm()
     return d_pSourceTerm;
 }
 
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

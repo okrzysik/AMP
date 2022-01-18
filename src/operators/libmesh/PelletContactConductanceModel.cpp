@@ -3,8 +3,7 @@
 #include <cmath>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 PelletContactConductanceModel::PelletContactConductanceModel(
@@ -78,5 +77,4 @@ void PelletContactConductanceModel::getConductance(
         gamma[l] = 0.00125 * fkm / ( d_r * exp( 5.3778 - 0.528 * log( d_r * 3.937 * exp( 7 ) ) ) );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

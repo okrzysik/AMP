@@ -5,8 +5,7 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 int Operator::d_iInstance_id = 0;
@@ -124,11 +123,11 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->constSelect( meshSelector, vec->getVariable()->getName() );
-        auto varSubsetVec  = meshSubsetVec->constSubsetVectorForVariable( var );
+        auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         retvec             = varSubsetVec;
     } else {
-        retvec = vec->constSubsetVectorForVariable( var );
+        retvec = vec->subsetVectorForVariable( var );
     }
     PROFILE_STOP( "constSubsetOutputVector", 1 );
     return retvec;
@@ -143,11 +142,11 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->constSelect( meshSelector, vec->getVariable()->getName() );
-        auto varSubsetVec  = meshSubsetVec->constSubsetVectorForVariable( var );
+        auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+        auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         retvec             = varSubsetVec;
     } else {
-        retvec = vec->constSubsetVectorForVariable( var );
+        retvec = vec->subsetVectorForVariable( var );
     }
     PROFILE_STOP( "constSubsetInputVector", 1 );
     return retvec;
@@ -159,5 +158,4 @@ void Operator::makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec )
     vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

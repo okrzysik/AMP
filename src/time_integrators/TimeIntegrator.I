@@ -3,8 +3,7 @@
 
 #include "TimeIntegrator.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 inline double TimeIntegrator::getCurrentDt() const { return ( d_current_dt ); }
 
@@ -22,7 +21,6 @@ inline bool TimeIntegrator::stepsRemaining() const
 inline int TimeIntegrator::getIntegratorStep() const { return ( d_integrator_step ); }
 
 inline int TimeIntegrator::getMaxIntegratorSteps() const { return ( d_max_integrator_steps ); }
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

@@ -4,8 +4,7 @@
 
 #include "AMP/operators/newFrozenVectorDesign/OnePointOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class FirstOperator : public OnePointOperator
 {
@@ -20,7 +19,7 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr r ) override
     {
-        auto in  = u->constSubsetVectorForVariable( d_var );
+        auto in  = u->subsetVectorForVariable( d_var );
         auto out = r->subsetVectorForVariable( d_var );
         out->scale( d_constant, *in );
     }
@@ -36,7 +35,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

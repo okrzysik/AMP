@@ -14,34 +14,34 @@
 // Macros to define 3 levels of profilers
 //#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
 #if 0
-#define PROFILE_START_L2( MSG ) PROFILE_START( MSG, 4 )
-#define PROFILE_STOP_L2( MSG ) PROFILE_STOP( MSG, 4 )
-#define PROFILE_STOP2_L2( MSG ) PROFILE_STOP2( MSG, 4 )
+    #define PROFILE_START_L2( MSG ) PROFILE_START( MSG, 4 )
+    #define PROFILE_STOP_L2( MSG ) PROFILE_STOP( MSG, 4 )
+    #define PROFILE_STOP2_L2( MSG ) PROFILE_STOP2( MSG, 4 )
 #else
-#define PROFILE_START_L2( MSG ) \
-    do {                        \
-    } while ( 0 )
-#define PROFILE_STOP_L2( MSG ) \
-    do {                       \
-    } while ( 0 )
-#define PROFILE_STOP2_L2( MSG ) \
-    do {                        \
-    } while ( 0 )
+    #define PROFILE_START_L2( MSG ) \
+        do {                        \
+        } while ( 0 )
+    #define PROFILE_STOP_L2( MSG ) \
+        do {                       \
+        } while ( 0 )
+    #define PROFILE_STOP2_L2( MSG ) \
+        do {                        \
+        } while ( 0 )
 #endif
 #if 0
-#define PROFILE_START_L3( MSG ) PROFILE_START( MSG, 5 )
-#define PROFILE_STOP_L3( MSG ) PROFILE_STOP( MSG, 5 )
-#define PROFILE_STOP2_L3( MSG ) PROFILE_STOP2( MSG, 5 )
+    #define PROFILE_START_L3( MSG ) PROFILE_START( MSG, 5 )
+    #define PROFILE_STOP_L3( MSG ) PROFILE_STOP( MSG, 5 )
+    #define PROFILE_STOP2_L3( MSG ) PROFILE_STOP2( MSG, 5 )
 #else
-#define PROFILE_START_L3( MSG ) \
-    do {                        \
-    } while ( 0 )
-#define PROFILE_STOP_L3( MSG ) \
-    do {                       \
-    } while ( 0 )
-#define PROFILE_STOP2_L3( MSG ) \
-    do {                        \
-    } while ( 0 )
+    #define PROFILE_START_L3( MSG ) \
+        do {                        \
+        } while ( 0 )
+    #define PROFILE_STOP_L3( MSG ) \
+        do {                       \
+        } while ( 0 )
+    #define PROFILE_STOP2_L3( MSG ) \
+        do {                        \
+        } while ( 0 )
 #endif
 
 
@@ -152,8 +152,8 @@ bool are_tri_neighbors( const int ndim, const int tri1[], const int tri2[], int 
  * Note: This can be an expensive test and should only be used when  *
  *    debugging.                                                     *
  * Inputs:                                                           *
- *    N         The number of verticies                              *
- *    x         The coordinates of the verticies (NDIMxN)            *
+ *    N         The number of vertices                              *
+ *    x         The coordinates of the vertices (NDIMxN)            *
  *    N_tri     The number of triangles                              *
  *    tri       The current list of triangles (NDIM+1xN_tri)         *
  *    tri_nab   The current list of triangle neighbors (NDIM+1xN_tri)*
@@ -649,7 +649,7 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
             }
         }
     }
-    // Update the faces whose triangle number and face number did not change (the verticies might
+    // Update the faces whose triangle number and face number did not change (the vertices might
     // have changed)
     for ( int i = 0; i < N_update; i++ ) {
         // Find the face

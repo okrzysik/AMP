@@ -1,20 +1,6 @@
-# To run clang tools:
-#   cd to AMP directory (source dir)
-# To update format only:
+# To run clang-format
 #   find src -name "*.cpp" -or -name "*.cc" -or -name "*.h" -or -name "*.hpp" -or -name "*.I" | xargs -I{} clang-format -i {}
 #   git status -s . | sed s/^...// | grep -E "(\.cpp|\.h|\.cc|\.hpp|\.I)" | xargs -I{} clang-format -i {}
-# To run modernize
-#   export CLANG_PATH=/packages/llvm/build/llvm-60
-#   export PATH=${CLANG_PATH}/bin:${CLANG_PATH}/share/clang:$PATH
-#   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R 'AMP::shared_ptr' 'std::shared_ptr' src
-#   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R 'AMP::make_shared' 'std::make_shared' src
-#   find src -name "*.cpp" -or -name "*.cc" | xargs -I{} clang-tidy -checks=modernize* -p=/projects/AMP/build/debug/AMP -fix {}
-#   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R 'std::shared_ptr' 'AMP::shared_ptr' src
-#   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R 'std::make_shared' 'AMP::make_shared' src
-#   rpl -x'.cc' -x'.cpp' -x'.h' -x'.hpp' -x'.I' -R -e '#include <memory>\n' '' src
-#   find src -name "*.cpp" -or -name "*.cc" -or -name "*.h" -or -name "*.hpp" -or -name "*.I" | xargs -I{} clang-format -i {}
-
-
 
 
 
@@ -39,23 +25,28 @@ AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: true
 BinPackArguments: false
 BinPackParameters: false
-BraceWrapping:   
-  AfterClass:      true
+BraceWrapping:
+  AfterCaseLabel:   false
+  AfterClass:       true
   AfterControlStatement: false
-  AfterEnum:       false
-  AfterFunction:   true
-  AfterNamespace:  false
+  AfterEnum:        false
+  AfterFunction:    true
+  AfterNamespace:   false
   AfterObjCDeclaration: true
-  AfterStruct:     false
-  AfterUnion:      false
-  BeforeCatch:     false
-  BeforeElse:      false
-  IndentBraces:    false
+  AfterStruct:      false
+  AfterUnion:       false
+  AfterExternBlock: false
+  BeforeCatch:      false
+  BeforeElse:       false
+  BeforeLambdaBody: false
+  IndentBraces:     false
 BreakBeforeBinaryOperators: None
 #BreakBeforeBraces: Stroustrup
 BreakBeforeBraces: Custom
+BreakBeforeConceptDeclarations: true
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializersBeforeComma: false
+BreakInheritanceList: AfterColon
 ColumnLimit:     100
 CommentPragmas:  '^ IWYU pragma:'
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
@@ -74,6 +65,7 @@ IncludeCategories:
   - Regex:           '.*'
     Priority:        1
 IndentCaseLabels: false
+IndentPPDirectives: BeforeHash
 IndentWidth:     4
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: true
@@ -97,15 +89,18 @@ SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeSquareBrackets: false
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
+SpaceBeforeRangeBasedForLoopColon: true
 SpacesBeforeTrailingComments: 1
-SpacesInAngles:  false
-SpacesInContainerLiterals: true
+SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
+SpacesInConditionalStatement: true
+SpacesInContainerLiterals: true
 SpacesInParentheses: true
 SpacesInSquareBrackets: false
-Standard:        Cpp11
+Standard:        c++17
 TabWidth:        4
 UseTab:          Never
 ...

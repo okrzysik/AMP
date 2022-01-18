@@ -1,10 +1,12 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BlockOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
@@ -22,10 +24,8 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -171,7 +171,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto pressureUpdateVec = pressureSolVec->cloneVector();
     auto velocityUpdateVec = velocitySolVec->cloneVector();
 
-    AMP::LinearAlgebra::Vector::shared_ptr velocityPrimeVec = velocitySolVec->cloneVector();
+    auto velocityPrimeVec = velocitySolVec->cloneVector();
 
     // SIMPLE(Semi Implicit Method for Pressure Linked Equations) ALGORITHM
 

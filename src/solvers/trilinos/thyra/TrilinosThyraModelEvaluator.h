@@ -14,8 +14,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -77,7 +76,6 @@ private:
     std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner;
     std::shared_ptr<AMP::Solver::PrePostOperator> d_prePostOperator;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

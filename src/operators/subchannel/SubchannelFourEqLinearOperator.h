@@ -5,10 +5,9 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   Lnear operator class for the 4-equation formulation of the subchannel equations:
@@ -168,7 +167,6 @@ private:
                                    const AMP::Mesh::MeshElement &,
                                    std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

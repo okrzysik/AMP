@@ -4,8 +4,7 @@
 
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class RobinVectorCorrectionParameters : public OperatorParameters
 {
@@ -15,11 +14,10 @@ public:
     {
     }
 
-    std::string type() const override { return "RobinVectorCorrectionParameters"; }
+    std::string type() const { return "RobinVectorCorrectionParameters"; }
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

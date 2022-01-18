@@ -1,7 +1,6 @@
-
 #include "AMP/operators/map/libmesh/GaussPointToGaussPointMap.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 // Libmesh files
@@ -21,8 +20,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -39,7 +37,7 @@ GaussPointToGaussPointMap::GaussPointToGaussPointMap(
 void GaussPointToGaussPointMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                             AMP::LinearAlgebra::Vector::shared_ptr f )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr uInternal = u;
+    auto uInternal = u;
     if ( d_useFrozenInputVec ) {
         uInternal = d_frozenInputVec;
     }
@@ -68,7 +66,7 @@ bool GaussPointToGaussPointMap::validMapType( const std::string &t )
 // Correct the local ordering
 void GaussPointToGaussPointMap::correctLocalOrdering()
 {
-    std::shared_ptr<AMP::Discretization::DOFManager> dofMap = d_OutputVector->getDOFManager();
+    auto dofMap = d_OutputVector->getDOFManager();
     std::vector<size_t> localDofs( DofsPerObj );
     for ( size_t i = 0; i < d_recvList.size(); ++i ) {
         dofMap->getDOFs( d_recvList[i], localDofs );
@@ -92,22 +90,22 @@ void GaussPointToGaussPointMap::correctLocalOrdering()
 void GaussPointToGaussPointMap::createIdxMap(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
-    std::shared_ptr<AMP::Database> db = params->d_db;
-    std::string feTypeOrderName       = db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
-    auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
+    auto db              = params->d_db;
+    auto feTypeOrderName = db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
+    auto feTypeOrder     = libMesh::Utility::string_to_enum<libMeshEnums::Order>( feTypeOrderName );
 
-    std::string feFamilyName = db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
-    auto feFamily = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
+    auto feFamilyName = db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
+    auto feFamily     = libMesh::Utility::string_to_enum<libMeshEnums::FEFamily>( feFamilyName );
 
-    std::string qruleTypeName = db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
+    auto qruleTypeName = db->getWithDefault<std::string>( "QRULE_TYPE", "QGAUSS" );
     auto qruleType =
         libMesh::Utility::string_to_enum<libMeshEnums::QuadratureType>( qruleTypeName );
 
-    std::string qruleOrderName = db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto qruleOrderName = db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     int faceDim = db->getWithDefault<int>( "DIMENSION", 2 );
 
-    std::shared_ptr<libMesh::FEType> feType( new libMesh::FEType( feTypeOrder, feFamily ) );
+    auto feType = std::make_shared<libMesh::FEType>( feTypeOrder, feFamily );
 
     libMeshEnums::Order qruleOrder;
 
@@ -118,37 +116,30 @@ void GaussPointToGaussPointMap::createIdxMap(
     }
 
     std::shared_ptr<libMesh::QBase> qrule(
-        ( libMesh::QBase::build( qruleType, faceDim, qruleOrder ) ).release() );
+        libMesh::QBase::build( qruleType, faceDim, qruleOrder ).release() );
     qrule->init( libMesh::QUAD4, 0 );
 
     unsigned int numGaussPtsPerElem = qrule->n_points();
 
     unsigned int dofsPerElem = ( dim * numGaussPtsPerElem );
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> variable(
-        new AMP::LinearAlgebra::Variable( "GaussPoints" ) );
+    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "GaussPoints" );
 
     std::vector<AMP::Mesh::Mesh::shared_ptr> meshesForMap( 2 );
     meshesForMap[0] = d_mesh1;
     meshesForMap[1] = d_mesh2;
-    AMP::Mesh::Mesh::shared_ptr multiMesh(
-        new AMP::Mesh::MultiMesh( "MultiMesh", d_MapComm, meshesForMap ) );
+    auto multiMesh = std::make_shared<AMP::Mesh::MultiMesh>( "MultiMesh", d_MapComm, meshesForMap );
 
-    //      AMP::Mesh::MeshIterator surfIter =
-    //      multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);
-    //      std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
-    //      AMP::Discretization::simpleDOFManager::create(multiMesh,
-    //          surfIter, surfIter, dofsPerElem);
-    AMP::Mesh::Mesh::shared_ptr submesh =
+    // auto surfIter = multiMesh->getSurfaceIterator(AMP::Mesh::GeomType::Face, 0);
+    // auto dofMap = AMP::Discretization::simpleDOFManager::create(multiMesh, surfIter, surfIter,
+    // dofsPerElem);
+    auto submesh =
         multiMesh->Subset( multiMesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 0 ) );
-    std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            submesh, AMP::Mesh::GeomType::Face, 0, dofsPerElem, true );
+    auto dofMap = AMP::Discretization::simpleDOFManager::create(
+        submesh, AMP::Mesh::GeomType::Face, 0, dofsPerElem, true );
 
-    AMP::LinearAlgebra::Vector::shared_ptr inVec =
-        AMP::LinearAlgebra::createVector( dofMap, variable );
-
-    AMP::LinearAlgebra::Vector::shared_ptr outVec = inVec->cloneVector();
+    auto inVec  = AMP::LinearAlgebra::createVector( dofMap, variable );
+    auto outVec = inVec->cloneVector();
 
     std::vector<size_t> localDofs( dofsPerElem );
     for ( auto &_i : d_sendList ) {
@@ -187,8 +178,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     db->putScalar( "DOFsPerObject", dofsPerElem );
     db->putScalar( "VariableName", "GaussPoints" );
-    std::shared_ptr<AMP::Operator::NodeToNodeMap> n2nMap(
-        new AMP::Operator::NodeToNodeMap( params ) );
+    auto n2nMap = std::make_shared<AMP::Operator::NodeToNodeMap>( params );
     n2nMap->setVector( outVec );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
@@ -249,5 +239,4 @@ void GaussPointToGaussPointMap::createIdxMap(
         elem = nullptr;
     } // end for i
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

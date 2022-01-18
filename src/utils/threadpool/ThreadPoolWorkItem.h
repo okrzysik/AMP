@@ -27,7 +27,7 @@ public:
         d_size  = 0;
     }
     //! Get the number of work ids that this work item depends on
-    inline size_t get_N_dependencies() const { return d_N_ids; }
+    inline std::size_t get_N_dependencies() const { return d_N_ids; }
     //! Return the list of work ids that we depend on
     std::vector<ThreadPoolID> get_dependencies() const;
     /*!
@@ -50,7 +50,7 @@ public:
      * \param N     Number of items to add
      * \param ids   Ids of the work item to add
      */
-    void add_dependencies( size_t N, const ThreadPoolID *ids );
+    void add_dependencies( std::size_t N, const ThreadPoolID *ids );
 
     //! Get the current status
     inline auto getStatus() const { return d_state; }

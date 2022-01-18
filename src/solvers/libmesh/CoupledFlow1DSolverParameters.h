@@ -7,8 +7,7 @@
 #include "AMP/utils/Database.h"
 #include <memory>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 class CoupledFlow1DSolverParameters : public SolverStrategyParameters
 {
@@ -26,7 +25,6 @@ public:
 protected:
 private:
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

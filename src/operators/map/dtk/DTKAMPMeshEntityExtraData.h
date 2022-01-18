@@ -2,14 +2,13 @@
 #ifndef included_AMP_DTK_AMPMeshEntityExtraData
 #define included_AMP_DTK_AMPMeshEntityExtraData
 
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/MeshElement.h"
 
 #include "AMP/utils/AMP_MPI.h"
 
 #include <DTK_EntityExtraData.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -31,7 +30,6 @@ public:
     // Underlying mesh element.
     AMP::Mesh::MeshElement d_element;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -8,8 +8,7 @@
 #include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 typedef ElementPhysicsModelParameters MechanicsMaterialModelParameters;
 
@@ -250,7 +249,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

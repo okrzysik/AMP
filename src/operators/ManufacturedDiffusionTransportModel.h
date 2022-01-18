@@ -5,16 +5,15 @@
 #include <string>
 #include <vector>
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class ManufacturedDiffusionTransportModel : public DiffusionTransportModel
 {
@@ -50,7 +49,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

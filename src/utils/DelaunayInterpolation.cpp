@@ -7,10 +7,10 @@
 #include <limits>
 #include <stdexcept>
 
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/DelaunayInterpolation.h"
 #include "AMP/utils/DelaunayTessellation.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -486,7 +486,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
          * sparse.
          * Method 2 solves the sparse system directly, while method 3 uses Gauss-Seidel
          * iteration to improve the solution calculated by method 1.  Note: method 2 in
-         * only implimented in the MATLAB prototype since it would require linking to a
+         * only implemented in the MATLAB prototype since it would require linking to a
          * sparse matrix solve, and can have significant memory requirements.
          * Method 3 does not have these limitations, and for most systems only 10-20 iterations are
          * necessary.
@@ -504,7 +504,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
          * The resulting system will be a block system with d_ndimxd_ndim blocks.
          */
         if ( method == 2 ) {
-            AMP::perr << "This method is not implimented\n";
+            AMP::perr << "This method is not implemented\n";
             return;
         }
         // First, allocate storage to store the matrix components
@@ -548,7 +548,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         }
         if ( method == 2 ) {
             // Construct the sparse system and solve it directly
-            // NOT implimented
+            // NOT implemented
             AMP::perr << "This method is not implemented\n";
         } else if ( method == 3 ) {
             // Use a block Gauss-Seidel method to improve the solution computed by method 1
@@ -1906,7 +1906,7 @@ static int intersect_sorted( const int N_lists,
 
 // Explicit instantiations
 // clang-format off
-typedef std::tuple<AMP::Array<double>,AMP::Array<double>> FG;
+using FG = std::tuple<AMP::Array<double>, AMP::Array<double>>;
 
 template class DelaunayInterpolation<int>;
 template class DelaunayInterpolation<double>;

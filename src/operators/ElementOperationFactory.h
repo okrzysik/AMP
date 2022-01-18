@@ -5,8 +5,7 @@
 #include <memory>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class ElementOperationFactory
 {
@@ -17,7 +16,6 @@ public:
     static std::shared_ptr<ElementOperation>
     createElementOperation( std::shared_ptr<AMP::Database> input_db );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

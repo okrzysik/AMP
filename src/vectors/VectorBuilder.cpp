@@ -1,28 +1,25 @@
-#ifdef USE_AMP_DISCRETIZATION
-
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/NativePetscVectorData.h"
-#include "AMP/vectors/petsc/NativePetscVectorOperations.h"
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "petscvec.h"
+    #include "AMP/vectors/petsc/NativePetscVectorData.h"
+    #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "petscvec.h"
 #endif
 #ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
+    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
+    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
 #endif
 
 #include <iostream>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /********************************************************
@@ -63,8 +60,8 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
             "The multivariable has a different number of varaibles on different processors" );
         // Create the Vector for each variable, then combine
         std::vector<Vector::shared_ptr> vectors;
-        for ( auto it = multiVariable->beginVariable(); it != multiVariable->endVariable(); ++it )
-            vectors.push_back( createVector( DOFs, *it, split ) );
+        for ( auto var : *multiVariable )
+            vectors.push_back( createVector( DOFs, var, split ) );
         // Create the multivector
         AMP_MPI comm = DOFs->getComm();
         AMP_ASSERT( !comm.isNull() );
@@ -168,7 +165,4 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
 #endif
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
-
-#endif
+} // namespace AMP::LinearAlgebra

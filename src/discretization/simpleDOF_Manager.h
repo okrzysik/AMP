@@ -1,14 +1,13 @@
 #ifndef included_AMP_simpleDOF_Manager
 #define included_AMP_simpleDOF_Manager
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include <memory>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -159,7 +158,6 @@ private:
     std::vector<AMP::Mesh::MeshElementID> d_remote_id;
     std::vector<size_t> d_remote_dof;
 };
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

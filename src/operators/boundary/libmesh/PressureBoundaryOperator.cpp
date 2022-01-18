@@ -1,7 +1,7 @@
 
 #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -20,8 +20,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 PressureBoundaryOperator::PressureBoundaryOperator(
     std::shared_ptr<const OperatorParameters> params )
@@ -182,7 +181,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
         ( libMesh::QBase::build( qruleType, 2, qruleOrder ) ).release() );
 
     AMP_ASSERT( params->d_db->keyExists( "Value" ) );
-    const double val = params->d_db->getScalar<double>( "Value" );
+    const auto val = params->d_db->getScalar<double>( "Value" );
 
     std::vector<double> pressure( 12 * ( recvSideList.size() ) );
 
@@ -236,5 +235,4 @@ PressureBoundaryOperator::PressureBoundaryOperator(
 
     d_tractionOp.reset( new TractionBoundaryOperator( tracOpParams ) );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

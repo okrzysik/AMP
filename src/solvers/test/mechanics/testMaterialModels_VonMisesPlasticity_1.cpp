@@ -1,4 +1,6 @@
 
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -12,10 +14,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include <memory>
 
 #include <iostream>
@@ -35,10 +35,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementPhysicsModel;
     std::shared_ptr<AMP::Operator::VonMisesElastoPlasticModel> vmepModel;
-    // std::shared_ptr<AMP::IsotropicElasticModel> vmepModel;
 
-    std::shared_ptr<AMP::Database> matModelDatabase =
-        input_db->getDatabase( "MechanicsMaterialModel" );
+    auto matModelDatabase = input_db->getDatabase( "MechanicsMaterialModel" );
     elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( matModelDatabase );
     vmepModel =

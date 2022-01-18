@@ -6,8 +6,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class SubsetVariable
@@ -88,11 +87,13 @@ public:
      *    \endcode
      */
     static Vector::const_shared_ptr view( Vector::const_shared_ptr, std::shared_ptr<Variable> );
+
+public: // Functions inherited from Variable
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

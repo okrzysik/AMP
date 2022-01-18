@@ -14,8 +14,7 @@
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class to impose Robin Boundary conditions for a linear operator. Robin Condition
@@ -119,7 +118,6 @@ private:
     std::shared_ptr<NeumannVectorCorrection> d_NeumannCorrection;
     std::shared_ptr<NeumannVectorCorrectionParameters> d_NeumannParams;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

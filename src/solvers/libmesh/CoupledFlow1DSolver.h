@@ -8,8 +8,7 @@
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 class CoupledFlow1DSolver : public SolverStrategy
 {
@@ -48,7 +47,6 @@ private:
 
     std::shared_ptr<AMP::Solver::Flow1DSolver> d_flow1DSolver;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

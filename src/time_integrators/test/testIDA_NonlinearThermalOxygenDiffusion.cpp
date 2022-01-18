@@ -1,7 +1,9 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
@@ -23,10 +25,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -123,8 +123,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     columnMassOperator->append( massOxygenOp );
 
     // create a  time operator for use in the preconditioner
-    std::shared_ptr<AMP::Database> timeOperator_db =
-        std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
     timeOperator_db->putScalar( "CurrentDt", 0.01 );
     timeOperator_db->putScalar( "name", "TimeOperator" );
     timeOperator_db->putScalar( "bLinearMassOperator", true );

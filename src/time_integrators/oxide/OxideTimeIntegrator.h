@@ -9,8 +9,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 /*!
   @brief This class solves the time-dependent oxide growth on a surface.
@@ -112,7 +111,6 @@ private:
     AMP::LinearAlgebra::Vector::shared_ptr depth; // Depth of each layer (cm)
     AMP::LinearAlgebra::Vector::shared_ptr conc;  // Oxygen concentration of each layer (g/cm^3)
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

@@ -3,15 +3,15 @@
 
 
 #ifndef included_AMP_TimeIntegratorParameters
-#include "AMP/time_integrators/TimeIntegratorParameters.h"
+    #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #endif
 
 #ifndef included_AMP_IDATimeOperator
-#include "AMP/time_integrators/sundials/IDATimeOperator.h"
+    #include "AMP/time_integrators/sundials/IDATimeOperator.h"
 #endif
 
 #ifndef included_AMP_LinearTimeOperator
-#include "AMP/time_integrators/LinearTimeOperator.h"
+    #include "AMP/time_integrators/LinearTimeOperator.h"
 #endif
 
 // BC : Altered this to get a compile going..
@@ -21,11 +21,10 @@
 #include "AMP/operators/Operator.h"
 
 #ifndef included_AMP_SolverStrategy
-#include "AMP/solvers/SolverStrategy.h"
+    #include "AMP/solvers/SolverStrategy.h"
 #endif
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 
 /*!
@@ -77,7 +76,6 @@ private:
     explicit IDATimeIntegratorParameters( const IDATimeIntegratorParameters & );
     void operator=( const IDATimeIntegratorParameters & );
 };
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator
 
 #endif

@@ -3,12 +3,11 @@
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
@@ -97,5 +96,4 @@ void CoupledChannelToCladMapOperator::apply( AMP::LinearAlgebra::Vector::const_s
     d_thermalMapOperator->apply( d_subchannelTemperature, nullVec );
     d_densityMapOperator->apply( d_subchannelDensity, nullVec );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

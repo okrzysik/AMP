@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 LinearOperator::LinearOperator( std::shared_ptr<const OperatorParameters> params )
@@ -42,5 +41,4 @@ void LinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     fInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

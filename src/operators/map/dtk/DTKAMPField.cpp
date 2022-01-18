@@ -1,8 +1,7 @@
 
 #include "DTKAMPField.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor.
@@ -79,5 +78,4 @@ void DTKAMPField::finalizeAfterWrite()
 
 //---------------------------------------------------------------------------//
 
-} // end namespace Operator
-} // end namespace AMP
+} // namespace AMP::Operator

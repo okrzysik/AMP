@@ -9,8 +9,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 CoupledFlow1DSolver::CoupledFlow1DSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters ), d_numpoints( 0 )
@@ -86,7 +85,7 @@ void CoupledFlow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     d_outVariable = d_flowInternal1to3->getOutputVariable();
 
     d_Sol = u->subsetVectorForVariable( d_outVariable );
-    d_Rhs = f->constSubsetVectorForVariable( d_outVariable );
+    d_Rhs = f->subsetVectorForVariable( d_outVariable );
     AMP_ASSERT( d_Rhs->getUpdateStatus() ==
                 AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
@@ -99,5 +98,4 @@ void CoupledFlow1DSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     d_flow1DSolver->apply( d_flowInput, d_flowOutput );
     d_flowInternal1to3->apply( d_flowOutput, nullVec );
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

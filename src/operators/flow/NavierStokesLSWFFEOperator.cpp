@@ -8,8 +8,7 @@
 #include "libmesh/cell_hex8.h"
 #include "libmesh/node.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 NavierStokesLSWFFEOperator::NavierStokesLSWFFEOperator(
     std::shared_ptr<const NavierStokesLSWFFEOperatorParameters> params )
@@ -250,11 +249,10 @@ NavierStokesLSWFFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_sh
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
-            vec->constSelect( meshSelector, var->getName() );
-        return meshSubsetVec->constSubsetVectorForVariable( var );
+            vec->select( meshSelector, var->getName() );
+        return meshSubsetVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

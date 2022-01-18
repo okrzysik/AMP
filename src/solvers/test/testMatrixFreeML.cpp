@@ -1,9 +1,10 @@
-#include "AMP/ampmesh/MultiMesh.h"
-#include "AMP/ampmesh/libmesh/initializeLibMesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MultiMesh.h"
+#include "AMP/mesh/libmesh/initializeLibMesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 
+#include "AMP/IO/PIO.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -14,7 +15,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -24,8 +24,13 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 #include "libmesh/mesh_communication.h"
 
+DISABLE_WARNINGS
+#include "Epetra_CrsMatrix.h"
+#include "Trilinos_version.h"
+#include "ml_MultiLevelPreconditioner.h"
 #include "ml_include.h"
 #include <Trilinos_version.h>
+ENABLE_WARNINGS
 
 #include <iostream>
 #include <string>

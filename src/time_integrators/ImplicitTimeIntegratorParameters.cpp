@@ -1,7 +1,6 @@
 #include "ImplicitTimeIntegratorParameters.h"
 
-namespace AMP {
-namespace TimeIntegrator {
+namespace AMP::TimeIntegrator {
 
 ImplicitTimeIntegratorParameters::ImplicitTimeIntegratorParameters(
     std::shared_ptr<AMP::Database> db )
@@ -11,5 +10,4 @@ ImplicitTimeIntegratorParameters::ImplicitTimeIntegratorParameters(
 }
 
 ImplicitTimeIntegratorParameters::~ImplicitTimeIntegratorParameters() = default;
-} // namespace TimeIntegrator
-} // namespace AMP
+} // namespace AMP::TimeIntegrator

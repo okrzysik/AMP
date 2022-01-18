@@ -1,4 +1,3 @@
-#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -14,7 +13,7 @@ inline bool compareVecSubset( AMP::LinearAlgebra::Vector::const_shared_ptr vec1,
 }
 
 
-// Test to check that Vector::select, Vector::constSelect, VectorSelector::subset,
+// Test to check that Vector::select, Vector::select, VectorSelector::subset,
 // and VectorSelector::constSubset return the same vectors
 inline void testSelector( AMP::UnitTest *ut,
                           const std::string &test_name,
@@ -24,7 +23,7 @@ inline void testSelector( AMP::UnitTest *ut,
     auto vec1 = selector.subset( vec );
     auto vec2 = selector.subset( AMP::LinearAlgebra::Vector::const_shared_ptr( vec ) );
     auto vec3 = vec->select( selector, vec->getVariable()->getName() );
-    auto vec4 = vec->constSelect( selector, vec->getVariable()->getName() );
+    auto vec4 = vec->select( selector, vec->getVariable()->getName() );
     if ( !vec1 || !vec2 || !vec3 || !vec4 ) {
         ut->failure( "Failed to select (" + test_name + ")" );
         return;
@@ -32,9 +31,9 @@ inline void testSelector( AMP::UnitTest *ut,
     bool equal = compareVecSubset( vec1, vec2 ) && compareVecSubset( vec1, vec3 ) &&
                  compareVecSubset( vec1, vec4 );
     if ( equal )
-        ut->passes( "select matches constSelect and subset (" + test_name + ")" );
+        ut->passes( "select matches select and subset (" + test_name + ")" );
     else
-        ut->failure( "select matches constSelect and subset (" + test_name + ")" );
+        ut->failure( "select matches select and subset (" + test_name + ")" );
 }
 void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {

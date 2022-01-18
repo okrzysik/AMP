@@ -5,8 +5,7 @@
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/operators/mechanics/MechanicsMaterialModel.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class ContactOperatorParameters : public OperatorParameters
 {
@@ -46,7 +45,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

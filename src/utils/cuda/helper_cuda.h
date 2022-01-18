@@ -12,35 +12,40 @@
 #include <cuda_runtime.h>
 
 #ifndef EXIT_WAIVED
-#define EXIT_WAIVED 2
+    #define EXIT_WAIVED 2
 #endif
 
 
 #ifdef __DRIVER_TYPES_H__
-#ifndef DEVICE_RESET
-#define DEVICE_RESET cudaDeviceReset();
-#endif
+    #ifndef DEVICE_RESET
+        #define DEVICE_RESET cudaDeviceReset();
+    #endif
 #else
-#ifndef DEVICE_RESET
-#define DEVICE_RESET
-#endif
+    #ifndef DEVICE_RESET
+        #define DEVICE_RESET
+    #endif
 #endif
 
+
+// Get the name of a return code
+template<typename T>
+const char *cudaGetName( T result );
+
+// Check the return code
 template<typename T>
 void check( T result, char const *const func, const char *const file, int const line );
 
 #ifdef __DRIVER_TYPES_H__
-// This will output the proper CUDA error strings in the event that a CUDA host call returns an
-// error
-#define checkCudaErrors( val ) check( ( val ), #val, __FILE__, __LINE__ )
+    // This will output the proper CUDA error strings in the event that a CUDA host call returns an
+    // error
+    #define checkCudaErrors( val ) check( ( val ), #val, __FILE__, __LINE__ )
 
-// This will output the proper error string when calling cudaGetLastError
-#define getLastCudaError( msg ) __getLastCudaError( msg, __FILE__, __LINE__ )
+    // This will output the proper error string when calling cudaGetLastError
+    #define getLastCudaError( msg ) __getLastCudaError( msg, __FILE__, __LINE__ )
 
 inline void __getLastCudaError( const char *errorMessage, const char *file, const int line )
 {
     cudaError_t err = cudaGetLastError();
-
     if ( cudaSuccess != err ) {
         fprintf( stderr,
                  "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
@@ -56,7 +61,7 @@ inline void __getLastCudaError( const char *errorMessage, const char *file, cons
 #endif
 
 #ifndef MAX
-#define MAX( a, b ) ( a > b ? a : b )
+    #define MAX( a, b ) ( a > b ? a : b )
 #endif
 
 // Float To Int conversion

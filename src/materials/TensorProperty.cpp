@@ -3,8 +3,7 @@
 
 #include <algorithm>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 
 TensorProperty::TensorProperty( std::string name,
@@ -82,8 +81,7 @@ void TensorProperty::evalvActual( std::vector<std::vector<std::shared_ptr<RETURN
                 "incorrect dimensionality of output tensor" );
 
     // Make a tensor of iterators for the results tensor
-    typename RETURN_VTYPE::iterator dummy_iter =
-        r[0][0]->begin(); // for idiosyncracy of AMP::Vector
+    auto dummy_iter = r[0][0]->begin(); // for idiosyncracy of AMP::Vector
     std::vector<std::vector<typename RETURN_VTYPE::iterator>> r_iter(
         rdim0,
         std::vector<typename RETURN_VTYPE::iterator>(
@@ -181,5 +179,4 @@ void TensorProperty::evalv(
     evalvActual( r, args );
 }
 
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

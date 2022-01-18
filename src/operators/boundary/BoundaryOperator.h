@@ -3,8 +3,7 @@
 
 #include "AMP/operators/Operator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //  An abstract base class for representing a linear operator.
@@ -30,7 +29,6 @@ private:
 };
 
 
-} // Namespace Operator
-} // Namespace AMP
+} // namespace AMP::Operator
 
 #endif

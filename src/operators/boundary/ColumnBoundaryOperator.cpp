@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 void ColumnBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -73,5 +72,4 @@ void ColumnBoundaryOperator::modifyInitialSolutionVector(
         elem->modifyInitialSolutionVector( sol );
 }
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

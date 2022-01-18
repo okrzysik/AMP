@@ -3,8 +3,8 @@
 #define included_AMP_LinearFEOperator
 
 // AMP files
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/libmesh/LinearFEOperatorParameters.h"
 
@@ -14,8 +14,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing a linear finite element (FE) operator.
@@ -90,7 +89,6 @@ protected:
     std::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
     std::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

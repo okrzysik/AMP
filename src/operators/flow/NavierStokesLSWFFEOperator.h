@@ -3,8 +3,8 @@
 #define included_AMP_NavierStokesLSWFFEOperator
 
 /* AMP files */
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/flow/NavierStokesConstants.h"
 #include "AMP/operators/flow/NavierStokesLSWFElement.h"
 #include "AMP/operators/flow/NavierStokesLSWFFEOperatorParameters.h"
@@ -14,8 +14,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NavierStokesLSWFFEOperator : public NonlinearFEOperator
 {
@@ -97,7 +96,6 @@ protected:
 
     std::vector<std::vector<size_t>> d_type1DofIndices;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

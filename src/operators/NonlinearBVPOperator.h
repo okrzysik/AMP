@@ -6,8 +6,7 @@
 #include "AMP/operators/boundary/BoundaryOperator.h"
 #include "BVPOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
  * Class NonlinearBVPOperator is meant to wrap a pointer to a nonlinear volume or interior spatial
@@ -105,7 +104,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

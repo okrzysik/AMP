@@ -5,8 +5,7 @@
 #include "BoundaryOperator.h"
 #include "DirichletVectorCorrectionParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class used to impose Dirichlet boundary conditions for a nonlinear operator. This involves the
@@ -137,7 +136,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

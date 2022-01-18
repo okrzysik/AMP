@@ -5,8 +5,7 @@
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline auto getVectorEngine( std::shared_ptr<VectorData> data )
@@ -69,37 +68,6 @@ std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const std::shared_ptr<V
     auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
     auto retVal = std::make_unique<ManagedSundialsVector>( vec2 );
     retVal->setVariable( var );
-    return retVal;
-}
-
-
-/********************************************************
- * Subset                                                *
- ********************************************************/
-Vector::shared_ptr
-ManagedSundialsVector::subsetVectorForVariable( std::shared_ptr<const Variable> name )
-{
-    Vector::shared_ptr retVal;
-    if ( !retVal )
-        retVal = Vector::subsetVectorForVariable( name );
-    if ( !retVal ) {
-        auto vec = getVectorEngine( getVectorData() );
-        if ( vec )
-            retVal = vec->subsetVectorForVariable( name );
-    }
-    return retVal;
-}
-Vector::const_shared_ptr
-ManagedSundialsVector::constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const
-{
-    Vector::const_shared_ptr retVal;
-    if ( !retVal )
-        retVal = Vector::constSubsetVectorForVariable( name );
-    if ( !retVal ) {
-        auto const vec = getVectorEngine( getVectorData() );
-        if ( vec )
-            retVal = vec->constSubsetVectorForVariable( name );
-    }
     return retVal;
 }
 
@@ -342,5 +310,4 @@ void ManagedSundialsVector::swapVectors( Vector &other )
     d_VectorData->swapData( *other.getVectorData() );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

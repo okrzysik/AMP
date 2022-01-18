@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class NativeThyraVector
@@ -82,7 +81,6 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

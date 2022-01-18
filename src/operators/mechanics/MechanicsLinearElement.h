@@ -9,8 +9,7 @@
 /* AMP files */
 #include "MechanicsElement.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class for representing the element level computation performed within a
@@ -103,7 +102,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

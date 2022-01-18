@@ -5,8 +5,7 @@
 #include <algorithm>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -15,21 +14,6 @@ namespace LinearAlgebra {
 inline std::shared_ptr<AMP::Discretization::DOFManager> Vector::getDOFManager() const
 {
     return d_DOFManager;
-}
-
-/****************************************************************
- * Subset for variable name                                      *
- ****************************************************************/
-inline Vector::shared_ptr Vector::subsetVectorForVariable( const std::string &name )
-{
-    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-    return subsetVectorForVariable( var );
-}
-inline Vector::const_shared_ptr
-Vector::constSubsetVectorForVariable( const std::string &name ) const
-{
-    auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-    return constSubsetVectorForVariable( var );
 }
 
 
@@ -208,7 +192,6 @@ inline double Vector::getValueByLocalID( size_t ndx ) const
     return ans;
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

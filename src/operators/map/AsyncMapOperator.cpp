@@ -1,11 +1,10 @@
 #include "AsyncMapOperator.h"
 
-#include "AMP/ampmesh/MultiMesh.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AsyncMapOperatorParameters.h"
 #include "ProfilerApp.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 AsyncMapOperator::AsyncMapOperator( std::shared_ptr<const OperatorParameters> p )
@@ -78,5 +77,4 @@ AMP::Mesh::Mesh::shared_ptr AsyncMapOperator::getMesh( int which )
         return AMP::Mesh::Mesh::shared_ptr();
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -74,9 +74,9 @@ int main( int argc, char **argv )
 #if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
     test_matrix_loop<DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>>( ut );
     test_matrix_loop<DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 1>>( ut );
-#if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
+    #if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
     test_matrix_loop<DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>>( ut );
-#endif
+    #endif
 #endif
 
     // Test the DenseSerialMatrix (only valid for serial meshes)

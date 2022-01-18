@@ -1,16 +1,16 @@
 #include "AMP/vectors/testHelpers/VectorTests.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #ifdef USE_EXT_SUNDIALS
-#include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/sundials/SundialsVector.h"
+    #include "AMP/vectors/sundials/ManagedSundialsVector.h"
+    #include "AMP/vectors/sundials/SundialsVector.h"
 #endif
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
 #endif
 
 #include <algorithm>
@@ -25,8 +25,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
@@ -80,9 +79,8 @@ void VectorTests::Bug_728( AMP::UnitTest *ut )
     if ( !var1 )
         return;
     auto var2 = var1->cloneVariable( var1->getName() );
-    PASS_FAIL( vector->subsetVectorForVariable( var1 ), "Found vector for same variable pointer" );
-    PASS_FAIL( vector->subsetVectorForVariable( var2 ),
-               "Found vector for cloned variable pointer" );
+    PASS_FAIL( vector->subsetVectorForVariable( var1 ), "Found vector for same variable" );
+    PASS_FAIL( vector->subsetVectorForVariable( var2 ), "Found vector for cloned variable" );
 }
 
 
@@ -652,7 +650,7 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
 
     // Add values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        const double val = double( i );
+        const auto val = double( i );
         vector->addValuesByGlobalID( 1, &i, &val );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
@@ -731,7 +729,7 @@ void VectorTests::VerifyVectorMakeConsistentSet( AMP::UnitTest *ut )
 
     // Set values by global id
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        const double val = double( i );
+        const auto val = double( i );
         vector->setValuesByGlobalID( 1, &i, &val );
     }
     if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED &&
@@ -797,5 +795,4 @@ void VectorTests::TestMultivectorDuplicate( AMP::UnitTest *ut )
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

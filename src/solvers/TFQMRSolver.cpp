@@ -8,13 +8,12 @@
 #include <cmath>
 #include <limits>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-TFQMRSolver::TFQMRSolver() {}
+TFQMRSolver::TFQMRSolver() = default;
 
 TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -29,7 +28,7 @@ TFQMRSolver::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-TFQMRSolver::~TFQMRSolver() {}
+TFQMRSolver::~TFQMRSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *
@@ -305,5 +304,4 @@ void TFQMRSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorPa
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

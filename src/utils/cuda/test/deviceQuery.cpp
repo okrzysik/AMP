@@ -21,13 +21,13 @@
 #include <cuda_runtime.h>
 
 
-int *pArgc   = NULL;
-char **pArgv = NULL;
+int *pArgc   = nullptr;
+char **pArgv = nullptr;
 
 #if CUDART_VERSION < 5000
 
-// CUDA-C includes
-#include <cuda.h>
+    // CUDA-C includes
+    #include <cuda.h>
 
 // This function wraps the CUDA Driver API into a template function
 template<class T>
@@ -225,7 +225,7 @@ int main( int argc, char **argv )
             "Exclusive Process (many threads in one process is able to use ::cudaSetDevice() "
             "with this device)",
             "Unknown",
-            NULL
+            nullptr
         };
         printf( "  Compute Mode:\n" );
         printf( "     < %s >\n", sComputeMode[deviceProp.computeMode] );

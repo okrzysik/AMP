@@ -2,17 +2,15 @@
 #ifndef included_AMP_SubchannelHelpers
 #define included_AMP_SubchannelHelpers
 
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
 #include "AMP/vectors/Vector.h"
 
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Operator {
-namespace Subchannel {
+namespace AMP::Operator::Subchannel {
 
 
 /**
@@ -146,8 +144,6 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
  */
 AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     AMP::Mesh::Mesh::shared_ptr clad, AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm );
-} // namespace Subchannel
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator::Subchannel
 
 #endif

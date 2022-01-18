@@ -6,8 +6,7 @@
 
 #include <stdexcept>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 LinearBVPOperator::LinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> params )
     : LinearOperator( params ),
@@ -63,5 +62,4 @@ void LinearBVPOperator::modifyRHSvector( AMP::LinearAlgebra::Vector::shared_ptr 
     this->getBoundaryOperator()->addRHScorrection( rhs );
     this->getBoundaryOperator()->setRHScorrection( rhs );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

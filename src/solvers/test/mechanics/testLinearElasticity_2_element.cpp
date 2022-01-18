@@ -1,6 +1,8 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -8,12 +10,10 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/WriteSolutionToFile.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -66,7 +66,7 @@ static void linearElasticTest( AMP::UnitTest *ut, int reduced, std::string mesh_
             AMP::Operator::OperatorBuilder::createOperator(
                 meshAdapter, "Load_Boundary", input_db, dummyModel ) );
 
-        std::shared_ptr<AMP::LinearAlgebra::Variable> var = bvpOperator->getOutputVariable();
+        auto var = bvpOperator->getOutputVariable();
 
         // This has an in-place apply. So, it has an empty input variable and
         // the output variable is the same as what it is operating on.

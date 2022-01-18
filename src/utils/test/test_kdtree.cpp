@@ -11,8 +11,11 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree.h"
 #include "AMP/utils/kdtree2.h"
+#include "AMP/utils/kdtree2.hpp"
 
 #include "ProfilerApp.h"
+
+using namespace AMP;
 
 
 // Add the result to the tests
@@ -22,54 +25,6 @@ void checkResult( AMP::UnitTest &ut, bool pass, const std::string &msg )
         ut.passes( msg );
     else
         ut.failure( msg );
-}
-
-
-// Factor a number into it's prime factors
-std::vector<size_t> factor( size_t number )
-{
-    if ( number <= 3 )
-        return std::vector<size_t>( 1, number );
-    size_t n, n_max;
-    bool factor_found;
-    // Compute the maximum number of factors
-    int N_primes_max = 1;
-    n                = number;
-    while ( n >>= 1 )
-        ++N_primes_max;
-    // Initialize n, factors
-    n = number;
-    std::vector<size_t> factors;
-    while ( true ) {
-        // Check if n is a trivial prime number
-        if ( n == 2 || n == 3 || n == 5 ) {
-            factors.push_back( (int) n );
-            break;
-        }
-        // Check if n is divisible by 2
-        if ( n % 2 == 0 ) {
-            factors.push_back( 2 );
-            n /= 2;
-            continue;
-        }
-        // Check each odd number until a factor is reached
-        n_max        = (size_t) floor( sqrt( (double) n ) );
-        factor_found = false;
-        for ( size_t i = 3; i <= n_max; i += 2 ) {
-            if ( n % i == 0 ) {
-                factors.push_back( i );
-                n /= i;
-                factor_found = true;
-                break;
-            }
-        }
-        if ( factor_found )
-            continue;
-        // No factors were found, the number must be prime
-        factors.push_back( (int) n );
-        break;
-    }
-    return factors;
 }
 
 
@@ -194,13 +149,22 @@ void run_kdtree2_test( AMP::UnitTest &ut, size_t N )
     auto tree = AMP::kdtree2<DIM, int>( N, x.data(), index.data() );
 
     // Check for ray intersections
-    auto result = tree.findNearestRay( { 10, 20, 20 }, { -1, -2, -2 } );
-    AMP_ASSERT( !result.empty() );
+    std::array<double, 3> p0 = { 10, 20, 20 };
+    std::array<double, 3> v  = { -1, -2, -2 };
+    auto result              = tree.findNearestRay( p0, v, 0.01 );
     std::cout << "Ray-point intersection:\n";
+    auto intersect = []( const std::array<double, 3> &p0,
+                         const std::array<double, 3> &v,
+                         const std::array<double, 3> &x ) {
+        auto t = dot( v, x - p0 );
+        t      = std::max( t, 0.0 );
+        auto p = p0 + v * t;
+        return p;
+    };
     for ( auto tmp : result ) {
         auto p  = std::get<0>( tmp );
-        auto pi = std::get<2>( tmp );
-        auto d  = std::get<3>( tmp );
+        auto pi = intersect( p0, v, p );
+        auto d  = sqrt( norm( pi - p ) );
         printf( "   (%0.2f,%0.2f,%0.2f)  (%0.2f,%0.2f,%0.2f)  %0.5f\n",
                 p[0],
                 p[1],

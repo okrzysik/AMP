@@ -6,7 +6,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 
 #include "AMP/vectors/Vector.h"
 
@@ -14,8 +14,7 @@
 
 #include <DTK_MapOperator.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DTKMapOperatorParameters : public OperatorParameters
 {
@@ -72,7 +71,6 @@ private:
     // DTK range mesh.
     std::shared_ptr<DTKAMPMeshManager> d_range_mesh;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -1,7 +1,9 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/CoupledOperator.h"
 #include "AMP/operators/CoupledOperatorParameters.h"
 #include "AMP/operators/ElementOperationFactory.h"
@@ -38,10 +40,8 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -65,7 +65,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -80,7 +80,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-    double intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
+    auto intguess = input_db->getWithDefault<double>( "InitialGuess", 400 );
 
     // CREATE THE NONLINEAR THERMAL OPERATOR 1
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
@@ -216,7 +216,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
     siloWriter->registerVector(

@@ -8,8 +8,7 @@
 #include <DTK_IntrepidCellLocalMap.hpp>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 //---------------------------------------------------------------------------//
@@ -140,5 +139,4 @@ void AMPMeshEntityLocalMap::getElementNodeCoordinates(
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

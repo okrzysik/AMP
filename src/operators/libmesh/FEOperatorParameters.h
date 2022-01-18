@@ -5,8 +5,7 @@
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/OperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
  * This class encapsulates parameters used to initialize or reset operators using a
@@ -32,7 +31,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

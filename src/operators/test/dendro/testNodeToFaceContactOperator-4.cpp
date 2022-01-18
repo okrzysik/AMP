@@ -1,9 +1,11 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/euclidean_geometry_tools.h"
-#include "AMP/ampmesh/latex_visualization_tools.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/euclidean_geometry_tools.h"
+#include "AMP/mesh/latex_visualization_tools.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -22,11 +24,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -47,7 +47,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
 #endif
 
@@ -417,9 +417,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( bis && useALittleHelp ) {
-        //    AMP::LinearAlgebra::Vector::shared_ptr zDispVec =
-        //    columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,
-        //    3), "help");
+        // auto zDispVec = columnSolVec->select(AMP::LinearAlgebra::VS_Stride(2,3), "help");
         auto it       = slaveMeshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 2 );
         auto it_begin = it.begin();
         auto it_end   = it.end();
@@ -512,13 +510,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     matrixShellOperator->setMatLocalColumnSize( matLocalSize );
     matrixShellOperator->setOperator( columnOperator );
 
-    std::shared_ptr<AMP::Solver::PetscKrylovSolverParameters> linearSolverParams =
+    auto linearSolverParams =
         std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = matrixShellOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = columnPreconditioner;
-    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver =
-        std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
+    auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );
 
@@ -586,7 +583,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             {
                 auto masterMat = masterBVPOperator->getMatrix();
                 auto masterRhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( masterCor.get() == NULL ) {
+                if ( masterCor.get() == nullptr ) {
                     masterCor = masterRhs->cloneVector();
                     applyCustomDirichletCondition(
                         masterRhs, masterCor, meshAdapter, masterConstraints, masterMat );
@@ -595,14 +592,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    masterCor,
                                                    meshAdapter,
                                                    masterConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( masterCor.get() != NULL );
+                AMP_ASSERT( masterCor.get() != nullptr );
             }
             {
                 auto slaveMat = slaveBVPOperator->getMatrix();
                 auto slaveRhs = slaveBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( slaveCor.get() == NULL ) {
+                if ( slaveCor.get() == nullptr ) {
                     slaveCor = slaveRhs->cloneVector();
                     applyCustomDirichletCondition(
                         slaveRhs, slaveCor, meshAdapter, slaveConstraints, slaveMat );
@@ -611,22 +608,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    slaveCor,
                                                    meshAdapter,
                                                    slaveConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( slaveCor.get() != NULL );
+                AMP_ASSERT( slaveCor.get() != nullptr );
             }
 
             // get d
-            //    AMP::LinearAlgebra::Vector::shared_ptr contactShiftVec =
-            //    createVector(dispDofManager, columnVar,
-            //    split);
+            // auto contactShiftVec = createVector(dispDofManager, columnVar, split);
             contactShiftVec->zero();
             contactOperator->addShiftToSlave( contactShiftVec );
             //  contactOperator->addShiftToSlave(columnSolVec);
 
             // compute - Kd
-            AMP::LinearAlgebra::Vector::shared_ptr rhsCorrectionVec =
-                createVector( dispDofManager, columnVar, split );
+            auto rhsCorrectionVec = createVector( dispDofManager, columnVar, split );
             rhsCorrectionVec->zero();
             masterBVPOperator->apply( nullVec, contactShiftVec, rhsCorrectionVec, -1.0, 0.0 );
             slaveBVPOperator->apply( nullVec, contactShiftVec, rhsCorrectionVec, -1.0, 0.0 );

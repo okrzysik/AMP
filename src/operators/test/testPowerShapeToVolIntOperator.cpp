@@ -1,6 +1,8 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -9,10 +11,8 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -40,7 +40,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     //  Construct PowerShape
     AMP_INSIST( input_db->keyExists( "PowerShape" ), "Key ''PowerShape'' is missing!" );
-    std::shared_ptr<AMP::Database> shape_db = input_db->getDatabase( "PowerShape" );
+    auto shape_db        = input_db->getDatabase( "PowerShape" );
     auto shape_params    = std::make_shared<AMP::Operator::PowerShapeParameters>( shape_db );
     shape_params->d_Mesh = meshAdapter;
     auto shape           = std::make_shared<AMP::Operator::PowerShape>( shape_params );

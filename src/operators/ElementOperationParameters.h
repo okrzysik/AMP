@@ -8,8 +8,7 @@
 
 #include "AMP/utils/ParameterBase.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
  An abstract base class that encapsulates parameters used to initialize the ElementOperation
@@ -35,7 +34,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

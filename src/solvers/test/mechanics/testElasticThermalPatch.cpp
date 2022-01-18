@@ -1,5 +1,7 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -18,10 +20,8 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -42,9 +42,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Read the mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    auto mesh_db = input_db->getDatabase( "Mesh" );
-    std::shared_ptr<AMP::Mesh::MeshParameters> meshParams =
-        std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mesh_db    = input_db->getDatabase( "Mesh" );
+    auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
@@ -86,13 +85,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Set Initial Temperature
     AMP_INSIST( input_db->keyExists( "INIT_TEMP_CONST" ), "key missing!" );
-    double initTempVal = input_db->getScalar<double>( "INIT_TEMP_CONST" );
+    auto initTempVal = input_db->getScalar<double>( "INIT_TEMP_CONST" );
     initTempVec->setToScalar( initTempVal );
     mechanicsNonlinearVolumeOperator->setReferenceTemperature( initTempVec );
 
     // Set Final Temperature
     AMP_INSIST( input_db->keyExists( "FINAL_TEMP_CONST" ), "key missing!" );
-    double finalTempVal = input_db->getScalar<double>( "FINAL_TEMP_CONST" );
+    auto finalTempVal = input_db->getScalar<double>( "FINAL_TEMP_CONST" );
     finalTempVec->setToScalar( finalTempVal );
     mechanicsNonlinearVolumeOperator->setVector( AMP::Operator::Mechanics::TEMPERATURE,
                                                  finalTempVec );

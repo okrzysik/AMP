@@ -1,4 +1,6 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -13,10 +15,8 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -75,13 +75,13 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //  MANUFACTURE THE INPUT SOLUTION FROM PRESCRIBED FLOW SOLUTION
     double Tin  = 300;
-    double Cp   = flowDatabase->getScalar<double>( "Heat_Capacity" );
-    double De   = flowDatabase->getScalar<double>( "Channel_Diameter" );
-    double G    = flowDatabase->getScalar<double>( "Mass_Flux" );
-    double K    = flowDatabase->getScalar<double>( "Conductivity" );
-    double Re   = flowDatabase->getScalar<double>( "Reynolds" );
-    double Pr   = flowDatabase->getScalar<double>( "Prandtl" );
-    double nP   = flowDatabase->getScalar<double>( "numpoints" );
+    auto Cp     = flowDatabase->getScalar<double>( "Heat_Capacity" );
+    auto De     = flowDatabase->getScalar<double>( "Channel_Diameter" );
+    auto G      = flowDatabase->getScalar<double>( "Mass_Flux" );
+    auto K      = flowDatabase->getScalar<double>( "Conductivity" );
+    auto Re     = flowDatabase->getScalar<double>( "Reynolds" );
+    auto Pr     = flowDatabase->getScalar<double>( "Prandtl" );
+    auto nP     = flowDatabase->getScalar<double>( "numpoints" );
     double heff = ( 0.023 * K / De ) * pow( Re, 0.8 ) * pow( Pr, 0.4 );
     double dz   = 2. / nP;
 

@@ -4,8 +4,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 PelletStackOperator::PelletStackOperator(
     std::shared_ptr<const PelletStackOperatorParameters> params )
@@ -219,7 +218,7 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
     }
 
     //      AMP::LinearAlgebra::Vector::const_shared_ptr subF =
-    //      f->constSubsetVectorForVariable(d_var);
+    //      f->subsetVectorForVariable(d_var);
     auto subR    = r->subsetVectorForVariable( d_var );
     auto subU    = d_frozenVectorForMaps->subsetVectorForVariable( d_var );
     auto dof_map = subR->getDOFManager();
@@ -246,7 +245,7 @@ void PelletStackOperator::applySerial( AMP::LinearAlgebra::Vector::const_shared_
 void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                         std::vector<double> &finalMaxZdispsList )
 {
-    auto subU    = u->constSubsetVectorForVariable( d_var );
+    auto subU    = u->subsetVectorForVariable( d_var );
     auto dof_map = subU->getDOFManager();
     std::vector<double> myMaxZdisps( d_pelletIds.size(), 0.0 );
     for ( size_t i = 0; i < d_pelletIds.size(); i++ ) {
@@ -299,5 +298,4 @@ void PelletStackOperator::computeZscan( AMP::LinearAlgebra::Vector::const_shared
         finalMaxZdispsList[i] += finalMaxZdispsList[i - 1];
     } // end for i
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

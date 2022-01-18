@@ -1,7 +1,7 @@
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
@@ -10,9 +10,7 @@
 #include <array>
 #include <cmath>
 
-namespace AMP {
-namespace Operator {
-namespace Subchannel {
+namespace AMP::Operator::Subchannel {
 
 
 // Get the number of subchannels from the mesh
@@ -423,6 +421,4 @@ AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
     diameter->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     return diameter;
 }
-} // namespace Subchannel
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator::Subchannel

@@ -9,8 +9,7 @@
 
 #include <cstring>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 VolumeIntegralOperator::VolumeIntegralOperator(
@@ -83,10 +82,10 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
     AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetPrimary, meshSubsetAuxillary;
 
     if ( d_inpVariables->numVariables() > 0 )
-        meshSubsetPrimary = u->constSelect( meshSelector, d_inpVariables->getName() );
+        meshSubsetPrimary = u->select( meshSelector, d_inpVariables->getName() );
     for ( size_t var = 0; var < d_inpVariables->numVariables(); var++ ) {
         auto primaryVariable = d_inpVariables->getVariable( var );
-        d_inVec[var]         = meshSubsetPrimary->constSubsetVectorForVariable( primaryVariable );
+        d_inVec[var]         = meshSubsetPrimary->subsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != nullptr );
         AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
@@ -96,7 +95,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
         meshSubsetAuxillary = d_multiAuxPtr->select( meshSelector, d_auxVariables->getName() );
     for ( size_t var = 0; var < d_auxVariables->numVariables(); var++ ) {
         auto auxillaryVariable = d_auxVariables->getVariable( var );
-        d_auxVec[var] = meshSubsetAuxillary->constSubsetVectorForVariable( auxillaryVariable );
+        d_auxVec[var]          = meshSubsetAuxillary->subsetVectorForVariable( auxillaryVariable );
         AMP_ASSERT( d_auxVec[var] != nullptr );
         AMP_ASSERT( d_auxVec[var]->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
@@ -242,5 +241,4 @@ void VolumeIntegralOperator::getNodeDofIndicesForCurrentElement()
         d_dofIndices[j] = dofs[0];
     } // end of j
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

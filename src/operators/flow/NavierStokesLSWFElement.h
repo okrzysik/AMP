@@ -10,8 +10,7 @@
 #include "AMP/operators/flow/FlowElement.h"
 #include "AMP/operators/flow/NavierStokesConstants.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NavierStokesLSWFElement : public FlowElement
 {
@@ -76,7 +75,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -10,8 +10,7 @@
 /// \cond UNDOCUMENTED
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 class NativeThyraFactory : public VectorFactory
@@ -58,8 +57,7 @@ private:
 void testBelosThyraVector( AMP::UnitTest &utils, const VectorFactory &factory );
 #endif
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

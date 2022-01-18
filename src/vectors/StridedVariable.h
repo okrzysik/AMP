@@ -3,8 +3,7 @@
 
 #include "SubsetVariable.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /** \class StridedVariable
  * \brief An AMP Variable that describes how to stride a vector to create
@@ -25,12 +24,13 @@ public:
     virtual AMP::Discretization::DOFManager::shared_ptr
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
+    std::shared_ptr<VectorSelector> createVectorSelector() const override;
+
 private:
     StridedVariable();
     size_t d_offset;
     size_t d_stride;
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

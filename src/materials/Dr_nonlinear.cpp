@@ -12,8 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 
 namespace Dr_nonlinear_NS {
 
@@ -70,5 +69,4 @@ Dr_nonlinear::Dr_nonlinear()
     d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
     INSERT_PROPERTY_IN_MAP( FickCoefficient, Dr_nonlinear_NS );
 }
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials

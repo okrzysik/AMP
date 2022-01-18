@@ -16,8 +16,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 typedef ElementPhysicsModelParameters SourcePhysicsModelParameters;
@@ -72,7 +71,6 @@ private:
     // Cached variables that may or may not be used to improve perfomance
     std::map<std::string, std::shared_ptr<std::vector<double>>> d_inputMaterialParameters;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -3,8 +3,8 @@
 #define included_AMP_MechanicsNonlinearFEOperator
 
 /* AMP files */
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/libmesh/NonlinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsConstants.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
@@ -15,8 +15,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class used for representing the nonlinear mechanics operator.
@@ -262,7 +261,6 @@ void MechanicsNonlinearFEOperator::updateMaterialForUpdatedLagrangianElement(
     d_mechNULElem->updateMaterialModel<updateType>( elementInputVectors2,
                                                     elementInputVectors_pre2 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

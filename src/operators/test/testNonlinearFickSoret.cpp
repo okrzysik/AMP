@@ -1,7 +1,8 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -18,7 +19,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -47,8 +47,8 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> mesh_db = input_db->getDatabase( "Mesh" );
-    auto mgrParams                         = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
+    auto mesh_db   = input_db->getDatabase( "Mesh" );
+    auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
@@ -161,12 +161,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto fsOutVar = fickOp->getOutputVariable();
 
     std::string msgPrefix = exeName + ": apply ";
-    AMP::LinearAlgebra::Vector::shared_ptr solVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
-    AMP::LinearAlgebra::Vector::shared_ptr rhsVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
-    AMP::LinearAlgebra::Vector::shared_ptr resVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+    auto solVec           = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
+    auto rhsVec           = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+    auto resVec           = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
     // set default values of input variables
     auto inTempVec = solVec->subsetVectorForVariable( tVar );

@@ -1,14 +1,14 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/libmesh/GradientOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <memory>
@@ -81,7 +81,7 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
     auto errVec = AMP::LinearAlgebra::createVector( nodalVectorDofMap, outputVar, true );
 
     // Create the writer
-    auto writer = AMP::Utilities::Writer::buildWriter( "silo" );
+    auto writer = AMP::IO::Writer::buildWriter( "silo" );
     writer->registerMesh( mesh );
     writer->registerVector( rhsVec, mesh, AMP::Mesh::GeomType::Vertex, "f" );
     writer->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "g" );
@@ -96,15 +96,15 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
     std::vector<double> tol;
 
     // Add a linear function
-    name.push_back( "linear" );
-    f.push_back( []( Point p ) { return 1.1 + 2.2 * p.x() + 3.3 * p.y() + 4.4 * p.z(); } );
-    g.push_back( []( Point ) { return Point( 2.2, 3.3, 4.4 ); } );
+    name.emplace_back( "linear" );
+    f.emplace_back( []( Point p ) { return 1.1 + 2.2 * p.x() + 3.3 * p.y() + 4.4 * p.z(); } );
+    g.emplace_back( []( Point ) { return Point( 2.2, 3.3, 4.4 ); } );
     tol.push_back( 1e-12 );
 
     // Add a simple quadratic function
-    name.push_back( "quadratic" );
-    f.push_back( []( Point p ) { return p.x() * p.x() + p.y() * p.y() + p.z() * p.z(); } );
-    g.push_back( []( Point p ) { return Point( 2 * p.x(), 2 * p.y(), 2 * p.z() ); } );
+    name.emplace_back( "quadratic" );
+    f.emplace_back( []( Point p ) { return p.x() * p.x() + p.y() * p.y() + p.z() * p.z(); } );
+    g.emplace_back( []( Point p ) { return Point( 2 * p.x(), 2 * p.y(), 2 * p.z() ); } );
     tol.push_back( 0.05 );
 
     // Run the tests

@@ -249,9 +249,7 @@ void Property::set_parameters_and_number( std::vector<double> params )
 void Property::set_translator( const std::map<std::string, std::string> &xlator )
 {
     // assure incoming map has correct keys
-    for ( std::map<std::string, std::string>::const_iterator iter = xlator.begin();
-          iter != xlator.end();
-          ++iter ) {
+    for ( auto iter = xlator.begin(); iter != xlator.end(); ++iter ) {
         AMP_ASSERT( std::find( d_arguments.begin(), d_arguments.end(), iter->first ) !=
                     d_arguments.end() );
     }
@@ -259,7 +257,7 @@ void Property::set_translator( const std::map<std::string, std::string> &xlator 
 }
 std::array<double, 2> Property::get_arg_range( const std::string &argname )
 {
-    std::map<std::string, size_t>::iterator it = d_argToIndexMap.find( argname );
+    auto it = d_argToIndexMap.find( argname );
     if ( it == d_argToIndexMap.end() )
         return { -std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
     size_t index = it->second;

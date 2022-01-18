@@ -2,8 +2,7 @@
 #include "DTKAMPMeshEntity.h"
 #include "DTKAMPMeshEntityImpl.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -18,5 +17,4 @@ AMPMeshEntity::AMPMeshEntity(
 {
     this->b_entity_impl = Teuchos::rcp( new AMPMeshEntityImpl( element, rank_map, id_map ) );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

@@ -8,14 +8,13 @@
 #include "AMP/operators/map/AsyncMapOperator.h"
 #include "AMP/operators/map/NodeToNodeMapParameters.h"
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /** \brief  A class for mapping a vector from one surface to another where the
@@ -115,8 +114,7 @@ protected:
     std::vector<AMP::Mesh::MeshElementID> d_sendList;
     std::vector<AMP::Mesh::MeshElementID> d_recvList;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 
 #endif

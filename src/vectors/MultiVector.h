@@ -5,8 +5,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \brief A collection of AMP Vectors that appear as one vector
@@ -154,12 +153,11 @@ public:
 
     //!  Destructor
     virtual ~MultiVector();
+
     std::string type() const override;
 
-    Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name ) override;
-    Vector::const_shared_ptr
-    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const override;
     std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> name ) const override;
+
     void swapVectors( Vector &other ) override;
 
 protected:
@@ -198,15 +196,10 @@ private:
 
     // Helper function to reset the vector operations
     inline void resetVectorOperations();
-
-public: // Pull Vector into the current scope
-    using Vector::constSubsetVectorForVariable;
-    using Vector::subsetVectorForVariable;
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

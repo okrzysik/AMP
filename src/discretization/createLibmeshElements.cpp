@@ -1,39 +1,38 @@
 #ifdef USE_EXT_LIBMESH
 
-#include "AMP/discretization/createLibmeshElements.h"
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
-#include "AMP/utils/Utilities.h"
+    #include "AMP/discretization/createLibmeshElements.h"
+    #include "AMP/mesh/Mesh.h"
+    #include "AMP/mesh/MeshElement.h"
+    #include "AMP/utils/Utilities.h"
 
-#include "ProfilerApp.h"
+    #include "ProfilerApp.h"
 
 DISABLE_WARNINGS
-#include "libmesh/auto_ptr.h"
-#include "libmesh/cell_hex27.h"
-#include "libmesh/cell_hex8.h"
-#include "libmesh/elem.h"
-#include "libmesh/enum_fe_family.h"
-#include "libmesh/enum_order.h"
-#include "libmesh/enum_quadrature_type.h"
-#include "libmesh/face_quad4.h"
-#include "libmesh/face_quad9.h"
-#include "libmesh/fe_base.h"
-#include "libmesh/fe_type.h"
-#include "libmesh/node.h"
-#include "libmesh/quadrature.h"
-#include "libmesh/string_to_enum.h"
+    #include "libmesh/auto_ptr.h"
+    #include "libmesh/cell_hex27.h"
+    #include "libmesh/cell_hex8.h"
+    #include "libmesh/elem.h"
+    #include "libmesh/enum_fe_family.h"
+    #include "libmesh/enum_order.h"
+    #include "libmesh/enum_quadrature_type.h"
+    #include "libmesh/face_quad4.h"
+    #include "libmesh/face_quad9.h"
+    #include "libmesh/fe_base.h"
+    #include "libmesh/fe_type.h"
+    #include "libmesh/node.h"
+    #include "libmesh/quadrature.h"
+    #include "libmesh/string_to_enum.h"
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
-// Default constuctor
+// Default constructor
 createLibmeshElements::createLibmeshElements() = default;
 
 
-// De-constuctor
+// De-constructor
 createLibmeshElements::~createLibmeshElements()
 {
     reinit( AMP::Mesh::MeshIterator(),
@@ -231,8 +230,7 @@ const libMesh::QBase *createLibmeshElements::getQBase( const AMP::Mesh::MeshElem
     PROFILE_STOP( "getQBase", 2 );
     return result;
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 
 #endif

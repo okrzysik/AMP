@@ -1,9 +1,11 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/euclidean_geometry_tools.h"
-#include "AMP/ampmesh/latex_visualization_tools.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/euclidean_geometry_tools.h"
+#include "AMP/mesh/latex_visualization_tools.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -23,11 +25,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -132,7 +132,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
 #endif
 
@@ -392,7 +392,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     columnSolVec->zero();
     columnRhsVec->zero();
     AMP::LinearAlgebra::Vector::shared_ptr cor;
-    AMP_ASSERT( cor.get() == NULL );
+    AMP_ASSERT( cor.get() == nullptr );
 
     auto tempVar        = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
@@ -555,14 +555,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             auto mat = masterBVPOperator->getMatrix();
             auto rhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-            if ( cor.get() == NULL ) {
+            if ( cor.get() == nullptr ) {
                 cor = rhs->cloneVector();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
             } else {
-                applyCustomDirichletCondition(
-                    rhs, cor, meshAdapter, constraints, AMP::LinearAlgebra::Matrix::shared_ptr() );
+                applyCustomDirichletCondition( rhs,
+                                               cor,
+                                               meshAdapter,
+                                               constraints,
+                                               std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
             } // end if
-            AMP_ASSERT( cor.get() != NULL );
+            AMP_ASSERT( cor.get() != nullptr );
 
             // get d
             contactOperator->addShiftToSlave( columnSolVec );

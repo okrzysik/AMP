@@ -5,8 +5,7 @@
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class NativeThyraVectorOperations
@@ -83,7 +82,6 @@ public: // Pull VectorOperations into the current scope
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

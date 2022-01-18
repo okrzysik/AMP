@@ -7,8 +7,7 @@
 #include <DTK_BasicEntityPredicates.hpp>
 #include <functional>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //---------------------------------------------------------------------------//
 // Constructor
@@ -107,5 +106,4 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 }
 
 //---------------------------------------------------------------------------//
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

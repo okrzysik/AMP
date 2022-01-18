@@ -13,8 +13,7 @@ ENABLE_WARNINGS
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 SourceNonlinearElement::SourceNonlinearElement(
     std::shared_ptr<const ElementOperationParameters> params )
@@ -44,8 +43,7 @@ SourceNonlinearElement::SourceNonlinearElement(
     d_fe.reset( ( libMesh::FEBase::build( dimension, ( *d_feType ) ) ).release() );
     d_fe->get_xyz();
 
-    std::string qruleOrderName =
-        params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
+    auto qruleOrderName = params->d_db->getWithDefault<std::string>( "QRULE_ORDER", "DEFAULT" );
 
     libMeshEnums::Order qruleOrder;
 
@@ -160,5 +158,4 @@ void SourceNonlinearElement::apply()
 
     PROFILE_STOP( "apply", 5 );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

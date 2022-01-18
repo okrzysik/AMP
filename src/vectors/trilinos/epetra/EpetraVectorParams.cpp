@@ -1,10 +1,10 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
 #ifdef USE_EXT_MPI
-#include <Epetra_MpiComm.h>
-#include <utility>
+    #include <Epetra_MpiComm.h>
+    #include <utility>
 #else
-#include <Epetra_SerialComm.h>
+    #include <Epetra_SerialComm.h>
 #endif
 
 

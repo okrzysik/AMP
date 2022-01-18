@@ -3,16 +3,16 @@
 #include "AMP/utils/Utilities.h"
 
 #ifdef USE_EXT_LIBMESH
-#include "AMP/operators/diffusion/DiffusionElement.h"
-#include "AMP/operators/diffusion/DiffusionLinearElement.h"
-#include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
-#include "AMP/operators/libmesh/MassLinearElement.h"
-#include "AMP/operators/libmesh/SourceNonlinearElement.h"
-#include "AMP/operators/mechanics/MechanicsElement.h"
-#include "AMP/operators/mechanics/MechanicsLinearElement.h"
-#include "AMP/operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
+    #include "AMP/operators/diffusion/DiffusionElement.h"
+    #include "AMP/operators/diffusion/DiffusionLinearElement.h"
+    #include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
+    #include "AMP/operators/libmesh/MassLinearElement.h"
+    #include "AMP/operators/libmesh/SourceNonlinearElement.h"
+    #include "AMP/operators/mechanics/MechanicsElement.h"
+    #include "AMP/operators/mechanics/MechanicsLinearElement.h"
+    #include "AMP/operators/mechanics/MechanicsLinearUpdatedLagrangianElement.h"
+    #include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
+    #include "AMP/operators/mechanics/MechanicsNonlinearUpdatedLagrangianElement.h"
 #endif
 
 
@@ -23,8 +23,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<ElementOperation>
@@ -56,5 +55,4 @@ ElementOperationFactory::createElementOperation( std::shared_ptr<Database> eleme
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

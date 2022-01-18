@@ -5,8 +5,7 @@
 
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 ThermalVonMisesMatModel::ThermalVonMisesMatModel(
     std::shared_ptr<MechanicsMaterialModelParameters> params )
@@ -601,5 +600,4 @@ void ThermalVonMisesMatModel::radialReturn( const double *stra_np1,
     *eph_bar_plas_np1 = ephbp_np1;
     *lambda           = lam;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

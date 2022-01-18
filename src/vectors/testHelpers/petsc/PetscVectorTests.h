@@ -1,17 +1,16 @@
 #ifdef USE_EXT_PETSC
-#ifndef included_AMP_test_PetscVectorTests
-#define included_AMP_test_PetscVectorTests
+    #ifndef included_AMP_test_PetscVectorTests
+        #define included_AMP_test_PetscVectorTests
 
-#include "string"
-#include <algorithm>
+        #include "string"
+        #include <algorithm>
 
-#include "AMP/utils/UnitTest.h"
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/testHelpers/VectorTests.h"
+        #include "AMP/utils/UnitTest.h"
+        #include "AMP/vectors/VectorBuilder.h"
+        #include "AMP/vectors/petsc/PetscVector.h"
+        #include "AMP/vectors/testHelpers/VectorTests.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 class PetscVectorFactory;
 
@@ -88,10 +87,9 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
-/// \endcond
+    /// \endcond
 
-#endif
+    #endif
 #endif

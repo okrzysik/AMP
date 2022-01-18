@@ -6,8 +6,7 @@
 #include "AMP/vectors/Vector.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * Class BandedSolver is a derived class to solve
@@ -71,7 +70,6 @@ private:
     std::shared_ptr<AMP::Discretization::DOFManager> rightDOF;
     std::shared_ptr<AMP::Discretization::DOFManager> leftDOF;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

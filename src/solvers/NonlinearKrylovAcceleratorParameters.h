@@ -8,13 +8,12 @@
 #include "AMP/utils/ParameterBase.h"
 
 #ifndef included_AMP_SolverStrategy
-#include "SolverStrategy.h"
+    #include "SolverStrategy.h"
 #endif
 
 #include "AMP/vectors/Vector.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /** \class NonlinearKrylovAcceleratorParameters
  *
@@ -46,7 +45,6 @@ public:
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

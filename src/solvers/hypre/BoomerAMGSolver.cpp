@@ -9,8 +9,7 @@
 #include <iomanip>
 #include <numeric>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -390,7 +389,7 @@ void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Mat
     HYPRE_DescribeError( ierr, hypre_mesg );
 }
 
-void BoomerAMGSolver::createHYPREVectors( void )
+void BoomerAMGSolver::createHYPREVectors()
 {
     char hypre_mesg[100];
 
@@ -500,7 +499,7 @@ void BoomerAMGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator>
     d_bCreationPhase = false;
 }
 
-void BoomerAMGSolver::setParameters( void ) {}
+void BoomerAMGSolver::setParameters() {}
 
 void BoomerAMGSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
@@ -575,7 +574,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
-    double localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<double>();
+    auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<double>();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
     // we are forced to update the state of u here
@@ -600,5 +599,4 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_STOP( "solve" );
 }
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

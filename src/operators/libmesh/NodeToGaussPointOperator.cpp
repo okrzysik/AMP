@@ -1,6 +1,6 @@
 #include "NodeToGaussPointOperator.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/mesh/Mesh.h"
 #include "ProfilerApp.h"
 
 
@@ -19,8 +19,7 @@ ENABLE_WARNINGS
 
 #include <cstring>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -141,5 +140,4 @@ void NodeToGaussPointOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
     } // end for
     PROFILE_STOP( "apply" );
 } // end apply
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

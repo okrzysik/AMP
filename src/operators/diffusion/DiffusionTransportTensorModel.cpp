@@ -10,8 +10,7 @@
 #include "AMP/utils/Utilities.h"
 #include <cmath>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 DiffusionTransportTensorModel::DiffusionTransportTensorModel(
     std::shared_ptr<const DiffusionTransportTensorModelParameters> params )
@@ -71,5 +70,4 @@ void DiffusionTransportTensorModel::getTensorTransport(
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

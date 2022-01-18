@@ -4,13 +4,12 @@
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-CGSolver::CGSolver() {}
+CGSolver::CGSolver() = default;
 
 CGSolver::CGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
@@ -25,7 +24,7 @@ CGSolver::CGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-CGSolver::~CGSolver() {}
+CGSolver::~CGSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *
@@ -204,5 +203,4 @@ void CGSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorParam
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

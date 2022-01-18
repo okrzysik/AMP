@@ -1,8 +1,9 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
@@ -12,7 +13,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
@@ -204,16 +204,16 @@ int main( int argc, char *argv[] )
 
     if ( argc > 1 ) {
 
-        files.push_back( argv[1] );
+        files.emplace_back( argv[1] );
 
     } else {
 
-        files.push_back( "input_testSolversForUserMatrix-ML" );
+        files.emplace_back( "input_testSolversForUserMatrix-ML" );
 #ifdef USE_EXT_HYPRE
-        files.push_back( "input_testSolversForUserMatrix-BoomerAMG" );
+        files.emplace_back( "input_testSolversForUserMatrix-BoomerAMG" );
 #endif
 #ifdef USE_TRILINOS_MUELU
-        files.push_back( "input_testSolversForUserMatrix-MueLu" );
+        files.emplace_back( "input_testSolversForUserMatrix-MueLu" );
 #endif
     }
 

@@ -3,8 +3,7 @@
 #include <cmath>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
@@ -77,5 +76,4 @@ void ConvectiveHeatCoefficient::getConductance(
     d_property->evalv( beta, argMap );
     d_property->evalv( gamma, argMap );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

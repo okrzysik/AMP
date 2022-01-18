@@ -1,5 +1,6 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -14,7 +15,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
@@ -143,7 +143,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto JacobianSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( jacobianSolverParams );
 
     // initialize the nonlinear solver
-    std::shared_ptr<AMP::Solver::PetscSNESSolverParameters> nonlinearSolverParams =
+    auto nonlinearSolverParams =
         std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out

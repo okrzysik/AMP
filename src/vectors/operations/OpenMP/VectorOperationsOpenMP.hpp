@@ -7,8 +7,7 @@
 #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 extern template class VectorOperationsOpenMP<double>; // Suppresses implicit instantiation below --
@@ -503,7 +502,6 @@ bool VectorOperationsOpenMP<TYPE>::localEquals( const VectorData &x,
     return equal;
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

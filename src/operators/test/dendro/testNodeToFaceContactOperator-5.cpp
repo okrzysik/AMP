@@ -1,9 +1,11 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/euclidean_geometry_tools.h"
-#include "AMP/ampmesh/latex_visualization_tools.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/euclidean_geometry_tools.h"
+#include "AMP/mesh/latex_visualization_tools.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -23,11 +25,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -48,7 +48,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
 #endif
 
@@ -728,7 +728,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             {
                 auto bottomPelletMat = bottomPelletBVPOperator->getMatrix();
                 auto bottomPelletRhs = bottomPelletBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( bottomPelletCor.get() == NULL ) {
+                if ( bottomPelletCor.get() == nullptr ) {
                     bottomPelletCor = bottomPelletRhs->cloneVector();
                     applyCustomDirichletCondition( bottomPelletRhs,
                                                    bottomPelletCor,
@@ -740,13 +740,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    bottomPelletCor,
                                                    bottomPelletMeshAdapter,
                                                    bottomPelletConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( bottomPelletCor.get() != NULL );
+                AMP_ASSERT( bottomPelletCor.get() != nullptr );
 
                 auto topPelletMat = topPelletBVPOperator->getMatrix();
                 auto topPelletRhs = topPelletBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( topPelletCor.get() == NULL ) {
+                if ( topPelletCor.get() == nullptr ) {
                     topPelletCor = topPelletRhs->cloneVector();
                     applyCustomDirichletCondition( topPelletRhs,
                                                    topPelletCor,
@@ -758,13 +758,13 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    topPelletCor,
                                                    topPelletMeshAdapter,
                                                    topPelletConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( topPelletCor.get() != NULL );
+                AMP_ASSERT( topPelletCor.get() != nullptr );
 
                 auto cladMat = cladBVPOperator->getMatrix();
                 auto cladRhs = cladBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( cladCor.get() == NULL ) {
+                if ( cladCor.get() == nullptr ) {
                     cladCor = cladRhs->cloneVector();
                     applyCustomDirichletCondition(
                         cladRhs, cladCor, cladMeshAdapter, cladConstraints, cladMat );
@@ -773,9 +773,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    cladCor,
                                                    cladMeshAdapter,
                                                    cladConstraints,
-                                                   AMP::LinearAlgebra::Matrix::shared_ptr() );
+                                                   std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( topPelletCor.get() != NULL );
+                AMP_ASSERT( topPelletCor.get() != nullptr );
             }
 
             // get d

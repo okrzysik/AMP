@@ -1,14 +1,13 @@
 #include "AMP/operators/map/CladToSubchannelMap.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/PIO.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/vectors/VectorSelector.h"
 
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 static void create_map( const std::vector<std::pair<double, double>> &,
@@ -206,8 +205,8 @@ void CladToSubchannelMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_p
     // Subset the vector for the variable (we only need the local portion of the vector)
     auto var = getInputVariable();
     AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
-    auto commSubsetVec = u->constSelect( commSelector, u->getVariable()->getName() );
-    auto curPhysics    = commSubsetVec->constSubsetVectorForVariable( var );
+    auto commSubsetVec = u->select( commSelector, u->getVariable()->getName() );
+    auto curPhysics    = commSubsetVec->subsetVectorForVariable( var );
     AMP_ASSERT( curPhysics );
 
     // Fill the send buffer
@@ -374,5 +373,4 @@ double interp_linear( const std::vector<double> &x, const std::vector<double> &f
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

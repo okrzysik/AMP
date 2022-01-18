@@ -2,15 +2,14 @@
 #define included_AMP_FickSoretNonlinearFEOperator
 
 /* AMP files */
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperatorParameters.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   Class to add the output of the Fick and Soret operators.
@@ -65,7 +64,6 @@ private:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_OutputVariable;
     bool d_AddSoretTerm;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

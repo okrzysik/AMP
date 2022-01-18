@@ -7,8 +7,7 @@
 #include <cmath>
 #include <limits>
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /****************************************************************
  *  Constructors                                                 *
@@ -28,7 +27,7 @@ GMRESSolver::GMRESSolver( std::shared_ptr<SolverStrategyParameters> parameters )
 /****************************************************************
  *  Destructor                                                   *
  ****************************************************************/
-GMRESSolver::~GMRESSolver() {}
+GMRESSolver::~GMRESSolver() = default;
 
 /****************************************************************
  *  Initialize                                                   *
@@ -334,7 +333,7 @@ void GMRESSolver::computeGivensRotation( const int k )
     d_dsin[k] = s;
 }
 
-void GMRESSolver::backwardSolve( void )
+void GMRESSolver::backwardSolve()
 {
     // lower corner
     d_dy[d_nr] = d_dw[d_nr] / d_dHessenberg( d_nr, d_nr );
@@ -374,5 +373,4 @@ void GMRESSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorPa
         d_pPreconditioner->resetOperator( params );
     }
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

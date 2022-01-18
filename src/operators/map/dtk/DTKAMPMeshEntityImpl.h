@@ -4,7 +4,7 @@
 
 #include "AMP/utils/AMP_MPI.h"
 
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/MeshElement.h"
 
 #include "DTKAMPMeshEntityExtraData.h"
 #include <DTK_EntityImpl.hpp>
@@ -12,8 +12,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -97,7 +96,6 @@ private:
 };
 
 
-} // end namespace Operator
-} // end namespace AMP
+} // namespace AMP::Operator
 
 #endif // end included_AMP_DTK_AMPMeshEntityImpl

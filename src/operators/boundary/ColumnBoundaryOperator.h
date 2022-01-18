@@ -8,8 +8,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class for representing a composite boundary operator, F=(F1, F2, F3, .., Fk),
@@ -65,7 +64,6 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

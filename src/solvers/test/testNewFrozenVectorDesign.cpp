@@ -1,3 +1,4 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/newFrozenVectorDesign/FirstOperator.h"
 #include "AMP/operators/newFrozenVectorDesign/SecondOperator.h"
@@ -5,7 +6,6 @@
 #include "AMP/solvers/OnePointSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -41,7 +41,7 @@ void run( AMP::UnitTest &ut )
 
     std::cout << "Constructed Operators." << std::endl;
 
-    std::shared_ptr<AMP::Database> solver_db = input_db->getDatabase( "Solver" );
+    auto solver_db = input_db->getDatabase( "Solver" );
 
     auto firstSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
     firstSolverParams->d_pOperator = firstOp;

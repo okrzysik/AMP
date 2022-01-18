@@ -25,7 +25,7 @@ class AtomicList2 final
 public:
     AtomicList2() : d_lock( 1 ) {}
     template<typename Compare, class... Args>
-    inline TYPE remove( Compare compare, const Args &... args )
+    inline TYPE remove( Compare compare, const Args &...args )
     {
         lock();
         auto it = d_data.begin();
@@ -92,8 +92,7 @@ private:
 template<class LIST>
 static void modify_list( LIST &list, const std::vector<int> &rnd )
 {
-    for ( size_t i = 0; i < rnd.size(); i++ ) {
-        int r   = rnd[i];
+    for ( int r : rnd ) {
         auto v1 = list.remove_first();
         auto v2 = list.remove( []( int ) { return true; } );
         auto v3 = list.remove( [r]( int v ) { return v >= ( r / 8 ); } );

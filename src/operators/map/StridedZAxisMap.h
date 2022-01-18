@@ -6,8 +6,7 @@
 #include "AMP/operators/map/ScalarZAxisMap.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 typedef AMP::Operator::Map3to1to3Parameters ScalarZAxisMapParameters;
 
@@ -50,7 +49,6 @@ protected:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

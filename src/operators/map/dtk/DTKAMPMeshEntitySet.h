@@ -1,18 +1,17 @@
 //! @cond Doxygen_Suppress
 #ifndef included_AMP_DTK_AMPMeshEntitySet
-#define included_AMP_DTK_AMPMeshEntitySet
+    #define included_AMP_DTK_AMPMeshEntitySet
 
-#include "AMP/ampmesh/Mesh.h"
+    #include "AMP/mesh/Mesh.h"
 
-#include "AMP/utils/AMP_MPI.h"
+    #include "AMP/utils/AMP_MPI.h"
 
-#include <DTK_EntitySet.hpp>
+    #include <DTK_EntitySet.hpp>
 
-#include <map>
-#include <unordered_map>
+    #include <map>
+    #include <unordered_map>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -98,8 +97,7 @@ private:
     std::vector<std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>>
         d_id_maps;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
 //! @endcond

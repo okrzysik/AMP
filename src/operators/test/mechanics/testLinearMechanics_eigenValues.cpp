@@ -1,6 +1,7 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/operators/mechanics/IsotropicElasticModel.h"
@@ -9,7 +10,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include <memory>
@@ -85,9 +85,8 @@ static void myTest( AMP::UnitTest *ut )
             std::make_shared<AMP::Operator::ElementOperationParameters>( elemOp_db );
         auto mechLinElem = std::make_shared<AMP::Operator::MechanicsLinearElement>( elemOpParams );
 
-        std::shared_ptr<AMP::Discretization::DOFManager> dofMap =
-            AMP::Discretization::simpleDOFManager::create(
-                meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+        auto dofMap = AMP::Discretization::simpleDOFManager::create(
+            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
         AMP_INSIST( input_db->keyExists( "Mechanics_Assembly" ),
                     "Key ''Mechanics_Assembly'' is missing!" );

@@ -1,8 +1,10 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -20,10 +22,8 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -209,8 +209,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
         auto solver_combo_name   = solver_db->getString( "name" );
         auto uses_preconditioner = solver_db->getWithDefault<bool>( "uses_preconditioner", false );
         if ( uses_preconditioner ) {
-            std::string pc_name =
-                solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
+            auto pc_name = solver_db->getWithDefault<std::string>( "pc_name", "Preconditioner" );
             solver_combo_name = solver_combo_name + "+" + pc_name;
         }
 
@@ -221,7 +220,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     // Plot the results
     auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
@@ -249,33 +248,33 @@ int main( int argc, char *argv[] )
 
     if ( argc > 1 ) {
 
-        files.push_back( argv[1] );
+        files.emplace_back( argv[1] );
 
     } else {
 
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
 
 #ifdef USE_EXT_HYPRE
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
 #endif
 
 #ifdef USE_TRILINOS_ML
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 #endif
 
 #ifdef USE_TRILINOS_MUELU
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
-        files.push_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-TFQMR" );
 #endif
     }
 

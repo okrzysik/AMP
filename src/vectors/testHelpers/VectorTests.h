@@ -10,8 +10,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /**
@@ -168,7 +167,7 @@ public:
 
 
 public: // Vector selector tests
-    // Test to check that Vector::select, Vector::constSelect, VectorSelector::subset,
+    // Test to check that Vector::select, Vector::select, VectorSelector::subset,
     // and VectorSelector::constSubset return the same vectors
     void testAllSelectors( AMP::UnitTest *ut );
 
@@ -186,8 +185,7 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 // Extra includes

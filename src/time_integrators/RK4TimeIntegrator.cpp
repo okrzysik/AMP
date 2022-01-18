@@ -40,7 +40,7 @@ RK4TimeIntegrator::RK4TimeIntegrator(
 *                                                                      *
 ************************************************************************
 */
-RK4TimeIntegrator::~RK4TimeIntegrator() {}
+RK4TimeIntegrator::~RK4TimeIntegrator() = default;
 
 /*
 ************************************************************************
@@ -71,7 +71,7 @@ void RK4TimeIntegrator::reset(
     abort();
 }
 
-void RK4TimeIntegrator::setupVectors( void )
+void RK4TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
@@ -137,7 +137,7 @@ int RK4TimeIntegrator::advanceSolution( const double dt,
 *                                                                      *
 ************************************************************************
 */
-bool RK4TimeIntegrator::checkNewSolution( void )
+bool RK4TimeIntegrator::checkNewSolution()
 {
     bool retcode = true;
     /*
@@ -162,7 +162,7 @@ bool RK4TimeIntegrator::checkNewSolution( void )
 *                                                                      *
 ************************************************************************
 */
-void RK4TimeIntegrator::updateSolution( void )
+void RK4TimeIntegrator::updateSolution()
 {
     d_solution_vector->swapVectors( d_new_solution );
     d_current_time += d_current_dt;

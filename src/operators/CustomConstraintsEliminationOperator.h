@@ -4,8 +4,7 @@
 
 #include "AMP/operators/ConstraintsEliminationOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class CustomConstraintsEliminationOperator : public ConstraintsEliminationOperator
 {
@@ -29,7 +28,6 @@ protected:
     std::vector<std::vector<size_t>> d_MasterIndices;
     std::vector<std::vector<double>> d_MasterCoefficients;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

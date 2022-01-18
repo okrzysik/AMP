@@ -1,6 +1,7 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/LinearOperator.h"
@@ -13,7 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -38,7 +38,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // create a nonlinear BVP operator for nonlinear mechanics
     AMP_INSIST( input_db->keyExists( "testNonlinearMechanicsOperator" ), "key missing!" );

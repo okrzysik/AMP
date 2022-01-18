@@ -1,13 +1,13 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/solvers/libmesh/PelletStackHelpers.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -27,7 +27,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 #endif
 
     auto global_input_db = AMP::Database::parseInputFile( input_file );
@@ -65,7 +65,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     if ( useThermalLoad ) {
-        double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
+        auto initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
         initialTemperatureVec->setToScalar( initialTemp );
         helperSetReferenceTemperatureForPelletMechanics( coupledOp, initialTemperatureVec );
     }
@@ -104,8 +104,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         scaledRhsVec->scale( scaleValue, *rhsVec );
 
         if ( useThermalLoad ) {
-            double initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
-            double finalTemp   = global_input_db->getScalar<double>( "FinalTemperature" );
+            auto initialTemp = global_input_db->getScalar<double>( "InitialTemperature" );
+            auto finalTemp   = global_input_db->getScalar<double>( "FinalTemperature" );
             double deltaTemp =
                 initialTemp + ( ( static_cast<double>( step + 1 ) ) * ( finalTemp - initialTemp ) /
                                 ( static_cast<double>( NumberOfLoadingSteps ) ) );

@@ -4,8 +4,7 @@
 #include "AMP/operators/ElementPhysicsModel.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class ElementPhysicsModelFactory
 {
@@ -16,7 +15,6 @@ public:
     static std::shared_ptr<ElementPhysicsModel>
     createElementPhysicsModel( std::shared_ptr<AMP::Database> input_db );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

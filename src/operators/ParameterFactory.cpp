@@ -1,10 +1,10 @@
 #include "AMP/operators/ParameterFactory.h"
 
 #ifdef USE_EXT_LIBMESH
-#include "AMP/operators/NeutronicsRhsParameters.h"
-#include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
-#include "AMP/operators/mechanics/MechanicsLinearFEOperatorParameters.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
+    #include "AMP/operators/NeutronicsRhsParameters.h"
+    #include "AMP/operators/boundary/DirichletMatrixCorrectionParameters.h"
+    #include "AMP/operators/mechanics/MechanicsLinearFEOperatorParameters.h"
+    #include "AMP/operators/mechanics/MechanicsNonlinearFEOperatorParameters.h"
 #endif
 
 
@@ -15,8 +15,7 @@
     } while ( 0 )
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<OperatorParameters>
@@ -46,5 +45,4 @@ ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
 }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

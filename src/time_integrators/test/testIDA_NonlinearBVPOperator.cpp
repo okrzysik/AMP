@@ -1,8 +1,10 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -15,10 +17,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -50,7 +50,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -72,8 +72,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "NonlinearOperator", input_db, elementModel ) );
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> outputVar =
-        nonlinearOperator->getOutputVariable();
+    auto outputVar = nonlinearOperator->getOutputVariable();
     // create a linear BVP operator
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -162,8 +161,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     nonlinearOperator->modifyInitialSolutionVector( initialCondition );
 
     // create a linear time operator
-    std::shared_ptr<AMP::Database> timeOperator_db =
-        std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
     timeOperator_db->putScalar<double>( "CurrentDt", 0.01 );
     timeOperator_db->putScalar<std::string>( "name", "TimeOperator" );
     timeOperator_db->putScalar<bool>( "bLinearMassOperator", true );
@@ -215,7 +213,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     }
 
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
 
     siloWriter->registerVector(

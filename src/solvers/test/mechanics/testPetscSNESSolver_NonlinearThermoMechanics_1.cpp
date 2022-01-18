@@ -1,5 +1,7 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -17,10 +19,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -40,7 +40,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 #endif
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -86,9 +86,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto vectorDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    std::shared_ptr<AMP::Discretization::DOFManager> scalarDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    auto scalarDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     // create solution, rhs, and residual vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;

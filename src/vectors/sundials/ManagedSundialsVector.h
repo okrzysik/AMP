@@ -8,8 +8,7 @@ extern "C" {
 #include "sundials/sundials_nvector.h"
 }
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /**
@@ -39,10 +38,6 @@ public:
     std::string type() const override;
     std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> var ) const override;
     void swapVectors( Vector &other ) override;
-
-    Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> name ) override;
-    Vector::const_shared_ptr
-    constSubsetVectorForVariable( std::shared_ptr<const Variable> name ) const override;
 
     std::shared_ptr<Vector> getManagedVec() override { return shared_from_this(); }
     std::shared_ptr<const Vector> getManagedVec() const override { return shared_from_this(); }
@@ -78,7 +73,6 @@ private:
     static booleantype constrmask_no_impl( N_Vector c, N_Vector x, N_Vector m );
     static realtype minquotient_AMP( N_Vector num, N_Vector denom );
 };
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

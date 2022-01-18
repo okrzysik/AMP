@@ -30,13 +30,21 @@ public:
     kdtree2();
 
     /**
-     * \brief   Default constructor
+     * \brief   Constructor
      * \details  This is the default constructor for creating the kdtree
      * \param[in] N     The number of points in the tree
      * \param[in] x     The coordinates of each point in the tree
      * \param[in] data  Data to associate with the nodes
      */
     kdtree2( size_t N, const Point *x, const TYPE *data );
+
+    /**
+     * \brief   Constructor
+     * \details  This is the default constructor for creating the kdtree
+     * \param[in] x     The coordinates of each point in the tree
+     * \param[in] data  Data to associate with the nodes
+     */
+    kdtree2( const std::vector<Point> &x, const std::vector<TYPE> &data );
 
     //!  Destructor
     ~kdtree2();
@@ -54,11 +62,17 @@ public:
     kdtree2 &operator=( kdtree2 && );
 
 
-    //! Function to return the bounding box for the tree
+    //! Return the bounding box for the tree
     std::array<double, 2 * NDIM> box() const;
 
-    //! Function to return the number of entries stored in the tree
+    //! Return the number of entries stored in the tree
     inline size_t size() const { return d_N; }
+
+    //! Return true if the tree is empty
+    inline bool empty() const { return d_N == 0; }
+
+    //! Return the points in the tree
+    std::vector<Point> getPoints() const;
 
     /**
      * \brief   Add a point
@@ -81,26 +95,30 @@ public:
      * \brief   Search the tree for the nearest neighbor points
      * \details  This will return the point and data for the nearest N neighbors in the tree
      * \param[in] x       The coordinates of the point to search (NDIM)
+     * \param[in] N       The number of points to return
      * @return            Returns a vector of tuples containing the points and the data
      */
     std::vector<std::tuple<Point, TYPE>> findNearest( const Point &x, int N ) const;
 
     /**
+     * \brief   Search the tree for the nearest neighbor points
+     * \details  This will return the point and data for the all the points within the
+     *     distance to the point x
+     * \param[in] x       The coordinates of the point to search (NDIM)
+     * \param[in] dist    The distance to the point
+     * @return            Returns a vector of tuples containing the points and the data
+     */
+    std::vector<std::tuple<Point, TYPE>> findNearest( const Point &x, double dist ) const;
+
+    /**
      * \brief   Search the tree for the nearest points to a ray
-     * \details  This function is similar to findNearest for a ray with some
-     *    significant differences.  It takes an initial point and a direction
-     *    vector for a ray.  Instead of returning the closest point to the ray,
-     *    it returns a set of "candidates" that are close to the point.  This is
-     *    useful in the event that the points represent regions and we want to
-     *    find the first region we intersect.  The algorithm works as the following:
-     *        First we find and return the closest point to the starting position.
-     *        Using the previous guess we advance the ray to find the next point that
-     *           is closer to the ray than the previous point.
+     * \details  This function will return all points within the given distance to the ray
      * \param[in] x       The coordinates of the starting point (NDIM)
      * \param[in] dir     The direction vector (NDIM)
      * @return            Returns a vector of candidates for the nearest points to a ray.
      */
-    std::vector<std::tuple<Point, TYPE, Point, double>> findNearestRay( Point x, Point dir ) const;
+    std::vector<std::tuple<Point, TYPE>>
+    findNearestRay( const Point &x, const Point &dir, double dist ) const;
 
 
 private: // Internal data
@@ -120,14 +138,23 @@ private: // Internal data
 
 
 private: // Internal functions
+    void initialize( size_t N, const Point *x, const TYPE *data );
     static size_t find_split( size_t N, const double *x );
     void splitData( size_t N, const Point *x, const TYPE *data );
+    bool intersect( const Point &x, double dist2 ) const;
+    void getPoints( std::vector<Point> &x ) const;
     void
     findNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
+    void findNearest( const Point &x,
+                      double dist2,
+                      std::vector<std::tuple<Point, TYPE>> &nearest ) const;
+    void findNearestRay( const Point &x,
+                         const Point &dir,
+                         const Point &n_inv,
+                         double dist2,
+                         std::vector<std::tuple<Point, TYPE>> &nearest ) const;
     void
     checkNearest( const Point &x, size_t N, std::tuple<Point, TYPE> *nearest, double *dist ) const;
-    static constexpr double norm( const Point &x, const Point &y );
-    static constexpr double dot( const Point &x, const Point &y );
     static double distanceToBox( const std::array<double, NDIM> &pos,
                                  const std::array<double, NDIM> &ang,
                                  const std::array<double, NDIM> &lb,

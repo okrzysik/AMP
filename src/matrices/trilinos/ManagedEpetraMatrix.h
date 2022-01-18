@@ -9,8 +9,7 @@
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class ManagedEpetraMatrix
@@ -89,7 +88,7 @@ public:
 
     void makeConsistent() override;
     double L1Norm() const override;
-    Matrix::shared_ptr cloneMatrix() const override;
+    std::shared_ptr<Matrix> cloneMatrix() const override;
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
     Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
@@ -103,7 +102,6 @@ protected:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

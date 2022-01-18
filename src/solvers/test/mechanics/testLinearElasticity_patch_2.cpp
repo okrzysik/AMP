@@ -1,6 +1,8 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -9,11 +11,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -77,7 +77,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         AMP::pout << "Initial Residual Norm: " << initResidualNorm << std::endl;
 
-        std::shared_ptr<AMP::Database> mlSolver_db = input_db->getDatabase( "LinearSolver" );
+        auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
         auto mlSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );

@@ -14,8 +14,7 @@ extern "C" {
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 typedef SolverStrategyParameters BoomerAMGSolverParameters;
@@ -191,7 +190,6 @@ private:
 
     bool d_bCreationPhase; /**< set to true if the PC is not ready and false otherwise. */
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

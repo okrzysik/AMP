@@ -3,8 +3,7 @@
 #include "AMP/vectors/petsc/PetscHelpers.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 //**********************************************************************
 // Static functions that operate on VectorData objects
@@ -52,9 +51,9 @@ void NativePetscVectorOperations::axpbypcz( const Scalar &alpha_in,
     Vec y = getConstPetscVec( vy );
     Vec z = getPetscVec( vz );
 
-    double alpha = alpha_in.get<double>();
-    double beta  = beta_in.get<double>();
-    double gamma = gamma_in.get<double>();
+    auto alpha = alpha_in.get<double>();
+    auto beta  = beta_in.get<double>();
+    auto gamma = gamma_in.get<double>();
 
     if ( x != y && x != z && y != z ) {
         // We can safely perform  z = alpha x + beta y + gamma z
@@ -284,5 +283,4 @@ Scalar NativePetscVectorOperations::localDot( const VectorData &vx, const Vector
     return static_cast<double>( ans );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

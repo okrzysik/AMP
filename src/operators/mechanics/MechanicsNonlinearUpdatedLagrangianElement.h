@@ -11,8 +11,7 @@
 #include "MechanicsElement.h"
 #include "UpdatedLagrangianUtils.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -655,7 +654,6 @@ void MechanicsNonlinearUpdatedLagrangianElement::updateMaterialModel(
 
     materialModelPostNonlinearElementOperation<type>();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

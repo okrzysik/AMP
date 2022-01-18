@@ -1,38 +1,37 @@
 #ifdef USE_TRILINOS_THYRA
 
-#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
+    #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 
-#include "AMP/discretization/DOF_Manager.h"
-#include "AMP/utils/AMP_MPI.h"
-#include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
-#include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
+    #include "AMP/discretization/DOF_Manager.h"
+    #include "AMP/utils/AMP_MPI.h"
+    #include "AMP/vectors/VectorBuilder.h"
+    #include "AMP/vectors/trilinos/thyra/ManagedThyraVector.h"
+    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
 
 
 // Trilinos includes
 DISABLE_WARNINGS
-#include <Epetra_Map.h>
-#include <Epetra_Vector.h>
-#ifdef USE_TRILINOS_BELOS
-//#include "Thyra_SpmdVectorBase_def.hpp"
-#include "BelosMVOPTester.hpp"
-#include "BelosThyraAdapter.hpp"
-#endif
-#include "Thyra_DefaultSpmdVector_def.hpp"
-#include "Thyra_EpetraThyraWrappers.hpp"
-#ifdef USE_EXT_MPI
-#include <Epetra_MpiComm.h>
+    #include <Epetra_Map.h>
+    #include <Epetra_Vector.h>
+    #ifdef USE_TRILINOS_BELOS
+        //#include "Thyra_SpmdVectorBase_def.hpp"
+        #include "BelosMVOPTester.hpp"
+        #include "BelosThyraAdapter.hpp"
+    #endif
+    #include "Thyra_DefaultSpmdVector_def.hpp"
+    #include "Thyra_EpetraThyraWrappers.hpp"
+    #ifdef USE_EXT_MPI
+        #include <Epetra_MpiComm.h>
 
-#else
-#include <Epetra_SerialComm.h>
-#endif
+    #else
+        #include <Epetra_SerialComm.h>
+    #endif
 ENABLE_WARNINGS
 
 /// \cond UNDOCUMENTED
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -43,12 +42,12 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
     AMP_MPI global_comm( AMP_COMM_WORLD );
     int local_size  = 101;
     int global_size = global_comm.sumReduce( local_size );
-// Create an epetra vector
-#ifdef USE_EXT_MPI
+    // Create an epetra vector
+    #ifdef USE_EXT_MPI
     Epetra_MpiComm comm = global_comm.getCommunicator();
-#else
+    #else
     Epetra_SerialComm comm;
-#endif
+    #endif
     Teuchos::RCP<Epetra_Map> epetra_map( new Epetra_Map( global_size, local_size, 0, comm ) );
     Teuchos::RCP<Epetra_Vector> epetra_v( new Epetra_Vector( *epetra_map, true ) );
     // Create a thyra vector from the epetra vector
@@ -95,7 +94,7 @@ AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() co
     return vec3;
 }
 
-#ifdef USE_TRILINOS_BELOS
+    #ifdef USE_TRILINOS_BELOS
 
 Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector::shared_ptr v )
 {
@@ -129,9 +128,8 @@ void testBelosThyraVector( AMP::UnitTest &ut, const VectorFactory &factory )
 }
 
 
-#endif
-} // namespace LinearAlgebra
-} // namespace AMP
+    #endif
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 

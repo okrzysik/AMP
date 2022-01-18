@@ -4,8 +4,7 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/LinearFEOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class DiffusionLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
@@ -28,7 +27,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

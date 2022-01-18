@@ -14,12 +14,11 @@
 #include "petscsnes.h"
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
-#error AMP only supports PETSc 3.7.5 or greater
+    #error AMP only supports PETSc 3.7.5 or greater
 #endif
 
 
@@ -168,7 +167,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 }
 void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
-    std::string petscOptions = db->getWithDefault<std::string>( "SNESOptions", "" );
+    auto petscOptions = db->getWithDefault<std::string>( "SNESOptions", "" );
     d_PetscMonitor.reset();
     if ( petscOptions.find( "monitor" ) != std::string::npos ) {
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
@@ -493,5 +492,4 @@ void PetscSNESSolver::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vecto
 }
 
 
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

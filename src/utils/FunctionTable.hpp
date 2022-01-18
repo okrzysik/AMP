@@ -38,7 +38,7 @@ inline void FunctionTable::rand( Array<TYPE, FUN> &x )
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = std::complex<double>( dis( gen ), dis( gen ) );
     } else {
-        AMP_ERROR( "rand not implimented" );
+        AMP_ERROR( "rand not implemented" );
     }
 }
 

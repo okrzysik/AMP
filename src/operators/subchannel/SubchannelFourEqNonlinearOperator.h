@@ -5,10 +5,9 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
 
-#include "AMP/ampmesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshElementVectorIterator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   Nonlinear operator class for the 2-equation {enthalpy, pressure} formulation of the subchannel
@@ -191,7 +190,6 @@ private:
 };
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

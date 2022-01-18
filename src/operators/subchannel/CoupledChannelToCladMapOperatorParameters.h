@@ -8,8 +8,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   A class that encapsulates the parameters required to construct
@@ -34,8 +33,7 @@ public:
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_vector;
     std::shared_ptr<AMP::Operator::SubchannelPhysicsModel> d_subchannelPhysicsModel;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 
 #endif

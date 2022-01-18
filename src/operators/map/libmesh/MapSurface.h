@@ -12,8 +12,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MapSurface : public MapOperator
 {
@@ -64,7 +63,6 @@ private:
     std::shared_ptr<Map1Dto3D> mapTarget;
     std::shared_ptr<MapOperatorParameters> mapTargetParams;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

@@ -5,15 +5,13 @@
 
 
 // Define the material
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 class CylindricallySymmetric : public AMP::Materials::Material
 {
 public:
     CylindricallySymmetric();
 };
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 
 // Add static initialize to force symbols to be included

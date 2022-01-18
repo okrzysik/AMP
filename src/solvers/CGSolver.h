@@ -5,8 +5,7 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/AMP_MPI.h"
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 /**
  * The CGSolver class implements the Conjugate Gradient method
@@ -107,7 +106,6 @@ private:
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

@@ -1,13 +1,13 @@
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include <memory>
 
@@ -36,14 +36,12 @@ static void myTest( AMP::UnitTest *ut )
     auto input_db          = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    std::shared_ptr<AMP::Database> sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
-    auto sourceMeshParams = std::make_shared<AMP::Mesh::MeshParameters>( sourceMeshDatabase );
+    auto sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
+    auto sourceMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( sourceMeshDatabase );
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    AMP::Mesh::Mesh::shared_ptr sourceMesh = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
-    std::size_t const numVerticesOnSourceMesh =
-        sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
-    std::size_t const numElementsOnSourceMesh =
-        sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    auto sourceMesh                = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
+    size_t numVerticesOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
+    size_t numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "source mesh contains " << numVerticesOnSourceMesh << " vertices\n";
     AMP::pout << "source mesh contains " << numElementsOnSourceMesh << " elements\n";
 
@@ -52,18 +50,15 @@ static void myTest( AMP::UnitTest *ut )
     bool const split      = true;
     int const ghostWidth  = 1;
     int const dofsPerNode = 1;
-    std::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager =
-        AMP::Discretization::simpleDOFManager::create(
-            sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
-    auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
-    AMP::LinearAlgebra::Vector::shared_ptr sourceVector =
-        AMP::LinearAlgebra::createVector( sourceDofManager, variable, split );
+    auto sourceDofManager = AMP::Discretization::simpleDOFManager::create(
+        sourceMesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
+    auto variable     = std::make_shared<AMP::LinearAlgebra::Variable>( "dummy" );
+    auto sourceVector = AMP::LinearAlgebra::createVector( sourceDofManager, variable, split );
     // and fill it
     std::vector<std::size_t> dofIndices;
     double value;
     AMP::pout << "Filling source vector" << std::endl;
-    AMP::Mesh::MeshIterator sourceMeshIterator =
-        sourceMesh->getIterator( AMP::Mesh::GeomType::Vertex );
+    auto sourceMeshIterator = sourceMesh->getIterator( AMP::Mesh::GeomType::Vertex );
     for ( sourceMeshIterator = sourceMeshIterator.begin();
           sourceMeshIterator != sourceMeshIterator.end();
           ++sourceMeshIterator ) {
@@ -74,7 +69,7 @@ static void myTest( AMP::UnitTest *ut )
     }
 #ifdef USE_EXT_SILO
     {
-        auto siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
+        auto siloWriter = AMP::IO::Writer::buildWriter( "silo" );
         siloWriter->setDecomposition( 1 );
         siloWriter->registerVector(
             sourceVector, sourceMesh, AMP::Mesh::GeomType::Vertex, "vector" );
@@ -87,11 +82,9 @@ static void myTest( AMP::UnitTest *ut )
     auto targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
     auto targetMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( targetMeshDatabase );
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto targetMesh = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
-    std::size_t const numVerticesOnTargetMesh =
-        targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
-    std::size_t const numElementsOnTargetMesh =
-        targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    auto targetMesh                = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
+    size_t numVerticesOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
+    size_t numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "target mesh contains " << numVerticesOnTargetMesh << " vertices\n";
     AMP::pout << "target mesh contains " << numElementsOnTargetMesh << " elements\n";
 
@@ -120,7 +113,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "source vector l2 norm = " << sourceVector->L2Norm() << std::endl;
     AMP::pout << "target vector l2 norm = " << targetVector->L2Norm() << std::endl;
 #ifdef USE_EXT_SILO
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "silo" );
     siloWriter->setDecomposition( 1 );
     siloWriter->registerVector( targetVector, targetMesh, AMP::Mesh::GeomType::Vertex, "vector" );
     siloWriter->writeFile( "target", 0 );

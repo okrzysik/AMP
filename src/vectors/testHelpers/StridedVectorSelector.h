@@ -1,16 +1,13 @@
 #ifndef included_AMP_test_StridedVectorFactory
 #define included_AMP_test_StridedVectorFactory
 
+#include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/UnitTest.h"
 
-
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 class StridedVectorFactory : public VectorFactory
@@ -37,7 +34,6 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

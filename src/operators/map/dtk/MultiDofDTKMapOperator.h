@@ -2,14 +2,13 @@
 #ifndef included_AMP_DTK_MultiDofDTKMapOperator
 #define included_AMP_DTK_MultiDofDTKMapOperator
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 
 #include <string>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class MultiDofDTKMapOperatorParameters : public OperatorParameters
 {
@@ -56,7 +55,6 @@ private:
     AMP::LinearAlgebra::Vector::const_shared_ptr d_SourceVectorMap21;
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVectorMap21;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

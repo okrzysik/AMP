@@ -5,8 +5,7 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/trilinos/EpetraMatrixOperatorParameters.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class EpetraMatrixOperator : public LinearOperator
 {
@@ -17,14 +16,13 @@ public:
     explicit EpetraMatrixOperator( std::shared_ptr<EpetraMatrixOperatorParameters> params )
         : LinearOperator( params )
     {
-        AMP::LinearAlgebra::Matrix::shared_ptr t(
+        std::shared_ptr<AMP::LinearAlgebra::Matrix> t(
             new AMP::LinearAlgebra::ManagedEpetraMatrix( params->d_Matrix ) );
         setMatrix( t );
     }
 
     virtual ~EpetraMatrixOperator() {}
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

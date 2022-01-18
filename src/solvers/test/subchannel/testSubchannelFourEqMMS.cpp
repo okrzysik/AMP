@@ -1,8 +1,10 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
@@ -16,10 +18,8 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -81,9 +81,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get dof manager
-    int DOFsPerFace[3] = { 1, 1, 3 };
-    auto subchannelDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    int DOFsPerFace[3]        = { 1, 1, 3 };
+    auto subchannelDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 1 );
 
     //=============================================================================
     // physics model, parameters, and operator creation
@@ -145,11 +145,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto box = subchannelMesh->getBoundingBox();
     AMP_ASSERT( box[4] == 0.0 );
     double H             = box[5] - box[4];
-    double m_in          = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
-    double w_in          = nonlinearOperator_db->getScalar<double>( "Inlet_Lateral_Flow_Rate" );
-    double Q             = nonlinearOperator_db->getScalar<double>( "Max_Rod_Power" );
-    double Pout          = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
-    double Tin           = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
+    auto m_in            = nonlinearOperator_db->getScalar<double>( "Inlet_Mass_Flow_Rate" );
+    auto w_in            = nonlinearOperator_db->getScalar<double>( "Inlet_Lateral_Flow_Rate" );
+    auto Q               = nonlinearOperator_db->getScalar<double>( "Max_Rod_Power" );
+    auto Pout            = nonlinearOperator_db->getScalar<double>( "Exit_Pressure" );
+    auto Tin             = nonlinearOperator_db->getScalar<double>( "Inlet_Temperature" );
     size_t N_subchannels = AMP::Operator::Subchannel::getNumberOfSubchannels( subchannelMesh );
     m_in                 = m_in / N_subchannels;
 
@@ -393,7 +393,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );
 
     // check that norm of relative error is less than tolerance
-    double tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
+    auto tol = input_db->getWithDefault<double>( "TOLERANCE", 1e-6 );
     if ( relErrorNorm <= tol && fabs( Tin - TinSol ) < tol ) {
         ut->passes( exeName + ": manufactured solution test" );
     } else {
@@ -401,10 +401,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // Print final solution
-    AMP::Mesh::Mesh::shared_ptr channel0 =
-        AMP::Operator::Subchannel::subsetForSubchannel( subchannelMesh, 0, 0 );
-    face        = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( channel0, 0 );
-    int N_print = std::max( 1, (int) face.size() / 10 );
+    auto channel0 = AMP::Operator::Subchannel::subsetForSubchannel( subchannelMesh, 0, 0 );
+    face          = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( channel0, 0 );
+    int N_print   = std::max( 1, (int) face.size() / 10 );
     for ( int i = 0; i < (int) face.size(); i++ ) {
         if ( i % N_print == 0 ) {
             subchannelDOFManager->getDOFs( face->globalID(), axialDofs );
@@ -451,7 +450,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     enthalpy->scale( h_scale );
     pressure->scale( P_scale );
     // Register the quantities to plot
-    auto siloWriter         = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter         = AMP::IO::Writer::buildWriter( "Silo" );
     auto subchannelMass     = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
     auto subchannelEnthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );
     auto subchannelPressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 2, 3 ), "P" );

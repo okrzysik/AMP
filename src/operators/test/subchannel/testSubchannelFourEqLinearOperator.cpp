@@ -1,7 +1,8 @@
-#include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
@@ -10,7 +11,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -188,8 +188,7 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
         // get centroid of current face
         auto faceCentroid = face->centroid();
         // get vertices of current face
-        std::vector<AMP::Mesh::MeshElement> vertices =
-            face->getElements( AMP::Mesh::GeomType::Vertex );
+        auto vertices = face->getElements( AMP::Mesh::GeomType::Vertex );
 
         bool perpindicular_to_x = true; // is the current face perpindicular to x-axis?
         bool perpindicular_to_y = true; // is the current face perpindicular to y-axis?
@@ -296,9 +295,8 @@ static void createGlobalIDMaps( std::shared_ptr<AMP::Discretization::DOFManager>
                                 std::map<size_t, size_t> &variables_by_globalID )
 {
     // loop over axial faces
-    AMP::Mesh::Mesh::shared_ptr xyMesh =
-        mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 ) );
-    AMP::Mesh::MeshIterator axial_face = xyMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto xyMesh     = mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 ) );
+    auto axial_face = xyMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; axial_face != axial_face.end(); ++axial_face ) {
         std::vector<size_t> dofs;
         dof_manager->getDOFs( axial_face->globalID(), dofs );
@@ -311,9 +309,8 @@ static void createGlobalIDMaps( std::shared_ptr<AMP::Discretization::DOFManager>
     }
 
     // loop over lateral faces
-    std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> lateral_face_map =
-        getLateralFaces( mesh, true );
-    AMP::Mesh::MeshIterator face = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto lateral_face_map = getLateralFaces( mesh, true );
+    auto face             = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; face != face.end(); ++face ) {
         auto centroid              = face->centroid();
         auto lateral_face_iterator = lateral_face_map.find( centroid );
@@ -338,9 +335,8 @@ static bool JacobianIsCorrect( std::shared_ptr<AMP::LinearAlgebra::Matrix> J_tes
 {
     double J_test_MATLAB[num_dofs_MATLAB][num_dofs_MATLAB] = { { 0.0 } };
     // loop over axial faces
-    AMP::Mesh::Mesh::shared_ptr xyMesh =
-        mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 ) );
-    AMP::Mesh::MeshIterator axial_face = xyMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
+    auto xyMesh     = mesh->Subset( AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( mesh, 0 ) );
+    auto axial_face = xyMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     for ( ; axial_face != axial_face.end(); ++axial_face ) {
         std::vector<size_t> dofs;
         dof_manager->getDOFs( axial_face->globalID(), dofs );
@@ -472,9 +468,9 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // get dof manager
     std::shared_ptr<AMP::Discretization::DOFManager> subchannelDOFManager;
-    int DOFsPerFace[3] = { 1, 1, 3 };
-    subchannelDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    int DOFsPerFace[3]   = { 1, 1, 3 };
+    subchannelDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 1 );
     // check number of DOFs
     if ( subchannelDOFManager->numGlobalDOF() == num_dofs_AMP )
         ut->passes( exeName + ": number of DOFs" );
@@ -523,9 +519,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 
     // check number of lateral gaps
-    std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> interiorLateralFaceMap =
-        getLateralFaces( subchannelMesh, false );
-    size_t Ngaps = interiorLateralFaceMap.size();
+    auto interiorLateralFaceMap = getLateralFaces( subchannelMesh, false );
+    size_t Ngaps                = interiorLateralFaceMap.size();
     if ( Ngaps == 36 ) { // for 3x3 subchannel array with 3 axial intervals, there are 12x3=36 gaps
         ut->passes( exeName + ": number of lateral gaps" );
     } else {
@@ -640,7 +635,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         auto lateralFaceIterator = interiorLateralFaceMap.find( faceCentroid );
         if ( lateralFaceIterator != interiorLateralFaceMap.end() ) { // if face in lateral face map,
             // get lateral face
-            AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+            auto lateralFace = lateralFaceIterator->second;
             // get MATLAB index for gap
             unsigned int k = getMATLABGapIndex( lateralFace );
             // get MATLAB axial index
@@ -667,7 +662,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     subchannelOperator->apply( SolVec, ResVec );
 
     // get the AMP Jacobian matrix to be tested against the MATLAB Jacobian matrix
-    std::shared_ptr<AMP::LinearAlgebra::Matrix> testJacobian = subchannelOperator->getMatrix();
+    auto testJacobian = subchannelOperator->getMatrix();
 
     // get the MATLAB Jacobian matrix
     // clang-format off

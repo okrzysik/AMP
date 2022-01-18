@@ -1,7 +1,7 @@
 #ifndef included_AMP_DiffusionLinearFEOperator
 #define included_AMP_DiffusionLinearFEOperator
 
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/operators/libmesh/LinearFEOperator.h"
@@ -11,8 +11,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 class DiffusionLinearFEOperator : public LinearFEOperator
@@ -52,7 +51,6 @@ protected:
 
     std::shared_ptr<DiffusionTransportModel> d_transportModel;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

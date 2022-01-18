@@ -1,10 +1,12 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/ampmesh/libmesh/libmeshMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
 
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/materials/UO2_MSRZC_09.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -21,11 +23,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -230,7 +230,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     }
     NULL_USE( libmeshInit );
 
-    double scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
+    auto scaleMeshFactor = inputDatabase->getWithDefault<double>( "scale_mesh", 1.0 );
     AMP::pout << "Scaling mesh by a factor " << scaleMeshFactor << "\n";
 
     // Create the linear mechanics operator
@@ -320,9 +320,9 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         bvpOperator->getBoundaryOperator() );
     auto dirichletBoundaryIds = dirichletMatOp->getBoundaryIds();
     std::vector<size_t> dofs;
-    for ( unsigned int i = 0; i < dirichletBoundaryIds.size(); i++ ) {
-        auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
-                                                       dirichletBoundaryIds[i] );
+    for ( short dirichletBoundaryId : dirichletBoundaryIds ) {
+        auto bnd =
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, dirichletBoundaryId );
         for ( const auto &node : bnd ) {
             auto p       = node.coord();
             auto bndVals = manufacturedSolution->getExactSolutions( p.x(), p.y(), p.z() );
@@ -337,9 +337,9 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
             meshAdapter, "NeumannCorrection", inputDatabase, volumeOp, dummyModel ) );
     // neumannVecOp->setVariable(var);
     auto neumannBoundaryIds = neumannVecOp->getBoundaryIds();
-    for ( unsigned int i = 0; i < neumannBoundaryIds.size(); i++ ) {
-        auto bnd = meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex,
-                                                       neumannBoundaryIds[i] );
+    for ( short neumannBoundaryId : neumannBoundaryIds ) {
+        auto bnd =
+            meshAdapter->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, neumannBoundaryId );
         for ( const auto &node : bnd ) {
             std::vector<double> dummyNormal( 3, 0.0 );
             std::vector<double> gradientX( 3, 1.0 );
@@ -463,7 +463,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     }
 #ifdef USE_EXT_SILO
     auto vertex     = AMP::Mesh::GeomType::Vertex;
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( exactErrVec, meshAdapter, vertex, "Exact_Error_Vector" );
     siloWriter->registerVector( exactSolVec, meshAdapter, vertex, "Exact_Solution_Vector" );
     siloWriter->registerVector( solVec, meshAdapter, vertex, "Solution_Vector" );

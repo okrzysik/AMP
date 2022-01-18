@@ -1,11 +1,11 @@
-#include "../../ampmesh/test/meshGenerators.h"
+#include "../../mesh/test/meshGenerators.h"
 
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/testHelpers/MatrixTests.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -18,8 +18,7 @@
 using namespace AMP::unit_test;
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Class to create a matrix from a simpleDOFManager
@@ -80,7 +79,7 @@ public:
         return vector;
     }
 
-    AMP::LinearAlgebra::Matrix::shared_ptr getMatrix() const override
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix() const override
     {
         PROFILE_START( "getMatrix" );
         auto variable_a = std::make_shared<AMP::LinearAlgebra::Variable>( "a" );
@@ -102,5 +101,4 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

@@ -1,12 +1,11 @@
 #include "AMP/discretization/subsetDOFManager.h"
 
-#include "AMP/ampmesh/MultiIterator.h"
+#include "AMP/mesh/MultiIterator.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /****************************************************************
@@ -232,5 +231,4 @@ std::shared_ptr<const DOFManager> subsetDOFManager::getDOFManager() const
 {
     return d_parentDOFManager;
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

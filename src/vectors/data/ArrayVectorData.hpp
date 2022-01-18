@@ -5,8 +5,7 @@
 #include "math.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
@@ -144,6 +143,5 @@ void ArrayVectorData<T, FUN, Allocator>::addLocalValuesByGlobalID( int num,
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 #endif

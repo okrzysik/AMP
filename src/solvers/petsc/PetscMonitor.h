@@ -41,11 +41,11 @@ public:
     //! Routine to pass to petsc for monitoring SNES
     static PetscErrorCode monitorSNES( SNES, int, double, void * );
 
-    //! Routine to pass to petsc for monitoring KSP delete
-    // static PetscErrorCode (*)(void**)  getKSPMonitorDelete();
+        //! Routine to pass to petsc for monitoring KSP delete
+        // static PetscErrorCode (*)(void**)  getKSPMonitorDelete();
 
-    //! Routine to pass to petsc for monitoring SNES delete
-    // static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
+        //! Routine to pass to petsc for monitoring SNES delete
+        // static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
 #endif
 
     // Function to remove the monitor options from the options

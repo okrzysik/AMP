@@ -4,8 +4,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 std::shared_ptr<AMP::LinearAlgebra::Variable> MassLinearFEOperator::getInputVariable()
@@ -158,5 +157,4 @@ void MassLinearFEOperator::postElementOperation()
 
     destroyCurrentLibMeshElement();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

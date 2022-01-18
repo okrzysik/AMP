@@ -1,7 +1,8 @@
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -13,7 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
@@ -72,9 +72,9 @@ static void linearTest( AMP::UnitTest *ut,
 
     // set up defaults for materials arguments and create transport model
     auto transportModel_db = input_db->getDatabase( "DiffusionTransportModel" );
-    double defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
-    double defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
-    double defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
+    auto defTemp = transportModel_db->getWithDefault<double>( "Default_Temperature", 400.0 );
+    auto defConc = transportModel_db->getWithDefault<double>( "Default_Concentration", .33 );
+    auto defBurn = transportModel_db->getWithDefault<double>( "Default_Burnup", .5 );
     auto elementPhysicsModel =
         AMP::Operator::ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     auto transportModel =

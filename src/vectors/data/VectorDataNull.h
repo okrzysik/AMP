@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/VectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 template<typename TYPE>
@@ -171,8 +170,7 @@ public: // Advanced virtual functions
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 #endif

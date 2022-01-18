@@ -5,15 +5,13 @@
 
 
 // Define the material
-namespace AMP {
-namespace Materials {
+namespace AMP::Materials {
 class UO2_MSRZC_09 : public Material
 {
 public:
     UO2_MSRZC_09();
 };
-} // namespace Materials
-} // namespace AMP
+} // namespace AMP::Materials
 
 
 // Add static initialize to force symbols to be included

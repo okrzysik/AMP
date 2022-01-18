@@ -1,5 +1,6 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -18,7 +19,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -115,10 +115,9 @@ static void myTest( AMP::UnitTest *ut )
             } // end for
             AMP_ASSERT( p == numDOFs );
             dirOp->initialize( slaveIndices, slaveValues );
-            //    colOp->append(dirOp);
+            // colOp->append(dirOp);
 
-            //    std::shared_ptr<AMP::Database> dummySolver_db =
-            //    preconditioner_db->getDatabase("ContactPreconditioner");
+            // auto dummySolver_db = preconditioner_db->getDatabase("ContactPreconditioner");
             auto dummySolver_db = std::make_shared<AMP::Database>( "DummySolver" );
             dummySolver_db->putScalar( "print_info_level", 1 );
             dummySolver_db->putScalar( "max_iterations", 1 );

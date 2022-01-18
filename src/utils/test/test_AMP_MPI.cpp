@@ -8,10 +8,10 @@
 #include <thread>
 #include <vector>
 
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -211,11 +211,11 @@ template<class type>
 int testScan( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testScan" );
-    auto x = ( type )( comm.getRank() + 1 );
+    auto x = (type) ( comm.getRank() + 1 );
     type y;
     auto msg = stringf( "sumScan (%s)", typeid( type ).name() );
     comm.sumScan<type>( &x, &y, 1 );
-    auto N = ( type )( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
+    auto N = (type) ( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
     if ( y == N )
         ut->passes( msg );
     else
@@ -1128,10 +1128,10 @@ void testCommDup( UnitTest *ut )
         ut->failure( "dup comm" );
         return;
     }
-#if defined( USE_PETSC ) && !defined( USE_MPI )
+    #if defined( USE_PETSC ) && !defined( USE_MPI )
     ut->expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
     return;
-#endif
+    #endif
     int N_comm_try = 2000; // Maximum number of comms to try and create
     std::vector<MPI_CLASS> comms;
     comms.reserve( N_comm_try );

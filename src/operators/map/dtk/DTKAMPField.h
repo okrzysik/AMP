@@ -13,8 +13,7 @@
 #include <DTK_Field.hpp>
 #include <DTK_Types.hpp>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /**
@@ -65,7 +64,6 @@ private:
     // The support ids over which the field is constructed.
     Teuchos::Array<DataTransferKit::SupportId> d_support_ids;
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

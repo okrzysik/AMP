@@ -2,11 +2,10 @@
 #define included_AMP_OperatorFactory
 
 /* AMP files */
-#include "AMP/ampmesh/MeshManager.h"
+#include "AMP/mesh/MeshManager.h"
 #include "AMP/utils/Database.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 template<typename OPERATOR>
 class OperatorFactory
@@ -60,7 +59,6 @@ OperatorFactory<OPERATOR>::getJacobian( Operator::shared_ptr oper,
         new typename Jacobian_t::OutputVariable( "factory jacobian output" ) ) );
     return retVal;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

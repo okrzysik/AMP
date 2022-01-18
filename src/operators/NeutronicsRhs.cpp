@@ -1,7 +1,7 @@
 /* AMP Files */
 #include "NeutronicsRhs.h"
-#include "AMP/ampmesh/Mesh.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/utils/Database.h"
 #include "AMP/vectors/Vector.h"
@@ -12,8 +12,7 @@
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /*
  *************************************************************************
@@ -61,10 +60,10 @@ void NeutronicsRhs::getFromInput( std::shared_ptr<AMP::Database> db )
     AMP_ASSERT( db );
 
     // define the source type and create the output variable.
-    std::string str = db->getWithDefault<std::string>( "type", "Power" );
-    d_type          = str2id( str );
+    auto str = db->getWithDefault<std::string>( "type", "Power" );
+    d_type   = str2id( str );
 
-    std::string outVarName = db->getWithDefault<std::string>( "OutputVariable", str );
+    auto outVarName = db->getWithDefault<std::string>( "OutputVariable", str );
     d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVarName ) );
 
     // number of time steps
@@ -301,5 +300,4 @@ void NeutronicsRhs::setTimeInSeconds( double setSeconds )
 void NeutronicsRhs::setTimeInDays( double days ) { setTimeInSeconds( days * d_secondsPerDay ); }
 
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

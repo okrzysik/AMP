@@ -9,24 +9,23 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #if defined( USE_EXT_PETSC )
-#include "AMP/matrices/petsc/PetscMatrix.h"
-#include "AMP/vectors/petsc/PetscHelpers.h"
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
-#include "petscmat.h"
+    #include "AMP/matrices/petsc/PetscMatrix.h"
+    #include "AMP/vectors/petsc/PetscHelpers.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+    #include "petscmat.h"
 #endif
 
 #include "ProfilerApp.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Classes to serve as the vector factories
 class AmpInterfaceLeftVectorFactory : public VectorFactory
 {
 public:
-    explicit AmpInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit AmpInterfaceLeftVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -44,14 +43,14 @@ public:
     }
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 
 class AmpInterfaceRightVectorFactory : public VectorFactory
 {
 public:
-    explicit AmpInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit AmpInterfaceRightVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -69,7 +68,7 @@ public:
     }
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 
@@ -78,7 +77,7 @@ private:
 class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {
 public:
-    explicit PETScInterfaceLeftVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit PETScInterfaceLeftVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -105,14 +104,14 @@ public:
     std::string name() const override { return "PETScInterfaceLeftVectorFactory"; };
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 
 class PETScInterfaceRightVectorFactory : public PetscVectorFactory
 {
 public:
-    explicit PETScInterfaceRightVectorFactory( AMP::LinearAlgebra::Matrix::shared_ptr matrix )
+    explicit PETScInterfaceRightVectorFactory( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
         : d_matrix( matrix )
     {
     }
@@ -139,12 +138,11 @@ public:
     std::string name() const override { return "PETScInterfaceRightVectorFactory"; }
 
 private:
-    AMP::LinearAlgebra::Matrix::shared_ptr d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::Matrix> d_matrix;
 };
 
 #endif
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

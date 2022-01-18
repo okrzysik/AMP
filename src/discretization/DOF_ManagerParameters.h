@@ -1,11 +1,10 @@
 #ifndef included_AMP_DOF_ManagerParameters
 #define included_AMP_DOF_ManagerParameters
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include <memory>
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /**
@@ -38,7 +37,6 @@ protected:
 };
 
 
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization
 
 #endif

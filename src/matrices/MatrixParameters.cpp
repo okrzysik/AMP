@@ -3,8 +3,7 @@
 #include "AMP/utils/Utilities.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
@@ -19,5 +18,4 @@ MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFMana
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

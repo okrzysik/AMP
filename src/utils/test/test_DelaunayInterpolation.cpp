@@ -1,8 +1,8 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/DelaunayInterpolation.h"
 #include "AMP/utils/DelaunayTessellation.h"
 #include "AMP/utils/NearestPairSearch.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 
 #include "test_DelaunayInterpolation.h"
@@ -554,12 +554,12 @@ void testInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x, bool check
 
         // Evaluate f and the gradient at each point
         std::string problem;
-        AMP::Array<double> f( N );         // The function at the verticies
-        AMP::Array<double> g( ndim, N );   // The gradient at the verticies
+        AMP::Array<double> f( N );         // The function at the vertices
+        AMP::Array<double> g( ndim, N );   // The gradient at the vertices
         AMP::Array<double> f1( N1 );       // The function at points within the triangles
         AMP::Array<double> g1( ndim, N1 ); // The gradient at points within the triangles
-        AMP::Array<double> f2( N2 );       // The function at points "near" the verticies
-        AMP::Array<double> g2( ndim, N2 ); // The gradient at points "near" the verticies
+        AMP::Array<double> f2( N2 );       // The function at points "near" the vertices
+        AMP::Array<double> g2( ndim, N2 ); // The gradient at points "near" the vertices
         double tol_grad, tol_linear, tol_cubic, tol_c_grad, tol_ce1, tol_ce2;
         initialize_problem(
             p, x1, xrange, f1, g1, tol_grad, tol_linear, tol_cubic, tol_c_grad, tol_ce1, tol_ce2 );

@@ -8,7 +8,7 @@
 #include "petscvec.h"
 
 #if PETSC_VERSION_LT( 3, 7, 5 )
-#error AMP only supports PETSc 3.7.5 or greater
+    #error AMP only supports PETSc 3.7.5 or greater
 #endif
 
 
@@ -25,14 +25,15 @@ static inline void increaseState( Vec x )
  * Wrapper class for an AMP vector for PETSc Vec         *
  ********************************************************/
 static uint32_t globalHash = AMP::Utilities::hash_char( "PetscVectorWrapper" );
-class PetscVectorWrapper : public AMP::LinearAlgebra::DataChangeListener,
-                           public AMP::enable_shared_from_this<PetscVectorWrapper>
+class PetscVectorWrapper :
+    public AMP::LinearAlgebra::DataChangeListener,
+    public AMP::enable_shared_from_this<PetscVectorWrapper>
 {
 public:
     PetscVectorWrapper()                             = delete;
     PetscVectorWrapper( const PetscVectorWrapper & ) = delete;
     explicit PetscVectorWrapper( std::shared_ptr<AMP::LinearAlgebra::Vector> vec );
-    ~PetscVectorWrapper();
+    ~PetscVectorWrapper() override;
     inline Vec &getVec() { return d_petscVec; }
     inline auto getAMP() { return d_vec; }
     inline bool check() const { return hash == globalHash; }

@@ -8,14 +8,13 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 #ifdef USE_EXT_MPI
-#include <Epetra_MpiComm.h>
+    #include <Epetra_MpiComm.h>
 #else
-#include <Epetra_SerialComm.h>
+    #include <Epetra_SerialComm.h>
 #endif
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 void EpetraMatrix::VerifyEpetraReturn( int err, const char *func ) const
@@ -43,10 +42,10 @@ Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() { return *d_epetraMatrix; 
 
 const Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() const { return *d_epetraMatrix; }
 
-Matrix::shared_ptr EpetraMatrix::transpose() const
+std::shared_ptr<Matrix> EpetraMatrix::transpose() const
 {
     EpetraExt::RowMatrix_Transpose transposer;
-    return Matrix::shared_ptr( new ManagedEpetraMatrix(
+    return std::shared_ptr<Matrix>( new ManagedEpetraMatrix(
         dynamic_cast<Epetra_CrsMatrix *>( &transposer( *d_epetraMatrix ) ), true ) );
 }
 
@@ -105,5 +104,4 @@ void EpetraMatrix::fillComplete()
         d_epetraMatrix->FillComplete();
     }
 }
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

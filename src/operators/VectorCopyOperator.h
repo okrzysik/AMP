@@ -6,8 +6,7 @@
 #include "AMP/vectors/Vector.h"
 #include <memory>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class VectorCopyOperator : public Operator
 {
@@ -31,7 +30,6 @@ private:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_copyVariable;
 };
 
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

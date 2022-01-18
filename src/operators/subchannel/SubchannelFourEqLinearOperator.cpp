@@ -1,6 +1,6 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
 #include "AMP/matrices/MatrixBuilder.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
@@ -13,8 +13,7 @@
 #include <string>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -1338,10 +1337,10 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->constSelect( commSelector, var->getName() );
-        return commVec->constSubsetVectorForVariable( var );
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 
@@ -1370,10 +1369,10 @@ AMP::LinearAlgebra::Vector::const_shared_ptr SubchannelFourEqLinearOperator::sub
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( d_Mesh->getComm() );
         AMP::LinearAlgebra::Vector::const_shared_ptr commVec =
-            vec->constSelect( commSelector, var->getName() );
-        return commVec->constSubsetVectorForVariable( var );
+            vec->select( commSelector, var->getName() );
+        return commVec->subsetVectorForVariable( var );
     } else {
-        return vec->constSubsetVectorForVariable( var );
+        return vec->subsetVectorForVariable( var );
     }
 }
 
@@ -1515,5 +1514,4 @@ AMP::Mesh::MeshElement SubchannelFourEqLinearOperator::getAxiallyAdjacentLateral
     AMP_INSIST( axiallyAdjacentLateralFaceFound, "Axially adjacent lateral face was not found." );
     return axiallyAdjacentLateralFace;
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

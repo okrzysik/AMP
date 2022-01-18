@@ -6,8 +6,7 @@
 #include "AMP/utils/Utilities.h"
 #include <iostream>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 VonMises_IsotropicKinematicHardening::VonMises_IsotropicKinematicHardening(
     std::shared_ptr<MechanicsMaterialModelParameters> params )
@@ -877,5 +876,4 @@ void VonMises_IsotropicKinematicHardening::postNonlinearAssembly()
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

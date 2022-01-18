@@ -1,13 +1,12 @@
 #include "AMP/operators/subchannel/SubchannelToPointMap.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 // Constructor
@@ -178,5 +177,4 @@ void SubchannelToPointMap::createGrid()
     N_subchannels = Nx * Ny;
     PROFILE_STOP( "createGrid" );
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

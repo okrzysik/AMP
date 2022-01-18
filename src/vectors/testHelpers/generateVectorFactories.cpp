@@ -5,36 +5,35 @@
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
 #ifdef USE_EXT_PETSC
-#include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+    #include "AMP/vectors/petsc/PetscVector.h"
+    #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
 #ifdef USE_EXT_TRILINOS
-#include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
-#include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-#ifdef USE_TRILINOS_THYRA
-#include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
-#endif
+    #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
+    #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+    #ifdef USE_TRILINOS_THYRA
+        #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
+    #endif
 #endif
 
 #ifdef USE_EXT_SUNDIALS
-#include "AMP/vectors/testHelpers/sundials/SundialsVectorFactory.h"
+    #include "AMP/vectors/testHelpers/sundials/SundialsVectorFactory.h"
 #endif
 
 #ifdef USE_OPENMP
-#include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+    #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-#include "AMP/vectors/data/cuda/VectorDataGPU.h"
-#include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
+    #include "AMP/vectors/data/cuda/VectorDataGPU.h"
+    #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
 #include <string>
 #include <vector>
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 // Trim string
@@ -310,29 +309,29 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
 std::vector<std::string> getSimpleVectorFactories()
 {
     std::vector<std::string> list;
-    list.push_back( "SimpleVectorFactory<15,false,double>" );
-    list.push_back( "SimpleVectorFactory<45,true,double>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,double>" );
+    list.emplace_back( "SimpleVectorFactory<45,true,double>" );
     // list.push_back( "SimpleVectorFactory<15,true,float>" );
-    list.push_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
     // list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" ); // Requires UVM
-    list.push_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
     list = cleanList( list );
     return list;
 }
 std::vector<std::string> getArrayVectorFactories()
 {
     std::vector<std::string> list;
-    list.push_back( "ArrayVectorFactory<4,10,false,double>" );
-    list.push_back( "ArrayVectorFactory<4,10,true,double>" );
+    list.emplace_back( "ArrayVectorFactory<4,10,false,double>" );
+    list.emplace_back( "ArrayVectorFactory<4,10,true,double>" );
     list = cleanList( list );
     return list;
 }
 std::vector<std::string> getNativeVectorFactories()
 {
     std::vector<std::string> list;
-    list.push_back( "NativePetscVectorFactory" );
-    list.push_back( "NativeEpetraFactory" );
-    list.push_back( "NativeThyraFactory" );
+    list.emplace_back( "NativePetscVectorFactory" );
+    list.emplace_back( "NativeEpetraFactory" );
+    list.emplace_back( "NativeThyraFactory" );
     list = cleanList( list );
     return list;
 }
@@ -370,7 +369,7 @@ std::vector<std::string> getManagedVectorFactories()
     std::string ManagedNativeThyraFactory2 =
         "ManagedNativeThyraFactory<" + SimpleFactories[1] + ">";
     std::string MNT_MVFactory = "ManagedNativeThyraFactory<" + MVFactory1 + ">";
-    list.push_back( "NativeThyraFactory" );
+    list.emplace_back( "NativeThyraFactory" );
     list.push_back( ManagedThyraFactory1 );
     list.push_back( ManagedThyraFactory2 );
     list.push_back( ManagedNativeThyraFactory1 );
@@ -472,5 +471,4 @@ std::vector<std::string> getAllFactories()
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

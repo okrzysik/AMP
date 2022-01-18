@@ -5,8 +5,7 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 typedef ElementPhysicsModelParameters DiffusionTransportTensorModelParameters;
 
@@ -30,7 +29,6 @@ public:
 private:
     std::shared_ptr<AMP::Materials::TensorProperty> d_tensorProperty; /// tensor property pointer
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

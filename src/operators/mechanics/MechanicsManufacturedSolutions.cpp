@@ -1,9 +1,8 @@
 #include "AMP/operators/mechanics/MechanicsManufacturedSolutions.h"
-#include "AMP/utils/PIO.h"
+#include "AMP/IO/PIO.h"
 
 
-namespace AMP {
-namespace MechanicsManufacturedSolution {
+namespace AMP::MechanicsManufacturedSolution {
 
 
 // Default constructor
@@ -513,7 +512,7 @@ std::vector<double> MMSTrigonometric::getStressTensor( double x, double y, doubl
 std::shared_ptr<MMS> MMSBuilder::createMMS( std::shared_ptr<AMP::Database> mmsDatabase )
 {
     std::shared_ptr<MMS> mms;
-    std::string name = mmsDatabase->getWithDefault<std::string>( "name", "One" );
+    auto name = mmsDatabase->getWithDefault<std::string>( "name", "One" );
     if ( name == "Trigonometric" ) {
         mms = std::shared_ptr<MMS>( new MMSTrigonometric );
     } else if ( name == "Linear" ) {
@@ -551,5 +550,4 @@ std::shared_ptr<MMS> MMSBuilder::createMMS( std::shared_ptr<AMP::Database> mmsDa
 }
 
 
-} // end namespace MechanicsManufacturedSolution
-} // end namespace AMP
+} // namespace AMP::MechanicsManufacturedSolution

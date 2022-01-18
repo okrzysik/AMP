@@ -3,8 +3,8 @@
 #define included_AMP_NonlinearFEOperator
 
 // AMP headers
-#include "AMP/ampmesh/Mesh.h"
-#include "AMP/ampmesh/MeshElement.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/libmesh/FEOperatorParameters.h"
 
@@ -16,8 +16,7 @@ ENABLE_WARNINGS
 #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**
   An abstract base class for representing a nonlinear finite element (FE) operator.
@@ -99,7 +98,6 @@ protected:
 
     std::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

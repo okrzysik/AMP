@@ -8,8 +8,7 @@
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /*! \struct Vec
@@ -105,7 +104,6 @@ private:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #endif

@@ -8,8 +8,7 @@ extern "C" {
 #include "sundials/sundials_nvector.h"
 }
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 /**  \class  SundialsVectorParameters
  *  \brief  Parameters class to construct a Sundials N_Vector
@@ -118,8 +117,7 @@ public:
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 
 /********************************************************

@@ -1,5 +1,7 @@
-#include "AMP/ampmesh/MeshParameters.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -19,10 +21,8 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/Writer.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -40,7 +40,7 @@ static void myTest( AMP::UnitTest *ut )
 
 #ifdef USE_EXT_SILO
     // Create the silo writer and register the data
-    auto siloWriter = AMP::Utilities::Writer::buildWriter( "Silo" );
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
 #endif
 
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -75,7 +75,7 @@ static void myTest( AMP::UnitTest *ut )
 
     initTempVec->setRandomValues();
     initTempVec->abs( *initTempVec );
-    double initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
+    auto initTempConst = input_db->getWithDefault<double>( "INIT_TEMP_CONST", 10.0 );
     initTempVec->scale( initTempConst );
     initTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -86,7 +86,7 @@ static void myTest( AMP::UnitTest *ut )
         finalTempVec->copyVector( initTempVec );
     } else {
         finalTempVec->setRandomValues();
-        double finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 12.0 );
+        auto finalTempConst = input_db->getWithDefault<double>( "FINAL_TEMP_CONST", 12.0 );
         finalTempVec->scale( finalTempConst );
     }
     finalTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -115,9 +115,8 @@ static void myTest( AMP::UnitTest *ut )
             meshAdapter, "Displacement_Boundary", input_db, dummyModel ) );
     dirichletDispInVecOp->setVariable( displacementVariable );
 
-    std::shared_ptr<AMP::Discretization::DOFManager> dispDofMap =
-        AMP::Discretization::simpleDOFManager::create(
-            meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
+    auto dispDofMap = AMP::Discretization::simpleDOFManager::create(
+        meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechNlSolVec = AMP::LinearAlgebra::createVector( dispDofMap, displacementVariable, true );

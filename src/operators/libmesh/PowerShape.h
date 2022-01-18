@@ -1,31 +1,30 @@
 #ifndef included_AMP_PowerShape_h
-#define included_AMP_PowerShape_h
+    #define included_AMP_PowerShape_h
 
 
-// AMP files
-#include "AMP/operators/Operator.h"
-#include "AMP/operators/OperatorParameters.h"
-#include "AMP/operators/libmesh/PowerShapeParameters.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
-#include "AMP/vectors/Variable.h"
-#include <memory>
+    // AMP files
+    #include "AMP/operators/Operator.h"
+    #include "AMP/operators/OperatorParameters.h"
+    #include "AMP/operators/libmesh/PowerShapeParameters.h"
+    #include "AMP/utils/Database.h"
+    #include "AMP/utils/Utilities.h"
+    #include "AMP/vectors/Variable.h"
+    #include <memory>
 
 
 // Libmesh headers
 DISABLE_WARNINGS
-#include "libmesh/elem.h"
-#include "libmesh/fe_base.h"
-#include "libmesh/fe_type.h"
-#include "libmesh/quadrature_gauss.h"
+    #include "libmesh/elem.h"
+    #include "libmesh/fe_base.h"
+    #include "libmesh/fe_type.h"
+    #include "libmesh/quadrature_gauss.h"
 ENABLE_WARNINGS
 
 
-#include <vector>
+    #include <vector>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //===========================================================================//
 /*!
@@ -177,8 +176,7 @@ protected:
 
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif
 

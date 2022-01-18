@@ -4,13 +4,12 @@
 
 #include <memory>
 
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 /**\class OperatorParameters
  *
@@ -46,7 +45,6 @@ public:
 protected:
 private:
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

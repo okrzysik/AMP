@@ -1,14 +1,13 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/ampmesh/MultiMesh.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
+#include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 #include <set>
 #include <vector>
 
 
-namespace AMP {
-namespace Discretization {
+namespace AMP::Discretization {
 
 
 /****************************************************************
@@ -495,5 +494,4 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
-} // namespace Discretization
-} // namespace AMP
+} // namespace AMP::Discretization

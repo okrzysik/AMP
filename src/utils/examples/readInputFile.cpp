@@ -1,6 +1,6 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 
 int main( int argc, char **argv )
 {

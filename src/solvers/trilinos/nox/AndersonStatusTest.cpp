@@ -11,8 +11,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /****************************************************************
@@ -70,8 +69,8 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
     bool converged = true;
     for ( size_t i = 0; i < d_variableNames.size(); ++i ) {
         auto thisVar     = std::make_shared<AMP::LinearAlgebra::Variable>( d_variableNames[i] );
-        auto thisCurVec  = curSolAmpVec->constSubsetVectorForVariable( thisVar );
-        auto thisPrevVec = prevSolAmpVec->constSubsetVectorForVariable( thisVar );
+        auto thisCurVec  = curSolAmpVec->subsetVectorForVariable( thisVar );
+        auto thisPrevVec = prevSolAmpVec->subsetVectorForVariable( thisVar );
         if ( thisCurVec ) {
             AMP_ASSERT( thisPrevVec );
             auto thisDiffVec = thisCurVec->cloneVector();
@@ -112,5 +111,4 @@ std::ostream &AndersonStatusTest::print( std::ostream &stream, int indent ) cons
 
     return stream;
 }
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver

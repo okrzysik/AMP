@@ -1,7 +1,8 @@
-#include "AMP/ampmesh/MeshParameters.h"
-#include "AMP/ampmesh/StructuredMeshHelper.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelOperatorParameters.h"
@@ -10,7 +11,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -106,9 +106,9 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
 
     // get dof manager
-    int DOFsPerFace[3] = { 0, 0, 2 };
-    auto faceDOFManager =
-        AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 1 );
+    int DOFsPerFace[3]  = { 0, 0, 2 };
+    auto faceDOFManager = std::make_shared<AMP::Discretization::structuredFaceDOFManager>(
+        subchannelMesh, DOFsPerFace, 1 );
 
     // get input and output variables
     auto inputVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "flow" );
@@ -150,8 +150,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // create linear operator
     // get linear operator database
-    std::shared_ptr<AMP::Database> subchannelOperator_db =
-        input_db->getDatabase( "SubchannelTwoEqLinearOperator" );
+    auto subchannelOperator_db = input_db->getDatabase( "SubchannelTwoEqLinearOperator" );
     // set operator parameters
     auto subchannelOpParams =
         std::make_shared<AMP::Operator::SubchannelOperatorParameters>( subchannelOperator_db );

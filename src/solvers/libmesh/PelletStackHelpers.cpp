@@ -14,7 +14,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 #ifdef USE_EXT_PETSC
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
+    #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"

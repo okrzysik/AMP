@@ -4,8 +4,7 @@
 #include "Matrix.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 /** \class ManagedMatrix
@@ -41,8 +40,7 @@ protected:
     std::shared_ptr<ManagedMatrixParameters> d_pParameters;
 };
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 #include "ManagedMatrix.inline.h"
 #endif

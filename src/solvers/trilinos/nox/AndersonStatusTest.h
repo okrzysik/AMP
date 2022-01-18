@@ -13,8 +13,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 
 /**
@@ -69,7 +68,6 @@ protected:
     std::vector<double> d_tolerances;
     std::vector<double> d_relativeResiduals;
 };
-} // namespace Solver
-} // namespace AMP
+} // namespace AMP::Solver
 
 #endif

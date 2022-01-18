@@ -1,22 +1,21 @@
 #ifdef USE_EXT_SUNDIALS
 
-#include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/sundials/ManagedSundialsVector.h"
-#include "AMP/vectors/sundials/SundialsVector.h"
+    #include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
+    #include "AMP/vectors/Vector.h"
+    #include "AMP/vectors/sundials/ManagedSundialsVector.h"
+    #include "AMP/vectors/sundials/SundialsVector.h"
 
 
-#define PASS_FAIL( test, MSG )                                                    \
-    do {                                                                          \
-        if ( test )                                                               \
-            ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
-        else                                                                      \
-            ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
-    } while ( 0 )
+    #define PASS_FAIL( test, MSG )                                                    \
+        do {                                                                          \
+            if ( test )                                                               \
+                ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
+            else                                                                      \
+                ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
+        } while ( 0 )
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 static inline N_Vector getVec( AMP::LinearAlgebra::Vector::shared_ptr vector )
@@ -304,8 +303,7 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *ut )
     PASS_FAIL( fabs( d1 - d2 ) < 0.00000001, "N_VMinQuotient" );
 }
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra
 
 /// \endcond
 #endif

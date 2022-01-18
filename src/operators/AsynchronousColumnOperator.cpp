@@ -1,8 +1,7 @@
 #include "AsynchronousColumnOperator.h"
 #include "AsynchronousOperator.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 
 /********************************************************
@@ -55,5 +54,4 @@ void AsynchronousColumnOperator::append( std::shared_ptr<Operator> op )
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

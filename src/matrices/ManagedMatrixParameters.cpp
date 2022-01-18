@@ -2,8 +2,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 ManagedMatrixParameters::ManagedMatrixParameters(
@@ -55,5 +54,4 @@ bool ManagedMatrixParameters::isSquare()
 }
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
+} // namespace AMP::LinearAlgebra

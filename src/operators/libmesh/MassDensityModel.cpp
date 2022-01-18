@@ -12,15 +12,14 @@
 #include <limits>
 
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParameters> params )
     : ElementPhysicsModel( params )
 {
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Mass Key ''Material'' is missing!" );
-    std::string matname = params->d_db->getWithDefault<std::string>( "Material", "Independent" );
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    auto matname = params->d_db->getWithDefault<std::string>( "Material", "Independent" );
+    d_material   = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
 
     if ( params->d_db->keyExists( "Property" ) ) {
         d_PropertyName = params->d_db->getString( "Property" );
@@ -323,7 +322,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
         for ( size_t i = 0; i < dimensions[0]; i++ )
             for ( size_t j = 0; j < dimensions[1]; j++ ) {
-                std::vector<double> *vd = new std::vector<double>( neval );
+                auto *vd = new std::vector<double>( neval );
                 coeff[i][j].reset( vd );
             }
         sourceTensorProp->evalv( coeff, args );
@@ -428,5 +427,4 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     }
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

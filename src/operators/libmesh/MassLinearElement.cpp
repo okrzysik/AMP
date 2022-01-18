@@ -2,8 +2,7 @@
 #include "AMP/utils/Utilities.h"
 #include "libmesh/point.h"
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 void MassLinearElement::apply()
 {
@@ -108,5 +107,4 @@ void MassLinearElement::apply()
 
     d_densityModel->postLinearElementOperation();
 }
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator

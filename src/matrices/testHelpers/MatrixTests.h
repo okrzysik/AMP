@@ -21,9 +21,9 @@ class MatrixFactory
 {
 public:
     virtual ~MatrixFactory() {}
-    virtual AMP::Mesh::Mesh::shared_ptr getMesh() const                         = 0;
-    virtual AMP::LinearAlgebra::Vector::shared_ptr getVector() const            = 0;
-    virtual AMP::LinearAlgebra::Matrix::shared_ptr getMatrix() const            = 0;
+    virtual std::shared_ptr<AMP::Mesh::Mesh> getMesh() const                    = 0;
+    virtual std::shared_ptr<AMP::LinearAlgebra::Vector> getVector() const       = 0;
+    virtual std::shared_ptr<AMP::LinearAlgebra::Matrix> getMatrix() const       = 0;
     virtual std::shared_ptr<AMP::Discretization::DOFManager> getDOFMap() const  = 0;
     virtual std::shared_ptr<AMP::Discretization::DOFManager> getDOFMapL() const = 0;
     virtual std::string name() const                                            = 0;

@@ -1,9 +1,9 @@
-#include "AMP/ampmesh/Mesh.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/map/dtk/DTKAMPMeshEntityIterator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include <memory>
@@ -32,18 +32,18 @@ static void myTest( AMP::UnitTest *ut )
     input_db->print( AMP::plog );
 
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
-    std::shared_ptr<AMP::Database> meshDatabase = input_db->getDatabase( "Mesh" );
+    auto meshDatabase = input_db->getDatabase( "Mesh" );
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
 
     // get the volume iterator
-    AMP::Mesh::MeshIterator vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
 
     // map the volume ids to dtk ids
     int counter = 0;
-    std::shared_ptr<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>> vol_id_map =
+    auto vol_id_map =
         std::make_shared<std::map<AMP::Mesh::MeshElementID, DataTransferKit::EntityId>>();
     for ( vol_iterator = vol_iterator.begin(); vol_iterator != vol_iterator.end();
           ++vol_iterator, ++counter ) {
@@ -62,15 +62,14 @@ static void myTest( AMP::UnitTest *ut )
     }
 
     // make the rank map.
-    std::shared_ptr<std::unordered_map<int, int>> rank_map =
-        std::make_shared<std::unordered_map<int, int>>();
+    auto rank_map     = std::make_shared<std::unordered_map<int, int>>();
     auto global_ranks = mesh->getComm().globalRanks();
     int size          = mesh->getComm().getSize();
     for ( int n = 0; n < size; ++n ) {
         rank_map->emplace( global_ranks[n], n );
     }
 
-    DataTransferKit::EntityIterator dtk_iterator =
+    auto dtk_iterator =
         AMP::Operator::AMPMeshEntityIterator( rank_map, vol_id_map, vol_iterator, selectAll );
 
     // Check the size of the iterator.

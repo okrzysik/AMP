@@ -3,8 +3,8 @@
 #define included_AMP_NavierStokesGalWFFEOperator
 
 // AMP files
-#include "AMP/ampmesh/MeshElement.h"
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/MeshElement.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -16,8 +16,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 class NavierStokesGalWFFEOperator : public NonlinearFEOperator
 {
@@ -112,7 +111,6 @@ private:
 
     std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_outVariables; /**< Output variable. */
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

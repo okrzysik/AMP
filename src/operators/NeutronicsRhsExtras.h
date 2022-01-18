@@ -11,8 +11,7 @@
 
 #include <vector>
 
-namespace AMP {
-namespace Operator {
+namespace AMP::Operator {
 
 //===========================================================================//
 /*!
@@ -98,7 +97,6 @@ protected:
     double d_secondsPerDay;
     SourceType str2id( const std::string &str );
 };
-} // namespace Operator
-} // namespace AMP
+} // namespace AMP::Operator
 
 #endif

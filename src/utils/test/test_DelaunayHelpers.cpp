@@ -1,6 +1,6 @@
+#include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/DelaunayHelpers.h"
-#include "AMP/utils/PIO.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/extended_int.h"
@@ -101,7 +101,7 @@ void runMatTest( const int64_t *M0,
                  AMP::UnitTest &ut )
 {
     std::string name = "<" + className<TYPE>() + "," + std::to_string( NDIM ) + ">";
-    double tol       = static_cast<double>( std::numeric_limits<TYPE>::epsilon() );
+    auto tol         = static_cast<double>( std::numeric_limits<TYPE>::epsilon() );
     TYPE M[NDIM * NDIM], b[NDIM];
     for ( size_t i = 0; i < NDIM * NDIM; i++ )
         M[i] = TYPE( M0[i] );
