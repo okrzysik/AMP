@@ -75,13 +75,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
-#ifdef USE_EXT_SILO
-    //-------------------------------------------------------------------------------------------//
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-#endif
 
     AMP::pout << "Constructing Linear Thermal Operator..." << std::endl;
 
@@ -169,9 +166,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     if ( initialResidualNorm > 1.0e-08 ) {
         ut->failure( "Nonlinear Diffusion Operator with stand alone Robin BC " );
@@ -179,12 +174,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->passes( "Nonlinear Diffusion Operator with stand alone Robin BC " );
     }
     ut->passes( exeName );
-
-    if ( globalComm.getSize() == 1 ) {
-#ifdef USE_EXT_SILO
-        siloWriter->writeFile( exeName, 0 );
-#endif
-    }
 }
 
 int testNonlinearRobin( int argc, char *argv[] )

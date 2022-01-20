@@ -283,13 +283,11 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     // Plot the results
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( exactVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Exact" );
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     ut->passes( exeName );
 }

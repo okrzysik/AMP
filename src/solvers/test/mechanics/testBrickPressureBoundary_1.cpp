@@ -148,9 +148,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;
@@ -198,21 +196,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinBvpOperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
 
-#ifdef USE_EXT_SILO
         siloWriter->registerVector(
             mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( mechNlSolVec );
         auto outFileName2 =
             AMP::Utilities::stringf( "PressurePrescribed-DeformedBrick-LinearElasticity_%d", step );
         siloWriter->writeFile( outFileName2, 1 );
-#endif
     }
 
     AMP::pout << "Final Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
-#endif
 
     ut->passes( exeName );
 }

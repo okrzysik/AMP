@@ -126,12 +126,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     dirichletLoadVecOp->apply( nullVec, rhsVec );
     nonlinearMechanicsBVPoperator->modifyRHSvector( rhsVec );
 
-// Create the silo writer and register the data
-#ifdef USE_EXT_SILO
+    // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, mesh, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
     siloWriter->registerVector( resVec, mesh, AMP::Mesh::GeomType::Vertex, "Residual_Vector" );
-#endif
 
     // Adding the Temperature and Burnup
     tempVecRef->setToScalar( 301.0 );
@@ -244,9 +242,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     mechanicsNonlinearVolumeOperator->printStressAndStrain( solVec, output_file );
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
-#endif
 
     ut->passes( exeName );
     fclose( fout123 );

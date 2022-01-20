@@ -146,11 +146,9 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
         std::cout << std::endl;
     }
 
-#ifdef USE_EXT_SILO
     if ( globalComm.getSize() == 1 ) {
         // manager->writeFile<AMP::Mesh::SiloIO> ( exeName , 0 );
     }
-#endif
 
     if ( testPassed )
         ut->passes( "Seggregated solve of Composite Operator using control loop of "

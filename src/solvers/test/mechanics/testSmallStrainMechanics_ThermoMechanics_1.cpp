@@ -233,7 +233,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector(
@@ -243,7 +242,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( "undeformedMesh_SS_3", 1 );
     meshAdapter->displaceMesh( solVec );
     siloWriter->writeFile( "deformedMesh_SS_3", 1 );
-#endif
 
     ut->passes( exeName );
 }

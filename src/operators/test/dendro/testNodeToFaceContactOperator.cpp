@@ -172,10 +172,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
-#endif
 
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
@@ -369,13 +367,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bool skipDisplaceMesh = true;
     contactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
 
-#ifdef USE_EXT_SILO
-    {
-        siloWriter->registerVector(
-            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-        siloWriter->writeFile( "TOTO_0", 0 );
-    }
-#endif
+    siloWriter->registerVector(
+        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
+    siloWriter->writeFile( "TOTO_0", 0 );
 
     size_t const maxActiveSetIterations =
         input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
@@ -474,7 +468,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         contactOperator->copyMasterToSlave( columnSolVec );
         contactOperator->addShiftToSlave( columnSolVec );
 
-#ifdef USE_EXT_SILO
         meshAdapter->displaceMesh( columnSolVec );
         siloWriter->registerVector(
             columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
@@ -482,7 +475,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         columnSolVec->scale( -1.0 );
         meshAdapter->displaceMesh( columnSolVec );
         columnSolVec->scale( -1.0 );
-#endif
 
         //  meshAdapter->displaceMesh(columnSolVec);
         size_t nChangesInActiveSet = contactOperator->updateActiveSet( columnSolVec );
@@ -515,11 +507,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         slaveFout.close();
     } // end if
 
-#ifdef USE_EXT_SILO
     siloWriter->registerVector(
         columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->writeFile( "MPC_0", 0 );
-#endif
+
     fout.close();
 
     ut->passes( exeName );

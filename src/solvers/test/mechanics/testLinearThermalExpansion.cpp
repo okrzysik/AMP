@@ -95,14 +95,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     linearSolver->apply( mechRhsVec, mechSolVec );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->writeFile( exeName, 1 );
     meshAdapter->displaceMesh( mechSolVec );
     siloWriter->writeFile( exeName, 2 );
-#endif
 
     ut->passes( exeName );
 }

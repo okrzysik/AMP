@@ -206,8 +206,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     }
 
 
-// Write the results
-#ifdef USE_EXT_SILO
+    // Write the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     if ( T_clad )
         siloWriter->registerVector( T_clad, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
@@ -216,7 +215,6 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
             T_subchannel, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );
-#endif
 }
 
 

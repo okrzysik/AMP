@@ -174,19 +174,15 @@ static void forwardTest1( AMP::UnitTest *ut, const std::string &exeName )
         globalComm.barrier();
     }
 
-// Plot the results
-#ifdef USE_EXT_SILO
+    // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-
     siloWriter->registerVector(
         workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( sourceVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     ut->passes( exeName );
     std::cout.flush();

@@ -202,14 +202,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearSolver->setZeroInitialGuess( false );
         } // end subset
 
-#ifdef USE_EXT_SILO
         auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         meshAdapter->displaceMesh( solVec );
         auto outFileName = AMP::Utilities::stringf(
             "LoadPrescribed-DeformedPlateWithHole-NonlinearPlasticity_%d", step );
         siloWriter->writeFile( outFileName, 0 );
-#endif
     } // end step
 
     AMP::pout << "epsilon = " << epsilon << std::endl;

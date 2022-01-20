@@ -1,8 +1,7 @@
-#include "AMP/vectors/testHelpers/VectorTests.h"
-
+#include "AMP/TPLs.h"
 #include "AMP/utils/UnitTest.h"
-
 #include "AMP/vectors/testHelpers/VectorFactory.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 #ifdef USE_EXT_SUNDIALS
     #include "AMP/vectors/sundials/SundialsVector.h"

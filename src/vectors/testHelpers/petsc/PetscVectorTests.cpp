@@ -1,27 +1,25 @@
-#ifdef USE_EXT_PETSC
+#include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/petsc/PetscHelpers.h"
+#include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 
-    #include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
-    #include "AMP/utils/UnitTest.h"
-    #include "AMP/vectors/MultiVector.h"
-    #include "AMP/vectors/petsc/PetscHelpers.h"
-    #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
+#include "petsc/private/vecimpl.h"
 
-    #include "petsc/private/vecimpl.h"
-
-    #include "string"
-    #include <algorithm>
+#include "string"
+#include <algorithm>
 
 
 namespace AMP::LinearAlgebra {
 
 
-    #define PASS_FAIL( test, MSG )                                                    \
-        do {                                                                          \
-            if ( test )                                                               \
-                ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
-            else                                                                      \
-                ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
-        } while ( 0 )
+#define PASS_FAIL( test, MSG )                                                    \
+    do {                                                                          \
+        if ( test )                                                               \
+            ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
+        else                                                                      \
+            ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
+    } while ( 0 )
 
 
 void checkPetscError( AMP::UnitTest *ut, PetscErrorCode i )
@@ -834,5 +832,3 @@ void PetscVectorTests::VerifyDotPetscVector( AMP::UnitTest *ut )
 } // namespace AMP::LinearAlgebra
 
 /// \endcond
-
-#endif

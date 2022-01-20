@@ -258,15 +258,13 @@ static void moabInterface( AMP::UnitTest *ut )
     else
         ut->failure( "Values not interpolated correctly" );
 
-        // How about some output?
-        // Useful for making sure everything looks right
+    // How about some output?
+    // Useful for making sure everything looks right
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( nodalVec, mesh, AMP::Mesh::GeomType::Vertex, "Temperatures" );
     siloWriter->writeFile( "Moab_Temp", 0 );
-#endif
 
     if ( ut->NumPassGlobal() == 0 )
         ut->failure( "if it doesn't pass, it must have failed." );

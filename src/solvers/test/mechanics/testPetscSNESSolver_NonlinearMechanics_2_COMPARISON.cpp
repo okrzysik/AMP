@@ -134,12 +134,10 @@ static void myTest( AMP::UnitTest *ut )
     auto mechNlScaledRhsVec =
         AMP::LinearAlgebra::createVector( NodalVectorDOF, displacementVariable );
 
-// Create the silo writer and register the data
-#ifdef USE_EXT_SILO
+    // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         mechNlSolVec, mesh, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
-#endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
@@ -246,9 +244,7 @@ static void myTest( AMP::UnitTest *ut )
     AMP::pout << "Final Solution Norm: " << finalSolNorm << std::endl;
     AMP::pout << "Maxx value in the final sol: " << mechNlSolVec->max() << std::endl;
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
-#endif
 
     ut->passes( exeName );
 }

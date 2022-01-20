@@ -1,11 +1,12 @@
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
-#include "ProfilerApp.h"
-
+#include "AMP/TPLs.h"
 #include "AMP/solvers/trilinos/nox/AndersonStatusTest.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
+
+#include "ProfilerApp.h"
 
 
 // Trilinos includes

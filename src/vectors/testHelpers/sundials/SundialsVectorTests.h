@@ -1,13 +1,12 @@
-#ifdef USE_EXT_SUNDIALS
-    #ifndef included_AMP_test_SundialsVectorTests
-        #define included_AMP_test_SundialsVectorTests
+#ifndef included_AMP_test_SundialsVectorTests
+#define included_AMP_test_SundialsVectorTests
 
-        #include "string"
-        #include <algorithm>
+#include "string"
+#include <algorithm>
 
-        #include "AMP/utils/UnitTest.h"
-        #include "AMP/vectors/sundials/ManagedSundialsVector.h"
-        #include "AMP/vectors/testHelpers/VectorTests.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/sundials/ManagedSundialsVector.h"
+#include "AMP/vectors/testHelpers/VectorTests.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -70,7 +69,5 @@ private:
 
 } // namespace AMP::LinearAlgebra
 
-    /// \endcond
 
-    #endif
 #endif

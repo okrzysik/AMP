@@ -56,7 +56,7 @@ void triangle_t::compute_centroid()
     }
     for ( unsigned int i = 0; i < 3; ++i ) {
         centroid[i] = 0.0;
-        for ( auto &elem : support_points_ptr ) {
+        for ( auto elem : support_points_ptr ) {
             centroid[i] += elem[i];
         } // end for j
         centroid[i] /= 3.0;

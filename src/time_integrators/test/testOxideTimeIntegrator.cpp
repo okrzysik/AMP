@@ -67,19 +67,18 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     auto oxide          = solution->subsetVectorForVariable( oxide_var );
     auto alpha          = solution->subsetVectorForVariable( alpha_var );
 
-// Register the data with the silo writer
-#ifdef USE_EXT_SILO
+    // Register the data with the silo writer
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( temp_vec, mesh, AMP::Mesh::GeomType::Vertex, "temperature" );
     siloWriter->registerVector( oxide, surface, AMP::Mesh::GeomType::Vertex, "oxide_thickness" );
     siloWriter->registerVector( alpha, surface, AMP::Mesh::GeomType::Vertex, "alpha_thickness" );
-#endif
 
     // Run the time integration
     double time = 0.0;
     auto times  = input_db->getVector<double>( "Time" );
     for ( size_t i = 0; i < times.size(); i++ ) {
         auto v = timeIntegrator->getSolution();
+
         // Advance the solution
         double dT = times[i] - timeIntegrator->getCurrentTime();
         globalComm.barrier();
@@ -87,9 +86,8 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
         timeIntegrator->advanceSolution( dT, false, v, v );
         globalComm.barrier();
         time += AMP::AMP_MPI::time() - t0;
-#ifdef USE_EXT_SILO
         siloWriter->writeFile( input_file, i );
-#endif
+
         // Check the solution
         if ( input_db->keyExists( "oxide" ) && input_db->keyExists( "alpha" ) ) {
             if ( times[i] == 0.0 )

@@ -170,15 +170,12 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     // Plot the results
     auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     input_db.reset();
 

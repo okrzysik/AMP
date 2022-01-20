@@ -467,14 +467,11 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
         vecLag2->subtract( *TemperatureInKelvinVec2, *vecLag2 );
 
-#ifdef USE_EXT_SILO
         auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-
         siloWriter->registerVector(
             TemperatureInKelvin, manager, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
-
         siloWriter->writeFile( input_file, 0 );
-#endif
+
         if ( vecLag2->L2Norm() < 1.e-6 ) {
             testPassed = true;
             break;

@@ -25,10 +25,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     auto global_input_db = AMP::Database::parseInputFile( input_file );
     global_input_db->print( AMP::plog );
@@ -91,9 +89,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearSolver = nonlinearSolver->getKrylovSolver();
     linearSolver->setPreconditioner( pelletStackSolver );
 
-#ifdef USE_EXT_SILO
     siloWriter->registerVector( solVec, manager, AMP::Mesh::GeomType::Vertex, "Displacement" );
-#endif
 
     for ( unsigned int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;
@@ -127,9 +123,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "final,   solVec: " << solVec->L2Norm() << std::endl;
         AMP::pout << "final,   resVec: " << resVec->L2Norm() << std::endl;
 
-#ifdef USE_EXT_SILO
         siloWriter->writeFile( exeName, step );
-#endif
 
         helperResetNonlinearOperatorForPelletMechanics( coupledOp );
     } // end for step

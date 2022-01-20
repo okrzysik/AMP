@@ -185,13 +185,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( !AMP::Utilities::approx_equal( initialRhsNorm, finalRhsNorm, 1e-9 ) )
         ut->failure( "the Final Rhs Norm has changed." );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     if ( N_error0 == ut->NumFailLocal() )
         ut->passes( exeName );

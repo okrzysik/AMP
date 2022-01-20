@@ -215,15 +215,11 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the Final Residual Norm has changed." );
     }
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-
     siloWriter->registerVector(
         globalSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
-
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     if ( globalResNorm < 10e-6 ) {
         ut->passes( "Seggregated solve of Composite Operator using control loop of "
