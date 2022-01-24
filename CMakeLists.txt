@@ -180,6 +180,7 @@ ENDIF()
 # Add the cppcheck tests
 SET( CPPCHECK_TIMEOUT 700 )
 SET( CPPCHECK_INCLUDE "-I${TIMER_INCLUDE}" "-I${${PROJ}_INSTALL_DIR}/include" )
+SET( CPPCHECK_IGNORE "-i${${PROJ}_SOURCE_DIR}/IO/test/test_HDF5.cpp" )  # Causes cppcheck 2.6 to segfault
 FIND_PACKAGE( Cppcheck )
 
 

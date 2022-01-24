@@ -34,10 +34,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -183,13 +181,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         meshAdapter->displaceMesh( mechNlSolVec );
 
-#ifdef USE_EXT_SILO
         siloWriter->registerVector(
             mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         auto outFileName = AMP::Utilities::stringf(
             "LoadPrescribed-DeformedPlateWithHole-LinearElasticity_%d", step );
         siloWriter->writeFile( outFileName, 0 );
-#endif
     }
 
     double finalSolNorm = static_cast<double>( mechNlSolVec->L2Norm() );

@@ -11,6 +11,10 @@
 #include <vector>
 
 
+// Add the definitions for the TPLs that are used
+#include "AMP/TPLs.h"
+
+
 // Include mpi.h (or define MPI objects)
 // clang-format off
 #ifdef USE_MPI

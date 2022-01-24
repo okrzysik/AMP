@@ -143,14 +143,12 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-// Plot the results
-#ifdef USE_EXT_SILO
+    // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     if ( finalResidualNorm > 1.0e-08 ) {
         ut->failure( "Error" );

@@ -34,19 +34,17 @@ public:
     //!  Empty deconstructor
     ~PetscMonitor();
 
-#ifdef USE_EXT_PETSC
     //! Routine to pass to petsc for monitoring KSP
     static PetscErrorCode monitorKSP( KSP, int, double, void * );
 
     //! Routine to pass to petsc for monitoring SNES
     static PetscErrorCode monitorSNES( SNES, int, double, void * );
 
-        //! Routine to pass to petsc for monitoring KSP delete
-        // static PetscErrorCode (*)(void**)  getKSPMonitorDelete();
+    //! Routine to pass to petsc for monitoring KSP delete
+    // static PetscErrorCode (*)(void**)  getKSPMonitorDelete();
 
-        //! Routine to pass to petsc for monitoring SNES delete
-        // static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
-#endif
+    //! Routine to pass to petsc for monitoring SNES delete
+    // static PetscErrorCode (*)(void**)  getSNESMonitorDelete();
 
     // Function to remove the monitor options from the options
     static std::string removeMonitor( std::string options );
@@ -56,10 +54,8 @@ private:
 
     AMP::AMP_MPI d_comm;
 
-#ifdef USE_EXT_PETSC
     void printKSPStatus( KSP ksp, int iteration, double L2norm );
     void printSNESStatus( SNES snes, int iteration, double L2norm );
-#endif
 };
 } // namespace AMP
 

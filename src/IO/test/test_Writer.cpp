@@ -232,6 +232,7 @@ void testWriterMesh( AMP::UnitTest &ut,
 
     // Create a surface mesh
     auto surface = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
+    surface->setName( mesh->getName() + "_surface" );
 
     // Create a simple DOFManager
     uint8_t ndim    = mesh->getDim();

@@ -178,11 +178,11 @@ bool Box<3>::inside( const Point &pos ) const
 template<std::size_t NDIM>
 int Box<NDIM>::surface( const Point &pos ) const
 {
-    double d[6] = { fabs( pos.x() - d_range[0] ), fabs( pos.x() - d_range[1] ),
-                    fabs( pos.y() - d_range[2] ), fabs( pos.y() - d_range[3] ),
-                    fabs( pos.z() - d_range[4] ), fabs( pos.z() - d_range[5] ) };
-    double d0   = d[0];
-    int s       = 0;
+    const double d[6] = { fabs( pos.x() - d_range[0] ), fabs( pos.x() - d_range[1] ),
+                          fabs( pos.y() - d_range[2] ), fabs( pos.y() - d_range[3] ),
+                          fabs( pos.z() - d_range[4] ), fabs( pos.z() - d_range[5] ) };
+    double d0         = d[0];
+    int s             = 0;
     for ( size_t i = 1; i < 2 * NDIM; i++ ) {
         if ( d[i] < d0 ) {
             d0 = d[i];

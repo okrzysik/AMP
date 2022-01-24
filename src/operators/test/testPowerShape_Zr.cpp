@@ -47,13 +47,11 @@ static void test_with_shape( AMP::UnitTest *ut )
     auto dof_map    = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
 
-#ifdef USE_EXT_SILO
     auto shapeVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "PowerShape" );
     auto shapeVec   = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::GeomType::Volume, "PowerShape" );
-#endif
 
     for ( int nMoments = 0; nMoments < 3; nMoments++ ) {
         shape_db->putScalar( "numMoments", nMoments );
@@ -99,11 +97,9 @@ static void test_with_shape( AMP::UnitTest *ut )
             }
         }
 
-#ifdef USE_EXT_SILO
         shapeVec->copyVector( SpecificPowerShapeVec );
         // SpecificPowerShapeVec->copyVector(shapeVec);
         siloWriter->writeFile( "PowerShape-Zr", nMoments );
-#endif
 
     } // end for elements
 
@@ -156,11 +152,9 @@ static void test_with_shape( AMP::UnitTest *ut )
                 }
             }
 
-#ifdef USE_EXT_SILO
             shapeVec->copyVector( SpecificPowerShapeVec );
             // SpecificPowerShapeVec->copyVector(shapeVec);
             siloWriter->writeFile( "PowerShape-Zr", i + 3 );
-#endif
 
             n += 2;
         }

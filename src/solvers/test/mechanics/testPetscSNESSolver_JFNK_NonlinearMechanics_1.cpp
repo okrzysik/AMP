@@ -78,14 +78,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mechNlResVec       = mechNlSolVec->cloneVector();
     auto mechNlScaledRhsVec = mechNlSolVec->cloneVector();
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector(
         mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-#endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
@@ -156,9 +154,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearSolver->setZeroInitialGuess( false );
     }
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     ut->passes( exeName );
 }

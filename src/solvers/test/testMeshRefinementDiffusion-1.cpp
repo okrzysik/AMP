@@ -379,11 +379,8 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     registerMapswithThermalOperator( input_db, nonlinearThermalColumnOperator, thermMapVec );
 
-//------------------------------------------
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( manager );
-
     siloWriter->registerVector(
         manufacturedSolution, manager, AMP::Mesh::GeomType::Vertex, "ManufacturedSolution" );
     siloWriter->registerVector(
@@ -391,12 +388,10 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     siloWriter->registerVector( ResidualVec, manager, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->registerVector(
         solutionError, manager, AMP::Mesh::GeomType::Vertex, "SolutionErro" );
-
     siloWriter->registerVector(
         manufacturedRHS, manager, AMP::Mesh::GeomType::Volume, "ManufacturedRhs" );
     std::string silo_file = "testMeshRefinementDiffusion-1";
     siloWriter->writeFile( silo_file, 0 );
-#endif
 
     TemperatureVec->copyVector( manufacturedSolution );
     std::cout << "Max value of manufactured solution : " << manufacturedSolution->max()
@@ -408,10 +403,8 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     std::cout << "Min value of manufactured RHS : " << manufacturedRHS->min()
               << " normal gradient: " << manufacturedNormalGradient->min() << std::endl;
 
-    //------------------------------------------
-    // OPERATOR APPLY TO CALCULATE        //
-    // MANUFACTURED RHS                   //
-    //------------------------------------------
+
+    // OPERATOR APPLY TO CALCULATE MANUFACTURED RHS
 
     auto bottomAdapter = manager->Subset( "Bottom" );
     // auto topAdapter = manager->Subset( "Top" );
@@ -435,9 +428,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
 
     integratedRHSVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
-#ifdef USE_EXT_SILO
     siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::GeomType::Vertex, "Source" );
-#endif
 
     // modify the RHS to take into account boundary conditions
     //  for(int id = 0; id !=
@@ -513,9 +504,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
               << std::endl;
 
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( silo_file, 1 );
-#endif
 
     ut->passes( "Ran to completion" );
 }

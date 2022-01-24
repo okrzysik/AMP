@@ -96,7 +96,7 @@ MeshIterator MultiVectorIterator::operator++( int )
     // Postfix increment (increment and return temporary object)
     MultiVectorIterator tmp( *this ); // Create a temporary variable
     this->operator++();               // apply operator
-    return std::move( tmp );          // return temporary result
+    return tmp;                       // return temporary result
 }
 MeshIterator &MultiVectorIterator::operator--()
 {
@@ -110,7 +110,7 @@ MeshIterator MultiVectorIterator::operator--( int )
     // Postfix decrement (increment and return temporary object)
     MultiVectorIterator tmp( *this ); // Create a temporary variable
     --( *this );                      // apply operator
-    return std::move( tmp );          // return temporary result
+    return tmp;                       // return temporary result
 }
 
 
@@ -121,7 +121,7 @@ MeshIterator MultiVectorIterator::operator+( int n ) const
 {
     MultiVectorIterator tmp( *this ); // Create a temporary iterator
     tmp.operator+=( n );              // Increment temporary iterator
-    return std::move( tmp );
+    return tmp;
 }
 MeshIterator &MultiVectorIterator::operator+=( int n )
 {

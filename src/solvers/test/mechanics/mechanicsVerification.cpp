@@ -461,7 +461,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         // need to define test requirements for new mms
         AMP_ERROR( "Unknown value for manufacturedSolution->getName()" );
     }
-#ifdef USE_EXT_SILO
+
     auto vertex     = AMP::Mesh::GeomType::Vertex;
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( exactErrVec, meshAdapter, vertex, "Exact_Error_Vector" );
@@ -471,7 +471,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     siloWriter->writeFile( "undeformedBeam_" + std::to_string( exampleNum ), 1 );
     meshAdapter->displaceMesh( solVec );
     siloWriter->writeFile( "deformedBeam_" + std::to_string( exampleNum ), 1 );
-#endif
 }
 
 

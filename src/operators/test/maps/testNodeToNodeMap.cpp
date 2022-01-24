@@ -1,4 +1,5 @@
 #include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -12,9 +13,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
-#ifdef USE_EXT_SILO
-    #include "AMP/IO/Writer.h"
-#endif
 
 
 static void
@@ -145,14 +143,12 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     globalComm.barrier();
     double end_time = AMP::AMP_MPI::time();
 
-// Save the results
-#ifdef USE_EXT_SILO
+    // Save the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( v1, mesh, AMP::Mesh::GeomType::Vertex, "v1" );
     siloWriter->registerVector( v2, mesh, AMP::Mesh::GeomType::Vertex, "v2" );
     siloWriter->registerVector( id_vec, surfaceMesh, AMP::Mesh::GeomType::Face, "id" );
     siloWriter->writeFile( "testNodeToNodeMap", 0 );
-#endif
 
     // Check the results
     std::cout << v1->maxNorm() << "  " << v2->maxNorm() << std::endl;

@@ -16,7 +16,7 @@ implied, or assumes any liability or
 responsibility for the use of this software.
 */
 #include "AMP/solvers/SolverFactory.h"
-
+#include "AMP/TPLs.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
