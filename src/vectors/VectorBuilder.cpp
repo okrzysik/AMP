@@ -1,7 +1,9 @@
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/TPLs.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+
 #ifdef USE_EXT_PETSC
     #include "AMP/vectors/petsc/NativePetscVectorData.h"
     #include "AMP/vectors/petsc/NativePetscVectorOperations.h"

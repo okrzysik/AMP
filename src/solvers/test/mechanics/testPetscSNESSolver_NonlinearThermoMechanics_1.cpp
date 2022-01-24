@@ -38,10 +38,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -101,12 +99,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto rhsVec = solVec->cloneVector();
     auto resVec = solVec->cloneVector();
 
-#ifdef USE_EXT_SILO
     siloWriter->registerVector(
         displacementVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
     siloWriter->registerVector(
         temperatureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalSolution" );
-#endif
 
     auto referenceTemperatureVec = temperatureVec->cloneVector();
     referenceTemperatureVec->setToScalar( 300.0 );
@@ -238,9 +234,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "Maximum V displacement: " << finalMaxV << std::endl;
     AMP::pout << "Maximum W displacement: " << finalMaxW << std::endl;
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 1 );
-#endif
 
     if ( finalResidualNorm > initialResidualNorm * 1.0e-10 + 1.0e-05 ) {
         ut->failure( "Error" );

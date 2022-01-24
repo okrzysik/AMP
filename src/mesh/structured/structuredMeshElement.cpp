@@ -9,7 +9,7 @@ namespace AMP::Mesh {
 
 
 // Function to evaluate the magnitude of a cross product in 3d
-double cross3magnitude( double a[3], double b[3] )
+double cross3magnitude( const double a[3], const double b[3] )
 {
     double v[3];
     v[0] = a[1] * b[2] - a[2] * b[1];
@@ -18,7 +18,7 @@ double cross3magnitude( double a[3], double b[3] )
     return std::sqrt( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
 }
 // Function to evaluate the dot produce of a vector and a cross product in 3d ( a . ( b X c ) )
-double dot3cross( double a[3], double b[3], double c[3] )
+double dot3cross( const double a[3], const double b[3], const double c[3] )
 {
     double v[3];
     v[0] = b[1] * c[2] - b[2] * c[1];
@@ -700,7 +700,7 @@ double structuredMeshElement::volume() const
         // Compute the volume using 6 sub-pyramids
         int pyr_base[4];
         double vol = 0.0;
-        for ( auto &elem : sub_pyr ) {
+        for ( auto elem : sub_pyr ) {
             // Set the nodes of the pyramid base
             for ( unsigned int i = 0; i < 4; ++i )
                 pyr_base[i] = elem[i];

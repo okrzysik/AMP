@@ -131,28 +131,27 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     globalComm.barrier();
     map->apply( T1, T2 );
 
-// Check the results
-/*if ( subchannel_face.get()!=NULL ) {
-    bool passes = true;
-    auto it = subchannel_face->getIterator(AMP::Mesh::GeomType::Face,1);
-    std::vector<size_t> dofs;
-    for (size_t i=0; i<it.size(); i++) {
-        subchannel_DOFs->getDOFs(it->globalID(),dofs);
-        AMP_ASSERT(dofs.size()==1);
-        std::vector<double> pos = it->centroid();
-        double v1 = T2->getValueByGlobalID(dofs[0]);
-        double v2 = getTemp(pos);
-        if ( !AMP::Utilities::approx_equal(v1,v2) )
-            passes = false;
-    }
-    if ( passes )
-        ut->passes("correctly mapped temperature");
-    else
-        ut->failure("correctly mapped temperature");
-}*/
+    // Check the results
+    /*if ( subchannel_face.get()!=NULL ) {
+        bool passes = true;
+        auto it = subchannel_face->getIterator(AMP::Mesh::GeomType::Face,1);
+        std::vector<size_t> dofs;
+        for (size_t i=0; i<it.size(); i++) {
+            subchannel_DOFs->getDOFs(it->globalID(),dofs);
+            AMP_ASSERT(dofs.size()==1);
+            std::vector<double> pos = it->centroid();
+            double v1 = T2->getValueByGlobalID(dofs[0]);
+            double v2 = getTemp(pos);
+            if ( !AMP::Utilities::approx_equal(v1,v2) )
+                passes = false;
+        }
+        if ( passes )
+            ut->passes("correctly mapped temperature");
+        else
+            ut->failure("correctly mapped temperature");
+    }*/
 
-// Write the results
-#ifdef USE_EXT_SILO
+    // Write the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     if ( T1 )
         siloWriter->registerVector( T1, pin_mesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
@@ -160,7 +159,6 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
         siloWriter->registerVector( T2, subchannel_face, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->setDecomposition( 1 );
     siloWriter->writeFile( fname, 0 );
-#endif
 }
 
 

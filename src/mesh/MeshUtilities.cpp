@@ -202,8 +202,11 @@ cellVolume1D( const AMP::Geometry::Geometry &geom, double x0, double dx, bool in
                cellVolume1D( geom, x0 + 0.5 * dx, 0.5 * dx, in2, tol );
     }
 }
-inline double cellVolume2D(
-    const AMP::Geometry::Geometry &geom, double x0[2], double dx[2], bool in[4], double tol )
+inline double cellVolume2D( const AMP::Geometry::Geometry &geom,
+                            const double x0[2],
+                            const double dx[2],
+                            const bool in[4],
+                            double tol )
 {
     bool all_inside  = in[0] && in[1] && in[2] && in[3];
     bool all_outside = !in[0] && !in[1] && !in[2] && !in[3];
@@ -253,8 +256,11 @@ inline double cellVolume2D(
         return volume;
     }
 }
-inline double cellVolume3D(
-    const AMP::Geometry::Geometry &geom, double x0[3], double dx[3], bool in[8], double tol )
+inline double cellVolume3D( const AMP::Geometry::Geometry &geom,
+                            const double x0[3],
+                            const double dx[3],
+                            const bool in[8],
+                            double tol )
 {
     bool all_inside  = in[0] && in[1] && in[2] && in[3] && in[4] && in[5] && in[6] && in[7];
     bool all_outside = !in[0] && !in[1] && !in[2] && !in[3] && !in[4] && !in[5] && !in[6] && !in[7];

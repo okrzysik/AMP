@@ -376,38 +376,30 @@ double GeneralCladThermalCreepPlasticModel::help_compute_E1( const double Temp_n
     return ( delta_e );
 }
 
-int GeneralCladThermalCreepPlasticModel::det_sign( double a )
-{
-    int i;
-    if ( a >= 0.0 )
-        i = 1;
-    if ( a < 0.0 )
-        i = -1;
-    return ( i );
-}
+int GeneralCladThermalCreepPlasticModel::det_sign( double a ) { return a >= 0.0 ? 1 : -1; }
 
 double GeneralCladThermalCreepPlasticModel::compute_dE1_dsig_e( double effective_stress_trial,
                                                                 double effective_stress,
                                                                 double Temp_np1,
                                                                 double G )
 {
-    double Q = 15027.0, R = 1.987, A = 1.0e-12, n = 2.0;
-    double dt           = d_Delta_Time;
-    double scale_stress = 1.0, scale_strain = 1.0;
+    const double Q = 15027.0, R = 1.987, A = 1.0e-12, n = 2.0;
+    const double dt           = d_Delta_Time;
+    const double scale_stress = 1.0, scale_strain = 1.0;
 
-    double delta_e = help_compute_E1( Temp_np1, effective_stress );
-    double term1   = effective_stress_trial / ( effective_stress + ( 3.0 * G * delta_e ) );
-    double term2   = ( effective_stress * effective_stress_trial ) /
-                   ( ( effective_stress + ( 3.0 * G * delta_e ) ) *
-                     ( effective_stress + ( 3.0 * G * delta_e ) ) );
+    const double delta_e = help_compute_E1( Temp_np1, effective_stress );
+    const double term1   = effective_stress_trial / ( effective_stress + ( 3.0 * G * delta_e ) );
+    const double term2   = ( effective_stress * effective_stress_trial ) /
+                         ( ( effective_stress + ( 3.0 * G * delta_e ) ) *
+                           ( effective_stress + ( 3.0 * G * delta_e ) ) );
 
-    effective_stress         = effective_stress * scale_stress;
-    double d_delta_e_d_sig_e = A * dt * exp( -Q / ( R * Temp_np1 ) ) * n *
-                               pow( effective_stress, ( n - 1.0 ) ) * scale_strain;
-    double term3      = 1.0 + ( 3.0 * G * d_delta_e_d_sig_e );
-    double dE1_dsig_e = 1.0 - term1 + ( term2 * term3 );
+    effective_stress               = effective_stress * scale_stress;
+    const double d_delta_e_d_sig_e = A * dt * exp( -Q / ( R * Temp_np1 ) ) * n *
+                                     pow( effective_stress, ( n - 1.0 ) ) * scale_strain;
+    const double term3      = 1.0 + ( 3.0 * G * d_delta_e_d_sig_e );
+    const double dE1_dsig_e = 1.0 - term1 + ( term2 * term3 );
 
-    return ( dE1_dsig_e );
+    return dE1_dsig_e;
 }
 
 void GeneralCladThermalCreepPlasticModel::computeCreepStrain( const double Temp_np1,

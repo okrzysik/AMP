@@ -71,7 +71,7 @@ Writer::WriterProperties SiloIO::getProperties() const
 }
 
 
-#if defined( USE_EXT_SILO )
+#ifdef USE_EXT_SILO
 
 // Some internal functions
 static void createSiloDirectory( DBfile *FileHandle, const std::string &path );

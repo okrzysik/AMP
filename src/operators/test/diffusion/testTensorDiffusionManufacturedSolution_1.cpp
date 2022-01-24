@@ -237,8 +237,7 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
         globalComm.barrier();
     }
 
-// Plot the results
-#ifdef USE_EXT_SILO
+    // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
@@ -247,7 +246,6 @@ static void bvpTest1( AMP::UnitTest *ut, std::string exeName, std::string meshNa
     siloWriter->registerVector( sourceVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     ut->passes( exeName );
     std::cout.flush();

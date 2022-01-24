@@ -39,10 +39,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -222,13 +220,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() )
             ->printStressAndStrain( solVec, fname );
 
-#ifdef USE_EXT_SILO
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         meshAdapter->displaceMesh( solVec );
         auto outFileName =
             AMP::Utilities::stringf( "displacementPrescribed-DeformedPlateWithHole_%d", step );
         siloWriter->writeFile( outFileName, 0 );
-#endif
     }
 
     AMP::pout << "epsilon = " << epsilon << std::endl;

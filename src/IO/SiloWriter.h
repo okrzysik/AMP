@@ -2,6 +2,7 @@
 #define included_AMP_SiloIO
 
 #include "AMP/IO/Writer.h"
+#include "AMP/TPLs.h"
 #include "AMP/mesh/Mesh.h"
 
 #include <map>

@@ -1,10 +1,12 @@
 // This file stores the routines to generate the meshes for AMP::Mesh::Mesh
+#include "AMP/TPLs.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
 #include "AMP/utils/Utilities.h"
+
 #ifdef USE_TRILINOS_STKCLASSIC
 //#include "AMP/mesh/STKmesh/STKMesh.h"
 #endif

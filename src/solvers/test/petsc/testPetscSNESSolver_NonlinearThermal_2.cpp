@@ -211,13 +211,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->failure( "the Final Residual Norm has changed." );
     }
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     ut->passes( exeName );
 }

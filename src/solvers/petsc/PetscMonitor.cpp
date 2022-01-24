@@ -40,7 +40,6 @@ std::string PetscMonitor::removeMonitor( std::string options )
 /********************************************************************
  *  Routines to provide petsc with function pointers for monitoring  *
  ********************************************************************/
-#ifdef USE_EXT_PETSC
 PetscErrorCode PetscMonitor::monitorKSP( KSP ksp, int iteration, double L2norm, void *ctx )
 {
     auto *monitor = reinterpret_cast<PetscMonitor *>( ctx );
@@ -73,5 +72,6 @@ void PetscMonitor::printSNESStatus( SNES snes, int iteration, double L2norm )
                   << std::setprecision( 12 ) << L2norm << std::endl;
     }
 }
-#endif
+
+
 } // namespace AMP

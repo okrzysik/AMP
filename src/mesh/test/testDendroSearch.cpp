@@ -494,7 +494,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     size_t n_i                                                            = 1;
     void ( *randomPtsGenerators[] )( int, size_t, std::vector<double> & ) = { &genUniformPts };
-    std::string prefixes[]                                                = { "uniform" };
+    const std::string prefixes[]                                          = { "uniform" };
 
     std::string suffix = AMP::Utilities::intToString( npes );
 

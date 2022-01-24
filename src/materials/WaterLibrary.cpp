@@ -781,23 +781,23 @@ inline double ThermalConductivityProp::eval( const std::vector<double> &args )
         AMP_ERROR( "Thermal conductivity called with temperature <= 0 K." );
 
     // declare parameters
-    double Tstar   = 647.3;                                               // [K]
-    double a[4]    = { 1.02811e-2, 2.99621e-2, 1.56146e-2, -4.22464e-3 }; // [W/K-m]
-    double b0      = -3.97070e-1;                                         // [W/K-m]
-    double b1      = 4.00302e-1;                                          // [W/K-m]
-    double b2      = 1.06000;                                             // [W/K-m]
-    double B1      = -1.71587e-1;
-    double B2      = 2.39219;
-    double rhostar = 317.7;      // [kg/m3]
-    double d1      = 7.01309e-2; // [W/K-m]
-    double d2      = 1.18520e-2; // [W/K-m]
-    double d3      = 1.69937e-3; // [W/K-m]
-    double d4      = -1.02000;   // [W/K-m]
-    double C1      = 6.42857e-1;
-    double C2      = -4.11717;
-    double C3      = -6.17937;
-    double C4      = 3.08976e-3;
-    double C5      = 8.22994e-2;
+    const double Tstar   = 647.3;                                               // [K]
+    const double a[4]    = { 1.02811e-2, 2.99621e-2, 1.56146e-2, -4.22464e-3 }; // [W/K-m]
+    const double b0      = -3.97070e-1;                                         // [W/K-m]
+    const double b1      = 4.00302e-1;                                          // [W/K-m]
+    const double b2      = 1.06000;                                             // [W/K-m]
+    const double B1      = -1.71587e-1;
+    const double B2      = 2.39219;
+    const double rhostar = 317.7;      // [kg/m3]
+    const double d1      = 7.01309e-2; // [W/K-m]
+    const double d2      = 1.18520e-2; // [W/K-m]
+    const double d3      = 1.69937e-3; // [W/K-m]
+    const double d4      = -1.02000;   // [W/K-m]
+    const double C1      = 6.42857e-1;
+    const double C2      = -4.11717;
+    const double C3      = -6.17937;
+    const double C4      = 3.08976e-3;
+    const double C5      = 8.22994e-2;
 
     // calculate temperature
     double Tratiosum = 0.0;

@@ -163,10 +163,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
-
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
     std::fstream fout;
@@ -431,12 +427,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         slaveFout.close();
     } // end if
 
-#ifdef USE_EXT_SILO
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     auto outFileName = "MPC_0";
     siloWriter->writeFile( outFileName, 0 );
-#endif
+
     fout.close();
 
     ut->passes( exeName );

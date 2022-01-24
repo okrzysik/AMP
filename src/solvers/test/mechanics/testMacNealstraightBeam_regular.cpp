@@ -132,7 +132,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         ut->passes( exeName );
     }
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     auto outFileName1 = AMP::Utilities::stringf( "undeformedBeam_%d", exampleNum );
@@ -140,7 +139,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     meshAdapter->displaceMesh( mechSolVec );
     auto outFileName2 = AMP::Utilities::stringf( "deformedBeam_%d", exampleNum );
     siloWriter->writeFile( outFileName2, 0 );
-#endif
 }
 
 int testMacNealstraightBeam_regular( int argc, char *argv[] )

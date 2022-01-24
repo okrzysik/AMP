@@ -63,6 +63,7 @@ static inline bool approx_equal( const std::array<double, N> &x,
     else if constexpr ( N == 3 )
         return fabs( x[0] - y[0] ) <= tol[0] && fabs( x[1] - y[1] ) <= tol[1] &&
                fabs( x[2] - y[2] ) <= tol[2];
+    return false;
 }
 
 

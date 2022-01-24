@@ -332,7 +332,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     input_db.reset();
 
-#ifdef USE_EXT_SILO
     // Rescale the solution to get the correct units
     auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 2 ), "H" );
     auto pressure = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 2 ), "P" );
@@ -357,7 +356,6 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         subchannelPressure, xyFaceMesh, AMP::Mesh::GeomType::Face, "Pressure" );
     siloWriter->registerVector( tempVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "Temperature" );
     siloWriter->writeFile( exeName, 0 );
-#endif
 }
 
 int testSubchannelSolutionNOX( int argc, char *argv[] )

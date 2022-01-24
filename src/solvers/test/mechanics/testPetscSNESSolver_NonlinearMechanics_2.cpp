@@ -38,10 +38,8 @@ static void myTest( AMP::UnitTest *ut )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
@@ -170,10 +168,8 @@ static void myTest( AMP::UnitTest *ut )
 
     nonlinearSolver->setZeroInitialGuess( false );
 
-#ifdef USE_EXT_SILO
     siloWriter->registerVector(
         mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
-#endif
 
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;
@@ -215,9 +211,7 @@ static void myTest( AMP::UnitTest *ut )
         nonlinBvpOperator->getVolumeOperator()->reset( tmpParams );
         nonlinearSolver->setZeroInitialGuess( false );
 
-#ifdef USE_EXT_SILO
         siloWriter->writeFile( "FrozenTemp_NonlinearMechExample", step );
-#endif
     }
 
     AMP::pout << "Final Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;

@@ -157,16 +157,12 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     else
         ut->failure( "Nodal vector is identically zero" );
 
-        // How about some output?
-
-    #ifdef USE_EXT_SILO
+    // How about some output?
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
     siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Volume, "AllGaussPointPressures" );
     siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );
     siloWriter->writeFile( "Nek_Pressure", 0 );
-    #endif
-
 
     // Finalize Nek Operator
     nekOp->finalize();
