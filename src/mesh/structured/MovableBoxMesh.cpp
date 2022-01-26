@@ -144,7 +144,20 @@ void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
 {
     AMP_ASSERT( index.type() == AMP::Mesh::GeomType::Vertex );
     size_t i = AMP::Utilities::findfirst( d_index, index );
-    AMP_ASSERT( d_index[i] == index );
+    if ( d_index[i] != index ) {
+        char msg[1024];
+        snprintf( msg,
+                  sizeof msg,
+                  "Did not find element %s in mesh MovableBoxMesh(%i,%i,%i,%i%i%i)",
+                  index.print().data(),
+                  d_globalSize[0],
+                  d_globalSize[1],
+                  d_globalSize[2],
+                  d_isPeriodic[0] ? 1 : 0,
+                  d_isPeriodic[1] ? 1 : 0,
+                  d_isPeriodic[2] ? 1 : 0 );
+        AMP_ERROR( msg );
+    }
     for ( int d = 0; d < PhysicalDim; d++ )
         pos[d] = d_coord[i][d];
 }

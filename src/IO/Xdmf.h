@@ -144,7 +144,7 @@ public:
     void addMultiMesh( const std::string &meshName, const std::vector<std::string> &submeshes );
 
     //! Add a multi-mesh
-    void addMultiMesh( const std::string &meshName, std::vector<MeshData> submeshes );
+    void addMultiMesh( const std::string &meshName, const std::vector<MeshData> &submeshes );
 
     //! Gather all data to rank 0
     void gather( const AMP::AMP_MPI &comm );

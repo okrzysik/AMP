@@ -18,7 +18,7 @@ class AsynchronousOperator : public Operator
 protected:
     /** \brief  A list of MPI_Requests for use in derived classes
      */
-    std::vector<MPI_Request> d_RequestList;
+    std::vector<AMP_MPI::Request> d_RequestList;
 
     /** \brief  Reserve a number of MPI_Requests for use
      * \param[in] i The number of MPI_Requests that will be used
@@ -32,17 +32,17 @@ protected:
     /** \brief  Return an iterator to the first MPI_Request
      * \return The iterator
      */
-    std::vector<MPI_Request>::iterator beginRequests();
+    std::vector<AMP_MPI::Request>::iterator beginRequests();
 
     /** \brief  Return an iterator to one past the end of the list of requests
      * \return The iterator
      */
-    std::vector<MPI_Request>::iterator endRequests();
+    std::vector<AMP_MPI::Request>::iterator endRequests();
 
     /** \brief  Return a specific MPI_Request
      * \return  The request
      */
-    MPI_Request &getRequest( size_t i );
+    AMP_MPI::Request &getRequest( size_t i );
 
     /** \brief  Wait for all requests to complete
      */

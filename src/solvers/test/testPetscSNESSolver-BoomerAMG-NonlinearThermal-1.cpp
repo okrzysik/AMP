@@ -1,10 +1,9 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"

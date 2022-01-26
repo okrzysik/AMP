@@ -208,10 +208,10 @@ void Xdmf::addMultiMesh( const std::string &meshName, const std::vector<std::str
     }
     addMultiMesh( meshName, std::move( domains ) );
 }
-void Xdmf::addMultiMesh( const std::string &meshName, std::vector<MeshData> submeshes )
+void Xdmf::addMultiMesh( const std::string &meshName, const std::vector<MeshData> &submeshes )
 {
-    AMP_ASSERT( d_meshData.find( meshName ) == d_meshData.end() );
-    d_meshData[meshName] = std::move( submeshes );
+    auto &data = d_meshData[meshName];
+    data.insert( data.end(), submeshes.begin(), submeshes.end() );
 }
 
 

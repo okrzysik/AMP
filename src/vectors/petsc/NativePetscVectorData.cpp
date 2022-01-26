@@ -17,7 +17,7 @@ NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI co
     // Get the correct communicator if it is not set
     MPI_Comm comm2 = comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
     PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm2 );
-    if ( comm2 != comm.getCommunicator() )
+    if ( comm2 != (MPI_Comm) comm.getCommunicator() )
         comm = AMP_MPI( comm2 );
     // Create the communication list
     auto params         = std::make_shared<CommunicationListParameters>();
