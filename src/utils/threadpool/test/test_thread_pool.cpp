@@ -90,7 +90,7 @@ std::mutex print_processor_mutex;
 
 void print_processor( ThreadPool *tpool )
 {
-    AMP::AMP_MPI comm( MPI_COMM_WORLD );
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     int rank      = comm.getRank();
     int thread    = tpool->getThreadNumber();
     int processor = ThreadPool::getCurrentProcessor();
@@ -319,7 +319,7 @@ void test_work_parallel( UnitTest &ut, ThreadPool &tpool )
     int N_procs      = ThreadPool::getNumberOfProcessors();
     int N_procs_used = std::min<int>( N_procs, N_threads );
     if ( N_procs_used > 1 ) {
-        AMP::AMP_MPI comm( MPI_COMM_WORLD );
+        AMP::AMP_MPI comm( AMP_COMM_WORLD );
         // Use a non-blocking serialization of the MPI processes
         // if we do not have a sufficient number of processors
         int rank           = comm.getRank();
@@ -435,7 +435,7 @@ void test_work_dependency( UnitTest &ut, ThreadPool &tpool )
  ******************************************************************/
 void test_FIFO( UnitTest &ut, ThreadPool &tpool )
 {
-    AMP::AMP_MPI comm( MPI_COMM_WORLD );
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     int rank    = comm.getRank();
     int size    = comm.getSize();
     const int N = 4000;
@@ -555,7 +555,7 @@ void testProcessAffinity( UnitTest &ut )
  ******************************************************************/
 void testThreadAffinity( ThreadPool &tpool, UnitTest &ut )
 {
-    AMP::AMP_MPI comm( MPI_COMM_WORLD );
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     int N_threads = tpool.getNumThreads();
     auto cpus     = ThreadPool::getProcessAffinity();
     int rank      = comm.getRank();
@@ -763,7 +763,7 @@ void run_tests( UnitTest &ut )
     constexpr int N_threads = 4; // Number of threads
 
     // Disable OS specific warnings for all non-root ranks
-    AMP::AMP_MPI comm( MPI_COMM_WORLD );
+    AMP::AMP_MPI comm( AMP_COMM_WORLD );
     int rank = comm.getRank();
     if ( rank > 0 )
         ThreadPool::set_OS_warnings( 1 );
