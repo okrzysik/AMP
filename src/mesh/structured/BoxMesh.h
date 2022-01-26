@@ -127,17 +127,20 @@ public:
         constexpr bool operator>=( const MeshElementIndex &rhs ) const; //!< Operator >=
         constexpr bool operator<( const MeshElementIndex &rhs ) const;  //!< Operator <
         constexpr bool operator<=( const MeshElementIndex &rhs ) const; //!< Operator <=
+        constexpr auto index() const { return d_index; }
         constexpr int index( int d ) const { return d_index[d]; }
         constexpr int &index( int d ) { return d_index[d]; }
         constexpr GeomType type() const { return static_cast<GeomType>( d_type ); }
         constexpr uint8_t side() const { return d_side; }
         static constexpr size_t numElements( const MeshElementIndex &first,
                                              const MeshElementIndex &last );
+        std::string print() const;
 
     private:
         uint8_t d_type; //!<  Mesh element type
         uint8_t d_side; //!<  Are we dealing with x, y, or z faces/edges
-        int d_index[3]; //!<  Global x, y, z index (may be negative with periodic boundaries)
+        std::array<int, 3>
+            d_index; //!<  Global x, y, z index (may be negative with periodic boundaries)
         friend class BoxMesh;
         friend class structuredMeshElement;
     };

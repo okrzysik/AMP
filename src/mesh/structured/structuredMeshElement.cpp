@@ -151,7 +151,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
         index[0] = d_index;
         return;
     }
-    const int *ijk = d_index.d_index;
+    const int *ijk = d_index.d_index.data();
     if ( type == GeomType::Vertex ) {
         // We want to get the vertices composing the elements
         if ( d_index.type() == d_meshType ) {
@@ -337,7 +337,7 @@ void structuredMeshElement::getNeighbors(
 }
 void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const
 {
-    const int *ijk = d_index.d_index;
+    const int *ijk = d_index.d_index.data();
     if ( d_index.type() == GeomType::Vertex ) {
         // Get the list of neighbor nodex (there are no null neighbors)
         // The node neighbors are the list of nodes that share any element
@@ -425,7 +425,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     };
     // Get the indicies of the parent elements (ignore boundaries for now)
     std::vector<BoxMesh::MeshElementIndex> index_list;
-    const int *ijk = d_index.d_index;
+    const int *ijk = d_index.d_index.data();
     if ( d_index.d_type == static_cast<int>( type ) ) {
         // We are looking for the current element
         return std::vector<MeshElement>( 1, MeshElement( *this ) );
@@ -773,7 +773,7 @@ bool structuredMeshElement::containsPoint( const Point &, double ) const
 bool structuredMeshElement::isOnSurface() const
 {
     bool on_surface = false;
-    const int *ijk  = d_index.d_index;
+    const int *ijk  = d_index.d_index.data();
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
         if ( d_mesh->d_isPeriodic[d] )
             continue;

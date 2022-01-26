@@ -232,7 +232,8 @@ void testWriterMesh( AMP::UnitTest &ut,
 
     // Create a surface mesh
     auto surface = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
-    surface->setName( mesh->getName() + "_surface" );
+    if ( surface )
+        surface->setName( mesh->getName() + "_surface" );
 
     // Create a simple DOFManager
     uint8_t ndim    = mesh->getDim();
@@ -313,7 +314,9 @@ void testWriterMesh( AMP::UnitTest &ut,
             if ( properties.registerVectorWithMesh )
                 writer->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
             // Get the surface
-            auto surfaceMesh = mesh2->Subset( mesh2->getSurfaceIterator( surfaceType, 1 ) );
+            std::shared_ptr<AMP::Mesh::Mesh> surfaceMesh;
+            if ( surface )
+                surfaceMesh = surface->Subset( meshIDs[i] );
             if ( surfaceMesh ) {
                 // Store the surface id
                 auto DOF_surface = AMP::Discretization::simpleDOFManager::create(

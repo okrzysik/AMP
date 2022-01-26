@@ -28,9 +28,8 @@ IF ( AMP_DATA )
 ENDIF()
 IF ( USE_EXT_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-1 )
-ELSE()
-    ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-2 )
 ENDIF()
+ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-2 )
 
 
 # Add HDF5 tests
