@@ -205,7 +205,7 @@ sendData( const std::vector<TYPE> &data, const std::vector<size_t> &rank, const 
             count[i] = data2[i].size();
         comm.bcast( count.data(), count.size(), 0 );
         // Send the data
-        std::vector<MPI_Request> request;
+        std::vector<AMP_MPI::Request> request;
         for ( int i = 1; i < comm.getSize(); i++ ) {
             if ( count[i] > 0 ) {
                 auto req = comm.Isend<TYPE>( data2[i].data(), data2[i].size(), i, 125 );

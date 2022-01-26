@@ -15,10 +15,21 @@ University makes any warranty, express or
 implied, or assumes any liability or
 responsibility for the use of this software.
 */
+
+
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/TPLs.h"
+#include "AMP/solvers/BiCGSTABSolver.h"
+#include "AMP/solvers/CGSolver.h"
+#include "AMP/solvers/GMRESSolver.h"
+#include "AMP/solvers/QMRCGSTABSolver.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/TFQMRSolver.h"
+
+#ifdef USE_EXT_PETSC
+    #include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#endif
 
 #ifdef USE_EXT_HYPRE
     #include "AMP/solvers/hypre/BoomerAMGSolver.h"
@@ -32,18 +43,8 @@ responsibility for the use of this software.
     #include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #endif
 
-#ifdef USE_EXT_PETSC
-    #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#endif
 
-#include "AMP/solvers/BiCGSTABSolver.h"
-#include "AMP/solvers/CGSolver.h"
-#include "AMP/solvers/GMRESSolver.h"
-#include "AMP/solvers/QMRCGSTABSolver.h"
-#include "AMP/solvers/TFQMRSolver.h"
-
-namespace AMP {
-namespace Solver {
+namespace AMP::Solver {
 
 // register all known solver factories
 void registerSolverFactories()
@@ -72,5 +73,6 @@ void registerSolverFactories()
     solverFactory.registerFactory( "TFQMRSolver", TFQMRSolver::createSolver );
     solverFactory.registerFactory( "QMRCGSTABSolver", QMRCGSTABSolver::createSolver );
 }
-} // namespace Solver
-} // end namespace AMP
+
+
+} // namespace AMP::Solver
