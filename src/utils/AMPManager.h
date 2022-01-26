@@ -61,7 +61,7 @@ public:
      *  Note:  Currently AMP_COMM_WORLD cannot be changed once AMPManager::startup
      *  has been called.
      */
-    MPI_Comm COMM_WORLD;
+    AMP_MPI::Comm COMM_WORLD;
 
 private:
     friend class AMPManager;

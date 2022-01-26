@@ -9,6 +9,15 @@
 #include <iomanip>
 #include <numeric>
 
+DISABLE_WARNINGS
+extern "C" {
+#include "HYPRE.h"
+#include "HYPRE_IJ_mv.h"
+#include "HYPRE_parcsr_ls.h"
+}
+ENABLE_WARNINGS
+
+
 namespace AMP::Solver {
 
 

@@ -24,7 +24,7 @@ int main( int argc, char *argv[] )
     }
 
     // Create the comm used to initialize AMP
-    MPI_Comm AMP_comm = AMP_COMM_WORLD;
+    auto AMP_comm = AMP_COMM_WORLD;
 #ifdef USE_EXT_MPI
     if ( procMax > 0 ) {
         MPI_Init( &argc, &argv );
@@ -75,7 +75,7 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::restart();
 
     // Shutdown
-    int rank = AMP::AMP_MPI( MPI_COMM_WORLD ).getRank();
+    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     AMP::AMPManager::shutdown();
 #ifdef USE_EXT_MPI
     if ( procMax > 0 )

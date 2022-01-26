@@ -66,7 +66,7 @@ int main( int argc, char *argv[] )
         // Create the thread pool
         int N_threads = 8;
         AMP::ThreadPool tpool( N_threads );
-        AMP::AMP_MPI comm_world( MPI_COMM_WORLD );
+        AMP::AMP_MPI comm_world( AMP_COMM_WORLD );
         comm_world.barrier();
 
         // Check the duration of the sleep functions

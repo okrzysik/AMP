@@ -1,17 +1,19 @@
 #ifndef included_AMP_BoomerAMGSolver
 #define included_AMP_BoomerAMGSolver
 
+
 #include "AMP/matrices/Matrix.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
-DISABLE_WARNINGS
-extern "C" {
-#include "HYPRE.h"
-#include "HYPRE_IJ_mv.h"
-#include "HYPRE_parcsr_ls.h"
-}
-ENABLE_WARNINGS
+
+// Forward declares
+struct hypre_Solver_struct;
+struct hypre_IJMatrix_struct;
+struct hypre_IJVector_struct;
+typedef struct hypre_Solver_struct *HYPRE_Solver;
+typedef struct hypre_IJMatrix_struct *HYPRE_IJMatrix;
+typedef struct hypre_IJVector_struct *HYPRE_IJVector;
 
 
 namespace AMP::Solver {
@@ -21,10 +23,10 @@ typedef SolverStrategyParameters BoomerAMGSolverParameters;
 
 
 /**
- * The BoomerAMGSolver is a wrapper to the HYPRE BoomerAMG solver. BoomerAMG provides
- * implementations of
- * various algebraic multigrid methods. The wrapper at present simply provides an adaptor
- * to enable AMP users to use the black box BoomerAMG preconditioner.
+ * The BoomerAMGSolver is a wrapper to the HYPRE BoomerAMG solver.
+ * BoomerAMG provides implementations of various algebraic multigrid methods.
+ * The wrapper at present simply provides an adapter to enable AMP
+ * users to use the black box BoomerAMG preconditioner.
  */
 
 class BoomerAMGSolver : public SolverStrategy
@@ -127,12 +129,10 @@ private:
 
     AMP_MPI d_comm;
 
-    HYPRE_IJMatrix d_ijMatrix; //! pointer to HYPRE matrix struct
-
-    HYPRE_IJVector d_hypre_rhs; //! pointer to HYPRE representation of rhs
-    HYPRE_IJVector d_hypre_sol; //! pointer to HYPRE representation of solution
-
-    HYPRE_Solver d_solver; //! pointer to HYPRE BoomerAMG solver
+    HYPRE_IJMatrix d_ijMatrix  = nullptr; //! pointer to HYPRE matrix struct
+    HYPRE_IJVector d_hypre_rhs = nullptr; //! pointer to HYPRE representation of rhs
+    HYPRE_IJVector d_hypre_sol = nullptr; //! pointer to HYPRE representation of solution
+    HYPRE_Solver d_solver      = nullptr; //! pointer to HYPRE BoomerAMG solver
 
     bool d_bComputeResidual = false; //! whether to compute the residual  before and after solve
 

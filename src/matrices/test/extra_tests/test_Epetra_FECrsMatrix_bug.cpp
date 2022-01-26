@@ -4,6 +4,7 @@
  *  -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC flags are set.
  *
  */
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 
 #include <cstdio>
@@ -19,10 +20,9 @@
 
 int main( int argc, char *argv[] )
 {
-    int rank, size;
-    MPI_Init( &argc, &argv );
-    MPI_Comm_size( MPI_COMM_WORLD, &size );
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+    AMP::AMPManager::startup( argc, argv );
+    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
+    int size = AMP::AMP_MPI( AMP_COMM_WORLD ).getSize();
     if ( size != 2 ) {
         std::cout << "Test is only designed for 2 processors\n";
         return -1;
@@ -61,7 +61,6 @@ int main( int argc, char *argv[] )
     }
     matrix.GlobalAssemble( true );
 
-    MPI_Barrier( MPI_COMM_WORLD );
-    MPI_Finalize();
+    AMP::AMPManager::shutdown();
     return 0;
 }

@@ -160,7 +160,7 @@ AsciiWriter::sendVecToRoot( std::shared_ptr<const AMP::LinearAlgebra::Vector> sr
     if ( !src_vec && rank != 0 )
         return nullptr;
     // Send the local data to rank 0
-    std::vector<MPI_Request> requests;
+    std::vector<AMP_MPI::Request> requests;
     std::vector<double> local_data( local_size, 0 );
     if ( local_size > 0 ) {
         for ( size_t i = 0; i < local_size; i++ )
@@ -210,7 +210,7 @@ void AsciiWriter::sendRowToRoot( std::shared_ptr<const AMP::LinearAlgebra::Matri
     }
     own_rank = comm.maxReduce( own_rank );
     // Send the data
-    std::vector<MPI_Request> requests;
+    std::vector<AMP_MPI::Request> requests;
     if ( own_rank == rank ) {
         mat->getRowByGlobalID( row, cols, data );
         if ( rank == 0 )

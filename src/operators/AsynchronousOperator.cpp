@@ -27,7 +27,7 @@ void AsynchronousOperator::waitForAllRequests()
 {
     auto curReq = beginRequests();
     while ( curReq != endRequests() ) {
-        MPI_Request request = *curReq;
+        auto request = *curReq;
         if ( request != 0 )
             AMP_MPI::wait( request );
         ++curReq;
@@ -41,19 +41,19 @@ void AsynchronousOperator::clearRequests() { d_RequestList.clear(); }
 void AsynchronousOperator::reserveRequests( size_t i ) { d_RequestList.resize( i ); }
 
 
-std::vector<MPI_Request>::iterator AsynchronousOperator::beginRequests()
+std::vector<AMP_MPI::Request>::iterator AsynchronousOperator::beginRequests()
 {
     return d_RequestList.begin();
 }
 
 
-std::vector<MPI_Request>::iterator AsynchronousOperator::endRequests()
+std::vector<AMP_MPI::Request>::iterator AsynchronousOperator::endRequests()
 {
     return d_RequestList.end();
 }
 
 
-MPI_Request &AsynchronousOperator::getRequest( size_t i )
+AMP_MPI::Request &AsynchronousOperator::getRequest( size_t i )
 {
     AMP_ASSERT( i < d_RequestList.size() );
     return d_RequestList[i];

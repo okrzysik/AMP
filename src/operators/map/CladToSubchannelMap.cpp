@@ -31,8 +31,9 @@ CladToSubchannelMap::CladToSubchannelMap(
                 "CladToSubchannelMap is currently only designed for 1 DOF per node" );
 
     // Clone the communicator to protect the communication (we need a large number of unique tags)
-    d_MapComm      = d_MapComm.dup();
-    d_currRequests = std::vector<MPI_Request>();
+    d_MapComm = d_MapComm.dup();
+    d_currRequests.clear();
+    ;
 
     // Get the iterators
     if ( d_mesh1 )
