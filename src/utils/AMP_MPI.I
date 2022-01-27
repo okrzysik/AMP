@@ -970,6 +970,13 @@ void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
  *  sumScan                                                              *
  ************************************************************************/
 template<class TYPE>
+TYPE MPI_CLASS::sumScan( const TYPE &x ) const
+{
+    TYPE y = x;
+    sumScan<TYPE>( &x, &y, 1 );
+    return y;
+}
+template<class TYPE>
 void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
 {
     if ( d_size == 1 ) {
@@ -995,6 +1002,13 @@ void MPI_CLASS::sumScan( const TYPE *x, TYPE *y, int n ) const
  *  minScan                                                              *
  ************************************************************************/
 template<class TYPE>
+TYPE MPI_CLASS::minScan( const TYPE &x ) const
+{
+    TYPE y = x;
+    minScan<TYPE>( &x, &y, 1 );
+    return y;
+}
+template<class TYPE>
 void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
 {
     if ( d_size == 1 ) {
@@ -1019,6 +1033,13 @@ void MPI_CLASS::minScan( const TYPE *x, TYPE *y, int n ) const
 /************************************************************************
  *  maxScan                                                              *
  ************************************************************************/
+template<class TYPE>
+TYPE MPI_CLASS::maxScan( const TYPE &x ) const
+{
+    TYPE y = x;
+    maxScan<TYPE>( &x, &y, 1 );
+    return y;
+}
 template<class TYPE>
 void MPI_CLASS::maxScan( const TYPE *x, TYPE *y, int n ) const
 {

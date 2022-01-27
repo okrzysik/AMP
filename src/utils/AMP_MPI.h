@@ -628,6 +628,16 @@ public: // Member functions
      * \brief    Scan Sum Reduce
      * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type sumScan( const type &x ) const;
+
+
+    /**
+     * \brief    Scan Sum Reduce
+     * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
      * \param[in] x         The input array for the scan
      * \param[in] y         The output array for the scan
      * \param[in] n         The number of values in the array (must match on all nodes)
@@ -640,12 +650,32 @@ public: // Member functions
      * \brief    Scan Min Reduce
      * \details  Computes the min scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type minScan( const type &x ) const;
+
+
+    /**
+     * \brief    Scan Min Reduce
+     * \details  Computes the min scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
      * \param[in] x         The input array for the scan
      * \param[in] y         The output array for the scan
      * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
     void minScan( const type *x, type *y, int n ) const;
+
+
+    /**
+     * \brief    Scan Max Reduce
+     * \details  Computes the max scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type maxScan( const type &x ) const;
 
 
     /**
