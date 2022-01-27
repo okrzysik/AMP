@@ -1,7 +1,7 @@
 #include "OxideModel.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
     #include "LapackWrappers.h"
 #endif
 
@@ -322,7 +322,7 @@ void OxideModel::solveLinearDiffusionLayer( const int N,
         lower[N - 2] = -0.5 * dt / ( h1 * h1 ) * Db[N - 1] + 0.5 * dt / h1 * vi;
     }
     // Solve the system
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
     int error = 0;
     Lapack<double>::gtsv( N, 1, lower, diag, upper, rhs, N, error );
     if ( error != 0 ) {

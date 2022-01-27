@@ -4,20 +4,20 @@
 #include "AMP/vectors/testHelpers/StridedVectorSelector.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "AMP/vectors/petsc/PetscVector.h"
     #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
 #endif
 
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
     #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
     #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-    #ifdef USE_TRILINOS_THYRA
+    #ifdef AMP_USE_TRILINOS_THYRA
         #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
     #endif
 #endif
 
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     #include "AMP/vectors/testHelpers/sundials/SundialsVectorFactory.h"
 #endif
 
@@ -101,16 +101,16 @@ int count( const std::string &s, char c ) { return std::count( s.begin(), s.end(
 bool isValid( const std::string &name )
 {
     bool valid = true;
-#ifndef USE_EXT_PETSC
+#ifndef AMP_USE_PETSC
     valid = valid && name.find( "Petsc" ) == std::string::npos;
 #endif
-#ifndef USE_TRILINOS_EPETRA
+#ifndef AMP_USE_TRILINOS_EPETRA
     valid = valid && name.find( "Epetra" ) == std::string::npos;
 #endif
-#ifndef USE_TRILINOS_THYRA
+#ifndef AMP_USE_TRILINOS_THYRA
     valid = valid && name.find( "Thyra" ) == std::string::npos;
 #endif
-#ifndef USE_EXT_SUNDIALS
+#ifndef AMP_USE_SUNDIALS
     valid = valid && name.find( "Sundials" ) == std::string::npos;
 #endif
 #ifndef USE_OPENMP
@@ -254,16 +254,16 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
     } else if ( factoryName == "StridedVectorFactory" ) {
         AMP_ASSERT( args.size() == 1 );
         factory.reset( new StridedVectorFactory( generateVectorFactory( args[0] ) ) );
-#if defined( USE_EXT_PETSC )
+#if defined( AMP_USE_PETSC )
     } else if ( factoryName == "NativePetscVectorFactory" ) {
         factory.reset( new NativePetscVectorFactory() );
 #endif
-#ifdef USE_TRILINOS_EPETRA
+#ifdef AMP_USE_TRILINOS_EPETRA
     } else if ( factoryName == "NativeEpetraFactory" ) {
         AMP_ASSERT( args.size() == 0 );
         factory.reset( new NativeEpetraFactory() );
 #endif
-#ifdef USE_TRILINOS_THYRA
+#ifdef AMP_USE_TRILINOS_THYRA
     } else if ( factoryName == "NativeThyraFactory" ) {
         AMP_ASSERT( args.size() == 0 );
         factory.reset( new NativeThyraFactory() );
@@ -286,11 +286,11 @@ std::shared_ptr<VectorFactory> generateVectorFactory( const std::string &name )
         AMP_ASSERT( args.size() == 2 );
         auto factory2 = generateVectorFactory( args[1] );
         if ( args[0] == "PetscVector" ) {
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
             factory.reset( new ViewFactory<PetscVector>( factory2 ) );
 #endif
         } else if ( args[0] == "EpetraVector" ) {
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
             factory.reset( new ViewFactory<EpetraVector>( factory2 ) );
 #endif
         } else {

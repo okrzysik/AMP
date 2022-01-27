@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "AMP/utils/ReadTestMesh.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include <memory>
 
 // Libmesh files

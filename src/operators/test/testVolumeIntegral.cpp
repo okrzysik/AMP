@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
+#include "AMP/TPLs.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -239,7 +240,7 @@ int testVolumeIntegral( int argc, char *argv[] )
     startup_properties.use_MPI_Abort = false;
     AMP::AMPManager::startup( argc, argv, startup_properties );
     PROFILE_ENABLE( 5 );
-#ifdef USE_TIMER
+#ifdef AMP_USE_TIMER
     global_profiler.ignoreTimerErrors( true );
 #endif
     PROFILE_START( "main" );

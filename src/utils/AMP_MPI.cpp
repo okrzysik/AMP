@@ -30,7 +30,7 @@
 
 
 // Make sure USE_MPI is set properly
-#if !defined( USE_MPI ) && defined( USE_EXT_MPI )
+#if !defined( USE_MPI ) && defined( AMP_USE_MPI )
     #define USE_MPI
 #endif
 

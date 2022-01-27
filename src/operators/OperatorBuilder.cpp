@@ -9,7 +9,7 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "AMP/discretization/structuredFaceDOFManager.h"
     #include "AMP/operators/ElementOperationFactory.h"
     #include "AMP/operators/NeutronicsRhs.h"
@@ -72,7 +72,7 @@ OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
     std::string name = in_params->d_db->getString( "name" );
 
     resetOperation( IdentityOperator );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     resetOperation( DirichletMatrixCorrection );
     resetOperation( DirichletVectorCorrection );
     resetOperation( NeumannVectorCorrection );
@@ -237,7 +237,7 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
 
 
 // Create the identity operator

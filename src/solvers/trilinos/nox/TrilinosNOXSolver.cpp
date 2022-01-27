@@ -12,7 +12,7 @@
 // Trilinos includes
 DISABLE_WARNINGS
 
-#ifdef USE_TRILINOS_BELOS
+#ifdef AMP_USE_TRILINOS_BELOS
     #include "BelosTypes.hpp"
 #endif
 

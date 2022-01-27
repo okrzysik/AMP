@@ -1,20 +1,22 @@
 // This file contains helper functions and interfaces for reading/writing HDF5
 #ifndef included_AMP_HDF5_hpp
 #define included_AMP_HDF5_hpp
-#ifdef USE_HDF5
 
-    #include "AMP/IO/HDF5_Class.h"
-    #include "AMP/IO/HDF5_IO.h"
-    #include "AMP/utils/Array.h"
-    #include "AMP/utils/Array.hpp"
-    #include "AMP/utils/TypeTraits.h"
-    #include "AMP/utils/Utilities.h"
+#include "AMP/IO/HDF5_Class.h"
+#include "AMP/IO/HDF5_IO.h"
+#include "AMP/TPLs.h"
+#include "AMP/utils/Array.h"
+#include "AMP/utils/Array.hpp"
+#include "AMP/utils/TypeTraits.h"
+#include "AMP/utils/Utilities.h"
 
-    #include <array>
-    #include <complex>
-    #include <memory>
-    #include <type_traits>
-    #include <vector>
+#include <array>
+#include <complex>
+#include <memory>
+#include <type_traits>
+#include <vector>
+
+#ifdef AMP_USE_HDF5
 
 namespace AMP {
 

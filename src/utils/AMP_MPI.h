@@ -15,7 +15,7 @@
 #include "AMP/TPLs.h"
 
 // Include MPI if we are building with MPI
-#ifdef USE_MPI
+#ifdef AMP_USE_MPI
     #include "mpi.h"
 #endif
 
@@ -49,7 +49,7 @@ class alignas( 8 ) AMP_MPI final
 public:
     enum class ThreadSupport : int { SINGLE, FUNNELED, SERIALIZED, MULTIPLE };
 
-#ifdef USE_MPI
+#ifdef AMP_USE_MPI
     typedef MPI_Comm Comm;
     typedef MPI_Request Request;
 #else
@@ -1182,7 +1182,7 @@ public: // Member functions
 
 
 private: // Private helper functions for templated MPI operations
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+#ifdef AMP_USE_MPI
     template<class type>
     void call_bcast( type *, int, int ) const;
     template<class type>

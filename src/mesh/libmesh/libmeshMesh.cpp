@@ -128,7 +128,7 @@ libmeshMesh::libmeshMesh( std::shared_ptr<libMesh::Mesh> mesh, const std::string
     : d_pos_hash( 0 ), d_libMesh( mesh )
 {
     // Set the base properties
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     this->d_comm = AMP_MPI( mesh->comm().get() );
     AMP_ASSERT( !d_comm.isNull() );
 #else

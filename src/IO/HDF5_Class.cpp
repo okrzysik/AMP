@@ -13,7 +13,7 @@
 #include <vector>
 
 
-#ifdef USE_HDF5 // USE HDF5
+#ifdef AMP_USE_HDF5 // USE HDF5
 
 
 namespace AMP {

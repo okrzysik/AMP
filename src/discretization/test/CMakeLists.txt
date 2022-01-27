@@ -13,6 +13,6 @@ ENDIF()
 
 # Add tests
 ADD_AMP_TEST_1_2_4( test_Discretization )
-IF ( USE_EXT_LIBMESH )
+IF ( USE_LIBMESH )
     ADD_AMP_TEST_1_2_4( test_libmeshElement )
 ENDIF()

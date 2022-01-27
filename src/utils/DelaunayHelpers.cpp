@@ -1,7 +1,7 @@
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/UtilityMacros.h"
 
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
     #include "LapackWrappers.h"
 #endif
 
@@ -41,7 +41,7 @@ void solve( int N, const double *M, const double *b, double *x )
         x[2] *= inv_det;
     } else {
         // Call Lapack to compute the inverse
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
         int error;
         int *IPIV;
         double *M2;
@@ -141,7 +141,7 @@ void inverse( const int N, const double *M, double *M_inv )
             M_inv[i] *= inv_det;
     } else {
         // Call Lapack to compute the inverse
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
         int error;
         int LWORK;
         int *IPIV;

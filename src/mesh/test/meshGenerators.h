@@ -205,7 +205,7 @@ public:
 
 
 // Include libmesh generators
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "libmeshGenerators.h"
 #endif
 

@@ -2,6 +2,7 @@
 #ifndef included_AMP_HDF5_h
 #define included_AMP_HDF5_h
 
+#include "AMP/TPLs.h"
 #include "AMP/utils/ArraySize.h"
 
 #include <cstring>
@@ -9,7 +10,7 @@
 
 
 // Include the headers and define some basic types
-#ifdef USE_HDF5
+#ifdef AMP_USE_HDF5
     // Using HDF5
     #include "hdf5.h"
 #else
@@ -153,7 +154,7 @@ hid_t getHDF5datatype();
 
 // Default no-op implimentations for use without HDF5
 // clang-format off
-#ifndef USE_HDF5
+#ifndef AMP_USE_HDF5
 template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
 template<class T> void writeHDF5( hid_t, const std::string_view&, const T& ) {}
 template<class T> void readHDF5Array( hid_t, const std::string_view&, AMP::Array<T>& ) {}

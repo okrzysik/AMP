@@ -1,11 +1,13 @@
 #ifndef included_AMP_createLibmeshElements
 #define included_AMP_createLibmeshElements
-#ifdef USE_EXT_LIBMESH
+
+// AMP headers
+#include "AMP/TPLs.h"
+#include "AMP/mesh/MeshIterator.h"
+#include "AMP/utils/Utilities.h"
 
 
-    // AMP headers
-    #include "AMP/mesh/MeshIterator.h"
-    #include "AMP/utils/Utilities.h"
+#ifdef AMP_USE_LIBMESH
 
 
 // Libmesh headers

@@ -27,19 +27,19 @@ responsibility for the use of this software.
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/TFQMRSolver.h"
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
-#ifdef USE_EXT_HYPRE
+#ifdef AMP_USE_HYPRE
     #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #endif
 
-#ifdef USE_TRILINOS_ML
+#ifdef AMP_USE_TRILINOS_ML
     #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #endif
 
-#ifdef USE_TRILINOS_MUELU
+#ifdef AMP_USE_TRILINOS_MUELU
     #include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #endif
 
@@ -51,19 +51,19 @@ void registerSolverFactories()
 {
     auto &solverFactory = SolverFactory::getFactory();
 
-#ifdef USE_TRILINOS_MUELU
+#ifdef AMP_USE_TRILINOS_MUELU
     solverFactory.registerFactory( "TrilinosMueLuSolver", TrilinosMueLuSolver::createSolver );
 #endif
 
-#ifdef USE_TRILINOS_ML
+#ifdef AMP_USE_TRILINOS_ML
     solverFactory.registerFactory( "TrilinosMLSolver", TrilinosMLSolver::createSolver );
 #endif
 
-#ifdef USE_EXT_HYPRE
+#ifdef AMP_USE_HYPRE
     solverFactory.registerFactory( "BoomerAMGSolver", BoomerAMGSolver::createSolver );
 #endif
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
 #endif
 

@@ -9,7 +9,7 @@ COPY_EXAMPLE_DATA_FILE( input_readInputFile )
 
 ADD_AMP_EXAMPLE( ampHelloWorld 1 )
 
-IF ( USE_EXT_MPI )
+IF ( USE_MPI )
 
 ADD_AMP_EXAMPLE( ampHelloWorld 2 )
 ADD_AMP_EXAMPLE( ampHelloWorld 4 )

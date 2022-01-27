@@ -91,7 +91,7 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
 void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
     PROFILE_SCOPED( timer, "writeFile" );
-#ifdef USE_EXT_HDF5
+#ifdef AMP_USE_HDF5
     Xdmf xmf;
     AMP_ASSERT( d_comm.getSize() == 1 );
     // Create the file

@@ -1,7 +1,7 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/utils/UtilityMacros.h"
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "AMP/operators/ManufacturedDiffusionTransportModel.h"
     #include "AMP/operators/diffusion/DiffusionCylindricalTransportModel.h"
     #include "AMP/operators/diffusion/DiffusionTransportModel.h"
@@ -47,7 +47,7 @@ std::shared_ptr<ElementPhysicsModel> ElementPhysicsModelFactory::createElementPh
 
     params.reset( new ElementPhysicsModelParameters( elementPhysicsModelDb ) );
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     resetElementPhysicsModel( IsotropicElasticModel );
     resetElementPhysicsModel( ThermalStrainMaterialModel );
     resetElementPhysicsModel( VonMisesElastoPlasticModel );

@@ -4,13 +4,13 @@
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "AMP/vectors/petsc/NativePetscVectorData.h"
     #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
     #include "AMP/vectors/petsc/PetscVector.h"
     #include "petscvec.h"
 #endif
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
     #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
     #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
     #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
@@ -118,7 +118,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 /********************************************************
  * create vector from PETSc Vec                          *
  ********************************************************/
-#if defined( USE_EXT_PETSC )
+#if defined( AMP_USE_PETSC )
 std::shared_ptr<Vector>
 createVector( Vec v, bool deleteable, AMP_MPI comm, std::shared_ptr<Variable> var )
 {
@@ -134,7 +134,7 @@ createVector( Vec v, bool deleteable, AMP_MPI comm, std::shared_ptr<Variable> va
 /********************************************************
  * create vector from Trilinos Thyra vector              *
  ********************************************************/
-#if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_THYRA )
+#if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_THYRA )
 std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
                                       size_t local,
                                       AMP_MPI comm,
@@ -152,7 +152,7 @@ std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> ve
 /********************************************************
  * create Trilinos Epetra vector                         *
  ********************************************************/
-#if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_EPETRA )
+#if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_EPETRA )
 std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> commList,
                                             std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                             std::shared_ptr<VectorData> buf )

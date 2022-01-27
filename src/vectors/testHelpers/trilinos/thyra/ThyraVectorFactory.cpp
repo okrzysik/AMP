@@ -11,14 +11,14 @@
 DISABLE_WARNINGS
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#ifdef USE_TRILINOS_BELOS
+#ifdef AMP_USE_TRILINOS_BELOS
     //#include "Thyra_SpmdVectorBase_def.hpp"
     #include "BelosMVOPTester.hpp"
     #include "BelosThyraAdapter.hpp"
 #endif
 #include "Thyra_DefaultSpmdVector_def.hpp"
 #include "Thyra_EpetraThyraWrappers.hpp"
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     #include <Epetra_MpiComm.h>
 
 #else
@@ -41,7 +41,7 @@ AMP::LinearAlgebra::Vector::shared_ptr NativeThyraFactory::getVector() const
     int local_size  = 101;
     int global_size = global_comm.sumReduce( local_size );
 // Create an epetra vector
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     Epetra_MpiComm comm = global_comm.getCommunicator();
 #else
     Epetra_SerialComm comm;
@@ -92,7 +92,7 @@ AMP::LinearAlgebra::Vector::shared_ptr ManagedNativeThyraFactory::getVector() co
     return vec3;
 }
 
-#ifdef USE_TRILINOS_BELOS
+#ifdef AMP_USE_TRILINOS_BELOS
 
 Teuchos::RCP<Thyra::VectorBase<double>> getThyraVec( AMP::LinearAlgebra::Vector::shared_ptr v )
 {

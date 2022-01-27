@@ -23,7 +23,7 @@
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 
-#include "AMP/utils/ReadTestMesh.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {
