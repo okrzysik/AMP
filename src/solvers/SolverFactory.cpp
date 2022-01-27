@@ -18,7 +18,7 @@ responsibility for the use of this software.
 
 
 #include "AMP/solvers/SolverFactory.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/solvers/BiCGSTABSolver.h"
 #include "AMP/solvers/CGSolver.h"
 #include "AMP/solvers/GMRESSolver.h"

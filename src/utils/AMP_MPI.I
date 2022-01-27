@@ -3,7 +3,7 @@
 #ifndef included_AMP_MPI_I
 #define included_AMP_MPI_I
 
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/UtilityMacros.h"

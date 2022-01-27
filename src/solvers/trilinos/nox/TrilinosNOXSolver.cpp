@@ -1,5 +1,5 @@
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/solvers/trilinos/nox/AndersonStatusTest.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 #include "AMP/utils/Utilities.h"

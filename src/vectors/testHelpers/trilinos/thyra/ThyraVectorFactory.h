@@ -2,7 +2,7 @@
 #define included_AMP_ThyraVectorFactor
 
 
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"

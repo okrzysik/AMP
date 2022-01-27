@@ -68,6 +68,10 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<Vector> vec )
     // and will fire off a change to any objects that are listening
     auto listener = dynamic_cast<DataChangeListener *>( this );
     d_Engine->getVectorData()->registerListener( listener );
+
+    d_localSize  = getEngineData( *this )->getLocalSize();
+    d_globalSize = getEngineData( *this )->getGlobalSize();
+    d_localStart = d_CommList->getStartGID();
 }
 
 ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
@@ -86,6 +90,10 @@ ManagedVectorData::ManagedVectorData( std::shared_ptr<VectorData> alias )
     // and will fire off a change to any objects that are listening
     auto listener = dynamic_cast<DataChangeListener *>( this );
     vec2->getVectorData()->registerListener( listener );
+
+    d_localSize  = getEngineData( *this )->getLocalSize();
+    d_globalSize = getEngineData( *this )->getGlobalSize();
+    d_localStart = d_CommList->getStartGID();
 }
 
 ManagedVectorData::~ManagedVectorData() = default;
@@ -227,8 +235,7 @@ void ManagedVectorData::setValuesByGlobalID( int numVals, size_t *ndx, const dou
         std::vector<double> ghost_val;
         ghost_val.reserve( numVals );
         for ( int i = 0; i < numVals; i++ ) {
-            if ( ( ndx[i] < getLocalStartID() ) ||
-                 ( ndx[i] >= ( getLocalStartID() + getLocalMaxID() ) ) ) {
+            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
                 ghost_ndx.push_back( ndx[i] );
                 ghost_val.push_back( vals[i] );
             } else {
@@ -312,10 +319,6 @@ size_t ManagedVectorData::sizeOfDataBlock( size_t i ) const
 {
     return getEngineData( *this )->sizeOfDataBlock( i );
 }
-
-size_t ManagedVectorData::getLocalSize() const { return getEngineData( *this )->getLocalSize(); }
-
-size_t ManagedVectorData::getGlobalSize() const { return getEngineData( *this )->getGlobalSize(); }
 
 Vector::shared_ptr ManagedVectorData::getVectorEngine() { return d_Engine; }
 

@@ -1,4 +1,4 @@
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"

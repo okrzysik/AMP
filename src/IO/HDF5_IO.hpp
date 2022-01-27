@@ -2,9 +2,9 @@
 #ifndef included_AMP_HDF5_hpp
 #define included_AMP_HDF5_hpp
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/HDF5_Class.h"
 #include "AMP/IO/HDF5_IO.h"
-#include "AMP/TPLs.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/TypeTraits.h"

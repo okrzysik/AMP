@@ -27,9 +27,11 @@ NativeThyraVectorData::NativeThyraVectorData( Teuchos::RCP<Thyra::VectorBase<dou
     auto communicationListParams         = std::make_shared<CommunicationListParameters>();
     communicationListParams->d_comm      = comm;
     communicationListParams->d_localsize = localsize;
-    d_CommList = std::make_shared<CommunicationList>( communicationListParams );
-    d_local    = localsize;
-    d_thyraVec = vec;
+    d_CommList   = std::make_shared<CommunicationList>( communicationListParams );
+    d_thyraVec   = vec;
+    d_localSize  = localsize;
+    d_globalSize = d_thyraVec->space()->dim();
+    d_localStart = d_CommList->getStartGID();
 }
 
 
@@ -43,7 +45,7 @@ NativeThyraVectorData::~NativeThyraVectorData() = default;
  ************************************************************************/
 std::shared_ptr<VectorData> NativeThyraVectorData::cloneData() const
 {
-    return std::make_shared<NativeThyraVectorData>( d_thyraVec->clone_v(), d_local, getComm() );
+    return std::make_shared<NativeThyraVectorData>( d_thyraVec->clone_v(), d_localSize, getComm() );
 }
 
 void NativeThyraVectorData::putRawData( const double *in )
@@ -125,7 +127,7 @@ size_t NativeThyraVectorData::sizeOfDataBlock( size_t i ) const
     const Thyra::VectorBase<double> *ptr = d_thyraVec.get();
     const auto *spmdVector = dynamic_cast<const Thyra::DefaultSpmdVector<double> *>( ptr );
     if ( spmdVector != nullptr )
-        return d_local;
+        return d_localSize;
     const auto *wrapperVector = dynamic_cast<const ThyraVectorWrapper *>( ptr );
     if ( wrapperVector != nullptr ) {
         AMP_INSIST( wrapperVector->numVecs() == 1,
@@ -133,7 +135,7 @@ size_t NativeThyraVectorData::sizeOfDataBlock( size_t i ) const
         return wrapperVector->getVec( 0 )->sizeOfDataBlock( i );
     }
     AMP_ERROR( "not finished" );
-    return d_local;
+    return d_localSize;
 }
 
 Teuchos::RCP<const Thyra::VectorBase<double>>
@@ -194,11 +196,6 @@ void NativeThyraVectorData::addLocalValuesByGlobalID( int num, size_t *indices, 
     AMP_ERROR( "not implemented" );
 }
 
-size_t NativeThyraVectorData::getLocalSize() const { return d_local; }
-
-
-size_t NativeThyraVectorData::getGlobalSize() const { return d_thyraVec->space()->dim(); }
-
 
 void NativeThyraVectorData::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
 {
@@ -213,7 +210,9 @@ void NativeThyraVectorData::swapData( VectorData &rhs )
 {
     auto rhs2 = dynamic_cast<NativeThyraVectorData *>( &rhs );
     AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
-    std::swap( d_local, rhs2->d_local );
+    std::swap( d_localSize, rhs2->d_localSize );
+    std::swap( d_globalSize, rhs2->d_globalSize );
+    std::swap( d_localStart, rhs2->d_localStart );
     std::swap( d_thyraVec, rhs2->d_thyraVec );
 }
 
