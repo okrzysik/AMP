@@ -10,28 +10,30 @@ extern std::ostream plog;
 } // namespace AMP
 
 
+namespace AMP::Utilities {
+
+
 /************************************************************************
  * Get the operating system                                              *
  ************************************************************************/
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::Windows; }
+constexpr OS getOS() { return OS::Windows; }
 #elif defined( __APPLE__ )
-constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::macOS; }
+constexpr OS getOS() { return OS::macOS; }
 #elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
-constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::Linux; }
+constexpr OS getOS() { return OS::Linux; }
 #else
-constexpr AMP::Utilities::OS AMP::Utilities::getOS() { return OS::Unknown; }
+constexpr OS getOS() { return OS::Unknown; }
 #endif
 
 
 /************************************************************************
  * Functions to hash                                                     *
  ************************************************************************/
-constexpr unsigned int AMP::Utilities::hash_char( const char *name )
+constexpr unsigned int hash_char( const std::string_view &name )
 {
-    uint32_t hash   = 5381;
-    unsigned char c = 0;
-    while ( ( c = *name++ ) ) {
+    uint32_t hash = 5381;
+    for ( unsigned char c : name ) {
         // hash = hash * 33 ^ c
         hash = ( ( hash << 5 ) + hash ) ^ c;
     }
@@ -42,39 +44,55 @@ constexpr unsigned int AMP::Utilities::hash_char( const char *name )
 /************************************************************************
  * Functions to get type                                                 *
  ************************************************************************/
+#if !defined( __INTEL_COMPILER )
 template<typename T>
-constexpr std::string_view AMP::Utilities::type_name()
+constexpr const char *func_name()
 {
-    std::string_view name;
-    //    std::string_view prefix, suffix;
-#ifdef __clang__
-    name = __PRETTY_FUNCTION__;
-        // prefix = "std::string_view type_name() [T = ";
-        // suffix = "]";
-#elif defined( __GNUC__ )
-    name = __PRETTY_FUNCTION__;
-        // prefix = "constexpr std::string_view type_name() [with T = ";
-        // suffix = "; std::string_view = std::basic_string_view<char>]";
-#elif defined( _MSC_VER )
-    name = __FUNCSIG__;
-        // prefix = "class std::basic_string_view<char,struct std::char_traits<char> > __cdecl
-        // type_name<"; suffix = ">(void)";
-#endif
-    // name.remove_prefix( prefix.size() );
-    // name.remove_suffix( suffix.size() );
+    #ifdef __clang__
+    return __PRETTY_FUNCTION__;
+    #elif defined( __GNUC__ )
+    return __PRETTY_FUNCTION__;
+    #elif defined( _MSC_VER )
+    return __FUNCSIG__;
+    #else
+        #error "Not finished";
+    #endif
+}
+template<typename T>
+constexpr std::string_view type_name()
+{
+    std::string_view name = func_name<T>();
+    if ( name.rfind( "T = " ) != std::string::npos )
+        name = name.substr( name.rfind( "T = " ) + 4 );
+    if ( name.find( "]" ) != std::string::npos )
+        name = name.substr( 0, name.find( "]" ) );
     return name;
 }
 template<typename T>
-constexpr unsigned int AMP::Utilities::type_hash()
+constexpr unsigned int type_hash()
 {
-    return AMP::Utilities::hash_char( type_name<T>().data() );
+    return hash_char( type_name<T>() );
 }
+#else
+template<typename T>
+constexpr std::string_view type_name()
+{
+    AMP_ERROR( "Requires Intel 19.10" )
+    return "";
+}
+template<typename T>
+constexpr unsigned int type_hash()
+{
+    AMP_ERROR( "Requires Intel 19.10" )
+    return 0;
+}
+#endif
 
 
 /************************************************************************
  * Function to wrap printf to std::string                                *
  ************************************************************************/
-inline std::string AMP::Utilities::stringf( const char *format, ... )
+inline std::string stringf( const char *format, ... )
 {
     va_list ap;
     va_start( ap, format );
@@ -91,7 +109,7 @@ inline std::string AMP::Utilities::stringf( const char *format, ... )
  * templated quicksort routines                                          *
  ************************************************************************/
 template<class T>
-void AMP::Utilities::quicksort( size_t n, T *x )
+void quicksort( size_t n, T *x )
 {
     if ( n <= 1 )
         return;
@@ -177,7 +195,7 @@ void AMP::Utilities::quicksort( size_t n, T *x )
     }
 }
 template<class T1, class T2>
-void AMP::Utilities::quicksort( size_t n, T1 *x, T2 *y )
+void quicksort( size_t n, T1 *x, T2 *y )
 {
     if ( n <= 1 )
         return;
@@ -292,12 +310,12 @@ void AMP::Utilities::quicksort( size_t n, T1 *x, T2 *y )
  * Subroutine to find the unique elements in a list                      *
  ************************************************************************/
 template<class T>
-void AMP::Utilities::unique( std::vector<T> &x )
+void unique( std::vector<T> &x )
 {
     if ( x.size() <= 1 )
         return;
     // First perform a quicksort
-    AMP::Utilities::quicksort( x );
+    quicksort( x );
     // Next remove duplicate entries
     size_t pos = 1;
     for ( size_t i = 1; i < x.size(); i++ ) {
@@ -310,7 +328,7 @@ void AMP::Utilities::unique( std::vector<T> &x )
         x.resize( pos );
 }
 template<class T>
-void AMP::Utilities::unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J )
+void unique( std::vector<T> &X, std::vector<size_t> &I, std::vector<size_t> &J )
 {
     if ( X.empty() ) {
         I.clear();
@@ -354,7 +372,7 @@ void AMP::Utilities::unique( std::vector<T> &X, std::vector<size_t> &I, std::vec
  * Returns -1 if no value is larger.                                     *
  ************************************************************************/
 template<class T>
-size_t AMP::Utilities::findfirst( size_t n, const T *x, const T &value )
+size_t findfirst( size_t n, const T *x, const T &value )
 {
     AMP_INSIST( n > 0, "x must not be empty" );
     // Check if value is within the range of x
@@ -382,7 +400,7 @@ size_t AMP::Utilities::findfirst( size_t n, const T *x, const T &value )
  * Convert a vector to a string                                          *
  ************************************************************************/
 template<class TYPE>
-std::string AMP::Utilities::to_string( const std::vector<TYPE> &x )
+std::string to_string( const std::vector<TYPE> &x )
 {
     using std::to_string;
     if ( x.empty() )
@@ -393,6 +411,9 @@ std::string AMP::Utilities::to_string( const std::vector<TYPE> &x )
     str += "]";
     return str;
 }
+
+
+} // namespace AMP::Utilities
 
 
 #endif
