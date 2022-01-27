@@ -37,6 +37,11 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
         params->d_remote_DOFs = remote_DOFs;
         d_CommList            = std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
     }
+
+    // Initialize local/global size
+    d_localSize  = d_globalDOFManager->numLocalDOF();
+    d_globalSize = d_globalDOFManager->numGlobalDOF();
+    d_localStart = d_CommList->getStartGID();
 }
 
 /****************************************************************
@@ -64,8 +69,6 @@ size_t MultiVectorData::sizeOfDataBlock( size_t i ) const
     }
     return retVal;
 }
-size_t MultiVectorData::getLocalSize() const { return d_globalDOFManager->numLocalDOF(); }
-size_t MultiVectorData::getGlobalSize() const { return d_globalDOFManager->numGlobalDOF(); }
 size_t MultiVectorData::getGhostSize() const
 {
     size_t ans = 0;

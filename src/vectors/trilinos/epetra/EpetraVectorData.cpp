@@ -24,25 +24,26 @@ EpetraVectorData::EpetraVectorData( std::shared_ptr<EpetraVectorEngineParameters
                                     int globalSize )
     : VectorData( alias->d_CommList ),
       d_epetraVector( method, map, getBufferPtr( bufData ) ),
-      d_buf_scope{ bufData },
-      d_iLocalStart{ localStart },
-      d_iLocalSize{ localSize },
-      d_iGlobalSize{ globalSize }
+      d_buf_scope{ bufData }
 {
+    d_localStart = localStart;
+    d_localSize  = localSize;
+    d_globalSize = globalSize;
+    AMP_ASSERT( d_globalSize < 0x80000000 );
 }
 
 std::shared_ptr<EpetraVectorData>
 EpetraVectorData::create( std::shared_ptr<EpetraVectorEngineParameters> alias,
                           std::shared_ptr<VectorData> buf )
 {
-    return std::make_shared<EpetraVectorData>(
-        alias,
-        View,
-        std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getEpetraMap(),
-        buf,
-        std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->beginDOF(),
-        std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getLocalSize(),
-        std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias )->getGlobalSize() );
+    auto params = std::dynamic_pointer_cast<EpetraVectorEngineParameters>( alias );
+    return std::make_shared<EpetraVectorData>( alias,
+                                               View,
+                                               params->getEpetraMap(),
+                                               buf,
+                                               params->beginDOF(),
+                                               params->getLocalSize(),
+                                               params->getGlobalSize() );
 }
 
 void *EpetraVectorData::getRawDataBlockAsVoid( size_t i )
@@ -75,7 +76,6 @@ void EpetraVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const
 {
     if ( num == 0 )
         return;
-    AMP_ASSERT( getGlobalSize() < 0x80000000 );
     std::vector<int> indices2( num, 0 );
     for ( int i = 0; i < num; i++ )
         indices2[i] = (int) indices[i];
@@ -98,7 +98,6 @@ void EpetraVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const
 {
     if ( num == 0 )
         return;
-    AMP_ASSERT( getGlobalSize() < 0x80000000 );
     std::vector<int> indices2( num, 0 );
     for ( int i = 0; i < num; i++ )
         indices2[i] = (int) indices[i];
@@ -124,9 +123,8 @@ void EpetraVectorData::getLocalValuesByGlobalID( int num, size_t *indices, doubl
     double *data;
     d_epetraVector.ExtractView( &data );
     for ( int i = 0; i < num; i++ ) {
-        AMP_ASSERT( (int64_t) indices[i] >= d_iLocalStart &&
-                    (int64_t) indices[i] < d_iLocalStart + d_iLocalSize );
-        vals[i] = static_cast<double>( data[indices[i] - d_iLocalStart] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
+        vals[i] = static_cast<double>( data[indices[i] - d_localStart] );
     }
 }
 
@@ -134,18 +132,17 @@ void EpetraVectorData::putRawData( const double *in )
 {
     double *p;
     d_epetraVector.ExtractView( &p );
-    size_t N = getLocalSize();
-    memcpy( p, in, N * sizeof( double ) );
+    memcpy( p, in, d_localSize * sizeof( double ) );
 }
 
 void EpetraVectorData::copyOutRawData( double *out ) const { d_epetraVector.ExtractCopy( out ); }
 
 std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
 {
-    auto buffer = std::make_shared<VectorDataCPU<double>>(
-        getLocalStartID(), getLocalSize(), getGlobalSize() );
+    auto buffer =
+        std::make_shared<VectorDataCPU<double>>( d_localStart, d_localSize, d_globalSize );
     auto params = std::make_shared<EpetraVectorEngineParameters>(
-        getLocalSize(), getComm(), getCommunicationList() );
+        d_localSize, getComm(), getCommunicationList() );
     auto data = EpetraVectorData::create( params, buffer );
     return data;
 }
@@ -156,9 +153,9 @@ void EpetraVectorData::swapData( VectorData &rhs )
     AMP_INSIST( rhs2, "Cannot swap with arbitrary VectorData" );
     std::swap( d_epetraVector, rhs2->d_epetraVector );
     std::swap( d_buf_scope, rhs2->d_buf_scope );
-    std::swap( d_iLocalStart, rhs2->d_iLocalStart );
-    std::swap( d_iLocalSize, rhs2->d_iLocalSize );
-    std::swap( d_iGlobalSize, rhs2->d_iGlobalSize );
+    std::swap( d_localStart, rhs2->d_localStart );
+    std::swap( d_localSize, rhs2->d_localSize );
+    std::swap( d_globalSize, rhs2->d_globalSize );
 }
 
 

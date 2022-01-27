@@ -1,5 +1,5 @@
 #include "AMP/discretization/createLibmeshElements.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/utils/Utilities.h"

@@ -1,5 +1,5 @@
 #include "AMP/vectors/testHelpers/generateVectorFactories.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/StridedVectorSelector.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"

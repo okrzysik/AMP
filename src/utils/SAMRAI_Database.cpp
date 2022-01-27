@@ -1,4 +1,4 @@
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 
 #ifdef AMP_USE_SAMRAI
 

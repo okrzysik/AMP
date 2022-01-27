@@ -12,7 +12,7 @@
 
 
 // Add the definitions for the TPLs that are used
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 
 // Include MPI if we are building with MPI
 #ifdef AMP_USE_MPI

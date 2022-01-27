@@ -1,5 +1,5 @@
 #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"

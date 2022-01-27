@@ -1,5 +1,5 @@
 // This file stores the routines to generate the meshes for AMP::Mesh::Mesh
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"

@@ -34,11 +34,13 @@ VectorDataGPU<TYPE>::VectorDataGPU( size_t start, size_t localSize, size_t globa
 template<typename TYPE>
 void VectorDataGPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
-    cudaMallocManaged( (void **) &d_Data, localSize * sizeof( TYPE ), cudaMemAttachGlobal );
-    AMP_INSIST( d_Data, "Failed to allocate memory on device" );
-    d_startIndex = start;
+    d_localStart = start;
     d_localSize  = localSize;
     d_globalSize = globalSize;
+    if ( d_localSize > 0 ) {
+        cudaMallocManaged( (void **) &d_Data, localSize * sizeof( TYPE ), cudaMemAttachGlobal );
+        AMP_INSIST( d_Data, "Failed to allocate memory on device" );
+    }
 }
 template<typename TYPE>
 VectorDataGPU<TYPE>::~VectorDataGPU()
@@ -61,16 +63,6 @@ size_t VectorDataGPU<TYPE>::sizeOfDataBlock( size_t i ) const
     if ( i > 0 )
         return 0;
     return d_localSize;
-}
-template<typename TYPE>
-size_t VectorDataGPU<TYPE>::getLocalSize() const
-{
-    return d_localSize;
-}
-template<typename TYPE>
-size_t VectorDataGPU<TYPE>::getGlobalSize() const
-{
-    return d_globalSize;
 }
 template<typename TYPE>
 uint64_t VectorDataGPU<TYPE>::getDataID() const
@@ -138,8 +130,8 @@ inline void
 VectorDataGPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_localSize );
-        d_Data[indices[i] - d_startIndex] = static_cast<TYPE>( vals[i] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
+        d_Data[indices[i] - d_localStart] = static_cast<TYPE>( vals[i] );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -159,8 +151,8 @@ inline void
 VectorDataGPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_localSize );
-        d_Data[indices[i] - d_startIndex] += static_cast<TYPE>( vals[i] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
+        d_Data[indices[i] - d_localStart] += static_cast<TYPE>( vals[i] );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -171,8 +163,8 @@ inline void
 VectorDataGPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_localSize );
-        vals[i] = static_cast<double>( d_Data[indices[i] - d_startIndex] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
+        vals[i] = static_cast<double>( d_Data[indices[i] - d_localStart] );
     }
 }
 
@@ -203,12 +195,9 @@ void VectorDataGPU<TYPE>::copyOutRawData( double *out ) const
 template<typename TYPE>
 std::shared_ptr<VectorData> VectorDataGPU<TYPE>::cloneData() const
 {
-    {
-        auto retVal =
-            std::make_shared<VectorDataGPU<TYPE>>( d_startIndex, d_localSize, d_globalSize );
-        retVal->setCommunicationList( getCommunicationList() );
-        return retVal;
-    }
+    auto retVal = std::make_shared<VectorDataGPU<TYPE>>( d_localStart, d_localSize, d_globalSize );
+    retVal->setCommunicationList( getCommunicationList() );
+    return retVal;
 }
 
 
@@ -225,7 +214,7 @@ void VectorDataGPU<TYPE>::swapData( VectorData &rhs )
     std::swap( d_Ghosts, rhs2->d_Ghosts );
     std::swap( d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( d_Data, rhs2->d_Data );
-    std::swap( d_startIndex, rhs2->d_startIndex );
+    std::swap( d_localStart, rhs2->d_localStart );
     std::swap( d_localSize, rhs2->d_localSize );
     std::swap( d_globalSize, rhs2->d_globalSize );
 }

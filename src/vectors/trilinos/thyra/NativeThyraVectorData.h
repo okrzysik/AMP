@@ -42,8 +42,6 @@ public:
     void addValuesByLocalID( int, size_t *, const double * ) override;
     void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
     void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    size_t getLocalSize() const override;
-    size_t getGlobalSize() const override;
     void putRawData( const double * ) override;
     void copyOutRawData( double *out ) const override;
     uint64_t getDataID() const override
@@ -69,8 +67,6 @@ protected:
 
 
 private:
-    size_t d_local;
-
     Teuchos::RCP<Thyra::VectorBase<double>> d_thyraVec;
 
     static Teuchos::RCP<const Thyra::VectorBase<double>>

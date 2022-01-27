@@ -69,8 +69,6 @@ public:
     }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-    size_t getLocalSize() const override;
-    size_t getGlobalSize() const override;
 
     void addValuesByLocalID( int, size_t *, const double * ) override;
     void setValuesByLocalID( int, size_t *, const double * ) override;

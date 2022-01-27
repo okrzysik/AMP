@@ -45,6 +45,11 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> para
     // For now use one datablock for each value, this needs to be changed
     d_dataBlockPtr  = data_ptr;
     d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+    // Cache the local/global size
+    AMP_ASSERT( d_ViewVector );
+    d_localSize  = d_CommList->numLocalRows();
+    d_globalSize = d_CommList->getTotalSize();
+    d_localStart = d_CommList->getStartGID();
 }
 
 /****************************************************************
@@ -172,9 +177,6 @@ void SubsetVectorData::getValuesByLocalID( int cnt, size_t *ndx, double *vals ) 
     d_ViewVector->getValuesByLocalID( cnt, t, vals );
     delete[] t;
 }
-
-size_t SubsetVectorData::getLocalSize() const { return getCommunicationList()->numLocalRows(); }
-size_t SubsetVectorData::getGlobalSize() const { return getCommunicationList()->getTotalSize(); }
 
 void SubsetVectorData::swapData( VectorData &rhs )
 {

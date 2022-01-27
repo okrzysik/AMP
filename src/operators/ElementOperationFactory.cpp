@@ -1,5 +1,5 @@
 #include "ElementOperationFactory.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Utilities.h"
 
 #ifdef AMP_USE_LIBMESH
