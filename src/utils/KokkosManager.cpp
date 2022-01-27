@@ -1,4 +1,4 @@
-#include "TPLs.h"
+#include "AMP/TPLs.h"
 
 #ifdef AMP_USE_KOKKOS
     #ifndef USE_CUDA
