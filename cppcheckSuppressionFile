@@ -114,7 +114,6 @@ arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/test/test_AMP_MPI.cpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
-unreadVariable:*/utils/ReadTestMesh.cpp
 unreadVariable:*/src/utils/DelaunayInterpolation.cpp
 unreadVariable:*/src/utils/DelaunayTessellation.cpp
 unreadVariable:*/src/IO/HDF5writer.cpp
@@ -133,7 +132,8 @@ objectIndex:*/src/mesh/libmesh/initializeLibMesh.cpp
 ignoredReturnValue:*/src/geometry/GeometryHelpers.cpp
 unassignedVariable:*/src/mesh/triangle/TriangleMesh.cpp
 duplicateExpression:*/src/utils/DatabaseKeyData.cpp
-invalidscanf:*/src/utils/ReadTestMesh.cpp
+unreadVariable:*/mesh/libmesh/ReadTestMesh.cpp
+invalidscanf:*/src/mesh/libmesh/ReadTestMesh.cpp
 constVariable:*/src/mesh/edge_t.cpp
 constVariable:*/src/mesh/structured/structuredMeshElement.cpp
 constVariable:*/src/mesh/triangle_t.cpp
