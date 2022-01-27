@@ -13,6 +13,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <typeinfo>
 
 
 namespace AMP {
@@ -44,7 +45,6 @@ static constexpr TYPE abs( const TYPE &x )
 template<class TYPE1, class TYPE2>
 Array<TYPE2> convert( const Array<TYPE1> &x )
 {
-    using AMP::Utilities::type_name;
     if constexpr ( std::is_same<TYPE1, TYPE2>::value ) {
         return x;
     } else if constexpr ( std::is_arithmetic<TYPE1>::value && std::is_arithmetic<TYPE2>::value ) {
@@ -57,14 +57,17 @@ Array<TYPE2> convert( const Array<TYPE1> &x )
             pass   = pass && abs( static_cast<TYPE1>( y( i ) - x( i ) ) ) <= tol * x( i );
         }
         if ( !pass ) {
-            std::string msg = "Converting " + std::string( type_name<TYPE1>() ) + "-" +
-                              std::string( type_name<TYPE2>() ) + " results in loss of precision";
+            std::string type1 = typeid( TYPE1 ).name();
+            std::string type2 = typeid( TYPE2 ).name();
+            std::string msg = "Converting " + type1 + "-" + type2 + " results in loss of precision";
             AMP_WARNING( msg );
         }
         return y;
     } else {
-        std::string msg = "Invalid conversion: " + std::string( type_name<TYPE1>() ) + "-" +
-                          std::string( type_name<TYPE2>() ) + " results in loss of precision";
+        std::string type1 = typeid( TYPE1 ).name();
+        std::string type2 = typeid( TYPE2 ).name();
+        std::string msg =
+            "Invalid conversion: " + type1 + "-" + type2 + " results in loss of precision";
         throw std::logic_error( msg );
     }
 }
@@ -86,8 +89,8 @@ void scaleData( TYPE &data, double factor )
         data = static_cast<TYPE>( factor ) * data;
     } else {
         NULL_USE( factor );
-        using AMP::Utilities::type_name;
-        throw std::logic_error( "Unable to scale " + std::string( type_name<TYPE>() ) );
+        std::string type = typeid( TYPE ).name();
+        throw std::logic_error( "Unable to scale " + type );
     }
 }
 template<class TYPE>
@@ -99,8 +102,8 @@ void scaleData( Array<TYPE> &data, double factor )
         data.scale( factor );
     } else {
         NULL_USE( factor );
-        using AMP::Utilities::type_name;
-        throw std::logic_error( "Unable to scale " + std::string( type_name<TYPE>() ) );
+        std::string type = typeid( TYPE ).name();
+        throw std::logic_error( "Unable to scale " + type );
     }
 }
 

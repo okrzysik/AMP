@@ -1,4 +1,5 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
+#include "AMP/TPLs.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #ifdef AMP_USE_LIBMESH
