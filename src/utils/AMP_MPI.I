@@ -13,14 +13,6 @@
 #include <complex>
 #include <typeinfo>
 
-#ifdef AMP_USE_MPI
-    #ifndef USE_MPI
-        #define USE_MPI
-    #endif
-#else
-    #undef USE_MPI
-#endif
-
 
 #define MPI_CLASS AMP_MPI
 #define MPI_CLASS_ERROR AMP_ERROR
@@ -31,10 +23,10 @@
 
 // Include mpi.h (or define MPI objects)
 // clang-format off
-#ifdef USE_MPI
+#ifdef AMP_USE_MPI
     // Building with mpi
     #include "mpi.h"
-#elif defined( USE_SAMRAI ) && defined( USE_PETSC )
+#elif defined( AMP_USE_SAMRAI ) && defined( AMP_USE_PETSC )
     // Building with SAMRAI and PETSc and without MPI is complicated
     #include "petsc/mpiuni/mpi.h"
     #undef MPI_REQUEST_NULL
@@ -53,13 +45,13 @@
         #undef INCLUDED_SAMRAI_CONFIG_H
     #endif
     #undef HAVE_MPI
-#elif defined( USE_SAMRAI )
+#elif defined( AMP_USE_SAMRAI )
     // SAMRAI serial builds define basic MPI types
     #include "SAMRAI/tbox/SAMRAI_MPI.h"
-#elif defined( USE_PETSC )
+#elif defined( AMP_USE_PETSC )
     // petsc serial builds include mpi.h
     #include "petsc/mpiuni/mpi.h"
-#elif defined( USE_TRILINOS )
+#elif defined( AMP_USE_TRILINOS )
     // trilinos serial builds include mpi.h
     #include "mpi.h" 
 #elif defined(__has_include)
@@ -72,6 +64,14 @@
 #else
     #define SET_MPI_TYPES
 #endif
+#ifdef AMP_USE_MPI
+    #ifndef USE_MPI
+        #define USE_MPI
+    #endif
+#else
+    #undef USE_MPI
+#endif
+
 #ifdef SET_MPI_TYPES
     typedef uint32_t MPI_Comm;
     typedef uint32_t MPI_Request;

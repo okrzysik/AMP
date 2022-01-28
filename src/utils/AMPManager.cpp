@@ -1,8 +1,9 @@
-#include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMP_MPI.I"
+
 #include "AMP/AMP_Version.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
