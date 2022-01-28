@@ -1,4 +1,4 @@
-#ifdef USE_KOKKOS
+#ifdef AMP_USE_KOKKOS
 #ifdef USE_CUDA
 
 #include "AMP/utils/KokkosManager.h"

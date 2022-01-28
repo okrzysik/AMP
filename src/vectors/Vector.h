@@ -444,6 +444,8 @@ public: // Non-virtual functions
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
+     * \details A null pointer will be returned if the vector does not contain
+     * a sub-vector associated with the Variable
      * \see MultiVector
      */
     Vector::const_shared_ptr subsetVectorForVariable( const std::string &name ) const;
@@ -451,6 +453,8 @@ public: // Non-virtual functions
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] var  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
+     * \details A null pointer will be returned if the vector does not contain
+     * a sub-vector associated with the Variable
      * \see MultiVector
      */
     Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var );
@@ -458,13 +462,16 @@ public: // Non-virtual functions
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] var  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
+     * \details A null pointer will be returned if the vector does not contain
+     * a sub-vector associated with the Variable
      * \see MultiVector
      */
     Vector::const_shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
-      * \details Effectively, this is
+      * \details A null pointer will be returned if the vector does not contain
+      * a sub-vector associated with the Variable. Effectively, this is
       * \code
       Vector *a;
       Vector *b;
