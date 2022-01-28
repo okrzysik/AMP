@@ -146,8 +146,9 @@ std::string MPI_CLASS::info()
         MPI_info.erase( pos + 1, 1 );
         pos = MPI_info.find( '\n', pos + 1 );
     }
-    if ( MPI_info.back() == '\n' )
+    while ( MPI_info.back() == '\n' || MPI_info.back() == '\r' || MPI_info.back() == ' ' )
         MPI_info.pop_back();
+    MPI_info += '\n';
 #endif
     return MPI_info;
 }
