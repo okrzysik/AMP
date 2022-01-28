@@ -157,7 +157,7 @@ void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
         ut.expected_failure( writerName + " does not support registering a matrix" );
         return;
     }
-#if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
+#if !defined( AMP_USE_PETSC ) && !defined( AMP_USE_TRILINOS )
     ut.expected_failure( writerName + "  - no parallel matrix to test" );
     return;
 #endif

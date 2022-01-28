@@ -22,7 +22,7 @@ private:
     AMP_MPI d_comm;
     size_t d_offset;
     ArraySize d_blockIndex;
-    ArraySize d_globalSize;
+    ArraySize d_globalArraySize;
 
 public:
     /** \brief    Create a ArrayVector
@@ -91,19 +91,6 @@ public:
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
     void copyOutRawData( double *buf ) const override;
-
-    /**\brief Number of elements "owned" by this core
-     *\return  Number of entries stored contiguously on this processor
-     *\details  For some types of variables, vectors may store "ghost"
-     * data---possibly non-contiguous subsets of entries stored on other
-     * cores.
-     */
-    size_t getLocalSize() const override { return d_array.length(); }
-
-    /**\brief Number of total entries in this vector across all cores
-     *\return Number of entries stored across all cores in this
-     */
-    size_t getGlobalSize() const override { return d_globalSize.length(); }
 
     /**
      * \brief Set values in the vector by their local offset

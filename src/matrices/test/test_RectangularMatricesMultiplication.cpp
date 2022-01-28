@@ -14,7 +14,7 @@
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
-#if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
+#if !defined( AMP_USE_PETSC ) && !defined( AMP_USE_TRILINOS )
     if ( AMP::AMP_MPI( AMP_COMM_WORLD ).getSize() > 1 ) {
         ut->expected_failure( "No parallel matrix to test" );
         return;
@@ -60,7 +60,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::vector<std::string> types;
     if ( globalComm.getSize() == 1 )
         types.emplace_back( "DenseSerialMatrix" );
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
 #endif
     for ( auto &type : types ) {

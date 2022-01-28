@@ -4,8 +4,7 @@
 #include "AMP/vectors/data/VectorData.h"
 
 
-namespace AMP {
-namespace LinearAlgebra {
+namespace AMP::LinearAlgebra {
 
 
 template<typename TYPE>
@@ -13,14 +12,10 @@ class VectorDataIterator;
 
 
 /**
-  \brief  A class used to hold vector data
-
-  \details
-
-  VectorDataGPU is a default implimentation of VectorData that stores
-  the local values as a single block of data on the GPU.
-
-  */
+ * \brief  A class used to hold vector data
+ * \details  VectorDataGPU is a default implimentation of VectorData that stores
+ *    the local values as a single block of data on the GPU.
+ */
 template<typename TYPE = double>
 class VectorDataGPU : public VectorData
 {
@@ -59,20 +54,6 @@ public: // Virtual functions
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
     virtual void copyOutRawData( double *buf ) const override;
-
-    /**\brief Number of elements "owned" by this core
-      *\return  Number of entries stored contiguously on this processor
-      *\details  For some types of variables, vectors may store "ghost"
-      * data---possibly non-contiguous subsets of entries stored on other
-      * cores.make
-
-      */
-    virtual size_t getLocalSize() const override;
-
-    /**\brief Number of total entries in this vector across all cores
-     *\return Number of entries stored across all cores in this
-     */
-    virtual size_t getGlobalSize() const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -183,21 +164,16 @@ public: // Non-virtual functions
 
 
 protected:
-    VectorDataGPU() : d_Data( nullptr ), d_startIndex( 0 ), d_localSize( 0 ), d_globalSize( 0 ) {}
+    VectorDataGPU() : d_Data( nullptr ) {}
 
     void allocate( size_t start, size_t localSize, size_t globalSize );
 
 
 private:
     TYPE *d_Data;
-    size_t d_startIndex;
-    size_t d_localSize;
-    size_t d_globalSize;
 };
 
 
-} // namespace LinearAlgebra
-} // namespace AMP
-
+} // namespace AMP::LinearAlgebra
 
 #endif

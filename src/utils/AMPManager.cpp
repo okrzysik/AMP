@@ -1,4 +1,5 @@
 #include "AMP/utils/AMPManager.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/AMP_Version.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMP_MPI.I"
@@ -14,48 +15,48 @@
 
 // Include external files for startup/version info
 // clang-format off
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef USE_CUDA
+    #include <cuda.h>
+    #include <cuda_runtime_api.h>
+#endif
+#ifdef AMP_USE_LAPACK_WRAPPERS
     #include "LapackWrappers.h"
 #endif
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "petsc.h"
     #include "petscerror.h"
     #include "petscsys.h"
     #include "petscversion.h"
 #endif
-#if USE_EXT_TIMER
+#ifdef AMP_USE_TIMER
     #include "MemoryApp.h"
     #include "TimerUtilityVersion.h"
 #endif
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
     #include "Trilinos_version.h"
 #endif
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "libmesh/libmesh_version.h"
 #endif
-#ifdef USE_EXT_HDF5
+#ifdef AMP_USE_HDF5
     #include "H5public.h"
 #endif
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     #include "sundials/sundials_config.h"
 #endif
-#ifdef USE_EXT_SILO
+#ifdef AMP_USE_SILO
     #include "silo.h"
 #endif
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
     #undef NULL_USE
     #include "SAMRAI/tbox/Logger.h"
     #include "SAMRAI/tbox/SAMRAIManager.h"
     #include "SAMRAI/tbox/StartupShutdownManager.h"
 #endif
-#ifdef USE_EXT_HYPRE
+#ifdef AMP_USE_HYPRE
     #include "HYPRE_config.h"
 #endif
-#ifdef USE_CUDA
-    #include <cuda.h>
-    #include <cuda_runtime_api.h>
-#endif
-#ifdef USE_KOKKOS
+#ifdef AMP_USE_KOKKOS
     #include "AMP/utils/KokkosManager.h"
 #endif
 // clang-format on
@@ -164,7 +165,7 @@ void AMPManager::exitFun()
 /****************************************************************************
  *  Function to PETSc errors                                                 *
  ****************************************************************************/
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #if PETSC_VERSION_LT( 3, 7, 5 )
         #error AMP only supports PETSc 3.7.5 or greater
     #endif
@@ -343,7 +344,7 @@ void AMPManager::shutdown()
     resourceMap.clear();
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
-#ifdef USE_TIMER
+#ifdef AMP_USE_TIMER
     auto memory = MemoryApp::getMemoryStats();
     if ( rank == 0 && memory.N_new > memory.N_delete )
         MemoryApp::print( std::cout );
@@ -361,7 +362,7 @@ void AMPManager::restart()
     if ( initialized != 1 )
         AMP_ERROR( "AMP is not initialized or has been shutdown" );
         // Restart SAMRAI
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
     SAMRAI::tbox::SAMRAIManager::shutdown();
     SAMRAI::tbox::SAMRAIManager::startup();
 #endif
@@ -374,9 +375,9 @@ void AMPManager::restart()
 double AMPManager::start_SAMRAI()
 {
     double time = 0;
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
     double start = Utilities::time();
-    #ifdef USE_MPI
+    #ifdef AMP_USE_MPI
     SAMRAI::tbox::SAMRAI_MPI::init( AMP_MPI( AMP_COMM_WORLD ).getCommunicator() );
     #else
     SAMRAI::tbox::SAMRAI_MPI::initMPIDisabled();
@@ -391,7 +392,7 @@ double AMPManager::start_SAMRAI()
 double AMPManager::stop_SAMRAI()
 {
     double time = 0;
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
     double start = Utilities::time();
     SAMRAI::tbox::PIO::finalize();
     SAMRAI::tbox::SAMRAIManager::shutdown();
@@ -406,7 +407,7 @@ double AMPManager::stop_SAMRAI()
 /****************************************************************************
  *  Class to override the output appender for abort messages                 *
  ****************************************************************************/
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
 class SAMRAIAbortAppender : public SAMRAI::tbox::Logger::Appender
 {
 public:
@@ -426,7 +427,7 @@ public:
 double AMPManager::start_PETSc()
 {
     double time = 0;
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     double start = Utilities::time();
     if ( PetscInitializeCalled ) {
         called_PetscInitialize = false;
@@ -441,7 +442,7 @@ double AMPManager::start_PETSc()
         for ( auto &petscArg : petscArgs )
             delete[] petscArg;
     }
-    #ifndef USE_MPI
+    #ifndef AMP_USE_MPI
     // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
     AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
     #endif
@@ -452,7 +453,7 @@ double AMPManager::start_PETSc()
 double AMPManager::stop_PETSc()
 {
     double time = 0;
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     if ( called_PetscInitialize ) {
         double start = Utilities::time();
         PetscPopSignalHandler();
@@ -514,7 +515,7 @@ double AMPManager::start_CUDA()
 
 double AMPManager::start_Kokkos( int argc, char **argv )
 {
-#ifdef USE_KOKKOS
+#ifdef AMP_USE_KOKKOS
     AMP::Utilities::initializeKokkos( argc, argv );
 #else
     NULL_USE( argc );
@@ -525,7 +526,7 @@ double AMPManager::start_Kokkos( int argc, char **argv )
 
 double AMPManager::stop_Kokkos()
 {
-#ifdef USE_KOKKOS
+#ifdef AMP_USE_KOKKOS
     AMP::Utilities::finalizeKokkos();
 #endif
     return 0;
@@ -540,13 +541,13 @@ void AMPManager::setHandlers()
     // Set the MPI error handler for comm_world
     setMPIErrorHandler();
 // Set the error handlers for petsc
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     PetscPopSignalHandler();
     PetscPopErrorHandler();
     PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
 #endif
 // Set the error handlers for SAMRAI
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
     SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
     SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
     auto appender = std::make_shared<SAMRAIAbortAppender>();
@@ -570,7 +571,7 @@ void AMPManager::clearHandlers()
     StackTrace::clearSignals();
     StackTrace::clearSymbols();
     // Clear the error handlers for petsc
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     PetscPopSignalHandler();
     PetscPopErrorHandler();
 #endif
@@ -582,18 +583,18 @@ void AMPManager::clearHandlers()
  ****************************************************************************/
 void AMPManager::setMPIErrorHandler()
 {
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     StackTrace::setMPIErrorHandler( comm_world.getCommunicator() );
-    #ifdef USE_EXT_SAMRAI
+    #ifdef AMP_USE_SAMRAI
     StackTrace::setMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
     #endif
 #endif
 }
 void AMPManager::clearMPIErrorHandler()
 {
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     StackTrace::clearMPIErrorHandler( comm_world.getCommunicator() );
-    #ifdef USE_EXT_SAMRAI
+    #ifdef AMP_USE_SAMRAI
     StackTrace::clearMPIErrorHandler(
         SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
     #endif
@@ -653,21 +654,21 @@ std::string AMPManager::info()
     out << "   C Flags: " << AMP::Version::C_FLAGS << std::endl;
     out << "   C++ Flags: " << AMP::Version::CXX_FLAGS << std::endl;
     out << "   Fortran Flags: " << AMP::Version::Fortran_FLAGS << std::endl;
-#ifdef USE_TIMER
+#ifdef AMP_USE_TIMER
     out << "ProfilerApp: " << TIMER_VERSION << std::endl;
 #endif
-#ifdef USE_EXT_SAMRAI
+#ifdef AMP_USE_SAMRAI
     out << "SAMRAI: " << SAMRAI_VERSION_MAJOR << "." << SAMRAI_VERSION_MINOR << "."
         << SAMRAI_VERSION_PATCHLEVEL << std::endl;
 #endif
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     out << "PETSc: " << PETSC_VERSION_MAJOR << "." << PETSC_VERSION_MINOR << "."
         << PETSC_VERSION_SUBMINOR << std::endl;
 #endif
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
     out << "Trilinos: " << TRILINOS_VERSION_STRING << std::endl;
 #endif
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     #ifdef SUNDIALS_PACKAGE_VERSION
     out << "Sundials: " << SUNDIALS_PACKAGE_VERSION << std::endl;
     #elif defined( SUNDIALS_VERSION )
@@ -679,19 +680,19 @@ std::string AMPManager::info()
 #elif defined( HYPRE_PACKAGE_VERSION )
     out << "Hypre: " << HYPRE_PACKAGE_VERSION << std::endl;
 #endif
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     out << "libMesh: " << libMesh::get_libmesh_version() << std::endl;
 #endif
-#ifdef USE_EXT_HDF5
+#ifdef AMP_USE_HDF5
     out << "HDF5: " << H5_VERS_MAJOR << "." << H5_VERS_MINOR << "." << H5_VERS_RELEASE << std::endl;
 #endif
-#ifdef USE_EXT_SILO
+#ifdef AMP_USE_SILO
     out << "SILO: " << SILO_VERS_MAJ << "." << SILO_VERS_MIN << "." << SILO_VERS_PAT << std::endl;
 #endif
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     out << "MPI: " << AMP::AMP_MPI::info() << std::endl;
 #endif
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
     out << "Lapack: " << Lapack<double>::info();
 #endif
     return out.str();

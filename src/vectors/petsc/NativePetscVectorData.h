@@ -39,8 +39,6 @@ public:
     size_t sizeOfDataBlock( size_t i ) const override;
     void putRawData( const double * ) override;
     void copyOutRawData( double *out ) const override;
-    size_t getLocalSize() const override;
-    size_t getGlobalSize() const override;
 
     void setValuesByLocalID( int, size_t *, const double * ) override;
     void setLocalValuesByGlobalID( int, size_t *, const double * ) override;

@@ -13,7 +13,7 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
@@ -251,7 +251,7 @@ void helperBuildColumnSolverForPelletMechanics(
         mlSolverParams->d_pOperator = currOp;
         auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
         auto ikspSolverParams =
             std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( ikspSolver_db );
         ikspSolverParams->d_pOperator       = currOp;

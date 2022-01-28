@@ -2,7 +2,7 @@
 #define included_AMP_TrilinosNOXSolver
 
 // AMP includes
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"

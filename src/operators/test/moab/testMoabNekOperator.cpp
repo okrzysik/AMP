@@ -38,7 +38,7 @@
 
 static void nekPipeOperator( AMP::UnitTest *ut )
 {
-#ifdef USE_EXT_NEK
+#ifdef AMP_USE_NEK
     // Print Banner
     AMP::Utilities::printBanner();
 

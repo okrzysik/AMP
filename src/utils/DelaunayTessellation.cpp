@@ -17,11 +17,6 @@
 #include <stdexcept>
 
 
-#ifndef USE_LAPACK
-    #define USE_LAPACK 0
-#endif
-
-
 #if defined( USING_ICC )
 DISABLE_WARNINGS
 #endif

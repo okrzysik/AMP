@@ -5,11 +5,11 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     #include "AMP/vectors/sundials/ManagedSundialsVector.h"
     #include "AMP/vectors/sundials/SundialsVector.h"
 #endif
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "AMP/vectors/petsc/PetscVector.h"
 #endif
 
@@ -248,7 +248,7 @@ void VectorTests::ScaleVector( AMP::UnitTest *ut )
 }
 
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
 void VectorTests::Bug_491( AMP::UnitTest *ut )
 {
     auto vector1( d_factory->getVector() );

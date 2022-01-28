@@ -1,3 +1,4 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -15,7 +16,7 @@
 #include <sys/stat.h>
 #include <vector>
 
-#ifdef USE_SAMRAI
+#ifdef AMP_USE_SAMRAI
     #include "SAMRAI/tbox/InputManager.h"
     #include "SAMRAI/tbox/MemoryDatabase.h"
 #endif
@@ -128,7 +129,7 @@ void testCreateDatabase( AMP::UnitTest &ut )
 /************************************************************************
  * This tests converting to/from SAMRAI                                  *
  ************************************************************************/
-#if USE_SAMRAI
+#ifdef AMP_USE_SAMRAI
 bool compare_SAMRAI( SAMRAI::tbox::Database &db1, SAMRAI::tbox::Database &db2 )
 {
     // Check that the keys match

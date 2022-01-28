@@ -19,6 +19,9 @@ class VectorDataIterator;
  * \brief  A class used to hold vector data
  * \details  VectorData is a class to helping disassociate data storage
  *    and vector operations such as dot product, norms, etc.
+ *    When indexing VectorData (and Vector) the local index runs from
+ *       [0,getLocalSize()) and the global indexing (for the local elements)
+ *       runs from [getLocalStartID(),getLocalStartID+getLocalSize())
  */
 
 class VectorData : public DataChangeFirer
@@ -35,7 +38,7 @@ public: // enums
     enum class UpdateState { UNCHANGED, LOCAL_CHANGED, ADDING, SETTING, MIXED };
 
 
-public: // Virtual functions
+public: // Get basic information
     //! Virtual destructor
     virtual ~VectorData() {}
 
@@ -57,7 +60,31 @@ public: // Virtual functions
      */
     virtual size_t sizeOfDataBlock( size_t i = 0 ) const = 0;
 
+    /**\brief Number of elements "owned" by this core
+     *\return  Number of entries stored on this processor
+     *\details  This function returns the number of locally stored values
+     *    under contiguous indexing.
+     */
+    inline size_t getLocalSize() const { return d_localSize; }
 
+    /**\brief Number of total entries in this vector across all cores
+     *\return Number of entries stored across all cores in this
+     */
+    inline size_t getGlobalSize() const { return d_globalSize; }
+
+    /**\brief get local start id core.
+     *\return The first entry "owned" by this core
+     */
+    inline size_t getLocalStartID() const { return d_localStart; }
+
+    /**\brief Number of entries "owned" by other cores stored on this
+     * core.
+     *\return Number of entries "owned" by other cores stored on this core
+     */
+    virtual size_t getGhostSize() const;
+
+
+public: // Get/Set data
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
@@ -69,44 +96,6 @@ public: // Virtual functions
      */
     virtual void copyOutRawData( double *buf ) const = 0;
 
-    /**\brief Number of elements "owned" by this core
-     *\return  Number of entries stored contiguously on this processor
-     *\details  For some types of variables, vectors may store "ghost"
-     * data---possibly non-contiguous subsets of entries stored on other
-     * cores.
-     */
-    virtual size_t getLocalSize() const = 0;
-
-    /**\brief Number of total entries in this vector across all cores
-     *\return Number of entries stored across all cores in this
-     */
-    virtual size_t getGlobalSize() const = 0;
-
-
-    /**\brief The largest index in the vector (whether it is stored or not)
-     *\details  Sparse vectors may not actually store the largest index
-     * and getGlobalSize will only return the number of values stored
-     *\return The largest index
-     */
-    virtual size_t getGlobalMaxID() const;
-
-    /**\brief The largest index in the vector (whether it is stored or not)
-     *\details  Sparse vectors may not actually store the largest index
-     * and getGlobalSize will only return the number of values stored
-     *\return The largest index
-     */
-    virtual size_t getLocalMaxID() const;
-
-    /**\brief get local start id core.
-     *\return The first entry "owned" by this core
-     */
-    virtual size_t getLocalStartID() const;
-
-    /**\brief Number of entries "owned" by other cores stored on this
-     * core.
-     *\return Number of entries "owned" by other cores stored on this core
-     */
-    virtual size_t getGhostSize() const;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -450,6 +439,7 @@ public: // Non-virtual functions
      */
     void copyGhostValues( const VectorData &rhs );
 
+
 public:
     /** \brief Notify listeners that data has changed in this vector.
      */
@@ -466,6 +456,7 @@ public:
      * \details  This method is empty except for instantiations of NativePetscVectorData
      */
     virtual void assemble() {}
+
 
 public: // Non virtual functions
     /** \brief  Return the current update state of this Vector
@@ -487,7 +478,12 @@ public: // Non virtual functions
 
     std::vector<double> &getGhosts() { return *d_Ghosts; }
 
-protected: // Internal data
+
+protected:                   // Internal data
+    size_t d_localSize  = 0; //! Number of local values
+    size_t d_globalSize = 0; //! Number of global values
+    size_t d_localStart = 0; //! Index of first local value
+
     //! The communication list for this vector
     std::shared_ptr<CommunicationList> d_CommList = nullptr;
 
@@ -510,6 +506,7 @@ protected: // Internal data
 public:
     //! Default constructor
     VectorData();
+    VectorData( const VectorData & ) = delete;
 
     VectorData( std::shared_ptr<CommunicationList> commList );
 };

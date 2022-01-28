@@ -1,4 +1,6 @@
-#ifdef USE_SAMRAI
+#include "AMP/AMP_TPLs.h"
+
+#ifdef AMP_USE_SAMRAI
 
     #include "AMP/utils/Database.h"
     #include "AMP/utils/Utilities.h"

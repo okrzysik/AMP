@@ -1,5 +1,6 @@
 #define NOMINMAX
 #include "AMP/utils/Utilities.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -22,7 +23,7 @@
 #include <stdexcept>
 #include <sys/stat.h>
 
-#ifdef USE_TIMER
+#ifdef AMP_USE_TIMER
     #include "MemoryApp.h"
 #endif
 

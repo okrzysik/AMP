@@ -1,11 +1,13 @@
-#ifdef USE_EXT_LIBMESH
+#include "AMP/discretization/createLibmeshElements.h"
+#include "AMP/AMP_TPLs.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshElement.h"
+#include "AMP/utils/Utilities.h"
 
-    #include "AMP/discretization/createLibmeshElements.h"
-    #include "AMP/mesh/Mesh.h"
-    #include "AMP/mesh/MeshElement.h"
-    #include "AMP/utils/Utilities.h"
+#include "ProfilerApp.h"
 
-    #include "ProfilerApp.h"
+
+#ifdef AMP_USE_LIBMESH
 
 DISABLE_WARNINGS
     #include "libmesh/auto_ptr.h"

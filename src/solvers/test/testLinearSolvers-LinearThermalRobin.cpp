@@ -1,6 +1,6 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
-#include "AMP/TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
@@ -252,21 +252,21 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
 
-#ifdef USE_EXT_HYPRE
+#ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
 #endif
 
-#ifdef USE_TRILINOS_ML
+#ifdef AMP_USE_TRILINOS_ML
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 #endif
 
-#ifdef USE_TRILINOS_MUELU
+#ifdef AMP_USE_TRILINOS_MUELU
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );

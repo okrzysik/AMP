@@ -444,6 +444,8 @@ public: // Non-virtual functions
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
+     * \details A null pointer will be returned if the vector does not contain
+     * a sub-vector associated with the Variable
      * \see MultiVector
      */
     Vector::const_shared_ptr subsetVectorForVariable( const std::string &name ) const;
@@ -451,6 +453,8 @@ public: // Non-virtual functions
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] var  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
+     * \details A null pointer will be returned if the vector does not contain
+     * a sub-vector associated with the Variable
      * \see MultiVector
      */
     Vector::shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var );
@@ -458,13 +462,16 @@ public: // Non-virtual functions
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] var  Variable by which to retrieve a subvector
      * \return  A Vector shared pointer
+     * \details A null pointer will be returned if the vector does not contain
+     * a sub-vector associated with the Variable
      * \see MultiVector
      */
     Vector::const_shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
-      * \details Effectively, this is
+      * \details A null pointer will be returned if the vector does not contain
+      * a sub-vector associated with the Variable. Effectively, this is
       * \code
       Vector *a;
       Vector *b;
@@ -596,9 +603,8 @@ public: // Non-virtual functions
         return d_VectorData->getRawDataBlock<RETURN_TYPE>( i );
     }
 
-public:
-    /****************************************************************
-     *  VectorData operations                                       */
+
+public: // VectorData operations
     inline bool hasComm() const { return d_VectorData->hasComm(); }
     inline AMP_MPI getComm() const { return d_VectorData->getComm(); }
     inline std::string VectorDataName() const { return d_VectorData->VectorDataName(); }
@@ -607,10 +613,10 @@ public:
     {
         return d_VectorData->sizeOfDataBlock( i );
     }
-    virtual inline void putRawData( const double *buf ) { d_VectorData->putRawData( buf ); }
-    virtual inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData( buf ); }
-    virtual inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
-    virtual inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
+    inline void putRawData( const double *buf ) { d_VectorData->putRawData( buf ); }
+    inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData( buf ); }
+    inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
+    inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
     inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); }
     inline void setValuesByLocalID( int num, size_t *indices, const double *vals )
     {
@@ -674,9 +680,6 @@ public:
     }
     inline void dataChanged() { return d_VectorData->dataChanged(); }
 
-    // missed on first round
-    inline size_t getGlobalMaxID() const { return d_VectorData->getGlobalMaxID(); }
-    inline size_t getLocalMaxID() const { return d_VectorData->getLocalMaxID(); }
     inline size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
     inline void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals )
     {
@@ -721,9 +724,6 @@ public:
         d_VectorData->dumpGhostedData( out, offset );
     }
 
-    /*******************************************************************/
-
-    // These should probably be removed as they add to the interface bloat
 public: // Non virtual functions
     /**
      * \brief Return a value from the vector.

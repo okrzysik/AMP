@@ -26,7 +26,7 @@ ADD_AMP_TEST( test_Writer input_crystal PROCS 2 )
 IF ( AMP_DATA )
     ADD_AMP_TEST( test_Writer input_stl )
 ENDIF()
-IF ( USE_EXT_LIBMESH AND AMP_DATA )
+IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-1 )
 ENDIF()
 ADD_AMP_TEST_1_2_4( test_Writer input_SiloIO-2 )
@@ -44,7 +44,7 @@ ENDIF()
 
 
 # Graphics tests
-IF ( USE_EXT_OGRE )
+IF ( USE_OGRE )
     CONFIGURE_FILE( plugins.cfg "${CMAKE_CURRENT_BINARY_DIR}/${plugins.cfg}" )
     CONFIGURE_FILE( resources.cfg "${CMAKE_CURRENT_BINARY_DIR}/${resources.cfg}" )
     ADD_AMP_PROVISIONAL_TEST( test_ogre_tutorial1 )

@@ -16,7 +16,7 @@
  #include "ImplicitTimeIntegrator.h"
  #endif
  */
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
 extern "C" {
     #include "ida/ida.h"
     #include "ida/ida_spgmr.h"

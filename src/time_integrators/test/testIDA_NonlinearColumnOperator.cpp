@@ -251,7 +251,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     time_Params->d_object_name = "IDATimeIntegratorParameters";
 
     std::cout << "Before IDATimeIntegrator" << std::endl;
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     auto pIDATimeIntegrator =
         std::make_shared<AMP::TimeIntegrator::IDATimeIntegrator>( time_Params );
 
