@@ -52,7 +52,7 @@ void PetscMatrixShellOperator::setOperator( std::shared_ptr<Operator> op )
                     this,
                     &d_mat );
     MatShellSetOperation(
-        d_mat, MATOP_MULT, ( void ( * )() )( &( PetscMatrixShellOperator::mult ) ) );
+        d_mat, MATOP_MULT, (void ( * )()) ( &( PetscMatrixShellOperator::mult ) ) );
     d_matrix.reset( new AMP::LinearAlgebra::NativePetscMatrix( d_mat, true ) );
 }
 
