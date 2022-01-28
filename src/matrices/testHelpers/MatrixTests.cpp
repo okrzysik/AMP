@@ -54,7 +54,7 @@ void MatrixTests::VerifyGetLeftRightVector( AMP::UnitTest *utils )
     VectorTests tests2( factory2 );
     tests1.testBasicVector( utils );
     tests2.testBasicVector( utils );
-#if defined( USE_EXT_PETSC )
+#if defined( AMP_USE_PETSC )
     auto factory3 = std::make_shared<PETScInterfaceRightVectorFactory>( matrix );
     auto factory4 = std::make_shared<PETScInterfaceLeftVectorFactory>( matrix );
     VectorTests tests3( factory3 );

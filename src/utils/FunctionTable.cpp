@@ -1,7 +1,7 @@
 #include "FunctionTable.hpp"
 
 
-#ifdef USE_EXT_LAPACK_WRAPPERS
+#ifdef AMP_USE_LAPACK_WRAPPERS
     #include "LapackWrappers.h"
 #else
 template<class TYPE>

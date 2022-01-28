@@ -73,11 +73,8 @@ public: // Virtual functions
     create( std::shared_ptr<EpetraVectorEngineParameters> alias, std::shared_ptr<VectorData> buf );
 
     std::string VectorDataName() const override { return "EpetraVectorData"; }
-    size_t getLocalSize() const override { return d_iLocalSize; }
-    size_t getGlobalSize() const override { return d_iGlobalSize; }
-    size_t getLocalStartID() const override { return d_iLocalStart; }
     size_t numberOfDataBlocks() const override { return 1; }
-    size_t sizeOfDataBlock( size_t i ) const override { return i == 0 ? d_iLocalSize : 0; }
+    size_t sizeOfDataBlock( size_t i ) const override { return i == 0 ? d_localSize : 0; }
     void setValuesByLocalID( int i, size_t *, const double *val ) override;
     void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
     void addValuesByLocalID( int i, size_t *, const double *val ) override;
@@ -124,15 +121,6 @@ protected:
 
     //! A shared ptr to the buffer (to prevent it from leaving scope)
     std::shared_ptr<VectorData> d_buf_scope;
-
-    //! The local start index
-    int d_iLocalStart;
-
-    //! The number of local elements in the vector
-    int d_iLocalSize;
-
-    //! The number of elements in the entire vector
-    int d_iGlobalSize;
 };
 
 

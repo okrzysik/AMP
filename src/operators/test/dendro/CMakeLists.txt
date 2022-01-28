@@ -24,7 +24,7 @@ ENDIF()
 
 
 # Add the tests
-IF( USE_EXT_DENDRO AND USE_EXT_PETSC )
+IF( USE_DENDRO AND USE_PETSC )
    # R.S.: This needs to be fixed!
     ## does not work in parallel - ADD_AMP_TEST_1_2_4( testNodeToFaceContactOperator )
     ADD_AMP_TEST( testNodeToFaceContactOperator )

@@ -12,7 +12,7 @@ COPY_TEST_FILE( input_testStridedZAxisMap )
 
 
 # Test maps that use libmesh
-IF ( AMP_DATA AND USE_EXT_LIBMESH )
+IF ( AMP_DATA AND USE_LIBMESH )
 
     # Add Jacobian map
     ADD_TB_PROVISIONAL_TEST( testJacobianMap )
@@ -47,7 +47,7 @@ ENDIF()
 
 
 # Test DTK map
-IF( USE_EXT_DTK AND USE_EXT_LIBMESH )
+IF( USE_DTK AND USE_LIBMESH )
     ADD_TB_TEST_1_2_4( testMultiDofDTKMapOperator )
     ADD_TB_TEST_1_2_4( testMultiDofDTKMapOperator_2 )
     COPY_TEST_FILE( input_testMultiDofDTKMapOperator-1 )

@@ -1,5 +1,5 @@
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/solvers/trilinos/nox/AndersonStatusTest.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 #include "AMP/utils/Utilities.h"
@@ -12,7 +12,7 @@
 // Trilinos includes
 DISABLE_WARNINGS
 
-#ifdef USE_TRILINOS_BELOS
+#ifdef AMP_USE_TRILINOS_BELOS
     #include "BelosTypes.hpp"
 #endif
 

@@ -41,8 +41,21 @@ template<typename TYPE>
 void VectorDataCPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
     d_Data.resize( localSize );
-    d_startIndex = start;
+    d_localSize  = localSize;
     d_globalSize = globalSize;
+    d_localStart = start;
+}
+
+
+/****************************************************************
+ * Clone the data                                                *
+ ****************************************************************/
+template<typename TYPE>
+std::shared_ptr<VectorData> VectorDataCPU<TYPE>::cloneData() const
+{
+    auto retVal = std::make_shared<VectorDataCPU<TYPE>>( d_localStart, d_localSize, d_globalSize );
+    retVal->setCommunicationList( getCommunicationList() );
+    return retVal;
 }
 
 
@@ -60,21 +73,6 @@ inline size_t VectorDataCPU<TYPE>::sizeOfDataBlock( size_t i ) const
     if ( i > 0 )
         return 0;
     return d_Data.size();
-}
-template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::getLocalSize() const
-{
-    return d_Data.size();
-}
-template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::getGlobalSize() const
-{
-    return d_globalSize;
-}
-template<typename TYPE>
-inline size_t VectorDataCPU<TYPE>::getLocalStartID() const
-{
-    return d_startIndex;
 }
 template<typename TYPE>
 uint64_t VectorDataCPU<TYPE>::getDataID() const
@@ -142,8 +140,8 @@ inline void
 VectorDataCPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
-        d_Data[indices[i] - d_startIndex] = static_cast<TYPE>( vals[i] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_Data.size() );
+        d_Data[indices[i] - d_localStart] = static_cast<TYPE>( vals[i] );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -163,8 +161,8 @@ inline void
 VectorDataCPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
-        d_Data[indices[i] - d_startIndex] += static_cast<TYPE>( vals[i] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_Data.size() );
+        d_Data[indices[i] - d_localStart] += static_cast<TYPE>( vals[i] );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -175,8 +173,8 @@ inline void
 VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
 {
     for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_startIndex && indices[i] < d_startIndex + d_Data.size() );
-        vals[i] = static_cast<double>( d_Data[indices[i] - d_startIndex] );
+        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_Data.size() );
+        vals[i] = static_cast<double>( d_Data[indices[i] - d_localStart] );
     }
 }
 
@@ -214,7 +212,7 @@ void VectorDataCPU<TYPE>::swapData( VectorData &rhs )
     std::swap( d_Ghosts, rhs2->d_Ghosts );
     std::swap( d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( d_Data, rhs2->d_Data );
-    std::swap( d_startIndex, rhs2->d_startIndex );
+    std::swap( d_localStart, rhs2->d_localStart );
     std::swap( d_globalSize, rhs2->d_globalSize );
 }
 

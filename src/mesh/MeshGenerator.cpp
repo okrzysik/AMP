@@ -1,5 +1,5 @@
 // This file stores the routines to generate the meshes for AMP::Mesh::Mesh
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
@@ -7,13 +7,13 @@
 #include "AMP/mesh/triangle/TriangleHelpers.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef USE_TRILINOS_STKCLASSIC
+#ifdef AMP_USE_TRILINOS_STKCLASSIC
 //#include "AMP/mesh/STKmesh/STKMesh.h"
 #endif
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "AMP/mesh/libmesh/libmeshMesh.h"
 #endif
-#ifdef USE_EXT_MOAB
+#ifdef AMP_USE_MOAB
     #include "AMP/mesh/moab/moabMesh.h"
 #endif
 
@@ -64,14 +64,14 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( std::shared_ptr<const MeshPara
         mesh     = AMP::Mesh::TriangleHelpers::generate( geom, params->getComm(), res );
     } else if ( MeshType == "libMesh" ) {
 // The mesh is a libmesh mesh
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
         mesh = std::make_shared<AMP::Mesh::libmeshMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
     } else if ( MeshType == "STKMesh" ) {
 // The mesh is a stk mesh
-#ifdef USE_TRILINOS_STKClassic
+#ifdef AMP_USE_TRILINOS_STKClassic
         // mesh = std::make_shared<AMP::Mesh::STKMesh>( params );
         AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
@@ -79,7 +79,7 @@ std::shared_ptr<AMP::Mesh::Mesh> Mesh::buildMesh( std::shared_ptr<const MeshPara
 #endif
     } else if ( MeshType == "moab" || MeshType == "MOAB" ) {
 // The mesh is a MOAB mesh
-#ifdef USE_EXT_MOAB
+#ifdef AMP_USE_MOAB
         mesh = std::make_shared<AMP::Mesh::moabMesh>( params );
 #else
         AMP_ERROR( "AMP was compiled without support for MOAB" );
@@ -146,14 +146,14 @@ size_t Mesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
             meshSize *= std::max<int64_t>( ( ub[d] - lb[d] ) / resolution, 1 );
     } else if ( MeshType == "libMesh" ) {
 // The mesh is a libmesh mesh
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
         meshSize = AMP::Mesh::libmeshMesh::estimateMeshSize( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
     } else if ( MeshType == "STKMesh" ) {
 // The mesh is a stkMesh mesh
-#ifdef USE_TRILINOS_STKCLASSIC
+#ifdef AMP_USE_TRILINOS_STKCLASSIC
         // meshSize = AMP::Mesh::STKMesh::estimateMeshSize( params );
         AMP_ERROR( "AMP stk mesh interface is broken" );
 #else
@@ -208,14 +208,14 @@ size_t Mesh::maxProcs( std::shared_ptr<const MeshParameters> params )
         maxSize = 1;
     } else if ( MeshType == std::string( "libMesh" ) ) {
 // The mesh is a libmesh mesh
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
         maxSize = AMP::Mesh::libmeshMesh::maxProcs( params );
 #else
         AMP_ERROR( "AMP was compiled without support for libMesh" );
 #endif
     } else if ( MeshType == std::string( "STKMesh" ) ) {
 // The mesh is a stkMesh mesh
-#ifdef USE_TRILINOS_STKCLASSIC
+#ifdef AMP_USE_TRILINOS_STKCLASSIC
         // maxSize = AMP::Mesh::STKMesh::maxProcs( params );
         AMP_ERROR( "AMP stk mesh interface is broken" );
 #else

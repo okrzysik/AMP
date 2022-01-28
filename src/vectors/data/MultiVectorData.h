@@ -55,20 +55,6 @@ public: // Virtual functions
      */
     void copyOutRawData( double *buf ) const override;
 
-    /**\brief Number of elements "owned" by this core
-      *\return  Number of entries stored contiguously on this processor
-      *\details  For some types of variables, vectors may store "ghost"
-      * data---possibly non-contiguous subsets of entries stored on other
-      * cores.make
-
-      */
-    size_t getLocalSize() const override;
-
-    /**\brief Number of total entries in this vector across all cores
-     *\return Number of entries stored across all cores in this
-     */
-    size_t getGlobalSize() const override;
-
     /**
      * \brief Set values in the vector by their local offset
      * \param[in] num  number of values to set

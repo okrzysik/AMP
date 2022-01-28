@@ -1205,7 +1205,7 @@ int main( int argc, char *argv[] )
 
         // Print the global size (if we are using MPI)
         int global_size = 0;
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         MPI_Comm_size( MPI_COMM_WORLD, &global_size );
 #else
         global_size = 1;
@@ -1225,7 +1225,7 @@ int main( int argc, char *argv[] )
             std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl;
             std::cout << "   Largest tag value = " << globalComm.maxTag() << std::endl << std::endl;
         }
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         if ( globalComm.getCommunicator() == MPI_COMM_WORLD )
             ut.passes( "Communicator == MPI_COMM_WORLD" );
         else
@@ -1254,7 +1254,7 @@ int main( int argc, char *argv[] )
             ut.passes( "Self communicator created" );
         else
             ut.failure( "Self communicator created" );
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         if ( selfComm.getCommunicator() == MPI_COMM_SELF )
             ut.passes( "Communicator == MPI_COMM_SELF" );
         else
@@ -1282,7 +1282,7 @@ int main( int argc, char *argv[] )
             ut.passes( "Null communicator has zero size" );
         else
             ut.failure( "Null communicator has zero size" );
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         if ( nullComm.getCommunicator() == MPI_COMM_NULL )
             ut.passes( "Communicator == MPI_COMM_NULL" );
         else
@@ -1290,7 +1290,7 @@ int main( int argc, char *argv[] )
 #endif
 
             // Test dup
-#if !defined( USE_EXT_MPI ) && defined( USE_EXT_PETSC )
+#if !defined( AMP_USE_MPI ) && defined( AMP_USE_PETSC )
         MPI_CLASS dupComm2 = globalComm.dup();
 #endif
         MPI_CLASS dupComm = globalComm.dup();

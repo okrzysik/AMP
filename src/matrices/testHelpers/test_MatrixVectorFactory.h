@@ -8,7 +8,7 @@
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/testHelpers/VectorFactory.h"
 
-#if defined( USE_EXT_PETSC )
+#if defined( AMP_USE_PETSC )
     #include "AMP/matrices/petsc/PetscMatrix.h"
     #include "AMP/vectors/petsc/PetscHelpers.h"
     #include "AMP/vectors/petsc/PetscVector.h"
@@ -72,7 +72,7 @@ private:
 };
 
 
-#if defined( USE_EXT_PETSC )
+#if defined( AMP_USE_PETSC )
 
 class PETScInterfaceLeftVectorFactory : public PetscVectorFactory
 {

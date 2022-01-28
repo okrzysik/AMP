@@ -17,7 +17,7 @@ int main( int argc, char **argv )
     // Run the simpleDOFManager tests
     testSimpleDOFManager<AMPCubeGenerator<10>>( &ut );
     testSimpleDOFManager<AMPMultiMeshGenerator>( &ut );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     testSimpleDOFManager<LibMeshCubeGenerator<5>>( &ut );
     testSimpleDOFManager<ExodusReaderGenerator<1>>( &ut );
     testSimpleDOFManager<ExodusReaderGenerator<3>>( &ut );
@@ -26,7 +26,7 @@ int main( int argc, char **argv )
 
     // Run the multiDOFManager tests
     testMultiDOFManager<AMPCubeGenerator<10>>( &ut );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     testMultiDOFManager<LibMeshCubeGenerator<5>>( &ut );
     testMultiDOFManager<MultiMeshGenerator>( &ut );
 #endif
@@ -35,7 +35,7 @@ int main( int argc, char **argv )
     testSubsetDOFManager<AMPCubeGenerator<10>, false>( &ut );
     testSubsetDOFManager<AMPMultiMeshGenerator, false>( &ut );
     testSubsetDOFManager<AMPMultiMeshGenerator, true>( &ut );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     testSubsetDOFManager<ExodusReaderGenerator<3>, false>( &ut );
     testSubsetDOFManager<MultiMeshGenerator, false>( &ut );
     testSubsetDOFManager<MultiMeshGenerator, true>( &ut );

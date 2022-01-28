@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
 // Note:  sundials 2.4.0 has a memory leak that can cause some tests to fail
 extern "C" {
     #include "ida/ida_spils.h"

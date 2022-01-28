@@ -1,6 +1,6 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
 
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     #include <Epetra_MpiComm.h>
     #include <utility>
 #else
@@ -33,7 +33,7 @@ Epetra_Map &EpetraVectorEngineParameters::getEpetraMap()
     if ( d_emap )
         return *d_emap;
 // Create the epetra map
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     Epetra_MpiComm comm = d_comm.getCommunicator();
 #else
     Epetra_SerialComm comm;

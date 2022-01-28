@@ -12,10 +12,10 @@
 
 
 // Add the definitions for the TPLs that are used
-#include "AMP/TPLs.h"
+#include "AMP/AMP_TPLs.h"
 
 // Include MPI if we are building with MPI
-#ifdef USE_MPI
+#ifdef AMP_USE_MPI
     #include "mpi.h"
 #endif
 
@@ -49,7 +49,7 @@ class alignas( 8 ) AMP_MPI final
 public:
     enum class ThreadSupport : int { SINGLE, FUNNELED, SERIALIZED, MULTIPLE };
 
-#ifdef USE_MPI
+#ifdef AMP_USE_MPI
     typedef MPI_Comm Comm;
     typedef MPI_Request Request;
 #else
@@ -628,6 +628,16 @@ public: // Member functions
      * \brief    Scan Sum Reduce
      * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type sumScan( const type &x ) const;
+
+
+    /**
+     * \brief    Scan Sum Reduce
+     * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
      * \param[in] x         The input array for the scan
      * \param[in] y         The output array for the scan
      * \param[in] n         The number of values in the array (must match on all nodes)
@@ -640,12 +650,32 @@ public: // Member functions
      * \brief    Scan Min Reduce
      * \details  Computes the min scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type minScan( const type &x ) const;
+
+
+    /**
+     * \brief    Scan Min Reduce
+     * \details  Computes the min scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
      * \param[in] x         The input array for the scan
      * \param[in] y         The output array for the scan
      * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
     void minScan( const type *x, type *y, int n ) const;
+
+
+    /**
+     * \brief    Scan Max Reduce
+     * \details  Computes the max scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type maxScan( const type &x ) const;
 
 
     /**
@@ -1182,7 +1212,7 @@ public: // Member functions
 
 
 private: // Private helper functions for templated MPI operations
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+#ifdef AMP_USE_MPI
     template<class type>
     void call_bcast( type *, int, int ) const;
     template<class type>

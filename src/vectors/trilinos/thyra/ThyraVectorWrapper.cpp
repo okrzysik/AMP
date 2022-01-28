@@ -6,7 +6,7 @@ DISABLE_WARNINGS
 #include "RTOpPack_RTOpT_decl.hpp"
 #include "RTOpPack_SPMD_apply_op_def.hpp"
 #include "RTOpPack_Types.hpp"
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     #include "Teuchos_DefaultMpiComm.hpp"
 #else
     #include "Teuchos_DefaultSerialComm.hpp"
@@ -74,7 +74,7 @@ void ThyraVectorWrapper::initialize(
     d_vecs   = vecs;
     d_cols   = cols;
     d_N_cols = N_cols;
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     Teuchos::RCP<const Teuchos::OpaqueWrapper<MPI_Comm>> mpi_wrapper(
         new Teuchos::OpaqueWrapper<MPI_Comm>( d_vecs[0]->getComm().getCommunicator() ) );
     d_comm = new Teuchos::MpiComm<RTOpPack::index_type>( mpi_wrapper );

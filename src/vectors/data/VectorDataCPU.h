@@ -27,6 +27,7 @@ class VectorDataCPU : public VectorData
 public: // Constructors
     VectorDataCPU( size_t start, size_t localSize, size_t globalSize );
 
+    VectorDataCPU( const VectorDataCPU & ) = delete;
 
 public: // Virtual functions
     //! Virtual destructor
@@ -59,25 +60,6 @@ public: // Virtual functions
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
     void copyOutRawData( double *buf ) const override;
-
-    /**\brief Number of elements "owned" by this core
-      *\return  Number of entries stored contiguously on this processor
-      *\details  For some types of variables, vectors may store "ghost"
-      * data---possibly non-contiguous subsets of entries stored on other
-      * cores.make
-
-      */
-    size_t getLocalSize() const override;
-
-    /**\brief Number of total entries in this vector across all cores
-     *\return Number of entries stored across all cores in this
-     */
-    size_t getGlobalSize() const override;
-
-    /**\brief get local start id core.
-     *\return The first entry "owned" by this core
-     */
-    size_t getLocalStartID() const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -172,12 +154,7 @@ public: // Advanced virtual functions
 
     /** \brief Clone the data
      */
-    std::shared_ptr<VectorData> cloneData() const override
-    {
-        auto retVal = std::make_shared<VectorDataCPU<TYPE>>( *this );
-        retVal->setCommunicationList( getCommunicationList() );
-        return retVal;
-    }
+    std::shared_ptr<VectorData> cloneData() const override;
 
 
 public: // Non-virtual functions
@@ -193,20 +170,13 @@ public: // Non-virtual functions
 
 
 protected:
-    VectorDataCPU() : d_startIndex( 0 ), d_globalSize( 0 ) {}
+    VectorDataCPU() {}
 
     void allocate( size_t start, size_t localSize, size_t globalSize );
 
 
 private:
     std::vector<TYPE> d_Data;
-    size_t d_startIndex;
-    size_t d_globalSize;
-
-
-public: // Deprecated functions
-    //! return a const reference to the internal data container (deprecated)
-    [[deprecated]] inline const std::vector<TYPE> &getData( void ) const { return d_Data; }
 };
 
 

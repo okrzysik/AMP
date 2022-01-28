@@ -30,7 +30,7 @@
 
 
 // Make sure USE_MPI is set properly
-#if !defined( USE_MPI ) && defined( USE_EXT_MPI )
+#if !defined( USE_MPI ) && defined( AMP_USE_MPI )
     #define USE_MPI
 #endif
 
@@ -1613,16 +1613,19 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
 // clang-format off
 #define INSTANTIATE( TYPE )                                                             \
     template TYPE MPI_CLASS::sumReduce<TYPE>( const TYPE ) const;                       \
-    template void MPI_CLASS::sumReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::sumReduce<TYPE>( const TYPE*, TYPE*, int ) const;          \
     template TYPE MPI_CLASS::minReduce<TYPE>( const TYPE ) const;                       \
-    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int, int* ) const;                 \
-    template void MPI_CLASS::minReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
     template TYPE MPI_CLASS::maxReduce<TYPE>( const TYPE ) const;                       \
+    template void MPI_CLASS::sumReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int ) const;                       \
     template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int, int* ) const;                 \
     template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int, int* ) const;                 \
+    template void MPI_CLASS::sumReduce<TYPE>( const TYPE*, TYPE*, int ) const;          \
+    template void MPI_CLASS::minReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
     template void MPI_CLASS::maxReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
+    template TYPE MPI_CLASS::sumScan<TYPE>( const TYPE& ) const;                        \
+    template TYPE MPI_CLASS::minScan<TYPE>( const TYPE& ) const;                        \
+    template TYPE MPI_CLASS::maxScan<TYPE>( const TYPE& ) const;                        \
     template void MPI_CLASS::sumScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template void MPI_CLASS::minScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template void MPI_CLASS::maxScan<TYPE>( const TYPE*, TYPE*, int ) const;            \

@@ -63,7 +63,7 @@ int main( int argc, char **argv )
 
     // Test some basic properties
     std::vector<std::string> types = { "DenseSerialMatrix" };
-#ifdef USE_EXT_TRILINOS
+#ifdef AMP_USE_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
 #endif
     types.emplace_back( "auto" );
@@ -71,10 +71,10 @@ int main( int argc, char **argv )
         testBasics( ut, type );
 
 // Test the ManagedPetscMatrix (requires both petsc and trilinos)
-#if defined( USE_EXT_PETSC ) && defined( USE_EXT_TRILINOS )
+#if defined( AMP_USE_PETSC ) && defined( AMP_USE_TRILINOS )
     test_matrix_loop<DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 1>>( ut );
     test_matrix_loop<DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 1>>( ut );
-    #if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
+    #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     test_matrix_loop<DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 1>>( ut );
     #endif
 #endif
