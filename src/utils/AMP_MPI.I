@@ -64,14 +64,6 @@
 #else
     #define SET_MPI_TYPES
 #endif
-#ifdef AMP_USE_MPI
-    #ifndef USE_MPI
-        #define USE_MPI
-    #endif
-#else
-    #undef USE_MPI
-#endif
-
 #ifdef SET_MPI_TYPES
     typedef uint32_t MPI_Comm;
     typedef uint32_t MPI_Request;

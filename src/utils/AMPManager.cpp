@@ -691,7 +691,7 @@ std::string AMPManager::info()
     out << "SILO: " << SILO_VERS_MAJ << "." << SILO_VERS_MIN << "." << SILO_VERS_PAT << std::endl;
 #endif
 #ifdef AMP_USE_MPI
-    out << "MPI: " << AMP::AMP_MPI::info() << std::endl;
+    out << "MPI: " << AMP::AMP_MPI::info();
 #endif
 #ifdef AMP_USE_LAPACK_WRAPPERS
     out << "Lapack: " << Lapack<double>::info();
