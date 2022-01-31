@@ -209,10 +209,10 @@ int main( int argc, char *argv[] )
     } else {
 
         files.emplace_back( "input_testSolversForUserMatrix-ML" );
-#ifdef USE_EXT_HYPRE
+#ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testSolversForUserMatrix-BoomerAMG" );
 #endif
-#ifdef USE_TRILINOS_MUELU
+#ifdef AMP_USE_TRILINOS_MUELU
         files.emplace_back( "input_testSolversForUserMatrix-MueLu" );
 #endif
     }

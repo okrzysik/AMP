@@ -1,6 +1,7 @@
 #ifndef included_AMP_SiloIO
 #define included_AMP_SiloIO
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
 
@@ -10,7 +11,7 @@
 #include <string.h>
 #include <vector>
 
-#ifdef USE_EXT_SILO
+#ifdef AMP_USE_SILO
     #include <silo.h>
 #endif
 
@@ -52,7 +53,7 @@ public:
 
 private:
 // Function to write a single mesh
-#ifdef USE_EXT_SILO
+#ifdef AMP_USE_SILO
     void writeMesh( DBfile *file, const baseMeshData &data, int cycle, double time );
 #endif
 

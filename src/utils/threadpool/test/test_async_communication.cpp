@@ -25,7 +25,7 @@ void run_thread( size_t message_size,
                  int ms_sleep_duration )
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    MPI_Request requests[2];
+    AMP::AMP_MPI::Request requests[2];
     requests[0] = globalComm.Isend( data_src, message_size, send_proc, tag );
     requests[1] = globalComm.Irecv( data_dst, message_size, recv_proc, tag );
     globalComm.waitAll( 2, requests );
@@ -41,7 +41,7 @@ void run_test( size_t message_size, int N_messages, double sleep_duration, Threa
     int size      = globalComm.getSize();
     int send_proc = ( size + rank - 1 ) % size;
     int recv_proc = ( size + rank + 1 ) % size;
-    std::vector<MPI_Request> requests( 2 * N_messages );
+    std::vector<AMP::AMP_MPI::Request> requests( 2 * N_messages );
     if ( rank == 0 ) {
         printf( "Running test with %i messages of size of %zu bytes, waiting %0.2e s\n",
                 N_messages,

@@ -32,14 +32,17 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
     std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> retVal(
         new ArrayVectorData<T, FUN, Allocator>() );
     retVal->d_array.resize( localSize );
-    retVal->d_comm       = comm;
-    retVal->d_blockIndex = blockIndex;
-    retVal->d_globalSize = { localSize[0] * N_blocks[0],
-                             localSize[1] * N_blocks[1],
-                             localSize[2] * N_blocks[2] };
-    retVal->d_offset     = blockOffset * localSize.length();
+    retVal->d_comm            = comm;
+    retVal->d_blockIndex      = blockIndex;
+    retVal->d_globalArraySize = { localSize[0] * N_blocks[0],
+                                  localSize[1] * N_blocks[1],
+                                  localSize[2] * N_blocks[2] };
+    retVal->d_offset          = blockOffset * localSize.length();
     retVal->setCommunicationList(
         AMP::LinearAlgebra::CommunicationList::createEmpty( localSize.length(), comm ) );
+    retVal->d_localSize  = localSize.length();
+    retVal->d_globalSize = retVal->d_globalArraySize.length();
+    retVal->d_localStart = retVal->d_CommList->getStartGID();
     return retVal;
 }
 
@@ -50,11 +53,14 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
 template<typename T, typename FUN, typename Allocator>
 inline std::shared_ptr<VectorData> ArrayVectorData<T, FUN, Allocator>::cloneData() const
 {
-    auto retVal          = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
-    retVal->d_array      = d_array;
-    retVal->d_comm       = d_comm;
-    retVal->d_blockIndex = d_blockIndex;
-    retVal->d_globalSize = d_globalSize;
+    auto retVal               = std::make_shared<ArrayVectorData<T, FUN, Allocator>>();
+    retVal->d_array           = d_array;
+    retVal->d_comm            = d_comm;
+    retVal->d_blockIndex      = d_blockIndex;
+    retVal->d_globalArraySize = d_globalSize;
+    retVal->d_localSize       = d_localSize;
+    retVal->d_globalSize      = d_globalSize;
+    retVal->d_localStart      = d_localStart;
     retVal->setCommunicationList( getCommunicationList() );
     return retVal;
 }
@@ -77,7 +83,12 @@ void ArrayVectorData<T, FUN, Allocator>::resize( const ArraySize &localDims )
 {
     AMP_ASSERT( getComm().getSize() == 1 );
     d_array.resize( localDims );
-    d_globalSize = localDims;
+    d_globalArraySize = localDims;
+    setCommunicationList(
+        AMP::LinearAlgebra::CommunicationList::createEmpty( localDims.length(), getComm() ) );
+    d_localSize  = localDims.length();
+    d_globalSize = d_globalArraySize.length();
+    d_localStart = d_CommList->getStartGID();
 }
 
 

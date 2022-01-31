@@ -40,7 +40,7 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr right,
                   std::function<std::vector<size_t>( size_t )>() );
 
 
-#if defined( USE_EXT_PETSC )
+#if defined( AMP_USE_PETSC )
 /**
  * \brief  Create a matrix from an arbitrary PETSc Mat
  * \details  This function creates a matrix from an arbitrary PETSc Mat

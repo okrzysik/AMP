@@ -11,9 +11,11 @@
   \par AMP external package options
   AMP is designed to leverage a number of external packages.
   While most external packages are optional, some functionality will be lost if compiling without
-  a given package.  All external packages can be included or disabled using the
-  "-D USE_EXT_PACKAGE=" flags.  Unless otherwise noted, all external packages take a second cmake
-  argument "-D PACKAGE_DIRECTORY=" specifying the directory where the given package is installs.
+  a given package.  All external packages can be built through the TPL builder.
+  The required and optional packages can be specified with the TPL_LIST_REQUIRED and
+  TPL_LIST_OPTIONAL flags.  By default only STACKTRACE is required and all other external packages
+  are optional.  If a package is not specified by either flag (or the default) then it is not
+  included.
   The current list of external packages is: <BR>
   MPI: MPI provides parallel capabilities for AMP.  If used, there are a number of additional
      optional flags that are used to configure MPI: <BR>

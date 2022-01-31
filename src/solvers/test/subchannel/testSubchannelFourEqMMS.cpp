@@ -435,7 +435,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     input_db.reset();
 
-#if defined( USE_EXT_SILO ) && 0
+#if 0
     // Rescale the solution to get the correct units
     auto mass     = solVec->select( AMP::LinearAlgebra::VS_Stride( 0, 3 ), "M" );
     auto enthalpy = solVec->select( AMP::LinearAlgebra::VS_Stride( 1, 3 ), "H" );

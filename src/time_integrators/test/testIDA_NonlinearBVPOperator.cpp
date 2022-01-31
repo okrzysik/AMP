@@ -212,15 +212,11 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         ut->passes( "Testing TrilinosMLSolver's constructor: PASS" );
     }
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-
     siloWriter->registerVector(
         initialCondition, meshAdapter, AMP::Mesh::GeomType::Vertex, "InitialSolution" );
-
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     // create the IDA time integrator
     auto time_Params = std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );
@@ -278,14 +274,10 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         std::cout << "min val of the current solution = " << min << std::endl;
     }
 
-
-#ifdef USE_EXT_SILO
-
     auto pSolution = pIDATimeIntegrator->getSolution();
     siloWriter->registerVector( pSolution, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
 
     siloWriter->writeFile( input_file, 1 );
-#endif
 
     if ( ut->NumFailLocal() == 0 ) {
         ut->passes( "testIDATimeIntegrator successful" );

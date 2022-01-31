@@ -104,7 +104,7 @@ int testReduce( MPI_CLASS comm, UnitTest *ut )
         PROFILE_STOP2( "testReduce<class type>" );
         return 0;
     }
-    type x, y;
+    type x = 0, y = 0;
     int N = ( ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2 );
     // Test sumReduce
     auto msg = stringf( "sumReduce (%s)", typeid( type ).name() );
@@ -211,8 +211,8 @@ template<class type>
 int testScan( MPI_CLASS comm, UnitTest *ut )
 {
     PROFILE_START( "testScan" );
-    auto x = (type) ( comm.getRank() + 1 );
-    type y;
+    auto x   = (type) ( comm.getRank() + 1 );
+    type y   = 0;
     auto msg = stringf( "sumScan (%s)", typeid( type ).name() );
     comm.sumScan<type>( &x, &y, 1 );
     auto N = (type) ( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
@@ -691,8 +691,8 @@ template<class type>
 int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
 {
     PROFILE_START( "testIsendIrecv" );
-    std::vector<MPI_Request> sendRequest;
-    std::vector<MPI_Request> recvRequest;
+    std::vector<MPI_CLASS::Request> sendRequest;
+    std::vector<MPI_CLASS::Request> recvRequest;
     // Send all msgs
     for ( int i = 0; i < comm.getSize(); i++ ) {
         // Check if the current rank is sending
@@ -700,8 +700,8 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             continue;
         for ( int j = 0; j < comm.getSize(); j++ ) {
             // Start a non-blocking send
-            int tag             = i + j * comm.getSize();
-            MPI_Request request = comm.Isend( &v1, 1, j, tag );
+            int tag      = i + j * comm.getSize();
+            auto request = comm.Isend( &v1, 1, j, tag );
             sendRequest.insert( sendRequest.begin(), request );
         }
     }
@@ -716,8 +716,8 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             continue;
         for ( int i = 0; i < comm.getSize(); i++ ) {
             // Start a non-blocking recv
-            int tag             = i + j * comm.getSize();
-            MPI_Request request = comm.Irecv( &recv_buffer[i], 1, i, tag );
+            int tag      = i + j * comm.getSize();
+            auto request = comm.Irecv( &recv_buffer[i], 1, i, tag );
             recvRequest.insert( recvRequest.begin(), request );
         }
     }
@@ -1205,7 +1205,7 @@ int main( int argc, char *argv[] )
 
         // Print the global size (if we are using MPI)
         int global_size = 0;
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         MPI_Comm_size( MPI_COMM_WORLD, &global_size );
 #else
         global_size = 1;
@@ -1225,7 +1225,7 @@ int main( int argc, char *argv[] )
             std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl;
             std::cout << "   Largest tag value = " << globalComm.maxTag() << std::endl << std::endl;
         }
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         if ( globalComm.getCommunicator() == MPI_COMM_WORLD )
             ut.passes( "Communicator == MPI_COMM_WORLD" );
         else
@@ -1254,7 +1254,7 @@ int main( int argc, char *argv[] )
             ut.passes( "Self communicator created" );
         else
             ut.failure( "Self communicator created" );
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         if ( selfComm.getCommunicator() == MPI_COMM_SELF )
             ut.passes( "Communicator == MPI_COMM_SELF" );
         else
@@ -1282,7 +1282,7 @@ int main( int argc, char *argv[] )
             ut.passes( "Null communicator has zero size" );
         else
             ut.failure( "Null communicator has zero size" );
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
         if ( nullComm.getCommunicator() == MPI_COMM_NULL )
             ut.passes( "Communicator == MPI_COMM_NULL" );
         else
@@ -1290,7 +1290,7 @@ int main( int argc, char *argv[] )
 #endif
 
             // Test dup
-#if !defined( USE_EXT_MPI ) && defined( USE_EXT_PETSC )
+#if !defined( AMP_USE_MPI ) && defined( AMP_USE_PETSC )
         MPI_CLASS dupComm2 = globalComm.dup();
 #endif
         MPI_CLASS dupComm = globalComm.dup();
@@ -1443,11 +1443,8 @@ int main( int argc, char *argv[] )
         }
 
         // Test splitByNode
-        MPI_CLASS nodeComm = globalComm.splitByNode();
-        int length;
-        char name[MPI_MAX_PROCESSOR_NAME];
-        MPI_Get_processor_name( name, &length );
-        std::string localName( name );
+        MPI_CLASS nodeComm    = globalComm.splitByNode();
+        std::string localName = MPI_CLASS::getNodeName();
         std::vector<std::string> globalStrings( globalComm.getSize() );
         std::vector<std::string> nodeStrings( nodeComm.getSize() );
         globalComm.allGather<std::string>( localName, &globalStrings[0] );

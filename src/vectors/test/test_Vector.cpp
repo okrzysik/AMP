@@ -1,3 +1,4 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
@@ -10,7 +11,7 @@
 
 #include "test_ArrayVector.h"
 
-#ifdef USE_TRILINOS_THYRA
+#ifdef AMP_USE_TRILINOS_THYRA
     #include "AMP/vectors/testHelpers/trilinos/thyra/ThyraVectorFactory.h"
 #endif
 
@@ -27,7 +28,7 @@ std::string SimpleFactory1 = "SimpleVectorFactory<15,false,double>";
 std::string SimpleFactory2 = "SimpleVectorFactory<45,true,double>";
 std::string SNPVFactory    = "NativePetscVectorFactory";
 std::string SNEVFactory    = "NativeEpetraFactory";
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
 std::string MVFactory1 = "MultiVectorFactory<" + SNEVFactory + ", 1, " + SNPVFactory + ", 1>";
 #else
 std::string MVFactory1 =
@@ -112,7 +113,7 @@ int main( int argc, char **argv )
     }
 
 // Run Belos tests of thyra vectors
-#if defined( USE_TRILINOS_THYRA ) && defined( USE_TRILINOS_BELOS )
+#if defined( AMP_USE_TRILINOS_THYRA ) && defined( AMP_USE_TRILINOS_BELOS )
     AMP::pout << std::endl << "Testing Belos interface to Thyra vectors" << std::endl;
     testBelosThyraVector( ut, NativeThyraFactory() );
     testBelosThyraVector( ut, ManagedThyraFactory( generateVectorFactory( SimpleFactory2 ) ) );

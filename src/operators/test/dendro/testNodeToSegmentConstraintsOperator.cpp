@@ -6,6 +6,7 @@
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/latex_visualization_tools.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -21,7 +22,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
@@ -162,10 +162,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-
-#ifdef USE_EXT_SILO
-    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
@@ -431,12 +427,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         slaveFout.close();
     } // end if
 
-#ifdef USE_EXT_SILO
+    auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     auto outFileName = "MPC_0";
     siloWriter->writeFile( outFileName, 0 );
-#endif
+
     fout.close();
 
     ut->passes( exeName );

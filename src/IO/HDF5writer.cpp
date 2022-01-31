@@ -91,7 +91,7 @@ void HDF5writer::readFile( const std::string & ) { AMP_ERROR( "readFile is not i
 void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double time )
 {
     PROFILE_SCOPED( timer, "writeFile" );
-#ifdef USE_EXT_HDF5
+#ifdef AMP_USE_HDF5
     Xdmf xmf;
     AMP_ASSERT( d_comm.getSize() == 1 );
     // Create the file
@@ -278,14 +278,18 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
     AMP::ArraySize size( mesh2->size() );
     if ( size.ndim() != mesh2->getDim() )
         return writeDefaultMesh( fid, mesh, name, path ); // We have issues with surface meshes
-    auto size2 = size + (size_t) 1;
-    int ndim   = size2.ndim();
+    auto size2      = size + (size_t) 1;
+    int ndim        = size2.ndim();
+    auto isPeriodic = mesh2->periodic();
     AMP::Array<double> x( size2 ), y( size2 ), z( size2 );
     for ( size_t k = 0; k < size2[2]; k++ ) {
+        size_t k2 = isPeriodic[2] ? k % size[2] : k;
         for ( size_t j = 0; j < size2[1]; j++ ) {
+            size_t j2 = isPeriodic[1] ? j % size[1] : j;
             for ( size_t i = 0; i < size2[0]; i++ ) {
+                size_t i2     = isPeriodic[0] ? i % size[0] : i;
                 double pos[3] = { 0 };
-                auto index    = MeshElementIndex( GeomType::Vertex, 0, i, j, k );
+                auto index    = MeshElementIndex( GeomType::Vertex, 0, i2, j2, k2 );
                 mesh2->coord( index, pos );
                 x( i, j, k ) = pos[0];
                 y( i, j, k ) = pos[1];

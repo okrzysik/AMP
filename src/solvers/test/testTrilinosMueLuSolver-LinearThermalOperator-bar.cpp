@@ -244,8 +244,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     if ( passes )
         ut->passes( "The linear thermal solve is verified." );
 
-// Plot the results
-#ifdef USE_EXT_SILO
+    // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
@@ -253,9 +252,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     siloWriter->registerVector(
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     input_db.reset();
 

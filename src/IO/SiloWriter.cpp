@@ -50,7 +50,7 @@ static inline void strrep( std::string &str, const std::string &s, const std::st
 SiloIO::SiloIO() : AMP::IO::Writer()
 {
     d_dim = -1;
-#ifdef USE_EXT_SILO
+#ifdef AMP_USE_SILO
     DBSetAllowEmptyObjects( true );
 #endif
 }
@@ -71,7 +71,7 @@ Writer::WriterProperties SiloIO::getProperties() const
 }
 
 
-#if defined( USE_EXT_SILO )
+#ifdef AMP_USE_SILO
 
 // Some internal functions
 static void createSiloDirectory( DBfile *FileHandle, const std::string &path );

@@ -55,8 +55,6 @@ protected:
 public: // Derived from VectorData
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-    size_t getLocalSize() const override;
-    size_t getGlobalSize() const override;
     void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
     void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
     void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;

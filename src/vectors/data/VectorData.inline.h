@@ -12,9 +12,6 @@ namespace AMP::LinearAlgebra {
 /****************************************************************
  * Get the size of the vector                                    *
  ****************************************************************/
-inline size_t VectorData::getGlobalMaxID() const { return getGlobalSize(); }
-inline size_t VectorData::getLocalMaxID() const { return getLocalSize(); }
-inline size_t VectorData::getLocalStartID() const { return d_CommList->getStartGID(); }
 inline std::shared_ptr<CommunicationList> VectorData::getCommunicationList() const
 {
     return d_CommList;

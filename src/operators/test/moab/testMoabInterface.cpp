@@ -36,7 +36,7 @@ static void getmoabmeshdata_( void **, void ** );
 static void moabInterface( AMP::UnitTest *ut )
 {
 
-#ifdef USE_EXT_MOAB
+#ifdef AMP_USE_MOAB
 
     // Create new iMesh instance
     AMP::pout << "Creating iMesh instance" << std::endl;
@@ -206,7 +206,7 @@ int main( int argc, char *argv[] )
 
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
-#ifdef USE_EXT_NEK
+#ifdef AMP_USE_NEK
 // NEK_END();
 #endif
     return num_failed;

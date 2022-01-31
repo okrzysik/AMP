@@ -1,18 +1,16 @@
-#ifdef USE_EXT_SUNDIALS
-
-    #include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
-    #include "AMP/vectors/Vector.h"
-    #include "AMP/vectors/sundials/ManagedSundialsVector.h"
-    #include "AMP/vectors/sundials/SundialsVector.h"
+#include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/sundials/ManagedSundialsVector.h"
+#include "AMP/vectors/sundials/SundialsVector.h"
 
 
-    #define PASS_FAIL( test, MSG )                                                    \
-        do {                                                                          \
-            if ( test )                                                               \
-                ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
-            else                                                                      \
-                ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
-        } while ( 0 )
+#define PASS_FAIL( test, MSG )                                                    \
+    do {                                                                          \
+        if ( test )                                                               \
+            ut->passes( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG );  \
+        else                                                                      \
+            ut->failure( d_factory->name() + " - " + __FUNCTION__ + ": " + MSG ); \
+    } while ( 0 )
 
 
 namespace AMP::LinearAlgebra {
@@ -304,6 +302,3 @@ void SundialsVectorTests::MinQuotientSundialsVector( AMP::UnitTest *ut )
 }
 
 } // namespace AMP::LinearAlgebra
-
-/// \endcond
-#endif

@@ -708,8 +708,8 @@ void matrixOuterProduct( double Qia[3][3], double Qjb[3][3], double Tijab[6][6] 
 {
     int j, k, j3, k3;
     int m1j, m2j, m1k, m2k;
-    double map1[] = { 1, 2, 3, 2, 3, 1 };
-    double map2[] = { 1, 2, 3, 3, 1, 2 };
+    const double map1[] = { 1, 2, 3, 2, 3, 1 };
+    const double map2[] = { 1, 2, 3, 3, 1, 2 };
 
     for ( j = 0; j < 3; j++ ) {
         for ( k = 0; k < 3; k++ ) {

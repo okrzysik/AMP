@@ -70,7 +70,6 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     ut->passes( exeName + ": PowerShape gets past apply with a non-flat power shape." );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( SpecificPowerShapeVec,
@@ -78,7 +77,6 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
                                 AMP::Mesh::GeomType::Volume,
                                 "SpecificPowerInWattsPerKg" );
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     AMP::pout << "SpecificPowerShapeVec->max()"
               << " : " << SpecificPowerShapeVec->min() << " : " << SpecificPowerShapeVec->max()

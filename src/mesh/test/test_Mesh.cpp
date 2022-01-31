@@ -1,3 +1,4 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/BoxMesh.h"
@@ -39,7 +40,7 @@ void testMeshGenerators( AMP::UnitTest &ut )
     generator->build_mesh();
     AMP::Mesh::meshTests::MeshTestLoop( ut, generator->getMesh() );
     AMP::Mesh::meshTests::MeshGeometryTestLoop( ut, generator->getMesh() );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     // libmesh generators
     // Test the libmesh cube generator
     generator = std::make_shared<AMP::unit_test::LibMeshCubeGenerator<5>>();
@@ -153,7 +154,7 @@ void testAMPMesh( AMP::UnitTest &ut )
 // Function to test the creation/destruction of a STKmesh mesh
 void testSTKMesh( AMP::UnitTest &ut )
 {
-#if defined( USE_TRILINOS_STKCLASSIC ) && defined( USE_AMP_DATA )
+#if defined( AMP_USE_TRILINOS_STKCLASSIC ) && defined( USE_AMP_DATA )
     PROFILE_START( "testSTKMesh" );
     // Create a generic MeshParameters object
     auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -183,7 +184,7 @@ void testSTKMesh( AMP::UnitTest &ut )
 
 void testlibMesh( AMP::UnitTest &ut )
 {
-#if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
+#if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     PROFILE_START( "testlibMesh" );
     // Create a generic MeshParameters object
     auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -212,7 +213,7 @@ void testlibMesh( AMP::UnitTest &ut )
 // Function to test the creation/destruction of a moab mesh
 void testMoabMesh( AMP::UnitTest &ut )
 {
-#if defined( USE_EXT_MOAB ) && defined( USE_AMP_DATA )
+#if defined( AMP_USE_MOAB ) && defined( USE_AMP_DATA )
     PROFILE_START( "testMoabMesh" );
     // Create a generic MeshParameters object
     auto database = std::make_shared<AMP::Database>( "Mesh" );
@@ -271,7 +272,7 @@ void testSubsetMesh( AMP::UnitTest &ut )
 {
     NULL_USE( ut );
     PROFILE_START( "testSubsetMesh" );
-#if defined( USE_EXT_LIBMESH ) && defined( USE_AMP_DATA )
+#if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
     std::shared_ptr<AMP::unit_test::MeshGenerator> generator;
     // Subset a mesh for a surface without ghost cells and test
     generator = std::make_shared<
@@ -298,7 +299,7 @@ void testSubsetMesh( AMP::UnitTest &ut )
 void testIntializeLibmesh( AMP::UnitTest &ut )
 {
     NULL_USE( ut );
-#if defined( USE_EXT_LIBMESH )
+#if defined( AMP_USE_LIBMESH )
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     AMP::AMP_MPI splitComm = globalComm.split( globalComm.getRank() % 2 );
     AMP_ASSERT( !AMP::Mesh::initializeLibMesh::isInitialized() );
@@ -328,7 +329,7 @@ void testDefaults( AMP::UnitTest &ut )
     // Run tests on a STKmesh mesh (currently disabled)
     // testSTKMesh( ut );
 
-#if defined( USE_EXT_LIBMESH )
+#if defined( AMP_USE_LIBMESH )
     // Run tests on a libmesh mesh
     testIntializeLibmesh( ut );
     testlibMesh( ut );
@@ -337,7 +338,7 @@ void testDefaults( AMP::UnitTest &ut )
     // Run tests on a moab mesh
     testMoabMesh( ut );
 
-#if defined( USE_EXT_LIBMESH )
+#if defined( AMP_USE_LIBMESH )
     // Run tests on the input file
     testInputMesh( ut, "input_Mesh" );
 #endif

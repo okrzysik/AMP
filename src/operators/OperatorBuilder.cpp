@@ -9,7 +9,7 @@
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "AMP/discretization/structuredFaceDOFManager.h"
     #include "AMP/operators/ElementOperationFactory.h"
     #include "AMP/operators/NeutronicsRhs.h"
@@ -72,7 +72,7 @@ OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
     std::string name = in_params->d_db->getString( "name" );
 
     resetOperation( IdentityOperator );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     resetOperation( DirichletMatrixCorrection );
     resetOperation( DirichletVectorCorrection );
     resetOperation( NeumannVectorCorrection );
@@ -237,7 +237,7 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
 
 
 // Create the identity operator
@@ -507,8 +507,7 @@ Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
         sourcePhysicsModel = std::dynamic_pointer_cast<SourcePhysicsModel>( elementPhysicsModel );
     } else {
         if ( input_db->keyExists( "SourcePhysicsModel" ) ) {
-            std::shared_ptr<AMP::Database> sourceModel_db =
-                input_db->getDatabase( "SourcePhysicsModel" );
+            auto sourceModel_db = input_db->getDatabase( "SourcePhysicsModel" );
             elementPhysicsModel =
                 ElementPhysicsModelFactory::createElementPhysicsModel( sourceModel_db );
             sourcePhysicsModel =
@@ -518,7 +517,7 @@ Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
 
     // next create a ElementOperation object
     AMP_INSIST( input_db->keyExists( "SourceElement" ), "Key ''SourceElement'' is missing!" );
-    std::shared_ptr<ElementOperation> sourceNonlinearElem =
+    auto sourceNonlinearElem =
         ElementOperationFactory::createElementOperation( input_db->getDatabase( "SourceElement" ) );
 
     // now create the nonlinear source operator
@@ -563,9 +562,8 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
 
     // next create an ElementOperation object
     AMP_INSIST( input_db->keyExists( "DiffusionElement" ), "Key ''DiffusionElement'' is missing!" );
-    std::shared_ptr<ElementOperation> diffusionNonlinearElem =
-        ElementOperationFactory::createElementOperation(
-            input_db->getDatabase( "DiffusionElement" ) );
+    auto diffusionNonlinearElem = ElementOperationFactory::createElementOperation(
+        input_db->getDatabase( "DiffusionElement" ) );
 
     // now create the nonlinear diffusion operator parameters
     std::shared_ptr<AMP::Database> diffusionNLinFEOp_db;
@@ -650,13 +648,13 @@ Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOperator(
     std::shared_ptr<ElementPhysicsModel> soretPhysicsModel;
 
 
-    Operator::shared_ptr fickOperator = OperatorBuilder::createOperator(
+    auto fickOperator = OperatorBuilder::createOperator(
         meshAdapter, fickOperatorName, input_db, fickPhysicsModel, localModelFactory );
     AMP_INSIST(
         fickOperator,
         "Error: unable to create Fick operator in OperatorBuilder::createFickSoretOperator" );
 
-    Operator::shared_ptr soretOperator = OperatorBuilder::createOperator(
+    auto soretOperator = OperatorBuilder::createOperator(
         meshAdapter, soretOperatorName, input_db, soretPhysicsModel, localModelFactory );
 
     AMP_INSIST(
@@ -739,8 +737,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
         AMP_INSIST( input_db->keyExists( "MechanicsMaterialModel" ),
                     "Key ''MechanicsMaterialModel'' is missing!" );
 
-        std::shared_ptr<AMP::Database> transportModel_db =
-            input_db->getDatabase( "MechanicsMaterialModel" );
+        auto transportModel_db = input_db->getDatabase( "MechanicsMaterialModel" );
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     }
@@ -749,9 +746,8 @@ Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
 
     // next create a ElementOperation object
     AMP_INSIST( input_db->keyExists( "MechanicsElement" ), "Key ''MechanicsElement'' is missing!" );
-    std::shared_ptr<ElementOperation> mechanicsElem =
-        ElementOperationFactory::createElementOperation(
-            input_db->getDatabase( "MechanicsElement" ) );
+    auto mechanicsElem = ElementOperationFactory::createElementOperation(
+        input_db->getDatabase( "MechanicsElement" ) );
 
     // now create the nonlinear mechanics operator
     std::shared_ptr<AMP::Database> mechanicsFEOp_db;
@@ -1102,7 +1098,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createBoundaryOperator(
                     "Error:: OperatorBuilder::createOperator(): No local model "
                     "database entry with given name exists in input database" );
 
-        std::shared_ptr<AMP::Database> localModel_db = input_db->getDatabase( localModelName );
+        auto localModel_db = input_db->getDatabase( localModelName );
         AMP_INSIST( localModel_db,
                     "Error:: OperatorBuilder::createOperator(): No local model database "
                     "entry with given name exists in input database" );

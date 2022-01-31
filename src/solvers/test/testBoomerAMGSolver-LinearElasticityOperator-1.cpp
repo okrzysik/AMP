@@ -82,12 +82,10 @@ void linearElasticTest( AMP::UnitTest *ut )
 
     mlSolver->apply( mechRhsVec, mechSolVec );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     bvpOperator->residual( mechRhsVec, mechSolVec, mechResVec );
 

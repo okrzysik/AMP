@@ -5,6 +5,7 @@
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 
 #include "AMP/IO/PIO.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -15,7 +16,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/WriteSolutionToFile.h"

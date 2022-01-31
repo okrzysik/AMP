@@ -8,6 +8,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/materials/UO2_MSRZC_09.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
@@ -23,7 +24,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
@@ -461,7 +461,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         // need to define test requirements for new mms
         AMP_ERROR( "Unknown value for manufacturedSolution->getName()" );
     }
-#ifdef USE_EXT_SILO
+
     auto vertex     = AMP::Mesh::GeomType::Vertex;
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( exactErrVec, meshAdapter, vertex, "Exact_Error_Vector" );
@@ -471,7 +471,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     siloWriter->writeFile( "undeformedBeam_" + std::to_string( exampleNum ), 1 );
     meshAdapter->displaceMesh( solVec );
     siloWriter->writeFile( "deformedBeam_" + std::to_string( exampleNum ), 1 );
-#endif
 }
 
 

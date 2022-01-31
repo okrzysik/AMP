@@ -409,7 +409,7 @@ MeshElement BoxMesh::getElement( const MeshElementID &id ) const
     // Create the element
     structuredMeshElement elem( index, this );
     AMP_CHECK_ASSERT( elem.globalID() == id );
-    return std::move( elem );
+    return elem;
 }
 MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
 {
@@ -919,18 +919,16 @@ bool BoxMesh::operator==( const Mesh &rhs ) const
  ****************************************************************/
 std::ostream &operator<<( std::ostream &out, const BoxMesh::MeshElementIndex &x )
 {
+    out << x.print();
+    return out;
+}
+std::string BoxMesh::MeshElementIndex::print() const
+{
     const char *type[] = { "Vertex", "Edge", "Face", "Volume" };
     char tmp[128];
-    snprintf( tmp,
-              sizeof tmp,
-              "(%i,%i,%i,%s,%i)",
-              x.index( 0 ),
-              x.index( 1 ),
-              x.index( 2 ),
-              type[static_cast<int>( x.type() )],
-              x.side() );
-    out << tmp;
-    return out;
+    snprintf(
+        tmp, 128, "(%i,%i,%i,%s,%u)", d_index[0], d_index[1], d_index[2], type[d_type], d_side );
+    return tmp;
 }
 
 

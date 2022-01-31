@@ -78,21 +78,21 @@ void draw_triangle( triangle_t *t_ptr, const std::string &option, std::ostream &
 
 void draw_bounding_box( hex8_element_t *e_ptr, double const *point_of_view, std::ostream &os )
 {
-    double const *bb_ptr              = e_ptr->get_bounding_box();
-    std::string plane[6]              = { "yx", "zx", "zy", "zx", "zy", "yx" };
-    std::string fixed_coord[6]        = { "z", "y", "x", "y", "x", "z" };
-    unsigned int fixed_coord_index[6] = { 2, 1, 3, 4, 0, 5 };
+    double const *bb_ptr             = e_ptr->get_bounding_box();
+    const std::string plane[6]       = { "yx", "zx", "zy", "zx", "zy", "yx" };
+    const std::string fixed_coord[6] = { "z", "y", "x", "y", "x", "z" };
+    const int fixed_coord_index[6]   = { 2, 1, 3, 4, 0, 5 };
 
-    unsigned int first_point_second_coord_index[6]  = { 0, 0, 1, 0, 1, 0 };
-    unsigned int first_point_first_coord_index[6]   = { 1, 2, 2, 2, 2, 1 };
-    unsigned int second_point_second_coord_index[6] = { 3, 3, 4, 3, 4, 3 };
-    unsigned int second_point_first_coord_index[6]  = { 4, 5, 5, 5, 5, 4 };
+    const int first_point_second_coord_index[6]  = { 0, 0, 1, 0, 1, 0 };
+    const int first_point_first_coord_index[6]   = { 1, 2, 2, 2, 2, 1 };
+    const int second_point_second_coord_index[6] = { 3, 3, 4, 3, 4, 3 };
+    const int second_point_first_coord_index[6]  = { 4, 5, 5, 5, 5, 4 };
 
-    double normals[18] = { 0.0, 0.0, -1.0, 0.0,  -1.0, 0.0, 1.0, 0.0, 0.0,
-                           0.0, 1.0, 0.0,  -1.0, 0.0,  0.0, 0.0, 0.0, 1.0 };
+    const double normals[18] = { 0.0, 0.0, -1.0, 0.0,  -1.0, 0.0, 1.0, 0.0, 0.0,
+                                 0.0, 1.0, 0.0,  -1.0, 0.0,  0.0, 0.0, 0.0, 1.0 };
 
     os << "\\tikzset{facestyle/.style={fill=none,draw=black,line join=round}}\n";
-    for ( unsigned int f = 0; f < 6; ++f ) {
+    for ( int f = 0; f < 6; ++f ) {
         os << "\\begin{scope}[canvas is " << plane[f] << " plane at " << fixed_coord[f] << "="
            << bb_ptr[fixed_coord_index[f]] << "]\n";
         os << "\\path[facestyle"

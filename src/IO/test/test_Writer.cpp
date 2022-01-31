@@ -157,7 +157,7 @@ void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
         ut.expected_failure( writerName + " does not support registering a matrix" );
         return;
     }
-#if !defined( USE_EXT_PETSC ) && !defined( USE_EXT_TRILINOS )
+#if !defined( AMP_USE_PETSC ) && !defined( AMP_USE_TRILINOS )
     ut.expected_failure( writerName + "  - no parallel matrix to test" );
     return;
 #endif
@@ -232,6 +232,8 @@ void testWriterMesh( AMP::UnitTest &ut,
 
     // Create a surface mesh
     auto surface = mesh->Subset( mesh->getSurfaceIterator( surfaceType, 1 ) );
+    if ( surface )
+        surface->setName( mesh->getName() + "_surface" );
 
     // Create a simple DOFManager
     uint8_t ndim    = mesh->getDim();
@@ -312,7 +314,9 @@ void testWriterMesh( AMP::UnitTest &ut,
             if ( properties.registerVectorWithMesh )
                 writer->registerVector( volume, mesh2, mesh2->getGeomType(), "volume" );
             // Get the surface
-            auto surfaceMesh = mesh2->Subset( mesh2->getSurfaceIterator( surfaceType, 1 ) );
+            std::shared_ptr<AMP::Mesh::Mesh> surfaceMesh;
+            if ( surface )
+                surfaceMesh = surface->Subset( meshIDs[i] );
             if ( surfaceMesh ) {
                 // Store the surface id
                 auto DOF_surface = AMP::Discretization::simpleDOFManager::create(

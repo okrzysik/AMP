@@ -140,11 +140,11 @@ bool Parallelepiped::inside( const Point &pos ) const
  ********************************************************/
 int Parallelepiped::surface( const Point &pos ) const
 {
-    auto L       = logical( pos );
-    double d[6]  = { fabs( L.x() ),       fabs( 1.0 - L.x() ), fabs( L.y() ),
-                    fabs( 1.0 - L.y() ), fabs( L.z() ),       fabs( 1.0 - L.z() ) };
-    int index    = 0;
-    double d_min = d[0];
+    const auto L      = logical( pos );
+    const double d[6] = { fabs( L.x() ),       fabs( 1.0 - L.x() ), fabs( L.y() ),
+                          fabs( 1.0 - L.y() ), fabs( L.z() ),       fabs( 1.0 - L.z() ) };
+    int index         = 0;
+    double d_min      = d[0];
     for ( int i = 1; i < 6; i++ ) {
         if ( d[i] < d_min ) {
             index = i;
@@ -179,10 +179,10 @@ Point Parallelepiped::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Parallelepiped::physical( const Point &pos ) const
 {
-    double L[3] = { pos.x(), pos.y(), pos.z() };
-    double x    = d_a[0] * L[0] + d_b[0] * L[1] + d_c[0] * L[2];
-    double y    = d_a[1] * L[0] + d_b[1] * L[1] + d_c[1] * L[2];
-    double z    = d_a[2] * L[0] + d_b[2] * L[1] + d_c[2] * L[2];
+    const double L[3] = { pos.x(), pos.y(), pos.z() };
+    const double x    = d_a[0] * L[0] + d_b[0] * L[1] + d_c[0] * L[2];
+    const double y    = d_a[1] * L[0] + d_b[1] * L[1] + d_c[1] * L[2];
+    const double z    = d_a[2] * L[0] + d_b[2] * L[1] + d_c[2] * L[2];
     return { x + d_offset[0], y + d_offset[1], z + d_offset[2] };
 }
 

@@ -14,7 +14,7 @@ DISABLE_WARNINGS
 #include <EpetraExt_Transpose_RowMatrix.h>
 ENABLE_WARNINGS
 
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     #include <Epetra_MpiComm.h>
 #else
     #include <Epetra_SerialComm.h>
@@ -26,7 +26,7 @@ namespace AMP::LinearAlgebra {
 static inline auto createEpetraMap( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                     const AMP_MPI &comm )
 {
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     Epetra_MpiComm comm2 = comm.getCommunicator();
 #else
     NULL_USE( comm );
@@ -133,11 +133,11 @@ void ManagedEpetraMatrix::multiply( shared_ptr other_op, std::shared_ptr<Matrix>
     if ( !std::dynamic_pointer_cast<ManagedEpetraMatrix>( other_op ) )
         AMP_ERROR( "Incompatible matrix types" );
     AMP_ASSERT( other_op->numGlobalRows() == numGlobalColumns() );
-#ifdef USE_EXT_MPI
-    MPI_Comm epetraComm =
+#ifdef AMP_USE_MPI
+    AMP_MPI::Comm epetraComm =
         ( dynamic_cast<const Epetra_MpiComm *>( &d_epetraMatrix->RowMap().Comm() ) )->Comm();
 #else
-    MPI_Comm epetraComm = AMP_COMM_SELF;
+    AMP_MPI::Comm epetraComm = AMP_COMM_SELF;
 #endif
     auto leftVec  = this->getLeftVector();
     auto rightVec = other_op->getRightVector();

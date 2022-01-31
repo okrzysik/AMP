@@ -285,7 +285,6 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Plot the results
     if ( globalComm.getSize() == 1 ) {
-#ifdef USE_EXT_SILO
         auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
         siloWriter->registerVector(
             workVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "RelativeError" );
@@ -293,7 +292,6 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
         siloWriter->registerVector( srcVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Source" );
         siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
         siloWriter->writeFile( exeName, 0 );
-#endif
     }
 
     ut->passes( exeName );

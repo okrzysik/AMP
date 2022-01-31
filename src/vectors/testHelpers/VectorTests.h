@@ -95,7 +95,7 @@ public:
     void ScaleVector( AMP::UnitTest *utils );
 
 
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     void Bug_491( AMP::UnitTest *utils );
 #endif
 

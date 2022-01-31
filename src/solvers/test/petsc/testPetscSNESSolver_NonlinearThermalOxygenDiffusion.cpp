@@ -201,9 +201,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-#ifdef USE_EXT_SILO
     manager->writeFile<AMP::Mesh::SiloIO>( exeName, 1 );
-#endif
 
     if ( finalResidualNorm > initialResidualNorm * 1.0e-10 + 1.0e-05 ) {
         ITFAILS;

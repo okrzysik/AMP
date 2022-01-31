@@ -1,8 +1,8 @@
-
 #include "ElementOperationFactory.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Utilities.h"
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "AMP/operators/diffusion/DiffusionElement.h"
     #include "AMP/operators/diffusion/DiffusionLinearElement.h"
     #include "AMP/operators/diffusion/DiffusionNonlinearElement.h"
@@ -40,7 +40,7 @@ ElementOperationFactory::createElementOperation( std::shared_ptr<Database> eleme
 
     params.reset( new ElementOperationParameters( elementOperationDb ) );
 
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     resetElementOperation( MechanicsLinearElement );
     resetElementOperation( MechanicsNonlinearElement );
     resetElementOperation( MechanicsLinearUpdatedLagrangianElement );

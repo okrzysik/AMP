@@ -100,7 +100,7 @@ private:
     std::vector<std::vector<AMP::Mesh::MeshElementID>> d_elem;
 
     // Buffers to send/recv the data
-    std::vector<MPI_Request> d_currRequests;
+    std::vector<AMP_MPI::Request> d_currRequests;
     std::vector<std::vector<double>> d_sendBuffer;
 
     int getSubchannelIndex( double x, double y );

@@ -11,65 +11,18 @@
 #include <vector>
 
 
-// Include mpi.h (or define MPI objects)
-// clang-format off
-#ifdef USE_MPI
-    // Building with mpi
+// Add the definitions for the TPLs that are used
+#include "AMP/AMP_TPLs.h"
+
+// Include MPI if we are building with MPI
+#ifdef AMP_USE_MPI
     #include "mpi.h"
-#elif defined( USE_SAMRAI ) && defined( USE_PETSC )
-    // Building with SAMRAI and PETSc and without MPI is complicated
-    #include "petsc/mpiuni/mpi.h"
-    #undef MPI_REQUEST_NULL
-    #define HAVE_MPI
-    #ifndef included_tbox_SAMRAI_MPI
-        extern int MPI_REQUEST_NULL;
-        extern int MPI_ERR_IN_STATUS;
-    #endif
-    #ifdef INCLUDED_SAMRAI_CONFIG_H
-        #include "SAMRAI/tbox/SAMRAI_MPI.h"
-    #else
-        #define INCLUDED_SAMRAI_CONFIG_H
-        #define included_tbox_Utilities
-        #include "SAMRAI/tbox/SAMRAI_MPI.h"
-        #undef included_tbox_Utilities
-        #undef INCLUDED_SAMRAI_CONFIG_H
-    #endif
-    #undef HAVE_MPI
-#elif defined( USE_SAMRAI )
-    // SAMRAI serial builds define basic MPI types
-    #include "SAMRAI/tbox/SAMRAI_MPI.h"
-#elif defined( USE_PETSC )
-    // petsc serial builds include mpi.h
-    #include "petsc/mpiuni/mpi.h"
-#elif defined( USE_TRILINOS )
-    // trilinos serial builds include mpi.h
-    #include "mpi.h" 
-#elif defined(__has_include)
-    // Check if another package defines mpi.h
-    #if __has_include("mpi.h")
-        #include "mpi.h"
-    #else
-        #define SET_MPI_TYPES
-    #endif
-#else
-    #define SET_MPI_TYPES
 #endif
-#ifdef SET_MPI_TYPES
-    typedef int MPI_Comm;
-    typedef int MPI_Request;
-    typedef int MPI_Status;
-    typedef void *MPI_Errhandler;
-    enum MPI_TYPES { MPI_INT, MPI_FLOAT, MPI_DOUBLE };
-    #define MPI_COMM_WORLD ( (MPI_Comm) 0xF4000010 )
-    #define MPI_COMM_SELF ( (MPI_Comm) 0xF4000001 )
-    #define MPI_COMM_NULL ( (MPI_Comm) 0xF4000000 )
-#endif
-// clang-format on
 
 // Define extra comm_world, comm_self, and comm_null ids
-#define AMP_COMM_WORLD ( (MPI_Comm) 0xF4000010 )
-#define AMP_COMM_SELF ( (MPI_Comm) 0xF4000001 )
-#define AMP_COMM_NULL ( (MPI_Comm) 0xF4000000 )
+#define AMP_COMM_NULL ( (AMP::AMP_MPI::Comm) 0xF4000000 )
+#define AMP_COMM_WORLD ( (AMP::AMP_MPI::Comm) 0xF4000001 )
+#define AMP_COMM_SELF ( (AMP::AMP_MPI::Comm) 0xF4000002 )
 
 
 namespace AMP {
@@ -80,22 +33,30 @@ namespace AMP {
  *
  * @brief Provides C++ wrapper around MPI routines.
  *
- * Class AMP_MPI groups common MPI routines into one globally-accessible
- * location.  It provides small, simple routines that are common in MPI code.
+ * Class AMP_MPI groups common MPI routines into one globally-accessible location.
+ * It provides small, simple routines that are common in MPI code.
  * In some cases, the calling syntax has been simplified for convenience.
- * Moreover, there is no reason to include the preprocessor ifdef/endif
- * guards around these calls, since the MPI libraries are not called in
- * these routines if the MPI libraries are not being used (e.g., when
- * writing serial code).
- * Note: Many of the communication routines are templated on type.  When using
- * unknown types the reduce calls will fail, the send and gather calls should
- * succeed provided that the size of the data type object is a fixed size on
+ * Moreover, there is no reason to include the preprocessor ifdef/endif guards around
+ * these calls, since the MPI libraries are not called in these routines if the MPI
+ * libraries are not being used (e.g., when writing serial code).
+ * Note: Many of the communication routines are templated on type.
+ * When using unknown types the reduce calls will fail, the send and gather calls
+ * should succeed provided that the size of the data type object is a fixed size on
  * all processors.  sizeof(type) must be the same for all elements and processors.
  */
 class alignas( 8 ) AMP_MPI final
 {
 public:
     enum class ThreadSupport : int { SINGLE, FUNNELED, SERIALIZED, MULTIPLE };
+
+#ifdef AMP_USE_MPI
+    typedef MPI_Comm Comm;
+    typedef MPI_Request Request;
+#else
+    typedef uint32_t Comm;
+    typedef uint32_t Request;
+#endif
+
 
 public: // Constructors
     /**
@@ -121,13 +82,13 @@ public: // Constructors
      * \param[in] manage    Do we want to manage the comm (free the MPI_Comm when this object leaves
      * scope)
      */
-    AMP_MPI( MPI_Comm comm, bool manage = false );
+    AMP_MPI( Comm comm, bool manage = false );
 
 
     /**
      * \brief Constructor from existing communicator
      * \details  This constructor creates a new communicator from an existing communicator.
-     *   This does not create a new internal MPI_Comm, but uses the existing comm.
+     *   This does not create a new internal Comm, but uses the existing comm.
      * \param[in] comm Existing communicator
      */
     AMP_MPI( const AMP_MPI &comm );
@@ -316,7 +277,7 @@ public: // Member functions
      *  user is responsible for checking if the communicator is valid, or keeping a
      *  copy of the communicator that provided the MPI_Communicator.
      */
-    inline const MPI_Comm &getCommunicator() const { return communicator; }
+    inline const Comm &getCommunicator() const { return d_comm; }
 
 
     /**
@@ -407,13 +368,13 @@ public: // Member functions
      * Return the processor rank (identifier) from 0 through the number of
      * processors minus one.
      */
-    inline int getRank() const { return comm_rank; }
+    inline int getRank() const { return d_rank; }
 
 
     /**
      * Return the number of processors.
      */
-    inline int getSize() const { return comm_size; }
+    inline int getSize() const { return d_size; }
 
 
     /**
@@ -667,6 +628,16 @@ public: // Member functions
      * \brief    Scan Sum Reduce
      * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type sumScan( const type &x ) const;
+
+
+    /**
+     * \brief    Scan Sum Reduce
+     * \details  Computes the sum scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
      * \param[in] x         The input array for the scan
      * \param[in] y         The output array for the scan
      * \param[in] n         The number of values in the array (must match on all nodes)
@@ -679,12 +650,32 @@ public: // Member functions
      * \brief    Scan Min Reduce
      * \details  Computes the min scan (partial reductions) of data on a collection of processes.
      *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type minScan( const type &x ) const;
+
+
+    /**
+     * \brief    Scan Min Reduce
+     * \details  Computes the min scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
      * \param[in] x         The input array for the scan
      * \param[in] y         The output array for the scan
      * \param[in] n         The number of values in the array (must match on all nodes)
      */
     template<class type>
     void minScan( const type *x, type *y, int n ) const;
+
+
+    /**
+     * \brief    Scan Max Reduce
+     * \details  Computes the max scan (partial reductions) of data on a collection of processes.
+     *   See MPI_Scan for more information.
+     * \param[in] x         The input value for the scan
+     */
+    template<class type>
+    type maxScan( const type &x ) const;
 
 
     /**
@@ -775,7 +766,7 @@ public: // Member functions
      *                      to be sent with this message.
      */
     template<class type>
-    MPI_Request Isend( const type *buf, int length, int recv_proc, int tag ) const;
+    Request Isend( const type *buf, int length, int recv_proc, int tag ) const;
 
 
     /*!
@@ -790,7 +781,7 @@ public: // Member functions
      * @param[in] tag       Integer argument specifying an integer tag
      *                  to be sent with this message.
      */
-    MPI_Request IsendBytes( const void *buf, int N_bytes, int recv_proc, int tag ) const;
+    Request IsendBytes( const void *buf, int N_bytes, int recv_proc, int tag ) const;
 
 
     /*!
@@ -857,7 +848,7 @@ public: // Member functions
      *                      be matched by the tag of the incoming message.
      */
     template<class type>
-    MPI_Request Irecv( type *buf, int length, int send_proc, int tag ) const;
+    Request Irecv( type *buf, int length, int send_proc, int tag ) const;
 
 
     /*!
@@ -872,7 +863,7 @@ public: // Member functions
      * @param[in] tag       Integer argument specifying a tag which must
      *                      be matched by the tag of the incoming message.
      */
-    MPI_Request IrecvBytes( void *buf, int N_bytes, int send_proc, int tag ) const;
+    Request IrecvBytes( void *buf, int N_bytes, int send_proc, int tag ) const;
 
 
     /*!
@@ -1094,7 +1085,7 @@ public: // Member functions
      *    Note: this does not require a communicator.
      * \param[in] request    Communication request to wait for (returned for Isend or Irecv)
      */
-    static void wait( MPI_Request request );
+    static void wait( Request request );
 
 
     /*!
@@ -1106,7 +1097,7 @@ public: // Member functions
      * \param[in] request    Array of communication requests to wait for (returned for Isend or
      * Irecv)
      */
-    static int waitAny( int count, MPI_Request *request );
+    static int waitAny( int count, Request *request );
 
 
     /*!
@@ -1117,7 +1108,7 @@ public: // Member functions
      * \param[in] request    Array of communication requests to wait for (returned for Isend or
      * Irecv)
      */
-    static void waitAll( int count, MPI_Request *request );
+    static void waitAll( int count, Request *request );
 
 
     /*!
@@ -1129,7 +1120,7 @@ public: // Member functions
      * \param[in] request    Array of communication requests to wait for (returned for Isend or
      * Irecv)
      */
-    static std::vector<int> waitSome( int count, MPI_Request *request );
+    static std::vector<int> waitSome( int count, Request *request );
 
 
     /*!
@@ -1221,7 +1212,7 @@ public: // Member functions
 
 
 private: // Private helper functions for templated MPI operations
-#if defined( USE_MPI ) || defined( USE_EXT_MPI )
+#ifdef AMP_USE_MPI
     template<class type>
     void call_bcast( type *, int, int ) const;
     template<class type>
@@ -1235,7 +1226,7 @@ private: // Private helper functions for templated MPI operations
 
 private: // data members
     // The internal MPI communicator
-    MPI_Comm communicator;
+    Comm d_comm;
 
     // Is the communicator NULL
     bool d_isNull;
@@ -1246,8 +1237,8 @@ private: // data members
     // Do we want to call MPI_abort instead of exit
     bool d_call_abort;
 
-    // The rank and size of the communicator
-    int comm_rank, comm_size;
+    // The rank and size of the communicatorcommunicator
+    int d_rank, d_size;
 
     // Some attributes
     int d_maxTag;

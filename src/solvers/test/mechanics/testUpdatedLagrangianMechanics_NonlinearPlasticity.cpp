@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -18,7 +19,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -202,14 +202,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearSolver->setZeroInitialGuess( false );
         } // end subset
 
-#ifdef USE_EXT_SILO
         auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
         siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
         meshAdapter->displaceMesh( solVec );
         auto outFileName = AMP::Utilities::stringf(
             "LoadPrescribed-DeformedPlateWithHole-NonlinearPlasticity_%d", step );
         siloWriter->writeFile( outFileName, 0 );
-#endif
     } // end step
 
     AMP::pout << "epsilon = " << epsilon << std::endl;

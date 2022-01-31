@@ -193,11 +193,12 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
         // Register the base mesh
         auto it = d_baseMeshes.find( id );
         if ( it == d_baseMeshes.end() ) {
+            auto path2 = path + mesh->getName() + "_/";
             for ( const auto &[id2, mesh2] : d_baseMeshes ) {
                 NULL_USE( id2 );
-                if ( mesh2.mesh->getName() == mesh->getName() && mesh2.path == path )
-                    AMP_WARNING( "Registering multiple meshes with the same name: " +
-                                 mesh->getName() );
+                if ( mesh2.path == path2 )
+                    AMP_ERROR( "Registering multiple meshes with the same name: " +
+                               mesh->getName() );
             }
             baseMeshData data;
             data.id        = id;
@@ -205,7 +206,7 @@ void Writer::registerMesh2( std::shared_ptr<AMP::Mesh::Mesh> mesh,
             data.rank      = rank;
             data.ownerRank = rank;
             data.meshName  = "rank_" + std::to_string( data.rank );
-            data.path      = path + mesh->getName() + "_/";
+            data.path      = path2;
             if ( d_baseMeshes.find( id ) == d_baseMeshes.end() )
                 d_baseMeshes.insert( std::make_pair( id, data ) );
         }

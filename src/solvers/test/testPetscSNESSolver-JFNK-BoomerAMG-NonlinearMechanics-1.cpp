@@ -1,8 +1,7 @@
-#include "AMP/discretization/simpleDOF_Manager.h"
-#include "AMP/mesh/MeshParameters.h"
-
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -78,14 +77,12 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     auto mechNlResVec       = mechNlSolVec->cloneVector();
     auto mechNlScaledRhsVec = mechNlSolVec->cloneVector();
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector(
         mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-#endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
@@ -159,9 +156,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
         nonlinearSolver->setZeroInitialGuess( false );
     }
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     ut->passes( exeName );
 }

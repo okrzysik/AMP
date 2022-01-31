@@ -1,6 +1,7 @@
 #ifndef included_AMP_Database
 #define included_AMP_Database
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/Units.h"
@@ -456,7 +457,7 @@ public:
     std::string print( const std::string_view &indent = "", bool sort = true ) const;
 
 
-#ifdef USE_SAMRAI
+#ifdef AMP_USE_SAMRAI
 public: // SAMRAI interfaces
     //! Construct a database from a SAMRAI database
     Database( SAMRAI::tbox::Database & );
@@ -530,7 +531,7 @@ public:
     //! Construct from a string of the format "[(0,0,0), (7,7,7)]"
     explicit DatabaseBox( const std::string_view &str );
 
-#ifdef USE_SAMRAI
+#ifdef AMP_USE_SAMRAI
     //! Construct a DatabaseBox from a SAMRAI DatabaseBox
     DatabaseBox( const SAMRAI::tbox::DatabaseBox & );
 

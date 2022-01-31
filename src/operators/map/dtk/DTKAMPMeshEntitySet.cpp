@@ -6,7 +6,7 @@
 #include "DTKAMPMeshEntityIterator.h"
 #include "DTKAMPMeshEntitySet.h"
 
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     #include "Teuchos_DefaultMpiComm.hpp"
 #else
     #include "Teuchos_DefaultSerialComm.hpp"
@@ -43,7 +43,7 @@ AMPMeshEntitySet::AMPMeshEntitySet( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 // Get the parallel communicator for the entity set.
 Teuchos::RCP<const Teuchos::Comm<int>> AMPMeshEntitySet::communicator() const
 {
-#ifdef USE_EXT_MPI
+#ifdef AMP_USE_MPI
     return Teuchos::rcp( new Teuchos::MpiComm<int>( d_amp_mesh->getComm().getCommunicator() ) );
 #else
     return Teuchos::rcp( new Teuchos::SerialComm<int>() );

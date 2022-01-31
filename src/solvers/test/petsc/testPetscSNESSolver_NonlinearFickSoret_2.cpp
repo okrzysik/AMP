@@ -220,7 +220,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     }
 
     // write graphical output
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
@@ -233,9 +232,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
         fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
     siloWriter->registerVector(
         soretCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalDiffusionCoefficient" );
-
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     // store result
     {

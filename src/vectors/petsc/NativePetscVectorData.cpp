@@ -17,13 +17,20 @@ NativePetscVectorData::NativePetscVectorData( Vec v, bool deleteable, AMP_MPI co
     // Get the correct communicator if it is not set
     MPI_Comm comm2 = comm.getCommunicator(); // Get a MPI_comm object from AMP_MPI to pass to PETSc
     PetscObjectGetComm( reinterpret_cast<PetscObject>( v ), &comm2 );
-    if ( comm2 != comm.getCommunicator() )
+    if ( comm2 != (MPI_Comm) comm.getCommunicator() )
         comm = AMP_MPI( comm2 );
+    // Get the local size
+    PetscInt lsize;
+    VecGetLocalSize( d_petscVec, &lsize );
     // Create the communication list
     auto params         = std::make_shared<CommunicationListParameters>();
     params->d_comm      = comm;
-    params->d_localsize = getLocalSize();
+    params->d_localsize = lsize;
     setCommunicationList( std::make_shared<CommunicationList>( params ) );
+    // Cache vector sizes
+    d_localStart = d_CommList->getStartGID();
+    d_localSize  = lsize;
+    d_globalSize = d_CommList->getTotalSize();
 }
 
 
@@ -138,21 +145,6 @@ void NativePetscVectorData::addLocalValuesByGlobalID( int num, size_t *indices, 
         VecSetValues( d_petscVec, num, &indices2[0], vals, ::ADD_VALUES );
     }
 }
-
-size_t NativePetscVectorData::getLocalSize() const
-{
-    int lsize;
-    VecGetLocalSize( d_petscVec, &lsize );
-    return static_cast<size_t>( lsize );
-}
-
-size_t NativePetscVectorData::getGlobalSize() const
-{
-    int gsize;
-    VecGetSize( d_petscVec, &gsize );
-    return static_cast<size_t>( gsize );
-}
-
 
 void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 {

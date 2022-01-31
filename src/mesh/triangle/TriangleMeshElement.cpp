@@ -25,6 +25,7 @@ static inline std::array<double, N> operator*( double x, const std::array<double
         return { x * y[0], x * y[1] };
     else if constexpr ( N == 3 )
         return { x * y[0], x * y[1], x * y[2] };
+    return {};
 }
 template<size_t N>
 static inline std::array<double, N> operator-( const std::array<double, N> &x,
@@ -36,6 +37,7 @@ static inline std::array<double, N> operator-( const std::array<double, N> &x,
         return { x[0] - y[0], x[1] - y[1] };
     else if constexpr ( N == 3 )
         return { x[0] - y[0], x[1] - y[1], x[2] - y[2] };
+    return {};
 }
 template<size_t N>
 static inline double abs( const std::array<double, N> &x )
@@ -46,6 +48,7 @@ static inline double abs( const std::array<double, N> &x )
         return sqrt( x[0] * x[0] + x[1] * x[1] );
     else if constexpr ( N == 3 )
         return sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+    return {};
 }
 template<size_t N>
 static inline double dot( const std::array<double, N> &x, const std::array<double, N> &y )
@@ -56,6 +59,7 @@ static inline double dot( const std::array<double, N> &x, const std::array<doubl
         return x[0] * y[0] + x[1] * y[1];
     else if constexpr ( N == 3 )
         return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+    return {};
 }
 template<size_t N>
 static inline std::array<double, N> normalize( const std::array<double, N> &x )
@@ -69,6 +73,7 @@ static inline std::array<double, N> normalize( const std::array<double, N> &x )
         double tmp = 1.0 / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
         return { tmp * x[0], tmp * x[1], tmp * x[2] };
     }
+    return {};
 }
 
 

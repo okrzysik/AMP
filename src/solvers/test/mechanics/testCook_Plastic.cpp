@@ -6,6 +6,7 @@
 
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NonlinearBVPOperator.h"
@@ -18,7 +19,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
@@ -120,13 +120,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mechNlScaledRhsVec =
         AMP::LinearAlgebra::createVector( DOF_vector, residualVariable, true );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector(
         mechNlSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
     siloWriter->registerVector(
         mechNlResVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual_Vector" );
-#endif
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );
@@ -211,9 +209,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::pout << "Final Solution Norm: " << mechNlSolVec->L2Norm() << std::endl;
 
-#ifdef USE_EXT_SILO
     siloWriter->writeFile( exeName, 0 );
-#endif
 
     ut->passes( exeName );
 

@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -24,7 +25,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -45,10 +45,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-#endif
 
     // Read the input file
     auto input_db = AMP::Database::parseInputFile( input_file );
@@ -234,14 +232,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             nonlinearMechanicsBVPoperator->getVolumeOperator() )
             ->printStressAndStrain( solVec, fname );
 
-#ifdef USE_EXT_SILO
         siloWriter->registerVector(
             solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution_Vector" );
         meshAdapter->displaceMesh( solVec );
         auto outFileName2 =
             AMP::Utilities::stringf( "displacementPrescribed-DeformedPlateWithHole_%d", step );
         siloWriter->writeFile( outFileName2, 1 );
-#endif
     }
 
     AMP::pout << "epsilon = " << epsilon << std::endl;

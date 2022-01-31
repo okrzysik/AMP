@@ -1,10 +1,10 @@
+#include "AMP/AMP_TPLs.h"
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -218,16 +218,12 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     }
 
     // Plot the results
-    auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
         TemperatureInKelvinVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "TemperatureInKelvin" );
     siloWriter->registerVector( ResidualVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-
     siloWriter->writeFile( input_file, 0 );
-#endif
 
     input_db.reset();
 
@@ -256,21 +252,21 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
 
-#ifdef USE_EXT_HYPRE
+#ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
 #endif
 
-#ifdef USE_TRILINOS_ML
+#ifdef AMP_USE_TRILINOS_ML
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 #endif
 
-#ifdef USE_TRILINOS_MUELU
+#ifdef AMP_USE_TRILINOS_MUELU
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-MueLu-BiCGSTAB" );

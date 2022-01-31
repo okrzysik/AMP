@@ -32,11 +32,11 @@ inline BoxMesh::MeshElementIndex structuredMeshIterator::getIndex( int i ) const
         j += d_first.index( 1 );
         k += d_first.index( 2 );
         if ( d_checkBoundary ) {
-            if ( d_isPeriodic[0] && ( i < 0 || ( i + 1 ) > d_globalSize[0] ) )
+            if ( d_isPeriodic[0] && ( i < 0 || i >= d_globalSize[0] ) )
                 i = ( i + d_globalSize[0] ) % d_globalSize[0];
-            if ( d_isPeriodic[1] && ( j < 0 || ( j + 1 ) > d_globalSize[1] ) )
+            if ( d_isPeriodic[1] && ( j < 0 || j >= d_globalSize[1] ) )
                 j = ( j + d_globalSize[1] ) % d_globalSize[1];
-            if ( d_isPeriodic[2] && ( k < 0 || ( k + 1 ) > d_globalSize[2] ) )
+            if ( d_isPeriodic[2] && ( k < 0 || k >= d_globalSize[2] ) )
                 k = ( k + d_globalSize[2] ) % d_globalSize[2];
         }
         return BoxMesh::MeshElementIndex( d_first.type(), d_first.side(), i, j, k );
@@ -184,7 +184,7 @@ MeshIterator structuredMeshIterator::operator++( int )
     // Postfix increment (increment and return temporary object)
     structuredMeshIterator tmp( *this ); // Create a temporary variable
     this->operator++();                  // apply operator
-    return std::move( tmp );             // return temporary result
+    return tmp;                          // return temporary result
 }
 MeshIterator &structuredMeshIterator::operator--()
 {
@@ -199,7 +199,7 @@ MeshIterator structuredMeshIterator::operator--( int )
     // Postfix decrement (increment and return temporary object)
     structuredMeshIterator tmp( *this ); // Create a temporary variable
     --( *this );                         // apply operator
-    return std::move( tmp );             // return temporary result
+    return tmp;                          // return temporary result
 }
 
 
@@ -210,7 +210,7 @@ MeshIterator structuredMeshIterator::operator+( int n ) const
 {
     structuredMeshIterator tmp( *this ); // Create a temporary iterator
     tmp.operator+=( n );                 // Increment temporary iterator
-    return std::move( tmp );
+    return tmp;                          // return temporary result
 }
 MeshIterator &structuredMeshIterator::operator+=( int n )
 {

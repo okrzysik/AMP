@@ -5,6 +5,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
 #include "AMP/mesh/latex_visualization_tools.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
@@ -25,7 +26,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
@@ -132,10 +132,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::logOnlyNodeZero( log_file );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
-#endif
 
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
@@ -407,43 +405,31 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     bool skipDisplaceMesh = true;
     contactOperator->updateActiveSet( nullVec, skipDisplaceMesh );
 
-#ifdef USE_EXT_SILO
-    {
-        siloWriter->registerVector(
-            columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "SolutionDisplacement" );
-        siloWriter->registerVector(
-            sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMisesStresses" );
-        siloWriter->registerVector(
-            sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
-        siloWriter->registerVector(
-            sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
-        siloWriter->registerVector(
-            sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
-        siloWriter->registerVector(
-            sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
-        siloWriter->registerVector(
-            sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
-        siloWriter->registerVector(
-            sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
-        siloWriter->registerVector( activeSetBeforeUpdateVec,
-                                    meshAdapter,
-                                    AMP::Mesh::GeomType::Vertex,
-                                    "ActiveSetBeforeUpdate" );
-        siloWriter->registerVector( activeSetAfterUpdateVec,
-                                    meshAdapter,
-                                    AMP::Mesh::GeomType::Vertex,
-                                    "ActiveSetAfterUpdate" );
-        siloWriter->registerVector(
-            surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
-        siloWriter->registerVector(
-            normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
-        siloWriter->registerVector(
-            contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
-        siloWriter->registerVector(
-            contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
-        siloWriter->writeFile( "TITI_0", 0 );
-    }
-#endif
+    siloWriter->registerVector(
+        columnSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "SolutionDisplacement" );
+    siloWriter->registerVector(
+        sigma_eff, meshAdapter, AMP::Mesh::GeomType::Vertex, "vonMisesStresses" );
+    siloWriter->registerVector( sigma_xx, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xx" );
+    siloWriter->registerVector( sigma_yy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yy" );
+    siloWriter->registerVector( sigma_zz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_zz" );
+    siloWriter->registerVector( sigma_yz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_yz" );
+    siloWriter->registerVector( sigma_xz, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xz" );
+    siloWriter->registerVector( sigma_xy, meshAdapter, AMP::Mesh::GeomType::Vertex, "sigma_xy" );
+    siloWriter->registerVector( activeSetBeforeUpdateVec,
+                                meshAdapter,
+                                AMP::Mesh::GeomType::Vertex,
+                                "ActiveSetBeforeUpdate" );
+    siloWriter->registerVector(
+        activeSetAfterUpdateVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ActiveSetAfterUpdate" );
+    siloWriter->registerVector(
+        surfaceTractionVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Traction" );
+    siloWriter->registerVector(
+        normalVectorVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Normal" );
+    siloWriter->registerVector(
+        contactPressureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ContactPressure" );
+    siloWriter->registerVector(
+        contactShiftVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Shift" );
+    siloWriter->writeFile( "TITI_0", 0 );
 
     auto linearSolverParams =
         std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
@@ -694,15 +680,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             //    } // end if
             //  } // end for jj
 
-#ifdef USE_EXT_SILO
-            {
-                meshAdapter->displaceMesh( columnSolVec );
-                siloWriter->writeFile( "TITI_0", TOTO_count );
-                columnSolVec->scale( -1.0 );
-                meshAdapter->displaceMesh( columnSolVec );
-                columnSolVec->scale( -1.0 );
-            }
-#endif
+            meshAdapter->displaceMesh( columnSolVec );
+            siloWriter->writeFile( "TITI_0", TOTO_count );
+            columnSolVec->scale( -1.0 );
+            meshAdapter->displaceMesh( columnSolVec );
+            columnSolVec->scale( -1.0 );
+
             if ( !rank )
                 std::cout << nChangesInActiveSet << " CHANGES IN ACTIVE SET\n";
 

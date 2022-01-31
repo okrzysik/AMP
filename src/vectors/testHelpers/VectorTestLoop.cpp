@@ -1,19 +1,18 @@
+#include "AMP/AMP_TPLs.h"
+#include "AMP/utils/UnitTest.h"
+#include "AMP/vectors/testHelpers/VectorFactory.h"
 #include "AMP/vectors/testHelpers/VectorTests.h"
 
-#include "AMP/utils/UnitTest.h"
-
-#include "AMP/vectors/testHelpers/VectorFactory.h"
-
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     #include "AMP/vectors/sundials/SundialsVector.h"
     #include "AMP/vectors/testHelpers/sundials/SundialsVectorTests.h"
 #endif
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     #include "AMP/vectors/petsc/PetscVector.h"
     #include "AMP/vectors/testHelpers/petsc/PetscVectorFactory.h"
     #include "AMP/vectors/testHelpers/petsc/PetscVectorTests.h"
 #endif
-#ifdef USE_TRILINOS_EPETRA
+#ifdef AMP_USE_TRILINOS_EPETRA
     #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorFactory.h"
     #include "AMP/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.h"
 #endif
@@ -47,11 +46,11 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
         VerifyVectorMin( ut );
         VerifyVectorMax( ut );
         VerifyVectorMaxMin( ut );
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
         DeepCloneOfView<AMP::LinearAlgebra::PetscVector>( ut );
         Bug_491( ut );
 #endif
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
         DeepCloneOfView<AMP::LinearAlgebra::SundialsVector>( ut );
 #endif
         VectorIteratorLengthTest( ut );
@@ -72,7 +71,7 @@ void VectorTests::testManagedVector( AMP::UnitTest * ) {}
 void VectorTests::testPetsc( AMP::UnitTest *ut )
 {
     NULL_USE( ut );
-#ifdef USE_EXT_PETSC
+#ifdef AMP_USE_PETSC
     auto petscViewFactory  = std::make_shared<PetscViewFactory>( d_factory );
     auto petscCloneFactory = std::make_shared<PetscCloneFactory>( petscViewFactory );
     PetscVectorTests test1( petscViewFactory );
@@ -89,7 +88,7 @@ void VectorTests::testPetsc( AMP::UnitTest *ut )
 void VectorTests::testEpetra( AMP::UnitTest *ut )
 {
     NULL_USE( ut );
-#ifdef USE_TRILINOS_EPETRA
+#ifdef AMP_USE_TRILINOS_EPETRA
     if ( d_factory->getVector()->numberOfDataBlocks() <= 1 ) {
         // Epetra currently only supports one data block
         EpetraVectorTests test( d_factory );
@@ -102,7 +101,7 @@ void VectorTests::testEpetra( AMP::UnitTest *ut )
 void VectorTests::testSundials( AMP::UnitTest *ut )
 {
     NULL_USE( ut );
-#ifdef USE_EXT_SUNDIALS
+#ifdef AMP_USE_SUNDIALS
     auto viewFactory =
         std::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
     auto cloneFactory = std::make_shared<CloneFactory>( viewFactory );

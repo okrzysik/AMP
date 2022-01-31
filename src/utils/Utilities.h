@@ -311,7 +311,7 @@ double trilinear( const std::vector<double> &x,
                   double zi );
 
 //! Create a hash key from a char array
-constexpr unsigned int hash_char( const char * );
+constexpr unsigned int hash_char( const std::string_view & );
 
 
 // Function to demangle a string (e.g. from typeid)

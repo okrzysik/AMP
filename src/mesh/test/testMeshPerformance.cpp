@@ -31,7 +31,7 @@ void testMeshGenerators( AMP::UnitTest &ut )
     runTest<AMP::unit_test::AMPMultiMeshGenerator>( ut );
     runTest<AMP::unit_test::AMPCubeGenerator<4>>( ut );
 // libMesh generators
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     runTest<AMP::unit_test::LibMeshCubeGenerator<5>>( ut );
     runTest<AMP::unit_test::libMeshThreeElementGenerator>( ut );
     #ifdef USE_AMP_DATA

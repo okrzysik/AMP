@@ -193,7 +193,7 @@ public:
         generator.build_mesh();
         auto mesh1 = generator.getMesh();
         auto type  = mesh1->getGeomType();
-        auto type2 = ( AMP::Mesh::GeomType )( (int) type - 1 );
+        auto type2 = (AMP::Mesh::GeomType) ( (int) type - 1 );
         auto it    = mesh1->getSurfaceIterator( type2, GCW );
         mesh       = mesh1->Subset( it );
     }
@@ -205,7 +205,7 @@ public:
 
 
 // Include libmesh generators
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
     #include "libmeshGenerators.h"
 #endif
 

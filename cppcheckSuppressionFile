@@ -14,6 +14,7 @@ unusedFunction:*            // Suppress unusedFunction messages (functions may b
 redundantAssignment:*       // Suppress redundantAssignment, can be better practice in many instances
 redundantCopy:*             // Suppress redundantCopy, can be better practice in many instances
 preprocessorErrorDirective:* // Suppress #error messages (may be valid and will be caught by compiler)
+virtualCallInConstructor:*  // False errors
 
 
 //***********************************************************
@@ -56,6 +57,8 @@ operatorEqRetRefThis:*/AMP/utils/threadpool/ThreadPoolId.hpp
 arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
 templateRecursion:*/AMP/utils/AMP_MPI.I
 invalidLifetime:*/AMP/utils/kdtree2.hpp
+pointerOutOfBoundsCond:*/AMP/utils/kdtree2.hpp
+passedByValue:*/utils/FactoryStrategy.hpp
 
 
 //***********************************************************
@@ -111,7 +114,6 @@ arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/test/test_AMP_MPI.cpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
-unreadVariable:*/utils/ReadTestMesh.cpp
 unreadVariable:*/src/utils/DelaunayInterpolation.cpp
 unreadVariable:*/src/utils/DelaunayTessellation.cpp
 unreadVariable:*/src/IO/HDF5writer.cpp
@@ -130,12 +132,22 @@ objectIndex:*/src/mesh/libmesh/initializeLibMesh.cpp
 ignoredReturnValue:*/src/geometry/GeometryHelpers.cpp
 unassignedVariable:*/src/mesh/triangle/TriangleMesh.cpp
 duplicateExpression:*/src/utils/DatabaseKeyData.cpp
-invalidscanf:*/src/utils/ReadTestMesh.cpp
+unreadVariable:*/mesh/libmesh/ReadTestMesh.cpp
+invalidscanf:*/src/mesh/libmesh/ReadTestMesh.cpp
+constVariable:*/src/mesh/edge_t.cpp
+constVariable:*/src/mesh/structured/structuredMeshElement.cpp
+constVariable:*/src/mesh/triangle_t.cpp
+noOperatorEq:*/src/utils/Utilities.cpp
+constParameter:*/src/vectors/petsc/PetscHelpers.cpp
+constParameter:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
+constParameter:*/src/operators/mechanics/GeneralCladThermalCreepPlasticModel.cpp
+constParameter:*/src/operators/trilinos/TrilinosMatrixShellOperator.cpp
 
 
 //***********************************************************
 // Suppress test files                                      *
 //***********************************************************
+*:*/src/IO/test/test_HDF5.cpp
 duplicateExpression:*/test/test*
 uselessCallsCompare:*/test/test*
 variableScope:*/test/test*
@@ -177,7 +189,9 @@ redundantAssignment:*/src/utils/kdtree.cpp
 shadowVariable:*/utils/DelaunayTessellation.cpp
 shiftTooManyBits:*/src/utils/extended_int.cpp
 operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
-noOperatorEq:*/src/utils/Utilities.cpp
+duplicateAssignExpression:*/src/operators/test/diffusion/testLinearOperatorFromMatrix-1.cpp
+duplicateAssignExpression:*/src/solvers/test/testSolversForUserMatrix.cpp
+constParameter:*/src/solvers/test/testMatrixFreeML.cpp
 
 
 //***********************************************************

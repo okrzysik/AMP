@@ -93,7 +93,7 @@ public:
             indexArray[i] = i + 1;
         meshArrayDatabase->putVector<int>( "indicies", indexArray );
         meshArrayDatabase->putScalar<std::string>( "MeshName", "pellet_%i" );
-#ifdef USE_EXT_LIBMESH
+#ifdef AMP_USE_LIBMESH
         meshArrayDatabase->putScalar<std::string>( "FileName", "pellet_lo_res.e" );
         meshArrayDatabase->putScalar<std::string>( "MeshType", "libMesh" );
 #else

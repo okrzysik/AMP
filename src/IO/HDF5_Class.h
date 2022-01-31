@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Array.h"
 
 
@@ -14,7 +15,7 @@ namespace AMP {
 
 
 // Include the headers and define some basic types
-#ifdef USE_HDF5
+#ifdef AMP_USE_HDF5
     // Using HDF5
     #include "hdf5.h"
 #else

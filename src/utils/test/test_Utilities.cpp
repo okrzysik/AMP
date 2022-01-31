@@ -32,25 +32,25 @@ size_t abs_diff( size_t a, size_t b ) { return ( a >= b ) ? a - b : b - a; }
 template<class T>
 void testApproxEqualInt( UnitTest *ut )
 {
-    std::string type_name( typeid( T ).name() );
+    std::string type = typeid( T ).name();
     if ( Utilities::approx_equal<T>( 100000, 100000 ) &&
          Utilities::approx_equal_abs<T>( 100000, 100000 ) &&
          !Utilities::approx_equal<T>( 100000, 100001 ) &&
          !Utilities::approx_equal_abs<T>( 100000, 100001 ) )
-        ut->passes( "Integer (" + type_name + ") passes simple check." );
+        ut->passes( "Integer (" + type + ") passes simple check." );
     else
-        ut->failure( "Integer (" + type_name + ") passes simple check." );
+        ut->failure( "Integer (" + type + ") passes simple check." );
 
     if ( Utilities::approx_equal_abs<T>( 100001, 100000, 1 ) &&
          !Utilities::approx_equal_abs<T>( 100002, 100000, 1 ) )
-        ut->passes( "Integer (" + type_name + ") passes close simple check." );
+        ut->passes( "Integer (" + type + ") passes close simple check." );
     else
-        ut->failure( "Integer (" + type_name + ") passes close simple check." );
+        ut->failure( "Integer (" + type + ") passes close simple check." );
 }
 template<class T>
 void testApproxEqual( UnitTest *ut )
 {
-    std::string type_name( typeid( T ).name() );
+    std::string type = typeid( T ).name();
 
     T mine      = 1.0;
     T close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
@@ -61,9 +61,9 @@ void testApproxEqual( UnitTest *ut )
          Utilities::approx_equal_abs( mine, close_abs ) &&
          !Utilities::approx_equal( mine, wrong_rel ) &&
          !Utilities::approx_equal_abs( mine, wrong_abs ) )
-        ut->passes( type_name + " passes simple check near 1" );
+        ut->passes( type + " passes simple check near 1" );
     else
-        ut->failure( type_name + " passes simple check near 1" );
+        ut->failure( type + " passes simple check near 1" );
 
     mine      = static_cast<T>( 1e-6 );
     close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
@@ -74,9 +74,9 @@ void testApproxEqual( UnitTest *ut )
          Utilities::approx_equal_abs( mine, close_abs ) &&
          !Utilities::approx_equal( mine, wrong_rel ) &&
          !Utilities::approx_equal_abs( mine, wrong_abs ) )
-        ut->passes( type_name + " passes simple check near 1e-6" );
+        ut->passes( type + " passes simple check near 1e-6" );
     else
-        ut->failure( type_name + " passes simple check near 1e-6" );
+        ut->failure( type + " passes simple check near 1e-6" );
 
     mine      = static_cast<T>( -1e-32 );
     close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
@@ -87,9 +87,9 @@ void testApproxEqual( UnitTest *ut )
          Utilities::approx_equal_abs( mine, close_abs ) &&
          !Utilities::approx_equal( mine, wrong_rel ) &&
          !Utilities::approx_equal_abs( mine, wrong_abs ) )
-        ut->passes( type_name + " passes simple check near -1e-32" );
+        ut->passes( type + " passes simple check near -1e-32" );
     else
-        ut->failure( type_name + " passes simple check near -1e-32" );
+        ut->failure( type + " passes simple check near -1e-32" );
 }
 
 

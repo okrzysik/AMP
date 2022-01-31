@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorBuider
     #define included_AMP_VectorBuider
 
+    #include "AMP/AMP_TPLs.h"
     #include "AMP/discretization/DOF_Manager.h"
     #include "AMP/utils/FunctionTable.h"
     #include "AMP/vectors/Vector.h"
@@ -14,7 +15,7 @@ extern "C" {
 typedef struct _p_Vec *Vec;
 }
 
-    #if defined( USE_EXT_TRILINOS )
+    #if defined( AMP_USE_TRILINOS )
 DISABLE_WARNINGS
         #include "Thyra_VectorDefaultBase_decl.hpp"
 ENABLE_WARNINGS
@@ -42,7 +43,7 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               bool split = true );
 
 
-    #if defined( USE_EXT_PETSC )
+    #if defined( AMP_USE_PETSC )
 /**
  * \brief  Create a vector from an arbitrary PETSc Vec
  * \details  This function creates a vector from an arbitrary PETSc Vec
@@ -58,7 +59,7 @@ std::shared_ptr<Vector> createVector( Vec v,
     #endif
 
 
-    #if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_EPETRA )
+    #if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_EPETRA )
 /**
  * \brief  Create an epetra vector
  * \param[in] params        Epetra vector parameters
@@ -70,7 +71,7 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
     #endif
 
 
-    #if defined( USE_EXT_TRILINOS ) && defined( USE_TRILINOS_THYRA )
+    #if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_THYRA )
 /**
  * \brief  Create a vector from an arbitrary Thyra Vector
  * \details  This function creates a vector from an arbitrary Thyra Vector

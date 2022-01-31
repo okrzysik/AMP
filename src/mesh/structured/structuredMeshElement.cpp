@@ -9,7 +9,7 @@ namespace AMP::Mesh {
 
 
 // Function to evaluate the magnitude of a cross product in 3d
-double cross3magnitude( double a[3], double b[3] )
+double cross3magnitude( const double a[3], const double b[3] )
 {
     double v[3];
     v[0] = a[1] * b[2] - a[2] * b[1];
@@ -18,7 +18,7 @@ double cross3magnitude( double a[3], double b[3] )
     return std::sqrt( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
 }
 // Function to evaluate the dot produce of a vector and a cross product in 3d ( a . ( b X c ) )
-double dot3cross( double a[3], double b[3], double c[3] )
+double dot3cross( const double a[3], const double b[3], const double c[3] )
 {
     double v[3];
     v[0] = b[1] * c[2] - b[2] * c[1];
@@ -151,7 +151,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
         index[0] = d_index;
         return;
     }
-    const int *ijk = d_index.d_index;
+    const int *ijk = d_index.d_index.data();
     if ( type == GeomType::Vertex ) {
         // We want to get the vertices composing the elements
         if ( d_index.type() == d_meshType ) {
@@ -337,7 +337,7 @@ void structuredMeshElement::getNeighbors(
 }
 void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex *index ) const
 {
-    const int *ijk = d_index.d_index;
+    const int *ijk = d_index.d_index.data();
     if ( d_index.type() == GeomType::Vertex ) {
         // Get the list of neighbor nodex (there are no null neighbors)
         // The node neighbors are the list of nodes that share any element
@@ -425,7 +425,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
     };
     // Get the indicies of the parent elements (ignore boundaries for now)
     std::vector<BoxMesh::MeshElementIndex> index_list;
-    const int *ijk = d_index.d_index;
+    const int *ijk = d_index.d_index.data();
     if ( d_index.d_type == static_cast<int>( type ) ) {
         // We are looking for the current element
         return std::vector<MeshElement>( 1, MeshElement( *this ) );
@@ -700,7 +700,7 @@ double structuredMeshElement::volume() const
         // Compute the volume using 6 sub-pyramids
         int pyr_base[4];
         double vol = 0.0;
-        for ( auto &elem : sub_pyr ) {
+        for ( auto elem : sub_pyr ) {
             // Set the nodes of the pyramid base
             for ( unsigned int i = 0; i < 4; ++i )
                 pyr_base[i] = elem[i];
@@ -773,7 +773,7 @@ bool structuredMeshElement::containsPoint( const Point &, double ) const
 bool structuredMeshElement::isOnSurface() const
 {
     bool on_surface = false;
-    const int *ijk  = d_index.d_index;
+    const int *ijk  = d_index.d_index.data();
     for ( int d = 0; d < static_cast<int>( d_meshType ); d++ ) {
         if ( d_mesh->d_isPeriodic[d] )
             continue;

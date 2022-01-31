@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -13,7 +14,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/ReadTestMesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
@@ -151,7 +151,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
                                    ( ( bvpOperator->getMatrix() )->extractDiagonal() )->L1Norm() );
     AMP::pout << "epsilon = " << epsilon << std::endl;
 
-#ifdef USE_EXT_SILO
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerVector( mechSolVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     auto outFileName1 = AMP::Utilities::stringf( "undeformedBeam_%d", exampleNum );
@@ -159,7 +158,6 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     meshAdapter->displaceMesh( mechSolVec );
     auto outFileName2 = AMP::Utilities::stringf( "deformedBeam_%d", exampleNum );
     siloWriter->writeFile( outFileName2, 1 );
-#endif
 }
 
 int testLinearMechanics_PressureBoundary( int argc, char *argv[] )

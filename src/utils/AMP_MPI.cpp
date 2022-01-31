@@ -1,4 +1,4 @@
-// This file impliments a wrapper class for MPI functions
+// This file implements a wrapper class for MPI functions
 
 // Include AMP headers
 #include "AMP/utils/AMP_MPI.h"
@@ -30,17 +30,18 @@
 
 
 // Make sure USE_MPI is set properly
-#if !defined( USE_MPI ) && defined( USE_EXT_MPI )
+#if !defined( USE_MPI ) && defined( AMP_USE_MPI )
     #define USE_MPI
 #endif
 
 
-// Convience defines
+// Convenience defines
 #define MPI_CLASS_COMM_NULL AMP_COMM_NULL
 #define MPI_CLASS_COMM_SELF AMP_COMM_SELF
 #define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
 
 
+// Set MPI_REQUEST_NULL
 #if defined( USE_SAMRAI ) && defined( USE_PETSC ) && !defined( USE_MPI )
 int MPI_REQUEST_NULL  = 3;
 int MPI_ERR_IN_STATUS = 4;
@@ -85,14 +86,14 @@ static const int mpi_max_tag = 0x3FFFFFFF;
 // Note: these routines may not be thread-safe yet
 #ifndef USE_MPI
 struct Isendrecv_struct {
-    const void *data; // Pointer to data
-    int bytes;        // Number of bytes in the message
-    int status;       // Status: 1-sending, 2-recieving
-    MPI_Comm comm;    // Communicator
-    int tag;          // Tag
+    const void *data;     // Pointer to data
+    int bytes;            // Number of bytes in the message
+    int status;           // Status: 1-sending, 2-recieving
+    MPI_CLASS::Comm comm; // Communicator
+    int tag;              // Tag
 };
-std::map<MPI_Request, Isendrecv_struct> global_isendrecv_list;
-static MPI_Request getRequest( MPI_Comm comm, int tag )
+std::map<MPI_CLASS::Request, Isendrecv_struct> global_isendrecv_list;
+static MPI_CLASS::Request getRequest( MPI_CLASS::Comm comm, int tag )
 {
     MPI_CLASS_ASSERT( tag >= 0 && tag <= mpi_max_tag );
     // Use hashing function: 2^64*0.5*(sqrt(5)-1)
@@ -245,12 +246,12 @@ void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
  *  Empty constructor                                                    *
  ************************************************************************/
 MPI_CLASS::MPI_CLASS()
-    : communicator( MPI_COMM_NULL ),
+    : d_comm( MPI_COMM_NULL ),
       d_isNull( true ),
       d_manage( false ),
       d_call_abort( true ),
-      comm_rank( 0 ),
-      comm_size( 1 ),
+      d_rank( 0 ),
+      d_size( 1 ),
       d_maxTag( mpi_max_tag ),
       d_currentTag( nullptr ),
       d_ranks( nullptr ),
@@ -273,11 +274,11 @@ void MPI_CLASS::reset()
         // We are holding that last reference to the MPI_Comm object, we need to free it
         if ( d_manage ) {
 #if defined( USE_MPI ) || defined( USE_PETSC )
-            MPI_Comm_set_errhandler( communicator, MPI_ERRORS_ARE_FATAL );
-            int err = MPI_Comm_free( &communicator );
+            MPI_Comm_set_errhandler( d_comm, MPI_ERRORS_ARE_FATAL );
+            int err = MPI_Comm_free( (MPI_Comm *) &d_comm );
             if ( err != MPI_SUCCESS )
                 MPI_CLASS_ERROR( "Problem free'ing MPI_Comm object" );
-            communicator = MPI_CLASS_COMM_NULL;
+            d_comm = MPI_CLASS_COMM_NULL;
             ++N_MPI_Comm_destroyed;
 #endif
         }
@@ -295,8 +296,8 @@ void MPI_CLASS::reset()
     d_manage     = false;
     d_count      = nullptr;
     d_ranks      = nullptr;
-    comm_rank    = 0;
-    comm_size    = 1;
+    d_rank       = 0;
+    d_size       = 1;
     d_maxTag     = 0;
     d_isNull     = true;
     d_currentTag = nullptr;
@@ -308,12 +309,12 @@ void MPI_CLASS::reset()
  *  Copy constructors                                                    *
  ************************************************************************/
 MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
-    : communicator( comm.communicator ),
+    : d_comm( comm.d_comm ),
       d_isNull( comm.d_isNull ),
       d_manage( comm.d_manage ),
       d_call_abort( comm.d_call_abort ),
-      comm_rank( comm.comm_rank ),
-      comm_size( comm.comm_size ),
+      d_rank( comm.d_rank ),
+      d_size( comm.d_size ),
       d_maxTag( comm.d_maxTag ),
       d_currentTag( comm.d_currentTag ),
       d_ranks( comm.d_ranks ),
@@ -330,13 +331,13 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
 }
 MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
 {
-    std::swap( communicator, rhs.communicator );
+    std::swap( d_comm, rhs.d_comm );
     std::swap( d_isNull, rhs.d_isNull );
     std::swap( d_manage, rhs.d_manage );
     std::swap( d_call_abort, rhs.d_call_abort );
     std::swap( profile_level, rhs.profile_level );
-    std::swap( comm_rank, rhs.comm_rank );
-    std::swap( comm_size, rhs.comm_size );
+    std::swap( d_rank, rhs.d_rank );
+    std::swap( d_size, rhs.d_size );
     std::swap( d_ranks, rhs.d_ranks );
     std::swap( d_maxTag, rhs.d_maxTag );
     std::swap( d_currentTag, rhs.d_currentTag );
@@ -354,9 +355,9 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     // Destroy the previous object
     this->reset();
     // Initialize the data members to the existing object
-    this->communicator = comm.communicator;
-    this->comm_rank    = comm.comm_rank;
-    this->comm_size    = comm.comm_size;
+    this->d_comm       = comm.d_comm;
+    this->d_rank       = comm.d_rank;
+    this->d_size       = comm.d_size;
     this->d_ranks      = comm.d_ranks;
     this->d_isNull     = comm.d_isNull;
     this->d_manage     = comm.d_manage;
@@ -375,13 +376,13 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    std::swap( communicator, rhs.communicator );
+    std::swap( d_comm, rhs.d_comm );
     std::swap( d_isNull, rhs.d_isNull );
     std::swap( d_manage, rhs.d_manage );
     std::swap( d_call_abort, rhs.d_call_abort );
     std::swap( profile_level, rhs.profile_level );
-    std::swap( comm_rank, rhs.comm_rank );
-    std::swap( comm_size, rhs.comm_size );
+    std::swap( d_rank, rhs.d_rank );
+    std::swap( d_size, rhs.d_size );
     std::swap( d_ranks, rhs.d_ranks );
     std::swap( d_maxTag, rhs.d_maxTag );
     std::swap( d_currentTag, rhs.d_currentTag );
@@ -401,31 +402,31 @@ std::atomic_int d_global_count_world1 = { 1 };
 std::atomic_int d_global_count_world2 = { 1 };
 std::atomic_int d_global_count_self   = { 1 };
 #endif
-MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
+MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
 {
     d_count  = nullptr;
     d_ranks  = nullptr;
     d_manage = false;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
-        communicator = AMP::AMPManager::comm_world.communicator;
+        d_comm = AMP::AMPManager::comm_world.d_comm;
     } else if ( comm == MPI_CLASS_COMM_SELF ) {
-        communicator = MPI_COMM_SELF;
+        d_comm = MPI_COMM_SELF;
     } else if ( comm == MPI_CLASS_COMM_NULL ) {
-        communicator = MPI_COMM_NULL;
+        d_comm = MPI_COMM_NULL;
     } else {
-        communicator = comm;
+        d_comm = comm;
     }
 #ifdef USE_MPI
     // We are using MPI, use the MPI communicator to initialize the data
-    if ( communicator != MPI_COMM_NULL ) {
+    if ( d_comm != MPI_COMM_NULL ) {
         // Attach the error handler
-        StackTrace::setMPIErrorHandler( communicator );
+        StackTrace::setMPIErrorHandler( d_comm );
         // Get the communicator properties
-        MPI_Comm_rank( communicator, &comm_rank );
-        MPI_Comm_size( communicator, &comm_size );
+        MPI_Comm_rank( d_comm, &d_rank );
+        MPI_Comm_size( d_comm, &d_size );
         int flag, *val;
-        int ierr = MPI_Comm_get_attr( communicator, MPI_TAG_UB, &val, &flag );
+        int ierr = MPI_Comm_get_attr( d_comm, MPI_TAG_UB, &val, &flag );
         MPI_CLASS_ASSERT( ierr == MPI_SUCCESS );
         if ( flag == 0 ) {
             d_maxTag = mpi_max_tag; // The tag is not a valid attribute use default value
@@ -437,25 +438,24 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
             MPI_CLASS_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
         }
     } else {
-        comm_rank = 1;
-        comm_size = 0;
-        d_maxTag  = mpi_max_tag;
+        d_rank   = 1;
+        d_size   = 0;
+        d_maxTag = mpi_max_tag;
     }
-    d_isNull = communicator == MPI_COMM_NULL;
-    if ( manage && communicator != MPI_COMM_NULL && communicator != MPI_COMM_SELF &&
-         communicator != MPI_COMM_WORLD )
+    d_isNull = d_comm == MPI_COMM_NULL;
+    if ( manage && d_comm != MPI_COMM_NULL && d_comm != MPI_COMM_SELF && d_comm != MPI_COMM_WORLD )
         d_manage = true;
     // Create the count (Note: we do not need to worry about thread safety)
-    if ( communicator == AMP::AMPManager::comm_world.communicator ) {
+    if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
         d_count = &d_global_count_world1;
         ++( *d_count );
-    } else if ( communicator == MPI_COMM_WORLD ) {
+    } else if ( d_comm == MPI_COMM_WORLD ) {
         d_count = &d_global_count_world2;
         ++( *d_count );
-    } else if ( communicator == MPI_COMM_SELF ) {
+    } else if ( d_comm == MPI_COMM_SELF ) {
         d_count = &d_global_count_self;
         ++( *d_count );
-    } else if ( communicator == MPI_COMM_NULL ) {
+    } else if ( d_comm == MPI_COMM_NULL ) {
         d_count = nullptr;
     } else {
         d_count  = new std::atomic_int;
@@ -466,30 +466,30 @@ MPI_CLASS::MPI_CLASS( MPI_Comm comm, bool manage )
         // StackTrace::multi_stack_info( StackTrace::getCallStack() ).print( std::cout );
     }
     // Create d_ranks
-    if ( comm_size > 1 ) {
-        d_ranks    = new int[comm_size];
+    if ( d_size > 1 ) {
+        d_ranks    = new int[d_size];
         d_ranks[0] = -1;
     }
 #else
     // We are not using MPI, intialize based on the communicator
     NULL_USE( manage );
-    comm_rank = 0;
-    comm_size = 1;
-    d_maxTag  = mpi_max_tag;
-    d_isNull  = communicator == MPI_COMM_NULL;
+    d_rank   = 0;
+    d_size   = 1;
+    d_maxTag = mpi_max_tag;
+    d_isNull = d_comm == MPI_COMM_NULL;
     if ( d_isNull )
-        comm_size    = 0;
+        d_size       = 0;
 #endif
-    if ( communicator == AMP::AMPManager::comm_world.communicator ) {
+    if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
         d_currentTag = d_global_currentTag_world1;
         ++( this->d_currentTag[1] );
-    } else if ( communicator == MPI_COMM_WORLD ) {
+    } else if ( d_comm == MPI_COMM_WORLD ) {
         d_currentTag = d_global_currentTag_world2;
         ++( this->d_currentTag[1] );
-    } else if ( communicator == MPI_COMM_SELF ) {
+    } else if ( d_comm == MPI_COMM_SELF ) {
         d_currentTag = d_global_currentTag_self;
         ++( this->d_currentTag[1] );
-    } else if ( communicator == MPI_COMM_NULL ) {
+    } else if ( d_comm == MPI_COMM_NULL ) {
         d_currentTag = nullptr;
     } else {
         d_currentTag    = new int[2];
@@ -510,20 +510,20 @@ std::vector<int> MPI_CLASS::globalRanks() const
     if ( myGlobalRank == -1 ) {
 #ifdef USE_MPI
         if ( MPI_Active() )
-            MPI_Comm_rank( AMP::AMPManager::comm_world.communicator, &myGlobalRank );
+            MPI_Comm_rank( AMP::AMPManager::comm_world.d_comm, &myGlobalRank );
 #else
         myGlobalRank = 0;
 #endif
     }
     // Check if we are dealing with a serial or null communicator
-    if ( comm_size == 1 )
+    if ( d_size == 1 )
         return std::vector<int>( 1, myGlobalRank );
-    if ( d_ranks == nullptr || communicator == MPI_COMM_NULL )
+    if ( d_ranks == nullptr || d_comm == MPI_COMM_NULL )
         return std::vector<int>();
     // Fill d_ranks if necessary
     if ( d_ranks[0] == -1 ) {
-        if ( communicator == AMP::AMPManager::comm_world.communicator ) {
-            for ( int i = 0; i < comm_size; i++ )
+        if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+            for ( int i = 0; i < d_size; i++ )
                 d_ranks[i] = i;
         } else {
 
@@ -532,7 +532,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
         }
     }
     // Return d_ranks
-    return std::vector<int>( d_ranks, d_ranks + comm_size );
+    return std::vector<int>( d_ranks, d_ranks + d_size );
 }
 
 
@@ -569,11 +569,11 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
     MPI_Group group1 = MPI_GROUP_EMPTY, group2 = MPI_GROUP_EMPTY;
     if ( !comm1.isNull() ) {
         MPI_Group_free2( &group1 );
-        MPI_Comm_group( comm1.communicator, &group1 );
+        MPI_Comm_group( comm1.d_comm, &group1 );
     }
     if ( !comm2.isNull() ) {
         MPI_Group_free2( &group2 );
-        MPI_Comm_group( comm2.communicator, &group2 );
+        MPI_Comm_group( comm2.d_comm, &group2 );
     }
     MPI_Group group12;
     MPI_Group_intersection( group1, group2, &group12 );
@@ -595,7 +595,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
         // The intersection is smaller than comm1 or comm2
         // Check if the new comm is nullptr for all processors
         int max_size = 0;
-        MPI_Allreduce( &size, &max_size, 1, MPI_INT, MPI_MAX, comm1.communicator );
+        MPI_Allreduce( &size, &max_size, 1, MPI_INT, MPI_MAX, comm1.d_comm );
         if ( max_size == 0 ) {
             // We are dealing with completely disjoint sets
             new_comm = MPI_CLASS( MPI_CLASS_COMM_NULL, false );
@@ -608,7 +608,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
                 MPI_Comm_group( MPI_COMM_SELF, &group12 );
             }
             MPI_Comm new_MPI_comm;
-            MPI_Comm_create( comm1.communicator, group12, &new_MPI_comm );
+            MPI_Comm_create( comm1.d_comm, group12, &new_MPI_comm );
             if ( size > 0 ) {
                 // This is the valid case where we create a new intersection comm
                 new_comm = MPI_CLASS( new_MPI_comm, true );
@@ -629,7 +629,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 {
     if ( comm1.isNull() || comm2.isNull() )
         return MPI_CLASS( MPI_CLASS_COMM_NULL, false );
-    MPI_CLASS_ASSERT( comm1.comm_size == 1 && comm2.comm_size == 1 );
+    MPI_CLASS_ASSERT( comm1.d_size == 1 && comm2.d_size == 1 );
     return comm1;
 }
 #endif
@@ -642,7 +642,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
 {
     if ( d_isNull ) {
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
-    } else if ( comm_size == 1 ) {
+    } else if ( d_size == 1 ) {
         if ( color == -1 )
             return MPI_CLASS( MPI_CLASS_COMM_NULL );
         return dup();
@@ -652,9 +652,9 @@ MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
     // USE MPI to split the communicator
     int error = 0;
     if ( color == -1 ) {
-        error = MPI_Comm_split( communicator, MPI_UNDEFINED, key, &new_MPI_comm );
+        error = MPI_Comm_split( d_comm, MPI_UNDEFINED, key, &new_MPI_comm );
     } else {
-        error = MPI_Comm_split( communicator, color, key, &new_MPI_comm );
+        error = MPI_Comm_split( d_comm, color, key, &new_MPI_comm );
     }
     MPI_CLASS_INSIST( error == MPI_SUCCESS, "Error calling MPI routine" );
 #endif
@@ -667,7 +667,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
 MPI_CLASS MPI_CLASS::splitByNode( int key, bool manage ) const
 {
     // Check if we are dealing with a single processor (trivial case)
-    if ( comm_size == 1 )
+    if ( d_size == 1 )
         return this->split( 0, 0, manage );
     // Get the node name
     std::string name = MPI_CLASS::getNodeName();
@@ -688,10 +688,10 @@ MPI_CLASS MPI_CLASS::dup( bool manage ) const
 {
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
-    MPI_Comm new_MPI_comm = communicator;
+    MPI_Comm new_MPI_comm = d_comm;
 #if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator
-    MPI_Comm_dup( communicator, &new_MPI_comm );
+    MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
     static MPI_Comm uniqueGlobalComm = 11;
     new_MPI_comm = uniqueGlobalComm;
@@ -725,19 +725,13 @@ std::string MPI_CLASS::getNodeName()
 /************************************************************************
  *  Overload operator ==                                                 *
  ************************************************************************/
-bool MPI_CLASS::operator==( const MPI_CLASS &comm ) const
-{
-    return communicator == comm.communicator;
-}
+bool MPI_CLASS::operator==( const MPI_CLASS &comm ) const { return d_comm == comm.d_comm; }
 
 
 /************************************************************************
  *  Overload operator !=                                                 *
  ************************************************************************/
-bool MPI_CLASS::operator!=( const MPI_CLASS &comm ) const
-{
-    return communicator != comm.communicator;
-}
+bool MPI_CLASS::operator!=( const MPI_CLASS &comm ) const { return d_comm != comm.d_comm; }
 
 
 /************************************************************************
@@ -756,16 +750,16 @@ bool MPI_CLASS::operator<( const MPI_CLASS &comm ) const
     if ( compare( comm ) != 0 )
         return false;
     // Check that the size of the other communicator is > the current communicator size
-    if ( comm_size >= comm.comm_size )
+    if ( d_size >= comm.d_size )
         flag = false;
 // Check the union of the communicator groups
 // this is < comm iff this group is a subgroup of comm's group
 #ifdef USE_MPI
     MPI_Group group1 = MPI_GROUP_EMPTY, group2 = MPI_GROUP_EMPTY, group12 = MPI_GROUP_EMPTY;
     if ( !d_isNull )
-        MPI_Comm_group( communicator, &group1 );
+        MPI_Comm_group( d_comm, &group1 );
     if ( !comm.d_isNull )
-        MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Comm_group( comm.d_comm, &group2 );
     MPI_Group_union( group1, group2, &group12 );
     int compare;
     MPI_Group_compare( group2, group12, &compare );
@@ -805,13 +799,13 @@ bool MPI_CLASS::operator<=( const MPI_CLASS &comm ) const
         return true;
     // Check that the size of the other communicator is > the current communicator size
     // this is <= comm iff this group is a subgroup of comm's group
-    if ( comm_size > comm.comm_size )
+    if ( d_size > comm.d_size )
         flag = false;
 // Check the unnion of the communicator groups
 #ifdef USE_MPI
     MPI_Group group1, group2, group12;
-    MPI_Comm_group( communicator, &group1 );
-    MPI_Comm_group( comm.communicator, &group2 );
+    MPI_Comm_group( d_comm, &group1 );
+    MPI_Comm_group( comm.d_comm, &group2 );
     MPI_Group_union( group1, group2, &group12 );
     int compare;
     MPI_Group_compare( group2, group12, &compare );
@@ -841,16 +835,16 @@ bool MPI_CLASS::operator>( const MPI_CLASS &comm ) const
     if ( compare( comm ) != 0 )
         return false;
     // Check that the size of the other communicator is > the current communicator size
-    if ( comm_size <= comm.comm_size )
+    if ( d_size <= comm.d_size )
         flag = false;
 // Check the unnion of the communicator groups
 // this is > comm iff comm's group is a subgroup of this group
 #ifdef USE_MPI
     MPI_Group group1 = MPI_GROUP_EMPTY, group2 = MPI_GROUP_EMPTY, group12 = MPI_GROUP_EMPTY;
     if ( !d_isNull )
-        MPI_Comm_group( communicator, &group1 );
+        MPI_Comm_group( d_comm, &group1 );
     if ( !comm.d_isNull )
-        MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Comm_group( comm.d_comm, &group2 );
     MPI_Group_union( group1, group2, &group12 );
     int compare;
     MPI_Group_compare( group1, group12, &compare );
@@ -890,16 +884,16 @@ bool MPI_CLASS::operator>=( const MPI_CLASS &comm ) const
     if ( compare( comm ) != 0 )
         return true;
     // Check that the size of the other communicator is > the current communicator size
-    if ( comm_size < comm.comm_size )
+    if ( d_size < comm.d_size )
         flag = false;
 // Check the unnion of the communicator groups
 // this is >= comm iff comm's group is a subgroup of this group
 #ifdef USE_MPI
     MPI_Group group1 = MPI_GROUP_EMPTY, group2 = MPI_GROUP_EMPTY, group12 = MPI_GROUP_EMPTY;
     if ( !d_isNull )
-        MPI_Comm_group( communicator, &group1 );
+        MPI_Comm_group( d_comm, &group1 );
     if ( !comm.d_isNull )
-        MPI_Comm_group( comm.communicator, &group2 );
+        MPI_Comm_group( comm.d_comm, &group2 );
     MPI_Group_union( group1, group2, &group12 );
     int compare;
     MPI_Group_compare( group1, group12, &compare );
@@ -919,13 +913,13 @@ bool MPI_CLASS::operator>=( const MPI_CLASS &comm ) const
  ************************************************************************/
 int MPI_CLASS::compare( const MPI_CLASS &comm ) const
 {
-    if ( communicator == comm.communicator )
+    if ( d_comm == comm.d_comm )
         return 1;
 #ifdef USE_MPI
     if ( d_isNull || comm.d_isNull )
         return 0;
     int result;
-    int error = MPI_Comm_compare( communicator, comm.communicator, &result );
+    int error = MPI_Comm_compare( d_comm, comm.d_comm, &result );
     MPI_CLASS_INSIST( error == MPI_SUCCESS, "Error calling MPI routine" );
     if ( result == MPI_IDENT )
         return 2;
@@ -937,7 +931,7 @@ int MPI_CLASS::compare( const MPI_CLASS &comm ) const
         return 0;
     MPI_CLASS_ERROR( "Unknown results from comm compare" );
 #else
-    if ( comm.communicator == MPI_COMM_NULL || communicator == MPI_COMM_NULL )
+    if ( comm.d_comm == MPI_COMM_NULL || d_comm == MPI_COMM_NULL )
         return 0;
     else
         return 3;
@@ -953,13 +947,13 @@ void MPI_CLASS::setCallAbortInSerialInsteadOfExit( bool flag ) { d_call_abort = 
 void MPI_CLASS::abort() const
 {
 #ifdef USE_MPI
-    MPI_Comm comm = communicator;
+    MPI_Comm comm = d_comm;
     if ( comm == MPI_COMM_NULL )
         comm = MPI_COMM_WORLD;
     if ( !MPI_Active() ) {
         // MPI is not availible
         exit( -1 );
-    } else if ( comm_size > 1 ) {
+    } else if ( d_size > 1 ) {
         MPI_Abort( comm, -1 );
     } else if ( d_call_abort ) {
         MPI_Abort( comm, -1 );
@@ -1012,10 +1006,9 @@ static inline bool readBit( const uint64_t *x, size_t index )
 bool MPI_CLASS::allReduce( const bool value ) const
 {
     bool ret = value;
-    if ( comm_size > 1 ) {
+    if ( d_size > 1 ) {
 #ifdef USE_MPI
-        MPI_Allreduce(
-            (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, communicator );
+        MPI_Allreduce( (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MIN, d_comm );
 #else
         NULL_USE( value );
         MPI_CLASS_ERROR( "This shouldn't be possible" );
@@ -1025,7 +1018,7 @@ bool MPI_CLASS::allReduce( const bool value ) const
 }
 void MPI_CLASS::allReduce( std::vector<bool> &x ) const
 {
-    if ( comm_size <= 1 )
+    if ( d_size <= 1 )
         return;
 #ifdef USE_MPI
     size_t N  = ( x.size() + 63 ) / 64;
@@ -1037,7 +1030,7 @@ void MPI_CLASS::allReduce( std::vector<bool> &x ) const
         if ( x[i] )
             setBit( send, i );
     }
-    MPI_Allreduce( send, recv, N, MPI_UINT64_T, MPI_BAND, communicator );
+    MPI_Allreduce( send, recv, N, MPI_UINT64_T, MPI_BAND, d_comm );
     for ( size_t i = 0; i < x.size(); i++ )
         x[i] = readBit( recv, i );
     delete[] send;
@@ -1055,10 +1048,9 @@ void MPI_CLASS::allReduce( std::vector<bool> &x ) const
 bool MPI_CLASS::anyReduce( const bool value ) const
 {
     bool ret = value;
-    if ( comm_size > 1 ) {
+    if ( d_size > 1 ) {
 #ifdef USE_MPI
-        MPI_Allreduce(
-            (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, communicator );
+        MPI_Allreduce( (void *) &value, (void *) &ret, 1, MPI_UNSIGNED_CHAR, MPI_MAX, d_comm );
 #else
         NULL_USE( value );
         MPI_CLASS_ERROR( "This shouldn't be possible" );
@@ -1068,7 +1060,7 @@ bool MPI_CLASS::anyReduce( const bool value ) const
 }
 void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 {
-    if ( comm_size <= 1 )
+    if ( d_size <= 1 )
         return;
 #ifdef USE_MPI
     size_t N  = ( x.size() + 63 ) / 64;
@@ -1080,7 +1072,7 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
         if ( x[i] )
             setBit( send, i );
     }
-    MPI_Allreduce( send, recv, N, MPI_UINT64_T, MPI_BOR, communicator );
+    MPI_Allreduce( send, recv, N, MPI_UINT64_T, MPI_BOR, d_comm );
     for ( size_t i = 0; i < x.size(); i++ )
         x[i] = readBit( recv, i );
     delete[] send;
@@ -1098,7 +1090,7 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 void MPI_CLASS::barrier() const
 {
 #ifdef USE_MPI
-    MPI_Barrier( communicator );
+    MPI_Barrier( d_comm );
 #endif
 }
 
@@ -1131,7 +1123,7 @@ void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "sendBytes", profile_level );
-    auto id = getRequest( communicator, tag );
+    auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_CLASS_INSIST( it == global_isendrecv_list.end(),
                       "send must be paired with a previous call to irecv in serial" );
@@ -1145,7 +1137,7 @@ void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "recv<char>", profile_level );
-    auto id = getRequest( communicator, tag );
+    auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     MPI_CLASS_INSIST( it != global_isendrecv_list.end(),
                       "recv must be paired with a previous call to isend in serial" );
@@ -1155,12 +1147,12 @@ void MPI_CLASS::recvBytes( void *buf, int bytes, const int, int tag ) const
     global_isendrecv_list.erase( it );
     PROFILE_STOP( "recv<char>", profile_level );
 }
-MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) const
+MPI_CLASS::Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) const
 {
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "IsendBytes", profile_level );
-    auto id = getRequest( communicator, tag );
+    auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     if ( it == global_isendrecv_list.end() ) {
         // We are calling isend first
@@ -1168,9 +1160,9 @@ MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) co
         data.bytes = bytes;
         data.data = buf;
         data.status = 1;
-        data.comm = communicator;
+        data.comm = d_comm;
         data.tag = tag;
-        global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
+        global_isendrecv_list.insert( std::pair<MPI_CLASS::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
         MPI_CLASS_ASSERT( it->second.status == 2 );
@@ -1181,12 +1173,13 @@ MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int tag ) co
     PROFILE_STOP( "IsendBytes", profile_level );
     return id;
 }
-MPI_Request MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) const
+MPI_CLASS::Request
+MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) const
 {
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     PROFILE_START( "Irecv<char>", profile_level );
-    auto id = getRequest( communicator, tag );
+    auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
     if ( it == global_isendrecv_list.end() ) {
         // We are calling Irecv first
@@ -1194,9 +1187,9 @@ MPI_Request MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const 
         data.bytes = bytes;
         data.data = buf;
         data.status = 2;
-        data.comm = communicator;
+        data.comm = d_comm;
         data.tag = tag;
-        global_isendrecv_list.insert( std::pair<MPI_Request, Isendrecv_struct>( id, data ) );
+        global_isendrecv_list.insert( std::pair<MPI_CLASS::Request, Isendrecv_struct>( id, data ) );
     } else {
         // We called Isend first
         MPI_CLASS_ASSERT( it->second.status == 1 );
@@ -1219,16 +1212,16 @@ template<>
 void MPI_CLASS::call_allGather<std::string>( const std::string &x_in, std::string *x_out ) const
 {
     // Get the bytes recvied per processor
-    std::vector<int> recv_cnt( comm_size, 0 );
+    std::vector<int> recv_cnt( d_size, 0 );
     allGather<int>( (int) x_in.size() + 1, &recv_cnt[0] );
-    std::vector<int> recv_disp( comm_size, 0 );
-    for ( int i = 1; i < comm_size; i++ )
+    std::vector<int> recv_disp( d_size, 0 );
+    for ( int i = 1; i < d_size; i++ )
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     // Call the vector form of allGather for the char arrays
-    char *recv_data = new char[recv_disp[comm_size - 1] + recv_cnt[comm_size - 1]];
+    char *recv_data = new char[recv_disp[d_size - 1] + recv_cnt[d_size - 1]];
     allGather<char>(
         x_in.c_str(), (int) x_in.size() + 1, recv_data, &recv_cnt[0], &recv_disp[0], true );
-    for ( int i = 0; i < comm_size; i++ )
+    for ( int i = 0; i < d_size; i++ )
         x_out[i] = std::string( &recv_data[recv_disp[i]] );
     delete[] recv_data;
 }
@@ -1248,19 +1241,19 @@ std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
 {
 #ifdef USE_MPI
     // Get a byte array with the ranks to communicate
-    auto data1 = new char[comm_size];
-    auto data2 = new char[comm_size];
-    memset( data1, 0, comm_size );
-    memset( data2, 0, comm_size );
+    auto data1 = new char[d_size];
+    auto data2 = new char[d_size];
+    memset( data1, 0, d_size );
+    memset( data2, 0, d_size );
     for ( auto &rank : ranks )
         data1[rank] = 1;
-    MPI_Alltoall( data1, 1, MPI_CHAR, data2, 1, MPI_CHAR, communicator );
+    MPI_Alltoall( data1, 1, MPI_CHAR, data2, 1, MPI_CHAR, d_comm );
     int N = 0;
-    for ( int i = 0; i < comm_size; i++ )
+    for ( int i = 0; i < d_size; i++ )
         N += data2[i];
     std::vector<int> ranks_out;
     ranks_out.reserve( N );
-    for ( int i = 0; i < comm_size; i++ ) {
+    for ( int i = 0; i < d_size; i++ ) {
         if ( data2[i] )
             ranks_out.push_back( i );
     }
@@ -1277,7 +1270,7 @@ std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
  *  Wait functions                                                       *
  ************************************************************************/
 #ifdef USE_MPI
-void MPI_CLASS::wait( MPI_Request request )
+void MPI_CLASS::wait( Request request )
 {
     PROFILE_START( "wait", profile_level );
     MPI_Status status;
@@ -1292,7 +1285,7 @@ void MPI_CLASS::wait( MPI_Request request )
     }
     PROFILE_STOP( "wait", profile_level );
 }
-int MPI_CLASS::waitAny( int count, MPI_Request *request )
+int MPI_CLASS::waitAny( int count, Request *request )
 {
     if ( count == 0 )
         return -1;
@@ -1313,7 +1306,7 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
     PROFILE_STOP( "waitAny", profile_level );
     return index;
 }
-void MPI_CLASS::waitAll( int count, MPI_Request *request )
+void MPI_CLASS::waitAll( int count, Request *request )
 {
     if ( count == 0 )
         return;
@@ -1331,7 +1324,7 @@ void MPI_CLASS::waitAll( int count, MPI_Request *request )
     PROFILE_STOP( "waitAll", profile_level );
     delete[] status;
 }
-std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
+std::vector<int> MPI_CLASS::waitSome( int count, Request *request )
 {
     if ( count == 0 )
         return std::vector<int>();
@@ -1354,7 +1347,7 @@ std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
     return indicies;
 }
 #else
-void MPI_CLASS::wait( MPI_Request request )
+void MPI_CLASS::wait( Request request )
 {
     PROFILE_START( "wait", profile_level );
     while ( 1 ) {
@@ -1366,7 +1359,7 @@ void MPI_CLASS::wait( MPI_Request request )
     }
     PROFILE_STOP( "wait", profile_level );
 }
-int MPI_CLASS::waitAny( int count, MPI_Request *request )
+int MPI_CLASS::waitAny( int count, Request *request )
 {
     if ( count == 0 )
         return -1;
@@ -1389,7 +1382,7 @@ int MPI_CLASS::waitAny( int count, MPI_Request *request )
     PROFILE_STOP( "waitAny", profile_level );
     return index;
 }
-void MPI_CLASS::waitAll( int count, MPI_Request *request )
+void MPI_CLASS::waitAll( int count, Request *request )
 {
     if ( count == 0 )
         return;
@@ -1408,7 +1401,7 @@ void MPI_CLASS::waitAll( int count, MPI_Request *request )
     }
     PROFILE_STOP( "waitAll", profile_level );
 }
-std::vector<int> MPI_CLASS::waitSome( int count, MPI_Request *request )
+std::vector<int> MPI_CLASS::waitSome( int count, Request *request )
 {
     if ( count == 0 )
         return std::vector<int>();
@@ -1441,7 +1434,7 @@ int MPI_CLASS::Iprobe( int source, int tag ) const
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_Status status;
     int flag = 0;
-    MPI_Iprobe( source, tag, communicator, &flag, &status );
+    MPI_Iprobe( source, tag, d_comm, &flag, &status );
     if ( flag == 0 )
         return -1;
     int count;
@@ -1454,7 +1447,7 @@ int MPI_CLASS::probe( int source, int tag ) const
     MPI_CLASS_INSIST( tag <= d_maxTag, "Maximum tag value exceeded" );
     MPI_CLASS_INSIST( tag >= 0, "tag must be >= 0" );
     MPI_Status status;
-    MPI_Probe( source, tag, communicator, &status );
+    MPI_Probe( source, tag, d_comm, &status );
     int count;
     MPI_Get_count( &status, MPI_BYTE, &count );
     MPI_CLASS_ASSERT( count >= 0 );
@@ -1466,7 +1459,7 @@ int MPI_CLASS::Iprobe( int source, int tag ) const
     AMP_ASSERT( source == 0 || source < -1 );
     for ( const auto &tmp : global_isendrecv_list ) {
         const auto &data = tmp.second;
-        if ( data.comm == communicator && ( data.tag == tag || tag == -1 ) && data.status == 1 )
+        if ( data.comm == d_comm && ( data.tag == tag || tag == -1 ) && data.status == 1 )
             return data.bytes;
     }
     return -1;
@@ -1508,10 +1501,10 @@ void MPI_CLASS::serializeStart()
 {
 #ifdef USE_MPI
     // Wait for a message from the previous rank
-    if ( comm_rank > 0 ) {
+    if ( d_rank > 0 ) {
         MPI_Request request;
         int flag = false, buf = 0;
-        MPI_Irecv( &buf, 1, MPI_INT, comm_rank - 1, 5627, communicator, &request );
+        MPI_Irecv( &buf, 1, MPI_INT, d_rank - 1, 5627, d_comm, &request );
         while ( !flag ) {
             MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
             std::this_thread::yield();
@@ -1523,10 +1516,10 @@ void MPI_CLASS::serializeStop()
 {
 #ifdef USE_MPI
     // Send flag to next rank
-    if ( comm_rank < comm_size - 1 )
-        MPI_Send( &comm_rank, 1, MPI_INT, comm_rank + 1, 5627, communicator );
+    if ( d_rank < d_size - 1 )
+        MPI_Send( &d_rank, 1, MPI_INT, d_rank + 1, 5627, d_comm );
     // Final barrier to sync all threads
-    MPI_Barrier( communicator );
+    MPI_Barrier( d_comm );
 #endif
 }
 
@@ -1583,7 +1576,7 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
 {
     // Send the length of the strings
     std::vector<int> length( n, 0 );
-    if ( root == comm_rank ) {
+    if ( root == d_rank ) {
         for ( int i = 0; i < n; i++ )
             length[i] = str[i].size();
     }
@@ -1594,15 +1587,15 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
         N += length[i];
     auto buffer = new char[N];
     // Create and send the buffer
-    if ( root == comm_rank ) {
+    if ( root == d_rank ) {
         for ( int i = 0, j = 0; i < n; i++ ) {
             memcpy( &buffer[j], str[i].data(), length[i] );
             j += length[i];
         }
     }
-    MPI_Bcast( buffer, N, MPI_CHAR, root, communicator );
+    MPI_Bcast( buffer, N, MPI_CHAR, root, d_comm );
     // Unpack the strings
-    if ( root != comm_rank ) {
+    if ( root != d_rank ) {
         for ( int i = 0, j = 0; i < n; i++ ) {
             str[i].resize( length[i] );
             memcpy( str[i].data(), &buffer[j], length[i] );
@@ -1620,26 +1613,29 @@ void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) con
 // clang-format off
 #define INSTANTIATE( TYPE )                                                             \
     template TYPE MPI_CLASS::sumReduce<TYPE>( const TYPE ) const;                       \
-    template void MPI_CLASS::sumReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::sumReduce<TYPE>( const TYPE*, TYPE*, int ) const;          \
     template TYPE MPI_CLASS::minReduce<TYPE>( const TYPE ) const;                       \
-    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int, int* ) const;                 \
-    template void MPI_CLASS::minReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
     template TYPE MPI_CLASS::maxReduce<TYPE>( const TYPE ) const;                       \
+    template void MPI_CLASS::sumReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int ) const;                       \
     template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int ) const;                       \
+    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int, int* ) const;                 \
     template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int, int* ) const;                 \
+    template void MPI_CLASS::sumReduce<TYPE>( const TYPE*, TYPE*, int ) const;          \
+    template void MPI_CLASS::minReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
     template void MPI_CLASS::maxReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
+    template TYPE MPI_CLASS::sumScan<TYPE>( const TYPE& ) const;                        \
+    template TYPE MPI_CLASS::minScan<TYPE>( const TYPE& ) const;                        \
+    template TYPE MPI_CLASS::maxScan<TYPE>( const TYPE& ) const;                        \
     template void MPI_CLASS::sumScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template void MPI_CLASS::minScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template void MPI_CLASS::maxScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
     template TYPE MPI_CLASS::bcast<TYPE>( TYPE, int ) const;                            \
     template void MPI_CLASS::bcast<TYPE>( TYPE*, int, int ) const;                      \
     template void MPI_CLASS::send<TYPE>( const TYPE*, int, int, int ) const;            \
-    template MPI_Request MPI_CLASS::Isend<TYPE>( const TYPE*, int, int, int ) const;    \
+    template MPI_CLASS::Request MPI_CLASS::Isend<TYPE>( const TYPE*, int, int, int ) const; \
     template void MPI_CLASS::recv<TYPE>( TYPE*, int, int, int ) const;                  \
     template void MPI_CLASS::recv<TYPE>( TYPE*, int&, int, const bool, int ) const;     \
-    template MPI_Request MPI_CLASS::Irecv<TYPE>( TYPE* buf, int, int, int ) const;      \
+    template MPI_CLASS::Request MPI_CLASS::Irecv<TYPE>( TYPE* buf, int, int, int ) const; \
     template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const TYPE & ) const;        \
     template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const std::vector<TYPE>& ) const; \
     template void MPI_CLASS::allGather<TYPE>( const TYPE&, TYPE* ) const;               \
