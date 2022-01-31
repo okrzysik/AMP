@@ -1,8 +1,9 @@
-#include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMP_MPI.I"
+
 #include "AMP/AMP_Version.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
@@ -690,7 +691,7 @@ std::string AMPManager::info()
     out << "SILO: " << SILO_VERS_MAJ << "." << SILO_VERS_MIN << "." << SILO_VERS_PAT << std::endl;
 #endif
 #ifdef AMP_USE_MPI
-    out << "MPI: " << AMP::AMP_MPI::info() << std::endl;
+    out << "MPI: " << AMP::AMP_MPI::info();
 #endif
 #ifdef AMP_USE_LAPACK_WRAPPERS
     out << "Lapack: " << Lapack<double>::info();
