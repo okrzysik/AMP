@@ -4,6 +4,7 @@
 #include "AMP/vectors/data/cuda/VectorDataGPU.h"
 
 
+#include <cstring>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <string>
@@ -70,9 +71,10 @@ uint64_t VectorDataGPU<TYPE>::getDataID() const
     return reinterpret_cast<uint64_t>( d_Data );
 }
 template<typename TYPE>
-bool VectorDataGPU<TYPE>::isTypeId( size_t hash, size_t ) const
+bool VectorDataGPU<TYPE>::isType( const typeID &id, size_t ) const
 {
-    return hash == typeid( TYPE ).hash_code();
+    constexpr auto type = getTypeID<TYPE>();
+    return id == type;
 }
 template<typename TYPE>
 size_t VectorDataGPU<TYPE>::sizeofDataBlockType( size_t ) const
@@ -173,18 +175,30 @@ VectorDataGPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double 
  * Copy raw data                                                 *
  ****************************************************************/
 template<typename TYPE>
-void VectorDataGPU<TYPE>::putRawData( const double *in )
+void VectorDataGPU<TYPE>::putRawData( const void *in, const typeID &id )
 {
-    for ( size_t i = 0; i < d_localSize; ++i ) {
-        d_Data[i] = static_cast<TYPE>( in[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        memcpy( d_Data, in, d_localSize * sizeof( TYPE ) );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( in );
+        for ( size_t i = 0; i < d_localSize; ++i )
+            d_Data[i] = static_cast<TYPE>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
 template<typename TYPE>
-void VectorDataGPU<TYPE>::copyOutRawData( double *out ) const
+void VectorDataGPU<TYPE>::copyOutRawData( void *out, const typeID &id ) const
 {
-    for ( size_t i = 0; i < d_localSize; ++i ) {
-        out[i] = static_cast<double>( d_Data[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        memcpy( out, d_Data, d_localSize * sizeof( TYPE ) );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( out );
+        for ( size_t i = 0; i < d_localSize; ++i )
+            data[i] = static_cast<double>( d_Data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 

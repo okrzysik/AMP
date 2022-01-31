@@ -48,24 +48,34 @@ std::shared_ptr<VectorData> NativeThyraVectorData::cloneData() const
     return std::make_shared<NativeThyraVectorData>( d_thyraVec->clone_v(), d_localSize, getComm() );
 }
 
-void NativeThyraVectorData::putRawData( const double *in )
+void NativeThyraVectorData::putRawData( const void *in, const typeID &id )
 {
-    size_t i = 0;
-    for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
-        auto *data = reinterpret_cast<double *>( getRawDataBlockAsVoid( b ) );
-        for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
-            data[j] = in[i];
+    if ( id == getTypeID<double>() ) {
+        size_t i = 0;
+        auto ptr = reinterpret_cast<const double *>( in );
+        for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
+            auto *data = reinterpret_cast<double *>( getRawDataBlockAsVoid( b ) );
+            for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
+                data[j] = ptr[i];
+        }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
 
-void NativeThyraVectorData::copyOutRawData( double *out ) const
+void NativeThyraVectorData::copyOutRawData( void *out, const typeID &id ) const
 {
-    size_t i = 0;
-    for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
-        const auto *data = reinterpret_cast<const double *>( getRawDataBlockAsVoid( b ) );
-        for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
-            out[i] = data[j];
+    if ( id == getTypeID<double>() ) {
+        size_t i = 0;
+        auto ptr = reinterpret_cast<double *>( out );
+        for ( size_t b = 0; b < numberOfDataBlocks(); b++ ) {
+            const auto *data = reinterpret_cast<const double *>( getRawDataBlockAsVoid( b ) );
+            for ( size_t j = 0; j < sizeOfDataBlock( b ); j++, i++ )
+                ptr[i] = data[j];
+        }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
@@ -161,46 +171,32 @@ Teuchos::RCP<Thyra::VectorBase<double>> NativeThyraVectorData::getThyraVec( Vect
     return vec2->getVec();
 }
 
-void NativeThyraVectorData::setValuesByLocalID( int num, size_t *indices, const double *vals )
+void NativeThyraVectorData::getValuesByLocalID( size_t N,
+                                                const size_t *indices,
+                                                double *vals ) const
 {
-    NULL_USE( num );
+    NULL_USE( N );
     NULL_USE( indices );
     NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
-
-void NativeThyraVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void NativeThyraVectorData::setValuesByLocalID( size_t N,
+                                                const size_t *indices,
+                                                const double *vals )
 {
-    NULL_USE( num );
+    NULL_USE( N );
     NULL_USE( indices );
     NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
-
-void NativeThyraVectorData::addValuesByLocalID( int num, size_t *indices, const double *vals )
+void NativeThyraVectorData::addValuesByLocalID( size_t N,
+                                                const size_t *indices,
+                                                const double *vals )
 {
-    NULL_USE( num );
+    NULL_USE( N );
     NULL_USE( indices );
-    NULL_USE( vals );
-    AMP_ERROR( "not implemented" );
-}
-
-
-void NativeThyraVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    NULL_USE( num );
-    NULL_USE( indices );
-    NULL_USE( vals );
-    AMP_ERROR( "not implemented" );
-}
-
-
-void NativeThyraVectorData::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
-{
-    NULL_USE( numVals );
-    NULL_USE( ndx );
     NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }

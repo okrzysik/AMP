@@ -613,8 +613,18 @@ public: // VectorData operations
     {
         return d_VectorData->sizeOfDataBlock( i );
     }
-    inline void putRawData( const double *buf ) { d_VectorData->putRawData( buf ); }
-    inline void copyOutRawData( double *buf ) const { d_VectorData->copyOutRawData( buf ); }
+    template<class TYPE>
+    inline void putRawData( const TYPE *buf )
+    {
+        constexpr auto type = getTypeID<TYPE>();
+        d_VectorData->putRawData( buf, type );
+    }
+    template<class TYPE>
+    inline void copyOutRawData( TYPE *buf ) const
+    {
+        constexpr auto type = getTypeID<TYPE>();
+        d_VectorData->copyOutRawData( buf, type );
+    }
     inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
     inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
     inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); }
@@ -651,9 +661,11 @@ public: // VectorData operations
     {
         return d_VectorData->sizeofDataBlockType( i );
     }
-    inline bool isTypeId( size_t hash, size_t block ) const
+    template<typename TYPE>
+    inline bool isType( size_t block ) const
     {
-        return d_VectorData->isTypeId( hash, block );
+        constexpr auto type = getTypeID<TYPE>();
+        return d_VectorData->isType( type, block );
     }
     inline void swapData( VectorData &rhs ) { d_VectorData->swapData( rhs ); }
     inline std::shared_ptr<VectorData> cloneData() const { return d_VectorData->cloneData(); }
@@ -681,31 +693,31 @@ public: // VectorData operations
     inline void dataChanged() { return d_VectorData->dataChanged(); }
 
     inline size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
-    inline void setGhostValuesByGlobalID( int num, size_t *indices, const double *vals )
+    inline void setGhostValuesByGlobalID( int num, const size_t *indices, const double *vals )
     {
         d_VectorData->setGhostValuesByGlobalID( num, indices, vals );
     }
-    inline void setValuesByGlobalID( int num, size_t *indices, const double *vals )
+    inline void addGhostValuesByGlobalID( int num, const size_t *indices, const double *vals )
+    {
+        d_VectorData->addGhostValuesByGlobalID( num, indices, vals );
+    }
+    inline void setValuesByGlobalID( int num, const size_t *indices, const double *vals )
     {
         d_VectorData->setValuesByGlobalID( num, indices, vals );
     }
-    inline void addValuesByGlobalID( int num, size_t *indices, const double *vals )
+    inline void addValuesByGlobalID( int num, const size_t *indices, const double *vals )
     {
         d_VectorData->addValuesByGlobalID( num, indices, vals );
     }
-    inline void getGhostAddValuesByGlobalID( int num, size_t *indices, double *vals ) const
-    {
-        d_VectorData->getGhostAddValuesByGlobalID( num, indices, vals );
-    }
-    inline void getValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    inline void getValuesByGlobalID( int num, const size_t *indices, double *vals ) const
     {
         d_VectorData->getValuesByGlobalID( num, indices, vals );
     }
-    inline void getGhostValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    inline void getGhostValuesByGlobalID( int num, const size_t *indices, double *vals ) const
     {
         d_VectorData->getGhostValuesByGlobalID( num, indices, vals );
     }
-    inline void getValuesByLocalID( int num, size_t *indices, double *vals ) const
+    inline void getValuesByLocalID( int num, const size_t *indices, double *vals ) const
     {
         d_VectorData->getValuesByLocalID( num, indices, vals );
     }

@@ -50,69 +50,24 @@ public: // Virtual functions
 
     /**\brief Copy data into this vector
      */
-    inline void putRawData( const double * ) override {}
+    inline void putRawData( const void *, const typeID & ) override {}
 
     /**\brief Copy data out of this vector
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    inline void copyOutRawData( double * ) const override {}
+    inline void copyOutRawData( void *, const typeID & ) const override {}
 
-    /**
-     * \brief Set values in the vector by their local offset
-     * \param[in] num  number of values to set
-     * \details This will set the owned values for this core.  All indices are
-     * from 0.
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    inline void setValuesByLocalID( int num, size_t *, const double * ) override
+    inline void getValuesByLocalID( size_t N, const size_t *, double * ) const override
     {
-        AMP_INSIST( num == 0, "Cannot set values in NullVectorData" );
+        AMP_INSIST( N == 0, "Cannot get values in NullVectorData" );
     }
-
-    /**
-     * \brief Set owned values using global identifier
-     * \param[in] num  number of values to set
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    inline void setLocalValuesByGlobalID( int num, size_t *, const double * ) override
+    inline void setValuesByLocalID( size_t N, const size_t *, const double * ) override
     {
-        AMP_INSIST( num == 0, "Cannot set values in NullVectorData" );
+        AMP_INSIST( N == 0, "Cannot set values in NullVectorData" );
     }
-
-    /**
-     * \brief Add values to vector entities by their local offset
-     * \param[in] num  number of values to set
-     * \details This will set the owned values for this core.  All indices are
-     * from 0.
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-     */
-    inline void addValuesByLocalID( int num, size_t *, const double * ) override
+    inline void addValuesByLocalID( size_t N, const size_t *, const double * ) override
     {
-        AMP_INSIST( num == 0, "Cannot add values in NullVectorData" );
-    }
-
-    /**
-     * \brief Add owned values using global identifier
-     * \param[in] num  number of values to set
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-     */
-    inline void addLocalValuesByGlobalID( int num, size_t *, const double * ) override
-    {
-        AMP_INSIST( num == 0, "Cannot add values in NullVectorData" );
-    }
-
-    /**
-     * \brief Get local values in the vector by their global offset
-     * \param[in] num  number of values to set
-     * \details This will get any value owned by this core.
-     */
-    inline void getLocalValuesByGlobalID( int num, size_t *, double * ) const override
-    {
-        AMP_INSIST( num == 0, "Cannot get values in NullVectorData" );
+        AMP_INSIST( N == 0, "Cannot add values in NullVectorData" );
     }
 
 
@@ -142,9 +97,9 @@ public: // Advanced virtual functions
     /** \brief Is the data of the given type
      * \param hash     The hash code: typeid(myint).hash_code()
      */
-    inline bool isTypeId( size_t hash, size_t ) const override
+    inline bool isType( const typeID &id, size_t ) const override
     {
-        return hash == typeid( TYPE ).hash_code();
+        return id == getTypeID<TYPE>();
     }
 
     inline void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }

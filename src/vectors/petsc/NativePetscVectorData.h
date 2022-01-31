@@ -37,15 +37,12 @@ public:
     std::string VectorDataName() const override { return "NativePetscVector"; }
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
-    void putRawData( const double * ) override;
-    void copyOutRawData( double *out ) const override;
+    void putRawData( const void *, const typeID & ) override;
+    void copyOutRawData( void *, const typeID & ) const override;
 
-    void setValuesByLocalID( int, size_t *, const double * ) override;
-    void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    void addValuesByLocalID( int, size_t *, const double * ) override;
-    void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
-
-    void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const double * ) override;
+    void addValuesByLocalID( size_t, const size_t *, const double * ) override;
+    void getValuesByLocalID( size_t, const size_t *, double * ) const override;
 
     // Return the id of the data
     uint64_t getDataID() const override
@@ -55,9 +52,10 @@ public:
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    bool isTypeId( size_t hash, size_t ) const override
+    bool isType( const typeID &id, size_t ) const override
     {
-        return hash == typeid( double ).hash_code();
+        constexpr auto type = getTypeID<double>();
+        return id == type;
     }
     void swapData( VectorData &rhs ) override;
 

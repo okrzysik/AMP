@@ -53,13 +53,13 @@ public: // Virtual functions
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    void putRawData( const double *buf ) override;
+    void putRawData( const void *buf, const typeID &id ) override;
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    void copyOutRawData( double *buf ) const override;
+    void copyOutRawData( void *buf, const typeID &id ) const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -70,17 +70,7 @@ public: // Virtual functions
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Set owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
+    void setValuesByLocalID( size_t num, const size_t *indices, const double *vals ) override;
 
     /**
      * \brief Add values to vector entities by their local offset
@@ -92,27 +82,19 @@ public: // Virtual functions
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
+    void addValuesByLocalID( size_t num, const size_t *indices, const double *vals ) override;
 
     /**
-     * \brief Add owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
+     * \brief Get values to vector entities by their local offset
+     * \param[in] num  number of values to get
+     * \param[in] indices the indices of the values to get
      * \param[in] vals the values to place in the vector
-     *
+     * \details This will get the owned values for this core.  All indices are
+     * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Get local values in the vector by their global offset
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[out] vals the values to place in the vector
-     * \details This will get any value owned by this core.
-     */
-    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
+    void getValuesByLocalID( size_t num, const size_t *indices, double *vals ) const override;
 
 
 public: // Advanced virtual functions
@@ -145,7 +127,7 @@ public: // Advanced virtual functions
      * \param hash     The hash code: typeid(myint).hash_code()
      * \param block    The block id to check
      */
-    bool isTypeId( size_t hash, size_t block ) const override;
+    bool isType( const typeID &id, size_t block ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with

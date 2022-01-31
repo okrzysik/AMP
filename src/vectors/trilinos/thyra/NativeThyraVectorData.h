@@ -37,13 +37,11 @@ public:
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
 
-    void setValuesByLocalID( int, size_t *, const double * ) override;
-    void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    void addValuesByLocalID( int, size_t *, const double * ) override;
-    void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void putRawData( const double * ) override;
-    void copyOutRawData( double *out ) const override;
+    void getValuesByLocalID( size_t, const size_t *, double * ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const double * ) override;
+    void addValuesByLocalID( size_t, const size_t *, const double * ) override;
+    void putRawData( const void *, const typeID & ) override;
+    void copyOutRawData( void *, const typeID & ) const override;
     uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
@@ -51,10 +49,7 @@ public:
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    bool isTypeId( size_t hash, size_t ) const override
-    {
-        return hash == typeid( double ).hash_code();
-    }
+    bool isType( const typeID &id, size_t ) const override { return id == getTypeID<double>(); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
 

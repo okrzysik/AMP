@@ -627,6 +627,7 @@ void VectorTests::VerifyVectorGhostCreate( AMP::UnitTest *ut )
 
 void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
 {
+    using UpdateState = AMP::LinearAlgebra::VectorData::UpdateState;
     AMP_MPI globalComm( AMP_COMM_WORLD );
     auto vector = d_factory->getVector();
     auto dofmap = vector->getDOFManager();
@@ -635,75 +636,41 @@ void VectorTests::VerifyVectorMakeConsistentAdd( AMP::UnitTest *ut )
 
     // Zero the vector
     vector->zero();
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+    if ( vector->getUpdateStatus() != UpdateState::UNCHANGED )
         ut->failure( "zero leaves vector in UpdateState::UNCHANGED state " + d_factory->name() );
 
-    // Set and add local values by global id (this should not interfer with the add)
+    // Set and add local values by global id (this should not interfere with the add)
     const double val = 0.0;
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
         vector->setLocalValuesByGlobalID( 1, &i, &val );
         vector->addLocalValuesByGlobalID( 1, &i, &val );
     }
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED )
+    if ( vector->getUpdateStatus() != UpdateState::LOCAL_CHANGED )
         ut->failure( "local set/add leaves vector in UpdateState::LOCAL_CHANGED state " +
                      d_factory->name() );
 
     // Add values by global id
-    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        const auto val = double( i );
-        vector->addValuesByGlobalID( 1, &i, &val );
-    }
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::ADDING )
-        ut->failure( "addValueByGlobalID leaves vector in UpdateState::ADDING state " +
-                     d_factory->name() );
-
-    auto offset = (double) ( 1 << globalComm.getRank() );
-    for ( size_t i = 0; i != vector->getGhostSize(); i++ ) {
-        size_t ndx = vector->getCommunicationList()->getGhostIDList()[i];
-        vector->addValuesByGlobalID( 1, &ndx, &offset );
+    const double zero = 0.0;
+    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ )
+        vector->addValuesByGlobalID( 1, &i, &zero );
+    if ( vector->getUpdateStatus() != UpdateState::LOCAL_CHANGED )
+        ut->failure(
+            "addValueByGlobalID(local) leaves vector in UpdateState::LOCAL_CHANGED state " +
+            d_factory->name() );
+    auto remote = dofmap->getRemoteDOFs();
+    if ( !remote.empty() ) {
+        for ( size_t i : remote )
+            vector->addValuesByGlobalID( 1, &i, &zero );
+        if ( vector->getUpdateStatus() != UpdateState::ADDING )
+            ut->failure( "addValueByGlobalID(remote) leaves vector in UpdateState::ADDING state " +
+                         d_factory->name() );
     }
 
     // Perform a makeConsistent ADD and check the result
     vector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
-    if ( vector->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+    if ( vector->getUpdateStatus() != UpdateState::UNCHANGED )
         ut->failure( "makeConsistent leaves vector in UpdateState::UNCHANGED state " +
                      d_factory->name() );
-    std::map<int, std::set<size_t>> ghosted_entities;
-    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        double diff_double = fabs( vector->getValueByGlobalID( i ) - (double) i );
-        if ( diff_double > 0.00001 ) {
-            int ioffset  = lround( diff_double );
-            int cur_rank = 0;
-            while ( ioffset > 0 ) {
-                if ( ioffset & 1 )
-                    ghosted_entities[cur_rank].insert( i );
-                ioffset >>= 1;
-                cur_rank++;
-            }
-        }
-    }
-    auto cur_replicated = vector->getCommunicationList()->getReplicatedIDList().begin();
-    auto end_replicated = vector->getCommunicationList()->getReplicatedIDList().end();
-    while ( cur_replicated != end_replicated ) {
-        bool found = false;
-        for ( int i = 0; i != globalComm.getSize(); i++ ) {
-            auto location = ghosted_entities[i].find( *cur_replicated );
-            if ( location != ghosted_entities[i].end() ) {
-                found = true;
-                ghosted_entities[i].erase( location );
-                break;
-            }
-        }
-        if ( !found ) {
-            ut->failure( "overly ghosted value " + d_factory->name() );
-            return;
-        }
-        ++cur_replicated;
-    }
-    size_t last_size = 0;
-    for ( int i = 0; i != globalComm.getSize(); i++ )
-        last_size += ghosted_entities[i].size();
-    PASS_FAIL( last_size == 0, "all ghosted values accounted for" );
 }
 
 

@@ -96,16 +96,32 @@ void ArrayVectorData<T, FUN, Allocator>::resize( const ArraySize &localDims )
  * Get/Set raw data                                              *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::putRawData( const double *buf )
+void ArrayVectorData<T, FUN, Allocator>::putRawData( const void *buf, const typeID &id )
 {
     auto &array = this->getArray();
-    array.copy( buf );
+    if ( id == getTypeID<T>() ) {
+        auto data = reinterpret_cast<const T *>( buf );
+        array.copy( data );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( buf );
+        array.copy( data );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
 }
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::copyOutRawData( double *buf ) const
+void ArrayVectorData<T, FUN, Allocator>::copyOutRawData( void *buf, const typeID &id ) const
 {
     auto &array = this->getArray();
-    array.copyTo( buf );
+    if ( id == getTypeID<T>() ) {
+        auto data = reinterpret_cast<T *>( buf );
+        array.copyTo( data );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( buf );
+        array.copyTo( data );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
 }
 
 
@@ -113,44 +129,32 @@ void ArrayVectorData<T, FUN, Allocator>::copyOutRawData( double *buf ) const
  * Get/Set values                                                *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::setValuesByLocalID( int num,
-                                                             size_t *indices,
+void ArrayVectorData<T, FUN, Allocator>::setValuesByLocalID( size_t num,
+                                                             const size_t *indices,
                                                              const double *vals )
 {
-    for ( int i = 0; i < num; i++ )
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    for ( size_t i = 0; i < num; i++ )
         d_array( indices[i] ) = vals[i];
 }
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::addValuesByLocalID( int num,
-                                                             size_t *indices,
+void ArrayVectorData<T, FUN, Allocator>::addValuesByLocalID( size_t num,
+                                                             const size_t *indices,
                                                              const double *vals )
 {
-    for ( int i = 0; i < num; i++ )
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    for ( size_t i = 0; i < num; i++ )
         d_array( indices[i] ) += vals[i];
 }
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::getLocalValuesByGlobalID( int num,
-                                                                   size_t *indices,
-                                                                   double *vals ) const
+void ArrayVectorData<T, FUN, Allocator>::getValuesByLocalID( size_t num,
+                                                             const size_t *indices,
+                                                             double *vals ) const
 {
-    for ( int i = 0; i < num; i++ )
-        vals[i] = d_array( indices[i] - d_offset );
-}
-template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::setLocalValuesByGlobalID( int num,
-                                                                   size_t *indices,
-                                                                   const double *vals )
-{
-    for ( int i = 0; i < num; i++ )
-        d_array( indices[i] - d_offset ) = vals[i];
-}
-template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::addLocalValuesByGlobalID( int num,
-                                                                   size_t *indices,
-                                                                   const double *vals )
-{
-    for ( int i = 0; i < num; i++ )
-        d_array( indices[i] - d_offset ) += vals[i];
+    for ( size_t i = 0; i < num; i++ )
+        vals[i] = d_array( indices[i] );
 }
 
 

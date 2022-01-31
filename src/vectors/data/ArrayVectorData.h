@@ -84,13 +84,13 @@ public:
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    void putRawData( const double *buf ) override;
+    void putRawData( const void *buf, const typeID &id ) override;
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    void copyOutRawData( double *buf ) const override;
+    void copyOutRawData( void *buf, const typeID &id ) const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -101,17 +101,7 @@ public:
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Set owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
+    void setValuesByLocalID( size_t num, const size_t *indices, const double *vals ) override;
 
     /**
      * \brief Add values to vector entities by their local offset
@@ -123,27 +113,16 @@ public:
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
+    void addValuesByLocalID( size_t num, const size_t *indices, const double *vals ) override;
 
     /**
-     * \brief Add owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-     */
-    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Get local values in the vector by their global offset
+     * \brief Get local values in the vector by their lcoal offset
      * \param[in] num  number of values to set
      * \param[in] indices the indices of the values to set
      * \param[out] vals the values to place in the vector
      * \details This will get any value owned by this core.
      */
-    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
+    void getValuesByLocalID( size_t num, const size_t *indices, double *vals ) const override;
 
     /**\brief  A unique id for the underlying data allocation
      *\details This is a unique id that is associated with the data
@@ -178,7 +157,7 @@ protected:
         return d_array.data();
     }
 
-    bool isTypeId( size_t hash, size_t ) const override { return hash == typeid( T ).hash_code(); }
+    bool isType( const typeID &id, size_t ) const override { return id == getTypeID<T>(); }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData( void ) const override;

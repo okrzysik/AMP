@@ -64,78 +64,52 @@ const void *EpetraVectorData::getRawDataBlockAsVoid( size_t i ) const
     return p;
 }
 
-void EpetraVectorData::setValuesByLocalID( int num, size_t *indices, const double *vals )
+
+/****************************************************************
+ * Functions get/set/add values                                  *
+ ****************************************************************/
+void EpetraVectorData::setValuesByLocalID( size_t N, const size_t *indices, const double *vals )
 {
-    for ( int i = 0; i != num; i++ )
+    for ( size_t i = 0; i != N; i++ )
         d_epetraVector[indices[i]] = vals[i];
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-
-void EpetraVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void EpetraVectorData::addValuesByLocalID( size_t N, const size_t *indices, const double *vals )
 {
-    if ( num == 0 )
+    if ( N == 0 )
         return;
-    std::vector<int> indices2( num, 0 );
-    for ( int i = 0; i < num; i++ )
-        indices2[i] = (int) indices[i];
-    d_epetraVector.ReplaceGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
-
-void EpetraVectorData::addValuesByLocalID( int num, size_t *indices, const double *vals )
-{
-    if ( num == 0 )
-        return;
-    for ( int i = 0; i != num; i++ )
+    for ( size_t i = 0; i != N; i++ )
         d_epetraVector[indices[i]] += vals[i];
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-
-void EpetraVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+void EpetraVectorData::getValuesByLocalID( size_t N, const size_t *indices, double *vals ) const
 {
-    if ( num == 0 )
-        return;
-    std::vector<int> indices2( num, 0 );
-    for ( int i = 0; i < num; i++ )
-        indices2[i] = (int) indices[i];
-    d_epetraVector.SumIntoGlobalValues( num, const_cast<double *>( vals ), &indices2[0] );
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
-
-void EpetraVectorData::getValuesByLocalID( int num, size_t *indices, double *vals ) const
-{
-    if ( num == 0 )
+    if ( N == 0 )
         return;
     double *data;
     d_epetraVector.ExtractView( &data );
-    for ( int i = 0; i != num; i++ )
+    for ( size_t i = 0; i != N; i++ )
         vals[i] = data[indices[i]];
 }
 
-void EpetraVectorData::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
-{
-    if ( num == 0 )
-        return;
-    double *data;
-    d_epetraVector.ExtractView( &data );
-    for ( int i = 0; i < num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
-        vals[i] = static_cast<double>( data[indices[i] - d_localStart] );
-    }
-}
 
-void EpetraVectorData::putRawData( const double *in )
+void EpetraVectorData::putRawData( const void *in, const typeID &id )
 {
+    AMP_ASSERT( id == getTypeID<double>() );
+    auto data = reinterpret_cast<const double *>( in );
     double *p;
     d_epetraVector.ExtractView( &p );
-    memcpy( p, in, d_localSize * sizeof( double ) );
+    memcpy( p, data, d_localSize * sizeof( double ) );
 }
 
-void EpetraVectorData::copyOutRawData( double *out ) const { d_epetraVector.ExtractCopy( out ); }
+void EpetraVectorData::copyOutRawData( void *out, const typeID &id ) const
+{
+    AMP_ASSERT( id == getTypeID<double>() );
+    auto data = reinterpret_cast<double *>( out );
+    d_epetraVector.ExtractCopy( data );
+}
 
 std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
 {

@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorData_inline
 #define included_AMP_VectorData_inline
 
+#include "AMP/utils/typeid.h"
 #include "AMP/vectors/data/VectorDataIterator.h"
 
 #include <algorithm>
@@ -37,17 +38,17 @@ inline bool VectorData::containsGlobalElement( size_t i )
 template<typename TYPE>
 bool VectorData::isType() const
 {
-    bool test = true;
-    auto hash = typeid( TYPE ).hash_code();
+    bool test           = true;
+    constexpr auto type = getTypeID<TYPE>();
     for ( size_t i = 0; i < numberOfDataBlocks(); i++ )
-        test = test && isTypeId( hash, i );
+        test = test && isType( type, i );
     return test;
 }
 template<typename TYPE>
 bool VectorData::isBlockType( size_t i ) const
 {
-    auto hash = typeid( TYPE ).hash_code();
-    return isTypeId( hash, i );
+    constexpr auto type = getTypeID<TYPE>();
+    return isType( type, i );
 }
 
 

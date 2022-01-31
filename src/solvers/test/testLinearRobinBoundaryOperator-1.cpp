@@ -1,9 +1,8 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -34,24 +33,23 @@
 constexpr double pi = 3.14159265;
 static inline double fun_T0( double x, double y, double z, double sg )
 {
-    return ( sg * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+    return sg * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z );
 }
 static inline double fun_dTdx( double x, double y, double z, double sg )
 {
-    return ( sg * -0.1 * pi * sin( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+    return sg * -0.1 * pi * sin( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z );
 }
 static inline double fun_dTdy( double x, double y, double z, double sg )
 {
-    return ( sg * -0.1 * pi * cos( 0.1 * pi * x ) * sin( 0.1 * pi * y ) * cos( 0.1 * pi * z ) );
+    return sg * -0.1 * pi * cos( 0.1 * pi * x ) * sin( 0.1 * pi * y ) * cos( 0.1 * pi * z );
 }
 static inline double fun_dTdz( double x, double y, double z, double sg )
 {
-    return ( sg * -0.1 * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * sin( 0.1 * pi * z ) );
+    return sg * -0.1 * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * sin( 0.1 * pi * z );
 }
 static inline double fun_rhs( double x, double y, double z, double sg )
 {
-    return ( sg * -0.03 * pi * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) *
-             cos( 0.1 * pi * z ) );
+    return sg * -0.03 * pi * pi * cos( 0.1 * pi * x ) * cos( 0.1 * pi * y ) * cos( 0.1 * pi * z );
 }
 
 
@@ -129,22 +127,20 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     //------------------------------------------
     // check the solution
     int zeroGhostWidth = 0;
-    auto node          = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    auto end_node      = node.end();
+    auto nodeIt        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
 
-    for ( ; node != end_node; ++node ) {
+    for ( const auto &node : nodeIt ) {
         std::vector<size_t> gid;
-        nodalDofMap->getDOFs( node->globalID(), gid );
+        nodalDofMap->getDOFs( node.globalID(), gid );
 
-        double px = ( node->coord() )[0];
-        double py = ( node->coord() )[1];
-        double pz = ( node->coord() )[2];
+        double px = ( node.coord() )[0];
+        double py = ( node.coord() )[1];
+        double pz = ( node.coord() )[2];
 
-        double val, rhs;
-
-        rhs = fun_rhs( px, py, pz, -1.0 );
+        double rhs = fun_rhs( px, py, pz, -1.0 );
         RightHandSideVec->setValuesByGlobalID( 1, &gid[0], &rhs );
 
+        double val;
         if ( fabs( pz - 1.0 ) <= 1.0e-12 ) {
             val = fun_dTdz( px, py, pz, 1.0 );
             val = val + fun_T0( px, py, pz, 1.0 );
@@ -170,7 +166,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
             val = val + fun_T0( px, py, pz, 1.0 );
             variableFluxVec->setValuesByGlobalID( 1, &gid[0], &val );
         }
-    } // end for node
+    }
     RightHandSideVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     correctionParameters->d_variableFlux = variableFluxVec;
@@ -243,25 +239,24 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    node          = node.begin();
     auto diffVec  = TemperatureInKelvinVec->cloneVector();
     auto exactVec = TemperatureInKelvinVec->cloneVector();
 
     diffVec->zero();
     exactVec->zero();
 
-    for ( ; node != end_node; ++node ) {
+    for ( const auto &node : nodeIt ) {
         std::vector<size_t> gid;
-        nodalDofMap->getDOFs( node->globalID(), gid );
+        nodalDofMap->getDOFs( node.globalID(), gid );
 
-        double px = ( node->coord() )[0];
-        double py = ( node->coord() )[1];
-        double pz = ( node->coord() )[2];
+        double px = ( node.coord() )[0];
+        double py = ( node.coord() )[1];
+        double pz = ( node.coord() )[2];
 
-        double exact;
-        exact = fun_T0( px, py, pz, 1.0 );
+        double exact = fun_T0( px, py, pz, 1.0 );
         exactVec->setValuesByGlobalID( 1, &gid[0], &exact );
     }
+    exactVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     diffVec->subtract( *exactVec, *TemperatureInKelvinVec );
 

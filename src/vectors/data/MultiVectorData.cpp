@@ -78,14 +78,14 @@ size_t MultiVectorData::getGhostSize() const
 }
 
 uint64_t MultiVectorData::getDataID() const { return 0; }
-bool MultiVectorData::isTypeId( size_t hash, size_t block ) const
+bool MultiVectorData::isType( const typeID &id, size_t block ) const
 {
     size_t curOffset = 0;
     for ( const auto &data : d_data ) {
         curOffset += data->numberOfDataBlocks();
         if ( block < curOffset ) {
             size_t index = block + data->numberOfDataBlocks() - curOffset;
-            return data->isTypeId( hash, index );
+            return data->isType( id, index );
         }
     }
     return false;
@@ -136,152 +136,88 @@ const void *MultiVectorData::getRawDataBlockAsVoid( size_t i ) const
 /****************************************************************
  * Functions to access data by ID                                *
  ****************************************************************/
-void MultiVectorData::setValuesByLocalID( int num, size_t *indices, const double *in_vals )
+void MultiVectorData::setValuesByLocalID( size_t N, const size_t *indices, const double *in_vals )
 {
-    if ( num == 0 )
+    if ( N == 0 )
         return;
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
-    partitionLocalValues( num, indices, in_vals, ndxs, vals );
+    partitionLocalValues( N, indices, in_vals, ndxs, vals );
     for ( size_t i = 0; i != ndxs.size(); i++ ) {
         if ( ndxs[i].size() )
             d_data[i]->setValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
 }
-void MultiVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const double *in_vals )
+void MultiVectorData::addValuesByLocalID( size_t N, const size_t *indices, const double *in_vals )
 {
-    if ( num == 0 )
+    if ( N == 0 )
         return;
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->setLocalValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVectorData::setGhostValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->setGhostValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVectorData::setValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->setValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVectorData::addValuesByLocalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionLocalValues( num, indices, in_vals, ndxs, vals );
+    partitionLocalValues( N, indices, in_vals, ndxs, vals );
     for ( size_t i = 0; i != ndxs.size(); i++ ) {
         if ( ndxs[i].size() )
             d_data[i]->addValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
 }
-void MultiVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const double *in_vals )
+void MultiVectorData::getValuesByLocalID( size_t N, const size_t *indices, double *out_vals ) const
 {
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->addLocalValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVectorData::addValuesByGlobalID( int num, size_t *indices, const double *in_vals )
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    partitionGlobalValues( num, indices, in_vals, ndxs, vals );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->addValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-}
-void MultiVectorData::getValuesByGlobalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
+    if ( N == 0 )
         return;
     std::vector<std::vector<size_t>> ndxs;
     std::vector<std::vector<double>> vals;
     std::vector<std::vector<int>> remap;
-    partitionGlobalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->getValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-void MultiVectorData::getLocalValuesByGlobalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionGlobalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->getLocalValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-void MultiVectorData::getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionGlobalValues( num, indices, out_vals, ndxs, vals, &remap );
-    for ( size_t i = 0; i != ndxs.size(); i++ ) {
-        if ( ndxs[i].size() )
-            d_data[i]->getGhostValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
-    }
-    for ( size_t i = 0; i != remap.size(); i++ ) {
-        for ( size_t j = 0; j != remap[i].size(); j++ )
-            out_vals[remap[i][j]] = vals[i][j];
-    }
-}
-void MultiVectorData::getValuesByLocalID( int num, size_t *indices, double *out_vals ) const
-{
-    if ( num == 0 )
-        return;
-    std::vector<std::vector<size_t>> ndxs;
-    std::vector<std::vector<double>> vals;
-    std::vector<std::vector<int>> remap;
-    partitionLocalValues( num, indices, out_vals, ndxs, vals, &remap );
+    partitionLocalValues( N, indices, out_vals, ndxs, vals, &remap );
     for ( size_t i = 0; i != ndxs.size(); i++ ) {
         if ( ndxs[i].size() )
             d_data[i]->getValuesByLocalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
+    }
+    for ( size_t i = 0; i != remap.size(); i++ ) {
+        for ( size_t j = 0; j != remap[i].size(); j++ )
+            out_vals[remap[i][j]] = vals[i][j];
+    }
+}
+void MultiVectorData::setGhostValuesByGlobalID( size_t N,
+                                                const size_t *indices,
+                                                const double *in_vals )
+{
+    if ( N == 0 )
+        return;
+    std::vector<std::vector<size_t>> ndxs;
+    std::vector<std::vector<double>> vals;
+    partitionGlobalValues( N, indices, in_vals, ndxs, vals );
+    for ( size_t i = 0; i != ndxs.size(); i++ ) {
+        if ( ndxs[i].size() )
+            d_data[i]->setGhostValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
+    }
+}
+void MultiVectorData::addGhostValuesByGlobalID( size_t N,
+                                                const size_t *indices,
+                                                const double *in_vals )
+{
+    if ( N == 0 )
+        return;
+    std::vector<std::vector<size_t>> ndxs;
+    std::vector<std::vector<double>> vals;
+    partitionGlobalValues( N, indices, in_vals, ndxs, vals );
+    for ( size_t i = 0; i != ndxs.size(); i++ ) {
+        if ( ndxs[i].size() )
+            d_data[i]->addGhostValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
+    }
+}
+void MultiVectorData::getGhostValuesByGlobalID( size_t N,
+                                                const size_t *indices,
+                                                double *out_vals ) const
+{
+    if ( N == 0 )
+        return;
+    std::vector<std::vector<size_t>> ndxs;
+    std::vector<std::vector<double>> vals;
+    std::vector<std::vector<int>> remap;
+    partitionGlobalValues( N, indices, out_vals, ndxs, vals, &remap );
+    for ( size_t i = 0; i != ndxs.size(); i++ ) {
+        if ( ndxs[i].size() )
+            d_data[i]->getGhostValuesByGlobalID( ndxs[i].size(), &( ndxs[i][0] ), &( vals[i][0] ) );
     }
     for ( size_t i = 0; i != remap.size(); i++ ) {
         for ( size_t j = 0; j != remap[i].size(); j++ )
@@ -293,21 +229,21 @@ void MultiVectorData::getValuesByLocalID( int num, size_t *indices, double *out_
 /****************************************************************
  * Copy raw data                                                 *
  ****************************************************************/
-void MultiVectorData::putRawData( const double *in )
+void MultiVectorData::putRawData( const void *in, const typeID &id )
 {
-    int cur_off = 0;
+    const char *ptr = reinterpret_cast<const char *>( in );
     for ( const auto &data : d_data ) {
-        data->putRawData( in + cur_off );
-        cur_off += data->getLocalSize();
+        data->putRawData( ptr, id );
+        ptr += id.bytes * data->getLocalSize();
     }
 }
 
-void MultiVectorData::copyOutRawData( double *out ) const
+void MultiVectorData::copyOutRawData( void *out, const typeID &id ) const
 {
-    size_t curOffset = 0;
+    char *ptr = reinterpret_cast<char *>( out );
     for ( const auto &data : d_data ) {
-        data->copyOutRawData( &out[curOffset] );
-        curOffset += data->getLocalSize();
+        data->copyOutRawData( ptr, id );
+        ptr += id.bytes * data->getLocalSize();
     }
 }
 

@@ -47,13 +47,13 @@ public: // Virtual functions
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    virtual void putRawData( const double *buf ) override;
+    virtual void putRawData( const void *buf, const typeID &id ) override;
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    virtual void copyOutRawData( double *buf ) const override;
+    virtual void copyOutRawData( void *buf, const typeID &id ) const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -139,7 +139,7 @@ public: // Advanced virtual functions
      * \param hash     The hash code: typeid(myint).hash_code()
      * \param block    The block id to check
      */
-    virtual bool isTypeId( size_t hash, size_t block ) const override;
+    virtual bool isType( const typeID &id, size_t block ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
