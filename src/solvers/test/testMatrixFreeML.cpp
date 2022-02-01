@@ -80,7 +80,7 @@ int myMatVec( ML_Operator *data, int in_length, double in[], int out_length, dou
 
     mat->mult( inVec, outVec );
 
-    outVec->copyOutRawData( out );
+    outVec->getRawData( out );
 
     return 0;
 }
@@ -312,8 +312,8 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
 
         auto solArr = new double[fusedSolVec->getLocalSize()];
         auto rhsArr = new double[fusedRhsVec->getLocalSize()];
-        fusedSolVec->copyOutRawData( solArr );
-        fusedRhsVec->copyOutRawData( rhsArr );
+        fusedSolVec->getRawData( solArr );
+        fusedRhsVec->getRawData( rhsArr );
         ML_Iterate( ml_object, solArr, rhsArr );
         fusedSolVec->putRawData( solArr );
         fusedRhsVec->putRawData( rhsArr );

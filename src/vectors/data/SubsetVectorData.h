@@ -70,20 +70,14 @@ public:
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
 
-    void addValuesByLocalID( int, size_t *, const double * ) override;
-    void setValuesByLocalID( int, size_t *, const double * ) override;
-    void getValuesByLocalID( int, size_t *, double *vals ) const override;
-    void addLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    void setLocalValuesByGlobalID( int, size_t *, const double * ) override;
-    void getLocalValuesByGlobalID( int, size_t *, double * ) const override;
-    void putRawData( const double *in ) override;
-    void copyOutRawData( double *out ) const override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void putRawData( const void *in, const typeID &id ) override;
+    void getRawData( void *out, const typeID &id ) const override;
 
     uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
-    bool isTypeId( size_t hash, size_t ) const override
-    {
-        return hash == typeid( double ).hash_code();
-    }
+    bool isType( const typeID &id, size_t ) const override { return id == getTypeID<double>(); }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
@@ -97,6 +91,7 @@ private:
 
     // Internal data
     Vector::shared_ptr d_ViewVector;                   // Vector we subsetted for the view
+    size_t d_parentLocalStartID;                       // Offset for the parent
     std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
     std::vector<size_t> d_dataBlockSize;               // The size of the data blocks
     std::vector<double *> d_dataBlockPtr;              // The pointers to the data blocks

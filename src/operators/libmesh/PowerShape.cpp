@@ -341,6 +341,7 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Power Vector" );
     AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL PowerWithShape Vector" );
+    AMP_ASSERT( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
     constexpr double PI = 3.14159265359;
     double newval, val;

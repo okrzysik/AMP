@@ -3,6 +3,8 @@
 
 #include "AMP/vectors/data/VectorDataCPU.h"
 
+#include <cstring>
+
 
 namespace AMP::LinearAlgebra {
 
@@ -80,9 +82,10 @@ uint64_t VectorDataCPU<TYPE>::getDataID() const
     return reinterpret_cast<uint64_t>( d_Data.data() );
 }
 template<typename TYPE>
-bool VectorDataCPU<TYPE>::isTypeId( size_t hash, size_t ) const
+bool VectorDataCPU<TYPE>::isType( const typeID &id, size_t ) const
 {
-    return hash == typeid( TYPE ).hash_code();
+    constexpr auto type = getTypeID<TYPE>();
+    return id == type;
 }
 template<typename TYPE>
 size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const
@@ -127,54 +130,61 @@ inline const TYPE &VectorDataCPU<TYPE>::operator[]( size_t i ) const
     return d_Data[i];
 }
 template<typename TYPE>
-inline void VectorDataCPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
+inline void VectorDataCPU<TYPE>::setValuesByLocalID( size_t num,
+                                                     const size_t *indices,
+                                                     const void *vals,
+                                                     const typeID &id )
 {
-    for ( int i = 0; i != num; i++ )
-        d_Data[indices[i]] = static_cast<TYPE>( vals[i] );
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
-
-template<typename TYPE>
-inline void
-VectorDataCPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_Data.size() );
-        d_Data[indices[i] - d_localStart] = static_cast<TYPE>( vals[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<const TYPE *>( vals );
+        for ( size_t i = 0; i < num; i++ )
+            d_Data[indices[i]] = data[i];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            d_Data[indices[i]] = static_cast<TYPE>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-
 template<typename TYPE>
-inline void VectorDataCPU<TYPE>::addValuesByLocalID( int num, size_t *indices, const double *vals )
+inline void VectorDataCPU<TYPE>::addValuesByLocalID( size_t num,
+                                                     const size_t *indices,
+                                                     const void *vals,
+                                                     const typeID &id )
 {
-    for ( int i = 0; i != num; i++ )
-        d_Data[indices[i]] += static_cast<TYPE>( vals[i] );
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
-
-template<typename TYPE>
-inline void
-VectorDataCPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_Data.size() );
-        d_Data[indices[i] - d_localStart] += static_cast<TYPE>( vals[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<const TYPE *>( vals );
+        for ( size_t i = 0; i < num; i++ )
+            d_Data[indices[i]] += data[i];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            d_Data[indices[i]] += static_cast<TYPE>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-
 template<typename TYPE>
-inline void
-VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
+inline void VectorDataCPU<TYPE>::getValuesByLocalID( size_t num,
+                                                     const size_t *indices,
+                                                     void *vals,
+                                                     const typeID &id ) const
 {
-    for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_Data.size() );
-        vals[i] = static_cast<double>( d_Data[indices[i] - d_localStart] );
+    if ( id == getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<TYPE *>( vals );
+        for ( size_t i = 0; i < num; i++ )
+            data[i] = d_Data[indices[i]];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            data[i] = d_Data[indices[i]];
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
@@ -183,18 +193,30 @@ VectorDataCPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double 
  * Copy raw data                                                 *
  ****************************************************************/
 template<typename TYPE>
-void VectorDataCPU<TYPE>::putRawData( const double *in )
+void VectorDataCPU<TYPE>::putRawData( const void *in, const typeID &id )
 {
-    for ( size_t i = 0; i < d_Data.size(); ++i ) {
-        d_Data[i] = static_cast<TYPE>( in[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        memcpy( d_Data.data(), in, d_Data.size() * sizeof( TYPE ) );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( in );
+        for ( size_t i = 0; i < d_Data.size(); ++i )
+            d_Data[i] = static_cast<TYPE>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
 template<typename TYPE>
-void VectorDataCPU<TYPE>::copyOutRawData( double *out ) const
+void VectorDataCPU<TYPE>::getRawData( void *out, const typeID &id ) const
 {
-    for ( size_t i = 0; i < d_Data.size(); ++i ) {
-        out[i] = static_cast<double>( d_Data[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        memcpy( out, d_Data.data(), d_Data.size() * sizeof( TYPE ) );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( out );
+        for ( size_t i = 0; i < d_Data.size(); ++i )
+            data[i] = static_cast<double>( d_Data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
@@ -212,8 +234,9 @@ void VectorDataCPU<TYPE>::swapData( VectorData &rhs )
     std::swap( d_Ghosts, rhs2->d_Ghosts );
     std::swap( d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( d_Data, rhs2->d_Data );
-    std::swap( d_localStart, rhs2->d_localStart );
+    std::swap( d_localSize, rhs2->d_localSize );
     std::swap( d_globalSize, rhs2->d_globalSize );
+    std::swap( d_localStart, rhs2->d_localStart );
 }
 
 

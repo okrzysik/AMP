@@ -170,7 +170,7 @@ void CommunicationList::unpackReceiveBufferSet( const std::vector<double> &recv,
                                                 VectorData &vec ) const
 {
     AMP_ASSERT( recv.size() == d_ReceiveDOFList.size() );
-    vec.setValuesByGlobalID( (int) recv.size(), getPtr( d_ReceiveDOFList ), getPtr( recv ) );
+    vec.setGhostValuesByGlobalID( (int) recv.size(), getPtr( d_ReceiveDOFList ), getPtr( recv ) );
 }
 
 void CommunicationList::unpackSendBufferAdd( const std::vector<double> &recv,
