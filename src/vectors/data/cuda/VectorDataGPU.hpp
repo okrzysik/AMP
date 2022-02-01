@@ -19,8 +19,7 @@ namespace AMP::LinearAlgebra {
 template<typename TYPE>
 std::string VectorDataGPU<TYPE>::VectorDataName() const
 {
-    std::string type = typeid( TYPE ).name();
-    return "VectorDataGPU<" + type + ">";
+    return "VectorDataGPU<" + std::string( typeid( TYPE ).name() ) + ">";
 }
 
 
@@ -35,9 +34,9 @@ VectorDataGPU<TYPE>::VectorDataGPU( size_t start, size_t localSize, size_t globa
 template<typename TYPE>
 void VectorDataGPU<TYPE>::allocate( size_t start, size_t localSize, size_t globalSize )
 {
-    d_localStart = start;
     d_localSize  = localSize;
     d_globalSize = globalSize;
+    d_localStart = start;
     if ( d_localSize > 0 ) {
         cudaMallocManaged( (void **) &d_Data, localSize * sizeof( TYPE ), cudaMemAttachGlobal );
         AMP_INSIST( d_Data, "Failed to allocate memory on device" );
@@ -47,6 +46,18 @@ template<typename TYPE>
 VectorDataGPU<TYPE>::~VectorDataGPU()
 {
     cudaFree( d_Data );
+}
+
+
+/****************************************************************
+ * Clone the data                                                *
+ ****************************************************************/
+template<typename TYPE>
+std::shared_ptr<VectorData> VectorDataGPU<TYPE>::cloneData() const
+{
+    auto retVal = std::make_shared<VectorDataGPU<TYPE>>( d_localStart, d_localSize, d_globalSize );
+    retVal->setCommunicationList( getCommunicationList() );
+    return retVal;
 }
 
 
@@ -119,54 +130,61 @@ inline const TYPE &VectorDataGPU<TYPE>::operator[]( size_t i ) const
     return d_Data[i];
 }
 template<typename TYPE>
-inline void VectorDataGPU<TYPE>::setValuesByLocalID( int num, size_t *indices, const double *vals )
+inline void VectorDataGPU<TYPE>::setValuesByLocalID( size_t num,
+                                                     const size_t *indices,
+                                                     const void *vals,
+                                                     const typeID &id )
 {
-    for ( int i = 0; i != num; i++ )
-        d_Data[indices[i]] = static_cast<TYPE>( vals[i] );
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
-
-template<typename TYPE>
-inline void
-VectorDataGPU<TYPE>::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
-        d_Data[indices[i] - d_localStart] = static_cast<TYPE>( vals[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<const TYPE *>( vals );
+        for ( size_t i = 0; i < num; i++ )
+            d_Data[indices[i]] = data[i];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            d_Data[indices[i]] = static_cast<TYPE>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-
 template<typename TYPE>
-inline void VectorDataGPU<TYPE>::addValuesByLocalID( int num, size_t *indices, const double *vals )
+inline void VectorDataGPU<TYPE>::addValuesByLocalID( size_t num,
+                                                     const size_t *indices,
+                                                     const void *vals,
+                                                     const typeID &id )
 {
-    for ( int i = 0; i != num; i++ )
-        d_Data[indices[i]] += static_cast<TYPE>( vals[i] );
-    if ( *d_UpdateState == UpdateState::UNCHANGED )
-        *d_UpdateState = UpdateState::LOCAL_CHANGED;
-}
-
-template<typename TYPE>
-inline void
-VectorDataGPU<TYPE>::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
-    for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
-        d_Data[indices[i] - d_localStart] += static_cast<TYPE>( vals[i] );
+    if ( id == getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<const TYPE *>( vals );
+        for ( size_t i = 0; i < num; i++ )
+            d_Data[indices[i]] += data[i];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            d_Data[indices[i]] += static_cast<TYPE>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-
 template<typename TYPE>
-inline void
-VectorDataGPU<TYPE>::getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
+inline void VectorDataGPU<TYPE>::getValuesByLocalID( size_t num,
+                                                     const size_t *indices,
+                                                     void *vals,
+                                                     const typeID &id ) const
 {
-    for ( int i = 0; i != num; i++ ) {
-        AMP_ASSERT( indices[i] >= d_localStart && indices[i] < d_localStart + d_localSize );
-        vals[i] = static_cast<double>( d_Data[indices[i] - d_localStart] );
+    if ( id == getTypeID<TYPE>() ) {
+        auto data = reinterpret_cast<TYPE *>( vals );
+        for ( size_t i = 0; i < num; i++ )
+            data[i] = d_Data[indices[i]];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            data[i] = d_Data[indices[i]];
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
@@ -204,18 +222,6 @@ void VectorDataGPU<TYPE>::getRawData( void *out, const typeID &id ) const
 
 
 /****************************************************************
- * Clone raw data                                                *
- ****************************************************************/
-template<typename TYPE>
-std::shared_ptr<VectorData> VectorDataGPU<TYPE>::cloneData() const
-{
-    auto retVal = std::make_shared<VectorDataGPU<TYPE>>( d_localStart, d_localSize, d_globalSize );
-    retVal->setCommunicationList( getCommunicationList() );
-    return retVal;
-}
-
-
-/****************************************************************
  * Swap raw data                                                 *
  ****************************************************************/
 template<typename TYPE>
@@ -228,9 +234,9 @@ void VectorDataGPU<TYPE>::swapData( VectorData &rhs )
     std::swap( d_Ghosts, rhs2->d_Ghosts );
     std::swap( d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( d_Data, rhs2->d_Data );
-    std::swap( d_localStart, rhs2->d_localStart );
     std::swap( d_localSize, rhs2->d_localSize );
     std::swap( d_globalSize, rhs2->d_globalSize );
+    std::swap( d_localStart, rhs2->d_localStart );
 }
 
 

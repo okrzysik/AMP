@@ -84,7 +84,8 @@ uint64_t VectorDataCPU<TYPE>::getDataID() const
 template<typename TYPE>
 bool VectorDataCPU<TYPE>::isType( const typeID &id, size_t ) const
 {
-    return id == getTypeID<TYPE>();
+    constexpr auto type = getTypeID<TYPE>();
+    return id == type;
 }
 template<typename TYPE>
 size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const
@@ -136,7 +137,7 @@ inline void VectorDataCPU<TYPE>::setValuesByLocalID( size_t num,
 {
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
-        for ( size_t i = 0; i != num; i++ )
+        for ( size_t i = 0; i < num; i++ )
             d_Data[indices[i]] = data[i];
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<const double *>( vals );
@@ -156,7 +157,7 @@ inline void VectorDataCPU<TYPE>::addValuesByLocalID( size_t num,
 {
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
-        for ( size_t i = 0; i != num; i++ )
+        for ( size_t i = 0; i < num; i++ )
             d_Data[indices[i]] += data[i];
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<const double *>( vals );
@@ -176,7 +177,7 @@ inline void VectorDataCPU<TYPE>::getValuesByLocalID( size_t num,
 {
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<TYPE *>( vals );
-        for ( size_t i = 0; i != num; i++ )
+        for ( size_t i = 0; i < num; i++ )
             data[i] = d_Data[indices[i]];
     } else if ( id == getTypeID<double>() ) {
         auto data = reinterpret_cast<double *>( vals );
@@ -233,8 +234,9 @@ void VectorDataCPU<TYPE>::swapData( VectorData &rhs )
     std::swap( d_Ghosts, rhs2->d_Ghosts );
     std::swap( d_AddBuffer, rhs2->d_AddBuffer );
     std::swap( d_Data, rhs2->d_Data );
-    std::swap( d_localStart, rhs2->d_localStart );
+    std::swap( d_localSize, rhs2->d_localSize );
     std::swap( d_globalSize, rhs2->d_globalSize );
+    std::swap( d_localStart, rhs2->d_localStart );
 }
 
 

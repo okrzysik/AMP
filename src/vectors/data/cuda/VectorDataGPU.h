@@ -22,38 +22,39 @@ class VectorDataGPU : public VectorData
 public: // Constructors
     VectorDataGPU( size_t start, size_t localSize, size_t globalSize );
 
+    VectorDataGPU( const VectorDataGPU & ) = delete;
 
 public: // Virtual functions
     //! Virtual destructor
     virtual ~VectorDataGPU();
 
     //! Get the type name
-    virtual std::string VectorDataName() const override;
+    std::string VectorDataName() const override;
 
     /** \brief Number of blocks of contiguous data in the Vector
      * \return Number of blocks in the Vector
      * \details  A vector is not necessarily contiguous in memory.  This method
      * returns the number of contiguous blocks in memory used by this vector
      */
-    virtual size_t numberOfDataBlocks() const override;
+    size_t numberOfDataBlocks() const override;
 
     /** \brief Number of elements in a data block
      * \param[in] i  particular data block
      * \return The size of a particular block
      */
-    virtual size_t sizeOfDataBlock( size_t i = 0 ) const override;
+    size_t sizeOfDataBlock( size_t i = 0 ) const override;
 
 
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    virtual void putRawData( const void *buf, const typeID &id ) override;
+    void putRawData( const void *buf, const typeID &id ) override;
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    virtual void getRawData( void *buf, const typeID &id ) const override;
+    void getRawData( void *buf, const typeID &id ) const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -64,17 +65,10 @@ public: // Virtual functions
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    virtual void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Set owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    virtual void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
+    void setValuesByLocalID( size_t num,
+                             const size_t *indices,
+                             const void *vals,
+                             const typeID &id ) override;
 
     /**
      * \brief Add values to vector entities by their local offset
@@ -86,27 +80,25 @@ public: // Virtual functions
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    virtual void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
+    void addValuesByLocalID( size_t num,
+                             const size_t *indices,
+                             const void *vals,
+                             const typeID &id ) override;
 
     /**
-     * \brief Add owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
+     * \brief Get values to vector entities by their local offset
+     * \param[in] num  number of values to get
+     * \param[in] indices the indices of the values to get
      * \param[in] vals the values to place in the vector
-     *
+     * \details This will get the owned values for this core.  All indices are
+     * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    virtual void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Get local values in the vector by their global offset
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[out] vals the values to place in the vector
-     * \details This will get any value owned by this core.
-     */
-    virtual void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
+    void getValuesByLocalID( size_t num,
+                             const size_t *indices,
+                             void *vals,
+                             const typeID &id ) const override;
 
 
 public: // Advanced virtual functions
@@ -117,38 +109,38 @@ public: // Advanced virtual functions
      *   multiple vectors (such as Multivector) should return 0.
      *   Note: this id is not consistent across multiple processors.
      */
-    virtual uint64_t getDataID() const override;
+    uint64_t getDataID() const override;
 
     /** \brief Return a pointer to a particular block of memory in the vector
      * \param i The block to return
      */
-    virtual void *getRawDataBlockAsVoid( size_t i ) override;
+    void *getRawDataBlockAsVoid( size_t i ) override;
 
     /** \brief Return a pointer to a particular block of memory in the
      * vector
      * \param i        The block to return
      */
-    virtual const void *getRawDataBlockAsVoid( size_t i ) const override;
+    const void *getRawDataBlockAsVoid( size_t i ) const override;
 
     /** \brief Return the result of sizeof(TYPE) for the given data block
      * \param i The block to return
      */
-    virtual size_t sizeofDataBlockType( size_t i ) const override;
+    size_t sizeofDataBlockType( size_t i ) const override;
 
     /** \brief Is the data of the given type
      * \param hash     The hash code: typeid(myint).hash_code()
      * \param block    The block id to check
      */
-    virtual bool isType( const typeID &id, size_t block ) const override;
+    bool isType( const typeID &id, size_t block ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
      */
-    virtual void swapData( VectorData &rhs ) override;
+    void swapData( VectorData &rhs ) override;
 
     /** \brief Clone the data
      */
-    virtual std::shared_ptr<VectorData> cloneData() const override;
+    std::shared_ptr<VectorData> cloneData() const override;
 
 
 public: // Non-virtual functions
@@ -175,5 +167,6 @@ private:
 
 
 } // namespace AMP::LinearAlgebra
+
 
 #endif

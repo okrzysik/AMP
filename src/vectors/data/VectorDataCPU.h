@@ -13,14 +13,10 @@ class VectorDataIterator;
 
 
 /**
-  \brief  A class used to hold vector data
-
-  \details
-
-  VectorDataCPU is a default implimentation of VectorData that stores
-  the local values as a single block of data on the CPU.
-
-  */
+ * \brief  A class used to hold vector data
+ * \details  VectorDataCPU is a default implimentation of VectorData that stores
+ * the local values as a single block of data on the CPU.
+ */
 template<typename TYPE = double>
 class VectorDataCPU : public VectorData
 {
