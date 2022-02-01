@@ -1,4 +1,5 @@
-#include "FunctionTable.hpp"
+#include "AMP/utils/FunctionTable.hpp"
+#include "AMP/AMP_TPLs.h"
 
 
 #ifdef AMP_USE_LAPACK_WRAPPERS

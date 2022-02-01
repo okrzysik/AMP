@@ -165,29 +165,33 @@ inline bool Vector::equals( const Vector &a, const Scalar &tol ) const
 
 
 /****************************************************************
- * Get individual values                                     *
+ * Get individual values                                         *
  ****************************************************************/
-inline double Vector::getValueByGlobalID( size_t i ) const
+template<typename TYPE>
+TYPE Vector::getValueByGlobalID( size_t i ) const
 {
-    double ans;
+    TYPE ans;
     getValuesByGlobalID( 1, &i, &ans );
     return ans;
 }
-inline double Vector::getLocalValueByGlobalID( size_t i ) const
+template<typename TYPE>
+TYPE Vector::getLocalValueByGlobalID( size_t i ) const
 {
-    double ans;
+    TYPE ans;
     getLocalValuesByGlobalID( 1, &i, &ans );
     return ans;
 }
-inline double Vector::getGhostValueByGlobalID( size_t i ) const
+template<typename TYPE>
+TYPE Vector::getGhostValueByGlobalID( size_t i ) const
 {
-    double ans;
+    TYPE ans;
     getGhostValuesByGlobalID( 1, &i, &ans );
     return ans;
 }
-inline double Vector::getValueByLocalID( size_t ndx ) const
+template<typename TYPE>
+TYPE Vector::getValueByLocalID( size_t ndx ) const
 {
-    double ans;
+    TYPE ans;
     getValuesByLocalID( 1, &ndx, &ans );
     return ans;
 }

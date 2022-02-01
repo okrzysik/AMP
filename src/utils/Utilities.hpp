@@ -42,54 +42,6 @@ constexpr unsigned int hash_char( const std::string_view &name )
 
 
 /************************************************************************
- * Functions to get type                                                 *
- ************************************************************************/
-#if !defined( __INTEL_COMPILER )
-template<typename T>
-constexpr const char *func_name()
-{
-    #ifdef __clang__
-    return __PRETTY_FUNCTION__;
-    #elif defined( __GNUC__ )
-    return __PRETTY_FUNCTION__;
-    #elif defined( _MSC_VER )
-    return __FUNCSIG__;
-    #else
-        #error "Not finished";
-    #endif
-}
-template<typename T>
-constexpr std::string_view type_name()
-{
-    std::string_view name = func_name<T>();
-    if ( name.rfind( "T = " ) != std::string::npos )
-        name = name.substr( name.rfind( "T = " ) + 4 );
-    if ( name.find( "]" ) != std::string::npos )
-        name = name.substr( 0, name.find( "]" ) );
-    return name;
-}
-template<typename T>
-constexpr unsigned int type_hash()
-{
-    return hash_char( type_name<T>() );
-}
-#else
-template<typename T>
-constexpr std::string_view type_name()
-{
-    AMP_ERROR( "Requires Intel 19.10" )
-    return "";
-}
-template<typename T>
-constexpr unsigned int type_hash()
-{
-    AMP_ERROR( "Requires Intel 19.10" )
-    return 0;
-}
-#endif
-
-
-/************************************************************************
  * Function to wrap printf to std::string                                *
  ************************************************************************/
 inline std::string stringf( const char *format, ... )

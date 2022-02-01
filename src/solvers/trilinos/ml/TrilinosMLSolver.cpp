@@ -271,8 +271,8 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     } else {
         auto uArr = new double[u->getLocalSize()];
         auto fArr = new double[f->getLocalSize()];
-        u->copyOutRawData( uArr );
-        f->copyOutRawData( fArr );
+        u->getRawData( uArr );
+        f->getRawData( fArr );
         ML_Iterate( d_ml, uArr, fArr );
         u->putRawData( uArr );
         delete[] uArr;

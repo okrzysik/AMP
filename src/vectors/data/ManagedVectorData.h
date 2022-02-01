@@ -54,27 +54,21 @@ protected:
 
 public: // Derived from VectorData
     size_t numberOfDataBlocks() const override;
-    size_t sizeOfDataBlock( size_t i ) const override;
-    void getValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void getGhostValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const override;
-    void setValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void setGhostValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void setValuesByLocalID( int i, size_t *, const double *val ) override;
-    void addValuesByLocalID( int i, size_t *, const double *val ) override;
-    void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void putRawData( const double *in ) override;
-    void copyOutRawData( double *in ) const override;
+    size_t sizeOfDataBlock( size_t ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void putRawData( const void *, const typeID & ) override;
+    void getRawData( void *, const typeID & ) const override;
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
+    bool isType( const typeID &, size_t ) const;
     uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
-    }
-    bool isTypeId( size_t hash, size_t ) const override
-    {
-        return hash == typeid( double ).hash_code();
     }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     std::string VectorDataName() const override;
