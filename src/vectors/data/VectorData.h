@@ -89,14 +89,15 @@ public: // Get/Set data
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    virtual void putRawData( const void *buf, const typeID &id ) = 0;
+    template<class TYPE>
+    void putRawData( const TYPE *buf );
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    virtual void copyOutRawData( void *buf, const typeID &id ) const = 0;
-
+    template<class TYPE>
+    void getRawData( TYPE *buf ) const;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -107,8 +108,8 @@ public: // Get/Set data
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    virtual void setValuesByLocalID( size_t num, const size_t *indices, const double *vals ) = 0;
-
+    template<class TYPE>
+    void setValuesByLocalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Set owned values using global identifier
@@ -118,7 +119,8 @@ public: // Get/Set data
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    void setLocalValuesByGlobalID( size_t num, const size_t *indices, const double *vals );
+    template<class TYPE>
+    void setLocalValuesByGlobalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Set ghost values using global identifier
@@ -128,7 +130,8 @@ public: // Get/Set data
      *
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    virtual void setGhostValuesByGlobalID( size_t num, const size_t *indices, const double *vals );
+    template<class TYPE>
+    void setGhostValuesByGlobalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Set owned or shared values using global identifier
@@ -139,7 +142,8 @@ public: // Get/Set data
      * this function must sort the data by buffer before setting
      * values.
      */
-    void setValuesByGlobalID( size_t num, const size_t *indices, const double *vals );
+    template<class TYPE>
+    void setValuesByGlobalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Add values to vector entities by their local offset
@@ -151,7 +155,8 @@ public: // Get/Set data
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    virtual void addValuesByLocalID( size_t num, const size_t *indices, const double *vals ) = 0;
+    template<class TYPE>
+    void addValuesByLocalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Add owned values using global identifier
@@ -162,7 +167,8 @@ public: // Get/Set data
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addLocalValuesByGlobalID( size_t num, const size_t *indices, const double *vals );
+    template<class TYPE>
+    void addLocalValuesByGlobalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Add owned or shared values using global identifier
@@ -173,7 +179,8 @@ public: // Get/Set data
      * this function must sort the data by buffer before setting
      * values.
      */
-    void addValuesByGlobalID( size_t num, const size_t *indices, const double *vals );
+    template<class TYPE>
+    void addValuesByGlobalID( size_t num, const size_t *indices, const TYPE *vals );
 
     /**
      * \brief Add shared values using global identifier
@@ -181,7 +188,8 @@ public: // Get/Set data
      * \param[in] indices the indices of the values to add
      * \param[in] vals the values to place in the vector
      */
-    virtual void addGhostValuesByGlobalID( size_t num, const size_t *indices, const double *vals );
+    template<class TYPE>
+    void addGhostValuesByGlobalID( size_t num, const size_t *indices, const TYPE *vals );
 
 
     /**
@@ -192,7 +200,8 @@ public: // Get/Set data
      * \details This will get the ghosted updates this processor has made.  All indices are
      * from global 0.
      */
-    void getGhostAddValuesByGlobalID( size_t num, const size_t *indices, double *vals ) const;
+    template<class TYPE>
+    void getGhostAddValuesByGlobalID( size_t num, const size_t *indices, TYPE *vals ) const;
 
 
     /**
@@ -202,7 +211,8 @@ public: // Get/Set data
      * \param[out] vals the values to place in the vector
      * \details This will get any value used by this core.
      */
-    virtual void getValuesByLocalID( size_t num, const size_t *indices, double *vals ) const = 0;
+    template<class TYPE>
+    void getValuesByLocalID( size_t num, const size_t *indices, TYPE *vals ) const;
 
     /**
      * \brief get values in the vector by their local offset
@@ -212,7 +222,8 @@ public: // Get/Set data
      * \details This will get the owned values for this core.  All indices are
      * from 0.
      */
-    void getValuesByGlobalID( size_t num, const size_t *indices, double *vals ) const;
+    template<class TYPE>
+    void getValuesByGlobalID( size_t num, const size_t *indices, TYPE *vals ) const;
 
     /**
      * \brief Get local values in the vector by their global offset
@@ -221,7 +232,8 @@ public: // Get/Set data
      * \param[out] vals the values to place in the vector
      * \details This will get any value owned by this core.
      */
-    void getLocalValuesByGlobalID( size_t num, const size_t *indices, double *vals ) const;
+    template<class TYPE>
+    void getLocalValuesByGlobalID( size_t num, const size_t *indices, TYPE *vals ) const;
 
     /**
      * \brief Get ghost values in the vector by their global offset
@@ -230,7 +242,106 @@ public: // Get/Set data
      * \param[out] vals the values to place in the vector
      * \details This will get any value owned by this core.
      */
-    virtual void getGhostValuesByGlobalID( size_t num, const size_t *indices, double *vals ) const;
+    template<class TYPE>
+    void getGhostValuesByGlobalID( size_t num, const size_t *indices, TYPE *vals ) const;
+
+
+public: // Advanced (virtual) get/set values
+    /**\brief Copy data into this vector
+     *\param[in] buf  Buffer to copy from
+     */
+    virtual void putRawData( const void *buf, const typeID &id ) = 0;
+
+    /**\brief Copy data out of this vector
+     *\param[out] buf  Buffer to copy to
+     *\details The Vector should be pre-allocated to the correct size (getLocalSize())
+     */
+    virtual void getRawData( void *buf, const typeID &id ) const = 0;
+
+    /**
+     * \brief Set values in the vector by their local offset
+     * \param[in] num  number of values to set
+     * \param[in] indices the indices of the values to set
+     * \param[in] vals the values to place in the vector
+     * \details This will set the owned values for this core.  All indices are
+     * from 0.
+     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
+     */
+    virtual void
+    setValuesByLocalID( size_t num, const size_t *indices, const void *vals, const typeID &id ) = 0;
+
+    /**
+     * \brief Set ghost values using global identifier
+     * \param[in] num  number of values to set
+     * \param[in] indices the indices of the values to set
+     * \param[in] vals the values to place in the vector
+     *
+     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
+     */
+    virtual void setGhostValuesByGlobalID( size_t num,
+                                           const size_t *indices,
+                                           const void *vals,
+                                           const typeID &id );
+
+    /**
+     * \brief Add values to vector entities by their local offset
+     * \param[in] num  number of values to set
+     * \param[in] indices the indices of the values to set
+     * \param[in] vals the values to place in the vector
+     * \details This will set the owned values for this core.  All indices are
+     * from 0.
+     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
+     * \mathit{vals}_i \f$
+     */
+    virtual void
+    addValuesByLocalID( size_t num, const size_t *indices, const void *vals, const typeID &id ) = 0;
+
+    /**
+     * \brief Add shared values using global identifier
+     * \param[in] num  number of values to add
+     * \param[in] indices the indices of the values to add
+     * \param[in] vals the values to place in the vector
+     */
+    virtual void addGhostValuesByGlobalID( size_t num,
+                                           const size_t *indices,
+                                           const void *vals,
+                                           const typeID &id );
+
+    /**
+     * \brief get ghosted values to add to off-proc elements
+     * \param[in] num  number of values to set
+     * \param[in] indices the indices of the values to set
+     * \param[in] vals the values to place in the vector
+     * \details This will get the ghosted updates this processor has made.  All indices are
+     * from global 0.
+     */
+    virtual void getGhostAddValuesByGlobalID( size_t num,
+                                              const size_t *indices,
+                                              void *vals,
+                                              const typeID &id ) const;
+
+
+    /**
+     * \brief Get local values in the vector by their global offset
+     * \param[in] num  number of values to set
+     * \param[in] indices the indices of the values to set
+     * \param[out] vals the values to place in the vector
+     * \details This will get any value used by this core.
+     */
+    virtual void
+    getValuesByLocalID( size_t num, const size_t *indices, void *vals, const typeID &id ) const = 0;
+
+    /**
+     * \brief Get ghost values in the vector by their global offset
+     * \param[in] num  number of values to set
+     * \param[in] indices the indices of the values to set
+     * \param[out] vals the values to place in the vector
+     * \details This will get any value owned by this core.
+     */
+    virtual void getGhostValuesByGlobalID( size_t num,
+                                           const size_t *indices,
+                                           void *vals,
+                                           const typeID &id ) const;
 
 
 public: // Advanced functions

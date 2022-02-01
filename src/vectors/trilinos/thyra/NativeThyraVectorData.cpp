@@ -64,7 +64,7 @@ void NativeThyraVectorData::putRawData( const void *in, const typeID &id )
 }
 
 
-void NativeThyraVectorData::copyOutRawData( void *out, const typeID &id ) const
+void NativeThyraVectorData::getRawData( void *out, const typeID &id ) const
 {
     if ( id == getTypeID<double>() ) {
         size_t i = 0;
@@ -171,33 +171,27 @@ Teuchos::RCP<Thyra::VectorBase<double>> NativeThyraVectorData::getThyraVec( Vect
     return vec2->getVec();
 }
 
-void NativeThyraVectorData::getValuesByLocalID( size_t N,
-                                                const size_t *indices,
-                                                double *vals ) const
+void NativeThyraVectorData::getValuesByLocalID( size_t,
+                                                const size_t *,
+                                                void *,
+                                                const typeID & ) const
 {
-    NULL_USE( N );
-    NULL_USE( indices );
-    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
-void NativeThyraVectorData::setValuesByLocalID( size_t N,
-                                                const size_t *indices,
-                                                const double *vals )
+void NativeThyraVectorData::setValuesByLocalID( size_t,
+                                                const size_t *,
+                                                const void *,
+                                                const typeID & )
 {
-    NULL_USE( N );
-    NULL_USE( indices );
-    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 
-void NativeThyraVectorData::addValuesByLocalID( size_t N,
-                                                const size_t *indices,
-                                                const double *vals )
+void NativeThyraVectorData::addValuesByLocalID( size_t,
+                                                const size_t *,
+                                                const void *,
+                                                const typeID & )
 {
-    NULL_USE( N );
-    NULL_USE( indices );
-    NULL_USE( vals );
     AMP_ERROR( "not implemented" );
 }
 

@@ -110,7 +110,7 @@ void ArrayVectorData<T, FUN, Allocator>::putRawData( const void *buf, const type
     }
 }
 template<typename T, typename FUN, typename Allocator>
-void ArrayVectorData<T, FUN, Allocator>::copyOutRawData( void *buf, const typeID &id ) const
+void ArrayVectorData<T, FUN, Allocator>::getRawData( void *buf, const typeID &id ) const
 {
     auto &array = this->getArray();
     if ( id == getTypeID<T>() ) {
@@ -131,30 +131,60 @@ void ArrayVectorData<T, FUN, Allocator>::copyOutRawData( void *buf, const typeID
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::setValuesByLocalID( size_t num,
                                                              const size_t *indices,
-                                                             const double *vals )
+                                                             const void *vals,
+                                                             const typeID &id )
 {
+    if ( id == getTypeID<T>() ) {
+        auto data = reinterpret_cast<const T *>( vals );
+        for ( size_t i = 0; i != num; i++ )
+            d_array( indices[i] ) = data[i];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            d_array( indices[i] ) = static_cast<T>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-    for ( size_t i = 0; i < num; i++ )
-        d_array( indices[i] ) = vals[i];
 }
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::addValuesByLocalID( size_t num,
                                                              const size_t *indices,
-                                                             const double *vals )
+                                                             const void *vals,
+                                                             const typeID &id )
 {
+    if ( id == getTypeID<T>() ) {
+        auto data = reinterpret_cast<const T *>( vals );
+        for ( size_t i = 0; i != num; i++ )
+            d_array( indices[i] ) += data[i];
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            d_array( indices[i] ) = static_cast<T>( data[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-    for ( size_t i = 0; i < num; i++ )
-        d_array( indices[i] ) += vals[i];
 }
 template<typename T, typename FUN, typename Allocator>
 void ArrayVectorData<T, FUN, Allocator>::getValuesByLocalID( size_t num,
                                                              const size_t *indices,
-                                                             double *vals ) const
+                                                             void *vals,
+                                                             const typeID &id ) const
 {
-    for ( size_t i = 0; i < num; i++ )
-        vals[i] = d_array( indices[i] );
+    if ( id == getTypeID<T>() ) {
+        auto data = reinterpret_cast<T *>( vals );
+        for ( size_t i = 0; i != num; i++ )
+            data[i] = d_array( indices[i] );
+    } else if ( id == getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( vals );
+        for ( size_t i = 0; i < num; ++i )
+            data[i] = d_array( indices[i] );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
 }
 
 

@@ -70,11 +70,11 @@ public:
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
 
-    void addValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void setValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void getValuesByLocalID( size_t, const size_t *, double *vals ) const override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
     void putRawData( const void *in, const typeID &id ) override;
-    void copyOutRawData( void *out, const typeID &id ) const override;
+    void getRawData( void *out, const typeID &id ) const override;
 
     uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
     bool isType( const typeID &id, size_t ) const override { return id == getTypeID<double>(); }

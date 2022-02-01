@@ -125,7 +125,7 @@ void BandedSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // Copy f
     AMP_ASSERT( *rightDOF == *( f->getDOFManager() ) );
     auto B = new double[N];
-    f->copyOutRawData( B );
+    f->getRawData( B );
 
     // Solve the
 #ifdef AMP_USE_LAPACK_WRAPPERS

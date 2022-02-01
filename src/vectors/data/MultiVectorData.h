@@ -53,15 +53,15 @@ public: // Virtual functions
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    void copyOutRawData( void *buf, const typeID &id ) const override;
+    void getRawData( void *buf, const typeID &id ) const override;
 
 
-    void getValuesByLocalID( size_t, const size_t *, double * ) const override;
-    void setValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void addValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void setGhostValuesByGlobalID( size_t, const size_t *, const double * ) override;
-    void addGhostValuesByGlobalID( size_t, const size_t *, const double * ) override;
-    void getGhostValuesByGlobalID( size_t, const size_t *, double * ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     size_t getGhostSize() const override;
     using VectorData::makeConsistent;
     void makeConsistent( ScatterType t ) override;
@@ -149,6 +149,7 @@ protected:
      * \param[in] num            The number of DOFs that need to be mapped
      * \param[in] indices        The indices of the values relative to the multivector
      * \param[in] vals           Values associated somehow with the indices
+     * \param[in] bytes          Size of a value
      * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
      * vectors
      * \param[out] out_vals      The values partitioned according to out_indices
@@ -157,9 +158,10 @@ protected:
      */
     void partitionGlobalValues( const int num,
                                 const size_t *indices,
-                                const double *vals,
+                                const void *vals,
+                                const size_t bytes,
                                 std::vector<std::vector<size_t>> &out_indices,
-                                std::vector<std::vector<double>> &out_vals,
+                                std::vector<std::vector<std::byte>> &out_vals,
                                 std::vector<std::vector<int>> *remap = nullptr ) const;
 
     /** A method that will translate an array of local ids relative to the multivector
@@ -167,6 +169,7 @@ protected:
      * \param[in] num            The number of DOFs that need to be mapped
      * \param[in] indices        The indices of the values relative to the multivector
      * \param[in] vals           Values associated somehow with the indices
+     * \param[in] bytes          Size of a value
      * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
      * vectors
      * \param[out] out_vals      The values partitioned according to out_indices
@@ -175,9 +178,10 @@ protected:
      */
     void partitionLocalValues( const int num,
                                const size_t *indices,
-                               const double *vals,
+                               const void *vals,
+                               const size_t bytes,
                                std::vector<std::vector<size_t>> &out_indices,
-                               std::vector<std::vector<double>> &out_vals,
+                               std::vector<std::vector<std::byte>> &out_vals,
                                std::vector<std::vector<int>> *remap = nullptr ) const;
 };
 

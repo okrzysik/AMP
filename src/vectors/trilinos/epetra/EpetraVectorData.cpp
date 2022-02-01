@@ -68,26 +68,41 @@ const void *EpetraVectorData::getRawDataBlockAsVoid( size_t i ) const
 /****************************************************************
  * Functions get/set/add values                                  *
  ****************************************************************/
-void EpetraVectorData::setValuesByLocalID( size_t N, const size_t *indices, const double *vals )
+void EpetraVectorData::setValuesByLocalID( size_t N,
+                                           const size_t *indices,
+                                           const void *in,
+                                           const typeID &id )
 {
+    AMP_INSIST( id == getTypeID<double>(), "Epetra only supports double" );
+    auto vals = reinterpret_cast<const double *>( in );
     for ( size_t i = 0; i != N; i++ )
         d_epetraVector[indices[i]] = vals[i];
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-void EpetraVectorData::addValuesByLocalID( size_t N, const size_t *indices, const double *vals )
+void EpetraVectorData::addValuesByLocalID( size_t N,
+                                           const size_t *indices,
+                                           const void *in,
+                                           const typeID &id )
 {
     if ( N == 0 )
         return;
+    AMP_INSIST( id == getTypeID<double>(), "Epetra only supports double" );
+    auto vals = reinterpret_cast<const double *>( in );
     for ( size_t i = 0; i != N; i++ )
         d_epetraVector[indices[i]] += vals[i];
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
 }
-void EpetraVectorData::getValuesByLocalID( size_t N, const size_t *indices, double *vals ) const
+void EpetraVectorData::getValuesByLocalID( size_t N,
+                                           const size_t *indices,
+                                           void *out,
+                                           const typeID &id ) const
 {
     if ( N == 0 )
         return;
+    AMP_INSIST( id == getTypeID<double>(), "Epetra only supports double" );
+    auto vals = reinterpret_cast<double *>( out );
     double *data;
     d_epetraVector.ExtractView( &data );
     for ( size_t i = 0; i != N; i++ )
@@ -97,16 +112,16 @@ void EpetraVectorData::getValuesByLocalID( size_t N, const size_t *indices, doub
 
 void EpetraVectorData::putRawData( const void *in, const typeID &id )
 {
-    AMP_ASSERT( id == getTypeID<double>() );
+    AMP_INSIST( id == getTypeID<double>(), "Epetra only supports double" );
     auto data = reinterpret_cast<const double *>( in );
     double *p;
     d_epetraVector.ExtractView( &p );
     memcpy( p, data, d_localSize * sizeof( double ) );
 }
 
-void EpetraVectorData::copyOutRawData( void *out, const typeID &id ) const
+void EpetraVectorData::getRawData( void *out, const typeID &id ) const
 {
-    AMP_ASSERT( id == getTypeID<double>() );
+    AMP_INSIST( id == getTypeID<double>(), "Epetra only supports double" );
     auto data = reinterpret_cast<double *>( out );
     d_epetraVector.ExtractCopy( data );
 }

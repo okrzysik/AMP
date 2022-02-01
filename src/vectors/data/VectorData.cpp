@@ -32,199 +32,84 @@ void VectorData::setCommunicationList( std::shared_ptr<CommunicationList> comm )
     }
 }
 
-
-/****************************************************************
- * Get/Set values by global id                                   *
- ****************************************************************/
-void VectorData::getLocalValuesByGlobalID( size_t N, const size_t *ndx, double *vals ) const
-{
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        getLocalValuesByGlobalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
-    size_t index[N_max];
-    for ( size_t i = 0; i < N; i++ ) {
-        AMP_ASSERT( ndx[i] >= d_localStart && ndx[i] < ( d_localStart + d_localSize ) );
-        index[i] = ndx[i] - d_localStart;
-    }
-    getValuesByLocalID( N, index, vals );
-}
-void VectorData::addLocalValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
-{
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        addLocalValuesByGlobalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
-    size_t index[N_max];
-    for ( size_t i = 0; i < N; i++ ) {
-        AMP_ASSERT( ndx[i] >= d_localStart && ndx[i] < ( d_localStart + d_localSize ) );
-        index[i] = ndx[i] - d_localStart;
-    }
-    addValuesByLocalID( N, index, vals );
-}
-void VectorData::setLocalValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
-{
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        setLocalValuesByGlobalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
-    size_t index[N_max];
-    for ( size_t i = 0; i < N; i++ ) {
-        AMP_ASSERT( ndx[i] >= d_localStart && ndx[i] < ( d_localStart + d_localSize ) );
-        index[i] = ndx[i] - d_localStart;
-    }
-    setValuesByLocalID( N, index, vals );
-}
-void VectorData::getValuesByGlobalID( size_t N, const size_t *ndx, double *vals ) const
-{
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        getValuesByGlobalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
-    size_t N_local = 0, N_ghost = 0;
-    size_t local_index[N_max], ghost_index[N_max];
-    double local_vals[N_max], ghost_vals[N_max];
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
-            local_index[N_local] = ndx[i] - d_localStart;
-            N_local++;
-        } else {
-            ghost_index[N_ghost] = ndx[i];
-            N_ghost++;
-        }
-    }
-    if ( N_local > 0 )
-        getValuesByLocalID( N_local, local_index, local_vals );
-    if ( N_ghost > 0 )
-        getGhostValuesByGlobalID( N_ghost, ghost_index, ghost_vals );
-    N_local = 0;
-    N_ghost = 0;
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
-            vals[i] = local_vals[N_local];
-            N_local++;
-        } else {
-            vals[i] = ghost_vals[N_ghost];
-            N_ghost++;
-        }
-    }
-}
-void VectorData::setValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
-{
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        setValuesByGlobalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
-    size_t N_local = 0, N_ghost = 0;
-    size_t local_index[N_max], ghost_index[N_max];
-    double local_vals[N_max], ghost_vals[N_max];
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
-            local_index[N_local] = ndx[i] - d_localStart;
-            local_vals[N_local]  = vals[i];
-            N_local++;
-        } else {
-            ghost_index[N_ghost] = ndx[i];
-            ghost_vals[N_ghost]  = vals[i];
-            N_ghost++;
-        }
-    }
-    if ( N_local > 0 )
-        setValuesByLocalID( N_local, local_index, local_vals );
-    if ( N_ghost > 0 )
-        setGhostValuesByGlobalID( N_ghost, ghost_index, ghost_vals );
-}
-void VectorData::addValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
-{
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        addValuesByGlobalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
-    size_t N_local = 0, N_ghost = 0;
-    size_t local_index[N_max], ghost_index[N_max];
-    double local_vals[N_max], ghost_vals[N_max];
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
-            local_index[N_local] = ndx[i] - d_localStart;
-            local_vals[N_local]  = vals[i];
-            N_local++;
-        } else {
-            ghost_index[N_ghost] = ndx[i];
-            ghost_vals[N_ghost]  = vals[i];
-            N_ghost++;
-        }
-    }
-    if ( N_local > 0 )
-        addValuesByLocalID( N_local, local_index, local_vals );
-    if ( N_ghost > 0 )
-        addGhostValuesByGlobalID( N_ghost, ghost_index, ghost_vals );
-}
-
-
 /****************************************************************
  * Get/Set ghost values by global id                             *
  ****************************************************************/
-void VectorData::setGhostValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
+void VectorData::setGhostValuesByGlobalID( size_t N,
+                                           const size_t *ndx,
+                                           const void *vals,
+                                           const typeID &id )
 {
-    AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
-    *d_UpdateState = UpdateState::SETTING;
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-            ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] = vals[i];
-        } else {
-            AMP_ERROR( "Non ghost index" );
+    if ( id == AMP::getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
+        *d_UpdateState = UpdateState::SETTING;
+        for ( size_t i = 0; i < N; i++ ) {
+            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
+                ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] = data[i];
+            } else {
+                AMP_ERROR( "Non ghost index" );
+            }
         }
+    } else {
+        AMP_ERROR( "Ghosts other than double are not supported yet" );
     }
 }
-void VectorData::addGhostValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
+void VectorData::addGhostValuesByGlobalID( size_t N,
+                                           const size_t *ndx,
+                                           const void *vals,
+                                           const typeID &id )
 {
-    AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
-    *d_UpdateState = UpdateState::ADDING;
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-            ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )] += vals[i];
-        } else {
-            AMP_ERROR( "Non ghost index" );
+    if ( id == AMP::getTypeID<double>() ) {
+        auto data = reinterpret_cast<const double *>( vals );
+        AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
+        *d_UpdateState = UpdateState::ADDING;
+        for ( size_t i = 0; i < N; i++ ) {
+            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
+                ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )] += data[i];
+            } else {
+                AMP_ERROR( "Non ghost index" );
+            }
         }
+    } else {
+        AMP_ERROR( "Ghosts other than double are not supported yet" );
     }
 }
-void VectorData::getGhostValuesByGlobalID( size_t N, const size_t *ndx, double *vals ) const
+void VectorData::getGhostValuesByGlobalID( size_t N,
+                                           const size_t *ndx,
+                                           void *vals,
+                                           const typeID &id ) const
 {
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-            vals[i] = ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] +
-                      ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
-        } else {
-            AMP_ERROR( "Tried to get a non-ghost ghost value" );
+    if ( id == AMP::getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( vals );
+        for ( size_t i = 0; i < N; i++ ) {
+            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
+                data[i] = ( *d_Ghosts )[d_CommList->getLocalGhostID( ndx[i] )] +
+                          ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
+            } else {
+                AMP_ERROR( "Tried to get a non-ghost ghost value" );
+            }
         }
+    } else {
+        AMP_ERROR( "Ghosts other than double are not supported yet" );
     }
 }
-void VectorData::getGhostAddValuesByGlobalID( size_t N, const size_t *ndx, double *vals ) const
+void VectorData::getGhostAddValuesByGlobalID( size_t N,
+                                              const size_t *ndx,
+                                              void *vals,
+                                              const typeID &id ) const
 {
-    for ( size_t i = 0; i < N; i++ ) {
-        if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
-            vals[i] = ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
-        } else {
-            AMP_ERROR( "Tried to get a non-ghost ghost value" );
+    if ( id == AMP::getTypeID<double>() ) {
+        auto data = reinterpret_cast<double *>( vals );
+        for ( size_t i = 0; i < N; i++ ) {
+            if ( ( ndx[i] < d_localStart ) || ( ndx[i] >= ( d_localStart + d_localSize ) ) ) {
+                data[i] = ( *d_AddBuffer )[d_CommList->getLocalGhostID( ndx[i] )];
+            } else {
+                AMP_ERROR( "Tried to get a non-ghost ghost value" );
+            }
         }
+    } else {
+        AMP_ERROR( "Ghosts other than double are not supported yet" );
     }
 }
 

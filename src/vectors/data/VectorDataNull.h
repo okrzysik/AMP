@@ -55,17 +55,20 @@ public: // Virtual functions
     /**\brief Copy data out of this vector
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    inline void copyOutRawData( void *, const typeID & ) const override {}
+    inline void getRawData( void *, const typeID & ) const override {}
 
-    inline void getValuesByLocalID( size_t N, const size_t *, double * ) const override
+    inline void
+    getValuesByLocalID( size_t N, const size_t *, void *, const typeID & ) const override
     {
         AMP_INSIST( N == 0, "Cannot get values in NullVectorData" );
     }
-    inline void setValuesByLocalID( size_t N, const size_t *, const double * ) override
+    inline void
+    setValuesByLocalID( size_t N, const size_t *, const void *, const typeID & ) override
     {
         AMP_INSIST( N == 0, "Cannot set values in NullVectorData" );
     }
-    inline void addValuesByLocalID( size_t N, const size_t *, const double * ) override
+    inline void
+    addValuesByLocalID( size_t N, const size_t *, const void *, const typeID & ) override
     {
         AMP_INSIST( N == 0, "Cannot add values in NullVectorData" );
     }

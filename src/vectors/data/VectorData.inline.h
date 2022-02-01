@@ -106,8 +106,20 @@ inline std::shared_ptr<VectorData::UpdateState> VectorData::getUpdateStatusPtr()
 
 
 /****************************************************************
- * Templated functions                                           *
+ * Get/Set raw data                                              *
  ****************************************************************/
+template<class TYPE>
+void VectorData::putRawData( const TYPE *buf )
+{
+    constexpr auto type = getTypeID<TYPE>();
+    putRawData( buf, type );
+}
+template<class TYPE>
+void VectorData::getRawData( TYPE *buf ) const
+{
+    constexpr auto type = getTypeID<TYPE>();
+    getRawData( buf, type );
+}
 template<typename TYPE>
 TYPE *VectorData::getRawDataBlock( size_t i )
 {
@@ -118,6 +130,212 @@ const TYPE *VectorData::getRawDataBlock( size_t i ) const
 {
     return static_cast<const TYPE *>( this->getRawDataBlockAsVoid( i ) );
 }
+
+
+/****************************************************************
+ * Get/Set values by global id                                   *
+ ****************************************************************/
+template<typename TYPE>
+void VectorData::getValuesByLocalID( size_t N, const size_t *ndx, TYPE *vals ) const
+{
+    constexpr auto type = getTypeID<TYPE>();
+    getValuesByLocalID( N, ndx, vals, type );
+}
+template<typename TYPE>
+void VectorData::setValuesByLocalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr auto type = getTypeID<TYPE>();
+    setValuesByLocalID( N, ndx, vals, type );
+}
+template<typename TYPE>
+void VectorData::addValuesByLocalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr auto type = getTypeID<TYPE>();
+    addValuesByLocalID( N, ndx, vals, type );
+}
+template<typename TYPE>
+void VectorData::getLocalValuesByGlobalID( size_t N, const size_t *ndx, TYPE *vals ) const
+{
+    constexpr size_t N_max = 128;
+    while ( N > N_max ) {
+        getLocalValuesByGlobalID( N_max, ndx, vals );
+        N -= N_max;
+        ndx  = &ndx[N_max];
+        vals = &vals[N_max];
+    }
+    size_t index[N_max];
+    for ( size_t i = 0; i < N; i++ ) {
+        AMP_ASSERT( ndx[i] >= d_localStart && ndx[i] < ( d_localStart + d_localSize ) );
+        index[i] = ndx[i] - d_localStart;
+    }
+    constexpr auto type = getTypeID<TYPE>();
+    getValuesByLocalID( N, index, vals, type );
+}
+template<typename TYPE>
+void VectorData::addLocalValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr size_t N_max = 128;
+    while ( N > N_max ) {
+        addLocalValuesByGlobalID( N_max, ndx, vals );
+        N -= N_max;
+        ndx  = &ndx[N_max];
+        vals = &vals[N_max];
+    }
+    size_t index[N_max];
+    for ( size_t i = 0; i < N; i++ ) {
+        AMP_ASSERT( ndx[i] >= d_localStart && ndx[i] < ( d_localStart + d_localSize ) );
+        index[i] = ndx[i] - d_localStart;
+    }
+    constexpr auto type = getTypeID<TYPE>();
+    addValuesByLocalID( N, index, vals, type );
+}
+template<typename TYPE>
+void VectorData::setLocalValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr size_t N_max = 128;
+    while ( N > N_max ) {
+        setLocalValuesByGlobalID( N_max, ndx, vals );
+        N -= N_max;
+        ndx  = &ndx[N_max];
+        vals = &vals[N_max];
+    }
+    size_t index[N_max];
+    for ( size_t i = 0; i < N; i++ ) {
+        AMP_ASSERT( ndx[i] >= d_localStart && ndx[i] < ( d_localStart + d_localSize ) );
+        index[i] = ndx[i] - d_localStart;
+    }
+    constexpr auto type = getTypeID<TYPE>();
+    setValuesByLocalID( N, index, vals, type );
+}
+template<typename TYPE>
+void VectorData::getValuesByGlobalID( size_t N, const size_t *ndx, TYPE *vals ) const
+{
+    constexpr size_t N_max = 128;
+    while ( N > N_max ) {
+        getValuesByGlobalID( N_max, ndx, vals );
+        N -= N_max;
+        ndx  = &ndx[N_max];
+        vals = &vals[N_max];
+    }
+    size_t N_local = 0, N_ghost = 0;
+    size_t local_index[N_max], ghost_index[N_max];
+    TYPE local_vals[N_max], ghost_vals[N_max];
+    for ( size_t i = 0; i < N; i++ ) {
+        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
+            local_index[N_local] = ndx[i] - d_localStart;
+            N_local++;
+        } else {
+            ghost_index[N_ghost] = ndx[i];
+            N_ghost++;
+        }
+    }
+    constexpr auto type = getTypeID<TYPE>();
+    if ( N_local > 0 )
+        getValuesByLocalID( N_local, local_index, local_vals, type );
+    if ( N_ghost > 0 )
+        getGhostValuesByGlobalID( N_ghost, ghost_index, ghost_vals, type );
+    N_local = 0;
+    N_ghost = 0;
+    for ( size_t i = 0; i < N; i++ ) {
+        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
+            vals[i] = local_vals[N_local];
+            N_local++;
+        } else {
+            vals[i] = ghost_vals[N_ghost];
+            N_ghost++;
+        }
+    }
+}
+template<typename TYPE>
+void VectorData::setValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr size_t N_max = 128;
+    while ( N > N_max ) {
+        setValuesByGlobalID( N_max, ndx, vals );
+        N -= N_max;
+        ndx  = &ndx[N_max];
+        vals = &vals[N_max];
+    }
+    size_t N_local = 0, N_ghost = 0;
+    size_t local_index[N_max], ghost_index[N_max];
+    TYPE local_vals[N_max], ghost_vals[N_max];
+    for ( size_t i = 0; i < N; i++ ) {
+        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
+            local_index[N_local] = ndx[i] - d_localStart;
+            local_vals[N_local]  = vals[i];
+            N_local++;
+        } else {
+            ghost_index[N_ghost] = ndx[i];
+            ghost_vals[N_ghost]  = vals[i];
+            N_ghost++;
+        }
+    }
+    constexpr auto type = getTypeID<TYPE>();
+    if ( N_local > 0 )
+        setValuesByLocalID( N_local, local_index, local_vals, type );
+    if ( N_ghost > 0 )
+        setGhostValuesByGlobalID( N_ghost, ghost_index, ghost_vals, type );
+}
+template<typename TYPE>
+void VectorData::addValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr size_t N_max = 128;
+    while ( N > N_max ) {
+        addValuesByGlobalID( N_max, ndx, vals );
+        N -= N_max;
+        ndx  = &ndx[N_max];
+        vals = &vals[N_max];
+    }
+    size_t N_local = 0, N_ghost = 0;
+    size_t local_index[N_max], ghost_index[N_max];
+    TYPE local_vals[N_max], ghost_vals[N_max];
+    for ( size_t i = 0; i < N; i++ ) {
+        if ( ( ndx[i] >= d_localStart ) && ( ndx[i] < ( d_localStart + d_localSize ) ) ) {
+            local_index[N_local] = ndx[i] - d_localStart;
+            local_vals[N_local]  = vals[i];
+            N_local++;
+        } else {
+            ghost_index[N_ghost] = ndx[i];
+            ghost_vals[N_ghost]  = vals[i];
+            N_ghost++;
+        }
+    }
+    constexpr auto type = getTypeID<TYPE>();
+    if ( N_local > 0 )
+        addValuesByLocalID( N_local, local_index, local_vals, type );
+    if ( N_ghost > 0 )
+        addGhostValuesByGlobalID( N_ghost, ghost_index, ghost_vals, type );
+}
+
+
+/****************************************************************
+ * Get/Set ghost values by global id                             *
+ ****************************************************************/
+template<typename TYPE>
+void VectorData::setGhostValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr auto type = getTypeID<TYPE>();
+    setGhostValuesByGlobalID( N, ndx, vals, type );
+}
+template<typename TYPE>
+void VectorData::addGhostValuesByGlobalID( size_t N, const size_t *ndx, const TYPE *vals )
+{
+    constexpr auto type = getTypeID<TYPE>();
+    addGhostValuesByGlobalID( N, ndx, vals, type );
+}
+template<typename TYPE>
+void VectorData::getGhostValuesByGlobalID( size_t N, const size_t *ndx, TYPE *vals ) const
+{
+    constexpr auto type = getTypeID<TYPE>();
+    getGhostValuesByGlobalID( N, ndx, vals, type );
+}
+template<typename TYPE>
+void VectorData::getGhostAddValuesByGlobalID( size_t N, const size_t *ndx, TYPE *vals ) const
+{
+    constexpr auto type = getTypeID<TYPE>();
+    getGhostAddValuesByGlobalID( N, ndx, vals, type );
+}
+
 
 } // namespace AMP::LinearAlgebra
 

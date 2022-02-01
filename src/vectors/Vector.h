@@ -616,35 +616,38 @@ public: // VectorData operations
     template<class TYPE>
     inline void putRawData( const TYPE *buf )
     {
-        constexpr auto type = getTypeID<TYPE>();
-        d_VectorData->putRawData( buf, type );
+        d_VectorData->putRawData( buf );
     }
     template<class TYPE>
-    inline void copyOutRawData( TYPE *buf ) const
+    inline void getRawData( TYPE *buf ) const
     {
-        constexpr auto type = getTypeID<TYPE>();
-        d_VectorData->copyOutRawData( buf, type );
+        d_VectorData->getRawData( buf );
     }
     inline size_t getLocalSize() const { return d_VectorData->getLocalSize(); }
     inline size_t getGlobalSize() const { return d_VectorData->getGlobalSize(); }
     inline size_t getLocalStartID() const { return d_VectorData->getLocalStartID(); }
-    inline void setValuesByLocalID( int num, size_t *indices, const double *vals )
+    template<class TYPE>
+    inline void setValuesByLocalID( int num, size_t *indices, const TYPE *vals )
     {
         d_VectorData->setValuesByLocalID( num, indices, vals );
     }
-    inline void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+    template<class TYPE>
+    inline void setLocalValuesByGlobalID( int num, size_t *indices, const TYPE *vals )
     {
         d_VectorData->setLocalValuesByGlobalID( num, indices, vals );
     }
-    inline void addValuesByLocalID( int num, size_t *indices, const double *vals )
+    template<class TYPE>
+    inline void addValuesByLocalID( int num, size_t *indices, const TYPE *vals )
     {
         d_VectorData->addValuesByLocalID( num, indices, vals );
     }
-    inline void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
+    template<class TYPE>
+    inline void addLocalValuesByGlobalID( int num, size_t *indices, const TYPE *vals )
     {
         d_VectorData->addLocalValuesByGlobalID( num, indices, vals );
     }
-    inline void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const
+    template<class TYPE>
+    inline void getLocalValuesByGlobalID( int num, size_t *indices, TYPE *vals ) const
     {
         d_VectorData->getLocalValuesByGlobalID( num, indices, vals );
     }

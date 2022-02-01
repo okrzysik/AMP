@@ -603,7 +603,7 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *ut )
     vectora->setRandomValues();
     vectorb->zero();
     auto buf = new double[vectora->getLocalSize()];
-    vectora->copyOutRawData( buf );
+    vectora->getRawData( buf );
     vectorb->putRawData( buf );
     delete[] buf;
     vectorc->subtract( *vectora, *vectorb );

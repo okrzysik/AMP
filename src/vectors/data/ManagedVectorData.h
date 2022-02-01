@@ -55,14 +55,14 @@ protected:
 public: // Derived from VectorData
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t ) const override;
-    void setValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void addValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void getValuesByLocalID( size_t, const size_t *, double * ) const override;
-    void setGhostValuesByGlobalID( size_t, const size_t *, const double * ) override;
-    void addGhostValuesByGlobalID( size_t, const size_t *, const double * ) override;
-    void getGhostValuesByGlobalID( size_t, const size_t *, double * ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     void putRawData( const void *, const typeID & ) override;
-    void copyOutRawData( void *, const typeID & ) const override;
+    void getRawData( void *, const typeID & ) const override;
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
     bool isType( const typeID &, size_t ) const;

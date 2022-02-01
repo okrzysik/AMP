@@ -53,7 +53,7 @@ public: // Virtual functions
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    virtual void copyOutRawData( void *buf, const typeID &id ) const override;
+    virtual void getRawData( void *buf, const typeID &id ) const override;
 
     /**
      * \brief Set values in the vector by their local offset

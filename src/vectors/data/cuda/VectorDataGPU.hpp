@@ -189,7 +189,7 @@ void VectorDataGPU<TYPE>::putRawData( const void *in, const typeID &id )
 }
 
 template<typename TYPE>
-void VectorDataGPU<TYPE>::copyOutRawData( void *out, const typeID &id ) const
+void VectorDataGPU<TYPE>::getRawData( void *out, const typeID &id ) const
 {
     if ( id == getTypeID<TYPE>() ) {
         memcpy( out, d_Data, d_localSize * sizeof( TYPE ) );

@@ -168,51 +168,69 @@ void ManagedVectorData::swapData( VectorData &other )
 /****************************************************************
  * Get/Set values                                                *
  ****************************************************************/
-void ManagedVectorData::getValuesByLocalID( size_t N, const size_t *ndx, double *vals ) const
+void ManagedVectorData::getValuesByLocalID( size_t N,
+                                            const size_t *ndx,
+                                            void *vals,
+                                            const typeID &id ) const
 {
-    getEngineData( *this )->getValuesByLocalID( N, ndx, vals );
+    getEngineData( *this )->getValuesByLocalID( N, ndx, vals, id );
 }
-void ManagedVectorData::getGhostValuesByGlobalID( size_t N, const size_t *ndx, double *vals ) const
+void ManagedVectorData::getGhostValuesByGlobalID( size_t N,
+                                                  const size_t *ndx,
+                                                  void *vals,
+                                                  const typeID &id ) const
 {
     auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
-        VectorData::getGhostValuesByGlobalID( N, ndx, vals );
+        VectorData::getGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
-        vec->getGhostValuesByGlobalID( N, ndx, vals );
+        vec->getVectorData()->getGhostValuesByGlobalID( N, ndx, vals, id );
     }
 }
-void ManagedVectorData::setValuesByLocalID( size_t N, const size_t *id, const double *val )
+void ManagedVectorData::setValuesByLocalID( size_t N,
+                                            const size_t *ndx,
+                                            const void *val,
+                                            const typeID &id )
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::ADDING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-    getEngineData( *this )->setValuesByLocalID( N, id, val );
+    getEngineData( *this )->setValuesByLocalID( N, ndx, val, id );
     fireDataChange();
 }
-void ManagedVectorData::setGhostValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
+void ManagedVectorData::setGhostValuesByGlobalID( size_t N,
+                                                  const size_t *ndx,
+                                                  const void *vals,
+                                                  const typeID &id )
 {
     auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
-        VectorData::setGhostValuesByGlobalID( N, ndx, vals );
+        VectorData::setGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
-        vec->setGhostValuesByGlobalID( N, ndx, vals );
+        vec->getVectorData()->setGhostValuesByGlobalID( N, ndx, vals, id );
     }
 }
-void ManagedVectorData::addValuesByLocalID( size_t N, const size_t *id, const double *val )
+void ManagedVectorData::addValuesByLocalID( size_t N,
+                                            const size_t *ndx,
+                                            const void *val,
+                                            const typeID &id )
 {
     AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
     if ( *d_UpdateState == UpdateState::UNCHANGED )
         *d_UpdateState = UpdateState::LOCAL_CHANGED;
-    getEngineData( *this )->addValuesByLocalID( N, id, val );
+    getEngineData( *this )->addValuesByLocalID( N, ndx, val, id );
     fireDataChange();
 }
-void ManagedVectorData::addGhostValuesByGlobalID( size_t N, const size_t *ndx, const double *vals )
+void ManagedVectorData::addGhostValuesByGlobalID( size_t N,
+                                                  const size_t *ndx,
+                                                  const void *vals,
+                                                  const typeID &id )
 {
     auto vec = getVectorEngine();
     if ( vec.get() == nullptr ) {
-        VectorData::addGhostValuesByGlobalID( N, ndx, vals );
+        VectorData::addGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
-        vec->addGhostValuesByGlobalID( N, ndx, vals );
+        vec->getVectorData()->addGhostValuesByGlobalID( N, ndx, vals, id );
     }
 }
 
@@ -221,9 +239,9 @@ void ManagedVectorData::putRawData( const void *in, const typeID &id )
     getEngineData( *this )->putRawData( in, id );
 }
 
-void ManagedVectorData::copyOutRawData( void *in, const typeID &id ) const
+void ManagedVectorData::getRawData( void *in, const typeID &id ) const
 {
-    getEngineData( *this )->copyOutRawData( in, id );
+    getEngineData( *this )->getRawData( in, id );
 }
 
 bool ManagedVectorData::isType( const typeID &id, size_t i ) const

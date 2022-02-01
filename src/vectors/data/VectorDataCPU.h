@@ -59,7 +59,7 @@ public: // Virtual functions
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    void copyOutRawData( void *buf, const typeID &id ) const override;
+    void getRawData( void *buf, const typeID &id ) const override;
 
     /**
      * \brief Set values in the vector by their local offset
@@ -70,7 +70,10 @@ public: // Virtual functions
      * from 0.
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
      */
-    void setValuesByLocalID( size_t num, const size_t *indices, const double *vals ) override;
+    void setValuesByLocalID( size_t num,
+                             const size_t *indices,
+                             const void *vals,
+                             const typeID &id ) override;
 
     /**
      * \brief Add values to vector entities by their local offset
@@ -82,7 +85,10 @@ public: // Virtual functions
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void addValuesByLocalID( size_t num, const size_t *indices, const double *vals ) override;
+    void addValuesByLocalID( size_t num,
+                             const size_t *indices,
+                             const void *vals,
+                             const typeID &id ) override;
 
     /**
      * \brief Get values to vector entities by their local offset
@@ -94,7 +100,10 @@ public: // Virtual functions
      * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
      * \mathit{vals}_i \f$
      */
-    void getValuesByLocalID( size_t num, const size_t *indices, double *vals ) const override;
+    void getValuesByLocalID( size_t num,
+                             const size_t *indices,
+                             void *vals,
+                             const typeID &id ) const override;
 
 
 public: // Advanced virtual functions

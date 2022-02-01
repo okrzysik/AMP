@@ -78,7 +78,7 @@ void SubsetVectorData::putRawData( const void *in, const typeID &id )
             d_dataBlockPtr[i][j] = data[k];
     }
 }
-void SubsetVectorData::copyOutRawData( void *out, const typeID &id ) const
+void SubsetVectorData::getRawData( void *out, const typeID &id ) const
 {
     AMP_ASSERT( id == getTypeID<double>() );
     auto data = reinterpret_cast<double *>( out );
@@ -93,50 +93,38 @@ void SubsetVectorData::copyOutRawData( void *out, const typeID &id ) const
 /****************************************************************
  * Functions get/set/add values                                  *
  ****************************************************************/
-void SubsetVectorData::addValuesByLocalID( size_t N, const size_t *ndx, const double *vals )
+void SubsetVectorData::addValuesByLocalID( size_t N,
+                                           const size_t *ndx,
+                                           const void *vals,
+                                           const typeID &id )
 {
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        addValuesByLocalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
     AMP_ASSERT( d_ViewVector );
-    size_t index[N_max];
+    std::vector<size_t> index( N );
     for ( size_t i = 0; i != N; i++ )
         index[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]] - d_parentLocalStartID;
-    d_ViewVector->addValuesByLocalID( N, index, vals );
+    d_ViewVector->getVectorData()->addValuesByLocalID( N, index.data(), vals, id );
 }
-void SubsetVectorData::setValuesByLocalID( size_t N, const size_t *ndx, const double *vals )
+void SubsetVectorData::setValuesByLocalID( size_t N,
+                                           const size_t *ndx,
+                                           const void *vals,
+                                           const typeID &id )
 {
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        setValuesByLocalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
     AMP_ASSERT( d_ViewVector );
-    size_t index[N_max];
+    std::vector<size_t> index( N );
     for ( size_t i = 0; i != N; i++ )
         index[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]] - d_parentLocalStartID;
-    d_ViewVector->setValuesByLocalID( N, index, vals );
+    d_ViewVector->getVectorData()->setValuesByLocalID( N, index.data(), vals, id );
 }
-void SubsetVectorData::getValuesByLocalID( size_t N, const size_t *ndx, double *vals ) const
+void SubsetVectorData::getValuesByLocalID( size_t N,
+                                           const size_t *ndx,
+                                           void *vals,
+                                           const typeID &id ) const
 {
-    constexpr size_t N_max = 128;
-    while ( N > N_max ) {
-        getValuesByLocalID( N_max, ndx, vals );
-        N -= N_max;
-        ndx  = &ndx[N_max];
-        vals = &vals[N_max];
-    }
     AMP_ASSERT( d_ViewVector );
-    size_t index[N_max];
+    std::vector<size_t> index( N );
     for ( size_t i = 0; i != N; i++ )
         index[i] = d_SubsetLocalIDToViewGlobalID[ndx[i]] - d_parentLocalStartID;
-    d_ViewVector->getValuesByLocalID( N, index, vals );
+    d_ViewVector->getVectorData()->getValuesByLocalID( N, index.data(), vals, id );
 }
 
 void SubsetVectorData::swapData( VectorData &rhs )

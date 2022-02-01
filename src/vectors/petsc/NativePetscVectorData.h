@@ -38,11 +38,11 @@ public:
     size_t numberOfDataBlocks() const override;
     size_t sizeOfDataBlock( size_t i ) const override;
     void putRawData( const void *, const typeID & ) override;
-    void copyOutRawData( void *, const typeID & ) const override;
+    void getRawData( void *, const typeID & ) const override;
 
-    void setValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void addValuesByLocalID( size_t, const size_t *, const double * ) override;
-    void getValuesByLocalID( size_t, const size_t *, double * ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
 
     // Return the id of the data
     uint64_t getDataID() const override
