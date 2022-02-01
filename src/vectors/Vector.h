@@ -696,31 +696,38 @@ public: // VectorData operations
     inline void dataChanged() { return d_VectorData->dataChanged(); }
 
     inline size_t getGhostSize() const { return d_VectorData->getGhostSize(); }
-    inline void setGhostValuesByGlobalID( int num, const size_t *indices, const double *vals )
+    template<typename TYPE>
+    inline void setGhostValuesByGlobalID( int num, const size_t *indices, const TYPE *vals )
     {
         d_VectorData->setGhostValuesByGlobalID( num, indices, vals );
     }
-    inline void addGhostValuesByGlobalID( int num, const size_t *indices, const double *vals )
+    template<typename TYPE>
+    inline void addGhostValuesByGlobalID( int num, const size_t *indices, const TYPE *vals )
     {
         d_VectorData->addGhostValuesByGlobalID( num, indices, vals );
     }
-    inline void setValuesByGlobalID( int num, const size_t *indices, const double *vals )
+    template<typename TYPE>
+    inline void setValuesByGlobalID( int num, const size_t *indices, const TYPE *vals )
     {
         d_VectorData->setValuesByGlobalID( num, indices, vals );
     }
-    inline void addValuesByGlobalID( int num, const size_t *indices, const double *vals )
+    template<typename TYPE>
+    inline void addValuesByGlobalID( int num, const size_t *indices, const TYPE *vals )
     {
         d_VectorData->addValuesByGlobalID( num, indices, vals );
     }
-    inline void getValuesByGlobalID( int num, const size_t *indices, double *vals ) const
+    template<typename TYPE>
+    inline void getValuesByGlobalID( int num, const size_t *indices, TYPE *vals ) const
     {
         d_VectorData->getValuesByGlobalID( num, indices, vals );
     }
-    inline void getGhostValuesByGlobalID( int num, const size_t *indices, double *vals ) const
+    template<typename TYPE>
+    inline void getGhostValuesByGlobalID( int num, const size_t *indices, TYPE *vals ) const
     {
         d_VectorData->getGhostValuesByGlobalID( num, indices, vals );
     }
-    inline void getValuesByLocalID( int num, const size_t *indices, double *vals ) const
+    template<typename TYPE>
+    inline void getValuesByLocalID( int num, const size_t *indices, TYPE *vals ) const
     {
         d_VectorData->getValuesByLocalID( num, indices, vals );
     }
@@ -746,7 +753,8 @@ public: // Non virtual functions
      * \return The value stored at the index
      * \details This uses getValuesByGlobalID to get the value
      */
-    double getValueByGlobalID( size_t i ) const;
+    template<typename TYPE = double>
+    TYPE getValueByGlobalID( size_t i ) const;
 
     /**
      * \brief Return a local value from the vector.
@@ -754,7 +762,8 @@ public: // Non virtual functions
      * \return The value stored at the index
      * \details This uses getLocalValuesByGlobalID to get the value
      */
-    double getLocalValueByGlobalID( size_t i ) const;
+    template<typename TYPE = double>
+    TYPE getLocalValueByGlobalID( size_t i ) const;
 
     /**
      * \brief Return a ghost value from the vector.
@@ -762,7 +771,8 @@ public: // Non virtual functions
      * \return The value stored at the index
      * \details This uses getGhostValuesByGlobalID to get the value
      */
-    double getGhostValueByGlobalID( size_t i ) const;
+    template<typename TYPE = double>
+    TYPE getGhostValueByGlobalID( size_t i ) const;
 
     /**
      * \brief Return a local value from the vector.
@@ -770,7 +780,8 @@ public: // Non virtual functions
      * \return The value stored at the index
      * \details This uses getValuesByGlobalID to get the value
      */
-    double getValueByLocalID( size_t i ) const;
+    template<typename TYPE = double>
+    TYPE getValueByLocalID( size_t i ) const;
 
 
 private:
