@@ -81,7 +81,7 @@ int TrilinosMatrixShellOperator::matVec(
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     op->d_operator->apply( inVec, outVec );
 
-    outVec->copyOutRawData( out );
+    outVec->getRawData( out );
 
     return 0;
 }
@@ -142,7 +142,7 @@ void TrilinosMatrixShellOperator::getColumn( int column,
 
     size_t outLength = outVec->getLocalSize();
     auto outPtr      = new double[outLength];
-    outVec->copyOutRawData( outPtr );
+    outVec->getRawData( outPtr );
 
     rows.clear();
     values.clear();

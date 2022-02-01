@@ -47,73 +47,21 @@ public: // Virtual functions
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from
      */
-    void putRawData( const double *buf ) override;
+    void putRawData( const void *buf, const typeID &id ) override;
 
     /**\brief Copy data out of this vector
      *\param[out] buf  Buffer to copy to
      *\details The Vector should be pre-allocated to the correct size (getLocalSize())
      */
-    void copyOutRawData( double *buf ) const override;
+    void getRawData( void *buf, const typeID &id ) const override;
 
-    /**
-     * \brief Set values in the vector by their local offset
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     * \details This will set the owned values for this core.  All indices are
-     * from 0.
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    void setValuesByLocalID( int num, size_t *indices, const double *vals ) override;
 
-    /**
-     * \brief Set owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{vals}_i \f$
-     */
-    void setLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Add values to vector entities by their local offset
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     * \details This will set the owned values for this core.  All indices are
-     * from 0.
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-     */
-    void addValuesByLocalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Add owned values using global identifier
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[in] vals the values to place in the vector
-     *
-     * \f$ \mathit{this}_{\mathit{indices}_i} = \mathit{this}_{\mathit{indices}_i} +
-     * \mathit{vals}_i \f$
-     */
-    void addLocalValuesByGlobalID( int num, size_t *indices, const double *vals ) override;
-
-    /**
-     * \brief Get local values in the vector by their global offset
-     * \param[in] num  number of values to set
-     * \param[in] indices the indices of the values to set
-     * \param[out] vals the values to place in the vector
-     * \details This will get any value owned by this core.
-     */
-    void getLocalValuesByGlobalID( int num, size_t *indices, double *vals ) const override;
-
-    void setGhostValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
-    void setValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
-    void addValuesByGlobalID( int num, size_t *indices, const double *in_vals ) override;
-    void getValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
-    void getGhostValuesByGlobalID( int num, size_t *indices, double *out_vals ) const override;
-    void getValuesByLocalID( int num, size_t *indices, double *out_vals ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void setGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addGhostValuesByGlobalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getGhostValuesByGlobalID( size_t, const size_t *, void *, const typeID & ) const override;
     size_t getGhostSize() const override;
     using VectorData::makeConsistent;
     void makeConsistent( ScatterType t ) override;
@@ -151,7 +99,7 @@ public: // Advanced virtual functions
      * \param hash     The hash code: typeid(myint).hash_code()
      * \param block    The block id to check
      */
-    bool isTypeId( size_t hash, size_t block ) const override;
+    bool isType( const typeID &id, size_t block ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
@@ -201,6 +149,7 @@ protected:
      * \param[in] num            The number of DOFs that need to be mapped
      * \param[in] indices        The indices of the values relative to the multivector
      * \param[in] vals           Values associated somehow with the indices
+     * \param[in] bytes          Size of a value
      * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
      * vectors
      * \param[out] out_vals      The values partitioned according to out_indices
@@ -209,9 +158,10 @@ protected:
      */
     void partitionGlobalValues( const int num,
                                 const size_t *indices,
-                                const double *vals,
+                                const void *vals,
+                                const size_t bytes,
                                 std::vector<std::vector<size_t>> &out_indices,
-                                std::vector<std::vector<double>> &out_vals,
+                                std::vector<std::vector<std::byte>> &out_vals,
                                 std::vector<std::vector<int>> *remap = nullptr ) const;
 
     /** A method that will translate an array of local ids relative to the multivector
@@ -219,6 +169,7 @@ protected:
      * \param[in] num            The number of DOFs that need to be mapped
      * \param[in] indices        The indices of the values relative to the multivector
      * \param[in] vals           Values associated somehow with the indices
+     * \param[in] bytes          Size of a value
      * \param[out] out_indices   An array of arrays of mapped indices relative to constituent
      * vectors
      * \param[out] out_vals      The values partitioned according to out_indices
@@ -227,9 +178,10 @@ protected:
      */
     void partitionLocalValues( const int num,
                                const size_t *indices,
-                               const double *vals,
+                               const void *vals,
+                               const size_t bytes,
                                std::vector<std::vector<size_t>> &out_indices,
-                               std::vector<std::vector<double>> &out_vals,
+                               std::vector<std::vector<std::byte>> &out_vals,
                                std::vector<std::vector<int>> *remap = nullptr ) const;
 };
 

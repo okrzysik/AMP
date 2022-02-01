@@ -318,15 +318,6 @@ constexpr unsigned int hash_char( const std::string_view & );
 std::string demangle( const std::string &name );
 
 
-//! Get the type name (does not match typeid, does not work for all compilers)
-template<typename T>
-constexpr std::string_view type_name();
-
-//! Get the type hash (does not match typeid, does not work for all compilers)
-template<typename T>
-constexpr unsigned int type_hash();
-
-
 //! Get the prime factors for a number
 std::vector<int> factor( uint64_t );
 
@@ -359,6 +350,7 @@ void nullUse( void * );
 
 //! std::string version of sprintf
 inline std::string stringf( const char *format, ... );
+
 
 //! Print a vector
 template<class TYPE>

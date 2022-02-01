@@ -41,21 +41,27 @@ NativePetscVectorData::~NativePetscVectorData()
         PETSC::vecDestroy( &d_petscVec );
 }
 
-void NativePetscVectorData::putRawData( const double *in )
+void NativePetscVectorData::putRawData( const void *in, const typeID &id )
 {
+    constexpr auto type = getTypeID<double>();
+    auto data           = reinterpret_cast<const double *>( in );
+    AMP_ASSERT( id == type );
     int a, b;
     VecGetOwnershipRange( d_petscVec, &a, &b );
     AMP_ASSERT( b - a == (int) getLocalSize() );
     std::vector<int> offs( b - a );
     for ( size_t j = 0; j != offs.size(); j++ )
         offs[j] = a + j;
-    VecSetValues( d_petscVec, offs.size(), offs.data(), in, INSERT_VALUES );
+    VecSetValues( d_petscVec, offs.size(), offs.data(), data, INSERT_VALUES );
 }
 
 
-void NativePetscVectorData::copyOutRawData( double *out ) const
+void NativePetscVectorData::getRawData( void *out, const typeID &id ) const
 {
-    std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), out );
+    constexpr auto type = getTypeID<double>();
+    AMP_ASSERT( id == type );
+    auto data = reinterpret_cast<double *>( out );
+    std::copy( getRawDataBlock<double>( 0 ), getRawDataBlock<double>( 0 ) + getLocalSize(), data );
 }
 
 
@@ -103,48 +109,54 @@ void NativePetscVectorData::resetArray() const
     }
 }
 
-void NativePetscVectorData::setValuesByLocalID( int num, size_t *indices, const double *vals )
+void NativePetscVectorData::setValuesByLocalID( size_t N,
+                                                const size_t *indices,
+                                                const void *vals,
+                                                const typeID &id )
 {
-    for ( int i = 0; i != num; i++ )
-        getRawDataBlock<double>()[indices[i]] = vals[i];
-}
-
-
-void NativePetscVectorData::setLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
+    AMP_ASSERT( id == getTypeID<double>() );
+    auto data = reinterpret_cast<const double *>( vals );
     resetArray();
-    if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
-        VecSetValues( d_petscVec, num, (PetscInt *) indices, vals, INSERT_VALUES );
-    } else {
-        AMP_ASSERT( getGlobalSize() < 0x80000000 );
-        std::vector<PetscInt> indices2( num, 0 );
-        for ( int i = 0; i < num; i++ )
-            indices2[i] = (PetscInt) indices[i];
-        VecSetValues( d_petscVec, num, &indices2[0], vals, INSERT_VALUES );
-    }
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    std::vector<PetscInt> idx( N );
+    for ( size_t i = 0; i < N; i++ )
+        idx[i] = indices[i] + d_localStart;
+    VecSetValues( d_petscVec, N, idx.data(), data, INSERT_VALUES );
 }
 
 
-void NativePetscVectorData::addValuesByLocalID( int num, size_t *indices, const double *vals )
+void NativePetscVectorData::addValuesByLocalID( size_t N,
+                                                const size_t *indices,
+                                                const void *vals,
+                                                const typeID &id )
 {
-    for ( int i = 0; i != num; i++ )
-        getRawDataBlock<double>()[indices[i]] += vals[i];
-}
-
-
-void NativePetscVectorData::addLocalValuesByGlobalID( int num, size_t *indices, const double *vals )
-{
+    AMP_ASSERT( id == getTypeID<double>() );
+    auto data = reinterpret_cast<const double *>( vals );
     resetArray();
-    if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
-        VecSetValues( d_petscVec, num, (PetscInt *) indices, vals, ::ADD_VALUES );
-    } else {
-        AMP_ASSERT( getGlobalSize() < 0x80000000 );
-        std::vector<PetscInt> indices2( num, 0 );
-        for ( int i = 0; i < num; i++ )
-            indices2[i] = (PetscInt) indices[i];
-        VecSetValues( d_petscVec, num, &indices2[0], vals, ::ADD_VALUES );
-    }
+    if ( *d_UpdateState == UpdateState::UNCHANGED )
+        *d_UpdateState = UpdateState::LOCAL_CHANGED;
+    std::vector<PetscInt> idx( N );
+    for ( size_t i = 0; i < N; i++ )
+        idx[i] = indices[i] + d_localStart;
+    VecSetValues( d_petscVec, N, idx.data(), data, ::ADD_VALUES );
 }
+
+
+void NativePetscVectorData::getValuesByLocalID( size_t N,
+                                                const size_t *indices,
+                                                void *vals,
+                                                const typeID &id ) const
+{
+    AMP_ASSERT( id == getTypeID<double>() );
+    auto data = reinterpret_cast<double *>( vals );
+    resetArray();
+    std::vector<PetscInt> idx( N );
+    for ( size_t i = 0; i < N; i++ )
+        idx[i] = indices[i] + d_localStart;
+    VecGetValues( d_petscVec, N, idx.data(), data );
+}
+
 
 void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i )
 {
@@ -166,21 +178,6 @@ const void *NativePetscVectorData::getRawDataBlockAsVoid( size_t i ) const
     return d_pArray;
 }
 
-
-void NativePetscVectorData::getLocalValuesByGlobalID( int numVals, size_t *ndx, double *vals ) const
-{
-    if ( numVals == 0 )
-        return;
-    if ( sizeof( size_t ) == sizeof( PetscInt ) ) {
-        VecGetValues( d_petscVec, numVals, (PetscInt *) ndx, vals );
-    } else {
-        AMP_ASSERT( getGlobalSize() < 0x80000000 );
-        std::vector<PetscInt> ndx2( numVals, 0 );
-        for ( int i = 0; i < numVals; i++ )
-            ndx2[i] = (PetscInt) ndx[i];
-        VecGetValues( d_petscVec, numVals, &ndx2[0], vals );
-    }
-}
 
 void NativePetscVectorData::assemble()
 {

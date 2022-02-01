@@ -75,14 +75,11 @@ public: // Virtual functions
     std::string VectorDataName() const override { return "EpetraVectorData"; }
     size_t numberOfDataBlocks() const override { return 1; }
     size_t sizeOfDataBlock( size_t i ) const override { return i == 0 ? d_localSize : 0; }
-    void setValuesByLocalID( int i, size_t *, const double *val ) override;
-    void setLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void addValuesByLocalID( int i, size_t *, const double *val ) override;
-    void addLocalValuesByGlobalID( int i, size_t *, const double *val ) override;
-    void getValuesByLocalID( int i, size_t *, double *val ) const override;
-    void getLocalValuesByGlobalID( int i, size_t *, double *val ) const override;
-    void putRawData( const double *in ) override;
-    void copyOutRawData( double *out ) const override;
+    void setValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void addValuesByLocalID( size_t, const size_t *, const void *, const typeID & ) override;
+    void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
+    void putRawData( const void *in, const typeID &id ) override;
+    void getRawData( void *out, const typeID &id ) const override;
     uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
@@ -90,10 +87,7 @@ public: // Virtual functions
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    bool isTypeId( size_t hash, size_t ) const override
-    {
-        return hash == typeid( double ).hash_code();
-    }
+    bool isType( const typeID &id, size_t ) const override { return id == getTypeID<double>(); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
 

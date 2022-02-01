@@ -183,6 +183,7 @@ extern std::ostream plog;
     #elif defined( USING_ICC )
         #define DISABLE_WARNINGS                \
             _Pragma( "warning (push)" )         \
+            _Pragma( "warning disable 488" )   \
             _Pragma( "warning disable 1011" )   \
             _Pragma( "warning disable 61" )     \
             _Pragma( "warning disable 1478" )   \
