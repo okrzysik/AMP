@@ -94,6 +94,8 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     std::string log_file   = "output_" + inputFileName;
     size_t N_error0        = ut->NumFailLocal();
 
+    AMP::pout << "Running linearThermalTest with input " << input_file << std::endl;
+
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );

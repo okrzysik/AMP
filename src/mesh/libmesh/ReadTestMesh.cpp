@@ -12,7 +12,7 @@ ENABLE_WARNINGS
 
 namespace AMP {
 
-void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
+void readBinaryTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
 {
     FILE *fp = fopen( mesh_file.c_str(), "rb" );
 
@@ -100,7 +100,7 @@ void readBinaryTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> m
     fclose( fp );
 }
 
-void readTestMesh( std::string mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
+void readTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::Mesh> mesh )
 {
     FILE *fp = fopen( mesh_file.c_str(), "r" );
     char str[256];

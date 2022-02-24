@@ -470,7 +470,7 @@ double AMPManager::stop_PETSc()
 /****************************************************************************
  * Function to create the arguments for petsc                                *
  ****************************************************************************/
-static inline void addArg( std::string arg, std::vector<char *> &args )
+static inline void addArg( const std::string &arg, std::vector<char *> &args )
 {
     auto *tmp = new char[arg.length() + 1];
     memset( tmp, 0, arg.length() + 1 );

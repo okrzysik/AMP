@@ -262,7 +262,7 @@ void scaleData( Array<TYPE> &data, double factor );
 template<class TYPE>
 void scaleData( TYPE &data, double factor );
 template<class TYPE>
-TYPE Database::getScalar( const std::string_view &key, Units unit ) const
+TYPE Database::getScalar( const std::string_view &key, const Units &unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -300,7 +300,7 @@ TYPE Database::getScalar( const std::string_view &key, Units unit ) const
     return data;
 }
 template<class TYPE>
-std::vector<TYPE> Database::getVector( const std::string_view &key, Units unit ) const
+std::vector<TYPE> Database::getVector( const std::string_view &key, const Units &unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -338,7 +338,7 @@ std::vector<TYPE> Database::getVector( const std::string_view &key, Units unit )
     return data2;
 }
 template<class TYPE>
-Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
+Array<TYPE> Database::getArray( const std::string_view &key, const Units &unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -379,7 +379,7 @@ Array<TYPE> Database::getArray( const std::string_view &key, Units unit ) const
 template<class TYPE>
 TYPE Database::getWithDefault( const std::string_view &key,
                                const typename IdentityType<const TYPE &>::type value,
-                               Units unit ) const
+                               const Units &unit ) const
 {
     // Check if the key exists and return if it does not
     auto keyData = getData( key );
