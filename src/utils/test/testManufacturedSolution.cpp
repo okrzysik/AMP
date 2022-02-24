@@ -12,9 +12,9 @@
 
 
 void testit( AMP::UnitTest *ut,
-             std::string geom,
-             std::string order,
-             std::string bc,
+             const std::string &geom,
+             const std::string &order,
+             const std::string &bc,
              double x,
              double y,
              double z )

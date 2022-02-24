@@ -238,7 +238,7 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE getScalar( const std::string_view &key, Units unit = Units() ) const;
+    TYPE getScalar( const std::string_view &key, const Units &unit = Units() ) const;
 
 
     /**
@@ -253,7 +253,7 @@ public:
     template<class TYPE>
     TYPE getWithDefault( const std::string_view &key,
                          typename IdentityType<const TYPE &>::type value,
-                         Units unit = Units() ) const;
+                         const Units &unit = Units() ) const;
 
 
     /**
@@ -266,7 +266,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    Array<TYPE> getArray( const std::string_view &key, Units unit = Units() ) const;
+    Array<TYPE> getArray( const std::string_view &key, const Units &unit = Units() ) const;
 
 
     /**
@@ -279,7 +279,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    std::vector<TYPE> getVector( const std::string_view &key, Units unit = Units() ) const;
+    std::vector<TYPE> getVector( const std::string_view &key, const Units &unit = Units() ) const;
 
 
     /**

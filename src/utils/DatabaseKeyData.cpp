@@ -324,61 +324,60 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     FUN( std::complex<double> ); \
     FUN( std::string );          \
     FUN( std::_Bit_reference );  \
-    FUN( AMP::DatabaseBox )
-#define instantiateConvert( TYPE )                                            \
-    template AMP::Array<TYPE> convert( const Array<bool> & );                 \
-    template AMP::Array<TYPE> convert( const Array<char> & );                 \
-    template AMP::Array<TYPE> convert( const Array<int8_t> & );               \
-    template AMP::Array<TYPE> convert( const Array<int16_t> & );              \
-    template AMP::Array<TYPE> convert( const Array<int32_t> & );              \
-    template AMP::Array<TYPE> convert( const Array<int64_t> & );              \
-    template AMP::Array<TYPE> convert( const Array<uint8_t> & );              \
-    template AMP::Array<TYPE> convert( const Array<uint16_t> & );             \
-    template AMP::Array<TYPE> convert( const Array<uint32_t> & );             \
-    template AMP::Array<TYPE> convert( const Array<uint64_t> & );             \
-    template AMP::Array<TYPE> convert( const Array<float> & );                \
-    template AMP::Array<TYPE> convert( const Array<double> & );               \
-    template AMP::Array<TYPE> convert( const Array<long double> & );          \
-    template AMP::Array<TYPE> convert( const Array<std::complex<float>> & );  \
-    template AMP::Array<TYPE> convert( const Array<std::complex<double>> & ); \
-    template AMP::Array<TYPE> convert( const Array<std::string> & );          \
-    template AMP::Array<TYPE> convert( const Array<std::_Bit_reference> & );  \
-    template AMP::Array<TYPE> convert( const Array<AMP::DatabaseBox> & )
+    FUN( DatabaseBox )
+#define instantiateConvert( TYPE )                                       \
+    template Array<TYPE> convert( const Array<bool> & );                 \
+    template Array<TYPE> convert( const Array<char> & );                 \
+    template Array<TYPE> convert( const Array<int8_t> & );               \
+    template Array<TYPE> convert( const Array<int16_t> & );              \
+    template Array<TYPE> convert( const Array<int32_t> & );              \
+    template Array<TYPE> convert( const Array<int64_t> & );              \
+    template Array<TYPE> convert( const Array<uint8_t> & );              \
+    template Array<TYPE> convert( const Array<uint16_t> & );             \
+    template Array<TYPE> convert( const Array<uint32_t> & );             \
+    template Array<TYPE> convert( const Array<uint64_t> & );             \
+    template Array<TYPE> convert( const Array<float> & );                \
+    template Array<TYPE> convert( const Array<double> & );               \
+    template Array<TYPE> convert( const Array<long double> & );          \
+    template Array<TYPE> convert( const Array<std::complex<float>> & );  \
+    template Array<TYPE> convert( const Array<std::complex<double>> & ); \
+    template Array<TYPE> convert( const Array<std::string> & );          \
+    template Array<TYPE> convert( const Array<std::_Bit_reference> & );  \
+    template Array<TYPE> convert( const Array<DatabaseBox> & )
 #define instantiateScaleData( TYPE )                             \
     template void scaleData<TYPE>( TYPE & data, double factor ); \
-    template void scaleData<TYPE>( AMP::Array<TYPE> & data, double factor )
+    template void scaleData<TYPE>( Array<TYPE> & data, double factor )
 #define instantiateKeyDataScalar( TYPE ) template class KeyDataScalar<TYPE>
 #define instantiateKeyDataArray( TYPE ) template class KeyDataArray<TYPE>
 #define instantiateIsType( TYPE ) \
-    template bool AMP::Database::isType<TYPE>( const std::string_view & ) const
-#define instantiatePutScalar( TYPE )              \
-    template void AMP::Database::putScalar<TYPE>( \
-        const std::string_view &, TYPE, AMP::Units, AMP::Database::Check )
+    template bool Database::isType<TYPE>( const std::string_view & ) const
+#define instantiatePutScalar( TYPE )         \
+    template void Database::putScalar<TYPE>( \
+        const std::string_view &, TYPE, Units, Database::Check )
 #define instantiateGetScalar( TYPE ) \
-    template TYPE AMP::Database::getScalar<TYPE>( const std::string_view &, AMP::Units ) const
+    template TYPE Database::getScalar<TYPE>( const std::string_view &, const Units & ) const
 #define instantiateGetArray( TYPE ) \
-    template Array<TYPE> AMP::Database::getArray( const std::string_view &, Units unit ) const
-#define instantiateGetVector( TYPE )                                                            \
-    template std::vector<TYPE> AMP::Database::getVector( const std::string_view &, Units unit ) \
-        const
-#define instantiatePutVector( TYPE )              \
-    template void AMP::Database::putVector<TYPE>( \
-        const std::string_view &, const std::vector<TYPE> &, AMP::Units, AMP::Database::Check )
-#define instantiatePutArray( TYPE )              \
-    template void AMP::Database::putArray<TYPE>( \
-        const std::string_view &, AMP::Array<TYPE>, AMP::Units, AMP::Database::Check )
-#define instantiateGetWithDefault( TYPE )                                                       \
-    template TYPE AMP::Database::getWithDefault<TYPE>(                                          \
-        const std::string_view &, AMP::Database::IdentityType<TYPE const &>::type, AMP::Units ) \
-        const;                                                                                  \
-    template std::vector<TYPE> AMP::Database::getWithDefault<std::vector<TYPE>>(                \
-        const std::string_view &,                                                               \
-        AMP::Database::IdentityType<std::vector<TYPE> const &>::type,                           \
-        AMP::Units ) const;                                                                     \
-    template AMP::Array<TYPE> AMP::Database::getWithDefault<AMP::Array<TYPE>>(                  \
-        const std::string_view &,                                                               \
-        AMP::Database::IdentityType<AMP::Array<TYPE> const &>::type,                            \
-        AMP::Units ) const
+    template Array<TYPE> Database::getArray( const std::string_view &, const Units & ) const
+#define instantiateGetVector( TYPE ) \
+    template std::vector<TYPE> Database::getVector( const std::string_view &, const Units & ) const
+#define instantiatePutVector( TYPE )         \
+    template void Database::putVector<TYPE>( \
+        const std::string_view &, const std::vector<TYPE> &, Units, Database::Check )
+#define instantiatePutArray( TYPE )         \
+    template void Database::putArray<TYPE>( \
+        const std::string_view &, Array<TYPE>, Units, Database::Check )
+#define instantiateGetWithDefault( TYPE )                                                     \
+    template TYPE Database::getWithDefault<TYPE>( const std::string_view &,                   \
+                                                  Database::IdentityType<TYPE const &>::type, \
+                                                  const Units & ) const;                      \
+    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                   \
+        const std::string_view &,                                                             \
+        Database::IdentityType<std::vector<TYPE> const &>::type,                              \
+        const Units & ) const;                                                                \
+    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                               \
+        const std::string_view &,                                                             \
+        Database::IdentityType<Array<TYPE> const &>::type,                                    \
+        const Units & ) const
 instantiate( instantiateConvert );        // convert
 instantiate( instantiateScaleData );      // scaleData
 instantiate( instantiateKeyDataScalar );  // KeyDataScalar
@@ -391,10 +390,8 @@ instantiate( instantiatePutScalar );      // Database::putScalar
 instantiate( instantiatePutVector );      // Database::putVector
 instantiate( instantiatePutArray );       // Database::putArray
 instantiate( instantiateGetWithDefault ); // Database::getWithDefault
-template void AMP::Database::putScalar<const char *>( const std::string_view &,
-                                                      const char *,
-                                                      AMP::Units,
-                                                      AMP::Database::Check );
+template void
+Database::putScalar<const char *>( const std::string_view &, const char *, Units, Database::Check );
 
 
 /********************************************************
