@@ -2,6 +2,7 @@
 #define included_AMP_DelaunayHelpers
 
 #include <array>
+#include <stdexcept>
 #include <stdlib.h>
 
 
