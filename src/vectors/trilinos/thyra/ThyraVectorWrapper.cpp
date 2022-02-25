@@ -13,6 +13,7 @@ DISABLE_WARNINGS
 #endif
 #include "Thyra_DefaultMultiVectorProductVectorSpace.hpp"
 #include "Thyra_DefaultSpmdVectorSpace.hpp"
+#include "Thyra_VectorStdOps_def.hpp"
 ENABLE_WARNINGS
 
 

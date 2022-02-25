@@ -2,8 +2,9 @@
 #define MMS_H
 
 #include <memory>
-
+#include <string>
 #include <valarray>
+
 
 namespace AMP {
 
