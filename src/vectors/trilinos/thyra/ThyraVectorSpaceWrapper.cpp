@@ -63,7 +63,7 @@ ThyraVectorSpaceWrapper::smallVecSpcFcty() const
 double ThyraVectorSpaceWrapper::scalarProd( const Thyra::VectorBase<double> &x,
                                             const Thyra::VectorBase<double> &y ) const
 {
-    return dot( x, y );
+    return x.dot( y );
 }
 Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorSpaceWrapper::createMember() const
 {
