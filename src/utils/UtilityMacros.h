@@ -178,7 +178,8 @@ extern std::ostream plog;
             _Pragma( "GCC diagnostic ignored \"-Wsign-compare\"" )              \
             _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
             _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )      \
-            _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )
+            _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )       \
+            _Pragma( "GCC diagnostic ignored \"-Winaccessible-base\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )
         #define DISABLE_WARNINGS                \
