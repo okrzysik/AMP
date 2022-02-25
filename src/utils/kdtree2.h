@@ -4,7 +4,8 @@
 #include <array>
 #include <cstdint>
 #include <vector>
-
+#include <cstdint>
+#include <cstddef>
 
 namespace AMP {
 
