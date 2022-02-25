@@ -1,6 +1,6 @@
 #include "OxideModel.h"
 #include "AMP/AMP_TPLs.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #ifdef AMP_USE_LAPACK_WRAPPERS
     #include "LapackWrappers.h"
