@@ -136,7 +136,7 @@ initializeLibMesh::~initializeLibMesh()
 /************************************************************
  * Function check if initiallize can be called successfully  *
  ************************************************************/
-bool initializeLibMesh::canBeInitialized( AMP_MPI comm )
+bool initializeLibMesh::canBeInitialized( const AMP_MPI &comm )
 {
     if ( N_copies == 0 )
         return true;
