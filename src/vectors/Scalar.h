@@ -1,9 +1,9 @@
 #ifndef included_AMP_Scalar
-#define included_AMP_Scalar
+    #define included_AMP_Scalar
 
-#include <any>
-#include <cstdint>
-#include <cstddef>
+    #include <any>
+    #include <cstddef>
+    #include <cstdint>
 
 namespace AMP {
 
