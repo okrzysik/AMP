@@ -2,10 +2,9 @@
 #define included_AMP_kdtree2
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
-#include <cstdint>
-#include <cstddef>
 
 namespace AMP {
 
