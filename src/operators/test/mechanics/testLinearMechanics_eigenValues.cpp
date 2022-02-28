@@ -53,7 +53,7 @@ static void myTest( AMP::UnitTest *ut )
             ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
         if ( distortElement ) {
-            libMesh::Elem *elemPtr = mesh->elem( 0 );
+            libMesh::Elem *elemPtr = mesh->elem_ptr( 0 );
 
             ( elemPtr->point( 0 ) )( 0 ) -= 0.1;
             ( elemPtr->point( 0 ) )( 1 ) -= 0.2;

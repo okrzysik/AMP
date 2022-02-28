@@ -44,7 +44,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     libMesh::MeshTools::Generation::build_cube(
         ( *( mesh.get() ) ), 1, 1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, libMesh::HEX8, false );
 
-    libMesh::Elem *elemPtr = mesh->elem( 0 );
+    libMesh::Elem *elemPtr = mesh->elem_ptr( 0 );
 
     ( elemPtr->point( 4 ) )( 0 ) -= 0.4;
 

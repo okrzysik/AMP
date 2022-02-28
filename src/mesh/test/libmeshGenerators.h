@@ -8,6 +8,7 @@
 #include "meshGenerators.h"
 
 // LibMesh include
+#include "libmesh/boundary_info.h"
 #include "libmesh/cell_hex8.h"
 #include "libmesh/elem.h"
 #include "libmesh/point.h"

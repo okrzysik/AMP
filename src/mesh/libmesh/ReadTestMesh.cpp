@@ -92,7 +92,7 @@ void readBinaryTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::
                 AMP_INSIST( ( n == 1 ), "Error while reading the file" );
                 n = fread( &idxS, sizeof( int ), 1, fp );
                 AMP_INSIST( ( n == 1 ), "Error while reading the file" );
-                mesh->boundary_info->add_side( mesh->elem( idxE ), idxS, bid );
+                mesh->boundary_info->add_side( mesh->elem_ptr( idxE ), idxS, bid );
             }
         }
     }
@@ -194,13 +194,13 @@ void readTestMesh( const std::string &mesh_file, std::shared_ptr<libMesh::Mesh> 
                 AMP_INSIST( ( n == 1 ), "Error while reading the file" );
                 n = fscanf( fp, "%d,", &idxS );
                 AMP_INSIST( ( n == 1 ), "Error while reading the file" );
-                mesh->boundary_info->add_side( mesh->elem( idxE ), idxS, bid );
+                mesh->boundary_info->add_side( mesh->elem_ptr( idxE ), idxS, bid );
             } // end for i
             n = fscanf( fp, "%d,", &idxE );
             AMP_INSIST( ( n == 1 ), "Error while reading the file" );
             n = fscanf( fp, "%d", &idxS );
             AMP_INSIST( ( n == 1 ), "Error while reading the file" );
-            mesh->boundary_info->add_side( mesh->elem( idxE ), idxS, bid );
+            mesh->boundary_info->add_side( mesh->elem_ptr( idxE ), idxS, bid );
         }
     } // end for bid
 
@@ -265,7 +265,7 @@ void readTestMesh( std::shared_ptr<AMP::Database> mesh_file_db,
             auto bndDofIndices = mesh_db->getVector<int>( key );
             for ( int i = 0; i < bndDofSize; i++ ) {
                 mesh->boundary_info->add_side(
-                    mesh->elem( bndDofIndices[2 * i] ), bndDofIndices[( 2 * i ) + 1], bid );
+                    mesh->elem_ptr( bndDofIndices[2 * i] ), bndDofIndices[( 2 * i ) + 1], bid );
             } // end for i
         }
     } // end for bid
