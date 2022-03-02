@@ -170,15 +170,17 @@ static AMP::Xdmf::RankType getRankType( int numDOFs, int ndim )
         return AMP::Xdmf::RankType::Tensor;
     return AMP::Xdmf::RankType::Matrix;
 }
-static AMP::Xdmf::Center getCenter( AMP::Mesh::GeomType type )
+static AMP::Xdmf::Center getCenter( AMP::Mesh::GeomType meshType, AMP::Mesh::GeomType vecType )
 {
-    if ( type == AMP::Mesh::GeomType::Vertex )
+    if ( vecType == AMP::Mesh::GeomType::Vertex )
         return AMP::Xdmf::Center::Node;
-    if ( type == AMP::Mesh::GeomType::Edge )
+    if ( meshType == vecType )
+        return AMP::Xdmf::Center::Cell;
+    if ( vecType == AMP::Mesh::GeomType::Edge )
         return AMP::Xdmf::Center::Edge;
-    if ( type == AMP::Mesh::GeomType::Face )
+    if ( vecType == AMP::Mesh::GeomType::Face )
         return AMP::Xdmf::Center::Face;
-    if ( type == AMP::Mesh::GeomType::Volume )
+    if ( vecType == AMP::Mesh::GeomType::Volume )
         return AMP::Xdmf::Center::Cell;
     return AMP::Xdmf::Center::Null;
 }
@@ -258,7 +260,7 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
         AMP::Xdmf::VarData var;
         var.name     = vec.name;
         var.rankType = getRankType( vec.numDOFs, mesh.mesh->getDim() );
-        var.center   = getCenter( vec.type );
+        var.center   = getCenter( mesh.mesh->getGeomType(), vec.type );
         var.size     = data.size();
         var.data     = path + "/" + vec.name;
         XdmfData.vars.push_back( var );
@@ -355,7 +357,7 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
         AMP::Xdmf::VarData var;
         var.name     = vec.name;
         var.rankType = getRankType( vec.numDOFs, mesh.mesh->getDim() );
-        var.center   = getCenter( vec.type );
+        var.center   = getCenter( mesh.mesh->getGeomType(), vec.type );
         var.size     = data.size();
         var.data     = path + "/" + vec.name;
         XdmfData.vars.push_back( var );
