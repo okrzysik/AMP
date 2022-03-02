@@ -144,7 +144,7 @@ public:
     std::string getName() const;
 
 public: // Functions inherited from VectorSelector
-    bool isSelected( Vector::const_shared_ptr ) const override;
+    bool isSelected( const Vector & ) const override;
     Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
     Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
 

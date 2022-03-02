@@ -261,8 +261,8 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
 Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
 {
     // Check if this vector matches (only need to deal with select by name for now)
-    if ( dynamic_cast<const VS_ByVariableName *>( &s ) ||
-         dynamic_cast<const VS_MultiVariable *>( &s ) ) {
+    auto s_name = dynamic_cast<const VS_ByVariableName *>( &s );
+    if ( s_name || dynamic_cast<const VS_MultiVariable *>( &s ) ) {
         auto retVec = Vector::selectInto( s );
         if ( retVec )
             return retVec;
@@ -277,9 +277,13 @@ Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
                 subvectors.push_back( retVec2 );
         }
     }
+    // Construct the new multivector
+    std::string vecName = getVariable()->getName();
+    if ( s_name )
+        vecName = s_name->getName();
     // Add the subsets to the multivector
-    AMP_MPI comm = s.communicator( shared_from_this() );
-    auto retVec  = MultiVector::create( "tmp_vector", comm, subvectors );
+    AMP_MPI comm = s.communicator( *this );
+    auto retVec  = MultiVector::create( vecName, comm, subvectors );
     if ( retVec->getGlobalSize() == 0 )
         retVec.reset();
     return retVec;
