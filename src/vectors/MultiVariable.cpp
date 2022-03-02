@@ -16,7 +16,7 @@ namespace AMP::LinearAlgebra {
  ****************************************************************/
 VS_MultiVariable::VS_MultiVariable( const std::shared_ptr<MultiVariable> &var ) : d_var( var ) {}
 std::string VS_MultiVariable::getName() const { return d_var->getName(); }
-bool VS_MultiVariable::isSelected( Vector::const_shared_ptr ) const { return true; }
+bool VS_MultiVariable::isSelected( const Vector & ) const { return true; }
 Vector::shared_ptr VS_MultiVariable::subset( Vector::shared_ptr vec ) const
 {
     auto var = vec->getVariable();
