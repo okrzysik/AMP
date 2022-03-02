@@ -453,19 +453,6 @@ void libmeshMesh::initialize()
         size_t global_size = d_comm.sumReduce( local_size );
         AMP_ASSERT( global_size >= element_surface_global_size );
     }
-    /*std::cout << std::endl;
-    for (int i=0; i<=(int)GeomDim; i++) {
-        size_t local_size = d_localSurfaceElements[i]->size();
-        size_t ghost_size = d_ghostSurfaceElements[i]->size();
-        size_t global_size = d_comm.sumReduce(local_size);
-        for (int j=0; j<d_comm.getSize(); j++) {
-            d_comm.barrier();
-            if ( d_comm.getRank()==j )
-                printf("%i, %i, %i, %i\n",i,local_size,ghost_size,global_size);
-            d_comm.barrier();
-            std::cout << "";
-        }
-    }*/
     // Construct the boundary lists
     auto libmesh_bids = d_libMesh->boundary_info->get_boundary_ids();
     std::vector<short int> bids( libmesh_bids.begin(), libmesh_bids.end() );
