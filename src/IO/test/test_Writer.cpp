@@ -262,9 +262,7 @@ void testWriterMesh( AMP::UnitTest &ut,
     double t3 = AMP::AMP_MPI::time();
 
     // Create a view of a vector
-    AMP::Mesh::Mesh::shared_ptr clad;
     AMP::LinearAlgebra::Vector::shared_ptr x_surface;
-    AMP::LinearAlgebra::Vector::shared_ptr cladPosition;
     if ( surface ) {
         AMP::LinearAlgebra::VS_MeshIterator meshSelector( surface->getIterator( pointType, 1 ),
                                                           surface->getComm() );
@@ -273,12 +271,6 @@ void testWriterMesh( AMP::UnitTest &ut,
         AMP_ASSERT( vec_meshSubset );
         x_surface = vec_meshSubset->select( xSelector, "x surface" );
         AMP_ASSERT( x_surface );
-        clad = mesh->Subset( "clad" );
-        if ( clad ) {
-            clad->setName( "clad" );
-            AMP::LinearAlgebra::VS_Mesh cladMeshSelector( clad );
-            cladPosition = position->select( cladMeshSelector, "cladPosition" );
-        }
     }
 
     // Register the data
@@ -294,9 +286,6 @@ void testWriterMesh( AMP::UnitTest &ut,
         writer->registerVector( gauss_pt, mesh, volumeType, "gauss_pnt" );
         if ( surface )
             writer->registerVector( x_surface, surface, pointType, "x_surface" );
-        // Register a vector over the clad
-        if ( clad )
-            writer->registerVector( cladPosition, clad, pointType, "clad_position" );
     }
     globalComm.barrier();
     double t4 = AMP::AMP_MPI::time();
