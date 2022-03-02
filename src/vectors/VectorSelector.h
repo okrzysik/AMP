@@ -29,7 +29,7 @@ public:
      * \param[in]  vec  The Vector to match
      * \details Base class defaults to accepting all vectors.
      */
-    virtual bool isSelected( Vector::const_shared_ptr vec ) const = 0;
+    virtual bool isSelected( const Vector &vec ) const = 0;
 
     /** \brief Returns the communicator for the subset
      * \param[in]  vec  The Vector to match
@@ -37,19 +37,19 @@ public:
      *     For most subsetters, this will be the same communicator as the current vector,
      *     however some subsetters (MeshSelector) may opperate on a different (smaller) comm.
      */
-    virtual AMP_MPI communicator( Vector::const_shared_ptr vec ) const;
+    virtual AMP_MPI communicator( const Vector &vec ) const;
 
     /** \brief Subset the given vector
      * \param[in]  vec  The Vector to subset
      * \details Base class defaults to returning all data in the vector
      */
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const = 0;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const = 0;
 
     /** \brief Subset the given vector
      * \param[in]  vec  The Vector to subset
      * \details Base class defaults to returning all data in the vector
      */
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const = 0;
+    virtual std::shared_ptr<const Vector> subset( std::shared_ptr<const Vector> vec ) const = 0;
 };
 
 
@@ -80,9 +80,10 @@ public:
     std::string getName() const { return d_VecName; };
 
 public: // Functions inherited from VectorSelector
-    virtual bool isSelected( Vector::const_shared_ptr v ) const override;
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
+    virtual bool isSelected( const Vector &v ) const override;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const override;
+    virtual std::shared_ptr<const Vector>
+    subset( std::shared_ptr<const Vector> vec ) const override;
 };
 
 
@@ -99,9 +100,10 @@ public:
     explicit VS_Stride( size_t a, size_t b );
 
 public: // Functions inherited from VectorSelector
-    virtual bool isSelected( Vector::const_shared_ptr v ) const override;
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
+    virtual bool isSelected( const Vector &v ) const override;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const override;
+    virtual std::shared_ptr<const Vector>
+    subset( std::shared_ptr<const Vector> vec ) const override;
 
 protected:
     //  Offset to start striding on
@@ -127,10 +129,11 @@ public:
     explicit VS_Comm( const AMP_MPI &comm );
 
 public: // Functions inherited from VectorSelector
-    virtual bool isSelected( Vector::const_shared_ptr v ) const override;
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
-    virtual AMP_MPI communicator( Vector::const_shared_ptr vec ) const override;
+    virtual bool isSelected( const Vector &v ) const override;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const override;
+    virtual std::shared_ptr<const Vector>
+    subset( std::shared_ptr<const Vector> vec ) const override;
+    virtual AMP_MPI communicator( const Vector &vec ) const override;
 
 protected:
     std::string d_Name; //  The name of this subset
@@ -152,10 +155,11 @@ public:
     explicit VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm = true );
 
 public: // Functions inherited from VectorSelector
-    virtual bool isSelected( Vector::const_shared_ptr v ) const override;
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
-    virtual AMP_MPI communicator( Vector::const_shared_ptr vec ) const override;
+    virtual bool isSelected( const Vector &v ) const override;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const override;
+    virtual std::shared_ptr<const Vector>
+    subset( std::shared_ptr<const Vector> vec ) const override;
+    virtual AMP_MPI communicator( const Vector &vec ) const override;
 
 protected:
     bool d_useMeshComm;            //  Use the comm of the mesh
@@ -176,9 +180,10 @@ public:
     explicit VS_MeshIterator( const AMP::Mesh::MeshIterator &iterator, const AMP::AMP_MPI &comm );
 
 public: // Functions inherited from VectorSelector
-    virtual bool isSelected( Vector::const_shared_ptr v ) const override;
-    virtual Vector::shared_ptr subset( Vector::shared_ptr vec ) const override;
-    virtual Vector::const_shared_ptr subset( Vector::const_shared_ptr vec ) const override;
+    virtual bool isSelected( const Vector &v ) const override;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const override;
+    virtual std::shared_ptr<const Vector>
+    subset( std::shared_ptr<const Vector> vec ) const override;
 
 protected:
     const AMP_MPI d_comm;                // comm for the subset

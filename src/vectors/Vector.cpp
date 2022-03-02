@@ -98,7 +98,7 @@ void Vector::setRandomValues( std::shared_ptr<RNG> rng )
 Vector::shared_ptr Vector::selectInto( const VectorSelector &s )
 {
     Vector::shared_ptr subvector;
-    if ( s.isSelected( shared_from_this() ) ) {
+    if ( s.isSelected( *this ) ) {
         // Subset the vector
         subvector = s.subset( shared_from_this() );
         if ( subvector ) {
@@ -113,7 +113,7 @@ Vector::shared_ptr Vector::selectInto( const VectorSelector &s )
 Vector::const_shared_ptr Vector::selectInto( const VectorSelector &s ) const
 {
     Vector::const_shared_ptr subvector;
-    if ( s.isSelected( shared_from_this() ) ) {
+    if ( s.isSelected( *this ) ) {
         // Subset the vector
         subvector = s.subset( shared_from_this() );
         if ( subvector ) {
