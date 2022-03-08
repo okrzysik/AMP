@@ -281,7 +281,7 @@ public:
     // Check if two array sizes are equal
     CONSTEXPR ARRAY_ATTRIBUTE bool operator==( const ArraySize &rhs ) const
     {
-        return d_ndim == rhs.d_ndim && memcmp( d_N, rhs.d_N, sizeof( d_N ) ) == 0;
+        return d_ndim == rhs.d_ndim && d_N[0] == rhs.d_N[0] && d_N[1] == rhs.d_N[1] && d_N[2] == rhs.d_N[2] && d_N[3] == rhs.d_N[3] && d_N[4] == rhs.d_N[4];
     }
 
     // Check if two array sizes are equal (ignoring the dimension)
@@ -293,7 +293,7 @@ public:
     //! Check if two matrices are not equal
     CONSTEXPR ARRAY_ATTRIBUTE bool operator!=( const ArraySize &rhs ) const
     {
-        return d_ndim != rhs.d_ndim || memcmp( d_N, rhs.d_N, sizeof( d_N ) ) != 0;
+        return !operator==( rhs );
     }
 
     //! Maximum supported dimension
