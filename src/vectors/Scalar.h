@@ -43,7 +43,7 @@ public:
      * \return              Returns the scalar value
      */
     template<class TYPE>
-    inline TYPE get( double tol = getTol<TYPE>() ) const;
+    inline TYPE get( double tol = Scalar::getTol<TYPE>() ) const;
 
     //! Return true if the type is a floating point type
     inline bool is_floating_point() const { return d_type == 'f'; }
