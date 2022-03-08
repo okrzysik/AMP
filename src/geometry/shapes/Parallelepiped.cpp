@@ -13,7 +13,7 @@ namespace AMP::Geometry {
 Parallelepiped::Parallelepiped( std::shared_ptr<const AMP::Database> db )
 {
     // Fill some basic properties
-    d_ids         = { 4, 4, 4, 4, 2, 1 };
+    d_ids         = { 1, 2, 3, 4, 5, 6 };
     d_isPeriodic  = { false, false, false };
     d_physicalDim = 3;
     d_logicalDim  = 3;
