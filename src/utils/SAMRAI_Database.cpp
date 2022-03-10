@@ -34,8 +34,10 @@ AMP::Database::Database( SAMRAI::tbox::Database &db ) : d_name( db.getName() )
         } else if ( type == SAMRAI::tbox::Database::SAMRAI_COMPLEX ) {
             auto data = db.getComplexVector( key );
             putVector( key, data );
-        } else if ( type == SAMRAI::tbox::Database::SAMRAI_DOUBLE ||
-                    type == SAMRAI::tbox::Database::SAMRAI_FLOAT ) {
+        } else if ( type == SAMRAI::tbox::Database::SAMRAI_FLOAT ) {
+            auto data = db.getFloatVector( key );
+            putVector( key, data );
+        } else if ( type == SAMRAI::tbox::Database::SAMRAI_DOUBLE ) {
             auto data = db.getDoubleVector( key );
             putVector( key, data );
         } else if ( type == SAMRAI::tbox::Database::SAMRAI_STRING ) {
@@ -57,6 +59,73 @@ AMP::Database::Database( SAMRAI::tbox::Database &db ) : d_name( db.getName() )
 /********************************************************************
  * Construct a SAMRAI database                                       *
  ********************************************************************/
+static void
+addScalar( const AMP::Database &db0, SAMRAI::tbox::Database &db, const std::string &key )
+{
+    using AMP::getTypeID;
+    auto data = db0.getData( key );
+    auto id   = data->getDataType();
+    if ( id == getTypeID<std::string>() ) {
+        db.putString( key, db0.getScalar<std::string>( key ) );
+    } else if ( id == getTypeID<bool>() ) {
+        db.putBool( key, db0.getScalar<bool>( key ) );
+    } else if ( id == getTypeID<char>() ) {
+        db.putChar( key, db0.getScalar<char>( key ) );
+    } else if ( id == getTypeID<int>() ) {
+        db.putInteger( key, db0.getScalar<int>( key ) );
+    } else if ( id == getTypeID<float>() ) {
+        db.putFloat( key, db0.getScalar<float>( key ) );
+    } else if ( id == getTypeID<double>() ) {
+        db.putDouble( key, db0.getScalar<double>( key ) );
+    } else if ( id == getTypeID<std::complex<double>>() ||
+                id == getTypeID<std::complex<float>>() ) {
+        db.putComplex( key, db0.getScalar<std::complex<double>>( key ) );
+    } else if ( id == getTypeID<AMP::DatabaseBox>() ) {
+        auto box = db0.getScalar<AMP::DatabaseBox>( key );
+        db.putDatabaseBox( key, box.cloneToSAMRAI() );
+    } else if ( data->is_integral() ) {
+        db.putInteger( key, db0.getScalar<int>( key ) );
+    } else if ( data->is_floating_point() ) {
+        db.putDouble( key, db0.getScalar<double>( key ) );
+    } else {
+        AMP_ERROR( "Unknown type: " + std::string( id.name ) );
+    }
+}
+static void
+addVector( const AMP::Database &db0, SAMRAI::tbox::Database &db, const std::string &key )
+{
+    using AMP::getTypeID;
+    auto data = db0.getData( key );
+    auto id   = data->getDataType();
+    if ( id == getTypeID<std::string>() ) {
+        db.putStringVector( key, db0.getVector<std::string>( key ) );
+    } else if ( id == getTypeID<bool>() ) {
+        db.putBoolVector( key, db0.getVector<bool>( key ) );
+    } else if ( id == getTypeID<char>() ) {
+        db.putCharVector( key, db0.getVector<char>( key ) );
+    } else if ( id == getTypeID<int>() ) {
+        db.putIntegerVector( key, db0.getVector<int>( key ) );
+    } else if ( id == getTypeID<float>() ) {
+        db.putFloatVector( key, db0.getVector<float>( key ) );
+    } else if ( id == getTypeID<double>() ) {
+        db.putDoubleVector( key, db0.getVector<double>( key ) );
+    } else if ( id == getTypeID<std::complex<double>>() ||
+                id == getTypeID<std::complex<float>>() ) {
+        db.putComplexVector( key, db0.getVector<std::complex<double>>( key ) );
+    } else if ( id == getTypeID<AMP::DatabaseBox>() ) {
+        auto boxes = db0.getVector<AMP::DatabaseBox>( key );
+        std::vector<SAMRAI::tbox::DatabaseBox> boxes2;
+        for ( const auto &box : boxes )
+            boxes2.push_back( box.cloneToSAMRAI() );
+        db.putDatabaseBoxVector( key, boxes2 );
+    } else if ( data->is_integral() ) {
+        db.putIntegerVector( key, db0.getVector<int>( key ) );
+    } else if ( data->is_floating_point() ) {
+        db.putDoubleVector( key, db0.getVector<double>( key ) );
+    } else {
+        AMP_ERROR( "Unknown type: " + std::string( id.name ) );
+    }
+}
 std::shared_ptr<SAMRAI::tbox::Database> AMP::Database::cloneToSAMRAI() const
 {
     auto db   = std::make_shared<SAMRAI::tbox::MemoryDatabase>( getName() );
@@ -65,24 +134,15 @@ std::shared_ptr<SAMRAI::tbox::Database> AMP::Database::cloneToSAMRAI() const
         if ( isDatabase( key ) ) {
             auto db2 = getDatabase( key );
             db->putDatabase( key )->copyDatabase( db2->cloneToSAMRAI() );
-        } else if ( isType<std::string>( key ) ) {
-            db->putStringVector( key, getVector<std::string>( key ) );
-        } else if ( isType<bool>( key ) ) {
-            db->putBoolVector( key, getVector<bool>( key ) );
-        } else if ( isType<int>( key ) ) {
-            db->putIntegerVector( key, getVector<int>( key ) );
-        } else if ( isType<std::complex<double>>( key ) ) {
-            db->putComplexVector( key, getVector<std::complex<double>>( key ) );
-        } else if ( isType<double>( key ) ) {
-            db->putDoubleVector( key, getVector<double>( key ) );
-        } else if ( isType<AMP::DatabaseBox>( key ) ) {
-            auto boxes = getVector<DatabaseBox>( key );
-            std::vector<SAMRAI::tbox::DatabaseBox> boxes2;
-            for ( const auto &box : boxes )
-                boxes2.push_back( box.cloneToSAMRAI() );
-            db->putDatabaseBoxVector( key, boxes2 );
         } else {
-            AMP_ERROR( "Unknown type" );
+            auto data = getData( key );
+            AMP_ASSERT( data );
+            auto size = data->arraySize();
+            if ( size.length() == 1 ) {
+                addScalar( *this, *db, key );
+            } else {
+                addVector( *this, *db, key );
+            }
         }
     }
     return db;
