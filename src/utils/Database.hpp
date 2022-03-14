@@ -80,7 +80,7 @@ public:
     {
         os << std::endl;
     }
-    std::string_view type() const override { return ""; }
+    typeID getDataType() const override { return AMP::typeID(); }
     bool is_floating_point() const override { return true; }
     bool is_integral() const override { return true; }
     ArraySize arraySize() const override { return ArraySize(); }
@@ -110,7 +110,7 @@ public:
             os << " " << d_unit.str();
         os << std::endl;
     }
-    std::string_view type() const override { return typeid( TYPE ).name(); }
+    typeID getDataType() const override { return getTypeID<TYPE>(); }
     bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
     bool is_integral() const override { return std::is_integral<TYPE>(); }
     ArraySize arraySize() const override { return ArraySize( 1 ); }
@@ -186,7 +186,7 @@ public:
             }
         }
     }
-    std::string_view type() const override { return typeid( TYPE ).name(); }
+    typeID getDataType() const override { return getTypeID<TYPE>(); }
     bool is_floating_point() const override { return std::is_floating_point<TYPE>(); }
     bool is_integral() const override { return std::is_integral<TYPE>(); }
     ArraySize arraySize() const override { return d_data.size(); }
@@ -228,7 +228,7 @@ public:
             data.print( os, indent2, sort );
         }
     }
-    std::string_view type() const override { return typeid( std::vector<Database> ).name(); }
+    typeID getDataType() const override { return getTypeID<Database>(); }
     bool is_floating_point() const override { return false; }
     bool is_integral() const override { return false; }
     ArraySize arraySize() const override { return ArraySize( d_data.size() ); }
