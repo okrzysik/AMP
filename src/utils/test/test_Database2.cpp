@@ -56,22 +56,35 @@ void readInputDatabase( AMP::UnitTest &ut )
 /************************************************************************
  * This tests whether we can put/get keys with a database                *
  ************************************************************************/
+template<class TYPE>
+static inline bool checkType( const AMP::Database &db, const std::string &key )
+{
+    return db.getData( key )->getDataType() == AMP::getTypeID<TYPE>();
+}
 void testCreateDatabase( AMP::UnitTest &ut )
 {
+    std::complex<double> onetwo( 1.0, 2.0 );
+
+    // Create the database
     auto db = std::make_shared<AMP::Database>( "database" );
+    db->putScalar<bool>( "scalar_bool", true );
+    db->putScalar<char>( "scalar_char", 1 );
+    db->putScalar<int>( "scalar_int", 1 );
+    db->putScalar<float>( "scalar_float", 1 );
+    db->putScalar<double>( "scalar_double", 1 );
+    db->putScalar<std::complex<double>>( "scalar_complex", onetwo );
+    db->putScalar<std::string>( "scalar_string", "string" );
 
-    std::complex<double> zero( 0, 0 );
-    std::complex<double> onetwo( 1, 2 );
+    // Check that the types are stored as expected
+    AMP_ASSERT( checkType<bool>( *db, "scalar_bool" ) );
+    AMP_ASSERT( checkType<char>( *db, "scalar_char" ) );
+    AMP_ASSERT( checkType<int>( *db, "scalar_int" ) );
+    AMP_ASSERT( checkType<float>( *db, "scalar_float" ) );
+    AMP_ASSERT( checkType<double>( *db, "scalar_double" ) );
+    AMP_ASSERT( checkType<std::complex<double>>( *db, "scalar_complex" ) );
+    AMP_ASSERT( checkType<std::string>( *db, "scalar_string" ) );
 
-    db->putScalar( "scalar_int", (int) 1 );
-    db->putScalar( "scalar_float", (float) 1 );
-    db->putScalar( "scalar_double", (double) 1 );
-    db->putScalar( "scalar_complex", onetwo );
-    db->putScalar( "scalar_char", (char) 1 );
-    db->putScalar( "scalar_bool", true );
-
-    AMP_ASSERT( db->keyExists( "scalar_int" ) );
-
+    // Check isType
     AMP_ASSERT( db->isType<int>( "scalar_int" ) );
     AMP_ASSERT( db->isType<float>( "scalar_float" ) );
     AMP_ASSERT( db->isType<double>( "scalar_double" ) );
@@ -89,7 +102,7 @@ void testCreateDatabase( AMP::UnitTest &ut )
     AMP_ASSERT( db->getWithDefault<int>( "scalar_int", 0 ) == 1 );
     AMP_ASSERT( db->getWithDefault<float>( "scalar_float", 0.0 ) == 1.0 );
     AMP_ASSERT( db->getWithDefault<double>( "scalar_double", 0 ) == 1.0 );
-    AMP_ASSERT( db->getWithDefault<std::complex<double>>( "scalar_complex", zero ) == onetwo );
+    AMP_ASSERT( db->getWithDefault<std::complex<double>>( "scalar_complex", 0 ) == onetwo );
     AMP_ASSERT( db->getWithDefault<char>( "scalar_char", 0 ) == 1 );
     AMP_ASSERT( db->getWithDefault<bool>( "scalar_bool", false ) == true );
 
@@ -116,10 +129,11 @@ void testCreateDatabase( AMP::UnitTest &ut )
     AMP_ASSERT( db->AMP::Database::getWithDefault<int>( "scalar_int", 0 ) == 1 );
     AMP_ASSERT( db->AMP::Database::getWithDefault<float>( "scalar_float", 0 ) == 1.0 );
     AMP_ASSERT( db->AMP::Database::getWithDefault<double>( "scalar_double", 0 ) == 1.0 );
-    AMP_ASSERT( db->AMP::Database::getWithDefault<std::complex<double>>( "scalar_complex", zero ) ==
+    AMP_ASSERT( db->AMP::Database::getWithDefault<std::complex<double>>( "scalar_complex", 0 ) ==
                 onetwo );
     AMP_ASSERT( db->AMP::Database::getWithDefault<char>( "scalar_char", 0 ) == 1 );
     AMP_ASSERT( db->AMP::Database::getWithDefault<bool>( "scalar_bool", false ) == true );
+
 
     // Finished
     ut.passes( "Create database passes" );
@@ -184,7 +198,7 @@ void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
     AMP::Database db1( AMP_db->cloneToSAMRAI() );
     if ( db1 != *AMP_db ) {
         pass = false;
-        ut.failure( "Read AMP dbdatabase, convert to SAMRAI then back to AMP" );
+        ut.failure( "Read AMP database, convert to SAMRAI then back to AMP" );
     }
 
     // Convert SAMRAI to AMP to SAMRAI and compare
@@ -218,7 +232,46 @@ void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
     if ( pass )
         ut.passes( "Converting between AMP and SAMRAI databases" );
 }
+    #ifdef AMP_USE_SAMRAI
+void testConvertSAMRAI( AMP::UnitTest &ut )
+{
+    // Create the SAMRAI database
+    auto db = std::make_shared<AMP::Database>( "database" );
+    db->putScalar<bool>( "scalar_bool", true );
+    db->putVector<bool>( "vector_bool", { true, false } );
+    db->putScalar<char>( "scalar_char", 1 );
+    db->putVector<char>( "vector_char", { 1, 2 } );
+    db->putScalar<int>( "scalar_int", 1 );
+    db->putVector<int>( "vector_int", { 1, 2 } );
+    db->putScalar<float>( "scalar_float", 1 );
+    db->putVector<float>( "vector_float", { 1, 2 } );
+    db->putScalar<double>( "scalar_double", 1 );
+    db->putVector<double>( "vector_double", { 1, 2 } );
+    db->putScalar<std::complex<double>>( "scalar_complex", 1 );
+    db->putVector<std::complex<double>>( "vector_complex", { 1, 2 } );
+    db->putScalar<std::string>( "scalar_string", "a" );
+    db->putVector<std::string>( "vector_string", { "a", "b" } );
+
+    // Test converting to SAMRAI and back without change in type
+    auto samrai = db->cloneToSAMRAI();
+    auto db2    = std::make_shared<AMP::Database>( *samrai );
+    bool pass   = true;
+    for ( const auto &key : db->getAllKeys() ) {
+        auto type1 = db->getData( key )->getDataType();
+        auto type2 = db2->getData( key )->getDataType();
+        if ( type1 != type2 ) {
+            pass = false;
+            printf( "Changing data converting AMP-SAMRAI-AMP: %s-%s\n", type1.name, type2.name );
+        }
+    }
+    if ( pass )
+        ut.passes( "Converting to/from SAMRAI maintains types" );
+    else
+        ut.failure( "Converting to/from SAMRAI maintains types" );
+}
+    #endif
 #else
+void testConvertSAMRAI( AMP::UnitTest &, const std::string & ) {}
 void testSAMRAI( AMP::UnitTest &, const std::string & ) {}
 #endif
 
@@ -233,6 +286,7 @@ int main( int argc, char *argv[] )
 
     readInputDatabase( ut );
     testCreateDatabase( ut );
+    testConvertSAMRAI( ut );
     testSAMRAI( ut, "input_SAMRAI" );
     testSAMRAI( ut, "input_NRDF" );
     testSAMRAI( ut, "input_NRDF2" );

@@ -5,6 +5,7 @@
 #include "AMP/utils/Array.h"
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/Units.h"
+#include "AMP/utils/typeid.h"
 
 #include <iostream>
 #include <memory>
@@ -35,8 +36,6 @@ public:
     //! Print the data to a stream
     virtual void
     print( std::ostream &os, const std::string_view &indent = "", bool sort = true ) const = 0;
-    //! Return the native data type
-    virtual std::string_view type() const = 0;
     //! Return true if the type is a floating point type
     virtual bool is_floating_point() const = 0;
     //! Return true if the type is a integer point type
@@ -44,6 +43,8 @@ public:
     // Check if the entry can be stored as the given type
     template<class TYPE>
     bool isType() const;
+    // Get the fundamental type (e.g. double, int, float, ...)
+    virtual typeID getDataType() const = 0;
     //! Return the array size
     virtual ArraySize arraySize() const = 0;
     //! Return the data as a Array<double> (throw error if this is not valid)
@@ -445,7 +446,7 @@ public:
 
 
     //! Print the type
-    std::string_view type() const override { return "database"; }
+    typeID getDataType() const override { return AMP::getTypeID<Database>(); }
 
 
     /**
