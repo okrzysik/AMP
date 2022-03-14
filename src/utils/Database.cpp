@@ -350,39 +350,39 @@ void Database::erase( const std::string_view &key, bool check )
 template<>
 bool KeyData::isType<std::string>() const
 {
-    return type() == typeid( std::string ).name();
+    return getDataType() == getTypeID<std::string>();
 }
 template<>
 bool KeyData::isType<bool>() const
 {
-    return type() == typeid( bool ).name();
+    return getDataType() == getTypeID<bool>();
 }
 template<>
 bool KeyData::isType<std::complex<float>>() const
 {
-    return type() == typeid( std::complex<float> ).name();
+    return getDataType() == getTypeID<std::complex<float>>();
 }
 template<>
 bool KeyData::isType<std::complex<double>>() const
 {
-    return type() == typeid( std::complex<double> ).name();
+    return getDataType() == getTypeID<std::complex<double>>();
 }
 template<>
 bool KeyData::isType<double>() const
 {
-    if ( type() == typeid( double ).name() )
+    if ( getDataType() == getTypeID<double>() )
         return true;
     return is_floating_point() || is_integral();
 }
 template<>
 bool KeyData::isType<DatabaseBox>() const
 {
-    return type() == typeid( DatabaseBox ).name();
+    return getDataType() == getTypeID<DatabaseBox>();
 }
 template<class TYPE>
 bool KeyData::isType() const
 {
-    if ( type() == typeid( TYPE ).name() )
+    if ( getDataType() == getTypeID<TYPE>() )
         return true;
     if ( is_integral() ) {
         auto data2 = convertToInt64();
