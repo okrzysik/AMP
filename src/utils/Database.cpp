@@ -263,6 +263,12 @@ const KeyData *Database::getData( const std::string_view &key ) const
     int index = find( hash );
     return index == -1 ? nullptr : d_data[index].get();
 }
+typeID Database::getDataType( const std::string_view &key ) const
+{
+    auto hash = hashString( key );
+    int index = find( hash );
+    return index == -1 ? typeID() : d_data[index]->getDataType();
+}
 bool Database::isDatabase( const std::string_view &key ) const
 {
     auto hash = hashString( key );
@@ -422,7 +428,10 @@ bool Database::isString( const std::string_view &key ) const
 /********************************************************************
  * Print the database                                                *
  ********************************************************************/
-void Database::print( std::ostream &os, const std::string_view &indent, bool sort ) const
+void Database::print( std::ostream &os,
+                      const std::string_view &indent,
+                      bool sort,
+                      bool printType ) const
 {
     auto keys = getAllKeys( sort ); //  We want the keys in sorted order
     for ( const auto &key : keys ) {
@@ -432,21 +441,21 @@ void Database::print( std::ostream &os, const std::string_view &indent, bool sor
         auto dbVec = dynamic_cast<const DatabaseVector *>( data );
         if ( db ) {
             os << " {\n";
-            db->print( os, std::string( indent ) + "   ", sort );
+            db->print( os, std::string( indent ) + "   ", sort, printType );
             os << indent << "}\n";
         } else if ( dbVec ) {
             os << ":\n";
-            dbVec->print( os, indent, sort );
+            dbVec->print( os, indent, sort, printType );
         } else {
             os << " = ";
-            data->print( os, "", sort );
+            data->print( os, "", sort, printType );
         }
     }
 }
-std::string Database::print( const std::string_view &indent, bool sort ) const
+std::string Database::print( const std::string_view &indent, bool sort, bool printType ) const
 {
     std::stringstream ss;
-    print( ss, indent, sort );
+    print( ss, indent, sort, printType );
     return ss.str();
 }
 
@@ -963,7 +972,9 @@ read_value( const std::string_view &buffer,
         data_type = getType( values[0], databaseKeys );
         for ( size_t i = 1; i < values.size(); i++ ) {
             auto type2 = getType( values[i], databaseKeys );
-            if ( type2 == class_type::UNKNOWN ) {
+            if ( type2 == data_type ) {
+                continue;
+            } else if ( type2 == class_type::UNKNOWN ) {
                 data_type = class_type::UNKNOWN;
                 break;
             } else if ( ( type2 == class_type::INT || type2 == class_type::FLOAT ) &&
