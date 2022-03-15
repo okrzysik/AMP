@@ -34,8 +34,10 @@ public:
     //! Copy the data
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
-    virtual void
-    print( std::ostream &os, const std::string_view &indent = "", bool sort = true ) const = 0;
+    virtual void print( std::ostream &os,
+                        const std::string_view &indent = "",
+                        bool sort                      = true,
+                        bool printType                 = false ) const = 0;
     //! Return true if the type is a floating point type
     virtual bool is_floating_point() const = 0;
     //! Return true if the type is a integer point type
@@ -362,18 +364,20 @@ public:
                   Check check = Check::GetDatabaseDefault );
 
 
-    // Check if the key is a database object
+    //! Check if the key is a database object
     bool isDatabase( const std::string_view &key ) const;
 
 
-    // Check if the named entry is a string
+    //! Check if the named entry is a string
     bool isString( const std::string_view &key ) const;
 
 
-    // Check if the entry can be stored as the given type
+    //! Check if the entry can be stored as the given type
     template<class TYPE>
     bool isType( const std::string_view &key ) const;
 
+    //! Get the fundamental type (e.g. double, int, float, ...)
+    typeID getDataType( const std::string_view &key ) const;
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -440,9 +444,13 @@ public:
      * Print the data to a stream
      * @param os        Output stream
      * @param indent    Indenting to use before each line
+     * @param sort      Sort the entries before printing
+     * @param printType Print a comment with the stored datatype
      */
-    void
-    print( std::ostream &os, const std::string_view &indent = "", bool sort = true ) const override;
+    void print( std::ostream &os,
+                const std::string_view &indent = "",
+                bool sort                      = true,
+                bool printType                 = false ) const override;
 
 
     //! Print the type
@@ -451,11 +459,13 @@ public:
 
     /**
      * Print the data to a string
-     * @param indent    Optional prefix
-     * @param indent    Optional flag specifying if the data should be returned in sorted order
+     * @param indent    Indenting to use before each line
+     * @param sort      Sort the entries before printing
+     * @param printType Print a comment with the stored datatype
      * @return          Output string
      */
-    std::string print( const std::string_view &indent = "", bool sort = true ) const;
+    std::string
+    print( const std::string_view &indent = "", bool sort = true, bool printType = false ) const;
 
 
 #ifdef AMP_USE_SAMRAI
