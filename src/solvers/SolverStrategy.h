@@ -189,6 +189,10 @@ public:
 
     virtual void print( std::ostream &os ) { NULL_USE( os ); }
 
+    virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
+
+    int getTotalNumberOfIterations( void );
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
@@ -210,6 +214,9 @@ protected:
     int d_iObjectId;
 
     static int d_iInstanceId; // used to differentiate between different instances of the class
+
+    //! keeps track of iteration statistics over solver lifetime
+    std::vector<int> d_iterationHistory;
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 

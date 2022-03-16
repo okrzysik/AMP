@@ -99,12 +99,19 @@ public:
      12. name: operatorComponentToEnableBoundsCheck, type: integer, default value: none
      acceptable values ()
     */
-    explicit PetscSNESSolver( std::shared_ptr<PetscSNESSolverParameters> parameters );
+    explicit PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> parameters );
 
     /**
      * Default destructor.
      */
     virtual ~PetscSNESSolver();
+
+    //! static create routine that is used by SolverFactory
+    static std::unique_ptr<SolverStrategy>
+    createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::make_unique<PetscSNESSolver>( solverStrategyParameters );
+    }
 
     /**
      * Solve the system \f$Au = 0\f$.
@@ -184,35 +191,36 @@ private:
 
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
 
-    bool d_bUsesJacobian;
-    bool d_bEnableLineSearchPreCheck;
-    bool d_bEnableMFFDBoundsCheck;
-    int d_iMaximumFunctionEvals;
-    int d_iNumberOfLineSearchPreCheckAttempts;
-    int d_operatorComponentToEnableBoundsCheck;
+    bool d_bUsesJacobian                       = false;
+    bool d_bEnableLineSearchPreCheck           = false;
+    bool d_bEnableMFFDBoundsCheck              = false;
+    int d_iMaximumFunctionEvals                = 0;
+    int d_iNumberOfLineSearchPreCheckAttempts  = 0;
+    int d_operatorComponentToEnableBoundsCheck = 0;
 
-    double d_dStepTolerance;
+    double d_dStepTolerance = 0.0;
 
     // strategy to use for MFFD differencing (DS or WP)
-    std::string d_sMFFDDifferencingStrategy;
+    std::string d_sMFFDDifferencingStrategy = MATMFFD_WP;
 
     // string prefix for SNES options passed on command line or through petsc options
-    std::string d_SNESAppendOptionsPrefix;
+    std::string d_SNESAppendOptionsPrefix = "";
     // error in MFFD approximations
-    double d_dMFFDFunctionDifferencingError;
+    double d_dMFFDFunctionDifferencingError = PETSC_DEFAULT;
 
     AMP_MPI d_comm;
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector;
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
-    std::shared_ptr<PetscMonitor> d_PetscMonitor;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pResidualVector = nullptr;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector  = nullptr;
 
-    SNES d_SNESSolver;
+    std::shared_ptr<PetscMonitor> d_PetscMonitor = nullptr;
 
-    Mat d_Jacobian;
+    SNES d_SNESSolver = nullptr;
 
-    std::shared_ptr<PetscKrylovSolver> d_pKrylovSolver;
+    Mat d_Jacobian = nullptr;
+
+    std::shared_ptr<PetscKrylovSolver> d_pKrylovSolver = nullptr;
 };
 } // namespace AMP::Solver
 

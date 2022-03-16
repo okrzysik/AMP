@@ -14,7 +14,6 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
 
     d_pCorrectionVectors         = nullptr;
     d_pFunctionDifferenceVectors = nullptr;
-    d_iNonlinearIterationCount   = 0;
     d_iMaximumFunctionEvals      = 50;
 
     d_bPrintResiduals    = false;
@@ -327,7 +326,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
 
     double residual_norm = 1.0e10;
 
-    d_iNonlinearIterationCount = 0;
+    d_iNumberIterations = 0;
 
     // make the internal solution vector point to the output solution so we don't have to make a
     // copy
@@ -338,7 +337,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
     residual_norm = static_cast<double>( d_pvResidual->L2Norm() );
 
     if ( d_bPrintResiduals ) {
-        AMP::pout << "NonlinearKrylovAccelerator::solve: iteration : " << d_iNonlinearIterationCount
+        AMP::pout << "NonlinearKrylovAccelerator::solve: iteration : " << d_iNumberIterations
                   << ", residual: " << residual_norm << std::endl;
     }
 
@@ -354,7 +353,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
         d_pPreconditioner->resetOperator( pc_parameters );
     }
 
-    while ( ( d_iNonlinearIterationCount < d_iMaxIterations ) &&
+    while ( ( d_iNumberIterations < d_iMaxIterations ) &&
             ( residual_norm > d_dAbsoluteTolerance ) ) {
         if ( !d_bFreezePc ) {
             pc_parameters = d_pOperator->getParameters( "Jacobian", d_pvSolution );
@@ -395,13 +394,15 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
         }
 
         residual_norm = static_cast<double>( d_pvResidual->L2Norm() );
-        d_iNonlinearIterationCount++;
+        d_iNumberIterations++;
 
         if ( d_bPrintResiduals ) {
-            AMP::pout << "Nonlinear Krylov iteration : " << d_iNonlinearIterationCount
+            AMP::pout << "Nonlinear Krylov iteration : " << d_iNumberIterations
                       << ", residual: " << residual_norm << std::endl;
         }
     }
+
+    d_iterationHistory.push_back( d_iNumberIterations );
 }
 
 
@@ -424,7 +425,7 @@ void NonlinearKrylovAccelerator::restart()
 
     d_piNext[d_iMaximumNumberOfVectors] = EOL;
 
-    d_iNonlinearIterationCount = 0;
+    d_iNumberIterations = 0;
 }
 
 

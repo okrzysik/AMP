@@ -115,11 +115,6 @@ public:
     void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
-    /*!
-     * Obtain number of nonlinear iterations.
-     */
-    int getNonlinearIterationCount() const { return d_iNonlinearIterationCount; }
-
     /**
      *
      */
@@ -170,7 +165,6 @@ private:
     int *d_piPrevious;       /* previous index link field in doubly-linked subspace v */
 
     int d_iMaximumFunctionEvals;
-    int d_iNonlinearIterationCount;
 
     bool d_bPrintResiduals;
     bool d_bSolverInitialized;

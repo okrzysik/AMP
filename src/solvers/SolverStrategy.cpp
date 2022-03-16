@@ -1,6 +1,6 @@
 #include "SolverStrategy.h"
 #include "AMP/utils/Utilities.h"
-
+#include <numeric>
 
 namespace AMP::Solver {
 
@@ -75,5 +75,10 @@ void SolverStrategy::resetOperator(
 void SolverStrategy::reset( std::shared_ptr<SolverStrategyParameters> ) {}
 
 void SolverStrategy::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> ) {}
+
+int SolverStrategy::getTotalNumberOfIterations( void )
+{
+    return std::accumulate( d_iterationHistory.begin(), d_iterationHistory.end(), 0 );
+}
 
 } // namespace AMP::Solver

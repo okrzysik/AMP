@@ -29,6 +29,7 @@ responsibility for the use of this software.
 
 #ifdef AMP_USE_PETSC
     #include "AMP/solvers/petsc/PetscKrylovSolver.h"
+    #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #endif
 
 #ifdef AMP_USE_HYPRE
@@ -64,6 +65,7 @@ void registerSolverFactories()
 #endif
 
 #ifdef AMP_USE_PETSC
+    solverFactory.registerFactory( "PetscSNESSolver", PetscSNESSolver::createSolver );
     solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
 #endif
 
