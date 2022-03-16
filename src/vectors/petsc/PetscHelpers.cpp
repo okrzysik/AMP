@@ -672,19 +672,14 @@ void reset_vec_ops( Vec t )
     t->ops->setvalues               = _AMP_setvalues;
     t->ops->assemblybegin           = _AMP_assemblybegin;
     t->ops->assemblyend             = _AMP_assemblyend;
-    t->ops->getarray                = _AMP_getarray;
     t->ops->getsize                 = _AMP_getsize;
     t->ops->getlocalsize            = _AMP_getlocalsize;
-    t->ops->restorearray            = _AMP_restorearray;
     t->ops->max                     = _AMP_max;
     t->ops->min                     = _AMP_min;
     t->ops->setrandom               = _AMP_setrandom;
     t->ops->setoption               = _AMP_setoption;
-    t->ops->setvaluesblocked        = _AMP_setvaluesblocked;
     t->ops->destroy                 = _AMP_destroy;
     t->ops->view                    = _AMP_view;
-    t->ops->placearray              = _AMP_placearray;
-    t->ops->replacearray            = _AMP_replacearray;
     t->ops->dot_local               = _AMP_dot_local;
     t->ops->tdot_local              = _AMP_tdot_local;
     t->ops->norm_local              = _AMP_norm_local;
@@ -694,7 +689,6 @@ void reset_vec_ops( Vec t )
     t->ops->conjugate               = _AMP_conjugate;
     t->ops->setlocaltoglobalmapping = _AMP_setlocaltoglobalmapping;
     t->ops->setvalueslocal          = _AMP_setvalueslocal;
-    t->ops->resetarray              = _AMP_resetarray;
     t->ops->maxpointwisedivide      = _AMP_maxpointwisedivide;
     t->ops->load                    = _AMP_load;
     t->ops->pointwisemax            = _AMP_pointwisemax;
@@ -707,6 +701,23 @@ void reset_vec_ops( Vec t )
     t->ops->log                     = _AMP_log;
     t->ops->shift                   = _AMP_shift;
     t->ops->create                  = _AMP_create;
+
+    auto p = getAMP( t );
+    if ( p->numberOfDataBlocks() > 1u ) {
+        t->ops->getarray         = nullptr;
+        t->ops->restorearray     = nullptr;
+        t->ops->placearray       = nullptr;
+        t->ops->replacearray     = nullptr;
+        t->ops->resetarray       = nullptr;
+        t->ops->setvaluesblocked = nullptr;
+    } else {
+        t->ops->getarray         = _AMP_getarray;
+        t->ops->restorearray     = _AMP_restorearray;
+        t->ops->placearray       = _AMP_placearray;
+        t->ops->replacearray     = _AMP_replacearray;
+        t->ops->resetarray       = _AMP_resetarray;
+        t->ops->setvaluesblocked = _AMP_setvaluesblocked;
+    }
     /*** The following functions do not need to be overridden
       t->ops->setfromoptions = _AMP_setfromoptions;
      ***/
