@@ -21,6 +21,7 @@ SolverStrategy::SolverStrategy()
     d_iObjectId            = 0;
 }
 SolverStrategy::SolverStrategy( std::shared_ptr<const SolverStrategyParameters> parameters )
+    : d_db( parameters->d_db )
 {
     AMP_INSIST( parameters, "NULL SolverStrategyParameters object" );
 
@@ -79,6 +80,25 @@ void SolverStrategy::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector
 int SolverStrategy::getTotalNumberOfIterations( void )
 {
     return std::accumulate( d_iterationHistory.begin(), d_iterationHistory.end(), 0 );
+}
+
+bool SolverStrategy::checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual )
+{
+
+    d_ConvergenceStatus = SolverStatus::DivergedOther;
+    d_dResidualNorm     = static_cast<double>( residual->L2Norm() );
+
+    bool converged = d_dResidualNorm < d_dAbsoluteTolerance;
+
+    if ( converged ) {
+        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
+    } else {
+        converged = d_dResidualNorm < d_dRelativeTolerance * d_dInitialResidual;
+        if ( converged )
+            d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
+    }
+
+    return converged;
 }
 
 } // namespace AMP::Solver
