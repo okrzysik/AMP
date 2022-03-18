@@ -189,20 +189,40 @@ public:
 
     virtual void print( std::ostream &os ) { NULL_USE( os ); }
 
+    /**
+     * Return the residual norm.
+     */
+    virtual double getResidualNorm( void ) const { return d_dResidualNorm; }
+
+    /**
+     * returns whether the solver has converged or not
+     */
+    virtual bool checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual );
+
     virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
 
     int getTotalNumberOfIterations( void );
+
+    virtual void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                           std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                           std::shared_ptr<AMP::LinearAlgebra::Vector> r )
+    {
+        AMP_ERROR( "Not implemented" );
+    }
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
     SolverStatus d_ConvergenceStatus = SolverStatus::DivergedOther;
 
+    std::string d_sName;
+
     int d_iNumberIterations = 0; // iterations in solver
 
     int d_iMaxIterations = 0;
 
-    double d_dResidualNorm = 0.0;
+    double d_dResidualNorm    = 0.0;
+    double d_dInitialResidual = 0.0;
 
     double d_dAbsoluteTolerance = 1.0e-14;
     double d_dRelativeTolerance = 1.0e-09;
@@ -217,6 +237,8 @@ protected:
 
     //! keeps track of iteration statistics over solver lifetime
     std::vector<int> d_iterationHistory;
+
+    std::shared_ptr<AMP::Database> d_db = nullptr;
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
