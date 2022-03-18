@@ -21,6 +21,7 @@ SolverStrategy::SolverStrategy()
     d_iObjectId            = 0;
 }
 SolverStrategy::SolverStrategy( std::shared_ptr<const SolverStrategyParameters> parameters )
+    : d_db( parameters->d_db )
 {
     AMP_INSIST( parameters, "NULL SolverStrategyParameters object" );
 

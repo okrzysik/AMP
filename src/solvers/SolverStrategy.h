@@ -203,16 +203,25 @@ public:
 
     int getTotalNumberOfIterations( void );
 
+    virtual void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                           std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                           std::shared_ptr<AMP::LinearAlgebra::Vector> r )
+    {
+        AMP_ERROR( "Not implemented" );
+    }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
     SolverStatus d_ConvergenceStatus = SolverStatus::DivergedOther;
 
+    std::string d_sName;
+
     int d_iNumberIterations = 0; // iterations in solver
 
     int d_iMaxIterations = 0;
 
-    double d_dResidualNorm = 0.0;
+    double d_dResidualNorm    = 0.0;
     double d_dInitialResidual = 0.0;
 
     double d_dAbsoluteTolerance = 1.0e-14;
@@ -228,6 +237,8 @@ protected:
 
     //! keeps track of iteration statistics over solver lifetime
     std::vector<int> d_iterationHistory;
+
+    std::shared_ptr<AMP::Database> d_db = nullptr;
 
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
