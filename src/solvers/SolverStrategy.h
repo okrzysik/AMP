@@ -189,6 +189,16 @@ public:
 
     virtual void print( std::ostream &os ) { NULL_USE( os ); }
 
+    /**
+     * Return the residual norm.
+     */
+    virtual double getResidualNorm( void ) const { return d_dResidualNorm; }
+
+    /**
+     * returns whether the solver has converged or not
+     */
+    virtual bool checkConvergence( std::shared_ptr<const AMP::LinearAlgebra::Vector> residual );
+
     virtual const std::vector<int> &getIterationHistory( void ) { return d_iterationHistory; }
 
     int getTotalNumberOfIterations( void );
@@ -203,6 +213,7 @@ protected:
     int d_iMaxIterations = 0;
 
     double d_dResidualNorm = 0.0;
+    double d_dInitialResidual = 0.0;
 
     double d_dAbsoluteTolerance = 1.0e-14;
     double d_dRelativeTolerance = 1.0e-09;
