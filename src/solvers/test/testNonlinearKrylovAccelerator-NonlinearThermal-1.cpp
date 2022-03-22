@@ -13,7 +13,7 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearKrylovAccelerator.h"
-#include "AMP/solvers/NonlinearKrylovAcceleratorParameters.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
@@ -38,11 +38,6 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
-
-    AMP_INSIST( input_db->keyExists( "NumberOfMeshes" ), "Key does not exist" );
-    int numMeshes = input_db->getScalar<int>( "NumberOfMeshes" );
-
-    AMP::pout << "Num meshes = " << numMeshes << std::endl;
 
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
@@ -121,12 +116,12 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearKrylovAcceleratorParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_pOperator       = nonlinearThermalOperator;
-    nonlinearSolverParams->d_pInitialGuess   = solVec;
-    nonlinearSolverParams->d_pPreconditioner = linearThermalPreconditioner;
+    nonlinearSolverParams->d_pOperator     = nonlinearThermalOperator;
+    nonlinearSolverParams->d_pInitialGuess = solVec;
+    nonlinearSolverParams->d_pNestedSolver = linearThermalPreconditioner;
     auto nonlinearSolver =
         std::make_shared<AMP::Solver::NonlinearKrylovAccelerator>( nonlinearSolverParams );
 
@@ -167,7 +162,8 @@ int main( int argc, char *argv[] )
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.emplace_back( "testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_kIsOne" );
+    //    exeNames.emplace_back( "testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_kIsOne"
+    //    );
     exeNames.emplace_back( "testNonlinearKrylovAccelerator-NonlinearThermal-cylinder_MATPRO" );
 
     for ( auto &exeName : exeNames )

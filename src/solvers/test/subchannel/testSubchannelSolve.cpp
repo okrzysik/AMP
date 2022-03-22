@@ -567,7 +567,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         // create nonlinear solver parameters
         auto nonlinearSolverParams =
-            std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+            std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
         nonlinearSolverParams->d_comm          = globalComm;
         nonlinearSolverParams->d_pOperator     = nonlinearCoupledOperator;
         nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;

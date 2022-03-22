@@ -1,10 +1,10 @@
 #ifndef included_AMP_PetscSNESSolver
 #define included_AMP_PetscSNESSolver
 
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscMonitor.h"
-#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 

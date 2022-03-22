@@ -29,10 +29,10 @@
 #include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
@@ -159,7 +159,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams1 =
-        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db1 );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db1 );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams1->d_comm          = globalComm;
