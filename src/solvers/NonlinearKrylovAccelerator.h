@@ -1,90 +1,48 @@
-#ifndef included_AMP_NonlinearKrylovAccelerator
-#define included_AMP_NonlinearKrylovAccelerator
+#ifndef included_NonlinearKrylovAccelerator
+#define included_NonlinearKrylovAccelerator
 
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/utils/AMP_MPI.h"
 
-#include "AMP/utils/Database.h"
-#include "AMP/vectors/Vector.h"
-#include "NonlinearKrylovAcceleratorParameters.h"
-#include "SolverStrategy.h"
-#include <memory>
+namespace AMP {
+class Database;
+namespace Solver {
+class SolverStrategyParameters;
+}
+} // namespace AMP
 
 namespace AMP::Solver {
 
-/**
- * The NonlinearKrylovAccelerator class provides a C++ implementation of the NLKAIN (Nonlinear
- * Krylov Accelerator)
- * solver
- * as described and implemented by Carlson et. al.
- */
-class NonlinearKrylovAccelerator : public SolverStrategy
+class NonlinearKrylovAccelerator : public AMP::Solver::SolverStrategy
 {
 
 public:
-    /**
-     * Main constructor.
-     @param [in] params The parameters object of type NonlinearKrylovAcceleratorParameters contains
-     a database object
-     which must contain the
-     following fields in addition to the fields expected by the base class SolverStrategy class:
-
-       1. name:  max_vectors, type: integer, (required)
-       acceptable values (non-negative integer values, typically 3 to 5)
-
-       2. name:  angle_tolerance, type: double, (required)
-       acceptable values (non-negative real values)
-
-       3. name:  maximum_function_evals, type: integer, (required), default:
-       acceptable values (non-negative integer values)
-
-       4. name:  absolute_tolerance, type: double, (required), default: none
-       acceptable values (non-negative real values)
-
-       5. name:  relative_tolerance, type: double, (required), default: none
-       acceptable values (non-negative real values)
-
-       6. name:  freeze_pc, type: bool, (required), default: none
-       acceptable values TRUE, FALSE)
-
-     */
     explicit NonlinearKrylovAccelerator(
-        std::shared_ptr<NonlinearKrylovAcceleratorParameters> params );
+        std::shared_ptr<AMP::Solver::SolverStrategyParameters> params );
 
-    NonlinearKrylovAccelerator( const NonlinearKrylovAccelerator & ) = delete;
-    NonlinearKrylovAccelerator &operator=( const NonlinearKrylovAccelerator & ) = delete;
+    ~NonlinearKrylovAccelerator();
 
-    /**
-     * Default destructor
-     */
-    virtual ~NonlinearKrylovAccelerator();
+    static std::unique_ptr<AMP::Solver::SolverStrategy>
+    createSolver( std::shared_ptr<AMP::Solver::SolverStrategyParameters> solverStrategyParameters )
+    {
+        return std::unique_ptr<AMP::Solver::SolverStrategy>(
+            new NonlinearKrylovAccelerator( solverStrategyParameters ) );
+    }
 
-    /**
-     * Initialize the solution vector
-     @param [in] parameters The parameters object (must be of type
-     NonlinearKrylovAcceleratorParameters)
-     Should contain a pointer to a solution guess vector.
-     */
-    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
+    void
+    initialize( std::shared_ptr<const AMP::Solver::SolverStrategyParameters> parameters ) override;
 
     /**
-     * Provide the initial guess for the solver.
-     * @param [in] initialGuess: shared pointer to the initial guess vector.
+     * Resets the solver internally with new parameters if necessary
+     * @param parameters
+     *        SolverStrategyParameters object that is NULL by default
      */
-    void setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess ) override;
+    void reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> parameters ) override;
 
-    /**
-     * This routine corrects the acceleration subspace using the vector f
-     @param [in] f shared pointer to vector used to correct acceleration subspace
-     */
-    void correction( std::shared_ptr<AMP::LinearAlgebra::Vector> &f );
+    void correction( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
 
-    /**
-     * Resets the internal Krylov supsace, destroying all the internal vectors for a fresh start
-     */
     void restart( void );
 
-    /**
-     * Should not be used at this time
-     */
     void relax( void );
 
     /*!
@@ -108,67 +66,86 @@ public:
     void setMaxFunctionEvaluations( int max_feval );
 
     /**
-     * Solve the system \f$A(u) = f\f$.
-     @param [in] f : shared pointer to right hand side vector
-     @param [out] u : shared pointer to approximate computed solution
+     * Solve the  system \f$A(u) = f\f$.  The solution \f$u\f$ and the
+     * right hand side \f$f\f$ are specified via vectors on the patch
+     * hierarchy.  This function returns zero if the solver converged within
+     * the specified tolerances and nonzero otherwise.  Member functions
+     * getIterations() and getRelativeNorm() return the iterations and
+     * relative norm, respectively, from the solver.
+     * \param f
+     *            vector for right hand side, can be nullptr
+     * \param u
+     *            vector for solution variables
      */
     void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
-    /**
-     *
-     */
-    void putToDatabase( std::shared_ptr<AMP::Database> &db );
+    void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> pc );
 
-    /**
-     * Sets the preconditioner that the solver will use.
-     @param [in] preconditioner shared pointer to SolverStrategy object to use as preconditioner
-     */
-    void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> preconditioner )
-    {
-        d_pPreconditioner = preconditioner;
-    }
+    void printStatistics( std::ostream &os ) override;
 
-    /**
-     * Return a shared pointer to the preconditioner being used.
-     */
-    std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
-    {
-        return d_pPreconditioner;
-    }
+    void registerOperator( std::shared_ptr<AMP::Operator::Operator> op ) override final;
 
-protected:
 private:
+    NonlinearKrylovAccelerator()                                     = delete;
+    NonlinearKrylovAccelerator( const NonlinearKrylovAccelerator & ) = delete;
+    NonlinearKrylovAccelerator( NonlinearKrylovAccelerator && )      = delete;
+    NonlinearKrylovAccelerator &operator=( const NonlinearKrylovAccelerator & ) = delete;
+
+
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
-    bool d_bIsSubspace;                 /* boolean: a nonempty subspace */
-    bool d_bContainsPendingVecs;        /* contains pending vectors -- boolean */
-    int d_iMaximumNumberOfVectors;      /* maximum number of subspace vectors */
-    double d_dVectorAngleDropTolerance; /* vector drop tolerance */
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pvSolution;   /* correction vectors */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pvResidual;   /* correction vectors */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pvCorrection; /* correction vectors */
+    std::shared_ptr<AMP::Operator::Operator>
+    createPreconditionerOperator( std::shared_ptr<AMP::Operator::Operator> op );
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> *d_pCorrectionVectors; /* correction vectors */
-    std::shared_ptr<AMP::LinearAlgebra::Vector>
-        *d_pFunctionDifferenceVectors;             /* function difference vectors */
-    double **d_ppdFunctionDifferenceInnerProducts; /* matrix of w vector inner products */
+    void factorizeNormalMatrix( void );
 
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+    //! forward backward solve for Cholesky
+    std::vector<double> forwardbackwardSolve( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+
+    bool d_subspace = false; //! boolean: a nonempty subspace
+    bool d_pending  = false; //! contains pending vectors -- boolean
+
+    bool d_use_qr = false; //! use qr factorization to solve the least squares problem
+
+    int d_mvec    = 0;   //! maximum number of subspace vectors
+    double d_vtol = 0.0; //! vector drop tolerance
+
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_vector = nullptr; //! correction vectors
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_residual_vector = nullptr; //! correction vectors
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_correction_vector =
+        nullptr; //! correction vectors
+
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_v; //! correction vectors
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_w; //! function difference vectors
+    double **d_h; //! matrix of w vector inner products
+
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner =
+        nullptr; //! stores a pointer to the preconditioner if being used
 
     /* Linked-list organization of the vector storage. */
-    int d_iFirstVectorIndex; /* index of first subspace vector */
-    int d_iLastVectorIndex;  /* index of last subspace vector */
-    int d_iFreeVectorIndex;  /* index of the initial vector in free storage linked list */
-    int *d_piNext;           /* next index link field */
-    int *d_piPrevious;       /* previous index link field in doubly-linked subspace v */
+    int d_first = 0;         //! index of first subspace vector
+    int d_last  = 0;         //! index of last subspace vector
+    int d_free  = 0;         //! index of the initial vector in free storage linked list
+    std::vector<int> d_next; //! next index link field
+    std::vector<int> d_prev; //! previous index link field in doubly-linked subspace v
 
-    int d_iMaximumFunctionEvals;
+    int d_maximum_function_evals = 0;
+    int d_current_correction     = 0; //! current number of corrections, updated each time
+                                      //! correction is called
+    int d_preconditioner_apply_count =
+        0;                          //! keeps track of the number of preconditioner applications
+    int d_function_apply_count = 0; //! keeps track of the number of function applications
 
-    bool d_bPrintResiduals;
-    bool d_bSolverInitialized;
-    bool d_bFreezePc;
+    double d_eta = 1.0; //! damping factor
+
+    bool d_use_preconditioner = false; //! whether the solver uses a preconditioner or not
+    bool d_freeze_pc       = true;  //! flag determining whether the preconditioner is frozen or not
+    bool d_print_residuals = false; //! whether to print the residuals
+    bool d_solver_initialized = false;
+    bool d_use_damping        = false; //! whether to use damping
+    bool d_adaptive_damping   = false; //! use adaptive damping
 };
 } // namespace AMP::Solver
 

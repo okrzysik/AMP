@@ -17,10 +17,10 @@
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -99,7 +99,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -232,7 +232,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;

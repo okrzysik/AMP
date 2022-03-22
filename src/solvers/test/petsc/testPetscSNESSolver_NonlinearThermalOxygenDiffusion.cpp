@@ -11,10 +11,10 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/PetscKrylovSolver.h"
 #include "AMP/solvers/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/PetscSNESSolver.h"
-#include "AMP/solvers/PetscSNESSolverParameters.h"
 #include "AMP/solvers/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -147,7 +147,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;

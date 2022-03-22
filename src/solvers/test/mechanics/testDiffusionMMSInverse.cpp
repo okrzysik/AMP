@@ -190,7 +190,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nlinBVPOp;
     nonlinearSolverParams->d_pInitialGuess = solVec;

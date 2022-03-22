@@ -2,6 +2,7 @@
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
@@ -35,9 +36,9 @@ PetscSNESSolver::PetscSNESSolver() {}
 PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> params )
     : SolverStrategy( params )
 {
-    auto parameters = std::dynamic_pointer_cast<const PetscSNESSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
     d_comm          = parameters->d_comm;
-    d_pKrylovSolver = parameters->d_pKrylovSolver;
+    d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( parameters->d_pNestedSolver );
     initialize( params );
 }
 
@@ -65,7 +66,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 {
     PROFILE_START( "initialize" );
 
-    auto parameters = std::dynamic_pointer_cast<const PetscSNESSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
     getFromInput( parameters->d_db );
 
     // create the SNES solver
@@ -93,7 +94,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
         AMP_INSIST( parameters->d_pInitialGuess,
                     "ERROR:: The initial guess has to "
                     "be provided through the "
-                    "PetscSNESSolverParameters class" );
+                    "NonlinearSolverParameters class" );
     }
 
     // if the krylov solver is initialized set the SNES pointer to it

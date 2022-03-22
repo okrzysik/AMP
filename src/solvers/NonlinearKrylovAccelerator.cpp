@@ -1,82 +1,93 @@
 #include "NonlinearKrylovAccelerator.h"
-#include "AMP/utils/Utilities.h"
 
+#include <iomanip>
+
+#include "AMP/operators/OperatorFactory.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
+
+#include "ProfilerApp.h"
+
+#include <iomanip>
 
 #define EOL -1
 
 namespace AMP::Solver {
 
 NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
-    std::shared_ptr<NonlinearKrylovAcceleratorParameters> params )
-    : SolverStrategy( params )
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> params )
+    : AMP::Solver::SolverStrategy( params )
 {
+
     int j, n;
 
-    d_pCorrectionVectors         = nullptr;
-    d_pFunctionDifferenceVectors = nullptr;
-    d_iMaximumFunctionEvals      = 50;
+    getFromInput( d_db );
 
-    d_bPrintResiduals    = false;
-    d_bSolverInitialized = false;
-    d_bFreezePc          = true;
+    // initialize the preconditioner
+    if ( d_use_preconditioner ) {
+        // 3 cases need to be addressed:
+        // 1. A preconditioner is being passed in
+        // 2. A preconditioner solver name is being specified
+        // 3. A preconditioner solver name is not specified but the user will set on their own
+        auto parameters =
+            std::dynamic_pointer_cast<AMP::Solver::NonlinearSolverParameters>( params );
+        if ( parameters != nullptr )
+            d_preconditioner = parameters->d_pNestedSolver;
 
-    getFromInput( params->d_db );
+        if ( d_preconditioner ) {
+            if ( d_pOperator ) {
+                std::shared_ptr<AMP::Operator::Operator> pcOperator =
+                    createPreconditionerOperator( d_pOperator );
+                d_preconditioner->registerOperator( pcOperator );
+            }
+        } else {
+            // construct the preconditioner
+            if ( d_db->keyExists( "pc_solver_name" ) ) {
+                AMP_ASSERT( params->d_global_db );
+                auto pc_solver_name = d_db->getString( "pc_solver_name" );
+                auto global_db      = params->d_global_db;
+                AMP_ASSERT( global_db->keyExists( pc_solver_name ) );
+                auto pc_solver_db = global_db->getDatabase( pc_solver_name );
+                auto pcSolverParameters =
+                    std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
+                if ( d_pOperator ) {
+                    std::shared_ptr<AMP::Operator::Operator> pcOperator =
+                        createPreconditionerOperator( d_pOperator );
+                    pcSolverParameters->d_pOperator = pcOperator;
+                }
 
-    d_pPreconditioner = params->d_pPreconditioner;
+                d_preconditioner = AMP::Solver::SolverFactory::create( pcSolverParameters );
+            }
+        }
+    }
 
-    n = d_iMaximumNumberOfVectors + 1;
+    n = d_mvec + 1;
 
-    d_ppdFunctionDifferenceInnerProducts    = new double *[n];
-    d_ppdFunctionDifferenceInnerProducts[0] = new double[n * n];
+    d_h    = new double *[n];
+    d_h[0] = new double[n * n];
 
     for ( j = 1; j < n; j++ ) {
-        d_ppdFunctionDifferenceInnerProducts[j] = d_ppdFunctionDifferenceInnerProducts[j - 1] + n;
+        d_h[j] = d_h[j - 1] + n;
     }
 
-    d_piNext     = new int[n];
-    d_piPrevious = new int[n];
-
-    if ( params->d_pInitialGuess ) {
-        initialize( params );
-    }
+    d_next.resize( n );
+    d_prev.resize( n );
 
     restart();
 }
 
-
-NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator()
+NonlinearKrylovAccelerator::~NonlinearKrylovAccelerator( void )
 {
-    if ( d_ppdFunctionDifferenceInnerProducts != nullptr ) {
-        delete d_ppdFunctionDifferenceInnerProducts[0];
-        delete[] d_ppdFunctionDifferenceInnerProducts;
+    if ( d_h != nullptr ) {
+        delete[] d_h[0];
+        delete[] d_h;
     }
-
-    delete[] d_piNext;
-    delete[] d_piPrevious;
-
-    /* freeVectorComponents is no longer necessary
-    for (int j = 0; j < d_iMaximumNumberOfVectors+1; j++)
-    {
-        if( (d_pCorrectionVectors!=NULL)&&(d_pCorrectionVectors[j].get()!=NULL) )
-        {
-            d_pCorrectionVectors[j]->freeVectorComponents();
-        }
-
-        if((d_pFunctionDifferenceVectors!=NULL) && (d_pFunctionDifferenceVectors[j].get()!=NULL))
-        {
-            d_pFunctionDifferenceVectors[j]->freeVectorComponents();
-        }
-    }*/
-
-    delete[] d_pCorrectionVectors;
-    delete[] d_pFunctionDifferenceVectors;
 }
-
 
 void NonlinearKrylovAccelerator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     if ( db->keyExists( "max_vectors" ) ) {
-        d_iMaximumNumberOfVectors = db->getScalar<int>( "max_vectors" );
+        d_mvec = db->getScalar<int>( "max_vectors" );
     } else {
         AMP_ERROR( "NonlinearKrylovAccelerator"
                    << " -- Key data `max_vectors'"
@@ -84,371 +95,503 @@ void NonlinearKrylovAccelerator::getFromInput( std::shared_ptr<AMP::Database> db
     }
 
     if ( db->keyExists( "angle_tolerance" ) ) {
-        d_dVectorAngleDropTolerance = db->getScalar<double>( "angle_tolerance" );
+        d_vtol = db->getScalar<double>( "angle_tolerance" );
     } else {
         AMP_ERROR( "NonlinearKrylovAccelerator"
                    << " -- Key data `angle_tolerance'"
                    << " missing in input." );
     }
 
-    if ( db->keyExists( "maximum_function_evals" ) ) {
-        d_iMaximumFunctionEvals = db->getScalar<int>( "maximum_function_evals" );
-    }
+    d_maximum_function_evals = db->getWithDefault<int>( "maximum_function_evals", 50 );
 
-    if ( db->keyExists( "freeze_pc" ) ) {
-        d_bFreezePc = db->getScalar<bool>( "freeze_pc" );
-    }
+    if ( db->keyExists( "use_preconditioner" ) ) {
+        d_use_preconditioner = db->getScalar<bool>( "use_preconditioner" );
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
-        d_bPrintResiduals = true;
-    }
-
-    AMP_INSIST( d_iMaximumNumberOfVectors > 0, "The maximum number of vectors must be positive" );
-    AMP_INSIST( d_dVectorAngleDropTolerance > 0.0, "The tolerance in angle must be positive" );
-}
-
-
-void NonlinearKrylovAccelerator::setInitialGuess(
-    std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
-{
-    size_t n;
-
-    d_pvSolution = initialGuess;
-
-    n = d_iMaximumNumberOfVectors + 1;
-
-    if ( !d_bSolverInitialized ) {
-        d_pCorrectionVectors = new std::shared_ptr<AMP::LinearAlgebra::Vector>[n];
-
-        for ( size_t j = 0; j < n; j++ ) {
-            d_pCorrectionVectors[j] = d_pvSolution->cloneVector();
+        if ( d_use_preconditioner ) {
+            if ( db->keyExists( "freeze_pc" ) ) {
+                d_freeze_pc = db->getScalar<bool>( "freeze_pc" );
+            }
         }
-
-        d_pFunctionDifferenceVectors = new std::shared_ptr<AMP::LinearAlgebra::Vector>[n];
-
-        for ( size_t j = 0; j < n; j++ ) {
-            d_pFunctionDifferenceVectors[j] = d_pvSolution->cloneVector();
-        }
-
-        d_pvResidual   = d_pvSolution->cloneVector();
-        d_pvCorrection = d_pvSolution->cloneVector();
-
-        d_bSolverInitialized = true;
     }
 
-    d_pvResidual->setToScalar( 0.0 );
-    d_pvCorrection->setToScalar( 0.0 );
-}
+    d_use_qr = db->getWithDefault<bool>( "use_qr", false );
 
+    d_print_residuals  = db->getWithDefault<bool>( "print_residuals", false );
+    d_use_damping      = db->getWithDefault<bool>( "use_damping", false );
+    d_adaptive_damping = db->getWithDefault<bool>( "adaptive_damping", false );
+    if ( d_adaptive_damping )
+        d_use_damping = true;
+
+    if ( d_use_damping ) {
+        d_eta = db->getWithDefault<double>( "damping_factor", 1.0 );
+    }
+
+    AMP_ASSERT( d_mvec > 0 );
+    AMP_ASSERT( d_vtol > 0.0 );
+}
 
 void NonlinearKrylovAccelerator::initialize(
-    std::shared_ptr<const SolverStrategyParameters> parameters )
+    std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
 {
-    auto params =
-        std::dynamic_pointer_cast<const NonlinearKrylovAcceleratorParameters>( parameters );
-    setInitialGuess( params->d_pInitialGuess );
+    AMP_ASSERT( params->d_vectors.size() > 0 );
+    d_solution_vector = params->d_vectors[0]->cloneVector( "NKAInternalSolution" );
+
+    int n = d_mvec + 1;
+
+    if ( !d_solver_initialized ) {
+
+        d_v.resize( n );
+
+        for ( int j = 0; j < n; j++ ) {
+            d_v[j] = d_solution_vector->cloneVector( "correction vectors" );
+        }
+
+        d_w.resize( n );
+
+        for ( int j = 0; j < n; j++ ) {
+            d_w[j] = d_solution_vector->cloneVector( "correction differences" );
+        }
+
+        d_residual_vector   = d_solution_vector->cloneVector( "residual vector" );
+        d_correction_vector = d_solution_vector->cloneVector( "correction vector" );
+
+        d_solver_initialized = true;
+    }
+
+    d_residual_vector->setToScalar( 0.0 );
+    d_correction_vector->setToScalar( 0.0 );
 }
 
-
-void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra::Vector> &f )
+void NonlinearKrylovAccelerator::reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> )
 {
-    int i, j, k, new_loc;
-    double s;
+    restart();
+}
+
+void NonlinearKrylovAccelerator::correction( std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+{
     std::shared_ptr<AMP::LinearAlgebra::Vector> v, w;
-    double *hj, *c;
+
+    d_current_correction++;
+
     /*
      *  UPDATE THE ACCELERATION SUBSPACE
      */
 
-    if ( d_bContainsPendingVecs ) {
+    if ( d_pending ) {
 
         /* next function difference w_1 */
-        w = d_pFunctionDifferenceVectors[d_iFirstVectorIndex];
+        w = d_w[d_first];
+
         w->axpy( -1.0, *f, *w );
-        s = static_cast<double>( w->L2Norm() );
+
+        auto s = static_cast<double>( w->L2Norm() );
 
         /* If the function difference is 0, we can't update the subspace with
-        this data; so we toss it out and continue.  In this case it is likely
-        that the outer iterative solution procedure has gone badly awry
-        (unless the function value is itself 0), and we merely want to do
-        something reasonable here and hope that situation is detected on the
-        outside. */
+           this data; so we toss it out and continue.  In this case it is likely
+           that the outer iterative solution procedure has gone badly awry
+           (unless the function value is itself 0), and we merely want to do
+           something reasonable here and hope that situation is detected on the
+           outside. */
         if ( s == 0.0 ) {
+            AMP_WARNING( "current vector not valid!!, relax() being called " );
             relax();
         }
-    }
 
-    if ( d_bContainsPendingVecs ) {
+        v = d_v[d_first];
 
         /* Normalize w_1 and apply same factor to v_1. */
-        v = d_pCorrectionVectors[d_iFirstVectorIndex];
-
-        v->scale( 1.0 / s, *v );
         w->scale( 1.0 / s, *w );
+        v->scale( 1.0 / s, *v );
 
-        /* Update H. */
-        for ( k = d_piNext[d_iFirstVectorIndex]; k != EOL; k = d_piNext[k] ) {
-            d_ppdFunctionDifferenceInnerProducts[d_iFirstVectorIndex][k] =
-                static_cast<double>( w->dot( *d_pFunctionDifferenceVectors[k] ) );
+        if ( !d_use_qr ) {
+
+            /* Update H. */
+            for ( int k = d_next[d_first]; k != EOL; k = d_next[k] ) {
+                d_h[d_first][k] = static_cast<double>( w->dot( *d_w[k] ) );
+            }
+
+            /*
+             *  CHOLESKI FACTORIZATION OF H = W^t W
+             *  original matrix kept in the upper triangle (implicit unit diagonal)
+             *  lower triangle holds the factorization
+             */
+            factorizeNormalMatrix();
+
+        } else {
+
+            AMP_ERROR( "QR factorization not implemented" );
         }
 
-        /*
-         *  CHOLESKI FACTORIZATION OF H = W^t W
-         *  original matrix kept in the upper triangle (implicit unit diagonal)
-         *  lower triangle holds the factorization
-         */
-
-        /* Trivial initial factorization stage. */
-        int nvec                                                                       = 1;
-        d_ppdFunctionDifferenceInnerProducts[d_iFirstVectorIndex][d_iFirstVectorIndex] = 1.0;
-
-        for ( k = d_piNext[d_iFirstVectorIndex]; k != EOL; k = d_piNext[k] ) {
-
-            /* Maintain at most MVEC vectors. */
-            if ( ++nvec > d_iMaximumNumberOfVectors ) {
-                /* Drop the last vector and update the free storage list. */
-                AMP_INSIST( d_iLastVectorIndex == k, "d_iLastVectorIndex not equal to k" );
-                d_piNext[d_iLastVectorIndex] = d_iFreeVectorIndex;
-                d_iFreeVectorIndex           = k;
-                d_iLastVectorIndex           = d_piPrevious[k];
-                d_piNext[d_iLastVectorIndex] = EOL;
-                break;
-            }
-
-            /* Single stage of Choleski factorization. */
-            double *hk = d_ppdFunctionDifferenceInnerProducts[k]; /* row k of H */
-            double hkk = 1.0;
-            for ( j = d_iFirstVectorIndex; j != k; j = d_piNext[j] ) {
-                hj         = d_ppdFunctionDifferenceInnerProducts[j]; /* row j of H */
-                double hkj = hj[k];
-                for ( i = d_iFirstVectorIndex; i != j; i = d_piNext[i] )
-                    hkj -= hk[i] * hj[i];
-                hkj /= hj[j];
-                hk[j] = hkj;
-                hkk -= hkj * hkj;
-            }
-
-            if ( hkk > pow( d_dVectorAngleDropTolerance, 2 ) ) {
-                hk[k] = sqrt( hkk );
-            } else {
-                /* The current w nearly lies in the span of the previous vectors: */
-                /* Drop this vector, */
-                AMP_INSIST( d_piPrevious[k] != EOL, "The previous vector index equal to EOL" );
-                d_piNext[d_piPrevious[k]] = d_piNext[k];
-                if ( d_piNext[k] == EOL )
-                    d_iLastVectorIndex = d_piPrevious[k];
-                else
-                    d_piPrevious[d_piNext[k]] = d_piPrevious[k];
-                /* update the free storage list, */
-                d_piNext[k]        = d_iFreeVectorIndex;
-                d_iFreeVectorIndex = k;
-                /* back-up and move on to the piNext vector. */
-                k = d_piPrevious[k];
-                nvec--;
-            }
-        }
-
-        AMP_INSIST( d_iFirstVectorIndex != EOL, "IFirstVectorIndex vector index equal to EOL" );
-        d_bIsSubspace = true; /* the acceleration subspace isn't empty */
+        // set the boolean to indicate we have a subspace
+        d_subspace = true;
+        d_pending  = false;
     }
 
-    /*
-     *  ACCELERATED CORRECTION
-     */
+    //  ACCELERATED CORRECTION
 
-    /* Locate storage for the new vectors. */
-    AMP_INSIST( d_iFreeVectorIndex != EOL, "d_iFreeVectorIndex is equal to EOL" );
-    new_loc            = d_iFreeVectorIndex;
-    d_iFreeVectorIndex = d_piNext[d_iFreeVectorIndex];
+    // locate storage location for the new vector by finding the
+    // first free location in the list
+    AMP_ASSERT( d_free != EOL );
+    int new_loc = d_free;
+    // update the free pointer to point to the next free location
+    d_free = d_next[d_free];
 
-    /* Save the original f for the next call. */
-    d_pFunctionDifferenceVectors[new_loc]->copyVector( f );
+    // store f in the currently free location of w, so that we can
+    // update it to the difference on the next iteration
+    d_w[new_loc]->copyVector( f );
 
-    if ( d_bIsSubspace ) {
-        c = new double[( d_iMaximumNumberOfVectors + 1 )];
+    if ( d_subspace ) {
 
-        AMP_INSIST( c != nullptr, "c is NULL" );
+        // create a row vector to store the solution components for
+        // the correction vector
+        std::vector<double> cv( d_mvec + 1, 0.0 );
 
-        /* Project f onto the span of the w vectors: */
-        /* forward substitution */
-        for ( j = d_iFirstVectorIndex; j != EOL; j = d_piNext[j] ) {
-            double cj = static_cast<double>( f->dot( *d_pFunctionDifferenceVectors[j] ) );
+        if ( !d_use_qr ) {
+            cv = forwardbackwardSolve( f );
+        } else {
+            AMP_ERROR( "QR factorization not implemented" );
+        }
+        // at this point the solution to the minimization
+        // problem has been computed and stored in cv(:)
+        // we now compute the accelerated correction
 
-            for ( i = d_iFirstVectorIndex; i != j; i = d_piNext[i] ) {
-                cj -= d_ppdFunctionDifferenceInnerProducts[j][i] * c[i];
+        for ( int k = d_first; k != EOL; k = d_next[k] ) {
+            f->axpy( cv[k], *d_v[k], *f );
+            f->axpy( -cv[k], *d_w[k], *f );
+        }
+
+        if ( d_use_damping ) {
+            double eta = d_eta;
+            if ( d_adaptive_damping ) {
+                eta = 1.0 - std::pow( 0.9, std::min( d_current_correction, d_mvec ) );
             }
 
-            c[j] = cj / d_ppdFunctionDifferenceInnerProducts[j][j];
+            // scale the residual vector
+            f->scale( eta, *f );
         }
-
-        /* backward substitution */
-        for ( j = d_iLastVectorIndex; j != EOL; j = d_piPrevious[j] ) {
-            double cj = c[j];
-            for ( i = d_iLastVectorIndex; i != j; i = d_piPrevious[i] )
-                cj -= d_ppdFunctionDifferenceInnerProducts[i][j] * c[i];
-            c[j] = cj / d_ppdFunctionDifferenceInnerProducts[j][j];
-        }
-
-        /* The accelerated correction */
-        for ( k = d_iFirstVectorIndex; k != EOL; k = d_piNext[k] ) {
-            f->axpy( c[k], *d_pCorrectionVectors[k], *f );
-            f->axpy( -c[k], *d_pFunctionDifferenceVectors[k], *f );
-        }
-
-        delete[] c;
     }
 
-    /* Save the accelerated correction for the next call. */
-    d_pCorrectionVectors[new_loc]->copyVector( f );
+#if 0
+   // if no subspace exists this is the first correction
+   // and it should include the damping
+   if(d_use_damping && (d_current_correction==1))
+      {
+         double eta = d_eta;
+         if(d_adaptive_damping)
+            {
+               eta = 1.0-std::pow(0.9, std::min(d_current_correction, d_mvec));
+            }
+         
+         // scale the residual vector
+         f->scale(eta, f);
+      }
+#endif
 
-    /* Prepend the new vectors to the list. */
-    d_piPrevious[new_loc] = EOL;
-    d_piNext[new_loc]     = d_iFirstVectorIndex;
+    // save the correction, accelerated or otherwise for the next
+    // call in the v matrix
+    d_v[new_loc]->copyVector( f );
 
-    if ( d_iFirstVectorIndex == EOL ) {
-        d_iLastVectorIndex = new_loc;
+    // prepend the vector to the list so that it is at the front of
+    // the list and is dropped last among the existing subspace
+    // vectors
+    d_prev[new_loc] = EOL;
+    d_next[new_loc] = d_first;
+
+    if ( d_first == EOL ) {
+        d_last = new_loc;
     } else {
-        d_piPrevious[d_iFirstVectorIndex] = new_loc;
+        d_prev[d_first] = new_loc;
     }
 
-    d_iFirstVectorIndex = new_loc;
+    d_first = new_loc;
 
     /* The original f and accelerated correction are cached for the next call. */
-    d_bContainsPendingVecs = true;
+    d_pending = true;
 }
-
 
 void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                                         std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
-    AMP_INSIST( d_pOperator != nullptr, "Operator cannot be NULL" );
-    AMP_INSIST( d_pPreconditioner, "Preconditioning operator cannot be NULL" );
+    PROFILE_START( "solve" );
+    d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::DivergedOther;
+    AMP_ASSERT( u.get() != nullptr );
+    AMP_ASSERT( d_pOperator != nullptr );
 
-    double residual_norm = 1.0e10;
+    if ( d_use_preconditioner ) {
+        AMP_ASSERT( d_preconditioner != nullptr );
+        AMP_ASSERT( d_preconditioner->getOperator() != nullptr );
+    }
 
     d_iNumberIterations = 0;
 
-    // make the internal solution vector point to the output solution so we don't have to make a
-    // copy
-    d_pvSolution = u;
+    d_solution_vector->copyVector( u );
+
+    AMP_ASSERT( d_pOperator.get() != nullptr );
 
     // compute residual
-    d_pOperator->residual( f, d_pvSolution, d_pvResidual );
-    residual_norm = static_cast<double>( d_pvResidual->L2Norm() );
+    d_pOperator->residual( f, d_solution_vector, d_residual_vector );
+    d_function_apply_count++;
 
-    if ( d_bPrintResiduals ) {
-        AMP::pout << "NonlinearKrylovAccelerator::solve: iteration : " << d_iNumberIterations
+    d_residual_vector->scale( -1.0, *d_residual_vector );
+
+    auto residual_norm = d_residual_vector->L2Norm();
+
+    if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
+        AMP::pout << std::setprecision( 16 )
+                  << "Nonlinear Krylov iteration : " << d_iNumberIterations
                   << ", residual: " << residual_norm << std::endl;
     }
 
-    std::shared_ptr<AMP::Operator::OperatorParameters> pc_parameters =
-        d_pOperator->getParameters( "Jacobian", d_pvSolution );
-    std::shared_ptr<AMP::Operator::Operator> pc_operator = d_pPreconditioner->getOperator();
+    const auto initial_residual_norm = residual_norm;
 
-    AMP_INSIST( pc_operator,
-                "NonlinearKrylovAccelerator::solve: preconditioning operator cannot be NULL" );
+    auto pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
+    AMP_ASSERT( pc_parameters.get() != nullptr );
 
-    // if using a frozen preconditioner set it up iFirstVectorIndex
-    if ( d_bFreezePc ) {
-        d_pPreconditioner->resetOperator( pc_parameters );
+    std::shared_ptr<AMP::Operator::Operator> pc_operator;
+    if ( d_use_preconditioner ) {
+        pc_operator = d_preconditioner->getOperator();
+        AMP_ASSERT( pc_operator.get() != nullptr );
+
+        // if using a frozen preconditioner set it up first
+        if ( d_freeze_pc ) {
+            pc_operator->reset( pc_parameters );
+        }
     }
 
-    while ( ( d_iNumberIterations < d_iMaxIterations ) &&
-            ( residual_norm > d_dAbsoluteTolerance ) ) {
-        if ( !d_bFreezePc ) {
-            pc_parameters = d_pOperator->getParameters( "Jacobian", d_pvSolution );
-            d_pPreconditioner->resetOperator( pc_parameters );
+    bool converged = ( residual_norm < d_dAbsoluteTolerance );
+    if ( converged )
+        d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnAbsTol;
+
+    while ( ( d_iNumberIterations < d_iMaxIterations ) && ( !converged ) ) {
+        if ( d_use_preconditioner ) {
+            if ( !d_freeze_pc ) {
+                pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
+                AMP_ASSERT( pc_parameters != nullptr );
+
+                pc_operator->reset( pc_parameters );
+            }
+
+            AMP_ASSERT( d_preconditioner->getOperator() != nullptr );
+            // apply the preconditioner
+            d_preconditioner->apply( d_residual_vector, d_correction_vector );
+            d_preconditioner_apply_count++;
+
+        } else {
+            // identity preconditioning
+            d_correction_vector->copyVector( d_residual_vector );
         }
-
-        // apply the preconditioner
-        d_pPreconditioner->apply( d_pvResidual, d_pvCorrection );
-
-        if ( d_iDebugPrintInfoLevel > 3 ) {
-            // compute residual
-            d_pOperator->residual( f, d_pvSolution, d_pvResidual );
-            residual_norm = static_cast<double>( d_pvResidual->L2Norm() );
-            std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of preconditioner residual "
-                      << residual_norm << std::endl;
-        }
-
 
         // compute AIN correction
-        this->correction( d_pvCorrection );
-
-        if ( d_iDebugPrintInfoLevel > 3 ) {
-            double pcSolutionNorm = static_cast<double>( d_pvCorrection->L2Norm() );
-            std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of correction from NLKAIN "
-                      << pcSolutionNorm << std::endl;
-        }
+        this->correction( d_correction_vector );
 
         // correct current solution
-        d_pvSolution->axpy( 1.0, *d_pvCorrection, *d_pvSolution );
+        //      d_solution_vector->axpy(1.0, d_correction_vector,
+        //      d_solution_vector);
+        // correct current solution
+        d_solution_vector->axpy( -1.0, *d_correction_vector, *d_solution_vector );
 
         // compute the residual
-        d_pOperator->residual( f, d_pvSolution, d_pvResidual );
+        d_pOperator->residual( f, d_solution_vector, d_residual_vector );
+        d_function_apply_count++;
 
-        if ( d_iDebugPrintInfoLevel > 3 ) {
-            double pcSolutionNorm = static_cast<double>( d_pvResidual->L2Norm() );
-            std::cout << "NonlinearKrylovAccelerator::solve: L2 norm of corrected residual "
-                      << pcSolutionNorm << std::endl;
-        }
+        d_residual_vector->scale( -1.0, *d_residual_vector );
 
-        residual_norm = static_cast<double>( d_pvResidual->L2Norm() );
+        //        auto prev_residual_norm = residual_norm;
+        residual_norm = d_residual_vector->L2Norm();
+
         d_iNumberIterations++;
 
-        if ( d_bPrintResiduals ) {
+        if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
             AMP::pout << "Nonlinear Krylov iteration : " << d_iNumberIterations
                       << ", residual: " << residual_norm << std::endl;
+        }
+
+        converged = ( residual_norm < d_dAbsoluteTolerance ) ||
+                    ( residual_norm < d_dRelativeTolerance * initial_residual_norm );
+        if ( converged ) {
+            d_ConvergenceStatus = ( residual_norm < d_dAbsoluteTolerance ) ?
+                                      AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnAbsTol :
+                                      AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnRelTol;
         }
     }
 
     d_iterationHistory.push_back( d_iNumberIterations );
+
+    if ( !converged && ( d_iDebugPrintInfoLevel > 0 ) ) {
+        AMP_WARNING( "NKA::solve did not converge to tolerance" );
+    }
+
+    if ( d_iDebugPrintInfoLevel > 1 ) {
+        AMP::pout << "NonlinearKrylovAccelerator convergence status "
+                  << static_cast<int>( d_ConvergenceStatus ) << std::endl;
+    }
+
+    u->copyVector( d_solution_vector );
+
+    PROFILE_STOP( "solve" );
 }
 
-
-void NonlinearKrylovAccelerator::restart()
+void NonlinearKrylovAccelerator::restart( void )
 {
     int k;
 
+    d_current_correction = 0;
+
     /* No vectors are stored. */
-    d_iFirstVectorIndex    = EOL;
-    d_iLastVectorIndex     = EOL;
-    d_bIsSubspace          = false;
-    d_bContainsPendingVecs = false;
+    d_first    = EOL;
+    d_last     = EOL;
+    d_subspace = false;
+    d_pending  = false;
 
     /* Initialize the free storage linked list. */
-    d_iFreeVectorIndex = 0;
+    d_free = 0;
 
-    for ( k = 0; k < d_iMaximumNumberOfVectors; k++ ) {
-        d_piNext[k] = k + 1;
+    for ( k = 0; k < d_mvec; ++k ) {
+        d_next[k] = k + 1;
     }
 
-    d_piNext[d_iMaximumNumberOfVectors] = EOL;
+    d_next[d_mvec] = EOL;
+
+    // reset the number of levels for all the vectors
+    if ( d_solution_vector.get() != nullptr ) {
+
+        d_solution_vector->getVectorData()->reset();
+        d_residual_vector->getVectorData()->reset();
+        d_correction_vector->getVectorData()->reset();
+
+        for ( k = 0; k < d_mvec + 1; ++k ) {
+            if ( d_v[k].get() != nullptr ) {
+                d_v[k]->getVectorData()->reset();
+            }
+
+            if ( d_w[k].get() != nullptr ) {
+                d_w[k]->getVectorData()->reset();
+            }
+        }
+    }
 
     d_iNumberIterations = 0;
 }
 
-
-void NonlinearKrylovAccelerator::relax()
+void NonlinearKrylovAccelerator::relax( void )
 {
-    if ( d_bContainsPendingVecs ) {
+    if ( d_pending ) {
         /* Drop the initial slot where the pending vectors are stored. */
-        AMP_INSIST( d_iFirstVectorIndex >= 0, "d_iFirstVectorIndex is not positive" );
-        int new_loc         = d_iFirstVectorIndex;
-        d_iFirstVectorIndex = d_piNext[d_iFirstVectorIndex];
-        if ( d_iFirstVectorIndex == EOL ) {
-            d_iLastVectorIndex = EOL;
+        AMP_ASSERT( d_first >= 0 );
+        int new_loc = d_first;
+        d_first     = d_next[d_first];
+        if ( d_first == EOL ) {
+            d_last = EOL;
         } else {
-            d_piPrevious[d_iFirstVectorIndex] = EOL;
+            d_prev[d_first] = EOL;
         }
 
         /* Update the free storage list. */
-        d_piNext[new_loc]      = d_iFreeVectorIndex;
-        d_iFreeVectorIndex     = new_loc;
-        d_bContainsPendingVecs = false;
+        d_next[new_loc] = d_free;
+        d_free          = new_loc;
+        d_pending       = false;
     }
 }
 
+void NonlinearKrylovAccelerator::factorizeNormalMatrix( void )
+{
+    // Solve the least squares problem using a Cholesky
+    // factorization, dropping any vectors that
+    // render the system nearly rank deficient
+    // we'll first follow Carlson's implementation
+
+    // start the factorization at the entry indexed by first
+
+    // Trivial initial factorization stage
+    int nvec              = 1;
+    d_h[d_first][d_first] = 1.0;
+
+    for ( int k = d_next[d_first]; k != EOL; k = d_next[k] ) {
+        ++nvec;
+
+        // maintain atmost mvec vectors, if we've reached the
+        // limit throw out the last vector in the subspace and
+        // update the subspace list and free list to reflect
+        // this
+        if ( nvec > d_mvec ) {
+            AMP_ASSERT( d_last == k );
+            d_next[d_last] = d_free;
+            d_free         = k;
+            d_last         = d_prev[k];
+            d_next[d_last] = EOL;
+            break;
+        }
+
+        // Single stage of Choleski factorization
+
+        double *hk = d_h[k]; // row k of H
+        double hkk = 1.0;
+        for ( int j = d_first; j != k; j = d_next[j] ) {
+            double *hj = d_h[j]; // row j of H
+            double hkj = hj[k];
+            for ( int i = d_first; i != j; i = d_next[i] ) {
+                hkj -= hk[i] * hj[i];
+            }
+            hkj /= hj[j];
+            hk[j] = hkj;
+            hkk -= hkj * hkj;
+        }
+
+        if ( hkk > d_vtol * d_vtol ) {
+            hk[k] = sqrt( hkk );
+        } else {
+            // The current w nearly lies in the span of the previous vectors so drop
+            // it
+            AMP_ASSERT( d_prev[k] != EOL );
+            d_next[d_prev[k]] = d_next[k];
+            if ( d_next[k] == EOL )
+                d_last = d_prev[k];
+            else
+                d_prev[d_next[k]] = d_prev[k];
+            // update the free storage list
+            d_next[k] = d_free;
+            d_free    = k;
+            // back-up and move on to the next vector
+            k = d_prev[k];
+            nvec--;
+        }
+    }
+}
+
+std::vector<double>
+NonlinearKrylovAccelerator::forwardbackwardSolve( std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+{
+    std::vector<double> cv( d_mvec + 1, 0.0 );
+
+    /* Project f onto the span of the w vectors: */
+    /* forward substitution */
+    for ( int j = d_first; j != EOL; j = d_next[j] ) {
+        double cj = static_cast<double>( f->dot( *d_w[j] ) );
+
+        for ( int i = d_first; i != j; i = d_next[i] ) {
+            cj -= d_h[j][i] * cv[i];
+        }
+
+        cv[j] = cj / d_h[j][j];
+    }
+
+    /* backward substitution */
+    for ( int j = d_last; j != EOL; j = d_prev[j] ) {
+        double cj = cv[j];
+        for ( int i = d_last; i != j; i = d_prev[i] ) {
+            cj -= d_h[i][j] * cv[i];
+        }
+        cv[j] = cj / d_h[j][j];
+    }
+
+    return cv;
+}
+
+void NonlinearKrylovAccelerator::setPreconditioner(
+    std::shared_ptr<AMP::Solver::SolverStrategy> pc )
+{
+    d_preconditioner = pc;
+}
 
 /*
 *************************************************************************
@@ -457,7 +600,6 @@ void NonlinearKrylovAccelerator::relax()
 *                                                                       *
 *************************************************************************
 */
-
 int NonlinearKrylovAccelerator::getMaxNonlinearIterations() const { return ( d_iMaxIterations ); }
 
 void NonlinearKrylovAccelerator::setMaxNonlinearIterations( int max_nli )
@@ -467,24 +609,49 @@ void NonlinearKrylovAccelerator::setMaxNonlinearIterations( int max_nli )
 
 int NonlinearKrylovAccelerator::getMaxFunctionEvaluations() const
 {
-    return ( d_iMaximumFunctionEvals );
+    return ( d_maximum_function_evals );
 }
 
 void NonlinearKrylovAccelerator::setMaxFunctionEvaluations( int max_feval )
 {
-    d_iMaximumFunctionEvals = max_feval;
+    d_maximum_function_evals = max_feval;
 }
 
-
-void NonlinearKrylovAccelerator::putToDatabase( std::shared_ptr<AMP::Database> &db )
+void NonlinearKrylovAccelerator::printStatistics( std::ostream &os )
 {
+    int total_nnl_iters = 0;
 
-    AMP_INSIST( db, "database object cannot be NULL" );
+    for ( int n : d_iterationHistory )
+        total_nnl_iters += n;
 
-    db->putScalar( "d_MaxIterations", d_iMaxIterations );
-    db->putScalar( "d_iMaximumFunctionEvals", d_iMaximumFunctionEvals );
+    os << "Total number of NKA nonlinear iterations       : " << total_nnl_iters << std::endl;
+    os << "Total number of NKA preconditioner iterations  : " << d_preconditioner_apply_count
+       << std::endl;
+    os << "Total number of function evaluations           : " << d_function_apply_count
+       << std::endl;
+    os << "Average number of nonlinear iterations         : "
+       << ( (double) total_nnl_iters ) / ( (double) d_iterationHistory.size() ) << std::endl;
+}
 
-    db->putScalar( "d_dAbsoluteTolerance", d_dAbsoluteTolerance );
-    db->putScalar( "d_dRelativeTolerance", d_dRelativeTolerance );
+void NonlinearKrylovAccelerator::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
+{
+    AMP_ASSERT( op );
+    d_pOperator = op;
+    if ( d_use_preconditioner ) {
+        AMP_ASSERT( d_preconditioner );
+        std::shared_ptr<AMP::Operator::Operator> pc_operator = createPreconditionerOperator( op );
+        d_preconditioner->registerOperator( pc_operator );
+    }
+}
+
+std::shared_ptr<AMP::Operator::Operator> NonlinearKrylovAccelerator::createPreconditionerOperator(
+    std::shared_ptr<AMP::Operator::Operator> op )
+{
+    AMP_ASSERT( op );
+
+    // use a null vector since this is not during the solution process
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x;
+    auto pc_params = op->getParameters( "Jacobian", x );
+    return AMP::Operator::OperatorFactory::create( pc_params );
 }
 } // namespace AMP::Solver

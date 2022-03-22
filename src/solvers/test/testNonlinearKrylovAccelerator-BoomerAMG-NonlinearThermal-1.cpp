@@ -1,10 +1,9 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -18,11 +17,11 @@
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/NonlinearKrylovAccelerator.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
-#include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -30,23 +29,19 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include <iostream>
 #include <memory>
-#include <string>
 
 
-static void myTest( AMP::UnitTest *ut, const std::string &exeName )
+void myTest( AMP::UnitTest *ut, std::string exeName )
 {
     std::string input_file = "input_" + exeName;
-    std::string log_file   = "output_" + exeName;
 
-    AMP::logOnlyNodeZero( log_file );
-    AMP::AMP_MPI globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
-
-    auto input_db = AMP::Database::parseInputFile( input_file );
+    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
+    size_t N_error0 = ut->NumFailLocal();
+    auto input_db   = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
 
-    // Create the Mesh.
+    //   Create the Mesh.
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
@@ -63,7 +58,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
-    AMP::pout << "Constructing Nonlinear Thermal Operator..." << std::endl;
 
     // create a nonlinear BVP operator for nonlinear thermal diffusion
     AMP_INSIST( input_db->keyExists( "testNonlinearThermalOperator" ), "key missing!" );
@@ -76,6 +70,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto thermalVolumeOperator =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
             nonlinearThermalOperator->getVolumeOperator() );
+
     auto thermalVariable = thermalVolumeOperator->getOutputVariable();
 
     // create solution, rhs, and residual vectors
@@ -85,7 +80,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    AMP::pout << "Constructing Linear Thermal Operator..." << std::endl;
 
     // now construct the linear BVP operator for thermal
     AMP_INSIST( input_db->keyExists( "testLinearThermalOperator" ), "key missing!" );
@@ -93,7 +87,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::Operator::OperatorBuilder::createOperator(
             meshAdapter, "testLinearThermalOperator", input_db, thermalTransportModel ) );
 
-    // CREATE THE NEUTRONICS SOURCE
+    // Initial guess
+    solVec->setToScalar( 400. );
+    double initialGuessNorm = static_cast<double>( solVec->L2Norm() );
+    std::cout << "initial guess norm = " << initialGuessNorm << "\n";
+
+    nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
+
+    initialGuessNorm = static_cast<double>( solVec->L2Norm() );
+    std::cout << "initial guess norm  after apply = " << initialGuessNorm << "\n";
+
+    //  CREATE THE NEUTRONICS SOURCE  //
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
@@ -105,7 +109,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    // Integrate Nuclear Rhs over Desnity * GeomType::Volume
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
@@ -119,115 +123,92 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
+
     rhsVec->copyVector( PowerInWattsVec );
-    auto precision = std::setprecision( 10 );
-    AMP::pout << "RHS L2 norm before corrections = " << precision << rhsVec->L2Norm() << "\n";
-    AMP::pout << "RHS max before corrections = " << precision << rhsVec->max() << "\n";
-    AMP::pout << "RHS min before corrections = " << precision << rhsVec->min() << "\n";
+
     nonlinearThermalOperator->modifyRHSvector( rhsVec );
-    AMP::pout << "RHS L2 norm after corrections = " << precision << rhsVec->L2Norm() << "\n";
-    AMP::pout << "RHS max after corrections = " << precision << rhsVec->max() << "\n";
-    AMP::pout << "RHS min after corrections = " << precision << rhsVec->min() << "\n";
 
-    // Initial guess
-    auto initGuess = input_db->getWithDefault<double>( "InitialGuess", 400.0 );
-    solVec->setToScalar( initGuess );
-    AMP::pout << "initial guess L2 norm before corrections = " << solVec->L2Norm() << "\n";
-    AMP::pout << "initial guess max before corrections = " << solVec->max() << "\n";
-    AMP::pout << "initial guess min before corrections = " << solVec->min() << "\n";
+    double initialRhsNorm = static_cast<double>( rhsVec->L2Norm() );
+    std::cout << "rhs norm  after modifyRHSvector = " << initialRhsNorm << "\n";
+    double expectedVal = 0.688628;
+    if ( !AMP::Utilities::approx_equal( expectedVal, initialRhsNorm, 1e-5 ) )
+        ut->failure( "the rhs norm after modifyRHSvector has changed." );
 
-    nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
-    AMP::pout << "initial guess L2 norm after corrections = " << solVec->L2Norm() << "\n";
-    AMP::pout << "initial guess max after corrections = " << solVec->max() << "\n";
-    AMP::pout << "initial guess min after corrections = " << solVec->min() << "\n";
-
+    // Get the solver databases
     auto nonlinearSolver_db = input_db->getDatabase( "NonlinearSolver" );
     auto linearSolver_db    = nonlinearSolver_db->getDatabase( "LinearSolver" );
 
-    // initialize the nonlinear solver
-    auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
-
-    // change the next line to get the correct communicator out
-    nonlinearSolverParams->d_comm          = globalComm;
-    nonlinearSolverParams->d_pOperator     = nonlinearThermalOperator;
-    nonlinearSolverParams->d_pInitialGuess = solVec;
-
-    auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
-
-    AMP::pout << "Calling Get Jacobian Parameters..." << std::endl;
-
-    nonlinearThermalOperator->modifyInitialSolutionVector( solVec );
-    linearThermalOperator->reset( nonlinearThermalOperator->getParameters( "Jacobian", solVec ) );
-
-    AMP::pout << "Finished reseting the jacobian." << std::endl;
-
+    // Create the preconditioner
     auto thermalPreconditioner_db = linearSolver_db->getDatabase( "Preconditioner" );
     auto thermalPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( thermalPreconditioner_db );
     thermalPreconditionerParams->d_pOperator = linearThermalOperator;
     auto linearThermalPreconditioner =
-        std::make_shared<AMP::Solver::TrilinosMLSolver>( thermalPreconditionerParams );
+        std::make_shared<AMP::Solver::BoomerAMGSolver>( thermalPreconditionerParams );
 
-    // register the preconditioner with the Jacobian free Krylov solver
-    auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( linearThermalPreconditioner );
+    // Crete the solvers
+    auto nonlinearSolverParams =
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+    nonlinearSolverParams->d_comm          = globalComm;
+    nonlinearSolverParams->d_pOperator     = nonlinearThermalOperator;
+    nonlinearSolverParams->d_pInitialGuess = solVec;
+    nonlinearSolverParams->d_pNestedSolver = linearThermalPreconditioner;
+    auto nonlinearSolver =
+        std::make_shared<AMP::Solver::NonlinearKrylovAccelerator>( nonlinearSolverParams );
+
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
-
     double initialResidualNorm = static_cast<double>( resVec->L2Norm() );
-    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
 
-    double expectedVal = 20.7018;
+    AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
+    expectedVal = 3625.84;
     if ( !AMP::Utilities::approx_equal( expectedVal, initialResidualNorm, 1e-5 ) ) {
         ut->failure( "the Initial Residual Norm has changed." );
     }
 
     nonlinearSolver->setZeroInitialGuess( false );
+
     nonlinearSolver->apply( rhsVec, solVec );
 
-    std::cout << "Final Solution Norm: " << solVec->L2Norm() << std::endl;
-    expectedVal    = 45612;
-    double solNorm = static_cast<double>( solVec->L2Norm() );
-    if ( !AMP::Utilities::approx_equal( expectedVal, solNorm, 1e-5 ) ) {
-        ut->failure( "the Final Solution Norm has changed." );
-    }
-
-    AMP::pout << " Solution Max: " << precision << solVec->max() << std::endl;
-    AMP::pout << " Solution Min: " << precision << solVec->min() << std::endl;
-    AMP::pout << " Solution L1 Norm: " << precision << solVec->L1Norm() << std::endl;
-    AMP::pout << " Solution L2 Norm: " << precision << solVec->L2Norm() << std::endl;
+    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
 
     double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
     double finalSolutionNorm = static_cast<double>( solVec->L2Norm() );
-    AMP::pout << "Final Residual Norm: " << precision << finalResidualNorm << std::endl;
-    AMP::pout << "Final Solution Norm: " << precision << finalSolutionNorm << std::endl;
+    double finalRhsNorm      = static_cast<double>( rhsVec->L2Norm() );
 
-    expectedVal = 4.561204386863e4;
+    AMP::pout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    AMP::pout << "Final Solution Norm: " << finalSolutionNorm << std::endl;
+    AMP::pout << "Final Rhs Norm: " << finalRhsNorm << std::endl;
+
     if ( fabs( finalResidualNorm ) > 1e-8 )
         ut->failure( "the Final Residual is larger than the tolerance" );
-    if ( !AMP::Utilities::approx_equal( expectedVal, finalSolutionNorm, 1e-7 ) ) {
-        ut->failure( "the Final Residual Norm has changed." );
-    }
+    if ( !AMP::Utilities::approx_equal( 45431.3, finalSolutionNorm, 1e-5 ) )
+        ut->failure( "the Final Solution Norm has changed." );
+    if ( !AMP::Utilities::approx_equal( initialRhsNorm, finalRhsNorm, 1e-9 ) )
+        ut->failure( "the Final Rhs Norm has changed." );
 
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->writeFile( exeName, 0 );
+    siloWriter->writeFile( input_file, 0 );
 
-    ut->passes( exeName );
+    if ( N_error0 == ut->NumFailLocal() )
+        ut->passes( exeName );
+    else
+        ut->failure( exeName );
 }
 
-
-int testPetscSNESSolver_NonlinearThermal_2( int argc, char *argv[] )
+int main( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
     std::vector<std::string> exeNames;
-    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO2" );
+    //  exeNames.push_back("testPetscSNESSolver-NonlinearThermal-cylinder_kIsOne");
+    exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO" );
 
     for ( auto &exeName : exeNames )
         myTest( &ut, exeName );

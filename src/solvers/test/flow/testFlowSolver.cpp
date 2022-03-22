@@ -7,11 +7,11 @@
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
-#include "AMP/solvers/petsc/PetscSNESSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
@@ -139,7 +139,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     // auto linearSolver_db = nonlinearSolver_db->getDatabase("LinearSolver");
 
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::PetscSNESSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
