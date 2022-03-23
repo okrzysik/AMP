@@ -191,6 +191,8 @@ private:
 
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
 
+    void setConvergenceStatus( void );
+
     bool d_bUsesJacobian                       = false;
     bool d_bEnableLineSearchPreCheck           = false;
     bool d_bEnableMFFDBoundsCheck              = false;
@@ -208,6 +210,19 @@ private:
     // error in MFFD approximations
     double d_dMFFDFunctionDifferencingError = PETSC_DEFAULT;
 
+    // The next set of options are specific to forcing
+    std::string d_sForcingTermStrategy = "CONSTANT"; //! string is for input
+    int d_iForcingTermFlag;                          //! int is for passing choice to PETSc
+
+    double d_dConstantForcingTerm;
+    double d_dInitialForcingTerm;
+    double d_dMaximumForcingTerm;
+    // Eisenstat-Walker algo. options
+    double d_dEWChoice2Alpha;
+    double d_dEWChoice2Gamma;
+    double d_dEWSafeguardExponent;
+    double d_dEWSafeguardDisableThreshold;
+
     AMP_MPI d_comm;
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionVector = nullptr;
@@ -219,6 +234,8 @@ private:
     SNES d_SNESSolver = nullptr;
 
     Mat d_Jacobian = nullptr;
+
+    SNESConvergedReason d_SNES_completion_code;
 
     std::shared_ptr<PetscKrylovSolver> d_pKrylovSolver = nullptr;
 };

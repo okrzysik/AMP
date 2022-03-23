@@ -119,13 +119,35 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     }
 
     if ( ( d_sKspType == "fgmres" ) || ( d_sKspType == "gmres" ) ) {
+
         checkErr( KSPGMRESSetRestart( d_KrylovSolver, d_iMaxKrylovDimension ) );
+
+        if ( d_sGmresOrthogonalizationAlgorithm == "modifiedgramschmidt" ) {
+            checkErr( KSPGMRESSetOrthogonalization(
+                d_KrylovSolver, KSPGMRESModifiedGramSchmidtOrthogonalization ) );
+        } else if ( d_sGmresOrthogonalizationAlgorithm == "gmres_cgs_refine_ifneeded" ) {
+            checkErr( KSPGMRESSetOrthogonalization(
+                d_KrylovSolver, KSPGMRESClassicalGramSchmidtOrthogonalization ) );
+            checkErr(
+                KSPGMRESSetCGSRefinementType( d_KrylovSolver, KSP_GMRES_CGS_REFINE_IFNEEDED ) );
+        } else if ( d_sGmresOrthogonalizationAlgorithm == "gmres_cgs_refine_always" ) {
+            checkErr( KSPGMRESSetOrthogonalization(
+                d_KrylovSolver, KSPGMRESClassicalGramSchmidtOrthogonalization ) );
+            checkErr( KSPGMRESSetCGSRefinementType( d_KrylovSolver, KSP_GMRES_CGS_REFINE_ALWAYS ) );
+        }
+    } else if ( d_sKspType == "bcgs" ) {
+        checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
+    } else if ( d_sKspType == "preonly" ) {
+        // if only preconditioner, override preconditioner side
+        d_PcSide = "LEFT";
+        checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
     }
 
     // Create the preconditioner
     PC pc;
     checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
     if ( d_bUsesPreconditioner ) {
+
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
             AMP_ASSERT( d_pPreconditioner.get() == nullptr );

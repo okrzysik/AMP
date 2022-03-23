@@ -60,6 +60,7 @@ public:
         ConvergedIterations,
         ConvergedUserCondition,
         DivergedMaxIterations,
+        DivergedLineSearch,
         DivergedOnNan,
         DivergedInternalSolver,
         DivergedOther
