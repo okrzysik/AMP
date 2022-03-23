@@ -36,6 +36,7 @@ PetscSNESSolver::PetscSNESSolver() {}
 PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> params )
     : SolverStrategy( params )
 {
+    d_sName         = "PetscSNESSolver";
     auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
     d_comm          = parameters->d_comm;
     d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( parameters->d_pNestedSolver );
@@ -84,6 +85,20 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
                                  d_dStepTolerance,
                                  d_iMaxIterations,
                                  d_iMaximumFunctionEvals ) );
+
+    if ( !( d_sForcingTermStrategy == "CONSTANT" ) ) {
+
+        checkErr( SNESKSPSetUseEW( d_SNESSolver, PETSC_TRUE ) );
+        checkErr( SNESKSPSetParametersEW( d_SNESSolver,
+                                          d_iForcingTermFlag,
+                                          d_dInitialForcingTerm,
+                                          d_dMaximumForcingTerm,
+                                          d_dEWChoice2Gamma,
+                                          d_dEWChoice2Alpha,
+                                          d_dEWSafeguardExponent,
+                                          d_dEWSafeguardDisableThreshold ) );
+    }
+
     if ( d_SNESAppendOptionsPrefix != "" )
         SNESAppendOptionsPrefix( d_SNESSolver, d_SNESAppendOptionsPrefix.c_str() );
 
@@ -181,6 +196,35 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     if ( d_bEnableMFFDBoundsCheck )
         d_operatorComponentToEnableBoundsCheck =
             db->getScalar<int>( "operatorComponentToEnableBoundsCheck" );
+
+    d_sForcingTermStrategy =
+        db->getWithDefault<std::string>( "forcing_term_strategy", std::string{ "CONSTANT" } );
+    if ( d_sForcingTermStrategy == "EWCHOICE1" ) {
+        d_iForcingTermFlag = 1;
+    } else if ( d_sForcingTermStrategy == "EWCHOICE2" ) {
+        d_iForcingTermFlag = 2;
+    } else if ( d_sForcingTermStrategy == "EWCHOICE3" ) {
+        d_iForcingTermFlag = 3;
+    } else if ( !( d_sForcingTermStrategy == "CONSTANT" ) ) {
+        AMP_ERROR( d_sName << ": "
+                           << "Key data `forcing_term_strategy' = " << d_sForcingTermStrategy
+                           << " in input not recognized." );
+    }
+
+    d_dConstantForcingTerm = db->getWithDefault<double>( "constant_forcing_term", PETSC_DEFAULT );
+
+    d_dInitialForcingTerm = db->getWithDefault<double>( "initial_forcing_term", PETSC_DEFAULT );
+
+    d_dMaximumForcingTerm = db->getWithDefault<double>( "maximum_forcing_term", PETSC_DEFAULT );
+
+    d_dEWChoice2Alpha = db->getWithDefault<double>( "EW_choice2_alpha", PETSC_DEFAULT );
+
+    d_dEWChoice2Gamma = db->getWithDefault<double>( "EW_choice2_gamma", PETSC_DEFAULT );
+
+    d_dEWSafeguardExponent = db->getWithDefault<double>( "EW_safeguard_exponent", PETSC_DEFAULT );
+
+    d_dEWSafeguardDisableThreshold =
+        db->getWithDefault<double>( "EW_safeguard_disable_threshold", PETSC_DEFAULT );
 }
 
 
@@ -300,6 +344,16 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     checkErr( SNESGetIterationNumber( d_SNESSolver, &d_iNumberIterations ) );
     d_iterationHistory.push_back( d_iNumberIterations );
 
+    checkErr( SNESGetConvergedReason( d_SNESSolver, &d_SNES_completion_code ) );
+
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+
+        int linearIterations = 0;
+        checkErr( SNESGetLinearSolveIterations( d_SNESSolver, &linearIterations ) );
+        AMP::pout << " SNES Iterations:  nonlinear: " << d_iNumberIterations << std::endl;
+        AMP::pout << "                      linear: " << linearIterations << std::endl;
+    }
+
     // Reset the solvers
     SNESReset( d_SNESSolver );
 
@@ -311,6 +365,36 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_STOP( "solve" );
 }
 
+void PetscSNESSolver::setConvergenceStatus( void )
+{
+    switch ( (int) d_SNES_completion_code ) {
+    case SNES_CONVERGED_FNORM_ABS:
+        d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
+        break;
+    case SNES_CONVERGED_FNORM_RELATIVE:
+        d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
+        break;
+    case SNES_CONVERGED_SNORM_RELATIVE:
+        d_ConvergenceStatus = SolverStatus::DivergedOther;
+        break;
+    case SNES_DIVERGED_FUNCTION_COUNT:
+        d_ConvergenceStatus = SolverStatus::DivergedOther;
+        break;
+    case SNES_DIVERGED_FNORM_NAN:
+        d_ConvergenceStatus = SolverStatus::DivergedOnNan;
+        break;
+    case SNES_DIVERGED_MAX_IT:
+        d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
+        break;
+    case SNES_DIVERGED_LINE_SEARCH:
+        d_ConvergenceStatus = SolverStatus::DivergedLineSearch;
+        break;
+    default:
+        d_ConvergenceStatus = SolverStatus::DivergedOther;
+        AMP_ERROR( "Unknown SNES completion code reported" );
+        break;
+    }
+}
 
 /****************************************************************
  *  setJacobian                                                  *
