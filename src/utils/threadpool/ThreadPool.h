@@ -117,7 +117,7 @@ public:
     ~ThreadPool();
 
 
-    //! Function to return the number of processors availible
+    //! Function to return the number of processors available
     static int getNumberOfProcessors();
 
 

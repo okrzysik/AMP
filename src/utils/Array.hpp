@@ -956,7 +956,8 @@ void Array<TYPE, FUN, Allocator>::print( std::ostream &os,
         for ( size_t i = 0; i < d_size[0]; i++ )
             os << prefix << name << "[" << i << "] = " << d_data[i] << std::endl;
     } else if ( d_size.ndim() == 2 ) {
-        os << prefix << name << ":" << std::endl;
+        if ( !name.empty() )
+            os << prefix << name << ":" << std::endl;
         for ( size_t i = 0; i < d_size[0]; i++ ) {
             for ( size_t j = 0; j < d_size[1]; j++ )
                 os << prefix << "  " << operator()( i, j );

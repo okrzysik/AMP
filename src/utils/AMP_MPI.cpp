@@ -952,7 +952,7 @@ void MPI_CLASS::abort() const
     if ( comm == MPI_COMM_NULL )
         comm = MPI_COMM_WORLD;
     if ( !MPI_Active() ) {
-        // MPI is not availible
+        // MPI is not available
         exit( -1 );
     } else if ( d_size > 1 ) {
         MPI_Abort( comm, -1 );

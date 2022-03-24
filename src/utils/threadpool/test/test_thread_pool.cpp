@@ -478,13 +478,13 @@ void test_FIFO( UnitTest &ut, ThreadPool &tpool )
  ******************************************************************/
 void testProcessAffinity( UnitTest &ut )
 {
-    // Get the number of processors availible
+    // Get the number of processors available
     int N_procs = ThreadPool::getNumberOfProcessors();
     if ( N_procs > 0 )
         ut.passes( "getNumberOfProcessors" );
     else
         ut.failure( "getNumberOfProcessors" );
-    printp( "%i processors availible\n", N_procs );
+    printp( "%i processors available\n", N_procs );
 
     // Get the processor affinities for the process
     auto cpus = ThreadPool::getProcessAffinity();

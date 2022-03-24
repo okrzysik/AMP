@@ -19,7 +19,7 @@ namespace AMP::LinearAlgebra {
  ****************************************************************/
 std::shared_ptr<VectorSelector> SubsetVariable::createVectorSelector() const
 {
-    AMP_ERROR( "createVectorSelector is not availible for SubsetVariabl" );
+    AMP_ERROR( "createVectorSelector is not available for SubsetVariabl" );
     return nullptr;
 }
 

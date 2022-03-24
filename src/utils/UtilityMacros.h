@@ -73,7 +73,7 @@ extern std::ostream plog;
  *  \details Throw an error exception from within any C++ source code if the
  *     given expression is not true.  This is a parallel-friendly version
  *     of assert.
- *     The file and line number of the abort are printed along with the stack trace (if availible).
+ *     The file and line number of the abort are printed along with the stack trace (if available).
  *  \param EXP  Expression to evaluate
  */
 #define AMP_ASSERT( EXP )                                                     \
@@ -91,7 +91,7 @@ extern std::ostream plog;
  *  \details Throw an error exception from within any C++ source code if the
  *     given expression is not true.  This will also print the given message.
  *     This is a parallel-friendly version of assert.
- *     The file and line number of the abort are printed along with the stack trace (if availible).
+ *     The file and line number of the abort are printed along with the stack trace (if available).
  *  \param EXP  Expression to evaluate
  *  \param MSG  Debug message to print
  */
