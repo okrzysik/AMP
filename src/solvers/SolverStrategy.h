@@ -205,10 +205,7 @@ public:
 
     virtual void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                            std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
-                           std::shared_ptr<AMP::LinearAlgebra::Vector> r )
-    {
-        AMP_ERROR( "Not implemented" );
-    }
+                           std::shared_ptr<AMP::LinearAlgebra::Vector> r );
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
