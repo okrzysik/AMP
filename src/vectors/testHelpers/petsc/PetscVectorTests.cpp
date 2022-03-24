@@ -687,8 +687,7 @@ void PetscVectorTests::VerifyAXPYPetscVector( AMP::UnitTest *ut )
     vectorb2->copyVector( vectorb );
     checkPetscError( ut, VecAXPY( *veca, 1.23456, *vecb ) );
     vectora2->axpy( 1.23456, *vectorb2, *vectora2 );
-    PetscBool ans;
-    checkPetscError( ut, VecEqual( *veca, *veca2, &ans ) );
+    PASS_FAIL( vectora->equals( *vectora2, 1.0e-13 ), "PETSc VecAXPY and AMP::axpy equal " );
     double norma  = static_cast<double>( vectora->L2Norm() );
     double norma2 = static_cast<double>( vectora2->L2Norm() );
     PASS_FAIL( fabs( norma - norma2 ) < 1e-14, "native interface on native petsc axpy works" );

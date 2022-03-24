@@ -2,6 +2,7 @@
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
@@ -31,43 +32,14 @@ static inline void checkErr( PetscErrorCode ierr )
 /****************************************************************
  *  Constructors                                                 *
  ****************************************************************/
-PetscSNESSolver::PetscSNESSolver()
-    : d_bUsesJacobian( false ),
-      d_bEnableLineSearchPreCheck( false ),
-      d_bEnableMFFDBoundsCheck( false ),
-      d_iMaximumFunctionEvals( 0 ),
-      d_iNumberOfLineSearchPreCheckAttempts( 0 ),
-      d_operatorComponentToEnableBoundsCheck( 0 ),
-      d_dStepTolerance( 0 ),
-      d_sMFFDDifferencingStrategy( MATMFFD_WP ),
-      d_dMFFDFunctionDifferencingError( PETSC_DEFAULT ),
-      d_comm( AMP_COMM_NULL ),
-      d_pSolutionVector( nullptr ),
-      d_pResidualVector( nullptr ),
-      d_SNESSolver( nullptr ),
-      d_Jacobian( nullptr ),
-      d_pKrylovSolver( nullptr )
+PetscSNESSolver::PetscSNESSolver() {}
+PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> params )
+    : SolverStrategy( params )
 {
-}
-PetscSNESSolver::PetscSNESSolver( std::shared_ptr<PetscSNESSolverParameters> parameters )
-    : SolverStrategy( parameters ),
-      d_bUsesJacobian( false ),
-      d_bEnableLineSearchPreCheck( false ),
-      d_bEnableMFFDBoundsCheck( false ),
-      d_iMaximumFunctionEvals( 0 ),
-      d_iNumberOfLineSearchPreCheckAttempts( 0 ),
-      d_operatorComponentToEnableBoundsCheck( 0 ),
-      d_dStepTolerance( 0 ),
-      d_sMFFDDifferencingStrategy( MATMFFD_WP ),
-      d_dMFFDFunctionDifferencingError( PETSC_DEFAULT ),
-      d_comm( parameters->d_comm ),
-      d_pSolutionVector( nullptr ),
-      d_pResidualVector( nullptr ),
-      d_SNESSolver( nullptr ),
-      d_Jacobian( nullptr ),
-      d_pKrylovSolver( parameters->d_pKrylovSolver )
-{
-    initialize( parameters );
+    auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
+    d_comm          = parameters->d_comm;
+    d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( parameters->d_pNestedSolver );
+    initialize( params );
 }
 
 
@@ -94,7 +66,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 {
     PROFILE_START( "initialize" );
 
-    auto parameters = std::dynamic_pointer_cast<const PetscSNESSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
     getFromInput( parameters->d_db );
 
     // create the SNES solver
@@ -122,7 +94,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
         AMP_INSIST( parameters->d_pInitialGuess,
                     "ERROR:: The initial guess has to "
                     "be provided through the "
-                    "PetscSNESSolverParameters class" );
+                    "NonlinearSolverParameters class" );
     }
 
     // if the krylov solver is initialized set the SNES pointer to it
@@ -324,6 +296,9 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_START( "petsc-SNESSolve" );
     checkErr( SNESSolve( d_SNESSolver, b, x ) );
     PROFILE_STOP( "petsc-SNESSolve" );
+
+    checkErr( SNESGetIterationNumber( d_SNESSolver, &d_iNumberIterations ) );
+    d_iterationHistory.push_back( d_iNumberIterations );
 
     // Reset the solvers
     SNESReset( d_SNESSolver );

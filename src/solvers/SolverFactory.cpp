@@ -22,6 +22,7 @@ responsibility for the use of this software.
 #include "AMP/solvers/BiCGSTABSolver.h"
 #include "AMP/solvers/CGSolver.h"
 #include "AMP/solvers/GMRESSolver.h"
+#include "AMP/solvers/NonlinearKrylovAccelerator.h"
 #include "AMP/solvers/QMRCGSTABSolver.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
@@ -29,6 +30,7 @@ responsibility for the use of this software.
 
 #ifdef AMP_USE_PETSC
     #include "AMP/solvers/petsc/PetscKrylovSolver.h"
+    #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #endif
 
 #ifdef AMP_USE_HYPRE
@@ -64,6 +66,7 @@ void registerSolverFactories()
 #endif
 
 #ifdef AMP_USE_PETSC
+    solverFactory.registerFactory( "PetscSNESSolver", PetscSNESSolver::createSolver );
     solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
 #endif
 
@@ -72,6 +75,8 @@ void registerSolverFactories()
     solverFactory.registerFactory( "BiCGSTABSolver", BiCGSTABSolver::createSolver );
     solverFactory.registerFactory( "TFQMRSolver", TFQMRSolver::createSolver );
     solverFactory.registerFactory( "QMRCGSTABSolver", QMRCGSTABSolver::createSolver );
+
+    solverFactory.registerFactory( "NKASolver", NonlinearKrylovAccelerator::createSolver );
 }
 
 
