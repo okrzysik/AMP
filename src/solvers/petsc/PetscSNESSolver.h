@@ -188,6 +188,9 @@ private:
     static PetscErrorCode
     lineSearchPreCheck( SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx );
 
+    // copies of PETSc routines that are not exposed for Eisenstat-Walker
+    static PetscErrorCode KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes );
+    static PetscErrorCode KSPPostSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes );
 
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
 

@@ -14,6 +14,7 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/operators/mechanics/ThermalStrainMaterialModel.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -164,6 +165,7 @@ int testElasticThermalPatch( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> mesh_files;
     mesh_files.emplace_back( "testElasticThermalPatch-1" );

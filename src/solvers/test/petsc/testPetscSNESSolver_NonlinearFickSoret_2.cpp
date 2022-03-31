@@ -20,6 +20,7 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -268,6 +269,7 @@ int testPetscSNESSolver_NonlinearFickSoret_2( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
 
     std::vector<double> results;
     fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-OxMSRZC09-1", results );

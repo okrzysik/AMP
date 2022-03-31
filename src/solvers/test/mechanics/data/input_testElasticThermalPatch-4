@@ -27,7 +27,8 @@ LinearMechanicsOperator {
 }
 
 NonlinearSolver{
-  print_info_level = 7
+    name = "PetscSNESSolver"
+    print_info_level = 7
     max_iterations = 100
     max_error = 1e-10
 
@@ -40,7 +41,8 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-04"
 
     LinearSolver{
-      print_info_level = 10
+        name = "PetscKrylovSolver"
+        print_info_level = 10
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"

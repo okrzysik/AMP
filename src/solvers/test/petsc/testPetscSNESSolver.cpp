@@ -6,6 +6,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/NullOperator.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -97,6 +98,7 @@ int testPetscSNESSolver( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
 
     myTest( &ut, "testPetscSNESSolver" );
 

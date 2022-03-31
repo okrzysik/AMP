@@ -38,6 +38,7 @@
 #include "AMP/operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "AMP/solvers/BandedSolver.h"
 #include "AMP/solvers/ColumnSolver.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
@@ -870,6 +871,7 @@ int testSubchannelSolve( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
     PROFILE_ENABLE( 0 );
 
     std::string exeName = "testSubchannelSolve-1";

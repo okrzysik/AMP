@@ -181,7 +181,7 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
                                 d_dDivergenceTolerance,
                                 d_iMaxIterations ) );
     if ( d_bKSPCreatedInternally ) {
-        checkErr( KSPSetFromOptions( d_KrylovSolver ) );
+        //        checkErr( KSPSetFromOptions( d_KrylovSolver ) );
     }
     if ( d_PetscMonitor ) {
         // Add the monitor

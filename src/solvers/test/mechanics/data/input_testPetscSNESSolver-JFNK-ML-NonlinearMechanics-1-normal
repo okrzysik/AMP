@@ -117,7 +117,8 @@ Load_Boundary {
 }
 
 NonlinearSolver{
-  print_info_level = 5
+    name = "PetscSNESSolver"
+    print_info_level = 5
     max_iterations = 100
     max_error = 1e-10
 
@@ -130,7 +131,8 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ksp_ew_version 1 -snes_ls_alpha 0.01"
 
     LinearSolver{
-      print_info_level = 1
+        name = "PetscKrylovSolver"
+        print_info_level = 1
         max_iterations = 100
         max_error = 1e-10
         ksp_type = "fgmres"
@@ -145,7 +147,8 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100"
 
         Preconditioner{
-          print_info_level = 0
+	    name = "TrilinosMLSolver"
+            print_info_level = 0
             PDE_equations = 3
             max_iterations = 1
             max_error = 1.0e-15

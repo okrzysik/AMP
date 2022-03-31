@@ -241,6 +241,13 @@ protected:
 
     std::shared_ptr<AMP::Database> d_db = nullptr;
 
+    /** Pointer to global database
+     *  This is temporary fix and eventually either d_global_db or d_db should go away
+     *  This is introduced to allow for solver factories to access databases in the global
+     *  database for the construction of nested solvers
+     */
+    std::shared_ptr<AMP::Database> d_global_db;
+
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
 
     std::shared_ptr<AMP::IO::Writer> d_writer = nullptr;

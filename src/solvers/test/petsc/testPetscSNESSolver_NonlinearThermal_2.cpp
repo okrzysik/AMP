@@ -19,6 +19,7 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -225,6 +226,7 @@ int testPetscSNESSolver_NonlinearThermal_2( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
 
     std::vector<std::string> exeNames;
     exeNames.emplace_back( "testPetscSNESSolver-NonlinearThermal-cylinder_MATPRO2" );
