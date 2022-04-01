@@ -24,7 +24,7 @@ NonlinearKrylovAccelerator::NonlinearKrylovAccelerator(
     getFromInput( d_db );
 
     // initialize the preconditioner
-    if ( d_use_preconditioner ) {
+    if ( d_uses_preconditioner ) {
         // 3 cases need to be addressed:
         // 1. A preconditioner is being passed in
         // 2. A preconditioner solver name is being specified
@@ -104,10 +104,10 @@ void NonlinearKrylovAccelerator::getFromInput( std::shared_ptr<AMP::Database> db
 
     d_maximum_function_evals = db->getWithDefault<int>( "maximum_function_evals", 50 );
 
-    if ( db->keyExists( "use_preconditioner" ) ) {
-        d_use_preconditioner = db->getScalar<bool>( "use_preconditioner" );
+    if ( db->keyExists( "uses_preconditioner" ) ) {
+        d_uses_preconditioner = db->getScalar<bool>( "uses_preconditioner" );
 
-        if ( d_use_preconditioner ) {
+        if ( d_uses_preconditioner ) {
             if ( db->keyExists( "freeze_pc" ) ) {
                 d_freeze_pc = db->getScalar<bool>( "freeze_pc" );
             }
@@ -317,7 +317,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
     AMP_ASSERT( u.get() != nullptr );
     AMP_ASSERT( d_pOperator != nullptr );
 
-    if ( d_use_preconditioner ) {
+    if ( d_uses_preconditioner ) {
         AMP_ASSERT( d_preconditioner != nullptr );
         AMP_ASSERT( d_preconditioner->getOperator() != nullptr );
     }
@@ -348,7 +348,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
     AMP_ASSERT( pc_parameters.get() != nullptr );
 
     std::shared_ptr<AMP::Operator::Operator> pc_operator;
-    if ( d_use_preconditioner ) {
+    if ( d_uses_preconditioner ) {
         pc_operator = d_preconditioner->getOperator();
         AMP_ASSERT( pc_operator.get() != nullptr );
 
@@ -363,7 +363,7 @@ void NonlinearKrylovAccelerator::apply( std::shared_ptr<const AMP::LinearAlgebra
         d_ConvergenceStatus = AMP::Solver::SolverStrategy::SolverStatus::ConvergedOnAbsTol;
 
     while ( ( d_iNumberIterations < d_iMaxIterations ) && ( !converged ) ) {
-        if ( d_use_preconditioner ) {
+        if ( d_uses_preconditioner ) {
             if ( !d_freeze_pc ) {
                 pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
                 AMP_ASSERT( pc_parameters != nullptr );
@@ -637,7 +637,7 @@ void NonlinearKrylovAccelerator::registerOperator( std::shared_ptr<AMP::Operator
 {
     AMP_ASSERT( op );
     d_pOperator = op;
-    if ( d_use_preconditioner ) {
+    if ( d_uses_preconditioner ) {
         AMP_ASSERT( d_preconditioner );
         std::shared_ptr<AMP::Operator::Operator> pc_operator = createPreconditionerOperator( op );
         d_preconditioner->registerOperator( pc_operator );

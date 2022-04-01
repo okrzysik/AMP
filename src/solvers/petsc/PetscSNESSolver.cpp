@@ -97,33 +97,60 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
     } else {
         // initialize the Krylov solver correctly
         // access the SNES internal pointer to KSP and get a pointer to KSP
-        auto nonlinearSolverDb = parameters->d_db;
+        auto nonlinearSolverDB = parameters->d_db;
         std::shared_ptr<AMP::Database> linearSolverDB;
 
-        if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
-            linearSolverDB = nonlinearSolverDb->getDatabase( "LinearSolver" );
+        if ( nonlinearSolverDB->keyExists( "LinearSolver" ) ) {
+            linearSolverDB = nonlinearSolverDB->getDatabase( "LinearSolver" );
 
+        } else if ( nonlinearSolverDB->keyExists( "linear_solver_name" ) ) {
+            linearSolverDB = nonlinearSolverDB->getDatabase( "linear_solver_name" );
         } else {
-            if ( nonlinearSolverDb->keyExists( "linear_solver_name" ) ) {
-                linearSolverDB = nonlinearSolverDb->getDatabase( "linear_solver_name" );
+            // create a default Krylov solver DB
+            // Note that sometimes a SNES solver database will directly specify options
+            // for the Krylov solver and preconditioner and so we check for that. This
+            // is how the AMR tests all work at present.
+            linearSolverDB = std::make_shared<AMP::Database>( "LinearSolver" );
+            linearSolverDB->putScalar<std::string>( "name", "PetscKrylovSolver" );
+
+            std::string linear_solver_type = "fgmres";
+
+            if ( nonlinearSolverDB->keyExists( "ksp_type" ) ||
+                 nonlinearSolverDB->keyExists( "linear_solver_type" ) ) {
+
+                linear_solver_type =
+                    nonlinearSolverDB->keyExists( "ksp_type" ) ?
+                        nonlinearSolverDB->getScalar<std::string>( "ksp_type" ) :
+                        nonlinearSolverDB->getScalar<std::string>( "linear_solver_type" );
+            }
+
+            linearSolverDB->putScalar<std::string>( "ksp_type", linear_solver_type );
+
+            const auto max_krylov_dim =
+                nonlinearSolverDB->getWithDefault<int>( "max_krylov_dimension", 25 );
+            linearSolverDB->putScalar<int>( "max_krylov_dimension", max_krylov_dim );
+            const auto maximum_linear_iterations =
+                nonlinearSolverDB->getWithDefault<int>( "maximum_linear_iterations", 25 );
+            linearSolverDB->putScalar<int>( "maximum_linear_iterations",
+                                            maximum_linear_iterations );
+            const auto uses_preconditioner =
+                nonlinearSolverDB->getWithDefault<bool>( "uses_preconditioner", false );
+            linearSolverDB->putScalar<bool>( "uses_preconditioner", uses_preconditioner );
+            if ( nonlinearSolverDB->keyExists( "pc_solver_name" ) ) {
+                linearSolverDB->putScalar<std::string>(
+                    "pc_solver_name",
+                    nonlinearSolverDB->getScalar<std::string>( "pc_solver_name" ) );
             }
         }
-        if ( linearSolverDB ) {
-            auto linearSolverParams =
-                std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
-            linearSolverParams->d_comm      = d_comm;
-            linearSolverParams->d_global_db = d_global_db;
-            std::shared_ptr<SolverStrategy> linearSolver =
-                AMP::Solver::SolverFactory::create( linearSolverParams );
-            d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( linearSolver );
-            AMP_ASSERT( d_pKrylovSolver );
-            SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
-        } else {
-            AMP_ERROR( "ERROR: PetscSNESSolver: The nonlinear solver database must "
-                       "contain a database called LinearSolver "
-                       "or contain a field linear_solver_name "
-                       "that is the name of a linear solver database" );
-        }
+
+        auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
+        linearSolverParams->d_comm      = d_comm;
+        linearSolverParams->d_global_db = d_global_db;
+        std::shared_ptr<SolverStrategy> linearSolver =
+            AMP::Solver::SolverFactory::create( linearSolverParams );
+        d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( linearSolver );
+        AMP_ASSERT( d_pKrylovSolver );
+        SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
     }
 
     SNESGetKSP( d_SNESSolver, &kspSolver );
