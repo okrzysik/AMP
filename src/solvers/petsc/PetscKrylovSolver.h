@@ -153,6 +153,8 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
+    void initializePreconditioner( std::shared_ptr<PetscKrylovSolverParameters> parameters );
+    std::shared_ptr<AMP::Operator::Operator> createPCOperator();
 
 private:
     // static functions to interface with PETSc
