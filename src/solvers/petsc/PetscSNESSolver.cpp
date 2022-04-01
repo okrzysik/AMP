@@ -3,6 +3,7 @@
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
@@ -10,7 +11,9 @@
 
 #include "ProfilerApp.h"
 
+#include "petsc/private/snesimpl.h"
 #include "petsc/private/vecimpl.h"
+#include "petscksp.h"
 #include "petscmat.h"
 #include "petscsnes.h"
 
@@ -76,6 +79,60 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
     }
     checkErr( SNESCreate( d_comm.getCommunicator(), &d_SNESSolver ) );
 
+    // if the initial guess is non-zero set the vectors accordingly
+    if ( parameters->d_pInitialGuess ) {
+        d_pSolutionVector = parameters->d_pInitialGuess;
+    } else {
+        AMP_INSIST( parameters->d_pInitialGuess,
+                    "ERROR:: The initial guess has to "
+                    "be provided through the "
+                    "NonlinearSolverParameters class" );
+    }
+
+    // if the krylov solver is initialized set the SNES pointer to it
+    KSP kspSolver;
+
+    if ( d_pKrylovSolver ) {
+        SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
+    } else {
+        // initialize the Krylov solver correctly
+        // access the SNES internal pointer to KSP and get a pointer to KSP
+        auto nonlinearSolverDb = parameters->d_db;
+
+        if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
+
+            auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>(
+                nonlinearSolverDb->getDatabase( "LinearSolver" ) );
+            linearSolverParams->d_comm      = d_comm;
+            linearSolverParams->d_global_db = d_global_db;
+            std::shared_ptr<SolverStrategy> linearSolver =
+                AMP::Solver::SolverFactory::create( linearSolverParams );
+            d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( linearSolver );
+            AMP_ASSERT( d_pKrylovSolver );
+            SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
+
+        } else {
+            AMP_INSIST( d_pKrylovSolver,
+                        "ERROR: The nonlinear solver database must "
+                        "contain a database called LinearSolver" );
+        }
+    }
+
+    SNESGetKSP( d_SNESSolver, &kspSolver );
+    checkErr( KSPSetPreSolve( kspSolver,
+                              (PetscErrorCode( * )( KSP, Vec, Vec, void * )) KSPPreSolve_SNESEW,
+                              d_SNESSolver ) );
+    checkErr( KSPSetPostSolve( kspSolver,
+                               (PetscErrorCode( * )( KSP, Vec, Vec, void * )) KSPPostSolve_SNESEW,
+                               d_SNESSolver ) );
+
+    if ( d_bEnableLineSearchPreCheck ) {
+        SNESLineSearch snesLineSearch;
+        SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
+        checkErr( SNESLineSearchSetPreCheck(
+            snesLineSearch, PetscSNESSolver::lineSearchPreCheck, this ) );
+    }
+
     // set the type to line search, potentially modify this later to be from input
     checkErr( SNESSetType( d_SNESSolver, SNESNEWTONLS ) );
     checkErr( SNESSetApplicationContext( d_SNESSolver, this ) );
@@ -101,48 +158,6 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 
     if ( d_SNESAppendOptionsPrefix != "" )
         SNESAppendOptionsPrefix( d_SNESSolver, d_SNESAppendOptionsPrefix.c_str() );
-
-    // if the initial guess is non-zero set the vectors accordingly
-    if ( parameters->d_pInitialGuess ) {
-        d_pSolutionVector = parameters->d_pInitialGuess;
-    } else {
-        AMP_INSIST( parameters->d_pInitialGuess,
-                    "ERROR:: The initial guess has to "
-                    "be provided through the "
-                    "NonlinearSolverParameters class" );
-    }
-
-    // if the krylov solver is initialized set the SNES pointer to it
-    if ( d_pKrylovSolver ) {
-        SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
-    } else {
-        // initialize the Krylov solver correctly
-        KSP kspSolver;
-        // access the SNES internal pointer to KSP and get a pointer to KSP
-        SNESGetKSP( d_SNESSolver, &kspSolver );
-
-        auto nonlinearSolverDb = parameters->d_db;
-
-        if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
-            d_pKrylovSolver.reset( new PetscKrylovSolver() );
-            d_pKrylovSolver->setKrylovSolver( &kspSolver );
-            auto params2 = std::make_shared<PetscKrylovSolverParameters>(
-                nonlinearSolverDb->getDatabase( "LinearSolver" ) );
-            params2->d_comm = d_comm;
-            d_pKrylovSolver->initialize( params2 );
-        } else {
-            AMP_INSIST( d_pKrylovSolver,
-                        "ERROR: The nonlinear solver database must "
-                        "contain a database called LinearSolver" );
-        }
-    }
-
-    if ( d_bEnableLineSearchPreCheck ) {
-        SNESLineSearch snesLineSearch;
-        SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
-        checkErr( SNESLineSearchSetPreCheck(
-            snesLineSearch, PetscSNESSolver::lineSearchPreCheck, this ) );
-    }
 
     checkErr( SNESSetFromOptions( d_SNESSolver ) );
 
@@ -434,6 +449,110 @@ bool PetscSNESSolver::isVectorValid( std::shared_ptr<AMP::Operator::Operator> &o
     int result  = comm.minReduce( msg );
     retVal      = ( result == 1 );
     return retVal;
+}
+
+// KSP Pre and Post Solve routines with Eisenstat-Walker that Petsc
+// does not at present expose. These are simply copied from the PETSc
+// internal routines
+PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes )
+{
+    PetscErrorCode ierr;
+    SNESKSPEW *kctx = (SNESKSPEW *) snes->kspconvctx;
+    PetscReal rtol  = PETSC_DEFAULT, stol;
+
+    PetscFunctionBegin;
+    if ( !snes->ksp_ewconv )
+        PetscFunctionReturn( 0 );
+    if ( !snes->iter ) {
+        rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
+        ierr = VecNorm( snes->vec_func, NORM_2, &kctx->norm_first );
+        CHKERRQ( ierr );
+    } else {
+        if ( kctx->version == 1 ) {
+            rtol = ( snes->norm - kctx->lresid_last ) / kctx->norm_last;
+            if ( rtol < 0.0 )
+                rtol = -rtol;
+            stol = PetscPowReal( kctx->rtol_last, kctx->alpha2 );
+            if ( stol > kctx->threshold )
+                rtol = PetscMax( rtol, stol );
+        } else if ( kctx->version == 2 ) {
+            rtol = kctx->gamma * PetscPowReal( snes->norm / kctx->norm_last, kctx->alpha );
+            stol = kctx->gamma * PetscPowReal( kctx->rtol_last, kctx->alpha );
+            if ( stol > kctx->threshold )
+                rtol = PetscMax( rtol, stol );
+        } else if ( kctx->version == 3 ) { /* contributed by Luis Chacon, June 2006. */
+            rtol = kctx->gamma * PetscPowReal( snes->norm / kctx->norm_last, kctx->alpha );
+            /* safeguard: avoid sharp decrease of rtol */
+            stol = kctx->gamma * PetscPowReal( kctx->rtol_last, kctx->alpha );
+            stol = PetscMax( rtol, stol );
+            rtol = PetscMin( kctx->rtol_0, stol );
+            /* safeguard: avoid oversolving */
+            stol = kctx->gamma * ( kctx->norm_first * snes->rtol ) / snes->norm;
+            stol = PetscMax( rtol, stol );
+            rtol = PetscMin( kctx->rtol_0, stol );
+        } else
+            SETERRQ1( PETSC_COMM_SELF,
+                      PETSC_ERR_ARG_OUTOFRANGE,
+                      "Only versions 1, 2 or 3 are supported: %D",
+                      kctx->version );
+    }
+    /* safeguard: avoid rtol greater than one */
+    rtol = PetscMin( rtol, kctx->rtol_max );
+    ierr = KSPSetTolerances( ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT );
+    CHKERRQ( ierr );
+    ierr = PetscInfo3( snes,
+                       "iter %D, Eisenstat-Walker (version %D) KSP rtol=%g\n",
+                       snes->iter,
+                       kctx->version,
+                       (double) rtol );
+    CHKERRQ( ierr );
+    PetscFunctionReturn( 0 );
+}
+
+PetscErrorCode PetscSNESSolver::KSPPostSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes )
+{
+    PetscErrorCode ierr;
+    SNESKSPEW *kctx = (SNESKSPEW *) snes->kspconvctx;
+    PCSide pcside;
+    Vec lres;
+
+    PetscFunctionBegin;
+    if ( !snes->ksp_ewconv )
+        PetscFunctionReturn( 0 );
+    ierr = KSPGetTolerances( ksp, &kctx->rtol_last, NULL, NULL, NULL );
+    CHKERRQ( ierr );
+    kctx->norm_last = snes->norm;
+    if ( kctx->version == 1 ) {
+        PC pc;
+        PetscBool isNone;
+
+        ierr = KSPGetPC( ksp, &pc );
+        CHKERRQ( ierr );
+        ierr = PetscObjectTypeCompare( (PetscObject) pc, PCNONE, &isNone );
+        CHKERRQ( ierr );
+        ierr = KSPGetPCSide( ksp, &pcside );
+        CHKERRQ( ierr );
+        if ( pcside == PC_RIGHT ||
+             isNone ) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
+            /* KSP residual is true linear residual */
+            ierr = KSPGetResidualNorm( ksp, &kctx->lresid_last );
+            CHKERRQ( ierr );
+        } else {
+            /* KSP residual is preconditioned residual */
+            /* compute true linear residual norm */
+            ierr = VecDuplicate( b, &lres );
+            CHKERRQ( ierr );
+            ierr = MatMult( snes->jacobian, x, lres );
+            CHKERRQ( ierr );
+            ierr = VecAYPX( lres, -1.0, b );
+            CHKERRQ( ierr );
+            ierr = VecNorm( lres, NORM_2, &kctx->lresid_last );
+            CHKERRQ( ierr );
+            ierr = VecDestroy( &lres );
+            CHKERRQ( ierr );
+        }
+    }
+    PetscFunctionReturn( 0 );
 }
 
 

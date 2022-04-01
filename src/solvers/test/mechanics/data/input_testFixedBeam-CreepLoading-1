@@ -47,7 +47,8 @@ Load_Boundary {
 }
 
 NonlinearSolver{
-  print_info_level = 1 
+    name = "PetscSNESSolver"
+    print_info_level = 1 
     max_iterations = 50
     max_error = 1e-12
 
@@ -60,7 +61,8 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
 
     LinearSolver{
-      print_info_level = 1
+        name = "PetscKrylovSolver"
+        print_info_level = 1
         ksp_type = "fgmres"
         absolute_tolerance = 1.0e-12
         relative_tolerance = 1.0e-12

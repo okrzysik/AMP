@@ -753,7 +753,8 @@ SubchannelPhysicsModel{
 }
 
 NonlinearSolver {
-  print_info_level = 1
+    name = "PetscSNESSolver"
+    print_info_level = 1
     max_iterations = 500
     max_error = 1e-5
 
@@ -767,6 +768,7 @@ NonlinearSolver {
     SNESOptions = "-snes_monitor -snes_type ls -snes_ksp_ew -snes_converged_reason -snes_ls_alpha 1.0e-4"
 
     LinearSolver{
+        name = "PetscKrylovSolver"
         print_info_level = 0
         max_iterations = 10000
         max_error = 1e-10

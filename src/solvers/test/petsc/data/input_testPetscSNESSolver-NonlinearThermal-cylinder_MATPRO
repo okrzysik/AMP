@@ -144,6 +144,7 @@ DirichletMatrixCorrection2 {
 }
 
 NonlinearSolver{
+    name = "PetscSNESSolver"
     print_info_level = 7
     max_iterations = 500
     max_error = 1e-10
@@ -156,6 +157,7 @@ NonlinearSolver{
     SNESOptions = "-snes_monitor -snes_type ls -snes_converged_reason -snes_ksp_ew -snes_ls_alpha 0.0001"
 
     LinearSolver{
+        name = "PetscKrylovSolver"
         print_info_level = 0
         max_iterations = 100
         max_error = 1e-10
@@ -171,6 +173,7 @@ NonlinearSolver{
         KSPOptions = "-ksp_monitor -ksp_converged_reason -ksp_max_it 100 -ksp_rtol 1e-3 -ksp_atol 1e-13 "
 
         Preconditioner{
+	    name = "BoomerAMGSolver"
             print_info_level = 0
             max_iterations = 3
             max_levels = 5

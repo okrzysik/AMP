@@ -28,6 +28,7 @@ PetscMonitor::~PetscMonitor() = default;
 std::string PetscMonitor::removeMonitor( std::string options )
 {
     size_t i2 = options.find( "monitor" );
+    i2 += 6;
     if ( i2 == std::string::npos )
         return options;
     size_t i1            = options.find_last_of( "-", i2 );

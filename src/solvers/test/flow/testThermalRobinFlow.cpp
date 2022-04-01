@@ -33,6 +33,7 @@
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
@@ -238,6 +239,8 @@ int testThermalRobinFlow( int argc, char *argv[] )
 {
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
+    AMP::Solver::registerSolverFactories();
+#include "AMP/solvers/SolverFactory.h"
 
     flowTest( &ut, "testThermalRobinFlow-2" );
 
