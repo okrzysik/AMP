@@ -136,10 +136,20 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
             const auto uses_preconditioner =
                 nonlinearSolverDB->getWithDefault<bool>( "uses_preconditioner", false );
             linearSolverDB->putScalar<bool>( "uses_preconditioner", uses_preconditioner );
-            if ( nonlinearSolverDB->keyExists( "pc_solver_name" ) ) {
-                linearSolverDB->putScalar<std::string>(
-                    "pc_solver_name",
-                    nonlinearSolverDB->getScalar<std::string>( "pc_solver_name" ) );
+
+            if ( uses_preconditioner ) {
+
+                std::string pc_type = "none";
+
+                if ( nonlinearSolverDB->keyExists( "pc_solver_name" ) ) {
+                    linearSolverDB->putScalar<std::string>(
+                        "pc_solver_name",
+                        nonlinearSolverDB->getScalar<std::string>( "pc_solver_name" ) );
+                    // set the preconditioner type to be shell if a pc solver name is given
+                    pc_type = "shell";
+                }
+                pc_type = nonlinearSolverDB->getWithDefault<std::string>( "pc_type", pc_type );
+                linearSolverDB->putScalar<std::string>( "pc_type", pc_type );
             }
         }
 
