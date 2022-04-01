@@ -15,7 +15,7 @@ namespace AMP {
 #ifdef AMP_USE_HDF5 // USE HDF5
 
 
-// Function to round up/down to the nearest power of 2
+// Function to round up to the nearest power of 2
 static size_t ceil2( size_t x )
 {
     size_t y = 2;
@@ -424,17 +424,17 @@ hid_t openHDF5( const std::string_view &filename, const char *mode, Compression 
         if ( compress == Compression::None ) {
             // No compression
         } else if ( compress == Compression::GZIP ) {
-            // Use gzip (if availible)
+            // Use gzip (if available)
             if ( H5Zfilter_avail( H5Z_FILTER_DEFLATE ) )
                 defaultCompression = 1;
             else
-                AMP::perr << "HDF5 gzip filter is not availible" << std::endl;
+                AMP::perr << "HDF5 gzip filter is not available" << std::endl;
         } else if ( compress == Compression::SZIP ) {
-            // Use szip (if availible)
+            // Use szip (if available)
             if ( H5Zfilter_avail( H5Z_FILTER_SZIP ) )
                 defaultCompression = 2;
             else
-                AMP::perr << "HDF5 szip filter is not availible" << std::endl;
+                AMP::perr << "HDF5 szip filter is not available" << std::endl;
         } else {
             AMP_ERROR( "Internal error" );
         }
@@ -507,9 +507,9 @@ hid_t createChunk( AMP::ArraySize dims, Compression compress, size_t objSize )
         return H5P_DEFAULT;
     if ( objSize == 0 )
         objSize = 512;
+    // Limit chunk size to < 2 GB
     int d = dims.ndim() - 1;
-    while ( dims.length() * objSize > 0x100000000 ) {
-        // Maximum chunk size is 4GB (limit to 2GB)
+    while ( dims.length() * objSize >= 0x80000000 ) {
         if ( dims[d] == 1 ) {
             d--;
         } else {
@@ -540,7 +540,8 @@ static void writeHDF5complex( hid_t fid,
 {
     hid_t datatype = getHDF5datatype<std::complex<TYPE>>();
     // Create the storage properties
-    hid_t plist = createChunk( data.size(), defaultCompression( fid ), sizeof( TYPE ) );
+    size_t objSize = sizeof( std::complex<TYPE> );
+    hid_t plist    = createChunk( data.size(), defaultCompression( fid ), objSize );
     // Copy the data
     size_t N = data.length();
     auto *y  = new complex_t<TYPE>[N];

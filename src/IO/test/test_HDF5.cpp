@@ -244,7 +244,6 @@ void testCompression( AMP::UnitTest &ut )
 // Test writing a large array with compression
 void testLarge( AMP::UnitTest &ut )
 {
-    // Write data using different compression formats
     printf( "Allocating large array\n" );
     AMP::Array<int> data( 40000, 40000 );
     data.fill( 0 );

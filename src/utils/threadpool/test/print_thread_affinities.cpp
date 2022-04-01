@@ -33,7 +33,7 @@ std::shared_ptr<ThreadPool> create_thread_pool( std::shared_ptr<AMP::Database> t
             AMP_ASSERT( tpool_db->keyExists( "N_threads_E" ) );
             AMP_ASSERT( tpool_db->keyExists( "N_threads_T" ) );
         }
-        // Get the number threads needed and the processors availible
+        // Get the number threads needed and the processors available
         int N_threads     = tpool_db->getWithDefault<int>( "N_threads", 0 );
         int N_threads_max = std::max( N_threads, 1 );
         if ( !tpool_db->getScalar<bool>( "share_tpool" ) ) {

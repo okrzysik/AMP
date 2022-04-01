@@ -23,6 +23,7 @@ class Array final
 {
 public: // Typedefs
     typedef TYPE value_type;
+    typedef FUN function_table;
 
 public: // Constructors / assignment operators
     /*!

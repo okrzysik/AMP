@@ -192,7 +192,7 @@ public:
 
 
     /** \brief Return all keys in the database.
-     * \details  This function will return the list of the keys availible.
+     * \details  This function will return the list of the keys available.
      *    The user may specify if they want the keys to be returned in
      *    sorted order.
      * \param[in] sort         Sort the keys (default is true)

@@ -73,7 +73,7 @@ extern std::ostream plog;
  *  \details Throw an error exception from within any C++ source code if the
  *     given expression is not true.  This is a parallel-friendly version
  *     of assert.
- *     The file and line number of the abort are printed along with the stack trace (if availible).
+ *     The file and line number of the abort are printed along with the stack trace (if available).
  *  \param EXP  Expression to evaluate
  */
 #define AMP_ASSERT( EXP )                                                     \
@@ -91,7 +91,7 @@ extern std::ostream plog;
  *  \details Throw an error exception from within any C++ source code if the
  *     given expression is not true.  This will also print the given message.
  *     This is a parallel-friendly version of assert.
- *     The file and line number of the abort are printed along with the stack trace (if availible).
+ *     The file and line number of the abort are printed along with the stack trace (if available).
  *  \param EXP  Expression to evaluate
  *  \param MSG  Debug message to print
  */
@@ -134,11 +134,11 @@ extern std::ostream plog;
 // clang-format off
 
 /*! \def DISABLE_WARNINGS
- *  \brief Reenable warnings
+ *  \brief Re-enable warnings
  *  \details This will re-enable warnings after a call to DIASABLE_WARNINGS
  */
 /*! \def ENABLE_WARNINGS
- *  \brief Supress all warnings
+ *  \brief Suppress all warnings
  *  \details This will start to supress all compile warnings.
  *      Be sure to follow with ENABLE_WARNINGS
  */
@@ -179,12 +179,13 @@ extern std::ostream plog;
             _Pragma( "GCC diagnostic ignored \"-Wterminate\"" )                 \
             _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )      \
             _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )       \
-            _Pragma( "GCC diagnostic ignored \"-Winaccessible-base\"" )
+            _Pragma( "GCC diagnostic ignored \"-Winaccessible-base\"" )         \
+            _Pragma( "GCC diagnostic ignored \"-Waggressive-loop-optimizations\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )
         #define DISABLE_WARNINGS                \
             _Pragma( "warning (push)" )         \
-            _Pragma( "warning disable 488" )   \
+            _Pragma( "warning disable 488" )    \
             _Pragma( "warning disable 1011" )   \
             _Pragma( "warning disable 61" )     \
             _Pragma( "warning disable 1478" )   \

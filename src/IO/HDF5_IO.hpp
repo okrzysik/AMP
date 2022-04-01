@@ -301,7 +301,7 @@ void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::
         auto status = H5Pset_layout( plist, H5D_COMPACT );
         AMP_ASSERT( status == 0 );
     } else {
-        // Use compression if availible
+        // Use compression if available
         plist = createChunk( data.size(), defaultCompression( fid ), sizeof( T ) );
     }
     hid_t dataspace = H5Screate_simple( dim.size(), dim.data(), NULL );

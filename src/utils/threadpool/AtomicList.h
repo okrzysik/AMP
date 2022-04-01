@@ -81,10 +81,10 @@ public:
     inline constexpr size_t capacity() const { return d_capacity; }
 
     /*!
-     * \brief   Return the availible space
-     * \details Return the current availible space (capacity - size)
+     * \brief   Return the available space
+     * \details Return the current available space (capacity - size)
      */
-    inline constexpr size_t availible() const { return d_capacity - size(); }
+    inline constexpr size_t available() const { return d_capacity - size(); }
 
 
     /*!
