@@ -98,11 +98,19 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
         // initialize the Krylov solver correctly
         // access the SNES internal pointer to KSP and get a pointer to KSP
         auto nonlinearSolverDb = parameters->d_db;
+        std::shared_ptr<AMP::Database> linearSolverDB;
 
         if ( nonlinearSolverDb->keyExists( "LinearSolver" ) ) {
+            linearSolverDB = nonlinearSolverDb->getDatabase( "LinearSolver" );
 
-            auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>(
-                nonlinearSolverDb->getDatabase( "LinearSolver" ) );
+        } else {
+            if ( nonlinearSolverDb->keyExists( "linear_solver_name" ) ) {
+                linearSolverDB = nonlinearSolverDb->getDatabase( "linear_solver_name" );
+            }
+        }
+        if ( linearSolverDB ) {
+            auto linearSolverParams =
+                std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
             linearSolverParams->d_comm      = d_comm;
             linearSolverParams->d_global_db = d_global_db;
             std::shared_ptr<SolverStrategy> linearSolver =
@@ -110,11 +118,11 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
             d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( linearSolver );
             AMP_ASSERT( d_pKrylovSolver );
             SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
-
         } else {
-            AMP_INSIST( d_pKrylovSolver,
-                        "ERROR: The nonlinear solver database must "
-                        "contain a database called LinearSolver" );
+            AMP_ERROR( "ERROR: PetscSNESSolver: The nonlinear solver database must "
+                       "contain a database called LinearSolver "
+                       "or contain a field linear_solver_name "
+                       "that is the name of a linear solver database" );
         }
     }
 

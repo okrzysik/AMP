@@ -2,6 +2,8 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/OperatorFactory.h"
+#include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
@@ -79,6 +81,7 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
     d_bKSPCreatedInternally = true;
     KSPCreate( params->d_comm.getCommunicator(), &d_KrylovSolver );
 
+    initializePreconditioner( params );
     // Initialize
     initialize( parameters );
 }
@@ -106,8 +109,6 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     // could be called by SNES directly
     d_comm = parameters->d_comm;
     AMP_ASSERT( !d_comm.isNull() );
-
-    d_pPreconditioner = parameters->d_pPreconditioner;
 
     getFromInput( parameters->d_db );
 
@@ -354,6 +355,53 @@ void PetscKrylovSolver::resetOperator(
     }
 }
 
+void PetscKrylovSolver::initializePreconditioner(
+    std::shared_ptr<PetscKrylovSolverParameters> parameters )
+{
+    d_pPreconditioner = parameters->d_pPreconditioner;
+
+    if ( d_pPreconditioner ) {
+
+        // if the operator has not been initialized
+        // attempt to initialize and register and operator
+        if ( d_pOperator ) {
+            auto op = d_pPreconditioner->getOperator();
+            if ( !op ) {
+                auto pcOperator = createPCOperator();
+                d_pPreconditioner->registerOperator( pcOperator );
+            }
+        }
+
+    } else {
+        // attempt to construct the preconditioner
+        // NOTE: at present a nested preconditioner database is not considered
+        // as we are trying to move away from it
+        if ( d_db->keyExists( "pc_solver_name" ) ) {
+            auto pc_solver_name = d_db->getString( "pc_solver_name" );
+            AMP_ASSERT( parameters->d_global_db );
+            auto global_db = parameters->d_global_db;
+            AMP_ASSERT( global_db->keyExists( pc_solver_name ) );
+            auto pc_solver_db       = global_db->getDatabase( pc_solver_name );
+            auto pcSolverParameters = std::make_shared<SolverStrategyParameters>( pc_solver_db );
+            if ( d_pOperator ) {
+                auto pcOperator                 = createPCOperator();
+                pcSolverParameters->d_pOperator = pcOperator;
+            }
+
+            d_pPreconditioner = SolverFactory::create( pcSolverParameters );
+        }
+    }
+}
+
+std::shared_ptr<AMP::Operator::Operator> PetscKrylovSolver::createPCOperator()
+{
+    std::shared_ptr<AMP::LinearAlgebra::Vector> x;
+    auto pc_params = d_pOperator->getParameters( "Jacobian", x );
+    std::shared_ptr<AMP::Operator::Operator> pcOperator =
+        AMP::Operator::OperatorFactory::create( pc_params );
+    AMP_ASSERT( pcOperator );
+    return pcOperator;
+}
 
 /****************************************************************
  *  Function to setup the preconditioner                         *
