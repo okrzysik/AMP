@@ -140,7 +140,7 @@ private:
 
     double d_eta = 1.0; //! damping factor
 
-    bool d_use_preconditioner = false; //! whether the solver uses a preconditioner or not
+    bool d_uses_preconditioner = false; //! whether the solver uses a preconditioner or not
     bool d_freeze_pc       = true;  //! flag determining whether the preconditioner is frozen or not
     bool d_print_residuals = false; //! whether to print the residuals
     bool d_solver_initialized = false;
