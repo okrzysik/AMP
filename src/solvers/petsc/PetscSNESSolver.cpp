@@ -2,6 +2,7 @@
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
+#include "AMP/operators/OperatorFactory.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
@@ -20,8 +21,8 @@
 namespace AMP::Solver {
 
 
-#if PETSC_VERSION_LT( 3, 7, 5 )
-    #error AMP only supports PETSc 3.7.5 or greater
+#if PETSC_VERSION_LT( 3, 15, 0 )
+    #error AMP only supports PETSc 3.15.0 or greater
 #endif
 
 
@@ -90,6 +91,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 
     // if the krylov solver is initialized set the SNES pointer to it
     KSP kspSolver;
+    bool snes_create_pc = false;
 
     if ( d_pKrylovSolver ) {
         SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
@@ -102,8 +104,8 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
         if ( nonlinearSolverDB->keyExists( "LinearSolver" ) ) {
             linearSolverDB = nonlinearSolverDB->getDatabase( "LinearSolver" );
         } else if ( nonlinearSolverDB->keyExists( "linear_solver_name" ) ) {
-   	    const auto name = nonlinearSolverDB->getScalar<std::string>("linear_solver_name");
-	    AMP_ASSERT( d_global_db && d_global_db->keyExists( name ) );
+            const auto name = nonlinearSolverDB->getScalar<std::string>( "linear_solver_name" );
+            AMP_ASSERT( d_global_db && d_global_db->keyExists( name ) );
             linearSolverDB = d_global_db->getDatabase( name );
         } else {
             // create a default Krylov solver DB
@@ -138,26 +140,35 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
                 nonlinearSolverDB->getWithDefault<bool>( "uses_preconditioner", false );
             linearSolverDB->putScalar<bool>( "uses_preconditioner", uses_preconditioner );
 
+            std::string pc_type = "none";
+
             if ( uses_preconditioner ) {
 
-                std::string pc_type = "none";
+                // for now restrict to shell pc's
+                pc_type = "shell";
 
                 if ( nonlinearSolverDB->keyExists( "pc_solver_name" ) ) {
                     linearSolverDB->putScalar<std::string>(
                         "pc_solver_name",
                         nonlinearSolverDB->getScalar<std::string>( "pc_solver_name" ) );
                     // set the preconditioner type to be shell if a pc solver name is given
-                    pc_type = "shell";
+                    snes_create_pc = true;
                 }
-                pc_type = nonlinearSolverDB->getWithDefault<std::string>( "pc_type", pc_type );
-                linearSolverDB->putScalar<std::string>( "pc_type", pc_type );
             }
+            pc_type = nonlinearSolverDB->getWithDefault<std::string>( "pc_type", pc_type );
+            linearSolverDB->putScalar<std::string>( "pc_type", pc_type );
         }
 
-	AMP_ASSERT( linearSolverDB );
+        std::shared_ptr<SolverStrategy> preconditionerSolver;
+
+        if ( snes_create_pc ) {
+            preconditionerSolver = createPreconditioner();
+        }
+        AMP_ASSERT( linearSolverDB );
         auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
-        linearSolverParams->d_comm      = d_comm;
-        linearSolverParams->d_global_db = d_global_db;
+        linearSolverParams->d_comm            = d_comm;
+        linearSolverParams->d_global_db       = d_global_db;
+        linearSolverParams->d_pPreconditioner = preconditionerSolver;
         std::shared_ptr<SolverStrategy> linearSolver =
             AMP::Solver::SolverFactory::create( linearSolverParams );
         d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( linearSolver );
@@ -209,12 +220,41 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
                                           d_dEWChoice2Alpha,
                                           d_dEWSafeguardExponent,
                                           d_dEWSafeguardDisableThreshold ) );
+    } else {
+
+        checkErr( KSPSetTolerances( d_pKrylovSolver->getKrylovSolver(),
+                                    d_dConstantForcingTerm,
+                                    PETSC_DEFAULT,
+                                    PETSC_DEFAULT,
+                                    PETSC_DEFAULT ) );
     }
 
     if ( d_SNESAppendOptionsPrefix != "" )
         SNESAppendOptionsPrefix( d_SNESSolver, d_SNESAppendOptionsPrefix.c_str() );
 
     checkErr( SNESSetFromOptions( d_SNESSolver ) );
+
+    if ( d_bPrintNonlinearResiduals ) {
+        PetscViewerAndFormat *vf;
+        checkErr(
+            PetscViewerAndFormatCreate( PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf ) );
+        checkErr( SNESMonitorSet(
+            d_SNESSolver,
+            (PetscErrorCode( * )( SNES, PetscInt, PetscReal, void * )) SNESMonitorDefault,
+            vf,
+            (PetscErrorCode( * )( void ** )) PetscViewerAndFormatDestroy ) );
+    }
+
+    if ( d_bPrintLinearResiduals ) {
+        PetscViewerAndFormat *vf;
+        checkErr(
+            PetscViewerAndFormatCreate( PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf ) );
+        checkErr( KSPMonitorSet(
+            d_pKrylovSolver->getKrylovSolver(),
+            (PetscErrorCode( * )( KSP, PetscInt, PetscReal, void * )) KSPMonitorResidual,
+            vf,
+            (PetscErrorCode( * )( void ** )) PetscViewerAndFormatDestroy ) );
+    }
 
     if ( d_PetscMonitor ) {
         // Add the monitor
@@ -295,8 +335,32 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     d_dEWSafeguardDisableThreshold =
         db->getWithDefault<double>( "EW_safeguard_disable_threshold", PETSC_DEFAULT );
+
+    d_bPrintNonlinearResiduals = db->getWithDefault<bool>( "print_nonlinear_residuals", false );
+    d_bPrintLinearResiduals    = db->getWithDefault<bool>( "print_linear_residuals", false );
 }
 
+std::shared_ptr<SolverStrategy> PetscSNESSolver::createPreconditioner( void )
+{
+    std::shared_ptr<SolverStrategy> preconditionerSolver;
+    AMP_ASSERT( d_db->keyExists( "pc_solver_name" ) );
+    auto pc_solver_name = d_db->getString( "pc_solver_name" );
+    AMP_ASSERT( d_global_db && d_global_db->keyExists( pc_solver_name ) );
+    auto pc_solver_db = d_global_db->getDatabase( pc_solver_name );
+    auto pcSolverParameters =
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
+    if ( d_pOperator ) {
+        std::shared_ptr<AMP::LinearAlgebra::Vector> x;
+        auto pc_params = d_pOperator->getParameters( "Jacobian", x );
+        std::shared_ptr<AMP::Operator::Operator> pcOperator =
+            AMP::Operator::OperatorFactory::create( pc_params );
+        pcSolverParameters->d_pOperator = pcOperator;
+    }
+
+    preconditionerSolver = AMP::Solver::SolverFactory::create( pcSolverParameters );
+
+    return preconditionerSolver;
+}
 
 /****************************************************************
  *  Apply                                                        *
@@ -733,7 +797,8 @@ void PetscSNESSolver::setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra:
     d_pResidualVector = rhs->cloneVector();
     d_pScratchVector  = d_pResidualVector->cloneVector();
 
-    // set the function evaluation routine to a static member of this class which acts as a wrapper
+    // set the function evaluation routine to a static member of this class which acts as a
+    // wrapper
     auto petscVec = AMP::LinearAlgebra::PetscVector::view( d_pResidualVector );
     AMP_INSIST( petscVec,
                 "ERROR: Currently the SNES Solver can only be used with a Petsc_Vector, "

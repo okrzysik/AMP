@@ -222,13 +222,9 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
     if ( d_bUsesPreconditioner ) {
-        if ( db->keyExists( "pc_type" ) ) {
-            d_sPcType = db->getWithDefault<std::string>( "pc_type", "none" );
-        } else {
-            // call error here
-            AMP_ERROR( "pc_type does not exist" );
-        }
-        d_PcSide = db->getWithDefault<std::string>( "pc_side", "RIGHT" );
+        // for now restrict to shell pc's
+        d_sPcType = db->getWithDefault<std::string>( "pc_type", "shell" );
+        d_PcSide  = db->getWithDefault<std::string>( "pc_side", "RIGHT" );
     } else {
         d_sPcType = "none";
     }
