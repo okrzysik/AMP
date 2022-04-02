@@ -7,7 +7,7 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-
+#include "AMP/IO/PIO.h"
 #include "ProfilerApp.h"
 
 #include "petsc.h"
@@ -251,10 +251,11 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     checkUpdateStatus( f );
     checkUpdateStatus( u );
 
+    AMP::pout << "Beginning PetscKrylovSolver::apply" << std::endl;
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
+        AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
     Vec fVec = fVecView->getVec();
@@ -292,7 +293,7 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     KSPSolve( d_KrylovSolver, fVec, uVec );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
+        AMP::pout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
     }
 
     // Reset the solvers
