@@ -1,4 +1,5 @@
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/LinearOperator.h"
@@ -7,7 +8,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-
 #include "ProfilerApp.h"
 
 #include "petsc.h"
@@ -81,7 +81,6 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
     d_bKSPCreatedInternally = true;
     KSPCreate( params->d_comm.getCommunicator(), &d_KrylovSolver );
 
-    initializePreconditioner( params );
     // Initialize
     initialize( parameters );
 }
@@ -144,31 +143,6 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
         checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
     }
 
-    // Create the preconditioner
-    PC pc;
-    checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
-    if ( d_bUsesPreconditioner ) {
-
-        if ( d_sPcType != "shell" ) {
-            // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
-            PCSetType( pc, d_sPcType.c_str() );
-        } else {
-            // for a shell preconditioner the user context is set to an instance of this class
-            // and the setup and apply preconditioner functions for the PCSHELL are set to
-            // static member functions of this class. By doing this we do not need to introduce
-            // static member functions into every SolverStrategy that might be used as a
-            // preconditioner
-            checkErr( PCSetType( pc, PCSHELL ) );
-            checkErr( PCShellSetContext( pc, this ) );
-            checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
-            checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
-        }
-        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-    } else {
-        checkErr( PCSetType( pc, PCNONE ) );
-    }
-
     // PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
     // ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
 
@@ -192,6 +166,32 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     // in this case we make the assumption we can access a PetscMat for now
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
+    }
+    // Create the preconditioner
+    PC pc;
+    checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
+    if ( d_bUsesPreconditioner ) {
+
+        initializePreconditioner( parameters );
+
+        if ( d_sPcType != "shell" ) {
+            // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
+            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
+            PCSetType( pc, d_sPcType.c_str() );
+        } else {
+            // for a shell preconditioner the user context is set to an instance of this class
+            // and the setup and apply preconditioner functions for the PCSHELL are set to
+            // static member functions of this class. By doing this we do not need to introduce
+            // static member functions into every SolverStrategy that might be used as a
+            // preconditioner
+            checkErr( PCSetType( pc, PCSHELL ) );
+            checkErr( PCShellSetContext( pc, this ) );
+            checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
+            checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
+        }
+        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
+    } else {
+        checkErr( PCSetType( pc, PCNONE ) );
     }
 }
 // Function to get values from input
@@ -220,13 +220,9 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
     if ( d_bUsesPreconditioner ) {
-        if ( db->keyExists( "pc_type" ) ) {
-            d_sPcType = db->getWithDefault<std::string>( "pc_type", "none" );
-        } else {
-            // call error here
-            AMP_ERROR( "pc_type does not exist" );
-        }
-        d_PcSide = db->getWithDefault<std::string>( "pc_side", "RIGHT" );
+        // for now restrict to shell pc's
+        d_sPcType = db->getWithDefault<std::string>( "pc_type", "shell" );
+        d_PcSide  = db->getWithDefault<std::string>( "pc_side", "RIGHT" );
     } else {
         d_sPcType = "none";
     }
@@ -249,10 +245,11 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     checkUpdateStatus( f );
     checkUpdateStatus( u );
 
+    AMP::pout << "Beginning PetscKrylovSolver::apply" << std::endl;
     if ( d_iDebugPrintInfoLevel > 1 ) {
-        std::cout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
+        AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of solution vector: " << u->L2Norm()
                   << std::endl;
-        std::cout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
+        AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
     Vec fVec = fVecView->getVec();
@@ -290,7 +287,7 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     KSPSolve( d_KrylovSolver, fVec, uVec );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        std::cout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
+        AMP::pout << "L2Norm of solution from KSP: " << u->L2Norm() << std::endl;
     }
 
     // Reset the solvers
@@ -356,7 +353,7 @@ void PetscKrylovSolver::resetOperator(
 }
 
 void PetscKrylovSolver::initializePreconditioner(
-    std::shared_ptr<PetscKrylovSolverParameters> parameters )
+    std::shared_ptr<const PetscKrylovSolverParameters> parameters )
 {
     d_pPreconditioner = parameters->d_pPreconditioner;
 
