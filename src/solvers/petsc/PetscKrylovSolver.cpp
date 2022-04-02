@@ -1,4 +1,5 @@
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
+#include "AMP/IO/PIO.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
 #include "AMP/operators/LinearOperator.h"
@@ -7,7 +8,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
 #include "AMP/vectors/petsc/PetscVector.h"
-#include "AMP/IO/PIO.h"
 #include "ProfilerApp.h"
 
 #include "petsc.h"
@@ -193,8 +193,6 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
-
-
 }
 // Function to get values from input
 void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )

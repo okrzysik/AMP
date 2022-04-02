@@ -222,11 +222,11 @@ private:
                        bool & )>
         d_lineSearchPreCheckPtr;
 
-    bool d_bUsesJacobian                       = false;
-    bool d_bEnableLineSearchPreCheck           = false;
-    bool d_bEnableMFFDBoundsCheck              = false;
-    bool d_bPrintNonlinearResiduals            = false;
-    bool d_bPrintLinearResiduals               = false;
+    bool d_bUsesJacobian             = false;
+    bool d_bEnableLineSearchPreCheck = false;
+    bool d_bEnableMFFDBoundsCheck    = false;
+    bool d_bPrintNonlinearResiduals  = false;
+    bool d_bPrintLinearResiduals     = false;
 
     int d_iMaximumFunctionEvals                = 0;
     int d_iNumberOfLineSearchPreCheckAttempts  = 0;
