@@ -358,7 +358,7 @@ void PetscKrylovSolver::resetOperator(
 }
 
 void PetscKrylovSolver::initializePreconditioner(
-    std::shared_ptr<PetscKrylovSolverParameters> parameters )
+    std::shared_ptr<const PetscKrylovSolverParameters> parameters )
 {
     d_pPreconditioner = parameters->d_pPreconditioner;
 
