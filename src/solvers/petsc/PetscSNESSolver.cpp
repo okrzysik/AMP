@@ -172,14 +172,14 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
                                d_SNESSolver ) );
 
     if ( d_bEnableLineSearchPreCheck ) {
-        
+
         auto fnPtr = std::bind( &AMP::Solver::PetscSNESSolver::defaultLineSearchPreCheck,
 	   		        this,
 			        std::placeholders::_1,
 			        std::placeholders::_2,
 			        std::placeholders::_3 );
         d_lineSearchPreCheckPtr = fnPtr;
-	
+
         SNESLineSearch snesLineSearch;
         SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
         checkErr( SNESLineSearchSetPreCheck(
@@ -437,14 +437,14 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
 						std::shared_ptr<AMP::LinearAlgebra::Vector> y,
 						bool &changed_y )
 {
-    int ierr          = 1;
+    int ierr            = 1;
     auto pScratchVector = getScratchVector();
 
     pScratchVector->add( *x, *y );
 
     if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
         changed_y = PETSC_FALSE;
-        ierr       = 0;
+        ierr      = 0;
     } else {
         int N_line = getNumberOfLineSearchPreCheckAttempts();
         auto pColumnOperator =
@@ -456,7 +456,7 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
                 y->scale( lambda, *y );
                 pScratchVector->add( *x, *y );
                 if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
-                    ierr       = 0;
+                    ierr      = 0;
                     changed_y = PETSC_TRUE;
                     break;
                 } else {
