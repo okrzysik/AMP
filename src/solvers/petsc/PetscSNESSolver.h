@@ -169,6 +169,20 @@ public:
      */
     int getBoundsCheckComponent( void ) { return d_operatorComponentToEnableBoundsCheck; }
 
+    //! set the pointer to the user function that does the line search pre-check if provided
+    void setLineSearchPreCheck( std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                                                   std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                                                   bool & )> lineSearchPreCheckPtr );
+
+    std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                       std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                       bool & )>
+    getLineSearchPreCheckAdaptor()
+    {
+        AMP_ASSERT( d_lineSearchPreCheckPtr != nullptr );
+        return d_lineSearchPreCheckPtr;
+    } //! pointer to line search function
+
 protected:
 private:
     void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
@@ -185,9 +199,13 @@ private:
                                AMP::LinearAlgebra::Vector::shared_ptr &v,
                                const AMP_MPI &comm );
 
+    int defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgebra::Vector> x,
+				   std::shared_ptr<AMP::LinearAlgebra::Vector> y,
+				   bool &changed_y );
+  
     static PetscErrorCode
-    lineSearchPreCheck( SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx );
-
+    wrapperLineSearchPreCheck( SNESLineSearch snes, Vec x, Vec y, PetscBool *changed_y, void *ctx );
+  
     // copies of PETSc routines that are not exposed for Eisenstat-Walker
     static PetscErrorCode KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes );
     static PetscErrorCode KSPPostSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes );
@@ -195,6 +213,12 @@ private:
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
 
     void setConvergenceStatus( void );
+
+    // pointer to the line search precheck function
+    std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                       std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                       bool & )>
+        d_lineSearchPreCheckPtr;
 
     bool d_bUsesJacobian                       = false;
     bool d_bEnableLineSearchPreCheck           = false;
