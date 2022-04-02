@@ -200,9 +200,9 @@ private:
                                const AMP_MPI &comm );
 
     int defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgebra::Vector> x,
-				   std::shared_ptr<AMP::LinearAlgebra::Vector> y,
-				   bool &changed_y );
-  
+                                   std::shared_ptr<AMP::LinearAlgebra::Vector> y,
+                                   bool &changed_y );
+
     static PetscErrorCode
     wrapperLineSearchPreCheck( SNESLineSearch snes, Vec x, Vec y, PetscBool *changed_y, void *ctx );
 
