@@ -101,9 +101,10 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
 
         if ( nonlinearSolverDB->keyExists( "LinearSolver" ) ) {
             linearSolverDB = nonlinearSolverDB->getDatabase( "LinearSolver" );
-
         } else if ( nonlinearSolverDB->keyExists( "linear_solver_name" ) ) {
-            linearSolverDB = nonlinearSolverDB->getDatabase( "linear_solver_name" );
+   	    const auto name = nonlinearSolverDB->getScalar<std::string>("linear_solver_name");
+	    AMP_ASSERT( d_global_db && d_global_db->keyExists( name ) );
+            linearSolverDB = d_global_db->getDatabase( name );
         } else {
             // create a default Krylov solver DB
             // Note that sometimes a SNES solver database will directly specify options
@@ -152,6 +153,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
             }
         }
 
+	AMP_ASSERT( linearSolverDB );
         auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
         linearSolverParams->d_comm      = d_comm;
         linearSolverParams->d_global_db = d_global_db;
