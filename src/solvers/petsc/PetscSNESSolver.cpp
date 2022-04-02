@@ -443,7 +443,7 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
     pScratchVector->add( *x, *y );
 
     if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
-        *changed_y = PETSC_FALSE;
+        changed_y = PETSC_FALSE;
         ierr       = 0;
     } else {
         int N_line = getNumberOfLineSearchPreCheckAttempts();
@@ -457,7 +457,7 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
                 pScratchVector->add( *x, *y );
                 if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
                     ierr       = 0;
-                    *changed_y = PETSC_TRUE;
+                    changed_y = PETSC_TRUE;
                     break;
                 } else {
                     lambda = lambda / 2.0;
