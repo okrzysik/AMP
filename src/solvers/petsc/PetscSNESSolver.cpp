@@ -17,7 +17,6 @@
 #include "petscmat.h"
 #include "petscsnes.h"
 
-
 namespace AMP::Solver {
 
 
@@ -172,10 +171,18 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
                                d_SNESSolver ) );
 
     if ( d_bEnableLineSearchPreCheck ) {
+
+        auto fnPtr = std::bind( &AMP::Solver::PetscSNESSolver::defaultLineSearchPreCheck,
+                                this,
+                                std::placeholders::_1,
+                                std::placeholders::_2,
+                                std::placeholders::_3 );
+        d_lineSearchPreCheckPtr = fnPtr;
+
         SNESLineSearch snesLineSearch;
         SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
         checkErr( SNESLineSearchSetPreCheck(
-            snesLineSearch, PetscSNESSolver::lineSearchPreCheck, this ) );
+            snesLineSearch, PetscSNESSolver::wrapperLineSearchPreCheck, this ) );
     }
 
     // set the type to line search, potentially modify this later to be from input
@@ -425,6 +432,41 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_STOP( "solve" );
 }
 
+int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgebra::Vector> x,
+                                                std::shared_ptr<AMP::LinearAlgebra::Vector> y,
+                                                bool &changed_y )
+{
+    int ierr            = 1;
+    auto pScratchVector = getScratchVector();
+
+    pScratchVector->add( *x, *y );
+
+    if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
+        changed_y = PETSC_FALSE;
+        ierr      = 0;
+    } else {
+        int N_line = getNumberOfLineSearchPreCheckAttempts();
+        auto pColumnOperator =
+            std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( d_pOperator );
+        if ( pColumnOperator ) {
+            for ( int i = 0; i < N_line; i++ ) {
+                AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
+                double lambda = 0.5;
+                y->scale( lambda, *y );
+                pScratchVector->add( *x, *y );
+                if ( isVectorValid( d_pOperator, pScratchVector, x->getComm() ) ) {
+                    ierr      = 0;
+                    changed_y = PETSC_TRUE;
+                    break;
+                } else {
+                    lambda = lambda / 2.0;
+                }
+            }
+        }
+    }
+    return ierr;
+}
+
 void PetscSNESSolver::setConvergenceStatus( void )
 {
     switch ( (int) d_SNES_completion_code ) {
@@ -454,6 +496,14 @@ void PetscSNESSolver::setConvergenceStatus( void )
         AMP_ERROR( "Unknown SNES completion code reported" );
         break;
     }
+}
+
+void PetscSNESSolver::setLineSearchPreCheck(
+    std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                       std::shared_ptr<AMP::LinearAlgebra::Vector>,
+                       bool & )> lineSearchPreCheckPtr )
+{
+    d_lineSearchPreCheckPtr = lineSearchPreCheckPtr;
 }
 
 /****************************************************************
@@ -604,46 +654,26 @@ PetscErrorCode PetscSNESSolver::KSPPostSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES
 /****************************************************************
  *  Linesearch precheck                                          *
  ****************************************************************/
-PetscErrorCode PetscSNESSolver::lineSearchPreCheck(
-    SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *checkctx )
+
+int PetscSNESSolver::wrapperLineSearchPreCheck(
+    SNESLineSearch, Vec x, Vec y, PetscBool *changed_y, void *ctx )
 {
-    int ierr          = 1;
-    auto *pSNESSolver = reinterpret_cast<PetscSNESSolver *>( checkctx );
+    bool b_changed_y = false;
+    int ierr         = 0;
 
-    auto pOperator      = pSNESSolver->getOperator();
-    auto pScratchVector = pSNESSolver->getScratchVector();
+    PROFILE_START( "wrapperLineSearchPreCheck" );
+    AMP_ASSERT( ctx != nullptr );
+    auto snesSolver = reinterpret_cast<PetscSNESSolver *>( ctx );
 
-    auto sp_x = PETSC::getAMP( x );
-    auto sp_y = PETSC::getAMP( y );
+    auto xv = PETSC::getAMP( x );
+    auto yv = PETSC::getAMP( y );
+    ierr    = snesSolver->getLineSearchPreCheckAdaptor()( xv, yv, b_changed_y );
 
-    pScratchVector->add( *sp_x, *sp_y );
+    *changed_y = static_cast<PetscBool>( b_changed_y );
 
-    if ( isVectorValid( pOperator, pScratchVector, sp_x->getComm() ) ) {
-        *changed_y = PETSC_FALSE;
-        ierr       = 0;
-    } else {
-        int N_line = pSNESSolver->getNumberOfLineSearchPreCheckAttempts();
-        auto pColumnOperator =
-            std::dynamic_pointer_cast<AMP::Operator::ColumnOperator>( pOperator );
-        if ( pColumnOperator ) {
-            for ( int i = 0; i < N_line; i++ ) {
-                AMP::pout << "Attempting to scale search, attempt number " << i << std::endl;
-                double lambda = 0.5;
-                sp_y->scale( lambda, *sp_y );
-                pScratchVector->add( *sp_x, *sp_y );
-                if ( isVectorValid( pOperator, pScratchVector, sp_x->getComm() ) ) {
-                    ierr       = 0;
-                    *changed_y = PETSC_TRUE;
-                    break;
-                } else {
-                    lambda = lambda / 2.0;
-                }
-            }
-        }
-    }
+    PROFILE_STOP( "wrapperLineSearchPreCheck" );
     return ierr;
 }
-
 
 PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h )
 {

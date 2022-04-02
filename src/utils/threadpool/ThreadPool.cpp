@@ -195,7 +195,7 @@ void ThreadPool::setErrorHandler( std::function<void( const std::string & )> fun
 
 
 /******************************************************************
- * Function to return the number of processors availible           *
+ * Function to return the number of processors available           *
  ******************************************************************/
 int ThreadPool::getNumberOfProcessors() { return std::thread::hardware_concurrency(); }
 

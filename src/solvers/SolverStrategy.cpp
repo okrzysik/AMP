@@ -101,4 +101,16 @@ bool SolverStrategy::checkConvergence( std::shared_ptr<const AMP::LinearAlgebra:
     return converged;
 }
 
+
+/****************************************************************
+ * residual                                                         *
+ ****************************************************************/
+void SolverStrategy::residual( std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+                               std::shared_ptr<const AMP::LinearAlgebra::Vector>,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> )
+{
+    AMP_ERROR( "Not implemented" );
+}
+
+
 } // namespace AMP::Solver
