@@ -112,6 +112,7 @@ void PetscSNESSolver::initialize( std::shared_ptr<const SolverStrategyParameters
             // is how the AMR tests all work at present.
             linearSolverDB = std::make_shared<AMP::Database>( "LinearSolver" );
             linearSolverDB->putScalar<std::string>( "name", "PetscKrylovSolver" );
+            linearSolverDB->putScalar<int>( "print_info_level", d_iDebugPrintInfoLevel );
 
             std::string linear_solver_type = "fgmres";
 
