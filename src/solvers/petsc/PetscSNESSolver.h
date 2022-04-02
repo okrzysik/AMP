@@ -191,6 +191,8 @@ private:
 
     void setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
 
+    std::shared_ptr<SolverStrategy> createPreconditioner( void );
+
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
 
     static PetscErrorCode setJacobian( SNES, Vec x, Mat A, Mat, void *ctx );
@@ -220,9 +222,12 @@ private:
                        bool & )>
         d_lineSearchPreCheckPtr;
 
-    bool d_bUsesJacobian                       = false;
-    bool d_bEnableLineSearchPreCheck           = false;
-    bool d_bEnableMFFDBoundsCheck              = false;
+    bool d_bUsesJacobian             = false;
+    bool d_bEnableLineSearchPreCheck = false;
+    bool d_bEnableMFFDBoundsCheck    = false;
+    bool d_bPrintNonlinearResiduals  = false;
+    bool d_bPrintLinearResiduals     = false;
+
     int d_iMaximumFunctionEvals                = 0;
     int d_iNumberOfLineSearchPreCheckAttempts  = 0;
     int d_operatorComponentToEnableBoundsCheck = 0;
