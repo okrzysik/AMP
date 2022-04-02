@@ -172,6 +172,8 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
     if ( d_bUsesPreconditioner ) {
 
+        initializePreconditioner( parameters );
+
         if ( d_sPcType != "shell" ) {
             // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
             AMP_ASSERT( d_pPreconditioner.get() == nullptr );
@@ -188,7 +190,6 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
         }
         checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-	initializePreconditioner( params );
     } else {
         checkErr( PCSetType( pc, PCNONE ) );
     }
