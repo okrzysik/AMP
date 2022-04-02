@@ -81,7 +81,6 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
     d_bKSPCreatedInternally = true;
     KSPCreate( params->d_comm.getCommunicator(), &d_KrylovSolver );
 
-    initializePreconditioner( params );
     // Initialize
     initialize( parameters );
 }
@@ -144,31 +143,6 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
         checkErr( KSPSetNormType( d_KrylovSolver, KSP_NORM_NONE ) );
     }
 
-    // Create the preconditioner
-    PC pc;
-    checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
-    if ( d_bUsesPreconditioner ) {
-
-        if ( d_sPcType != "shell" ) {
-            // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
-            PCSetType( pc, d_sPcType.c_str() );
-        } else {
-            // for a shell preconditioner the user context is set to an instance of this class
-            // and the setup and apply preconditioner functions for the PCSHELL are set to
-            // static member functions of this class. By doing this we do not need to introduce
-            // static member functions into every SolverStrategy that might be used as a
-            // preconditioner
-            checkErr( PCSetType( pc, PCSHELL ) );
-            checkErr( PCShellSetContext( pc, this ) );
-            checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
-            checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
-        }
-        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-    } else {
-        checkErr( PCSetType( pc, PCNONE ) );
-    }
-
     // PetscTruth useZeroGuess = (d_bUseZeroInitialGuess) ? PETSC_TRUE : PETSC_FALSE;
     // ierr = KSPSetInitialGuessNonzero(d_KrylovSolver, useZeroGuess);
 
@@ -193,6 +167,33 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
+    // Create the preconditioner
+    PC pc;
+    checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
+    if ( d_bUsesPreconditioner ) {
+
+        if ( d_sPcType != "shell" ) {
+            // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
+            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
+            PCSetType( pc, d_sPcType.c_str() );
+        } else {
+            // for a shell preconditioner the user context is set to an instance of this class
+            // and the setup and apply preconditioner functions for the PCSHELL are set to
+            // static member functions of this class. By doing this we do not need to introduce
+            // static member functions into every SolverStrategy that might be used as a
+            // preconditioner
+            checkErr( PCSetType( pc, PCSHELL ) );
+            checkErr( PCShellSetContext( pc, this ) );
+            checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
+            checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
+        }
+        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
+	initializePreconditioner( params );
+    } else {
+        checkErr( PCSetType( pc, PCNONE ) );
+    }
+
+
 }
 // Function to get values from input
 void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
