@@ -185,15 +185,13 @@ public:
 
 protected:
 private:
-    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
-
     void getFromInput( std::shared_ptr<const AMP::Database> db );
-
-    void setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
 
     std::shared_ptr<SolverStrategy> createPreconditioner( void );
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
+
+    void preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector> v );
 
     static PetscErrorCode setJacobian( SNES, Vec x, Mat A, Mat, void *ctx );
 
@@ -216,17 +214,22 @@ private:
 
     void setConvergenceStatus( void );
 
+    void createPetscObjects( std::shared_ptr<const SolverStrategyParameters> params );
+    void initializePetscObjects( void );
+    void destroyPetscObjects( void );
+
     // pointer to the line search precheck function
     std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
                        std::shared_ptr<AMP::LinearAlgebra::Vector>,
                        bool & )>
         d_lineSearchPreCheckPtr;
 
-    bool d_bUsesJacobian             = false;
-    bool d_bEnableLineSearchPreCheck = false;
-    bool d_bEnableMFFDBoundsCheck    = false;
-    bool d_bPrintNonlinearResiduals  = false;
-    bool d_bPrintLinearResiduals     = false;
+    bool d_bUsesJacobian              = false;
+    bool d_bEnableLineSearchPreCheck  = false;
+    bool d_bEnableMFFDBoundsCheck     = false;
+    bool d_bPrintNonlinearResiduals   = false;
+    bool d_bPrintLinearResiduals      = false;
+    bool d_bPetscInterfaceInitialized = false;
 
     int d_iMaximumFunctionEvals                = 0;
     int d_iNumberOfLineSearchPreCheckAttempts  = 0;
