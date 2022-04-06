@@ -85,7 +85,7 @@ void DiffusionNonlinearFEOperator::setVector( unsigned int id,
                                               AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
 {
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-    auto meshSubsetVec = frozenVec->select( meshSelector, frozenVec->getVariable()->getName() );
+    auto meshSubsetVec = frozenVec->select( meshSelector, frozenVec->getName() );
     d_Frozen[id] = meshSubsetVec->subsetVectorForVariable( d_inpVariables->getVariable( id ) );
     d_Frozen[id]->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }

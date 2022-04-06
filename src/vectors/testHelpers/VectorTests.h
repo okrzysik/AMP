@@ -60,106 +60,71 @@ public:
 public:
     void InstantiateVector( AMP::UnitTest *utils );
 
-
     void CopyVectorConsistency( AMP::UnitTest *utils );
-
 
     template<typename VIEWER>
     void DeepCloneOfView( AMP::UnitTest *utils );
 
-
     void Bug_728( AMP::UnitTest *utils );
-
 
     void SetToScalarVector( AMP::UnitTest *utils );
 
-
     void CloneVector( AMP::UnitTest *utils );
-
 
     void DotProductVector( AMP::UnitTest *utils );
 
-
     void L2NormVector( AMP::UnitTest *utils );
-
 
     void AbsVector( AMP::UnitTest *utils );
 
-
     void L1NormVector( AMP::UnitTest *utils );
-
 
     void MaxNormVector( AMP::UnitTest *utils );
 
-
     void ScaleVector( AMP::UnitTest *utils );
 
-
-#ifdef AMP_USE_PETSC
     void Bug_491( AMP::UnitTest *utils );
-#endif
-
 
     void AddVector( AMP::UnitTest *utils );
 
-
     void SubtractVector( AMP::UnitTest *utils );
-
 
     void MultiplyVector( AMP::UnitTest *utils );
 
-
     void DivideVector( AMP::UnitTest *utils );
 
-
     void VectorIteratorLengthTest( AMP::UnitTest *utils );
-
 
     template<typename ITERATOR>
     void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils );
 
-
     void VectorIteratorTests( AMP::UnitTest *utils );
-
 
     void VerifyVectorMin( AMP::UnitTest *utils );
 
-
     void VerifyVectorMax( AMP::UnitTest *utils );
-
 
     void VerifyVectorMaxMin( AMP::UnitTest *utils );
 
-
     void SetRandomValuesVector( AMP::UnitTest *utils );
-
 
     void ReciprocalVector( AMP::UnitTest *utils );
 
-
     void LinearSumVector( AMP::UnitTest *utils );
-
 
     void AxpyVector( AMP::UnitTest *utils );
 
-
     void AxpbyVector( AMP::UnitTest *utils );
-
 
     void CopyVector( AMP::UnitTest *utils );
 
-
     void CopyRawDataBlockVector( AMP::UnitTest *utils );
-
 
     void VerifyVectorGhostCreate( AMP::UnitTest *utils );
 
-
     void VerifyVectorMakeConsistentAdd( AMP::UnitTest *utils );
 
-
     void VerifyVectorMakeConsistentSet( AMP::UnitTest *utils );
-
 
     // Test creating a multivector with multiple copies of the data
     // This should always return one copy of the superset of the data
@@ -171,13 +136,14 @@ public: // Vector selector tests
     // and VectorSelector::constSubset return the same vectors
     void testAllSelectors( AMP::UnitTest *ut );
 
-
     // Test the behavior of VS_ByVariableName
     void test_VS_ByVariableName( AMP::UnitTest *ut );
 
-
     // Test the behavior of VS_Comm
     void test_VS_Comm( AMP::UnitTest *ut );
+
+    // Test the behavior of VS_Comm
+    void test_VS_Component( AMP::UnitTest *ut );
 
 
 private:

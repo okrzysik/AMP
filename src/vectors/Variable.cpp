@@ -17,9 +17,6 @@ std::shared_ptr<Variable> Variable::cloneVariable( const std::string &name ) con
 }
 
 
-const std::string &Variable::getName() const { return d_VariableName; }
-
-
 bool Variable::operator==( const Variable &rhs ) const
 {
     return d_VariableName == rhs.d_VariableName;

@@ -61,11 +61,9 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
         y0->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> x;
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> y;
-    if ( x0->getVariable()->getName() == "ThyraMultiVec" ||
-         y0->getVariable()->getName() == "ThyraMultiVec" ) {
+    if ( x0->getName() == "ThyraMultiVec" || y0->getName() == "ThyraMultiVec" ) {
         // We are dealing with a column thyra multivector
-        if ( x0->getVariable()->getName() != "ThyraMultiVec" ||
-             y0->getVariable()->getName() != "ThyraMultiVec" )
+        if ( x0->getName() != "ThyraMultiVec" || y0->getName() != "ThyraMultiVec" )
             AMP_ERROR( "Not finished" );
         std::shared_ptr<const AMP::LinearAlgebra::MultiVector> x1 =
             std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( x0 );

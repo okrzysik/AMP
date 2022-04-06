@@ -398,6 +398,9 @@ public: // Get/Set data/variables/operations
      */
     std::shared_ptr<Variable> getVariable();
 
+    //! Return the vector name
+    std::string getName() const;
+
     //! Return integer number of patch data components in vector
     size_t getNumberOfComponents() const;
 
@@ -468,6 +471,20 @@ public: // Subset/Select
      * \see MultiVector
      */
     Vector::const_shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
+
+    /** \brief Retrieve ith subvector
+     * \details Returns the ith subvector based on teh number of components.
+     * \param[in] index  Index to retrieve
+     * \return  A Vector shared pointer
+     */
+    Vector::shared_ptr subsetVectorForComponent( size_t index );
+
+    /** \brief Retrieve ith subvector
+     * \details Returns the ith subvector based on teh number of components.
+     * \param[in] index  Index to retrieve
+     * \return  A Vector shared pointer
+     */
+    Vector::const_shared_ptr subsetVectorForComponent( size_t index ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
@@ -788,7 +805,7 @@ public: // Get values
 
 protected:                                                         // Internal data
     static std::shared_ptr<RNG> d_DefaultRNG;                      // default RNG
-    std::shared_ptr<Variable> d_pVariable;                         // Variable
+    std::shared_ptr<Variable> d_Variable;                          // Variable
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // The DOF_Manager
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
     std::shared_ptr<VectorOperations> d_VectorOps;                 // Pointer to a VectorOperations

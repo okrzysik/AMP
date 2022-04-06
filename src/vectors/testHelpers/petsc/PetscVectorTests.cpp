@@ -97,8 +97,8 @@ void PetscVectorTests::DuplicatePetscVector( AMP::UnitTest *ut )
     checkPetscError( ut, VecDuplicate( *petsc_vec, &another_vec ) );
     auto dup = PETSC::getAMP( another_vec );
     ut->passes( "managed duplicated" );
-    auto name1 = vectora->getVariable()->getName();
-    auto name2 = dup->getVariable()->getName();
+    auto name1 = vectora->getName();
+    auto name2 = dup->getName();
     bool test1 = ( dup->getGlobalSize() == vectora->getGlobalSize() ) &&
                  ( dup->getLocalSize() == vectora->getLocalSize() );
     PASS_FAIL( test1, "Allocated sizes are the same" );

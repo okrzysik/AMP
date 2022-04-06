@@ -38,6 +38,7 @@ noExplicitConstructor:*/AMP/utils/Units.h
 noExplicitConstructor:*/AMP/utils/Utilities.h
 noExplicitConstructor:*/AMP/vectors/Scalar.h
 noExplicitConstructor:*/AMP/vectors/Vector.h
+noExplicitConstructor:*/AMP/vectors/VectorSelector.h
 noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
 noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
 duplicateExpression:*/AMP/utils/Array.hpp
