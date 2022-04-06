@@ -184,10 +184,14 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
             // static member functions of this class. By doing this we do not need to introduce
             // static member functions into every SolverStrategy that might be used as a
             // preconditioner
+            // NOTE: if this is being used within a JFNK solver the outer solver sets and applies
+            // the PC
+            //            if ( !d_bMatrixFree ) {
             checkErr( PCSetType( pc, PCSHELL ) );
             checkErr( PCShellSetContext( pc, this ) );
             checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
             checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
+            //            }
         }
         checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
     } else {
@@ -216,6 +220,8 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
         d_sGmresOrthogonalizationAlgorithm = db->getWithDefault<std::string>(
             "gmres_orthogonalization_algorithm", "modifiedgramschmidt" );
     }
+
+    d_bMatrixFree = db->getWithDefault<bool>( "matrix_free", false );
 
     d_bUsesPreconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
 
@@ -252,38 +258,15 @@ void PetscKrylovSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         AMP::pout << "PetscKrylovSolver::solve: initial L2Norm of rhs vector: " << f->L2Norm()
                   << std::endl;
     }
-    Vec fVec = fVecView->getVec();
-    Vec uVec = uVecView->getVec();
 
-    // Create the preconditioner and re-register the operator
-    PC pc;
-    checkErr( KSPGetPC( d_KrylovSolver, &pc ) );
-    if ( d_bUsesPreconditioner ) {
-        if ( d_sPcType != "shell" ) {
-            // the pointer to the preconditioner should be NULL if we are using a Petsc internal PC
-            AMP_ASSERT( d_pPreconditioner.get() == nullptr );
-            PCSetType( pc, d_sPcType.c_str() );
-        } else {
-            // for a shell preconditioner the user context is set to an instance of this class
-            // and the setup and apply preconditioner functions for the PCSHELL
-            // are set to static member functions of this class.
-            // By doing this we do not need to introduce static member functions
-            // into every SolverStrategy that might be used as a preconditioner
-            checkErr( PCSetType( pc, PCSHELL ) );
-            checkErr( PCShellSetContext( pc, this ) );
-            checkErr( PCShellSetSetUp( pc, PetscKrylovSolver::setupPreconditioner ) );
-            checkErr( PCShellSetApply( pc, PetscKrylovSolver::applyPreconditioner ) );
-        }
-        checkErr( KSPSetPCSide( d_KrylovSolver, getPCSide( d_PcSide ) ) );
-    } else {
-        checkErr( PCSetType( pc, PCNONE ) );
-    }
     if ( d_pOperator ) {
         registerOperator( d_pOperator );
     }
 
     // This will replace any PETSc references to pointers we also track
     // After this, we are free to delet f_thisGetsAroundPETScSharedPtrIssue without memory leak.
+    Vec fVec = fVecView->getVec();
+    Vec uVec = uVecView->getVec();
     KSPSolve( d_KrylovSolver, fVec, uVec );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {

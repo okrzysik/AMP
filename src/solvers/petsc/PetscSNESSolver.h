@@ -183,17 +183,17 @@ public:
         return d_lineSearchPreCheckPtr;
     } //! pointer to line search function
 
+    void reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> ) override;
+
 protected:
 private:
-    void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
-
     void getFromInput( std::shared_ptr<const AMP::Database> db );
-
-    void setSNESFunction( std::shared_ptr<const AMP::LinearAlgebra::Vector> rhs );
 
     std::shared_ptr<SolverStrategy> createPreconditioner( void );
 
     static PetscErrorCode apply( SNES snes, Vec x, Vec f, void *ctx );
+
+    void preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector> v );
 
     static PetscErrorCode setJacobian( SNES, Vec x, Mat A, Mat, void *ctx );
 
@@ -214,7 +214,14 @@ private:
 
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
 
+    static PetscErrorCode setupPreconditioner( PC pc );
+    static PetscErrorCode applyPreconditioner( PC pc, Vec xin, Vec xout );
+
     void setConvergenceStatus( void );
+
+    void createPetscObjects( std::shared_ptr<const SolverStrategyParameters> params );
+    void initializePetscObjects( void );
+    void destroyPetscObjects( void );
 
     // pointer to the line search precheck function
     std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
@@ -222,11 +229,12 @@ private:
                        bool & )>
         d_lineSearchPreCheckPtr;
 
-    bool d_bUsesJacobian             = false;
-    bool d_bEnableLineSearchPreCheck = false;
-    bool d_bEnableMFFDBoundsCheck    = false;
-    bool d_bPrintNonlinearResiduals  = false;
-    bool d_bPrintLinearResiduals     = false;
+    bool d_bUsesJacobian              = false;
+    bool d_bEnableLineSearchPreCheck  = false;
+    bool d_bEnableMFFDBoundsCheck     = false;
+    bool d_bPrintNonlinearResiduals   = false;
+    bool d_bPrintLinearResiduals      = false;
+    bool d_bPetscInterfaceInitialized = false;
 
     int d_iMaximumFunctionEvals                = 0;
     int d_iNumberOfLineSearchPreCheckAttempts  = 0;
