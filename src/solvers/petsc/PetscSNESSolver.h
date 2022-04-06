@@ -183,6 +183,8 @@ public:
         return d_lineSearchPreCheckPtr;
     } //! pointer to line search function
 
+    void reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> ) override;
+
 protected:
 private:
     void getFromInput( std::shared_ptr<const AMP::Database> db );
@@ -211,6 +213,9 @@ private:
     static PetscErrorCode KSPPostSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes );
 
     static PetscErrorCode mffdCheckBounds( void *checkctx, Vec U, Vec a, PetscScalar *h );
+
+    static PetscErrorCode setupPreconditioner( PC pc );
+    static PetscErrorCode applyPreconditioner( PC pc, Vec xin, Vec xout );
 
     void setConvergenceStatus( void );
 

@@ -142,6 +142,10 @@ void PetscSNESSolver::createPetscObjects( std::shared_ptr<const SolverStrategyPa
             linearSolverDB->putScalar<std::string>( "pc_type", pc_type );
         }
 
+        if ( !d_bUsesJacobian ) {
+            linearSolverDB->putScalar<bool>( "matrix_free", true );
+        }
+
         std::shared_ptr<SolverStrategy> preconditionerSolver;
 
         if ( snes_create_pc ) {
@@ -190,6 +194,16 @@ void PetscSNESSolver::initializePetscObjects()
     checkErr( KSPSetPostSolve( kspSolver,
                                (PetscErrorCode( * )( KSP, Vec, Vec, void * )) KSPPostSolve_SNESEW,
                                d_SNESSolver ) );
+
+    // If JFNK is being employed no operator is registered with the Krylov solver
+    // and so the setup and apply of the preconditioner should be taken care of by PetscSNESSolver
+    if ( ( !d_bUsesJacobian ) && ( d_pKrylovSolver->usesPreconditioner() ) ) {
+        PC pc_handle;
+        checkErr( KSPGetPC( kspSolver, &pc_handle ) );
+        checkErr( PCShellSetContext( pc_handle, this ) );
+        checkErr( PCShellSetSetUp( pc_handle, PetscSNESSolver::setupPreconditioner ) );
+        checkErr( PCShellSetApply( pc_handle, PetscSNESSolver::applyPreconditioner ) );
+    }
 
     checkErr( SNESSetTolerances( d_SNESSolver,
                                  d_dAbsoluteTolerance,
@@ -517,6 +531,32 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     PROFILE_STOP( "solve" );
 }
 
+void PetscSNESSolver::reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> params )
+{
+    // BP: 02/14/2012
+    // the reset call will typically happen after a regrid
+    // if the number of refinement levels changes during the
+    // regrid then the vector will try to deallocate data
+    // on the wrong number of refinement levels
+    // we can count on SAMRAI to deallocate data on patches
+    // that no longer exist and keep data on patches that do
+    // so the deallocate call is unnecessary and causes problems
+    //   solution_vector->deallocateVectorData();
+    if ( d_pSolutionVector )
+        d_pSolutionVector->getVectorData()->reset();
+    if ( d_pResidualVector )
+        d_pResidualVector->getVectorData()->reset();
+    if ( d_pScratchVector )
+        d_pScratchVector->getVectorData()->reset();
+
+    destroyPetscObjects();
+    // BP: 04/5/2022
+    // We need to be careful that the params object is correctly initialized for
+    // the internal creation of Krylov solvers.
+    createPetscObjects( params );
+    initializePetscObjects();
+}
+
 int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgebra::Vector> x,
                                                 std::shared_ptr<AMP::LinearAlgebra::Vector> y,
                                                 bool &changed_y )
@@ -594,7 +634,7 @@ void PetscSNESSolver::setLineSearchPreCheck(
 /****************************************************************
  *  setJacobian                                                  *
  ****************************************************************/
-PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx )
+PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat B, void *ctx )
 {
     PROFILE_START( "setJacobian" );
     int ierr           = 0;
@@ -604,6 +644,10 @@ PetscErrorCode PetscSNESSolver::setJacobian( SNES, Vec x, Mat A, Mat, void *ctx 
     if ( !bUsesJacobian ) {
         ierr = MatAssemblyBegin( A, MAT_FINAL_ASSEMBLY );
         ierr = MatAssemblyEnd( A, MAT_FINAL_ASSEMBLY );
+        if ( A != B ) {
+            ierr = MatAssemblyBegin( B, MAT_FINAL_ASSEMBLY );
+            ierr = MatAssemblyEnd( B, MAT_FINAL_ASSEMBLY );
+        }
     }
 
     auto pSolution     = PETSC::getAMP( x );
@@ -803,6 +847,103 @@ PetscErrorCode PetscSNESSolver::mffdCheckBounds( void *checkctx, Vec U, Vec a, P
     }
 
     return ( 0 );
+}
+
+PetscErrorCode PetscSNESSolver::setupPreconditioner( PC pc )
+{
+    PROFILE_START( "PetscSNESSolver::setupPreconditioner" );
+
+    int ierr = 0;
+    Vec current_solution;
+    void *ctx;
+    PCShellGetContext( pc, &ctx );
+
+    auto snesSolver = static_cast<PetscSNESSolver *>( ctx );
+    AMP_ASSERT( snesSolver );
+    checkErr( SNESGetSolution( snesSolver->getSNESSolver(), &current_solution ) );
+
+    auto soln = PETSC::getAMP( current_solution );
+
+    auto op = snesSolver->getOperator();
+    AMP_ASSERT( op );
+
+    auto operatorParameters = op->getParameters( "Jacobian", soln );
+    AMP_ASSERT( operatorParameters );
+
+    auto krylovSolver = snesSolver->getKrylovSolver();
+    AMP_ASSERT( krylovSolver );
+
+    auto preconditioner = krylovSolver->getPreconditioner();
+    AMP_ASSERT( preconditioner );
+
+    auto pcOperator = preconditioner->getOperator();
+    AMP_ASSERT( pcOperator );
+    pcOperator->reset( operatorParameters );
+
+    PROFILE_STOP( "PetscSNESSolver::setupPreconditioner" );
+
+    return ierr;
+}
+
+PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
+                                                     Vec xin,   // input vector
+                                                     Vec xout ) // output vector
+{
+    PROFILE_START( "PetscSNESSolver::applyPreconditioner" );
+
+    void *ctx = nullptr;
+    PCShellGetContext( pc, &ctx );
+    auto snesSolver = static_cast<PetscSNESSolver *>( ctx );
+    AMP_ASSERT( snesSolver );
+    auto krylovSolver = snesSolver->getKrylovSolver();
+    AMP_ASSERT( krylovSolver );
+    auto preconditioner = krylovSolver->getPreconditioner();
+    AMP_ASSERT( preconditioner );
+
+    AMP_ASSERT( xin );
+    AMP_ASSERT( xout );
+    auto rhs  = PETSC::getAMP( xin );
+    auto soln = PETSC::getAMP( xout );
+
+    // Make sure the vectors are in a consistent state
+    rhs->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    soln->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+
+    // these tests were helpful in finding a bug
+    if ( preconditioner->getDebugPrintInfoLevel() > 5 ) {
+        double norm = 0.0;
+        VecNorm( xin, NORM_2, &norm );
+        double rhs_norm = static_cast<double>( rhs->L2Norm() );
+        AMP_ASSERT( AMP::Utilities::approx_equal( norm, rhs_norm ) );
+    }
+
+    // BP: 04/09/2012, to prevent norms getting cached
+    checkErr( PetscObjectStateIncrease( reinterpret_cast<PetscObject>( xout ) ) );
+
+    // BP: 04/05/2022, the SAMRSolvers version copies input to output (identity pc)
+    // if the preconditioner is null. For now we don't
+    preconditioner->apply( rhs, soln );
+
+    // Check for nans (no communication necessary)
+    double localNorm =
+        static_cast<double>( soln->getVectorOperations()->localL2Norm( *soln->getVectorData() ) );
+    AMP_INSIST( localNorm == localNorm, "NaNs detected in preconditioner" );
+
+    // these tests were helpful in finding a bug
+    if ( preconditioner->getDebugPrintInfoLevel() > 5 ) {
+        auto ampSolnNorm = static_cast<double>( soln->L2Norm() );
+        AMP::pout << "L2 Norm of soln " << ampSolnNorm << std::endl;
+        double petscSolnNorm = 0.0;
+        VecNorm( xout, NORM_2, &petscSolnNorm );
+        AMP::pout << "L2 Norm of xout " << petscSolnNorm << std::endl;
+        AMP_ASSERT( petscSolnNorm == ampSolnNorm );
+    }
+
+    //    snesSolver->logPreconditionerApply();
+
+    PROFILE_STOP( "PetscSNESSolver::applyPreconditioner" );
+
+    return 0;
 }
 
 void PetscSNESSolver::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vector> initialGuess )
