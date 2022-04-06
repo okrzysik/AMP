@@ -224,6 +224,10 @@ void Vector::swapVectors( Vector &other ) { d_VectorData->swapData( *other.getVe
 /****************************************************************
  * Misc                                                          *
  ****************************************************************/
+size_t Vector::getNumberOfComponents() const
+{
+    return d_VectorData ? d_VectorData->getNumberOfComponents() : 0;
+}
 std::ostream &operator<<( std::ostream &out, const Vector &v )
 {
     out << "Vector type: " << v.type() << "\n";
