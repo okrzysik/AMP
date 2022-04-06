@@ -217,7 +217,7 @@ protected:
 
     int d_iNumberIterations = 0; // iterations in solver
 
-    int d_iMaxIterations = 0;
+    int d_iMaxIterations = 100;
 
     double d_dResidualNorm    = 0.0;
     double d_dInitialResidual = 0.0;
