@@ -151,6 +151,8 @@ public:
     void
     resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> parameters ) override;
 
+    bool usesPreconditioner( void ) { return d_bUsesPreconditioner; }
+
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
     void initializePreconditioner( std::shared_ptr<const PetscKrylovSolverParameters> parameters );
@@ -172,7 +174,9 @@ private:
 
     bool d_bKSPCreatedInternally;
 
-    bool d_bUsesPreconditioner;
+    bool d_bUsesPreconditioner = false;
+    bool d_bMatrixFree         = false;
+
     std::string d_sPcType;
     std::string d_KSPAppendOptionsPrefix;
 
