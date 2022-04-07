@@ -337,6 +337,8 @@ void PetscKrylovSolver::setupPetscMatInterface( std::shared_ptr<AMP::Operator::O
                               &mat ) );
     AMP_ASSERT( mat );
     checkErr( MatShellSetOperation( mat, MATOP_MULT, (void ( * )()) PetscKrylovSolver::matVec ) );
+    checkErr( MatAssemblyBegin( mat, MAT_FINAL_ASSEMBLY ) );
+    checkErr( MatAssemblyEnd( mat, MAT_FINAL_ASSEMBLY ) );
 }
 
 void PetscKrylovSolver::resetOperator(
