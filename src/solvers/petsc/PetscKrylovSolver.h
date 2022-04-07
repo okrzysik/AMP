@@ -157,6 +157,7 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
     void initializePreconditioner( std::shared_ptr<const PetscKrylovSolverParameters> parameters );
     std::shared_ptr<AMP::Operator::Operator> createPCOperator();
+    void setupPetscMatInterface( std::shared_ptr<AMP::Operator::Operator> op, Mat &mat );
 
 private:
     // static functions to interface with PETSc
@@ -165,6 +166,7 @@ private:
 
     static PetscErrorCode setupPreconditioner( PC pc );
     static PetscErrorCode applyPreconditioner( PC pc, Vec r, Vec z );
+    static PetscErrorCode matVec( Mat mat, Vec x, Vec y );
 
     AMP_MPI d_comm;
 
@@ -191,6 +193,8 @@ private:
     KSP d_KrylovSolver;
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
+
+    Mat d_Mat;
 };
 } // namespace AMP::Solver
 
