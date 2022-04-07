@@ -72,6 +72,7 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
       d_iMaxKrylovDimension( 0 ),
       d_KrylovSolver( nullptr )
 {
+    d_sName = "PetscKrylovSolver";
     AMP_ASSERT( parameters );
 
     auto params = std::dynamic_pointer_cast<PetscKrylovSolverParameters>( parameters );

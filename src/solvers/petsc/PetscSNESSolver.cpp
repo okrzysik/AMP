@@ -18,6 +18,8 @@
 #include "petscmat.h"
 #include "petscsnes.h"
 
+#include <numeric>
+
 namespace AMP::Solver {
 
 
@@ -41,10 +43,20 @@ PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> para
 {
     d_sName         = "PetscSNESSolver";
     auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
-    d_comm          = parameters->d_comm;
-    d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( parameters->d_pNestedSolver );
+    // we have to figure out a more general factory strategy that
+    // alllows for solvers with different inputs to be initialized.
+    // In the meantime we attempt to initialize as best we can
+    if ( parameters ) {
+        d_comm = parameters->d_comm;
+        d_pKrylovSolver =
+            std::dynamic_pointer_cast<PetscKrylovSolver>( parameters->d_pNestedSolver );
+        d_pSolutionVector = parameters->d_pInitialGuess;
+    } else if ( d_pOperator ) {
+        d_comm = d_pOperator->getMesh()->getComm();
+    } else {
+        AMP_ERROR( "PetscSNESSolver ERROR: Unable to initialize MPI comm from parameters" );
+    }
 
-    d_pSolutionVector = parameters->d_pInitialGuess;
     getFromInput( params->d_db );
     createPetscObjects( params );
     initializePetscObjects();
@@ -69,10 +81,9 @@ void PetscSNESSolver::destroyPetscObjects( void )
     d_bPetscInterfaceInitialized = false;
 }
 
-void PetscSNESSolver::createPetscObjects( std::shared_ptr<const SolverStrategyParameters> params )
+void PetscSNESSolver::createPetscObjects(
+    std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
-
     checkErr( SNESCreate( d_comm.getCommunicator(), &d_SNESSolver ) );
     bool snes_create_pc = false;
 
@@ -361,8 +372,17 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
 
     d_bUsesJacobian = db->getWithDefault<bool>( "usesJacobian", false );
-    d_sMFFDDifferencingStrategy =
-        db->getWithDefault<std::string>( "MFFDDifferencingStrategy", MATMFFD_WP );
+
+    // account for different keywords
+    d_sMFFDDifferencingStrategy = MATMFFD_WP;
+    if ( db->keyExists( "MFFDDifferencingStrategy" ) ) {
+        d_sMFFDDifferencingStrategy = db->getScalar<std::string>( "MFFDDifferencingStrategy" );
+    }
+    if ( db->keyExists( "differencing_parameter_strategy" ) ) {
+        d_sMFFDDifferencingStrategy =
+            db->getScalar<std::string>( "differencing_parameter_strategy" );
+    }
+
     d_dMFFDFunctionDifferencingError =
         db->getWithDefault<double>( "MFFDFunctionDifferencingError", PETSC_DEFAULT );
 
@@ -370,9 +390,14 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     if ( db->keyExists( "maximumFunctionEvals" ) )
         d_iMaximumFunctionEvals = db->getScalar<int>( "maximumFunctionEvals" );
+    if ( db->keyExists( "maximum_function_evals" ) )
+        d_iMaximumFunctionEvals = db->getScalar<int>( "maximum_function_evals" );
 
+    // account for different keywords
     if ( db->keyExists( "stepTolerance" ) )
         d_dStepTolerance = db->getScalar<double>( "stepTolerance" );
+    if ( db->keyExists( "step_tolerance" ) )
+        d_dStepTolerance = db->getScalar<double>( "step_tolerance" );
 
     d_bEnableLineSearchPreCheck = db->getWithDefault<bool>( "enableLineSearchPreCheck", false );
 
@@ -510,14 +535,16 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     checkErr( SNESGetIterationNumber( d_SNESSolver, &d_iNumberIterations ) );
     d_iterationHistory.push_back( d_iNumberIterations );
 
-    checkErr( SNESGetConvergedReason( d_SNESSolver, &d_SNES_completion_code ) );
+    int iLinearIterations = 0;
+    checkErr( SNESGetLinearSolveIterations( d_SNESSolver, &iLinearIterations ) );
+    d_iLinearIterationHistory.push_back( iLinearIterations );
+
+    setConvergenceStatus();
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
 
-        int linearIterations = 0;
-        checkErr( SNESGetLinearSolveIterations( d_SNESSolver, &linearIterations ) );
         AMP::pout << " SNES Iterations:  nonlinear: " << d_iNumberIterations << std::endl;
-        AMP::pout << "                      linear: " << linearIterations << std::endl;
+        AMP::pout << "                      linear: " << iLinearIterations << std::endl;
     }
 
     // Reset the solvers
@@ -594,6 +621,8 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
 
 void PetscSNESSolver::setConvergenceStatus( void )
 {
+    checkErr( SNESGetConvergedReason( d_SNESSolver, &d_SNES_completion_code ) );
+
     switch ( (int) d_SNES_completion_code ) {
     case SNES_CONVERGED_FNORM_ABS:
         d_ConvergenceStatus = SolverStatus::ConvergedOnAbsTol;
@@ -628,6 +657,12 @@ void PetscSNESSolver::setLineSearchPreCheck(
                        std::shared_ptr<AMP::LinearAlgebra::Vector>,
                        bool & )> lineSearchPreCheckPtr )
 {
+    d_bEnableLineSearchPreCheck = true;
+    SNESLineSearch snesLineSearch;
+    SNESGetLineSearch( d_SNESSolver, &snesLineSearch );
+    checkErr( SNESLineSearchSetPreCheck(
+        snesLineSearch, &wrapperLineSearchPreCheck, (void *) ( this ) ) );
+
     d_lineSearchPreCheckPtr = lineSearchPreCheckPtr;
 }
 
@@ -676,8 +711,9 @@ bool PetscSNESSolver::isVectorValid( std::shared_ptr<AMP::Operator::Operator> &o
 }
 
 // KSP Pre and Post Solve routines with Eisenstat-Walker that Petsc
-// does not at present expose. These are simply copied from the PETSc
-// internal routines
+// does not at present expose. These are largely copied from the PETSc
+// internal routines with fixes applied for the first routine that decrease
+// the number of linear iterations required
 PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes )
 {
     PetscErrorCode ierr;
@@ -705,13 +741,17 @@ PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES 
             if ( stol > kctx->threshold )
                 rtol = PetscMax( rtol, stol );
         } else if ( kctx->version == 3 ) { /* contributed by Luis Chacon, June 2006. */
-            rtol = kctx->gamma * PetscPowReal( snes->norm / kctx->norm_last, kctx->alpha );
+            rtol = kctx->gamma * pow( snes->norm / kctx->norm_last, kctx->alpha );
             /* safeguard: avoid sharp decrease of rtol */
-            stol = kctx->gamma * PetscPowReal( kctx->rtol_last, kctx->alpha );
-            stol = PetscMax( rtol, stol );
-            rtol = PetscMin( kctx->rtol_0, stol );
+            stol = kctx->gamma * pow( kctx->rtol_last, kctx->alpha );
+            if ( stol <= 0.1 ) {
+                rtol = PetscMin( kctx->rtol_0, rtol );
+            } else {
+                stol = PetscMax( rtol, stol );
+                rtol = PetscMin( kctx->rtol_0, stol );
+            }
             /* safeguard: avoid oversolving */
-            stol = kctx->gamma * ( kctx->norm_first * snes->rtol ) / snes->norm;
+            stol = 0.8 * ( snes->ttol ) / snes->norm;
             stol = PetscMax( rtol, stol );
             rtol = PetscMin( kctx->rtol_0, stol );
         } else
@@ -951,5 +991,10 @@ void PetscSNESSolver::setInitialGuess( std::shared_ptr<AMP::LinearAlgebra::Vecto
     d_pSolutionVector->copyVector( initialGuess );
 }
 
+
+int PetscSNESSolver::getTotalNumberOfLinearIterations( void ) const
+{
+    return std::accumulate( d_iLinearIterationHistory.begin(), d_iLinearIterationHistory.end(), 0 );
+}
 
 } // namespace AMP::Solver

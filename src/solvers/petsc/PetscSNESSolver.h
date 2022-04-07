@@ -170,6 +170,7 @@ public:
     int getBoundsCheckComponent( void ) { return d_operatorComponentToEnableBoundsCheck; }
 
     //! set the pointer to the user function that does the line search pre-check if provided
+    // Note that this will enable the line search functionality also
     void setLineSearchPreCheck( std::function<int( std::shared_ptr<AMP::LinearAlgebra::Vector>,
                                                    std::shared_ptr<AMP::LinearAlgebra::Vector>,
                                                    bool & )> lineSearchPreCheckPtr );
@@ -184,6 +185,8 @@ public:
     } //! pointer to line search function
 
     void reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> ) override;
+
+    int getTotalNumberOfLinearIterations( void ) const;
 
 protected:
 private:
@@ -236,11 +239,11 @@ private:
     bool d_bPrintLinearResiduals      = false;
     bool d_bPetscInterfaceInitialized = false;
 
-    int d_iMaximumFunctionEvals                = 0;
+    int d_iMaximumFunctionEvals                = PETSC_DEFAULT;
     int d_iNumberOfLineSearchPreCheckAttempts  = 0;
     int d_operatorComponentToEnableBoundsCheck = 0;
 
-    double d_dStepTolerance = 0.0;
+    double d_dStepTolerance = PETSC_DEFAULT;
 
     // strategy to use for MFFD differencing (DS or WP)
     std::string d_sMFFDDifferencingStrategy = MATMFFD_WP;
@@ -254,14 +257,18 @@ private:
     std::string d_sForcingTermStrategy = "CONSTANT"; //! string is for input
     int d_iForcingTermFlag;                          //! int is for passing choice to PETSc
 
-    double d_dConstantForcingTerm;
-    double d_dInitialForcingTerm;
-    double d_dMaximumForcingTerm;
+    double d_dConstantForcingTerm = PETSC_DEFAULT;
+    double d_dInitialForcingTerm  = PETSC_DEFAULT;
+    double d_dMaximumForcingTerm  = PETSC_DEFAULT;
+
     // Eisenstat-Walker algo. options
-    double d_dEWChoice2Alpha;
-    double d_dEWChoice2Gamma;
-    double d_dEWSafeguardExponent;
-    double d_dEWSafeguardDisableThreshold;
+    double d_dEWChoice2Alpha              = PETSC_DEFAULT;
+    double d_dEWChoice2Gamma              = PETSC_DEFAULT;
+    double d_dEWSafeguardExponent         = PETSC_DEFAULT;
+    double d_dEWSafeguardDisableThreshold = PETSC_DEFAULT;
+
+    //! keeps track of linear iteration statistics over solver lifetime
+    std::vector<int> d_iLinearIterationHistory;
 
     AMP_MPI d_comm;
 
