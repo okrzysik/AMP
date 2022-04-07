@@ -532,6 +532,13 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     checkErr( SNESSolve( d_SNESSolver, b, x ) );
     PROFILE_STOP( "petsc-SNESSolve" );
 
+    // Note that an alternative would be to use the PETSc routine
+    // SNESSetConvergenceHistory. At present we don't use it since
+    // the solver reset which in the AMR use case is called leads to
+    // deletion of the SNES solver. This is probably not optimal
+    // but some care is required to re-initialize SNES so that cached
+    // vectors are not kept. A refactor at some future point should
+    // address this and other issues that the present implementation has
     checkErr( SNESGetIterationNumber( d_SNESSolver, &d_iNumberIterations ) );
     d_iterationHistory.push_back( d_iNumberIterations );
 

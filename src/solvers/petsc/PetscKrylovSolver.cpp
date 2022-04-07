@@ -299,19 +299,48 @@ void PetscKrylovSolver::registerOperator( std::shared_ptr<AMP::Operator::Operato
 {
     // in this case we make the assumption we can access a PetscMat for now
     AMP_ASSERT( op );
-
     d_pOperator = op;
 
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op );
-    AMP_ASSERT( linearOperator );
 
-    auto pMatrix = AMP::LinearAlgebra::PetscMatrix::view( linearOperator->getMatrix() );
+    // some weird error preventing a single call to KSPOperators
+    // will need to debug later
+    if ( linearOperator ) {
 
-    Mat mat;
-    mat = pMatrix->getMat();
+        auto pMatrix = AMP::LinearAlgebra::PetscMatrix::view( linearOperator->getMatrix() );
+        Mat mat      = pMatrix->getMat();
+        KSPSetOperators( d_KrylovSolver, mat, mat );
 
-    KSPSetOperators( d_KrylovSolver, mat, mat );
+    } else {
+
+        setupPetscMatInterface( d_pOperator, d_Mat );
+        AMP_ASSERT( d_Mat );
+        KSPSetOperators( d_KrylovSolver, d_Mat, d_Mat );
+    }
 }
+
+void PetscKrylovSolver::setupPetscMatInterface( std::shared_ptr<AMP::Operator::Operator> op,
+                                                Mat &mat )
+{
+    AMP_ASSERT( op );
+
+    if ( d_Mat )
+        MatDestroy( &d_Mat );
+
+    MPI_Comm comm = op->getMesh()->getComm().getCommunicator();
+    checkErr( MatCreateShell( comm,
+                              0, // dummy number of local rows
+                              0, // dummy number of local columns
+                              PETSC_DETERMINE,
+                              PETSC_DETERMINE,
+                              (void *) this,
+                              &mat ) );
+    AMP_ASSERT( mat );
+    checkErr( MatShellSetOperation( mat, MATOP_MULT, (void ( * )()) PetscKrylovSolver::matVec ) );
+    checkErr( MatAssemblyBegin( mat, MAT_FINAL_ASSEMBLY ) );
+    checkErr( MatAssemblyEnd( mat, MAT_FINAL_ASSEMBLY ) );
+}
+
 void PetscKrylovSolver::resetOperator(
     std::shared_ptr<const AMP::Operator::OperatorParameters> params )
 {
@@ -392,6 +421,22 @@ PetscErrorCode PetscKrylovSolver::setupPreconditioner( PC pc )
     int ierr  = 0;
     void *ctx = nullptr;
     ierr      = PCShellGetContext( pc, &ctx );
+    return ierr;
+}
+
+PetscErrorCode PetscKrylovSolver::matVec( Mat mat, Vec x, Vec y )
+{
+    int ierr  = 0;
+    void *ctx = nullptr;
+    checkErr( MatShellGetContext( mat, &ctx ) );
+    AMP_ASSERT( ctx != nullptr );
+    auto solver = reinterpret_cast<PetscKrylovSolver *>( ctx );
+    auto op     = solver->getOperator();
+    auto sp_x   = PETSC::getAMP( x );
+    auto sp_y   = PETSC::getAMP( y );
+    AMP_ASSERT( sp_x && sp_y );
+    op->apply( sp_x, sp_y );
+
     return ierr;
 }
 
