@@ -66,6 +66,7 @@ void registerSolverFactories()
 #endif
 
 #ifdef AMP_USE_PETSC
+    solverFactory.registerFactory( "SNESSolver", PetscSNESSolver::createSolver );
     solverFactory.registerFactory( "PetscSNESSolver", PetscSNESSolver::createSolver );
     solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
 #endif
