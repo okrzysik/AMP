@@ -102,6 +102,13 @@ size_t MultiVectorData::sizeofDataBlockType( size_t block ) const
     }
     return 0;
 }
+size_t MultiVectorData::getNumberOfComponents() const
+{
+    size_t N = 0;
+    for ( auto data : d_data )
+        N += data->getNumberOfComponents();
+    return N;
+}
 
 
 /****************************************************************

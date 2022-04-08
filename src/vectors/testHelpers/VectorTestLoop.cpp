@@ -140,6 +140,7 @@ void VectorTests::testVectorSelector( AMP::UnitTest *ut )
     testAllSelectors( ut );
     test_VS_ByVariableName( ut );
     test_VS_Comm( ut );
+    test_VS_Component( ut );
 }
 
 

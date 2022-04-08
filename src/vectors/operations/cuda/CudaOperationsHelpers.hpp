@@ -1,7 +1,7 @@
 #ifndef included_AMP_CudaOperationsHelpers_hpp
 #define included_AMP_CudaOperationsHelpers_hpp
 
-
+#include <cuda.h>
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 #include <thrust/for_each.h>

@@ -88,6 +88,7 @@ inline VectorDataIterator<const TYPE> VectorData::end() const
     return VectorDataIterator<const TYPE>( const_cast<VectorData *>( this ), getLocalSize() );
 }
 inline size_t VectorData::getGhostSize() const { return d_Ghosts->size(); }
+inline size_t VectorData::getNumberOfComponents() const { return 1; }
 
 
 /****************************************************************

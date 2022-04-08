@@ -79,7 +79,7 @@ void AsciiWriter::writeFile( const std::string &fname_in, size_t iteration_count
         if ( d_comm.getRank() == 0 ) {
             fprintf( fid,
                      "Vector: \"%s\" %i\n",
-                     dst_vec->getVariable()->getName().c_str(),
+                     dst_vec->getName().c_str(),
                      static_cast<int>( dst_vec->getGlobalSize() ) );
             for ( size_t i = 0; i < dst_vec->getGlobalSize(); i++ )
                 fprintf( fid, "   %0.14e\n", dst_vec->getValueByGlobalID( i ) );
@@ -146,7 +146,7 @@ AsciiWriter::sendVecToRoot( std::shared_ptr<const AMP::LinearAlgebra::Vector> sr
     // Broadcast the local vector size and name to all processors for simplicity
     std::string name;
     if ( rank == ownerRank )
-        name = src_vec->getVariable()->getName();
+        name = src_vec->getName();
     name              = comm.bcast( name, ownerRank );
     size_t local_size = 0;
     if ( src_vec )

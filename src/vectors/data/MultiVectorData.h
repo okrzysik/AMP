@@ -67,7 +67,7 @@ public: // Virtual functions
     void makeConsistent( ScatterType t ) override;
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
-
+    size_t getNumberOfComponents() const override;
 
 public: // Advanced virtual functions
     /**\brief  A unique id for the underlying data allocation
@@ -117,10 +117,10 @@ public: // Advanced virtual functions
     VectorData *getVectorData( size_t i );
     const VectorData *getVectorData( size_t i ) const;
 
-    size_t numberOfComponents( void ) const { return d_data.size(); }
+    size_t getVectorDataSize() const { return d_data.size(); }
 
     AMP_MPI getComm() const override { return d_comm; }
-    bool hasComm( void ) const override { return true; }
+    bool hasComm() const override { return true; }
 
     void assemble() override;
 

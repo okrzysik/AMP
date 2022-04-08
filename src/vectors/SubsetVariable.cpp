@@ -55,8 +55,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
         auto parentDOF = v->getDOFManager();
         auto subsetDOF = var->getSubsetDOF( parentDOF );
         PROFILE_STOP2( "view", 2 );
-        return MultiVector::const_create(
-            v->getVariable()->getName(), subsetDOF->getComm(), vec_list );
+        return MultiVector::const_create( v->getName(), subsetDOF->getComm(), vec_list );
     }
     // Subset the DOFManager and create a new communication list
     auto parentDOF = v->getDOFManager();

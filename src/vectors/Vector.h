@@ -86,9 +86,55 @@ public: // Constructor/destructors
             std::shared_ptr<Variable> var,
             std::shared_ptr<AMP::Discretization::DOFManager> DOFManager );
 
-    /** \brief Destructor
-     */
+    //! No direct copying
+    Vector( const Vector & ) = delete;
+
+    //! No direct copying
+    void operator=( const Vector & ) = delete;
+
+    //! Destructor
     virtual ~Vector();
+
+
+public: // Virtual functions
+    /** \brief Return the name of the vector
+     */
+    virtual std::string type() const;
+
+    //@{
+    /** \brief Allocate space in the same fashion as <i>this</i>
+     * \param[in] name  The variable to associate with the new vector
+     * \details  This will allocate new space with identical layout as <i>this</i>.
+     * \return  A Vector shared pointer
+     * It will have the same number of blocks, each with the same engines and same number of
+     * entries.
+     */
+    virtual std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> name ) const;
+
+    /** \brief  Swap the data in this Vector for another
+      * \param[in]  other  Vector to swap data with
+      * \details Effectively, this is
+      * \code
+      Vector *a;
+      Vector *b;
+      std::swap ( a, b );
+        \endcode
+      * without a and b exchanging pointers.
+     */
+    virtual void swapVectors( Vector &other );
+
+    /** \brief  Selects a portion of this vector and puts a view into a vector
+     * \param[in]  criterion  The method for deciding inclusion in the view
+     */
+    virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
+
+    // This is the const version of selectInto.
+    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
+
+    virtual void copyVector( std::shared_ptr<const Vector> x )
+    {
+        d_VectorOps->copy( *( x->getVectorData() ), *d_VectorData );
+    }
 
 
 public: // the next set of functions defines the public math. interface for vectors
@@ -291,11 +337,7 @@ public: // the next set of functions defines the public math. interface for vect
     bool equals( const Vector &x, const Scalar &tol = 1e-6 ) const;
 
 
-public: // Virtual functions
-    /** \brief Return the name of the vector
-     */
-    virtual std::string type() const;
-
+public: // Clone vectors
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \details  This will allocate new space with identical layout as <i>this</i>.
      * \return  A Vector shared pointer
@@ -315,11 +357,6 @@ public: // Virtual functions
      */
     std::shared_ptr<Vector> cloneVector( const std::string &name ) const;
 
-    //! \name Vector memory manipulation
-    //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
-    //! pointers among Vector
-    //! instantiations
-    //@{
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \param[in] name  The variable to associate with the new vector
      * \details  This will allocate new space with identical layout as <i>this</i>.
@@ -329,32 +366,45 @@ public: // Virtual functions
      */
     std::shared_ptr<Vector> cloneVector( const std::shared_ptr<Variable> name ) const;
 
-    //! \name Vector memory manipulation
-    //! \brief These methods control memory allocation, copying data, aliasing data, and swapping
-    //! pointers among Vector
-    //! instantiations
-    //@{
-    /** \brief Allocate space in the same fashion as <i>this</i>
-     * \param[in] name  The variable to associate with the new vector
-     * \details  This will allocate new space with identical layout as <i>this</i>.
-     * \return  A Vector shared pointer
-     * It will have the same number of blocks, each with the same engines and same number of
-     * entries.
-     */
-    virtual std::unique_ptr<Vector> rawClone( const std::shared_ptr<Variable> name ) const;
 
-    /** \brief  Swap the data in this Vector for another
-      * \param[in]  other  Vector to swap data with
-      * \details Effectively, this is
-      * \code
-      Vector *a;
-      Vector *b;
-      std::swap ( a, b );
-        \endcode
-      * without a and b exchanging pointers.
-     */
-    virtual void swapVectors( Vector &other );
+public: // Get/Set data/variables/operations
+    //! Get the DOFManager for this Vector
+    inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
 
+    //! Return the pointer to the VectorData
+    std::shared_ptr<VectorData> getVectorData() { return d_VectorData; }
+
+    //! Return the pointer to the VectorData
+    std::shared_ptr<const VectorData> getVectorData() const { return d_VectorData; }
+
+    //! Return the pointer to the VectorOperation
+    std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
+
+    //! Return the pointer to the VectorOperation
+    std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
+
+    /** \brief Change the variable associated with this vector
+     * \param[in] name  The new variable
+     */
+    void setVariable( const std::shared_ptr<Variable> name );
+
+    /** \brief  Get the variable associated with this vector
+     * \return  A shared point to the Variable associated with this Vector
+     */
+    const std::shared_ptr<Variable> getVariable() const;
+
+    /** \brief  Get the variable associated with this vector
+     * \return  A shared point to the Variable associated with this Vector
+     */
+    std::shared_ptr<Variable> getVariable();
+
+    //! Return the vector name
+    std::string getName() const;
+
+    //! Return integer number of patch data components in vector
+    size_t getNumberOfComponents() const;
+
+public: // Subset/Select
     /** \brief  Selects a portion of this vector and creates a view.
       * \param[in]  criterion  The method for deciding inclusion in the view
       * \param[in]  variable_name  The name of the vector to be created
@@ -387,52 +437,6 @@ public: // Virtual functions
       */
     const_shared_ptr select( const VectorSelector &criterion,
                              const std::string &variable_name ) const;
-
-    //! Get the DOFManager for this Vector
-    inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
-
-
-    /** \brief  Selects a portion of this vector and puts a view into a vector
-     * \param[in]  criterion  The method for deciding inclusion in the view
-     */
-    virtual Vector::shared_ptr selectInto( const VectorSelector &criterion );
-
-    // This is the const version of selectInto.
-    virtual Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const;
-
-    virtual void copyVector( std::shared_ptr<const Vector> x )
-    {
-        d_VectorOps->copy( *( x->getVectorData() ), *d_VectorData );
-    }
-
-
-public: // Non-virtual functions
-    //! Return the pointer to the VectorData
-    std::shared_ptr<VectorData> getVectorData() { return d_VectorData; }
-
-    //! Return the pointer to the VectorData
-    std::shared_ptr<const VectorData> getVectorData() const { return d_VectorData; }
-
-    //! Return the pointer to the VectorOperation
-    std::shared_ptr<VectorOperations> getVectorOperations() { return d_VectorOps; }
-
-    //! Return the pointer to the VectorOperation
-    std::shared_ptr<const VectorOperations> getVectorOperations() const { return d_VectorOps; }
-
-    /** \brief Change the variable associated with this vector
-     * \param[in] name  The new variable
-     */
-    void setVariable( const std::shared_ptr<Variable> name );
-
-    /** \brief  Get the variable associated with this vector
-     * \return  A shared point to the Variable associated with this Vector
-     */
-    const std::shared_ptr<Variable> getVariable() const;
-
-    /** \brief  Get the variable associated with this vector
-     * \return  A shared point to the Variable associated with this Vector
-     */
-    std::shared_ptr<Variable> getVariable();
 
     /** \brief Retrieve a sub-vector associated with a particular Variable
      * \param[in] name  Variable by which to retrieve a subvector
@@ -467,6 +471,20 @@ public: // Non-virtual functions
      * \see MultiVector
      */
     Vector::const_shared_ptr subsetVectorForVariable( std::shared_ptr<const Variable> var ) const;
+
+    /** \brief Retrieve ith subvector
+     * \details Returns the ith subvector based on teh number of components.
+     * \param[in] index  Index to retrieve
+     * \return  A Vector shared pointer
+     */
+    Vector::shared_ptr subsetVectorForComponent( size_t index );
+
+    /** \brief Retrieve ith subvector
+     * \details Returns the ith subvector based on teh number of components.
+     * \param[in] index  Index to retrieve
+     * \return  A Vector shared pointer
+     */
+    Vector::const_shared_ptr subsetVectorForComponent( size_t index ) const;
 
     /** \brief  Swap the data in this Vector for another
       * \param[in]  other Vector to swap data with
@@ -520,7 +538,8 @@ public: // Non-virtual functions
      */
     void aliasGhostBuffer( Vector::shared_ptr in );
 
-public: // Non-virtual functions
+
+public: // Iterators/Data
     /**
      * \brief Return an iterator to the beginning of the data
      * \returns A VectorDataIterator
@@ -746,7 +765,7 @@ public: // VectorData operations
         d_VectorData->dumpGhostedData( out, offset );
     }
 
-public: // Non virtual functions
+public: // Get values
     /**
      * \brief Return a value from the vector.
      * \param[in] i The global index into the vector
@@ -784,15 +803,9 @@ public: // Non virtual functions
     TYPE getValueByLocalID( size_t i ) const;
 
 
-private:
-    // The following are not implemented
-    explicit Vector( const Vector & );
-    void operator=( const Vector & );
-
-
 protected:                                                         // Internal data
     static std::shared_ptr<RNG> d_DefaultRNG;                      // default RNG
-    std::shared_ptr<Variable> d_pVariable;                         // Variable
+    std::shared_ptr<Variable> d_Variable;                          // Variable
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // The DOF_Manager
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
     std::shared_ptr<VectorOperations> d_VectorOps;                 // Pointer to a VectorOperations

@@ -454,8 +454,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             manager, densityCladToSubchannelDb );
     if ( cladMesh ) {
         AMP::LinearAlgebra::VS_Comm commSelector( cladMesh->getComm() );
-        auto subsetTheramlVec =
-            thermalMapVec->select( commSelector, thermalMapVec->getVariable()->getName() );
+        auto subsetTheramlVec = thermalMapVec->select( commSelector, thermalMapVec->getName() );
         thermalSubchannelToCladMap->setVector( subsetTheramlVec );
         densitySubchannelToCladMap->setVector( density_map_vec );
     }
