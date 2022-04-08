@@ -86,6 +86,7 @@ void PetscSNESSolver::createPetscObjects(
 {
     checkErr( SNESCreate( d_comm.getCommunicator(), &d_SNESSolver ) );
     bool snes_create_pc = false;
+    std::string preconditionerName;
 
     if ( d_pKrylovSolver ) {
         SNESSetKSP( d_SNESSolver, d_pKrylovSolver->getKrylovSolver() );
@@ -102,7 +103,7 @@ void PetscSNESSolver::createPetscObjects(
             AMP_ASSERT( d_global_db && d_global_db->keyExists( name ) );
             linearSolverDB = d_global_db->getDatabase( name );
         } else {
-            // create a default Krylov solver DB
+            // create a default Krylov solver DB and use a Jacobian free method
             // Note that sometimes a SNES solver database will directly specify options
             // for the Krylov solver and preconditioner and so we check for that. This
             // is how the AMR tests all work at present.
@@ -142,9 +143,9 @@ void PetscSNESSolver::createPetscObjects(
                 pc_type = "shell";
 
                 if ( nonlinearSolverDB->keyExists( "pc_solver_name" ) ) {
-                    linearSolverDB->putScalar<std::string>(
-                        "pc_solver_name",
-                        nonlinearSolverDB->getScalar<std::string>( "pc_solver_name" ) );
+                    preconditionerName =
+                        nonlinearSolverDB->getScalar<std::string>( "pc_solver_name" );
+                    linearSolverDB->putScalar<std::string>( "pc_solver_name", preconditionerName );
                     // set the preconditioner type to be shell if a pc solver name is given
                     snes_create_pc = true;
                 }
@@ -154,13 +155,25 @@ void PetscSNESSolver::createPetscObjects(
         }
 
         if ( !d_bUsesJacobian ) {
+            // for Jacobian free methods  the SNES solver should create the
+            // preconditioner even if the parameters are specified in the
+            // linear solver database by the user
+            const auto uses_preconditioner =
+                linearSolverDB->getWithDefault<bool>( "uses_preconditioner", false );
+            // check if the linearSolverDB specifies the name of the preconditioner
+            // else assume the preconditioner will be created externally and set
+            // later
+            if ( uses_preconditioner && linearSolverDB->keyExists( "pc_solver_name" ) ) {
+                snes_create_pc     = true;
+                preconditionerName = linearSolverDB->getScalar<std::string>( "pc_solver_name" );
+            }
             linearSolverDB->putScalar<bool>( "matrix_free", true );
         }
 
         std::shared_ptr<SolverStrategy> preconditionerSolver;
 
         if ( snes_create_pc ) {
-            preconditionerSolver = createPreconditioner();
+            preconditionerSolver = createPreconditioner( preconditionerName );
         }
         AMP_ASSERT( linearSolverDB );
         auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
@@ -443,11 +456,10 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     d_bPrintLinearResiduals    = db->getWithDefault<bool>( "print_linear_residuals", false );
 }
 
-std::shared_ptr<SolverStrategy> PetscSNESSolver::createPreconditioner( void )
+std::shared_ptr<SolverStrategy>
+PetscSNESSolver::createPreconditioner( const std::string &pc_solver_name )
 {
     std::shared_ptr<SolverStrategy> preconditionerSolver;
-    AMP_ASSERT( d_db->keyExists( "pc_solver_name" ) );
-    auto pc_solver_name = d_db->getString( "pc_solver_name" );
     AMP_ASSERT( d_global_db && d_global_db->keyExists( pc_solver_name ) );
     auto pc_solver_db = d_global_db->getDatabase( pc_solver_name );
     auto pcSolverParameters =
