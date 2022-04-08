@@ -16,44 +16,20 @@ implied, or assumes any liability or
 responsibility for the use of this software.
 */
 
-#ifndef included_AMP_TimeIntegratorFactory
-#define included_AMP_TimeIntegratorFactory
+#ifndef included_TimeIntegratorFactory_H_
+#define included_TimeIntegratorFactory_H_
 
-#include "TimeIntegrator.h"
-#include "TimeIntegratorParameters.h"
-
+#include "AMP/utils/FactoryStrategy.hpp"
 
 namespace AMP::TimeIntegrator {
+class TimeIntegratorParameters;
+class TimeIntegrator;
 
-/**\class TimeIntegratorFactory
- *
- * TimeIntegratorFactory is a factory class that creates specific multilevel
- * solver classes.  These are used to provide methods that operate on
- * a SAMR hierarchy
- */
-class TimeIntegratorFactory
-{
-public:
-    /**
-     * Constructor.
-     */
-    TimeIntegratorFactory();
+using TimeIntegratorFactory = AMP::FactoryStrategy<AMP::TimeIntegrator::TimeIntegrator,
+                                                   AMP::TimeIntegrator::TimeIntegratorParameters>;
 
-    /**
-     * Destructor.
-     */
-    virtual ~TimeIntegratorFactory();
+// free function to preregister time integrators known by AMP
+void registerTimeIntegratorFactories();
 
-    /**
-     * Factory method for generating multilevel solvers with characteristics
-     * specified by parameters.
-     */
-    std::shared_ptr<TimeIntegrator>
-    createTimeIntegrator( std::shared_ptr<TimeIntegratorParameters> timeIntegratorParameters );
-
-protected:
-private:
-};
-} // namespace AMP::TimeIntegrator
-
-#endif
+} // namespace  AMP::TimeIntegrator
+#endif // included_TimeIntegratorFactory_H_
