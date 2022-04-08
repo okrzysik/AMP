@@ -10,7 +10,7 @@
 #include <iomanip>
 
 #ifdef ENABLE_RESTART
-#include "RestartData.h"
+    #include "RestartData.h"
 #endif
 
 #include "ProfilerApp.h"
