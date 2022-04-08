@@ -22,8 +22,8 @@ inline void testSelector( AMP::UnitTest *ut,
 {
     auto vec1 = selector.subset( vec );
     auto vec2 = selector.subset( AMP::LinearAlgebra::Vector::const_shared_ptr( vec ) );
-    auto vec3 = vec->select( selector, vec->getVariable()->getName() );
-    auto vec4 = vec->select( selector, vec->getVariable()->getName() );
+    auto vec3 = vec->select( selector, vec->getName() );
+    auto vec4 = vec->select( selector, vec->getName() );
     if ( !vec1 || !vec2 || !vec3 || !vec4 ) {
         ut->failure( "Failed to select (" + test_name + ")" );
         return;
@@ -38,24 +38,21 @@ inline void testSelector( AMP::UnitTest *ut,
 void AMP::LinearAlgebra::VectorTests::testAllSelectors( AMP::UnitTest *ut )
 {
     auto vec = d_factory->getVector();
-    vec->setVariable( std::make_shared<AMP::LinearAlgebra::Variable>( "test_selector" ) );
+    vec->setVariable( std::make_shared<Variable>( "test_selector" ) );
     AMP::AMP_MPI vec_comm = vec->getComm();
     AMP::AMP_MPI world_comm( AMP_COMM_WORLD );
     AMP::AMP_MPI self_comm( AMP_COMM_SELF );
-    testSelector( ut,
-                  "VS_ByVariableName",
-                  AMP::LinearAlgebra::VS_ByVariableName( vec->getVariable()->getName() ),
-                  vec );
-    testSelector( ut, "VS_Stride", AMP::LinearAlgebra::VS_Stride( 0, 1 ), vec );
-    testSelector( ut, "VS_Comm(vec)", AMP::LinearAlgebra::VS_Comm( vec_comm ), vec );
-    testSelector( ut, "VS_Comm(world)", AMP::LinearAlgebra::VS_Comm( world_comm ), vec );
+    testSelector( ut, "VS_ByVariableName", VS_ByVariableName( vec->getName() ), vec );
+    testSelector( ut, "VS_Stride", VS_Stride( 0, 1 ), vec );
+    testSelector( ut, "VS_Comm(vec)", VS_Comm( vec_comm ), vec );
+    testSelector( ut, "VS_Comm(world)", VS_Comm( world_comm ), vec );
     for ( int i = 0; i < vec_comm.getRank(); i++ )
         vec_comm.barrier();
-    testSelector( ut, "VS_Comm(self)", AMP::LinearAlgebra::VS_Comm( self_comm ), vec );
+    testSelector( ut, "VS_Comm(self)", VS_Comm( self_comm ), vec );
     for ( int i = vec_comm.getRank(); i < vec_comm.getSize(); i++ )
         vec_comm.barrier();
-    // testSelector( ut, "VS_Mesh", AMP::LinearAlgebra::VS_Mesh(), vec );
-    // testSelector( ut, "VS_MeshIterator", AMP::LinearAlgebra::VS_MeshIterator(), vec );
+    // testSelector( ut, "VS_Mesh", VS_Mesh(), vec );
+    // testSelector( ut, "VS_MeshIterator", VS_MeshIterator(), vec );
 }
 
 
@@ -150,4 +147,30 @@ void AMP::LinearAlgebra::VectorTests::test_VS_Comm( AMP::UnitTest *ut )
         vec_comm.barrier();
     if ( pass )
         ut->passes( "passed subset by comm" );
+}
+
+// Test the behavior of VS_Components
+void AMP::LinearAlgebra::VectorTests::test_VS_Component( AMP::UnitTest *ut )
+{
+    auto vec  = d_factory->getVector();
+    size_t N  = vec->getNumberOfComponents();
+    size_t n1 = vec->getGlobalSize();
+    size_t n2 = 0;
+    std::vector<size_t> index;
+    for ( size_t i = 0; i < N; i++ ) {
+        auto vec2 = vec->subsetVectorForComponent( i );
+        AMP_ASSERT( vec2 );
+        AMP_ASSERT( vec2->getNumberOfComponents() == 1 );
+        n2 += vec2->getGlobalSize();
+        index.push_back( i );
+    }
+    auto vec3 = vec->selectInto( VS_Components( index ) );
+    AMP_ASSERT( vec3 );
+    size_t n3 = vec3->getGlobalSize();
+    if ( n1 == n2 && n1 == n3 )
+        ut->passes( "Subset by component" );
+    if ( n1 != n2 )
+        ut->failure( "subsetVectorForComponent" );
+    if ( n1 != n3 )
+        ut->failure( "VS_Components (all)" );
 }

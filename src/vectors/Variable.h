@@ -4,6 +4,7 @@
 #include "AMP/utils/Units.h"
 
 #include <memory>
+#include <string_view>
 
 
 namespace AMP::LinearAlgebra {
@@ -45,7 +46,7 @@ public:
     /** \brief  A function that returns the name of a variable
      * \details  This gives access to the name
      */
-    virtual const std::string &getName() const;
+    inline auto &getName() const { return d_VariableName; }
 
 
     /** \brief  Compares two variables for equality.

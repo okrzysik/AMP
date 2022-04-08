@@ -84,6 +84,8 @@ public: // Get basic information
      */
     virtual size_t getGhostSize() const;
 
+    //! Return integer number of patch data components in vector
+    virtual size_t getNumberOfComponents() const;
 
 public: // Get/Set data
     /**\brief Copy data into this vector

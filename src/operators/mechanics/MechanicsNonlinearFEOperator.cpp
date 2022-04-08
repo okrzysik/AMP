@@ -757,7 +757,7 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::shared
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::shared_ptr meshSubsetVec =
-            vec->select( meshSelector, vec->getVariable()->getName() );
+            vec->select( meshSelector, vec->getName() );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );
@@ -771,7 +771,7 @@ MechanicsNonlinearFEOperator::mySubsetVector( AMP::LinearAlgebra::Vector::const_
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
         AMP::LinearAlgebra::Vector::const_shared_ptr meshSubsetVec =
-            vec->select( meshSelector, vec->getVariable()->getName() );
+            vec->select( meshSelector, vec->getName() );
         return meshSubsetVec->subsetVectorForVariable( var );
     } else {
         return vec->subsetVectorForVariable( var );

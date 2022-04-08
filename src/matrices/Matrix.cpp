@@ -99,7 +99,7 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     /*out << "Vector type: " << v.type() << "\n";
     if ( v.getVariable() )
     {
-      out << "Variable name: " << v.getVariable()->getName() << "\n";
+      out << "Variable name: " << v.getName() << "\n";
     }*/
     // Print the rank
     auto leftDOF   = M->getLeftDOFManager();

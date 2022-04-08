@@ -88,7 +88,7 @@ Writer::VectorData::VectorData( std::shared_ptr<AMP::LinearAlgebra::Vector> vec_
     if ( !vec )
         return;
     if ( name.empty() )
-        name = vec->getVariable()->getName();
+        name = vec->getName();
     if ( name.empty() )
         name = vec->type();
 }
@@ -104,8 +104,7 @@ Writer::MatrixData::MatrixData( std::shared_ptr<AMP::LinearAlgebra::Matrix> mat_
     if ( !mat )
         return;
     if ( name.empty() )
-        name = mat->getLeftVector()->getVariable()->getName() + " - " +
-               mat->getRightVector()->getVariable()->getName();
+        name = mat->getLeftVector()->getName() + " - " + mat->getRightVector()->getName();
 }
 
 
@@ -324,7 +323,7 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
         for ( auto &[id0, mesh2] : d_baseMeshes ) {
             if ( id0.objID == id.getData() ) {
                 AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2.mesh );
-                auto vec2 = vec->select( meshSelector, vec->getVariable()->getName() );
+                auto vec2 = vec->select( meshSelector, vec->getName() );
                 if ( vec2 ) {
                     VectorData data( vec2, name_in );
                     data.type    = type;

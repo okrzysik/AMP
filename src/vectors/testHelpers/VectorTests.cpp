@@ -248,9 +248,10 @@ void VectorTests::ScaleVector( AMP::UnitTest *ut )
 }
 
 
-#ifdef AMP_USE_PETSC
 void VectorTests::Bug_491( AMP::UnitTest *ut )
 {
+    NULL_USE( ut );
+#ifdef AMP_USE_PETSC
     auto vector1( d_factory->getVector() );
     vector1->setRandomValues();
     auto managed_petsc = AMP::LinearAlgebra::PetscVector::view( vector1 );
@@ -298,8 +299,8 @@ void VectorTests::Bug_491( AMP::UnitTest *ut )
     PASS_FAIL( fabs( n1 - L1Norm ) < 0.00000001 * n1, "L1 norm -- Petsc interface begin/end " );
     PASS_FAIL( fabs( n2 - L2Norm ) < 0.00000001 * n1, "L2 norm -- Petsc interface begin/end " );
     PASS_FAIL( fabs( ninf - maxNorm ) < 0.00000001 * n1, "inf norm -- Petsc interface begin/end " );
-}
 #endif
+}
 
 
 void VectorTests::AddVector( AMP::UnitTest *ut )

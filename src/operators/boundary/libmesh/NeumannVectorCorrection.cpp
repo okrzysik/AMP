@@ -280,7 +280,7 @@ void NeumannVectorCorrection::setFrozenVector( AMP::LinearAlgebra::Vector::share
 {
     AMP::LinearAlgebra::Vector::shared_ptr f2 = f;
     if ( d_Mesh )
-        f2 = f->select( AMP::LinearAlgebra::VS_Mesh( d_Mesh ), f->getVariable()->getName() );
+        f2 = f->select( AMP::LinearAlgebra::VS_Mesh( d_Mesh ), f->getName() );
     if ( f2 == nullptr )
         return;
     if ( d_Frozen == nullptr )
