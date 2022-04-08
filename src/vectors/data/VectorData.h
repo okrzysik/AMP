@@ -87,6 +87,9 @@ public: // Get basic information
     //! Return integer number of patch data components in vector
     virtual size_t getNumberOfComponents() const;
 
+    //! returns whether all data for the vector on a single process is contiguous
+    virtual bool hasContiguousData() const { return true; }
+
 public: // Get/Set data
     /**\brief Copy data into this vector
      *\param[in] buf  Buffer to copy from

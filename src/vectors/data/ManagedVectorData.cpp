@@ -293,6 +293,11 @@ size_t ManagedVectorData::sizeOfDataBlock( size_t i ) const
     return getEngineData( *this )->sizeOfDataBlock( i );
 }
 
+bool ManagedVectorData::hasContiguousData() const
+{
+    return getEngineData( *this )->hasContiguousData();
+}
+
 Vector::shared_ptr ManagedVectorData::getVectorEngine() { return d_Engine; }
 
 Vector::const_shared_ptr ManagedVectorData::getVectorEngine() const { return d_Engine; }

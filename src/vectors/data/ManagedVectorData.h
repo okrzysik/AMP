@@ -77,6 +77,7 @@ public: // Derived from VectorData
     void dataChanged() override;
 
     std::shared_ptr<VectorData> cloneData() const override;
+    bool hasContiguousData() const override;
 
 protected: // Derived from VectorData
     void *getRawDataBlockAsVoid( size_t i ) override;

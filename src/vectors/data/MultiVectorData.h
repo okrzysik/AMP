@@ -68,6 +68,8 @@ public: // Virtual functions
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
     size_t getNumberOfComponents() const override;
+    //! the next routine could be refined to depend on number of components
+    bool hasContiguousData() const override { return false; }
 
 public: // Advanced virtual functions
     /**\brief  A unique id for the underlying data allocation

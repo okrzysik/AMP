@@ -703,20 +703,20 @@ void reset_vec_ops( Vec t )
     t->ops->create                  = _AMP_create;
 
     auto p = getAMP( t );
-    if ( p->numberOfDataBlocks() > 1u ) {
-        t->ops->getarray         = nullptr;
-        t->ops->restorearray     = nullptr;
-        t->ops->placearray       = nullptr;
-        t->ops->replacearray     = nullptr;
-        t->ops->resetarray       = nullptr;
-        t->ops->setvaluesblocked = nullptr;
-    } else {
+    if ( p->getVectorData()->hasContiguousData() ) {
         t->ops->getarray         = _AMP_getarray;
         t->ops->restorearray     = _AMP_restorearray;
         t->ops->placearray       = _AMP_placearray;
         t->ops->replacearray     = _AMP_replacearray;
         t->ops->resetarray       = _AMP_resetarray;
         t->ops->setvaluesblocked = _AMP_setvaluesblocked;
+    } else {
+        t->ops->getarray         = nullptr;
+        t->ops->restorearray     = nullptr;
+        t->ops->placearray       = nullptr;
+        t->ops->replacearray     = nullptr;
+        t->ops->resetarray       = nullptr;
+        t->ops->setvaluesblocked = nullptr;
     }
     /*** The following functions do not need to be overridden
       t->ops->setfromoptions = _AMP_setfromoptions;
