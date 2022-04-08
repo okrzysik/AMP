@@ -24,7 +24,7 @@ MultiVector::MultiVector( const std::string &name, const AMP_MPI &comm ) : Vecto
 {
     d_VectorOps  = std::make_shared<MultiVectorOperations>();
     d_VectorData = std::make_shared<MultiVectorData>( comm );
-    d_pVariable.reset( new MultiVariable( name ) );
+    d_Variable.reset( new MultiVariable( name ) );
 }
 
 std::shared_ptr<MultiVector> MultiVector::create( std::shared_ptr<Variable> variable,
@@ -75,7 +75,7 @@ std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
     }
     if ( comm.isNull() )
         comm = vec->getComm();
-    multivec  = create( vec->getVariable()->getName(), comm, { vec } );
+    multivec  = create( vec->getName(), comm, { vec } );
     auto data = multivec->Vector::getVectorData();
     AMP_ASSERT( data );
     auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
@@ -99,7 +99,7 @@ std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AM
     if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        multivec = create( vec->getVariable()->getName(), comm, { vec } );
+        multivec = create( vec->getName(), comm, { vec } );
     }
     return multivec;
 }
@@ -121,7 +121,7 @@ std::shared_ptr<const MultiVector> MultiVector::constView( Vector::const_shared_
     if ( !multivec ) {
         if ( comm.isNull() )
             comm = vec->getComm();
-        multivec = const_create( vec->getVariable()->getName(), comm, { vec } );
+        multivec = const_create( vec->getName(), comm, { vec } );
     }
     return multivec;
 }
@@ -229,7 +229,7 @@ void MultiVector::addVectorHelper( Vector::shared_ptr vec )
         }
     }
     // Append the variable if we have a multivariable
-    auto multiVar = std::dynamic_pointer_cast<MultiVariable>( d_pVariable );
+    auto multiVar = std::dynamic_pointer_cast<MultiVariable>( d_Variable );
     if ( multiVar != nullptr )
         multiVar->add( vec->getVariable() );
 }
@@ -260,6 +260,9 @@ void MultiVector::replaceSubVector( Vector::shared_ptr oldVec, Vector::shared_pt
  ****************************************************************/
 Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
 {
+    // Check if we are dealing with a component selector
+    if ( dynamic_cast<const VS_Components *>( &s ) )
+        return s.subset( shared_from_this() );
     // Check if this vector matches (only need to deal with select by name for now)
     auto s_name = dynamic_cast<const VS_ByVariableName *>( &s );
     if ( s_name || dynamic_cast<const VS_MultiVariable *>( &s ) ) {
@@ -278,7 +281,7 @@ Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
         }
     }
     // Construct the new multivector
-    std::string vecName = getVariable()->getName();
+    std::string vecName = getName();
     if ( s_name )
         vecName = s_name->getName();
     // Add the subsets to the multivector

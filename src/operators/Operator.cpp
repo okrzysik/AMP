@@ -85,7 +85,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     AMP::LinearAlgebra::Vector::shared_ptr retvec;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         retvec             = varSubsetVec;
     } else {
@@ -104,7 +104,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::shared_ptr vec )
     AMP::LinearAlgebra::Vector::shared_ptr retvec;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         retvec             = varSubsetVec;
     } else {
@@ -123,7 +123,7 @@ Operator::subsetOutputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         retvec             = varSubsetVec;
     } else {
@@ -142,7 +142,7 @@ Operator::subsetInputVector( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
     AMP::LinearAlgebra::Vector::const_shared_ptr retvec;
     if ( d_Mesh ) {
         AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-        auto meshSubsetVec = vec->select( meshSelector, vec->getVariable()->getName() );
+        auto meshSubsetVec = vec->select( meshSelector, vec->getName() );
         auto varSubsetVec  = meshSubsetVec->subsetVectorForVariable( var );
         retvec             = varSubsetVec;
     } else {

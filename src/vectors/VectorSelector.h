@@ -75,7 +75,8 @@ public:
     /** \brief Constructor
      * \param[in] name  The name of the variable to subset on
      */
-    explicit VS_ByVariableName( const std::string &name );
+    VS_ByVariableName( std::string name );
+
 
     std::string getName() const { return d_VecName; };
 
@@ -106,12 +107,38 @@ public: // Functions inherited from VectorSelector
     subset( std::shared_ptr<const Vector> vec ) const override;
 
 protected:
-    //  Offset to start striding on
-    size_t d_Offset;
-    //  The stride to use
-    size_t d_Stride;
-    //  The name of this subset
-    std::string d_Name;
+    size_t d_Offset; // Offset to start striding on
+    size_t d_Stride; // The stride to use
+};
+
+
+/** \brief  Create a subset based on the components of a vector
+ * \details  This will select the given components of a vector
+ */
+class VS_Components : public VectorSelector
+{
+public:
+    /** \brief Constructor
+     * \param[in]  index    The component index to subset
+     */
+    VS_Components( size_t index );
+
+    /** \brief Constructor
+     * \param[in]  index    The component indices to subset
+     */
+    explicit VS_Components( std::vector<size_t> index );
+
+    //! Get the indices
+    inline const auto &getIndices() const { return d_index; }
+
+public: // Functions inherited from VectorSelector
+    virtual bool isSelected( const Vector &v ) const override;
+    virtual std::shared_ptr<Vector> subset( std::shared_ptr<Vector> vec ) const override;
+    virtual std::shared_ptr<const Vector>
+    subset( std::shared_ptr<const Vector> vec ) const override;
+
+protected:
+    std::vector<size_t> d_index; // Index to select
 };
 
 
@@ -162,8 +189,8 @@ public: // Functions inherited from VectorSelector
     virtual AMP_MPI communicator( const Vector &vec ) const override;
 
 protected:
-    bool d_useMeshComm;            //  Use the comm of the mesh
-    Mesh::Mesh::shared_ptr d_mesh; //  Mesh
+    bool d_useMeshComm;            // Use the comm of the mesh
+    Mesh::Mesh::shared_ptr d_mesh; // Mesh
 };
 
 

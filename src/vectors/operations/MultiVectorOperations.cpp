@@ -22,13 +22,13 @@ std::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
 VectorData *MultiVectorOperations::getVectorDataComponent( VectorData &x, size_t i )
 {
     auto x2 = dynamic_cast<MultiVectorData *>( &x );
-    AMP_ASSERT( x2 && ( i < x2->numberOfComponents() ) );
+    AMP_ASSERT( x2 && ( i < x2->getVectorDataSize() ) );
     return x2->getVectorData( i );
 }
 const VectorData *MultiVectorOperations::getVectorDataComponent( const VectorData &x, size_t i )
 {
     auto x2 = dynamic_cast<const MultiVectorData *>( &x );
-    AMP_ASSERT( x2 && ( i < x2->numberOfComponents() ) );
+    AMP_ASSERT( x2 && ( i < x2->getVectorDataSize() ) );
     return x2->getVectorData( i );
 }
 
@@ -45,8 +45,7 @@ MultiVectorData *MultiVectorOperations::getMultiVectorData( VectorData &x )
 void MultiVectorOperations::zero( VectorData &x )
 {
     auto mData = getMultiVectorData( x );
-
-    for ( size_t i = 0; i != mData->numberOfComponents(); ++i ) {
+    for ( size_t i = 0; i != mData->getVectorDataSize(); ++i ) {
 
         d_operations[i]->zero( *getVectorDataComponent( x, i ) );
     }
@@ -78,7 +77,6 @@ void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 
     auto xc = getMultiVectorData( x );
     auto yc = getMultiVectorData( y );
-
     if ( xc && yc ) {
         // Both this and x are multivectors
         for ( size_t i = 0; i != d_operations.size(); i++ )
@@ -115,7 +113,7 @@ void MultiVectorOperations::scale( const Scalar &alpha, const VectorData &x, Vec
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->scale(
                 alpha, *getVectorDataComponent( x, i ), *getVectorDataComponent( y, i ) );
@@ -135,8 +133,8 @@ void MultiVectorOperations::add( const VectorData &x, const VectorData &y, Vecto
     if ( x2 && y2 ) {
         auto z2 = getMultiVectorData( y );
         AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->add( *getVectorDataComponent( x, i ),
                                   *getVectorDataComponent( y, i ),
@@ -156,8 +154,8 @@ void MultiVectorOperations::subtract( const VectorData &x, const VectorData &y, 
     if ( x2 && y2 ) {
         auto z2 = getMultiVectorData( y );
         AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->subtract( *getVectorDataComponent( x, i ),
                                        *getVectorDataComponent( y, i ),
@@ -177,8 +175,8 @@ void MultiVectorOperations::multiply( const VectorData &x, const VectorData &y, 
     if ( x2 && y2 ) {
         auto z2 = getMultiVectorData( y );
         AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->multiply( *getVectorDataComponent( x, i ),
                                        *getVectorDataComponent( y, i ),
@@ -198,8 +196,8 @@ void MultiVectorOperations::divide( const VectorData &x, const VectorData &y, Ve
     if ( x2 && y2 ) {
         auto z2 = getMultiVectorData( y );
         AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->divide( *getVectorDataComponent( x, i ),
                                      *getVectorDataComponent( y, i ),
@@ -217,8 +215,8 @@ void MultiVectorOperations::reciprocal( const VectorData &x, VectorData &y )
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
-        AMP_ASSERT( x2->numberOfComponents() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
+        AMP_ASSERT( x2->getVectorDataSize() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->reciprocal( *getVectorDataComponent( x, i ),
                                          *getVectorDataComponent( y, i ) );
@@ -242,9 +240,9 @@ void MultiVectorOperations::linearSum( const Scalar &alpha_in,
     if ( x2 && y2 ) {
         auto z2 = getMultiVectorData( y );
         AMP_ASSERT( z2 );
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == z2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == z2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->linearSum( alpha_in,
                                         *getVectorDataComponent( x, i ),
@@ -311,8 +309,8 @@ void MultiVectorOperations::abs( const VectorData &x, VectorData &y )
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ ) {
             d_operations[i]->abs( *getVectorDataComponent( x, i ),
                                   *getVectorDataComponent( y, i ) );
@@ -330,8 +328,8 @@ void MultiVectorOperations::addScalar( const VectorData &x, const Scalar &alpha_
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i != d_operations.size(); i++ )
             d_operations[i]->addScalar(
                 *getVectorDataComponent( x, i ), alpha_in, *getVectorDataComponent( y, i ) );
@@ -414,8 +412,8 @@ Scalar MultiVectorOperations::localDot( const VectorData &x, const VectorData &y
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         Scalar ans;
         for ( size_t i = 0; i != d_operations.size(); i++ ) {
             auto xi = getVectorDataComponent( x, i );
@@ -437,8 +435,8 @@ Scalar MultiVectorOperations::localMinQuotient( const VectorData &x, const Vecto
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         auto ans = d_operations[0]->localMinQuotient( *getVectorDataComponent( x, 0 ),
                                                       *getVectorDataComponent( y, 0 ) );
         for ( size_t i = 1; i != d_operations.size(); i++ )
@@ -460,8 +458,8 @@ Scalar MultiVectorOperations::localWrmsNorm( const VectorData &x, const VectorDa
     auto x2 = getMultiVectorData( x );
     auto y2 = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         Scalar ans;
         for ( size_t i = 0; i < d_operations.size(); i++ ) {
             auto yi   = getVectorDataComponent( y, i );
@@ -487,9 +485,9 @@ Scalar MultiVectorOperations::localWrmsNormMask( const VectorData &x,
     auto m2 = getMultiVectorData( mask );
     auto y2 = getMultiVectorData( y );
     if ( x2 && m2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == m2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == m2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         Scalar ans;
         for ( size_t i = 0; i < d_operations.size(); i++ ) {
             auto yi  = getVectorDataComponent( y, i );
@@ -517,8 +515,8 @@ bool MultiVectorOperations::localEquals( const VectorData &x,
     auto x2  = getMultiVectorData( x );
     auto y2  = getMultiVectorData( y );
     if ( x2 && y2 ) {
-        AMP_ASSERT( d_operations.size() == x2->numberOfComponents() );
-        AMP_ASSERT( d_operations.size() == y2->numberOfComponents() );
+        AMP_ASSERT( d_operations.size() == x2->getVectorDataSize() );
+        AMP_ASSERT( d_operations.size() == y2->getVectorDataSize() );
         for ( size_t i = 0; i < d_operations.size(); i++ ) {
             ans = ans && d_operations[i]->localEquals( *getVectorDataComponent( x, i ),
                                                        *getVectorDataComponent( y, i ),

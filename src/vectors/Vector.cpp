@@ -25,7 +25,7 @@ std::shared_ptr<RNG> Vector::d_DefaultRNG;
  * Constructors/Destructor                                       *
  ****************************************************************/
 Vector::Vector()
-    : d_pVariable( new Variable( "null" ) ),
+    : d_Variable( new Variable( "null" ) ),
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
@@ -35,7 +35,7 @@ Vector::Vector()
     AMPManager::incrementResource( "Vector" );
 }
 Vector::Vector( const std::string &name )
-    : d_pVariable( new Variable( name ) ),
+    : d_Variable( new Variable( name ) ),
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
@@ -48,7 +48,7 @@ Vector::Vector( std::shared_ptr<VectorData> data,
                 std::shared_ptr<VectorOperations> ops,
                 std::shared_ptr<Variable> var,
                 std::shared_ptr<AMP::Discretization::DOFManager> DOFManager )
-    : d_pVariable( var ),
+    : d_Variable( var ),
       d_DOFManager( DOFManager ),
       d_VectorData( data ),
       d_VectorOps( ops ),
@@ -128,7 +128,7 @@ Vector::const_shared_ptr Vector::selectInto( const VectorSelector &s ) const
 Vector::shared_ptr Vector::select( const VectorSelector &s, const std::string &variable_name )
 {
     if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
-        std::string name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
+        const std::string &name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
         if ( name == this->getVariable()->getName() )
             return shared_from_this();
     }
@@ -145,7 +145,7 @@ Vector::const_shared_ptr Vector::select( const VectorSelector &s,
                                          const std::string &variable_name ) const
 {
     if ( dynamic_cast<const VS_ByVariableName *>( &s ) ) {
-        std::string name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
+        const std::string &name = dynamic_cast<const VS_ByVariableName *>( &s )->getName();
         if ( name == this->getVariable()->getName() )
             return shared_from_this();
     }
@@ -184,6 +184,14 @@ Vector::subsetVectorForVariable( std::shared_ptr<const Variable> var ) const
     auto selector = var->createVectorSelector();
     return selectInto( *selector );
 }
+Vector::shared_ptr Vector::subsetVectorForComponent( size_t index )
+{
+    return selectInto( VS_Components( index ) );
+}
+Vector::const_shared_ptr Vector::subsetVectorForComponent( size_t index ) const
+{
+    return selectInto( VS_Components( index ) );
+}
 
 
 /****************************************************************
@@ -207,7 +215,7 @@ Vector::shared_ptr Vector::cloneVector( const std::shared_ptr<Variable> name ) c
 std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name ) const
 {
     auto vec             = std::make_unique<Vector>();
-    vec->d_pVariable     = name;
+    vec->d_Variable      = name;
     vec->d_DOFManager    = d_DOFManager;
     vec->d_VectorData    = d_VectorData->cloneData();
     vec->d_VectorOps     = d_VectorOps->cloneOperations();
@@ -224,6 +232,16 @@ void Vector::swapVectors( Vector &other ) { d_VectorData->swapData( *other.getVe
 /****************************************************************
  * Misc                                                          *
  ****************************************************************/
+std::string Vector::getName() const
+{
+    if ( d_Variable )
+        return d_Variable->getName();
+    return "";
+}
+size_t Vector::getNumberOfComponents() const
+{
+    return d_VectorData ? d_VectorData->getNumberOfComponents() : 0;
+}
 std::ostream &operator<<( std::ostream &out, const Vector &v )
 {
     out << "Vector type: " << v.type() << "\n";

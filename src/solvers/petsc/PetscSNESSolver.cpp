@@ -735,6 +735,8 @@ bool PetscSNESSolver::isVectorValid( std::shared_ptr<AMP::Operator::Operator> &o
 // the number of linear iterations required
 PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES snes )
 {
+    NULL_USE( b );
+    NULL_USE( x );
     PetscErrorCode ierr;
     SNESKSPEW *kctx = (SNESKSPEW *) snes->kspconvctx;
     PetscReal rtol  = PETSC_DEFAULT, stol;
