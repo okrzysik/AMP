@@ -41,6 +41,14 @@
 #define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
 
 
+// Define MPI_COMM_WORLD / etc without MPI
+#ifndef AMP_USE_MPI
+    #define MPI_COMM_NULL 0
+    #define MPI_COMM_WORLD 1
+    #define MPI_COMM_SELF 2
+#endif
+
+
 // Set MPI_REQUEST_NULL
 #if defined( USE_SAMRAI ) && defined( USE_PETSC ) && !defined( USE_MPI )
 int MPI_REQUEST_NULL  = 3;
@@ -100,8 +108,8 @@ static MPI_CLASS::Request getRequest( MPI_CLASS::Comm comm, int tag )
     uint64_t a    = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
     uint64_t b    = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
     uint64_t hash = a ^ b;
-    MPI_Request request;
-    memcpy( &request, &hash, sizeof( MPI_Request ) );
+    MPI_CLASS::Request request;
+    memcpy( &request, &hash, sizeof( MPI_CLASS::Request ) );
     return request;
 }
 #endif
@@ -648,7 +656,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
             return MPI_CLASS( MPI_CLASS_COMM_NULL );
         return dup();
     }
-    MPI_Comm new_MPI_comm = MPI_CLASS_COMM_NULL;
+    MPI_CLASS::Comm new_MPI_comm = MPI_CLASS_COMM_NULL;
 #ifdef USE_MPI
     // USE MPI to split the communicator
     int error = 0;
@@ -689,12 +697,12 @@ MPI_CLASS MPI_CLASS::dup( bool manage ) const
 {
     if ( d_isNull )
         return MPI_CLASS( MPI_CLASS_COMM_NULL );
-    MPI_Comm new_MPI_comm = d_comm;
+    MPI_CLASS::Comm new_MPI_comm = d_comm;
 #if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator
     MPI_Comm_dup( d_comm, &new_MPI_comm );
 #else
-    static MPI_Comm uniqueGlobalComm = 11;
+    static MPI_CLASS::Comm uniqueGlobalComm = 11;
     new_MPI_comm = uniqueGlobalComm;
     uniqueGlobalComm++;
 #endif
