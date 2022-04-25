@@ -77,9 +77,7 @@ FactoryStrategy<TYPE, PARAMETERS>::create( std::string name,
     if ( it != d_factories.end() ) {
         obj = it->second( parameters );
     } else {
-        std::stringstream err;
-        err << "Unable to create object " << name;
-        AMP_ERROR( err.str() );
+        AMP_ERROR( "Unable to create object " + name; );
     }
 
     return obj;
@@ -98,9 +96,7 @@ FactoryStrategy<TYPE, PARAMETERS>::create( std::shared_ptr<PARAMETERS> parameter
     if ( inputDatabase->keyExists( "name" ) ) {
         objectName = inputDatabase->getString( "name" );
     } else {
-        AMP_ERROR( "FactoryStrategy"
-                   << " -- Required key `name'"
-                   << " missing in input." );
+        AMP_ERROR( "FactoryStrategy -- Required key `name' missing in input" );
     }
 
     auto &factory = FactoryStrategy<TYPE, PARAMETERS>::getFactory();

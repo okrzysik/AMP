@@ -1,9 +1,8 @@
+#include "AMP/utils/AMPManager.h"
 #include "AMP/AMP_TPLs.h"
-#include "AMP/utils/AMP_MPI.I"
-
 #include "AMP/AMP_Version.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
@@ -62,7 +61,6 @@
 #endif
 // clang-format on
 
-
 #include <algorithm>
 #include <array>
 #include <csignal>
@@ -75,6 +73,15 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+
+
+#define NULL_USE( variable )                    \
+    do {                                        \
+        if ( 0 ) {                              \
+            auto static t = (char *) &variable; \
+            t++;                                \
+        }                                       \
+    } while ( 0 )
 
 
 namespace AMP {
