@@ -35,5 +35,8 @@ IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_1_2_4( testMatMultiply )
 ENDIF()
 
-ADD_SUBDIRECTORY ( extra_tests )
+IF ( USE_TRILINOS ) 
+    ADD_AMP_TEST( test_Epetra_FECrsMatrix_bug PROCS 2 )
+ENDIF()
+
 
