@@ -2,6 +2,14 @@
 #  Configure tests
 ############################################################################
 
+
+# Set default number of processors for tests
+SET( MESH_PROCS 1 )
+IF ( USE_MPI )
+    SET( MESH_PROCS 1 )
+ENDIF()
+
+
 # Copy input files
 COPY_TEST_FILE( input_Mesh )
 COPY_TEST_FILE( input_SiloIO-1 )
@@ -53,13 +61,8 @@ ENDIF()
 # Add mesh tests
 ADD_AMP_TEST_1_2_4( test_Mesh )
 ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_1D )
-IF ( USE_MPI OR USE_MPI )
-    ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_2D )
-    ADD_AMP_TEST_PARALLEL( test_Mesh 4 input_AMP_mesh_zoo_3D )
-ELSE()
-    ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_2D )
-    ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_3D )
-ENDIF()
+ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_2D PROCS ${MESH_PROCS} )
+ADD_AMP_TEST( test_Mesh input_AMP_mesh_zoo_3D PROCS ${MESH_PROCS} )
 ADD_AMP_TEST( test_Mesh input_LogicalMesh )
 ADD_AMP_TEST( test_Mesh input_crystal_circular_tri )  # triangle mesh (1 rank only)
 IF ( AMP_DATA )
@@ -80,7 +83,7 @@ ADD_AMP_TEST( testTriangleProjection )
 IF( USE_DENDRO AND USE_PETSC )
     ADD_AMP_TEST_1_2_4( testDendroInterpolation )
     COPY_TEST_FILE( input_testDendroInterpolation  )
-    ADD_AMP_TEST_PARALLEL( testDendroSearch 4)
+    ADD_AMP_TEST( testDendroSearch PROCS 4 )
 ENDIF()
 #ADD_AMP_TEST( testHex8ElementMapping )
 #ADD_AMP_TEST( testHex8ElementLinearInterpolation )
