@@ -627,41 +627,34 @@ void writeHDF5<std::vector<bool>>( hid_t fid,
 }
 
 
-/************************************************************************
- * Explicit instantiations for readHDF5<vector>                         *
- ***********************************************************************/
-// clang-format off
-template void readHDF5<std::vector<char>>( hid_t, const std::string_view &, std::vector<char> & );
-template void readHDF5<std::vector<unsigned char>>( hid_t, const std::string_view &, std::vector<unsigned char> & );
-template void readHDF5<std::vector<int>>( hid_t, const std::string_view &, std::vector<int> & );
-template void readHDF5<std::vector<unsigned int>>( hid_t, const std::string_view &, std::vector<unsigned int> & );
-template void readHDF5<std::vector<int16_t>>( hid_t, const std::string_view &, std::vector<int16_t> & );
-template void readHDF5<std::vector<uint16_t>>( hid_t, const std::string_view &, std::vector<uint16_t> & );
-template void readHDF5<std::vector<int64_t>>( hid_t, const std::string_view &, std::vector<int64_t> & );
-template void readHDF5<std::vector<uint64_t>>( hid_t, const std::string_view &, std::vector<uint64_t> & );
-template void readHDF5<std::vector<float>>( hid_t, const std::string_view &, std::vector<float> & );
-template void readHDF5<std::vector<double>>( hid_t, const std::string_view &, std::vector<double> & );
-template void readHDF5<std::vector<std::vector<double>>>( hid_t, const std::string_view &, std::vector<std::vector<double>> & );
-template void readHDF5<std::vector<std::string>>( hid_t, const std::string_view &, std::vector<std::string> & );
-// clang-format on
-
 
 /************************************************************************
- * Explicit instantiations for writeHDF5<vector>                        *
+ * Explicit instantiations                                              *
  ***********************************************************************/
+template void readHDF5<bool>( hid_t, const std::string_view &, bool & );
+template void writeHDF5<bool>( hid_t, const std::string_view &, const bool& );
 // clang-format off
-template void writeHDF5<std::vector<char>>( hid_t, const std::string_view &, const std::vector<char> & );
-template void writeHDF5<std::vector<unsigned char>>( hid_t, const std::string_view &, const std::vector<unsigned char> & );
-template void writeHDF5<std::vector<int>>( hid_t, const std::string_view &, const std::vector<int> & );
-template void writeHDF5<std::vector<unsigned int>>( hid_t, const std::string_view &, const std::vector<unsigned int> & );
-template void writeHDF5<std::vector<int16_t>>( hid_t, const std::string_view &, const std::vector<int16_t> & );
-template void writeHDF5<std::vector<uint16_t>>( hid_t, const std::string_view &, const std::vector<uint16_t> & );
-template void writeHDF5<std::vector<int64_t>>( hid_t, const std::string_view &, const std::vector<int64_t> & );
-template void writeHDF5<std::vector<uint64_t>>( hid_t, const std::string_view &, const std::vector<uint64_t> & );
-template void writeHDF5<std::vector<float>>( hid_t, const std::string_view &, const std::vector<float> & );
-template void writeHDF5<std::vector<double>>( hid_t, const std::string_view &, const std::vector<double> & );
-template void writeHDF5<std::vector<std::vector<double>>>( hid_t, const std::string_view &, const std::vector<std::vector<double>> & );
-template void writeHDF5<std::vector<std::string>>( hid_t, const std::string_view &, const std::vector<std::string> & );
+#define instantiate( FUN )       \
+    FUN( char );                 \
+    FUN( int8_t );               \
+    FUN( int16_t );              \
+    FUN( int32_t );              \
+    FUN( int64_t );              \
+    FUN( uint8_t );              \
+    FUN( uint16_t );             \
+    FUN( uint32_t );             \
+    FUN( uint64_t );             \
+    FUN( float );                \
+    FUN( double );               \
+    FUN( long double );
+#define instantiateScalerData( TYPE )                             \
+    template void readHDF5<TYPE>( hid_t, const std::string_view &, TYPE & ); \
+    template void writeHDF5<TYPE>( hid_t, const std::string_view &, const TYPE& )
+#define instantiateVectorData( TYPE )                             \
+    template void readHDF5<std::vector<TYPE>>( hid_t, const std::string_view &, std::vector<TYPE> & ); \
+    template void writeHDF5<std::vector<TYPE>>( hid_t, const std::string_view &, const std::vector<TYPE>& )
+instantiate( instantiateScalerData )        // Scalar data
+instantiate( instantiateVectorData )        // Vector data
 // clang-format on
 
 
