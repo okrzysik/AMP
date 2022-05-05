@@ -320,8 +320,8 @@ public:
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.  The base class provides a basic implimentation, but
+     *    Ideally, this should be done in O(1) time, but the implementation is up to
+     *    the underlying mesh.  The base class provides a basic implementation, but
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
@@ -390,7 +390,7 @@ public:
 
     /**
      *  Get the meshIDs of all meshes that compose the current mesh (including its self)
-     *  Note: This function may require global communication depending on the implimentation
+     *  Note: This function may require global communication depending on the implementation
      */
     virtual std::vector<MeshID> getAllMeshIDs() const;
 
@@ -398,7 +398,7 @@ public:
     /**
      *  Get the meshIDs of all the basic meshes that compose the current mesh
      *     (excluding multimeshes and subset meshes)
-     *  Note: This function may require global communication depending on the implimentation
+     *  Note: This function may require global communication depending on the implementation
      */
     virtual std::vector<MeshID> getBaseMeshIDs() const;
 

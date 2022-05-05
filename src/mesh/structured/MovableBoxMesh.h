@@ -13,10 +13,10 @@ namespace AMP::Mesh {
 /**
  * \class MovableBoxMesh
  * \brief A general BoxMesh
- * \details A concrete implimentation of BoxMesh in which the
+ * \details A concrete implementation of BoxMesh in which the
  *    coordinates of the nodes may be moved.  The base class
  *    BoxMesh is an arbitrary logically rectangular mesh class.
- *    To allow for derived implimentations which can leverage specific
+ *    To allow for derived implementations which can leverage specific
  *    properties, a derived class is required.
  */
 class MovableBoxMesh : public AMP::Mesh::BoxMesh
@@ -82,7 +82,7 @@ public:
     /**
      * \brief    Return a mesh element's coordinates given it's id.
      * \details  This function queries the mesh to get an element's coordinates given the mesh id.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to
+     *    Ideally, this should be done in O(1) time, but the implementation is up to
      *    the underlying mesh.
      * \param[in] index     Mesh element index we are requesting.
      * \param[out] pos      Mesh element coordinates

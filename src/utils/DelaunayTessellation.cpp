@@ -992,7 +992,7 @@ void swap_triangles( size_t N_tri,
  * det(A) > 0:   We are inside the circumsphere                          *
  * det(A) < 0:   We are outside the circumsphere                         *
  *                                                                       *
- * Note: this implimentation requires N^D precision                      *
+ * Note: this implementation requires N^D precision                      *
  ************************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
 int test_in_circumsphere( const std::array<TYPE, NDIM> x[],

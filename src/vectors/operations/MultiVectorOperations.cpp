@@ -2,6 +2,7 @@
 #include "AMP/vectors/Scalar.h"
 #include "AMP/vectors/Scalar.hpp"
 #include "AMP/vectors/data/MultiVectorData.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -16,9 +17,10 @@ std::shared_ptr<VectorOperations> MultiVectorOperations::cloneOperations() const
     return ptr;
 }
 
-//**********************************************************************
-// Static functions that operate on VectorData objects
 
+/****************************************************************
+ * Static functions that operate on VectorData objects           *
+ ****************************************************************/
 VectorData *MultiVectorOperations::getVectorDataComponent( VectorData &x, size_t i )
 {
     auto x2 = dynamic_cast<MultiVectorData *>( &x );
@@ -74,24 +76,49 @@ void MultiVectorOperations::setRandomValues( std::shared_ptr<RNG> rng, VectorDat
 
 void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 {
-
+    // Check if both x and y are MultVectorData objects (of the same size)
     auto xc = getMultiVectorData( x );
     auto yc = getMultiVectorData( y );
     if ( xc && yc ) {
-        // Both this and x are multivectors
-        for ( size_t i = 0; i != d_operations.size(); i++ )
-            d_operations[i]->copy( *getVectorDataComponent( x, i ),
-                                   *getVectorDataComponent( y, i ) );
-    } else {
-        // x is not a multivector, try to call a default implementation
-        AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
-        if ( x.isType<double>() && y.isType<double>() ) {
-            std::copy( x.begin<double>(), x.end<double>(), y.begin<double>() );
-        } else if ( x.isType<float>() && y.isType<float>() ) {
-            std::copy( x.begin<float>(), x.end<float>(), y.begin<float>() );
-        } else {
-            AMP_ERROR( "Unable to discern data types" );
+        if ( d_operations.size() == xc->getVectorDataSize() &&
+             d_operations.size() == yc->getVectorDataSize() ) {
+            for ( size_t i = 0; i != d_operations.size(); i++ )
+                d_operations[i]->copy( *getVectorDataComponent( x, i ),
+                                       *getVectorDataComponent( y, i ) );
+            return;
         }
+    }
+    // Check if we are dealing with vector data with multiple components
+    size_t Nx = x.getNumberOfComponents();
+    size_t Ny = y.getNumberOfComponents();
+    if ( Nx == Ny ) {
+        for ( size_t i = 0; i != Nx; i++ ) {
+            std::shared_ptr<VectorOperations> op;
+            auto x2 = x.getComponent( i );
+            auto y2 = y.getComponent( i );
+            if ( Nx == d_operations.size() ) {
+                // Use the vector data operations on the multivector
+                op = d_operations[i];
+            } else if ( x2->isType<double>() && y2->isType<double>() ) {
+                op = std::make_shared<VectorOperationsDefault<double>>();
+            } else if ( x2->isType<float>() && y2->isType<float>() ) {
+                op = std::make_shared<VectorOperationsDefault<float>>();
+            } else {
+                AMP_ERROR( "Unable to discern data types" );
+            }
+            op->copy( *x2, *y2 );
+        }
+        return;
+    }
+    // Try a default implementation using std::copy
+    // x is not a multivector, try to call a default implementation
+    AMP_ASSERT( x.getLocalSize() == y.getLocalSize() );
+    if ( x.isType<double>() && y.isType<double>() ) {
+        std::copy( x.begin<double>(), x.end<double>(), y.begin<double>() );
+    } else if ( x.isType<float>() && y.isType<float>() ) {
+        std::copy( x.begin<float>(), x.end<float>(), y.begin<float>() );
+    } else {
+        AMP_ERROR( "Unable to discern data types" );
     }
 }
 
