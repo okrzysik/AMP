@@ -13,7 +13,7 @@ class VectorDataIterator;
 
 /**
  * \brief  A class used to hold vector data
- * \details  VectorDataGPU is a default implimentation of VectorData that stores
+ * \details  VectorDataGPU is a default implementation of VectorData that stores
  *    the local values as a single block of data on the GPU.
  */
 template<typename TYPE = double>

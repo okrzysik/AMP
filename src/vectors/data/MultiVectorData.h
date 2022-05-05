@@ -14,7 +14,7 @@ namespace AMP::LinearAlgebra {
 
   \details
 
-  MultiVectorData is a default implimentation of VectorData that stores
+  MultiVectorData is a default implementation of VectorData that stores
   the local values as a single block of data on the CPU.
 
   */
@@ -68,6 +68,8 @@ public: // Virtual functions
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
     size_t getNumberOfComponents() const override;
+    std::shared_ptr<VectorData> getComponent( size_t i = 0 ) override;
+    std::shared_ptr<const VectorData> getComponent( size_t i = 0 ) const override;
     //! the next routine could be refined to depend on number of components
     bool hasContiguousData() const override { return false; }
 

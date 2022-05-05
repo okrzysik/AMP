@@ -28,51 +28,47 @@ public:
 
 private:
     //  static function that operate on VectorData
-    static VectorData *getVectorDataComponent( VectorData &x, size_t i );
-    static const VectorData *getVectorDataComponent( const VectorData &x, size_t i );
-    static MultiVectorData *getMultiVectorData( VectorData &x );
-    static const MultiVectorData *getMultiVectorData( const VectorData &x );
+    static VectorData *getVectorDataComponent( VectorData &, size_t );
+    static const VectorData *getVectorDataComponent( const VectorData &, size_t );
+    static MultiVectorData *getMultiVectorData( VectorData & );
+    static const MultiVectorData *getMultiVectorData( const VectorData & );
 
 public:
     std::string VectorOpName() const override { return "MultiVectorOperations"; }
-    void zero( VectorData &z ) override;
-    void setToScalar( const Scalar &alpha, VectorData &z ) override;
-    void setRandomValues( VectorData &x ) override;
-    void setRandomValues( std::shared_ptr<RNG> rng, VectorData &x ) override;
-    void copy( const VectorData &x, VectorData &z ) override;
-    void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
-    void scale( const Scalar &alpha, VectorData &x ) override;
-    void add( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void subtract( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void multiply( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void divide( const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void reciprocal( const VectorData &x, VectorData &y ) override;
-    void linearSum( const Scalar &alpha,
-                    const VectorData &x,
-                    const Scalar &beta,
-                    const VectorData &y,
-                    VectorData &z ) override;
-    void
-    axpy( const Scalar &alpha, const VectorData &x, const VectorData &y, VectorData &z ) override;
-    void
-    axpby( const Scalar &alpha, const Scalar &beta, const VectorData &x, VectorData &y ) override;
-    void abs( const VectorData &x, VectorData &z ) override;
-    void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
+    void zero( VectorData & ) override;
+    void setToScalar( const Scalar &, VectorData & ) override;
+    void setRandomValues( VectorData & ) override;
+    void setRandomValues( std::shared_ptr<RNG>, VectorData & ) override;
+    void copy( const VectorData &, VectorData & ) override;
+    void scale( const Scalar &, const VectorData &, VectorData & ) override;
+    void scale( const Scalar &, VectorData & ) override;
+    void add( const VectorData &, const VectorData &, VectorData & ) override;
+    void subtract( const VectorData &, const VectorData &, VectorData & ) override;
+    void multiply( const VectorData &, const VectorData &, VectorData & ) override;
+    void divide( const VectorData &, const VectorData &, VectorData & ) override;
+    void reciprocal( const VectorData &, VectorData & ) override;
+    void linearSum( const Scalar &,
+                    const VectorData &,
+                    const Scalar &,
+                    const VectorData &,
+                    VectorData & ) override;
+    void axpy( const Scalar &, const VectorData &, const VectorData &, VectorData & ) override;
+    void axpby( const Scalar &, const Scalar &, const VectorData &, VectorData & ) override;
+    void abs( const VectorData &, VectorData & ) override;
+    void addScalar( const VectorData &, const Scalar &, VectorData & ) override;
 
-    Scalar localMin( const VectorData &x ) const override;
-    Scalar localMax( const VectorData &x ) const override;
-    Scalar localL1Norm( const VectorData &x ) const override;
-    Scalar localL2Norm( const VectorData &x ) const override;
-    Scalar localMaxNorm( const VectorData &x ) const override;
-    Scalar localDot( const VectorData &x, const VectorData &y ) const override;
-    Scalar localMinQuotient( const VectorData &x, const VectorData &y ) const override;
-    Scalar localWrmsNorm( const VectorData &x, const VectorData &y ) const override;
-    Scalar localWrmsNormMask( const VectorData &x,
-                              const VectorData &mask,
-                              const VectorData &y ) const override;
-    bool localEquals( const VectorData &x,
-                      const VectorData &y,
-                      const Scalar &tol = 1e-6 ) const override;
+    Scalar localMin( const VectorData & ) const override;
+    Scalar localMax( const VectorData & ) const override;
+    Scalar localL1Norm( const VectorData & ) const override;
+    Scalar localL2Norm( const VectorData & ) const override;
+    Scalar localMaxNorm( const VectorData & ) const override;
+    Scalar localDot( const VectorData &, const VectorData & ) const override;
+    Scalar localMinQuotient( const VectorData &, const VectorData & ) const override;
+    Scalar localWrmsNorm( const VectorData &, const VectorData & ) const override;
+    Scalar
+    localWrmsNormMask( const VectorData &, const VectorData &, const VectorData & ) const override;
+    bool
+    localEquals( const VectorData &, const VectorData &, const Scalar &tol = 1e-6 ) const override;
 
     void resetVectorOperations( std::vector<std::shared_ptr<VectorOperations>> ops );
 

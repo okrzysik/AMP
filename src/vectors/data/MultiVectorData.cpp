@@ -102,12 +102,37 @@ size_t MultiVectorData::sizeofDataBlockType( size_t block ) const
     }
     return 0;
 }
+
+
+/****************************************************************
+ * Component data                                                *
+ ****************************************************************/
 size_t MultiVectorData::getNumberOfComponents() const
 {
     size_t N = 0;
     for ( auto data : d_data )
         N += data->getNumberOfComponents();
     return N;
+}
+std::shared_ptr<VectorData> MultiVectorData::getComponent( size_t i )
+{
+    for ( auto data : d_data ) {
+        size_t N = data->getNumberOfComponents();
+        if ( i < N )
+            return data->getComponent( i );
+        i -= N;
+    }
+    return nullptr;
+}
+std::shared_ptr<const VectorData> MultiVectorData::getComponent( size_t i ) const
+{
+    for ( auto data : d_data ) {
+        size_t N = data->getNumberOfComponents();
+        if ( i < N )
+            return data->getComponent( i );
+        i -= N;
+    }
+    return nullptr;
 }
 
 

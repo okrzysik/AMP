@@ -152,7 +152,7 @@ template<class T>
 hid_t getHDF5datatype();
 
 
-// Default no-op implimentations for use without HDF5
+// Default no-op implementations for use without HDF5
 // clang-format off
 #ifndef AMP_USE_HDF5
 template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}

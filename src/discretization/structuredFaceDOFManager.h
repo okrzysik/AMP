@@ -15,7 +15,7 @@ namespace AMP::Discretization {
  * \brief A derived class to create a DOFManager for faces
  * \details  This derived class impliments a concrete DOFManager for creating Vectors
  *    and matricies over a mesh on the faces of structured meshes.
- *    This is a specific implimentation designed for rectangular 3d meshes,
+ *    This is a specific implementation designed for rectangular 3d meshes,
  *    and will create the unknowns on the faces.  Two faces are neighbors if they
  *    share an element.
  */

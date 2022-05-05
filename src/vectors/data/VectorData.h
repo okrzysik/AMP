@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorData
 #define included_AMP_VectorData
 
+#include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
 #include "AMP/vectors/CommunicationList.h"
 #include "AMP/vectors/data/DataChangeFirer.h"
@@ -25,7 +26,7 @@ class VectorDataIterator;
  *       runs from [getLocalStartID(),getLocalStartID+getLocalSize())
  */
 
-class VectorData : public DataChangeFirer
+class VectorData : public DataChangeFirer, public AMP::enable_shared_from_this<VectorData>
 {
 public: // enums
     /**\brief Flag to choose algorithm for makeConsistent
@@ -84,8 +85,20 @@ public: // Get basic information
      */
     virtual size_t getGhostSize() const;
 
-    //! Return integer number of patch data components in vector
+    //! Return integer number of data components
     virtual size_t getNumberOfComponents() const;
+
+    /** \brief Number of elements in the ith component
+     * \param[in] i  particular data block
+     * \return The number of elements in the ith component
+     */
+    virtual std::shared_ptr<VectorData> getComponent( size_t i = 0 );
+
+    /** \brief Number of elements in the ith component
+     * \param[in] i  particular data block
+     * \return The number of elements in the ith component
+     */
+    virtual std::shared_ptr<const VectorData> getComponent( size_t i = 0 ) const;
 
     //! returns whether all data for the vector on a single process is contiguous
     virtual bool hasContiguousData() const { return true; }

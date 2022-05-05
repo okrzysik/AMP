@@ -16,7 +16,7 @@ class VectorDataIterator;
 
   \details
 
-  VectorDataNull is a default implimentation of VectorData that stores
+  VectorDataNull is a default implementation of VectorData that stores
   the local values as a single block of data on the CPU.
 
   */

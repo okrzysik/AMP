@@ -15,7 +15,7 @@ namespace AMP::Geometry {
 /**
  * \class MeshGeometry
  * \brief A class used to abstract away geometry information from an application or mesh.
- * \details  This class provides a geometry implimentation based on a surface mesh
+ * \details  This class provides a geometry implementation based on a surface mesh
  */
 class MeshGeometry final : public Geometry
 {

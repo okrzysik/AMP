@@ -39,7 +39,7 @@ public:
     /** \brief Basic constructor for DOFManager
      * \details  This will create a very simple DOFManager with the given number
      *    of DOFs on each processor.  It will not contain info to relate that to a mesh.
-     *    A derived implimentation should be used for more advanced features.
+     *    A derived implementation should be used for more advanced features.
      *    For example see simpleDOFManager and multiDOFManager.
      * \param[in]  N_local  The local number of DOFs
      * \param[in]  comm     The comm over which the DOFManager exists

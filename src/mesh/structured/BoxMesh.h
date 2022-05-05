@@ -292,8 +292,8 @@ public:
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.  The base class provides a basic implimentation, but
+     *    Ideally, this should be done in O(1) time, but the implementation is up to
+     *    the underlying mesh.  The base class provides a basic implementation, but
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param id    Mesh element id we are requesting.
      */
@@ -337,8 +337,8 @@ public:
      * \brief    Return a mesh element given it's id.
      * \details  This function queries the mesh to get an element given the mesh id.
      *    This function is only required to return an element if the id is local.
-     *    Ideally, this should be done in O(1) time, but the implimentation is up to
-     *    the underlying mesh.  The base class provides a basic implimentation, but
+     *    Ideally, this should be done in O(1) time, but the implementation is up to
+     *    the underlying mesh.  The base class provides a basic implementation, but
      *    uses mesh iterators and requires O(N) time on the number of elements in the mesh.
      * \param index    Mesh element index we are requesting.
      */
