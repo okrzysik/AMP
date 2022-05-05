@@ -94,7 +94,7 @@ template<> void readHDF5<std::vector<bool>>( hid_t, const std::string_view &, st
 
 
 /******************************************************************
- * Default implimentation                                          *
+ * Default implementation                                          *
  ******************************************************************/
 template<class TYPE>
 void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )

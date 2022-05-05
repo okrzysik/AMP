@@ -453,7 +453,7 @@ void MPI_CLASS::bcast( TYPE *, int, int ) const
 {
 }
 #endif
-// Default implimentation of bcast
+// Default implementation of bcast
 template<class TYPE>
 TYPE MPI_CLASS::bcast( TYPE x, int root ) const
 {

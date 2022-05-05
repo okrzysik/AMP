@@ -54,6 +54,7 @@
     #include "SAMRAI/tbox/StartupShutdownManager.h"
 #endif
 #ifdef AMP_USE_HYPRE
+    #undef HAVE_UNISTD_H
     #include "HYPRE_config.h"
 #endif
 #ifdef AMP_USE_KOKKOS
@@ -75,6 +76,7 @@
 #include <vector>
 
 
+#undef NULL_USE
 #define NULL_USE( variable )                    \
     do {                                        \
         if ( 0 ) {                              \

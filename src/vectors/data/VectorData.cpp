@@ -211,6 +211,24 @@ void VectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
 
 
 /****************************************************************
+ * Component data                                                *
+ ****************************************************************/
+size_t VectorData::getNumberOfComponents() const { return 1; }
+std::shared_ptr<VectorData> VectorData::getComponent( size_t i )
+{
+    AMP_ASSERT( getNumberOfComponents() == 1 );
+    AMP_ASSERT( i == 0 );
+    return shared_from_this();
+}
+std::shared_ptr<const VectorData> VectorData::getComponent( size_t i ) const
+{
+    AMP_ASSERT( getNumberOfComponents() == 1 );
+    AMP_ASSERT( i == 0 );
+    return shared_from_this();
+}
+
+
+/****************************************************************
  * dump data to ostream                                          *
  ****************************************************************/
 void VectorData::copyGhostValues( const VectorData &rhs )
@@ -220,7 +238,7 @@ void VectorData::copyGhostValues( const VectorData &rhs )
     } else if ( getGhostSize() == rhs.getGhostSize() ) {
         // The ghosts in the src vector match the current vector
         // Copy the ghosts from the rhs
-        std::vector<size_t> ghostIDs = getCommunicationList()->getGhostIDList();
+        auto ghostIDs = getCommunicationList()->getGhostIDList();
         std::vector<double> values( ghostIDs.size() );
         rhs.getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
@@ -229,7 +247,7 @@ void VectorData::copyGhostValues( const VectorData &rhs )
     } else {
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts
-        // Note: this will incure global communication
+        // Note: this will insure global communication
         *d_UpdateState = *( rhs.getUpdateStatusPtr() );
         if ( *d_UpdateState == UpdateState::UNCHANGED )
             *d_UpdateState = UpdateState::LOCAL_CHANGED;
@@ -237,7 +255,7 @@ void VectorData::copyGhostValues( const VectorData &rhs )
 }
 
 /****************************************************************
- * reset a vector                                               *
+ * reset vector data                                             *
  ****************************************************************/
 void VectorData::reset() { AMP_ERROR( "Not implemented" ); }
 
@@ -248,5 +266,6 @@ void VectorData::print( std::ostream &os, const std::string &name, const std::st
     NULL_USE( prefix );
     AMP_ERROR( "Not implemented" );
 }
+
 
 } // namespace AMP::LinearAlgebra
