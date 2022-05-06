@@ -19,7 +19,7 @@ MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParame
 {
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Mass Key ''Material'' is missing!" );
     auto matname = params->d_db->getWithDefault<std::string>( "Material", "Independent" );
-    d_material   = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    d_material   = AMP::Materials::getMaterial( matname );
 
     if ( params->d_db->keyExists( "Property" ) ) {
         d_PropertyName = params->d_db->getString( "Property" );
