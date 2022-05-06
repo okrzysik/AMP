@@ -125,8 +125,8 @@ MatTestResult testMaterial( std::string &name )
     }
 
     // test property evaluations
-    std::vector<std::string> proplist( mat->list() );
-    size_t nprop = proplist.size();
+    auto proplist = mat->list();
+    size_t nprop  = proplist.size();
     results.propResults.resize( nprop );
     for ( size_t type = 0; type < proplist.size(); type++ ) {
 

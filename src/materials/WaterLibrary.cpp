@@ -984,17 +984,18 @@ inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double
 }
 } // namespace WaterLibrary_NS
 //=================== Materials =====================================================
-
+// clang-format off
 WaterLibrary::WaterLibrary()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( Temperature, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( SaturatedLiquidEnthalpy, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( SaturatedVaporEnthalpy, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( SpecificVolume, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalConductivity, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( DynamicViscosity, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( Enthalpy, WaterLibrary_NS );
-    INSERT_PROPERTY_IN_MAP( ConvectiveHeat, WaterLibrary_NS );
+    d_propertyMap["Temperature"]             = std::make_shared<WaterLibrary_NS::TemperatureProp>();
+    d_propertyMap["SaturatedLiquidEnthalpy"] = std::make_shared<WaterLibrary_NS::SaturatedLiquidEnthalpyProp>();
+    d_propertyMap["SaturatedVaporEnthalpy"]  = std::make_shared<WaterLibrary_NS::SaturatedVaporEnthalpyProp>();
+    d_propertyMap["SpecificVolume"]          = std::make_shared<WaterLibrary_NS::SpecificVolumeProp>();
+    d_propertyMap["ThermalConductivity"]     = std::make_shared<WaterLibrary_NS::ThermalConductivityProp>();
+    d_propertyMap["DynamicViscosity"]        = std::make_shared<WaterLibrary_NS::DynamicViscosityProp>();
+    d_propertyMap["Enthalpy"]                = std::make_shared<WaterLibrary_NS::EnthalpyProp>();
+    d_propertyMap["ConvectiveHeat"]          = std::make_shared<WaterLibrary_NS::ConvectiveHeatProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials

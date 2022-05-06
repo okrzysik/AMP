@@ -185,15 +185,16 @@ inline double PoissonRatioProp::eval( const std::vector<double> & ) { return PRa
 } // namespace Steel316_MSRZC_09_NS
 
 //=================== Materials =====================================================
-
+// clang-format off
 Steel316_MSRZC_09::Steel316_MSRZC_09()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( ThermalConductivity, Steel316_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( Density, Steel316_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( HeatCapacityPressure, Steel316_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalExpansion, Steel316_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( YoungsModulus, Steel316_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( PoissonRatio, Steel316_MSRZC_09_NS );
+    d_propertyMap["ThermalConductivity"]  = std::make_shared<Steel316_MSRZC_09_NS::ThermalConductivityProp>();
+    d_propertyMap["Density"]              = std::make_shared<Steel316_MSRZC_09_NS::DensityProp>();
+    d_propertyMap["HeatCapacityPressure"] = std::make_shared<Steel316_MSRZC_09_NS::HeatCapacityPressureProp>();
+    d_propertyMap["ThermalExpansion"]     = std::make_shared<Steel316_MSRZC_09_NS::ThermalExpansionProp>();
+    d_propertyMap["YoungsModulus"]        = std::make_shared<Steel316_MSRZC_09_NS::YoungsModulusProp>();
+    d_propertyMap["PoissonRatio"]         = std::make_shared<Steel316_MSRZC_09_NS::PoissonRatioProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials

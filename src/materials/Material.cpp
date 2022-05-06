@@ -18,15 +18,15 @@ namespace AMP::Materials {
 // check if a property exists in the material
 bool Material::hasProperty( std::string type )
 {
-    return d_propertyMap->find( type ) != d_propertyMap->end();
+    return d_propertyMap.find( type ) != d_propertyMap.end();
 }
 
 
 // get a pointer to a specific property through its name
 std::shared_ptr<Property> Material::property( std::string type )
 {
-    auto it = d_propertyMap->find( type );
-    AMP_INSIST( it != d_propertyMap->end(), std::string( "property " ) + type + " is not defined" );
+    auto it = d_propertyMap.find( type );
+    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
     return it->second;
 }
 
@@ -36,12 +36,17 @@ std::shared_ptr<Property> Material::property( std::string type )
 std::vector<std::string> Material::list()
 {
     std::vector<std::string> result;
-    for ( auto it : *d_propertyMap ) {
-        std::string name        = it.second->get_name();
-        size_t usIndex          = name.rfind( "_" );
-        std::string nameReduced = name.substr( usIndex + 1 );
-        result.push_back( nameReduced );
-    }
+    for ( auto it : d_propertyMap )
+        result.push_back( it.first );
     return result;
 }
+
+
+// Return the material
+std::shared_ptr<Material> getMaterial( const std::string &name )
+{
+    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+}
+
+
 } // namespace AMP::Materials

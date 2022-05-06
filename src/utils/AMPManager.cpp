@@ -2,6 +2,7 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/AMP_Version.h"
 #include "AMP/IO/PIO.h"
+#include "AMP/materials/Material.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/RNG.h"
@@ -352,6 +353,8 @@ void AMPManager::shutdown()
         }
     }
     resourceMap.clear();
+    // Clear the material factories
+    AMP::voodoo::Factory<AMP::Materials::Material>::instance().clear();
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
 #ifdef AMP_USE_TIMER
