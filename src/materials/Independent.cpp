@@ -363,26 +363,27 @@ TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
 } // namespace Independent_NS
 
 //  =================== Materials =====================================================
-
+// clang-format off
 Independent::Independent()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( ThermalConductivity, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( FickCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( SoretCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( DTThermalConductivity, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( DTFickCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( DTSoretCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( DxThermalConductivity, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( DxFickCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( DxSoretCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( Density, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( HeatCapacityPressure, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalExpansion, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( YoungsModulus, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( PoissonRatio, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, Independent_NS );
-    INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, Independent_NS );
+    d_propertyMap["ThermalConductivity"]         = std::make_shared<Independent_NS::ThermalConductivityProp>();
+    d_propertyMap["FickCoefficient"]             = std::make_shared<Independent_NS::FickCoefficientProp>();
+    d_propertyMap["SoretCoefficient"]            = std::make_shared<Independent_NS::SoretCoefficientProp>();
+    d_propertyMap["DTThermalConductivity"]       = std::make_shared<Independent_NS::DTThermalConductivityProp>();
+    d_propertyMap["DTFickCoefficient"]           = std::make_shared<Independent_NS::DTFickCoefficientProp>();
+    d_propertyMap["DTSoretCoefficient"]          = std::make_shared<Independent_NS::DTSoretCoefficientProp>();
+    d_propertyMap["DxThermalConductivity"]       = std::make_shared<Independent_NS::DxThermalConductivityProp>();
+    d_propertyMap["DxFickCoefficient"]           = std::make_shared<Independent_NS::DxFickCoefficientProp>();
+    d_propertyMap["DxSoretCoefficient"]          = std::make_shared<Independent_NS::DxSoretCoefficientProp>();
+    d_propertyMap["Density"]                     = std::make_shared<Independent_NS::DensityProp>();
+    d_propertyMap["HeatCapacityPressure"]        = std::make_shared<Independent_NS::HeatCapacityPressureProp>();
+    d_propertyMap["ThermalExpansion"]            = std::make_shared<Independent_NS::ThermalExpansionProp>();
+    d_propertyMap["YoungsModulus"]               = std::make_shared<Independent_NS::YoungsModulusProp>();
+    d_propertyMap["PoissonRatio"]                = std::make_shared<Independent_NS::PoissonRatioProp>();
+    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<Independent_NS::ThermalDiffusionCoefficientProp>();
+    d_propertyMap["VectorFickCoefficient"]       = std::make_shared<Independent_NS::VectorFickCoefficientProp>();
+    d_propertyMap["TensorFickCoefficient"]       = std::make_shared<Independent_NS::TensorFickCoefficientProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials

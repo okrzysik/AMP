@@ -77,7 +77,7 @@ inline double FickCoefficientProp::eval( const std::vector<double> &args )
     double u = args[1];
 
     std::vector<double> p = get_parameters();
-    AMP_ASSERT( T > TminVal && T < TmaxVal );
+    AMP_ASSERT( T > TminVal && T < TmaxVal ); // clang-format off
     AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
     double x = u;
@@ -124,12 +124,13 @@ static std::vector<std::array<double, 2>> thermDiffRanges = { { TminVal, TmaxVal
 } // namespace Ox_MSRZC_09_NS
 
 //=================== Materials =====================================================
-
+// clang-format off
 Ox_MSRZC_09::Ox_MSRZC_09()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( FickCoefficient, Ox_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( SoretCoefficient, Ox_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, Ox_MSRZC_09_NS );
+    d_propertyMap["FickCoefficient"]             = std::make_shared<Ox_MSRZC_09_NS::FickCoefficientProp>();
+    d_propertyMap["SoretCoefficient"]            = std::make_shared<Ox_MSRZC_09_NS::SoretCoefficientProp>();
+    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<Ox_MSRZC_09_NS::ThermalDiffusionCoefficientProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials

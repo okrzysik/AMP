@@ -365,26 +365,27 @@ TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
 } // namespace FixedClad_NS
 
 //  =================== Materials =====================================================
-
+// clang-format off
 FixedClad::FixedClad()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( ThermalConductivity, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( FickCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( SoretCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( DTThermalConductivity, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( DTFickCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( DTSoretCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( DxThermalConductivity, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( DxFickCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( DxSoretCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( Density, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( HeatCapacityPressure, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalExpansion, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( YoungsModulus, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( PoissonRatio, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, FixedClad_NS );
-    INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, FixedClad_NS );
+    d_propertyMap["ThermalConductivity"]         = std::make_shared<FixedClad_NS::ThermalConductivityProp>();
+    d_propertyMap["FickCoefficient"]             = std::make_shared<FixedClad_NS::FickCoefficientProp>();
+    d_propertyMap["SoretCoefficient"]            = std::make_shared<FixedClad_NS::SoretCoefficientProp>();
+    d_propertyMap["DTThermalConductivity"]       = std::make_shared<FixedClad_NS::DTThermalConductivityProp>();
+    d_propertyMap["DTFickCoefficient"]           = std::make_shared<FixedClad_NS::DTFickCoefficientProp>();
+    d_propertyMap["DTSoretCoefficient"]          = std::make_shared<FixedClad_NS::DTSoretCoefficientProp>();
+    d_propertyMap["DxThermalConductivity"]       = std::make_shared<FixedClad_NS::DxThermalConductivityProp>();
+    d_propertyMap["DxFickCoefficient"]           = std::make_shared<FixedClad_NS::DxFickCoefficientProp>();
+    d_propertyMap["DxSoretCoefficient"]          = std::make_shared<FixedClad_NS::DxSoretCoefficientProp>();
+    d_propertyMap["Density"]                     = std::make_shared<FixedClad_NS::DensityProp>();
+    d_propertyMap["HeatCapacityPressure"]        = std::make_shared<FixedClad_NS::HeatCapacityPressureProp>();
+    d_propertyMap["ThermalExpansion"]            = std::make_shared<FixedClad_NS::ThermalExpansionProp>();
+    d_propertyMap["YoungsModulus"]               = std::make_shared<FixedClad_NS::YoungsModulusProp>();
+    d_propertyMap["PoissonRatio"]                = std::make_shared<FixedClad_NS::PoissonRatioProp>();
+    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<FixedClad_NS::ThermalDiffusionCoefficientProp>();
+    d_propertyMap["VectorFickCoefficient"]       = std::make_shared<FixedClad_NS::VectorFickCoefficientProp>();
+    d_propertyMap["TensorFickCoefficient"]       = std::make_shared<FixedClad_NS::TensorFickCoefficientProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials
