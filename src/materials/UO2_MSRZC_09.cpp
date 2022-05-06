@@ -329,17 +329,18 @@ inline double DTThermalConductivityProp::eval( const std::vector<double> &args )
 } // namespace UO2_MSRZC_09_NS
 
 //=================== Materials =====================================================
-
+// clang-format off
 UO2_MSRZC_09::UO2_MSRZC_09()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( ThermalConductivity, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( Density, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( HeatCapacityPressure, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalExpansion, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( YoungsModulus, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( PoissonRatio, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( DxThermalConductivity, UO2_MSRZC_09_NS );
-    INSERT_PROPERTY_IN_MAP( DTThermalConductivity, UO2_MSRZC_09_NS );
+    d_propertyMap["ThermalConductivity"]   = std::make_shared<UO2_MSRZC_09_NS::ThermalConductivityProp>();
+    d_propertyMap["Density"]               = std::make_shared<UO2_MSRZC_09_NS::DensityProp>();
+    d_propertyMap["HeatCapacityPressure"]  = std::make_shared<UO2_MSRZC_09_NS::HeatCapacityPressureProp>();
+    d_propertyMap["ThermalExpansion"]      = std::make_shared<UO2_MSRZC_09_NS::ThermalExpansionProp>();
+    d_propertyMap["YoungsModulus"]         = std::make_shared<UO2_MSRZC_09_NS::YoungsModulusProp>();
+    d_propertyMap["PoissonRatio"]          = std::make_shared<UO2_MSRZC_09_NS::PoissonRatioProp>();
+    d_propertyMap["DxThermalConductivity"] = std::make_shared<UO2_MSRZC_09_NS::DxThermalConductivityProp>();
+    d_propertyMap["DTThermalConductivity"] = std::make_shared<UO2_MSRZC_09_NS::DTThermalConductivityProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials

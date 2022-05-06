@@ -63,10 +63,11 @@ inline double FickCoefficientProp::eval( const std::vector<double> &args )
 } // namespace Dr_nonlinear_NS
 
 //=================== Materials =====================================================
-
+// clang-format off
 Dr_nonlinear::Dr_nonlinear()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( FickCoefficient, Dr_nonlinear_NS );
+    d_propertyMap["FickCoefficient"] = std::make_shared<Dr_nonlinear_NS::FickCoefficientProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials

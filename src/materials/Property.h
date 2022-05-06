@@ -175,9 +175,9 @@ public:
     void getAuxiliaryData( const std::string &key, std::string &val );
 
 protected:
-    std::string d_name;           //!< should be unique
-    std::string d_source;         //!< journal or report reference: from where did model come?
-    std::vector<double> d_params; //!< parameters
+    std::string d_name;                            //!< should be unique
+    std::string d_source;                          //!< reference for source data
+    std::vector<double> d_params;                  //!< parameters
     std::vector<std::string> d_arguments;          //!< names of the arguments to the eval function
     std::vector<double> d_defaults;                //!< default values of arguments to eval function
     bool d_defaultsAreSet;                         //!< indicates defaults have been set
