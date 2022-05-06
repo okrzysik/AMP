@@ -364,25 +364,28 @@ TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
 
 //  =================== Materials =====================================================
 
+// clang-format off
 FixedFuel::FixedFuel()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<Property>>();
-    INSERT_PROPERTY_IN_MAP( ThermalConductivity, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( FickCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( SoretCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( DTThermalConductivity, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( DTFickCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( DTSoretCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( DxThermalConductivity, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( DxFickCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( DxSoretCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( Density, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( HeatCapacityPressure, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalExpansion, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( YoungsModulus, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( PoissonRatio, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( ThermalDiffusionCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( VectorFickCoefficient, FixedFuel_NS );
-    INSERT_PROPERTY_IN_MAP( TensorFickCoefficient, FixedFuel_NS );
+    d_propertyMap["ThermalConductivity"]   = std::make_shared<FixedFuel_NS::ThermalConductivityProp>();
+    d_propertyMap["FickCoefficient"]       = std::make_shared<FixedFuel_NS::FickCoefficientProp>();
+    d_propertyMap["SoretCoefficient"]      = std::make_shared<FixedFuel_NS::SoretCoefficientProp>();
+    d_propertyMap["DTThermalConductivity"] = std::make_shared<FixedFuel_NS::DTThermalConductivityProp>();
+    d_propertyMap["DTFickCoefficient"]     = std::make_shared<FixedFuel_NS::DTFickCoefficientProp>();
+    d_propertyMap["DTSoretCoefficient"]    = std::make_shared<FixedFuel_NS::DTSoretCoefficientProp>();
+    d_propertyMap["DxThermalConductivity"] = std::make_shared<FixedFuel_NS::DxThermalConductivityProp>();
+    d_propertyMap["DxFickCoefficient"]     = std::make_shared<FixedFuel_NS::DxFickCoefficientProp>();
+    d_propertyMap["DxSoretCoefficient"]    = std::make_shared<FixedFuel_NS::DxSoretCoefficientProp>();
+    d_propertyMap["Density"]               = std::make_shared<FixedFuel_NS::DensityProp>();
+    d_propertyMap["HeatCapacityPressure"]  = std::make_shared<FixedFuel_NS::HeatCapacityPressureProp>();
+    d_propertyMap["ThermalExpansion"]      = std::make_shared<FixedFuel_NS::ThermalExpansionProp>();
+    d_propertyMap["YoungsModulus"]         = std::make_shared<FixedFuel_NS::YoungsModulusProp>();
+    d_propertyMap["PoissonRatio"]          = std::make_shared<FixedFuel_NS::PoissonRatioProp>();
+    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<FixedFuel_NS::ThermalDiffusionCoefficientProp>();
+    d_propertyMap["VectorFickCoefficient"] = std::make_shared<FixedFuel_NS::VectorFickCoefficientProp>();
+    d_propertyMap["TensorFickCoefficient"] = std::make_shared<FixedFuel_NS::TensorFickCoefficientProp>();
 }
+// clang-format on
+
+
 } // namespace AMP::Materials

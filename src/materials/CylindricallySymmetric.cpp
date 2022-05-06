@@ -268,13 +268,14 @@ std::vector<std::vector<double>> TensorFickProp::evalTensor( const std::vector<d
 } // namespace CylindricallySymmetric_NS
 
 //=================== Materials =====================================================
-
+// clang-format off
 CylindricallySymmetric::CylindricallySymmetric()
 {
-    d_propertyMap = new std::map<std::string, std::shared_ptr<AMP::Materials::Property>>();
-    INSERT_PROPERTY_IN_MAP( ScalarRadialFick, CylindricallySymmetric_NS );
-    INSERT_PROPERTY_IN_MAP( RadialFick, CylindricallySymmetric_NS );
-    INSERT_PROPERTY_IN_MAP( LongitudinalFick, CylindricallySymmetric_NS );
-    INSERT_PROPERTY_IN_MAP( TensorFick, CylindricallySymmetric_NS );
+    d_propertyMap["ScalarRadialFick"] = std::make_shared<CylindricallySymmetric_NS::ScalarRadialFickProp>();
+    d_propertyMap["RadialFick"]       = std::make_shared<CylindricallySymmetric_NS::RadialFickProp>();
+    d_propertyMap["LongitudinalFick"] = std::make_shared<CylindricallySymmetric_NS::LongitudinalFickProp>();
+    d_propertyMap["TensorFick"]       = std::make_shared<CylindricallySymmetric_NS::TensorFickProp>();
 }
+// clang-format on
+
 } // namespace AMP::Materials
