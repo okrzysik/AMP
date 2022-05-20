@@ -5,8 +5,6 @@
  *	  Author: bm, gad
  */
 
-#include "Independent.h"
-
 #include "Material.h"
 #include "Property.h"
 #include "TensorProperty.h"
@@ -15,6 +13,19 @@
 #include <string>
 
 namespace AMP::Materials {
+
+
+// Define the material
+class Independent : public Material
+{
+public:
+    Independent();
+};
+
+
+// Register the materials
+registerMaterial( Independent, "Independent" );
+
 
 namespace Independent_NS {
 

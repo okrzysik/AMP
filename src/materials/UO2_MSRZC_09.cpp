@@ -7,7 +7,6 @@
  *
  */
 
-#include "AMP/materials/UO2_MSRZC_09.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 
@@ -15,6 +14,19 @@
 #include <vector>
 
 namespace AMP::Materials {
+
+
+// Define the material
+class UO2_MSRZC_09 : public Material
+{
+public:
+    UO2_MSRZC_09();
+};
+
+
+// Register the materials
+registerMaterial( UO2_MSRZC_09, "UO2_MSRZC_09" );
+
 
 namespace UO2_MSRZC_09_NS {
 

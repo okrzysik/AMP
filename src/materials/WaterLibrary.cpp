@@ -4,7 +4,6 @@
  * flow.
  */
 
-#include "AMP/materials/WaterLibrary.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 
@@ -13,6 +12,20 @@
 #include <vector>
 
 namespace AMP::Materials {
+
+
+// Define the material
+class WaterLibrary : public Material
+{
+public:
+    WaterLibrary();
+};
+
+
+// Register the materials
+registerMaterial( WaterLibrary, "WaterLibrary" );
+
+
 namespace WaterLibrary_NS {
 
 //=================== Constants =====================================================

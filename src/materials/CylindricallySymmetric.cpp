@@ -5,8 +5,6 @@
  *	  Author: bm
  */
 
-#include "CylindricallySymmetric.h"
-
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 #include "AMP/materials/TensorProperty.h"
@@ -22,6 +20,16 @@
 static inline int round_zero( double x ) { return x >= 0.0 ? ceil( x ) : floor( x ); }
 
 namespace AMP::Materials {
+
+
+// Define and register the material
+class CylindricallySymmetric : public AMP::Materials::Material
+{
+public:
+    CylindricallySymmetric();
+};
+registerMaterial( CylindricallySymmetric, "CylindricallySymmetric" );
+
 
 /**
  * This is a nearly generic analytic model for the cylindrically symmetric diffusion in 3D.

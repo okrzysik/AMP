@@ -1,11 +1,12 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include "AMP/materials/Property.h"
 #include "AMP/utils/Factory.h"
-#include "Property.h"
-#include <memory>
+#include "AMP/utils/Utilities.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -44,13 +45,36 @@ protected:
 std::shared_ptr<Material> getMaterial( const std::string &name );
 
 
-/*// This macro is to be placed after each material class (UO2, Pu, etc.)
-// It will register the material with the factory
-#define REGISTER_MATERIAL(name)											\
-namespace																\
-{																		\
-    AMP::voodoo::Registration<Material,name> reg(#name);				\
-}*/
+//! Macro to register a material
+#define registerMaterial( CLASS, NAME )                                                    \
+    static struct CLASS##_INIT {                                                           \
+        CLASS##_INIT()                                                                     \
+        {                                                                                  \
+            static AMP::voodoo::Registration<AMP::Materials::Material, CLASS> reg( NAME ); \
+        }                                                                                  \
+    } CLASS##_init
+
+
+//! Macro to register a scalar property
+#define registerScalarProperty( PROPERTY, VALUE, UNITS )        \
+    d_propertyMap[PROPERTY] = std::make_shared<ScalarProperty>( \
+        AMP::Utilities::demangle( typeid( *this ).name() ) + "::" + PROPERTY, VALUE, UNITS );
+
+
+//! Scalar property class
+class ScalarProperty final : public Property
+{
+public:
+    ScalarProperty( std::string name, double value, AMP::Units unit )
+        : Property( name ), d_value( value ), d_unit( unit )
+    {
+    }
+    double eval( const std::vector<double> & ) override { return d_value; }
+
+private:
+    double d_value;
+    AMP::Units d_unit;
+};
 
 
 } // namespace AMP::Materials

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "AMP/materials/Material.h"
-#include "AMP/materials/WaterLibrary.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -25,8 +24,7 @@ static inline auto make_shared_vector( size_t N, double v = 0 )
 
 void checkConsistency( double h, double p, double T, bool &allCorrect, bool &allConsistent )
 {
-    auto mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
-        "WaterLibrary" );                                      // get water library
+    auto mat                 = AMP::Materials::getMaterial( "WaterLibrary" ); // get water library
     auto temperatureProperty = mat->property( "Temperature" ); // temperature property
     auto enthalpyProperty    = mat->property( "Enthalpy" );    // enthalpy property
 

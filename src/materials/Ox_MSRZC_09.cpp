@@ -8,7 +8,6 @@
  *
  */
 
-#include "AMP/materials/Ox_MSRZC_09.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 
@@ -16,6 +15,19 @@
 #include <string>
 
 namespace AMP::Materials {
+
+
+// Define the material
+class Ox_MSRZC_09 : public Material
+{
+public:
+    Ox_MSRZC_09();
+};
+
+
+// Register the materials
+registerMaterial( Ox_MSRZC_09, "Ox_MSRZC_09" );
+
 
 namespace Ox_MSRZC_09_NS {
 

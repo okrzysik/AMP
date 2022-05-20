@@ -6,8 +6,6 @@
  */
 //---------------------------------------------------------------------------//
 
-#include "FixedFuel.h"
-
 #include "Material.h"
 #include "Property.h"
 #include "TensorProperty.h"
@@ -16,6 +14,19 @@
 #include <string>
 
 namespace AMP::Materials {
+
+
+// Define the material
+class FixedFuel : public Material
+{
+public:
+    FixedFuel();
+};
+
+
+// Register the materials
+registerMaterial( FixedFuel, "FixedFuel" );
+
 
 namespace FixedFuel_NS {
 

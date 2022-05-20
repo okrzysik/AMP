@@ -52,9 +52,9 @@ public:
      */
     Property( std::string name,
               std::string source                        = "None",
-              std::vector<double> params                = std::vector<double>(),
-              std::vector<std::string> args             = std::vector<std::string>(),
-              std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>() );
+              std::vector<double> params                = {},
+              std::vector<std::string> args             = {},
+              std::vector<std::array<double, 2>> ranges = {} );
 
     /**
      * Destructor
@@ -62,10 +62,10 @@ public:
     virtual ~Property() {}
 
     /** return name of property */
-    inline std::string get_name() { return d_name; }
+    inline std::string get_name() const { return d_name; }
 
     /** return source reference */
-    inline std::string get_source() { return d_source; }
+    inline std::string get_source() const { return d_source; }
 
     /** return property parameters */
     inline const std::vector<double> &get_parameters() const { return d_params; }
@@ -211,8 +211,8 @@ public:
      *  \param args map of vectors of arguments, indexed by strings which are members of
      * get_arguments()
      *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
+     *  The  \a args  parameter need not contain all the members of  get_arguments()  as
+     * indices. Arguments left out will have values supplied by the entries in  get_defaults() .
      *  Sizes of  \a r  and \a args["name"] must match. Members of
      *  \a args  indexed by names other than those in  get_arguments()  are ignored.
      */
@@ -224,13 +224,12 @@ public:
      *  \param args map of AMP vectors of arguments, indexed by strings which are members of
      * get_arguments()
      *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
+     *  The  \a args  parameter need not contain all the members of  get_arguments()  as
+     * indices. Arguments left out will have values supplied by the entries in  get_defaults() .
      *  Sizes of  \a r  and \a args["name"] must match. Members of
      *  \a args  indexed by names other than those in  get_arguments()  are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the k-j-th
-     * result
-     *  returned in (*r[k][j])[i].
+     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the
+     * k-j-th result returned in (*r[k][j])[i].
      */
     virtual void
     evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
@@ -244,9 +243,8 @@ public:
      * set_translator() function
      *  which gives the correspondence between entries in get_arguments() and the \a args
      * multivector.
-     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
-     * and passed to another
-     * version of evalv.
+     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via
+     * make_map() and passed to another version of evalv.
      */
     virtual void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );

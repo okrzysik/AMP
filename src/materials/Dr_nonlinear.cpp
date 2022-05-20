@@ -5,7 +5,6 @@
  *	  Author: bm
  */
 
-#include "AMP/materials/Dr_nonlinear.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 
@@ -13,6 +12,19 @@
 #include <vector>
 
 namespace AMP::Materials {
+
+
+// Define the material
+class Dr_nonlinear : public Material
+{
+public:
+    Dr_nonlinear();
+};
+
+
+// Register the materials
+registerMaterial( Dr_nonlinear, "Dr_nonlinear" );
+
 
 namespace Dr_nonlinear_NS {
 
