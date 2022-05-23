@@ -11,8 +11,7 @@
 
 void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
-    std::string matname = "UO2_MSRZC_09";
-    auto material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    auto material = AMP::Materials::getMaterial( "UO2_MSRZC_09" );
 
     std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 

@@ -21,7 +21,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
     AMP_INSIST( ( params->d_db->keyExists( "Material" ) ),
                 "Subchannel Key ''Material'' is missing!" );
     auto matname = params->d_db->getString( "Material" );
-    d_material   = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    d_material   = AMP::Materials::getMaterial( matname );
 
     // get the formulation key
     AMP_INSIST( ( params->d_db->keyExists( "Formulation" ) ),

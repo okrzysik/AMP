@@ -89,8 +89,8 @@ int main( int argc, char *argv[] )
     AMP_INSIST( inDb->keyExists( "Property" ), "must specify material property" );
     auto propname = inDb->getString( "Property" );
 
-    // Use the material factory to grab an instance of the material named by matname
-    auto material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    // Get the material named by matname
+    auto material = AMP::Materials::getMaterial( matname );
 
     // get argument names and ranges
     auto names   = material->property( propname )->get_arguments();

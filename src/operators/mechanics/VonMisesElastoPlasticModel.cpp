@@ -582,6 +582,7 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
                                                double R_np1[3][3] )
 {
     if ( d_useMaterialsLibrary == true ) {
+
         std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
         std::string temperatureString = "temperature";   // in the future get from input file

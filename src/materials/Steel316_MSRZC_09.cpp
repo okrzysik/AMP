@@ -6,25 +6,13 @@
  */
 
 #include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 
 #include <string>
 #include <vector>
 
 namespace AMP::Materials {
-
-
-// Define the material
-class Steel316_MSRZC_09 : public Material
-{
-public:
-    Steel316_MSRZC_09();
-};
-
-
-// Register the materials
-registerMaterial( Steel316_MSRZC_09, "Steel316_MSRZC_09" );
-
 
 namespace Steel316_MSRZC_09_NS {
 

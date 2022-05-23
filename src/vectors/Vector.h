@@ -2,6 +2,7 @@
 #define included_AMP_Vector
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/Units.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -368,6 +369,9 @@ public: // Clone vectors
 
 
 public: // Get/Set data/variables/operations
+    //! Get the units for this Vector
+    inline auto getUnits() const { return d_units; }
+
     //! Get the DOFManager for this Vector
     inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
 
@@ -805,6 +809,7 @@ public: // Get values
 
 protected:                                                         // Internal data
     static std::shared_ptr<RNG> d_DefaultRNG;                      // default RNG
+    AMP::Units d_units;                                            // Optional units for the data
     std::shared_ptr<Variable> d_Variable;                          // Variable
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // The DOF_Manager
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data

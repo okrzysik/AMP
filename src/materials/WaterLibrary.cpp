@@ -1,10 +1,7 @@
-/*
- * \file materials/WaterLibrary.h
- * \brief Material library that contains all the properties of water as a coolant for subchannel
- * flow.
- */
+// Material library that contains all the properties of water as a coolant for subchannel flow
 
 #include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 
 #include <iomanip>
@@ -12,20 +9,6 @@
 #include <vector>
 
 namespace AMP::Materials {
-
-
-// Define the material
-class WaterLibrary : public Material
-{
-public:
-    WaterLibrary();
-};
-
-
-// Register the materials
-registerMaterial( WaterLibrary, "WaterLibrary" );
-
-
 namespace WaterLibrary_NS {
 
 //=================== Constants =====================================================

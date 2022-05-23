@@ -1,5 +1,5 @@
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#ifndef included_AMP_Material
+#define included_AMP_Material
 
 #include "AMP/materials/Property.h"
 #include "AMP/utils/Factory.h"
@@ -44,15 +44,19 @@ protected:
 //! Get a material
 std::shared_ptr<Material> getMaterial( const std::string &name );
 
+//! Get the list of materials available
+std::vector<std::string> getMaterialList();
 
-//! Macro to register a material
-#define registerMaterial( CLASS, NAME )                                                    \
-    static struct CLASS##_INIT {                                                           \
-        CLASS##_INIT()                                                                     \
+
+// This macro is to be placed after each material class (UO2, Pu, etc.)
+// It will register the material with the factory
+#define REGISTER_MATERIAL( NAME )                                                          \
+    static struct NAME##_INIT {                                                            \
+        NAME##_INIT()                                                                      \
         {                                                                                  \
-            static AMP::voodoo::Registration<AMP::Materials::Material, CLASS> reg( NAME ); \
+            static AMP::voodoo::Registration<AMP::Materials::Material, NAME> reg( #NAME ); \
         }                                                                                  \
-    } CLASS##_init
+    } NAME##_init
 
 
 //! Macro to register a scalar property
@@ -65,7 +69,7 @@ std::shared_ptr<Material> getMaterial( const std::string &name );
 class ScalarProperty final : public Property
 {
 public:
-    ScalarProperty( std::string name, double value, AMP::Units unit )
+    ScalarProperty( std::string name, double value, AMP::Units unit = "" )
         : Property( name ), d_value( value ), d_unit( unit )
     {
     }

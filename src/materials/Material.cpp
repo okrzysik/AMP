@@ -1,4 +1,5 @@
-#include "Material.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
 
 
 namespace AMP::Materials {
@@ -35,6 +36,13 @@ std::vector<std::string> Material::list()
 std::shared_ptr<Material> getMaterial( const std::string &name )
 {
     return AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+}
+
+
+// Return a list of available materials
+std::vector<std::string> getMaterialList()
+{
+    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
 }
 
 

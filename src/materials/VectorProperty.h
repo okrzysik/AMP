@@ -83,8 +83,8 @@ public:
      *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the result
      *  returned in r[i].
      */
-    virtual void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
-                        const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
+    void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of AMP vectors of return values
@@ -99,52 +99,26 @@ public:
      * result
      *  returned in (*r[j])[i].
      */
-    virtual void
-    evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
 
     /** Wrapper function that calls evalvActual for each argument set
+     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
+     *     and passed to another version of evalv.
      *  \param r vector of AMP vectors of return values
      *  \param args AMP multivector of arguments
-     *
-     *  Before this function is used, a translation table must be assigned by means of the
-     * set_translator() function
-     *  which gives the correspondence between entries in get_arguments() and the \a args
-     * multivector.
-     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
-     * and passed to another
-     * version of evalv.
+     *  \param translator   Optional translator between property arguments and AMP::Multivector
+     * entries
      */
-    virtual void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                        const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                const std::map<std::string, std::string> &translator = {} );
 
     // disable scalar evaluator
     double eval( const std::vector<double> & ) override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
         return 0;
-    }
-
-    // disable scalar evaluator
-    void evalv( std::vector<double> &,
-                const std::map<std::string, std::shared_ptr<std::vector<double>>> & ) override
-    {
-        AMP_ERROR( "cannot use scalar evaluator from vector property" );
-    }
-
-    // disable scalar evaluator
-    void
-    evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &,
-           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> & ) override
-    {
-        AMP_ERROR( "cannot use scalar evaluator from vector property" );
-    }
-
-    // disable scalar evaluator
-    void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &,
-                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> & ) override
-    {
-        AMP_ERROR( "cannot use scalar evaluator from vector property" );
     }
 };
 

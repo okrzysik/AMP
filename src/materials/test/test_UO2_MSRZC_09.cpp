@@ -18,7 +18,7 @@ int main( int argc, char **argv )
     bool good = true;
 
     // test constructors
-    auto mat  = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "UO2_MSRZC_09" );
+    auto mat  = AMP::Materials::getMaterial( "UO2_MSRZC_09" );
     auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors

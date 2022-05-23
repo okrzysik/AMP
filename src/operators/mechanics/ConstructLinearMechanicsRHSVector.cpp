@@ -82,8 +82,8 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     if ( useMaterialsLibrary == true ) {
         AMP_INSIST( ( materialModelDatabase->keyExists( "Material" ) ),
                     "Key ''Material'' is missing!" );
-        std::string matname = materialModelDatabase->getString( "Material" );
-        material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+        auto matname = materialModelDatabase->getString( "Material" );
+        material     = AMP::Materials::getMaterial( matname );
     }
 
     if ( useMaterialsLibrary == false ) {

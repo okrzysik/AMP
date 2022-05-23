@@ -6,27 +6,15 @@
  */
 //---------------------------------------------------------------------------//
 
-#include "Material.h"
-#include "Property.h"
-#include "TensorProperty.h"
-#include "VectorProperty.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
+#include "AMP/materials/Property.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/VectorProperty.h"
 
 #include <string>
 
 namespace AMP::Materials {
-
-
-// Define the material
-class FixedClad : public Material
-{
-public:
-    FixedClad();
-};
-
-
-// Register the materials
-registerMaterial( FixedClad, "FixedClad" );
-
 
 namespace FixedClad_NS {
 

@@ -29,16 +29,17 @@ void TensorProperty::evalv(
     std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
     const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
 {
-    bool in = this->in_range( args );
-    AMP_INSIST( in, "Property out of range" );
+    for ( const auto &arg : args )
+        in_range( arg.first, *arg.second, "", true );
     evalvActual( r, args );
 }
 
 void TensorProperty::evalv(
     std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
+    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+    const std::map<std::string, std::string> &translator )
 {
-    auto mapargs = make_map( args );
+    auto mapargs = make_map( args, translator );
     evalv( r, mapargs );
 }
 
@@ -174,8 +175,8 @@ void TensorProperty::evalv(
     std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &r,
     const std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
 {
-    bool in = this->in_range( args );
-    AMP_INSIST( in, "Property out of range" );
+    for ( const auto &arg : args )
+        in_range( arg.first, *arg.second, "", true );
     evalvActual( r, args );
 }
 

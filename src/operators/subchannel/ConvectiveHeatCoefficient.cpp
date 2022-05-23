@@ -14,7 +14,7 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
                 "Convective Heat  Coefficient Key ''Material'' is missing!" );
     auto matname = params->d_db->getString( "Material" );
 
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    d_material = AMP::Materials::getMaterial( matname );
 
     AMP_INSIST( params->d_db->keyExists( "Property" ),
                 "Convective Heat Coefficient Key ''Property'' is missing!" );

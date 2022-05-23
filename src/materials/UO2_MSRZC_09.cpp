@@ -1,32 +1,16 @@
 /*
- * UO2_MSRZC_09.h
- *
  *  Created on: Mar 11, 2010
  *	  Author: bm, gad
- *
- *
  */
 
 #include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 
 #include <string>
 #include <vector>
 
 namespace AMP::Materials {
-
-
-// Define the material
-class UO2_MSRZC_09 : public Material
-{
-public:
-    UO2_MSRZC_09();
-};
-
-
-// Register the materials
-registerMaterial( UO2_MSRZC_09, "UO2_MSRZC_09" );
-
 
 namespace UO2_MSRZC_09_NS {
 

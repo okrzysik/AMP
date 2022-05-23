@@ -25,7 +25,7 @@ DiffusionTransportModel::DiffusionTransportModel(
     AMP_INSIST( params->d_db->keyExists( "Material" ), "Diffusion Key ''Material'' is missing!" );
     std::string matname = params->d_db->getString( "Material" );
 
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    d_material = AMP::Materials::getMaterial( matname );
 
     AMP_INSIST( params->d_db->keyExists( "Property" ), "Diffusion Key ''Property'' is missing!" );
     std::string propname = params->d_db->getString( "Property" );

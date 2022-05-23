@@ -1,31 +1,17 @@
 /*
- * Independent.h
- *
  *  Created on: Mar 11, 2010
  *	  Author: bm, gad
  */
 
-#include "Material.h"
-#include "Property.h"
-#include "TensorProperty.h"
-#include "VectorProperty.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
+#include "AMP/materials/Property.h"
+#include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/VectorProperty.h"
 
 #include <string>
 
 namespace AMP::Materials {
-
-
-// Define the material
-class Independent : public Material
-{
-public:
-    Independent();
-};
-
-
-// Register the materials
-registerMaterial( Independent, "Independent" );
-
 
 namespace Independent_NS {
 

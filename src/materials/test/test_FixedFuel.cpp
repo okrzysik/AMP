@@ -25,7 +25,7 @@ int main( int argc, char **argv )
     bool good = true;
 
     // get material pointer
-    auto mat  = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( "FixedFuel" );
+    auto mat  = AMP::Materials::getMaterial( "FixedFuel" );
     auto prop = mat->property( "ThermalConductivity" );
 
     // test property accessors

@@ -585,7 +585,10 @@ constexpr double Units::convert( const Units &rhs ) const
 {
     constexpr SI_type energy      = { -2, 2, 1, 0, 0, 0, 0, 0 };
     constexpr SI_type temperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
-    if ( d_SI == rhs.d_SI ) {
+    if ( d_scale == 0 && rhs.d_scale == 0 ) {
+        // No units for both sides
+        return 1.0;
+    } else if ( d_SI == rhs.d_SI ) {
         // The SI units match
         return d_scale / rhs.d_scale;
     } else if ( d_SI == energy && rhs.d_SI == temperature ) {

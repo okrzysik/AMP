@@ -57,9 +57,8 @@ int main( int argc, char **argv )
     bool good = true;
 
     // test constructors for temperature
-    auto mat = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create(
-        "WaterLibrary" );                                      // get water library
-    auto temperatureProperty = mat->property( "Temperature" ); // temperature
+    auto mat                 = AMP::Materials::getMaterial( "WaterLibrary" ); // get water library
+    auto temperatureProperty = mat->property( "Temperature" );                // temperature
     auto liquidEnthalpyProperty =
         mat->property( "SaturatedLiquidEnthalpy" ); // saturated liquid enthalpy
     auto vaporEnthalpyProperty =
