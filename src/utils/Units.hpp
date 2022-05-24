@@ -462,6 +462,8 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
     // Check special units/characters
     if ( str == "percent" || str == "%" )
         return create( UnitType::unitless, 0.01 );
+    if ( str == "angstrom" )
+        return create( UnitType::length, 1e-10 );
     // No success
     SI_type u = { 0 };
     double s  = 0;

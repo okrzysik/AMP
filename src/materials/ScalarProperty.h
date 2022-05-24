@@ -4,13 +4,6 @@
 #include "AMP/materials/Property.h"
 
 
-//! Macro to register a scalar property
-#define registerScalarProperty( PROPERTY, VALUE, ... )                        \
-    d_propertyMap[PROPERTY] = std::make_shared<ScalarProperty>(               \
-        AMP::Utilities::demangle( typeid( *this ).name() ) + "::" + PROPERTY, \
-        VALUE,                                                                \
-        __VA_ARGS__ );
-
 //! Macro to register a polynomial based property
 #define registerPolynomialProperty( PROPERTY, ... )                 \
     d_propertyMap[PROPERTY] = std::make_shared<PolynomialProperty>( \

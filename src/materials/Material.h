@@ -38,17 +38,35 @@ public:
 
 public:
     //! check if a property exists in the material
-    bool hasProperty( std::string type );
+    bool hasProperty( const std::string &type ) const;
+
+    //! Return the name of the material
+    virtual std::string materialName() const = 0;
 
     //! get a pointer to a specific scalar property
     std::shared_ptr<Property> property( std::string type );
 
     //! return a list of all properties in this material
-    std::vector<std::string> list();
+    std::vector<std::string> list() const;
 
 protected:
     /// database of scalar properties
     std::map<std::string, std::shared_ptr<Property>> d_propertyMap;
+
+protected:
+    //! Add a constant-value fixed property
+    template<class PROPERTY, class... Args>
+    void addProperty( const std::string &name, Args &&...args )
+    {
+        auto name2          = materialName() + "::" + name;
+        d_propertyMap[name] = std::make_shared<PROPERTY>( name2, args... );
+    }
+
+    //! Add a constant-value fixed property
+    void addScalarProperty( const std::string &name,
+                            double value,
+                            const AMP::Units &unit = AMP::Units(),
+                            std::string source     = "" );
 };
 
 
