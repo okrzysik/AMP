@@ -31,7 +31,7 @@ int main( int argc, char **argv )
     // test property accessors
     std::string tcname = prop->get_name();
     std::string tcsorc = prop->get_source();
-    good               = good && tcname == "Independent_ThermalConductivity";
+    good               = good && tcname == "AMP::Materials::Independent::ThermalConductivity";
     good               = good && tcsorc == prop->get_source();
     std::cout << "thermal conductivity name is " << tcname << "\n";
     std::cout << "thermal conductivity source is " << tcsorc << "\n";
@@ -83,7 +83,7 @@ int main( int argc, char **argv )
     arg[0] = tv[1];
     arg[1] = bv[1];
     arg[2] = uv[1];
-    tcv[1] = prop->eval( arg );
+    tcv[1] = prop->eval();
 
     prop->evalv( tcv, argMap );
 
@@ -122,7 +122,7 @@ int main( int argc, char **argv )
     std::vector<double> param = { 1.2345 };
 
     prop->set_parameters( param );
-    double tcs = prop->eval( arg );
+    double tcs = prop->eval();
     good       = good && AMP::Utilities::approx_equal( tcs, param[0] );
 
     mat->property( "ThermalConductivity" )->set_parameters( param );

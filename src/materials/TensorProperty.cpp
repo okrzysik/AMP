@@ -13,6 +13,7 @@ TensorProperty::TensorProperty( std::string name,
                                 std::vector<std::array<double, 2>> ranges,
                                 std::vector<size_t> dimensions )
     : Property( std::move( name ),
+                Units(),
                 std::move( source ),
                 std::move( params ),
                 std::move( args ),

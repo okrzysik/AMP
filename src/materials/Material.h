@@ -11,6 +11,17 @@
 #include <vector>
 
 
+// This macro is to be placed after each material class (UO2, Pu, etc.)
+// It will register the material with the factory
+#define REGISTER_MATERIAL( NAME )                                                          \
+    static struct NAME##_INIT {                                                            \
+        NAME##_INIT()                                                                      \
+        {                                                                                  \
+            static AMP::voodoo::Registration<AMP::Materials::Material, NAME> reg( #NAME ); \
+        }                                                                                  \
+    } NAME##_init
+
+
 namespace AMP::Materials {
 
 
@@ -46,39 +57,6 @@ std::shared_ptr<Material> getMaterial( const std::string &name );
 
 //! Get the list of materials available
 std::vector<std::string> getMaterialList();
-
-
-// This macro is to be placed after each material class (UO2, Pu, etc.)
-// It will register the material with the factory
-#define REGISTER_MATERIAL( NAME )                                                          \
-    static struct NAME##_INIT {                                                            \
-        NAME##_INIT()                                                                      \
-        {                                                                                  \
-            static AMP::voodoo::Registration<AMP::Materials::Material, NAME> reg( #NAME ); \
-        }                                                                                  \
-    } NAME##_init
-
-
-//! Macro to register a scalar property
-#define registerScalarProperty( PROPERTY, VALUE, UNITS )        \
-    d_propertyMap[PROPERTY] = std::make_shared<ScalarProperty>( \
-        AMP::Utilities::demangle( typeid( *this ).name() ) + "::" + PROPERTY, VALUE, UNITS );
-
-
-//! Scalar property class
-class ScalarProperty final : public Property
-{
-public:
-    ScalarProperty( std::string name, double value, AMP::Units unit = "" )
-        : Property( name ), d_value( value ), d_unit( unit )
-    {
-    }
-    double eval( const std::vector<double> & ) override { return d_value; }
-
-private:
-    double d_value;
-    AMP::Units d_unit;
-};
 
 
 } // namespace AMP::Materials

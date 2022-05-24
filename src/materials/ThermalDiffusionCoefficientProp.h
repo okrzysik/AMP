@@ -1,9 +1,5 @@
-/*
- * ThermalDiffusionCoefficientProp.h
- *
- *  Created on: Sep 14, 2010
- *	  Author: gad
- */
+#ifndef included_AMP_ThermalDiffusionCoefficientProp
+#define included_AMP_ThermalDiffusionCoefficientProp
 
 /**
  * These context-dependent classes handle the thermal diffusion coefficient in a generic way.
@@ -18,178 +14,183 @@
  * one.
  */
 
-//=================== Classes =======================================================
 
 class ThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
-    ThermalDiffusionCoefficientProp()
+    ThermalDiffusionCoefficientProp( std::shared_ptr<Property> FickProp,
+                                     std::shared_ptr<Property> SoretProp )
         : AMP::Materials::Property( std::string( name_base ) +
                                         "_ThermalDiffusionCoefficient", // Name string
+                                    Units(),                            // Units
                                     source,                             // Reference source
                                     thermalDiffusionParams,             // Property parameters
                                     thermDiffArgs, // Names of arguments to the eval function
                                     thermDiffRanges ),
+          d_FickProp( FickProp ),
+          d_SoretProp( SoretProp ),
           d_ExtraParams( 2 )
     {
     }
 
     virtual void set_parameters( std::vector<double> params )
     {
-        std::vector<double> fickParams  = d_FickProp.get_parameters();
-        std::vector<double> soretParams = d_SoretProp.get_parameters();
+        std::vector<double> fickParams  = d_FickProp->get_parameters();
+        std::vector<double> soretParams = d_SoretProp->get_parameters();
         AMP_ASSERT( params.size() == fickParams.size() + soretParams.size() );
         for ( size_t i = 0; i < fickParams.size(); i++ )
             fickParams[i] = params[i];
         for ( size_t i = 0; i < soretParams.size(); i++ )
             soretParams[i] = params[fickParams.size() + i];
-        d_FickProp.set_parameters( std::move( fickParams ) );
-        d_SoretProp.set_parameters( std::move( soretParams ) );
+        d_FickProp->set_parameters( std::move( fickParams ) );
+        d_SoretProp->set_parameters( std::move( soretParams ) );
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override
+    {
+        this->getExtraParameters( args );
+        double fick  = d_ExtraParams[0];
+        double soret = d_ExtraParams[1];
+        return fick * soret;
+    }
 
 protected:
     virtual void getExtraParameters( const std::vector<double> &args )
     {
-        d_ExtraParams[0] = d_FickProp.eval( args );
-        d_ExtraParams[1] = d_SoretProp.eval( args );
+        d_ExtraParams[0] = d_FickProp->evalDirect( args );
+        d_ExtraParams[1] = d_SoretProp->evalDirect( args );
     }
 
 private:
-    FickCoefficientProp d_FickProp;
-    SoretCoefficientProp d_SoretProp;
+    std::shared_ptr<Property> d_FickProp;
+    std::shared_ptr<Property> d_SoretProp;
     std::vector<double> d_ExtraParams;
 };
 
-// define this macro in your host class if you want derivatives in your class and have
-// derivatives of Fick and Soret coefficients.
-#ifdef THERMAL_DIFFUSION_DERIVATIVE
 
 class DxThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
-    DxThermalDiffusionCoefficientProp()
+    DxThermalDiffusionCoefficientProp( std::shared_ptr<Property> FickProp,
+                                       std::shared_ptr<Property> SoretProp,
+                                       std::shared_ptr<Property> DxFickProp,
+                                       std::shared_ptr<Property> DxSoretProp )
         : AMP::Materials::Property( std::string( name_base ) +
                                         "_DxThermalDiffusionCoefficient", // Name string
+                                    Units(),                              // Units
                                     source,                               // Reference source
                                     thermalDiffusionParams,               // Property parameters
                                     thermDiffArgs, // Names of arguments to the eval function
                                     thermDiffRanges ),
+          d_FickProp( FickProp ),
+          d_SoretProp( SoretProp ),
+          d_DxFickProp( DxFickProp ),
+          d_DxSoretProp( DxSoretProp ),
           d_ExtraParams( 4 )
     {
     } // Number of arguments
 
     virtual void set_parameters( const double *params, const unsigned int nparams )
     {
-        std::vector<double> fickParams  = d_FickProp.get_parameters();
-        std::vector<double> soretParams = d_SoretProp.get_parameters();
+        std::vector<double> fickParams  = d_FickProp->get_parameters();
+        std::vector<double> soretParams = d_SoretProp->get_parameters();
         AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
         for ( size_t i = 0; i < fickParams.size(); i++ )
             fickParams[i] = params[i];
         for ( size_t i = 0; i < soretParams.size(); i++ )
             soretParams[i] = params[fickParams.size() + i];
-        d_FickProp.set_parameters( std::move( fickParams ) );
-        d_SoretProp.set_parameters( std::move( soretParams ) );
+        d_FickProp->set_parameters( std::move( fickParams ) );
+        d_SoretProp->set_parameters( std::move( soretParams ) );
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override
+    {
+        this->getExtraParameters( args );
+        double fick    = d_ExtraParams[0];
+        double soret   = d_ExtraParams[1];
+        double fickDx  = d_ExtraParams[2];
+        double soretDx = d_ExtraParams[3];
+        return fickDx * soret + fick * soretDx;
+    }
 
 protected:
     virtual void getExtraParameters( const std::vector<double> &args )
     {
-        d_ExtraParams[0] = d_FickProp.eval( args );
-        d_ExtraParams[1] = d_SoretProp.eval( args );
-        d_ExtraParams[2] = d_DxFickProp.eval( args );
-        d_ExtraParams[3] = d_DxSoretProp.eval( args );
+        d_ExtraParams[0] = d_FickProp->evalDirect( args );
+        d_ExtraParams[1] = d_SoretProp->evalDirect( args );
+        d_ExtraParams[2] = d_DxFickProp->evalDirect( args );
+        d_ExtraParams[3] = d_DxSoretProp->evalDirect( args );
     }
 
 private:
-    FickCoefficientProp d_FickProp;
-    SoretCoefficientProp d_SoretProp;
-    DxFickCoefficientProp d_DxFickProp;
-    DxSoretCoefficientProp d_DxSoretProp;
+    std::shared_ptr<Property> d_FickProp;
+    std::shared_ptr<Property> d_SoretProp;
+    std::shared_ptr<Property> d_DxFickProp;
+    std::shared_ptr<Property> d_DxSoretProp;
     std::vector<double> d_ExtraParams;
 };
 
 class DTThermalDiffusionCoefficientProp : public AMP::Materials::Property
 {
 public:
-    DTThermalDiffusionCoefficientProp()
+    DTThermalDiffusionCoefficientProp( std::shared_ptr<Property> FickProp,
+                                       std::shared_ptr<Property> SoretProp,
+                                       std::shared_ptr<Property> DTFickProp,
+                                       std::shared_ptr<Property> DTSoretProp )
         : AMP::Materials::Property( std::string( name_base ) +
                                         "_DTThermalDiffusionCoefficient", // Name string
+                                    Units(),                              // Units
                                     source,                               // Reference source
                                     thermalDiffusionParams,               // Property parameters
                                     thermDiffArgs, // Names of arguments to the eval function
                                     thermDiffRanges ),
+          d_FickProp( FickProp ),
+          d_SoretProp( SoretProp ),
+          d_DTFickProp( DTFickProp ),
+          d_DTSoretProp( DTSoretProp ),
           d_ExtraParams( 4 )
     {
     } // Number of arguments
 
     virtual void set_parameters( std::vector<double> params )
     {
-        std::vector<double> fickParams  = d_FickProp.get_parameters();
-        std::vector<double> soretParams = d_SoretProp.get_parameters();
+        std::vector<double> fickParams  = d_FickProp->get_parameters();
+        std::vector<double> soretParams = d_SoretProp->get_parameters();
         AMP_ASSERT( params.size() == fickParams.size() + soretParams.size() );
         for ( size_t i = 0; i < fickParams.size(); i++ )
             fickParams[i] = params[i];
         for ( size_t i = 0; i < soretParams.size(); i++ )
             soretParams[i] = params[fickParams.size() + i];
-        d_FickProp.set_parameters( std::move( fickParams ) );
-        d_SoretProp.set_parameters( std::move( soretParams ) );
+        d_FickProp->set_parameters( std::move( fickParams ) );
+        d_SoretProp->set_parameters( std::move( soretParams ) );
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) override
+    {
+        this->getExtraParameters( args );
+        double fick    = d_ExtraParams[0];
+        double soret   = d_ExtraParams[1];
+        double fickDT  = d_ExtraParams[2];
+        double soretDT = d_ExtraParams[3];
+        return fickDT * soret + fick * soretDT;
+    }
 
 protected:
     virtual void getExtraParameters( const std::vector<double> &args )
     {
-        d_ExtraParams[0] = d_FickProp.eval( args );
-        d_ExtraParams[1] = d_SoretProp.eval( args );
-        d_ExtraParams[2] = d_DTFickProp.eval( args );
-        d_ExtraParams[3] = d_DTSoretProp.eval( args );
+        d_ExtraParams[0] = d_FickProp->evalDirect( args );
+        d_ExtraParams[1] = d_SoretProp->evalDirect( args );
+        d_ExtraParams[2] = d_DTFickProp->evalDirect( args );
+        d_ExtraParams[3] = d_DTSoretProp->evalDirect( args );
     }
 
 private:
-    FickCoefficientProp d_FickProp;
-    SoretCoefficientProp d_SoretProp;
-    DTFickCoefficientProp d_DTFickProp;
-    DTSoretCoefficientProp d_DTSoretProp;
+    std::shared_ptr<Property> d_FickProp;
+    std::shared_ptr<Property> d_SoretProp;
+    std::shared_ptr<Property> d_DTFickProp;
+    std::shared_ptr<Property> d_DTSoretProp;
     std::vector<double> d_ExtraParams;
 };
 
-#endif
-
-//=================== Functions =====================================================
-
-inline double ThermalDiffusionCoefficientProp::eval( const std::vector<double> &args )
-{
-    this->getExtraParameters( args );
-    double fick  = d_ExtraParams[0];
-    double soret = d_ExtraParams[1];
-    return fick * soret;
-}
-
-#ifdef THERMAL_DIFFUSION_DERIVATIVE
-
-inline double DxThermalDiffusionCoefficientProp::eval( const std::vector<double> &args )
-{
-    this->getExtraParameters( args );
-    double fick    = d_ExtraParams[0];
-    double soret   = d_ExtraParams[1];
-    double fickDx  = d_ExtraParams[2];
-    double soretDx = d_ExtraParams[3];
-    return fickDx * soret + fick * soretDx;
-}
-
-inline double DTThermalDiffusionCoefficientProp::eval( const std::vector<double> &args )
-{
-    this->getExtraParameters( args );
-    double fick    = d_ExtraParams[0];
-    double soret   = d_ExtraParams[1];
-    double fickDT  = d_ExtraParams[2];
-    double soretDT = d_ExtraParams[3];
-    return fickDT * soret + fick * soretDT;
-}
 
 #endif

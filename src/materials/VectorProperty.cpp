@@ -13,6 +13,7 @@ VectorProperty::VectorProperty( std::string name,
                                 std::vector<std::array<double, 2>> ranges,
                                 const size_t dimension )
     : Property( std::move( name ),
+                Units(),
                 std::move( source ),
                 std::move( params ),
                 std::move( args ),

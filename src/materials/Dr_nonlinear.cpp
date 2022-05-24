@@ -33,6 +33,7 @@ class FickCoefficientProp : public Property
 public:
     FickCoefficientProp()
         : Property( "Dr_nonlinear_FickCoefficient", // Name string
+                    Units(),                        // Units
                     "manufactured solution -- nonlinear D(r) \n"
                     "   u(r) = 1 - r3 \n"
                     "   D(r) = D0 exp( - gamma u(r) ) \n"

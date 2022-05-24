@@ -213,6 +213,7 @@ class TemperatureProp : public Property
 public:
     TemperatureProp()
         : Property( "WaterLibrary_Temperature", // Name string
+                    Units(),                    // Units
                     source,                     // Reference source
                     TempParams,                 // Property parameters
                     TempArgs,                   // Names of arguments
@@ -229,6 +230,7 @@ class SaturatedLiquidEnthalpyProp : public Property
 public:
     SaturatedLiquidEnthalpyProp()
         : Property( "WaterLibrary_SaturatedLiquidEnthalpy", // Name string
+                    Units(),                                // Units
                     source,                                 // Reference source
                     HfSatParams,                            // Property parameters
                     HfSatArgs,                              // Names of arguments
@@ -245,6 +247,7 @@ class SaturatedVaporEnthalpyProp : public Property
 public:
     SaturatedVaporEnthalpyProp()
         : Property( "WaterLibrary_SaturatedVaporEnthalpy", // Name string
+                    Units(),                               // Units
                     source,                                // Reference source
                     HgSatParams,                           // Property parameters
                     HgSatArgs,                             // Names of arguments
@@ -261,6 +264,7 @@ class SpecificVolumeProp : public Property
 public:
     SpecificVolumeProp()
         : Property( "WaterLibrary_SpecificVolume", // Name string
+                    Units(),                       // Units
                     source,                        // Reference source
                     VolParams,                     // Property parameters
                     VolArgs,                       // Names of arguments
@@ -277,6 +281,7 @@ class ThermalConductivityProp : public Property
 public:
     ThermalConductivityProp()
         : Property( "WaterLibrary_ThermalConductivity", // Name string
+                    Units(),                            // Units
                     source,                             // Reference source
                     CondParams,                         // Property parameters
                     CondArgs,                           // Names of arguments
@@ -293,6 +298,7 @@ class ConvectiveHeatProp : public Property
 public:
     ConvectiveHeatProp()
         : Property( "WaterLibrary_ConvectiveHeat", // Name string
+                    Units(),                       // Units
                     source,                        // Reference source
                     ConvParams,                    // Property parameters
                     ConvArgs,                      // Names of arguments
@@ -309,6 +315,7 @@ class DynamicViscosityProp : public Property
 public:
     DynamicViscosityProp()
         : Property( "WaterLibrary_DynamicViscosity", // Name string
+                    Units(),                         // Units
                     source,                          // Reference source
                     ViscParams,                      // Property parameters
                     ViscArgs,                        // Names of arguments
@@ -325,6 +332,7 @@ class EnthalpyProp : public Property
 public:
     EnthalpyProp()
         : Property( "WaterLibrary_Enthalpy", // Name string
+                    Units(),                 // Units
                     source,                  // Reference source
                     EnthalpyParams,          // Property parameters
                     EnthalpyArgs,            // Names of arguments

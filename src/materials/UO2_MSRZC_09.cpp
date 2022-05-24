@@ -49,6 +49,7 @@ class ThermalConductivityProp : public Property
 public:
     ThermalConductivityProp()
         : Property( "UO2_MSRZC_09_ThermalConductivity", // Name string
+                    Units(),                            // Units
                     source,                             // Reference source
                     TCparams,                           // Property parameters
                     arguments,                          // Names of arguments to the eval function
@@ -65,6 +66,7 @@ class DensityProp : public Property
 public:
     DensityProp()
         : Property( "UO2_MSRZC_09_Density", // Name string
+                    Units(),                // Units
                     source,                 // Reference source
                     DEparams,               // Property parameters
                     arguments,              // Names of arguments to the eval function
@@ -81,6 +83,7 @@ class ThermalExpansionProp : public Property
 public:
     ThermalExpansionProp()
         : Property( "UO2_MSRZC_09_ThermalExpansion", // Name string
+                    Units(),                         // Units
                     source,                          // Reference source
                     TEparams,                        // Property parameters
                     arguments,                       // Names of arguments to the eval function
@@ -97,6 +100,7 @@ class HeatCapacityPressureProp : public Property
 public:
     HeatCapacityPressureProp()
         : Property( "UO2_MSRZC_09_HeatCapacityPressure", // Name string
+                    Units(),                             // Units
                     source,                              // Reference source
                     HCparams,                            // Property parameters
                     arguments,                           // Names of arguments to the eval function
@@ -112,6 +116,7 @@ class YoungsModulusProp : public Property
 public:
     YoungsModulusProp()
         : Property( "UO2_MSRZC_09_YoungsModulus", // Name string
+                    Units(),                      // Units
                     source,                       // Reference source
                     YMparams,                     // Property parameters
                     arguments,                    // Names of arguments to the eval function
@@ -128,6 +133,7 @@ class PoissonRatioProp : public Property
 public:
     PoissonRatioProp()
         : Property( "UO2_MSRZC_09_PoissonRatio", // Name string
+                    Units(),                     // Units
                     source,                      // Reference source
                     { PRatio },                  // Property parameters
                     {},                          // Names of arguments to the eval function
@@ -144,6 +150,7 @@ class DxThermalConductivityProp : public Property
 public:
     DxThermalConductivityProp()
         : Property( "UO2_MSRZC_09_DxThermalConductivity", // Name string
+                    Units(),                              // Units
                     source,                               // Reference source
                     TCparams,                             // Property parameters
                     arguments,                            // Names of arguments to the eval function
@@ -160,6 +167,7 @@ class DTThermalConductivityProp : public Property
 public:
     DTThermalConductivityProp()
         : Property( "UO2_MSRZC_09_DTThermalConductivity", // Name string
+                    Units(),                              // Units
                     source,                               // Reference source
                     TCparams,                             // Property parameters
                     arguments,                            // Names of arguments to the eval function

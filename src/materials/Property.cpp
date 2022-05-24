@@ -13,12 +13,14 @@ namespace AMP::Materials {
  *  Constructor                                                          *
  ************************************************************************/
 Property::Property( std::string name,
+                    Units unit,
                     std::string source,
                     std::vector<double> params,
                     std::vector<std::string> args,
                     std::vector<std::array<double, 2>> ranges,
                     std::vector<Units> units )
     : d_name( std::move( name ) ),
+      d_units( unit ),
       d_source( std::move( source ) ),
       d_params( std::move( params ) ),
       d_arguments( std::move( args ) ),
@@ -73,12 +75,50 @@ Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args
 
 
 /************************************************************************
- *  evalvActual                                                          *
+ *  evalv                                                                *
+ ************************************************************************/
+double Property::eval( const Units &unit,
+                       const std::vector<double> &args,
+                       const std::vector<std::string> &names,
+                       const std::vector<Units> &argUnits )
+{
+    double value = 0;
+    if ( names.empty() && argUnits.empty() && args.size() == d_arguments.size() ) {
+        // Evaluate the property
+        value = eval( args );
+    } else {
+        // Set the default values
+        auto eval_args = d_defaults;
+        // Override default arguments
+        AMP_ASSERT( names.size() == args.size() );
+        for ( size_t i = 0; i < args.size(); i++ ) {
+            for ( size_t j = 0; j < d_arguments.size(); j++ ) {
+                if ( names[i] == d_arguments[j] ) {
+                    eval_args[j] = args[i];
+                    if ( !argUnits.empty() ) {
+                        if ( !argUnits[i].isNull() && !d_argUnits[j].isNull() )
+                            eval_args[j] *= argUnits[i].convert( d_argUnits[j] );
+                    }
+                }
+            }
+        }
+        // Evaluate the property
+        value = eval( eval_args );
+    }
+    // Convert units if required
+    if ( !unit.isNull() )
+        value *= d_units.convert( unit );
+    return value;
+}
+
+
+/************************************************************************
+ *  evalv                                                                *
  ************************************************************************/
 static inline size_t size( const std::vector<double> &x ) { return x.size(); }
 static inline size_t size( const AMP::LinearAlgebra::Vector &x ) { return x.getLocalSize(); }
 template<class OUT, class IN>
-void Property::evalv( OUT &r, const std::vector<argumentDataStruct<IN>> &args )
+void Property::evalv( OUT &r, const Units &unit, const std::vector<argumentDataStruct<IN>> &args )
 {
     // Check that all vectors are the same size
     for ( size_t i = 0; i < args.size(); i++ )
@@ -107,6 +147,10 @@ void Property::evalv( OUT &r, const std::vector<argumentDataStruct<IN>> &args )
     }
 
     // Call eval for each entry
+    double scale = 1.0;
+    if ( !unit.isNull() )
+        scale = d_units.convert( unit );
+
     for ( auto r_it = r.begin(); r_it != r.end(); ++r_it ) {
         // Update the arguments
         for ( size_t i = 0; i < args.size(); i++ ) {
@@ -116,37 +160,12 @@ void Property::evalv( OUT &r, const std::vector<argumentDataStruct<IN>> &args )
             }
         }
         // Call eval
-        *r_it = eval( eval_args );
+        *r_it = scale * eval( eval_args );
     }
-}
-double Property::eval( const std::vector<std::string> &names,
-                       const std::vector<double> &args,
-                       const std::vector<Units> &units )
-{
-    // Set the default values
-    auto eval_args = d_defaults;
-    // Override default arguments
-    AMP_ASSERT( names.size() == args.size() );
-    for ( size_t i = 0; i < args.size(); i++ ) {
-        for ( size_t j = 0; j < d_arguments.size(); j++ ) {
-            if ( names[i] == d_arguments[j] ) {
-                eval_args[j] = args[i];
-                if ( !units.empty() ) {
-                    if ( !units[i].isNull() && !d_argUnits[j].isNull() )
-                        eval_args[j] *= units[i].convert( d_argUnits[j] );
-                }
-            }
-        }
-    }
-    return eval( eval_args );
 }
 template void Property::evalv( std::vector<double> &,
+                               const Units &unit,
                                const std::vector<argumentDataStruct<std::vector<double>>> & );
-
-
-/************************************************************************
- *  evalv                                                                *
- ************************************************************************/
 double Property::eval( const std::vector<double> & )
 {
     AMP_INSIST( false, "function is not implemented for this property" );
@@ -159,7 +178,7 @@ void Property::evalv(
     std::vector<argumentDataStruct<AMP::LinearAlgebra::Vector>> args2;
     for ( const auto &t : args )
         args2.emplace_back( std::get<0>( t ), *std::get<1>( t ), std::get<1>( t )->getUnits() );
-    evalv( *r, args2 );
+    evalv( *r, r->getUnits(), args2 );
 }
 void Property::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                       const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
@@ -174,7 +193,7 @@ void Property::evalv( std::vector<double> &r,
     std::vector<argumentDataStruct<std::vector<double>>> args2;
     for ( const auto &tmp : args )
         args2.emplace_back( tmp.first, *tmp.second );
-    evalv( r, args2 );
+    evalv( r, Units(), args2 );
 }
 
 

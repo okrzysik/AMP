@@ -42,6 +42,7 @@ class ThermalConductivityProp : public Property
 public:
     ThermalConductivityProp()
         : Property( "Steel316_MSRZC_09_ThermalConductivity", // Name string
+                    Units(),                                 // Units
                     source,                                  // Reference source
                     TCparams,                                // Property parameters
                     arguments,                               // Names of arguments
@@ -58,6 +59,7 @@ class DensityProp : public Property
 public:
     DensityProp()
         : Property( "Steel316_MSRZC_09_Density", // Name string
+                    Units(),                     // Units
                     source,                      // Reference source
                     DEparams,                    // Property parameters
                     arguments,                   // Names of arguments
@@ -74,6 +76,7 @@ class ThermalExpansionProp : public Property
 public:
     ThermalExpansionProp()
         : Property( "Steel316_MSRZC_09_ThermalExpansion", // Name string
+                    Units(),                              // Units
                     source,                               // Reference source
                     TEparams,                             // Property parameters
                     arguments,                            // Names of arguments
@@ -90,6 +93,7 @@ class HeatCapacityPressureProp : public Property
 public:
     HeatCapacityPressureProp()
         : Property( "Steel316_MSRZC_09_HeatCapacityPressure", // Name string
+                    Units(),                                  // Units
                     source,                                   // Reference source
                     HCparams,                                 // Property parameters
                     arguments,                                // Names of arguments
@@ -106,6 +110,7 @@ class YoungsModulusProp : public Property
 public:
     YoungsModulusProp()
         : Property( "Steel316_MSRZC_09_YoungsModulus", // Name string
+                    Units(),                           // Units
                     source,                            // Reference source
                     YMparams,                          // Property parameters
                     arguments,                         // Names of arguments
@@ -122,6 +127,7 @@ class PoissonRatioProp : public Property
 public:
     PoissonRatioProp()
         : Property( "Steel316_MSRZC_09_PoissonRatio", // Name string
+                    Units(),                          // Units
                     source,                           // Reference source
                     { PRatio },                       // Property parameters
                     arguments,                        // Names of arguments

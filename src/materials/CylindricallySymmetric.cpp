@@ -74,6 +74,7 @@ class ScalarRadialFickProp : public Property
 public:
     ScalarRadialFickProp()
         : Property( "CylindricallySymmetric_ScalarRadialFick", // Name string
+                    Units(),                                   // Null units
                     "",                                        // Reference source
                     { 1.0 },                                   // Property parameters
                     { "radius" },              // Names of arguments to the eval function

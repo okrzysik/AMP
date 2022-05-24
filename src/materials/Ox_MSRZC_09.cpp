@@ -44,9 +44,10 @@ class FickCoefficientProp : public Property
 public:
     FickCoefficientProp()
         : Property( "Ox_MSRZC_09_FickCoefficient", // Name string
-                    source,                        // Reference source
-                    FCparams,                      // Property parameters
-                    arguments,                     // Names of arguments to the eval function
+                    Units(),
+                    source,    // Reference source
+                    FCparams,  // Property parameters
+                    arguments, // Names of arguments to the eval function
                     { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
     {
     } // Range of variables
@@ -59,9 +60,10 @@ class SoretCoefficientProp : public Property
 public:
     SoretCoefficientProp()
         : Property( "Ox_MSRZC_09_SoretCoefficient", // Name string
-                    source,                         // Reference source
-                    SCparams,                       // Property parameters
-                    arguments,                      // Names of arguments to the eval function
+                    Units(),
+                    source,    // Reference source
+                    SCparams,  // Property parameters
+                    arguments, // Names of arguments to the eval function
                     { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
     {
     } // Range of variables
@@ -129,7 +131,7 @@ Ox_MSRZC_09::Ox_MSRZC_09()
 {
     d_propertyMap["FickCoefficient"]             = std::make_shared<Ox_MSRZC_09_NS::FickCoefficientProp>();
     d_propertyMap["SoretCoefficient"]            = std::make_shared<Ox_MSRZC_09_NS::SoretCoefficientProp>();
-    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<Ox_MSRZC_09_NS::ThermalDiffusionCoefficientProp>();
+    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<Ox_MSRZC_09_NS::ThermalDiffusionCoefficientProp>( property( "FickCoefficient" ), property( "SoretCoefficient" ) );
 }
 // clang-format on
 

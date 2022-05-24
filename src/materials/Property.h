@@ -53,11 +53,12 @@ public:
      * \param units     Optional units for each argument
      */
     Property( std::string name,
+              Units unit                                = Units(),
               std::string source                        = "None",
               std::vector<double> params                = {},
               std::vector<std::string> args             = {},
               std::vector<std::array<double, 2>> ranges = {},
-              std::vector<Units> units                  = {} );
+              std::vector<Units> argUnits               = {} );
 
     /**
      * Destructor
@@ -65,18 +66,21 @@ public:
     virtual ~Property() {}
 
     /** return name of property */
-    inline std::string get_name() const { return d_name; }
+    inline const std::string &get_name() const { return d_name; }
 
     /** return source reference */
-    inline std::string get_source() const { return d_source; }
+    inline const std::string &get_source() const { return d_source; }
+
+    /** return source reference */
+    inline const Units &get_units() const { return d_units; }
 
     /** return property parameters */
     inline const std::vector<double> &get_parameters() const { return d_params; }
 
     /**
-     * \brief		   set the property parameters
-     * \param[in]	   params the new parameters
-     * \param[in]	   nparams the number of new parameters
+     * \brief           set the property parameters
+     * \param[in]       params the new parameters
+     * \param[in]       nparams the number of new parameters
      */
     inline void set_parameters( std::vector<double> params )
     {
@@ -91,9 +95,9 @@ public:
     inline bool variable_number_parameters() { return d_variableNumberParameters; }
 
     /**
-     * \brief		   set the property parameters
-     * \param[in]	   params the new parameters
-     * \param[in]	   nparams the number of new parameters
+     * \brief           set the property parameters
+     * \param[in]       params the new parameters
+     * \param[in]       nparams the number of new parameters
      */
     virtual void set_parameters_and_number( std::vector<double> params );
 
@@ -178,22 +182,21 @@ public: // Functions dealing with auxilliary data
 
 public: // Evaluators
     /**
-     * scalar evaluation function for a single argument set
-     * \param args list of argument values, in correct order, in the correct units, given by
-     *    get_arguments()
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      The values for the optional arguments.  If names is not specified,
+     *                  this must match the values from get_parameters().
+     * \param names     The names for the optional arguments.
+     * \param argUnits  The units for the given arguments.  If not specified then the
+     *                  native units are used (see get_arg_units())
      * \return scalar value of property
      */
-    virtual double eval( const std::vector<double> &args ) = 0;
-
-    /**
-     * scalar evaluation function for a single argument set
-     * \param args list of argument values
-     *    get_arguments()
-     * \return scalar value of property
-     */
-    double eval( const std::vector<std::string> &names,
-                 const std::vector<double> &args,
-                 const std::vector<Units> &units = {} );
+    double eval( const Units &unit                     = Units(),
+                 const std::vector<double> &args       = {},
+                 const std::vector<std::string> &names = {},
+                 const std::vector<Units> &argUnits    = {} );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of return values
@@ -220,8 +223,9 @@ public: // Evaluators
      *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the
      * k-j-th result returned in (*r[k][j])[i].
      */
-    void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+    void
+    evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
+           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args = {} );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via
@@ -255,11 +259,25 @@ public: // Advanced interfaces
 
     // Loops through input vectors, calling the child eval function, returning scalar
     template<class OUT, class IN = OUT>
-    void evalv( OUT &r, const std::vector<argumentDataStruct<IN>> &args );
+    void evalv( OUT &r, const Units &units, const std::vector<argumentDataStruct<IN>> &args );
 
     // [[deprecated]]
     void evalv( std::vector<double> &r,
                 const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
+
+    // [[deprecated]]
+    inline double evalDirect( const std::vector<double> &args ) { return eval( args ); }
+
+protected:
+    Property() : d_variableNumberParameters( false ) {}
+
+    /**
+     * scalar evaluation function for a single argument set
+     * \param args list of argument values, in correct order, in the correct units, given by
+     *    get_arguments()
+     * \return scalar value of property
+     */
+    virtual double eval( const std::vector<double> &args ) = 0;
 
 
 protected:
@@ -300,6 +318,11 @@ protected:
                               const VEC &,
                               const Units &u,
                               Args... args );
+
+protected: // Friend classes (need to clean this up)
+    friend class ThermalDiffusionCoefficientProp;
+    friend class DxThermalDiffusionCoefficientProp;
+    friend class DTThermalDiffusionCoefficientProp;
 };
 
 

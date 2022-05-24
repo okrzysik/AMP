@@ -9,14 +9,13 @@
 #include "AMP/materials/Material.h"
 #include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
+#include "AMP/materials/ScalarProperty.h"
 #include "AMP/materials/TensorProperty.h"
 #include "AMP/materials/VectorProperty.h"
 
 #include <string>
 
 namespace AMP::Materials {
-
-namespace FixedClad_NS {
 
 //  =================== Constants =====================================================
 
@@ -34,205 +33,10 @@ static const double heatcpval = 1.;
 static const double youngsval = 1.;
 static const double pratioval = 0.290;
 
+
 //  =================== Classes =======================================================
 
-class ThermalConductivityProp : public Property
-{
-public:
-    ThermalConductivityProp()
-        : Property( "FixedClad_ThermalConductivity", // Name string
-                    source,                          // Reference source
-                    { thermalval }                   // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class FickCoefficientProp : public Property
-{
-public:
-    FickCoefficientProp()
-        : Property( "FixedClad_FickCoefficient", // Name string
-                    source,                      // Reference source
-                    { fickval }                  // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class SoretCoefficientProp : public Property
-{
-public:
-    SoretCoefficientProp()
-        : Property( "FixedClad_SoretCoefficient", // Name string
-                    source,                       // Reference source
-                    { fickval }                   // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DensityProp : public Property
-{
-public:
-    DensityProp()
-        : Property( "FixedClad_Density", // Name string
-                    source,              // Reference source
-                    { densval }          // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class ThermalExpansionProp : public Property
-{
-public:
-    ThermalExpansionProp()
-        : Property( "FixedClad_ThermalExpansion", // Name string
-                    source,                       // Reference source
-                    { alphaval }                  // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class HeatCapacityPressureProp : public Property
-{
-public:
-    HeatCapacityPressureProp()
-        : Property( "FixedClad_HeatCapacityPressure", // Name string
-                    source,                           // Reference source
-                    { heatcpval }                     // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class YoungsModulusProp : public Property
-{
-public:
-    YoungsModulusProp()
-        : Property( "FixedClad_YoungsModulus", // Name string
-                    source,                    // Reference source
-                    { youngsval }              // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class PoissonRatioProp : public Property
-{
-public:
-    PoissonRatioProp()
-        : Property( "FixedClad_PoissonRatio", // Name string
-                    source,                   // Reference source
-                    { pratioval }             // Property parameters
-          )
-    {
-    } // Number of arguments
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DTThermalConductivityProp : public Property
-{
-public:
-    DTThermalConductivityProp()
-        : Property( "FixedClad_DTThermalConductivity", // Name string
-                    source,                            // Reference source
-                    { thermalval }                     // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DTFickCoefficientProp : public Property
-{
-public:
-    DTFickCoefficientProp()
-        : Property( "FixedClad_DTFickCoefficient", // Name string
-                    source,                        // Reference source
-                    { fickval },                   // Property parameters
-                    {}                             // Names of arguments
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DTSoretCoefficientProp : public Property
-{
-public:
-    DTSoretCoefficientProp()
-        : Property( "FixedClad_DTSoretCoefficient", // Name string
-                    source,                         // Reference source
-                    { soretval }                    // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DxThermalConductivityProp : public Property
-{
-public:
-    DxThermalConductivityProp()
-        : Property( "FixedClad_DxThermalConductivity", // Name string
-                    source,                            // Reference source
-                    { thermalval }                     // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DxFickCoefficientProp : public Property
-{
-public:
-    DxFickCoefficientProp()
-        : Property( "FixedClad_DxFickCoefficient", // Name string
-                    source,                        // Reference source
-                    { fickval },                   // Property parameters
-                    {}                             // Names of arguments
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
-
-class DxSoretCoefficientProp : public Property
-{
-public:
-    DxSoretCoefficientProp()
-        : Property( "FixedClad_DxSoretCoefficient", // Name string
-                    source,                         // Reference source
-                    { soretval }                    // Property parameters
-          )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-};
+namespace FixedClad_NS {
 
 class VectorFickCoefficientProp : public VectorProperty
 {
@@ -294,54 +98,8 @@ static std::initializer_list<double> thermalDiffusionParams     = { 1., 1. };
 static const std::vector<std::string> thermDiffArgs             = {};
 static const std::vector<std::array<double, 2>> thermDiffRanges = {};
 
-#define THERMAL_DIFFUSION_DERIVATIVE
 #include "ThermalDiffusionCoefficientProp.h"
-#undef THERMAL_DIFFUSION_DERIVATIVE
 
-//  =================== Functions =====================================================
-
-inline double ThermalConductivityProp::eval( const std::vector<double> & )
-{
-    return get_parameters()[0];
-}
-
-inline double FickCoefficientProp::eval( const std::vector<double> & )
-{
-    return get_parameters()[0];
-}
-
-inline double SoretCoefficientProp::eval( const std::vector<double> & )
-{
-    return get_parameters()[0];
-}
-
-inline double DTThermalConductivityProp::eval( const std::vector<double> & ) { return 0.; }
-
-inline double DxThermalConductivityProp::eval( const std::vector<double> & ) { return 0.; }
-
-inline double DTFickCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
-
-inline double DxFickCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
-
-inline double DTSoretCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
-
-inline double DxSoretCoefficientProp::eval( const std::vector<double> & ) { return 0.; }
-
-inline double DensityProp::eval( const std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double ThermalExpansionProp::eval( const std::vector<double> & )
-{
-    return get_parameters()[0];
-}
-
-inline double HeatCapacityPressureProp::eval( const std::vector<double> & )
-{
-    return get_parameters()[0];
-}
-
-inline double YoungsModulusProp::eval( const std::vector<double> & ) { return get_parameters()[0]; }
-
-inline double PoissonRatioProp::eval( const std::vector<double> & ) { return get_parameters()[0]; }
 
 std::vector<double> VectorFickCoefficientProp::evalVector( const std::vector<double> & )
 {
@@ -367,21 +125,21 @@ TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
 // clang-format off
 FixedClad::FixedClad()
 {
-    d_propertyMap["ThermalConductivity"]         = std::make_shared<FixedClad_NS::ThermalConductivityProp>();
-    d_propertyMap["FickCoefficient"]             = std::make_shared<FixedClad_NS::FickCoefficientProp>();
-    d_propertyMap["SoretCoefficient"]            = std::make_shared<FixedClad_NS::SoretCoefficientProp>();
-    d_propertyMap["DTThermalConductivity"]       = std::make_shared<FixedClad_NS::DTThermalConductivityProp>();
-    d_propertyMap["DTFickCoefficient"]           = std::make_shared<FixedClad_NS::DTFickCoefficientProp>();
-    d_propertyMap["DTSoretCoefficient"]          = std::make_shared<FixedClad_NS::DTSoretCoefficientProp>();
-    d_propertyMap["DxThermalConductivity"]       = std::make_shared<FixedClad_NS::DxThermalConductivityProp>();
-    d_propertyMap["DxFickCoefficient"]           = std::make_shared<FixedClad_NS::DxFickCoefficientProp>();
-    d_propertyMap["DxSoretCoefficient"]          = std::make_shared<FixedClad_NS::DxSoretCoefficientProp>();
-    d_propertyMap["Density"]                     = std::make_shared<FixedClad_NS::DensityProp>();
-    d_propertyMap["HeatCapacityPressure"]        = std::make_shared<FixedClad_NS::HeatCapacityPressureProp>();
-    d_propertyMap["ThermalExpansion"]            = std::make_shared<FixedClad_NS::ThermalExpansionProp>();
-    d_propertyMap["YoungsModulus"]               = std::make_shared<FixedClad_NS::YoungsModulusProp>();
-    d_propertyMap["PoissonRatio"]                = std::make_shared<FixedClad_NS::PoissonRatioProp>();
-    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<FixedClad_NS::ThermalDiffusionCoefficientProp>();
+    registerPolynomialProperty( "Density", source, std::vector<double>( { densval } ) );
+    registerPolynomialProperty( "ThermalConductivity", source, std::vector<double>( { thermalval } ) );
+    registerPolynomialProperty( "FickCoefficient", source, std::vector<double>( { fickval } ) );
+    registerPolynomialProperty( "SoretCoefficient", source, std::vector<double>( { fickval } ) );
+    registerPolynomialProperty( "DTThermalConductivity", source, std::vector<double>( { 0 } ) );
+    registerPolynomialProperty( "DTFickCoefficient", source, std::vector<double>( { 0 } ) );
+    registerPolynomialProperty( "DTSoretCoefficient", source, std::vector<double>( { 0 } ) );
+    registerPolynomialProperty( "DxThermalConductivity", source, std::vector<double>( { 0 } ) );
+    registerPolynomialProperty( "DxSoretCoefficient", source, std::vector<double>( { 0 } ) );
+    registerPolynomialProperty( "DxFickCoefficient", source, std::vector<double>( { 0 } ) );
+    registerPolynomialProperty( "HeatCapacityPressure", source, std::vector<double>( { heatcpval } ) );
+    registerPolynomialProperty( "ThermalExpansion", source, std::vector<double>( { alphaval } ) );
+    registerPolynomialProperty( "YoungsModulus", source, std::vector<double>( { youngsval } ) );
+    registerPolynomialProperty( "PoissonRatio", source, std::vector<double>( { pratioval } ) );
+    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<FixedClad_NS::ThermalDiffusionCoefficientProp>( property( "FickCoefficient" ), property( "SoretCoefficient" ) );
     d_propertyMap["VectorFickCoefficient"]       = std::make_shared<FixedClad_NS::VectorFickCoefficientProp>();
     d_propertyMap["TensorFickCoefficient"]       = std::make_shared<FixedClad_NS::TensorFickCoefficientProp>();
 }
