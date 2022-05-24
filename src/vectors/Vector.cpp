@@ -215,6 +215,7 @@ Vector::shared_ptr Vector::cloneVector( const std::shared_ptr<Variable> name ) c
 std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name ) const
 {
     auto vec             = std::make_unique<Vector>();
+    vec->d_units         = d_units;
     vec->d_Variable      = name;
     vec->d_DOFManager    = d_DOFManager;
     vec->d_VectorData    = d_VectorData->cloneData();
@@ -226,7 +227,11 @@ std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name )
         AMP_ERROR( "Failed to clone ops: " + d_VectorOps->VectorOpName() );
     return vec;
 }
-void Vector::swapVectors( Vector &other ) { d_VectorData->swapData( *other.getVectorData() ); }
+void Vector::swapVectors( Vector &other )
+{
+    d_VectorData->swapData( *other.getVectorData() );
+    std::swap( d_units, other.d_units );
+}
 
 
 /****************************************************************

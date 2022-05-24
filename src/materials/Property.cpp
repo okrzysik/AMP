@@ -31,13 +31,11 @@ Property::Property( std::string name,
         d_argUnits.resize( d_arguments.size() );
     AMP_ASSERT( d_arguments.size() == d_ranges.size() );
     AMP_ASSERT( d_arguments.size() == d_argUnits.size() );
-    for ( size_t i = 0; i < d_arguments.size(); i++ ) {
-        d_argToIndexMap.insert( std::pair<std::string, size_t>( d_arguments[i], i ) );
-    }
+    for ( size_t i = 0; i < d_arguments.size(); i++ )
+        d_argToIndexMap[d_arguments[i]] = i;
     d_defaults.resize( d_arguments.size() );
     for ( size_t i = 0; i < d_arguments.size(); i++ )
         d_defaults[i] = d_ranges[i][0];
-    d_defaultsAreSet = true;
 }
 
 
@@ -77,64 +75,73 @@ Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args
 /************************************************************************
  *  evalvActual                                                          *
  ************************************************************************/
-template<class INPUT_VTYPE, class RETURN_VTYPE>
-void Property::evalvActual( RETURN_VTYPE &r,
-                            const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args )
+static inline size_t size( const std::vector<double> &x ) { return x.size(); }
+static inline size_t size( const AMP::LinearAlgebra::Vector &x ) { return x.getLocalSize(); }
+template<class OUT, class IN>
+void Property::evalv( OUT &r, const std::vector<argumentDataStruct<IN>> &args )
 {
-    std::vector<double> eval_args( d_arguments.size() ); // list of arguments for each input type
+    // Check that all vectors are the same size
+    for ( size_t i = 0; i < args.size(); i++ )
+        AMP_ASSERT( size( args[i].vec ) == size( r ) );
 
-    // First we make sure that all of the vectors have something in them
-    AMP_ASSERT( r.begin() != r.end() );
+    // Check that all arguments are in range
+    for ( const auto &arg : args )
+        in_range( std::string( arg.str ), arg.vec, arg.units, true );
 
-    // Make a vector of iterators - one for each d_arguments
-    std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
-    std::vector<size_t> parameter_indices;
-    std::vector<typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator>
-        parameter_map_iter;
+    // Set the default values
+    auto eval_args = d_defaults;
 
-    // Walk through d_arguments and set the iterator at the beginning of the map vector to which it
-    // corresponds
-    for ( size_t i = 0; i < d_arguments.size(); ++i ) {
-        auto mapIter = args.find( d_arguments[i] );
-        if ( mapIter == args.end() ) {
-            eval_args[i] = d_defaults[i];
-        } else {
-            parameter_iter.push_back( mapIter->second->begin() );
-            parameter_indices.push_back( i );
-            parameter_map_iter.push_back( mapIter );
+    // Get the indices and iterators to override
+    std::vector<int> index( args.size(), -1 );
+    std::vector<double> scaleArgs( args.size(), 1.0 );
+    std::vector<typename IN::const_iterator> arg_it( args.size() );
+    for ( size_t i = 0; i < args.size(); i++ ) {
+        auto it = d_argToIndexMap.find( args[i].str );
+        if ( it != d_argToIndexMap.end() ) {
+            size_t j  = it->second;
+            index[j]  = i;
+            arg_it[j] = args[i].vec.begin();
+            if ( !args[i].units.isNull() && !d_argUnits[j].isNull() )
+                scaleArgs[j] = args[i].units.convert( d_argUnits[j] );
         }
     }
-    const size_t npresent = parameter_iter.size();
 
-    for ( auto r_iter = r.begin(); r_iter != r.end(); ++r_iter ) {
-        // Loop through the list of actually present parameter iterators and assign their values to
-        // the vector being sent to eval
-        // Check that parameter iterators have not gone off the end - meaning result and input sizes
-        // do not match
-        if ( !d_arguments.empty() ) {
-            for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
-                AMP_INSIST( parameter_iter[ipresent] != parameter_map_iter[ipresent]->second->end(),
-                            std::string( "size mismatch between results and arguments - too few "
-                                         "argument values for argument " ) +
-                                d_arguments[parameter_indices[ipresent]] + std::string( "\n" ) );
-                eval_args[parameter_indices[ipresent]] = *( parameter_iter[ipresent] );
+    // Call eval for each entry
+    for ( auto r_it = r.begin(); r_it != r.end(); ++r_it ) {
+        // Update the arguments
+        for ( size_t i = 0; i < args.size(); i++ ) {
+            if ( index[i] >= 0 ) {
+                eval_args[i] = scaleArgs[i] * ( *arg_it[i] );
+                ++arg_it[i];
             }
         }
-        *r_iter = eval( eval_args );
-
-        // update the parameter iterators
-        for ( size_t i = 0; i < npresent; i++ ) {
-            parameter_iter[i]++;
-        }
-    }
-    // Make sure the input value iterators all got to the end.
-    if ( !d_arguments.empty() ) {
-        for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
-            AMP_INSIST( parameter_iter[ipresent] == parameter_map_iter[ipresent]->second->end(),
-                        "size mismatch between results and arguments - too few results\n" );
-        }
+        // Call eval
+        *r_it = eval( eval_args );
     }
 }
+double Property::eval( const std::vector<std::string> &names,
+                       const std::vector<double> &args,
+                       const std::vector<Units> &units )
+{
+    // Set the default values
+    auto eval_args = d_defaults;
+    // Override default arguments
+    AMP_ASSERT( names.size() == args.size() );
+    for ( size_t i = 0; i < args.size(); i++ ) {
+        for ( size_t j = 0; j < d_arguments.size(); j++ ) {
+            if ( names[i] == d_arguments[j] ) {
+                eval_args[j] = args[i];
+                if ( !units.empty() ) {
+                    if ( !units[i].isNull() && !d_argUnits[j].isNull() )
+                        eval_args[j] *= units[i].convert( d_argUnits[j] );
+                }
+            }
+        }
+    }
+    return eval( eval_args );
+}
+template void Property::evalv( std::vector<double> &,
+                               const std::vector<argumentDataStruct<std::vector<double>>> & );
 
 
 /************************************************************************
@@ -145,20 +152,14 @@ double Property::eval( const std::vector<double> & )
     AMP_INSIST( false, "function is not implemented for this property" );
     return 0;
 }
-void Property::evalv( std::vector<double> &r,
-                      const std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
-{
-    for ( const auto &arg : args )
-        in_range( arg.first, *arg.second, "", true );
-    evalvActual( r, args );
-}
 void Property::evalv(
     std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
     const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
 {
-    for ( const auto &arg : args )
-        in_range( arg.first, *arg.second, "", true );
-    evalvActual( *r, args );
+    std::vector<argumentDataStruct<AMP::LinearAlgebra::Vector>> args2;
+    for ( const auto &t : args )
+        args2.emplace_back( std::get<0>( t ), *std::get<1>( t ), std::get<1>( t )->getUnits() );
+    evalv( *r, args2 );
 }
 void Property::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
                       const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
@@ -166,6 +167,14 @@ void Property::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
 {
     auto mapargs = make_map( args, translator );
     evalv( r, mapargs );
+}
+void Property::evalv( std::vector<double> &r,
+                      const std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
+{
+    std::vector<argumentDataStruct<std::vector<double>>> args2;
+    for ( const auto &tmp : args )
+        args2.emplace_back( tmp.first, *tmp.second );
+    evalv( r, args2 );
 }
 
 

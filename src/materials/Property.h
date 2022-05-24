@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 
@@ -184,6 +185,16 @@ public: // Evaluators
      */
     virtual double eval( const std::vector<double> &args ) = 0;
 
+    /**
+     * scalar evaluation function for a single argument set
+     * \param args list of argument values
+     *    get_arguments()
+     * \return scalar value of property
+     */
+    double eval( const std::vector<std::string> &names,
+                 const std::vector<double> &args,
+                 const std::vector<Units> &units = {} );
+
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r vector of return values
      *  \param args map of vectors of arguments, indexed by strings which are members of
@@ -194,8 +205,8 @@ public: // Evaluators
      *  Sizes of  \a r  and \a args["name"] must match. Members of
      *  \a args  indexed by names other than those in  get_arguments()  are ignored.
      */
-    void evalv( std::vector<double> &r,
-                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
+    template<class... Args>
+    void evalv( std::vector<double> &r, Units u, Args... args );
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
@@ -225,18 +236,43 @@ public: // Evaluators
                 const std::map<std::string, std::string> &translator = {} );
 
 
+public: // Advanced interfaces
+    template<class VEC>
+    struct argumentDataStruct {
+        argumentDataStruct( std::string_view s, const VEC &v ) : str( s ), vec( v ) {}
+        argumentDataStruct( std::string_view s, const VEC &v, const Units &u )
+            : str( s ), vec( v ), units( u )
+        {
+        }
+        std::string_view str;
+        const VEC &vec;
+        Units units;
+    };
+
+    // Convert the argument data
+    template<class VEC, class... Args>
+    static std::vector<argumentDataStruct<VEC>> convertArgs( Args... args );
+
+    // Loops through input vectors, calling the child eval function, returning scalar
+    template<class OUT, class IN = OUT>
+    void evalv( OUT &r, const std::vector<argumentDataStruct<IN>> &args );
+
+    // [[deprecated]]
+    void evalv( std::vector<double> &r,
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
+
+
 protected:
-    Units d_units;                        //!< default units to return
-    std::string d_name;                   //!< should be unique
-    std::string d_source;                 //!< reference for source data
-    std::vector<double> d_params;         //!< parameters
-    std::vector<std::string> d_arguments; //!< names of the arguments to the eval function
-    std::vector<Units> d_argUnits;        //!< default units for the arguments to the eval function
-    std::vector<double> d_defaults;       //!< default values of arguments to eval function
-    bool d_defaultsAreSet;                //!< indicates defaults have been set
-    std::vector<std::array<double, 2>> d_ranges;   //!< allowed ranges of arguments
-    std::map<std::string, size_t> d_argToIndexMap; //!< connects argument names to their indices
-    bool d_variableNumberParameters;               //!< can change number of parameters
+    Units d_units;                                      //!< default units to return
+    std::string d_name;                                 //!< should be unique
+    std::string d_source;                               //!< reference for source data
+    std::vector<double> d_params;                       //!< parameters
+    std::vector<std::string> d_arguments;               //!< names of the arguments
+    std::vector<Units> d_argUnits;                      //!< default units for the arguments
+    std::vector<double> d_defaults;                     //!< default values of arguments
+    std::vector<std::array<double, 2>> d_ranges;        //!< allowed ranges of arguments
+    std::map<std::string_view, size_t> d_argToIndexMap; //!< map argument names to indices
+    bool d_variableNumberParameters;                    //!< can change number of parameters
 
     std::map<std::string, double> d_AuxiliaryDataDouble;
     std::map<std::string, int> d_AuxiliaryDataInteger;
@@ -253,10 +289,17 @@ protected:
         return it->second;
     }
 
-    // Loops through input vectors, calling the child eval function, returning scalar
-    template<class INPUT_VTYPE, class RETURN_VTYPE>
-    void evalvActual( RETURN_VTYPE &r,
-                      const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args );
+    template<class VEC, class... Args>
+    static void convertArgs1( std::vector<argumentDataStruct<VEC>> &,
+                              const std::string &,
+                              const VEC &,
+                              Args... args );
+    template<class VEC, class... Args>
+    static void convertArgs2( std::vector<argumentDataStruct<VEC>> &,
+                              const std::string &,
+                              const VEC &,
+                              const Units &u,
+                              Args... args );
 };
 
 

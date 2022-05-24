@@ -137,10 +137,10 @@ void DiffusionTransportModel::getTransport(
     PROFILE_START( "getTransport", 7 );
     std::shared_ptr<std::vector<double>> scaledp;
 
-    auto &data = *args[d_BilogVariable];
 
     if ( d_UseBilogScaling ) {
         // do the transform
+        auto &data   = *args[d_BilogVariable];
         auto lower   = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
         auto upper   = d_BilogRange[1] - d_BilogEpsilonRangeLimit;
         scaledp      = bilogTransform( data, lower, upper );
@@ -159,6 +159,7 @@ void DiffusionTransportModel::getTransport(
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value
+        auto &data                  = *args[d_BilogVariable];
         std::vector<double> &scaled = *scaledp;
         auto lower                  = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
         auto upper                  = d_BilogRange[1] - d_BilogEpsilonRangeLimit;

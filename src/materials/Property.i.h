@@ -58,4 +58,55 @@ inline bool Property::in_range( const std::string &name,
 }
 
 
+/************************************************************************
+ *  evalv                                                                *
+ ************************************************************************/
+template<class VEC, class... Args>
+void Property::convertArgs1( std::vector<argumentDataStruct<VEC>> &args2,
+                             const std::string &name,
+                             const VEC &v,
+                             Args... args )
+{
+    constexpr size_t n = sizeof...( args );
+    if constexpr ( n > 0 ) {
+        auto t = std::make_tuple( std::forward<Args>( args )... );
+        if constexpr ( std::is_same<Units, decltype( std::get<0>( t ) )>::value ) {
+            convertArgs2( args2, name, args... );
+            return;
+        }
+    }
+    args2.emplace_back( name, v );
+    if constexpr ( n > 0 )
+        convertArgs1( args2, args... );
+}
+template<class VEC, class... Args>
+void Property::convertArgs2( std::vector<argumentDataStruct<VEC>> &args2,
+                             const std::string &name,
+                             const VEC &v,
+                             const Units &u,
+                             Args... args )
+{
+    constexpr size_t n = sizeof...( args );
+    args2.emplace_back( name, v, u );
+    if constexpr ( n > 0 )
+        convertArgs1( args2, args... );
+}
+template<class VEC, class... Args>
+std::vector<Property::argumentDataStruct<VEC>> Property::convertArgs( Args... args )
+{
+    constexpr size_t n = sizeof...( args );
+    if ( n == 0 )
+        return {};
+    std::vector<argumentDataStruct<VEC>> args2;
+    convertArgs1( args2, args... );
+    return args2;
+}
+template<class... Args>
+void Property::evalv( std::vector<double> &r, Units u, Args... args )
+{
+    auto args2 = convertArgs<std::vector<double>>( args... );
+    evalv( r, args2 );
+}
+
+
 } // namespace AMP::Materials
