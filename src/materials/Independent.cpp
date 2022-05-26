@@ -116,24 +116,21 @@ TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
 //  =================== Materials =====================================================
 Independent::Independent()
 {
-    registerPolynomialProperty( "Density", source, std::vector<double>( { densval } ) );
-    registerPolynomialProperty(
-        "ThermalConductivity", source, std::vector<double>( { thermalval } ) );
-    registerPolynomialProperty( "FickCoefficient", source, std::vector<double>( { fickval } ) );
-    registerPolynomialProperty( "SoretCoefficient", source, std::vector<double>( { fickval } ) );
-    registerPolynomialProperty( "DTThermalConductivity", source, std::vector<double>( { 0 } ) );
-    registerPolynomialProperty( "DTFickCoefficient", source, std::vector<double>( { 0 } ) );
-    registerPolynomialProperty( "DTSoretCoefficient", source, std::vector<double>( { 0 } ) );
-    registerPolynomialProperty( "DxThermalConductivity", source, std::vector<double>( { 0 } ) );
-    registerPolynomialProperty( "DxSoretCoefficient", source, std::vector<double>( { 0 } ) );
-    registerPolynomialProperty( "DxFickCoefficient", source, std::vector<double>( { 0 } ) );
-    registerPolynomialProperty(
-        "HeatCapacityPressure", source, std::vector<double>( { heatcpval } ) );
-    registerPolynomialProperty( "ThermalExpansion", source, std::vector<double>( { alphaval } ) );
-    registerPolynomialProperty( "YoungsModulus", source, std::vector<double>( { youngsval } ) );
-    registerPolynomialProperty( "PoissonRatio", source, std::vector<double>( { pratioval } ) );
-    registerPolynomialProperty(
-        "ThermalDiffusionCoefficient", source, std::vector<double>( { 0 } ) );
+    addPolynomialProperty( "Density", source, {}, { densval } );
+    addPolynomialProperty( "ThermalConductivity", source, {}, { thermalval } );
+    addPolynomialProperty( "FickCoefficient", source, {}, { fickval } );
+    addPolynomialProperty( "SoretCoefficient", source, {}, { fickval } );
+    addPolynomialProperty( "DTThermalConductivity", source, {}, { 0 } );
+    addPolynomialProperty( "DTFickCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "DTSoretCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "DxThermalConductivity", source, {}, { 0 } );
+    addPolynomialProperty( "DxSoretCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "DxFickCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "HeatCapacityPressure", source, {}, { heatcpval } );
+    addPolynomialProperty( "ThermalExpansion", source, {}, { alphaval } );
+    addPolynomialProperty( "YoungsModulus", source, {}, { youngsval } );
+    addPolynomialProperty( "PoissonRatio", source, {}, { pratioval } );
+    addPolynomialProperty( "ThermalDiffusionCoefficient", source, {}, { 0 } );
     d_propertyMap["ThermalDiffusionCoefficient"] =
         std::make_shared<Independent_NS::ThermalDiffusionCoefficientProp>(
             property( "FickCoefficient" ), property( "SoretCoefficient" ) );

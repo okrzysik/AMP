@@ -4,12 +4,6 @@
 #include "AMP/materials/Property.h"
 
 
-//! Macro to register a polynomial based property
-#define registerPolynomialProperty( PROPERTY, ... )                 \
-    d_propertyMap[PROPERTY] = std::make_shared<PolynomialProperty>( \
-        AMP::Utilities::demangle( typeid( *this ).name() ) + "::" + PROPERTY, __VA_ARGS__ );
-
-
 namespace AMP::Materials {
 
 
@@ -38,16 +32,18 @@ public:
     PolynomialProperty() {}
     PolynomialProperty( std::string name,
                         std::string source,
-                        std::vector<double> params,
+                        const AMP::Units &unit                    = {},
+                        std::vector<double> params                = {},
                         std::vector<std::string> args             = {},
                         std::vector<std::array<double, 2>> ranges = {},
-                        const AMP::Units &unit                    = AMP::Units() )
+                        std::vector<AMP::Units> argUnits          = {} )
         : Property( std::move( name ),
                     unit,
                     std::move( source ),
                     std::move( params ),
                     std::move( args ),
-                    std::move( ranges ) )
+                    std::move( ranges ),
+                    std::move( argUnits ) )
     {
         if ( d_params.size() > 1 )
             AMP_ASSERT( d_arguments.size() == 1 );

@@ -33,13 +33,29 @@ std::vector<std::string> Material::list() const
 }
 
 
-// Add a constant-value fixed property
-void Material::addScalarProperty( const std::string &name,
+// Add a property
+void Material::addScalarProperty( std::string name,
                                   double value,
                                   const AMP::Units &unit,
                                   std::string source )
 {
-    addProperty<ScalarProperty>( name, value, unit, source );
+    addProperty<ScalarProperty>( std::move( name ), value, unit, std::move( source ) );
+}
+void Material::addPolynomialProperty( std::string name,
+                                      std::string source,
+                                      const AMP::Units &unit,
+                                      std::vector<double> params,
+                                      std::vector<std::string> args,
+                                      std::vector<std::array<double, 2>> ranges,
+                                      std::vector<AMP::Units> argUnits )
+{
+    addProperty<PolynomialProperty>( std::move( name ),
+                                     std::move( source ),
+                                     unit,
+                                     std::move( params ),
+                                     std::move( args ),
+                                     std::move( ranges ),
+                                     std::move( argUnits ) );
 }
 
 

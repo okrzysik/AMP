@@ -31,7 +31,7 @@ int main( int argc, char **argv )
     // test property accessors
     std::string tcname = prop->get_name();
     std::string tcsorc = prop->get_source();
-    good               = good && tcname == "AMP::Materials::Independent::ThermalConductivity";
+    good               = good && tcname == "Independent::ThermalConductivity";
     good               = good && tcsorc == prop->get_source();
     std::cout << "thermal conductivity name is " << tcname << "\n";
     std::cout << "thermal conductivity source is " << tcsorc << "\n";
