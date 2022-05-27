@@ -8,16 +8,11 @@ namespace AMP::Materials {
 
 TensorProperty::TensorProperty( std::string name,
                                 std::string source,
-                                std::vector<double> params,
                                 std::vector<std::string> args,
                                 std::vector<std::array<double, 2>> ranges,
                                 std::vector<size_t> dimensions )
-    : Property( std::move( name ),
-                Units(),
-                std::move( source ),
-                std::move( params ),
-                std::move( args ),
-                std::move( ranges ) ),
+    : Property(
+          std::move( name ), Units(), std::move( source ), std::move( args ), std::move( ranges ) ),
       d_dimensions( std::move( dimensions ) ),
       d_variableDimensions( false )
 {

@@ -55,7 +55,6 @@ public:
     Property( std::string name,
               Units unit                                = Units(),
               std::string source                        = "None",
-              std::vector<double> params                = {},
               std::vector<std::string> args             = {},
               std::vector<std::array<double, 2>> ranges = {},
               std::vector<Units> argUnits               = {} );
@@ -74,38 +73,11 @@ public:
     /** return source reference */
     inline const Units &get_units() const { return d_units; }
 
-    /** return property parameters */
-    inline const std::vector<double> &get_parameters() const { return d_params; }
-
-    /**
-     * \brief           set the property parameters
-     * \param[in]       params the new parameters
-     * \param[in]       nparams the number of new parameters
-     */
-    inline void set_parameters( std::vector<double> params )
-    {
-        AMP_INSIST( d_params.size() == params.size(),
-                    "new parameters must be same in number as old" );
-        d_params = std::move( params );
-    }
-
-    /**
-     * \brief          changing number of parameters allowed
-     */
-    inline bool variable_number_parameters() { return d_variableNumberParameters; }
-
-    /**
-     * \brief           set the property parameters
-     * \param[in]       params the new parameters
-     * \param[in]       nparams the number of new parameters
-     */
-    virtual void set_parameters_and_number( std::vector<double> params );
-
     /** return the names of the arguments to eval */
     inline const std::vector<std::string> &get_arguments() const { return d_arguments; }
 
     /** return the number of arguments to eval */
-    inline unsigned int get_number_arguments() { return d_arguments.size(); }
+    inline size_t get_number_arguments() const { return d_arguments.size(); }
 
     /** get the defaults */
     inline const std::vector<double> &get_defaults() { return d_defaults; }
@@ -269,7 +241,7 @@ public: // Advanced interfaces
     inline double evalDirect( const std::vector<double> &args ) { return eval( args ); }
 
 protected:
-    Property() : d_variableNumberParameters( false ) {}
+    Property() = default;
 
     /**
      * scalar evaluation function for a single argument set
@@ -281,16 +253,14 @@ protected:
 
 
 protected:
-    Units d_units;                                      //!< default units to return
     std::string d_name;                                 //!< should be unique
+    Units d_units;                                      //!< default units to return
     std::string d_source;                               //!< reference for source data
-    std::vector<double> d_params;                       //!< parameters
     std::vector<std::string> d_arguments;               //!< names of the arguments
     std::vector<Units> d_argUnits;                      //!< default units for the arguments
     std::vector<double> d_defaults;                     //!< default values of arguments
     std::vector<std::array<double, 2>> d_ranges;        //!< allowed ranges of arguments
     std::map<std::string_view, size_t> d_argToIndexMap; //!< map argument names to indices
-    bool d_variableNumberParameters;                    //!< can change number of parameters
 
     std::map<std::string, double> d_AuxiliaryDataDouble;
     std::map<std::string, int> d_AuxiliaryDataInteger;

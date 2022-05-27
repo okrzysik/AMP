@@ -289,8 +289,9 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             sourceProp = std::make_shared<AMP::Materials::ScalarTensorProperty>(
                 name, "", dims, d_Parameters );
         } else if ( sourceProp->isVector() ) {
+            AMP_ASSERT( d_Parameters.size() == 1 );
             sourceProp =
-                std::make_shared<AMP::Materials::ScalarVectorProperty>( name, d_Parameters );
+                std::make_shared<AMP::Materials::ScalarVectorProperty>( name, d_Parameters[0] );
         } else {
             sourceProp =
                 std::make_shared<AMP::Materials::PolynomialProperty>( d_PropertyName,

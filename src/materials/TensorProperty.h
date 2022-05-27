@@ -12,7 +12,6 @@ public:
      * Constructor
      * \param name      name of property (required)
      * \param source    literature reference for model and notes
-     * \param params    default parameter values
      * \param args      names of arguments
      * \param ranges    ranges of arguments
      * \param dimensions the first and second dimensions of return value tensor
@@ -20,7 +19,6 @@ public:
     TensorProperty(
         std::string name,
         std::string source                        = std::string( "None" ),
-        std::vector<double> params                = std::vector<double>(),
         std::vector<std::string> args             = std::vector<std::string>(),
         std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>(),
         std::vector<size_t> dimensions            = { 2, 1 } );

@@ -27,26 +27,12 @@ public:
     ThermalDiffusionCoefficientProp( const std::string &name,
                                      std::shared_ptr<Property> FickProp,
                                      std::shared_ptr<Property> SoretProp,
-                                     std::vector<double> params,
                                      std::vector<std::string> args,
                                      std::vector<std::array<double, 2>> range )
-        : AMP::Materials::Property( name, Units(), "", params, args, range ),
+        : AMP::Materials::Property( name, Units(), "", args, range ),
           d_FickProp( FickProp ),
           d_SoretProp( SoretProp )
     {
-    }
-
-    virtual void set_parameters( std::vector<double> params )
-    {
-        std::vector<double> fickParams  = d_FickProp->get_parameters();
-        std::vector<double> soretParams = d_SoretProp->get_parameters();
-        AMP_ASSERT( params.size() == fickParams.size() + soretParams.size() );
-        for ( size_t i = 0; i < fickParams.size(); i++ )
-            fickParams[i] = params[i];
-        for ( size_t i = 0; i < soretParams.size(); i++ )
-            soretParams[i] = params[fickParams.size() + i];
-        d_FickProp->set_parameters( std::move( fickParams ) );
-        d_SoretProp->set_parameters( std::move( soretParams ) );
     }
 
     double eval( const std::vector<double> &args ) override
@@ -71,28 +57,14 @@ public:
                                        std::shared_ptr<Property> SoretProp,
                                        std::shared_ptr<Property> DxFickProp,
                                        std::shared_ptr<Property> DxSoretProp,
-                                       std::vector<double> params,
                                        std::vector<std::string> args,
                                        std::vector<std::array<double, 2>> range )
-        : AMP::Materials::Property( name, Units(), "", params, args, range ),
+        : AMP::Materials::Property( name, Units(), "", args, range ),
           d_FickProp( FickProp ),
           d_SoretProp( SoretProp ),
           d_DxFickProp( DxFickProp ),
           d_DxSoretProp( DxSoretProp )
     {
-    }
-
-    virtual void set_parameters( const double *params, const unsigned int nparams )
-    {
-        std::vector<double> fickParams  = d_FickProp->get_parameters();
-        std::vector<double> soretParams = d_SoretProp->get_parameters();
-        AMP_ASSERT( nparams == fickParams.size() + soretParams.size() );
-        for ( size_t i = 0; i < fickParams.size(); i++ )
-            fickParams[i] = params[i];
-        for ( size_t i = 0; i < soretParams.size(); i++ )
-            soretParams[i] = params[fickParams.size() + i];
-        d_FickProp->set_parameters( std::move( fickParams ) );
-        d_SoretProp->set_parameters( std::move( soretParams ) );
     }
 
     double eval( const std::vector<double> &args ) override
@@ -119,28 +91,14 @@ public:
                                        std::shared_ptr<Property> SoretProp,
                                        std::shared_ptr<Property> DTFickProp,
                                        std::shared_ptr<Property> DTSoretProp,
-                                       std::vector<double> params,
                                        std::vector<std::string> args,
                                        std::vector<std::array<double, 2>> range )
-        : AMP::Materials::Property( name, Units(), "", params, args, range ),
+        : AMP::Materials::Property( name, Units(), "", args, range ),
           d_FickProp( FickProp ),
           d_SoretProp( SoretProp ),
           d_DTFickProp( DTFickProp ),
           d_DTSoretProp( DTSoretProp )
     {
-    }
-
-    virtual void set_parameters( std::vector<double> params )
-    {
-        std::vector<double> fickParams  = d_FickProp->get_parameters();
-        std::vector<double> soretParams = d_SoretProp->get_parameters();
-        AMP_ASSERT( params.size() == fickParams.size() + soretParams.size() );
-        for ( size_t i = 0; i < fickParams.size(); i++ )
-            fickParams[i] = params[i];
-        for ( size_t i = 0; i < soretParams.size(); i++ )
-            soretParams[i] = params[fickParams.size() + i];
-        d_FickProp->set_parameters( std::move( fickParams ) );
-        d_SoretProp->set_parameters( std::move( soretParams ) );
     }
 
     double eval( const std::vector<double> &args ) override

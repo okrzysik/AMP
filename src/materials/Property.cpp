@@ -15,19 +15,16 @@ namespace AMP::Materials {
 Property::Property( std::string name,
                     Units unit,
                     std::string source,
-                    std::vector<double> params,
                     std::vector<std::string> args,
                     std::vector<std::array<double, 2>> ranges,
                     std::vector<Units> units )
     : d_name( std::move( name ) ),
       d_units( unit ),
       d_source( std::move( source ) ),
-      d_params( std::move( params ) ),
       d_arguments( std::move( args ) ),
       d_argUnits( std::move( units ) ),
       d_defaults( {} ),
-      d_ranges( std::move( ranges ) ),
-      d_variableNumberParameters( false )
+      d_ranges( std::move( ranges ) )
 {
     if ( d_argUnits.empty() )
         d_argUnits.resize( d_arguments.size() );
@@ -240,12 +237,6 @@ void Property::getAuxiliaryData( const std::string &key, std::string &val )
 /************************************************************************
  *  Misc functions                                                       *
  ************************************************************************/
-void Property::set_parameters_and_number( std::vector<double> params )
-{
-    AMP_INSIST( d_variableNumberParameters,
-                "changing number of parameters for this property not allowed" );
-    d_params = std::move( params );
-}
 std::array<double, 2> Property::get_arg_range( const std::string &name )
 {
     int index = get_arg_index( name );

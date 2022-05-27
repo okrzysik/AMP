@@ -101,7 +101,8 @@ DiffusionTransportModel::DiffusionTransportModel(
             d_property =
                 std::make_shared<AMP::Materials::ScalarTensorProperty>( name, "", dims, data );
         } else if ( d_property->isVector() ) {
-            d_property = std::make_shared<AMP::Materials::ScalarVectorProperty>( name, data );
+            AMP_ASSERT( data.size() == 1 );
+            d_property = std::make_shared<AMP::Materials::ScalarVectorProperty>( name, data[0] );
         } else {
             d_property =
                 std::make_shared<AMP::Materials::PolynomialProperty>( name,

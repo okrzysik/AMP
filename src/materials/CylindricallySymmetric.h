@@ -23,8 +23,6 @@ public:
     CylindricallySymmetricTensor( const std::string &name,
                                   std::vector<double> params = { 1, 1, 1 } );
 
-    void set_parameters_and_number( std::vector<double> params ) override;
-
     std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) override;
 
 private:

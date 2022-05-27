@@ -16,8 +16,7 @@ static const char *source = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zub
                             "Petrica Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
 
 static std::initializer_list<double> FCparams = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
-static std::initializer_list<double> SCparams = { -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
-                                                  -1380.8, -134435.5, 0.0261 };
+static std::initializer_list<double> SCparams = { -1380.8, -134435.5, 0.0261 };
 
 static std::initializer_list<std::string> arguments = { "temperature", "concentration" };
 
@@ -36,12 +35,9 @@ class FickCoefficientProp : public Property
 {
 public:
     FickCoefficientProp( const std::string &name )
-        : Property( name,
-                    Units(),
-                    source,
-                    FCparams,
-                    arguments,
-                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
+        : Property(
+              name, Units(), source, arguments, { { TminVal, TmaxVal }, { uminVal, umaxVal } } ),
+          d_p( FCparams )
     {
     } // Range of variables
 
@@ -50,7 +46,6 @@ public:
         double T = args[0];
         double u = args[1];
 
-        std::vector<double> p = get_parameters();
         AMP_ASSERT( T > TminVal && T < TmaxVal );
         AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -58,22 +53,22 @@ public:
         if ( x < 0.001 )
             x = 0.001;
 
-        double expDC = p[0] + p[1] / T + p[2] * T * x + p[3] * T * log10( ( 2 + x ) / x );
+        double expDC = d_p[0] + d_p[1] / T + d_p[2] * T * x + d_p[3] * T * log10( ( 2 + x ) / x );
         double fick  = exp( expDC * log( 10.0 ) );
         return fick;
     }
+
+private:
+    std::vector<double> d_p;
 };
 
 class SoretCoefficientProp : public Property
 {
 public:
     SoretCoefficientProp( const std::string &name )
-        : Property( name,
-                    Units(),
-                    source,
-                    SCparams,
-                    arguments,
-                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
+        : Property(
+              name, Units(), source, arguments, { { TminVal, TmaxVal }, { uminVal, umaxVal } } ),
+          d_p( SCparams )
     {
     } // Range of variables
 
@@ -82,7 +77,6 @@ public:
         double T = args[0];
         double u = args[1];
 
-        std::vector<double> p = get_parameters();
         AMP_ASSERT( T > TminVal && T < TmaxVal );
         AMP_ASSERT( u >= uminVal && u <= umaxVal );
 
@@ -90,12 +84,15 @@ public:
         if ( x < 0.001 )
             x = 0.001;
 
-        double Q_star = p[4] + p[5] * exp( -x / p[6] );
+        double Q_star = d_p[0] + d_p[1] * exp( -x / d_p[2] );
         double F_SC   = ( 2 + x ) / ( 2 * ( 1 - 3 * x ) * ( 1 - 2 * x ) );
         double R_ig   = 8.314;
         double soret  = x / F_SC * Q_star / ( R_ig * T * T );
         return soret;
     }
+
+private:
+    std::vector<double> d_p;
 };
 
 
@@ -107,20 +104,13 @@ Ox_MSRZC_09::Ox_MSRZC_09()
 {
     addProperty<Ox_MSRZC_09_NS::FickCoefficientProp>( "FickCoefficient" );
     addProperty<Ox_MSRZC_09_NS::SoretCoefficientProp>( "SoretCoefficient" );
-    std::vector<double> thermalDiffusionParams         = { -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
-                                                   -9.386,  -4.26e3,   1.2e-3, 7.5e-4,
-                                                   -1380.8, -134435.5, 0.0261 };
     std::vector<std::string> thermDiffArgs             = { "temperature", "concentration" };
     std::vector<std::array<double, 2>> thermDiffRanges = { { TminVal, TmaxVal },
                                                            { uminVal, umaxVal } };
     auto fick                                          = property( "FickCoefficient" );
     auto soret                                         = property( "SoretCoefficient" );
-    addProperty<ThermalDiffusionCoefficientProp>( "ThermalDiffusionCoefficient",
-                                                  fick,
-                                                  soret,
-                                                  thermalDiffusionParams,
-                                                  thermDiffArgs,
-                                                  thermDiffRanges );
+    addProperty<ThermalDiffusionCoefficientProp>(
+        "ThermalDiffusionCoefficient", fick, soret, thermDiffArgs, thermDiffRanges );
 }
 
 

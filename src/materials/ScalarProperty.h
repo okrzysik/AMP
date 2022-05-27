@@ -42,29 +42,32 @@ public:
         : Property( std::move( name ),
                     unit,
                     std::move( source ),
-                    std::move( params ),
                     std::move( args ),
                     std::move( ranges ),
-                    std::move( argUnits ) )
+                    std::move( argUnits ) ),
+          d_p( params )
     {
-        if ( d_params.size() > 1 )
+        if ( d_p.size() > 1 )
             AMP_ASSERT( d_arguments.size() == 1 );
         else
             AMP_ASSERT( d_arguments.empty() );
     }
     double eval( const std::vector<double> &args ) override
     {
-        if ( d_params.size() == 1 )
-            return d_params[0];
+        if ( d_p.size() == 1 )
+            return d_p[0];
         double y  = 0;
         double x  = args[0];
         double x2 = 1.0;
-        for ( size_t i = 0; i < d_params.size(); i++ ) {
-            y += d_params[i] * x2;
+        for ( size_t i = 0; i < d_p.size(); i++ ) {
+            y += d_p[i] * x2;
             x2 *= x;
         }
         return y;
     }
+
+private:
+    std::vector<double> d_p;
 };
 
 
@@ -73,13 +76,16 @@ class ScalarVectorProperty : public VectorProperty
 {
 public:
     explicit ScalarVectorProperty( const std::string &name,
-                                   const std::vector<double> &data,
+                                   double value,
                                    const std::string &source = "" )
-        : VectorProperty( name, source, data, {}, {}, data.size() )
+        : VectorProperty( name, source, {}, {}, 1 ), d_value( value )
     {
     }
 
-    std::vector<double> evalVector( const std::vector<double> & ) override { return d_params; }
+    std::vector<double> evalVector( const std::vector<double> & ) override { return { d_value }; }
+
+private:
+    double d_value;
 };
 
 
@@ -91,7 +97,7 @@ public:
                                    const std::string &source,
                                    const std::vector<size_t> &dims,
                                    const std::vector<double> &params )
-        : TensorProperty( name, source, params, {}, {}, dims )
+        : TensorProperty( name, source, {}, {}, dims ), d_params( params )
     {
         AMP_INSIST( d_params.size() == dims[0] * dims[1],
                     "dimensions and number of parameters don't match" );
@@ -106,6 +112,9 @@ public:
                 result[i][j] = d_params[i * d_dimensions[1] + j];
         return result;
     }
+
+private:
+    std::vector<double> d_params;
 };
 
 } // namespace AMP::Materials

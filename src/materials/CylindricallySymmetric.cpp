@@ -1,8 +1,3 @@
-/*
- *  Created on: June 11, 2010
- *	  Author: bm
- */
-
 #include "AMP/materials/CylindricallySymmetric.h"
 #include "AMP/materials/Material.h"
 #include "AMP/materials/MaterialList.h"
@@ -46,19 +41,10 @@ namespace AMP::Materials {
  * is generated. The only thing more general is if \f$k_r\f$ and \f$k_z\f$ are functions
  * of both \f$r\f$ and \f$z\f$.
  *
- * Example:
- * \code
- * double param[5] = {1., 2.3, 0., 4.5, 6.7};
- * RadialFickProp prop;
- * prop.set_parameters(param, 5);
- * std::vector args(1); args[0] = r;
- * double v = prop.eval(args); // v has the value 1. + 2.3*r + 4.5*r*r*r + 6.7*r*r*r*r
- * \endcode
  */
 
 
-//=================== Constants =====================================================
-
+// Constants
 static const double rMinVal = 0.0;
 static const double rMaxVal = std::numeric_limits<double>::max();
 static const double tMinVal = 0.0;
@@ -81,105 +67,24 @@ static std::array<double, 2> evalPoly( const std::vector<double> &p, double x )
 }
 
 
-//=================== Classes =======================================================
-
-namespace CylindricallySymmetric_NS {
-
-/** radial diffusion coefficient */
-class ScalarRadialFickProp : public Property
-{
-public:
-    ScalarRadialFickProp( const std::string &name )
-        : Property( name, Units(), "", { 1.0 }, { "radius" }, { { rMinVal, rMaxVal } } )
-    {
-        d_variableNumberParameters = true;
-    }
-
-    /** returns property and derivative wrto r
-     * \return [0]=property, [1]=property derivative wrto r
-     */
-    double eval( const std::vector<double> &args ) override
-    {
-        double x = 0;
-        if ( !args.empty() )
-            x = args[0];
-        auto ans = evalPoly( d_params, x );
-        return ans[0];
-    }
-};
-
-/** radial diffusion coefficient */
-class RadialFickProp : public VectorProperty
-{
-public:
-    RadialFickProp( const std::string &name )
-        : VectorProperty( name, "", { 1.0 }, { "radius" }, { { rMinVal, rMaxVal } } )
-    {
-        d_variableNumberParameters = true;
-    }
-
-    /** returns property and derivative wrto r
-     * \return [0]=property, [1]=property derivative wrto r
-     */
-    std::vector<double> evalVector( const std::vector<double> &args ) override
-    {
-        double x = 0;
-        if ( !args.empty() )
-            x = args[0];
-        auto ans = evalPoly( d_params, x );
-        return { ans[0], ans[1] };
-    }
-};
-
-/** longitudinal diffusion coefficient */
-class LongitudinalFickProp : public VectorProperty
-{
-public:
-    LongitudinalFickProp( const std::string &name )
-        : VectorProperty( name, "", { 1.0 }, { "zee" }, { { zMinVal, zMaxVal } } )
-    {
-        d_variableNumberParameters = true;
-    }
-
-    std::vector<double> evalVector( const std::vector<double> &args ) override
-    {
-        double x = 0;
-        if ( !args.empty() )
-            x = args[0];
-        auto ans = evalPoly( d_params, x );
-        return { ans[0], ans[1] };
-    }
-};
-
-
-} // namespace CylindricallySymmetric_NS
-
-
 // full cylindrically symmetric tensor diffusion coefficient
 CylindricallySymmetricTensor::CylindricallySymmetricTensor( const std::string &name,
                                                             std::vector<double> params )
     : TensorProperty( name,
                       "",
-                      { 1.0, 1.0, 1.0 },
                       { "radius", "theta", "zee" },
                       { { rMinVal, rMaxVal }, { tMinVal, tMaxVal }, { zMinVal, zMaxVal } },
                       { 3, 3 } )
 {
-    d_variableNumberParameters = true;
-    d_variableDimensions       = true;
-    d_AuxiliaryDataInteger.insert( std::make_pair( "derivative", 0 ) );
-    set_parameters_and_number( params );
-}
-void CylindricallySymmetricTensor::set_parameters_and_number( std::vector<double> params )
-{
     AMP_ASSERT( params.size() >= 3 );
-    Property::set_parameters_and_number( params );
-    size_t nRadial = round_zero( d_params[0] );
+    d_variableDimensions = true;
+    d_AuxiliaryDataInteger.insert( std::make_pair( "derivative", 0 ) );
+    size_t nRadial = round_zero( params[0] );
     AMP_ASSERT( nRadial < params.size() - 1 );
     size_t nLongitudinal = params.size() - 1 - nRadial;
-    d_paramsRadial       = std::vector<double>( &d_params[1], &d_params[1] + nRadial );
+    d_paramsRadial       = std::vector<double>( &params[1], &params[1] + nRadial );
     d_paramsLongitudinal =
-        std::vector<double>( &d_params[1 + nRadial], &d_params[1 + nRadial] + nLongitudinal );
+        std::vector<double>( &params[1 + nRadial], &params[1 + nRadial] + nLongitudinal );
 }
 std::vector<std::vector<double>>
 CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args )
@@ -227,9 +132,8 @@ CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args )
 //=================== Materials =====================================================
 CylindricallySymmetric::CylindricallySymmetric()
 {
-    addProperty<CylindricallySymmetric_NS::ScalarRadialFickProp>( "ScalarRadialFick" );
-    // addProperty<CylindricallySymmetric_NS::RadialFickProp>( "RadialFick" );
-    // addProperty<CylindricallySymmetric_NS::LongitudinalFickProp>( "LongitudinalFick" );
+    addPolynomialProperty(
+        "ScalarRadialFick", "", {}, { 1.0, 0.0 }, { "radius" }, { { rMinVal, rMaxVal } } );
     addProperty<CylindricallySymmetricTensor>( "TensorFick" );
 }
 

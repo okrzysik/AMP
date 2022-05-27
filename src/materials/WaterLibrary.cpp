@@ -212,136 +212,122 @@ class TemperatureProp : public Property
 {
 public:
     TemperatureProp()
-        : Property( "WaterLibrary_Temperature", // Name string
-                    Units(),                    // Units
-                    source,                     // Reference source
-                    TempParams,                 // Property parameters
-                    TempArgs,                   // Names of arguments
-                    TempRanges                  // Range of variables
-          )
+        : Property( "WaterLibrary_Temperature", Units(), source, TempArgs, TempRanges ),
+          d_params( TempParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class SaturatedLiquidEnthalpyProp : public Property
 {
 public:
     SaturatedLiquidEnthalpyProp()
-        : Property( "WaterLibrary_SaturatedLiquidEnthalpy", // Name string
-                    Units(),                                // Units
-                    source,                                 // Reference source
-                    HfSatParams,                            // Property parameters
-                    HfSatArgs,                              // Names of arguments
-                    HfSatRanges                             // Range of variables
-          )
+        : Property(
+              "WaterLibrary_SaturatedLiquidEnthalpy", Units(), source, HfSatArgs, HfSatRanges ),
+          d_params( HfSatParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class SaturatedVaporEnthalpyProp : public Property
 {
 public:
     SaturatedVaporEnthalpyProp()
-        : Property( "WaterLibrary_SaturatedVaporEnthalpy", // Name string
-                    Units(),                               // Units
-                    source,                                // Reference source
-                    HgSatParams,                           // Property parameters
-                    HgSatArgs,                             // Names of arguments
-                    HgSatRanges                            // Range of variables
-          )
+        : Property(
+              "WaterLibrary_SaturatedVaporEnthalpy", Units(), source, HgSatArgs, HgSatRanges ),
+          d_params( HgSatParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class SpecificVolumeProp : public Property
 {
 public:
     SpecificVolumeProp()
-        : Property( "WaterLibrary_SpecificVolume", // Name string
-                    Units(),                       // Units
-                    source,                        // Reference source
-                    VolParams,                     // Property parameters
-                    VolArgs,                       // Names of arguments
-                    VolRanges                      // Range of variables
-          )
+        : Property( "WaterLibrary_SpecificVolume", Units(), source, VolArgs, VolRanges ),
+          d_params( VolParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class ThermalConductivityProp : public Property
 {
 public:
     ThermalConductivityProp()
-        : Property( "WaterLibrary_ThermalConductivity", // Name string
-                    Units(),                            // Units
-                    source,                             // Reference source
-                    CondParams,                         // Property parameters
-                    CondArgs,                           // Names of arguments
-                    CondRanges                          // Range of variables
-          )
+        : Property( "WaterLibrary_ThermalConductivity", Units(), source, CondArgs, CondRanges ),
+          d_params( CondParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class ConvectiveHeatProp : public Property
 {
 public:
     ConvectiveHeatProp()
-        : Property( "WaterLibrary_ConvectiveHeat", // Name string
-                    Units(),                       // Units
-                    source,                        // Reference source
-                    ConvParams,                    // Property parameters
-                    ConvArgs,                      // Names of arguments
-                    ConvRanges                     // Range of variables
-          )
+        : Property( "WaterLibrary_ConvectiveHeat", Units(), source, ConvArgs, ConvRanges ),
+          d_params( ConvParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class DynamicViscosityProp : public Property
 {
 public:
     DynamicViscosityProp()
-        : Property( "WaterLibrary_DynamicViscosity", // Name string
-                    Units(),                         // Units
-                    source,                          // Reference source
-                    ViscParams,                      // Property parameters
-                    ViscArgs,                        // Names of arguments
-                    ViscRanges                       // Range of variables
-          )
+        : Property( "WaterLibrary_DynamicViscosity", Units(), source, ViscArgs, ViscRanges ),
+          d_params( ViscParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 };
 
 class EnthalpyProp : public Property
 {
 public:
     EnthalpyProp()
-        : Property( "WaterLibrary_Enthalpy", // Name string
-                    Units(),                 // Units
-                    source,                  // Reference source
-                    EnthalpyParams,          // Property parameters
-                    EnthalpyArgs,            // Names of arguments
-                    EnthalpyRanges           // Range of variables
-          )
+        : Property( "WaterLibrary_Enthalpy", Units(), source, EnthalpyArgs, EnthalpyRanges ),
+          d_params( EnthalpyParams )
     {
     }
 
     double eval( const std::vector<double> &args ) override;
+
+private:
+    std::vector<double> d_params;
 
 private:
     double MfpSolve( double, double, double, double );
@@ -380,27 +366,26 @@ inline double TemperatureProp::eval( const std::vector<double> &args )
         AMP_ERROR( "Liquid water temperature called with enthalpy below 0 Btu/lbm." );
 
     // extract parameters from parameter array
-    std::vector<double> Param = get_parameters();
     double ct1[2][4], ct2[5][5], ct3[5][5], ct4[5][5];
     int offset = 0;
     for ( int i = 0; i < 2; i++ )
         for ( int j = 0; j < 4; j++ )
-            ct1[i][j] = Param[offset + 4 * i + j];
+            ct1[i][j] = d_params[offset + 4 * i + j];
 
     offset += 4 * 2;
     for ( int i = 0; i < 5; i++ )
         for ( int j = 0; j < 5; j++ )
-            ct2[i][j] = Param[offset + 5 * i + j];
+            ct2[i][j] = d_params[offset + 5 * i + j];
 
     offset += 5 * 5;
     for ( int i = 0; i < 5; i++ )
         for ( int j = 0; j < 5; j++ )
-            ct3[i][j] = Param[offset + 5 * i + j];
+            ct3[i][j] = d_params[offset + 5 * i + j];
 
     offset += 5 * 5;
     for ( int i = 0; i < 5; i++ )
         for ( int j = 0; j < 5; j++ )
-            ct4[i][j] = Param[offset + 5 * i + j];
+            ct4[i][j] = d_params[offset + 5 * i + j];
 
     // calculate temperature
     T = 0;
@@ -467,12 +452,11 @@ inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args
     const double P_crit = 3208.2; // critical pressure [psi]
 
     // extract parameters from parameter array
-    std::vector<double> Param = get_parameters();
     double a[9], b[9], c[9];
     for ( int i = 0; i < 9; i++ ) {
-        a[i] = Param[i];
-        b[i] = Param[9 + i];
-        c[i] = Param[18 + i];
+        a[i] = d_params[i];
+        b[i] = d_params[9 + i];
+        c[i] = d_params[18 + i];
     }
 
     // calculate saturated liquid enthalpy
@@ -514,16 +498,15 @@ inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args 
     const double P_crit = 3208.2; // critical pressure [psi]
 
     // extract parameters from parameter array
-    std::vector<double> Param = get_parameters();
     double a[12], b[9], c[7];
     for ( int i = 0; i < 12; i++ ) {
-        a[i] = Param[i];
+        a[i] = d_params[i];
     }
     for ( int i = 0; i < 9; i++ ) {
-        b[i] = Param[12 + i];
+        b[i] = d_params[12 + i];
     }
     for ( int i = 0; i < 7; i++ ) {
-        c[i] = Param[21 + i];
+        c[i] = d_params[21 + i];
     }
 
     // calculate saturated vapor enthalpy
@@ -572,46 +555,45 @@ inline double SpecificVolumeProp::eval( const std::vector<double> &args )
         AMP_ERROR( "Liquid water specific volume called with enthalpy at or below 0 Btu/lbm." );
 
     // extract parameters from parameter array
-    std::vector<double> Param = get_parameters();
     double cn0[3][3], cn1[3][5], cn2[4][3], cn3[4][4], cp[3], cx[4], ct[3], cj[4], d;
     int offset = 0;
     for ( int i = 0; i < 3; i++ )
         for ( int j = 0; j < 3; j++ )
-            cn0[i][j] = Param[offset + 3 * i + j];
+            cn0[i][j] = d_params[offset + 3 * i + j];
 
     offset += 3 * 3;
     for ( int i = 0; i < 3; i++ )
         for ( int j = 0; j < 5; j++ )
-            cn1[i][j] = Param[offset + 5 * i + j];
+            cn1[i][j] = d_params[offset + 5 * i + j];
 
     offset += 3 * 5;
     for ( int i = 0; i < 4; i++ )
         for ( int j = 0; j < 3; j++ )
-            cn2[i][j] = Param[offset + 3 * i + j];
+            cn2[i][j] = d_params[offset + 3 * i + j];
 
     offset += 4 * 3;
     for ( int i = 0; i < 4; i++ )
         for ( int j = 0; j < 4; j++ )
-            cn3[i][j] = Param[offset + 4 * i + j];
+            cn3[i][j] = d_params[offset + 4 * i + j];
 
     offset += 4 * 4;
     for ( int i = 0; i < 3; i++ )
-        cp[i] = Param[offset + i];
+        cp[i] = d_params[offset + i];
 
     offset += 3;
     for ( int i = 0; i < 4; i++ )
-        cx[i] = Param[offset + i];
+        cx[i] = d_params[offset + i];
 
     offset += 4;
     for ( int i = 0; i < 3; i++ )
-        ct[i] = Param[offset + i];
+        ct[i] = d_params[offset + i];
 
     offset += 3;
     for ( int i = 0; i < 4; i++ )
-        cj[i] = Param[offset + i];
+        cj[i] = d_params[offset + i];
 
     offset += 4;
-    d = Param[offset];
+    d = d_params[offset];
 
     // Start evaluation
     V = 0;
@@ -890,13 +872,12 @@ inline double DynamicViscosityProp::eval( const std::vector<double> &args )
         AMP_ERROR( "Dynamic viscosity called with temperature <= 0 K." );
 
     // extract parameters from parameter array
-    std::vector<double> Param = get_parameters();
     double a[4], b[5][6];
     for ( size_t i = 0; i < 4; i++ )
-        a[i] = Param[i];
+        a[i] = d_params[i];
     for ( size_t i = 0; i < 5; i++ )
         for ( size_t j = 0; j < 6; j++ )
-            b[i][j] = Param[4 + 6 * i + j];
+            b[i][j] = d_params[4 + 6 * i + j];
 
     double Tstar   = 647.27;  // [K]
     double rhostar = 317.763; // [kg/m3]
