@@ -1,7 +1,10 @@
-#include "DiffusionTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/materials/CylindricallySymmetric.h"
+#include "AMP/materials/ScalarProperty.h"
+#include "AMP/materials/ThermalDiffusionCoefficientProp.h"
+#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "DiffusionTransportTensorModel.h"
 
 #include "ProfilerApp.h"
 
@@ -17,10 +20,7 @@ const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
 
 DiffusionTransportModel::DiffusionTransportModel(
     std::shared_ptr<const DiffusionTransportModelParameters> params )
-    : ElementPhysicsModel( params ),
-      d_defaults( Diffusion::NUMBER_VARIABLES ),
-      d_MaterialParameters( 0 ),
-      d_IsTensor( false )
+    : ElementPhysicsModel( params ), d_defaults( Diffusion::NUMBER_VARIABLES ), d_IsTensor( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Material" ), "Diffusion Key ''Material'' is missing!" );
     std::string matname = params->d_db->getString( "Material" );
@@ -40,11 +40,11 @@ DiffusionTransportModel::DiffusionTransportModel(
     }
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
-        std::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
-        std::vector<std::string> defaultkeys  = defaults_db->getAllKeys();
+        auto defaults_db = params->d_db->getDatabase( "Defaults" );
+        auto defaultkeys = defaults_db->getAllKeys();
         AMP_INSIST( defaultkeys.size() == d_property->get_number_arguments(),
                     "Incorrect number of defaults supplied." );
-        std::vector<std::string> argnames = d_property->get_arguments();
+        auto argnames = d_property->get_arguments();
         for ( auto &defaultkey : defaultkeys ) {
             auto hit = std::find( argnames.begin(), argnames.end(), defaultkey );
             AMP_INSIST( hit != argnames.end(),
@@ -78,29 +78,39 @@ DiffusionTransportModel::DiffusionTransportModel(
             params->d_db->getWithDefault<double>( "BilogEpsilonRangeLimit", 1.0e-06 );
     }
 
-    // for tensor properties, set or change dimension
-    if ( d_property->isTensor() ) {
-        auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
-        if ( tensprop->variable_dimensions() ) {
-            if ( params->d_db->keyExists( "Dimensions" ) ) {
-                auto dims = params->d_db->getVector<size_t>( "Dimensions" );
-                AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
-                tensprop->set_dimensions( dims );
-            }
-        }
-    }
-
     // set property parameters
     if ( params->d_db->keyExists( "Parameters" ) ) {
-        d_MaterialParameters = params->d_db->getVector<double>( "Parameters" );
-        size_t nparams       = d_MaterialParameters.size();
-        size_t ndefparams    = d_property->get_parameters().size();
-        if ( d_property->variable_number_parameters() ) {
-            d_property->set_parameters_and_number( d_MaterialParameters );
+        auto name = d_property->get_name();
+        auto data = params->d_db->getVector<double>( "Parameters" );
+        if ( std::dynamic_pointer_cast<AMP::Materials::CylindricallySymmetricTensor>(
+                 d_property ) ) {
+            d_property =
+                std::make_shared<AMP::Materials::CylindricallySymmetricTensor>( name, data );
+        } else if ( std::dynamic_pointer_cast<AMP::Materials::ThermalDiffusionCoefficientProp>(
+                        d_property ) &&
+                    data.size() == 2 ) {
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>(
+                name, data[0] * data[1], d_property->get_units() );
+        } else if ( d_property->isTensor() ) {
+            auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
+            auto dims     = tensprop->get_dimensions();
+            if ( params->d_db->keyExists( "Dimensions" ) )
+                dims = params->d_db->getVector<size_t>( "Dimensions" );
+            AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
+            AMP_ASSERT( data.size() == dims[0] * dims[1] );
+            d_property =
+                std::make_shared<AMP::Materials::ScalarTensorProperty>( name, "", dims, data );
+        } else if ( d_property->isVector() ) {
+            d_property = std::make_shared<AMP::Materials::ScalarVectorProperty>( name, data );
         } else {
-            AMP_INSIST( nparams == ndefparams,
-                        "attempted to set incorrect number of parameters for this property" );
-            d_property->set_parameters( d_MaterialParameters );
+            d_property =
+                std::make_shared<AMP::Materials::PolynomialProperty>( name,
+                                                                      "",
+                                                                      d_property->get_units(),
+                                                                      data,
+                                                                      d_property->get_arguments(),
+                                                                      d_property->get_arg_ranges(),
+                                                                      d_property->get_arg_units() );
         }
     }
 }

@@ -1,13 +1,9 @@
-/*
- * MassDensityModel.cc
- *
- *  Created on: Aug 4, 2010
- *      Author: gad
- */
-
 #include "MassDensityModel.h"
+#include "AMP/materials/CylindricallySymmetric.h"
+#include "AMP/materials/ScalarProperty.h"
 #include "AMP/materials/TensorProperty.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
+
 #include <algorithm>
 #include <limits>
 
@@ -113,14 +109,8 @@ MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParame
         AMP_INSIST( d_ManufacturedVariable == "Temperature" or
                         d_ManufacturedVariable == "Concentration",
                     "ManufacturedVariable must have the values Temperature or Concentration" );
-        if ( d_ManufacturedVariable == "Temperature" )
-            d_ManufacturedUseTemp = true;
-        else
-            d_ManufacturedUseTemp = false;
-        if ( d_ManufacturedVariable == "Concentration" )
-            d_ManufacturedUseConc = true;
-        else
-            d_ManufacturedUseConc = false;
+        d_ManufacturedUseTemp = d_ManufacturedVariable == "Temperature";
+        d_ManufacturedUseConc = d_ManufacturedVariable == "Concentration";
 
         std::shared_ptr<Database> mfg_db = params->d_db->getDatabase( "ManufacturedSolution" );
         d_ManufacturedSolution.reset( new ManufacturedSolution( mfg_db ) );
@@ -280,13 +270,39 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         } else if ( d_ManufacturedEquation == ManufacturedEquation::FickSoretSrc ) {
             AMP_INSIST( false, "cannot do Fick-Soret yet" );
         }
+    } else if ( !d_Parameters.empty() ) {
+        sourceProp = d_material->property( d_PropertyName );
+        auto name  = sourceProp->get_name();
+        if ( std::dynamic_pointer_cast<AMP::Materials::CylindricallySymmetricTensor>(
+                 sourceProp ) ) {
+            sourceProp = std::make_shared<AMP::Materials::CylindricallySymmetricTensor>(
+                name, d_Parameters );
+        } else if ( sourceProp->isTensor() ) {
+            auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( sourceProp );
+            auto dims     = tensprop->get_dimensions();
+            AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
+            if ( d_Parameters.size() == 4 )
+                dims = { 2, 2 };
+            else if ( d_Parameters.size() == 9 )
+                dims = { 3, 3 };
+            AMP_ASSERT( d_Parameters.size() == dims[0] * dims[1] );
+            sourceProp = std::make_shared<AMP::Materials::ScalarTensorProperty>(
+                name, "", dims, d_Parameters );
+        } else if ( sourceProp->isVector() ) {
+            sourceProp =
+                std::make_shared<AMP::Materials::ScalarVectorProperty>( name, d_Parameters );
+        } else {
+            sourceProp =
+                std::make_shared<AMP::Materials::PolynomialProperty>( d_PropertyName,
+                                                                      "",
+                                                                      sourceProp->get_units(),
+                                                                      d_Parameters,
+                                                                      sourceProp->get_arguments(),
+                                                                      sourceProp->get_arg_ranges(),
+                                                                      sourceProp->get_arg_units() );
+        }
     } else {
         sourceProp = d_material->property( d_PropertyName );
-        if ( d_Parameters.size() > 0 && sourceProp->variable_number_parameters() ) {
-            sourceProp->set_parameters_and_number( d_Parameters );
-        } else if ( d_Parameters.size() > 0 ) {
-            sourceProp->set_parameters( d_Parameters );
-        }
     }
 
     std::map<std::string, std::shared_ptr<std::vector<double>>> args;
@@ -315,9 +331,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                          solnname.find( "Cylindrical" ) < solnname.size();
 
     if ( sourceProp->isTensor() && !isCylindrical ) {
-        std::shared_ptr<Materials::TensorProperty> sourceTensorProp =
-            std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
-        std::vector<size_t> dimensions = sourceTensorProp->get_dimensions();
+        auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
+        auto dimensions       = sourceTensorProp->get_dimensions();
         std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
             dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
         for ( size_t i = 0; i < dimensions[0]; i++ )
