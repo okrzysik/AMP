@@ -1,16 +1,9 @@
-//----------------------------------*-C++-*----------------------------------//
-/*!
- * \file   materials/FixedClad.cc
- * \author Aaron Phillippe
- * \brief  Implementation file for constant cladding properties
- */
-//---------------------------------------------------------------------------//
-
 #include "AMP/materials/Material.h"
 #include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 #include "AMP/materials/ScalarProperty.h"
 #include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/ThermalDiffusionCoefficientProp.h"
 #include "AMP/materials/VectorProperty.h"
 
 #include <string>
@@ -19,8 +12,7 @@ namespace AMP::Materials {
 
 //  =================== Constants =====================================================
 
-const char *name_base = "FixedClad";
-const char *source    = "average values from matpro; as defined by Phillippe";
+const char *source = "average values from matpro; as defined by Phillippe";
 
 static const double thermalval = 16.05;
 static const double fickval    = 1.;
@@ -41,13 +33,13 @@ namespace FixedClad_NS {
 class VectorFickCoefficientProp : public VectorProperty
 {
 public:
-    explicit VectorFickCoefficientProp( const size_t dim = 1 )
-        : VectorProperty( "FixedClad_VectorFickCoefficient", // Name string
-                          source,                            // Reference source
-                          { 1. },                            // Property parameters
-                          {},                                // Names of arguments
-                          {},                                // ranges
-                          dim )                              // dimension
+    explicit VectorFickCoefficientProp( const std::string &name, const size_t dim = 1 )
+        : VectorProperty( name,   // Name string
+                          source, // Reference source
+                          { 1. }, // Property parameters
+                          {},     // Names of arguments
+                          {},     // ranges
+                          dim )   // dimension
     {
         AMP_INSIST( d_params.size() == dim, "dimensions and number of parameters don't match" );
         d_variableNumberParameters = true;
@@ -62,20 +54,21 @@ public:
         Property::set_parameters_and_number( params );
     }
 
-    std::vector<double> evalVector( const std::vector<double> &args ) override;
+    std::vector<double> evalVector( const std::vector<double> &args ) override { return d_params; }
 };
 
 class TensorFickCoefficientProp : public TensorProperty
 {
 public:
-    explicit TensorFickCoefficientProp( const std::vector<size_t> &dims = std::vector<size_t>( 2,
+    explicit TensorFickCoefficientProp( const std::string &name,
+                                        const std::vector<size_t> &dims = std::vector<size_t>( 2,
                                                                                                1 ) )
-        : TensorProperty( "FixedClad_TensorFickCoefficient", // Name string
-                          source,                            // Reference source
-                          { 1. },                            // Property parameters
-                          {},                                // Names of arguments
-                          {},                                // ranges
-                          dims )                             // dimensions
+        : TensorProperty( name,   // Name string
+                          source, // Reference source
+                          { 1. }, // Property parameters
+                          {},     // Names of arguments
+                          {},     // ranges
+                          dims )  // dimensions
     {
         AMP_INSIST( d_params.size() == dims[0] * dims[1],
                     "dimensions and number of parameters don't match" );
@@ -91,58 +84,50 @@ public:
         Property::set_parameters_and_number( params );
     }
 
-    std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) override;
+    std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) override
+    {
+        std::vector<std::vector<double>> result( d_dimensions[0],
+                                                 std::vector<double>( d_dimensions[1] ) );
+        for ( size_t i = 0; i < d_dimensions[0]; i++ )
+            for ( size_t j = 0; j < d_dimensions[1]; j++ )
+                result[i][j] = d_params[i * d_dimensions[1] + j];
+        return result;
+    }
 };
 
-static std::initializer_list<double> thermalDiffusionParams     = { 1., 1. };
-static const std::vector<std::string> thermDiffArgs             = {};
-static const std::vector<std::array<double, 2>> thermDiffRanges = {};
 
-#include "ThermalDiffusionCoefficientProp.h"
-
-
-std::vector<double> VectorFickCoefficientProp::evalVector( const std::vector<double> & )
-{
-    std::vector<double> result( d_dimension );
-    for ( size_t i = 0; i < d_dimension; i++ )
-        result[i] = d_params[i];
-    return result;
-}
-
-std::vector<std::vector<double>>
-TensorFickCoefficientProp::evalTensor( const std::vector<double> & )
-{
-    std::vector<std::vector<double>> result( d_dimensions[0],
-                                             std::vector<double>( d_dimensions[1] ) );
-    for ( size_t i = 0; i < d_dimensions[0]; i++ )
-        for ( size_t j = 0; j < d_dimensions[1]; j++ )
-            result[i][j] = d_params[i * d_dimensions[1] + j];
-    return result;
-}
 } // namespace FixedClad_NS
 
 //  =================== Materials =====================================================
-// clang-format off
 FixedClad::FixedClad()
 {
-    addPolynomialProperty( "Density",              source, {}, { densval } );
-    addPolynomialProperty( "ThermalConductivity",  source, {}, { thermalval });
-    addPolynomialProperty( "FickCoefficient",      source, {}, { fickval } );
-    addPolynomialProperty( "SoretCoefficient",     source, {}, { fickval } );
-    addPolynomialProperty( "DTThermalConductivity",source, {}, { 0 } );
-    addPolynomialProperty( "DTFickCoefficient",    source, {}, { 0 } );
-    addPolynomialProperty( "DTSoretCoefficient",   source, {}, { 0 } );
-    addPolynomialProperty( "DxThermalConductivity",source, {}, { 0 } );
-    addPolynomialProperty( "DxSoretCoefficient",   source, {}, { 0 } );
-    addPolynomialProperty( "DxFickCoefficient",    source, {}, { 0 } );
+    addPolynomialProperty( "Density", source, {}, { densval } );
+    addPolynomialProperty( "ThermalConductivity", source, {}, { thermalval } );
+    addPolynomialProperty( "FickCoefficient", source, {}, { fickval } );
+    addPolynomialProperty( "SoretCoefficient", source, {}, { fickval } );
+    addPolynomialProperty( "DTThermalConductivity", source, {}, { 0 } );
+    addPolynomialProperty( "DTFickCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "DTSoretCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "DxThermalConductivity", source, {}, { 0 } );
+    addPolynomialProperty( "DxSoretCoefficient", source, {}, { 0 } );
+    addPolynomialProperty( "DxFickCoefficient", source, {}, { 0 } );
     addPolynomialProperty( "HeatCapacityPressure", source, {}, { heatcpval } );
-    addPolynomialProperty( "ThermalExpansion",     source, {}, { alphaval } );
-    addPolynomialProperty( "YoungsModulus",        source, {}, { youngsval } );
-    addPolynomialProperty( "PoissonRatio",         source, {}, { pratioval } );
-    d_propertyMap["ThermalDiffusionCoefficient"] = std::make_shared<FixedClad_NS::ThermalDiffusionCoefficientProp>( property( "FickCoefficient" ), property( "SoretCoefficient" ) );
-    d_propertyMap["VectorFickCoefficient"]       = std::make_shared<FixedClad_NS::VectorFickCoefficientProp>();
-    d_propertyMap["TensorFickCoefficient"]       = std::make_shared<FixedClad_NS::TensorFickCoefficientProp>();
+    addPolynomialProperty( "ThermalExpansion", source, {}, { alphaval } );
+    addPolynomialProperty( "YoungsModulus", source, {}, { youngsval } );
+    addPolynomialProperty( "PoissonRatio", source, {}, { pratioval } );
+    std::vector<double> thermalDiffusionParams         = { 1., 1. };
+    std::vector<std::string> thermDiffArgs             = {};
+    std::vector<std::array<double, 2>> thermDiffRanges = {};
+    auto fick                                          = property( "FickCoefficient" );
+    auto soret                                         = property( "SoretCoefficient" );
+    addProperty<ThermalDiffusionCoefficientProp>( "ThermalDiffusionCoefficient",
+                                                  fick,
+                                                  soret,
+                                                  thermalDiffusionParams,
+                                                  thermDiffArgs,
+                                                  thermDiffRanges );
+    addProperty<FixedClad_NS::VectorFickCoefficientProp>( "VectorFickCoefficient" );
+    addProperty<FixedClad_NS::TensorFickCoefficientProp>( "TensorFickCoefficient" );
 }
-// clang-format on
 
 } // namespace AMP::Materials

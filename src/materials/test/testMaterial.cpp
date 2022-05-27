@@ -35,14 +35,6 @@ double maxabs( const std::vector<double> &x )
         y = std::max( y, std::abs( v ) );
     return y;
 }
-static std::vector<double> operator-( const std::vector<double> &a, const std::vector<double> &b )
-{
-    AMP_ASSERT( a.size() == b.size() );
-    std::vector<double> c( a.size(), 0 );
-    for ( size_t i = 0; i < a.size(); i++ )
-        c[i] = a[i] - b[i];
-    return c;
-}
 static inline void
 record( const std::string &prefix, bool pass, const std::string &test, AMP::UnitTest &ut )
 {
@@ -137,24 +129,6 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
         auto propname          = proplist[type];
         auto property          = mat->property( propname );
         std::string propPrefix = "material " + name + " property" + " " + propname + " ";
-
-        // test parameter get and set
-        try {
-            auto params = property->get_parameters();
-            if ( params.size() > 0 ) {
-                for ( auto &p : params )
-                    p *= 10.0;
-                property->set_parameters( params );
-                for ( auto &p : params )
-                    p /= 10.0;
-                property->set_parameters( params );
-                auto nparams = property->get_parameters();
-                bool pass    = maxabs( nparams - params ) <= 1.e-10 * maxabs( params );
-                record( propPrefix, pass, "get/set parameters", ut );
-            }
-        } catch ( ... ) {
-            record( propPrefix, false, "get/set parameters", ut );
-        }
 
         // get argument info
         std::vector<std::string> argnames( property->get_arguments() );
