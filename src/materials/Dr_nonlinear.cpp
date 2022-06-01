@@ -25,7 +25,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override
+    double eval( const std::vector<double> &args ) const override
     {
         double T = args[0];
         double u = args[1];

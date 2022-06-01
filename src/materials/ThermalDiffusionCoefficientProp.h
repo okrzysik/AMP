@@ -35,7 +35,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override
+    double eval( const std::vector<double> &args ) const override
     {
         double fick  = d_FickProp->evalDirect( args );
         double soret = d_SoretProp->evalDirect( args );
@@ -67,7 +67,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override
+    double eval( const std::vector<double> &args ) const override
     {
         double fick    = d_FickProp->evalDirect( args );
         double soret   = d_SoretProp->evalDirect( args );
@@ -101,7 +101,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override
+    double eval( const std::vector<double> &args ) const override
     {
         double fick    = d_FickProp->evalDirect( args );
         double soret   = d_SoretProp->evalDirect( args );

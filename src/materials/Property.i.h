@@ -10,7 +10,8 @@ namespace AMP::Materials {
 /************************************************************************
  *  Determine if a set of values are all within range or not             *
  ************************************************************************/
-inline bool Property::in_range( const std::string &name, double value, Units unit, bool throwError )
+inline bool
+Property::in_range( const std::string &name, double value, Units unit, bool throwError ) const
 {
     auto index = get_arg_index( name );
     if ( index == -1 )
@@ -33,7 +34,7 @@ template<class INPUT_VTYPE>
 inline bool Property::in_range( const std::string &name,
                                 const INPUT_VTYPE &values,
                                 Units unit,
-                                bool throwError )
+                                bool throwError ) const
 {
     auto index = get_arg_index( name );
     if ( index == -1 )
@@ -101,12 +102,12 @@ std::vector<Property::argumentDataStruct<VEC>> Property::convertArgs( Args... ar
     convertArgs1( args2, args... );
     return args2;
 }
-template<class... Args>
-void Property::evalv( std::vector<double> &r, Units u, Args... args )
+/*template<class... Args>
+void Property::evalv( std::vector<double> &r, Units u, Args... args ) const
 {
     auto args2 = convertArgs<std::vector<double>>( args... );
-    evalv( r, args2 );
-}
+    evalv( r, u, args2 );
+}*/
 
 
 } // namespace AMP::Materials

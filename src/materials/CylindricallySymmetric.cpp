@@ -87,7 +87,7 @@ CylindricallySymmetricTensor::CylindricallySymmetricTensor( const std::string &n
         std::vector<double>( &params[1 + nRadial], &params[1 + nRadial] + nLongitudinal );
 }
 std::vector<std::vector<double>>
-CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args )
+CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args ) const
 {
     AMP_ASSERT( args.size() >= 3 );
     std::vector<std::vector<double>> result( 3, std::vector<double>( 3, 0. ) );
