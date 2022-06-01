@@ -71,7 +71,7 @@ void registerSolverFactories()
     solverFactory.registerFactory( "PetscKrylovSolver", PetscKrylovSolver::createSolver );
 #endif
 
-    solverFactory.registerFactory( "CGSolver", CGSolver::createSolver );
+    solverFactory.registerFactory( "CGSolver", CGSolver<double>::createSolver );
     solverFactory.registerFactory( "GMRESSolver", GMRESSolver::createSolver );
     solverFactory.registerFactory( "BiCGSTABSolver", BiCGSTABSolver::createSolver );
     solverFactory.registerFactory( "TFQMRSolver", TFQMRSolver::createSolver );
