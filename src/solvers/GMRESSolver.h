@@ -18,6 +18,7 @@ namespace AMP::Solver {
  * If a preconditioner is provided right preconditioning is done
  */
 
+template<typename T = double>
 class GMRESSolver : public SolverStrategy
 {
 public:
@@ -53,13 +54,13 @@ public:
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_unique<GMRESSolver>( solverStrategyParameters );
+        return std::make_unique<GMRESSolver<T>>( solverStrategyParameters );
     }
 
     /**
      * Default destructor
      */
-    virtual ~GMRESSolver();
+    virtual ~GMRESSolver() = default;
 
     /**
      * Solve the system Au=f.
@@ -182,18 +183,18 @@ private:
     bool d_bUsesPreconditioner = false;
 
     //! stores the upper Hessenberg matrix formed during the GMRES iteration
-    AMP::Array<double> d_dHessenberg;
+    AMP::Array<T> d_dHessenberg;
 
     //! stores the cosine and sine values required for Givens rotations
     // when Givens is being used
-    std::vector<double> d_dcos;
-    std::vector<double> d_dsin;
+    std::vector<T> d_dcos;
+    std::vector<T> d_dsin;
 
     //! stores the right hand side for the Hessenberg least squares system
-    std::vector<double> d_dw;
+    std::vector<T> d_dw;
 
     //! stores the solution for the least squares system
-    std::vector<double> d_dy;
+    std::vector<T> d_dy;
 
     //! shared pointer to preconditioner if it exists
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;

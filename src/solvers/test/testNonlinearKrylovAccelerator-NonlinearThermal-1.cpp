@@ -123,7 +123,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pInitialGuess = solVec;
     nonlinearSolverParams->d_pNestedSolver = linearThermalPreconditioner;
     auto nonlinearSolver =
-        std::make_shared<AMP::Solver::NonlinearKrylovAccelerator>( nonlinearSolverParams );
+        std::make_shared<AMP::Solver::NonlinearKrylovAccelerator<double>>( nonlinearSolverParams );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;

@@ -13,6 +13,7 @@ class SolverStrategyParameters;
 
 namespace AMP::Solver {
 
+template<typename T = double>
 class NonlinearKrylovAccelerator : public AMP::Solver::SolverStrategy
 {
 
@@ -25,8 +26,7 @@ public:
     static std::unique_ptr<AMP::Solver::SolverStrategy>
     createSolver( std::shared_ptr<AMP::Solver::SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::unique_ptr<AMP::Solver::SolverStrategy>(
-            new NonlinearKrylovAccelerator( solverStrategyParameters ) );
+        return std::make_unique<NonlinearKrylovAccelerator<T>>( solverStrategyParameters );
     }
 
     void
@@ -102,7 +102,7 @@ private:
     void factorizeNormalMatrix( void );
 
     //! forward backward solve for Cholesky
-    std::vector<double> forwardbackwardSolve( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+    std::vector<T> forwardbackwardSolve( std::shared_ptr<AMP::LinearAlgebra::Vector> f );
 
     bool d_subspace = false; //! boolean: a nonempty subspace
     bool d_pending  = false; //! contains pending vectors -- boolean
@@ -110,7 +110,7 @@ private:
     bool d_use_qr = false; //! use qr factorization to solve the least squares problem
 
     int d_mvec    = 0;   //! maximum number of subspace vectors
-    double d_vtol = 0.0; //! vector drop tolerance
+    T d_vtol      = 0.0; //! vector drop tolerance
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_vector = nullptr; //! correction vectors
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_residual_vector = nullptr; //! correction vectors
@@ -119,7 +119,7 @@ private:
 
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_v; //! correction vectors
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> d_w; //! function difference vectors
-    double **d_h; //! matrix of w vector inner products
+    T **d_h; //! matrix of w vector inner products
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_preconditioner =
         nullptr; //! stores a pointer to the preconditioner if being used
@@ -138,7 +138,7 @@ private:
         0;                          //! keeps track of the number of preconditioner applications
     int d_function_apply_count = 0; //! keeps track of the number of function applications
 
-    double d_eta = 1.0; //! damping factor
+    T d_eta = 1.0; //! damping factor
 
     bool d_uses_preconditioner = false; //! whether the solver uses a preconditioner or not
     bool d_freeze_pc       = true;  //! flag determining whether the preconditioner is frozen or not
