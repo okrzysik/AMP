@@ -53,7 +53,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -68,7 +68,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -83,7 +83,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -98,7 +98,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -113,7 +113,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -127,7 +127,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -142,7 +142,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -157,7 +157,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -166,7 +166,7 @@ private:
 
 //=================== Functions =====================================================
 
-inline double ThermalConductivityProp::eval( const std::vector<double> &args )
+double ThermalConductivityProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];
@@ -186,7 +186,7 @@ inline double ThermalConductivityProp::eval( const std::vector<double> &args )
     return thcond;
 }
 
-inline double DensityProp::eval( const std::vector<double> &args )
+double DensityProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];
@@ -206,7 +206,7 @@ inline double DensityProp::eval( const std::vector<double> &args )
     return dens;
 }
 
-inline double ThermalExpansionProp::eval( const std::vector<double> &args )
+double ThermalExpansionProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];
@@ -225,7 +225,7 @@ inline double ThermalExpansionProp::eval( const std::vector<double> &args )
     return alpha;
 }
 
-inline double HeatCapacityPressureProp::eval( const std::vector<double> &args )
+double HeatCapacityPressureProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];
@@ -245,7 +245,7 @@ inline double HeatCapacityPressureProp::eval( const std::vector<double> &args )
     return heatcp;
 }
 
-inline double YoungsModulusProp::eval( const std::vector<double> &args )
+double YoungsModulusProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];
@@ -262,9 +262,9 @@ inline double YoungsModulusProp::eval( const std::vector<double> &args )
     return youngs;
 }
 
-inline double PoissonRatioProp::eval( const std::vector<double> & ) { return PRatio; }
+double PoissonRatioProp::eval( const std::vector<double> & ) const { return PRatio; }
 
-inline double DxThermalConductivityProp::eval( const std::vector<double> &args )
+double DxThermalConductivityProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];
@@ -288,7 +288,7 @@ inline double DxThermalConductivityProp::eval( const std::vector<double> &args )
     return DxThCond;
 }
 
-inline double DTThermalConductivityProp::eval( const std::vector<double> &args )
+double DTThermalConductivityProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0];
     double u = args[1];

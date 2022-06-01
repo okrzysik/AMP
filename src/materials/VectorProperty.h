@@ -43,10 +43,10 @@ public:
     }
 
     /// indicator for scalar evaluator
-    bool isScalar() override { return false; }
+    bool isScalar() const override { return false; }
 
     /// indicator for vector evaluator
-    bool isVector() override { return true; }
+    bool isVector() const override { return true; }
 
 protected:
     size_t d_dimension;       ///< number of return values
@@ -113,7 +113,7 @@ public:
                 const std::map<std::string, std::string> &translator = {} );
 
     // disable scalar evaluator
-    double eval( const std::vector<double> & ) override
+    double eval( const std::vector<double> & ) const override
     {
         AMP_ERROR( "cannot use scalar evaluator from vector property" );
         return 0;

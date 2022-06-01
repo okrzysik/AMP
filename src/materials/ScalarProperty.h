@@ -20,7 +20,7 @@ public:
         : Property( std::move( name ), unit, std::move( source ) ), d_value( value )
     {
     }
-    double eval( const std::vector<double> & ) override { return d_value; }
+    double eval( const std::vector<double> & ) const override { return d_value; }
 
 private:
     double d_value;
@@ -52,7 +52,7 @@ public:
         else
             AMP_ASSERT( d_arguments.empty() );
     }
-    double eval( const std::vector<double> &args ) override
+    double eval( const std::vector<double> &args ) const override
     {
         if ( d_p.size() == 1 )
             return d_p[0];

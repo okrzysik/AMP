@@ -217,7 +217,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -233,7 +233,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -249,7 +249,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -264,7 +264,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -279,7 +279,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -294,7 +294,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -309,7 +309,7 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
@@ -324,14 +324,14 @@ public:
     {
     }
 
-    double eval( const std::vector<double> &args ) override;
+    double eval( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_params;
 
 private:
-    double MfpSolve( double, double, double, double );
-    double Residual( double, double, double );
+    double MfpSolve( double, double, double, double ) const;
+    double Residual( double, double, double ) const;
     static const double Mfp_atol;          // absolute tolerance for MFP solve
     static const double Mfp_rtol;          // relative tolerance for MFP solve
     static const double Mfp_ftol;          // function tolerance for MFP solve
@@ -345,7 +345,7 @@ const unsigned int EnthalpyProp::Mfp_maxIter = 1000; // maximum number of iterat
 
 //=================== Functions =====================================================
 
-inline double TemperatureProp::eval( const std::vector<double> &args )
+double TemperatureProp::eval( const std::vector<double> &args ) const
 {
     double H = args[0]; // local enthalpy in J/kg
     double P = args[1]; // local pressure in Pa
@@ -438,7 +438,7 @@ inline double TemperatureProp::eval( const std::vector<double> &args )
     return T;
 }
 
-inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args )
+double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args ) const
 {
     double P = args[0]; // local pressure in Pa
     double Hf;          // saturated liquid enthalpy [J/kg]
@@ -484,7 +484,7 @@ inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args
     return Hf;
 }
 
-inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args )
+double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args ) const
 {
     double P = args[0]; // local pressure in Pa
     double Hf;          // saturated liquid enthalpy [J/kg]
@@ -534,7 +534,7 @@ inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args 
     return Hf;
 }
 
-inline double SpecificVolumeProp::eval( const std::vector<double> &args )
+double SpecificVolumeProp::eval( const std::vector<double> &args ) const
 {
     double H = args[0]; // local enthalpy in J/kg
     double P = args[1]; // local pressure in Pa
@@ -754,7 +754,7 @@ inline double SpecificVolumeProp::eval( const std::vector<double> &args )
     return V;
 }
 
-inline double ThermalConductivityProp::eval( const std::vector<double> &args )
+double ThermalConductivityProp::eval( const std::vector<double> &args ) const
 {
     double T   = args[0]; // local temperature in Kelvin
     double rho = args[1]; // local density in kg/m3
@@ -816,7 +816,7 @@ inline double ThermalConductivityProp::eval( const std::vector<double> &args )
 }
 
 // Compute the turbulent heat transfer coefficient
-inline double ConvectiveHeatProp::eval( const std::vector<double> &args )
+double ConvectiveHeatProp::eval( const std::vector<double> &args ) const
 {
     double T   = args[0]; // local temperature in Kelvin
     double rho = args[1]; // local density in kg/m3
@@ -859,7 +859,7 @@ inline double ConvectiveHeatProp::eval( const std::vector<double> &args )
     return h;
 }
 
-inline double DynamicViscosityProp::eval( const std::vector<double> &args )
+double DynamicViscosityProp::eval( const std::vector<double> &args ) const
 {
     double T   = args[0]; // local temperature in Kelvin
     double rho = args[1]; // local density in kg/m3
@@ -901,7 +901,7 @@ inline double DynamicViscosityProp::eval( const std::vector<double> &args )
     return u;
 }
 
-inline double EnthalpyProp::eval( const std::vector<double> &args )
+double EnthalpyProp::eval( const std::vector<double> &args ) const
 {
     double T = args[0]; // local temperature in Kelvin
     double P = args[1]; // local pressure in Pa
@@ -918,7 +918,7 @@ inline double EnthalpyProp::eval( const std::vector<double> &args )
     return h;
 }
 
-inline double EnthalpyProp::Residual( double h, double T, double P )
+double EnthalpyProp::Residual( double h, double T, double P ) const
 {
     TemperatureProp temperatureProperty;
     std::vector<double> tempArgs;
@@ -930,7 +930,7 @@ inline double EnthalpyProp::Residual( double h, double T, double P )
 }
 
 // Use Method of False Position (MFP) to solve for enthalpy
-inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double P )
+double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double P ) const
 {
     // enthalpy values at left (l), right (r), and middle (m) as well as
     //  residual evaluated at these points

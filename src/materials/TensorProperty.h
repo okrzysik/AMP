@@ -45,10 +45,10 @@ public:
     }
 
     /// indicator for scalar evaluator
-    bool isScalar() override { return false; }
+    bool isScalar() const override { return false; }
 
     /// indicator for tensor evaluator
-    bool isTensor() override { return true; }
+    bool isTensor() const override { return true; }
 
 protected:
     std::vector<size_t> d_dimensions; ///< dimensions of return value tensor
@@ -116,7 +116,7 @@ public:
                 const std::map<std::string, std::string> &translator = {} );
 
     // disable scalar evaluator
-    double eval( const std::vector<double> & ) override
+    double eval( const std::vector<double> & ) const override
     {
         AMP_ERROR( "cannot use scalar evaluator from tensor property" );
         return 0;
