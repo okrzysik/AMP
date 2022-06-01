@@ -110,7 +110,7 @@ double Property::eval( const Units &unit,
 
 
 /************************************************************************
- *  evalv                                                                *
+ *  evalv (vector)                                                       *
  ************************************************************************/
 static inline size_t size( const std::vector<double> &x ) { return x.size(); }
 static inline size_t size( const AMP::LinearAlgebra::Vector &x ) { return x.getLocalSize(); }
@@ -119,7 +119,7 @@ void Property::evalv( OUT &r,
                       const Units &unit,
                       const std::vector<argumentDataStruct<IN>> &args ) const
 {
-    // Check that all vectors are the same size
+    // Check that argument vectors are the same size
     for ( size_t i = 0; i < args.size(); i++ )
         AMP_ASSERT( size( args[i].vec ) == size( r ) );
 
@@ -149,7 +149,6 @@ void Property::evalv( OUT &r,
     double scale = 1.0;
     if ( !unit.isNull() )
         scale = d_units.convert( unit );
-
     for ( auto r_it = r.begin(); r_it != r.end(); ++r_it ) {
         // Update the arguments
         for ( size_t i = 0; i < args.size(); i++ ) {

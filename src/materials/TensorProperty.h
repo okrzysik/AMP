@@ -29,7 +29,7 @@ public:
     virtual ~TensorProperty() {}
 
     /// get dimensions of evalv return value tensor
-    std::vector<size_t> get_dimensions() { return d_dimensions; }
+    std::vector<size_t> get_dimensions() const { return d_dimensions; }
 
     /// ok to change dimensions
     bool variable_dimensions() { return d_variableDimensions; }
@@ -54,21 +54,14 @@ protected:
     std::vector<size_t> d_dimensions; ///< dimensions of return value tensor
     bool d_variableDimensions;        ///< true if ok to change dimensions
 
-    ///////////////////// Evaluators /////////////////////
-
-private:
-    /* Loops through input vectors, calling the child eval function, returning tensor results */
-    template<class INPUT_VTYPE, class RETURN_VTYPE>
-    void evalvActual( std::vector<std::vector<std::shared_ptr<RETURN_VTYPE>>> &r,
-                      const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args );
-
 public:
     /**
      * tensor evaluation function for a single argument set
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return tensor of property values with dimensions get_dimensions()
      */
-    virtual std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) = 0;
+    virtual std::vector<std::vector<double>>
+    evalTensor( const std::vector<double> &args ) const = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r tensor vector of return values
@@ -85,7 +78,7 @@ public:
      *  returned in (*r[j])[i].
      */
     void evalv( std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &r,
-                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r tensor of AMP vectors of return values
@@ -100,8 +93,9 @@ public:
      * result
      *  returned in (*r[k][j])[i].
      */
-    void evalv( std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-                const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+    void
+    evalv( std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
+           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const;
 
     /** Wrapper function that calls evalvActualVector for each argument set
      *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
@@ -113,7 +107,14 @@ public:
      */
     void evalv( std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
                 const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                const std::map<std::string, std::string> &translator = {} );
+                const std::map<std::string, std::string> &translator = {} ) const;
+
+
+public: // Advanced interfaces
+    /* Loops through input vectors, calling the child eval function, returning tensor results */
+    template<class OUT, class IN = OUT>
+    void evalv( std::vector<std::vector<std::shared_ptr<OUT>>> &r,
+                const std::vector<argumentDataStruct<IN>> &args ) const;
 
     // disable scalar evaluator
     double eval( const std::vector<double> & ) const override

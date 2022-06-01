@@ -82,7 +82,10 @@ public:
     {
     }
 
-    std::vector<double> evalVector( const std::vector<double> & ) override { return { d_value }; }
+    std::vector<double> evalVector( const std::vector<double> & ) const override
+    {
+        return { d_value };
+    }
 
 private:
     double d_value;
@@ -103,7 +106,7 @@ public:
                     "dimensions and number of parameters don't match" );
     }
 
-    std::vector<std::vector<double>> evalTensor( const std::vector<double> & ) override
+    std::vector<std::vector<double>> evalTensor( const std::vector<double> & ) const override
     {
         std::vector<std::vector<double>> result( d_dimensions[0],
                                                  std::vector<double>( d_dimensions[1] ) );
