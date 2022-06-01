@@ -151,11 +151,12 @@ void BiCGSTABSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             // attempt to restart with a new r0
             d_pOperator->residual( f, u, res );
             r_tilde->copyVector( res );
+            p->copyVector( res );
             res_norm = static_cast<double>( res->L2Norm() );
             rho[1] = r_tilde_norm = res_norm;
             NULL_USE( rho[1] );
             d_restarts++;
-            break;
+            continue;
         }
 
         if ( iter == 0 ) {
