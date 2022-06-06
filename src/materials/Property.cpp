@@ -197,46 +197,6 @@ void Property::evalv(
 
 
 /************************************************************************
- *  Get/Set auxiliary data                                               *
- ************************************************************************/
-void Property::setAuxiliaryData( const std::string &key, const double val )
-{
-    auto loc = d_AuxiliaryDataDouble.find( key );
-    AMP_ASSERT( loc != d_AuxiliaryDataDouble.end() );
-    loc->second = val;
-}
-void Property::setAuxiliaryData( const std::string &key, const int val )
-{
-    auto loc = d_AuxiliaryDataInteger.find( key );
-    AMP_ASSERT( loc != d_AuxiliaryDataInteger.end() );
-    loc->second = val;
-}
-void Property::setAuxiliaryData( const std::string &key, const std::string &val )
-{
-    auto loc = d_AuxiliaryDataString.find( key );
-    AMP_ASSERT( loc != d_AuxiliaryDataString.end() );
-    loc->second = val;
-}
-void Property::getAuxiliaryData( const std::string &key, double &val ) const
-{
-    auto p = d_AuxiliaryDataDouble.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataDouble.end() );
-    val = p->second;
-}
-void Property::getAuxiliaryData( const std::string &key, int &val ) const
-{
-    auto p = d_AuxiliaryDataInteger.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataInteger.end() );
-    val = p->second;
-}
-void Property::getAuxiliaryData( const std::string &key, std::string &val ) const
-{
-    auto p = d_AuxiliaryDataString.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataString.end() );
-    val = p->second;
-}
-
-/************************************************************************
  *  Misc functions                                                       *
  ************************************************************************/
 std::array<double, 2> Property::get_arg_range( const std::string &name ) const

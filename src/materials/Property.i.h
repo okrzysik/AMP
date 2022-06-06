@@ -110,4 +110,19 @@ void Property::evalv( std::vector<double> &r, Units u, Args... args ) const
 }*/
 
 
+/************************************************************************
+ *  Get/Set auxillary data                                               *
+ ************************************************************************/
+template<class TYPE>
+TYPE Property::getAuxiliaryData( const std::string &key ) const
+{
+    return d_auxiliaryData.getScalar<TYPE>( key );
+}
+template<class TYPE>
+void Property::setAuxiliaryData( const std::string &key, const TYPE &data )
+{
+    return d_auxiliaryData.putScalar( key, data );
+}
+
+
 } // namespace AMP::Materials

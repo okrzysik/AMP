@@ -21,7 +21,7 @@ public:
         std::string source                        = std::string( "None" ),
         std::vector<std::string> args             = std::vector<std::string>(),
         std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>(),
-        const size_t dimension                    = 1 );
+        size_t dimension                          = 1 );
 
     /**
      * Destructor
@@ -31,17 +31,6 @@ public:
     /// return dimension of evalv return value vector
     size_t get_dimension() const { return d_dimension; }
 
-    /// ok to change dimension
-    bool variable_dimension() const { return d_variableDimension; }
-
-    /// supply dimension of evalv return value vector
-    void set_dimension( size_t dimension )
-    {
-        AMP_INSIST( d_variableDimension, "can not change dimension for this property" );
-        d_dimension = dimension;
-        AMP_INSIST( d_dimension > 0, "must return at least one value" );
-    }
-
     /// indicator for scalar evaluator
     bool isScalar() const override { return false; }
 
@@ -49,8 +38,7 @@ public:
     bool isVector() const override { return true; }
 
 protected:
-    size_t d_dimension;       ///< number of return values
-    bool d_variableDimension; ///< true if ok to change dimension
+    size_t d_dimension; ///< number of return values
 
 
 public:

@@ -26,7 +26,7 @@ DiffusionTransportTensorModel::DiffusionTransportTensorModel(
 }
 
 void DiffusionTransportTensorModel::getTensorTransport(
-    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+    AMP::Array<std::shared_ptr<std::vector<double>>> &result,
     std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> & )
 {
@@ -64,9 +64,7 @@ void DiffusionTransportTensorModel::getTensorTransport(
 
         if ( d_BilogScaleCoefficient ) {
             for ( auto &elem : result )
-                for ( auto &j : elem ) {
-                    bilogScale( *j, lower, upper );
-                }
+                bilogScale( *elem, lower, upper );
         }
     }
 }

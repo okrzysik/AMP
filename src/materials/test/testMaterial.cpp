@@ -627,21 +627,19 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             }
 
             // prepare results vector, check for reasonable size info
-            std::vector<size_t> nvecs( 2, 0U );
+            AMP::ArraySize nvecs;
             try {
                 nvecs = tensorProperty->get_dimensions();
                 record( propPrefix, true, "get_dimension() ok", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "get_dimension() ok", ut );
             }
-            std::vector<std::vector<std::shared_ptr<std::vector<double>>>> stdEval(
-                nvecs[0], std::vector<std::shared_ptr<std::vector<double>>>( nvecs[1] ) );
-            std::vector<std::vector<std::shared_ptr<std::vector<double>>>> nominalEval(
-                nvecs[0], std::vector<std::shared_ptr<std::vector<double>>>( nvecs[1] ) );
+            AMP::Array<std::shared_ptr<std::vector<double>>> stdEval( nvecs[0], nvecs[1] );
+            AMP::Array<std::shared_ptr<std::vector<double>>> nominalEval( nvecs[0], nvecs[1] );
             for ( size_t i = 0; i < nvecs[0]; i++ )
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
-                    stdEval[i][j]     = std::make_shared<std::vector<double>>( npoints );
-                    nominalEval[i][j] = std::make_shared<std::vector<double>>( npoints );
+                    stdEval( i, j )     = std::make_shared<std::vector<double>>( npoints );
+                    nominalEval( i, j ) = std::make_shared<std::vector<double>>( npoints );
                 }
 
             // check that number of components is positive
@@ -681,12 +679,10 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             }
 
             // setup AMP::Vector evalv results
-            std::vector<std::vector<AMP::LinearAlgebra::Vector::shared_ptr>> ampEval( nvecs[0] ),
-                nominalAmpEval( nvecs[0] ), nominalMultiEval( nvecs[0] );
+            AMP::Array<AMP::LinearAlgebra::Vector::shared_ptr> ampEval( nvecs );
+            AMP::Array<AMP::LinearAlgebra::Vector::shared_ptr> nominalAmpEval( nvecs );
+            AMP::Array<AMP::LinearAlgebra::Vector::shared_ptr> nominalMultiEval( nvecs );
             for ( size_t i = 0; i < nvecs[0]; i++ ) {
-                ampEval[i].resize( nvecs[1] );
-                nominalAmpEval[i].resize( nvecs[1] );
-                nominalMultiEval[i].resize( nvecs[1] );
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
                     auto istr    = std::to_string( i );
                     auto evalVar = std::make_shared<AMP::LinearAlgebra::Variable>( "amp" + istr );
@@ -694,11 +690,11 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                         std::make_shared<AMP::LinearAlgebra::Variable>( "nominal" + istr );
                     auto multiVar =
                         std::make_shared<AMP::LinearAlgebra::Variable>( "multivec" + istr );
-                    ampEval[i][j] =
+                    ampEval( i, j ) =
                         AMP::LinearAlgebra::createSimpleVector<double>( npoints, evalVar );
-                    nominalAmpEval[i][j] =
+                    nominalAmpEval( i, j ) =
                         AMP::LinearAlgebra::createSimpleVector<double>( npoints, nomVar );
-                    nominalMultiEval[i][j] =
+                    nominalMultiEval( i, j ) =
                         AMP::LinearAlgebra::createSimpleVector<double>( npoints, multiVar );
                 }
             }
@@ -708,7 +704,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                 tensorProperty->evalv( ampEval, argsVec );
                 for ( size_t i = 0; i < nvecs[0]; i++ )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
-                        nominalAmpEval[i][j]->copyVector( ampEval[i][j] );
+                        nominalAmpEval( i, j )->copyVector( ampEval( i, j ) );
                 record( propPrefix, true, "evalv AMP::Vector", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv AMP::Vector", ut );
@@ -739,7 +735,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                 tensorProperty->evalv( ampEval, argsMultiVec, xlator );
                 for ( size_t i = 0; i < nvecs[0]; i++ )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
-                        nominalMultiEval[i][j]->copyVector( ampEval[i][j] );
+                        nominalMultiEval( i, j )->copyVector( ampEval( i, j ) );
                 record( propPrefix, true, "evalv AMP::MultiVector", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv AMP::MultiVector", ut );
@@ -770,9 +766,9 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             for ( size_t k = 0; k < nvecs[0]; k++ ) {
                 for ( size_t j = 0; j < nvecs[1]; j++ ) {
                     for ( size_t i = 0; i < npoints; i++ ) {
-                        double vstd      = ( *nominalEval[k][j] )[i];
-                        double vVec      = nominalAmpEval[k][j]->getValueByLocalID( i );
-                        double vMultiVec = nominalMultiEval[k][j]->getValueByLocalID( i );
+                        double vstd      = ( *nominalEval( k, j ) )[i];
+                        double vVec      = nominalAmpEval( k, j )->getValueByLocalID( i );
+                        double vMultiVec = nominalMultiEval( k, j )->getValueByLocalID( i );
                         pass             = pass && ( vstd == vVec && vVec == vMultiVec );
                     }
                 }

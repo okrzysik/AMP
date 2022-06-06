@@ -1,6 +1,8 @@
 #ifndef included_AMP_Property
 #define included_AMP_Property
 
+#include "AMP/utils/ArraySize.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Units.h"
 #include "AMP/utils/UtilityMacros.h"
 
@@ -38,9 +40,6 @@ namespace AMP::Materials {
 /**
  * \class          Property
  * \brief          Provides material properties of scalar type.
- *
- * A Property class may provide only one of eval(), evalVector() or evalTensor(). It can not
- * provide both scalar and tensor
  */
 class Property
 {
@@ -62,6 +61,13 @@ public:
 
     //! Destructor
     virtual ~Property() {}
+
+    /**
+     * \brief          Return the size of the property
+     * \details        Return the size of the property (1 for scalar, N for vector, NxM for Tensor,
+     * etc.)
+     */
+    // ArraySize size() const;
 
     //! Return name of property
     inline const std::string &get_name() const { return d_name; }
@@ -131,24 +137,16 @@ public: // Functions dealing with the ranges of the arguments
                           bool throwError = false ) const;
 
 
-public: // Functions dealing with auxilliary data
-    //! Set auxiliary data
-    void setAuxiliaryData( const std::string &key, const double val );
-
-    //! Set auxiliary data
-    void setAuxiliaryData( const std::string &key, const int val );
-
-    //! Set auxiliary data
-    void setAuxiliaryData( const std::string &key, const std::string &val );
+    //! Get auxiliary data
+    inline const Database &getAuxiliaryData() const { return d_auxiliaryData; }
 
     //! Get auxiliary data
-    void getAuxiliaryData( const std::string &key, double &val ) const;
+    template<class TYPE>
+    TYPE getAuxiliaryData( const std::string &key ) const;
 
-    //! Get auxiliary data
-    void getAuxiliaryData( const std::string &key, int &val ) const;
-
-    //! Get auxiliary data
-    void getAuxiliaryData( const std::string &key, std::string &val ) const;
+    //! Set auxiliary data
+    template<class TYPE>
+    void setAuxiliaryData( const std::string &key, const TYPE &data );
 
 
 public: // Evaluators
@@ -174,10 +172,10 @@ public: // Evaluators
      *  \param args map of vectors of arguments, indexed by strings which are members of
      *     get_arguments()
      *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as
-     * indices. Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  \a r  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+     *  The  \a args  parameter need not contain all the members of get_arguments() as
+     *  indices.  Arguments left out will have values supplied by the entries in get_defaults().
+     *  Sizes of \a r and \a args["name"] must match. Members of
+     *  \a args  indexed by names other than those in get_arguments() are ignored.
      */
     // template<class... Args>
     // void evalv( std::vector<double> &r, Units u, Args... args ) const;
@@ -185,12 +183,12 @@ public: // Evaluators
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
      *  \param args map of AMP vectors of arguments, indexed by strings which are members of
-     * get_arguments()
+     *     get_arguments()
      *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as
+     *  The  \a args  parameter need not contain all the members of get_arguments() as
      * indices. Arguments left out will have values supplied by the entries in  get_defaults() .
      *  Sizes of  \a r  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+     *  \a args  indexed by names other than those in get_arguments() are ignored.
      *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the
      * k-j-th result returned in (*r[k][j])[i].
      */
@@ -260,10 +258,7 @@ protected:
     std::vector<double> d_defaults;                     //!< default values of arguments
     std::vector<std::array<double, 2>> d_ranges;        //!< allowed ranges of arguments
     std::map<std::string_view, size_t> d_argToIndexMap; //!< map argument names to indices
-
-    std::map<std::string, double> d_AuxiliaryDataDouble;
-    std::map<std::string, int> d_AuxiliaryDataInteger;
-    std::map<std::string, std::string> d_AuxiliaryDataString;
+    Database d_auxiliaryData;                           //!< Database containing auxiliary data
 
 
 protected:

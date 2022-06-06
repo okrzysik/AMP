@@ -98,7 +98,7 @@ class ScalarTensorProperty : public TensorProperty
 public:
     explicit ScalarTensorProperty( const std::string &name,
                                    const std::string &source,
-                                   const std::vector<size_t> &dims,
+                                   const AMP::ArraySize &dims,
                                    const std::vector<double> &params )
         : TensorProperty( name, source, {}, {}, dims ), d_params( params )
     {
@@ -106,13 +106,12 @@ public:
                     "dimensions and number of parameters don't match" );
     }
 
-    std::vector<std::vector<double>> evalTensor( const std::vector<double> & ) const override
+    AMP::Array<double> evalTensor( const std::vector<double> & ) const override
     {
-        std::vector<std::vector<double>> result( d_dimensions[0],
-                                                 std::vector<double>( d_dimensions[1] ) );
+        AMP::Array<double> result( d_dimensions );
         for ( size_t i = 0; i < d_dimensions[0]; i++ )
             for ( size_t j = 0; j < d_dimensions[1]; j++ )
-                result[i][j] = d_params[i * d_dimensions[1] + j];
+                result( i, j ) = d_params[i * d_dimensions[1] + j];
         return result;
     }
 

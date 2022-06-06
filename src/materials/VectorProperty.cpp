@@ -13,11 +13,10 @@ VectorProperty::VectorProperty( std::string name,
                                 std::string source,
                                 std::vector<std::string> args,
                                 std::vector<std::array<double, 2>> ranges,
-                                const size_t dimension )
+                                size_t dimension )
     : Property(
           std::move( name ), Units(), std::move( source ), std::move( args ), std::move( ranges ) ),
-      d_dimension( dimension ),
-      d_variableDimension( false )
+      d_dimension( dimension )
 {
     AMP_INSIST( d_dimension > 0, "must return at least one value" );
 }

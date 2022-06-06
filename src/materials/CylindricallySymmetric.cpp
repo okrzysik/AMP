@@ -77,8 +77,7 @@ CylindricallySymmetricTensor::CylindricallySymmetricTensor( const std::string &n
                       { 3, 3 } )
 {
     AMP_ASSERT( params.size() >= 3 );
-    d_variableDimensions = true;
-    d_AuxiliaryDataInteger.insert( std::make_pair( "derivative", 0 ) );
+    setAuxiliaryData<int>( "derivative", 0 );
     size_t nRadial = round_zero( params[0] );
     AMP_ASSERT( nRadial < params.size() - 1 );
     size_t nLongitudinal = params.size() - 1 - nRadial;
@@ -86,44 +85,31 @@ CylindricallySymmetricTensor::CylindricallySymmetricTensor( const std::string &n
     d_paramsLongitudinal =
         std::vector<double>( &params[1 + nRadial], &params[1 + nRadial] + nLongitudinal );
 }
-std::vector<std::vector<double>>
-CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args ) const
+AMP::Array<double> CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args ) const
 {
     AMP_ASSERT( args.size() >= 3 );
-    std::vector<std::vector<double>> result( 3, std::vector<double>( 3, 0. ) );
+    AMP::Array<double> result( 3, 3 );
+    result.fill( 0 );
     auto Kr    = evalPoly( d_paramsRadial, args[0] );
     auto Kz    = evalPoly( d_paramsLongitudinal, args[2] );
     double cth = cos( args[1] );
     double sth = sin( args[1] );
-    int deriv  = d_AuxiliaryDataInteger.find( "derivative" )->second;
-    switch ( deriv ) {
-    case 0: {
-        result[0][0] = cth * cth * Kr[0];
-        result[0][1] = sth * cth * Kr[0];
-        result[1][0] = sth * cth * Kr[0];
-        result[1][1] = sth * sth * Kr[0];
-        result[2][2] = Kz[0];
-        break;
-    }
-    case 1: {
-        result[0][0] = cth * cth * Kr[1];
-        result[0][1] = sth * cth * Kr[1];
-        result[1][0] = sth * cth * Kr[1];
-        result[1][1] = sth * sth * Kr[1];
-        result[2][2] = 0.;
-        break;
-    }
-    case 2: {
-        result[0][0] = 0.;
-        result[0][1] = 0.;
-        result[1][0] = 0.;
-        result[1][1] = 0.;
-        result[2][2] = Kz[1];
-        break;
-    }
-    default:
+    int deriv  = getAuxiliaryData<int>( "derivative" );
+    if ( deriv == 0 ) {
+        result( 0, 0 ) = cth * cth * Kr[0];
+        result( 0, 1 ) = sth * cth * Kr[0];
+        result( 1, 0 ) = sth * cth * Kr[0];
+        result( 1, 1 ) = sth * sth * Kr[0];
+        result( 2, 2 ) = Kz[0];
+    } else if ( deriv == 1 ) {
+        result( 0, 0 ) = cth * cth * Kr[1];
+        result( 0, 1 ) = sth * cth * Kr[1];
+        result( 1, 0 ) = sth * cth * Kr[1];
+        result( 1, 1 ) = sth * sth * Kr[1];
+    } else if ( deriv == 2 ) {
+        result( 2, 2 ) = Kz[1];
+    } else {
         AMP_ASSERT( false );
-        break;
     }
     return result;
 }

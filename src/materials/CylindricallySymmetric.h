@@ -23,7 +23,7 @@ public:
     CylindricallySymmetricTensor( const std::string &name,
                                   std::vector<double> params = { 1, 1, 1 } );
 
-    std::vector<std::vector<double>> evalTensor( const std::vector<double> &args ) const override;
+    AMP::Array<double> evalTensor( const std::vector<double> &args ) const override;
 
 private:
     std::vector<double> d_paramsRadial;

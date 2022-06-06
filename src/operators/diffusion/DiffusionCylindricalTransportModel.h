@@ -28,7 +28,7 @@ public:
      * \param Coordinates vector of points that define the spatial location
      */
     virtual void
-    getTensorTransport( std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+    getTensorTransport( AMP::Array<std::shared_ptr<std::vector<double>>> &result,
                         std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                         const std::vector<libMesh::Point> &Coordinates = d_DummyCoords ) override;
 

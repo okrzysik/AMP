@@ -1,4 +1,5 @@
 #include "TensorProperty.h"
+#include "AMP/utils/Array.hpp"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -13,11 +14,10 @@ TensorProperty::TensorProperty( std::string name,
                                 std::string source,
                                 std::vector<std::string> args,
                                 std::vector<std::array<double, 2>> ranges,
-                                std::vector<size_t> dimensions )
+                                const AMP::ArraySize &dimensions )
     : Property(
           std::move( name ), Units(), std::move( source ), std::move( args ), std::move( ranges ) ),
-      d_dimensions( std::move( dimensions ) ),
-      d_variableDimensions( false )
+      d_dimensions( dimensions )
 {
     AMP_INSIST( d_dimensions.size() == 2, "there must be two dimensions" );
     AMP_INSIST( d_dimensions[0] > 0, "must have first return tensor dimension > 0" );
@@ -31,13 +31,13 @@ TensorProperty::TensorProperty( std::string name,
 static inline size_t size( const std::vector<double> &x ) { return x.size(); }
 static inline size_t size( const AMP::LinearAlgebra::Vector &x ) { return x.getLocalSize(); }
 template<class OUT, class IN>
-void TensorProperty::evalv( std::vector<std::vector<std::shared_ptr<OUT>>> &r,
+void TensorProperty::evalv( AMP::Array<std::shared_ptr<OUT>> &r,
                             const std::vector<argumentDataStruct<IN>> &args ) const
 {
 
     // Check that argument vectors are the same size
     for ( size_t i = 0; i < args.size(); i++ )
-        AMP_ASSERT( size( args[i].vec ) == size( *r[0][0] ) );
+        AMP_ASSERT( size( args[i].vec ) == size( *r( 0 ) ) );
 
     // Check that all arguments are in range
     for ( const auto &arg : args )
@@ -62,20 +62,17 @@ void TensorProperty::evalv( std::vector<std::vector<std::shared_ptr<OUT>>> &r,
     }
 
     // Check rows of tensor are same size
-    size_t rdim0 = r.size();    // dimension 0 of results tensor to return
-    size_t rdim1 = r[0].size(); // dimension 1 of results tensor to return
-    for ( size_t i = 1; i < rdim0; i++ ) {
-        AMP_ASSERT( r[i].size() == rdim1 );
-    }
+    size_t rdim0 = r.size( 0 );
+    size_t rdim1 = r.size( 1 );
 
     // Get the iterators to the results
-    size_t N   = size( *r[0][0] );
-    using R_IT = decltype( r[0][0]->begin() );
-    std::vector<std::vector<R_IT>> r_it( rdim0, std::vector<R_IT>( rdim1 ) );
+    size_t N   = size( *r( 0 ) );
+    using R_IT = decltype( r( 0 )->begin() );
+    AMP::Array<R_IT> r_it( rdim0, rdim1 );
     for ( size_t i = 0; i < rdim0; i++ ) {
         for ( size_t j = 0; j < rdim1; j++ ) {
-            AMP_ASSERT( size( *r[i][j] ) == N );
-            r_it[i][j] = r[i][j]->begin();
+            AMP_ASSERT( size( *r( i, j ) ) == N );
+            r_it( i, j ) = r( i, j )->begin();
         }
     }
 
@@ -95,14 +92,14 @@ void TensorProperty::evalv( std::vector<std::vector<std::shared_ptr<OUT>>> &r,
         auto result = evalTensor( eval_args );
         for ( size_t i = 0; i < rdim0; i++ ) {
             for ( size_t j = 0; j < rdim1; j++ ) {
-                *r_it[i][j] = scale * result[i][j];
-                ++r_it[i][j];
+                *r_it( i, j ) = scale * result( i, j );
+                ++r_it( i, j );
             }
         }
     }
 }
 void TensorProperty::evalv(
-    std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
+    AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
     const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const
 {
     std::vector<argumentDataStruct<AMP::LinearAlgebra::Vector>> args2;
@@ -110,16 +107,15 @@ void TensorProperty::evalv(
         args2.emplace_back( tmp.first, *tmp.second );
     evalv( r, args2 );
 }
-void TensorProperty::evalv(
-    std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
-    const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-    const std::map<std::string, std::string> &translator ) const
+void TensorProperty::evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                            const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                            const std::map<std::string, std::string> &translator ) const
 {
     auto mapargs = make_map( args, translator );
     evalv( r, mapargs );
 }
 void TensorProperty::evalv(
-    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &r,
+    AMP::Array<std::shared_ptr<std::vector<double>>> &r,
     const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const
 {
     std::vector<argumentDataStruct<std::vector<double>>> args2;
@@ -128,4 +124,12 @@ void TensorProperty::evalv(
     evalv( r, args2 );
 }
 
+
 } // namespace AMP::Materials
+
+
+/********************************************************
+ *  Explicit instantiations of Array                     *
+ ********************************************************/
+instantiateArrayConstructors( std::shared_ptr<std::vector<double>> );
+instantiateArrayConstructors( std::shared_ptr<AMP::LinearAlgebra::Vector> );

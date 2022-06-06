@@ -1,7 +1,9 @@
 #ifndef included_AMP_TensorProperty
 #define included_AMP_TensorProperty
 
-#include "Property.h"
+#include "AMP/materials/Property.h"
+#include "AMP/utils/Array.h"
+
 
 namespace AMP::Materials {
 
@@ -21,7 +23,7 @@ public:
         std::string source                        = std::string( "None" ),
         std::vector<std::string> args             = std::vector<std::string>(),
         std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>(),
-        std::vector<size_t> dimensions            = { 2, 1 } );
+        const AMP::ArraySize &dimensions          = { 2, 1 } );
 
     /**
      * Destructor
@@ -29,20 +31,7 @@ public:
     virtual ~TensorProperty() {}
 
     /// get dimensions of evalv return value tensor
-    std::vector<size_t> get_dimensions() const { return d_dimensions; }
-
-    /// ok to change dimensions
-    bool variable_dimensions() { return d_variableDimensions; }
-
-    /// set dimensions of evalv return value tensor
-    void set_dimensions( const std::vector<size_t> &dimensions )
-    {
-        AMP_INSIST( d_variableDimensions, "can not change dimensions for this property" );
-        d_dimensions = dimensions;
-        AMP_INSIST( d_dimensions.size() == 2, "there must be two dimensions" );
-        AMP_INSIST( d_dimensions[0] > 0, "must have first return tensor dimension > 0" );
-        AMP_INSIST( d_dimensions[1] > 0, "must have second return tensor dimension > 0" );
-    }
+    ArraySize get_dimensions() const { return d_dimensions; }
 
     /// indicator for scalar evaluator
     bool isScalar() const override { return false; }
@@ -51,8 +40,7 @@ public:
     bool isTensor() const override { return true; }
 
 protected:
-    std::vector<size_t> d_dimensions; ///< dimensions of return value tensor
-    bool d_variableDimensions;        ///< true if ok to change dimensions
+    ArraySize d_dimensions; ///< dimensions of return value tensor
 
 public:
     /**
@@ -60,8 +48,7 @@ public:
      * \param args list of argument values, in correct order, given by  get_arguments()
      * \return tensor of property values with dimensions get_dimensions()
      */
-    virtual std::vector<std::vector<double>>
-    evalTensor( const std::vector<double> &args ) const = 0;
+    virtual AMP::Array<double> evalTensor( const std::vector<double> &args ) const = 0;
 
     /** Wrapper function that calls evalvActual for each argument set
      *  \param r tensor vector of return values
@@ -77,7 +64,7 @@ public:
      * result
      *  returned in (*r[j])[i].
      */
-    void evalv( std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &r,
+    void evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
                 const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
 
     /** Wrapper function that calls evalvActual for each argument set
@@ -94,7 +81,7 @@ public:
      *  returned in (*r[k][j])[i].
      */
     void
-    evalv( std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
+    evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
            const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const;
 
     /** Wrapper function that calls evalvActualVector for each argument set
@@ -105,7 +92,7 @@ public:
      *  \param translator   Optional translator between property arguments and AMP::Multivector
      * entries
      */
-    void evalv( std::vector<std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>>> &r,
+    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
                 const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
                 const std::map<std::string, std::string> &translator = {} ) const;
 
@@ -113,7 +100,7 @@ public:
 public: // Advanced interfaces
     /* Loops through input vectors, calling the child eval function, returning tensor results */
     template<class OUT, class IN = OUT>
-    void evalv( std::vector<std::vector<std::shared_ptr<OUT>>> &r,
+    void evalv( AMP::Array<std::shared_ptr<OUT>> &r,
                 const std::vector<argumentDataStruct<IN>> &args ) const;
 
     // disable scalar evaluator

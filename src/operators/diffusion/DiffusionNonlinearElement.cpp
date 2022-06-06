@@ -32,16 +32,15 @@ void DiffusionNonlinearElement::apply()
 
     // create transport coefficient storage
     std::vector<double> transportCoeff( d_qrule->n_points() );
-    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> transportCoeffTensor(
-        3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
+    AMP::Array<std::shared_ptr<std::vector<double>>> transportCoeffTensor( 3, 3 );
     if ( d_transportModel->isaTensor() ) {
         d_transportTensorModel =
             std::dynamic_pointer_cast<DiffusionTransportTensorModel>( d_transportModel );
-        for ( int i = 0; i < 3; i++ )
-            for ( int j = 0; j < 3; j++ ) {
-                auto *vec = new std::vector<double>( d_qrule->n_points() );
-                transportCoeffTensor[i][j].reset( vec );
-            }
+        for ( int i = 0; i < 3; i++ ) {
+            for ( int j = 0; j < 3; j++ )
+                transportCoeffTensor( i, j ) =
+                    std::make_shared<std::vector<double>>( d_qrule->n_points() );
+        }
     }
 
     // compute transport coefficients
@@ -81,8 +80,7 @@ void DiffusionNonlinearElement::apply()
         }
 
         // set up storage for transport coefficients
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> nodalTransportCoeffTensor(
-            3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
+        AMP::Array<std::shared_ptr<std::vector<double>>> nodalTransportCoeffTensor( 3, 3 );
 
         // construct material evalv arguments
         for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
@@ -110,8 +108,8 @@ void DiffusionNonlinearElement::apply()
         } else {
             for ( int i = 0; i < 3; i++ )
                 for ( int j = 0; j < 3; j++ ) {
-                    auto *vec( new std::vector<double>( num_nodes ) );
-                    nodalTransportCoeffTensor[i][j].reset( vec );
+                    nodalTransportCoeffTensor( i, j ) =
+                        std::make_shared<std::vector<double>>( num_nodes );
                 }
             d_transportTensorModel->getTensorTransport(
                 nodalTransportCoeffTensor, transport_args, elem_nodes );
@@ -120,12 +118,12 @@ void DiffusionNonlinearElement::apply()
             for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
                 for ( int i = 0; i < 3; i++ )
                     for ( int j = 0; j < 3; j++ )
-                        ( *transportCoeffTensor[i][j] )[qp] = 0.0;
+                        ( *transportCoeffTensor( i, j ) )[qp] = 0.0;
                 for ( size_t n = 0; n < num_nodes; n++ ) {
                     for ( int i = 0; i < 3; i++ )
                         for ( int j = 0; j < 3; j++ ) {
-                            ( *transportCoeffTensor[i][j] )[qp] +=
-                                ( *nodalTransportCoeffTensor[i][j] )[n] * phi[n][qp];
+                            ( *transportCoeffTensor( i, j ) )[qp] +=
+                                ( *nodalTransportCoeffTensor( i, j ) )[n] * phi[n][qp];
                         }
                 } // end for j
             }     // end for qp
@@ -151,7 +149,7 @@ void DiffusionNonlinearElement::apply()
                 for ( int i = 0; i < 3; i++ )
                     for ( int j = 0; j < 3; j++ ) {
                         ( *d_elementOutputVector )[n] +=
-                            ( JxW[qp] * ( *transportCoeffTensor[i][j] )[qp] * dphi[n][qp]( i ) *
+                            ( JxW[qp] * ( *transportCoeffTensor( i, j ) )[qp] * dphi[n][qp]( i ) *
                               grad_phi( j ) );
                     }
             } // end for n

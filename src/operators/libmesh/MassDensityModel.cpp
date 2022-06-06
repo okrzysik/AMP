@@ -334,13 +334,9 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
     if ( sourceProp->isTensor() && !isCylindrical ) {
         auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
         auto dimensions       = sourceTensorProp->get_dimensions();
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
-        for ( size_t i = 0; i < dimensions[0]; i++ )
-            for ( size_t j = 0; j < dimensions[1]; j++ ) {
-                auto *vd = new std::vector<double>( neval );
-                coeff[i][j].reset( vd );
-            }
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
+        for ( size_t i = 0; i < dimensions.length(); i++ )
+            coeff( i ) = std::make_shared<std::vector<double>>( neval, 0 );
         sourceTensorProp->evalv( coeff, args );
 
         // 4 + xx xy xz yy yz zz =
@@ -356,7 +352,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             result[k] = 0.;
             for ( size_t i = 0; i < dimensions[0]; i++ )
                 for ( size_t j = 0; j < dimensions[1]; j++ ) {
-                    result[k] += ( *coeff[i][j] )[k] * soln[xlate[i][j]];
+                    result[k] += ( *coeff( i, j ) )[k] * soln[xlate[i][j]];
                 }
         }
     } else if ( sourceProp->isTensor() ) {
@@ -364,23 +360,15 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
         auto dimensions       = sourceTensorProp->get_dimensions();
         AMP_ASSERT( ( dimensions[0] == 3 ) && ( dimensions[1] == 3 ) );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeffr(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeffz(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeffr( dimensions );
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeffz( dimensions );
 
-        for ( size_t i = 0; i < 3; i++ )
-            for ( size_t j = 0; j < 3; j++ ) {
-                std::vector<double> *vd;
-                vd = new std::vector<double>( neval );
-                coeff[i][j].reset( vd );
-                vd = new std::vector<double>( neval );
-                coeffr[i][j].reset( vd );
-                vd = new std::vector<double>( neval );
-                coeffz[i][j].reset( vd );
-            }
+        for ( size_t i = 0; i < dimensions.length(); i++ ) {
+            coeff( i )  = std::make_shared<std::vector<double>>( neval, 0 );
+            coeffr( i ) = std::make_shared<std::vector<double>>( neval, 0 );
+            coeffz( i ) = std::make_shared<std::vector<double>>( neval, 0 );
+        }
 
         // check that material property has expected argument names
         std::vector<std::string> argnames = sourceTensorProp->get_arguments();
@@ -433,10 +421,10 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             d_ManufacturedSolution->evaluate( soln, r, th, z );
 
             std::vector<double> Kr( 2 ), Kz( 2 );
-            Kr[0] = ( *coeff[0][0] )[k] + ( *coeff[1][1] )[k];
-            Kz[0] = ( *coeff[2][2] )[k];
-            Kr[1] = ( *coeffr[0][0] )[k] + ( *coeffr[1][1] )[k];
-            Kz[1] = ( *coeffz[2][2] )[k];
+            Kr[0] = ( *coeff( 0, 0 ) )[k] + ( *coeff( 1, 1 ) )[k];
+            Kz[0] = ( *coeff( 2, 2 ) )[k];
+            Kr[1] = ( *coeffr( 0, 0 ) )[k] + ( *coeffr( 1, 1 ) )[k];
+            Kz[1] = ( *coeffz( 2, 2 ) )[k];
 
             result[k] = Kz[1] * soln[3] + Kz[0] * soln[9] + Kr[0] * soln[1] / r + Kr[1] * soln[1] +
                         Kr[0] * soln[4];
