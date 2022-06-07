@@ -2,8 +2,6 @@
 #define included_AMP_ScalarProperty
 
 #include "AMP/materials/Property.h"
-#include "AMP/materials/TensorProperty.h"
-#include "AMP/materials/VectorProperty.h"
 
 
 namespace AMP::Materials {
@@ -17,10 +15,13 @@ public:
                     double value,
                     const AMP::Units &unit = AMP::Units(),
                     std::string source     = "" )
-        : Property( std::move( name ), unit, std::move( source ) ), d_value( value )
+        : Property( std::move( name ), { 1 }, unit, std::move( source ) ), d_value( value )
     {
     }
-    double eval( const std::vector<double> & ) const override { return d_value; }
+    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
+    {
+        result.fill( d_value );
+    }
 
 private:
     double d_value;
@@ -40,6 +41,7 @@ public:
                         std::vector<std::array<double, 2>> ranges = {},
                         std::vector<AMP::Units> argUnits          = {} )
         : Property( std::move( name ),
+                    { 1 },
                     unit,
                     std::move( source ),
                     std::move( args ),
@@ -52,18 +54,20 @@ public:
         else
             AMP_ASSERT( d_arguments.empty() );
     }
-    double eval( const std::vector<double> &args ) const override
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
     {
         if ( d_p.size() == 1 )
-            return d_p[0];
-        double y  = 0;
-        double x  = args[0];
-        double x2 = 1.0;
-        for ( size_t i = 0; i < d_p.size(); i++ ) {
-            y += d_p[i] * x2;
-            x2 *= x;
+            return result.fill( d_p[0] );
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            double x  = args( i );
+            double y  = 0;
+            double x2 = 1.0;
+            for ( size_t i = 0; i < d_p.size(); i++ ) {
+                y += d_p[i] * x2;
+                x2 *= x;
+            }
+            result( i ) = y;
         }
-        return y;
     }
 
 private:
@@ -72,19 +76,19 @@ private:
 
 
 //! Scalar Vector Property
-class ScalarVectorProperty : public VectorProperty
+class ScalarVectorProperty : public Property
 {
 public:
     explicit ScalarVectorProperty( const std::string &name,
                                    double value,
                                    const std::string &source = "" )
-        : VectorProperty( name, source, {}, {}, 1 ), d_value( value )
+        : Property( name, { 1 }, {}, source, {}, {} ), d_value( value )
     {
     }
 
-    std::vector<double> evalVector( const std::vector<double> & ) const override
+    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
     {
-        return { d_value };
+        result.fill( d_value );
     }
 
 private:
@@ -93,26 +97,28 @@ private:
 
 
 //! Scalar Tensor Property
-class ScalarTensorProperty : public TensorProperty
+class ScalarTensorProperty : public Property
 {
 public:
     explicit ScalarTensorProperty( const std::string &name,
                                    const std::string &source,
                                    const AMP::ArraySize &dims,
                                    const std::vector<double> &params )
-        : TensorProperty( name, source, {}, {}, dims ), d_params( params )
+        : Property( name, dims, {}, source, {}, {} ), d_params( params )
     {
         AMP_INSIST( d_params.size() == dims[0] * dims[1],
                     "dimensions and number of parameters don't match" );
     }
 
-    AMP::Array<double> evalTensor( const std::vector<double> & ) const override
+    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
     {
-        AMP::Array<double> result( d_dimensions );
-        for ( size_t i = 0; i < d_dimensions[0]; i++ )
-            for ( size_t j = 0; j < d_dimensions[1]; j++ )
-                result( i, j ) = d_params[i * d_dimensions[1] + j];
-        return result;
+        for ( size_t i = 0; i < d_dim[0]; i++ ) {
+            for ( size_t j = 0; j < d_dim[1]; j++ ) {
+                for ( size_t k = 0; k < result.size( 2 ); k++ ) {
+                    result( i, j, k ) = d_params[i * d_dim[1] + j];
+                }
+            }
+        }
     }
 
 private:

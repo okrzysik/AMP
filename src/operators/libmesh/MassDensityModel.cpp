@@ -1,11 +1,17 @@
 #include "MassDensityModel.h"
 #include "AMP/materials/CylindricallySymmetric.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/materials/TensorProperty.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 
 #include <algorithm>
 #include <limits>
+
+
+template<class TYPE>
+static inline bool is( std::shared_ptr<AMP::Materials::Property> prop )
+{
+    return std::dynamic_pointer_cast<TYPE>( prop ).get() != nullptr;
+}
 
 
 namespace AMP::Operator {
@@ -271,15 +277,20 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             AMP_INSIST( false, "cannot do Fick-Soret yet" );
         }
     } else if ( !d_Parameters.empty() ) {
-        sourceProp = d_material->property( d_PropertyName );
-        auto name  = sourceProp->get_name();
-        if ( std::dynamic_pointer_cast<AMP::Materials::CylindricallySymmetricTensor>(
-                 sourceProp ) ) {
+        sourceProp    = d_material->property( d_PropertyName );
+        auto name     = sourceProp->get_name();
+        auto units    = sourceProp->get_units();
+        auto args     = sourceProp->get_arguments();
+        auto ranges   = sourceProp->get_arg_ranges();
+        auto argUnits = sourceProp->get_arg_units();
+        if ( is<AMP::Materials::CylindricallySymmetricTensor>( sourceProp ) ) {
             sourceProp = std::make_shared<AMP::Materials::CylindricallySymmetricTensor>(
                 name, d_Parameters );
+        } else if ( is<AMP::Materials::PolynomialProperty>( sourceProp ) ) {
+            sourceProp = std::make_shared<AMP::Materials::PolynomialProperty>(
+                name, "", units, d_Parameters, args, ranges, argUnits );
         } else if ( sourceProp->isTensor() ) {
-            auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( sourceProp );
-            auto dims     = tensprop->get_dimensions();
+            auto dims = sourceProp->size();
             AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
             if ( d_Parameters.size() == 4 )
                 dims = { 2, 2 };
@@ -293,14 +304,8 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             sourceProp =
                 std::make_shared<AMP::Materials::ScalarVectorProperty>( name, d_Parameters[0] );
         } else {
-            sourceProp =
-                std::make_shared<AMP::Materials::PolynomialProperty>( d_PropertyName,
-                                                                      "",
-                                                                      sourceProp->get_units(),
-                                                                      d_Parameters,
-                                                                      sourceProp->get_arguments(),
-                                                                      sourceProp->get_arg_ranges(),
-                                                                      sourceProp->get_arg_units() );
+            sourceProp = std::make_shared<AMP::Materials::PolynomialProperty>(
+                d_PropertyName, "", units, d_Parameters, args, ranges, argUnits );
         }
     } else {
         sourceProp = d_material->property( d_PropertyName );
@@ -332,12 +337,11 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                          solnname.find( "Cylindrical" ) < solnname.size();
 
     if ( sourceProp->isTensor() && !isCylindrical ) {
-        auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
-        auto dimensions       = sourceTensorProp->get_dimensions();
+        auto dimensions = sourceProp->size();
         AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
         for ( size_t i = 0; i < dimensions.length(); i++ )
             coeff( i ) = std::make_shared<std::vector<double>>( neval, 0 );
-        sourceTensorProp->evalv( coeff, args );
+        sourceProp->evalv( coeff, args );
 
         // 4 + xx xy xz yy yz zz =
         //      4  5  6  7  8  9 =
@@ -357,8 +361,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
     } else if ( sourceProp->isTensor() ) {
         // check dimensions, set up temporary storage
-        auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
-        auto dimensions       = sourceTensorProp->get_dimensions();
+        auto dimensions = sourceProp->size();
         AMP_ASSERT( ( dimensions[0] == 3 ) && ( dimensions[1] == 3 ) );
         AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
         AMP::Array<std::shared_ptr<std::vector<double>>> coeffr( dimensions );
@@ -371,7 +374,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
 
         // check that material property has expected argument names
-        std::vector<std::string> argnames = sourceTensorProp->get_arguments();
+        std::vector<std::string> argnames = sourceProp->get_arguments();
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "radius" ) != argnames.end() );
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "theta" ) != argnames.end() );
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "zee" ) != argnames.end() );
@@ -397,14 +400,14 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
 
         // evaluate various derivatives of diffusion coefficient tensor
-        sourceTensorProp->setAuxiliaryData( "derivative", 0 );
-        sourceTensorProp->evalv( coeff, args );
+        sourceProp->setAuxiliaryData( "derivative", 0 );
+        sourceProp->evalv( coeff, args );
 
-        sourceTensorProp->setAuxiliaryData( "derivative", 1 );
-        sourceTensorProp->evalv( coeffr, args );
+        sourceProp->setAuxiliaryData( "derivative", 1 );
+        sourceProp->evalv( coeffr, args );
 
-        sourceTensorProp->setAuxiliaryData( "derivative", 2 );
-        sourceTensorProp->evalv( coeffz, args );
+        sourceProp->setAuxiliaryData( "derivative", 2 );
+        sourceProp->evalv( coeffz, args );
 
         // compute div (K . grad u) = div K . grad u + K : grad grad u
         for ( size_t k = 0; k < neval; k++ ) {

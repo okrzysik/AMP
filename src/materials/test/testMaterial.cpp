@@ -1,7 +1,5 @@
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
-#include "AMP/materials/TensorProperty.h"
-#include "AMP/materials/VectorProperty.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Factory.h"
@@ -398,19 +396,9 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             /////////////////////////////////////////////////////////////////////////////////////////////
         } else if ( property->isVector() ) {
 
-            auto vectorProperty =
-                std::dynamic_pointer_cast<AMP::Materials::VectorProperty>( property );
-
-            // check that scalar nature is not signaled
-            if ( vectorProperty->isScalar() ) {
-                ut.failure( propPrefix + "not a scalar" );
-            } else {
-                ut.passes( propPrefix + "not a scalar" );
-            }
-
             // test make_map
             try {
-                auto testMap = vectorProperty->make_map( argsMultiVec, xlator );
+                auto testMap = property->make_map( argsMultiVec, xlator );
                 bool good    = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
                     auto vec1It = testMap.find( argnames[i] );
@@ -434,10 +422,10 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             // prepare results vector, check for reasonable size info
             size_t nvec = 0;
             try {
-                nvec = vectorProperty->get_dimension();
-                record( propPrefix, true, "get_dimension() ok", ut );
+                nvec = property->size().length();
+                record( propPrefix, true, "size() ok", ut );
             } catch ( ... ) {
-                record( propPrefix, false, "get_dimension() ok", ut );
+                record( propPrefix, false, "size() ok", ut );
             }
             std::vector<std::shared_ptr<std::vector<double>>> stdEval( nvec );
             std::vector<std::shared_ptr<std::vector<double>>> nominalEval( nvec );
@@ -455,7 +443,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, std::vector
             try {
-                vectorProperty->evalv( stdEval, args );
+                property->evalv( stdEval, args );
                 nominalEval = stdEval;
                 record( propPrefix, true, "evalv std::vector", ut );
             } catch ( ... ) {
@@ -464,7 +452,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // first out of range low/hi, std::vector
             if ( !args.empty() ) {
-                testArgsRange( vectorProperty,
+                testArgsRange( property,
                                args,
                                argnames[0],
                                stdEval,
@@ -472,7 +460,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                                justright[0][5],
                                propPrefix + "evalv std::vector out of range lo 1",
                                ut );
-                testArgsRange( vectorProperty,
+                testArgsRange( property,
                                args,
                                argnames[0],
                                stdEval,
@@ -500,7 +488,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, AMP::Vector
             try {
-                vectorProperty->evalv( ampEval, argsVec );
+                property->evalv( ampEval, argsVec );
                 for ( size_t i = 0; i < nvec; i++ )
                     nominalAmpEval[i]->copyVector( ampEval[i] );
                 record( propPrefix, true, "evalv AMP::Vector", ut );
@@ -510,7 +498,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // first out of range low/hi, AMP::Vector
             if ( nargs > 0 ) {
-                testArgsRange( vectorProperty,
+                testArgsRange( property,
                                argsVec,
                                argnames[0],
                                ampEval,
@@ -518,7 +506,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                                justright[0][5],
                                propPrefix + "evalv AMP::Vector out of range lo 1",
                                ut );
-                testArgsRange( vectorProperty,
+                testArgsRange( property,
                                argsVec,
                                argnames[0],
                                ampEval,
@@ -530,7 +518,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, AMP::MultiVector
             try {
-                vectorProperty->evalv( ampEval, argsMultiVec, xlator );
+                property->evalv( ampEval, argsMultiVec, xlator );
                 for ( size_t i = 0; i < nvec; i++ )
                     nominalMultiEval[i]->copyVector( ampEval[i] );
                 record( propPrefix, true, "evalv AMP::MultiVector", ut );
@@ -540,7 +528,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // first out of range low/hi, AMP::MultiVector
             if ( nargs > 0 ) {
-                testArgsRange( vectorProperty,
+                testArgsRange( property,
                                argsMultiVec,
                                justrightVec[0]->getVariable(),
                                ampEval,
@@ -548,7 +536,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                                justright[0][5],
                                propPrefix + "evalv AMP::MultiVector out of range lo 1",
                                ut );
-                testArgsRange( vectorProperty,
+                testArgsRange( property,
                                argsMultiVec,
                                justrightVec[0]->getVariable(),
                                ampEval,
@@ -581,7 +569,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // check that evalv with fewer than normal number of arguments works
             try {
-                vectorProperty->evalv( stdEval, argsm );
+                property->evalv( stdEval, argsm );
                 record( propPrefix, true, "evalv with missing arguments", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv with missing arguments", ut );
@@ -592,20 +580,9 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             /////////////////////////////////////////////////////////////////////////////////////////////
         } else if ( property->isTensor() ) {
 
-            auto tensorProperty =
-                std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( property );
-
-            // check that scalar nature is not signaled
-            if ( tensorProperty->isScalar() ) {
-                record( propPrefix, false, "not a scalar", ut );
-            } else {
-                record( propPrefix, true, "not a scalar", ut );
-            }
-
-
             // test make_map
             try {
-                auto testMap = tensorProperty->make_map( argsMultiVec, xlator );
+                auto testMap = property->make_map( argsMultiVec, xlator );
                 bool good    = true;
                 for ( size_t i = 0; i < nargs; i++ ) {
                     auto vec1It = testMap.find( argnames[i] );
@@ -629,10 +606,10 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
             // prepare results vector, check for reasonable size info
             AMP::ArraySize nvecs;
             try {
-                nvecs = tensorProperty->get_dimensions();
-                record( propPrefix, true, "get_dimension() ok", ut );
+                nvecs = property->size();
+                record( propPrefix, true, "size() ok", ut );
             } catch ( ... ) {
-                record( propPrefix, false, "get_dimension() ok", ut );
+                record( propPrefix, false, "size() ok", ut );
             }
             AMP::Array<std::shared_ptr<std::vector<double>>> stdEval( nvecs[0], nvecs[1] );
             AMP::Array<std::shared_ptr<std::vector<double>>> nominalEval( nvecs[0], nvecs[1] );
@@ -651,7 +628,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, std::vector
             try {
-                tensorProperty->evalv( stdEval, args );
+                property->evalv( stdEval, args );
                 nominalEval = stdEval;
                 record( propPrefix, true, "evalv std::vector", ut );
             } catch ( ... ) {
@@ -660,7 +637,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // first out of range low/hi, std::vector
             if ( !args.empty() ) {
-                testArgsRange( tensorProperty,
+                testArgsRange( property,
                                args,
                                argnames[0],
                                stdEval,
@@ -668,7 +645,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                                justright[0][5],
                                propPrefix + "evalv std::vector out of range lo 1",
                                ut );
-                testArgsRange( tensorProperty,
+                testArgsRange( property,
                                args,
                                argnames[0],
                                stdEval,
@@ -701,7 +678,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, AMP::Vector
             try {
-                tensorProperty->evalv( ampEval, argsVec );
+                property->evalv( ampEval, argsVec );
                 for ( size_t i = 0; i < nvecs[0]; i++ )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalAmpEval( i, j )->copyVector( ampEval( i, j ) );
@@ -712,7 +689,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // first out of range low/hi, AMP::Vector
             if ( !args.empty() ) {
-                testArgsRange( tensorProperty,
+                testArgsRange( property,
                                argsVec,
                                argnames[0],
                                ampEval,
@@ -720,7 +697,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                                justright[0][5],
                                propPrefix + "evalv AMP::Vector out of range lo 1",
                                ut );
-                testArgsRange( tensorProperty,
+                testArgsRange( property,
                                argsVec,
                                argnames[0],
                                ampEval,
@@ -732,7 +709,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, AMP::MultiVector
             try {
-                tensorProperty->evalv( ampEval, argsMultiVec, xlator );
+                property->evalv( ampEval, argsMultiVec, xlator );
                 for ( size_t i = 0; i < nvecs[0]; i++ )
                     for ( size_t j = 0; j < nvecs[1]; j++ )
                         nominalMultiEval( i, j )->copyVector( ampEval( i, j ) );
@@ -743,7 +720,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // first out of range low/hi, AMP::MultiVector
             if ( nargs > 0 ) {
-                testArgsRange( tensorProperty,
+                testArgsRange( property,
                                argsMultiVec,
                                justrightVec[0]->getVariable(),
                                ampEval,
@@ -751,7 +728,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                                justright[0][5],
                                propPrefix + "evalv AMP::MultiVector out of range lo 1",
                                ut );
-                testArgsRange( tensorProperty,
+                testArgsRange( property,
                                argsMultiVec,
                                justrightVec[0]->getVariable(),
                                ampEval,
@@ -786,7 +763,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // check that evalv with fewer than normal number of arguments works
             try {
-                tensorProperty->evalv( stdEval, argsm );
+                property->evalv( stdEval, argsm );
                 record( propPrefix, true, "evalv with missing arguments", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv with missing arguments", ut );

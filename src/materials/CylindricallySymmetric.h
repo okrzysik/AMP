@@ -2,7 +2,7 @@
 #ifndef included_AMP_Materials_CylindricallySymmetric
 #define included_AMP_Materials_CylindricallySymmetric
 
-#include "AMP/materials/TensorProperty.h"
+#include "AMP/materials/Property.h"
 
 
 namespace AMP::Materials {
@@ -17,13 +17,13 @@ namespace AMP::Materials {
  * AuxiliaryInteger data "derivative" has values 0, 1, 2 for
  * zeroth, r- and z- derivatives, respectively.
  */
-class CylindricallySymmetricTensor : public TensorProperty
+class CylindricallySymmetricTensor : public Property
 {
 public:
     CylindricallySymmetricTensor( const std::string &name,
                                   std::vector<double> params = { 1, 1, 1 } );
 
-    AMP::Array<double> evalTensor( const std::vector<double> &args ) const override;
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override;
 
 private:
     std::vector<double> d_paramsRadial;

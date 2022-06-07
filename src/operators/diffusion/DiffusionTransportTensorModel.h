@@ -1,7 +1,6 @@
 #ifndef included_AMP_DiffusionTransportTensorModel
 #define included_AMP_DiffusionTransportTensorModel
 
-#include "AMP/materials/TensorProperty.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/utils/Utilities.h"
 
@@ -25,9 +24,6 @@ public:
     getTensorTransport( AMP::Array<std::shared_ptr<std::vector<double>>> &result,
                         std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
                         const std::vector<libMesh::Point> &Coordinates = d_DummyCoords );
-
-private:
-    std::shared_ptr<AMP::Materials::TensorProperty> d_tensorProperty; /// tensor property pointer
 };
 } // namespace AMP::Operator
 

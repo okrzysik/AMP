@@ -53,7 +53,8 @@ public:
      * \param units     Optional units for each argument
      */
     Property( std::string name,
-              Units unit                                = Units(),
+              const ArraySize &size                     = { 1 },
+              const Units &unit                         = Units(),
               std::string source                        = "None",
               std::vector<std::string> args             = {},
               std::vector<std::array<double, 2>> ranges = {},
@@ -62,12 +63,8 @@ public:
     //! Destructor
     virtual ~Property() {}
 
-    /**
-     * \brief          Return the size of the property
-     * \details        Return the size of the property (1 for scalar, N for vector, NxM for Tensor,
-     * etc.)
-     */
-    // ArraySize size() const;
+    //! get dimensions of evalv return value
+    inline ArraySize size() const { return d_dim; }
 
     //! Return name of property
     inline const std::string &get_name() const { return d_name; }
@@ -99,13 +96,13 @@ public:
     bool is_argument( const std::string &argname ) const;
 
     //! Indicator for scalar evaluator
-    virtual bool isScalar() const { return true; }
+    bool isScalar() const { return d_dim.length() == 1; }
 
     //! Indicator for vector evaluator
-    virtual bool isVector() const { return false; }
+    bool isVector() const { return d_dim.ndim() == 1; }
 
     //! Indicator for tensor evaluator
-    virtual bool isTensor() const { return false; }
+    bool isTensor() const { return d_dim.ndim() == 2; }
 
     // converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
     std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
@@ -168,19 +165,6 @@ public: // Evaluators
                  const std::vector<Units> &argUnits    = {} ) const;
 
     /** Wrapper function that calls evalvActual for each argument set
-     *  \param r vector of return values
-     *  \param args map of vectors of arguments, indexed by strings which are members of
-     *     get_arguments()
-     *
-     *  The  \a args  parameter need not contain all the members of get_arguments() as
-     *  indices.  Arguments left out will have values supplied by the entries in get_defaults().
-     *  Sizes of \a r and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in get_arguments() are ignored.
-     */
-    // template<class... Args>
-    // void evalv( std::vector<double> &r, Units u, Args... args ) const;
-
-    /** Wrapper function that calls evalvActual for each argument set
      *  \param r AMP vector of return values
      *  \param args map of AMP vectors of arguments, indexed by strings which are members of
      *     get_arguments()
@@ -234,8 +218,114 @@ public: // Advanced interfaces
     void evalv( std::vector<double> &r,
                 const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
 
-    // [[deprecated]]
-    inline double evalDirect( const std::vector<double> &args ) const { return eval( args ); }
+public:
+    /** Wrapper function that calls evalvActual for each argument set
+     *  \param r vector of vectors of return values
+     *  \param args map of vectors of arguments, indexed by strings which are members of
+     * get_arguments()
+     *
+     *  The  \a r parameter must have size get_dimension()[0].
+     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
+     *  Arguments left out will have values supplied by the entries in  get_defaults() .
+     *  Sizes of  *r[i]  and \a args["name"] must match. Members of
+     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the result
+     *  returned in r[i].
+     */
+    void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
+
+    /** Wrapper function that calls evalvActual for each argument set
+     *  \param r vector of AMP vectors of return values
+     *  \param args map of AMP vectors of arguments, indexed by strings which are members of
+     * get_arguments()
+     *
+     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
+     *  Arguments left out will have values supplied by the entries in  get_defaults() .
+     *  Sizes of  \a *r[i]  and \a args["name"] must match. Members of
+     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the j-th
+     * result
+     *  returned in (*r[j])[i].
+     */
+    void
+    evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const;
+
+    /** Wrapper function that calls evalvActual for each argument set
+     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
+     *     and passed to another version of evalv.
+     *  \param r vector of AMP vectors of return values
+     *  \param args AMP multivector of arguments
+     *  \param translator   Optional translator between property arguments and AMP::Multivector
+     * entries
+     */
+    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                const std::map<std::string, std::string> &translator = {} ) const;
+
+
+public: // Advanced interfaces
+    /* Loops through input vectors, calling the child eval function, returning tensor results */
+    template<class OUT, class IN = OUT>
+    void evalv( std::vector<std::shared_ptr<OUT>> &r,
+                const Units &units,
+                const std::vector<argumentDataStruct<IN>> &args ) const;
+
+    /** Wrapper function that calls evalvActual for each argument set
+     *  \param r tensor vector of return values
+     *  \param args map of vectors of arguments, indexed by strings which are members of
+     * get_arguments()
+     *
+     *  The  \a r parameter must have dimensions get_dimension().
+     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
+     *  Arguments left out will have values supplied by the entries in  get_defaults() .
+     *  Sizes of  *r[i][j]  and \a args["name"] must match. Members of
+     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the j-th
+     * result
+     *  returned in (*r[j])[i].
+     */
+    void evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
+                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
+
+    /** Wrapper function that calls evalvActual for each argument set
+     *  \param r tensor of AMP vectors of return values
+     *  \param args map of AMP vectors of arguments, indexed by strings which are members of
+     * get_arguments()
+     *
+     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
+     *  Arguments left out will have values supplied by the entries in  get_defaults() .
+     *  Sizes of  \a *r[i][j]  and \a args["name"] must match. Members of
+     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the k-j-th
+     * result
+     *  returned in (*r[k][j])[i].
+     */
+    void
+    evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const;
+
+    /** Wrapper function that calls evalvActualVector for each argument set
+     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
+     *     and passed to another version of evalv.
+     *  \param r tensor of AMP vectors of return values
+     *  \param args AMP multivector of arguments
+     *  \param translator   Optional translator between property arguments and AMP::Multivector
+     * entries
+     */
+    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                const std::map<std::string, std::string> &translator = {} ) const;
+
+
+public: // Advanced interfaces
+    /* Loops through input vectors, calling the child eval function, returning tensor results */
+    template<class OUT, class IN = OUT>
+    void evalv( AMP::Array<std::shared_ptr<OUT>> &r,
+                const Units &units,
+                const std::vector<argumentDataStruct<IN>> &args ) const;
+
 
 protected:
     Property() = default;
@@ -244,13 +334,22 @@ protected:
      * scalar evaluation function for a single argument set
      * \param args list of argument values, in correct order, in the correct units, given by
      *    get_arguments()
+     *  \param result       Output result (N)
+     *  \param args         Input arguments (MxN)
      * \return scalar value of property
      */
-    virtual double eval( const std::vector<double> &args ) const = 0;
+    virtual void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const = 0;
 
+    //! Check the argument values
+    void checkArgs( const AMP::Array<double> &args ) const;
+
+    //! Load the argument values (will also check individual values)
+    template<class VEC>
+    AMP::Array<double> loadArgs( size_t N, const std::vector<argumentDataStruct<VEC>> &args ) const;
 
 protected:
     std::string d_name;                                 //!< should be unique
+    AMP::ArraySize d_dim;                               //!< size of the result
     Units d_units;                                      //!< default units to return
     std::string d_source;                               //!< reference for source data
     std::vector<std::string> d_arguments;               //!< names of the arguments
