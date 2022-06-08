@@ -166,23 +166,9 @@ void MassDensityModel::getDensityMechanics( std::vector<double> &result,
 {
     AMP_ASSERT( ( T.size() == U.size() ) && ( U.size() == result.size() ) &&
                 ( B.size() == U.size() ) );
-    std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
-    std::string temperatureString = "temperature";   // in the future get from input file
-    std::string burnupString      = "burnup";        // in the future get from input file
-    std::string oxygenString      = "concentration"; // in the future get from input file
-
-    std::shared_ptr<std::vector<double>> tempVec( new std::vector<double>( T ) );
-    std::shared_ptr<std::vector<double>> burnupVec( new std::vector<double>( B ) );
-    std::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double>( U ) );
-
-    inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-    inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
-    inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
-
-    std::string denString = "Density";
-
-    d_material->property( denString )->evalv( result, inputMaterialParameters );
+    d_material->property( "Density" )
+        ->evalv( result, {}, "temperature", T, "concentration", U, "burnup", B );
 }
 
 void MassDensityModel::getDensityThermal( std::vector<double> &result,
@@ -194,12 +180,10 @@ void MassDensityModel::getDensityThermal( std::vector<double> &result,
                 ( B.size() == U.size() ) );
     unsigned int n = result.size();
     std::vector<double> density( n ), specificheat( n );
-    std::map<std::string, std::shared_ptr<std::vector<double>>> args;
-    args.insert( std::make_pair( "temperature", std::make_shared<std::vector<double>>( T ) ) );
-    args.insert( std::make_pair( "concentration", std::make_shared<std::vector<double>>( U ) ) );
-    args.insert( std::make_pair( "burnup", std::make_shared<std::vector<double>>( B ) ) );
-    d_material->property( "Density" )->evalv( density, args );
-    d_material->property( "HeatCapacityPressure" )->evalv( specificheat, args );
+    auto densityProp = d_material->property( "Density" );
+    auto heatCapProp = d_material->property( "HeatCapacityPressure" );
+    densityProp->evalv( density, {}, "temperature", T, "concentration", U, "burnup", B );
+    heatCapProp->evalv( specificheat, {}, "temperature", T, "concentration", U, "burnup", B );
     for ( unsigned int i = 0; i < n; i++ )
         result[i] = density[i] * specificheat[i];
 
@@ -311,16 +295,15 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         sourceProp = d_material->property( d_PropertyName );
     }
 
-    std::map<std::string, std::shared_ptr<std::vector<double>>> args;
-    args.insert( std::make_pair( "temperature", std::make_shared<std::vector<double>>( T ) ) );
-    args.insert( std::make_pair( "concentration", std::make_shared<std::vector<double>>( U ) ) );
-    args.insert( std::make_pair( "burnup", std::make_shared<std::vector<double>>( B ) ) );
+    std::map<std::string, const std::vector<double> &> args = { { "temperature", T },
+                                                                { "concentration", U },
+                                                                { "burnup", B } };
 
     if ( sourceProp->isScalar() ) {
         std::vector<double> coeff( neval ), dCoeff( neval, 0. );
-        sourceProp->evalv( coeff, args );
+        sourceProp->evalv( coeff, {}, args );
         if ( needD ) {
-            dSourceProp->evalv( dCoeff, args );
+            dSourceProp->evalv( dCoeff, {}, args );
         }
 
         for ( size_t i = 0; i < neval; i++ ) {
@@ -341,7 +324,7 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
         for ( size_t i = 0; i < dimensions.length(); i++ )
             coeff( i ) = std::make_shared<std::vector<double>>( neval, 0 );
-        sourceProp->evalv( coeff, args );
+        sourceProp->evalv( coeff, {}, args );
 
         // 4 + xx xy xz yy yz zz =
         //      4  5  6  7  8  9 =
@@ -380,12 +363,12 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "zee" ) != argnames.end() );
 
         // get argument vectors
-        args.insert( std::make_pair( "radius", std::make_shared<std::vector<double>>( neval ) ) );
-        args.insert( std::make_pair( "theta", std::make_shared<std::vector<double>>( neval ) ) );
-        args.insert( std::make_pair( "zee", std::make_shared<std::vector<double>>( neval ) ) );
-        std::vector<double> &radius = ( *args.find( "radius" )->second );
-        std::vector<double> &theta  = ( *args.find( "theta" )->second );
-        std::vector<double> &zee    = ( *args.find( "zee" )->second );
+        std::vector<double> radius( neval );
+        std::vector<double> theta( neval );
+        std::vector<double> zee( neval );
+        args.insert( std::pair<std::string, const std::vector<double> &>( "radius", radius ) );
+        args.insert( std::pair<std::string, const std::vector<double> &>( "theta", theta ) );
+        args.insert( std::pair<std::string, const std::vector<double> &>( "zee", zee ) );
 
         // fill in cylindrical coordinates
         double Pi = 3.1415926535898;
@@ -401,13 +384,13 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
 
         // evaluate various derivatives of diffusion coefficient tensor
         sourceProp->setAuxiliaryData( "derivative", 0 );
-        sourceProp->evalv( coeff, args );
+        sourceProp->evalv( coeff, {}, args );
 
         sourceProp->setAuxiliaryData( "derivative", 1 );
-        sourceProp->evalv( coeffr, args );
+        sourceProp->evalv( coeffr, {}, args );
 
         sourceProp->setAuxiliaryData( "derivative", 2 );
-        sourceProp->evalv( coeffz, args );
+        sourceProp->evalv( coeffz, {}, args );
 
         // compute div (K . grad u) = div K . grad u + K : grad grad u
         for ( size_t k = 0; k < neval; k++ ) {

@@ -169,7 +169,7 @@ void DiffusionTransportModel::getTransport(
     }
 
     // evaluate material property
-    d_property->evalv( result, args );
+    d_property->evalv( result, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value

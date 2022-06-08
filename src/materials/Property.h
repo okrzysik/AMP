@@ -69,7 +69,6 @@ public:
     //! Return name of property
     inline const std::string &get_name() const { return d_name; }
 
-    //! Return source reference
     inline const std::string &get_source() const { return d_source; }
 
     //! Return source reference
@@ -152,184 +151,119 @@ public: // Evaluators
      * \details  This function evaluates the property at the desired conditions
      * \param unit      The desired units of the result.  If this is not specified,
      *                  the native units of the property are use (see get_units())
-     * \param args      The values for the optional arguments.  If names is not specified,
-     *                  this must match the values from get_parameters().
-     * \param names     The names for the optional arguments.
-     * \param argUnits  The units for the given arguments.  If not specified then the
-     *                  native units are used (see get_arg_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      * \return scalar value of property
      */
-    double eval( const Units &unit                     = Units(),
-                 const std::vector<double> &args       = {},
-                 const std::vector<std::string> &names = {},
-                 const std::vector<Units> &argUnits    = {} ) const;
+    template<class... Args>
+    double eval( const Units &unit = Units(), Args... args );
 
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r AMP vector of return values
-     *  \param args map of AMP vectors of arguments, indexed by strings which are members of
-     *     get_arguments()
-     *
-     *  The  \a args  parameter need not contain all the members of get_arguments() as
-     * indices. Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  \a r  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in get_arguments() are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the
-     * k-j-th result returned in (*r[k][j])[i].
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    void evalv(
-        std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-        const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args = {} ) const;
+    template<class... Args>
+    void evalv( std::vector<double> &r, const Units &unit, Args... args );
 
-    /** Wrapper function that calls evalvActual for each argument set
-     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via
-     *     make_map() and passed to another version of evalv.
-     *  \param r            AMP vector of return values
-     *  \param args         AMP multivector of arguments
-     *  \param translator   Optional translator between property arguments and AMP::Multivector
-     * entries
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                const std::map<std::string, std::string> &translator = {} ) const;
+    template<class... Args>
+    void evalv( AMP::LinearAlgebra::Vector &r, Args... args );
 
-
-public: // Advanced interfaces
-    template<class VEC>
-    struct argumentDataStruct {
-        argumentDataStruct( std::string_view s, const VEC &v ) : str( s ), vec( v ) {}
-        argumentDataStruct( std::string_view s, const VEC &v, const Units &u )
-            : str( s ), vec( v ), units( u )
-        {
-        }
-        std::string_view str;
-        const VEC &vec;
-        Units units;
-    };
-
-    // Convert the argument data
-    template<class VEC, class... Args>
-    static std::vector<argumentDataStruct<VEC>> convertArgs( Args... args );
-
-    // Loops through input vectors, calling the child eval function, returning scalar
-    template<class OUT, class IN = OUT>
-    void evalv( OUT &r, const Units &units, const std::vector<argumentDataStruct<IN>> &args ) const;
-
-    //[[deprecated]]
-    void evalv( std::vector<double> &r,
-                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
-
-public:
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r vector of vectors of return values
-     *  \param args map of vectors of arguments, indexed by strings which are members of
-     * get_arguments()
-     *
-     *  The  \a r parameter must have size get_dimension()[0].
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  *r[i]  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the result
-     *  returned in r[i].
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
-                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
-
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r vector of AMP vectors of return values
-     *  \param args map of AMP vectors of arguments, indexed by strings which are members of
-     * get_arguments()
-     *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  \a *r[i]  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the j-th
-     * result
-     *  returned in (*r[j])[i].
-     */
+    template<class... Args>
     void
-    evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const;
+    evalv( std::vector<std::shared_ptr<std::vector<double>>> &r, const Units &unit, Args... args );
 
-    /** Wrapper function that calls evalvActual for each argument set
-     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
-     *     and passed to another version of evalv.
-     *  \param r vector of AMP vectors of return values
-     *  \param args AMP multivector of arguments
-     *  \param translator   Optional translator between property arguments and AMP::Multivector
-     * entries
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                const std::map<std::string, std::string> &translator = {} ) const;
+    template<class... Args>
+    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r, Args... args );
 
-
-public: // Advanced interfaces
-    /* Loops through input vectors, calling the child eval function, returning tensor results */
-    template<class OUT, class IN = OUT>
-    void evalv( std::vector<std::shared_ptr<OUT>> &r,
-                const Units &units,
-                const std::vector<argumentDataStruct<IN>> &args ) const;
-
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r tensor vector of return values
-     *  \param args map of vectors of arguments, indexed by strings which are members of
-     * get_arguments()
-     *
-     *  The  \a r parameter must have dimensions get_dimension().
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  *r[i][j]  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the j-th
-     * result
-     *  returned in (*r[j])[i].
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r            std::vector of return values
+     * \param unit         Units to use for return values
+     * \param args         Optional arguments specifying input arguments to the eval() function
      */
-    void evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
-                const std::map<std::string, std::shared_ptr<std::vector<double>>> &args ) const;
-
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r tensor of AMP vectors of return values
-     *  \param args map of AMP vectors of arguments, indexed by strings which are members of
-     * get_arguments()
-     *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  \a *r[i][j]  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the k-j-th
-     * result
-     *  returned in (*r[k][j])[i].
-     */
+    template<class... Args>
     void
-    evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args ) const;
+    evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r, const Units &unit, Args... args );
 
-    /** Wrapper function that calls evalvActualVector for each argument set
-     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
-     *     and passed to another version of evalv.
-     *  \param r tensor of AMP vectors of return values
-     *  \param args AMP multivector of arguments
-     *  \param translator   Optional translator between property arguments and AMP::Multivector
-     * entries
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                const std::map<std::string, std::string> &translator = {} ) const;
+    template<class... Args>
+    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r, Args... args );
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
+     */
+    template<class... Args>
+    void evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, Args... args );
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
+     */
+    template<class... Args>
+    void evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, Args... args );
 
 
-public: // Advanced interfaces
-    /* Loops through input vectors, calling the child eval function, returning tensor results */
-    template<class OUT, class IN = OUT>
-    void evalv( AMP::Array<std::shared_ptr<OUT>> &r,
-                const Units &units,
-                const std::vector<argumentDataStruct<IN>> &args ) const;
-
-
-protected:
-    Property() = default;
-
+protected: // Virtual function to override to load the property
     /**
      * scalar evaluation function for a single argument set
      * \param args list of argument values, in correct order, in the correct units, given by
@@ -340,27 +274,56 @@ protected:
      */
     virtual void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const = 0;
 
-    //! Check the argument values
-    void checkArgs( const AMP::Array<double> &args ) const;
 
-    //! Load the argument values (will also check individual values)
+protected: // Functions to load the arguments
+    // clang-format off
+    void evalArgs( AMP::Array<double>& ) const {}
+    void evalArgs( AMP::Array<double>&, const std::shared_ptr<AMP::LinearAlgebra::MultiVector>&, const std::map<std::string, std::string>& = {} ) const;
     template<class VEC>
-    AMP::Array<double> loadArgs( size_t N, const std::vector<argumentDataStruct<VEC>> &args ) const;
+    void evalArgs( AMP::Array<double>&, const std::map<std::string, VEC>& );
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, double, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, double, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const std::vector<double>&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const AMP::LinearAlgebra::Vector&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector&, Args... ) const;
+    template<class VEC, class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const std::shared_ptr<VEC>&, Args... ) const;
+    template<class VEC, class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::shared_ptr<VEC>&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::vector<double> &args, const std::vector<std::string> &names, const std::vector<Units> &argUnits = {} ) const;
+    // clang-format on
+
 
 protected:
     std::string d_name;                                 //!< should be unique
     AMP::ArraySize d_dim;                               //!< size of the result
-    Units d_units;                                      //!< default units to return
+    AMP::Units d_units;                                 //!< default units to return
     std::string d_source;                               //!< reference for source data
     std::vector<std::string> d_arguments;               //!< names of the arguments
     std::vector<Units> d_argUnits;                      //!< default units for the arguments
     std::vector<double> d_defaults;                     //!< default values of arguments
     std::vector<std::array<double, 2>> d_ranges;        //!< allowed ranges of arguments
     std::map<std::string_view, size_t> d_argToIndexMap; //!< map argument names to indices
-    Database d_auxiliaryData;                           //!< Database containing auxiliary data
+    AMP::Database d_auxiliaryData;                      //!< Database containing auxiliary data
 
 
 protected:
+    Property() = default;
+
+    //! Create the default argument array
+    AMP::Array<double> defaultArgs( size_t ) const;
+
+    //! Check the argument values
+    void checkArgs( const AMP::Array<double> &args ) const;
+
     // Get the index for the desired argument
     inline int get_arg_index( const std::string &name ) const
     {
@@ -369,28 +332,11 @@ protected:
             return -1;
         return it->second;
     }
-
-    template<class VEC, class... Args>
-    static void convertArgs1( std::vector<argumentDataStruct<VEC>> &,
-                              const std::string &,
-                              const VEC &,
-                              Args... args );
-    template<class VEC, class... Args>
-    static void convertArgs2( std::vector<argumentDataStruct<VEC>> &,
-                              const std::string &,
-                              const VEC &,
-                              const Units &u,
-                              Args... args );
-
-protected: // Friend classes (need to clean this up)
-    friend class ThermalDiffusionCoefficientProp;
-    friend class DxThermalDiffusionCoefficientProp;
-    friend class DTThermalDiffusionCoefficientProp;
 };
 
 
 } // namespace AMP::Materials
 
-#include "Property.i.h"
+#include "AMP/materials/Property.hpp"
 
 #endif

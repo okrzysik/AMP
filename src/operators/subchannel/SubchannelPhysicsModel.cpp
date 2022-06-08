@@ -140,6 +140,6 @@ void SubchannelPhysicsModel::getProperty(
     // evaluate material property
     auto it = d_properties.find( property );
     AMP_INSIST( it != d_properties.end(), "Model does not have property (" + property + ")" );
-    d_properties.find( property )->second->evalv( result, args );
+    d_properties.find( property )->second->evalv( result, {}, args );
 }
 } // namespace AMP::Operator

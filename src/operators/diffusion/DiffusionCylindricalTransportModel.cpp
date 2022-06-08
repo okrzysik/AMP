@@ -59,7 +59,7 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
         double r  = sqrt( x * x + y * y );
         radius[k] = r;
     }
-    d_property->evalv( radialCoefficient, args );
+    d_property->evalv( radialCoefficient, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value

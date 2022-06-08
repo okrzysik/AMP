@@ -63,8 +63,8 @@ find( std::shared_ptr<AMP::LinearAlgebra::MultiVector> &multivec,
 {
     return multivec->subsetVectorForVariable( var );
 }
-template<class PROP, class ARGS, class VAR, class VAL>
-void testArgsRange( const PROP &property,
+template<class ARGS, class VAR, class VAL>
+void testArgsRange( const std::shared_ptr<AMP::Materials::Property> &property,
                     ARGS &args,
                     const VAR &var,
                     VAL &value,
@@ -77,7 +77,13 @@ void testArgsRange( const PROP &property,
     auto vec  = find( args, var );
     try {
         set( *vec, 5, outOfRange );
-        property->evalv( value, args );
+        using Vector = AMP::LinearAlgebra::Vector;
+        if constexpr ( std::is_same<VAL, Vector>::value ||
+                       std::is_same<VAL, std::vector<std::shared_ptr<Vector>>>::value ||
+                       std::is_same<VAL, AMP::Array<std::shared_ptr<Vector>>>::value )
+            property->evalv( value, args );
+        else
+            property->evalv( value, {}, args );
         pass = false;
     } catch ( const std::exception & ) {
         // We caught a std::exception as expected
@@ -95,7 +101,6 @@ void testArgsRange( const PROP &property,
 // Test a given material
 void testMaterial( std::string &name, AMP::UnitTest &ut )
 {
-
     // create material object
     std::string matPrefix = "material " + name + " ";
     std::shared_ptr<AMP::Materials::Material> mat;
@@ -255,7 +260,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, std::vector
             try {
-                property->evalv( value, args );
+                property->evalv( value, {}, args );
                 nominal = value;
                 record( propPrefix, true, "evalv std::vector", ut );
             } catch ( ... ) {
@@ -284,7 +289,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, AMP::Vector
             try {
-                property->evalv( valueVec, argsVec );
+                property->evalv( *valueVec, argsVec );
                 nominalVec->copyVector( valueVec );
                 record( propPrefix, true, "evalv AMP::Vector", ut );
             } catch ( ... ) {
@@ -296,7 +301,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                 testArgsRange( property,
                                argsVec,
                                argnames[0],
-                               valueVec,
+                               *valueVec,
                                toosmall[0][5],
                                justright[0][5],
                                propPrefix + "evalv AMP::Vector out of range lo 1",
@@ -304,7 +309,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                 testArgsRange( property,
                                argsVec,
                                argnames[0],
-                               valueVec,
+                               *valueVec,
                                toobig[0][5],
                                justright[0][5],
                                propPrefix + "evalv AMP::Vector out of range hi 1",
@@ -336,7 +341,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, AMP::MultiVector
             try {
-                property->evalv( valueVec, argsMultiVec, xlator );
+                property->evalv( *valueVec, argsMultiVec, xlator );
                 nominalMultiVec->copyVector( valueVec );
                 record( propPrefix, true, "evalv AMP::MultiVector", ut );
             } catch ( ... ) {
@@ -348,7 +353,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                 testArgsRange( property,
                                argsMultiVec,
                                justrightVec[0]->getVariable(),
-                               valueVec,
+                               *valueVec,
                                toosmall[0][5],
                                justright[0][5],
                                propPrefix + "evalv AMP::MultiVector out of range lo 1",
@@ -356,7 +361,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
                 testArgsRange( property,
                                argsMultiVec,
                                justrightVec[0]->getVariable(),
-                               valueVec,
+                               *valueVec,
                                toobig[0][5],
                                justright[0][5],
                                propPrefix + "evalv AMP::MultiVector out of range hi 1",
@@ -384,7 +389,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // check that evalv with fewer than normal number of arguments works
             try {
-                property->evalv( value, argsm );
+                property->evalv( value, {}, argsm );
                 record( propPrefix, true, "evalv with missing arguments", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv with missing arguments", ut );
@@ -443,7 +448,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, std::vector
             try {
-                property->evalv( stdEval, args );
+                property->evalv( stdEval, {}, args );
                 nominalEval = stdEval;
                 record( propPrefix, true, "evalv std::vector", ut );
             } catch ( ... ) {
@@ -569,7 +574,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // check that evalv with fewer than normal number of arguments works
             try {
-                property->evalv( stdEval, argsm );
+                property->evalv( stdEval, {}, argsm );
                 record( propPrefix, true, "evalv with missing arguments", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv with missing arguments", ut );
@@ -628,7 +633,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // all in range, std::vector
             try {
-                property->evalv( stdEval, args );
+                property->evalv( stdEval, {}, args );
                 nominalEval = stdEval;
                 record( propPrefix, true, "evalv std::vector", ut );
             } catch ( ... ) {
@@ -763,7 +768,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 
             // check that evalv with fewer than normal number of arguments works
             try {
-                property->evalv( stdEval, argsm );
+                property->evalv( stdEval, {}, argsm );
                 record( propPrefix, true, "evalv with missing arguments", ut );
             } catch ( ... ) {
                 record( propPrefix, false, "evalv with missing arguments", ut );

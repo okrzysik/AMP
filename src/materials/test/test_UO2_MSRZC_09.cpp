@@ -46,13 +46,10 @@ int main( int argc, char **argv )
 
     // Block for temporary variables
     {
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
-        argMap.insert( std::make_pair( "temperature", tv ) );
-        argMap.insert( std::make_pair( "concentration", uv ) );
-
         std::vector<double> tcv_mat( tcv );
-        mat->property( "ThermalConductivity" )->evalv( tcv_mat, argMap );
-        prop->evalv( tcv, argMap );
+        mat->property( "ThermalConductivity" )
+            ->evalv( tcv_mat, {}, "temperature", tv, "concentration", uv );
+        prop->evalv( tcv, {}, "temperature", tv, "concentration", uv );
         for ( size_t i = 0; i < n; i++ ) {
             good = good && AMP::Utilities::approx_equal( tcv[i], tcv_mat[i] );
         }
@@ -70,10 +67,8 @@ int main( int argc, char **argv )
 
     // Block for temporary variables
     {
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
-        argMap.insert( std::make_pair( "temperature", tv ) );
         std::vector<double> tcv_def( tcv );
-        prop->evalv( tcv_def, argMap );
+        prop->evalv( tcv_def, {}, "temperature", tv );
         for ( size_t i = 0; i < n; i++ ) {
             good = good && AMP::Utilities::approx_equal( tcv[i], tcv_def[i] );
         }
@@ -81,9 +76,8 @@ int main( int argc, char **argv )
 
     // test material accessors, no arguments present
     {
-        std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
         std::vector<double> tcv_def( tcv );
-        prop->evalv( tcv_def, argMap );
+        prop->evalv( tcv_def, {} );
         for ( size_t i = 0; i < n; i++ ) {
             good = good && AMP::Utilities::approx_equal( tcv[i], tcv_def[i] );
         }

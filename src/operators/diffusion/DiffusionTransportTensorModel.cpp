@@ -50,7 +50,7 @@ void DiffusionTransportTensorModel::getTensorTransport(
     // evaluate material property
     // material library has been temporarily supplied with a dummy evalv for tensors
     // new material interface will fix.
-    d_property->evalv( result, args );
+    d_property->evalv( result, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value

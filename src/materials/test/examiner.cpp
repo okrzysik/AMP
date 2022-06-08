@@ -181,7 +181,8 @@ int main( int argc, char *argv[] )
             ( *argMap[names[i]] )[0] = args[i][indices[i]];
         }
         std::vector<double> value( 1 );
-        material->property( propname )->evalv( value, argMap );
+        auto property = material->property( propname );
+        property->evalv( value, {}, argMap );
         if ( format == "Mathematica" )
             std::cout << "{";
         for ( size_t i = 0; i < nargs; i++ )
