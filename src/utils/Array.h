@@ -34,8 +34,9 @@ public: // Constructors / assignment operators
     /*!
      * Create an Array with the given size
      * @param N             Size of the array
+     * @param data          Optional raw array to copy the src data
      */
-    explicit Array( const ArraySize &N );
+    explicit Array( const ArraySize &N, const TYPE *data = nullptr );
 
     /*!
      * Create a new 1D Array with the given number of elements
@@ -76,13 +77,6 @@ public: // Constructors / assignment operators
      * @param N5            Number of elements in the fifth dimension
      */
     explicit Array( size_t N1, size_t N2, size_t N3, size_t N4, size_t N5 );
-
-    /*!
-     * Create a multi-dimensional Array with the given number of elements
-     * @param N             Number of elements in each dimension
-     * @param data          Optional raw array to copy the src data
-     */
-    explicit Array( const std::vector<size_t> &N, const TYPE *data = nullptr );
 
     /*!
      * Create a 1D Array with the range
@@ -167,7 +161,7 @@ public: // Views/copies/subset
      * @param data          Pointer to the data
      */
     static std::unique_ptr<const Array> constView( const ArraySize &N,
-                                                   std::shared_ptr<const TYPE> const &data );
+                                                   const std::shared_ptr<const TYPE> &data );
 
 
     /*!

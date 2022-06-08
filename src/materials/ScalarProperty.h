@@ -3,6 +3,8 @@
 
 #include "AMP/materials/Property.h"
 
+#include <cstring>
+
 
 namespace AMP::Materials {
 
@@ -15,16 +17,31 @@ public:
                     double value,
                     const AMP::Units &unit = AMP::Units(),
                     std::string source     = "" )
-        : Property( std::move( name ), { 1 }, unit, std::move( source ) ), d_value( value )
+        : Property( std::move( name ), { 1 }, unit, std::move( source ) )
+    {
+        d_value.resize( 1 );
+        d_value( 0 ) = value;
+    }
+    ScalarProperty( std::string name,
+                    AMP::Array<double> value,
+                    const AMP::Units &unit = AMP::Units(),
+                    std::string source     = "" )
+        : Property( std::move( name ), value.size(), unit, std::move( source ) ),
+          d_value( std::move( value ) )
     {
     }
     void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
     {
-        result.fill( d_value );
+        size_t N1 = d_value.length();
+        size_t N2 = result.size( d_value.ndim() + 1 );
+        for ( size_t i = 0; i < N2; i++ ) {
+            memcpy( &result( 0, i ), d_value.data(), N1 * sizeof( double ) );
+            result.fill( d_value );
+        }
     }
 
 private:
-    double d_value;
+    AMP::Array<double> d_value;
 };
 
 
@@ -74,56 +91,6 @@ private:
     std::vector<double> d_p;
 };
 
-
-//! Scalar Vector Property
-class ScalarVectorProperty : public Property
-{
-public:
-    explicit ScalarVectorProperty( const std::string &name,
-                                   double value,
-                                   const std::string &source = "" )
-        : Property( name, { 1 }, {}, source, {}, {} ), d_value( value )
-    {
-    }
-
-    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
-    {
-        result.fill( d_value );
-    }
-
-private:
-    double d_value;
-};
-
-
-//! Scalar Tensor Property
-class ScalarTensorProperty : public Property
-{
-public:
-    explicit ScalarTensorProperty( const std::string &name,
-                                   const std::string &source,
-                                   const AMP::ArraySize &dims,
-                                   const std::vector<double> &params )
-        : Property( name, dims, {}, source, {}, {} ), d_params( params )
-    {
-        AMP_INSIST( d_params.size() == dims[0] * dims[1],
-                    "dimensions and number of parameters don't match" );
-    }
-
-    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
-    {
-        for ( size_t i = 0; i < d_dim[0]; i++ ) {
-            for ( size_t j = 0; j < d_dim[1]; j++ ) {
-                for ( size_t k = 0; k < result.size( 2 ); k++ ) {
-                    result( i, j, k ) = d_params[i * d_dim[1] + j];
-                }
-            }
-        }
-    }
-
-private:
-    std::vector<double> d_params;
-};
 
 } // namespace AMP::Materials
 

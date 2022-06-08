@@ -41,6 +41,13 @@ void Material::addScalarProperty( std::string name,
 {
     addProperty<ScalarProperty>( std::move( name ), value, unit, std::move( source ) );
 }
+void Material::addScalarProperty( std::string name,
+                                  AMP::Array<double> value,
+                                  const AMP::Units &unit,
+                                  std::string source )
+{
+    addProperty<ScalarProperty>( std::move( name ), std::move( value ), unit, std::move( source ) );
+}
 void Material::addPolynomialProperty( std::string name,
                                       std::string source,
                                       const AMP::Units &unit,

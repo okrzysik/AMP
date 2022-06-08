@@ -107,11 +107,10 @@ DiffusionTransportModel::DiffusionTransportModel(
                 dims = params->d_db->getVector<size_t>( "Dimensions" );
             AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
             AMP_ASSERT( data.size() == dims[0] * dims[1] );
-            d_property =
-                std::make_shared<AMP::Materials::ScalarTensorProperty>( name, "", dims, data );
-        } else if ( d_property->isVector() ) {
-            AMP_ASSERT( data.size() == 1 );
-            d_property = std::make_shared<AMP::Materials::ScalarVectorProperty>( name, data[0] );
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>(
+                name, Array<double>( dims, data.data() ) );
+        } else if ( data.size() == 1 ) {
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>( name, data[0] );
         } else {
             d_property = std::make_shared<AMP::Materials::PolynomialProperty>(
                 name, "", units, data, args, ranges, argUnits );

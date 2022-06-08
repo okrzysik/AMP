@@ -68,6 +68,12 @@ protected:
                             const AMP::Units &unit = AMP::Units(),
                             std::string source     = "" );
 
+    //! Add a constant-value fixed property
+    void addScalarProperty( std::string name,
+                            AMP::Array<double> value,
+                            const AMP::Units &unit = AMP::Units(),
+                            std::string source     = "" );
+
     //! Add a polynomial based property
     void addPolynomialProperty( std::string name,
                                 std::string source,

@@ -35,10 +35,8 @@ FixedClad::FixedClad()
     addScalarProperty( "YoungsModulus", youngsval, {}, source );
     addScalarProperty( "PoissonRatio", pratioval, {}, source );
     addScalarProperty( "ThermalDiffusionCoefficient", fickval * soretval, {}, source );
-    std::vector<size_t> dims = { 1, 1 };
-    addProperty<ScalarVectorProperty>( "VectorFickCoefficient", 1.0, source );
-    addProperty<ScalarTensorProperty>(
-        "TensorFickCoefficient", source, dims, std::vector<double>( 1, 1.0 ) );
+    addScalarProperty( "VectorFickCoefficient", 1.0, {}, source );
+    addScalarProperty( "TensorFickCoefficient", Array<double>( { 1, 1 }, &fickval ), {}, source );
 }
 
 } // namespace AMP::Materials

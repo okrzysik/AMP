@@ -140,13 +140,7 @@ void Property::checkArgs( const AMP::Array<double> &args ) const
 /********************************************************
  *  Explicit instantiations of Array                     *
  ********************************************************/
-template AMP::Array<std::vector<double> *>::Array();
-template AMP::Array<std::vector<double> *>::~Array();
-template AMP::Array<std::vector<double> *>::Array( const AMP::ArraySize & );
-template AMP::Array<std::vector<double> *>::Array( size_t );
-template AMP::Array<AMP::LinearAlgebra::Vector *>::Array();
-template AMP::Array<AMP::LinearAlgebra::Vector *>::~Array();
-template AMP::Array<AMP::LinearAlgebra::Vector *>::Array( const AMP::ArraySize & );
-template AMP::Array<AMP::LinearAlgebra::Vector *>::Array( size_t );
+instantiateArrayConstructors( std::vector<double> * );
+instantiateArrayConstructors( AMP::LinearAlgebra::Vector * );
 instantiateArrayConstructors( std::shared_ptr<std::vector<double>> );
 instantiateArrayConstructors( std::shared_ptr<AMP::LinearAlgebra::Vector> );
