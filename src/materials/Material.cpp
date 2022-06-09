@@ -6,24 +6,19 @@
 namespace AMP::Materials {
 
 
-// check if a property exists in the material
+/********************************************************************
+ * Get properties                                                    *
+ ********************************************************************/
 bool Material::hasProperty( const std::string &type ) const
 {
     return d_propertyMap.find( type ) != d_propertyMap.end();
 }
-
-
-// get a pointer to a specific property through its name
 std::shared_ptr<Property> Material::property( std::string type )
 {
     auto it = d_propertyMap.find( type );
     AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
     return it->second;
 }
-
-
-// return a list of all properties in this material
-// note: this list is in error if property has an embedded underscore
 std::vector<std::string> Material::list() const
 {
     std::vector<std::string> result;
@@ -33,7 +28,9 @@ std::vector<std::string> Material::list() const
 }
 
 
-// Add a property
+/********************************************************************
+ * Add a property                                                    *
+ ********************************************************************/
 void Material::addScalarProperty( std::string name,
                                   double value,
                                   const AMP::Units &unit,
@@ -66,18 +63,24 @@ void Material::addPolynomialProperty( std::string name,
 }
 
 
-// Return the material
+/********************************************************************
+ * Construct a material from a database                              *
+ ********************************************************************/
+DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Database> db )
+    : d_name( name )
+{
+    AMP_ERROR( "Not finished" );
+}
+
+
+/********************************************************************
+ * Material factory functiosn                                        *
+ ********************************************************************/
+std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
 std::unique_ptr<Material> getMaterial( const std::string &name )
 {
     return AMP::FactoryStrategy<Material>::create( name );
 }
-
-
-// Return a list of available materials
-std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
-
-
-// Register a new material
 void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun )
 {
     AMP::FactoryStrategy<Material>::registerFactory( name, fun );

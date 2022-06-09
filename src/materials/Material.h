@@ -33,9 +33,11 @@ namespace AMP::Materials {
 class Material
 {
 public:
-    Material() {}
+    //! Default constructor
+    Material() = default;
 
-    virtual ~Material() {}
+    //! Default destructor
+    virtual ~Material() = default;
 
 public:
     //! check if a property exists in the material
@@ -83,6 +85,21 @@ protected:
                                 std::vector<std::string> args             = {},
                                 std::vector<std::array<double, 2>> ranges = {},
                                 std::vector<AMP::Units> argUnits          = {} );
+};
+
+
+//! Construct a material from a database
+class DatabaseMaterial : public Material
+{
+public:
+    //! Construct a material from the database
+    DatabaseMaterial( const std::string &name, std::shared_ptr<Database> db );
+
+    //! Return the name of the material
+    std::string materialName() const override { return d_name; }
+
+private:
+    std::string d_name; //!< Name of material
 };
 
 

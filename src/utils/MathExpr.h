@@ -62,7 +62,7 @@ public:
      * \param[in] data              List of variable values: { x, y }
      * @return                      Returns the result
      */
-    double operator()( const std::initializer_list<double> &data = {} );
+    double operator()( const std::initializer_list<double> &data = {} ) const;
 
     /**
      * \brief Evaluate
@@ -70,7 +70,13 @@ public:
      * \param[in] data              List of variable values: { x, y }
      * @return                      Returns the result
      */
-    double operator()( const double *data );
+    double operator()( const double *data ) const;
+
+    //! Check if two expressions are the same
+    bool operator==( const MathExpr &rhs ) const;
+
+    //! Check if two expressions are different
+    bool operator!=( const MathExpr &rhs ) const { return !operator==( rhs ); }
 
 private:
     void initialize();
@@ -79,7 +85,7 @@ private:
     te_expr *d_fun;
     std::vector<std::string> d_vars;
     std::vector<te_variable> d_tevar;
-    std::vector<double> d_data;
+    mutable std::vector<double> d_data;
 };
 
 
