@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -11,7 +12,6 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/WriteSolutionToFile.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <algorithm>
@@ -37,7 +37,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
 
     std::cout << "Mesh has " << meshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex )
               << " nodes." << std::endl;

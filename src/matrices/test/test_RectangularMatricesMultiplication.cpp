@@ -2,6 +2,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
@@ -41,7 +42,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // create mesh
     auto params = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
     // create two different dof managers
     auto firstDofManager = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );

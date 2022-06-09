@@ -12,6 +12,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -83,7 +84,7 @@ static void runTest( AMP::UnitTest *ut, std::string input_file )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Run the test with > 2^24  DOFs
     simpleDOFManagerVectorTest( ut, mesh, 0x1000001, false );

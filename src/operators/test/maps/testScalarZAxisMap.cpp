@@ -2,6 +2,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/map/AsyncMapColumnOperator.h"
 #include "AMP/operators/map/ScalarZAxisMap.h"
@@ -43,7 +44,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Get the database for the node to node maps
     auto map_db = input_db->getDatabase( "MeshToMeshMaps" );

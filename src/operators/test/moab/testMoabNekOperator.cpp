@@ -78,7 +78,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     AMP::pout << "Creating AMP mesh" << std::endl;
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDB );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
 
     // Create Parameters for Map Operator

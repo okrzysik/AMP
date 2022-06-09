@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/map/StridedZAxisMap.h"
 #include "AMP/utils/AMPManager.h"
@@ -61,7 +62,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto meshDatabase = inputDatabase->getDatabase( "Mesh" );
     auto meshParams   = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
-    auto mesh    = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh    = AMP::Mesh::MeshFactory::create( meshParams );
     auto fooMesh = mesh->Subset( "Foo" );
     auto barMesh = mesh->Subset( "Bar" );
 

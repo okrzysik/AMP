@@ -2,6 +2,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
 #include "AMP/utils/AMPManager.h"
@@ -33,7 +34,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto database = input_db->getDatabase( "Mesh" );
     auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     auto var            = std::make_shared<AMP::LinearAlgebra::Variable>( "myVar" );
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(

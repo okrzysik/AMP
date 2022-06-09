@@ -159,7 +159,7 @@ static void moabInterface( AMP::UnitTest *ut )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Put moab mesh filename onto DB
     std::string moabMeshFile = "input.h5m";

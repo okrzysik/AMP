@@ -13,6 +13,7 @@
 #include "AMP/geometry/shapes/SquareFrustum.h"
 #include "AMP/geometry/shapes/Tube.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/Database.h"
@@ -83,7 +84,7 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
         auto mesh_db = db->getDatabase( "Mesh" );
         auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db->cloneDatabase() );
         params->setComm( AMP_COMM_SELF );
-        auto mesh      = AMP::Mesh::Mesh::buildMesh( params );
+        auto mesh      = AMP::Mesh::MeshFactory::create( params );
         auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
         if ( multimesh ) {
             std::vector<std::shared_ptr<Geometry>> geoms;

@@ -3,6 +3,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
@@ -53,7 +54,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
     // nonlinear operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;

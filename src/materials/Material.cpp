@@ -67,16 +67,20 @@ void Material::addPolynomialProperty( std::string name,
 
 
 // Return the material
-std::shared_ptr<Material> getMaterial( const std::string &name )
+std::unique_ptr<Material> getMaterial( const std::string &name )
 {
-    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+    return AMP::FactoryStrategy<Material>::create( name );
 }
 
 
 // Return a list of available materials
-std::vector<std::string> getMaterialList()
+std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
+
+
+// Register a new material
+void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun )
 {
-    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
+    AMP::FactoryStrategy<Material>::registerFactory( name, fun );
 }
 
 

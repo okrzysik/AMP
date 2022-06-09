@@ -1,5 +1,6 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -25,7 +26,7 @@ void createMesh( AMP::UnitTest *ut, const std::string &input_file )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Create the silo writer and write the mesh
     AMP::Utilities::recursiveMkdir( "output" );

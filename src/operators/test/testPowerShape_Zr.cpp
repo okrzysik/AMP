@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/libmesh/PowerShape.h"
 #include "AMP/utils/AMPManager.h"
@@ -32,7 +33,7 @@ static void test_with_shape( AMP::UnitTest *ut )
     //   Create the Mesh
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     //  Construct PowerShape for a radial only term.
     auto shape_db = input_db->putDatabase( "shape_db" );

@@ -1,6 +1,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/dendro/DendroSearch.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
@@ -300,7 +301,7 @@ void run( const std::string &meshFileName,
 
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
     globalComm.barrier();
     double meshEndTime = MPI_Wtime();
     size_t numberGlobalVolumeElements =

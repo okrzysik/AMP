@@ -1,4 +1,5 @@
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/testHelpers/meshTests.h"
@@ -24,7 +25,7 @@ bool compare( const std::string &filename )
         auto db     = input_db->getDatabase( key );
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( db );
         params->setComm( globalComm );
-        meshes.push_back( AMP::Mesh::Mesh::buildMesh( params ) );
+        meshes.push_back( AMP::Mesh::MeshFactory::create( params ) );
     }
 
     // Compare the meshes

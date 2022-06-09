@@ -1,7 +1,9 @@
 #include "AMP/IO/PIO.h"
+#include "AMP/IO/WriteSolutionToFile.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -13,7 +15,6 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/WriteSolutionToFile.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 

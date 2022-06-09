@@ -2,7 +2,7 @@
 #define included_AMP_Material
 
 #include "AMP/materials/Property.h"
-#include "AMP/utils/Factory.h"
+#include "AMP/utils/FactoryStrategy.hpp"
 #include "AMP/utils/Utilities.h"
 
 #include <map>
@@ -13,12 +13,13 @@
 
 // This macro is to be placed after each material class (UO2, Pu, etc.)
 // It will register the material with the factory
-#define REGISTER_MATERIAL( NAME )                                                          \
-    static struct NAME##_INIT {                                                            \
-        NAME##_INIT()                                                                      \
-        {                                                                                  \
-            static AMP::voodoo::Registration<AMP::Materials::Material, NAME> reg( #NAME ); \
-        }                                                                                  \
+#define REGISTER_MATERIAL( NAME )                                 \
+    static struct NAME##_INIT {                                   \
+        NAME##_INIT()                                             \
+        {                                                         \
+            auto fun = []() { return std::make_unique<NAME>(); }; \
+            AMP::Materials::registerMaterial( #NAME, fun );       \
+        }                                                         \
     } NAME##_init
 
 
@@ -85,8 +86,11 @@ protected:
 };
 
 
+//! Register a material with the factory
+void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun );
+
 //! Get a material
-std::shared_ptr<Material> getMaterial( const std::string &name );
+std::unique_ptr<Material> getMaterial( const std::string &name );
 
 //! Get the list of materials available
 std::vector<std::string> getMaterialList();

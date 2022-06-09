@@ -1,6 +1,7 @@
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/geometry/MultiGeometry.h"
 #include "AMP/mesh/MeshElement.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/SubsetMesh.h"
@@ -72,7 +73,7 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
             continue;
         auto params = std::make_shared<MeshParameters>( meshDatabases[i] );
         params->setComm( comms[i] );
-        auto new_mesh = AMP::Mesh::Mesh::buildMesh( params );
+        auto new_mesh = AMP::Mesh::MeshFactory::create( params );
         d_meshes.push_back( new_mesh );
     }
     // Get the physical dimension

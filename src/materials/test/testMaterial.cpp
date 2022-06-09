@@ -2,7 +2,6 @@
 #include "AMP/materials/Property.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/Factory.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
@@ -799,11 +798,10 @@ int main( int argc, char **argv )
 
         // check that undefined material name is caught
         try {
-            std::string name( "flubber" );
-            auto mat = AMP::Materials::getMaterial( name );
+            auto mat = AMP::Materials::getMaterial( "flubber" );
             ut.failure( "Failed to catch unknown material" );
         } catch ( const StackTrace::abort_error &err ) {
-            if ( err.message == "Unregistered creator" )
+            if ( err.message == "Unable to create object flubber" )
                 ut.passes( "detected undefined material" );
             else
                 ut.failure( "did not detect undefined material" );
