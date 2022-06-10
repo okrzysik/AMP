@@ -335,6 +335,10 @@ protected:
 };
 
 
+//! Create a property from a database data
+std::unique_ptr<Property> createProperty( const std::string &key, const Database &db );
+
+
 } // namespace AMP::Materials
 
 #include "AMP/materials/Property.hpp"

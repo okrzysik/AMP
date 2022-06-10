@@ -1,5 +1,7 @@
 #include "AMP/materials/Property.h"
+#include "AMP/materials/ScalarProperty.h"
 #include "AMP/utils/Array.hpp"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
@@ -131,6 +133,30 @@ void Property::checkArgs( const AMP::Array<double> &args ) const
             }
         }
     }
+}
+
+
+/************************************************************************
+ *  Create a property from a database key data object                    *
+ ************************************************************************/
+std::unique_ptr<Property> createProperty( const std::string &key, const Database &db )
+{
+    auto keyData = db.getData( key );
+    auto unit    = keyData->unit();
+    if ( db.isDatabase( key ) ) {
+        // We are dealing with a database
+        AMP_ERROR( "Not finished (Database)" );
+    } else if ( db.isEquation( key ) ) {
+        // We are dealing with an equation
+        return std::make_unique<EquationProperty>( key, db.getEquation( key ), unit );
+    } else if ( keyData->is_floating_point() ) {
+        // We are dealing with a scalar
+        auto data = keyData->convertToDouble();
+        return std::make_unique<ScalarProperty>( key, data, unit );
+    } else {
+        AMP_ERROR( "Unknown data type" );
+    }
+    return nullptr;
 }
 
 

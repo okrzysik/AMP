@@ -777,6 +777,29 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
 }
 
 
+// Register a dummy material created from a database
+void registerDatabaseMaterial( AMP::UnitTest &ut )
+{
+    // Create the material
+    auto fun = []() {
+        const char databaseText[] = "a = 3.2            // constant\n"
+                                    "b = 4.3 um         // constant (with units)\n"
+                                    "c = @(x) 2*x;      // equation\n"
+                                    "d = @(x) 2*x; cm   // equation with units\n"
+                                    "e = 1,2, 3.0, 4,5  // vector\n";
+        //"f {                // Database property\n"
+        //"   value = 5.1\n"
+        //"}\n";
+        auto db = AMP::Database::createFromString( databaseText );
+        return std::make_unique<AMP::Materials::DatabaseMaterial>( "databaseMaterial",
+                                                                   std::move( db ) );
+    };
+    AMP::Materials::registerMaterial( "databaseMaterial", fun );
+    // Run some basic checks
+    auto mat = AMP::Materials::getMaterial( "databaseMaterial" );
+}
+
+
 int main( int argc, char **argv )
 {
     AMP::AMPManagerProperties amprops;
@@ -785,6 +808,9 @@ int main( int argc, char **argv )
     AMP::UnitTest ut;
 
     { // Limit scope
+
+        // Register a database material
+        registerDatabaseMaterial( ut );
 
         // test all materials and all properties and print report
         auto matlist = AMP::Materials::getMaterialList();

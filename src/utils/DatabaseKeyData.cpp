@@ -203,7 +203,7 @@ bool KeyDataArray<TYPE>::operator==( const KeyData &rhs ) const
 /********************************************************************
  * EquationKeyData                                                   *
  ********************************************************************/
-EquationKeyData::EquationKeyData( std::string_view eq )
+EquationKeyData::EquationKeyData( std::string_view eq, const Units &unit ) : KeyData( unit )
 {
     eq = deblank( eq );
     AMP_ASSERT( eq.size() > 4 );
@@ -222,10 +222,13 @@ EquationKeyData::EquationKeyData( std::string_view eq )
     }
     d_eq = std::make_shared<MathExpr>( equation, vars );
 }
-EquationKeyData::EquationKeyData( std::shared_ptr<const MathExpr> eq ) : d_eq( eq ) {}
+EquationKeyData::EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit )
+    : KeyData( unit ), d_eq( eq )
+{
+}
 std::unique_ptr<KeyData> EquationKeyData::clone() const
 {
-    return std::make_unique<EquationKeyData>( d_eq );
+    return std::make_unique<EquationKeyData>( d_eq, d_unit );
 }
 void EquationKeyData::print( std::ostream &os, std::string_view indent, bool, bool printType ) const
 {

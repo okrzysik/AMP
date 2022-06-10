@@ -393,6 +393,12 @@ bool KeyData::isType<MathExpr>() const
         return true;
     if ( isType<double>() && arraySize().length() == 1 )
         return true;
+    return false;
+}
+template<>
+bool KeyData::isType<Database>() const
+{
+    return dynamic_cast<const Database *>( this );
 }
 template<class TYPE>
 bool KeyData::isType() const
@@ -703,10 +709,20 @@ createKeyData( std::string_view key,
             data = std::make_unique<KeyDataArray<std::string>>( std::move( data2 ) );
         }
     } else if ( data_type == class_type::EQUATION ) {
-        // We are dealing with and equation
-        if ( values.size() > 1 )
+        // We are dealing with equations
+        Array<std::string_view> data2( values.size() );
+        Units unit;
+        for ( size_t i = 0; i < values.size(); i++ ) {
+            Units unit2;
+            size_t j   = values[i].find( ';' );
+            data2( i ) = deblank( values[i].substr( 0, j + 1 ) );
+            auto str   = deblank( values[i].substr( j + 1 ) );
+            if ( unit.isNull() && !str.empty() )
+                unit = Units( str );
+        }
+        if ( data2.length() > 1 )
             AMP_ERROR( "Arrays of equations are not currently supported" );
-        data = std::make_unique<EquationKeyData>( std::string( values[0] ) );
+        data = std::make_unique<EquationKeyData>( std::string( data2( 0 ) ) );
     } else if ( data_type == class_type::BOOL ) {
         // We are dealing with logical values
         Array<bool> data2( values.size() );

@@ -92,8 +92,8 @@ class EquationKeyData final : public KeyData
 {
 public:
     EquationKeyData() = default;
-    EquationKeyData( std::string_view eq );
-    EquationKeyData( std::shared_ptr<const MathExpr> eq );
+    EquationKeyData( std::string_view eq, const Units &unit = Units() );
+    EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit = Units() );
     virtual ~EquationKeyData() = default;
     std::unique_ptr<KeyData> clone() const override;
     void print( std::ostream &, std::string_view = "", bool = true, bool = false ) const override;

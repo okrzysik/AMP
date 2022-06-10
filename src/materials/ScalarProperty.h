@@ -2,6 +2,7 @@
 #define included_AMP_ScalarProperty
 
 #include "AMP/materials/Property.h"
+#include "AMP/utils/MathExpr.h"
 
 #include <cstring>
 
@@ -89,6 +90,53 @@ public:
 
 private:
     std::vector<double> d_p;
+};
+
+
+//! Polynomial based property class
+class EquationProperty : public Property
+{
+public:
+    EquationProperty() {}
+    EquationProperty( std::string name,
+                      std::shared_ptr<const MathExpr> eq,
+                      const AMP::Units &unit                    = {},
+                      std::vector<std::array<double, 2>> ranges = {},
+                      std::vector<AMP::Units> argUnits          = {},
+                      std::string source                        = "" )
+        : Property( std::move( name ),
+                    { 1 },
+                    unit,
+                    std::move( source ),
+                    eq->getVars(),
+                    getRanges( ranges, eq ),
+                    std::move( argUnits ) ),
+          d_eq( eq )
+    {
+        AMP_ASSERT( d_eq );
+    }
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        AMP_ASSERT( d_eq );
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            if ( args.empty() )
+                result( i ) = ( *d_eq )();
+            else
+                result( i ) = ( *d_eq )( &args( 0, i ) );
+        }
+    }
+
+private:
+    static std::vector<std::array<double, 2>> getRanges( std::vector<std::array<double, 2>> ranges,
+                                                         std::shared_ptr<const MathExpr> eq )
+    {
+        if ( ranges.empty() )
+            ranges.resize( eq->getVars().size(), { { -1e100, 1e100 } } );
+        return ranges;
+    }
+
+private:
+    std::shared_ptr<const MathExpr> d_eq;
 };
 
 

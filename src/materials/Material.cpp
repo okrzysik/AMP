@@ -69,7 +69,11 @@ void Material::addPolynomialProperty( std::string name,
 DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Database> db )
     : d_name( name )
 {
-    AMP_ERROR( "Not finished" );
+    if ( !db )
+        return;
+    auto keys = db->getAllKeys();
+    for ( auto key : keys )
+        d_propertyMap[key] = createProperty( key, *db );
 }
 
 
