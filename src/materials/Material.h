@@ -49,6 +49,9 @@ public:
     //! get a pointer to a specific scalar property
     std::shared_ptr<Property> property( std::string type );
 
+    //! get a pointer to a specific scalar property
+    std::shared_ptr<const Property> property( std::string type ) const;
+
     //! return a list of all properties in this material
     std::vector<std::string> list() const;
 

@@ -19,6 +19,12 @@ std::shared_ptr<Property> Material::property( std::string type )
     AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
     return it->second;
 }
+std::shared_ptr<const Property> Material::property( std::string type ) const
+{
+    auto it = d_propertyMap.find( type );
+    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    return it->second;
+}
 std::vector<std::string> Material::list() const
 {
     std::vector<std::string> result;
