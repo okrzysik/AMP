@@ -1,5 +1,4 @@
 #include "AMP/utils/Array.h"
-#include "AMP/utils/Array.hpp"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Database.hpp"
 #include "AMP/utils/MathExpr.h"
@@ -480,10 +479,11 @@ template void
 Database::putScalar<const char *>( std::string_view, const char *, Units, Database::Check );
 
 
+} // namespace AMP
+
+
 /********************************************************
  *  Explicit instantiations of Array<DatabaseBox>        *
  ********************************************************/
-instantiateArrayConstructors( DatabaseBox );
-
-
-} // namespace AMP
+#include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( AMP::DatabaseBox );

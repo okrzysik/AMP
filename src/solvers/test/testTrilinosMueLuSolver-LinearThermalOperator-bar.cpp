@@ -147,7 +147,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     // Use a random initial guess?
     mlSolver->setZeroInitialGuess( false );
 
-    // Solve the prblem.
+    // Solve the problem
     mlSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     // Compute the residual

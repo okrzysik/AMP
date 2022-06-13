@@ -134,16 +134,16 @@ public: // Constructors / assignment operators
     Array &operator=( const std::vector<TYPE> &rhs );
 
     //! Is copyable?
-    inline bool isCopyable() const { return d_isCopyable; }
+    ARRAY_INLINE bool isCopyable() const { return d_isCopyable; }
 
     //! Set is copyable
-    inline void setCopyable( bool flag ) { d_isCopyable = flag; }
+    ARRAY_INLINE void setCopyable( bool flag ) { d_isCopyable = flag; }
 
     //! Is fixed size?
-    inline bool isFixedSize() const { return d_isFixedSize; }
+    ARRAY_INLINE bool isFixedSize() const { return d_isFixedSize; }
 
     //! Set is copyable
-    inline void setFixedSize( bool flag ) { d_isFixedSize = flag; }
+    ARRAY_INLINE void setFixedSize( bool flag ) { d_isFixedSize = flag; }
 
 
 public: // Views/copies/subset
@@ -190,7 +190,7 @@ public: // Views/copies/subset
      * @param isCopyable    Once the view is created, can the array be copied
      * @param isFixedSize   Once the view is created, is the array size fixed
      */
-    inline void viewRaw(
+    ARRAY_INLINE void viewRaw(
         int ndim, const size_t *dims, TYPE *data, bool isCopyable = true, bool isFixedSize = true )
     {
         viewRaw( ArraySize( ndim, dims ), data, isCopyable, isFixedSize );
@@ -220,7 +220,7 @@ public: // Views/copies/subset
      * @param N             Number of elements in each dimension
      * @param data          Pointer to the data
      */
-    static inline Array staticView( const ArraySize &N, TYPE *data )
+    static ARRAY_INLINE Array staticView( const ArraySize &N, TYPE *data )
     {
         Array x;
         x.viewRaw( N, data, true, true );
@@ -301,7 +301,7 @@ public: // Views/copies/subset
      * Fill the array with the given value
      * @param y         Value to fill
      */
-    inline void fill( const TYPE &y )
+    ARRAY_INLINE void fill( const TYPE &y )
     {
         for ( auto &x : *this )
             x = y;
@@ -312,7 +312,7 @@ public: // Views/copies/subset
      * @param y         Value to scale by
      */
     template<class TYPE2>
-    inline void scale( const TYPE2 &y )
+    ARRAY_INLINE void scale( const TYPE2 &y )
     {
         for ( auto &x : *this )
             x *= y;
@@ -336,34 +336,34 @@ public: // Views/copies/subset
 
 
     //! Return the size of the Array
-    inline int ndim() const { return d_size.ndim(); }
+    ARRAY_INLINE int ndim() const { return d_size.ndim(); }
 
 
     //! Return the size of the Array
-    inline const ArraySize &size() const { return d_size; }
+    ARRAY_INLINE const ArraySize &size() const { return d_size; }
 
 
     //! Return the size of the Array
-    inline size_t size( int d ) const { return d_size[d]; }
+    ARRAY_INLINE size_t size( int d ) const { return d_size[d]; }
 
 
     //! Return the size of the Array
-    inline size_t length() const { return d_size.length(); }
+    ARRAY_INLINE size_t length() const { return d_size.length(); }
 
 
     //! Return true if the Array is empty
-    inline bool empty() const { return d_size.length() == 0; }
+    ARRAY_INLINE bool empty() const { return d_size.length() == 0; }
 
 
     //! Return true if the Array is not empty
-    inline operator bool() const { return d_size.length() != 0; }
+    ARRAY_INLINE operator bool() const { return d_size.length() != 0; }
 
 
     /*!
      * Resize the Array
-     * @param N             NUmber of elements
+     * @param N             Number of elements
      */
-    inline void resize( size_t N ) { resize( ArraySize( N ) ); }
+    ARRAY_INLINE void resize( size_t N ) { resize( ArraySize( N ) ); }
 
 
     /*!
@@ -371,7 +371,7 @@ public: // Views/copies/subset
      * @param N_row         Number of rows
      * @param N_col         Number of columns
      */
-    inline void resize( size_t N_row, size_t N_col ) { resize( ArraySize( N_row, N_col ) ); }
+    ARRAY_INLINE void resize( size_t N_row, size_t N_col ) { resize( ArraySize( N_row, N_col ) ); }
 
     /*!
      * Resize the Array
@@ -379,7 +379,10 @@ public: // Views/copies/subset
      * @param N2            Number of columns
      * @param N3            Number of elements in the third dimension
      */
-    inline void resize( size_t N1, size_t N2, size_t N3 ) { resize( ArraySize( N1, N2, N3 ) ); }
+    ARRAY_INLINE void resize( size_t N1, size_t N2, size_t N3 )
+    {
+        resize( ArraySize( N1, N2, N3 ) );
+    }
 
     /*!
      * Resize the Array
@@ -409,7 +412,7 @@ public: // Views/copies/subset
      *    max of ndim and the largest dim>1.
      * @param ndim          Desired number of dimensions
      */
-    inline void setNdim( int ndim ) { d_size.setNdim( ndim ); }
+    ARRAY_INLINE void setNdim( int ndim ) { d_size.setNdim( ndim ); }
 
 
     /*!
@@ -460,33 +463,27 @@ public: // Accessors
      * Access the desired element
      * @param i             The row index
      */
-    ARRAY_ATTRIBUTE inline TYPE &operator()( size_t i ) { return d_data[d_size.index( i )]; }
+    ARRAY_INLINE TYPE &operator()( size_t i ) { return d_data[d_size.index( i )]; }
 
     /*!
      * Access the desired element
      * @param i             The row index
      */
-    ARRAY_ATTRIBUTE inline const TYPE &operator()( size_t i ) const
-    {
-        return d_data[d_size.index( i )];
-    }
-
-    /*!
-     * Access the desired element
-     * @param i             The row index
-     * @param j             The column index
-     */
-    ARRAY_ATTRIBUTE inline TYPE &operator()( size_t i, size_t j )
-    {
-        return d_data[d_size.index( i, j )];
-    }
+    ARRAY_INLINE const TYPE &operator()( size_t i ) const { return d_data[d_size.index( i )]; }
 
     /*!
      * Access the desired element
      * @param i             The row index
      * @param j             The column index
      */
-    ARRAY_ATTRIBUTE inline const TYPE &operator()( size_t i, size_t j ) const
+    ARRAY_INLINE TYPE &operator()( size_t i, size_t j ) { return d_data[d_size.index( i, j )]; }
+
+    /*!
+     * Access the desired element
+     * @param i             The row index
+     * @param j             The column index
+     */
+    ARRAY_INLINE const TYPE &operator()( size_t i, size_t j ) const
     {
         return d_data[d_size.index( i, j )];
     }
@@ -497,7 +494,7 @@ public: // Accessors
      * @param j             The column index
      * @param k             The third index
      */
-    ARRAY_ATTRIBUTE inline TYPE &operator()( size_t i, size_t j, size_t k )
+    ARRAY_INLINE TYPE &operator()( size_t i, size_t j, size_t k )
     {
         return d_data[d_size.index( i, j, k )];
     }
@@ -508,7 +505,7 @@ public: // Accessors
      * @param j             The column index
      * @param k             The third index
      */
-    ARRAY_ATTRIBUTE inline const TYPE &operator()( size_t i, size_t j, size_t k ) const
+    ARRAY_INLINE const TYPE &operator()( size_t i, size_t j, size_t k ) const
     {
         return d_data[d_size.index( i, j, k )];
     }
@@ -520,7 +517,7 @@ public: // Accessors
      * @param i3            The third index
      * @param i4            The fourth index
      */
-    ARRAY_ATTRIBUTE inline TYPE &operator()( size_t i1, size_t i2, size_t i3, size_t i4 )
+    ARRAY_INLINE TYPE &operator()( size_t i1, size_t i2, size_t i3, size_t i4 )
     {
         return d_data[d_size.index( i1, i2, i3, i4 )];
     }
@@ -532,8 +529,7 @@ public: // Accessors
      * @param i3            The third index
      * @param i4            The fourth index
      */
-    ARRAY_ATTRIBUTE inline const TYPE &
-    operator()( size_t i1, size_t i2, size_t i3, size_t i4 ) const
+    ARRAY_INLINE const TYPE &operator()( size_t i1, size_t i2, size_t i3, size_t i4 ) const
     {
         return d_data[d_size.index( i1, i2, i3, i4 )];
     }
@@ -546,7 +542,7 @@ public: // Accessors
      * @param i4            The fourth index
      * @param i5            The fifth index
      */
-    ARRAY_ATTRIBUTE inline TYPE &operator()( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 )
+    ARRAY_INLINE TYPE &operator()( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 )
     {
         return d_data[d_size.index( i1, i2, i3, i4, i5 )];
     }
@@ -559,7 +555,7 @@ public: // Accessors
      * @param i4            The fourth index
      * @param i5            The fifth index
      */
-    ARRAY_ATTRIBUTE inline const TYPE &
+    ARRAY_INLINE const TYPE &
     operator()( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 ) const
     {
         return d_data[d_size.index( i1, i2, i3, i4, i5 )];
@@ -569,43 +565,40 @@ public: // Accessors
      * Access the desired element as a raw pointer
      * @param i             The global index
      */
-    ARRAY_ATTRIBUTE inline TYPE *ptr( size_t i )
-    {
-        return i >= d_size.length() ? nullptr : &d_data[i];
-    }
+    ARRAY_INLINE TYPE *ptr( size_t i ) { return i >= d_size.length() ? nullptr : &d_data[i]; }
 
     /*!
      * Access the desired element as a raw pointer
      * @param i             The global index
      */
-    ARRAY_ATTRIBUTE inline const TYPE *ptr( size_t i ) const
+    ARRAY_INLINE const TYPE *ptr( size_t i ) const
     {
         return i >= d_size.length() ? nullptr : &d_data[i];
     }
 
     //! Get iterator to beginning of data
-    inline TYPE *begin() { return d_data; }
+    ARRAY_INLINE TYPE *begin() { return d_data; }
 
     //! Get iterator to beginning of data
-    inline const TYPE *begin() const { return d_data; }
+    ARRAY_INLINE const TYPE *begin() const { return d_data; }
 
     //! Get iterator to beginning of data
-    inline TYPE *end() { return d_data + d_size.length(); }
+    ARRAY_INLINE TYPE *end() { return d_data + d_size.length(); }
 
     //! Get iterator to beginning of data
-    inline const TYPE *end() const { return d_data + d_size.length(); }
+    ARRAY_INLINE const TYPE *end() const { return d_data + d_size.length(); }
 
     //! Return the pointer to the raw data
-    inline std::shared_ptr<TYPE> getPtr() { return d_ptr; }
+    ARRAY_INLINE std::shared_ptr<TYPE> getPtr() { return d_ptr; }
 
     //! Return the pointer to the raw data
-    inline std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
+    ARRAY_INLINE std::shared_ptr<const TYPE> getPtr() const { return d_ptr; }
 
     //! Return the pointer to the raw data
-    ARRAY_ATTRIBUTE inline TYPE *data() { return d_data; }
+    ARRAY_INLINE TYPE *data() { return d_data; }
 
     //! Return the pointer to the raw data
-    ARRAY_ATTRIBUTE inline const TYPE *data() const { return d_data; }
+    ARRAY_INLINE const TYPE *data() const { return d_data; }
 
 
 public: // Operator overloading
@@ -614,7 +607,7 @@ public: // Operator overloading
     bool operator==( const Array &rhs ) const;
 
     //! Check if two matrices are not equal
-    inline bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
+    ARRAY_INLINE bool operator!=( const Array &rhs ) const { return !this->operator==( rhs ); }
 
     //! Add another array
     Array &operator+=( const Array &rhs );

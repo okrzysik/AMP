@@ -37,12 +37,10 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     // Input and output file names
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    size_t N_error0        = ut->NumFailLocal();
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
-
 
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
@@ -159,8 +157,9 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "TrilinosMueLuSolver does not solve a linear thermal problem with a nuclear "
-                     "source term." );
+        ut->failure( "exeName" );
+    } else {
+        ut->passes( exeName );
     }
 
     // Plot the results
@@ -172,11 +171,6 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
-
-    if ( N_error0 == ut->NumFailLocal() )
-        ut->passes( exeName );
-    else
-        ut->failure( exeName );
 }
 
 

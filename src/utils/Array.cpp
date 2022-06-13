@@ -27,6 +27,7 @@ template class Array<float>;
 template class Array<double>;
 template class Array<long double>;
 instantiateArrayConstructors( bool );
+instantiateArrayConstructors( std::byte );
 instantiateArrayConstructors( std::string );
 instantiateArrayConstructors( std::string_view );
 

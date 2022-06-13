@@ -25,6 +25,8 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include "../testSolverHelpers.h"
+
 #include <fstream>
 #include <limits>
 #include <memory>
@@ -131,67 +133,16 @@ static void linearFickTest( AMP::UnitTest *ut )
     //   c = -power/2
     //   b = -10*power
     //   a = 300 + 150*power
-
-    double power = 1.;
-    double c     = -power / 2.;
-    double b     = -10. * power;
-    double a     = 300. + 150. * power;
-    bool passes  = true;
-
-    if ( false ) {
-        double cal, zee, sol, err;
-        // Serialize the code
-        for ( int i = 0; i < globalComm.getSize(); i++ ) {
-            if ( globalComm.getRank() == i ) {
-                std::string filename = "data_" + exeName;
-                int rank             = globalComm.getRank();
-                int nranks           = globalComm.getSize();
-                auto omode           = std::ios_base::out;
-                if ( rank > 0 )
-                    omode |= std::ios_base::app;
-                std::ofstream file( filename.c_str(), omode );
-                if ( rank == 0 ) {
-                    file << "(* x y z analytic calculated relative-error *)" << std::endl;
-                    file << "formula=" << a << " + " << b << "*z + " << c << "*z^2;" << std::endl;
-                    file << "results={" << std::endl;
-                }
-                file.precision( 14 );
-
-                size_t numNodes = iterator.size();
-                size_t iNode    = 0;
-                iterator        = iterator.begin();
-                for ( ; iterator != iterator.end(); ++iterator ) {
-                    std::vector<size_t> gid;
-                    nodalDofMap->getDOFs( iterator->globalID(), gid );
-                    cal = SolutionVec->getValueByGlobalID( gid[0] );
-                    zee = ( iterator->coord() )[2];
-                    sol = a + b * zee + c * zee * zee;
-                    err = fabs( cal - sol ) * 2. /
-                          ( cal + sol + std::numeric_limits<double>::epsilon() );
-                    double x, y, z;
-                    x = ( iterator->coord() )[0];
-                    y = ( iterator->coord() )[1];
-                    z = ( iterator->coord() )[2];
-                    file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << ","
-                         << err << "}";
-                    if ( iNode < numNodes - 1 )
-                        file << "," << std::endl;
-                    if ( fabs( cal - sol ) > cal * 1e-3 ) {
-                        passes = false;
-                        ut->failure( "Error" );
-                    }
-                    iNode++;
-                }
-
-                if ( rank == nranks - 1 ) {
-                    file << "};" << std::endl;
-                }
-                file.close();
-            }
-        }
-    }
+    auto fun = []( double, double, double z ) {
+        double power = 1.;
+        double c     = -power / 2.;
+        double b     = -10. * power;
+        double a     = 300. + 150. * power;
+        return a + b * z + c * z * z;
+    };
+    bool passes = checkAnalyticalSolution( exeName, fun, iterator, SolutionVec );
     if ( passes )
-        ut->passes( "The linear fick solve is verified." );
+        ut->passes( "The linear fick solve is verified" );
 
     // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );

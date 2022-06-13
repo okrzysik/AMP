@@ -3,7 +3,6 @@
 #include "AMP/IO/HDF5_IO.hpp"
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/Array.h"
-#include "AMP/utils/Array.hpp"
 #include "AMP/utils/Utilities.h"
 
 #include <cstddef>
@@ -598,5 +597,13 @@ std::unique_ptr<HDF5data> readHDF5( hid_t fid, const std::string_view &name )
 
 
 } // namespace AMP
+
+
+    /********************************************************
+     *  Explicit instantiations of Array                     *
+     ********************************************************/
+    #include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( std::shared_ptr<AMP::HDF5data> );
+
 
 #endif

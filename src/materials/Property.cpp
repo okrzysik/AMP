@@ -1,6 +1,5 @@
 #include "AMP/materials/Property.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/utils/Array.hpp"
 #include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
@@ -166,6 +165,7 @@ std::unique_ptr<Property> createProperty( const std::string &key, const Database
 /********************************************************
  *  Explicit instantiations of Array                     *
  ********************************************************/
+#include "AMP/utils/Array.hpp"
 instantiateArrayConstructors( std::vector<double> * );
 instantiateArrayConstructors( AMP::LinearAlgebra::Vector * );
 instantiateArrayConstructors( std::shared_ptr<std::vector<double>> );

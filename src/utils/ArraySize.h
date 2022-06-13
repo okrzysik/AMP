@@ -25,12 +25,12 @@
     #define CONSTEXPR_IF constexpr
 #endif
 #if defined( USING_GCC ) || defined( USING_CLANG )
-    #define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
+    #define ARRAY_INLINE HOST_DEVICE inline __attribute__( ( always_inline ) )
+#elif defined( _MSC_VER )
+    #define ARRAY_INLINE HOST_DEVICE __forceinline
 #else
-    #define ARRAY_ATTRIBUTE HOST_DEVICE
+    #define ARRAY_INLINE HOST_DEVICE inline
 #endif
-
-
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
     #define CHECK_ARRAY_LENGTH( i, length )                              \
         do {                                                             \
@@ -47,6 +47,7 @@
     #include "AMP/utils/UtilityMacros.h"
 DISABLE_WARNINGS
 #endif
+
 
 namespace AMP {
 
@@ -243,16 +244,16 @@ public:
      * Access the ith dimension
      * @param i             Index to access
      */
-    CONSTEXPR ARRAY_ATTRIBUTE size_t operator[]( size_t i ) const { return d_N[i]; }
+    CONSTEXPR size_t operator[]( size_t i ) const { return d_N[i]; }
 
     //! Return the number of dimensions
-    CONSTEXPR ARRAY_ATTRIBUTE uint8_t ndim() const { return d_ndim; }
+    CONSTEXPR uint8_t ndim() const { return d_ndim; }
 
     //! Return the number of dimensions
-    CONSTEXPR ARRAY_ATTRIBUTE size_t size() const { return d_ndim; }
+    CONSTEXPR size_t size() const { return d_ndim; }
 
     //! Return the total number of elements in the array
-    CONSTEXPR ARRAY_ATTRIBUTE size_t length() const { return d_length; }
+    CONSTEXPR size_t length() const { return d_length; }
 
     //! Resize the dimension
     CONSTEXPR void resize( uint8_t dim, size_t N )
@@ -279,36 +280,33 @@ public:
     CONSTEXPR const size_t *end() const { return d_N + d_ndim; }
 
     // Check if two array sizes are equal
-    CONSTEXPR ARRAY_ATTRIBUTE bool operator==( const ArraySize &rhs ) const
+    CONSTEXPR bool operator==( const ArraySize &rhs ) const
     {
         return d_ndim == rhs.d_ndim && d_N[0] == rhs.d_N[0] && d_N[1] == rhs.d_N[1] &&
                d_N[2] == rhs.d_N[2] && d_N[3] == rhs.d_N[3] && d_N[4] == rhs.d_N[4];
     }
 
     // Check if two array sizes are equal (ignoring the dimension)
-    CONSTEXPR ARRAY_ATTRIBUTE bool approxEqual( const ArraySize &rhs ) const
+    CONSTEXPR bool approxEqual( const ArraySize &rhs ) const
     {
         return ( length() == 0 && rhs.length() == 0 ) || memcmp( d_N, rhs.d_N, sizeof( d_N ) ) == 0;
     }
 
     //! Check if two matrices are not equal
-    CONSTEXPR ARRAY_ATTRIBUTE bool operator!=( const ArraySize &rhs ) const
-    {
-        return !operator==( rhs );
-    }
+    CONSTEXPR bool operator!=( const ArraySize &rhs ) const { return !operator==( rhs ); }
 
     //! Maximum supported dimension
-    CONSTEXPR ARRAY_ATTRIBUTE static uint8_t maxDim() { return 5u; }
+    CONSTEXPR static uint8_t maxDim() { return 5u; }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i ) const
+    CONSTEXPR size_t index( size_t i ) const
     {
         CHECK_ARRAY_LENGTH( i, d_length );
         return i;
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2 ) const
     {
         size_t index = i1 + i2 * d_N[0];
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -316,7 +314,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2, size_t i3 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * i3 );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -324,7 +322,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3, size_t i4 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2, size_t i3, size_t i4 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * i4 ) );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -332,8 +330,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t
-    index( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * ( i4 + d_N[3] * i5 ) ) );
         CHECK_ARRAY_LENGTH( index, d_length );

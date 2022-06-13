@@ -104,7 +104,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
 
-    //   Create the Mesh.
+    // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
@@ -122,19 +122,21 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-    //  CREATE THE NEUTRONICS SOURCE  //
+    // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
     auto neutronicsParams =
         std::make_shared<AMP::Operator::NeutronicsRhsParameters>( neutronicsOp_db );
     auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
-    auto SpecificPowerVar   = neutronicsOperator->getOutputVariable();
+
+    auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
     auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
+
+    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //  Integrate Nuclear Source over Desnity * Volume //
+    // Integrate Nuclear Source over Desnity * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
@@ -149,7 +151,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
-    //   CREATE THE THERMAL BVP OPERATOR  //
+    // CREATE THE THERMAL BVP OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(
         meshAdapter, "DiffusionBVPOperator", input_db, transportModel );
@@ -166,13 +168,12 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
 
     RightHandSideVec->setToScalar( 0.0 );
 
-    //   Add the boundary conditions corrections //
+    // Add the boundary conditions corrections
     auto boundaryOpCorrectionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
-    auto boundaryOp = diffusionOperator->getBoundaryOperator();
 
-    std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp )
-        ->addRHScorrection( boundaryOpCorrectionVec );
+    auto boundaryOp = diffusionOperator->getBoundaryOperator();
+    boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
@@ -218,6 +219,8 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
 
         ut->failure( solver_combo_name + " does not solve a linear thermal problem with a nuclear "
                                          "source term." );
+    } else {
+        ut->passes( inputFileName );
     }
 
     // Plot the results
@@ -229,11 +232,6 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
-
-    if ( N_error0 == ut->NumFailLocal() )
-        ut->passes( inputFileName );
-    else
-        ut->failure( inputFileName );
 }
 
 
