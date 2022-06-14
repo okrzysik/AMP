@@ -195,7 +195,7 @@ public:
     {
         if ( ndim >= 0 )
             d_ndim = ndim;
-        ARRAY_INSIST( d_ndim > maxDim(), "Maximum number of dimensions exceeded" );
+        ARRAY_INSIST( d_ndim <= maxDim(), "Maximum number of dimensions exceeded" );
         auto it = N.begin();
         for ( size_t i = 0; i < d_ndim; i++, ++it )
             d_N[i] = *it;
@@ -215,7 +215,7 @@ public:
     CONSTEXPR ArraySize( size_t ndim, const size_t *dims )
         : d_ndim( ndim ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
-        ARRAY_INSIST( d_ndim > maxDim(), "Maximum number of dimensions exceeded" );
+        ARRAY_INSIST( d_ndim <= maxDim(), "Maximum number of dimensions exceeded" );
         for ( size_t i = 0; i < ndim; i++ )
             d_N[i] = dims[i];
         d_length = 1;
@@ -258,7 +258,7 @@ public:
     //! Resize the dimension
     CONSTEXPR void resize( uint8_t dim, size_t N )
     {
-        ARRAY_INSIST( dim >= d_ndim, "Invalid dimension" );
+        ARRAY_INSIST( dim < d_ndim, "Invalid dimension" );
         d_N[dim] = N;
         d_length = 1;
         for ( unsigned long i : d_N )
@@ -400,7 +400,7 @@ private:
 // Function to concatenate dimensions of two array sizes
 CONSTEXPR ArraySize cat( const ArraySize &x, const ArraySize &y )
 {
-    ARRAY_INSIST( x.ndim() + y.ndim() > ArraySize::maxDim(),
+    ARRAY_INSIST( x.ndim() + y.ndim() <= ArraySize::maxDim(),
                   "Maximum number of dimensions exceeded" );
     size_t N[ArraySize::maxDim()] = { 0 };
     for ( int i = 0; i < x.ndim(); i++ )
