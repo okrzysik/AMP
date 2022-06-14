@@ -363,7 +363,7 @@ public: // Views/copies/subset
      * Resize the Array
      * @param N             Number of elements
      */
-    ARRAY_INLINE void resize( size_t N ) { resize( ArraySize( N ) ); }
+    inline void resize( size_t N ) { resize( ArraySize( N ) ); }
 
 
     /*!
@@ -371,7 +371,7 @@ public: // Views/copies/subset
      * @param N_row         Number of rows
      * @param N_col         Number of columns
      */
-    ARRAY_INLINE void resize( size_t N_row, size_t N_col ) { resize( ArraySize( N_row, N_col ) ); }
+    inline void resize( size_t N_row, size_t N_col ) { resize( ArraySize( N_row, N_col ) ); }
 
     /*!
      * Resize the Array
@@ -379,7 +379,7 @@ public: // Views/copies/subset
      * @param N2            Number of columns
      * @param N3            Number of elements in the third dimension
      */
-    ARRAY_INLINE void resize( size_t N1, size_t N2, size_t N3 )
+    inline void resize( size_t N1, size_t N2, size_t N3 )
     {
         resize( ArraySize( N1, N2, N3 ) );
     }
