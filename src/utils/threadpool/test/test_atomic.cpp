@@ -35,7 +35,7 @@ static void modify_counter( int N, std::atomic_int64_t &counter )
 /******************************************************************
  * The main program                                                *
  ******************************************************************/
-int main( int argc, char *argv[] )
+int main( int, char *[] )
 {
     AMP::UnitTest ut;
 

@@ -293,7 +293,7 @@ static int runParallel( const std::vector<int> &x, LIST &list, int N_threads )
 /******************************************************************
  * The main program                                                *
  ******************************************************************/
-int main( int argc, char *argv[] )
+int main( int, char *[] )
 {
     AMP::UnitTest ut;
 

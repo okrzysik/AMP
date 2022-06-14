@@ -797,6 +797,7 @@ void registerDatabaseMaterial( AMP::UnitTest &ut )
     AMP::Materials::registerMaterial( "databaseMaterial", fun );
     // Run some basic checks
     auto mat = AMP::Materials::getMaterial( "databaseMaterial" );
+    NULL_USE( ut );
 }
 
 

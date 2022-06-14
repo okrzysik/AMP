@@ -1,6 +1,7 @@
 #include "AMP/utils/threadpool/ThreadHelpers.h"
 
 #include <climits>
+#include <stdexcept>
 #include <thread>
 
 
