@@ -1,4 +1,3 @@
-#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/threadpool/AtomicList.h"
@@ -14,6 +13,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+
 
 using namespace AMP;
 
@@ -295,8 +295,7 @@ static int runParallel( const std::vector<int> &x, LIST &list, int N_threads )
  ******************************************************************/
 int main( int argc, char *argv[] )
 {
-    AMP::AMPManager::startup( argc, argv );
-    UnitTest ut;
+    AMP::UnitTest ut;
 
     const int N_threads = 8;
 
@@ -407,6 +406,5 @@ int main( int argc, char *argv[] )
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMPManager::shutdown();
     return N_errors;
 }

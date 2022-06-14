@@ -6,6 +6,7 @@
 #include "ProfilerApp.h"
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <limits>
 
