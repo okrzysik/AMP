@@ -8,7 +8,6 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/FactoryStrategy.hpp"
-#include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -270,8 +269,6 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     if ( abort_stackType == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     StackTrace::setDefaultStackType( static_cast<StackTrace::printStackType>( abort_stackType ) );
-    // Initialize the random number generator
-    AMP::RNG::initialize( 123 );
     // Initialize cuda
     start_CUDA();
     // Initialize Kokkos

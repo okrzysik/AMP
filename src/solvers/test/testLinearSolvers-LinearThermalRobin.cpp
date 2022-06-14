@@ -93,7 +93,6 @@ void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
     // Input and output file names
     std::string input_file = inputFileName;
     std::string log_file   = "output_" + inputFileName;
-    size_t N_error0        = ut->NumFailLocal();
 
     AMP::pout << "Running linearThermalTest with input " << input_file << std::endl;
 

@@ -114,13 +114,6 @@ void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 }
 
 template<typename TYPE>
-void VectorOperationsCuda<TYPE>::setRandomValues( std::shared_ptr<RNG> rng, VectorData &x )
-{
-    // Default to VectorOperationsDefault (on cpu)
-    getDefaultOps()->setRandomValues( rng, x );
-}
-
-template<typename TYPE>
 void VectorOperationsCuda<TYPE>::copy( const VectorData &x, VectorData &y )
 {
     if ( checkData( x, y ) ) {

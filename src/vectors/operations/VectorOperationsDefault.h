@@ -33,7 +33,6 @@ public:
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
     void setRandomValues( VectorData &x ) override;
-    void setRandomValues( std::shared_ptr<RNG> rng, VectorData &x ) override;
     void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
     void scale( const Scalar &alpha, VectorData &x ) override;
     void add( const VectorData &x, const VectorData &y, VectorData &z ) override;

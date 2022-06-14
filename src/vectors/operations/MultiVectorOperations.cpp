@@ -67,13 +67,6 @@ void MultiVectorOperations::setRandomValues( VectorData &x )
     }
 }
 
-void MultiVectorOperations::setRandomValues( std::shared_ptr<RNG> rng, VectorData &x )
-{
-    for ( size_t i = 0; i != d_operations.size(); i++ ) {
-        d_operations[i]->setRandomValues( rng, *getVectorDataComponent( x, i ) );
-    }
-}
-
 void MultiVectorOperations::copy( const VectorData &x, VectorData &y )
 {
     // Check if both x and y are MultVectorData objects (of the same size)
