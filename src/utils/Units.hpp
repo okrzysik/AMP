@@ -462,6 +462,8 @@ constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
     // Check special units/characters
     if ( str == "percent" || str == "%" )
         return create( UnitType::unitless, 0.01 );
+    if ( str == "angstrom" )
+        return create( UnitType::length, 1e-10 );
     // No success
     SI_type u = { 0 };
     double s  = 0;
@@ -585,7 +587,10 @@ constexpr double Units::convert( const Units &rhs ) const
 {
     constexpr SI_type energy      = { -2, 2, 1, 0, 0, 0, 0, 0 };
     constexpr SI_type temperature = { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
-    if ( d_SI == rhs.d_SI ) {
+    if ( d_scale == 0 && rhs.d_scale == 0 ) {
+        // No units for both sides
+        return 1.0;
+    } else if ( d_SI == rhs.d_SI ) {
         // The SI units match
         return d_scale / rhs.d_scale;
     } else if ( d_SI == energy && rhs.d_SI == temperature ) {

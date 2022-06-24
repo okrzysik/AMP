@@ -3,6 +3,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -39,7 +40,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Construct Variables
     auto Variable1 = std::make_shared<AMP::LinearAlgebra::Variable>( "Var1" );

@@ -1,11 +1,12 @@
 #include "AMP/utils/kdtree.h"
-#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/kdtree2.h"
 
 #include "ProfilerApp.h"
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <limits>
 

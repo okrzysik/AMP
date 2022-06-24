@@ -24,7 +24,7 @@ SourcePhysicsModel::SourcePhysicsModel( std::shared_ptr<const SourcePhysicsModel
     if ( d_useMaterialsLibrary == true ) {
         AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
         std::string matname = params->d_db->getString( "Material" );
-        d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+        d_material          = AMP::Materials::getMaterial( matname );
     } else {
         // Read constant value for the associated property.
         d_constantProperty = params->d_db->getWithDefault<double>( "CONSTANT_VALUE", 1.0 );

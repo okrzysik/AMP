@@ -1,20 +1,28 @@
-#ifndef included_AMP_OperatorFactory_H_
-#define included_AMP_OperatorFactory_H_
-
-/* AMP files */
+#ifndef included_AMP_Operator_OperatorFactory
+#define included_AMP_Operator_OperatorFactory
 
 #include "AMP/utils/FactoryStrategy.hpp"
+
+#include <memory>
+
 
 namespace AMP::Operator {
 
 class Operator;
 class OperatorParameters;
 
-using OperatorFactory = FactoryStrategy<Operator, OperatorParameters>;
 
-// free function to preregister operators known by AMP
-// none at present
+//! Operator factory class
+class OperatorFactory : public FactoryStrategy<Operator, std::shared_ptr<OperatorParameters>>
+{
+public:
+    static std::unique_ptr<Operator> create( std::shared_ptr<OperatorParameters> parameters );
+};
+
+
+//! Register operators known by AMP
 void registerOperatorFactories();
+
 
 } // namespace AMP::Operator
 

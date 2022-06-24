@@ -6,6 +6,7 @@
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BlockOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -59,7 +60,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager        = AMP::Mesh::Mesh::buildMesh( params );
+    auto manager        = AMP::Mesh::MeshFactory::create( params );
     auto meshAdapterH27 = manager->Subset( "cubeH27" );
     auto meshAdapterH08 = manager->Subset( "cubeH08" );
 

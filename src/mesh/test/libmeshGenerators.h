@@ -120,7 +120,7 @@ public:
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create the mesh
-        mesh = AMP::Mesh::Mesh::buildMesh( params );
+        mesh = AMP::Mesh::MeshFactory::create( params );
     }
     static std::string name() { return "MultiMeshGenerator"; }
 };

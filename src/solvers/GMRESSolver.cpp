@@ -115,15 +115,20 @@ void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // residual vector
     AMP::LinearAlgebra::Vector::shared_ptr res = f->cloneVector();
 
-    // compute the initial residual
-    if ( d_bUseZeroInitialGuess ) {
-        res->copyVector( f );
-        u->setToScalar( 0.0 );
-    } else {
-        d_pOperator->residual( f, u, res );
+    // z is only used if there is preconditioning
+    AMP::LinearAlgebra::Vector::shared_ptr z;
+    // z1 is only used if there is right preconditioning
+    AMP::LinearAlgebra::Vector::shared_ptr z1;
+
+    if ( d_bUsesPreconditioner ) {
+        z = f->cloneVector();
+        if ( d_preconditioner_side == "right" ) {
+            z1 = f->cloneVector();
+        }
     }
 
-    d_nr = -1;
+    // compute the initial residual
+    computeInitialResidual( d_bUseZeroInitialGuess, f, u, z, res );
 
     // compute the current residual norm
     const double beta = static_cast<double>( res->L2Norm() );
@@ -154,26 +159,36 @@ void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     auto v_norm = beta;
 
-    // z is only used if there is preconditioning
-    AMP::LinearAlgebra::Vector::shared_ptr z;
-
-    for ( int k = 0; ( k < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++k ) {
-
-        // clone off of the rhs to create a new basis vector
-        AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
-        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-            z = f->cloneVector();
-            d_pPreconditioner->apply( d_vBasis[k], z );
+    int k = 0;
+    for ( int iter = 0; ( iter < d_iMaxIterations ) && ( v_norm > terminate_tol ); ++iter ) {
+        AMP::LinearAlgebra::Vector::shared_ptr v;
+        if ( k + 1 < static_cast<int>( d_vBasis.size() ) ) {
+            // reuse basis vectors for restarts
+            v = d_vBasis[k + 1];
         } else {
-            z = d_vBasis[k];
+            // clone off of the rhs to create a new basis vector
+            v = f->cloneVector();
+            d_vBasis.push_back( v );
         }
 
-        // construct the Krylov vector
-        d_pOperator->apply( z, v );
+        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
+            d_pOperator->apply( d_vBasis[k], z );
+            // construct the Krylov vector
+            d_pPreconditioner->apply( z, v );
+        } else {
+            if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+                d_pPreconditioner->apply( d_vBasis[k], z );
+            } else {
+                z = d_vBasis[k];
+            }
+
+            // construct the Krylov vector
+            d_pOperator->apply( z, v );
+        }
 
         // orthogonalize to previous vectors and
         // add new column to Hessenberg matrix
-        orthogonalize( v );
+        orthogonalize( k + 1, v );
 
         v_norm = d_dHessenberg( k + 1, k );
         // replace the conditional by a soft equality
@@ -182,9 +197,6 @@ void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             v->scale( 1.0 / v_norm );
             v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         }
-
-        // update basis with new orthonormal vector
-        d_vBasis.push_back( v );
 
         // apply all previous Givens rotations to
         // the k-th column of the Hessenberg matrix
@@ -203,50 +215,52 @@ void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             // explicitly apply the newly computed
             // Givens rotations to the rhs vector
             auto x = d_dw[k];
-            auto y = d_dw[k + 1];
             auto c = d_dcos[k];
             auto s = d_dsin[k];
 #if 0
-            d_dw[k]     = c * x - s * y;
-            d_dw[k + 1] = s * x + c * y;
+            d_dw[k]     = c * x;
+            d_dw[k + 1] = s * x;
 #else
-            d_dw[k]     = c * x + s * y;
-            d_dw[k + 1] = -s * x + c * y;
+            d_dw[k]     = c * x;
+            d_dw[k + 1] = -s * x;
 #endif
         }
 
         v_norm = std::fabs( d_dw[k + 1] );
 
         if ( d_iDebugPrintInfoLevel > 0 ) {
-            std::cout << "GMRES: iteration " << ( k + 1 ) << ", residual " << v_norm << std::endl;
+            std::cout << "GMRES: iteration " << ( iter + 1 ) << ", residual " << v_norm
+                      << std::endl;
         }
 
-        ++d_nr; // update the dimension of the upper triangular system to solve
-    }
-
-    // compute y, the solution to the least squares minimization problem
-    backwardSolve();
-
-    // update the current approximation with the correction
-    if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
-
-        z->setToScalar( 0.0 );
-
-        for ( int i = 0; i <= d_nr; ++i ) {
-            z->axpy( d_dy[i], *d_vBasis[i], *z );
-        }
-
-        AMP::LinearAlgebra::Vector::shared_ptr v = f->cloneVector();
-        d_pPreconditioner->apply( z, v );
-        u->axpy( 1.0, *v, *u );
-
-    } else {
-        for ( int i = 0; i <= d_nr; ++i ) {
-            u->axpy( d_dy[i], *d_vBasis[i], *u );
+        ++k;
+        if ( ( k == d_iMaxKrylovDimension ) && ( iter != d_iMaxIterations - 1 ) ) {
+            if ( d_bRestart ) {
+                if ( d_iDebugPrintInfoLevel > 2 ) {
+                    std::cout << "GMRES: restarting" << std::endl;
+                }
+                // compute y, the solution to the least squares minimization problem
+                backwardSolve( k - 1 );
+                // update the current approximation with the correction
+                addCorrection( k - 1, z, z1, u );
+                computeInitialResidual( false, f, u, z, d_vBasis[0] );
+                v_norm = static_cast<double>( d_vBasis[0]->L2Norm() );
+                d_vBasis[0]->scale( 1.0 / v_norm );
+                d_dw[0] = v_norm;
+                ++d_restarts;
+                k = 0;
+            } else
+                break;
         }
     }
-    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
+    if ( k > 0 ) {
+        // compute y, the solution to the least squares minimization problem
+        backwardSolve( k - 1 );
+
+        // update the current approximation with the correction
+        addCorrection( k - 1, z, z1, u );
+    }
     if ( d_iDebugPrintInfoLevel > 2 ) {
         d_pOperator->residual( f, u, res );
         std::cout << "GMRES: Final residual: " << res->L2Norm() << std::endl;
@@ -256,10 +270,8 @@ void GMRESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE_STOP( "solve" );
 }
 
-void GMRESSolver::orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v )
+void GMRESSolver::orthogonalize( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v )
 {
-    const int k = d_vBasis.size();
-
     if ( d_sOrthogonalizationMethod == "CGS" ) {
 
         AMP_ERROR( "Classical Gram-Schmidt not implemented as yet" );
@@ -333,17 +345,17 @@ void GMRESSolver::computeGivensRotation( const int k )
     d_dsin[k] = s;
 }
 
-void GMRESSolver::backwardSolve()
+void GMRESSolver::backwardSolve( const int nr )
 {
     // lower corner
-    d_dy[d_nr] = d_dw[d_nr] / d_dHessenberg( d_nr, d_nr );
+    d_dy[nr] = d_dw[nr] / d_dHessenberg( nr, nr );
 
     // backwards solve
-    for ( int k = d_nr - 1; k >= 0; --k ) {
+    for ( int k = nr - 1; k >= 0; --k ) {
 
         d_dy[k] = d_dw[k];
 
-        for ( int i = k + 1; i <= d_nr; ++i ) {
+        for ( int i = k + 1; i <= nr; ++i ) {
             d_dy[k] -= d_dHessenberg( k, i ) * d_dy[i];
         }
 
@@ -372,5 +384,53 @@ void GMRESSolver::resetOperator( std::shared_ptr<const AMP::Operator::OperatorPa
     if ( d_pPreconditioner ) {
         d_pPreconditioner->resetOperator( params );
     }
+}
+
+void GMRESSolver::computeInitialResidual( bool use_zero_guess,
+                                          std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                          std::shared_ptr<AMP::LinearAlgebra::Vector> u,
+                                          std::shared_ptr<AMP::LinearAlgebra::Vector> tmp,
+                                          std::shared_ptr<AMP::LinearAlgebra::Vector> res )
+{
+    if ( use_zero_guess ) {
+        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
+            tmp->copyVector( f );
+            d_pPreconditioner->apply( tmp, res );
+        } else {
+            res->copyVector( f );
+        }
+        u->setToScalar( 0.0 );
+    } else {
+        if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
+            d_pOperator->residual( f, u, tmp );
+            d_pPreconditioner->apply( tmp, res );
+        } else {
+            d_pOperator->residual( f, u, res );
+        }
+    }
+}
+
+void GMRESSolver::addCorrection( const int nr,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> z,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> z1,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> u )
+{
+    if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+
+        z->setToScalar( 0.0 );
+
+        for ( int i = 0; i <= nr; ++i ) {
+            z->axpy( d_dy[i], *d_vBasis[i], *z );
+        }
+
+        d_pPreconditioner->apply( z, z1 );
+        u->axpy( 1.0, *z1, *u );
+
+    } else {
+        for ( int i = 0; i <= nr; ++i ) {
+            u->axpy( d_dy[i], *d_vBasis[i], *u );
+        }
+    }
+    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 } // namespace AMP::Solver

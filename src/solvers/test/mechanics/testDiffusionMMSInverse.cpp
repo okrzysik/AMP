@@ -3,6 +3,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -59,7 +60,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
     // Create nonlinear diffusion BVP operator and access volume nonlinear Diffusion operator
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> nonlinearPhysicsModel;

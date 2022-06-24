@@ -1,9 +1,8 @@
 #include "AMP/utils/Array.h"
-#include "AMP/utils/Array.hpp"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Database.hpp"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
-
 
 #include <cmath>
 #include <complex>
@@ -201,6 +200,99 @@ bool KeyDataArray<TYPE>::operator==( const KeyData &rhs ) const
 
 
 /********************************************************************
+ * EquationKeyData                                                   *
+ ********************************************************************/
+EquationKeyData::EquationKeyData( std::string_view eq, const Units &unit ) : KeyData( unit )
+{
+    eq = deblank( eq );
+    AMP_ASSERT( eq.size() > 4 );
+    size_t i = eq.find( ')' );
+    if ( eq[0] != '@' || eq[1] != '(' || eq.back() != ';' || i == std::string::npos )
+        AMP_ERROR( "Equation appears invalid: " + std::string( eq ) );
+    auto eq_var   = deblank( eq.substr( 2, i - 2 ) );
+    auto equation = std::string( deblank( eq.substr( i + 1, eq.size() - i - 2 ) ) );
+    std::vector<std::string> vars;
+    if ( !eq_var.empty() ) {
+        for ( size_t i = 0; i < eq_var.size(); ) {
+            size_t j = std::min( eq_var.find( ',' ), eq_var.size() );
+            vars.emplace_back( deblank( eq_var.substr( i, j - i ) ) );
+            i = j + 1;
+        }
+    }
+    d_eq = std::make_shared<MathExpr>( equation, vars );
+}
+EquationKeyData::EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit )
+    : KeyData( unit ), d_eq( eq )
+{
+}
+std::unique_ptr<KeyData> EquationKeyData::clone() const
+{
+    return std::make_unique<EquationKeyData>( d_eq, d_unit );
+}
+void EquationKeyData::print( std::ostream &os, std::string_view indent, bool, bool printType ) const
+{
+    os << indent << "@(";
+    if ( d_eq ) {
+        auto vars = d_eq->getVars();
+        auto expr = d_eq->getExpr();
+        if ( !vars.empty() ) {
+            os << vars[0];
+            for ( size_t i = 1; i < vars.size(); i++ )
+                os << "," << vars[i];
+        }
+        os << ") " << expr << ";";
+    }
+    if ( printType )
+        os << "  // " << getDataType().name;
+    os << std::endl;
+}
+typeID EquationKeyData::getDataType() const { return AMP::getTypeID<MathExpr>(); }
+bool EquationKeyData::is_floating_point() const { return d_eq->getVars().empty(); }
+bool EquationKeyData::is_integral() const
+{
+    if ( d_eq->getVars().empty() ) {
+        double v = ( *d_eq )();
+        if ( static_cast<double>( static_cast<int64_t>( v ) ) == v )
+            return true;
+    }
+    return false;
+}
+ArraySize EquationKeyData::arraySize() const
+{
+    return d_eq->getVars().empty() ? ArraySize() : ArraySize( 1 );
+}
+Array<double> EquationKeyData::convertToDouble() const
+{
+    if ( d_eq->getVars().empty() ) {
+        double v = ( *d_eq )();
+        return Array<double>( { 1 }, &v );
+    }
+    return Array<double>();
+}
+Array<int64_t> EquationKeyData::convertToInt64() const
+{
+    if ( d_eq->getVars().empty() ) {
+        double v   = ( *d_eq )();
+        int64_t v2 = v;
+        if ( v2 == v )
+            return Array<int64_t>( { 1 }, &v2 );
+    }
+    return Array<int64_t>();
+}
+bool EquationKeyData::operator==( const KeyData &rhs ) const
+{
+    auto rhs2 = dynamic_cast<const EquationKeyData *>( &rhs );
+    if ( rhs2 == nullptr )
+        return false;
+    if ( d_eq == rhs2->d_eq )
+        return true;
+    if ( !d_eq || !rhs2->d_eq )
+        return false;
+    return *d_eq == *rhs2->d_eq;
+}
+
+
+/********************************************************************
  * DatabaseBox                                                       *
  ********************************************************************/
 DatabaseBox::DatabaseBox() : d_dim( 0 )
@@ -218,7 +310,7 @@ DatabaseBox::DatabaseBox( int dim, const int *lower, const int *upper ) : d_dim(
         d_upper[d] = upper[d];
     }
 }
-DatabaseBox::DatabaseBox( const std::string_view &str ) : d_dim( 0 )
+DatabaseBox::DatabaseBox( std::string_view str ) : d_dim( 0 )
 {
     d_lower.fill( 0 );
     d_upper.fill( 0 );
@@ -349,35 +441,28 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     template void scaleData<TYPE>( Array<TYPE> & data, double factor )
 #define instantiateKeyDataScalar( TYPE ) template class KeyDataScalar<TYPE>
 #define instantiateKeyDataArray( TYPE ) template class KeyDataArray<TYPE>
-#define instantiateIsType( TYPE ) \
-    template bool Database::isType<TYPE>( const std::string_view & ) const
-#define instantiatePutScalar( TYPE )         \
-    template void Database::putScalar<TYPE>( \
-        const std::string_view &, TYPE, Units, Database::Check )
+#define instantiateIsType( TYPE ) template bool Database::isType<TYPE>( std::string_view ) const
+#define instantiatePutScalar( TYPE ) \
+    template void Database::putScalar<TYPE>( std::string_view, TYPE, Units, Database::Check )
 #define instantiateGetScalar( TYPE ) \
-    template TYPE Database::getScalar<TYPE>( const std::string_view &, const Units & ) const
+    template TYPE Database::getScalar<TYPE>( std::string_view, const Units & ) const
 #define instantiateGetArray( TYPE ) \
-    template Array<TYPE> Database::getArray( const std::string_view &, const Units & ) const
+    template Array<TYPE> Database::getArray( std::string_view, const Units & ) const
 #define instantiateGetVector( TYPE ) \
-    template std::vector<TYPE> Database::getVector( const std::string_view &, const Units & ) const
+    template std::vector<TYPE> Database::getVector( std::string_view, const Units & ) const
 #define instantiatePutVector( TYPE )         \
     template void Database::putVector<TYPE>( \
-        const std::string_view &, const std::vector<TYPE> &, Units, Database::Check )
-#define instantiatePutArray( TYPE )         \
-    template void Database::putArray<TYPE>( \
-        const std::string_view &, Array<TYPE>, Units, Database::Check )
-#define instantiateGetWithDefault( TYPE )                                                     \
-    template TYPE Database::getWithDefault<TYPE>( const std::string_view &,                   \
-                                                  Database::IdentityType<TYPE const &>::type, \
-                                                  const Units & ) const;                      \
-    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                   \
-        const std::string_view &,                                                             \
-        Database::IdentityType<std::vector<TYPE> const &>::type,                              \
-        const Units & ) const;                                                                \
-    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                               \
-        const std::string_view &,                                                             \
-        Database::IdentityType<Array<TYPE> const &>::type,                                    \
-        const Units & ) const
+        std::string_view, const std::vector<TYPE> &, Units, Database::Check )
+#define instantiatePutArray( TYPE ) \
+    template void Database::putArray<TYPE>( std::string_view, Array<TYPE>, Units, Database::Check )
+#define instantiateGetWithDefault( TYPE )                                                          \
+    template TYPE Database::getWithDefault<TYPE>(                                                  \
+        std::string_view, Database::IdentityType<TYPE const &>::type, const Units & ) const;       \
+    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                        \
+        std::string_view, Database::IdentityType<std::vector<TYPE> const &>::type, const Units & ) \
+        const;                                                                                     \
+    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                                    \
+        std::string_view, Database::IdentityType<Array<TYPE> const &>::type, const Units & ) const
 instantiate( instantiateConvert );        // convert
 instantiate( instantiateScaleData );      // scaleData
 instantiate( instantiateKeyDataScalar );  // KeyDataScalar
@@ -391,13 +476,14 @@ instantiate( instantiatePutVector );      // Database::putVector
 instantiate( instantiatePutArray );       // Database::putArray
 instantiate( instantiateGetWithDefault ); // Database::getWithDefault
 template void
-Database::putScalar<const char *>( const std::string_view &, const char *, Units, Database::Check );
+Database::putScalar<const char *>( std::string_view, const char *, Units, Database::Check );
+
+
+} // namespace AMP
 
 
 /********************************************************
  *  Explicit instantiations of Array<DatabaseBox>        *
  ********************************************************/
-instantiateArrayConstructors( DatabaseBox );
-
-
-} // namespace AMP
+#include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( AMP::DatabaseBox );

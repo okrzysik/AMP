@@ -2,6 +2,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
@@ -34,7 +35,7 @@ static void testSubchannelHelpers( AMP::UnitTest *ut, std::string input_file )
     meshParams->setComm( globalComm );
 
     // Get the meshes and clad properties
-    auto manager        = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto manager        = AMP::Mesh::MeshFactory::create( meshParams );
     auto cladMesh       = manager->Subset( "clad" );
     auto subchannelMesh = manager->Subset( "subchannel" );
     std::vector<double> clad_x, clad_y, clad_d;

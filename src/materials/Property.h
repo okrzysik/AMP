@@ -1,6 +1,9 @@
 #ifndef included_AMP_Property
 #define included_AMP_Property
 
+#include "AMP/utils/ArraySize.h"
+#include "AMP/utils/Database.h"
+#include "AMP/utils/Units.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #include <algorithm>
@@ -9,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 
@@ -32,12 +36,10 @@ namespace AMP::Materials {
  * and a name.
  */
 
+
 /**
  * \class          Property
  * \brief          Provides material properties of scalar type.
- *
- * A Property class may provide only one of eval(), evalVector() or evalTensor(). It can not
- * provide both scalar and tensor
  */
 class Property
 {
@@ -48,62 +50,40 @@ public:
      * \param source    literature reference for model and notes
      * \param params    default parameter values
      * \param args      names of arguments
-     * \param ranges    ranges of arguments
+     * \param units     Optional units for each argument
      */
     Property( std::string name,
+              const ArraySize &size                     = { 1 },
+              const Units &unit                         = Units(),
               std::string source                        = "None",
-              std::vector<double> params                = std::vector<double>(),
-              std::vector<std::string> args             = std::vector<std::string>(),
-              std::vector<std::array<double, 2>> ranges = std::vector<std::array<double, 2>>() );
+              std::vector<std::string> args             = {},
+              std::vector<std::array<double, 2>> ranges = {},
+              std::vector<Units> argUnits               = {} );
 
-    /**
-     * Destructor
-     */
+    //! Destructor
     virtual ~Property() {}
 
-    /** return name of property */
-    inline std::string get_name() { return d_name; }
+    //! get dimensions of evalv return value
+    inline ArraySize size() const { return d_dim; }
 
-    /** return source reference */
-    inline std::string get_source() { return d_source; }
+    //! Return name of property
+    inline const std::string &get_name() const { return d_name; }
 
-    /** return property parameters */
-    inline const std::vector<double> &get_parameters() const { return d_params; }
+    inline const std::string &get_source() const { return d_source; }
 
-    /**
-     * \brief		   set the property parameters
-     * \param[in]	   params the new parameters
-     * \param[in]	   nparams the number of new parameters
-     */
-    inline void set_parameters( std::vector<double> params )
-    {
-        AMP_INSIST( d_params.size() == params.size(),
-                    "new parameters must be same in number as old" );
-        d_params = std::move( params );
-    }
+    //! Return source reference
+    inline const Units &get_units() const { return d_units; }
 
-    /**
-     * \brief          changing number of parameters allowed
-     */
-    inline bool variable_number_parameters() { return d_variableNumberParameters; }
-
-    /**
-     * \brief		   set the property parameters
-     * \param[in]	   params the new parameters
-     * \param[in]	   nparams the number of new parameters
-     */
-    virtual void set_parameters_and_number( std::vector<double> params );
-
-    /** return the names of the arguments to eval */
+    //! Return the names of the arguments to eval
     inline const std::vector<std::string> &get_arguments() const { return d_arguments; }
 
-    /** return the number of arguments to eval */
-    inline unsigned int get_number_arguments() { return d_arguments.size(); }
+    //! Return the number of arguments to eval
+    inline size_t get_number_arguments() const { return d_arguments.size(); }
 
-    /** get the defaults */
-    inline const std::vector<double> &get_defaults() { return d_defaults; }
+    //! Get the defaults
+    inline const std::vector<double> &get_defaults() const { return d_defaults; }
 
-    /** set the defaults */
+    //! Set the defaults
     inline void set_defaults( std::vector<double> defaults )
     {
         AMP_INSIST( defaults.size() == d_arguments.size(),
@@ -111,150 +91,258 @@ public:
         d_defaults = defaults;
     }
 
-    //! get ranges for all arguments used in this material
-    virtual std::vector<std::array<double, 2>> get_arg_ranges() { return d_ranges; }
+    //! Determine if a string is an argument
+    bool is_argument( const std::string &argname ) const;
 
-    //! determine if a string is an argument
-    inline bool is_argument( const std::string &argname )
-    {
-        std::map<std::string, size_t>::iterator it = d_argToIndexMap.find( argname );
-        if ( it == d_argToIndexMap.end() )
-            return false;
-        return true;
-    }
+    //! Indicator for scalar evaluator
+    bool isScalar() const { return d_dim.length() == 1; }
 
-    //! get range for a specific argument
-    virtual std::array<double, 2> get_arg_range( const std::string &argname );
+    //! Indicator for vector evaluator
+    bool isVector() const { return d_dim.ndim() == 1; }
 
-    //! determine if a value is within range or not
-    inline bool in_range( const std::string &argname, const double value );
+    //! Indicator for tensor evaluator
+    bool isTensor() const { return d_dim.ndim() == 2; }
 
-    //! determine if a set of values are all within range or not
-    template<class INPUT_VTYPE>
-    inline bool in_range( const std::string &argname, const INPUT_VTYPE &values );
-
-    //! determine if a set of sets of values are all within range or not
-    template<class INPUT_VTYPE>
-    inline bool in_range( const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &values );
-
-    //! set the translation table between property arguments and AMP::Multivector entries
-    void set_translator( const std::map<std::string, std::string> &xlator );
-
-    //! get the translation table between property arguments and AMP::Multivector entries
-    std::map<std::string, std::string> get_translator() { return d_translator; }
-
-    //! converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
+    // converts AMP::MultiVector to a map of pointers to AMP::Vectors based on argument names
     std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
-    make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+    make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+              const std::map<std::string, std::string> &translator ) const;
 
-    //! indicator for scalar evaluator
-    virtual bool isScalar() { return true; }
 
-    //! indicator for vector evaluator
-    virtual bool isVector() { return false; }
+public: // Functions dealing with the ranges of the arguments
+    //! Get units for all arguments used in this material
+    std::vector<Units> get_arg_units() const { return d_argUnits; }
 
-    //! indicator for tensor evaluator
-    virtual bool isTensor() { return false; }
+    //! Get ranges for all arguments used in this material
+    std::vector<std::array<double, 2>> get_arg_ranges() const { return d_ranges; }
 
-    //! set auxiliary data
-    void setAuxiliaryData( const std::string &key, const double val );
+    //! Get range for a specific argument
+    std::array<double, 2> get_arg_range( const std::string &argname ) const;
 
-    //! set auxiliary data
-    void setAuxiliaryData( const std::string &key, const int val );
+    //! Determine if a value is within range or not
+    inline bool in_range( const std::string &argname,
+                          double value,
+                          Units unit      = Units(),
+                          bool throwError = false ) const;
 
-    //! set auxiliary data
-    void setAuxiliaryData( const std::string &key, const std::string &val );
+    //! Determine if a set of values are all within range or not
+    template<class INPUT_VTYPE>
+    inline bool in_range( const std::string &argname,
+                          const INPUT_VTYPE &values,
+                          Units unit      = Units(),
+                          bool throwError = false ) const;
 
-    //! get auxiliary data
-    void getAuxiliaryData( const std::string &key, double &val );
 
-    //! get auxiliary data
-    void getAuxiliaryData( const std::string &key, int &val );
+    //! Get auxiliary data
+    inline const Database &getAuxiliaryData() const { return d_auxiliaryData; }
 
-    //! get auxiliary data
-    void getAuxiliaryData( const std::string &key, std::string &val );
+    //! Get auxiliary data
+    template<class TYPE>
+    TYPE getAuxiliaryData( const std::string &key ) const;
 
-protected:
-    std::string d_name;                            //!< should be unique
-    std::string d_source;                          //!< reference for source data
-    std::vector<double> d_params;                  //!< parameters
-    std::vector<std::string> d_arguments;          //!< names of the arguments to the eval function
-    std::vector<double> d_defaults;                //!< default values of arguments to eval function
-    bool d_defaultsAreSet;                         //!< indicates defaults have been set
-    std::vector<std::array<double, 2>> d_ranges;   //!< allowed ranges of arguments
-    std::map<std::string, size_t> d_argToIndexMap; //!< connects argument names to their indices
-    std::map<std::string, std::string> d_translator; //!< standard names to multivector names
-    bool d_variableNumberParameters;                 //!< can change number of parameters
+    //! Set auxiliary data
+    template<class TYPE>
+    void setAuxiliaryData( const std::string &key, const TYPE &data );
 
-    std::map<std::string, double> d_AuxiliaryDataDouble;
-    std::map<std::string, int> d_AuxiliaryDataInteger;
-    std::map<std::string, std::string> d_AuxiliaryDataString;
 
-    //!//!//!//!//!//!//! Evaluators //!//!//!//!//!//!//!
-
-private:
-    /* Loops through input vectors, calling the child eval function, returning scalar */
-    template<class INPUT_VTYPE, class RETURN_VTYPE>
-    void evalvActual( RETURN_VTYPE &r,
-                      const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args );
-
-public:
+public: // Evaluators
     /**
-     * scalar evaluation function for a single argument set
-     * \param args list of argument values, in correct order, given by  get_arguments()
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      * \return scalar value of property
      */
-    virtual double eval( const std::vector<double> &args ) = 0;
+    template<class... Args>
+    double eval( const Units &unit = Units(), Args... args ) const;
 
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r vector of return values
-     *  \param args map of vectors of arguments, indexed by strings which are members of
-     * get_arguments()
-     *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  \a r  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    virtual void evalv( std::vector<double> &r,
-                        const std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
+    template<class... Args>
+    void evalv( std::vector<double> &r, const Units &unit, Args... args ) const;
 
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r AMP vector of return values
-     *  \param args map of AMP vectors of arguments, indexed by strings which are members of
-     * get_arguments()
-     *
-     *  The  \a args  parameter need not contain all the members of  get_arguments()  as indices.
-     *  Arguments left out will have values supplied by the entries in  get_defaults() .
-     *  Sizes of  \a r  and \a args["name"] must match. Members of
-     *  \a args  indexed by names other than those in  get_arguments()  are ignored.
-     *  The list {args["name-1"][i], ..., args["name-n"][i]} will be passed to eval() and the k-j-th
-     * result
-     *  returned in (*r[k][j])[i].
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    virtual void
-    evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-           const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args );
+    template<class... Args>
+    void evalv( AMP::LinearAlgebra::Vector &r, Args... args ) const;
 
-    /** Wrapper function that calls evalvActual for each argument set
-     *  \param r AMP vector of return values
-     *  \param args AMP multivector of arguments
-     *
-     *  Before this function is used, a translation table must be assigned by means of the
-     * set_translator() function
-     *  which gives the correspondence between entries in get_arguments() and the \a args
-     * multivector.
-     *  Upon invocation, the \a args parameter is converted to a map of AMP vectors via make_map()
-     * and passed to another
-     * version of evalv.
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
-    virtual void evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                        const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args );
+    template<class... Args>
+    void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
+                const Units &unit,
+                Args... args ) const;
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
+     */
+    template<class... Args>
+    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r, Args... args ) const;
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r            std::vector of return values
+     * \param unit         Units to use for return values
+     * \param args         Optional arguments specifying input arguments to the eval() function
+     */
+    template<class... Args>
+    void evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
+                const Units &unit,
+                Args... args ) const;
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
+     */
+    template<class... Args>
+    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r, Args... args ) const;
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
+     */
+    template<class... Args>
+    void evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, Args... args ) const;
+
+    /**
+     * \brief    Evaluate the property
+     * \details  This function evaluates the property at the desired conditions for multiple points.
+     * \param r         std::vector of return values
+     * \param unit      The desired units of the result.  If this is not specified,
+     *                  the native units of the property are use (see get_units())
+     * \param args      Optional arguments specifying input arguments to the eval() function.
+     *                  In general arguments are of the form:
+     *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
+     */
+    template<class... Args>
+    void evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, Args... args ) const;
+
+
+protected: // Virtual function to override to load the property
+    /**
+     * scalar evaluation function for a single argument set
+     * \param args list of argument values, in correct order, in the correct units, given by
+     *    get_arguments()
+     *  \param result       Output result (N)
+     *  \param args         Input arguments (MxN)
+     * \return scalar value of property
+     */
+    virtual void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const = 0;
+
+
+protected: // Functions to load the arguments
+    // clang-format off
+    void evalArgs( AMP::Array<double>& ) const {}
+    void evalArgs( AMP::Array<double>&, const std::shared_ptr<AMP::LinearAlgebra::MultiVector>&, const std::map<std::string, std::string>& = {} ) const;
+    template<class VEC>
+    void evalArgs( AMP::Array<double>&, const std::map<std::string, VEC>& ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, double, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, double, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const std::vector<double>&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const AMP::LinearAlgebra::Vector&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector&, Args... ) const;
+    template<class VEC, class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const std::shared_ptr<VEC>&, Args... ) const;
+    template<class VEC, class... Args>
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::shared_ptr<VEC>&, Args... ) const;
+    template<class... Args>
+    void evalArgs( AMP::Array<double>&, const std::vector<double> &args, const std::vector<std::string> &names, const std::vector<Units> &argUnits = {} ) const;
+    // clang-format on
+
+
+protected:
+    std::string d_name;                                 //!< should be unique
+    AMP::ArraySize d_dim;                               //!< size of the result
+    AMP::Units d_units;                                 //!< default units to return
+    std::string d_source;                               //!< reference for source data
+    std::vector<std::string> d_arguments;               //!< names of the arguments
+    std::vector<Units> d_argUnits;                      //!< default units for the arguments
+    std::vector<double> d_defaults;                     //!< default values of arguments
+    std::vector<std::array<double, 2>> d_ranges;        //!< allowed ranges of arguments
+    std::map<std::string_view, size_t> d_argToIndexMap; //!< map argument names to indices
+    AMP::Database d_auxiliaryData;                      //!< Database containing auxiliary data
+
+
+protected:
+    Property() = default;
+
+    //! Create the default argument array
+    AMP::Array<double> defaultArgs( size_t ) const;
+
+    //! Check the argument values
+    void checkArgs( const AMP::Array<double> &args ) const;
+
+    // Get the index for the desired argument
+    inline int get_arg_index( const std::string &name ) const
+    {
+        auto it = d_argToIndexMap.find( name );
+        if ( it == d_argToIndexMap.end() )
+            return -1;
+        return it->second;
+    }
 };
+
+
+//! Create a property from a database data
+std::unique_ptr<Property> createProperty( const std::string &key, const Database &db );
 
 
 } // namespace AMP::Materials
 
-#include "Property.i.h"
+#include "AMP/materials/Property.hpp"
 
 #endif

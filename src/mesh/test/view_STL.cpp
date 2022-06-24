@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -37,7 +38,7 @@ int main( int argc, char **argv )
         // Create the mesh
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( db );
         params->setComm( globalComm );
-        auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+        auto mesh = AMP::Mesh::MeshFactory::create( params );
 
         // Create the silo writer and register the data
         auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );

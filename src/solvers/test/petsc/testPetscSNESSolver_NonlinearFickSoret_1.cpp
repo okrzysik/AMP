@@ -1,6 +1,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 
 #include "AMP/IO/PIO.h"
@@ -56,7 +57,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::Mesh::buildMesh( params );
+    auto manager     = AMP::Mesh::MeshFactory::create( params );
     auto meshAdapter = manager->Subset( "cylinder" );
 
     // create a nonlinear BVP operator for nonlinear fick diffusion
@@ -173,7 +174,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::Mesh::buildMesh( params );
+    auto manager     = AMP::Mesh::MeshFactory::create( params );
     auto meshAdapter = manager->Subset( "cylinder" );
 
     // create a nonlinear BVP operator for nonlinear Fick-Soret diffusion

@@ -1,73 +1,48 @@
-/*
- * Dr_nonlinear.h
- *
- *  Created on: June 24, 2010
- *	  Author: bm
- */
-
-#include "AMP/materials/Dr_nonlinear.h"
 #include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 
 #include <string>
 #include <vector>
 
+
 namespace AMP::Materials {
 
-namespace Dr_nonlinear_NS {
 
-//=================== Constants =====================================================
-
-
-static const double TminVal = 299.9;
-static const double TmaxVal =
-    1E6; // DEBUG: This value was not provided, but is needed for ranges - set arbitrarily high
-static const double uminVal = 0.0;
-static const double umaxVal =
-    1E6; // DEBUG: This value was not provided, but is needed for ranges - set arbitrarily high
-
-//=================== Classes =======================================================
-
-class FickCoefficientProp : public Property
+class Dr_nonlinear_FickCoefficientProp : public Property
 {
 public:
-    FickCoefficientProp()
-        : Property( "Dr_nonlinear_FickCoefficient", // Name string
+    Dr_nonlinear_FickCoefficientProp()
+        : Property( "Dr_nonlinear_FickCoefficient",
+                    { 1 },
+                    Units(),
                     "manufactured solution -- nonlinear D(r) \n"
                     "   u(r) = 1 - r3 \n"
                     "   D(r) = D0 exp( - gamma u(r) ) \n"
-                    "   S(r) = - D(r) (u''(r) + u'(r)/r - gamma [u'(r)]^2) ", // Reference source
-                    { -0.1, 2 },                                              // Property parameters
-                    { "temperature", "concentration" }, // Names of arguments to the eval function
-                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
+                    "   S(r) = - D(r) (u''(r) + u'(r)/r - gamma [u'(r)]^2) ",
+                    { "temperature", "concentration" },
+                    { { 299.9, 1E6 }, { 0, 1E6 } } )
     {
-    } // Range of variables
+    }
 
-    double eval( const std::vector<double> &args ) override;
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        const double p[] = { -0.1, 2 };
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            double u    = args( 1, i );
+            result( i ) = p[0] * exp( -p[1] * u );
+        }
+    }
+
+private:
+    std::vector<double> d_params;
 };
 
-//=================== Functions =====================================================
 
-inline double FickCoefficientProp::eval( const std::vector<double> &args )
-{
-    double T = args[0];
-    double u = args[1];
-
-    const auto &p = get_parameters();
-    AMP_ASSERT( T > TminVal );
-    AMP_ASSERT( u >= uminVal );
-
-    double fick = p[0] * exp( -p[1] * u );
-    return fick;
-}
-} // namespace Dr_nonlinear_NS
-
-//=================== Materials =====================================================
-// clang-format off
 Dr_nonlinear::Dr_nonlinear()
 {
-    d_propertyMap["FickCoefficient"] = std::make_shared<Dr_nonlinear_NS::FickCoefficientProp>();
+    d_propertyMap["FickCoefficient"] = std::make_shared<Dr_nonlinear_FickCoefficientProp>();
 }
-// clang-format on
+
 
 } // namespace AMP::Materials

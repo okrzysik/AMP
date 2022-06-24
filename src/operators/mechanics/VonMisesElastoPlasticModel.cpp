@@ -582,36 +582,27 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
                                                double R_np1[3][3] )
 {
     if ( d_useMaterialsLibrary == true ) {
-        std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
-        std::string temperatureString = "temperature";   // in the future get from input file
-        std::string burnupString      = "burnup";        // in the future get from input file
-        std::string oxygenString      = "concentration"; // in the future get from input file
-
-        auto tempVec   = std::make_shared<std::vector<double>>();
-        auto burnupVec = std::make_shared<std::vector<double>>();
-        auto oxygenVec = std::make_shared<std::vector<double>>();
-
-        inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-        inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
-        inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
+        std::vector<double> tempVec;
+        std::vector<double> burnupVec;
+        std::vector<double> oxygenVec;
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
-            tempVec->push_back( default_TEMPERATURE );
+            tempVec.push_back( default_TEMPERATURE );
         } else {
-            ( *tempVec ) = strain[Mechanics::TEMPERATURE];
+            tempVec = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
-            burnupVec->push_back( default_BURNUP );
+            burnupVec.push_back( default_BURNUP );
         } else {
-            ( *burnupVec ) = strain[Mechanics::BURNUP];
+            burnupVec = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
-            oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
+            oxygenVec.push_back( default_OXYGEN_CONCENTRATION );
         } else {
-            ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
+            oxygenVec = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
         std::vector<double> YM( 1 );
@@ -620,8 +611,12 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
         std::string ymString = "YoungsModulus";
         std::string prString = "PoissonRatio";
 
-        d_material->property( ymString )->evalv( YM, inputMaterialParameters );
-        d_material->property( prString )->evalv( PR, inputMaterialParameters );
+        std::map<std::string, std::vector<double> &> args = { { "temperature", tempVec },
+                                                              { "concentration", oxygenVec },
+                                                              { "burnup", burnupVec } };
+
+        d_material->property( ymString )->evalv( YM, {}, args );
+        d_material->property( prString )->evalv( PR, {}, args );
 
         d_E[d_gaussPtCnt]  = YM[0];
         d_Nu[d_gaussPtCnt] = PR[0];
@@ -641,9 +636,9 @@ void VonMisesElastoPlasticModel::radialReturn( const double *stra_np1,
             std::vector<double> SHE( 1 );
             std::vector<double> SRSE( 1 );
 
-            d_material->property( scString )->evalv( SC, inputMaterialParameters );
-            d_material->property( sheString )->evalv( SHE, inputMaterialParameters );
-            d_material->property( srseString )->evalv( SRSE, inputMaterialParameters );
+            d_material->property( scString )->evalv( SC, {}, args );
+            d_material->property( sheString )->evalv( SHE, {}, args );
+            d_material->property( srseString )->evalv( SRSE, {}, args );
 
             double K        = SC[0];
             double n        = SHE[0];

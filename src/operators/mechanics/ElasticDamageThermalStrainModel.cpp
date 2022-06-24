@@ -350,36 +350,26 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
 {
     if ( d_useMaterialsLibrary == true ) {
 
-        std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
-
-        std::string temperatureString = "temperature";   // in the future get from input file
-        std::string burnupString      = "burnup";        // in the future get from input file
-        std::string oxygenString      = "concentration"; // in the future get from input file
-
-        auto tempVec   = std::make_shared<std::vector<double>>();
-        auto burnupVec = std::make_shared<std::vector<double>>();
-        auto oxygenVec = std::make_shared<std::vector<double>>();
-
-        inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-        inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
-        inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
+        std::vector<double> tempVec;
+        std::vector<double> burnupVec;
+        std::vector<double> oxygenVec;
 
         if ( strain[Mechanics::TEMPERATURE].empty() ) {
-            tempVec->push_back( default_TEMPERATURE );
+            tempVec.push_back( default_TEMPERATURE );
         } else {
-            ( *tempVec ) = strain[Mechanics::TEMPERATURE];
+            tempVec = strain[Mechanics::TEMPERATURE];
         }
 
         if ( strain[Mechanics::BURNUP].empty() ) {
-            burnupVec->push_back( default_BURNUP );
+            burnupVec.push_back( default_BURNUP );
         } else {
-            ( *burnupVec ) = strain[Mechanics::BURNUP];
+            burnupVec = strain[Mechanics::BURNUP];
         }
 
         if ( strain[Mechanics::OXYGEN_CONCENTRATION].empty() ) {
-            oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
+            oxygenVec.push_back( default_OXYGEN_CONCENTRATION );
         } else {
-            ( *oxygenVec ) = strain[Mechanics::OXYGEN_CONCENTRATION];
+            oxygenVec = strain[Mechanics::OXYGEN_CONCENTRATION];
         }
 
         std::vector<double> YM( 1 );
@@ -388,19 +378,23 @@ void ElasticDamageThermalStrainModel::computeEvalv( const std::vector<std::vecto
         std::vector<double> TEC_1( 1 );
         std::vector<double> TEC_2( 1 );
 
-        d_material->property( "YoungsModulus" )->evalv( YM, inputMaterialParameters );
-        d_material->property( "PoissonRatio" )->evalv( PR, inputMaterialParameters );
+        std::map<std::string, std::vector<double> &> args = { { "temperature", tempVec },
+                                                              { "concentration", oxygenVec },
+                                                              { "burnup", burnupVec } };
+
+        d_material->property( "YoungsModulus" )->evalv( YM, {}, args );
+        d_material->property( "PoissonRatio" )->evalv( PR, {}, args );
         if ( d_checkCladOrPellet == false ) {
-            d_material->property( "ThermalExpansion" )->evalv( TEC, inputMaterialParameters );
+            d_material->property( "ThermalExpansion" )->evalv( TEC, {}, args );
         } else {
-            d_material->property( "ThermalExpansionAxial" )->evalv( TEC, inputMaterialParameters );
-            d_material->property( "ThermalExpansion" )->evalv( TEC_2, inputMaterialParameters );
+            d_material->property( "ThermalExpansionAxial" )->evalv( TEC, {}, args );
+            d_material->property( "ThermalExpansion" )->evalv( TEC_2, {}, args );
         }
 
         if ( !( strain[Mechanics::TEMPERATURE].empty() ) ) {
-            ( *tempVec )[0] = d_EquilibriumTemperature[d_gaussPtCnt];
+            tempVec[0] = d_EquilibriumTemperature[d_gaussPtCnt];
         }
-        d_material->property( "ThermalExpansion" )->evalv( TEC_1, inputMaterialParameters );
+        d_material->property( "ThermalExpansion" )->evalv( TEC_1, {}, args );
 
         d_E[d_gaussPtCnt]  = YM[0];
         d_Nu[d_gaussPtCnt] = PR[0];

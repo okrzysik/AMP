@@ -82,8 +82,8 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     if ( useMaterialsLibrary == true ) {
         AMP_INSIST( ( materialModelDatabase->keyExists( "Material" ) ),
                     "Key ''Material'' is missing!" );
-        std::string matname = materialModelDatabase->getString( "Material" );
-        material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+        auto matname = materialModelDatabase->getString( "Material" );
+        material     = AMP::Materials::getMaterial( matname );
     }
 
     if ( useMaterialsLibrary == false ) {
@@ -170,23 +170,14 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
             } // end k
 
             if ( useMaterialsLibrary == true ) {
-                std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
-                std::string temperatureString = "temperature"; // in the future get from input file
-                std::string burnupString      = "burnup";      // in the future get from input file
-                std::string oxygenString = "concentration";    // in the future get from input file
+                std::vector<double> tempVec;
+                std::vector<double> burnupVec;
+                std::vector<double> oxygenVec;
 
-                auto tempVec   = std::make_shared<std::vector<double>>();
-                auto burnupVec = std::make_shared<std::vector<double>>();
-                auto oxygenVec = std::make_shared<std::vector<double>>();
-
-                inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-                inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
-                inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
-
-                tempVec->push_back( currTemperatureAtGaussPoint );
-                burnupVec->push_back( default_BURNUP );
-                oxygenVec->push_back( default_OXYGEN_CONCENTRATION );
+                tempVec.push_back( currTemperatureAtGaussPoint );
+                burnupVec.push_back( default_BURNUP );
+                oxygenVec.push_back( default_OXYGEN_CONCENTRATION );
 
                 std::vector<double> YM( 1 );
                 std::vector<double> PR( 1 );
@@ -196,9 +187,14 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
                 std::string prString  = "PoissonRatio";
                 std::string tecString = "ThermalExpansion";
 
-                material->property( ymString )->evalv( YM, inputMaterialParameters );
-                material->property( prString )->evalv( PR, inputMaterialParameters );
-                material->property( tecString )->evalv( TEC, inputMaterialParameters );
+                std::map<std::string, std::vector<double> &> args = { { "temperature", tempVec },
+                                                                      { "concentration",
+                                                                        oxygenVec },
+                                                                      { "burnup", burnupVec } };
+
+                material->property( ymString )->evalv( YM, {}, args );
+                material->property( prString )->evalv( PR, {}, args );
+                material->property( tecString )->evalv( TEC, {}, args );
 
                 youngsModulus               = YM[0];
                 poissonsRatio               = PR[0];

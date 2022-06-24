@@ -21,15 +21,30 @@ responsibility for the use of this software.
 
 #include "AMP/utils/FactoryStrategy.hpp"
 
+#include <memory>
+
+
 namespace AMP::TimeIntegrator {
-class TimeIntegratorParameters;
+
 class TimeIntegrator;
+class TimeIntegratorParameters;
 
-using TimeIntegratorFactory = AMP::FactoryStrategy<AMP::TimeIntegrator::TimeIntegrator,
-                                                   AMP::TimeIntegrator::TimeIntegratorParameters>;
 
-// free function to preregister time integrators known by AMP
+//! Operator factory class
+class TimeIntegratorFactory :
+    public FactoryStrategy<TimeIntegrator, std::shared_ptr<TimeIntegratorParameters>>
+{
+public:
+    static std::unique_ptr<TimeIntegrator>
+    create( std::shared_ptr<TimeIntegratorParameters> parameters );
+};
+
+
+//! Register time integrators known by AMP
 void registerTimeIntegratorFactories();
 
+
 } // namespace  AMP::TimeIntegrator
+
+
 #endif // included_TimeIntegratorFactory_H_

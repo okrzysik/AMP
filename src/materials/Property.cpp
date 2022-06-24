@@ -1,9 +1,12 @@
-#include "Property.h"
+#include "AMP/materials/Property.h"
+#include "AMP/materials/ScalarProperty.h"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 
 #include <algorithm>
+
 
 namespace AMP::Materials {
 
@@ -12,47 +15,73 @@ namespace AMP::Materials {
  *  Constructor                                                          *
  ************************************************************************/
 Property::Property( std::string name,
+                    const ArraySize &size,
+                    const Units &unit,
                     std::string source,
-                    std::vector<double> params,
                     std::vector<std::string> args,
-                    std::vector<std::array<double, 2>> ranges )
+                    std::vector<std::array<double, 2>> ranges,
+                    std::vector<Units> units )
     : d_name( std::move( name ) ),
+      d_dim( size ),
+      d_units( unit ),
       d_source( std::move( source ) ),
-      d_params( std::move( params ) ),
       d_arguments( std::move( args ) ),
+      d_argUnits( std::move( units ) ),
       d_defaults( {} ),
-      d_ranges( std::move( ranges ) ),
-      d_variableNumberParameters( false )
+      d_ranges( std::move( ranges ) )
 {
+    if ( d_argUnits.empty() )
+        d_argUnits.resize( d_arguments.size() );
     AMP_ASSERT( d_arguments.size() == d_ranges.size() );
-    for ( size_t i = 0; i < d_arguments.size(); i++ ) {
-        d_argToIndexMap.insert( std::pair<std::string, size_t>( d_arguments[i], i ) );
-    }
+    AMP_ASSERT( d_arguments.size() == d_argUnits.size() );
+    for ( size_t i = 0; i < d_arguments.size(); i++ )
+        d_argToIndexMap[d_arguments[i]] = i;
     d_defaults.resize( d_arguments.size() );
     for ( size_t i = 0; i < d_arguments.size(); i++ )
         d_defaults[i] = d_ranges[i][0];
-    d_defaultsAreSet = true;
+}
+
+
+/************************************************************************
+ *  Evaluate the input arguments                                         *
+ ************************************************************************/
+void Property::evalArgs( AMP::Array<double> &args2,
+                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                         const std::map<std::string, std::string> &translator ) const
+{
+    auto mapargs = make_map( args, translator );
+    for ( auto arg : mapargs )
+        evalArgs( args2, arg.first, *arg.second );
 }
 
 
 /************************************************************************
  *  make_map                                                             *
  ************************************************************************/
+static std::string getArgName( const std::string &vecname,
+                               const std::map<std::string, std::string> &translator )
+{
+    if ( translator.empty() )
+        return vecname;
+    for ( auto &elem : translator ) {
+        if ( elem.second == vecname )
+            return elem.first;
+    }
+    return "";
+}
 std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
-Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
+Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                    const std::map<std::string, std::string> &translator ) const
 {
     std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> result;
     if ( !d_arguments.empty() ) {
-        size_t xls = d_translator.size();
+        size_t xls = translator.size();
         AMP_INSIST( xls > 0, "attempt to make MultiVector map without setting translator" );
         for ( auto vec : *args ) {
-            std::string name = vec->getName();
-            for ( auto &elem : d_translator ) {
-                std::string key = elem.first;
-                if ( elem.second == name ) {
-                    result.insert( std::make_pair( key, vec ) );
-                }
-            }
+            auto key = getArgName( vec->getName(), translator );
+            auto it  = std::find( d_arguments.begin(), d_arguments.end(), key );
+            if ( it != d_arguments.end() )
+                result.insert( std::make_pair( key, vec ) );
         }
     }
     return result;
@@ -60,209 +89,84 @@ Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args
 
 
 /************************************************************************
- *  evalvActual                                                          *
+ *  Create the default arguments                                         *
  ************************************************************************/
-/**
- * \brief       Evaluate a vector of results
- * \tparam      VTYPE       A vector type container.
- *
- *              Template argument:
- *              VTYPE   A vector type that must support:
- *                      VTYPE::iterator
- *                      VTYPE::const_iterator
- *                      VTYPE::iterator begin()
- *                      VTYPE::iterator end()
- *              Constraints:
- *                      type of *VTYPE::iterator is a Number.
- *                      type of *VTYPE::const_iterator is a const Number.
- * \param[out]  r      vector of results
- * \param[in]   args  input arguments corresponding to d_sequence
- *                      Must be in the correct order: T, u, burn
- */
-template<class INPUT_VTYPE, class RETURN_VTYPE>
-void Property::evalvActual( RETURN_VTYPE &r,
-                            const std::map<std::string, std::shared_ptr<INPUT_VTYPE>> &args )
+AMP::Array<double> Property::defaultArgs( size_t N ) const
 {
-    std::vector<double> eval_args( d_arguments.size() ); // list of arguments for each input type
-
-    // First we make sure that all of the vectors have something in them
-    AMP_ASSERT( r.begin() != r.end() );
-
-    // Make a vector of iterators - one for each d_arguments
-    std::vector<typename INPUT_VTYPE::iterator> parameter_iter;
-    std::vector<size_t> parameter_indices;
-    std::vector<typename std::map<std::string, std::shared_ptr<INPUT_VTYPE>>::const_iterator>
-        parameter_map_iter;
-
-    // Walk through d_arguments and set the iterator at the beginning of the map vector to which it
-    // corresponds
-    for ( size_t i = 0; i < d_arguments.size(); ++i ) {
-        auto mapIter = args.find( d_arguments[i] );
-        if ( mapIter == args.end() ) {
-            eval_args[i] = d_defaults[i];
-        } else {
-            parameter_iter.push_back( mapIter->second->begin() );
-            parameter_indices.push_back( i );
-            parameter_map_iter.push_back( mapIter );
-        }
-    }
-    const size_t npresent = parameter_iter.size();
-
-    for ( auto r_iter = r.begin(); r_iter != r.end(); ++r_iter ) {
-        // Loop through the list of actually present parameter iterators and assign their values to
-        // the vector being sent to eval
-        // Check that parameter iterators have not gone off the end - meaning result and input sizes
-        // do not match
-        if ( !d_arguments.empty() ) {
-            for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
-                AMP_INSIST( parameter_iter[ipresent] != parameter_map_iter[ipresent]->second->end(),
-                            std::string( "size mismatch between results and arguments - too few "
-                                         "argument values for argument " ) +
-                                d_arguments[parameter_indices[ipresent]] + std::string( "\n" ) );
-                eval_args[parameter_indices[ipresent]] = *( parameter_iter[ipresent] );
-            }
-        }
-        *r_iter = eval( eval_args );
-
-        // update the parameter iterators
-        for ( size_t i = 0; i < npresent; i++ ) {
-            parameter_iter[i]++;
-        }
-    }
-    // Make sure the input value iterators all got to the end.
-    if ( !d_arguments.empty() ) {
-        for ( size_t ipresent = 0; ipresent < npresent; ipresent++ ) {
-            AMP_INSIST( parameter_iter[ipresent] == parameter_map_iter[ipresent]->second->end(),
-                        "size mismatch between results and arguments - too few results\n" );
-        }
-    }
+    AMP::Array<double> args2( d_arguments.size(), N );
+    if ( args2.empty() )
+        return args2;
+    for ( size_t j = 0; j < N; j++ )
+        memcpy( &args2( 0, j ), d_defaults.data(), d_defaults.size() * sizeof( double ) );
+    return args2;
 }
 
-
-/************************************************************************
- *  evalv                                                                *
- ************************************************************************/
-double Property::eval( const std::vector<double> & )
-{
-    AMP_INSIST( false, "function is not implemented for this property" );
-    return 0;
-}
-void Property::evalv( std::vector<double> &r,
-                      const std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
-{
-    if ( !in_range( args ) ) {
-        for ( const auto &arg : args ) {
-            if ( !in_range( arg.first, *( arg.second ) ) ) {
-                auto range  = get_arg_range( arg.first );
-                auto values = *( arg.second );
-                std::stringstream ss;
-                ss << "Property '" + arg.first + "' out of range in function '" + d_name + "'."
-                   << std::endl;
-                ss << "Values are ";
-                for ( auto &value : values )
-                    ss << value << " ";
-                ss << std::endl;
-                ss << "Valid range is [" << range[0] << "," << range[1] << "]" << std::endl;
-                AMP_ERROR( ss.str() );
-            }
-        }
-    }
-    evalvActual( r, args );
-}
-void Property::evalv(
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
-{
-    bool in = in_range( args );
-    AMP_INSIST( in, "Property out of range" );
-    evalvActual( *r, args );
-}
-void Property::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                      const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args )
-{
-    auto mapargs = make_map( args );
-    evalv( r, mapargs );
-}
-
-
-/************************************************************************
- *  Get/Set auxiliary data                                               *
- ************************************************************************/
-void Property::setAuxiliaryData( const std::string &key, const double val )
-{
-    auto loc = d_AuxiliaryDataDouble.find( key );
-
-    // this guarantees that the host code can not set just any old data value.
-    // the property constructor must set up the database for legitimate use.
-    AMP_ASSERT( loc != d_AuxiliaryDataDouble.end() );
-
-    loc->second = val;
-}
-void Property::setAuxiliaryData( const std::string &key, const int val )
-{
-    auto loc = d_AuxiliaryDataInteger.find( key );
-
-    // this guarantees that the host code can not set just any old data value.
-    // the property constructor must set up the database for legitimate use.
-    AMP_ASSERT( loc != d_AuxiliaryDataInteger.end() );
-
-    loc->second = val;
-}
-void Property::setAuxiliaryData( const std::string &key, const std::string &val )
-{
-    auto loc = d_AuxiliaryDataString.find( key );
-
-    // this guarantees that the host code can not set just any old data value.
-    // the property constructor must set up the database for legitimate use.
-    AMP_ASSERT( loc != d_AuxiliaryDataString.end() );
-
-    loc->second = val;
-}
-void Property::getAuxiliaryData( const std::string &key, double &val )
-{
-    auto p = d_AuxiliaryDataDouble.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataDouble.end() );
-    val = p->second;
-}
-void Property::getAuxiliaryData( const std::string &key, int &val )
-{
-    auto p = d_AuxiliaryDataInteger.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataInteger.end() );
-    val = p->second;
-}
-void Property::getAuxiliaryData( const std::string &key, std::string &val )
-{
-    auto p = d_AuxiliaryDataString.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataString.end() );
-    val = p->second;
-}
 
 /************************************************************************
  *  Misc functions                                                       *
  ************************************************************************/
-void Property::set_parameters_and_number( std::vector<double> params )
+std::array<double, 2> Property::get_arg_range( const std::string &name ) const
 {
-    AMP_INSIST( d_variableNumberParameters,
-                "changing number of parameters for this property not allowed" );
-    d_params = std::move( params );
-}
-void Property::set_translator( const std::map<std::string, std::string> &xlator )
-{
-    // assure incoming map has correct keys
-    for ( auto iter = xlator.begin(); iter != xlator.end(); ++iter ) {
-        AMP_ASSERT( std::find( d_arguments.begin(), d_arguments.end(), iter->first ) !=
-                    d_arguments.end() );
-    }
-    d_translator = xlator;
-}
-std::array<double, 2> Property::get_arg_range( const std::string &argname )
-{
-    auto it = d_argToIndexMap.find( argname );
-    if ( it == d_argToIndexMap.end() )
-        return { -std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
-    size_t index = it->second;
+    int index = get_arg_index( name );
+    AMP_ASSERT( index >= 0 );
     return d_ranges[index];
+}
+bool Property::is_argument( const std::string &name ) const { return get_arg_index( name ) >= 0; }
+void Property::checkArgs( const AMP::Array<double> &args ) const
+{
+    AMP_ASSERT( args.ndim() <= 2 );
+    AMP_ASSERT( args.size( 0 ) == d_arguments.size() );
+    for ( size_t i = 0; i < args.size( 0 ); i++ ) {
+        auto range = d_ranges[i];
+        for ( size_t j = 0; j < args.size( 1 ); j++ ) {
+            auto value = args( i, j );
+            bool test  = value >= range[0] && value <= range[1];
+            if ( !test ) {
+                std::stringstream ss;
+                ss << "Property '" + d_arguments[i] + "' out of range in function '" + d_name +
+                          "'\n";
+                ss << "Value is " << value << " ";
+                ss << std::endl
+                   << "Valid range is [" << range[0] << "," << range[1] << "]" << std::endl;
+                AMP_ERROR( ss.str() );
+            }
+        }
+    }
+}
+
+
+/************************************************************************
+ *  Create a property from a database key data object                    *
+ ************************************************************************/
+std::unique_ptr<Property> createProperty( const std::string &key, const Database &db )
+{
+    auto keyData = db.getData( key );
+    auto unit    = keyData->unit();
+    if ( db.isDatabase( key ) ) {
+        // We are dealing with a database
+        AMP_ERROR( "Not finished (Database)" );
+    } else if ( db.isEquation( key ) ) {
+        // We are dealing with an equation
+        return std::make_unique<EquationProperty>( key, db.getEquation( key ), unit );
+    } else if ( keyData->is_floating_point() ) {
+        // We are dealing with a scalar
+        auto data = keyData->convertToDouble();
+        return std::make_unique<ScalarProperty>( key, data, unit );
+    } else {
+        AMP_ERROR( "Unknown data type" );
+    }
+    return nullptr;
 }
 
 
 } // namespace AMP::Materials
+
+
+/********************************************************
+ *  Explicit instantiations of Array                     *
+ ********************************************************/
+#include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( std::vector<double> * );
+instantiateArrayConstructors( AMP::LinearAlgebra::Vector * );
+instantiateArrayConstructors( std::shared_ptr<std::vector<double>> );
+instantiateArrayConstructors( std::shared_ptr<AMP::LinearAlgebra::Vector> );

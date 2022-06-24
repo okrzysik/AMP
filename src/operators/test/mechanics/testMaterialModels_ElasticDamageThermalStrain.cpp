@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"

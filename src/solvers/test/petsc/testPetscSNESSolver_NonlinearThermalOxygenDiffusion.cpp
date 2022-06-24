@@ -1,4 +1,5 @@
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"

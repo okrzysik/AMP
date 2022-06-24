@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -36,7 +37,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto subchannelMesh = AMP::Mesh::MeshFactory::create( meshParams );
     auto xyFaceMesh     = subchannelMesh->Subset(
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
 

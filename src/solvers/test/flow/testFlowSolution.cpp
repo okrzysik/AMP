@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
@@ -44,7 +45,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     meshParams->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto manager     = AMP::Mesh::MeshFactory::create( meshParams );
     auto meshAdapter = manager->Subset( "bar" );
 
 
