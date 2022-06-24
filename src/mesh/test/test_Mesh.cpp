@@ -1,5 +1,6 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/testHelpers/meshTests.h"
@@ -166,7 +167,7 @@ void testSTKMesh( AMP::UnitTest &ut )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create a STKMesh mesh
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
     AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
@@ -196,7 +197,7 @@ void testlibMesh( AMP::UnitTest &ut )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create a libMesh mesh
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
     AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
@@ -225,7 +226,7 @@ void testMoabMesh( AMP::UnitTest &ut )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create a MOAB mesh
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
     AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests
@@ -253,7 +254,7 @@ void testInputMesh( AMP::UnitTest &ut, std::string filename )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
     AMP_ASSERT( mesh != nullptr );
 
     // Run the mesh tests

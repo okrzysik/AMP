@@ -4,6 +4,7 @@
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"

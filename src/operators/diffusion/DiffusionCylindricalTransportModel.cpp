@@ -21,7 +21,7 @@ DiffusionCylindricalTransportModel::DiffusionCylindricalTransportModel(
 }
 
 void DiffusionCylindricalTransportModel::getTensorTransport(
-    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+    AMP::Array<std::shared_ptr<std::vector<double>>> &result,
     std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> &coordinates )
 {
@@ -59,7 +59,7 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
         double r  = sqrt( x * x + y * y );
         radius[k] = r;
     }
-    d_property->evalv( radialCoefficient, args );
+    d_property->evalv( radialCoefficient, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value
@@ -78,25 +78,22 @@ void DiffusionCylindricalTransportModel::getTensorTransport(
     }
 
     // form angle-dependent tensor factor
+    AMP_INSIST( result.size() == ArraySize( 3, 3 ), "result tensor must be 3x3" );
     for ( size_t i = 0; i < 3; i++ ) {
-        AMP_INSIST( result.size() == 3, "result tensor must be 3x3" );
         for ( size_t j = 0; j < 3; j++ ) {
-            AMP_INSIST( result[i].size() == 3, "result tensor must be 3x3" );
-            AMP_INSIST( result[i][j]->size() == coordinates.size(),
-                        "result tensor components must be same size as coordinates" );
             if ( ( i == 2 ) || ( j == 2 ) )
                 for ( size_t k = 0; k < coordinates.size(); k++ )
-                    ( *result[i][j] )[k] = 0.;
+                    ( *result( i, j ) )[k] = 0.;
         }
     }
     for ( size_t k = 0; k < coordinates.size(); k++ ) {
-        double x             = coordinates[k]( 0 );
-        double y             = coordinates[k]( 1 );
-        double r2            = x * x + y * y;
-        ( *result[0][0] )[k] = radialCoefficient[k] * x * x / r2;
-        ( *result[0][1] )[k] = radialCoefficient[k] * x * y / r2;
-        ( *result[1][0] )[k] = radialCoefficient[k] * x * y / r2;
-        ( *result[1][1] )[k] = radialCoefficient[k] * y * y / r2;
+        double x               = coordinates[k]( 0 );
+        double y               = coordinates[k]( 1 );
+        double r2              = x * x + y * y;
+        ( *result( 0, 0 ) )[k] = radialCoefficient[k] * x * x / r2;
+        ( *result( 0, 1 ) )[k] = radialCoefficient[k] * x * y / r2;
+        ( *result( 1, 0 ) )[k] = radialCoefficient[k] * x * y / r2;
+        ( *result( 1, 1 ) )[k] = radialCoefficient[k] * y * y / r2;
     }
 }
 } // namespace AMP::Operator

@@ -3,6 +3,7 @@
 #define included_AMP_Unit_test_Mesh_Generators_h
 
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/utils/Database.h"
@@ -135,7 +136,7 @@ public:
         auto params = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
         // Create the mesh
-        mesh = AMP::Mesh::Mesh::buildMesh( params );
+        mesh = AMP::Mesh::MeshFactory::create( params );
     }
     static std::string name() { return "AMPMultiMeshGenerator"; }
 

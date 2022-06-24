@@ -41,35 +41,34 @@ extern template class Array<float>;
 #define instantiateArrayConstructors( TYPE )                                       \
     template AMP::Array<TYPE>::Array();                                            \
     template AMP::Array<TYPE>::~Array();                                           \
-    template AMP::Array<TYPE>::Array( const AMP::ArraySize & );                    \
+    template AMP::Array<TYPE>::Array( const AMP::ArraySize&, TYPE const* );        \
     template AMP::Array<TYPE>::Array( size_t );                                    \
     template AMP::Array<TYPE>::Array( size_t, size_t );                            \
     template AMP::Array<TYPE>::Array( size_t, size_t, size_t );                    \
     template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t );            \
     template AMP::Array<TYPE>::Array( size_t, size_t, size_t, size_t, size_t );    \
-    template AMP::Array<TYPE>::Array( const std::vector<size_t> &, const TYPE * ); \
     template AMP::Array<TYPE>::Array( std::initializer_list<TYPE> );               \
     template AMP::Array<TYPE>::Array( std::initializer_list<std::initializer_list<TYPE>> ); \
-    template AMP::Array<TYPE>::Array( const AMP::Array<TYPE> & );                  \
-    template AMP::Array<TYPE>::Array( AMP::Array<TYPE> && );                       \
-    template void AMP::Array<TYPE>::allocate( const ArraySize & );                 \
-    template void AMP::Array<TYPE>::reshape( AMP::ArraySize const& );              \
+    template AMP::Array<TYPE>::Array( const AMP::Array<TYPE>& );                   \
+    template AMP::Array<TYPE>::Array( AMP::Array<TYPE>&& );                        \
+    template void AMP::Array<TYPE>::allocate( const ArraySize& );                  \
+    template void AMP::Array<TYPE>::reshape( const AMP::ArraySize& );              \
     template std::unique_ptr<const AMP::Array<TYPE>>                               \
-        AMP::Array<TYPE>::constView(ArraySize const&, std::shared_ptr<TYPE const> const&); \
-    template void AMP::Array<TYPE>::viewRaw( ArraySize const&, TYPE*, bool, bool ); \
-    template void AMP::Array<TYPE>::view2(ArraySize const&, std::shared_ptr<TYPE> ); \
-    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( const AMP::Array<TYPE> & ); \
-    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( AMP::Array<TYPE> && ); \
+        AMP::Array<TYPE>::constView( const ArraySize&, const std::shared_ptr<TYPE const>& ); \
+    template void AMP::Array<TYPE>::viewRaw( const ArraySize&, TYPE*, bool, bool ); \
+    template void AMP::Array<TYPE>::view2( const ArraySize&, std::shared_ptr<TYPE> ); \
+    template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const AMP::Array<TYPE>& ); \
+    template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( AMP::Array<TYPE>&& );  \
     template TYPE* AMP::Array<TYPE>::data();                                       \
-    template const TYPE* AMP::Array<TYPE>::data() const;                           \
+    template TYPE const* AMP::Array<TYPE>::data() const;                           \
     template void AMP::Array<TYPE>::resize( size_t );                              \
     template void AMP::Array<TYPE>::resize( size_t, size_t );                      \
     template void AMP::Array<TYPE>::resize( size_t, size_t, size_t );              \
     template void AMP::Array<TYPE>::resize( AMP::ArraySize const& );               \
     template void AMP::Array<TYPE>::clear();                                       \
     template bool AMP::Array<TYPE>::empty() const;                                 \
-    template AMP::Array<TYPE> &AMP::Array<TYPE>::operator=( const std::vector<TYPE> & ); \
-    template bool AMP::Array<TYPE>::operator==( AMP::Array<TYPE> const & ) const
+    template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const std::vector<TYPE>& ); \
+    template bool AMP::Array<TYPE>::operator==( const AMP::Array<TYPE>& ) const
 // clang-format on
 
 
@@ -82,10 +81,12 @@ Array<TYPE, FUN, Allocator>::Array()
 {
 }
 template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>::Array( const ArraySize &N )
+Array<TYPE, FUN, Allocator>::Array( const ArraySize &N, const TYPE *data )
     : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( N );
+    if ( data )
+        copy( data );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( size_t N ) : d_isCopyable( true ), d_isFixedSize( false )
@@ -115,14 +116,6 @@ Array<TYPE, FUN, Allocator>::Array( size_t N1, size_t N2, size_t N3, size_t N4, 
     : d_isCopyable( true ), d_isFixedSize( false )
 {
     allocate( ArraySize( N1, N2, N3, N4, N5 ) );
-}
-template<class TYPE, class FUN, class Allocator>
-Array<TYPE, FUN, Allocator>::Array( const std::vector<size_t> &N, const TYPE *data )
-    : d_isCopyable( true ), d_isFixedSize( false )
-{
-    allocate( N );
-    if ( data )
-        copy( data );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const Range<TYPE> &range )

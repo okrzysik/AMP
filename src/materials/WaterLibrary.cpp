@@ -18,7 +18,7 @@ static const char *source =
     "NP-7450, GeomType::Volume 1, September 1998";
 
 // Temperature as a function of enthalpy and pressure
-static std::initializer_list<double> TempParams = {
+static const double TempParams[] = {
     .3276275552e2,    .9763617000e0,    .1857226027e-3,   -.4682674330e-6, // CT1
     .3360880214e-2,   -.5595281760e-4,  .1618595991e-6,   -.1180204381e-9,  .6390801208e3,
     -.3055217235e1,   .8713231868e-2,   -.6269403683e-5,  -.9844700000e-17, // CT2
@@ -47,7 +47,7 @@ static std::initializer_list<std::array<double, 2>> TempRanges = { { TempHminVal
                                                                    { TempPminVal, TempPmaxVal } };
 
 // Saturated liquid enthalpy as a function of pressure
-static std::initializer_list<double> HfSatParams = {
+static const double HfSatParams[] = {
     .6970887859e2,   .3337529994e2,  .2318240735e1,   .1840599513e0,   -.5245502284e-2,
     .2878007027e-2,  .1753652324e-2, -.4334859620e-3, .3325699282e-4,  .8408618802e6,
     .3637413208e6,   -.4634506669e6, .1130306339e6,   -.4350217298e3,  -.3898988188e4,
@@ -62,34 +62,34 @@ static std::initializer_list<std::array<double, 2>> HfSatRanges = { { HfSatPminV
                                                                       HfSatPmaxVal } };
 
 // Saturated vapor enthalpy as a function of pressure
-static std::initializer_list<double> HgSatParams = { 0.1105836875e4,
-                                                     0.1436943768e2,
-                                                     0.8018288621,
-                                                     0.1617232913e-1,
-                                                     -0.1501147505e-2,
-                                                     0.0,
-                                                     0.0,
-                                                     0.0,
-                                                     0.0,
-                                                     -0.1237675562e-4,
-                                                     0.3004773304e-5,
-                                                     -0.2062390734e-6,
-                                                     -0.2234264997e7,
-                                                     0.1231247634e7,
-                                                     -0.1978847871e6,
-                                                     0.1859988044e2,
-                                                     -0.2765701318e1,
-                                                     0.1036033878e4,
-                                                     -0.2143423131e3,
-                                                     0.1690507762e2,
-                                                     -0.4864322134,
-                                                     0.9059978254e3,
-                                                     0.5561957539e1,
-                                                     0.3434189609e1,
-                                                     -0.6406390628,
-                                                     0.5918579484e-1,
-                                                     -0.2725378570e-2,
-                                                     0.5006336938e-4 };
+static const double HgSatParams[] = { 0.1105836875e4,
+                                      0.1436943768e2,
+                                      0.8018288621,
+                                      0.1617232913e-1,
+                                      -0.1501147505e-2,
+                                      0.0,
+                                      0.0,
+                                      0.0,
+                                      0.0,
+                                      -0.1237675562e-4,
+                                      0.3004773304e-5,
+                                      -0.2062390734e-6,
+                                      -0.2234264997e7,
+                                      0.1231247634e7,
+                                      -0.1978847871e6,
+                                      0.1859988044e2,
+                                      -0.2765701318e1,
+                                      0.1036033878e4,
+                                      -0.2143423131e3,
+                                      0.1690507762e2,
+                                      -0.4864322134,
+                                      0.9059978254e3,
+                                      0.5561957539e1,
+                                      0.3434189609e1,
+                                      -0.6406390628,
+                                      0.5918579484e-1,
+                                      -0.2725378570e-2,
+                                      0.5006336938e-4 };
 
 static std::initializer_list<std::string> HgSatArgs = { "pressure" };
 static const double HgSatPminVal                    = 689.4757; // minimum pressure [Pa]
@@ -99,7 +99,7 @@ static std::initializer_list<std::array<double, 2>> HgSatRanges = { { HgSatPminV
 
 
 // Specific volume as a function of enthalpy and pressure
-static std::initializer_list<double> VolParams = {
+static const double VolParams[] = {
     1.1956901695e-9,   3.7591804374e-11,  -2.4473796276e-13, // CN0
     1.6173258743e-13,  -2.1383283863e-14, 9.3054844544e-17,  7.4927085737e-17,  4.2176141427e-18,
     -1.1512516405e-20, -.4117961750e1,    -.3811294543e-3,   .4308265942e-5,    -.9160120130e-8,
@@ -132,7 +132,6 @@ static std::initializer_list<std::array<double, 2>> VolRanges = { { VolHminVal, 
                                                                   { VolPminVal, VolPmaxVal } };
 
 // Thermal conductivity as a function of temperature and density
-static std::initializer_list<double> CondParams    = { 0 };
 static std::initializer_list<std::string> CondArgs = { "temperature", "density" };
 static const double CondTminVal                    = 200.0; // minimum temperature [K]
 static const double CondTmaxVal =
@@ -146,7 +145,6 @@ static std::initializer_list<std::array<double, 2>> CondRanges = {
 
 // Convective Heat Coefficient as a function of thermal Conductivity,
 // Diameter, Reynolds Number and Prandtl Number
-static std::initializer_list<double> ConvParams    = { 0 };
 static std::initializer_list<std::string> ConvArgs = {
     "temperature", "density", "diameter", "reynolds", "prandtl"
 };
@@ -171,13 +169,13 @@ static std::initializer_list<std::array<double, 2>> ConvRanges = { { ConvTminVal
 
 
 // dynamic viscosity as a function of temperature and density
-static const std::initializer_list<double> ViscParams = {
-    0.0181583,  0.0177624,  0.0105287,  -0.0036744, 0.501938,  0.162888,  -0.130356,
-    0.907919,   -0.551119,  0.146543,   0.235622,   0.789393,  0.673665,  1.207552,
-    0.0670665,  -0.0843370, -0.274637,  -0.743539,  -0.959456, -0.687343, -0.497089,
-    0.195286,   0.145831,   0.263129,   0.347247,   0.213486,  0.100754,  -0.032932,
-    -0.0270448, -0.0253093, -0.0267758, -0.0822904, 0.0602253, -0.0202595
-};
+static const double ViscParams[] = { 0.0181583,  0.0177624,  0.0105287, -0.0036744, 0.501938,
+                                     0.162888,   -0.130356,  0.907919,  -0.551119,  0.146543,
+                                     0.235622,   0.789393,   0.673665,  1.207552,   0.0670665,
+                                     -0.0843370, -0.274637,  -0.743539, -0.959456,  -0.687343,
+                                     -0.497089,  0.195286,   0.145831,  0.263129,   0.347247,
+                                     0.213486,   0.100754,   -0.032932, -0.0270448, -0.0253093,
+                                     -0.0267758, -0.0822904, 0.0602253, -0.0202595 };
 static std::initializer_list<std::string> ViscArgs = { "temperature", "density" };
 static const double ViscTminVal                    = 0.0; // minimum temperature [K]
 static const double ViscTmaxVal =
@@ -190,9 +188,8 @@ static std::initializer_list<std::array<double, 2>> ViscRanges = {
 };
 
 // enthalpy as a function of temperature and pressure
-static std::initializer_list<double> EnthalpyParams    = { -256638.942,    -203.118982,
-                                                        0.760349801,    -3848757.66,
-                                                        -0.00106377488, 0.0000006177396046 };
+static const double EnthalpyParams[]                   = { -256638.942, -203.118982,    0.760349801,
+                                         -3848757.66, -0.00106377488, 0.0000006177396046 };
 static std::initializer_list<std::string> EnthalpyArgs = { "temperature", "pressure" };
 static const double EnthalpyTminVal                    = 0.0; // minimum temperature [K]
 static const double EnthalpyTmaxVal =
@@ -206,242 +203,12 @@ static std::initializer_list<std::array<double, 2>> EnthalpyRanges = {
     { EnthalpyTminVal, EnthalpyTmaxVal }, { EnthalpyPminVal, EnthalpyPmaxVal }
 };
 
-//=================== Classes =======================================================
-
-class TemperatureProp : public Property
-{
-public:
-    TemperatureProp()
-        : Property( "WaterLibrary_Temperature", Units(), source, TempArgs, TempRanges ),
-          d_params( TempParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class SaturatedLiquidEnthalpyProp : public Property
-{
-public:
-    SaturatedLiquidEnthalpyProp()
-        : Property(
-              "WaterLibrary_SaturatedLiquidEnthalpy", Units(), source, HfSatArgs, HfSatRanges ),
-          d_params( HfSatParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class SaturatedVaporEnthalpyProp : public Property
-{
-public:
-    SaturatedVaporEnthalpyProp()
-        : Property(
-              "WaterLibrary_SaturatedVaporEnthalpy", Units(), source, HgSatArgs, HgSatRanges ),
-          d_params( HgSatParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class SpecificVolumeProp : public Property
-{
-public:
-    SpecificVolumeProp()
-        : Property( "WaterLibrary_SpecificVolume", Units(), source, VolArgs, VolRanges ),
-          d_params( VolParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class ThermalConductivityProp : public Property
-{
-public:
-    ThermalConductivityProp()
-        : Property( "WaterLibrary_ThermalConductivity", Units(), source, CondArgs, CondRanges ),
-          d_params( CondParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class ConvectiveHeatProp : public Property
-{
-public:
-    ConvectiveHeatProp()
-        : Property( "WaterLibrary_ConvectiveHeat", Units(), source, ConvArgs, ConvRanges ),
-          d_params( ConvParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class DynamicViscosityProp : public Property
-{
-public:
-    DynamicViscosityProp()
-        : Property( "WaterLibrary_DynamicViscosity", Units(), source, ViscArgs, ViscRanges ),
-          d_params( ViscParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-};
-
-class EnthalpyProp : public Property
-{
-public:
-    EnthalpyProp()
-        : Property( "WaterLibrary_Enthalpy", Units(), source, EnthalpyArgs, EnthalpyRanges ),
-          d_params( EnthalpyParams )
-    {
-    }
-
-    double eval( const std::vector<double> &args ) override;
-
-private:
-    std::vector<double> d_params;
-
-private:
-    double MfpSolve( double, double, double, double );
-    double Residual( double, double, double );
-    static const double Mfp_atol;          // absolute tolerance for MFP solve
-    static const double Mfp_rtol;          // relative tolerance for MFP solve
-    static const double Mfp_ftol;          // function tolerance for MFP solve
-    static const unsigned int Mfp_maxIter; // maximum number of iterations for MFP solve
-};
-const double EnthalpyProp::Mfp_atol          = 1.0e-7;  // absolute tolerance for MFP solve
-const double EnthalpyProp::Mfp_rtol          = 1.0e-7;  // relative tolerance for MFP solve
-const double EnthalpyProp::Mfp_ftol          = 1.0e-14; // function tolerance for MFP solve
-const unsigned int EnthalpyProp::Mfp_maxIter = 1000; // maximum number of iterations for MFP solve
-
 
 //=================== Functions =====================================================
 
-inline double TemperatureProp::eval( const std::vector<double> &args )
+static double evalSaturatedLiquidEnthalpy( double P )
 {
-    double H = args[0]; // local enthalpy in J/kg
-    double P = args[1]; // local pressure in Pa
-    double T;           // temperature in Kelvin
-
-    // convert SI units to units used in correlation
-    double PaToPsi     = 1.45037738e-4;
-    double JKgToBtuLbm = 4.29922614e-4;
-    P                  = P * PaToPsi;
-    H                  = H * JKgToBtuLbm;
-
-    const double P_crit = 3208.2; // critical pressure [psi]
-    const double H_crit = 906;    // specific enthalpy at critical pressure [Btu/lbm]
-
-    if ( P < 0.1 )
-        AMP_ERROR( "Liquid water temperature called with pressure below 0.1 psi." );
-    if ( H <= 0 )
-        AMP_ERROR( "Liquid water temperature called with enthalpy below 0 Btu/lbm." );
-
-    // extract parameters from parameter array
-    double ct1[2][4], ct2[5][5], ct3[5][5], ct4[5][5];
-    int offset = 0;
-    for ( int i = 0; i < 2; i++ )
-        for ( int j = 0; j < 4; j++ )
-            ct1[i][j] = d_params[offset + 4 * i + j];
-
-    offset += 4 * 2;
-    for ( int i = 0; i < 5; i++ )
-        for ( int j = 0; j < 5; j++ )
-            ct2[i][j] = d_params[offset + 5 * i + j];
-
-    offset += 5 * 5;
-    for ( int i = 0; i < 5; i++ )
-        for ( int j = 0; j < 5; j++ )
-            ct3[i][j] = d_params[offset + 5 * i + j];
-
-    offset += 5 * 5;
-    for ( int i = 0; i < 5; i++ )
-        for ( int j = 0; j < 5; j++ )
-            ct4[i][j] = d_params[offset + 5 * i + j];
-
-    // calculate temperature
-    T = 0;
-
-    if ( P >= P_crit ) {
-        if ( H <= H_crit ) {
-            // Eq. III.1-6b
-            for ( int i = 0; i < 5; i++ )
-                for ( int j = 0; j < 5; j++ )
-                    T = T + ct2[i][j] * pow( P, (double) i ) * pow( H, (double) j );
-        } else {
-            // Eq. III.1-6d
-            for ( int i = 0; i < 5; i++ )
-                for ( int j = 0; j < 5; j++ )
-                    T = T + ct4[i][j] * pow( P, (double) i ) * pow( H, (double) j );
-        }
-    } else {
-        // Evaluate saturated liquid/vapor properties
-        SaturatedLiquidEnthalpyProp hf_obj;
-        std::vector<double> PVec( 1, P / PaToPsi ); // convert back to Pa
-        double Hf = hf_obj.eval( PVec );
-        Hf        = Hf * JKgToBtuLbm;
-
-        SaturatedVaporEnthalpyProp hg_obj;
-        double Hg = hg_obj.eval( PVec );
-        Hg        = Hg * JKgToBtuLbm;
-
-        if ( H <= Hf ) {
-            // Eq. III.1-6a
-            for ( int i = 0; i < 2; i++ )
-                for ( int j = 0; j < 4; j++ )
-                    T = T + ct1[i][j] * pow( P, (double) i ) * pow( H, (double) j );
-        } else if ( H <= Hg ) {
-            // Eq. III.1-6a with H=Hf
-            for ( int i = 0; i < 2; i++ )
-                for ( int j = 0; j < 4; j++ )
-                    T = T + ct1[i][j] * pow( P, (double) i ) * pow( Hf, (double) j );
-        } else {
-            // Eq. III.1-6c
-            for ( int i = 0; i < 5; i++ )
-                for ( int j = 0; j < 5; j++ )
-                    T = T + ct3[i][j] * pow( P, (double) i ) * pow( H, (double) j );
-        }
-    }
-    NULL_USE( H_crit );
-
-    // convert result to SI units
-    T = 5. / 9. * ( T - 32. ) + 273.15; // [F] to [K]
-
-    return T;
-}
-
-inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args )
-{
-    double P = args[0]; // local pressure in Pa
-    double Hf;          // saturated liquid enthalpy [J/kg]
+    // pressure in Pa
 
     // convert SI units to units used in correlation
     double PaToPsi     = 1.45037738e-4;
@@ -454,13 +221,13 @@ inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args
     // extract parameters from parameter array
     double a[9], b[9], c[9];
     for ( int i = 0; i < 9; i++ ) {
-        a[i] = d_params[i];
-        b[i] = d_params[9 + i];
-        c[i] = d_params[18 + i];
+        a[i] = HfSatParams[i];
+        b[i] = HfSatParams[9 + i];
+        c[i] = HfSatParams[18 + i];
     }
 
     // calculate saturated liquid enthalpy
-    Hf = 0;
+    double Hf = 0;              // saturated liquid enthalpy [J/kg]
     if ( P >= Pmin && P < 900 ) // liquid region
     {
         // Eq. III.1-4a
@@ -484,10 +251,11 @@ inline double SaturatedLiquidEnthalpyProp::eval( const std::vector<double> &args
     return Hf;
 }
 
-inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args )
+static double evalSaturatedVaporEnthalpy( double P )
 {
-    double P = args[0]; // local pressure in Pa
-    double Hf;          // saturated liquid enthalpy [J/kg]
+    // local pressure in Pa
+
+    double Hf; // saturated liquid enthalpy [J/kg]
 
     // convert SI units to units used in correlation
     double PaToPsi     = 1.45037738e-4;
@@ -500,13 +268,13 @@ inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args 
     // extract parameters from parameter array
     double a[12], b[9], c[7];
     for ( int i = 0; i < 12; i++ ) {
-        a[i] = d_params[i];
+        a[i] = HgSatParams[i];
     }
     for ( int i = 0; i < 9; i++ ) {
-        b[i] = d_params[12 + i];
+        b[i] = HgSatParams[12 + i];
     }
     for ( int i = 0; i < 7; i++ ) {
-        c[i] = d_params[21 + i];
+        c[i] = HgSatParams[21 + i];
     }
 
     // calculate saturated vapor enthalpy
@@ -534,11 +302,101 @@ inline double SaturatedVaporEnthalpyProp::eval( const std::vector<double> &args 
     return Hf;
 }
 
-inline double SpecificVolumeProp::eval( const std::vector<double> &args )
+static double evalTemperature( double H, double P )
 {
-    double H = args[0]; // local enthalpy in J/kg
-    double P = args[1]; // local pressure in Pa
-    double V;           // specific volume in m3/kg
+    // enthalpy in J/kg
+    // pressure in Pa
+
+    double T; // temperature in Kelvin
+
+    // convert SI units to units used in correlation
+    double PaToPsi     = 1.45037738e-4;
+    double JKgToBtuLbm = 4.29922614e-4;
+    P                  = P * PaToPsi;
+    H                  = H * JKgToBtuLbm;
+
+    const double P_crit = 3208.2; // critical pressure [psi]
+    const double H_crit = 906;    // specific enthalpy at critical pressure [Btu/lbm]
+
+    if ( P < 0.1 )
+        AMP_ERROR( "Liquid water temperature called with pressure below 0.1 psi." );
+    if ( H <= 0 )
+        AMP_ERROR( "Liquid water temperature called with enthalpy below 0 Btu/lbm." );
+
+    // extract parameters from parameter array
+    double ct1[2][4], ct2[5][5], ct3[5][5], ct4[5][5];
+    int offset = 0;
+    for ( int i = 0; i < 2; i++ )
+        for ( int j = 0; j < 4; j++ )
+            ct1[i][j] = TempParams[offset + 4 * i + j];
+
+    offset += 4 * 2;
+    for ( int i = 0; i < 5; i++ )
+        for ( int j = 0; j < 5; j++ )
+            ct2[i][j] = TempParams[offset + 5 * i + j];
+
+    offset += 5 * 5;
+    for ( int i = 0; i < 5; i++ )
+        for ( int j = 0; j < 5; j++ )
+            ct3[i][j] = TempParams[offset + 5 * i + j];
+
+    offset += 5 * 5;
+    for ( int i = 0; i < 5; i++ )
+        for ( int j = 0; j < 5; j++ )
+            ct4[i][j] = TempParams[offset + 5 * i + j];
+
+    // calculate temperature
+    T = 0;
+
+    if ( P >= P_crit ) {
+        if ( H <= H_crit ) {
+            // Eq. III.1-6b
+            for ( int i = 0; i < 5; i++ )
+                for ( int j = 0; j < 5; j++ )
+                    T = T + ct2[i][j] * pow( P, (double) i ) * pow( H, (double) j );
+        } else {
+            // Eq. III.1-6d
+            for ( int i = 0; i < 5; i++ )
+                for ( int j = 0; j < 5; j++ )
+                    T = T + ct4[i][j] * pow( P, (double) i ) * pow( H, (double) j );
+        }
+    } else {
+        // Evaluate saturated liquid/vapor properties
+        double Hf = evalSaturatedLiquidEnthalpy( P / PaToPsi );
+        double Hg = evalSaturatedVaporEnthalpy( P / PaToPsi );
+        Hf        = Hf * JKgToBtuLbm;
+        Hg        = Hg * JKgToBtuLbm;
+
+        if ( H <= Hf ) {
+            // Eq. III.1-6a
+            for ( int i = 0; i < 2; i++ )
+                for ( int j = 0; j < 4; j++ )
+                    T = T + ct1[i][j] * pow( P, (double) i ) * pow( H, (double) j );
+        } else if ( H <= Hg ) {
+            // Eq. III.1-6a with H=Hf
+            for ( int i = 0; i < 2; i++ )
+                for ( int j = 0; j < 4; j++ )
+                    T = T + ct1[i][j] * pow( P, (double) i ) * pow( Hf, (double) j );
+        } else {
+            // Eq. III.1-6c
+            for ( int i = 0; i < 5; i++ )
+                for ( int j = 0; j < 5; j++ )
+                    T = T + ct3[i][j] * pow( P, (double) i ) * pow( H, (double) j );
+        }
+    }
+    NULL_USE( H_crit );
+
+    // convert result to SI units
+    T = 5. / 9. * ( T - 32. ) + 273.15; // [F] to [K]
+
+    return T;
+}
+
+static double evalSpecificVolume( double H, double P )
+{
+    // local enthalpy in J/kg
+    // local pressure in Pa
+    double V; // specific volume in m3/kg
 
     // convert SI units to units used in correlation
     double PaToPsi     = 1.45037738e-4;
@@ -559,41 +417,41 @@ inline double SpecificVolumeProp::eval( const std::vector<double> &args )
     int offset = 0;
     for ( int i = 0; i < 3; i++ )
         for ( int j = 0; j < 3; j++ )
-            cn0[i][j] = d_params[offset + 3 * i + j];
+            cn0[i][j] = VolParams[offset + 3 * i + j];
 
     offset += 3 * 3;
     for ( int i = 0; i < 3; i++ )
         for ( int j = 0; j < 5; j++ )
-            cn1[i][j] = d_params[offset + 5 * i + j];
+            cn1[i][j] = VolParams[offset + 5 * i + j];
 
     offset += 3 * 5;
     for ( int i = 0; i < 4; i++ )
         for ( int j = 0; j < 3; j++ )
-            cn2[i][j] = d_params[offset + 3 * i + j];
+            cn2[i][j] = VolParams[offset + 3 * i + j];
 
     offset += 4 * 3;
     for ( int i = 0; i < 4; i++ )
         for ( int j = 0; j < 4; j++ )
-            cn3[i][j] = d_params[offset + 4 * i + j];
+            cn3[i][j] = VolParams[offset + 4 * i + j];
 
     offset += 4 * 4;
     for ( int i = 0; i < 3; i++ )
-        cp[i] = d_params[offset + i];
+        cp[i] = VolParams[offset + i];
 
     offset += 3;
     for ( int i = 0; i < 4; i++ )
-        cx[i] = d_params[offset + i];
+        cx[i] = VolParams[offset + i];
 
     offset += 4;
     for ( int i = 0; i < 3; i++ )
-        ct[i] = d_params[offset + i];
+        ct[i] = VolParams[offset + i];
 
     offset += 3;
     for ( int i = 0; i < 4; i++ )
-        cj[i] = d_params[offset + i];
+        cj[i] = VolParams[offset + i];
 
     offset += 4;
-    d = d_params[offset];
+    d = VolParams[offset];
 
     // Start evaluation
     V = 0;
@@ -665,13 +523,9 @@ inline double SpecificVolumeProp::eval( const std::vector<double> &args )
         }
     } else {
         // Evaluate saturated liquid/vapor properties
-        SaturatedLiquidEnthalpyProp hf_obj;
-        std::vector<double> PVec( 1, P / PaToPsi ); // convert back to Pa
-        double Hf = hf_obj.eval( PVec );
+        double Hf = evalSaturatedLiquidEnthalpy( P / PaToPsi );
+        double Hg = evalSaturatedVaporEnthalpy( P / PaToPsi );
         Hf        = Hf * JKgToBtuLbm;
-
-        SaturatedVaporEnthalpyProp hg_obj;
-        double Hg = hg_obj.eval( PVec );
         Hg        = Hg * JKgToBtuLbm;
 
         // Liquid
@@ -754,11 +608,11 @@ inline double SpecificVolumeProp::eval( const std::vector<double> &args )
     return V;
 }
 
-inline double ThermalConductivityProp::eval( const std::vector<double> &args )
+static double evalThermalConductivity( double T, double rho )
 {
-    double T   = args[0]; // local temperature in Kelvin
-    double rho = args[1]; // local density in kg/m3
-    double k;             // thermal conductivity in W/(K-m)
+    // local temperature in Kelvin
+    // local density in kg/m3
+    double k; // thermal conductivity in W/(K-m)
 
     // check bounds of inputs
     if ( rho <= 0 )
@@ -816,15 +670,15 @@ inline double ThermalConductivityProp::eval( const std::vector<double> &args )
 }
 
 // Compute the turbulent heat transfer coefficient
-inline double ConvectiveHeatProp::eval( const std::vector<double> &args )
+static double evalConvectiveHeat( double T, double rho, double D, double rey, double prt )
 {
-    double T   = args[0]; // local temperature in Kelvin
-    double rho = args[1]; // local density in kg/m3
-    double D   = args[2]; // hydraulic diameter in m
-    double rey = args[3]; // reynolds number
-    double prt = args[4]; // prandtl numner
-    double k;             // thermal conductivity in W/(K-m)
-    double h;             // Convective heat transfer Coefficient in W/(K-m2)
+    // local temperature in Kelvin
+    // local density in kg/m3
+    // hydraulic diameter in m
+    // reynolds number
+    // prandtl numner
+    double k; // thermal conductivity in W/(K-m)
+    double h; // Convective heat transfer Coefficient in W/(K-m2)
 
     // check bounds of inputs
     if ( rho <= 0 )
@@ -837,11 +691,7 @@ inline double ConvectiveHeatProp::eval( const std::vector<double> &args )
         AMP_ERROR( "Convective Heat called with reynolds # <= 0." );
 
     // get thermal conductivity
-    ThermalConductivityProp tCond;
-    std::vector<double> largs( 2 );
-    largs[0] = T;
-    largs[1] = rho;
-    k        = tCond.eval( largs );
+    k = evalThermalConductivity( T, rho );
 
     // Get the Nusselt number
     double Nu = 0.023 * pow( rey, 0.8 ) * pow( prt, 0.4 ); // Dittus-Boelter correlation
@@ -859,11 +709,11 @@ inline double ConvectiveHeatProp::eval( const std::vector<double> &args )
     return h;
 }
 
-inline double DynamicViscosityProp::eval( const std::vector<double> &args )
+static double evalDynamicViscosity( double T, double rho )
 {
-    double T   = args[0]; // local temperature in Kelvin
-    double rho = args[1]; // local density in kg/m3
-    double u;             // dynamic viscosity in Pa-s
+    // local temperature in Kelvin
+    // local density in kg/m3
+    double u; // dynamic viscosity in Pa-s
 
     // check bounds of inputs
     if ( rho <= 0 )
@@ -874,10 +724,10 @@ inline double DynamicViscosityProp::eval( const std::vector<double> &args )
     // extract parameters from parameter array
     double a[4], b[5][6];
     for ( size_t i = 0; i < 4; i++ )
-        a[i] = d_params[i];
+        a[i] = ViscParams[i];
     for ( size_t i = 0; i < 5; i++ )
         for ( size_t j = 0; j < 6; j++ )
-            b[i][j] = d_params[4 + 6 * i + j];
+            b[i][j] = ViscParams[4 + 6 * i + j];
 
     double Tstar   = 647.27;  // [K]
     double rhostar = 317.763; // [kg/m3]
@@ -901,37 +751,17 @@ inline double DynamicViscosityProp::eval( const std::vector<double> &args )
     return u;
 }
 
-inline double EnthalpyProp::eval( const std::vector<double> &args )
-{
-    double T = args[0]; // local temperature in Kelvin
-    double P = args[1]; // local pressure in Pa
-    double h;           // specific enthalpy in J/kg
-
-    double hmin = 0.1;         // Can't be zero
-    double hmax = TempHmaxVal; // Max value we can evaluate the Temperature
-    // We used to do this solve using Newton's method, however, there
-    //  were occasional instabilities when evaluating at large temperatures.
-    // Switching to the Method of False Position for improved robustness,
-    //  it appears to use approximately twice as many function evaluations
-    //  as Newton on average.
-    h = MfpSolve( hmin, hmax, T, P );
-    return h;
-}
-
-inline double EnthalpyProp::Residual( double h, double T, double P )
-{
-    TemperatureProp temperatureProperty;
-    std::vector<double> tempArgs;
-    tempArgs.push_back( h );
-    tempArgs.push_back( P );
-    double tempResult = temperatureProperty.eval( tempArgs );
-
-    return ( T - tempResult );
-}
 
 // Use Method of False Position (MFP) to solve for enthalpy
-inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double P )
+static double MfpSolve( double hmin, double hmax, double T, double P )
 {
+    const double Mfp_atol          = 1.0e-7;  // absolute tolerance for MFP solve
+    const double Mfp_rtol          = 1.0e-7;  // relative tolerance for MFP solve
+    const double Mfp_ftol          = 1.0e-14; // function tolerance for MFP solve
+    const unsigned int Mfp_maxIter = 1000;    // maximum number of iterations for MFP solve
+
+    auto Residual = []( double h, double T, double P ) { return T - evalTemperature( h, P ); };
+
     // enthalpy values at left (l), right (r), and middle (m) as well as
     //  residual evaluated at these points
     double l, r, fl, fr;
@@ -967,6 +797,160 @@ inline double EnthalpyProp::MfpSolve( double hmin, double hmax, double T, double
     // Return point with smallest function value
     return std::abs( fl ) < std::abs( fr ) ? l : r;
 }
+
+static double evalEnthalpy( double T, double P )
+{
+    // local temperature in Kelvin
+    // local pressure in Pa
+    double h; // specific enthalpy in J/kg
+
+    double hmin = 0.1;         // Can't be zero
+    double hmax = TempHmaxVal; // Max value we can evaluate the Temperature
+    // We used to do this solve using Newton's method, however, there
+    //  were occasional instabilities when evaluating at large temperatures.
+    // Switching to the Method of False Position for improved robustness,
+    //  it appears to use approximately twice as many function evaluations
+    //  as Newton on average.
+    h = MfpSolve( hmin, hmax, T, P );
+    return h;
+}
+
+
+//=================== Classes =======================================================
+
+class TemperatureProp : public Property
+{
+public:
+    TemperatureProp()
+        : Property( "WaterLibrary_Temperature", { 1 }, Units(), source, TempArgs, TempRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalTemperature( args( 0, i ), args( 1, i ) );
+    }
+};
+
+class SaturatedLiquidEnthalpyProp : public Property
+{
+public:
+    SaturatedLiquidEnthalpyProp()
+        : Property( "WaterLibrary_SaturatedLiquidEnthalpy",
+                    { 1 },
+                    Units(),
+                    source,
+                    HfSatArgs,
+                    HfSatRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalSaturatedLiquidEnthalpy( args( 0, i ) );
+    }
+};
+
+class SaturatedVaporEnthalpyProp : public Property
+{
+public:
+    SaturatedVaporEnthalpyProp()
+        : Property( "WaterLibrary_SaturatedVaporEnthalpy",
+                    { 1 },
+                    Units(),
+                    source,
+                    HgSatArgs,
+                    HgSatRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalSaturatedVaporEnthalpy( args( 0, i ) );
+    }
+};
+
+class SpecificVolumeProp : public Property
+{
+public:
+    SpecificVolumeProp()
+        : Property( "WaterLibrary_SpecificVolume", { 1 }, Units(), source, VolArgs, VolRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalSpecificVolume( args( 0, i ), args( 1, i ) );
+    }
+};
+
+class ThermalConductivityProp : public Property
+{
+public:
+    ThermalConductivityProp()
+        : Property(
+              "WaterLibrary_ThermalConductivity", { 1 }, Units(), source, CondArgs, CondRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalThermalConductivity( args( 0, i ), args( 1, i ) );
+    }
+};
+
+class ConvectiveHeatProp : public Property
+{
+public:
+    ConvectiveHeatProp()
+        : Property( "WaterLibrary_ConvectiveHeat", { 1 }, Units(), source, ConvArgs, ConvRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalConvectiveHeat(
+                args( 0, i ), args( 1, i ), args( 2, i ), args( 3, i ), args( 4, i ) );
+    }
+};
+
+class DynamicViscosityProp : public Property
+{
+public:
+    DynamicViscosityProp()
+        : Property( "WaterLibrary_DynamicViscosity", { 1 }, Units(), source, ViscArgs, ViscRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalDynamicViscosity( args( 0, i ), args( 1, i ) );
+    }
+};
+
+class EnthalpyProp : public Property
+{
+public:
+    EnthalpyProp()
+        : Property( "WaterLibrary_Enthalpy", { 1 }, Units(), source, EnthalpyArgs, EnthalpyRanges )
+    {
+    }
+
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ )
+            result( i ) = evalEnthalpy( args( 0, i ), args( 1, i ) );
+    }
+};
+
+
 } // namespace WaterLibrary_NS
 //=================== Materials =====================================================
 // clang-format off

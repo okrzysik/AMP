@@ -1,4 +1,5 @@
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/utils/AMPManager.h"

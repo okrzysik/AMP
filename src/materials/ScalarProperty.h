@@ -2,8 +2,9 @@
 #define included_AMP_ScalarProperty
 
 #include "AMP/materials/Property.h"
-#include "AMP/materials/TensorProperty.h"
-#include "AMP/materials/VectorProperty.h"
+#include "AMP/utils/MathExpr.h"
+
+#include <cstring>
 
 
 namespace AMP::Materials {
@@ -17,13 +18,31 @@ public:
                     double value,
                     const AMP::Units &unit = AMP::Units(),
                     std::string source     = "" )
-        : Property( std::move( name ), unit, std::move( source ) ), d_value( value )
+        : Property( std::move( name ), { 1 }, unit, std::move( source ) )
+    {
+        d_value.resize( 1 );
+        d_value( 0 ) = value;
+    }
+    ScalarProperty( std::string name,
+                    AMP::Array<double> value,
+                    const AMP::Units &unit = AMP::Units(),
+                    std::string source     = "" )
+        : Property( std::move( name ), value.size(), unit, std::move( source ) ),
+          d_value( std::move( value ) )
     {
     }
-    double eval( const std::vector<double> & ) override { return d_value; }
+    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
+    {
+        size_t N1 = d_value.length();
+        size_t N2 = result.size( d_value.ndim() + 1 );
+        for ( size_t i = 0; i < N2; i++ ) {
+            memcpy( &result( 0, i ), d_value.data(), N1 * sizeof( double ) );
+            result.fill( d_value );
+        }
+    }
 
 private:
-    double d_value;
+    AMP::Array<double> d_value;
 };
 
 
@@ -40,6 +59,7 @@ public:
                         std::vector<std::array<double, 2>> ranges = {},
                         std::vector<AMP::Units> argUnits          = {} )
         : Property( std::move( name ),
+                    { 1 },
                     unit,
                     std::move( source ),
                     std::move( args ),
@@ -52,18 +72,20 @@ public:
         else
             AMP_ASSERT( d_arguments.empty() );
     }
-    double eval( const std::vector<double> &args ) override
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
     {
         if ( d_p.size() == 1 )
-            return d_p[0];
-        double y  = 0;
-        double x  = args[0];
-        double x2 = 1.0;
-        for ( size_t i = 0; i < d_p.size(); i++ ) {
-            y += d_p[i] * x2;
-            x2 *= x;
+            return result.fill( d_p[0] );
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            double x  = args( i );
+            double y  = 0;
+            double x2 = 1.0;
+            for ( size_t i = 0; i < d_p.size(); i++ ) {
+                y += d_p[i] * x2;
+                x2 *= x;
+            }
+            result( i ) = y;
         }
-        return y;
     }
 
 private:
@@ -71,51 +93,52 @@ private:
 };
 
 
-//! Scalar Vector Property
-class ScalarVectorProperty : public VectorProperty
+//! Polynomial based property class
+class EquationProperty : public Property
 {
 public:
-    explicit ScalarVectorProperty( const std::string &name,
-                                   double value,
-                                   const std::string &source = "" )
-        : VectorProperty( name, source, {}, {}, 1 ), d_value( value )
+    EquationProperty() {}
+    EquationProperty( std::string name,
+                      std::shared_ptr<const MathExpr> eq,
+                      const AMP::Units &unit                    = {},
+                      std::vector<std::array<double, 2>> ranges = {},
+                      std::vector<AMP::Units> argUnits          = {},
+                      std::string source                        = "" )
+        : Property( std::move( name ),
+                    { 1 },
+                    unit,
+                    std::move( source ),
+                    eq->getVars(),
+                    getRanges( ranges, eq ),
+                    std::move( argUnits ) ),
+          d_eq( eq )
     {
+        AMP_ASSERT( d_eq );
     }
-
-    std::vector<double> evalVector( const std::vector<double> & ) override { return { d_value }; }
-
-private:
-    double d_value;
-};
-
-
-//! Scalar Tensor Property
-class ScalarTensorProperty : public TensorProperty
-{
-public:
-    explicit ScalarTensorProperty( const std::string &name,
-                                   const std::string &source,
-                                   const std::vector<size_t> &dims,
-                                   const std::vector<double> &params )
-        : TensorProperty( name, source, {}, {}, dims ), d_params( params )
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
     {
-        AMP_INSIST( d_params.size() == dims[0] * dims[1],
-                    "dimensions and number of parameters don't match" );
-    }
-
-    std::vector<std::vector<double>> evalTensor( const std::vector<double> & ) override
-    {
-        std::vector<std::vector<double>> result( d_dimensions[0],
-                                                 std::vector<double>( d_dimensions[1] ) );
-        for ( size_t i = 0; i < d_dimensions[0]; i++ )
-            for ( size_t j = 0; j < d_dimensions[1]; j++ )
-                result[i][j] = d_params[i * d_dimensions[1] + j];
-        return result;
+        AMP_ASSERT( d_eq );
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            if ( args.empty() )
+                result( i ) = ( *d_eq )();
+            else
+                result( i ) = ( *d_eq )( &args( 0, i ) );
+        }
     }
 
 private:
-    std::vector<double> d_params;
+    static std::vector<std::array<double, 2>> getRanges( std::vector<std::array<double, 2>> ranges,
+                                                         std::shared_ptr<const MathExpr> eq )
+    {
+        if ( ranges.empty() )
+            ranges.resize( eq->getVars().size(), { { -1e100, 1e100 } } );
+        return ranges;
+    }
+
+private:
+    std::shared_ptr<const MathExpr> d_eq;
 };
+
 
 } // namespace AMP::Materials
 

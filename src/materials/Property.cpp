@@ -1,4 +1,6 @@
-#include "Property.h"
+#include "AMP/materials/Property.h"
+#include "AMP/materials/ScalarProperty.h"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
@@ -13,12 +15,14 @@ namespace AMP::Materials {
  *  Constructor                                                          *
  ************************************************************************/
 Property::Property( std::string name,
-                    Units unit,
+                    const ArraySize &size,
+                    const Units &unit,
                     std::string source,
                     std::vector<std::string> args,
                     std::vector<std::array<double, 2>> ranges,
                     std::vector<Units> units )
     : d_name( std::move( name ) ),
+      d_dim( size ),
       d_units( unit ),
       d_source( std::move( source ) ),
       d_arguments( std::move( args ) ),
@@ -35,6 +39,19 @@ Property::Property( std::string name,
     d_defaults.resize( d_arguments.size() );
     for ( size_t i = 0; i < d_arguments.size(); i++ )
         d_defaults[i] = d_ranges[i][0];
+}
+
+
+/************************************************************************
+ *  Evaluate the input arguments                                         *
+ ************************************************************************/
+void Property::evalArgs( AMP::Array<double> &args2,
+                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
+                         const std::map<std::string, std::string> &translator ) const
+{
+    auto mapargs = make_map( args, translator );
+    for ( auto arg : mapargs )
+        evalArgs( args2, arg.first, *arg.second );
 }
 
 
@@ -72,178 +89,84 @@ Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args
 
 
 /************************************************************************
- *  evalv                                                                *
+ *  Create the default arguments                                         *
  ************************************************************************/
-double Property::eval( const Units &unit,
-                       const std::vector<double> &args,
-                       const std::vector<std::string> &names,
-                       const std::vector<Units> &argUnits )
+AMP::Array<double> Property::defaultArgs( size_t N ) const
 {
-    double value = 0;
-    if ( names.empty() && argUnits.empty() && args.size() == d_arguments.size() ) {
-        // Evaluate the property
-        value = eval( args );
-    } else {
-        // Set the default values
-        auto eval_args = d_defaults;
-        // Override default arguments
-        AMP_ASSERT( names.size() == args.size() );
-        for ( size_t i = 0; i < args.size(); i++ ) {
-            for ( size_t j = 0; j < d_arguments.size(); j++ ) {
-                if ( names[i] == d_arguments[j] ) {
-                    eval_args[j] = args[i];
-                    if ( !argUnits.empty() ) {
-                        if ( !argUnits[i].isNull() && !d_argUnits[j].isNull() )
-                            eval_args[j] *= argUnits[i].convert( d_argUnits[j] );
-                    }
-                }
-            }
-        }
-        // Evaluate the property
-        value = eval( eval_args );
-    }
-    // Convert units if required
-    if ( !unit.isNull() )
-        value *= d_units.convert( unit );
-    return value;
+    AMP::Array<double> args2( d_arguments.size(), N );
+    if ( args2.empty() )
+        return args2;
+    for ( size_t j = 0; j < N; j++ )
+        memcpy( &args2( 0, j ), d_defaults.data(), d_defaults.size() * sizeof( double ) );
+    return args2;
 }
 
-
-/************************************************************************
- *  evalv                                                                *
- ************************************************************************/
-static inline size_t size( const std::vector<double> &x ) { return x.size(); }
-static inline size_t size( const AMP::LinearAlgebra::Vector &x ) { return x.getLocalSize(); }
-template<class OUT, class IN>
-void Property::evalv( OUT &r, const Units &unit, const std::vector<argumentDataStruct<IN>> &args )
-{
-    // Check that all vectors are the same size
-    for ( size_t i = 0; i < args.size(); i++ )
-        AMP_ASSERT( size( args[i].vec ) == size( r ) );
-
-    // Check that all arguments are in range
-    for ( const auto &arg : args )
-        in_range( std::string( arg.str ), arg.vec, arg.units, true );
-
-    // Set the default values
-    auto eval_args = d_defaults;
-
-    // Get the indices and iterators to override
-    std::vector<int> index( args.size(), -1 );
-    std::vector<double> scaleArgs( args.size(), 1.0 );
-    std::vector<typename IN::const_iterator> arg_it( args.size() );
-    for ( size_t i = 0; i < args.size(); i++ ) {
-        auto it = d_argToIndexMap.find( args[i].str );
-        if ( it != d_argToIndexMap.end() ) {
-            size_t j  = it->second;
-            index[j]  = i;
-            arg_it[j] = args[i].vec.begin();
-            if ( !args[i].units.isNull() && !d_argUnits[j].isNull() )
-                scaleArgs[j] = args[i].units.convert( d_argUnits[j] );
-        }
-    }
-
-    // Call eval for each entry
-    double scale = 1.0;
-    if ( !unit.isNull() )
-        scale = d_units.convert( unit );
-
-    for ( auto r_it = r.begin(); r_it != r.end(); ++r_it ) {
-        // Update the arguments
-        for ( size_t i = 0; i < args.size(); i++ ) {
-            if ( index[i] >= 0 ) {
-                eval_args[i] = scaleArgs[i] * ( *arg_it[i] );
-                ++arg_it[i];
-            }
-        }
-        // Call eval
-        *r_it = scale * eval( eval_args );
-    }
-}
-template void Property::evalv( std::vector<double> &,
-                               const Units &unit,
-                               const std::vector<argumentDataStruct<std::vector<double>>> & );
-double Property::eval( const std::vector<double> & )
-{
-    AMP_INSIST( false, "function is not implemented for this property" );
-    return 0;
-}
-void Property::evalv(
-    std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-    const std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> &args )
-{
-    std::vector<argumentDataStruct<AMP::LinearAlgebra::Vector>> args2;
-    for ( const auto &t : args )
-        args2.emplace_back( std::get<0>( t ), *std::get<1>( t ), std::get<1>( t )->getUnits() );
-    evalv( *r, r->getUnits(), args2 );
-}
-void Property::evalv( std::shared_ptr<AMP::LinearAlgebra::Vector> &r,
-                      const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                      const std::map<std::string, std::string> &translator )
-{
-    auto mapargs = make_map( args, translator );
-    evalv( r, mapargs );
-}
-void Property::evalv( std::vector<double> &r,
-                      const std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
-{
-    std::vector<argumentDataStruct<std::vector<double>>> args2;
-    for ( const auto &tmp : args )
-        args2.emplace_back( tmp.first, *tmp.second );
-    evalv( r, Units(), args2 );
-}
-
-
-/************************************************************************
- *  Get/Set auxiliary data                                               *
- ************************************************************************/
-void Property::setAuxiliaryData( const std::string &key, const double val )
-{
-    auto loc = d_AuxiliaryDataDouble.find( key );
-    AMP_ASSERT( loc != d_AuxiliaryDataDouble.end() );
-    loc->second = val;
-}
-void Property::setAuxiliaryData( const std::string &key, const int val )
-{
-    auto loc = d_AuxiliaryDataInteger.find( key );
-    AMP_ASSERT( loc != d_AuxiliaryDataInteger.end() );
-    loc->second = val;
-}
-void Property::setAuxiliaryData( const std::string &key, const std::string &val )
-{
-    auto loc = d_AuxiliaryDataString.find( key );
-    AMP_ASSERT( loc != d_AuxiliaryDataString.end() );
-    loc->second = val;
-}
-void Property::getAuxiliaryData( const std::string &key, double &val )
-{
-    auto p = d_AuxiliaryDataDouble.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataDouble.end() );
-    val = p->second;
-}
-void Property::getAuxiliaryData( const std::string &key, int &val )
-{
-    auto p = d_AuxiliaryDataInteger.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataInteger.end() );
-    val = p->second;
-}
-void Property::getAuxiliaryData( const std::string &key, std::string &val )
-{
-    auto p = d_AuxiliaryDataString.find( key );
-    AMP_ASSERT( p != d_AuxiliaryDataString.end() );
-    val = p->second;
-}
 
 /************************************************************************
  *  Misc functions                                                       *
  ************************************************************************/
-std::array<double, 2> Property::get_arg_range( const std::string &name )
+std::array<double, 2> Property::get_arg_range( const std::string &name ) const
 {
     int index = get_arg_index( name );
     AMP_ASSERT( index >= 0 );
     return d_ranges[index];
 }
-bool Property::is_argument( const std::string &name ) { return get_arg_index( name ) >= 0; }
+bool Property::is_argument( const std::string &name ) const { return get_arg_index( name ) >= 0; }
+void Property::checkArgs( const AMP::Array<double> &args ) const
+{
+    AMP_ASSERT( args.ndim() <= 2 );
+    AMP_ASSERT( args.size( 0 ) == d_arguments.size() );
+    for ( size_t i = 0; i < args.size( 0 ); i++ ) {
+        auto range = d_ranges[i];
+        for ( size_t j = 0; j < args.size( 1 ); j++ ) {
+            auto value = args( i, j );
+            bool test  = value >= range[0] && value <= range[1];
+            if ( !test ) {
+                std::stringstream ss;
+                ss << "Property '" + d_arguments[i] + "' out of range in function '" + d_name +
+                          "'\n";
+                ss << "Value is " << value << " ";
+                ss << std::endl
+                   << "Valid range is [" << range[0] << "," << range[1] << "]" << std::endl;
+                AMP_ERROR( ss.str() );
+            }
+        }
+    }
+}
+
+
+/************************************************************************
+ *  Create a property from a database key data object                    *
+ ************************************************************************/
+std::unique_ptr<Property> createProperty( const std::string &key, const Database &db )
+{
+    auto keyData = db.getData( key );
+    auto unit    = keyData->unit();
+    if ( db.isDatabase( key ) ) {
+        // We are dealing with a database
+        AMP_ERROR( "Not finished (Database)" );
+    } else if ( db.isEquation( key ) ) {
+        // We are dealing with an equation
+        return std::make_unique<EquationProperty>( key, db.getEquation( key ), unit );
+    } else if ( keyData->is_floating_point() ) {
+        // We are dealing with a scalar
+        auto data = keyData->convertToDouble();
+        return std::make_unique<ScalarProperty>( key, data, unit );
+    } else {
+        AMP_ERROR( "Unknown data type" );
+    }
+    return nullptr;
+}
 
 
 } // namespace AMP::Materials
+
+
+/********************************************************
+ *  Explicit instantiations of Array                     *
+ ********************************************************/
+#include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( std::vector<double> * );
+instantiateArrayConstructors( AMP::LinearAlgebra::Vector * );
+instantiateArrayConstructors( std::shared_ptr<std::vector<double>> );
+instantiateArrayConstructors( std::shared_ptr<AMP::LinearAlgebra::Vector> );

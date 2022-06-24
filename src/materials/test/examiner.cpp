@@ -1,10 +1,7 @@
-/*
- * examiner.cc
- *
- *  Created on: Sep 17, 2010
- *      Author: gad
- */
-
+#include "AMP/materials/Material.h"
+#include "AMP/materials/Property.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -15,11 +12,6 @@
 #include <valarray>
 #include <vector>
 
-#include "AMP/materials/Material.h"
-#include "AMP/materials/Property.h"
-#include "AMP/utils/AMPManager.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/Factory.h"
 
 // Allow external materials to include additional headers in the test
 // Note: this includes 1 additional include header that is passed from the command line:
@@ -181,7 +173,8 @@ int main( int argc, char *argv[] )
             ( *argMap[names[i]] )[0] = args[i][indices[i]];
         }
         std::vector<double> value( 1 );
-        material->property( propname )->evalv( value, argMap );
+        auto property = material->property( propname );
+        property->evalv( value, {}, argMap );
         if ( format == "Mathematica" )
             std::cout << "{";
         for ( size_t i = 0; i < nargs; i++ )

@@ -6,24 +6,25 @@
 namespace AMP::Materials {
 
 
-// check if a property exists in the material
+/********************************************************************
+ * Get properties                                                    *
+ ********************************************************************/
 bool Material::hasProperty( const std::string &type ) const
 {
     return d_propertyMap.find( type ) != d_propertyMap.end();
 }
-
-
-// get a pointer to a specific property through its name
 std::shared_ptr<Property> Material::property( std::string type )
 {
     auto it = d_propertyMap.find( type );
     AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
     return it->second;
 }
-
-
-// return a list of all properties in this material
-// note: this list is in error if property has an embedded underscore
+std::shared_ptr<const Property> Material::property( std::string type ) const
+{
+    auto it = d_propertyMap.find( type );
+    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    return it->second;
+}
 std::vector<std::string> Material::list() const
 {
     std::vector<std::string> result;
@@ -33,13 +34,22 @@ std::vector<std::string> Material::list() const
 }
 
 
-// Add a property
+/********************************************************************
+ * Add a property                                                    *
+ ********************************************************************/
 void Material::addScalarProperty( std::string name,
                                   double value,
                                   const AMP::Units &unit,
                                   std::string source )
 {
     addProperty<ScalarProperty>( std::move( name ), value, unit, std::move( source ) );
+}
+void Material::addScalarProperty( std::string name,
+                                  AMP::Array<double> value,
+                                  const AMP::Units &unit,
+                                  std::string source )
+{
+    addProperty<ScalarProperty>( std::move( name ), std::move( value ), unit, std::move( source ) );
 }
 void Material::addPolynomialProperty( std::string name,
                                       std::string source,
@@ -59,17 +69,31 @@ void Material::addPolynomialProperty( std::string name,
 }
 
 
-// Return the material
-std::shared_ptr<Material> getMaterial( const std::string &name )
+/********************************************************************
+ * Construct a material from a database                              *
+ ********************************************************************/
+DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Database> db )
+    : d_name( name )
 {
-    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+    if ( !db )
+        return;
+    auto keys = db->getAllKeys();
+    for ( auto key : keys )
+        d_propertyMap[key] = createProperty( key, *db );
 }
 
 
-// Return a list of available materials
-std::vector<std::string> getMaterialList()
+/********************************************************************
+ * Material factory functiosn                                        *
+ ********************************************************************/
+std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
+std::unique_ptr<Material> getMaterial( const std::string &name )
 {
-    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().getKeys();
+    return AMP::FactoryStrategy<Material>::create( name );
+}
+void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun )
+{
+    AMP::FactoryStrategy<Material>::registerFactory( name, fun );
 }
 
 

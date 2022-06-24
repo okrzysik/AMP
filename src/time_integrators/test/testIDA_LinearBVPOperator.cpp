@@ -3,6 +3,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/NeutronicsRhs.h"
@@ -52,7 +53,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto manager     = AMP::Mesh::Mesh::buildMesh( params );
+    auto manager     = AMP::Mesh::MeshFactory::create( params );
     auto meshAdapter = manager->Subset( "ida" );
 
     // Create a DOF manager for a nodal vector

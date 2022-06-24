@@ -3,6 +3,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
@@ -325,7 +326,7 @@ void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AM
     auto mesh_db       = input_db->getDatabase( "Mesh" );
     auto meshmgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshmgrParams->setComm( globalComm );
-    auto manager = AMP::Mesh::Mesh::buildMesh( meshmgrParams );
+    auto manager = AMP::Mesh::MeshFactory::create( meshmgrParams );
 
     // create the nonlinear and linear thermal operators
     std::shared_ptr<AMP::Operator::ColumnOperator> nonlinearThermalColumnOperator;

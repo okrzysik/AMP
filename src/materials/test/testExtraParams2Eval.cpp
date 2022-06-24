@@ -13,8 +13,6 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     auto material = AMP::Materials::getMaterial( "UO2_MSRZC_09" );
 
-    std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
-
     std::string temperatureString = "temperature";
     std::string burnupString      = "burnup";
     std::string oxygenString      = "concentration";
@@ -35,17 +33,30 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     for ( int i = 0; i < 2; i++ ) {
         if ( i == 0 ) {
-            inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-            inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
-            material->property( ymString )->evalv( YM, inputMaterialParameters );
-            material->property( prString )->evalv( PR, inputMaterialParameters );
+            material->property( ymString )
+                ->evalv( YM, {}, "temperature", tempVec, "concentration", oxygenVec );
+            material->property( prString )
+                ->evalv( PR, {}, "temperature", tempVec, "concentration", oxygenVec );
             std::cout << exeName << ": Passed if burnup is NOT used." << std::endl;
         } else {
-            inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
-            inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
-            inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-            material->property( ymString )->evalv( YM, inputMaterialParameters );
-            material->property( prString )->evalv( PR, inputMaterialParameters );
+            material->property( ymString )
+                ->evalv( YM,
+                         {},
+                         "temperature",
+                         tempVec,
+                         "concentration",
+                         oxygenVec,
+                         "burnup",
+                         burnupVec );
+            material->property( prString )
+                ->evalv( PR,
+                         {},
+                         "temperature",
+                         tempVec,
+                         "concentration",
+                         oxygenVec,
+                         "burnup",
+                         burnupVec );
             std::cout << exeName << ": Passed if burnup is used." << std::endl;
         }
     } // end for i

@@ -2,6 +2,7 @@
 #include "AMP/discretization/createLibmeshElements.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 
@@ -218,7 +219,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
         auto mesh_db   = inputDatabase->getDatabase( "Mesh" );
         auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
         mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-        auto manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
+        auto manager = AMP::Mesh::MeshFactory::create( mgrParams );
         // Reading the mesh
         if ( exeName == "mechanicsVerification-Cylinder" ) {
             meshAdapter = manager->Subset( "cylinder" );

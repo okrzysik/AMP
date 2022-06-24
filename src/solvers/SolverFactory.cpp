@@ -48,6 +48,19 @@ responsibility for the use of this software.
 
 namespace AMP::Solver {
 
+// Create the operator
+std::unique_ptr<SolverStrategy>
+SolverFactory::create( std::shared_ptr<SolverStrategyParameters> parameters )
+{
+    AMP_ASSERT( parameters != nullptr );
+    auto inputDatabase = parameters->d_db;
+    AMP_ASSERT( inputDatabase );
+    auto objectName = inputDatabase->getString( "name" );
+    return FactoryStrategy<SolverStrategy, std::shared_ptr<SolverStrategyParameters>>::create(
+        objectName, parameters );
+}
+
+
 // register all known solver factories
 void registerSolverFactories()
 {
