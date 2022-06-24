@@ -2,7 +2,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/RNG.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -16,9 +15,6 @@
 
 
 namespace AMP::LinearAlgebra {
-
-
-std::shared_ptr<RNG> Vector::d_DefaultRNG;
 
 
 /****************************************************************
@@ -71,25 +67,9 @@ std::string Vector::type() const { return "Vector<" + d_VectorData->VectorDataNa
 
 
 /****************************************************************
- * RNG                                                           *
+ * setRandomValues                                               *
  ****************************************************************/
-void Vector::setDefaultRNG( std::shared_ptr<RNG> p ) { d_DefaultRNG = p; }
-std::shared_ptr<RNG> Vector::getDefaultRNG()
-{
-    if ( !d_DefaultRNG ) {
-        AMP_MPI globalComm( AMP_COMM_WORLD );
-        int rank     = globalComm.getRank();
-        auto params  = std::make_shared<RNGParameters>( RNGParameters::RNGOptions::USE_GLOBAL_SEED,
-                                                       static_cast<size_t>( rank ) );
-        d_DefaultRNG = std::make_shared<RNG>( params );
-    }
-    return d_DefaultRNG;
-}
 void Vector::setRandomValues() { d_VectorOps->setRandomValues( *getVectorData() ); }
-void Vector::setRandomValues( std::shared_ptr<RNG> rng )
-{
-    d_VectorOps->setRandomValues( rng, *getVectorData() );
-}
 
 
 /****************************************************************

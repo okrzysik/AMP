@@ -2,97 +2,122 @@
 #include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/materials/TensorProperty.h"
-#include "AMP/materials/ThermalDiffusionCoefficientProp.h"
-#include "AMP/materials/VectorProperty.h"
+
 #include <cmath>
 #include <string>
 
+
 namespace AMP::Materials {
-
-//=================== Constants =====================================================
-
-static const char *source = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zubelewicz, "
-                            "Petrica Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
-
-static std::initializer_list<double> FCparams = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
-static std::initializer_list<double> SCparams = { -1380.8, -134435.5, 0.0261 };
-
-static std::initializer_list<std::string> arguments = { "temperature", "concentration" };
-
-static const double TminVal = 299.9;
-static const double TmaxVal = 1400;
-
-static const double uminVal = 0.0;
-static const double umaxVal = 0.2;
 
 
 //=================== Classes =======================================================
 
 namespace Ox_MSRZC_09_NS {
 
+
+static const char *source = "Bogdan Mihaila, Marius Stan, Juan Ramirez, Alek Zubelewicz, "
+                            "Petrica Cristea, Journal of Nuclear Materials 394 (2009) 182--189";
+static double FCparams[]                            = { -9.386, -4.26e3, 1.2e-3, 7.5e-4 };
+static double SCparams[]                            = { -1380.8, -134435.5, 0.0261 };
+static std::initializer_list<std::string> arguments = { "temperature", "concentration" };
+static const double TminVal                         = 299.9;
+static const double TmaxVal                         = 1400;
+static const double uminVal                         = 0.0;
+static const double umaxVal                         = 0.2;
+
+
+double evalFick( double T, double u )
+{
+    AMP_ASSERT( T > TminVal && T < TmaxVal );
+    AMP_ASSERT( u >= uminVal && u <= umaxVal );
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
+    double expDC = FCparams[0] + FCparams[1] / T + FCparams[2] * T * x +
+                   FCparams[3] * T * log10( ( 2 + x ) / x );
+    double fick = exp( expDC * log( 10.0 ) );
+    return fick;
+}
+double evalSoret( double T, double u )
+{
+    AMP_ASSERT( T > TminVal && T < TmaxVal );
+    AMP_ASSERT( u >= uminVal && u <= umaxVal );
+    double x = u;
+    if ( x < 0.001 )
+        x = 0.001;
+    double Q_star = SCparams[0] + SCparams[1] * exp( -x / SCparams[2] );
+    double F_SC   = ( 2 + x ) / ( 2 * ( 1 - 3 * x ) * ( 1 - 2 * x ) );
+    double R_ig   = 8.314;
+    double soret  = x / F_SC * Q_star / ( R_ig * T * T );
+    return soret;
+}
+
+
 class FickCoefficientProp : public Property
 {
 public:
     FickCoefficientProp( const std::string &name )
-        : Property(
-              name, Units(), source, arguments, { { TminVal, TmaxVal }, { uminVal, umaxVal } } ),
-          d_p( FCparams )
+        : Property( name,
+                    { 1 },
+                    Units(),
+                    source,
+                    arguments,
+                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
     {
-    } // Range of variables
-
-    double eval( const std::vector<double> &args ) const override
-    {
-        double T = args[0];
-        double u = args[1];
-
-        AMP_ASSERT( T > TminVal && T < TmaxVal );
-        AMP_ASSERT( u >= uminVal && u <= umaxVal );
-
-        double x = u;
-        if ( x < 0.001 )
-            x = 0.001;
-
-        double expDC = d_p[0] + d_p[1] / T + d_p[2] * T * x + d_p[3] * T * log10( ( 2 + x ) / x );
-        double fick  = exp( expDC * log( 10.0 ) );
-        return fick;
     }
-
-private:
-    std::vector<double> d_p;
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            double T    = args( 0, i );
+            double u    = args( 1, i );
+            result( i ) = evalFick( T, u );
+        }
+    }
 };
 
 class SoretCoefficientProp : public Property
 {
 public:
     SoretCoefficientProp( const std::string &name )
-        : Property(
-              name, Units(), source, arguments, { { TminVal, TmaxVal }, { uminVal, umaxVal } } ),
-          d_p( SCparams )
+        : Property( name,
+                    { 1 },
+                    Units(),
+                    source,
+                    arguments,
+                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
     {
-    } // Range of variables
-
-    double eval( const std::vector<double> &args ) const override
-    {
-        double T = args[0];
-        double u = args[1];
-
-        AMP_ASSERT( T > TminVal && T < TmaxVal );
-        AMP_ASSERT( u >= uminVal && u <= umaxVal );
-
-        double x = u;
-        if ( x < 0.001 )
-            x = 0.001;
-
-        double Q_star = d_p[0] + d_p[1] * exp( -x / d_p[2] );
-        double F_SC   = ( 2 + x ) / ( 2 * ( 1 - 3 * x ) * ( 1 - 2 * x ) );
-        double R_ig   = 8.314;
-        double soret  = x / F_SC * Q_star / ( R_ig * T * T );
-        return soret;
     }
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            double T    = args( 0, i );
+            double u    = args( 1, i );
+            result( i ) = evalSoret( T, u );
+        }
+    }
+};
 
-private:
-    std::vector<double> d_p;
+
+class ThermalDiffusionCoefficientProp : public Property
+{
+public:
+    ThermalDiffusionCoefficientProp( const std::string &name )
+        : Property( name,
+                    { 1 },
+                    Units(),
+                    source,
+                    arguments,
+                    { { TminVal, TmaxVal }, { uminVal, umaxVal } } )
+    {
+    }
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            double T    = args( 0, i );
+            double u    = args( 1, i );
+            result( i ) = evalFick( T, u ) * evalSoret( T, u );
+        }
+    }
 };
 
 
@@ -104,13 +129,7 @@ Ox_MSRZC_09::Ox_MSRZC_09()
 {
     addProperty<Ox_MSRZC_09_NS::FickCoefficientProp>( "FickCoefficient" );
     addProperty<Ox_MSRZC_09_NS::SoretCoefficientProp>( "SoretCoefficient" );
-    std::vector<std::string> thermDiffArgs             = { "temperature", "concentration" };
-    std::vector<std::array<double, 2>> thermDiffRanges = { { TminVal, TmaxVal },
-                                                           { uminVal, umaxVal } };
-    auto fick                                          = property( "FickCoefficient" );
-    auto soret                                         = property( "SoretCoefficient" );
-    addProperty<ThermalDiffusionCoefficientProp>(
-        "ThermalDiffusionCoefficient", fick, soret, thermDiffArgs, thermDiffRanges );
+    addProperty<Ox_MSRZC_09_NS::ThermalDiffusionCoefficientProp>( "ThermalDiffusionCoefficient" );
 }
 
 

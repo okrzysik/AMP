@@ -7,11 +7,6 @@
 #include <vector>
 
 
-namespace AMP {
-class RNG;
-}
-
-
 namespace AMP::LinearAlgebra {
 
 
@@ -58,16 +53,9 @@ public:
     virtual void setToScalar( const Scalar &alpha, VectorData &z ) = 0;
 
     /**
-     * \brief Set data in this vector to random values on [0,1).
+     * \brief Set data in this vector to random values
      */
     virtual void setRandomValues( VectorData &x ) = 0;
-
-    /**
-     * \brief Set data in this vector to random values using
-     *      a particular generator
-     * \param[in] rng       The generator to use.
-     */
-    virtual void setRandomValues( std::shared_ptr<RNG> rng, VectorData &x ) = 0;
 
     /**
      * \brief  Set vector equal to scaled input.

@@ -2,9 +2,6 @@
 #include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/materials/TensorProperty.h"
-#include "AMP/materials/ThermalDiffusionCoefficientProp.h"
-#include "AMP/materials/VectorProperty.h"
 
 #include <string>
 
@@ -23,30 +20,21 @@ FixedFuel::FixedFuel()
     const double heatcpval  = 1.;
     const double youngsval  = 1.;
     const double pratioval  = 0.290;
-    addPolynomialProperty( "Density", source, {}, { densval } );
-    addPolynomialProperty( "ThermalConductivity", source, {}, { thermalval } );
-    addPolynomialProperty( "FickCoefficient", source, {}, { fickval } );
-    addPolynomialProperty( "SoretCoefficient", source, {}, { soretval } );
-    addPolynomialProperty( "DTThermalConductivity", source, {}, { 0 } );
-    addPolynomialProperty( "DTFickCoefficient", source, {}, { 0 } );
-    addPolynomialProperty( "DTSoretCoefficient", source, {}, { 0 } );
-    addPolynomialProperty( "DxThermalConductivity", source, {}, { 0 } );
-    addPolynomialProperty( "DxSoretCoefficient", source, {}, { 0 } );
-    addPolynomialProperty( "DxFickCoefficient", source, {}, { 0 } );
-    addPolynomialProperty( "HeatCapacityPressure", source, {}, { heatcpval } );
-    addPolynomialProperty( "ThermalExpansion", source, {}, { alphaval } );
-    addPolynomialProperty( "YoungsModulus", source, {}, { youngsval } );
-    addPolynomialProperty( "PoissonRatio", source, {}, { pratioval } );
-    std::vector<std::string> thermDiffArgs             = {};
-    std::vector<std::array<double, 2>> thermDiffRanges = {};
-    auto fick                                          = property( "FickCoefficient" );
-    auto soret                                         = property( "SoretCoefficient" );
-    addProperty<ThermalDiffusionCoefficientProp>(
-        "ThermalDiffusionCoefficient", fick, soret, thermDiffArgs, thermDiffRanges );
-    std::vector<size_t> dims = { 1, 1 };
-    addProperty<ScalarVectorProperty>( "VectorFickCoefficient", 1.0, source );
-    addProperty<ScalarTensorProperty>(
-        "TensorFickCoefficient", source, dims, std::vector<double>( 1, 1.0 ) );
+    addScalarProperty( "Density", densval, {}, source );
+    addScalarProperty( "ThermalConductivity", thermalval, {}, source );
+    addScalarProperty( "FickCoefficient", fickval, {}, source );
+    addScalarProperty( "SoretCoefficient", soretval, {}, source );
+    addScalarProperty( "DTThermalConductivity", 0, {}, source );
+    addScalarProperty( "DTFickCoefficient", 0, {}, source );
+    addScalarProperty( "DTSoretCoefficient", 0, {}, source );
+    addScalarProperty( "DxThermalConductivity", 0, {}, source );
+    addScalarProperty( "DxSoretCoefficient", 0, {}, source );
+    addScalarProperty( "DxFickCoefficient", 0, {}, source );
+    addScalarProperty( "HeatCapacityPressure", heatcpval, {}, source );
+    addScalarProperty( "ThermalExpansion", alphaval, {}, source );
+    addScalarProperty( "YoungsModulus", youngsval, {}, source );
+    addScalarProperty( "PoissonRatio", pratioval, {}, source );
+    addScalarProperty( "ThermalDiffusionCoefficient", fickval * soretval, {}, source );
 }
 
 

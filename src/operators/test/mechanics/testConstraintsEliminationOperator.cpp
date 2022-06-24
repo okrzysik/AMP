@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CustomConstraintsEliminationOperator.h"
@@ -44,7 +45,7 @@ static void myTest( AMP::UnitTest *ut )
     auto mesh_db    = input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
 
     int const dofsPerNode = 3;
     int const gostWidth   = 1;

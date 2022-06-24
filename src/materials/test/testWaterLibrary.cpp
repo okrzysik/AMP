@@ -28,24 +28,16 @@ void checkConsistency( double h, double p, double T, bool &allCorrect, bool &all
     auto temperatureProperty = mat->property( "Temperature" ); // temperature property
     auto enthalpyProperty    = mat->property( "Enthalpy" );    // enthalpy property
 
-    materialMap tempMap;
-    tempMap.insert( std::make_pair( "enthalpy", make_shared_vector( 1, h ) ) );
-    tempMap.insert( std::make_pair( "pressure", make_shared_vector( 1, p ) ) );
-    std::vector<double> tempOutput( 1 );
-    temperatureProperty->evalv( tempOutput, tempMap );
+    double tempOutput = temperatureProperty->eval( {}, "enthalpy", h, "pressure", p );
     // check that answer is correct
-    if ( !AMP::Utilities::approx_equal( tempOutput[0], T, 0.01 ) ) {
-        AMP::pout << "Incorrect value: Calculated T: " << tempOutput[0] << ", Actual T: " << T
+    if ( !AMP::Utilities::approx_equal( tempOutput, T, 0.01 ) ) {
+        AMP::pout << "Incorrect value: Calculated T: " << tempOutput << ", Actual T: " << T
                   << std::endl;
         allCorrect = false;
     }
     // check that enthalpy function resturns original enthalpy
-    materialMap hMap;
-    hMap.insert( std::make_pair( "temperature", make_shared_vector( 1, tempOutput[0] ) ) );
-    hMap.insert( std::make_pair( "pressure", make_shared_vector( 1, p ) ) );
-    std::vector<double> hOutput( 1 );
-    enthalpyProperty->evalv( hOutput, hMap );
-    if ( !AMP::Utilities::approx_equal( hOutput[0], h, 0.01 ) )
+    double hOutput = enthalpyProperty->eval( {}, "temperature", tempOutput, "pressure", p );
+    if ( !AMP::Utilities::approx_equal( hOutput, h, 0.01 ) )
         allConsistent = false;
 }
 
@@ -163,21 +155,22 @@ int main( int argc, char **argv )
 
         // evaluate properties
         // temperature
-        temperatureProperty->evalv( temperatureOutput, temperatureArgMap );
+        temperatureProperty->evalv( temperatureOutput, {}, temperatureArgMap );
         // saturated liquid enthalpy
-        liquidEnthalpyProperty->evalv( liquidEnthalpyOutput, liquidEnthalpyArgMap );
+        liquidEnthalpyProperty->evalv( liquidEnthalpyOutput, {}, liquidEnthalpyArgMap );
         // specific volume
-        volumeProperty->evalv( volumeOutput, volumeArgMap );
+        volumeProperty->evalv( volumeOutput, {}, volumeArgMap );
         // thermal conductivity
-        conductivityProperty->evalv( conductivityOutput, conductivityArgMap );
+        conductivityProperty->evalv( conductivityOutput, {}, conductivityArgMap );
         // dynamic viscosity
-        viscosityProperty->evalv( viscosityOutput, viscosityArgMap );
+        viscosityProperty->evalv( viscosityOutput, {}, viscosityArgMap );
         // enthalpy
-        enthalpyProperty->evalv( enthalpyOutput, enthalpyArgMap );
+        enthalpyProperty->evalv( enthalpyOutput, {}, enthalpyArgMap );
         // temperature identical values case
         std::vector<double> temperatureOutput_mat( temperatureIdenticalOutput );
-        mat->property( "Temperature" )->evalv( temperatureOutput_mat, temperatureIdenticalArgMap );
-        temperatureProperty->evalv( temperatureIdenticalOutput, temperatureIdenticalArgMap );
+        mat->property( "Temperature" )
+            ->evalv( temperatureOutput_mat, {}, temperatureIdenticalArgMap );
+        temperatureProperty->evalv( temperatureIdenticalOutput, {}, temperatureIdenticalArgMap );
 
         // known values for testing
         double temperatureKnown[n]    = { 392.140, 504.658, 297.004 }; // temperature
@@ -304,7 +297,7 @@ int main( int argc, char **argv )
         materialMap argMap;
         argMap.insert( std::make_pair( "enthalpy", enthalpyIdenticalInput ) );
         std::vector<double> temperatureOutput_def( temperatureOutput );
-        temperatureProperty->evalv( temperatureOutput_def, argMap );
+        temperatureProperty->evalv( temperatureOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( temperatureOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Temperature w/ 1 arg incorrect: ";
             AMP::pout << temperatureOutput_def[0] << " vs " << knownSolution << "\n";
@@ -316,7 +309,7 @@ int main( int argc, char **argv )
         double knownSolution = 320.835; // T [K]	@ {0.5 MPa, 200 kJ/kg}
         materialMap argMap;
         std::vector<double> temperatureOutput_def( temperatureOutput );
-        temperatureProperty->evalv( temperatureOutput_def, argMap );
+        temperatureProperty->evalv( temperatureOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( temperatureOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Temperature w/ 0 arg incorrect: ";
             AMP::pout << temperatureOutput_def[0] << " vs " << knownSolution << "\n";
@@ -328,7 +321,7 @@ int main( int argc, char **argv )
         double knownSolution = 640.185e3; // Hf [J/kg]	@ {0.5 MPa}
         materialMap argMap;
         std::vector<double> liquidEnthalpyOutput_def( liquidEnthalpyOutput );
-        liquidEnthalpyProperty->evalv( liquidEnthalpyOutput_def, argMap );
+        liquidEnthalpyProperty->evalv( liquidEnthalpyOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( liquidEnthalpyOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Saturated liquid enthalpy w/ 0 arg incorrect: ";
             AMP::pout << liquidEnthalpyOutput_def[0] << " vs " << knownSolution << "\n";
@@ -341,7 +334,7 @@ int main( int argc, char **argv )
         materialMap argMap;
         argMap.insert( std::make_pair( "enthalpy", enthalpyIdenticalInput ) );
         std::vector<double> volumeOutput_def( volumeOutput );
-        volumeProperty->evalv( volumeOutput_def, argMap );
+        volumeProperty->evalv( volumeOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( volumeOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Specific volume w/ 1 arg incorrect: ";
             AMP::pout << volumeOutput_def[0] << " vs " << knownSolution << "\n";
@@ -353,7 +346,7 @@ int main( int argc, char **argv )
         double knownSolution = 0.00101083; // v [m3/kg]	@ {0.5 MPa, 200 kJ/kg}
         materialMap argMap;
         std::vector<double> volumeOutput_def( volumeOutput );
-        volumeProperty->evalv( volumeOutput_def, argMap );
+        volumeProperty->evalv( volumeOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( volumeOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Specific volume w/ 0 arg incorrect: ";
             AMP::pout << volumeOutput_def[0] << " vs " << knownSolution << "\n";
@@ -366,7 +359,7 @@ int main( int argc, char **argv )
         materialMap argMap;
         argMap.insert( std::make_pair( "temperature", temperatureIdenticalInput ) );
         std::vector<double> conductivityOutput_def( conductivityOutput );
-        conductivityProperty->evalv( conductivityOutput_def, argMap );
+        conductivityProperty->evalv( conductivityOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( conductivityOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Thermal conductivity w/ 1 arg incorrect: ";
             AMP::pout << conductivityOutput_def[0] << " vs " << knownSolution << "\n";
@@ -378,7 +371,7 @@ int main( int argc, char **argv )
         double knownSolution = 0.668247; // k [W/m-K]	@ {350 K, 973.919 kg/m3}
         materialMap argMap;
         std::vector<double> conductivityOutput_def( conductivityOutput );
-        conductivityProperty->evalv( conductivityOutput_def, argMap );
+        conductivityProperty->evalv( conductivityOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( conductivityOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Thermal conductivity w/ 0 arg incorrect: ";
             AMP::pout << conductivityOutput_def[0] << " vs " << knownSolution << "\n";
@@ -391,7 +384,7 @@ int main( int argc, char **argv )
         materialMap argMap;
         argMap.insert( std::make_pair( "temperature", temperatureIdenticalInput ) );
         std::vector<double> viscosityOutput_def( viscosityOutput );
-        viscosityProperty->evalv( viscosityOutput_def, argMap );
+        viscosityProperty->evalv( viscosityOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( viscosityOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Dynamic viscosity w/ 1 arg incorrect: ";
             AMP::pout << viscosityOutput_def[0] << " vs " << knownSolution << "\n";
@@ -403,7 +396,7 @@ int main( int argc, char **argv )
         double knownSolution = 0.000368895; // u [Pa-s]	@ {350 K, 973.919 kg/m3}
         materialMap argMap;
         std::vector<double> viscosityOutput_def( viscosityOutput );
-        viscosityProperty->evalv( viscosityOutput_def, argMap );
+        viscosityProperty->evalv( viscosityOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( viscosityOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Dynamic viscosity w/ 0 arg incorrect: ";
             AMP::pout << viscosityOutput_def[0] << " vs " << knownSolution << "\n";
@@ -416,7 +409,7 @@ int main( int argc, char **argv )
         materialMap argMap;
         argMap.insert( std::make_pair( "temperature", temperatureIdenticalInput ) );
         std::vector<double> enthalpyOutput_def( enthalpyOutput );
-        enthalpyProperty->evalv( enthalpyOutput_def, argMap );
+        enthalpyProperty->evalv( enthalpyOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( enthalpyOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Enthalpy w/ 1 arg incorrect: ";
             AMP::pout << enthalpyOutput_def[0] << " vs " << knownSolution << "\n";
@@ -428,7 +421,7 @@ int main( int argc, char **argv )
         double knownSolution = 200.0e3; // h [J/kg]	@ {320.835 K, 0.5 MPa}
         materialMap argMap;
         std::vector<double> enthalpyOutput_def( enthalpyOutput );
-        enthalpyProperty->evalv( enthalpyOutput_def, argMap );
+        enthalpyProperty->evalv( enthalpyOutput_def, {}, argMap );
         if ( !AMP::Utilities::approx_equal( enthalpyOutput_def[0], knownSolution, 0.01 ) ) {
             AMP::pout << "Enthalpy w/ 0 arg incorrect: ";
             AMP::pout << enthalpyOutput_def[0] << " vs " << knownSolution << "\n";
@@ -478,7 +471,7 @@ int main( int argc, char **argv )
     // p=800 psi -- Eq. 5a
     ( *pvec )[0] = 5.51580582e6;
     expected     = 1.18586462e6;
-    liquidEnthalpyProperty->evalv( h, pArgs );
+    liquidEnthalpyProperty->evalv( h, {}, pArgs );
     if ( !AMP::Utilities::approx_equal( h[0], expected, tol ) ) {
         AMP::pout << "Saturated liquid enthalpy test 1 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
@@ -488,7 +481,7 @@ int main( int argc, char **argv )
     // p=2000 psi -- Eq. 5b
     ( *pvec )[0] = 1.37895146e7;
     expected     = 1.56325778e6;
-    liquidEnthalpyProperty->evalv( h, pArgs );
+    liquidEnthalpyProperty->evalv( h, {}, pArgs );
     if ( !AMP::Utilities::approx_equal( h[0], expected, tol ) ) {
         AMP::pout << "Saturated liquid enthalpy test 2 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
@@ -498,7 +491,7 @@ int main( int argc, char **argv )
     // p=3000 psi -- Eq. 5c
     ( *pvec )[0] = 2.06842718e7;
     expected     = 1.86516705e6;
-    liquidEnthalpyProperty->evalv( h, pArgs );
+    liquidEnthalpyProperty->evalv( h, {}, pArgs );
     if ( !AMP::Utilities::approx_equal( h[0], expected, tol ) ) {
         AMP::pout << "Saturated liquid enthalpy test 3 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
@@ -510,7 +503,7 @@ int main( int argc, char **argv )
     // p=800 psi -- Eq. 6a
     ( *pvec )[0] = 5.51580582e6;
     expected     = 2.78981197e6;
-    vaporEnthalpyProperty->evalv( h, pArgs );
+    vaporEnthalpyProperty->evalv( h, {}, pArgs );
     if ( !AMP::Utilities::approx_equal( h[0], expected, tol ) ) {
         AMP::pout << "Saturated vapor enthalpy test 1 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
@@ -520,7 +513,7 @@ int main( int argc, char **argv )
     // p = 2000 psi -- Eq. 6b
     ( *pvec )[0] = 1.37895146e7;
     expected     = 2.64769923e6;
-    vaporEnthalpyProperty->evalv( h, pArgs );
+    vaporEnthalpyProperty->evalv( h, {}, pArgs );
     if ( !AMP::Utilities::approx_equal( h[0], expected, tol ) ) {
         AMP::pout << "Saturated vapor enthalpy test 2 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
@@ -530,7 +523,7 @@ int main( int argc, char **argv )
     // p=3000 psi -- Eq. 5c
     ( *pvec )[0] = 2.06842718e7;
     expected     = 2.37307137e6;
-    vaporEnthalpyProperty->evalv( h, pArgs );
+    vaporEnthalpyProperty->evalv( h, {}, pArgs );
     if ( !AMP::Utilities::approx_equal( h[0], expected, tol ) ) {
         AMP::pout << "Saturated vapor enthalpy test 3 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << h[0] << std::endl;
@@ -547,7 +540,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 9.304e5;
     ( *pvec )[0] = 2.75790291e7;
     expected     = 488.207658;
-    temperatureProperty->evalv( T, hpArgs );
+    temperatureProperty->evalv( T, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( T[0], expected, tol ) ) {
         AMP::pout << "Extended temperature test 1 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
@@ -558,7 +551,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 3.2564e6;
     ( *pvec )[0] = 2.75790291e7;
     expected     = 808.434684;
-    temperatureProperty->evalv( T, hpArgs );
+    temperatureProperty->evalv( T, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( T[0], expected, tol ) ) {
         AMP::pout << "Extended temperature test 2 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
@@ -569,7 +562,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 9.304e5;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 489.651055;
-    temperatureProperty->evalv( T, hpArgs );
+    temperatureProperty->evalv( T, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( T[0], expected, tol ) ) {
         AMP::pout << "Extended temperature test 3 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
@@ -580,7 +573,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 1.8608e6;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 609.133190;
-    temperatureProperty->evalv( T, hpArgs );
+    temperatureProperty->evalv( T, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( T[0], expected, tol ) ) {
         AMP::pout << "Extended temperature test 4 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
@@ -591,7 +584,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 3.2564e6;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 748.333926;
-    temperatureProperty->evalv( T, hpArgs );
+    temperatureProperty->evalv( T, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( T[0], expected, tol ) ) {
         AMP::pout << "Extended temperature test 5 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << T[0] << std::endl;
@@ -605,7 +598,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 4.652e5;
     ( *pvec )[0] = 2.75790291e7;
     expected     = 1.03475993e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 1 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -616,7 +609,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 1.3956e6;
     ( *pvec )[0] = 2.75790291e7;
     expected     = 1.37847268e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 2 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -627,7 +620,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 2.2097e6;
     ( *pvec )[0] = 2.75790291e7;
     expected     = 3.18909350e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 3 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -638,7 +631,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 3.2564e6;
     ( *pvec )[0] = 2.75790291e7;
     expected     = 1.07502487e-2;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 4 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -649,7 +642,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 4.652e5;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 1.04365756e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 5 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -660,7 +653,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 1.163e6;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 1.267956e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 6 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -671,7 +664,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 1.8608e6;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 4.45266612e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 7 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -682,7 +675,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 3.2564e6;
     ( *pvec )[0] = 1.37895146e7;
     expected     = 2.16299275e-2;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 8 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;
@@ -693,7 +686,7 @@ int main( int argc, char **argv )
     ( *hvec )[0] = 2.41904e6;
     ( *pvec )[0] = 2.06842718e7;
     expected     = 5.7290921e-3;
-    volumeProperty->evalv( V, hpArgs );
+    volumeProperty->evalv( V, {}, hpArgs );
     if ( !AMP::Utilities::approx_equal( V[0], expected, tol ) ) {
         AMP::pout << "Extended specific volume test 9 failed." << std::endl;
         AMP::pout << "Expected " << expected << ", computed " << V[0] << std::endl;

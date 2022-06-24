@@ -1,7 +1,6 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/materials/CylindricallySymmetric.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/materials/ThermalDiffusionCoefficientProp.h"
 #include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -11,6 +10,13 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
+
+
+template<class TYPE>
+static inline bool is( std::shared_ptr<AMP::Materials::Property> prop )
+{
+    return std::dynamic_pointer_cast<TYPE>( prop ).get() != nullptr;
+}
 
 
 namespace AMP::Operator {
@@ -80,38 +86,34 @@ DiffusionTransportModel::DiffusionTransportModel(
 
     // set property parameters
     if ( params->d_db->keyExists( "Parameters" ) ) {
-        auto name = d_property->get_name();
-        auto data = params->d_db->getVector<double>( "Parameters" );
-        if ( std::dynamic_pointer_cast<AMP::Materials::CylindricallySymmetricTensor>(
-                 d_property ) ) {
+        auto name     = d_property->get_name();
+        auto data     = params->d_db->getVector<double>( "Parameters" );
+        auto units    = d_property->get_units();
+        auto args     = d_property->get_arguments();
+        auto ranges   = d_property->get_arg_ranges();
+        auto argUnits = d_property->get_arg_units();
+        if ( is<AMP::Materials::CylindricallySymmetricTensor>( d_property ) ) {
             d_property =
                 std::make_shared<AMP::Materials::CylindricallySymmetricTensor>( name, data );
-        } else if ( std::dynamic_pointer_cast<AMP::Materials::ThermalDiffusionCoefficientProp>(
-                        d_property ) &&
-                    data.size() == 2 ) {
-            d_property = std::make_shared<AMP::Materials::ScalarProperty>(
-                name, data[0] * data[1], d_property->get_units() );
+        } else if ( is<AMP::Materials::PolynomialProperty>( d_property ) ) {
+            d_property = std::make_shared<AMP::Materials::PolynomialProperty>(
+                name, "", units, data, args, ranges, argUnits );
+        } else if ( propname == "ThermalDiffusionCoefficient" && data.size() == 2 ) {
+            d_property =
+                std::make_shared<AMP::Materials::ScalarProperty>( name, data[0] * data[1], units );
         } else if ( d_property->isTensor() ) {
-            auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
-            auto dims     = tensprop->get_dimensions();
+            auto dims = d_property->size();
             if ( params->d_db->keyExists( "Dimensions" ) )
                 dims = params->d_db->getVector<size_t>( "Dimensions" );
             AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
             AMP_ASSERT( data.size() == dims[0] * dims[1] );
-            d_property =
-                std::make_shared<AMP::Materials::ScalarTensorProperty>( name, "", dims, data );
-        } else if ( d_property->isVector() ) {
-            AMP_ASSERT( data.size() == 1 );
-            d_property = std::make_shared<AMP::Materials::ScalarVectorProperty>( name, data[0] );
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>(
+                name, Array<double>( dims, data.data() ) );
+        } else if ( data.size() == 1 ) {
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>( name, data[0] );
         } else {
-            d_property =
-                std::make_shared<AMP::Materials::PolynomialProperty>( name,
-                                                                      "",
-                                                                      d_property->get_units(),
-                                                                      data,
-                                                                      d_property->get_arguments(),
-                                                                      d_property->get_arg_ranges(),
-                                                                      d_property->get_arg_units() );
+            d_property = std::make_shared<AMP::Materials::PolynomialProperty>(
+                name, "", units, data, args, ranges, argUnits );
         }
     }
 }
@@ -166,7 +168,7 @@ void DiffusionTransportModel::getTransport(
     }
 
     // evaluate material property
-    d_property->evalv( result, args );
+    d_property->evalv( result, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value

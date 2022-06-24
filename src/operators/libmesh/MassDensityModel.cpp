@@ -1,11 +1,17 @@
 #include "MassDensityModel.h"
 #include "AMP/materials/CylindricallySymmetric.h"
 #include "AMP/materials/ScalarProperty.h"
-#include "AMP/materials/TensorProperty.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 
 #include <algorithm>
 #include <limits>
+
+
+template<class TYPE>
+static inline bool is( std::shared_ptr<AMP::Materials::Property> prop )
+{
+    return std::dynamic_pointer_cast<TYPE>( prop ).get() != nullptr;
+}
 
 
 namespace AMP::Operator {
@@ -160,23 +166,9 @@ void MassDensityModel::getDensityMechanics( std::vector<double> &result,
 {
     AMP_ASSERT( ( T.size() == U.size() ) && ( U.size() == result.size() ) &&
                 ( B.size() == U.size() ) );
-    std::map<std::string, std::shared_ptr<std::vector<double>>> inputMaterialParameters;
 
-    std::string temperatureString = "temperature";   // in the future get from input file
-    std::string burnupString      = "burnup";        // in the future get from input file
-    std::string oxygenString      = "concentration"; // in the future get from input file
-
-    std::shared_ptr<std::vector<double>> tempVec( new std::vector<double>( T ) );
-    std::shared_ptr<std::vector<double>> burnupVec( new std::vector<double>( B ) );
-    std::shared_ptr<std::vector<double>> oxygenVec( new std::vector<double>( U ) );
-
-    inputMaterialParameters.insert( std::make_pair( temperatureString, tempVec ) );
-    inputMaterialParameters.insert( std::make_pair( burnupString, burnupVec ) );
-    inputMaterialParameters.insert( std::make_pair( oxygenString, oxygenVec ) );
-
-    std::string denString = "Density";
-
-    d_material->property( denString )->evalv( result, inputMaterialParameters );
+    d_material->property( "Density" )
+        ->evalv( result, {}, "temperature", T, "concentration", U, "burnup", B );
 }
 
 void MassDensityModel::getDensityThermal( std::vector<double> &result,
@@ -188,12 +180,10 @@ void MassDensityModel::getDensityThermal( std::vector<double> &result,
                 ( B.size() == U.size() ) );
     unsigned int n = result.size();
     std::vector<double> density( n ), specificheat( n );
-    std::map<std::string, std::shared_ptr<std::vector<double>>> args;
-    args.insert( std::make_pair( "temperature", std::make_shared<std::vector<double>>( T ) ) );
-    args.insert( std::make_pair( "concentration", std::make_shared<std::vector<double>>( U ) ) );
-    args.insert( std::make_pair( "burnup", std::make_shared<std::vector<double>>( B ) ) );
-    d_material->property( "Density" )->evalv( density, args );
-    d_material->property( "HeatCapacityPressure" )->evalv( specificheat, args );
+    auto densityProp = d_material->property( "Density" );
+    auto heatCapProp = d_material->property( "HeatCapacityPressure" );
+    densityProp->evalv( density, {}, "temperature", T, "concentration", U, "burnup", B );
+    heatCapProp->evalv( specificheat, {}, "temperature", T, "concentration", U, "burnup", B );
     for ( unsigned int i = 0; i < n; i++ )
         result[i] = density[i] * specificheat[i];
 
@@ -271,51 +261,47 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             AMP_INSIST( false, "cannot do Fick-Soret yet" );
         }
     } else if ( !d_Parameters.empty() ) {
-        sourceProp = d_material->property( d_PropertyName );
-        auto name  = sourceProp->get_name();
-        if ( std::dynamic_pointer_cast<AMP::Materials::CylindricallySymmetricTensor>(
-                 sourceProp ) ) {
+        sourceProp    = d_material->property( d_PropertyName );
+        auto name     = sourceProp->get_name();
+        auto units    = sourceProp->get_units();
+        auto args     = sourceProp->get_arguments();
+        auto ranges   = sourceProp->get_arg_ranges();
+        auto argUnits = sourceProp->get_arg_units();
+        if ( is<AMP::Materials::CylindricallySymmetricTensor>( sourceProp ) ) {
             sourceProp = std::make_shared<AMP::Materials::CylindricallySymmetricTensor>(
                 name, d_Parameters );
+        } else if ( is<AMP::Materials::PolynomialProperty>( sourceProp ) ) {
+            sourceProp = std::make_shared<AMP::Materials::PolynomialProperty>(
+                name, "", units, d_Parameters, args, ranges, argUnits );
         } else if ( sourceProp->isTensor() ) {
-            auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( sourceProp );
-            auto dims     = tensprop->get_dimensions();
+            auto dims = sourceProp->size();
             AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
             if ( d_Parameters.size() == 4 )
                 dims = { 2, 2 };
             else if ( d_Parameters.size() == 9 )
                 dims = { 3, 3 };
             AMP_ASSERT( d_Parameters.size() == dims[0] * dims[1] );
-            sourceProp = std::make_shared<AMP::Materials::ScalarTensorProperty>(
-                name, "", dims, d_Parameters );
-        } else if ( sourceProp->isVector() ) {
-            AMP_ASSERT( d_Parameters.size() == 1 );
-            sourceProp =
-                std::make_shared<AMP::Materials::ScalarVectorProperty>( name, d_Parameters[0] );
+            sourceProp = std::make_shared<AMP::Materials::ScalarProperty>(
+                name, Array<double>( dims, d_Parameters.data() ) );
+        } else if ( d_Parameters.size() == 1 ) {
+            sourceProp = std::make_shared<AMP::Materials::ScalarProperty>( name, d_Parameters[0] );
         } else {
-            sourceProp =
-                std::make_shared<AMP::Materials::PolynomialProperty>( d_PropertyName,
-                                                                      "",
-                                                                      sourceProp->get_units(),
-                                                                      d_Parameters,
-                                                                      sourceProp->get_arguments(),
-                                                                      sourceProp->get_arg_ranges(),
-                                                                      sourceProp->get_arg_units() );
+            sourceProp = std::make_shared<AMP::Materials::PolynomialProperty>(
+                d_PropertyName, "", units, d_Parameters, args, ranges, argUnits );
         }
     } else {
         sourceProp = d_material->property( d_PropertyName );
     }
 
-    std::map<std::string, std::shared_ptr<std::vector<double>>> args;
-    args.insert( std::make_pair( "temperature", std::make_shared<std::vector<double>>( T ) ) );
-    args.insert( std::make_pair( "concentration", std::make_shared<std::vector<double>>( U ) ) );
-    args.insert( std::make_pair( "burnup", std::make_shared<std::vector<double>>( B ) ) );
+    std::map<std::string, const std::vector<double> &> args = { { "temperature", T },
+                                                                { "concentration", U },
+                                                                { "burnup", B } };
 
     if ( sourceProp->isScalar() ) {
         std::vector<double> coeff( neval ), dCoeff( neval, 0. );
-        sourceProp->evalv( coeff, args );
+        sourceProp->evalv( coeff, {}, args );
         if ( needD ) {
-            dSourceProp->evalv( dCoeff, args );
+            dSourceProp->evalv( dCoeff, {}, args );
         }
 
         for ( size_t i = 0; i < neval; i++ ) {
@@ -332,16 +318,11 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
                          solnname.find( "Cylindrical" ) < solnname.size();
 
     if ( sourceProp->isTensor() && !isCylindrical ) {
-        auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
-        auto dimensions       = sourceTensorProp->get_dimensions();
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
-        for ( size_t i = 0; i < dimensions[0]; i++ )
-            for ( size_t j = 0; j < dimensions[1]; j++ ) {
-                auto *vd = new std::vector<double>( neval );
-                coeff[i][j].reset( vd );
-            }
-        sourceTensorProp->evalv( coeff, args );
+        auto dimensions = sourceProp->size();
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
+        for ( size_t i = 0; i < dimensions.length(); i++ )
+            coeff( i ) = std::make_shared<std::vector<double>>( neval, 0 );
+        sourceProp->evalv( coeff, {}, args );
 
         // 4 + xx xy xz yy yz zz =
         //      4  5  6  7  8  9 =
@@ -356,45 +337,36 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             result[k] = 0.;
             for ( size_t i = 0; i < dimensions[0]; i++ )
                 for ( size_t j = 0; j < dimensions[1]; j++ ) {
-                    result[k] += ( *coeff[i][j] )[k] * soln[xlate[i][j]];
+                    result[k] += ( *coeff( i, j ) )[k] * soln[xlate[i][j]];
                 }
         }
     } else if ( sourceProp->isTensor() ) {
         // check dimensions, set up temporary storage
-        auto sourceTensorProp = std::dynamic_pointer_cast<Materials::TensorProperty>( sourceProp );
-        auto dimensions       = sourceTensorProp->get_dimensions();
+        auto dimensions = sourceProp->size();
         AMP_ASSERT( ( dimensions[0] == 3 ) && ( dimensions[1] == 3 ) );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeff(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeffr(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> coeffz(
-            dimensions[0], std::vector<std::shared_ptr<std::vector<double>>>( dimensions[1] ) );
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeff( dimensions );
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeffr( dimensions );
+        AMP::Array<std::shared_ptr<std::vector<double>>> coeffz( dimensions );
 
-        for ( size_t i = 0; i < 3; i++ )
-            for ( size_t j = 0; j < 3; j++ ) {
-                std::vector<double> *vd;
-                vd = new std::vector<double>( neval );
-                coeff[i][j].reset( vd );
-                vd = new std::vector<double>( neval );
-                coeffr[i][j].reset( vd );
-                vd = new std::vector<double>( neval );
-                coeffz[i][j].reset( vd );
-            }
+        for ( size_t i = 0; i < dimensions.length(); i++ ) {
+            coeff( i )  = std::make_shared<std::vector<double>>( neval, 0 );
+            coeffr( i ) = std::make_shared<std::vector<double>>( neval, 0 );
+            coeffz( i ) = std::make_shared<std::vector<double>>( neval, 0 );
+        }
 
         // check that material property has expected argument names
-        std::vector<std::string> argnames = sourceTensorProp->get_arguments();
+        std::vector<std::string> argnames = sourceProp->get_arguments();
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "radius" ) != argnames.end() );
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "theta" ) != argnames.end() );
         AMP_ASSERT( std::find( argnames.begin(), argnames.end(), "zee" ) != argnames.end() );
 
         // get argument vectors
-        args.insert( std::make_pair( "radius", std::make_shared<std::vector<double>>( neval ) ) );
-        args.insert( std::make_pair( "theta", std::make_shared<std::vector<double>>( neval ) ) );
-        args.insert( std::make_pair( "zee", std::make_shared<std::vector<double>>( neval ) ) );
-        std::vector<double> &radius = ( *args.find( "radius" )->second );
-        std::vector<double> &theta  = ( *args.find( "theta" )->second );
-        std::vector<double> &zee    = ( *args.find( "zee" )->second );
+        std::vector<double> radius( neval );
+        std::vector<double> theta( neval );
+        std::vector<double> zee( neval );
+        args.insert( std::pair<std::string, const std::vector<double> &>( "radius", radius ) );
+        args.insert( std::pair<std::string, const std::vector<double> &>( "theta", theta ) );
+        args.insert( std::pair<std::string, const std::vector<double> &>( "zee", zee ) );
 
         // fill in cylindrical coordinates
         double Pi = 3.1415926535898;
@@ -409,14 +381,14 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
         }
 
         // evaluate various derivatives of diffusion coefficient tensor
-        sourceTensorProp->setAuxiliaryData( "derivative", 0 );
-        sourceTensorProp->evalv( coeff, args );
+        sourceProp->setAuxiliaryData( "derivative", 0 );
+        sourceProp->evalv( coeff, {}, args );
 
-        sourceTensorProp->setAuxiliaryData( "derivative", 1 );
-        sourceTensorProp->evalv( coeffr, args );
+        sourceProp->setAuxiliaryData( "derivative", 1 );
+        sourceProp->evalv( coeffr, {}, args );
 
-        sourceTensorProp->setAuxiliaryData( "derivative", 2 );
-        sourceTensorProp->evalv( coeffz, args );
+        sourceProp->setAuxiliaryData( "derivative", 2 );
+        sourceProp->evalv( coeffz, {}, args );
 
         // compute div (K . grad u) = div K . grad u + K : grad grad u
         for ( size_t k = 0; k < neval; k++ ) {
@@ -433,10 +405,10 @@ void MassDensityModel::getDensityManufactured( std::vector<double> &result,
             d_ManufacturedSolution->evaluate( soln, r, th, z );
 
             std::vector<double> Kr( 2 ), Kz( 2 );
-            Kr[0] = ( *coeff[0][0] )[k] + ( *coeff[1][1] )[k];
-            Kz[0] = ( *coeff[2][2] )[k];
-            Kr[1] = ( *coeffr[0][0] )[k] + ( *coeffr[1][1] )[k];
-            Kz[1] = ( *coeffz[2][2] )[k];
+            Kr[0] = ( *coeff( 0, 0 ) )[k] + ( *coeff( 1, 1 ) )[k];
+            Kz[0] = ( *coeff( 2, 2 ) )[k];
+            Kr[1] = ( *coeffr( 0, 0 ) )[k] + ( *coeffr( 1, 1 ) )[k];
+            Kz[1] = ( *coeffz( 2, 2 ) )[k];
 
             result[k] = Kz[1] * soln[3] + Kz[0] * soln[9] + Kr[0] * soln[1] / r + Kr[1] * soln[1] +
                         Kr[0] * soln[4];

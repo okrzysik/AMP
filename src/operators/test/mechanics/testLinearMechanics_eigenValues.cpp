@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"

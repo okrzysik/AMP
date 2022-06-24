@@ -11,6 +11,7 @@
 #include <string>
 
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
 
 #include "AMP/discretization/simpleDOF_Manager.h"

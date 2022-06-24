@@ -103,29 +103,6 @@ public:
 
 
     /**
-     * \brief   Create a mesh
-     * \details  This function will create a mesh (or series of meshes) based on
-     *   the input database.
-     * \param params Parameters for constructing a mesh from an input database
-     */
-    static std::shared_ptr<AMP::Mesh::Mesh>
-    buildMesh( std::shared_ptr<const MeshParameters> params );
-
-
-    /**
-     * \brief   Create a mesh
-     * \details  This function will create a mesh (or series of meshes) based on
-     *   the input database.
-     * \param name      Name of mesh generator
-     * \param gen       Mesh generator to use
-     */
-    static inline void registerGenerator( const std::string &name, const generatorType &gen )
-    {
-        d_generators[name] = gen;
-    }
-
-
-    /**
      * \brief   Return the geometry of the mesh
      * \details  This function will return the geometry for the mesh if it exists.
      *    Not all meshes will have a geometry associated with them.
@@ -531,9 +508,6 @@ protected:
 
     //! The bounding box for the mesh
     std::vector<double> d_box, d_box_local;
-
-    //! A list of mesh generators to use
-    static std::map<std::string, generatorType> d_generators;
 
     /**
      *  A function to create a unique id for the mesh (requires the comm to be set)

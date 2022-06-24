@@ -15,6 +15,7 @@ University makes any warranty, express or
 implied, or assumes any liability or
 responsibility for the use of this software.
 */
+#include "AMP/time_integrators/TimeIntegratorFactory.h"
 #include "AMP/time_integrators/BDFIntegrator.h"
 #include "AMP/time_integrators/ExplicitEuler.h"
 #include "AMP/time_integrators/RK12TimeIntegrator.h"
@@ -26,9 +27,22 @@ responsibility for the use of this software.
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 
-#include "AMP/time_integrators/TimeIntegratorFactory.h"
 
 namespace AMP::TimeIntegrator {
+
+
+// Create the operator
+std::unique_ptr<TimeIntegrator>
+TimeIntegratorFactory::create( std::shared_ptr<TimeIntegratorParameters> parameters )
+{
+    AMP_ASSERT( parameters != nullptr );
+    auto inputDatabase = parameters->d_db;
+    AMP_ASSERT( inputDatabase );
+    auto objectName = inputDatabase->getString( "name" );
+    return FactoryStrategy<TimeIntegrator, std::shared_ptr<TimeIntegratorParameters>>::create(
+        objectName, parameters );
+}
+
 
 // register all known time integrator factories
 void registerTimeIntegratorFactories()

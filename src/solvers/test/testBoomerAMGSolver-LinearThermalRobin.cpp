@@ -1,6 +1,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 
 #include "AMP/IO/PIO.h"
@@ -31,10 +32,9 @@
 #include <string>
 
 
-void linearThermalTest( AMP::UnitTest *ut )
+void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
 {
     // Input and output file names
-    std::string exeName( "testBoomerAMGSolver-LinearThermalRobin" );
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
 
@@ -45,12 +45,12 @@ void linearThermalTest( AMP::UnitTest *ut )
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
 
-    // Create the Mesh.
+    // Create the Mesh
     AMP_INSIST( input_db->keyExists( "Mesh" ), "Key ''Mesh'' is missing!" );
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -63,9 +63,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
 
-    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-    //  CREATE THE NEUTRONICS SOURCE  //
+    // CREATE THE NEUTRONICS SOURCE
     AMP_INSIST( input_db->keyExists( "NeutronicsOperator" ),
                 "Key ''NeutronicsOperator'' is missing!" );
     auto neutronicsOp_db = input_db->getDatabase( "NeutronicsOperator" );
@@ -76,9 +74,10 @@ void linearThermalTest( AMP::UnitTest *ut )
     auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
     auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
 
+    AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //  Integrate Nuclear Source over Desnity * GeomType::Volume //
+    // Integrate Nuclear Source over Desnity * Volume
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(
@@ -93,7 +92,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     // convert the vector of specific power to power for a given basis.
     sourceOperator->apply( SpecificPowerVec, PowerInWattsVec );
 
-    // CREATE THE THERMAL BVP OPERATOR  //
+    // CREATE THE THERMAL BVP OPERATOR
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> transportModel;
     auto diffusionOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
         AMP::Operator::OperatorBuilder::createOperator(
@@ -108,14 +107,12 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     RightHandSideVec->setToScalar( 0.0 );
 
-    //   Add the boundary conditions corrections //
+    // Add the boundary conditions corrections
     auto boundaryOpCorrectionVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
-
-    std::dynamic_pointer_cast<AMP::Operator::BoundaryOperator>( boundaryOp )
-        ->addRHScorrection( boundaryOpCorrectionVec );
+    boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
 
     RightHandSideVec->subtract( *PowerInWattsVec, *boundaryOpCorrectionVec );
 
@@ -127,10 +124,10 @@ void linearThermalTest( AMP::UnitTest *ut )
     // make sure the database on theinput file exists for the linear solver
     AMP_INSIST( input_db->keyExists( "LinearSolver" ), "Key ''LinearSolver'' is missing!" );
 
-    // Read the input file onto a database.
+    // Read the input file onto a database
     auto mlSolver_db = input_db->getDatabase( "LinearSolver" );
 
-    // Fill in the parameters fo the class with the info on the database.
+    // Fill in the parameters fo the class with the info on the database
     auto mlSolverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
 
     // Define the operature to be used by the Solver.
@@ -140,8 +137,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     TemperatureInKelvinVec->setToScalar( 1.0 );
 
     // Check the initial L2 norm of the solution
-    double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
-    std::cout << "Initial Solution Norm: " << initSolNorm << std::endl;
+    std::cout << "Initial Solution Norm: " << TemperatureInKelvinVec->L2Norm() << std::endl;
     std::cout << "RHS Norm: " << RightHandSideVec->L2Norm() << std::endl;
 
     // Create the ML Solver
@@ -161,15 +157,12 @@ void linearThermalTest( AMP::UnitTest *ut )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "BoomerAMGSolver could not solve a linear thermal problem with a nuclear "
-                     "source term." );
+        ut->failure( "exeName" );
     } else {
-        ut->passes( "BoomerAMGSolver successfully solves a linear thermal problem with a nuclear "
-                    "source term." );
+        ut->passes( exeName );
     }
 
     // Plot the results
-    auto globalComm = AMP::AMP_MPI( AMP_COMM_WORLD );
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
@@ -178,8 +171,6 @@ void linearThermalTest( AMP::UnitTest *ut )
     siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
-
-    ut->passes( exeName );
 }
 
 
@@ -188,7 +179,8 @@ int main( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
-    linearThermalTest( &ut );
+    std::string exeName( "testBoomerAMGSolver-LinearThermalRobin" );
+    linearThermalTest( &ut, exeName );
 
     ut.report();
 

@@ -3,6 +3,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/utils/AMPManager.h"
@@ -33,7 +34,7 @@ void myTest( AMP::UnitTest *ut, std::string input_file )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Create the DOF manager
     auto scalarDOFs =

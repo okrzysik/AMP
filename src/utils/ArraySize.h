@@ -18,28 +18,36 @@
     #define HOST_DEVICE
 #endif
 #if defined( __NVCC__ )
-    #define CONSTEXPR inline
+    #define CONSTEXPR HOST_DEVICE constexpr
     #define CONSTEXPR_IF
 #else
-    #define CONSTEXPR constexpr
+    #define CONSTEXPR HOST_DEVICE constexpr
     #define CONSTEXPR_IF constexpr
 #endif
 #if defined( USING_GCC ) || defined( USING_CLANG )
-    #define ARRAY_ATTRIBUTE HOST_DEVICE __attribute__( ( always_inline ) )
+    #define ARRAY_INLINE HOST_DEVICE inline __attribute__( ( always_inline ) )
+#elif defined( _MSC_VER )
+    #define ARRAY_INLINE HOST_DEVICE __forceinline
 #else
-    #define ARRAY_ATTRIBUTE HOST_DEVICE
+    #define ARRAY_INLINE HOST_DEVICE inline
 #endif
-
-
-#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG ) && !defined( __NVCC__ )
     #define CHECK_ARRAY_LENGTH( i, length )                              \
         do {                                                             \
             if ( i >= length )                                           \
                 throw std::out_of_range( "Index exceeds array bounds" ); \
         } while ( 0 )
+    #define ARRAY_INSIST( test, msg )           \
+        do {                                    \
+            if ( !( test ) )                    \
+                throw std::out_of_range( msg ); \
+        } while ( 0 )
 #else
     #define CHECK_ARRAY_LENGTH( i, length ) \
         do {                                \
+        } while ( 0 )
+    #define ARRAY_INSIST( test, msg ) \
+        do {                          \
         } while ( 0 )
 #endif
 
@@ -47,6 +55,7 @@
     #include "AMP/utils/UtilityMacros.h"
 DISABLE_WARNINGS
 #endif
+
 
 namespace AMP {
 
@@ -186,8 +195,7 @@ public:
     {
         if ( ndim >= 0 )
             d_ndim = ndim;
-        if ( d_ndim > maxDim() )
-            throw std::out_of_range( "Maximum number of dimensions exceeded" );
+        ARRAY_INSIST( d_ndim <= maxDim(), "Maximum number of dimensions exceeded" );
         auto it = N.begin();
         for ( size_t i = 0; i < d_ndim; i++, ++it )
             d_N[i] = *it;
@@ -207,8 +215,7 @@ public:
     CONSTEXPR ArraySize( size_t ndim, const size_t *dims )
         : d_ndim( ndim ), d_length( 0 ), d_N{ 0, 1, 1, 1, 1 }
     {
-        if ( d_ndim > maxDim() )
-            throw std::out_of_range( "Maximum number of dimensions exceeded" );
+        ARRAY_INSIST( d_ndim <= maxDim(), "Maximum number of dimensions exceeded" );
         for ( size_t i = 0; i < ndim; i++ )
             d_N[i] = dims[i];
         d_length = 1;
@@ -233,32 +240,25 @@ public:
      */
     inline ArraySize( const std::vector<size_t> &N ) : ArraySize( N.size(), N.data() ) {}
 
-    // Copy/assignment constructors
-    CONSTEXPR ArraySize( ArraySize &&rhs )      = default;
-    CONSTEXPR ArraySize( const ArraySize &rhs ) = default;
-    CONSTEXPR ArraySize &operator=( ArraySize &&rhs ) = default;
-    CONSTEXPR ArraySize &operator=( const ArraySize &rhs ) = default;
-
     /*!
      * Access the ith dimension
      * @param i             Index to access
      */
-    CONSTEXPR ARRAY_ATTRIBUTE size_t operator[]( size_t i ) const { return d_N[i]; }
+    CONSTEXPR size_t operator[]( size_t i ) const { return d_N[i]; }
 
     //! Return the number of dimensions
-    CONSTEXPR ARRAY_ATTRIBUTE uint8_t ndim() const { return d_ndim; }
+    CONSTEXPR uint8_t ndim() const { return d_ndim; }
 
     //! Return the number of dimensions
-    CONSTEXPR ARRAY_ATTRIBUTE size_t size() const { return d_ndim; }
+    CONSTEXPR size_t size() const { return d_ndim; }
 
     //! Return the total number of elements in the array
-    CONSTEXPR ARRAY_ATTRIBUTE size_t length() const { return d_length; }
+    CONSTEXPR size_t length() const { return d_length; }
 
     //! Resize the dimension
     CONSTEXPR void resize( uint8_t dim, size_t N )
     {
-        if ( dim >= d_ndim )
-            throw std::out_of_range( "Invalid dimension" );
+        ARRAY_INSIST( dim < d_ndim, "Invalid dimension" );
         d_N[dim] = N;
         d_length = 1;
         for ( unsigned long i : d_N )
@@ -270,7 +270,7 @@ public:
      *    max of ndim and the largest dim>1.
      * @param ndim          Desired number of dimensions
      */
-    CONSTEXPR void setNdim( uint8_t ndim ) { d_ndim = std::max( ndim, d_ndim ); }
+    constexpr void setNdim( uint8_t ndim ) { d_ndim = std::max( ndim, d_ndim ); }
 
     //! Returns an iterator to the beginning
     CONSTEXPR const size_t *begin() const { return d_N; }
@@ -279,36 +279,33 @@ public:
     CONSTEXPR const size_t *end() const { return d_N + d_ndim; }
 
     // Check if two array sizes are equal
-    CONSTEXPR ARRAY_ATTRIBUTE bool operator==( const ArraySize &rhs ) const
+    CONSTEXPR bool operator==( const ArraySize &rhs ) const
     {
         return d_ndim == rhs.d_ndim && d_N[0] == rhs.d_N[0] && d_N[1] == rhs.d_N[1] &&
                d_N[2] == rhs.d_N[2] && d_N[3] == rhs.d_N[3] && d_N[4] == rhs.d_N[4];
     }
 
     // Check if two array sizes are equal (ignoring the dimension)
-    CONSTEXPR ARRAY_ATTRIBUTE bool approxEqual( const ArraySize &rhs ) const
+    CONSTEXPR bool approxEqual( const ArraySize &rhs ) const
     {
         return ( length() == 0 && rhs.length() == 0 ) || memcmp( d_N, rhs.d_N, sizeof( d_N ) ) == 0;
     }
 
     //! Check if two matrices are not equal
-    CONSTEXPR ARRAY_ATTRIBUTE bool operator!=( const ArraySize &rhs ) const
-    {
-        return !operator==( rhs );
-    }
+    CONSTEXPR bool operator!=( const ArraySize &rhs ) const { return !operator==( rhs ); }
 
     //! Maximum supported dimension
-    CONSTEXPR ARRAY_ATTRIBUTE static uint8_t maxDim() { return 5u; }
+    CONSTEXPR static uint8_t maxDim() { return 5u; }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i ) const
+    CONSTEXPR size_t index( size_t i ) const
     {
         CHECK_ARRAY_LENGTH( i, d_length );
         return i;
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2 ) const
     {
         size_t index = i1 + i2 * d_N[0];
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -316,7 +313,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2, size_t i3 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * i3 );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -324,7 +321,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t index( size_t i1, size_t i2, size_t i3, size_t i4 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2, size_t i3, size_t i4 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * i4 ) );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -332,8 +329,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR ARRAY_ATTRIBUTE size_t
-    index( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 ) const
+    CONSTEXPR size_t index( size_t i1, size_t i2, size_t i3, size_t i4, size_t i5 ) const
     {
         size_t index = i1 + d_N[0] * ( i2 + d_N[1] * ( i3 + d_N[2] * ( i4 + d_N[3] * i5 ) ) );
         CHECK_ARRAY_LENGTH( index, d_length );
@@ -341,7 +337,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR size_t index( const std::array<size_t, 5> &i ) const
+    constexpr size_t index( const std::array<size_t, 5> &i ) const
     {
         size_t j = 0;
         for ( size_t m = 0, N = 1; m < 5; m++ ) {
@@ -352,7 +348,7 @@ public:
     }
 
     //! Get the index
-    CONSTEXPR size_t index( std::initializer_list<size_t> i ) const
+    constexpr size_t index( std::initializer_list<size_t> i ) const
     {
         size_t N = 1;
         size_t j = 0;
@@ -365,7 +361,7 @@ public:
     }
 
     //! Convert the index to ijk values
-    CONSTEXPR std::array<size_t, 5> ijk( size_t index ) const
+    constexpr std::array<size_t, 5> ijk( size_t index ) const
     {
         CHECK_ARRAY_LENGTH( index, d_length );
         size_t i0 = index % d_N[0];
@@ -404,8 +400,8 @@ private:
 // Function to concatenate dimensions of two array sizes
 CONSTEXPR ArraySize cat( const ArraySize &x, const ArraySize &y )
 {
-    if ( x.ndim() + y.ndim() > ArraySize::maxDim() )
-        throw std::out_of_range( "Maximum number of dimensions exceeded" );
+    ARRAY_INSIST( x.ndim() + y.ndim() <= ArraySize::maxDim(),
+                  "Maximum number of dimensions exceeded" );
     size_t N[ArraySize::maxDim()] = { 0 };
     for ( int i = 0; i < x.ndim(); i++ )
         N[i] = x[i];
@@ -416,7 +412,7 @@ CONSTEXPR ArraySize cat( const ArraySize &x, const ArraySize &y )
 
 
 // Remove singleton dimensions
-CONSTEXPR ArraySize squeeze( const ArraySize &x )
+constexpr ArraySize squeeze( const ArraySize &x )
 {
     int Nd      = 0;
     size_t N[5] = { 1 };

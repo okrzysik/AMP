@@ -2,8 +2,6 @@
 #include "AMP/materials/Material.h"
 #include "AMP/materials/MaterialList.h"
 #include "AMP/materials/Property.h"
-#include "AMP/materials/TensorProperty.h"
-#include "AMP/materials/VectorProperty.h"
 #include "AMP/utils/Utilities.h"
 
 #include <cmath>
@@ -70,15 +68,15 @@ static std::array<double, 2> evalPoly( const std::vector<double> &p, double x )
 // full cylindrically symmetric tensor diffusion coefficient
 CylindricallySymmetricTensor::CylindricallySymmetricTensor( const std::string &name,
                                                             std::vector<double> params )
-    : TensorProperty( name,
-                      "",
-                      { "radius", "theta", "zee" },
-                      { { rMinVal, rMaxVal }, { tMinVal, tMaxVal }, { zMinVal, zMaxVal } },
-                      { 3, 3 } )
+    : Property( name,
+                { 3, 3 },
+                {},
+                "",
+                { "radius", "theta", "zee" },
+                { { rMinVal, rMaxVal }, { tMinVal, tMaxVal }, { zMinVal, zMaxVal } } )
 {
     AMP_ASSERT( params.size() >= 3 );
-    d_variableDimensions = true;
-    d_AuxiliaryDataInteger.insert( std::make_pair( "derivative", 0 ) );
+    setAuxiliaryData<int>( "derivative", 0 );
     size_t nRadial = round_zero( params[0] );
     AMP_ASSERT( nRadial < params.size() - 1 );
     size_t nLongitudinal = params.size() - 1 - nRadial;
@@ -86,46 +84,33 @@ CylindricallySymmetricTensor::CylindricallySymmetricTensor( const std::string &n
     d_paramsLongitudinal =
         std::vector<double>( &params[1 + nRadial], &params[1 + nRadial] + nLongitudinal );
 }
-std::vector<std::vector<double>>
-CylindricallySymmetricTensor::evalTensor( const std::vector<double> &args ) const
+void CylindricallySymmetricTensor::eval( AMP::Array<double> &result,
+                                         const AMP::Array<double> &args ) const
 {
-    AMP_ASSERT( args.size() >= 3 );
-    std::vector<std::vector<double>> result( 3, std::vector<double>( 3, 0. ) );
-    auto Kr    = evalPoly( d_paramsRadial, args[0] );
-    auto Kz    = evalPoly( d_paramsLongitudinal, args[2] );
-    double cth = cos( args[1] );
-    double sth = sin( args[1] );
-    int deriv  = d_AuxiliaryDataInteger.find( "derivative" )->second;
-    switch ( deriv ) {
-    case 0: {
-        result[0][0] = cth * cth * Kr[0];
-        result[0][1] = sth * cth * Kr[0];
-        result[1][0] = sth * cth * Kr[0];
-        result[1][1] = sth * sth * Kr[0];
-        result[2][2] = Kz[0];
-        break;
+    result.fill( 0 );
+    for ( size_t i = 0; i < result.size( 2 ); i++ ) {
+        auto Kr    = evalPoly( d_paramsRadial, args( 0, i ) );
+        auto Kz    = evalPoly( d_paramsLongitudinal, args( 2, i ) );
+        double cth = cos( args( 1, i ) );
+        double sth = sin( args( 1, i ) );
+        int deriv  = getAuxiliaryData<int>( "derivative" );
+        if ( deriv == 0 ) {
+            result( 0, 0, i ) = cth * cth * Kr[0];
+            result( 0, 1, i ) = sth * cth * Kr[0];
+            result( 1, 0, i ) = sth * cth * Kr[0];
+            result( 1, 1, i ) = sth * sth * Kr[0];
+            result( 2, 2, i ) = Kz[0];
+        } else if ( deriv == 1 ) {
+            result( 0, 0, i ) = cth * cth * Kr[1];
+            result( 0, 1, i ) = sth * cth * Kr[1];
+            result( 1, 0, i ) = sth * cth * Kr[1];
+            result( 1, 1, i ) = sth * sth * Kr[1];
+        } else if ( deriv == 2 ) {
+            result( 2, 2, i ) = Kz[1];
+        } else {
+            AMP_ASSERT( false );
+        }
     }
-    case 1: {
-        result[0][0] = cth * cth * Kr[1];
-        result[0][1] = sth * cth * Kr[1];
-        result[1][0] = sth * cth * Kr[1];
-        result[1][1] = sth * sth * Kr[1];
-        result[2][2] = 0.;
-        break;
-    }
-    case 2: {
-        result[0][0] = 0.;
-        result[0][1] = 0.;
-        result[1][0] = 0.;
-        result[1][1] = 0.;
-        result[2][2] = Kz[1];
-        break;
-    }
-    default:
-        AMP_ASSERT( false );
-        break;
-    }
-    return result;
 }
 
 

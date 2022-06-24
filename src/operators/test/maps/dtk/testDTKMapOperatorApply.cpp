@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
@@ -32,7 +33,7 @@ static void thermalTest( AMP::UnitTest *ut, const std::string &input_file )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto manager = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto manager = AMP::Mesh::MeshFactory::create( mgrParams );
     AMP::pout << "Finished loading meshes" << std::endl;
 
     int DOFsPerNode     = 1;

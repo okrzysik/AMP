@@ -1,10 +1,10 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/boundary/DirichletMatrixCorrection.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
@@ -48,7 +48,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
         // Create the meshes from the input database
-        auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+        auto mesh = AMP::Mesh::MeshFactory::create( params );
         mesh_ref  = std::weak_ptr<AMP::Mesh::Mesh>( mesh );
 
         // Create a DOF manager for a nodal vector
