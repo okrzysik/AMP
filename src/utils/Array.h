@@ -379,10 +379,7 @@ public: // Views/copies/subset
      * @param N2            Number of columns
      * @param N3            Number of elements in the third dimension
      */
-    inline void resize( size_t N1, size_t N2, size_t N3 )
-    {
-        resize( ArraySize( N1, N2, N3 ) );
-    }
+    inline void resize( size_t N1, size_t N2, size_t N3 ) { resize( ArraySize( N1, N2, N3 ) ); }
 
     /*!
      * Resize the Array
