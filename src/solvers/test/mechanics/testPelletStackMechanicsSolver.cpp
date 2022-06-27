@@ -39,7 +39,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db    = global_input_db->getDatabase( "Mesh" );
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( globalComm );
-    auto manager = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto manager = AMP::Mesh::MeshFactory::create( meshParams );
 
     std::shared_ptr<AMP::Operator::CoupledOperator> coupledOp;
     std::shared_ptr<AMP::Operator::ColumnOperator> linearColumnOperator;

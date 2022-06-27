@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
@@ -29,7 +30,7 @@ static void dtkConsruction( AMP::UnitTest *ut, std::string input_file )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto manager = std::make_shared<AMP::Mesh::Mesh::buildMesh>( mgrParams );
+    auto manager = std::make_shared<AMP::Mesh::MeshFactory::create>( mgrParams );
     AMP::pout << "Finished loading meshes" << std::endl;
 
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(

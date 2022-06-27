@@ -1,6 +1,7 @@
 // This tests checks the creation of a TrilinosNOXSolver
 #include "AMP/IO/PIO.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/IdentityOperator.h"
 #include "AMP/operators/NullOperator.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"

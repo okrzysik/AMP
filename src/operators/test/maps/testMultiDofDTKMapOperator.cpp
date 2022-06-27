@@ -1,6 +1,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/operators/map/dtk/MultiDofDTKMapOperator.h"
@@ -46,7 +47,7 @@ int runTest( std::string exeName, AMP::UnitTest *ut )
     auto meshDatabase = inputDatabase->getDatabase( "Mesh" );
     auto meshParams   = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     // Subset the mesh
     auto cellSandwichMesh = mesh->Subset( "CellSandwich_2_1" );

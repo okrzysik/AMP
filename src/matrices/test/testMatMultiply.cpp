@@ -3,6 +3,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/libmesh/ReadTestMesh.h"
 #include "AMP/mesh/libmesh/initializeLibMesh.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"

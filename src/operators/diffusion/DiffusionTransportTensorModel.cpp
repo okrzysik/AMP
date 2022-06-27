@@ -21,12 +21,11 @@ DiffusionTransportTensorModel::DiffusionTransportTensorModel(
     std::string modelName = params->d_db->getString( "name" );
     if ( not( modelName == "DiffusionCylindricalTransportModel" ) ) {
         AMP_INSIST( d_property->isTensor(), "material property must be of tensor type" );
-        d_tensorProperty = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
     }
 }
 
 void DiffusionTransportTensorModel::getTensorTransport(
-    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> &result,
+    AMP::Array<std::shared_ptr<std::vector<double>>> &result,
     std::map<std::string, std::shared_ptr<std::vector<double>>> &args,
     const std::vector<libMesh::Point> & )
 {
@@ -51,7 +50,7 @@ void DiffusionTransportTensorModel::getTensorTransport(
     // evaluate material property
     // material library has been temporarily supplied with a dummy evalv for tensors
     // new material interface will fix.
-    d_tensorProperty->evalv( result, args );
+    d_property->evalv( result, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value
@@ -64,9 +63,7 @@ void DiffusionTransportTensorModel::getTensorTransport(
 
         if ( d_BilogScaleCoefficient ) {
             for ( auto &elem : result )
-                for ( auto &j : elem ) {
-                    bilogScale( *j, lower, upper );
-                }
+                bilogScale( *elem, lower, upper );
         }
     }
 }

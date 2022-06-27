@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/operators/map/dtk/DTKMapOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -39,7 +40,7 @@ static void myTest( AMP::UnitTest *ut )
     auto sourceMeshDatabase = input_db->getDatabase( "SourceMesh" );
     auto sourceMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( sourceMeshDatabase );
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto sourceMesh                = AMP::Mesh::Mesh::buildMesh( sourceMeshParams );
+    auto sourceMesh                = AMP::Mesh::MeshFactory::create( sourceMeshParams );
     size_t numVerticesOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
     size_t numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "source mesh contains " << numVerticesOnSourceMesh << " vertices\n";
@@ -80,7 +81,7 @@ static void myTest( AMP::UnitTest *ut )
     auto targetMeshDatabase = input_db->getDatabase( "TargetMesh" );
     auto targetMeshParams   = std::make_shared<AMP::Mesh::MeshParameters>( targetMeshDatabase );
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto targetMesh                = AMP::Mesh::Mesh::buildMesh( targetMeshParams );
+    auto targetMesh                = AMP::Mesh::MeshFactory::create( targetMeshParams );
     size_t numVerticesOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
     size_t numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
     AMP::pout << "target mesh contains " << numVerticesOnTargetMesh << " vertices\n";

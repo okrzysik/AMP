@@ -1,6 +1,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 
 #include "AMP/IO/PIO.h"
@@ -36,12 +37,10 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     // Input and output file names
     std::string input_file = "input_" + exeName;
     std::string log_file   = "output_" + exeName;
-    size_t N_error0        = ut->NumFailLocal();
 
     // Fill the database from the input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
     input_db->print( AMP::plog );
-
 
     // Print from all cores into the output files
     AMP::logAllNodes( log_file );
@@ -51,7 +50,7 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -158,8 +157,9 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
-        ut->failure( "TrilinosMueLuSolver does not solve a linear thermal problem with a nuclear "
-                     "source term." );
+        ut->failure( "exeName" );
+    } else {
+        ut->passes( exeName );
     }
 
     // Plot the results
@@ -171,11 +171,6 @@ void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
     siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
-
-    if ( N_error0 == ut->NumFailLocal() )
-        ut->passes( exeName );
-    else
-        ut->failure( exeName );
 }
 
 

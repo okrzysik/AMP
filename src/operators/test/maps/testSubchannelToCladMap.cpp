@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/map/AsyncMapColumnOperator.h"
 #include "AMP/operators/map/SubchannelToCladMap.h"
@@ -60,7 +61,7 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager  = AMP::Mesh::Mesh::buildMesh( params );
+    auto manager  = AMP::Mesh::MeshFactory::create( params );
     auto pin_mesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr clad_mesh;
     if ( pin_mesh ) {

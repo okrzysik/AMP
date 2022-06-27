@@ -271,7 +271,7 @@ void testConvertSAMRAI( AMP::UnitTest &ut )
 }
     #endif
 #else
-void testConvertSAMRAI( AMP::UnitTest &, const std::string & ) {}
+void testConvertSAMRAI( AMP::UnitTest & ) {}
 void testSAMRAI( AMP::UnitTest &, const std::string & ) {}
 #endif
 

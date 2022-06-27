@@ -1,6 +1,7 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -309,6 +310,14 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         auto data = ( *db )( "tabulated nk" ).getArray<double>( "data" );
         bool pass = data.size() == AMP::ArraySize( 49, 3 );
         checkResult( ut, pass, "Found material" );
+    }
+    if ( filename == "input_Database" ) {
+        auto db2 = db->getDatabase( "Try" );
+        checkResult( ut, db2->getScalar<int>( "eq1" ) == 9, "eq1 evaluates to a scalar int" );
+        auto eq1 = db2->getEquation( "eq1" );
+        auto eq2 = db2->getEquation( "eq2" );
+        checkResult( ut, ( *eq1 )() == 9, "eq1" );
+        checkResult( ut, ( *eq2 )( { 3.0 } ) == 12, "eq2" );
     }
     printf( "\n" );
 }

@@ -2,10 +2,12 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/AMP_Version.h"
 #include "AMP/IO/PIO.h"
-#include "AMP/materials/Material.h"
+#include "AMP/operators/OperatorFactory.h"
+#include "AMP/solvers/SolverFactory.h"
+#include "AMP/time_integrators/TimeIntegratorFactory.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
-#include "AMP/utils/RNG.h"
+#include "AMP/utils/FactoryStrategy.hpp"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -26,7 +28,6 @@
 #ifdef AMP_USE_PETSC
     #include "petsc.h"
     #include "petscerror.h"
-    #include "petscsys.h"
     #include "petscversion.h"
 #endif
 #ifdef AMP_USE_TIMER
@@ -85,6 +86,12 @@
             t++;                                \
         }                                       \
     } while ( 0 )
+
+
+// Forward declares
+namespace AMP::Materials {
+class Material;
+}
 
 
 namespace AMP {
@@ -262,8 +269,6 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     if ( abort_stackType == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     StackTrace::setDefaultStackType( static_cast<StackTrace::printStackType>( abort_stackType ) );
-    // Initialize the random number generator
-    AMP::RNG::initialize( 123 );
     // Initialize cuda
     start_CUDA();
     // Initialize Kokkos
@@ -353,8 +358,11 @@ void AMPManager::shutdown()
         }
     }
     resourceMap.clear();
-    // Clear the material factories
-    AMP::voodoo::Factory<AMP::Materials::Material>::instance().clear();
+    // Clear the factories
+    AMP::FactoryStrategy<AMP::Materials::Material>::clear();
+    AMP::Operator::OperatorFactory::clear();
+    AMP::Solver::SolverFactory::clear();
+    AMP::TimeIntegrator::TimeIntegratorFactory::clear();
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
 #ifdef AMP_USE_TIMER

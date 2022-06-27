@@ -1,39 +1,31 @@
-#include "Material.h"
-
-// Include all Material headers (they are responsible for registering themselves with the factory)
-#include "CylindricallySymmetric.h"
-#include "Dr_nonlinear.h"
-#include "FixedClad.h"
-#include "FixedFuel.h"
-#include "Independent.h"
-#include "Ox_MSRZC_09.h"
-#include "Steel316_MSRZC_09.h"
-#include "UO2_MSRZC_09.h"
-#include "WaterLibrary.h"
+#include "AMP/materials/Material.h"
+#include "AMP/materials/MaterialList.h"
+#include "AMP/materials/ScalarProperty.h"
 
 
 namespace AMP::Materials {
 
 
-// check if a property exists in the material
-bool Material::hasProperty( std::string type )
+/********************************************************************
+ * Get properties                                                    *
+ ********************************************************************/
+bool Material::hasProperty( const std::string &type ) const
 {
     return d_propertyMap.find( type ) != d_propertyMap.end();
 }
-
-
-// get a pointer to a specific property through its name
 std::shared_ptr<Property> Material::property( std::string type )
 {
     auto it = d_propertyMap.find( type );
     AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
     return it->second;
 }
-
-
-// return a list of all properties in this material
-// note: this list is in error if property has an embedded underscore
-std::vector<std::string> Material::list()
+std::shared_ptr<const Property> Material::property( std::string type ) const
+{
+    auto it = d_propertyMap.find( type );
+    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    return it->second;
+}
+std::vector<std::string> Material::list() const
 {
     std::vector<std::string> result;
     for ( auto it : d_propertyMap )
@@ -42,10 +34,66 @@ std::vector<std::string> Material::list()
 }
 
 
-// Return the material
-std::shared_ptr<Material> getMaterial( const std::string &name )
+/********************************************************************
+ * Add a property                                                    *
+ ********************************************************************/
+void Material::addScalarProperty( std::string name,
+                                  double value,
+                                  const AMP::Units &unit,
+                                  std::string source )
 {
-    return AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( name );
+    addProperty<ScalarProperty>( std::move( name ), value, unit, std::move( source ) );
+}
+void Material::addScalarProperty( std::string name,
+                                  AMP::Array<double> value,
+                                  const AMP::Units &unit,
+                                  std::string source )
+{
+    addProperty<ScalarProperty>( std::move( name ), std::move( value ), unit, std::move( source ) );
+}
+void Material::addPolynomialProperty( std::string name,
+                                      std::string source,
+                                      const AMP::Units &unit,
+                                      std::vector<double> params,
+                                      std::vector<std::string> args,
+                                      std::vector<std::array<double, 2>> ranges,
+                                      std::vector<AMP::Units> argUnits )
+{
+    addProperty<PolynomialProperty>( std::move( name ),
+                                     std::move( source ),
+                                     unit,
+                                     std::move( params ),
+                                     std::move( args ),
+                                     std::move( ranges ),
+                                     std::move( argUnits ) );
+}
+
+
+/********************************************************************
+ * Construct a material from a database                              *
+ ********************************************************************/
+DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Database> db )
+    : d_name( name )
+{
+    if ( !db )
+        return;
+    auto keys = db->getAllKeys();
+    for ( auto key : keys )
+        d_propertyMap[key] = createProperty( key, *db );
+}
+
+
+/********************************************************************
+ * Material factory functiosn                                        *
+ ********************************************************************/
+std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
+std::unique_ptr<Material> getMaterial( const std::string &name )
+{
+    return AMP::FactoryStrategy<Material>::create( name );
+}
+void registerMaterial( const std::string &name, std::function<std::unique_ptr<Material>()> fun )
+{
+    AMP::FactoryStrategy<Material>::registerFactory( name, fun );
 }
 
 

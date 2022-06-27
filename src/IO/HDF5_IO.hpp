@@ -6,7 +6,6 @@
 #include "AMP/IO/HDF5_Class.h"
 #include "AMP/IO/HDF5_IO.h"
 #include "AMP/utils/Array.h"
-#include "AMP/utils/Array.hpp"
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/Utilities.h"
 

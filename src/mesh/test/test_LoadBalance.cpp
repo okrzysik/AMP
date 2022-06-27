@@ -1,6 +1,7 @@
 // This program simulates the load balance with a given input file on a given number of processors
 
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/AMPManager.h"

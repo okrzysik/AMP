@@ -25,6 +25,10 @@ class DatabaseBox;
 namespace AMP {
 
 
+// Forward declares
+class MathExpr;
+
+
 //! Base class to hold data of a given type
 class KeyData
 {
@@ -35,9 +39,9 @@ public:
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
     virtual void print( std::ostream &os,
-                        const std::string_view &indent = "",
-                        bool sort                      = true,
-                        bool printType                 = false ) const = 0;
+                        std::string_view indent = "",
+                        bool sort               = true,
+                        bool printType          = false ) const = 0;
     //! Return true if the type is a floating point type
     virtual bool is_floating_point() const = 0;
     //! Return true if the type is a integer point type
@@ -106,7 +110,7 @@ public:
     static std::shared_ptr<Database> parseInputFile( const std::string &filename );
 
     // Read a YAML database
-    static std::unique_ptr<KeyData> readYAML( const std::string_view &filename );
+    static std::unique_ptr<KeyData> readYAML( std::string_view filename );
 
     /** \brief Create a database from key/value pairs
      * \details  This function will create a database from a set of key/value pairs
@@ -132,7 +136,7 @@ public:
      * Create database from string
      * @param data       String containing the database data
      */
-    static std::unique_ptr<Database> createFromString( const std::string_view &data );
+    static std::unique_ptr<Database> createFromString( std::string_view data );
 
     //! Copy constructor
     Database( const Database & ) = delete;
@@ -188,7 +192,7 @@ public:
      *     otherwise.
      * @param[in] key           Key name to lookup.
      */
-    bool keyExists( const std::string_view &key ) const;
+    bool keyExists( std::string_view key ) const;
 
 
     /** \brief Return all keys in the database.
@@ -225,7 +229,7 @@ public:
      *
      * @param[in] key           Key name in database.
      */
-    inline std::string getString( const std::string_view &key ) const
+    inline std::string getString( std::string_view key ) const
     {
         return getScalar<std::string>( key );
     }
@@ -241,7 +245,7 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE getScalar( const std::string_view &key, const Units &unit = Units() ) const;
+    TYPE getScalar( std::string_view key, const Units &unit = Units() ) const;
 
 
     /**
@@ -254,7 +258,7 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE getWithDefault( const std::string_view &key,
+    TYPE getWithDefault( std::string_view key,
                          typename IdentityType<const TYPE &>::type value,
                          const Units &unit = Units() ) const;
 
@@ -269,7 +273,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    Array<TYPE> getArray( const std::string_view &key, const Units &unit = Units() ) const;
+    Array<TYPE> getArray( std::string_view key, const Units &unit = Units() ) const;
 
 
     /**
@@ -282,7 +286,7 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    std::vector<TYPE> getVector( const std::string_view &key, const Units &unit = Units() ) const;
+    std::vector<TYPE> getVector( std::string_view key, const Units &unit = Units() ) const;
 
 
     /**
@@ -293,7 +297,7 @@ public:
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    void putScalar( const std::string_view &key,
+    void putScalar( std::string_view key,
                     TYPE value,
                     Units unit  = Units(),
                     Check check = Check::GetDatabaseDefault );
@@ -311,7 +315,7 @@ public:
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    void putArray( const std::string_view &key,
+    void putArray( std::string_view key,
                    Array<TYPE> data,
                    Units unit  = Units(),
                    Check check = Check::GetDatabaseDefault );
@@ -329,7 +333,7 @@ public:
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
     template<class TYPE>
-    void putVector( const std::string_view &key,
+    void putVector( std::string_view key,
                     const std::vector<TYPE> &data,
                     Units unit  = Units(),
                     Check check = Check::GetDatabaseDefault );
@@ -341,7 +345,7 @@ public:
      *
      * @param key Key name in database.
      */
-    KeyData *getData( const std::string_view &key );
+    KeyData *getData( std::string_view key );
 
     /**
      * Get a raw pointer to the data for a key in the database.
@@ -349,7 +353,7 @@ public:
      *
      * @param key Key name in database.
      */
-    const KeyData *getData( const std::string_view &key ) const;
+    const KeyData *getData( std::string_view key ) const;
 
 
     /**
@@ -359,25 +363,42 @@ public:
      * @param data      Data to store
      * @param check     Optional value to indicate the behavior of the database if the key exists.
      */
-    void putData( const std::string_view &key,
+    void putData( std::string_view key,
                   std::unique_ptr<KeyData> data,
                   Check check = Check::GetDatabaseDefault );
 
 
     //! Check if the key is a database object
-    bool isDatabase( const std::string_view &key ) const;
+    bool isDatabase( std::string_view key ) const;
 
 
     //! Check if the named entry is a string
-    bool isString( const std::string_view &key ) const;
+    bool isString( std::string_view key ) const;
+
+    /**
+     * Check if the named entry is an equation
+     * Note: scalar values can be represented as an equation and will return true
+     *
+     * @param key       Key name in database
+     */
+    bool isEquation( std::string_view key ) const;
+
+
+    /**
+     * Return an equation for the key
+     * Note: scalar values can be represented as an equation and will return a new scalar equation
+     *
+     * @param key       Key name in database
+     */
+    std::shared_ptr<const MathExpr> getEquation( std::string_view key ) const;
 
 
     //! Check if the entry can be stored as the given type
     template<class TYPE>
-    bool isType( const std::string_view &key ) const;
+    bool isType( std::string_view key ) const;
 
     //! Get the fundamental type (e.g. double, int, float, ...)
-    typeID getDataType( const std::string_view &key ) const;
+    typeID getDataType( std::string_view key ) const;
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -385,7 +406,7 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<Database> getDatabase( const std::string_view &key );
+    std::shared_ptr<Database> getDatabase( std::string_view key );
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -393,7 +414,7 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<const Database> getDatabase( const std::string_view &key ) const;
+    std::shared_ptr<const Database> getDatabase( std::string_view key ) const;
 
 
     /**
@@ -401,7 +422,7 @@ public:
      *
      * @param key Key name in database.
      */
-    const Database &operator()( const std::string_view &key ) const;
+    const Database &operator()( std::string_view key ) const;
 
 
     /**
@@ -411,7 +432,7 @@ public:
      * @param key       Key name in database.
      * @param db        Database to store
      */
-    inline void putDatabase( const std::string_view &key, std::unique_ptr<Database> db )
+    inline void putDatabase( std::string_view key, std::unique_ptr<Database> db )
     {
         putData( key, std::move( db ) );
     }
@@ -423,7 +444,7 @@ public:
      *
      * @param key       Key name in database.
      */
-    inline std::shared_ptr<Database> putDatabase( const std::string_view &key )
+    inline std::shared_ptr<Database> putDatabase( std::string_view key )
     {
         putData( key, std::make_unique<Database>( std::string( key.data(), key.size() ) ) );
         return getDatabase( key );
@@ -437,7 +458,7 @@ public:
      * @param key       Key name in database
      * @param check     Check if the key exists
      */
-    void erase( const std::string_view &key, bool check = true );
+    void erase( std::string_view key, bool check = true );
 
 
     /**
@@ -448,9 +469,9 @@ public:
      * @param printType Print a comment with the stored datatype
      */
     void print( std::ostream &os,
-                const std::string_view &indent = "",
-                bool sort                      = true,
-                bool printType                 = false ) const override;
+                std::string_view indent = "",
+                bool sort               = true,
+                bool printType          = false ) const override;
 
 
     //! Print the type
@@ -465,7 +486,7 @@ public:
      * @return          Output string
      */
     std::string
-    print( const std::string_view &indent = "", bool sort = true, bool printType = false ) const;
+    print( std::string_view indent = "", bool sort = true, bool printType = false ) const;
 
 
 #ifdef AMP_USE_SAMRAI
@@ -494,15 +515,14 @@ protected: // Internal data and functions
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
-    void addArgs( const std::string_view &key, TYPE value, Args... args );
+    void addArgs( std::string_view key, TYPE value, Args... args );
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
-    void
-    addArgsWithUnits( const std::string_view &key, TYPE value, const Units &unit, Args... args );
+    void addArgsWithUnits( std::string_view key, TYPE value, const Units &unit, Args... args );
 
     // Hash a string
-    static constexpr uint32_t hashString( const std::string_view &s )
+    static constexpr uint32_t hashString( std::string_view s )
     {
         uint32_t hash = 5381;
         for ( size_t i = 0; i < s.size(); i++ )
@@ -540,7 +560,7 @@ public:
     DatabaseBox( int dim, const int *lower, const int *upper );
 
     //! Construct from a string of the format "[(0,0,0), (7,7,7)]"
-    explicit DatabaseBox( const std::string_view &str );
+    explicit DatabaseBox( std::string_view str );
 
 #ifdef AMP_USE_SAMRAI
     //! Construct a DatabaseBox from a SAMRAI DatabaseBox
@@ -591,7 +611,7 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox & );
  * Create database from arguments                                    *
  ********************************************************************/
 template<class TYPE, class... Args>
-inline void Database::addArgs( const std::string_view &key, TYPE value, Args... args )
+inline void Database::addArgs( std::string_view key, TYPE value, Args... args )
 {
     if constexpr ( is_vector<TYPE>::value ) {
         putVector( key, value );
@@ -613,10 +633,8 @@ inline void Database::addArgs( const std::string_view &key, TYPE value, Args... 
         addArgs( args... );
 }
 template<class TYPE, class... Args>
-inline void Database::addArgsWithUnits( const std::string_view &key,
-                                        TYPE value,
-                                        const Units &unit,
-                                        Args... args )
+inline void
+Database::addArgsWithUnits( std::string_view key, TYPE value, const Units &unit, Args... args )
 {
     if constexpr ( is_vector<TYPE>::value ) {
         putVector( key, value, unit );

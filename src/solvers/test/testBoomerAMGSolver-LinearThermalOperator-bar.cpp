@@ -1,10 +1,10 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/ElementOperationFactory.h"
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -24,7 +24,8 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
-#include <fstream>
+#include "testSolverHelpers.h"
+
 #include <limits>
 #include <memory>
 #include <string>
@@ -54,7 +55,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     // Create a DOF manager for a nodal vector
     int DOFsPerNode          = 1;
@@ -171,75 +172,16 @@ void linearThermalTest( AMP::UnitTest *ut )
     //   c = -power/2
     //   b = -10*power
     //   a = 300 + 150*power
-
-    double power = 1.;
-    double c     = -power / 2.;
-    double b     = -10. * power;
-    double a     = 300. + 150. * power;
-    bool passes  = true;
-    double cal, zee, sol, err;
-
-    // Serial execution
-    AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    for ( int i = 0; i < globalComm.getSize(); ++i ) {
-        if ( globalComm.getRank() == i ) {
-            std::string filename = "data_" + exeName;
-            int rank             = globalComm.getRank();
-            int nranks           = globalComm.getSize();
-            auto omode           = std::ios_base::out;
-            if ( rank > 0 )
-                omode |= std::ios_base::app;
-            std::ofstream file( filename.c_str(), omode );
-            if ( rank == 0 ) {
-                file << "(* x y z analytic calculated relative-error *)" << std::endl;
-                file << "formula=" << a << " + " << b << "*z + " << c << "*z^2;" << std::endl;
-                file << "results={" << std::endl;
-            }
-            file.precision( 14 );
-
-            iterator        = iterator.begin();
-            size_t numNodes = 0, iNode = 0;
-            for ( ; iterator != iterator.end(); ++iterator )
-                numNodes++;
-
-            iterator   = iterator.end();
-            double mse = 0.0;
-            for ( ; iterator != iterator.end(); ++iterator ) {
-                std::vector<size_t> gid;
-                nodalDofMap->getDOFs( iterator->globalID(), gid );
-                cal = TemperatureInKelvinVec->getValueByGlobalID( gid[0] );
-                zee = ( iterator->coord() )[2];
-                sol = a + b * zee + c * zee * zee;
-                err =
-                    fabs( cal - sol ) * 2. / ( cal + sol + std::numeric_limits<double>::epsilon() );
-                double x, y, z;
-                x = ( iterator->coord() )[0];
-                y = ( iterator->coord() )[1];
-                z = ( iterator->coord() )[2];
-                mse += ( sol - cal ) * ( sol - cal );
-                file << "{" << x << "," << y << "," << z << "," << sol << "," << cal << "," << err
-                     << "}";
-                if ( iNode < numNodes - 1 )
-                    file << "," << std::endl;
-                if ( fabs( cal - sol ) > cal * 1e-3 ) {
-                    passes = false;
-                    ut->failure( "Error" );
-                }
-                iNode++;
-            }
-
-            if ( rank == nranks - 1 ) {
-                file << "};" << std::endl;
-                mse /= ( 1. * iNode );
-                mse = sqrt( mse );
-                file << "l2err = {" << iNode << "," << mse << "};\n";
-            }
-            file.close();
-        }
-        globalComm.barrier();
-    }
+    auto fun = []( double, double, double z ) {
+        double power = 1.;
+        double c     = -power / 2.;
+        double b     = -10. * power;
+        double a     = 300. + 150. * power;
+        return a + b * z + c * z * z;
+    };
+    bool passes = checkAnalyticalSolution( exeName, fun, iterator, TemperatureInKelvinVec );
     if ( passes )
-        ut->passes( "The linear thermal solve is verified." );
+        ut->passes( "The linear thermal solve is verified" );
 
     // Plot the results
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );

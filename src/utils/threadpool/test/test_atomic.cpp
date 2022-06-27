@@ -1,5 +1,3 @@
-#include "AMP/IO/PIO.h"
-#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
 
@@ -18,7 +16,6 @@
 #endif
 
 
-using namespace AMP;
 using AMP::Utilities::stringf;
 
 
@@ -38,10 +35,9 @@ static void modify_counter( int N, std::atomic_int64_t &counter )
 /******************************************************************
  * The main program                                                *
  ******************************************************************/
-int main( int argc, char *argv[] )
+int main( int, char *[] )
 {
-    AMP::AMPManager::startup( argc, argv );
-    UnitTest ut;
+    AMP::UnitTest ut;
 
     int N_threads = 64;      // Number of threads
     int N_count   = 1000000; // Number of work items
@@ -83,7 +79,7 @@ int main( int argc, char *argv[] )
         auto tmp = stringf( "Count of %i did not match expected count of %i", val, N_count );
         ut.failure( tmp );
     }
-    printp( "Time to increment (serial) = %0.1f ns\n", 1e9 * time_inc_serial );
+    printf( "Time to increment (serial) = %0.1f ns\n", 1e9 * time_inc_serial );
 
     // Decrement the counter in serial
     start = std::chrono::high_resolution_clock::now();
@@ -95,7 +91,7 @@ int main( int argc, char *argv[] )
         auto tmp = stringf( "Count of %i did not match expected count of %i", val, 0 );
         ut.failure( tmp );
     }
-    printp( "Time to decrement (serial) = %0.1f ns\n", 1e9 * time_dec_serial );
+    printf( "Time to decrement (serial) = %0.1f ns\n", 1e9 * time_dec_serial );
 
     // Increment the counter in parallel
     std::vector<std::thread> threads( N_threads );
@@ -113,7 +109,7 @@ int main( int argc, char *argv[] )
             stringf( "Count of %i did not match expected count of %i", val, N_count * N_threads );
         ut.failure( tmp );
     }
-    printp( "Time to increment (parallel) = %0.1f ns\n", 1e9 * time_inc_parallel );
+    printf( "Time to increment (parallel) = %0.1f ns\n", 1e9 * time_inc_parallel );
 
     // Decrement the counter in parallel
     start = std::chrono::high_resolution_clock::now();
@@ -129,7 +125,7 @@ int main( int argc, char *argv[] )
         auto tmp = stringf( "Count of %i did not match expected count of %i", val, 0 );
         ut.failure( tmp );
     }
-    printp( "Time to decrement (parallel) = %0.1f ns\n", 1e9 * time_dec_parallel );
+    printf( "Time to decrement (parallel) = %0.1f ns\n", 1e9 * time_dec_parallel );
 
     // Check the time to increment/decrement
     if ( time_inc_serial > 100e-9 || time_dec_serial > 100e-9 || time_inc_parallel > 100e-9 ||
@@ -147,6 +143,5 @@ int main( int argc, char *argv[] )
     ut.report();
     auto N_errors = static_cast<int>( ut.NumFailGlobal() );
     ut.reset();
-    AMP::AMPManager::shutdown();
     return N_errors;
 }

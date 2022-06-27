@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
@@ -70,7 +71,7 @@ void printMeshNames( const std::string &filename )
     auto database = input_db->getDatabase( "Mesh" );
     auto params   = std::make_shared<AMP::Mesh::MeshParameters>( database );
     params->setComm( globalComm );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh = AMP::Mesh::MeshFactory::create( params );
     if ( globalComm.getRank() == 0 ) {
         std::cout << "Mesh names (rank 0):\n";
         printMeshNames( mesh, "   " );
@@ -222,7 +223,7 @@ void testWriterMesh( AMP::UnitTest &ut,
 
     // Create the meshes from the input database
     PROFILE_START( "Load Mesh" );
-    auto mesh        = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh        = AMP::Mesh::MeshFactory::create( params );
     auto pointType   = AMP::Mesh::GeomType::Vertex;
     auto volumeType  = mesh->getGeomType();
     auto surfaceType = getSurfaceType( volumeType );

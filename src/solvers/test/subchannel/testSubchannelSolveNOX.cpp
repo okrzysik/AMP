@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/ColumnOperator.h"
@@ -131,7 +132,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     meshParams->setComm( globalComm );
 
     // Get the meshes
-    auto manager = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto manager = AMP::Mesh::MeshFactory::create( meshParams );
     auto pinMesh = manager->Subset( "MultiPin" );
     AMP::Mesh::Mesh::shared_ptr cladMesh;
     if ( pinMesh ) {

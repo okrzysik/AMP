@@ -1,10 +1,11 @@
 #ifndef included_AMP_VectorOperationsOpenMP_hpp
 #define included_AMP_VectorOperationsOpenMP_hpp
 
-#include "AMP/utils/RNG.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
+
+#include <random>
 
 
 namespace AMP::LinearAlgebra {
@@ -72,28 +73,18 @@ void VectorOperationsOpenMP<TYPE>::setToScalar( const Scalar &alpha_in, VectorDa
 template<typename TYPE>
 void VectorOperationsOpenMP<TYPE>::setRandomValues( VectorData &x )
 {
-    RandomVariable<double> r( 0, 1, Vector::getDefaultRNG() );
-    auto curMe = x.begin<TYPE>();
-    auto last  = x.end<TYPE>();
-    while ( curMe != last ) {
-        double curRand = r;
-        *curMe         = curRand;
-        ++curMe;
-    }
-    // Call makeConsistent to leave the vector in a consistent state
-    x.makeConsistent( VectorData::ScatterType::CONSISTENT_SET );
-}
-
-template<typename TYPE>
-void VectorOperationsOpenMP<TYPE>::setRandomValues( std::shared_ptr<RNG> rng, VectorData &x )
-{
-    RandomVariable<double> r( 0, 1, rng );
-    auto curMe = x.begin<TYPE>();
-    auto last  = x.end<TYPE>();
-    while ( curMe != last ) {
-        double curRand = r;
-        *curMe         = curRand;
-        ++curMe;
+    static std::random_device rd;
+    static std::mt19937 gen( rd() );
+    if constexpr ( std::is_floating_point<TYPE>::value ) {
+        static std::uniform_real_distribution<TYPE> dis( 0, 1 );
+        for ( auto &y : x )
+            y = dis( gen );
+    } else if constexpr ( std::is_integral<TYPE>::value ) {
+        static std::uniform_int_distribution<TYPE> dis;
+        for ( auto &y : x )
+            y = dis( gen );
+    } else {
+        AMP_ERROR( "Not finished" );
     }
     // Call makeConsistent to leave the vector in a consistent state
     x.makeConsistent( VectorData::ScatterType::CONSISTENT_SET );

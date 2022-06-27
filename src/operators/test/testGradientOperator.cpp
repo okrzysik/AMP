@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/libmesh/GradientOperator.h"
 #include "AMP/utils/AMPManager.h"
@@ -60,7 +61,7 @@ static void run( const std::string &input_file, AMP::UnitTest &ut )
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     // Create the gradient operator
     auto grad_db   = input_db->getDatabase( "GradientOperator" );

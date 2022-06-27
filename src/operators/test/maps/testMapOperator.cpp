@@ -3,6 +3,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/map/MapOperatorParameters.h"
@@ -38,7 +39,7 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto mesh         = AMP::Mesh::Mesh::buildMesh( params );
+    auto mesh         = AMP::Mesh::MeshFactory::create( params );
     auto meshAdapter1 = mesh->Subset( "pellet" );
     auto meshAdapter2 = mesh->Subset( "clad" );
 

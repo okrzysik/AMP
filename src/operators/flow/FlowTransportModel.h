@@ -25,8 +25,7 @@ public:
         if ( d_useMaterialsLibrary == true ) {
             AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
             std::string matname = params->d_db->getString( "Material" );
-            d_coolant =
-                AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+            d_coolant           = AMP::Materials::getMaterial( matname );
         } else {
             d_density = params->d_db->getWithDefault<double>( "DENSITY", 1 );
             d_fmu     = params->d_db->getWithDefault<double>( "VISCOSITY", 1.0 );

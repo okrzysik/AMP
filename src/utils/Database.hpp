@@ -76,10 +76,7 @@ public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
     std::unique_ptr<KeyData> clone() const override { return std::make_unique<EmptyKeyData>(); }
-    void print( std::ostream &os,
-                const std::string_view & = "",
-                bool                     = true,
-                bool                     = false ) const override
+    void print( std::ostream &os, std::string_view = "", bool = true, bool = false ) const override
     {
         os << std::endl;
     }
@@ -90,6 +87,27 @@ public:
     Array<double> convertToDouble() const override { return Array<double>(); }
     Array<int64_t> convertToInt64() const override { return Array<int64_t>(); }
     bool operator==( const KeyData &rhs ) const override { return rhs.convertToDouble().empty(); }
+};
+class EquationKeyData final : public KeyData
+{
+public:
+    EquationKeyData() = default;
+    EquationKeyData( std::string_view eq, const Units &unit = Units() );
+    EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit = Units() );
+    virtual ~EquationKeyData() = default;
+    std::unique_ptr<KeyData> clone() const override;
+    void print( std::ostream &, std::string_view = "", bool = true, bool = false ) const override;
+    typeID getDataType() const override;
+    bool is_floating_point() const override;
+    bool is_integral() const override;
+    ArraySize arraySize() const override;
+    Array<double> convertToDouble() const override;
+    Array<int64_t> convertToInt64() const override;
+    bool operator==( const KeyData &rhs ) const override;
+    auto getEq() const { return d_eq; }
+
+private:
+    std::shared_ptr<const MathExpr> d_eq;
 };
 template<class TYPE>
 class KeyDataScalar final : public KeyData
@@ -106,9 +124,9 @@ public:
         return std::make_unique<KeyDataScalar>( d_data, d_unit );
     }
     void print( std::ostream &os,
-                const std::string_view &indent = "",
-                bool                           = true,
-                bool printType                 = false ) const override
+                std::string_view indent = "",
+                bool                    = true,
+                bool printType          = false ) const override
     {
         os << indent;
         printValue( os, d_data );
@@ -156,9 +174,9 @@ public:
         return std::make_unique<KeyDataArray>( d_data, d_unit );
     }
     void print( std::ostream &os,
-                const std::string_view &indent = "",
-                bool                           = true,
-                bool printType                 = false ) const override
+                std::string_view indent = "",
+                bool                    = true,
+                bool printType          = false ) const override
     {
         os << indent;
         if ( d_data.ndim() == 1 ) {
@@ -234,9 +252,9 @@ public:
         return std::make_unique<DatabaseVector>( d_data );
     }
     void print( std::ostream &os,
-                const std::string_view &indent = "",
-                bool sort                      = true,
-                bool printType                 = false ) const override
+                std::string_view indent = "",
+                bool sort               = true,
+                bool printType          = false ) const override
     {
         std::string indent2 = std::string( indent ) + "   ";
         for ( const auto &data : d_data ) {
@@ -277,7 +295,7 @@ void scaleData( Array<TYPE> &data, double factor );
 template<class TYPE>
 void scaleData( TYPE &data, double factor );
 template<class TYPE>
-TYPE Database::getScalar( const std::string_view &key, const Units &unit ) const
+TYPE Database::getScalar( std::string_view key, const Units &unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -315,7 +333,7 @@ TYPE Database::getScalar( const std::string_view &key, const Units &unit ) const
     return data;
 }
 template<class TYPE>
-std::vector<TYPE> Database::getVector( const std::string_view &key, const Units &unit ) const
+std::vector<TYPE> Database::getVector( std::string_view key, const Units &unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -353,7 +371,7 @@ std::vector<TYPE> Database::getVector( const std::string_view &key, const Units 
     return data2;
 }
 template<class TYPE>
-Array<TYPE> Database::getArray( const std::string_view &key, const Units &unit ) const
+Array<TYPE> Database::getArray( std::string_view key, const Units &unit ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
@@ -392,7 +410,7 @@ Array<TYPE> Database::getArray( const std::string_view &key, const Units &unit )
  * Get data with default                                             *
  ********************************************************************/
 template<class TYPE>
-TYPE Database::getWithDefault( const std::string_view &key,
+TYPE Database::getWithDefault( std::string_view key,
                                const typename IdentityType<const TYPE &>::type value,
                                const Units &unit ) const
 {
@@ -415,7 +433,7 @@ TYPE Database::getWithDefault( const std::string_view &key,
  * Put data                                                          *
  ********************************************************************/
 template<class TYPE>
-void Database::putScalar( const std::string_view &key, TYPE value, Units unit, Check check )
+void Database::putScalar( std::string_view key, TYPE value, Units unit, Check check )
 {
     if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
         // Guard against storing a bit reference (store a bool instead)
@@ -432,7 +450,7 @@ void Database::putScalar( const std::string_view &key, TYPE value, Units unit, C
     }
 }
 template<class TYPE>
-void Database::putVector( const std::string_view &key,
+void Database::putVector( std::string_view key,
                           const std::vector<TYPE> &data,
                           Units unit,
                           Check check )
@@ -443,7 +461,7 @@ void Database::putVector( const std::string_view &key,
     putData( key, std::move( keyData ), check );
 }
 template<class TYPE>
-void Database::putArray( const std::string_view &key, Array<TYPE> data, Units unit, Check check )
+void Database::putArray( std::string_view key, Array<TYPE> data, Units unit, Check check )
 {
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( data ), unit );
     putData( key, std::move( keyData ), check );
@@ -454,7 +472,7 @@ void Database::putArray( const std::string_view &key, Array<TYPE> data, Units un
  * isType                                                            *
  ********************************************************************/
 template<class TYPE>
-bool Database::isType( const std::string_view &key ) const
+bool Database::isType( std::string_view key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );

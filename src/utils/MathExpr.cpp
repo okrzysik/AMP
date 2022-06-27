@@ -60,18 +60,32 @@ void MathExpr::initialize()
 /************************************************************
  *  Evaluate the expression                                  *
  ************************************************************/
-double MathExpr::operator()( const std::initializer_list<double> &data )
+double MathExpr::operator()( const std::initializer_list<double> &data ) const
 {
     auto it = data.begin();
     for ( size_t i = 0; i < d_data.size(); i++, ++it )
         d_data[i] = *it;
     return te_eval( d_fun );
 }
-double MathExpr::operator()( const double *data )
+double MathExpr::operator()( const double *data ) const
 {
     for ( size_t i = 0; i < d_data.size(); i++ )
         d_data[i] = data[i];
     return te_eval( d_fun );
+}
+
+
+/************************************************************
+ *  Compare two expressions (not perfect)                    *
+ ************************************************************/
+bool MathExpr::operator==( const MathExpr &rhs ) const
+{
+    if ( d_fun == rhs.d_fun )
+        return true;
+    if ( d_expr == rhs.d_expr )
+        return true;
+    // Really need more detailed comparisons
+    return false;
 }
 
 

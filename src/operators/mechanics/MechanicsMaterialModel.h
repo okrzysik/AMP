@@ -48,8 +48,7 @@ public:
         if ( d_useMaterialsLibrary == true ) {
             AMP_INSIST( ( params->d_db->keyExists( "Material" ) ), "Key ''Material'' is missing!" );
             std::string matname = params->d_db->getString( "Material" );
-            d_material =
-                AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+            d_material          = AMP::Materials::getMaterial( matname );
         }
 
         d_currentTime  = 0;
