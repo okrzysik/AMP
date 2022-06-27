@@ -106,11 +106,10 @@ private:
 
     bool d_subspace = false; //! boolean: a nonempty subspace
     bool d_pending  = false; //! contains pending vectors -- boolean
+    bool d_use_qr   = false; //! use qr factorization to solve the least squares problem
 
-    bool d_use_qr = false; //! use qr factorization to solve the least squares problem
-
-    int d_mvec    = 0;   //! maximum number of subspace vectors
-    T d_vtol      = 0.0; //! vector drop tolerance
+    int d_mvec = 0;   //! maximum number of subspace vectors
+    T d_vtol   = 0.0; //! vector drop tolerance
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_vector = nullptr; //! correction vectors
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_residual_vector = nullptr; //! correction vectors
