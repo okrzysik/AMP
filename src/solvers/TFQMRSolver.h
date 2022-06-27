@@ -16,13 +16,14 @@ namespace AMP::Solver {
  * If a preconditioner is provided right preconditioning is done
  */
 
+template<typename T = double>
 class TFQMRSolver : public SolverStrategy
 {
 public:
     /**
      * default constructor
      */
-    TFQMRSolver();
+    TFQMRSolver() = default;
 
     /**
      * main constructor
@@ -51,13 +52,13 @@ public:
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_unique<TFQMRSolver>( solverStrategyParameters );
+        return std::make_unique<TFQMRSolver<T>>( solverStrategyParameters );
     }
 
     /**
      * Default destructor
      */
-    virtual ~TFQMRSolver();
+    virtual ~TFQMRSolver() = default;
 
     /**
      * Solve the system \f$Au = 0\f$.

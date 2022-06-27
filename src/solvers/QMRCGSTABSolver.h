@@ -15,13 +15,14 @@ namespace AMP::Solver {
  * Currently no preconditioning
  */
 
+template<typename T = double>
 class QMRCGSTABSolver : public SolverStrategy
 {
 public:
     /**
      * default constructor
      */
-    QMRCGSTABSolver();
+    QMRCGSTABSolver() = default;
 
     /**
      * main constructor
@@ -50,13 +51,13 @@ public:
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_unique<QMRCGSTABSolver>( solverStrategyParameters );
+        return std::make_unique<QMRCGSTABSolver<T>>( solverStrategyParameters );
     }
 
     /**
      * Default destructor
      */
-    virtual ~QMRCGSTABSolver();
+    virtual ~QMRCGSTABSolver() = default;
 
     /**
      * Solve the system \f$Au = 0\f$.
