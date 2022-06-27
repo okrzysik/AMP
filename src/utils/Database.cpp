@@ -2,6 +2,7 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Database.hpp"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
 
 #include <algorithm>
@@ -21,7 +22,7 @@ namespace AMP {
 // Forward declarations
 static size_t
 loadDatabase( const std::string &,
-              const std::string_view &,
+              std::string_view,
               size_t,
               Database &,
               std::map<std::string, const KeyData *> = std::map<std::string, const KeyData *>() );
@@ -49,7 +50,7 @@ static std::vector<char> readFile( const std::string &filename )
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
-static inline bool strcmpi( const std::string_view &s1, const std::string_view &s2 )
+static inline bool strcmpi( std::string_view s1, std::string_view s2 )
 {
     if ( s1.size() != s2.size() )
         return false;
@@ -63,9 +64,9 @@ static inline bool strcmpi( const std::string_view &s1, const std::string_view &
     return equal;
 }
 template<class TYPE>
-static TYPE readValue( const std::string_view &str );
+static TYPE readValue( std::string_view str );
 template<>
-double readValue<double>( const std::string_view &str )
+double readValue<double>( std::string_view str )
 {
     double data = 0;
     if ( strcmpi( str, "inf" ) || strcmpi( str, "infinity" ) ) {
@@ -85,7 +86,7 @@ double readValue<double>( const std::string_view &str )
     return data;
 }
 template<>
-int readValue<int>( const std::string_view &str )
+int readValue<int>( std::string_view str )
 {
     char *pos = nullptr;
     int data  = strtol( str.data(), &pos, 10 );
@@ -94,7 +95,7 @@ int readValue<int>( const std::string_view &str )
     return data;
 }
 template<class TYPE>
-static std::tuple<TYPE, Units> readPair( const std::string_view &str )
+static std::tuple<TYPE, Units> readPair( std::string_view str )
 {
     auto str0 = str;
     auto tmp  = deblank( std::move( str0 ) );
@@ -122,7 +123,7 @@ static std::tuple<TYPE, Units> readPair( const std::string_view &str )
         }
     }
 }
-static void strrep( std::string &str, const std::string_view &s, const std::string_view &r )
+static void strrep( std::string &str, std::string_view s, std::string_view r )
 {
     size_t pos = str.find( s.data(), 0, s.size() );
     while ( pos != std::string::npos ) {
@@ -245,31 +246,31 @@ bool Database::operator==( const KeyData &rhs ) const
 /********************************************************************
  * Get the data object                                               *
  ********************************************************************/
-bool Database::keyExists( const std::string_view &key ) const
+bool Database::keyExists( std::string_view key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index != -1;
 }
-KeyData *Database::getData( const std::string_view &key )
+KeyData *Database::getData( std::string_view key )
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index == -1 ? nullptr : d_data[index].get();
 }
-const KeyData *Database::getData( const std::string_view &key ) const
+const KeyData *Database::getData( std::string_view key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index == -1 ? nullptr : d_data[index].get();
 }
-typeID Database::getDataType( const std::string_view &key ) const
+typeID Database::getDataType( std::string_view key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
     return index == -1 ? typeID() : d_data[index]->getDataType();
 }
-bool Database::isDatabase( const std::string_view &key ) const
+bool Database::isDatabase( std::string_view key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -277,7 +278,7 @@ bool Database::isDatabase( const std::string_view &key ) const
     auto ptr2 = dynamic_cast<const Database *>( d_data[index].get() );
     return ptr2 != nullptr;
 }
-std::shared_ptr<Database> Database::getDatabase( const std::string_view &key )
+std::shared_ptr<Database> Database::getDatabase( std::string_view key )
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -286,7 +287,7 @@ std::shared_ptr<Database> Database::getDatabase( const std::string_view &key )
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-std::shared_ptr<const Database> Database::getDatabase( const std::string_view &key ) const
+std::shared_ptr<const Database> Database::getDatabase( std::string_view key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -295,7 +296,7 @@ std::shared_ptr<const Database> Database::getDatabase( const std::string_view &k
     DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-const Database &Database::operator()( const std::string_view &key ) const
+const Database &Database::operator()( std::string_view key ) const
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -311,7 +312,7 @@ std::vector<std::string> Database::getAllKeys( bool sort ) const
         std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> data, Check check )
+void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Check check )
 {
     if ( check == Check::GetDatabaseDefault )
         check = d_check;
@@ -332,7 +333,7 @@ void Database::putData( const std::string_view &key, std::unique_ptr<KeyData> da
         d_data.emplace_back( std::move( data ) );
     }
 }
-void Database::erase( const std::string_view &key, bool check )
+void Database::erase( std::string_view key, bool check )
 {
     auto hash = hashString( key );
     int index = find( hash );
@@ -385,6 +386,20 @@ bool KeyData::isType<DatabaseBox>() const
 {
     return getDataType() == getTypeID<DatabaseBox>();
 }
+template<>
+bool KeyData::isType<MathExpr>() const
+{
+    if ( dynamic_cast<const EquationKeyData *>( this ) )
+        return true;
+    if ( isType<double>() && arraySize().length() == 1 )
+        return true;
+    return false;
+}
+template<>
+bool KeyData::isType<Database>() const
+{
+    return dynamic_cast<const Database *>( this );
+}
 template<class TYPE>
 bool KeyData::isType() const
 {
@@ -417,21 +432,39 @@ template bool KeyData::isType<int32_t>() const;
 template bool KeyData::isType<int64_t>() const;
 template bool KeyData::isType<float>() const;
 template bool KeyData::isType<long double>() const;
-bool Database::isString( const std::string_view &key ) const
+bool Database::isString( std::string_view key ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
     return data->isType<std::string>();
 }
 
+bool Database::isEquation( std::string_view key ) const
+{
+    auto data = getData( key );
+    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    return data->isType<MathExpr>();
+}
+std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key ) const
+{
+    auto data = getData( key );
+    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    auto eq_data = dynamic_cast<const EquationKeyData *>( data );
+    if ( eq_data )
+        return eq_data->getEq();
+    if ( data->isType<double>() && data->arraySize().length() == 1 ) {
+        double v = data->convertToDouble()( 0 );
+        return std::make_shared<MathExpr>( std::to_string( v ) );
+    }
+    DATABASE_ERROR( "Variable %s was not an equation", key.data() );
+    return nullptr;
+}
+
 
 /********************************************************************
  * Print the database                                                *
  ********************************************************************/
-void Database::print( std::ostream &os,
-                      const std::string_view &indent,
-                      bool sort,
-                      bool printType ) const
+void Database::print( std::ostream &os, std::string_view indent, bool sort, bool printType ) const
 {
     auto keys = getAllKeys( sort ); //  We want the keys in sorted order
     for ( const auto &key : keys ) {
@@ -452,7 +485,7 @@ void Database::print( std::ostream &os,
         }
     }
 }
-std::string Database::print( const std::string_view &indent, bool sort, bool printType ) const
+std::string Database::print( std::string_view indent, bool sort, bool printType ) const
 {
     std::stringstream ss;
     print( ss, indent, sort, printType );
@@ -501,7 +534,7 @@ void Database::readDatabase( const std::string &filename )
                   buffer.size(),
                   *this );
 }
-std::unique_ptr<Database> Database::createFromString( const std::string_view &data )
+std::unique_ptr<Database> Database::createFromString( std::string_view data )
 {
     auto db = std::make_unique<Database>();
     loadDatabase( "Error creating database from file\n", data.data(), data.size(), *db );
@@ -591,7 +624,18 @@ static size_t skip_comment( const char *buffer )
     }
     return pos;
 }
-enum class class_type { STRING, BOOL, INT, FLOAT, COMPLEX, BOX, ARRAY, DATABASE_ENTRY, UNKNOWN };
+enum class class_type {
+    STRING,
+    BOOL,
+    INT,
+    FLOAT,
+    COMPLEX,
+    BOX,
+    ARRAY,
+    EQUATION,
+    DATABASE_ENTRY,
+    UNKNOWN
+};
 static class_type getType( std::string_view value0,
                            const std::map<std::string, const KeyData *> &databaseKeys )
 {
@@ -638,7 +682,7 @@ static bool isType( const std::vector<const KeyData *> data )
 }
 // Convert the string value to the database value
 static std::unique_ptr<KeyData>
-createKeyData( const std::string_view &key,
+createKeyData( std::string_view key,
                class_type data_type,
                std::vector<std::string_view> &values,
                const std::map<std::string, const KeyData *> &databaseKeys )
@@ -664,6 +708,21 @@ createKeyData( const std::string_view &key,
                 data2( i ) = std::string( values[i].data(), values[i].size() );
             data = std::make_unique<KeyDataArray<std::string>>( std::move( data2 ) );
         }
+    } else if ( data_type == class_type::EQUATION ) {
+        // We are dealing with equations
+        Array<std::string_view> data2( values.size() );
+        Units unit;
+        for ( size_t i = 0; i < values.size(); i++ ) {
+            Units unit2;
+            size_t j   = values[i].find( ';' );
+            data2( i ) = deblank( values[i].substr( 0, j + 1 ) );
+            auto str   = deblank( values[i].substr( j + 1 ) );
+            if ( unit.isNull() && !str.empty() )
+                unit = Units( str );
+        }
+        if ( data2.length() > 1 )
+            AMP_ERROR( "Arrays of equations are not currently supported" );
+        data = std::make_unique<EquationKeyData>( std::string( data2( 0 ) ) );
     } else if ( data_type == class_type::BOOL ) {
         // We are dealing with logical values
         Array<bool> data2( values.size() );
@@ -876,8 +935,8 @@ createKeyData( const std::string_view &key,
     return data;
 }
 static std::tuple<size_t, std::unique_ptr<KeyData>>
-read_value( const std::string_view &buffer,
-            const std::string_view &key,
+read_value( std::string_view buffer,
+            std::string_view key,
             const std::map<std::string, const KeyData *> &databaseKeys =
                 std::map<std::string, const KeyData *>() )
 {
@@ -897,7 +956,16 @@ read_value( const std::string_view &buffer,
         while ( buffer[pos] == ' ' || buffer[pos] == '\t' )
             pos++;
         size_t pos0 = pos;
-        if ( buffer[pos0] == '(' ) {
+        if ( buffer[pos0] == '@' && buffer[pos0 + 1] == '(' ) {
+            // We are dealing with an equation
+            data_type = class_type::EQUATION;
+            while ( buffer[pos] != ';' && buffer[pos] != 0 && buffer[pos] != '\n' )
+                pos++;
+            AMP_INSIST( buffer[pos] == ';', "Equations must terminate with a ';'" );
+            size_t i;
+            std::tie( i, type ) = find_next_token( &buffer[pos] );
+            pos += i;
+        } else if ( buffer[pos0] == '(' ) {
             // We are dealing with a complex number
             data_type = class_type::COMPLEX;
             while ( buffer[pos] != ')' )
@@ -994,7 +1062,7 @@ read_value( const std::string_view &buffer,
     return std::make_tuple( pos, std::move( data ) );
 }
 static size_t loadDatabase( const std::string &errMsgPrefix,
-                            const std::string_view &buffer,
+                            std::string_view buffer,
                             size_t N,
                             Database &db,
                             std::map<std::string, const KeyData *> databaseKeys )
@@ -1077,8 +1145,7 @@ bool Database::is_integral() const
 /********************************************************************
  * Read YAML file                                                    *
  ********************************************************************/
-static inline std::tuple<std::string_view, std::string_view>
-splitYAML( const std::string_view &line )
+static inline std::tuple<std::string_view, std::string_view> splitYAML( std::string_view line )
 {
     size_t pos = line.find_first_not_of( ' ' );
     if ( line[pos] == '-' )
@@ -1194,7 +1261,7 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
     }
     return pos;
 }
-std::unique_ptr<KeyData> Database::readYAML( const std::string_view &filename )
+std::unique_ptr<KeyData> Database::readYAML( std::string_view filename )
 {
     // Read the file into memory
     auto buffer = readFile( std::string( filename ) );

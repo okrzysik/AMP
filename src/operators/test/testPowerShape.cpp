@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/libmesh/PowerShape.h"
 #include "AMP/utils/AMPManager.h"
@@ -31,7 +32,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     auto mesh_db   = input_db->getDatabase( "Mesh" );
     auto mgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     mgrParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( mgrParams );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( mgrParams );
 
     //  Construct PowerShape.
     AMP_INSIST( input_db->keyExists( "MyPowerShape" ), "Key ''MyPowerShape'' is missing!" );

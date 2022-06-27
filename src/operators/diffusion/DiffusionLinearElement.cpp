@@ -23,16 +23,15 @@ void DiffusionLinearElement::apply()
     AMP_ASSERT( d_num_dofs == num_local_dofs );
 
     std::vector<double> conductivity( d_qrule->n_points() );
-    std::vector<std::vector<std::shared_ptr<std::vector<double>>>> conductivityTensor(
-        3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
+    AMP::Array<std::shared_ptr<std::vector<double>>> conductivityTensor( 3, 3 );
     if ( d_transportModel->isaTensor() ) {
         d_transportTensorModel =
             std::dynamic_pointer_cast<DiffusionTransportTensorModel>( d_transportModel );
-        for ( int i = 0; i < 3; i++ )
-            for ( int j = 0; j < 3; j++ ) {
-                auto *vd = new std::vector<double>( d_qrule->n_points() );
-                conductivityTensor[i][j].reset( vd );
-            }
+        for ( int i = 0; i < 3; i++ ) {
+            for ( int j = 0; j < 3; j++ )
+                conductivityTensor( i, j ) =
+                    std::make_shared<std::vector<double>>( d_qrule->n_points() );
+        }
     }
 
     if ( d_transportAtGauss ) {
@@ -87,15 +86,14 @@ void DiffusionLinearElement::apply()
         args.insert( std::make_pair( "burnup", std::shared_ptr<std::vector<double>>( &burnup ) ) );
 
         std::vector<double> nodalConductivity( num_local_dofs );
-        std::vector<std::vector<std::shared_ptr<std::vector<double>>>> nodalConductivityTensor(
-            3, std::vector<std::shared_ptr<std::vector<double>>>( 3 ) );
+        AMP::Array<std::shared_ptr<std::vector<double>>> nodalConductivityTensor( 3, 3 );
         if ( not d_transportModel->isaTensor() ) {
             d_transportModel->getTransport( nodalConductivity, args, q_point );
         } else {
             for ( int i = 0; i < 3; i++ )
                 for ( int j = 0; j < 3; j++ ) {
-                    auto *vec( new std::vector<double>( num_local_dofs ) );
-                    nodalConductivityTensor[i][j].reset( vec );
+                    nodalConductivityTensor( i, j ) =
+                        std::make_shared<std::vector<double>>( num_local_dofs );
                 }
             d_transportTensorModel->getTensorTransport( nodalConductivityTensor, args, q_point );
         }
@@ -110,8 +108,8 @@ void DiffusionLinearElement::apply()
                 for ( unsigned int n = 0; n < num_local_dofs; n++ ) {
                     for ( int i = 0; i < 3; i++ )
                         for ( int j = 0; j < 3; j++ ) {
-                            ( *conductivityTensor[i][j] )[qp] +=
-                                ( *nodalConductivityTensor[i][j] )[n] * phi[n][qp];
+                            ( *conductivityTensor( i, j ) )[qp] +=
+                                ( *nodalConductivityTensor( i, j ) )[n] * phi[n][qp];
                         }
                 } // end for n
             }
@@ -134,7 +132,7 @@ void DiffusionLinearElement::apply()
                     for ( int i = 0; i < 3; i++ )
                         for ( int j = 0; j < 3; j++ ) {
                             elementStiffnessMatrix[n][k] +=
-                                ( JxW[qp] * ( *conductivityTensor[i][j] )[qp] *
+                                ( JxW[qp] * ( *conductivityTensor( i, j ) )[qp] *
                                   ( dphi[n][qp]( i ) * dphi[k][qp]( j ) ) );
                         }
                 } // end for k

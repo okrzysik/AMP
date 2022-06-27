@@ -1,13 +1,22 @@
-#include "DiffusionTransportModel.h"
+#include "AMP/operators/diffusion/DiffusionTransportModel.h"
+#include "AMP/materials/CylindricallySymmetric.h"
+#include "AMP/materials/ScalarProperty.h"
+#include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-#include "DiffusionTransportTensorModel.h"
 
 #include "ProfilerApp.h"
 
 #include <algorithm>
 #include <cmath>
 #include <map>
+
+
+template<class TYPE>
+static inline bool is( std::shared_ptr<AMP::Materials::Property> prop )
+{
+    return std::dynamic_pointer_cast<TYPE>( prop ).get() != nullptr;
+}
 
 
 namespace AMP::Operator {
@@ -17,15 +26,12 @@ const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
 
 DiffusionTransportModel::DiffusionTransportModel(
     std::shared_ptr<const DiffusionTransportModelParameters> params )
-    : ElementPhysicsModel( params ),
-      d_defaults( Diffusion::NUMBER_VARIABLES ),
-      d_MaterialParameters( 0 ),
-      d_IsTensor( false )
+    : ElementPhysicsModel( params ), d_defaults( Diffusion::NUMBER_VARIABLES ), d_IsTensor( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Material" ), "Diffusion Key ''Material'' is missing!" );
     std::string matname = params->d_db->getString( "Material" );
 
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    d_material = AMP::Materials::getMaterial( matname );
 
     AMP_INSIST( params->d_db->keyExists( "Property" ), "Diffusion Key ''Property'' is missing!" );
     std::string propname = params->d_db->getString( "Property" );
@@ -40,11 +46,11 @@ DiffusionTransportModel::DiffusionTransportModel(
     }
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
-        std::shared_ptr<Database> defaults_db = params->d_db->getDatabase( "Defaults" );
-        std::vector<std::string> defaultkeys  = defaults_db->getAllKeys();
+        auto defaults_db = params->d_db->getDatabase( "Defaults" );
+        auto defaultkeys = defaults_db->getAllKeys();
         AMP_INSIST( defaultkeys.size() == d_property->get_number_arguments(),
                     "Incorrect number of defaults supplied." );
-        std::vector<std::string> argnames = d_property->get_arguments();
+        auto argnames = d_property->get_arguments();
         for ( auto &defaultkey : defaultkeys ) {
             auto hit = std::find( argnames.begin(), argnames.end(), defaultkey );
             AMP_INSIST( hit != argnames.end(),
@@ -78,29 +84,36 @@ DiffusionTransportModel::DiffusionTransportModel(
             params->d_db->getWithDefault<double>( "BilogEpsilonRangeLimit", 1.0e-06 );
     }
 
-    // for tensor properties, set or change dimension
-    if ( d_property->isTensor() ) {
-        auto tensprop = std::dynamic_pointer_cast<AMP::Materials::TensorProperty>( d_property );
-        if ( tensprop->variable_dimensions() ) {
-            if ( params->d_db->keyExists( "Dimensions" ) ) {
-                auto dims = params->d_db->getVector<size_t>( "Dimensions" );
-                AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
-                tensprop->set_dimensions( dims );
-            }
-        }
-    }
-
     // set property parameters
     if ( params->d_db->keyExists( "Parameters" ) ) {
-        d_MaterialParameters = params->d_db->getVector<double>( "Parameters" );
-        size_t nparams       = d_MaterialParameters.size();
-        size_t ndefparams    = d_property->get_parameters().size();
-        if ( d_property->variable_number_parameters() ) {
-            d_property->set_parameters_and_number( d_MaterialParameters );
+        auto name     = d_property->get_name();
+        auto data     = params->d_db->getVector<double>( "Parameters" );
+        auto units    = d_property->get_units();
+        auto args     = d_property->get_arguments();
+        auto ranges   = d_property->get_arg_ranges();
+        auto argUnits = d_property->get_arg_units();
+        if ( is<AMP::Materials::CylindricallySymmetricTensor>( d_property ) ) {
+            d_property =
+                std::make_shared<AMP::Materials::CylindricallySymmetricTensor>( name, data );
+        } else if ( is<AMP::Materials::PolynomialProperty>( d_property ) ) {
+            d_property = std::make_shared<AMP::Materials::PolynomialProperty>(
+                name, "", units, data, args, ranges, argUnits );
+        } else if ( propname == "ThermalDiffusionCoefficient" && data.size() == 2 ) {
+            d_property =
+                std::make_shared<AMP::Materials::ScalarProperty>( name, data[0] * data[1], units );
+        } else if ( d_property->isTensor() ) {
+            auto dims = d_property->size();
+            if ( params->d_db->keyExists( "Dimensions" ) )
+                dims = params->d_db->getVector<size_t>( "Dimensions" );
+            AMP_INSIST( dims.size() == 2, "only two dimensions allowed for tensor property" );
+            AMP_ASSERT( data.size() == dims[0] * dims[1] );
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>(
+                name, Array<double>( dims, data.data() ) );
+        } else if ( data.size() == 1 ) {
+            d_property = std::make_shared<AMP::Materials::ScalarProperty>( name, data[0] );
         } else {
-            AMP_INSIST( nparams == ndefparams,
-                        "attempted to set incorrect number of parameters for this property" );
-            d_property->set_parameters( d_MaterialParameters );
+            d_property = std::make_shared<AMP::Materials::PolynomialProperty>(
+                name, "", units, data, args, ranges, argUnits );
         }
     }
 }
@@ -137,10 +150,10 @@ void DiffusionTransportModel::getTransport(
     PROFILE_START( "getTransport", 7 );
     std::shared_ptr<std::vector<double>> scaledp;
 
-    auto &data = *args[d_BilogVariable];
 
     if ( d_UseBilogScaling ) {
         // do the transform
+        auto &data   = *args[d_BilogVariable];
         auto lower   = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
         auto upper   = d_BilogRange[1] - d_BilogEpsilonRangeLimit;
         scaledp      = bilogTransform( data, lower, upper );
@@ -155,10 +168,11 @@ void DiffusionTransportModel::getTransport(
     }
 
     // evaluate material property
-    d_property->evalv( result, args );
+    d_property->evalv( result, {}, args );
 
     if ( d_UseBilogScaling ) {
         // restore untransformed argument value
+        auto &data                  = *args[d_BilogVariable];
         std::vector<double> &scaled = *scaledp;
         auto lower                  = d_BilogRange[0] + d_BilogEpsilonRangeLimit;
         auto upper                  = d_BilogRange[1] - d_BilogEpsilonRangeLimit;

@@ -5,7 +5,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
-#include "AMP/utils/threadpool/ThreadPool.h"
+#include "AMP/utils/threadpool/ThreadHelpers.h"
 
 #include "ProfilerApp.h"
 #include "StackTrace/ErrorHandlers.h"
@@ -39,14 +39,6 @@
 #define MPI_CLASS_COMM_NULL AMP_COMM_NULL
 #define MPI_CLASS_COMM_SELF AMP_COMM_SELF
 #define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
-
-
-// Define MPI_COMM_WORLD / etc without MPI
-#ifndef AMP_USE_MPI
-    #define MPI_COMM_NULL 0
-    #define MPI_COMM_WORLD 1
-    #define MPI_COMM_SELF 2
-#endif
 
 
 // Set MPI_REQUEST_NULL
@@ -166,10 +158,10 @@ std::string MPI_CLASS::info()
  *  Functions to get/set the process affinities                          *
  ************************************************************************/
 int MPI_CLASS::getNumberOfProcessors() { return std::thread::hardware_concurrency(); }
-std::vector<int> MPI_CLASS::getProcessAffinity() { return ThreadPool::getThreadAffinity(); }
+std::vector<int> MPI_CLASS::getProcessAffinity() { return AMP::Thread::getProcessAffinity(); }
 void MPI_CLASS::setProcessAffinity( const std::vector<int> &procs )
 {
-    ThreadPool::setProcessAffinity( procs );
+    AMP::Thread::setProcessAffinity( procs );
 }
 
 
@@ -428,7 +420,15 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     }
 #ifdef USE_MPI
     // We are using MPI, use the MPI communicator to initialize the data
-    if ( d_comm != MPI_COMM_NULL ) {
+    if ( d_comm == MPI_COMM_NULL ) {
+        d_rank   = 0;
+        d_size   = 0;
+        d_maxTag = mpi_max_tag;
+    } else if ( d_comm == MPI_COMM_SELF && !MPI_Active() ) {
+        d_rank   = 0;
+        d_size   = 1;
+        d_maxTag = mpi_max_tag;
+    } else {
         // Attach the error handler
         StackTrace::setMPIErrorHandler( d_comm );
         // Get the communicator properties
@@ -446,10 +446,6 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
             } // The maximum tag is > a signed int (set to 2^31-1)
             MPI_CLASS_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
         }
-    } else {
-        d_rank   = 1;
-        d_size   = 0;
-        d_maxTag = mpi_max_tag;
     }
     d_isNull = d_comm == MPI_COMM_NULL;
     if ( manage && d_comm != MPI_COMM_NULL && d_comm != MPI_COMM_SELF && d_comm != MPI_COMM_WORLD )
@@ -1099,7 +1095,8 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 void MPI_CLASS::barrier() const
 {
 #ifdef USE_MPI
-    MPI_Barrier( d_comm );
+    if ( d_size > 1 )
+        MPI_Barrier( d_comm );
 #endif
 }
 

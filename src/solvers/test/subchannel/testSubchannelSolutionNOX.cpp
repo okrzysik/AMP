@@ -4,6 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/structuredFaceDOFManager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/IdentityOperator.h"
@@ -66,7 +67,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     meshParams->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto subchannelMesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto subchannelMesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     // get subchannel physics model
     auto subchannelPhysics_db = input_db->getDatabase( "SubchannelPhysicsModel" );

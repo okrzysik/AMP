@@ -2,6 +2,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
@@ -28,6 +29,7 @@
 static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
 {
     // this tests creation from database and usage
+    std::cout << "Testing " << exeName << std::endl;
 
     // Test create
     std::string input_file = "input_" + exeName;
@@ -46,7 +48,7 @@ static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
 
     auto diffLinFEOp_db = input_db->getDatabase( "LinearDiffusionOp" );
@@ -87,61 +89,6 @@ static void linearTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     ut->passes( exeName );
 
-    // Test eigenvalues (run output through mathematica)
-    auto diffMat  = diffOp->getMatrix();
-    int nranks    = globalComm.getSize();
-    size_t matdim = 24;
-    if ( nranks == 1 ) {
-        std::cout << "cols={" << std::endl;
-        for ( size_t i = 0; i < matdim; i++ ) {
-            std::vector<size_t> matCols;
-            std::vector<double> matVals;
-            diffMat->getRowByGlobalID( i, matCols, matVals );
-            std::cout << "{";
-            for ( size_t j = 0; j < matCols.size(); j++ ) {
-                std::cout << matCols[j];
-                if ( j < matCols.size() - 1 )
-                    std::cout << ",";
-            }
-            std::cout << "}";
-            if ( i < matdim - 1 )
-                std::cout << ",";
-            std::cout << std::endl;
-        }
-        std::cout << "};" << std::endl;
-
-        std::cout << "matrix = {" << std::endl;
-
-        for ( size_t i = 0; i < matdim; i++ ) {
-            std::vector<size_t> matCols;
-            std::vector<double> matVals;
-            diffMat->getRowByGlobalID( i, matCols, matVals );
-            std::cout << "{";
-            size_t col = 0;
-            for ( size_t j = 0; j < matCols.size(); j++ ) {
-                while ( col < matCols[j] ) {
-                    std::cout << "0.";
-                    std::cout << ",";
-                    col++;
-                }
-                std::cout << matVals[j];
-                if ( matCols[j] < matdim - 1 )
-                    std::cout << ",";
-                col++;
-            } // end for j
-            while ( col < matdim ) {
-                std::cout << "0";
-                if ( col < matdim - 1 )
-                    std::cout << ",";
-                col++;
-            }
-            std::cout << "}";
-            if ( i < matdim - 1 )
-                std::cout << "," << std::endl;
-        } // end for i
-
-        std::cout << "};" << std::endl;
-    }
 
     ut->passes( exeName );
 }

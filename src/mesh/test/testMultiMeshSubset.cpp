@@ -1,5 +1,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -25,7 +26,7 @@ void testMultiMeshSubset( AMP::UnitTest &ut )
     // Build the mesh
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( meshDatabase );
     meshParams->setComm( globalComm );
-    auto mesh = AMP::Mesh::Mesh::buildMesh( meshParams );
+    auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     // Subset the mesh
     auto fooMesh = mesh->Subset( "Foo" );

@@ -3,6 +3,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -96,7 +97,7 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     params->setComm( globalComm );
 
     // create the mesh
-    const auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    const auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
     // create a linear diffusion operator
     auto linearOperator = AMP::Operator::OperatorBuilder::createOperator(

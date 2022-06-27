@@ -1,5 +1,5 @@
 #include "AMP/geometry/GeometryHelpers.h"
-#include "AMP/geometry/Geometry.h"
+#include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/arrayHelpers.h"

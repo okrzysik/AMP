@@ -2,6 +2,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
@@ -42,7 +43,7 @@ static void myTest( AMP::UnitTest *ut )
     params->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
 
     // Create the meshes from the input database
-    auto meshAdapter = AMP::Mesh::Mesh::buildMesh( params );
+    auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
     AMP_INSIST( outerInput_db->keyExists( "number_of_tests" ), "key missing!" );
     int numTests = outerInput_db->getScalar<int>( "number_of_tests" );

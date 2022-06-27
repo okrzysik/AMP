@@ -14,7 +14,7 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
                 "Convective Heat  Coefficient Key ''Material'' is missing!" );
     auto matname = params->d_db->getString( "Material" );
 
-    d_material = AMP::voodoo::Factory<AMP::Materials::Material>::instance().create( matname );
+    d_material = AMP::Materials::getMaterial( matname );
 
     AMP_INSIST( params->d_db->keyExists( "Property" ),
                 "Convective Heat Coefficient Key ''Property'' is missing!" );
@@ -57,23 +57,14 @@ void ConvectiveHeatCoefficient::getConductance(
     std::vector<double> &gamma,
     const std::vector<std::vector<double>> &inputVectors )
 {
-    AMP_ASSERT( inputVectors.size() == 4 );
-    std::map<std::string, std::shared_ptr<std::vector<double>>> argMap;
-    argMap.insert( std::make_pair(
-        std::string( "temperature" ),
-        std::make_shared<std::vector<double>>( inputVectors[0].begin(), inputVectors[0].end() ) ) );
-    argMap.insert( std::make_pair(
-        std::string( "density" ),
-        std::make_shared<std::vector<double>>( inputVectors[2].begin(), inputVectors[2].end() ) ) );
-    argMap.insert( std::make_pair(
-        std::string( "diameter" ),
-        std::make_shared<std::vector<double>>( inputVectors[3].begin(), inputVectors[3].end() ) ) );
-    // argMap.insert(std::make_pair("reynolds",new std::vector<double>(inputVectors[4].begin(),
-    // inputVectors[4].end())));
-    // argMap.insert(std::make_pair("prandtl",new std::vector<double>(inputVectors[5].begin(),
-    // inputVectors[5].end())));
 
-    d_property->evalv( beta, argMap );
-    d_property->evalv( gamma, argMap );
+
+    std::map<std::string, const std::vector<double> &> args = { { "temperature", inputVectors[0] },
+                                                                { "density", inputVectors[2] },
+                                                                { "diameter", inputVectors[3] } };
+    //  { "reynolds", inputVectors[4] }, { "prandtl" , inputVectors[5] } };
+
+    d_property->evalv( beta, {}, args );
+    d_property->evalv( gamma, {}, args );
 }
 } // namespace AMP::Operator

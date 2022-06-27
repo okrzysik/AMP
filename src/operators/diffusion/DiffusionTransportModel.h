@@ -179,8 +179,6 @@ protected: // used to be private
     std::array<double, 2> d_BilogRange;
     double d_BilogEpsilonRangeLimit;
 
-    std::vector<double> d_MaterialParameters;
-
     static const std::vector<libMesh::Point> d_DummyCoords;
 
     bool d_IsTensor;

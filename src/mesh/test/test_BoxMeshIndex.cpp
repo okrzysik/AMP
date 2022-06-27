@@ -1,4 +1,5 @@
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/structured/PureLogicalMesh.h"
 #include "AMP/utils/AMPManager.h"
@@ -89,7 +90,7 @@ bool run( const std::array<int, 3> &size, const std::array<bool, 3> &periodic, i
     for ( int rank = 0; rank < N_proc; rank++ ) {
         db->putScalar( "commRank", rank, AMP::Units(), AMP::Database::Check::Overwrite );
         // Create the mesh
-        auto mesh0 = AMP::Mesh::Mesh::buildMesh( params );
+        auto mesh0 = AMP::Mesh::MeshFactory::create( params );
         auto mesh  = std::dynamic_pointer_cast<AMP::Mesh::PureLogicalMesh>( mesh0 );
         AMP_ASSERT( mesh );
         // Convert an element box to a node box

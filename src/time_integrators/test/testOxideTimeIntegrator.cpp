@@ -2,6 +2,7 @@
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/time_integrators/oxide/OxideTimeIntegrator.h"
 #include "AMP/utils/AMPManager.h"
@@ -28,7 +29,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
     params->setComm( globalComm );
 
     // Create the meshes from the input database
-    auto manager = AMP::Mesh::Mesh::buildMesh( params );
+    auto manager = AMP::Mesh::MeshFactory::create( params );
     auto mesh    = manager->Subset( "clad" );
     globalComm.barrier();
 

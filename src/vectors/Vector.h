@@ -2,6 +2,7 @@
 #define included_AMP_Vector
 
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/Units.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -11,10 +12,6 @@
 #include <memory>
 #include <string>
 
-
-namespace AMP {
-class RNG;
-}
 
 namespace AMP::LinearAlgebra {
 
@@ -163,13 +160,6 @@ public: // the next set of functions defines the public math. interface for vect
      * \brief Set data in this vector to random values on [0,1).
      */
     void setRandomValues( void );
-
-    /**
-     * \brief Set data in this vector to random values using
-     *      a particular generator
-     * \param[in] rng       The generator to use.
-     */
-    void setRandomValues( std::shared_ptr<RNG> rng );
 
     /**
      * \brief  Set vector equal to scaled input.
@@ -368,6 +358,9 @@ public: // Clone vectors
 
 
 public: // Get/Set data/variables/operations
+    //! Get the units for this Vector
+    inline auto getUnits() const { return d_units; }
+
     //! Get the DOFManager for this Vector
     inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;
 
@@ -520,18 +513,6 @@ public: // Subset/Select
      */
     template<typename VIEW_TYPE>
     void registerView( std::shared_ptr<VIEW_TYPE> v ) const;
-
-    /** \brief Set the default RNG of this vector
-     * \param[in] rng  The generator to set
-     */
-    static void setDefaultRNG( std::shared_ptr<RNG> rng );
-
-    /** \brief Get the current default RNG of this vector
-     * \return  The current default RNG.
-     * \details  If setDefaultRNG has not been called, this returns
-     * an AMP::RNG base class.
-     */
-    static std::shared_ptr<RNG> getDefaultRNG();
 
     /** \brief Associate the ghost buffer of a Vector with this Vector
      * \param in  The Vector to share a ghost buffer with
@@ -804,7 +785,7 @@ public: // Get values
 
 
 protected:                                                         // Internal data
-    static std::shared_ptr<RNG> d_DefaultRNG;                      // default RNG
+    AMP::Units d_units;                                            // Optional units for the data
     std::shared_ptr<Variable> d_Variable;                          // Variable
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager; // The DOF_Manager
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
