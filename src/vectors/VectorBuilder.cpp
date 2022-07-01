@@ -3,6 +3,7 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorBuilder.hpp"
 
 #ifdef AMP_USE_PETSC
     #include "AMP/vectors/petsc/NativePetscVectorData.h"
@@ -165,6 +166,26 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> c
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 #endif
+
+
+/********************************************************
+ *  Explicit instantiations                              *
+ ********************************************************/
+template Vector::shared_ptr createSimpleVector<double>( size_t, const std::string & );
+template Vector::shared_ptr createSimpleVector<double>( size_t, std::shared_ptr<Variable> );
+template Vector::shared_ptr
+    createSimpleVector<double>( size_t, std::shared_ptr<Variable>, AMP_MPI );
+template Vector::shared_ptr
+    createSimpleVector<double>( std::shared_ptr<Variable>,
+                                std::shared_ptr<AMP::Discretization::DOFManager>,
+                                std::shared_ptr<CommunicationList> );
+template Vector::shared_ptr createArrayVector<double>( const ArraySize &, const std::string & );
+template Vector::shared_ptr createArrayVector<double>( const ArraySize &,
+                                                       std::shared_ptr<Variable> );
+template Vector::shared_ptr createArrayVector<double>( const ArraySize &,
+                                                       const ArraySize &,
+                                                       const AMP_MPI &,
+                                                       std::shared_ptr<Variable> );
 
 
 } // namespace AMP::LinearAlgebra

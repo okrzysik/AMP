@@ -280,13 +280,19 @@ Vector::shared_ptr MultiVector::selectInto( const VectorSelector &s )
                 subvectors.push_back( retVec2 );
         }
     }
+    // Check if we have an empty vector or single vector
+    AMP_MPI comm = s.communicator( *this );
+    bool test    = subvectors.empty();
+    if ( subvectors.size() == 1 )
+        test = comm.compare( subvectors[0]->getComm() ) != 0;
+    if ( comm.allReduce( test ) )
+        return subvectors.empty() ? nullptr : subvectors[0];
     // Construct the new multivector
     std::string vecName = getName();
     if ( s_name )
         vecName = s_name->getName();
     // Add the subsets to the multivector
-    AMP_MPI comm = s.communicator( *this );
-    auto retVec  = MultiVector::create( vecName, comm, subvectors );
+    auto retVec = MultiVector::create( vecName, comm, subvectors );
     if ( retVec->getGlobalSize() == 0 )
         retVec.reset();
     return retVec;
