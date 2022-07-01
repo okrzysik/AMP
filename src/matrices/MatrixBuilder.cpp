@@ -21,6 +21,16 @@ namespace AMP::LinearAlgebra {
 
 
 /********************************************************
+ * Check if we have a spare matrix available             *
+ ********************************************************/
+#if defined( AMP_USE_TRILINOS )
+bool haveSparseMatrix() { return true; }
+#else
+bool haveSparseMatrix() { return false; }
+#endif
+
+
+/********************************************************
  * Build a ManagedPetscMatrix                             *
  ********************************************************/
 std::shared_ptr<AMP::LinearAlgebra::Matrix>

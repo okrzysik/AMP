@@ -1,25 +1,28 @@
 #ifndef included_AMP_VectorBuider
-    #define included_AMP_VectorBuider
+#define included_AMP_VectorBuider
 
-    #include "AMP/AMP_TPLs.h"
-    #include "AMP/discretization/DOF_Manager.h"
-    #include "AMP/utils/FunctionTable.h"
-    #include "AMP/vectors/Vector.h"
-    #include "AMP/vectors/data/VectorDataCPU.h"
-    #include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/AMP_TPLs.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/utils/FunctionTable.h"
+#include "AMP/vectors/Vector.h"
+#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 
-    #include <string>
+#include <string>
 
 
+// Forward declares
 extern "C" {
 typedef struct _p_Vec *Vec;
 }
-
-    #if defined( AMP_USE_TRILINOS )
-DISABLE_WARNINGS
-        #include "Thyra_VectorDefaultBase_decl.hpp"
-ENABLE_WARNINGS
-    #endif
+namespace Teuchos {
+template<class TYPE>
+class RCP;
+}
+namespace Thyra {
+template<class TYPE>
+class VectorBase;
+}
 
 
 namespace AMP::LinearAlgebra {
@@ -43,7 +46,6 @@ createVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
               bool split = true );
 
 
-    #if defined( AMP_USE_PETSC )
 /**
  * \brief  Create a vector from an arbitrary PETSc Vec
  * \details  This function creates a vector from an arbitrary PETSc Vec
@@ -56,10 +58,8 @@ std::shared_ptr<Vector> createVector( Vec v,
                                       bool deleteable,
                                       AMP_MPI comm                  = AMP_MPI(),
                                       std::shared_ptr<Variable> var = nullptr );
-    #endif
 
 
-    #if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_EPETRA )
 /**
  * \brief  Create an epetra vector
  * \param[in] params        Epetra vector parameters
@@ -68,10 +68,8 @@ std::shared_ptr<Vector> createVector( Vec v,
 std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> commList,
                                             std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                             std::shared_ptr<VectorData> p = nullptr );
-    #endif
 
 
-    #if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_THYRA )
 /**
  * \brief  Create a vector from an arbitrary Thyra Vector
  * \details  This function creates a vector from an arbitrary Thyra Vector
@@ -84,7 +82,6 @@ std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> ve
                                       size_t local,
                                       AMP_MPI comm,
                                       std::shared_ptr<Variable> var = nullptr );
-    #endif
 
 
 /** \brief   Create a simple AMP vector
@@ -170,6 +167,3 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize,
 } // namespace AMP::LinearAlgebra
 
 #endif
-
-
-#include "VectorBuilder.hpp"

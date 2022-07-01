@@ -1,23 +1,8 @@
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.hpp"
-
-#ifdef AMP_USE_PETSC
-    #include "AMP/vectors/petsc/NativePetscVectorData.h"
-    #include "AMP/vectors/petsc/NativePetscVectorOperations.h"
-    #include "AMP/vectors/petsc/PetscVector.h"
-    #include "petscvec.h"
-#endif
-#ifdef AMP_USE_TRILINOS
-    #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
-    #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
-    #include "AMP/vectors/trilinos/epetra/EpetraVectorOperations.h"
-    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorData.h"
-    #include "AMP/vectors/trilinos/thyra/NativeThyraVectorOperations.h"
-#endif
 
 #include <iostream>
 
@@ -117,75 +102,24 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 
 
 /********************************************************
- * create vector from PETSc Vec                          *
- ********************************************************/
-#if defined( AMP_USE_PETSC )
-std::shared_ptr<Vector>
-createVector( Vec v, bool deleteable, AMP_MPI comm, std::shared_ptr<Variable> var )
-{
-    if ( !var )
-        var = std::make_shared<Variable>( "vec" );
-    auto ops  = std::make_shared<NativePetscVectorOperations>();
-    auto data = std::make_shared<NativePetscVectorData>( v, deleteable, comm );
-    return std::make_shared<Vector>( data, ops, var, nullptr );
-}
-#endif
-
-
-/********************************************************
- * create vector from Trilinos Thyra vector              *
- ********************************************************/
-#if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_THYRA )
-std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> vec,
-                                      size_t local,
-                                      AMP_MPI comm,
-                                      std::shared_ptr<Variable> var )
-{
-    if ( !var )
-        var = std::make_shared<Variable>( "vec" );
-    auto ops  = std::make_shared<NativeThyraVectorOperations>();
-    auto data = std::make_shared<NativeThyraVectorData>( vec, local, comm );
-    return std::make_shared<Vector>( data, ops, var, nullptr );
-}
-#endif
-
-
-/********************************************************
- * create Trilinos Epetra vector                         *
- ********************************************************/
-#if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_EPETRA )
-std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList> commList,
-                                            std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
-                                            std::shared_ptr<VectorData> buf )
-{
-    auto var    = std::make_shared<Variable>( "vec" );
-    auto ops    = std::make_shared<EpetraVectorOperations>();
-    auto params = std::make_shared<EpetraVectorEngineParameters>(
-        DOFs->numLocalDOF(), DOFs->getComm(), commList );
-    auto data = EpetraVectorData::create( params, buf );
-    return std::make_shared<Vector>( data, ops, var, DOFs );
-}
-#endif
-
-
-/********************************************************
  *  Explicit instantiations                              *
  ********************************************************/
-template Vector::shared_ptr createSimpleVector<double>( size_t, const std::string & );
-template Vector::shared_ptr createSimpleVector<double>( size_t, std::shared_ptr<Variable> );
-template Vector::shared_ptr
-    createSimpleVector<double>( size_t, std::shared_ptr<Variable>, AMP_MPI );
-template Vector::shared_ptr
-    createSimpleVector<double>( std::shared_ptr<Variable>,
-                                std::shared_ptr<AMP::Discretization::DOFManager>,
-                                std::shared_ptr<CommunicationList> );
-template Vector::shared_ptr createArrayVector<double>( const ArraySize &, const std::string & );
-template Vector::shared_ptr createArrayVector<double>( const ArraySize &,
-                                                       std::shared_ptr<Variable> );
-template Vector::shared_ptr createArrayVector<double>( const ArraySize &,
-                                                       const ArraySize &,
-                                                       const AMP_MPI &,
-                                                       std::shared_ptr<Variable> );
+#define INSANTIATE_VECTOR( TYPE )                                                                  \
+    template Vector::shared_ptr createSimpleVector<TYPE>( size_t, const std::string & );           \
+    template Vector::shared_ptr createSimpleVector<TYPE>( size_t, std::shared_ptr<Variable> );     \
+    template Vector::shared_ptr createSimpleVector<TYPE>(                                          \
+        size_t, std::shared_ptr<Variable>, AMP_MPI );                                              \
+    template Vector::shared_ptr createSimpleVector<TYPE>(                                          \
+        std::shared_ptr<Variable>,                                                                 \
+        std::shared_ptr<AMP::Discretization::DOFManager>,                                          \
+        std::shared_ptr<CommunicationList> );                                                      \
+    template Vector::shared_ptr createArrayVector<TYPE>( const ArraySize &, const std::string & ); \
+    template Vector::shared_ptr createArrayVector<TYPE>( const ArraySize &,                        \
+                                                         std::shared_ptr<Variable> );              \
+    template Vector::shared_ptr createArrayVector<TYPE>(                                           \
+        const ArraySize &, const ArraySize &, const AMP_MPI &, std::shared_ptr<Variable> );
+INSANTIATE_VECTOR( double )
+INSANTIATE_VECTOR( float )
 
 
 } // namespace AMP::LinearAlgebra
