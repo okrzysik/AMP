@@ -17,6 +17,7 @@ namespace AMP::Solver {
  *    13 (2): 631-644 (1992). doi:10.1137/0913035.
  * If a preconditioner is provided right preconditioning is done
  */
+template<typename T = double>
 class BiCGSTABSolver : public SolverStrategy
 {
 public:
@@ -52,7 +53,7 @@ public:
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_unique<BiCGSTABSolver>( solverStrategyParameters );
+        return std::make_unique<BiCGSTABSolver<T>>( solverStrategyParameters );
     }
 
     /**
