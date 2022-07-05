@@ -34,11 +34,10 @@ public:
     void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
     {
         size_t N1 = d_value.length();
-        size_t N2 = result.size( d_value.ndim() + 1 );
-        for ( size_t i = 0; i < N2; i++ ) {
+        size_t N2 = result.size( d_value.ndim() );
+        AMP_ASSERT( N1 * N2 == result.length() );
+        for ( size_t i = 0; i < N2; i++ )
             memcpy( &result( 0, i ), d_value.data(), N1 * sizeof( double ) );
-            result.fill( d_value );
-        }
     }
 
 private:

@@ -4,6 +4,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/data/ArrayVectorData.h"
 
+
 #include "math.h"
 
 
@@ -56,6 +57,12 @@ Vector::shared_ptr createSimpleVector( std::shared_ptr<Variable> var,
  * ArrayVector                                                  *
  ****************************************************************/
 template<typename T, typename FUN, typename Allocator>
+Vector::shared_ptr createArrayVector( const ArraySize &localSize, const std::string &name )
+{
+    auto var = std::make_shared<Variable>( name );
+    return createArrayVector<T, FUN, Allocator>( localSize, { 0, 0, 0 }, AMP_COMM_SELF, var );
+}
+template<typename T, typename FUN, typename Allocator>
 Vector::shared_ptr createArrayVector( const ArraySize &localSize, std::shared_ptr<Variable> var )
 {
     return createArrayVector<T, FUN, Allocator>( localSize, { 0, 0, 0 }, AMP_COMM_SELF, var );
@@ -70,15 +77,6 @@ Vector::shared_ptr createArrayVector( const ArraySize &localSize,
     auto ops  = std::make_shared<VectorOperationsDefault<T>>();
     auto data = ArrayVectorData<T, FUN, Allocator>::create( localSize, blockIndex, comm );
     auto DOFs = std::make_shared<AMP::Discretization::DOFManager>( N, comm );
-    return std::make_shared<Vector>( data, ops, var, DOFs );
-}
-template<typename T, typename FUN, typename Allocator>
-Vector::shared_ptr createArrayVector( std::shared_ptr<Variable> var,
-                                      std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
-                                      std::shared_ptr<CommunicationList> commlist )
-{
-    auto ops  = std::make_shared<VectorOperationsDefault<T>>();
-    auto data = ArrayVectorData<T, FUN, Allocator>::create( commlist );
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 
