@@ -16,6 +16,10 @@ typedef struct _p_Mat *Mat;
 namespace AMP::LinearAlgebra {
 
 
+//! Check if we have a sparse matrix availible
+bool haveSparseMatrix();
+
+
 /**
  * \brief  This function will create a matrix from two vectors
  * \details  This function is responsible for creating matrices given a left and a right vector
