@@ -13,7 +13,7 @@ namespace AMP {
 /*!
  * Class FunctionTable is a serial function table class that defines
  *   a series of operations that can be performed on the Array class.
- *   Users can impliment additional versions of the function table that match
+ *   Users can implement additional versions of the function table that match
  *   the interface to change the behavior of the array class.
  */
 class FunctionTable final

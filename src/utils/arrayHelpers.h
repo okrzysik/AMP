@@ -88,6 +88,22 @@ constexpr std::array<double, N> operator-( const std::array<double, N> &a, doubl
         return c;
     }
 }
+template<std::size_t N>
+constexpr std::array<double, N> operator-( const std::array<double, N> &a )
+{
+    if constexpr ( N == 1 ) {
+        return { -a[0] };
+    } else if constexpr ( N == 2 ) {
+        return { -a[0], -a[1] };
+    } else if constexpr ( N == 3 ) {
+        return { -a[0], -a[1], -a[2] };
+    } else {
+        std::array<double, N> c;
+        for ( size_t i = 0; i < N; i++ )
+            c[i] = -a[i];
+        return c;
+    }
+}
 
 
 /****************************************************************

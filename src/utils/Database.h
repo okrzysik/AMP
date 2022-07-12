@@ -63,6 +63,8 @@ public:
     inline bool operator!=( const KeyData &rhs ) const { return !operator==( rhs ); }
     //! Return the units
     const Units &unit() const { return d_unit; }
+    //! Return the conversion factor (if used)
+    double convertUnits( const Units &, std::string_view = "" ) const;
 
 protected:
     KeyData() {}
