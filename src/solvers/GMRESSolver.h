@@ -18,6 +18,7 @@ namespace AMP::Solver {
  * If a preconditioner is provided right preconditioning is done
  */
 
+template<typename T = double>
 class GMRESSolver : public SolverStrategy
 {
 public:
@@ -53,13 +54,13 @@ public:
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
     {
-        return std::make_unique<GMRESSolver>( solverStrategyParameters );
+        return std::make_unique<GMRESSolver<T>>( solverStrategyParameters );
     }
 
     /**
      * Default destructor
      */
-    virtual ~GMRESSolver();
+    virtual ~GMRESSolver() = default;
 
     /**
      * Solve the system Au=f.
@@ -114,7 +115,7 @@ protected:
     //! orthogonalize the vector against the existing vectors in the basis
     // stored internally. Store the coefficients of the Arnoldi
     // iteration internally in a upper Hessenberg matrix
-    virtual void orthogonalize( std::shared_ptr<AMP::LinearAlgebra::Vector> v );
+    virtual void orthogonalize( const int k, std::shared_ptr<AMP::LinearAlgebra::Vector> v );
 
     //! apply the i-th Givens rotation to the k-th column of the Hessenberg matrix
     void applyGivensRotation( const int i, const int k );
@@ -126,7 +127,34 @@ protected:
 
     //! perform a back solve for the upper triangular system generated for the least
     //! squares minimization problem
-    void backwardSolve( void );
+    //! @param[in] nr dimension of least squares system.
+    void backwardSolve( const int nr );
+
+    /**
+     * update current approximation with the correction.
+     * @param[in] nr dimension of least squares system.
+     * @param[in] z shared pointer to temporary vector used if there is right preconditioning.
+     * @param[in] z1 shared pointer to temporary vector used if there is right preconditioning.
+     * @param[out] u shared pointer to approximate computed solution to correct.
+     */
+    void addCorrection( const int nr,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> z,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> z1,
+                        std::shared_ptr<AMP::LinearAlgebra::Vector> u );
+
+    /**
+     * Compute initial residual for a GMRES cycle.
+     * @param[in] use_zero_guess specify if zero should be used for the initial guess.
+     * @param[in] f right hand side for residual.
+     * @param[in,out] u initial guess if use_zero_guess is false (set to zero otherwise).
+     * @param[in] tmp temporary vector needed if preconditiong is used.
+     * @param[out] res residual vector.
+     */
+    void computeInitialResidual( bool use_zero_guess,
+                                 std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> u,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> tmp,
+                                 std::shared_ptr<AMP::LinearAlgebra::Vector> res );
 
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
@@ -138,8 +166,6 @@ private:
 
     int d_restarts; //! logs number of times the solver is restarted
 
-    int d_nr = 0; // dimension of the least squares system
-
     //! string, determines orthogonalization method in Arnoldi
     //! options are "CGS", "MGS", "HR", where
     //! "CGS" : classical Gram-Schmidt ( fast but potentially unstable )
@@ -150,25 +176,25 @@ private:
     //! string, determining left, right or both side preconditioning
     //! this flag only applies if d_bUsesPreconditioner is true
     //! valid values are "left", "right", "both"
-    //! currently only right is implemented
+    //! currently only right and left are implemented
     std::string d_preconditioner_side = "right";
 
     //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner = false;
 
     //! stores the upper Hessenberg matrix formed during the GMRES iteration
-    AMP::Array<double> d_dHessenberg;
+    AMP::Array<T> d_dHessenberg;
 
     //! stores the cosine and sine values required for Givens rotations
     // when Givens is being used
-    std::vector<double> d_dcos;
-    std::vector<double> d_dsin;
+    std::vector<T> d_dcos;
+    std::vector<T> d_dsin;
 
     //! stores the right hand side for the Hessenberg least squares system
-    std::vector<double> d_dw;
+    std::vector<T> d_dw;
 
     //! stores the solution for the least squares system
-    std::vector<double> d_dy;
+    std::vector<T> d_dy;
 
     //! shared pointer to preconditioner if it exists
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
