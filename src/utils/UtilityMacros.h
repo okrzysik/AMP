@@ -45,11 +45,11 @@ extern std::ostream plog;
  *     line number of the abort are also printed.
  *  \param MSG  Error message to print
  */
-#define AMP_ERROR( MSG )                                                  \
-    do {                                                                  \
-        std::ostringstream stream;                                        \
-        stream << MSG;                                                    \
-        StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
+#define AMP_ERROR( MSG )                                                         \
+    do {                                                                         \
+        std::ostringstream stream;                                               \
+        stream << MSG;                                                           \
+        StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
     } while ( 0 )
 
 
@@ -76,13 +76,13 @@ extern std::ostream plog;
  *     The file and line number of the abort are printed along with the stack trace (if available).
  *  \param EXP  Expression to evaluate
  */
-#define AMP_ASSERT( EXP )                                                     \
-    do {                                                                      \
-        if ( !( EXP ) ) {                                                     \
-            std::ostringstream stream;                                        \
-            stream << "Failed assertion: " << #EXP;                           \
-            StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-        }                                                                     \
+#define AMP_ASSERT( EXP )                                                            \
+    do {                                                                             \
+        if ( !( EXP ) ) {                                                            \
+            std::ostringstream stream;                                               \
+            stream << "Failed assertion: " << #EXP;                                  \
+            StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
+        }                                                                            \
     } while ( 0 )
 
 
@@ -95,14 +95,14 @@ extern std::ostream plog;
  *  \param EXP  Expression to evaluate
  *  \param MSG  Debug message to print
  */
-#define AMP_INSIST( EXP, MSG )                                                \
-    do {                                                                      \
-        if ( !( EXP ) ) {                                                     \
-            std::ostringstream stream;                                        \
-            stream << "Failed insist: " << #EXP << std::endl;                 \
-            stream << "Message: " << MSG << std::ends;                        \
-            StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-        }                                                                     \
+#define AMP_INSIST( EXP, MSG )                                                       \
+    do {                                                                             \
+        if ( !( EXP ) ) {                                                            \
+            std::ostringstream stream;                                               \
+            stream << "Failed insist: " << #EXP << std::endl;                        \
+            stream << "Message: " << MSG << std::ends;                               \
+            StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
+        }                                                                            \
     } while ( 0 )
 
 
@@ -118,13 +118,13 @@ extern std::ostream plog;
  *  \param EXP  Expression to evaluate
  */
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-    #define AMP_CHECK_ASSERT( EXP )                                               \
-        do {                                                                      \
-            if ( !( EXP ) ) {                                                     \
-                std::ostringstream stream;                                        \
-                stream << "Failed assertion: " << #EXP;                           \
-                StackTrace::Utilities::abort( stream.str(), __FILE__, __LINE__ ); \
-            }                                                                     \
+    #define AMP_CHECK_ASSERT( EXP )                                                      \
+        do {                                                                             \
+            if ( !( EXP ) ) {                                                            \
+                std::ostringstream stream;                                               \
+                stream << "Failed assertion: " << #EXP;                                  \
+                StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
+            }                                                                            \
         } while ( 0 )
 #else
     #define AMP_CHECK_ASSERT( EXP )
