@@ -446,6 +446,7 @@ void ThreadPool::setNumThreads( int num_worker_threads,
  ******************************************************************/
 void ThreadPool::tpool_thread( int thread_id )
 {
+    StackTrace::registerThread();
     if ( get_bit( d_active, thread_id ) )
         throw std::logic_error( "Thread cannot already be active" );
     ++d_num_active;

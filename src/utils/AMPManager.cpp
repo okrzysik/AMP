@@ -434,7 +434,9 @@ class SAMRAIAbortAppender : public SAMRAI::tbox::Logger::Appender
 public:
     void logMessage( const std::string &msg, const std::string &file, const int line ) override
     {
-        AMP::Utilities::abort( msg, file, line );
+        auto msg2 = "SAMRAIAbortAppender called from " + file + " at line " +
+                    std::to_string( line ) + ":\n" + msg;
+        StackTrace::Utilities::abort( msg2, SOURCE_LOCATION_CURRENT() );
     }
     SAMRAIAbortAppender()           = default;
     ~SAMRAIAbortAppender() override = default;

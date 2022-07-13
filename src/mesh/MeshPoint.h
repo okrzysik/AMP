@@ -9,6 +9,7 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 
 namespace AMP::Mesh {
@@ -65,6 +66,11 @@ public:
     constexpr MeshPoint( const std::array<TYPE, NDIM> &x ) : d_ndim( NDIM ), d_data{ 0, 0, 0 }
     {
         for ( size_t d = 0; d < NDIM; d++ )
+            d_data[d] = x[d];
+    }
+    MeshPoint( const std::vector<TYPE> &x ) : d_ndim( x.size() ), d_data{ 0, 0, 0 }
+    {
+        for ( size_t d = 0; d < x.size(); d++ )
             d_data[d] = x[d];
     }
 

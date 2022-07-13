@@ -352,6 +352,18 @@ void Database::erase( std::string_view key, bool check )
 
 
 /********************************************************************
+ * Convert units                                                     *
+ ********************************************************************/
+double KeyData::convertUnits( const Units &unit, std::string_view key ) const
+{
+    if ( unit.isNull() )
+        return 1.0;
+    DATABASE_INSIST( !d_unit.isNull(), "Field %s must have units", key.data() );
+    return d_unit.convert( unit );
+}
+
+
+/********************************************************************
  * Is the data of the given type                                     *
  ********************************************************************/
 template<>
@@ -1093,8 +1105,8 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
                 std::tie( i, data ) = read_value( &buffer[pos], key, databaseKeys );
             } catch ( StackTrace::abort_error &err ) {
                 AMP_ERROR( errMsgPrefix + "   Error loading key '" + std::string( key ) + "'\n" +
-                           "      in file " + err.filename + " at line " +
-                           std::to_string( err.line ) + "\n" + "   " + err.message );
+                           "      in file " + err.source.file_name() + " at line " +
+                           std::to_string( err.source.line() ) + "\n" + "   " + err.message );
             } catch ( std::exception &err ) {
                 AMP_ERROR( errMsgPrefix + "    Error loading key '" + std::string( key ) +
                            "', unhandled exception:\n" + err.what() );

@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <limits>
 #include <tuple>
+#include <type_traits>
 
 
 #define DATABASE_ERROR( ... )                        \
@@ -142,15 +143,23 @@ public:
     ArraySize arraySize() const override { return ArraySize( 1 ); }
     Array<double> convertToDouble() const override
     {
-        Array<TYPE> x( 1 );
-        x( 0 ) = d_data;
-        return convert<TYPE, double>( x );
+        if constexpr ( std::is_arithmetic<TYPE>::value ) {
+            Array<TYPE> x( 1 );
+            x( 0 ) = d_data;
+            return convert<TYPE, double>( x );
+        } else {
+            DATABASE_ERROR( "Unable to convert type" );
+        }
     }
     Array<int64_t> convertToInt64() const override
     {
-        Array<TYPE> x( 1 );
-        x( 0 ) = d_data;
-        return convert<TYPE, int64_t>( x );
+        if constexpr ( std::is_arithmetic<TYPE>::value ) {
+            Array<TYPE> x( 1 );
+            x( 0 ) = d_data;
+            return convert<TYPE, int64_t>( x );
+        } else {
+            DATABASE_ERROR( "Unable to convert type" );
+        }
     }
     bool operator==( const KeyData &rhs ) const override;
     const TYPE &get() const { return d_data; }
@@ -300,35 +309,40 @@ TYPE Database::getScalar( std::string_view key, const Units &unit ) const
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
     TYPE data;
+    double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
     auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if ( scalarData ) {
-        // We are dealing with a scalar of the same type
-        data = scalarData->get();
-    } else if ( arrayData ) {
-        // We are dealing with an Array of the same type
-        const auto &data2 = arrayData->get();
-        DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
-        data = data2( 0 );
-    } else if ( keyData->is_integral() ) {
-        // We need to convert the data using int
-        auto data2 = convert<int64_t, TYPE>( keyData->convertToInt64() );
-        DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
-        data = data2( 0 );
-    } else if ( keyData->is_floating_point() ) {
-        // We need to convert the data using double
-        auto data2 = convert<double, TYPE>( keyData->convertToDouble() );
-        DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
-        data = data2( 0 );
+    if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        if ( scalarData ) {
+            data = scalarData->get();
+        } else if ( arrayData ) {
+            const auto &data2 = arrayData->get();
+            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            data = data2( 0 );
+        } else if ( keyData->is_integral() ) {
+            auto data2 = convert<int64_t, TYPE>( keyData->convertToInt64() );
+            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            data = data2( 0 );
+        } else if ( keyData->is_floating_point() ) {
+            auto data2 = convert<double, TYPE>( keyData->convertToDouble() );
+            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            data = data2( 0 );
+        } else {
+            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+        }
+        if ( factor != 1.0 )
+            scaleData( data, factor );
     } else {
-        DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
-    }
-    if ( !unit.isNull() ) {
-        auto unit2 = keyData->unit();
-        DATABASE_INSIST( !unit2.isNull(), "Field %s must have units", key.data() );
-        double factor = unit2.convert( unit );
-        DATABASE_INSIST( factor != 0, "Unit conversion failed" );
-        scaleData( data, factor );
+        DATABASE_INSIST( factor == 1.0, "Only arithmetic types can convert units" );
+        if ( scalarData ) {
+            data = scalarData->get();
+        } else if ( arrayData ) {
+            const auto &data2 = arrayData->get();
+            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            data = data2( 0 );
+        } else {
+            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+        }
     }
     return data;
 }
@@ -338,31 +352,36 @@ std::vector<TYPE> Database::getVector( std::string_view key, const Units &unit )
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
     Array<TYPE> data;
+    double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
     auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if ( scalarData ) {
-        // We are dealing with a scalar of the same type
-        const auto &data2 = scalarData->get();
-        data.resize( 1 );
-        data( 0 ) = data2;
-    } else if ( arrayData ) {
-        // We are dealing with an array of the same type
-        data = arrayData->get();
-    } else if ( keyData->is_integral() ) {
-        // We need to convert the data
-        data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
-    } else if ( keyData->is_floating_point() ) {
-        // We need to convert the data
-        data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
+    if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        if ( scalarData ) {
+            const auto &data2 = scalarData->get();
+            data.resize( 1 );
+            data( 0 ) = data2;
+        } else if ( arrayData ) {
+            data = arrayData->get();
+        } else if ( keyData->is_integral() ) {
+            data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
+        } else if ( keyData->is_floating_point() ) {
+            data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
+        } else {
+            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+        }
+        if ( factor != 1.0 )
+            scaleData( data, factor );
     } else {
-        DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
-    }
-    if ( !unit.isNull() && !data.empty() ) {
-        auto unit2 = keyData->unit();
-        DATABASE_INSIST( !unit2.isNull(), "Field %s must have units", key.data() );
-        double factor = unit2.convert( unit );
-        DATABASE_INSIST( factor != 0, "Unit conversion failed" );
-        scaleData( data, factor );
+        DATABASE_INSIST( factor == 1.0, "Only arithmetic types can convert units" );
+        if ( scalarData ) {
+            const auto &data2 = scalarData->get();
+            data.resize( 1 );
+            data( 0 ) = data2;
+        } else if ( arrayData ) {
+            data = arrayData->get();
+        } else {
+            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+        }
     }
     DATABASE_INSIST( data.ndim() <= 1, "Variable %s cannot be converted to a vector", key.data() );
     std::vector<TYPE> data2( data.length() );
@@ -376,31 +395,36 @@ Array<TYPE> Database::getArray( std::string_view key, const Units &unit ) const
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
     Array<TYPE> data;
+    double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
     auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if ( scalarData ) {
-        // We are dealing with a scalar of the same type
-        const auto &data2 = scalarData->get();
-        data.resize( 1 );
-        data( 0 ) = data2;
-    } else if ( arrayData ) {
-        // We are dealing with an array of the same type
-        data = arrayData->get();
-    } else if ( keyData->is_integral() ) {
-        // We need to convert the data
-        data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
-    } else if ( keyData->is_floating_point() ) {
-        // We need to convert the data
-        data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
+    if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        if ( scalarData ) {
+            const auto &data2 = scalarData->get();
+            data.resize( 1 );
+            data( 0 ) = data2;
+        } else if ( arrayData ) {
+            data = arrayData->get();
+        } else if ( keyData->is_integral() ) {
+            data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
+        } else if ( keyData->is_floating_point() ) {
+            data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
+        } else {
+            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+        }
+        if ( factor != 1.0 )
+            scaleData( data, factor );
     } else {
-        DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
-    }
-    if ( !unit.isNull() && !data.empty() ) {
-        auto unit2 = keyData->unit();
-        DATABASE_INSIST( !unit2.isNull(), "Field %s must have units", key.data() );
-        double factor = unit2.convert( unit );
-        DATABASE_INSIST( factor != 0, "Unit conversion failed" );
-        scaleData( data, factor );
+        DATABASE_INSIST( factor == 1.0, "Only arithmetic types can convert units" );
+        if ( scalarData ) {
+            const auto &data2 = scalarData->get();
+            data.resize( 1 );
+            data( 0 ) = data2;
+        } else if ( arrayData ) {
+            data = arrayData->get();
+        } else {
+            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+        }
     }
     return data;
 }
