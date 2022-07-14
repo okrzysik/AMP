@@ -3,9 +3,11 @@
 #define included_AMP_MPI
 
 
+#include <any>
 #include <array>
 #include <atomic>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -51,11 +53,25 @@ public:
 
 #ifdef AMP_USE_MPI
     typedef MPI_Comm Comm;
-    typedef MPI_Request Request;
+    typedef MPI_Datatype Datatype;
+    typedef MPI_Request Request2;
 #else
     typedef uint32_t Comm;
-    typedef uint32_t Request;
+    typedef uint32_t Datatype;
+    typedef uint32_t Request2;
 #endif
+
+    class Request final
+    {
+    public:
+        Request( Request2 request = Request2(), std::any data = std::any() );
+        ~Request();
+        operator Request2() const { return d_data->first; }
+        Request2 *get() { return &d_data->first; }
+
+    private:
+        std::shared_ptr<std::pair<Request2, std::any>> d_data;
+    };
 
 
 public: // Constructors
@@ -726,6 +742,25 @@ public: // Member functions
      * then send the data.  This call must be paired with a
      * matching call to recv.
      *
+     * @param[in] data      Data to send
+     * @param[in] recv      Receiving processor number.
+     * @param[in] tag       Optional integer argument specifying an integer tag
+     *                      to be sent with this message.  Default tag is 0.
+     *                      The matching recv must share this tag.
+     */
+    template<class type>
+    void send( const type &data, int recv, int tag = 0 ) const;
+
+
+    /*!
+     * @brief This function sends an MPI message with an array to another processor.
+     *
+     * If the receiving processor knows in advance the length
+     * of the array, use "send_length = false;"  otherwise,
+     * this processor will first send the length of the array,
+     * then send the data.  This call must be paired with a
+     * matching call to recv.
+     *
      * @param[in] buf       Pointer to array buffer with length integers.
      * @param[in] length    Number of integers in buf that we want to send.
      * @param[in] recv      Receiving processor number.
@@ -759,6 +794,21 @@ public: // Member functions
      *   The receiving processor must know the length of the array.
      *   This call must be paired  with a matching call to Irecv.
      *
+     * @param[in] buf       Data to send
+     * @param[in] recv_proc Receiving processor number.
+     * @param[in] tag       Integer argument specifying an integer tag
+     *                      to be sent with this message.
+     */
+    template<class type>
+    Request Isend( const type &data, int recv_proc, int tag ) const;
+
+
+    /*!
+     * @brief This function sends an MPI message with an array
+     *   to another processor using a non-blocking call.
+     *   The receiving processor must know the length of the array.
+     *   This call must be paired  with a matching call to Irecv.
+     *
      * @param[in] buf       Pointer to array buffer with length integers.
      * @param[in] length    Number of integers in buf that we want to send.
      * @param[in] recv_proc Receiving processor number.
@@ -782,6 +832,18 @@ public: // Member functions
      *                  to be sent with this message.
      */
     Request IsendBytes( const void *buf, int N_bytes, int recv_proc, int tag ) const;
+
+
+    /*!
+     * @brief This function receives an MPI message with a data array from another processor.
+     *    This call must be paired with a matching call to send.
+     *
+     * @param[in] send      Processor number of sender.
+     * @param[in] tag       Optional integer argument specifying a tag which must be matched
+     *                      by the tag of the incoming message. Default tag is 0.
+     */
+    template<class type>
+    type recv( int send, int tag = 0 ) const;
 
 
     /*!
@@ -841,7 +903,20 @@ public: // Member functions
      * @brief This function receives an MPI message with a data
      * array from another processor using a non-blocking call.
      *
-     * @param[in] buf        Pointer to integer array buffer with capacity of length integers.
+     * @param[in] data       Data to receive
+     * @param[in] send_proc  Processor number of sender.
+     * @param[in] tag        Optional integer argument specifying a tag which must
+     *                      be matched by the tag of the incoming message.
+     */
+    template<class type>
+    Request Irecv( type &data, int send_proc, int tag ) const;
+
+
+    /*!
+     * @brief This function receives an MPI message with a data
+     * array from another processor using a non-blocking call.
+     *
+     * @param[in] buf        Recieve buffer
      * @param[in] length     Maximum number of values that can be stored in buf.
      * @param[in] send_proc  Processor number of sender.
      * @param[in] tag        Optional integer argument specifying a tag which must
@@ -1085,7 +1160,16 @@ public: // Member functions
      *    Note: this does not require a communicator.
      * \param[in] request    Communication request to wait for (returned for Isend or Irecv)
      */
-    static void wait( Request request );
+    static void wait( const Request &request );
+
+
+    /*!
+     * \brief   Wait for a communication to finish
+     * \details Wait for a communication to finish.
+     *    Note: this does not require a communicator.
+     * \param[in] request    Communication request to wait for (returned for Isend or Irecv)
+     */
+    static void wait( Request2 request );
 
 
     /*!
@@ -1097,7 +1181,19 @@ public: // Member functions
      * \param[in] request    Array of communication requests to wait for (returned for Isend or
      * Irecv)
      */
-    static int waitAny( int count, Request *request );
+    static int waitAny( int count, const Request *request );
+
+
+    /*!
+     * \brief   Wait for any communication to finish.
+     * \details This function waits for any of the given communication requests to finish.
+     *    It returns the index of the communication request that finished.
+     *    Note: this does not require a communicator.
+     * \param[in] count      Number of communications to check
+     * \param[in] request    Array of communication requests to wait for (returned for Isend or
+     * Irecv)
+     */
+    static int waitAny( int count, Request2 *request );
 
 
     /*!
@@ -1108,7 +1204,17 @@ public: // Member functions
      * \param[in] request    Array of communication requests to wait for (returned for Isend or
      * Irecv)
      */
-    static void waitAll( int count, Request *request );
+    static void waitAll( int count, const Request *request );
+
+    /*!
+     * \brief   Wait for all communications to finish.
+     * \details This function waits for all of the given communication requests to finish.
+     *    Note: this does not require a communicator.
+     * \param[in] count      Number of communications to check
+     * \param[in] request    Array of communication requests to wait for (returned for Isend or
+     * Irecv)
+     */
+    static void waitAll( int count, Request2 *request );
 
 
     /*!
@@ -1120,7 +1226,19 @@ public: // Member functions
      * \param[in] request    Array of communication requests to wait for (returned for Isend or
      * Irecv)
      */
-    static std::vector<int> waitSome( int count, Request *request );
+    static std::vector<int> waitSome( int count, const Request *request );
+
+
+    /*!
+     * \brief   Wait for some communications to finish.
+     * \details This function waits for one (or more) communications to finish.
+     *    It returns an array of the indicies that have finished.
+     *    Note: this does not require a communicator.
+     * \param[in] count      Number of communications to check
+     * \param[in] request    Array of communication requests to wait for (returned for Isend or
+     * Irecv)
+     */
+    static std::vector<int> waitSome( int count, Request2 *request );
 
 
     /*!
@@ -1209,19 +1327,6 @@ public: // Member functions
 
     //! Stop MPI
     static void stop_MPI();
-
-
-private: // Private helper functions for templated MPI operations
-#ifdef AMP_USE_MPI
-    template<class type>
-    void call_bcast( type *, int, int ) const;
-    template<class type>
-    void call_allGather( const type &, type * ) const;
-    template<class type>
-    void call_allGather( const type *, int, type *, int *, int * ) const;
-    template<class type>
-    void call_gatherv( const type *, int, type *, const int *, const int *, int ) const;
-#endif
 
 
 private: // data members

@@ -15,6 +15,7 @@
 
 
 #define MPI_CLASS AMP_MPI
+#define MPI_CLASS2 AMP::AMP_MPI
 #define MPI_CLASS_ERROR AMP_ERROR
 #define MPI_CLASS_ASSERT AMP_ASSERT
 #define MPI_CLASS_INSIST AMP_INSIST
@@ -80,6 +81,100 @@
     MPI_CLASS_ERROR( std::string( MSG ) + " (" + typeid( TYPE ).name() + "(" );
 
 
+/************************************************************************
+ *  Instantiate common MPI functions for the given type                  *
+ ************************************************************************/
+#define INSTANTIATE_MPI_REDUCE( TYPE )                                                   \
+    template TYPE MPI_CLASS2::sumReduce<TYPE>( const TYPE ) const;                       \
+    template TYPE MPI_CLASS2::minReduce<TYPE>( const TYPE ) const;                       \
+    template TYPE MPI_CLASS2::maxReduce<TYPE>( const TYPE ) const;                       \
+    template void MPI_CLASS2::sumReduce<TYPE>( TYPE *, int ) const;                      \
+    template void MPI_CLASS2::minReduce<TYPE>( TYPE *, int ) const;                      \
+    template void MPI_CLASS2::maxReduce<TYPE>( TYPE *, int ) const;                      \
+    template void MPI_CLASS2::minReduce<TYPE>( TYPE *, int, int * ) const;               \
+    template void MPI_CLASS2::maxReduce<TYPE>( TYPE *, int, int * ) const;               \
+    template void MPI_CLASS2::sumReduce<TYPE>( const TYPE *, TYPE *, int ) const;        \
+    template void MPI_CLASS2::minReduce<TYPE>( const TYPE *, TYPE *, int, int * ) const; \
+    template void MPI_CLASS2::maxReduce<TYPE>( const TYPE *, TYPE *, int, int * ) const; \
+    template TYPE MPI_CLASS2::sumScan<TYPE>( const TYPE & ) const;                       \
+    template TYPE MPI_CLASS2::minScan<TYPE>( const TYPE & ) const;                       \
+    template TYPE MPI_CLASS2::maxScan<TYPE>( const TYPE & ) const;                       \
+    template void MPI_CLASS2::sumScan<TYPE>( const TYPE *, TYPE *, int ) const;          \
+    template void MPI_CLASS2::minScan<TYPE>( const TYPE *, TYPE *, int ) const;          \
+    template void MPI_CLASS2::maxScan<TYPE>( const TYPE *, TYPE *, int ) const
+#define INSTANTIATE_MPI_BCAST( TYPE )                         \
+    template TYPE MPI_CLASS2::bcast<TYPE>( TYPE, int ) const; \
+    template void MPI_CLASS2::bcast<TYPE>( TYPE *, int, int ) const
+#define INSTANTIATE_MPI_SENDRECV( TYPE )                                                       \
+    template void MPI_CLASS2::send<TYPE>( const TYPE &, int, int ) const;                      \
+    template void MPI_CLASS2::send<TYPE>( const TYPE *, int, int, int ) const;                 \
+    template MPI_CLASS2::Request MPI_CLASS2::Isend<TYPE>( const TYPE &, int, int ) const;      \
+    template MPI_CLASS2::Request MPI_CLASS2::Isend<TYPE>( const TYPE *, int, int, int ) const; \
+    template TYPE MPI_CLASS2::recv<TYPE>( int, int ) const;                                    \
+    template void MPI_CLASS2::recv<TYPE>( TYPE *, int, int, int ) const;                       \
+    template void MPI_CLASS2::recv<TYPE>( TYPE *, int &, int, const bool, int ) const;         \
+    template MPI_CLASS2::Request MPI_CLASS2::Irecv<TYPE>( TYPE & buf, int, int ) const;        \
+    template MPI_CLASS2::Request MPI_CLASS2::Irecv<TYPE>( TYPE * buf, int, int, int ) const
+#define INSTANTIATE_MPI_GATHER( TYPE )                                                         \
+    template std::vector<TYPE> MPI_CLASS2::allGather<TYPE>( const TYPE & ) const;              \
+    template std::vector<TYPE> MPI_CLASS2::allGather<TYPE>( const std::vector<TYPE> & ) const; \
+    template void MPI_CLASS2::allGather<TYPE>( const TYPE &, TYPE * ) const;                   \
+    template int MPI_CLASS2::allGather<TYPE>( const TYPE *, int, TYPE *, int *, int *, bool )  \
+        const;                                                                                 \
+    template void MPI_CLASS2::setGather<TYPE>( std::set<TYPE> & ) const;                       \
+    template void MPI_CLASS2::allToAll<TYPE>( int, const TYPE *, TYPE * ) const;               \
+    template int MPI_CLASS2::allToAll<TYPE>(                                                   \
+        const TYPE *, const int[], const int[], TYPE *, int *, int *, bool ) const
+#define INSTANTIATE_MPI_TYPE( TYPE )  \
+    INSTANTIATE_MPI_REDUCE( TYPE );   \
+    INSTANTIATE_MPI_BCAST( TYPE );    \
+    INSTANTIATE_MPI_SENDRECV( TYPE ); \
+    INSTANTIATE_MPI_GATHER( TYPE )
+
+
+/************************************************************************
+ *  Functions for packing/unpacking data                                 *
+ ************************************************************************/
+template<class TYPE>
+size_t packSize( const TYPE & );
+template<class TYPE>
+size_t pack( const TYPE &, std::byte * );
+template<class TYPE>
+size_t unpack( TYPE &, const std::byte * );
+template<class TYPE>
+std::tuple<size_t, std::byte *> packArray( const TYPE *data, size_t length )
+{
+    size_t tot_bytes = 0;
+    std::vector<size_t> bytes( length, 0 );
+    for ( size_t i = 0; i < length; i++ ) {
+        bytes[i] = packSize<TYPE>( data[i] );
+        tot_bytes += bytes[i];
+    }
+    AMP_ASSERT( tot_bytes < static_cast<size_t>( std::numeric_limits<int>::max() ) );
+    std::byte *buf = new std::byte[tot_bytes];
+    memset( buf, 0, tot_bytes );
+    size_t N = 0;
+    for ( size_t i = 0; i < length; i++ ) {
+        auto b = pack<TYPE>( data[i], &buf[N] );
+        MPI_CLASS_ASSERT( b == bytes[i] );
+        N += b;
+    }
+    MPI_CLASS_ASSERT( N == tot_bytes );
+    return std::tie( tot_bytes, buf );
+}
+template<class TYPE>
+size_t unpackArray( TYPE *data, size_t length, const std::byte *buf )
+{
+    size_t N = 0;
+    for ( size_t i = 0; i < length; i++ ) {
+        auto b = unpack<TYPE>( data[i], &buf[N] );
+        N += b;
+    }
+    return N;
+}
+
+
+// Use AMP namespace
 namespace AMP {
 
 
@@ -102,7 +197,6 @@ struct is_mpi_copyable {
 /************************************************************************
  *  getType                                                              *
  ************************************************************************/
-#ifdef USE_MPI
 template<class TYPE>
 struct TypeIntStruct {
     TYPE x;
@@ -140,8 +234,11 @@ constexpr bool isMPItype()
            std::is_same<TYPE, TypeIntStruct<double>>::value;
 }
 template<class TYPE>
-MPI_Datatype MPI_getType()
+MPI_CLASS::Datatype MPI_getType()
 {
+#ifdef USE_MPI
+    if constexpr ( std::is_same<TYPE, std::byte>::value )
+        return MPI_BYTE;
     if constexpr ( std::is_same<TYPE, char>::value )
         return MPI_CHAR;
     if constexpr ( std::is_same<TYPE, uint8_t>::value )
@@ -179,7 +276,61 @@ MPI_Datatype MPI_getType()
     if constexpr ( std::is_same<TYPE, TypeIntStruct<double>>::value )
         return MPI_DOUBLE_INT;
     return MPI_DATATYPE_NULL;
+#else
+    if constexpr ( isMPItype<TYPE>() )
+        return typeid( TYPE ).hash_code();
+    return 0;
+#endif
 }
+inline size_t MPI_getTypeSize( MPI_CLASS::Datatype type )
+{
+    if ( type == MPI_getType<std::byte>() )
+        return sizeof( std::byte );
+    if ( type == MPI_getType<char>() )
+        return sizeof( char );
+    if ( type == MPI_getType<uint8_t>() )
+        return sizeof( uint8_t );
+    if ( type == MPI_getType<int8_t>() )
+        return sizeof( int8_t );
+    if ( type == MPI_getType<uint16_t>() )
+        return sizeof( uint16_t );
+    if ( type == MPI_getType<int16_t>() )
+        return sizeof( int16_t );
+    if ( type == MPI_getType<uint32_t>() )
+        return sizeof( uint32_t );
+    if ( type == MPI_getType<int32_t>() )
+        return sizeof( int32_t );
+    if ( type == MPI_getType<uint64_t>() )
+        return sizeof( uint64_t );
+    if ( type == MPI_getType<int64_t>() )
+        return sizeof( int64_t );
+    if ( type == MPI_getType<float>() )
+        return sizeof( float );
+    if ( type == MPI_getType<double>() )
+        return sizeof( double );
+    if ( type == MPI_getType<std::complex<float>>() )
+        return sizeof( std::complex<float> );
+    if ( type == MPI_getType<std::complex<double>>() )
+        return sizeof( std::complex<double> );
+    if ( type == MPI_getType<TypeIntStruct<short>>() )
+        return sizeof( TypeIntStruct<short> );
+    if ( type == MPI_getType<TypeIntStruct<int>>() )
+        return sizeof( TypeIntStruct<int> );
+    if ( type == MPI_getType<TypeIntStruct<long>>() )
+        return sizeof( TypeIntStruct<long> );
+    if ( type == MPI_getType<TypeIntStruct<float>>() )
+        return sizeof( TypeIntStruct<float> );
+    if ( type == MPI_getType<TypeIntStruct<double>>() )
+        return sizeof( TypeIntStruct<double> );
+    if ( type == MPI_getType<TypeIntStruct<int>>() )
+        return sizeof( TypeIntStruct<int> );
+    if ( type == MPI_getType<TypeIntStruct<int>>() )
+        return sizeof( TypeIntStruct<int> );
+    MPI_CLASS_ERROR( "Unknown MPI type" );
+    return 0;
+}
+#ifndef USE_MPI
+    #define MPI_BYTE MPI_getType<std::byte>()
 #endif
 
 
@@ -427,7 +578,7 @@ void MPI_CLASS::maxReduce( TYPE *x, int n, int *rank ) const
 template<class TYPE>
 void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
 {
-    if ( d_size == 1 )
+    if ( d_size == 1 || n == 0 )
         return;
     if ( root >= d_size )
         MPI_CLASS_ERROR( "root cannot be >= size in bcast" );
@@ -443,8 +594,25 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
             x[i].resize( N );
             bcast( x[i].data(), N, root );
         }
+    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        if ( d_rank != root ) {
+            using TYPE2 = typename std::remove_reference<decltype( *( x->get() ) )>::type;
+            for ( int i = 0; i < n; i++ )
+                x[i].reset( new TYPE2() );
+        }
+        bcast( getPointers( x, n ).data(), n, root );
     } else {
-        call_bcast<TYPE>( x, n, root );
+        size_t bytes   = 0;
+        std::byte *buf = nullptr;
+        if ( d_rank == root )
+            std::tie( bytes, buf ) = packArray( x, n );
+        MPI_Bcast( &bytes, 1, MPI_getType<size_t>(), root, d_comm );
+        if ( buf == nullptr )
+            buf = new std::byte[bytes];
+        MPI_Bcast( buf, bytes, MPI_BYTE, root, d_comm );
+        if ( d_rank != root )
+            unpackArray( x, n, buf );
+        delete[] buf;
     }
 }
 #else
@@ -453,7 +621,6 @@ void MPI_CLASS::bcast( TYPE *, int, int ) const
 {
 }
 #endif
-// Default implementation of bcast
 template<class TYPE>
 TYPE MPI_CLASS::bcast( TYPE x, int root ) const
 {
@@ -466,7 +633,27 @@ TYPE MPI_CLASS::bcast( TYPE x, int root ) const
 /************************************************************************
  *  send                                                                 *
  ************************************************************************/
-#ifdef USE_MPI
+template<class TYPE>
+std::vector<TYPE *> getPointers( const std::shared_ptr<TYPE> *x, size_t N )
+{
+    std::vector<TYPE *> y( N, nullptr );
+    for ( size_t i = 0; i < y.size(); i++ )
+        y[i] = x[i].get();
+    return y;
+}
+template<class TYPE>
+void MPI_CLASS::send( const TYPE &buf, int recv_proc, int tag ) const
+{
+    send( &buf, 1, recv_proc, tag );
+}
+#ifndef USE_MPI
+inline void MPI_Send(
+    const void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
+{
+    size_t bytes = length * MPI_getTypeSize( type );
+    MPI_CLASS( comm ).sendBytes( buf, bytes, proc, tag );
+}
+#endif
 template<class TYPE>
 void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) const
 {
@@ -481,25 +668,38 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
         MPI_Send( buf, bytes, MPI_BYTE, recv_proc, tag, d_comm );
+    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        send( getPointers( buf, length ).data(), length, recv_proc, tag );
     } else {
-        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
+        auto [bytes, buf2] = packArray( buf, length );
+        MPI_Send( buf2, bytes, MPI_BYTE, recv_proc, tag, d_comm );
+        delete[] buf2;
     }
     PROFILE_STOP( "send", profile_level );
 }
-#else
-template<class TYPE>
-void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) const
-{
-    int bytes = length * sizeof( TYPE );
-    sendBytes( buf, bytes, recv_proc, tag );
-}
-#endif
 
 
 /************************************************************************
  *  Isend                                                                *
  ************************************************************************/
-#ifdef USE_MPI
+template<class TYPE>
+MPI_CLASS::Request MPI_CLASS::Isend( const TYPE &buf, int recv_proc, int tag ) const
+{
+    return Isend( &buf, 1, recv_proc, tag );
+}
+#ifndef USE_MPI
+inline void MPI_Isend( const void *buf,
+                       int length,
+                       MPI_CLASS::Datatype type,
+                       int proc,
+                       int tag,
+                       MPI_CLASS::Comm comm,
+                       MPI_CLASS::Request2 *request )
+{
+    size_t bytes = length * MPI_getTypeSize( type );
+    *request     = MPI_CLASS( comm ).IsendBytes( buf, bytes, proc, tag );
+}
+#endif
 template<class TYPE>
 MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int tag ) const
 {
@@ -511,30 +711,48 @@ MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc,
     MPI_CLASS::Request request;
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
-        MPI_Isend( buf, length, type, recv_proc, tag, d_comm, &request );
+        MPI_Isend( buf, length, type, recv_proc, tag, d_comm, request.get() );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
-        MPI_Isend( buf, bytes, MPI_BYTE, recv_proc, tag, d_comm, &request );
+        MPI_Isend( buf, bytes, MPI_BYTE, recv_proc, tag, d_comm, request.get() );
+    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        request = Isend( buf->get(), 1, recv_proc, tag );
     } else {
-        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
+        MPI_CLASS::Request2 request2;
+        auto [bytes, buf2] = packArray( buf, length );
+        MPI_Isend( buf2, bytes, MPI_BYTE, recv_proc, tag, d_comm, &request2 );
+        request = Request( request2, std::shared_ptr<std::byte>( buf2 ) );
     }
     PROFILE_STOP( "isend", profile_level );
     return request;
 }
-#else
-template<class TYPE>
-MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int tag ) const
-{
-    int bytes = length * sizeof( TYPE );
-    return IsendBytes( buf, bytes, recv_proc, tag );
-}
-#endif
 
 
 /************************************************************************
  *  recv                                                                 *
  ************************************************************************/
-#ifdef USE_MPI
+template<class TYPE>
+TYPE MPI_CLASS::recv( int send_proc, int tag ) const
+{
+    TYPE data;
+    int length = 1;
+    recv<TYPE>( &data, length, send_proc, false, tag );
+    return data;
+}
+#ifndef USE_MPI
+inline void MPI_Recv( void *buf,
+                      int length,
+                      MPI_CLASS::Datatype type,
+                      int proc,
+                      int tag,
+                      MPI_CLASS::Comm comm,
+                      MPI_Status *status )
+{
+    NULL_USE( status );
+    size_t bytes = length * MPI_getTypeSize( type );
+    MPI_CLASS( comm ).recvBytes( buf, bytes, proc, tag );
+}
+#endif
 template<class TYPE>
 void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, int tag ) const
 {
@@ -544,12 +762,12 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     PROFILE_START( "recv", profile_level );
     // Get the receive length if necessary
     if ( get_length ) {
-        int bytes       = this->probe( send_proc, tag );
+        int bytes       = probe( send_proc, tag );
         int recv_length = bytes / sizeof( TYPE );
         MPI_CLASS_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
         length = recv_length;
     }
-    // Recieve the data
+    // Receive the data
     MPI_Status status;
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
@@ -557,27 +775,22 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
         MPI_Recv( buf, bytes, MPI_BYTE, send_proc, tag, d_comm, &status );
+    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        MPI_CLASS_INSIST( length == 1 && get_length == false,
+                          "Receiving arrays of pointers of objects is not supported" );
+        using TYPE2 = typename std::remove_reference<decltype( *( buf->get() ) )>::type;
+        buf->reset( new TYPE2() );
+        recv( buf->get(), length, send_proc, false, tag );
     } else {
-        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
+        size_t bytes = probe( send_proc, tag );
+        auto buf2    = new std::byte[bytes];
+        MPI_Recv( buf2, bytes, MPI_BYTE, send_proc, tag, d_comm, &status );
+        size_t N = unpackArray( buf, length, buf2 );
+        delete[] buf2;
+        MPI_CLASS_ASSERT( N == bytes );
     }
     PROFILE_STOP( "recv", profile_level );
 }
-#else
-template<class TYPE>
-void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, int tag ) const
-{
-    // Get the receive length if necessary
-    if ( get_length ) {
-        int bytes       = this->probe( send_proc, tag );
-        int recv_length = bytes / sizeof( TYPE );
-        MPI_CLASS_INSIST( length >= recv_length, "Recived length is larger than allocated array" );
-        length = recv_length;
-    }
-    // Recieve the data
-    int bytes = length * sizeof( TYPE );
-    recvBytes( buf, bytes, send_proc, tag );
-}
-#endif
 template<class TYPE>
 void MPI_CLASS::recv( TYPE *buf, int length, int send_proc, int tag ) const
 {
@@ -588,8 +801,24 @@ void MPI_CLASS::recv( TYPE *buf, int length, int send_proc, int tag ) const
 /************************************************************************
  *  Irecv                                                                *
  ************************************************************************/
-// Define specializations of recv(TYPE*, int&, int, bool, int)
-#ifdef USE_MPI
+template<class TYPE>
+MPI_CLASS::Request MPI_CLASS::Irecv( TYPE &data, int send_proc, int tag ) const
+{
+    return Irecv<TYPE>( &data, 1, send_proc, tag );
+}
+#ifndef USE_MPI
+inline void MPI_Irecv( void *buf,
+                       int length,
+                       MPI_CLASS::Datatype type,
+                       int proc,
+                       int tag,
+                       MPI_CLASS::Comm comm,
+                       MPI_CLASS::Request2 *request )
+{
+    size_t bytes = length * MPI_getTypeSize( type );
+    *request     = MPI_CLASS( comm ).IrecvBytes( buf, bytes, proc, tag );
+}
+#endif
 template<class TYPE>
 MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) const
 {
@@ -599,24 +828,25 @@ MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int t
     PROFILE_START( "Irecv", profile_level );
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
-        MPI_Irecv( buf, length, type, send_proc, tag, d_comm, &request );
+        MPI_Irecv( buf, length, type, send_proc, tag, d_comm, request.get() );
     } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
         size_t bytes = length * sizeof( TYPE );
-        MPI_Irecv( buf, bytes, MPI_BYTE, send_proc, tag, d_comm, &request );
+        MPI_Irecv( buf, bytes, MPI_BYTE, send_proc, tag, d_comm, request.get() );
+    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        MPI_CLASS_INSIST( length == 1, "Receiving arrays of pointers of objects is not supported" );
+        using TYPE2 = typename std::remove_reference<decltype( *( buf->get() ) )>::type;
+        buf->reset( new TYPE2() );
+        request = Irecv( buf->get(), 1, send_proc, tag );
     } else {
-        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
+        NULL_USE( buf );
+        NULL_USE( length );
+        NULL_USE( send_proc );
+        NULL_USE( tag );
+        MPI_CLASS_ERROR( "Arbitrary types are not supported yet" );
     }
     PROFILE_STOP( "Irecv", profile_level );
     return request;
 }
-#else
-template<class TYPE>
-MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) const
-{
-    int bytes = length * sizeof( TYPE );
-    return IrecvBytes( buf, bytes, send_proc, tag );
-}
-#endif
 
 
 /************************************************************************
@@ -756,7 +986,7 @@ void MPI_CLASS::gather( const TYPE *sendbuf,
                      root,
                      d_comm );
     } else {
-        call_gatherv( sendbuf, sendcount, recvbuf, recv_cnt, recv_disp, root );
+        STATIC_ERROR( "Arbitrary types are not supported yet" );
     }
     PROFILE_STOP( "gather", profile_level );
 #endif
@@ -776,7 +1006,6 @@ std::vector<TYPE> MPI_CLASS::allGather( const TYPE &x ) const
 template<class TYPE>
 std::vector<TYPE> MPI_CLASS::allGather( const std::vector<TYPE> &x ) const
 {
-    static_assert( is_mpi_copyable<TYPE>::value, "Object is not trivially copyable" );
     if ( getSize() <= 1 )
         return x;
     std::vector<int> count = allGather<int>( x.size() );
@@ -794,93 +1023,140 @@ std::vector<TYPE> MPI_CLASS::allGather( const std::vector<TYPE> &x ) const
 template<class TYPE>
 void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
 {
-    MPI_CLASS_ASSERT( y );
-    if ( d_size == 1 ) {
-        y[0] = x;
-        return;
-    }
-#ifdef USE_MPI
-    PROFILE_START( "allGather", profile_level );
-    if constexpr ( isMPItype<TYPE>() ) {
-        auto type = MPI_getType<TYPE>();
-        MPI_Allgather( &x, 1, type, y, 1, type, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
-        size_t N = sizeof( TYPE );
-        MPI_Allgather( &x, N, MPI_BYTE, y, N, MPI_BYTE, d_comm );
+    NULL_USE( x );
+    NULL_USE( y );
+    if constexpr ( !std::is_copy_assignable<TYPE>::value ) {
+        STATIC_ERROR( "allGather is not valid for non-assignable objects" );
     } else {
-        call_allGather( x, y );
-    }
-    PROFILE_STOP( "allGather", profile_level );
+        MPI_CLASS_ASSERT( y );
+        if ( d_size == 1 ) {
+            y[0] = x;
+            return;
+        }
+#ifdef USE_MPI
+        PROFILE_START( "allGather", profile_level );
+        if constexpr ( isMPItype<TYPE>() ) {
+            auto type = MPI_getType<TYPE>();
+            MPI_Allgather( &x, 1, type, y, 1, type, d_comm );
+        } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+            size_t N = sizeof( TYPE );
+            MPI_Allgather( &x, N, MPI_BYTE, y, N, MPI_BYTE, d_comm );
+        } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+            STATIC_ERROR( "gathering array of pointers is not yet supported" );
+        } else {
+            auto [send_cnt, send_data] = packArray( &x, 1 );
+            auto recv_cnt              = allGather<int>( send_cnt );
+            std::vector<int> recv_disp( recv_cnt.size(), 0 );
+            size_t bytes = recv_cnt[0];
+            for ( size_t i = 1; i < recv_cnt.size(); i++ ) {
+                bytes += recv_cnt[i];
+                recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
+            }
+            auto recv_data = new std::byte[bytes];
+            allGather( send_data, send_cnt, recv_data, recv_cnt.data(), recv_disp.data(), true );
+            size_t N = unpackArray( y, recv_cnt.size(), recv_data );
+            MPI_CLASS_ASSERT( N == bytes );
+        }
+        PROFILE_STOP( "allGather", profile_level );
 #endif
+    }
 }
 template<class TYPE>
 int MPI_CLASS::allGather( const TYPE *send_data,
                           int send_cnt,
                           TYPE *recv_data,
-                          int *recv_cnt,
-                          int *recv_disp,
+                          int *recv_cnt0,
+                          int *recv_disp0,
                           bool known_recv ) const
 {
-    if ( d_size == 1 ) {
-        if ( !known_recv ) {
-            for ( int i = 0; i < send_cnt; i++ )
-                recv_data[i] = send_data[i];
-            if ( recv_cnt )
-                *recv_cnt = send_cnt;
-            if ( recv_disp )
-                *recv_disp = 0;
-        } else {
-            for ( int i = 0; i < send_cnt; i++ )
-                recv_data[i + recv_disp[0]] = send_data[i];
-        }
-        return send_cnt;
-    }
-#ifdef USE_MPI
-    PROFILE_START( "allGather2", profile_level );
-    // Get the sizes of the received data (if necessary)
-    int *recv_cnt2  = recv_cnt;
-    int *recv_disp2 = recv_disp;
-    if ( !known_recv ) {
-        if ( !recv_cnt )
-            recv_cnt2 = new int[d_size];
-        if ( !recv_disp )
-            recv_disp2 = new int[d_size];
-        allGather( send_cnt, recv_cnt2 );
-        recv_disp2[0] = 0;
-        for ( int i = 1; i < d_size; i++ )
-            recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
-    }
-    int N_recv = 0;
-    for ( int i = 0; i < d_size; i++ )
-        N_recv += recv_cnt2[i];
-    // Send/recv the data
-    if constexpr ( isMPItype<TYPE>() ) {
-        auto type = MPI_getType<TYPE>();
-        MPI_Allgatherv( send_data, send_cnt, type, recv_data, recv_cnt2, recv_disp2, type, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
-        auto cnt  = new int[d_size];
-        auto disp = new int[d_size];
-        for ( int i = 0; i < d_size; i++ ) {
-            cnt[i]  = sizeof( TYPE ) * recv_cnt2[i];
-            disp[i] = sizeof( TYPE ) * recv_disp2[i];
-        }
-        int N = send_cnt * sizeof( TYPE );
-        MPI_Allgatherv( send_data, N, MPI_BYTE, recv_data, cnt, disp, MPI_BYTE, d_comm );
-        delete[] cnt;
-        delete[] disp;
+    NULL_USE( send_data );
+    NULL_USE( send_cnt );
+    NULL_USE( recv_data );
+    NULL_USE( recv_cnt0 );
+    NULL_USE( recv_disp0 );
+    NULL_USE( known_recv );
+    if constexpr ( !std::is_copy_assignable<TYPE>::value ) {
+        STATIC_ERROR( "allGather is not valid for non-assignable objects" );
+        return 0;
+    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        STATIC_ERROR( "allGather is not valid for pointers yet" );
     } else {
-        call_allGather( send_data, send_cnt, recv_data, recv_cnt2, recv_disp2 );
-    }
-    // Delete any temporary memory
-    if ( !recv_cnt )
-        delete[] recv_cnt2;
-    if ( !recv_disp )
-        delete[] recv_disp2;
-    PROFILE_STOP( "allGather2", profile_level );
-    return N_recv;
-#else
-    return 0;
+        if ( d_size == 1 ) {
+            if ( !known_recv ) {
+                for ( int i = 0; i < send_cnt; i++ )
+                    recv_data[i] = send_data[i];
+                if ( recv_cnt0 )
+                    *recv_cnt0 = send_cnt;
+                if ( recv_disp0 )
+                    *recv_disp0 = 0;
+            } else {
+                for ( int i = 0; i < send_cnt; i++ )
+                    recv_data[i + recv_disp0[0]] = send_data[i];
+            }
+            return send_cnt;
+        }
+#ifdef USE_MPI
+        PROFILE_START( "allGather2", profile_level );
+        // Get the sizes of the received data (if necessary)
+        int *recv_cnt  = recv_cnt0;
+        int *recv_disp = recv_disp0;
+        if ( !known_recv ) {
+            if ( !recv_cnt0 )
+                recv_cnt = new int[d_size];
+            if ( !recv_disp0 )
+                recv_disp = new int[d_size];
+            allGather( send_cnt, recv_cnt );
+            recv_disp[0] = 0;
+            for ( int i = 1; i < d_size; i++ )
+                recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
+        }
+        int N_recv = 0;
+        for ( int i = 0; i < d_size; i++ )
+            N_recv += recv_cnt[i];
+        // Send/recv the data
+        if constexpr ( isMPItype<TYPE>() ) {
+            auto type = MPI_getType<TYPE>();
+            MPI_Allgatherv(
+                send_data, send_cnt, type, recv_data, recv_cnt, recv_disp, type, d_comm );
+        } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+            auto cnt  = new int[d_size];
+            auto disp = new int[d_size];
+            for ( int i = 0; i < d_size; i++ ) {
+                cnt[i]  = sizeof( TYPE ) * recv_cnt[i];
+                disp[i] = sizeof( TYPE ) * recv_disp[i];
+            }
+            int N = send_cnt * sizeof( TYPE );
+            MPI_Allgatherv( send_data, N, MPI_BYTE, recv_data, cnt, disp, MPI_BYTE, d_comm );
+            delete[] cnt;
+            delete[] disp;
+        } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+            STATIC_ERROR( "Pointers are not supported yet" );
+        } else {
+            auto [send_cnt2, send_data2] = packArray( send_data, send_cnt );
+            auto recv_cnt2               = allGather<int>( send_cnt2 );
+            std::vector<int> recv_disp2( recv_cnt2.size(), 0 );
+            size_t bytes = recv_cnt2[0];
+            for ( size_t i = 1; i < recv_cnt2.size(); i++ ) {
+                bytes += recv_cnt2[i];
+                recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
+            }
+            auto recv_data2 = new std::byte[bytes];
+            allGather(
+                send_data2, send_cnt2, recv_data2, recv_cnt2.data(), recv_disp2.data(), true );
+            size_t N = unpackArray( recv_data, N_recv, recv_data2 );
+            MPI_CLASS_ASSERT( N == bytes );
+            delete [] recv_data2;
+        }
+        // Delete any temporary memory
+        if ( !recv_cnt0 )
+            delete[] recv_cnt;
+        if ( !recv_disp0 )
+            delete[] recv_disp;
+        PROFILE_STOP( "allGather2", profile_level );
+        return N_recv;
 #endif
+    }
+    return 0;
 }
 
 
@@ -891,13 +1167,13 @@ template<class TYPE>
 void MPI_CLASS::setGather( std::set<TYPE> &set ) const
 {
     std::vector<TYPE> send_buf( set.begin(), set.end() );
-    std::vector<int> recv_cnt( this->d_size, 0 );
-    this->allGather<int>( (int) send_buf.size(), &recv_cnt[0] );
-    std::vector<int> recv_disp( this->d_size, 0 );
-    for ( int i = 1; i < this->d_size; i++ )
+    std::vector<int> recv_cnt( d_size, 0 );
+    allGather<int>( (int) send_buf.size(), &recv_cnt[0] );
+    std::vector<int> recv_disp( d_size, 0 );
+    for ( int i = 1; i < d_size; i++ )
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     size_t N_recv_tot = 0;
-    for ( int i = 0; i < this->d_size; i++ )
+    for ( int i = 0; i < d_size; i++ )
         N_recv_tot += recv_cnt[i];
     if ( N_recv_tot == 0 )
         return;
@@ -907,8 +1183,7 @@ void MPI_CLASS::setGather( std::set<TYPE> &set ) const
         send_data = &send_buf[0];
     }
     TYPE *recv_data = &recv_buf[0];
-    static_assert( is_mpi_copyable<TYPE>::value, "Object is not trivially copyable" );
-    this->allGather<TYPE>(
+    allGather<TYPE>(
         send_data, (int) send_buf.size(), recv_data, &recv_cnt[0], &recv_disp[0], true );
     for ( size_t i = 0; i < recv_buf.size(); i++ )
         set.insert( recv_buf[i] );
@@ -930,13 +1205,13 @@ void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
         send_data.push_back( it->second );
     }
     int send_size = (int) send_id.size();
-    std::vector<int> recv_cnt( this->d_size, 0 );
-    this->allGather<int>( send_size, &recv_cnt[0] );
-    std::vector<int> recv_disp( this->d_size, 0 );
-    for ( int i = 1; i < this->d_size; i++ )
+    std::vector<int> recv_cnt( d_size, 0 );
+    allGather<int>( send_size, &recv_cnt[0] );
+    std::vector<int> recv_disp( d_size, 0 );
+    for ( int i = 1; i < d_size; i++ )
         recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
     size_t N_recv_tot = 0;
-    for ( int i = 0; i < this->d_size; i++ )
+    for ( int i = 0; i < d_size; i++ )
         N_recv_tot += recv_cnt[i];
     if ( N_recv_tot == 0 )
         return;
@@ -948,10 +1223,8 @@ void MPI_CLASS::mapGather( std::map<KEY, DATA> &map ) const
         send_data1 = &send_id[0];
         send_data2 = &send_data[0];
     }
-    static_assert( is_mpi_copyable<DATA>::value, "Object is not trivially copyable" );
-    this->allGather<KEY>( send_data1, send_size, &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
-    this->allGather<DATA>(
-        send_data2, send_size, &recv_data[0], &recv_cnt[0], &recv_disp[0], true );
+    allGather<KEY>( send_data1, send_size, &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
+    allGather<DATA>( send_data2, send_size, &recv_data[0], &recv_cnt[0], &recv_disp[0], true );
     map = std::map<KEY, DATA>();
     for ( size_t i = 0; i < N_recv_tot; i++ )
         map.insert( std::pair<KEY, DATA>( recv_id[i], recv_data[i] ) );
@@ -1073,7 +1346,11 @@ void MPI_CLASS::allToAll( int n, const TYPE *send, TYPE *recv ) const
         int N = n * sizeof( TYPE );
         MPI_Alltoall( send, N, MPI_BYTE, recv, N, MPI_BYTE, d_comm );
     } else {
-        MPI_CLASS_ERROR_TYPE( "Arbitrary types are not supported" );
+        std::vector<int> count( d_size, n );
+        std::vector<int> disp( d_size, 0 );
+        for ( int i = 0; i < d_size; i++ )
+            disp[i] = i * n;
+        allToAll( send, count.data(), disp.data(), recv, count.data(), disp.data(), true );
     }
 #endif
 }

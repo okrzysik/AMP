@@ -320,6 +320,15 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         checkResult( ut, ( *eq2 )( { 3.0 } ) == 12, "eq2" );
     }
     printf( "\n" );
+    // Try sending/receiving database
+    /*AMP::AMP_MPI comm( AMP_COMM_WORLD );
+    int rank     = comm.getRank();
+    int size     = comm.getSize();
+    int recv     = ( rank - 1 + size ) % size;
+    int send     = ( rank + 1 ) % size;
+    auto request = comm.Isend( db, send, 0 );
+    auto db2     = comm.recv<decltype( db )>( recv, 0 );
+    checkResult( ut, *db == *db2, "send/recv" );*/
 }
 
 
@@ -330,7 +339,7 @@ int main( int argc, char *argv[] )
     UnitTest ut;
 
     // Run the tests
-    // runBasicTests( ut );
+    runBasicTests( ut );
     for ( int i = 1; i < argc; i++ )
         runFileTests( ut, argv[i] );
 
