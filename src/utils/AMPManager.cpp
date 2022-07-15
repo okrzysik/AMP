@@ -89,6 +89,9 @@
 
 
 // Forward declares
+namespace AMP {
+class KeyData;
+}
 namespace AMP::Materials {
 class Material;
 }
@@ -359,6 +362,7 @@ void AMPManager::shutdown()
     }
     resourceMap.clear();
     // Clear the factories
+    AMP::FactoryStrategy<AMP::KeyData>::clear();
     AMP::FactoryStrategy<AMP::Materials::Material>::clear();
     AMP::Operator::OperatorFactory::clear();
     AMP::Solver::SolverFactory::clear();

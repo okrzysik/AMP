@@ -35,6 +35,8 @@ class KeyData
 public:
     //! Destructor
     virtual ~KeyData() {}
+    //! Return class type
+    virtual typeID getClassType() const = 0;
     //! Copy the data
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
@@ -65,6 +67,12 @@ public:
     const Units &unit() const { return d_unit; }
     //! Return the conversion factor (if used)
     double convertUnits( const Units &, std::string_view = "" ) const;
+    //! Return the number of bytes required to pack the data
+    virtual size_t packSize() const = 0;
+    //! Pack the data to a buffer
+    virtual size_t pack( std::byte * ) const = 0;
+    //! Unpack the data from a buffer
+    virtual size_t unpack( const std::byte * ) = 0;
 
 protected:
     KeyData() {}
@@ -77,6 +85,10 @@ protected:
 protected:
     Units d_unit;
 };
+
+
+//! Register KeyData with the factory
+void registerKeyData( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun );
 
 
 //! Class to a database
@@ -141,10 +153,10 @@ public:
     static std::unique_ptr<Database> createFromString( std::string_view data );
 
     //! Copy constructor
-    Database( const Database & ) = delete;
+    Database( const Database & );
 
     //! Assignment operator
-    Database &operator=( const Database & ) = delete;
+    Database &operator=( const Database & );
 
     //! Move constructor
     Database( Database &&rhs );
@@ -161,6 +173,8 @@ public:
      */
     void readDatabase( const std::string &filename );
 
+    //! Return class type
+    typeID getClassType() const override { return getTypeID<Database>(); }
 
     //! Get the default behavior when adding keys
     inline Check getDefaultAddKeyBehavior() const { return d_check; }
@@ -491,6 +505,12 @@ public:
     print( std::string_view indent = "", bool sort = true, bool printType = false ) const;
 
 
+public: // Pack/unpack data
+    size_t packSize() const override;
+    size_t pack( std::byte * ) const override;
+    size_t unpack( const std::byte * ) override;
+
+
 #ifdef AMP_USE_SAMRAI
 public: // SAMRAI interfaces
     //! Construct a database from a SAMRAI database
@@ -601,6 +621,12 @@ private:
     uint8_t d_dim;
     std::array<int, 5> d_lower, d_upper;
 };
+
+
+/********************************************************************
+ * Register KeyData with the factory                                 *
+ ********************************************************************/
+void registerKeyData( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun );
 
 
 /********************************************************************

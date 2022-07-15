@@ -193,6 +193,7 @@ inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
             _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )      \
             _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )       \
             _Pragma( "GCC diagnostic ignored \"-Winaccessible-base\"" )         \
+            _Pragma( "GCC diagnostic ignored \"-Wclass-memaccess\"" )           \
             _Pragma( "GCC diagnostic ignored \"-Waggressive-loop-optimizations\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )

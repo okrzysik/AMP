@@ -5,6 +5,7 @@
 
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/UtilityMacros.h"
 
@@ -102,8 +103,8 @@
     template void MPI_CLASS2::sumScan<TYPE>( const TYPE *, TYPE *, int ) const;          \
     template void MPI_CLASS2::minScan<TYPE>( const TYPE *, TYPE *, int ) const;          \
     template void MPI_CLASS2::maxScan<TYPE>( const TYPE *, TYPE *, int ) const
-#define INSTANTIATE_MPI_BCAST( TYPE )                         \
-    template TYPE MPI_CLASS2::bcast<TYPE>( TYPE, int ) const; \
+#define INSTANTIATE_MPI_BCAST( TYPE )                                 \
+    template TYPE MPI_CLASS2::bcast<TYPE>( const TYPE &, int ) const; \
     template void MPI_CLASS2::bcast<TYPE>( TYPE *, int, int ) const
 #define INSTANTIATE_MPI_SENDRECV( TYPE )                                                       \
     template void MPI_CLASS2::send<TYPE>( const TYPE &, int, int ) const;                      \
@@ -130,48 +131,6 @@
     INSTANTIATE_MPI_BCAST( TYPE );    \
     INSTANTIATE_MPI_SENDRECV( TYPE ); \
     INSTANTIATE_MPI_GATHER( TYPE )
-
-
-/************************************************************************
- *  Functions for packing/unpacking data                                 *
- ************************************************************************/
-template<class TYPE>
-size_t packSize( const TYPE & );
-template<class TYPE>
-size_t pack( const TYPE &, std::byte * );
-template<class TYPE>
-size_t unpack( TYPE &, const std::byte * );
-template<class TYPE>
-std::tuple<size_t, std::byte *> packArray( const TYPE *data, size_t length )
-{
-    size_t tot_bytes = 0;
-    std::vector<size_t> bytes( length, 0 );
-    for ( size_t i = 0; i < length; i++ ) {
-        bytes[i] = packSize<TYPE>( data[i] );
-        tot_bytes += bytes[i];
-    }
-    AMP_ASSERT( tot_bytes < static_cast<size_t>( std::numeric_limits<int>::max() ) );
-    std::byte *buf = new std::byte[tot_bytes];
-    memset( buf, 0, tot_bytes );
-    size_t N = 0;
-    for ( size_t i = 0; i < length; i++ ) {
-        auto b = pack<TYPE>( data[i], &buf[N] );
-        MPI_CLASS_ASSERT( b == bytes[i] );
-        N += b;
-    }
-    MPI_CLASS_ASSERT( N == tot_bytes );
-    return std::tie( tot_bytes, buf );
-}
-template<class TYPE>
-size_t unpackArray( TYPE *data, size_t length, const std::byte *buf )
-{
-    size_t N = 0;
-    for ( size_t i = 0; i < length; i++ ) {
-        auto b = unpack<TYPE>( data[i], &buf[N] );
-        N += b;
-    }
-    return N;
-}
 
 
 // Use AMP namespace
@@ -595,12 +554,8 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
             bcast( x[i].data(), N, root );
         }
     } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
-        if ( d_rank != root ) {
-            using TYPE2 = typename std::remove_reference<decltype( *( x->get() ) )>::type;
-            for ( int i = 0; i < n; i++ )
-                x[i].reset( new TYPE2() );
-        }
-        bcast( getPointers( x, n ).data(), n, root );
+        MPI_CLASS_INSIST( n == 1, "Broadcasting arrays of pointers of objects is not supported" );
+        bcast( x->get(), 1, root );
     } else {
         size_t bytes   = 0;
         std::byte *buf = nullptr;
@@ -622,11 +577,23 @@ void MPI_CLASS::bcast( TYPE *, int, int ) const
 }
 #endif
 template<class TYPE>
-TYPE MPI_CLASS::bcast( TYPE x, int root ) const
+TYPE MPI_CLASS::bcast( const TYPE &x, int root ) const
 {
-    if ( d_size > 1 )
-        bcast( &x, 1, root );
-    return x;
+    TYPE y;
+    if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        using TYPE2 = typename std::remove_reference<decltype( *( x.get() ) )>::type;
+        y.reset( new TYPE2() );
+        if ( d_rank == root )
+            *y = *x;
+        if ( d_size > 1 )
+            bcast( y.get(), 1, root );
+    } else {
+        if ( d_rank == root )
+            y = x;
+        if ( d_size > 1 )
+            bcast( &y, 1, root );
+    }
+    return y;
 }
 
 
@@ -1145,7 +1112,7 @@ int MPI_CLASS::allGather( const TYPE *send_data,
                 send_data2, send_cnt2, recv_data2, recv_cnt2.data(), recv_disp2.data(), true );
             size_t N = unpackArray( recv_data, N_recv, recv_data2 );
             MPI_CLASS_ASSERT( N == bytes );
-            delete [] recv_data2;
+            delete[] recv_data2;
         }
         // Delete any temporary memory
         if ( !recv_cnt0 )

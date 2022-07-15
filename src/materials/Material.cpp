@@ -84,7 +84,7 @@ DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Dat
 
 
 /********************************************************************
- * Material factory functiosn                                        *
+ * Material factory functions                                        *
  ********************************************************************/
 std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
 std::unique_ptr<Material> getMaterial( const std::string &name )

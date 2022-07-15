@@ -1576,14 +1576,11 @@ MPI_CLASS::Request::Request( MPI_CLASS::Request2 request, std::any data )
 MPI_CLASS::Request::~Request() {}
 
 
-} // namespace AMP
-
-
 /****************************************************************************
  * pack/unpack routines                                                      *
  ****************************************************************************/
 template<>
-size_t packSize<std::string>( const std::string &s )
+size_t packSize( const std::string &s )
 {
     return s.size() + 1;
 }
@@ -1599,6 +1596,26 @@ size_t unpack( std::string &s, const std::byte *buf )
     s = std::string( reinterpret_cast<const char *>( buf ) );
     return s.size() + 1;
 }
+/*template<>
+size_t packSize( const std::vector<bool>::reference &s )
+{
+    return s.size() + 1;
+}
+template<>
+size_t pack( const std::vector<bool>::reference &s, std::byte *buf )
+{
+    memcpy( buf, s.data(), s.size() + 1 );
+    return s.size() + 1;
+}
+template<>
+size_t unpack( std::vector<bool>::reference &s, const std::byte *buf )
+{
+    s = std::vector<bool>::reference( reinterpret_cast<const char *>( buf ) );
+    return s.size() + 1;
+}*/
+
+
+} // namespace AMP
 
 
 /****************************************************************************

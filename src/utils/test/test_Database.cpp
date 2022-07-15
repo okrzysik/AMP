@@ -48,7 +48,7 @@ static TYPE random()
         static std::uniform_real_distribution<float> dist( 0, 1 );
         return std::complex<float>( random<float>(), random<float>() );
     } else {
-        AMP_ERROR( "Invalid TYPE: " + std::string( typeid( TYPE ).name() ) );
+        AMP_ERROR( "Invalid TYPE: " + std::string( AMP::getTypeID<TYPE>().name ) );
     }
     return 0;
 }
@@ -58,9 +58,9 @@ static TYPE random()
 template<class TYPE>
 static void addType( Database &db, UnitTest &ut )
 {
-    bool pass            = true;
-    std::string typeName = typeid( TYPE ).name();
-    TYPE rand            = random<TYPE>();
+    bool pass = true;
+    std::string typeName( AMP::getTypeID<TYPE>().name );
+    TYPE rand = random<TYPE>();
     db.putScalar<TYPE>( "scalar-" + typeName, rand );
     db.putVector<TYPE>( "vector-" + typeName, { rand } );
     auto v1 = db.getScalar<TYPE>( "scalar-" + typeName );
@@ -321,14 +321,8 @@ void runFileTests( UnitTest &ut, const std::string &filename )
     }
     printf( "\n" );
     // Try sending/receiving database
-    /*AMP::AMP_MPI comm( AMP_COMM_WORLD );
-    int rank     = comm.getRank();
-    int size     = comm.getSize();
-    int recv     = ( rank - 1 + size ) % size;
-    int send     = ( rank + 1 ) % size;
-    auto request = comm.Isend( db, send, 0 );
-    auto db2     = comm.recv<decltype( db )>( recv, 0 );
-    checkResult( ut, *db == *db2, "send/recv" );*/
+    auto db2 = AMP::AMP_MPI( AMP_COMM_WORLD ).bcast( db, 0 );
+    checkResult( ut, *db == *db2, filename + " - send/recv" );
 }
 
 

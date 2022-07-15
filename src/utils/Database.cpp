@@ -136,9 +136,9 @@ static void strrep( std::string &str, std::string_view s, std::string_view r )
 /********************************************************************
  * Constructors/destructor                                           *
  ********************************************************************/
-Database::Database() : d_check( Check::WarnOverwrite ) {}
+Database::Database() : KeyData(), d_check( Check::WarnOverwrite ) {}
 Database::Database( std::string name )
-    : d_check( Check::WarnOverwrite ), d_name( std::move( name ) )
+    : KeyData(), d_check( Check::WarnOverwrite ), d_name( std::move( name ) )
 {
 }
 Database::Database( Database &&rhs )
@@ -148,6 +148,13 @@ Database::Database( Database &&rhs )
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_keys, rhs.d_keys );
     std::swap( d_data, rhs.d_data );
+}
+Database::Database( const Database &rhs ) : KeyData() { copy( rhs ); }
+Database &Database::operator=( const Database &rhs )
+{
+    if ( &rhs != this )
+        copy( rhs );
+    return *this;
 }
 Database &Database::operator=( Database &&rhs )
 {
@@ -181,29 +188,10 @@ void Database::setDefaultAddKeyBehavior( Check check, bool setChildren )
 /********************************************************************
  * Clone the database                                                *
  ********************************************************************/
-std::unique_ptr<KeyData> Database::clone() const
-{
-    auto db     = std::make_unique<Database>();
-    db->d_check = d_check;
-    db->d_name  = d_name;
-    db->d_hash  = d_hash;
-    db->d_keys  = d_keys;
-    db->d_data.resize( d_data.size() );
-    for ( size_t i = 0; i < d_data.size(); i++ )
-        db->d_data[i] = d_data[i]->clone();
-    return db;
-}
+std::unique_ptr<KeyData> Database::clone() const { return std::make_unique<Database>( *this ); }
 std::unique_ptr<Database> Database::cloneDatabase() const
 {
-    auto db     = std::make_unique<Database>();
-    db->d_check = d_check;
-    db->d_name  = d_name;
-    db->d_hash  = d_hash;
-    db->d_keys  = d_keys;
-    db->d_data.resize( d_data.size() );
-    for ( size_t i = 0; i < d_data.size(); i++ )
-        db->d_data[i] = d_data[i]->clone();
-    return db;
+    return std::make_unique<Database>( *this );
 }
 void Database::copy( const Database &rhs )
 {
@@ -415,7 +403,8 @@ bool KeyData::isType<Database>() const
 template<class TYPE>
 bool KeyData::isType() const
 {
-    if ( getDataType() == getTypeID<TYPE>() )
+    constexpr auto id0 = getTypeID<TYPE>();
+    if ( getDataType() == id0 )
         return true;
     if ( is_integral() ) {
         auto data2 = convertToInt64();
@@ -1286,6 +1275,10 @@ std::unique_ptr<KeyData> Database::readYAML( std::string_view filename )
     // Return the result
     return makeKeyData( std::move( data ) );
 }
+
+
+// Register Database
+REGISTER_KEYDATA( Database, Database );
 
 
 } // namespace AMP

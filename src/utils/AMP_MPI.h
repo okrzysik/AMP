@@ -713,7 +713,7 @@ public: // Member functions
      * \param[in] root      The processor performing the broadcast
      */
     template<class type>
-    type bcast( type value, int root ) const;
+    type bcast( const type &value, int root ) const;
 
 
     /**

@@ -1,6 +1,7 @@
 #ifndef included_AMP_ArrayClass_hpp
 #define included_AMP_ArrayClass_hpp
 
+#include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/FunctionTable.hpp"
@@ -1331,5 +1332,82 @@ bool Array<TYPE, FUN, Allocator>::equals( const Array &rhs, TYPE tol ) const
 
 
 } // namespace AMP
+
+
+/********************************************************
+ *  Pack/Unpack                                          *
+ ********************************************************/
+template<class TYPE, class FUN, class Allocator>
+size_t AMP::Array<TYPE, FUN, Allocator>::packSize() const
+{
+    size_t N = 0;
+    N += AMP::packSize( d_isCopyable );
+    N += AMP::packSize( d_isFixedSize );
+    N += AMP::packSize( d_size );
+    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+        N += length() * sizeof( TYPE );
+    } else {
+        for ( size_t i = 0; i < length(); i++ )
+            N += AMP::packSize( d_data[i] );
+    }
+    return N;
+}
+template<class TYPE, class FUN, class Allocator>
+size_t AMP::Array<TYPE, FUN, Allocator>::pack( std::byte *buf ) const
+{
+    size_t N = 0;
+    N += AMP::pack( d_isCopyable, &buf[N] );
+    N += AMP::pack( d_isFixedSize, &buf[N] );
+    N += AMP::pack( d_size, &buf[N] );
+    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+        memcpy( &buf[N], d_data, length() * sizeof( TYPE ) );
+        N += length() * sizeof( TYPE );
+    } else {
+        for ( size_t i = 0; i < length(); i++ )
+            N += AMP::pack( d_data[i], &buf[N] );
+    }
+    return N;
+}
+template<class TYPE, class FUN, class Allocator>
+size_t AMP::Array<TYPE, FUN, Allocator>::unpack( const std::byte *buf )
+{
+    size_t N = 0;
+    bool copy, fixed;
+    ArraySize size;
+    N += AMP::unpack( copy, &buf[N] );
+    N += AMP::unpack( fixed, &buf[N] );
+    N += AMP::unpack( size, &buf[N] );
+    resize( size );
+    d_isCopyable  = copy;
+    d_isFixedSize = fixed;
+    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+        // clang-format off
+        DISABLE_WARNINGS
+        memcpy( d_data, &buf[N], length() * sizeof( TYPE ) );
+        N += length() * sizeof( TYPE );
+        ENABLE_WARNINGS
+        // clang-format on
+    } else {
+        for ( size_t i = 0; i < length(); i++ )
+            N += AMP::unpack( d_data[i], &buf[N] );
+    }
+    return N;
+}
+#define PACK_UNPACK_ARRAY( TYPE )                                   \
+    template<>                                                      \
+    size_t AMP::packSize( const AMP::Array<TYPE> &x )               \
+    {                                                               \
+        return x.packSize();                                        \
+    }                                                               \
+    template<>                                                      \
+    size_t AMP::pack( const AMP::Array<TYPE> &x, std::byte *buf )   \
+    {                                                               \
+        return x.pack( buf );                                       \
+    }                                                               \
+    template<>                                                      \
+    size_t AMP::unpack( AMP::Array<TYPE> &x, const std::byte *buf ) \
+    {                                                               \
+        return x.unpack( buf );                                     \
+    }
 
 #endif
