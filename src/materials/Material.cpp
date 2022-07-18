@@ -67,7 +67,22 @@ void Material::addPolynomialProperty( std::string name,
                                      std::move( ranges ),
                                      std::move( argUnits ) );
 }
-
+void Material::addEquationProperty( std::string name,
+                                    const AMP::Units &unit,
+                                    std::string expression,
+                                    std::vector<std::string> args,
+                                    std::vector<std::array<double, 2>> ranges,
+                                    std::vector<AMP::Units> argUnits,
+                                    std::string source )
+{
+    addProperty<EquationProperty>( std::move( name ),
+                                   std::move( expression ),
+                                   unit,
+                                   std::move( args ),
+                                   std::move( ranges ),
+                                   std::move( argUnits ),
+                                   std::move( source ) );
+}
 
 /********************************************************************
  * Construct a material from a database                              *

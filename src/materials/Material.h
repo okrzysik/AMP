@@ -88,6 +88,15 @@ protected:
                                 std::vector<std::string> args             = {},
                                 std::vector<std::array<double, 2>> ranges = {},
                                 std::vector<AMP::Units> argUnits          = {} );
+
+    //! Add an equation based propoerty
+    void addEquationProperty( std::string name,
+                              const AMP::Units &unit,
+                              std::string expression,
+                              std::vector<std::string> args             = {},
+                              std::vector<std::array<double, 2>> ranges = {},
+                              std::vector<AMP::Units> argUnits          = {},
+                              std::string source                        = "" );
 };
 
 
