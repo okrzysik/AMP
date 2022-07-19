@@ -1,5 +1,6 @@
 #include "AMP/utils/FunctionTable.hpp"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/Array.h"
 
 
 #ifdef AMP_USE_LAPACK_WRAPPERS
@@ -107,3 +108,11 @@ void call_gemm<float>( size_t M,
 
 
 } // namespace AMP
+
+
+/********************************************************
+ *  Explicit instantiations of FunctionTable             *
+ ********************************************************/
+// clang-format off
+template void AMP::FunctionTable::multiply<double,AMP::FunctionTable>( const AMP::Array<double>&, const AMP::Array<double>&, AMP::Array<double>& );
+// clang-format on

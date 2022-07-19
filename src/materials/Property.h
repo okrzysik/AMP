@@ -1,19 +1,19 @@
 #ifndef included_AMP_Property
-#define included_AMP_Property
+    #define included_AMP_Property
 
-#include "AMP/utils/ArraySize.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/Units.h"
-#include "AMP/utils/UtilityMacros.h"
+    #include "AMP/utils/ArraySize.h"
+    #include "AMP/utils/Database.h"
+    #include "AMP/utils/Units.h"
+    #include "AMP/utils/UtilityMacros.h"
 
-#include <algorithm>
-#include <array>
-#include <limits>
-#include <map>
-#include <memory>
-#include <string>
-#include <string_view>
-#include <vector>
+    #include <algorithm>
+    #include <array>
+    #include <limits>
+    #include <map>
+    #include <memory>
+    #include <string>
+    #include <string_view>
+    #include <vector>
 
 
 // Foward declare classes
@@ -277,6 +277,17 @@ protected: // Virtual function to override to load the property
     virtual void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const = 0;
 
 
+protected: // Internal eval/evalv/evalArg
+    // clang-format off
+    static size_t getSize( const AMP::LinearAlgebra::Vector& );
+    static Units getUnits( const AMP::LinearAlgebra::Vector& );
+    void evalv( const AMP::Array<double>&, AMP::Array<std::vector<double> *> &, const Units & ) const;
+    void evalv( const AMP::Array<double>&, AMP::Array<AMP::LinearAlgebra::Vector *> & ) const;
+    void evalArg( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>& ) const;
+    void evalArg( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector& ) const;
+    // clang-format on
+
+
 protected: // Functions to load the arguments
     // clang-format off
     void evalArgs( AMP::Array<double>& ) const {}
@@ -343,6 +354,7 @@ std::unique_ptr<Property> createProperty( const std::string &key, const Database
 
 } // namespace AMP::Materials
 
-#include "AMP/materials/Property.hpp"
-
 #endif
+
+
+#include "AMP/materials/Property.hpp"
