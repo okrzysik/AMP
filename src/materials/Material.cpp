@@ -16,13 +16,15 @@ bool Material::hasProperty( const std::string &type ) const
 std::shared_ptr<Property> Material::property( std::string type )
 {
     auto it = d_propertyMap.find( type );
-    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    if ( it == d_propertyMap.end() )
+        return nullptr;
     return it->second;
 }
 std::shared_ptr<const Property> Material::property( std::string type ) const
 {
     auto it = d_propertyMap.find( type );
-    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    if ( it == d_propertyMap.end() )
+        return nullptr;
     return it->second;
 }
 std::vector<std::string> Material::list() const

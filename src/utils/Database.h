@@ -505,6 +505,14 @@ public:
     print( std::string_view indent = "", bool sort = true, bool printType = false ) const;
 
 
+    /**
+     * Get unused entries
+     * @param recursive Check sub databases (pre-pending by DatabaseName::)
+     * @return          Output string
+     */
+    std::vector<std::string> getUnused( bool recursive = true ) const;
+
+
 public: // Pack/unpack data
     size_t packSize() const override;
     size_t pack( std::byte * ) const override;
@@ -534,6 +542,7 @@ protected: // Internal data and functions
     std::vector<uint32_t> d_hash;
     std::vector<std::string> d_keys;
     std::vector<std::shared_ptr<KeyData>> d_data;
+    mutable std::vector<bool> d_used;
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
@@ -553,13 +562,16 @@ protected: // Internal data and functions
     }
 
     // Find an entry
-    inline int find( uint32_t hash ) const
+    inline int find( uint32_t hash, bool use ) const
     {
-        int index = -1;
-        for ( size_t i = 0; i < d_hash.size(); i++ )
-            if ( hash == d_hash[i] )
-                index = i;
-        return index;
+        for ( size_t i = 0; i < d_hash.size(); i++ ) {
+            if ( hash == d_hash[i] ) {
+                if ( use && !d_used[i] )
+                    d_used[i] = true;
+                return i;
+            }
+        }
+        return -1;
     }
 
     // Functions inherited from KeyData that really aren't valid
