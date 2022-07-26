@@ -35,6 +35,8 @@ class KeyData
 public:
     //! Destructor
     virtual ~KeyData() {}
+    //! Return class type
+    virtual typeID getClassType() const = 0;
     //! Copy the data
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
@@ -65,6 +67,12 @@ public:
     const Units &unit() const { return d_unit; }
     //! Return the conversion factor (if used)
     double convertUnits( const Units &, std::string_view = "" ) const;
+    //! Return the number of bytes required to pack the data
+    virtual size_t packSize() const = 0;
+    //! Pack the data to a buffer
+    virtual size_t pack( std::byte * ) const = 0;
+    //! Unpack the data from a buffer
+    virtual size_t unpack( const std::byte * ) = 0;
 
 protected:
     KeyData() {}
@@ -77,6 +85,10 @@ protected:
 protected:
     Units d_unit;
 };
+
+
+//! Register KeyData with the factory
+void registerKeyData( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun );
 
 
 //! Class to a database
@@ -141,10 +153,10 @@ public:
     static std::unique_ptr<Database> createFromString( std::string_view data );
 
     //! Copy constructor
-    Database( const Database & ) = delete;
+    Database( const Database & );
 
     //! Assignment operator
-    Database &operator=( const Database & ) = delete;
+    Database &operator=( const Database & );
 
     //! Move constructor
     Database( Database &&rhs );
@@ -161,6 +173,8 @@ public:
      */
     void readDatabase( const std::string &filename );
 
+    //! Return class type
+    typeID getClassType() const override { return getTypeID<Database>(); }
 
     //! Get the default behavior when adding keys
     inline Check getDefaultAddKeyBehavior() const { return d_check; }
@@ -491,6 +505,20 @@ public:
     print( std::string_view indent = "", bool sort = true, bool printType = false ) const;
 
 
+    /**
+     * Get unused entries
+     * @param recursive Check sub databases (pre-pending by DatabaseName::)
+     * @return          Output string
+     */
+    std::vector<std::string> getUnused( bool recursive = true ) const;
+
+
+public: // Pack/unpack data
+    size_t packSize() const override;
+    size_t pack( std::byte * ) const override;
+    size_t unpack( const std::byte * ) override;
+
+
 #ifdef AMP_USE_SAMRAI
 public: // SAMRAI interfaces
     //! Construct a database from a SAMRAI database
@@ -514,6 +542,7 @@ protected: // Internal data and functions
     std::vector<uint32_t> d_hash;
     std::vector<std::string> d_keys;
     std::vector<std::shared_ptr<KeyData>> d_data;
+    mutable std::vector<bool> d_used;
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
@@ -533,13 +562,16 @@ protected: // Internal data and functions
     }
 
     // Find an entry
-    inline int find( uint32_t hash ) const
+    inline int find( uint32_t hash, bool use ) const
     {
-        int index = -1;
-        for ( size_t i = 0; i < d_hash.size(); i++ )
-            if ( hash == d_hash[i] )
-                index = i;
-        return index;
+        for ( size_t i = 0; i < d_hash.size(); i++ ) {
+            if ( hash == d_hash[i] ) {
+                if ( use && !d_used[i] )
+                    d_used[i] = true;
+                return i;
+            }
+        }
+        return -1;
     }
 
     // Functions inherited from KeyData that really aren't valid
@@ -601,6 +633,12 @@ private:
     uint8_t d_dim;
     std::array<int, 5> d_lower, d_upper;
 };
+
+
+/********************************************************************
+ * Register KeyData with the factory                                 *
+ ********************************************************************/
+void registerKeyData( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun );
 
 
 /********************************************************************

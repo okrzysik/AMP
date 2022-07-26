@@ -1,3 +1,4 @@
+#include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Database.hpp"
@@ -16,6 +17,15 @@
 
 
 namespace AMP {
+
+
+/********************************************************************
+ * KeyData factory functions                                         *
+ ********************************************************************/
+void registerMaterial( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun )
+{
+    AMP::FactoryStrategy<KeyData>::registerFactory( name, fun );
+}
 
 
 /********************************************************************
@@ -290,6 +300,41 @@ bool EquationKeyData::operator==( const KeyData &rhs ) const
         return false;
     return *d_eq == *rhs2->d_eq;
 }
+size_t EquationKeyData::packSize() const
+{
+    std::string expr;
+    std::vector<std::string> vars;
+    if ( d_eq ) {
+        expr = d_eq->getExpr();
+        vars = d_eq->getVars();
+    }
+    return AMP::packSize( expr ) + AMP::packSize( vars );
+}
+size_t EquationKeyData::pack( std::byte *buf ) const
+{
+    std::string expr;
+    std::vector<std::string> vars;
+    if ( d_eq ) {
+        expr = d_eq->getExpr();
+        vars = d_eq->getVars();
+    }
+    size_t N = 0;
+    N += AMP::pack( expr, &buf[N] );
+    N += AMP::pack( vars, &buf[N] );
+    return N;
+}
+size_t EquationKeyData::unpack( const std::byte *buf )
+{
+    std::string expr;
+    std::vector<std::string> vars;
+    size_t N = 0;
+    N += AMP::unpack( expr, &buf[N] );
+    N += AMP::unpack( vars, &buf[N] );
+    d_eq.reset();
+    if ( !expr.empty() )
+        d_eq = std::make_shared<MathExpr>( expr, vars );
+    return N;
+}
 
 
 /********************************************************************
@@ -415,7 +460,6 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     FUN( std::complex<float> );  \
     FUN( std::complex<double> ); \
     FUN( std::string );          \
-    FUN( std::_Bit_reference );  \
     FUN( DatabaseBox )
 #define instantiateConvert( TYPE )                                       \
     template Array<TYPE> convert( const Array<bool> & );                 \
@@ -434,7 +478,6 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     template Array<TYPE> convert( const Array<std::complex<float>> & );  \
     template Array<TYPE> convert( const Array<std::complex<double>> & ); \
     template Array<TYPE> convert( const Array<std::string> & );          \
-    template Array<TYPE> convert( const Array<std::_Bit_reference> & );  \
     template Array<TYPE> convert( const Array<DatabaseBox> & )
 #define instantiateScaleData( TYPE )                             \
     template void scaleData<TYPE>( TYPE & data, double factor ); \
@@ -463,6 +506,7 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
         const;                                                                                     \
     template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                                    \
         std::string_view, Database::IdentityType<Array<TYPE> const &>::type, const Units & ) const
+
 instantiate( instantiateConvert );        // convert
 instantiate( instantiateScaleData );      // scaleData
 instantiate( instantiateKeyDataScalar );  // KeyDataScalar
@@ -477,7 +521,37 @@ instantiate( instantiatePutArray );       // Database::putArray
 instantiate( instantiateGetWithDefault ); // Database::getWithDefault
 template void
 Database::putScalar<const char *>( std::string_view, const char *, Units, Database::Check );
+template void
+Database::putScalar<std::_Bit_reference>( std::string_view key, std::_Bit_reference, Units, Check );
 
+
+/********************************************************
+ *  Register KeyData with factory                        *
+ ********************************************************/
+#define registerkeyData2( TYPE, TYPENAME )                             \
+    REGISTER_KEYDATA( KeyDataScalar<TYPE>, KeyDataScalar_##TYPENAME ); \
+    REGISTER_KEYDATA( KeyDataArray<TYPE>, KeyDataArray##TYPENAME )
+#define registerkeyData( TYPE ) registerkeyData2( TYPE, TYPE )
+registerkeyData( bool );
+registerkeyData( char );
+registerkeyData( int8_t );
+registerkeyData( int16_t );
+registerkeyData( int32_t );
+registerkeyData( int64_t );
+registerkeyData( uint8_t );
+registerkeyData( uint16_t );
+registerkeyData( uint32_t );
+registerkeyData( uint64_t );
+registerkeyData( float );
+registerkeyData( double );
+registerkeyData2( long double, long_double );
+registerkeyData2( std::complex<float>, complex_float );
+registerkeyData2( std::complex<double>, complex_double );
+registerkeyData2( std::string, string );
+registerkeyData( DatabaseBox );
+REGISTER_KEYDATA( EmptyKeyData, EmptyKeyData );
+REGISTER_KEYDATA( DatabaseVector, DatabaseVector );
+REGISTER_KEYDATA( EquationKeyData, EquationKeyData );
 
 } // namespace AMP
 
@@ -487,3 +561,4 @@ Database::putScalar<const char *>( std::string_view, const char *, Units, Databa
  ********************************************************/
 #include "AMP/utils/Array.hpp"
 instantiateArrayConstructors( AMP::DatabaseBox );
+PACK_UNPACK_ARRAY( AMP::DatabaseBox )

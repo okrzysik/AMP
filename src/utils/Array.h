@@ -751,6 +751,14 @@ public: // Math operations
      */
     bool equals( const Array &rhs, TYPE tol = 0.000001 ) const;
 
+public:
+    //! Return the number of bytes required to pack the data
+    size_t packSize() const;
+    //! Pack the data to a buffer
+    size_t pack( std::byte * ) const;
+    //! Unpack the data from a buffer
+    size_t unpack( const std::byte * );
+
 private:
     bool d_isCopyable;           // Can the array be copied
     bool d_isFixedSize;          // Can the array be resized

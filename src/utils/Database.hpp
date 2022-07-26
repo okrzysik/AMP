@@ -1,7 +1,10 @@
 #ifndef included_AMP_Database_hpp
 #define included_AMP_Database_hpp
 
+#include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/FactoryStrategy.hpp"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <iomanip>
 #include <limits>
@@ -13,25 +16,39 @@
     do {                                             \
         char msg[1000];                              \
         snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-        throw std::logic_error( msg );               \
+        AMP_ERROR( msg );                            \
     } while ( 0 )
 #define DATABASE_WARNING( ... )                      \
     do {                                             \
         char msg[1000];                              \
         snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-        AMP::pout << msg << std::endl;               \
+        AMP_WARNING( msg );                          \
     } while ( 0 )
 #define DATABASE_INSIST( TEST, ... )                     \
     do {                                                 \
         if ( !( TEST ) ) {                               \
             char msg[1000];                              \
             snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-            throw std::logic_error( msg );               \
+            AMP_ERROR( msg );                            \
         }                                                \
     } while ( 0 )
 
 
 namespace AMP {
+
+
+/********************************************************************
+ * Macro to register KeyData with the factory                        *
+ ********************************************************************/
+#define REGISTER_KEYDATA( TYPE, CLASS_NAME )                                  \
+    static struct CLASS_NAME##_INIT {                                         \
+        CLASS_NAME##_INIT()                                                   \
+        {                                                                     \
+            auto fun            = []() { return std::make_unique<TYPE>(); };  \
+            constexpr auto type = AMP::getTypeID<TYPE>();                     \
+            AMP::FactoryStrategy<KeyData>::registerFactory( type.name, fun ); \
+        }                                                                     \
+    } CLASS_NAME##_init
 
 
 /********************************************************************
@@ -76,6 +93,7 @@ class EmptyKeyData final : public KeyData
 public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
+    typeID getClassType() const override { return getTypeID<EmptyKeyData>(); }
     std::unique_ptr<KeyData> clone() const override { return std::make_unique<EmptyKeyData>(); }
     void print( std::ostream &os, std::string_view = "", bool = true, bool = false ) const override
     {
@@ -88,6 +106,9 @@ public:
     Array<double> convertToDouble() const override { return Array<double>(); }
     Array<int64_t> convertToInt64() const override { return Array<int64_t>(); }
     bool operator==( const KeyData &rhs ) const override { return rhs.convertToDouble().empty(); }
+    size_t packSize() const override { return 0; }
+    size_t pack( std::byte * ) const override { return 0; }
+    size_t unpack( const std::byte * ) override { return 0; }
 };
 class EquationKeyData final : public KeyData
 {
@@ -96,6 +117,7 @@ public:
     EquationKeyData( std::string_view eq, const Units &unit = Units() );
     EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit = Units() );
     virtual ~EquationKeyData() = default;
+    typeID getClassType() const override { return getTypeID<EquationKeyData>(); }
     std::unique_ptr<KeyData> clone() const override;
     void print( std::ostream &, std::string_view = "", bool = true, bool = false ) const override;
     typeID getDataType() const override;
@@ -106,6 +128,9 @@ public:
     Array<int64_t> convertToInt64() const override;
     bool operator==( const KeyData &rhs ) const override;
     auto getEq() const { return d_eq; }
+    size_t packSize() const override;
+    size_t pack( std::byte *buf ) const override;
+    size_t unpack( const std::byte * ) override;
 
 private:
     std::shared_ptr<const MathExpr> d_eq;
@@ -118,8 +143,10 @@ public:
     explicit KeyDataScalar( TYPE data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
+        static_assert( !std::is_same<TYPE, std::_Bit_reference>::value );
     }
     virtual ~KeyDataScalar() {}
+    typeID getClassType() const override { return getTypeID<KeyDataScalar>(); }
     std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<KeyDataScalar>( d_data, d_unit );
@@ -149,6 +176,7 @@ public:
             return convert<TYPE, double>( x );
         } else {
             DATABASE_ERROR( "Unable to convert type" );
+            return {};
         }
     }
     Array<int64_t> convertToInt64() const override
@@ -159,10 +187,26 @@ public:
             return convert<TYPE, int64_t>( x );
         } else {
             DATABASE_ERROR( "Unable to convert type" );
+            return {};
         }
     }
     bool operator==( const KeyData &rhs ) const override;
     const TYPE &get() const { return d_data; }
+    size_t packSize() const override { return AMP::packSize( d_unit ) + AMP::packSize( d_data ); }
+    size_t pack( std::byte *buf ) const override
+    {
+        size_t N = 0;
+        N += AMP::pack( d_unit, &buf[N] );
+        N += AMP::pack( d_data, &buf[N] );
+        return N;
+    }
+    size_t unpack( const std::byte *buf ) override
+    {
+        size_t N = 0;
+        N += AMP::unpack( d_unit, &buf[N] );
+        N += AMP::unpack( d_data, &buf[N] );
+        return N;
+    }
 
 private:
     TYPE d_data;
@@ -175,9 +219,11 @@ public:
     explicit KeyDataArray( Array<TYPE> data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
+        static_assert( !std::is_same<TYPE, std::_Bit_reference>::value );
         data.clear(); // Suppress cppclean warning
     }
     virtual ~KeyDataArray() {}
+    typeID getClassType() const override { return getTypeID<KeyDataArray>(); }
     std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<KeyDataArray>( d_data, d_unit );
@@ -234,6 +280,21 @@ public:
     Array<int64_t> convertToInt64() const override { return convert<TYPE, int64_t>( d_data ); }
     bool operator==( const KeyData &rhs ) const override;
     const Array<TYPE> &get() const { return d_data; }
+    size_t packSize() const override { return AMP::packSize( d_unit ) + AMP::packSize( d_data ); }
+    size_t pack( std::byte *buf ) const override
+    {
+        size_t N = 0;
+        N += AMP::pack( d_unit, &buf[N] );
+        N += AMP::pack( d_data, &buf[N] );
+        return N;
+    }
+    size_t unpack( const std::byte *buf ) override
+    {
+        size_t N = 0;
+        N += AMP::unpack( d_unit, &buf[N] );
+        N += AMP::unpack( d_data, &buf[N] );
+        return N;
+    }
 
 private:
     Array<TYPE> d_data;
@@ -256,6 +317,7 @@ public:
         return *this;
     }
     virtual ~DatabaseVector() {}
+    typeID getClassType() const override { return getTypeID<DatabaseVector>(); }
     std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<DatabaseVector>( d_data );
@@ -290,6 +352,30 @@ public:
         return d_data == rhs2->d_data;
     }
     const std::vector<Database> &get() const { return d_data; }
+    size_t packSize() const override
+    {
+        size_t bytes = sizeof( size_t );
+        for ( const auto &db : d_data )
+            bytes += db.packSize();
+        return bytes;
+    }
+    size_t pack( std::byte *buf ) const override
+    {
+        size_t N = AMP::pack( d_data.size(), buf );
+        for ( const auto &db : d_data )
+            N += db.pack( &buf[N] );
+        return N;
+    }
+    size_t unpack( const std::byte *buf ) override
+    {
+        size_t N_db;
+        size_t N = AMP::unpack( N_db, buf );
+        d_data.clear();
+        d_data.resize( N_db );
+        for ( auto &db : d_data )
+            N += db.unpack( &buf[N] );
+        return N;
+    }
 
 private:
     std::vector<Database> d_data;

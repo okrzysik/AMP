@@ -1,8 +1,11 @@
+#ifndef included_AMP_Property_hpp
+#define included_AMP_Property_hpp
+
+#include "AMP/materials/Property.hpp"
+
 #include <algorithm>
 #include <sstream>
 
-#include "AMP/vectors/Vector.h"
-#include "AMP/vectors/data/VectorDataIterator.h"
 
 namespace AMP::Materials {
 
@@ -88,59 +91,19 @@ void Property::evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, A
     evalArgs( args2, args... );
     checkArgs( args2 );
 
-    // Allocate temporary output array
-    size_t N     = args2.size( 1 );
-    ArraySize rs = d_dim;
-    rs.setNdim( d_dim.ndim() + 1 );
-    rs.resize( d_dim.ndim(), N );
-    Array<double> r2( rs );
-    r2.fill( 0 );
-
-    // Call eval
-    eval( r2, args2 );
-
-    // Convert units
-    if ( !unit.isNull() )
-        r2.scale( d_units.convert( unit ) );
-
-    // Copy the results back
-    size_t N0 = r.length();
-    for ( size_t i = 0; i < N0; i++ ) {
-        AMP_ASSERT( r( i )->size() == N );
-        for ( size_t j = 0; j < N; j++ )
-            ( *r( i ) )[j] = r2( i + j * N0 );
-    }
+    // Call eval (and convert units)
+    evalv( args2, r, unit );
 }
 template<class... Args>
 void Property::evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, Args... args ) const
 {
     // Load the arguments
-    auto args2 = defaultArgs( r( 0 )->getLocalSize() );
+    auto args2 = defaultArgs( getSize( *r( 0 ) ) );
     evalArgs( args2, args... );
     checkArgs( args2 );
 
-    // Allocate temporary output array
-    size_t N     = args2.size( 1 );
-    ArraySize rs = d_dim;
-    rs.setNdim( d_dim.ndim() + 1 );
-    rs.resize( d_dim.ndim(), N );
-    Array<double> r2( rs );
-    r2.fill( 0 );
-
-    // Call eval
-    eval( r2, args2 );
-
-    // Copy the results back
-    size_t N0 = r.length();
-    for ( size_t i = 0; i < N0; i++ ) {
-        double scale = 1.0;
-        if ( !r( i )->getUnits().isNull() )
-            scale = d_units.convert( r( i )->getUnits() );
-        AMP_ASSERT( r( i )->getLocalSize() == N );
-        auto it = r( i )->begin();
-        for ( size_t j = 0; j < N; j++, ++it )
-            *it = scale * r2( i + j * N0 );
-    }
+    // Call eval (and convert units)
+    evalv( args2, r );
 }
 
 
@@ -191,16 +154,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const std::vector<double> &v,
                          Args... args ) const
 {
-    size_t N = args2.size( 1 );
-    AMP_INSIST( v.size() == N, "Argument " + name + " size does not match input" );
-    int i = get_arg_index( name );
-    if ( i >= 0 ) {
-        double scale = 1.0;
-        if ( !unit.isNull() )
-            scale = unit.convert( d_argUnits[i] );
-        for ( size_t j = 0; j < N; j++ )
-            args2( i, j ) = scale * v[j];
-    }
+    evalArg( args2, name, unit, v );
     evalArgs( args2, args... );
 }
 template<class... Args>
@@ -210,17 +164,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const AMP::LinearAlgebra::Vector &v,
                          Args... args ) const
 {
-    size_t N = args2.size( 1 );
-    AMP_INSIST( v.getLocalSize() == N, "Argument " + name + " size does not match input" );
-    int i = get_arg_index( name );
-    if ( i >= 0 ) {
-        double scale = 1.0;
-        if ( !unit.isNull() )
-            scale = unit.convert( d_argUnits[i] );
-        auto it = v.begin();
-        for ( size_t j = 0; j < N; j++, ++it )
-            args2( i, j ) = scale * *it;
-    }
+    evalArg( args2, name, unit, v );
     evalArgs( args2, args... );
 }
 template<class... Args>
@@ -237,7 +181,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const AMP::LinearAlgebra::Vector &v,
                          Args... args ) const
 {
-    evalArgs( args2, name, v.getUnits(), v, args... );
+    evalArgs( args2, name, getUnits( v ), v, args... );
 }
 template<class VEC, class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
@@ -348,3 +292,6 @@ void Property::setAuxiliaryData( const std::string &key, const TYPE &data )
 
 
 } // namespace AMP::Materials
+
+
+#endif

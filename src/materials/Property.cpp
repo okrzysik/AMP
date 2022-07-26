@@ -2,8 +2,6 @@
 #include "AMP/materials/ScalarProperty.h"
 #include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
-#include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/Vector.h"
 
 #include <algorithm>
 
@@ -45,46 +43,48 @@ Property::Property( std::string name,
 /************************************************************************
  *  Evaluate the input arguments                                         *
  ************************************************************************/
-void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                         const std::map<std::string, std::string> &translator ) const
+void Property::evalArg( AMP::Array<double> &args,
+                        const std::string &name,
+                        const Units &unit,
+                        const std::vector<double> &v ) const
 {
-    auto mapargs = make_map( args, translator );
-    for ( auto arg : mapargs )
-        evalArgs( args2, arg.first, *arg.second );
-}
-
-
-/************************************************************************
- *  make_map                                                             *
- ************************************************************************/
-static std::string getArgName( const std::string &vecname,
-                               const std::map<std::string, std::string> &translator )
-{
-    if ( translator.empty() )
-        return vecname;
-    for ( auto &elem : translator ) {
-        if ( elem.second == vecname )
-            return elem.first;
+    size_t N = args.size( 1 );
+    AMP_INSIST( v.size() == N, "Argument " + name + " size does not match input" );
+    int i = get_arg_index( name );
+    if ( i >= 0 ) {
+        double scale = 1.0;
+        if ( !unit.isNull() )
+            scale = unit.convert( d_argUnits[i] );
+        for ( size_t j = 0; j < N; j++ )
+            args( i, j ) = scale * v[j];
     }
-    return "";
 }
-std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>>
-Property::make_map( const std::shared_ptr<AMP::LinearAlgebra::MultiVector> &args,
-                    const std::map<std::string, std::string> &translator ) const
+void Property::evalv( const AMP::Array<double> &args,
+                      AMP::Array<std::vector<double> *> &r,
+                      const Units &unit ) const
 {
-    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> result;
-    if ( !d_arguments.empty() ) {
-        size_t xls = translator.size();
-        AMP_INSIST( xls > 0, "attempt to make MultiVector map without setting translator" );
-        for ( auto vec : *args ) {
-            auto key = getArgName( vec->getName(), translator );
-            auto it  = std::find( d_arguments.begin(), d_arguments.end(), key );
-            if ( it != d_arguments.end() )
-                result.insert( std::make_pair( key, vec ) );
-        }
+    // Allocate temporary output array
+    size_t N     = args.size( 1 );
+    ArraySize rs = d_dim;
+    rs.setNdim( d_dim.ndim() + 1 );
+    rs.resize( d_dim.ndim(), N );
+    Array<double> r2( rs );
+    r2.fill( 0 );
+
+    // Call eval
+    eval( r2, args );
+
+    // Convert units
+    if ( !unit.isNull() )
+        r2.scale( d_units.convert( unit ) );
+
+    // Copy the results back
+    size_t N0 = r.length();
+    for ( size_t i = 0; i < N0; i++ ) {
+        AMP_ASSERT( r( i )->size() == N );
+        for ( size_t j = 0; j < N; j++ )
+            ( *r( i ) )[j] = r2( i + j * N0 );
     }
-    return result;
 }
 
 
@@ -167,6 +167,4 @@ std::unique_ptr<Property> createProperty( const std::string &key, const Database
  ********************************************************/
 #include "AMP/utils/Array.hpp"
 instantiateArrayConstructors( std::vector<double> * );
-instantiateArrayConstructors( AMP::LinearAlgebra::Vector * );
 instantiateArrayConstructors( std::shared_ptr<std::vector<double>> );
-instantiateArrayConstructors( std::shared_ptr<AMP::LinearAlgebra::Vector> );

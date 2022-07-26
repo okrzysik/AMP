@@ -46,10 +46,20 @@ public:
     //! Return the name of the material
     virtual std::string materialName() const = 0;
 
-    //! get a pointer to a specific scalar property
+    /*!
+     * \brief  Get the desired property
+     * \details  Return a shared_ptr to the desired property if it exists.
+     *    If it does not exist, return a nullptr.
+     * \param type  Name of desired property
+     */
     std::shared_ptr<Property> property( std::string type );
 
-    //! get a pointer to a specific scalar property
+    /*!
+     * \brief  Get the desired property
+     * \details  Return a shared_ptr to the desired property if it exists.
+     *    If it does not exist, return a nullptr.
+     * \param type  Name of desired property
+     */
     std::shared_ptr<const Property> property( std::string type ) const;
 
     //! return a list of all properties in this material
@@ -88,6 +98,15 @@ protected:
                                 std::vector<std::string> args             = {},
                                 std::vector<std::array<double, 2>> ranges = {},
                                 std::vector<AMP::Units> argUnits          = {} );
+
+    //! Add an equation based propoerty
+    void addEquationProperty( std::string name,
+                              const AMP::Units &unit,
+                              std::string expression,
+                              std::vector<std::string> args             = {},
+                              std::vector<std::array<double, 2>> ranges = {},
+                              std::vector<AMP::Units> argUnits          = {},
+                              std::string source                        = "" );
 };
 
 

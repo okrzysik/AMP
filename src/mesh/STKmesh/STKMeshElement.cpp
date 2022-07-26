@@ -206,7 +206,6 @@ std::vector<std::shared_ptr<MeshElement>> STKMeshElement::getNeighbors() const
         stk::mesh::EntityVector adjacent_entities;
         const CellTopologyData *celltopology =
             stk::mesh::fem::get_cell_topology( *elem ).getCellTopologyData();
-        AMP_INSIST( celltopology, "No topology for element, can not find neighbors." );
         const stk::mesh::EntityRank subcell_rank = elem->entity_rank() - 1;
         const unsigned num_sides                 = celltopology->subcell_count[subcell_rank];
         for ( unsigned id = 0; id < num_sides; ++id ) {

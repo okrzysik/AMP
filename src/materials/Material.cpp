@@ -16,13 +16,15 @@ bool Material::hasProperty( const std::string &type ) const
 std::shared_ptr<Property> Material::property( std::string type )
 {
     auto it = d_propertyMap.find( type );
-    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    if ( it == d_propertyMap.end() )
+        return nullptr;
     return it->second;
 }
 std::shared_ptr<const Property> Material::property( std::string type ) const
 {
     auto it = d_propertyMap.find( type );
-    AMP_INSIST( it != d_propertyMap.end(), std::string( "property " ) + type + " is not defined" );
+    if ( it == d_propertyMap.end() )
+        return nullptr;
     return it->second;
 }
 std::vector<std::string> Material::list() const
@@ -67,7 +69,22 @@ void Material::addPolynomialProperty( std::string name,
                                      std::move( ranges ),
                                      std::move( argUnits ) );
 }
-
+void Material::addEquationProperty( std::string name,
+                                    const AMP::Units &unit,
+                                    std::string expression,
+                                    std::vector<std::string> args,
+                                    std::vector<std::array<double, 2>> ranges,
+                                    std::vector<AMP::Units> argUnits,
+                                    std::string source )
+{
+    addProperty<EquationProperty>( std::move( name ),
+                                   std::move( expression ),
+                                   unit,
+                                   std::move( args ),
+                                   std::move( ranges ),
+                                   std::move( argUnits ),
+                                   std::move( source ) );
+}
 
 /********************************************************************
  * Construct a material from a database                              *
@@ -84,7 +101,7 @@ DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Dat
 
 
 /********************************************************************
- * Material factory functiosn                                        *
+ * Material factory functions                                        *
  ********************************************************************/
 std::vector<std::string> getMaterialList() { return AMP::FactoryStrategy<Material>::getKeys(); }
 std::unique_ptr<Material> getMaterial( const std::string &name )
