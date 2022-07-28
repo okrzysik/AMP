@@ -7,6 +7,8 @@
 #include "AMP/utils/Units.h"
 #include "AMP/utils/typeid.h"
 
+#include "StackTrace/source_location.h"
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -109,6 +111,8 @@ public:
     struct IdentityType {
         typedef T type;
     };
+
+    using source_location = StackTrace::source_location;
 
 public:
     //! Empty constructor
@@ -245,9 +249,10 @@ public:
      *
      * @param[in] key           Key name in database.
      */
-    inline std::string getString( std::string_view key ) const
+    inline std::string getString( std::string_view key,
+                                  source_location src = source_location::current() ) const
     {
-        return getScalar<std::string>( key );
+        return getScalar<std::string>( key, {}, src );
     }
 
 
@@ -261,7 +266,9 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE getScalar( std::string_view key, const Units &unit = Units() ) const;
+    TYPE getScalar( std::string_view key,
+                    const Units &unit   = Units(),
+                    source_location src = source_location::current() ) const;
 
 
     /**
@@ -289,7 +296,9 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    Array<TYPE> getArray( std::string_view key, const Units &unit = Units() ) const;
+    Array<TYPE> getArray( std::string_view key,
+                          const Units &unit   = Units(),
+                          source_location src = source_location::current() ) const;
 
 
     /**
@@ -302,7 +311,9 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    std::vector<TYPE> getVector( std::string_view key, const Units &unit = Units() ) const;
+    std::vector<TYPE> getVector( std::string_view key,
+                                 const Units &unit   = Units(),
+                                 source_location src = source_location::current() ) const;
 
 
     /**
@@ -385,11 +396,11 @@ public:
 
 
     //! Check if the key is a database object
-    bool isDatabase( std::string_view key ) const;
+    bool isDatabase( std::string_view key, source_location src = source_location::current() ) const;
 
 
     //! Check if the named entry is a string
-    bool isString( std::string_view key ) const;
+    bool isString( std::string_view key, source_location src = source_location::current() ) const;
 
     /**
      * Check if the named entry is an equation
@@ -397,7 +408,7 @@ public:
      *
      * @param key       Key name in database
      */
-    bool isEquation( std::string_view key ) const;
+    bool isEquation( std::string_view key, source_location src = source_location::current() ) const;
 
 
     /**
@@ -406,12 +417,13 @@ public:
      *
      * @param key       Key name in database
      */
-    std::shared_ptr<const MathExpr> getEquation( std::string_view key ) const;
+    std::shared_ptr<const MathExpr>
+    getEquation( std::string_view key, source_location src = source_location::current() ) const;
 
 
     //! Check if the entry can be stored as the given type
     template<class TYPE>
-    bool isType( std::string_view key ) const;
+    bool isType( std::string_view key, source_location src = source_location::current() ) const;
 
     //! Get the fundamental type (e.g. double, int, float, ...)
     typeID getDataType( std::string_view key ) const;
@@ -422,7 +434,8 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<Database> getDatabase( std::string_view key );
+    std::shared_ptr<Database> getDatabase( std::string_view key,
+                                           source_location src = source_location::current() );
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -430,7 +443,8 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<const Database> getDatabase( std::string_view key ) const;
+    std::shared_ptr<const Database>
+    getDatabase( std::string_view key, source_location src = source_location::current() ) const;
 
 
     /**
@@ -438,7 +452,8 @@ public:
      *
      * @param key Key name in database.
      */
-    const Database &operator()( std::string_view key ) const;
+    const Database &operator()( std::string_view key,
+                                source_location src = source_location::current() ) const;
 
 
     /**

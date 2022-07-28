@@ -484,15 +484,19 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     template void scaleData<TYPE>( Array<TYPE> & data, double factor )
 #define instantiateKeyDataScalar( TYPE ) template class KeyDataScalar<TYPE>
 #define instantiateKeyDataArray( TYPE ) template class KeyDataArray<TYPE>
-#define instantiateIsType( TYPE ) template bool Database::isType<TYPE>( std::string_view ) const
+#define instantiateIsType( TYPE ) \
+    template bool Database::isType<TYPE>( std::string_view, source_location ) const
 #define instantiatePutScalar( TYPE ) \
     template void Database::putScalar<TYPE>( std::string_view, TYPE, Units, Database::Check )
-#define instantiateGetScalar( TYPE ) \
-    template TYPE Database::getScalar<TYPE>( std::string_view, const Units & ) const
-#define instantiateGetArray( TYPE ) \
-    template Array<TYPE> Database::getArray( std::string_view, const Units & ) const
-#define instantiateGetVector( TYPE ) \
-    template std::vector<TYPE> Database::getVector( std::string_view, const Units & ) const
+#define instantiateGetScalar( TYPE )                                                            \
+    template TYPE Database::getScalar<TYPE>( std::string_view, const Units &, source_location ) \
+        const
+#define instantiateGetArray( TYPE )                                                             \
+    template Array<TYPE> Database::getArray( std::string_view, const Units &, source_location ) \
+        const
+#define instantiateGetVector( TYPE )                \
+    template std::vector<TYPE> Database::getVector( \
+        std::string_view, const Units &, source_location ) const
 #define instantiatePutVector( TYPE )         \
     template void Database::putVector<TYPE>( \
         std::string_view, const std::vector<TYPE> &, Units, Database::Check )

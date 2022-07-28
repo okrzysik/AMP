@@ -35,7 +35,7 @@ static std::vector<char> readFile( const std::string &filename )
 {
     // Read the input file into memory
     FILE *fid = fopen( filename.data(), "rb" );
-    DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
+    DATABASE_INSIST( fid, SOURCE_LOCATION_CURRENT(), "Error opening file %s", filename.data() );
     fseek( fid, 0, SEEK_END );
     size_t bytes = ftell( fid );
     rewind( fid );
@@ -262,39 +262,40 @@ typeID Database::getDataType( std::string_view key ) const
     int index = find( hash, true );
     return index == -1 ? typeID() : d_data[index]->getDataType();
 }
-bool Database::isDatabase( std::string_view key ) const
+bool Database::isDatabase( std::string_view key, source_location src ) const
 {
     auto hash = hashString( key );
     int index = find( hash, false );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = dynamic_cast<const Database *>( d_data[index].get() );
     return ptr2 != nullptr;
 }
-std::shared_ptr<Database> Database::getDatabase( std::string_view key )
+std::shared_ptr<Database> Database::getDatabase( std::string_view key, source_location src )
 {
     auto hash = hashString( key );
     int index = find( hash, true );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = std::dynamic_pointer_cast<Database>( d_data[index] );
-    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-std::shared_ptr<const Database> Database::getDatabase( std::string_view key ) const
+std::shared_ptr<const Database> Database::getDatabase( std::string_view key,
+                                                       source_location src ) const
 {
     auto hash = hashString( key );
     int index = find( hash, true );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
-    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-const Database &Database::operator()( std::string_view key ) const
+const Database &Database::operator()( std::string_view key, source_location src ) const
 {
     auto hash = hashString( key );
     int index = find( hash, true );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
-    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return *ptr2;
 }
 std::vector<std::string> Database::getAllKeys( bool sort ) const
@@ -312,7 +313,8 @@ void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Che
     int index = find( hash, false );
     if ( index != -1 ) {
         if ( check == Check::Error )
-            DATABASE_ERROR( "Error: Variable '%s' already exists in database",
+            DATABASE_ERROR( SOURCE_LOCATION_CURRENT(),
+                            "Error: Variable '%s' already exists in database",
                             std::string( key ).data() );
         if ( check == Check::WarnOverwrite || check == Check::WarnKeep )
             DATABASE_WARNING( "Warning: variable '%s' already exists in database",
@@ -353,7 +355,8 @@ double KeyData::convertUnits( const Units &unit, std::string_view key ) const
 {
     if ( unit.isNull() )
         return 1.0;
-    DATABASE_INSIST( !d_unit.isNull(), "Field %s must have units", key.data() );
+    DATABASE_INSIST(
+        !d_unit.isNull(), SOURCE_LOCATION_CURRENT(), "Field %s must have units", key.data() );
     return d_unit.convert( unit );
 }
 
@@ -440,23 +443,24 @@ template bool KeyData::isType<int32_t>() const;
 template bool KeyData::isType<int64_t>() const;
 template bool KeyData::isType<float>() const;
 template bool KeyData::isType<long double>() const;
-bool Database::isString( std::string_view key ) const
+bool Database::isString( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     return data->isType<std::string>();
 }
 
-bool Database::isEquation( std::string_view key ) const
+bool Database::isEquation( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     return data->isType<MathExpr>();
 }
-std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key ) const
+std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key,
+                                                       source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     auto eq_data = dynamic_cast<const EquationKeyData *>( data );
     if ( eq_data )
         return eq_data->getEq();
@@ -464,7 +468,7 @@ std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key ) co
         double v = data->convertToDouble()( 0 );
         return std::make_shared<MathExpr>( std::to_string( v ) );
     }
-    DATABASE_ERROR( "Variable %s was not an equation", key.data() );
+    DATABASE_ERROR( src, "Variable %s was not an equation", key.data() );
     return nullptr;
 }
 
@@ -1113,7 +1117,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
             pos += i;
         } else if ( type == token_type::equal ) {
             // Reading key/value pair
-            DATABASE_INSIST( !key.empty(), "Empty key" );
+            DATABASE_INSIST( !key.empty(), SOURCE_LOCATION_CURRENT(), "Empty key" );
             pos += i;
             std::unique_ptr<KeyData> data;
             try {
@@ -1134,7 +1138,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
             pos += i;
         } else if ( type == token_type::bracket ) {
             // Read database
-            DATABASE_INSIST( !key.empty(), "Empty key" );
+            DATABASE_INSIST( !key.empty(), SOURCE_LOCATION_CURRENT(), "Empty key" );
             pos += i;
             auto database = std::make_unique<Database>();
             pos += loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys );

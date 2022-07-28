@@ -68,10 +68,6 @@ namespace AMP {
 static_assert( sizeof( MPI_CLASS ) % 8 == 0 );
 
 
-// Define the AMPManager comm_world
-AMP_MPI AMPManager::comm_world = AMP::AMP_MPI();
-
-
 // Initialized the static member variables
 volatile uint32_t MPI_CLASS::N_MPI_Comm_created   = 0;
 volatile uint32_t MPI_CLASS::N_MPI_Comm_destroyed = 0;
@@ -410,7 +406,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     d_manage = false;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
-        d_comm = AMP::AMPManager::comm_world.d_comm;
+        d_comm = AMP::AMPManager::getCommWorld().d_comm;
     } else if ( comm == MPI_CLASS_COMM_SELF ) {
         d_comm = MPI_COMM_SELF;
     } else if ( comm == MPI_CLASS_COMM_NULL ) {
@@ -451,7 +447,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     if ( manage && d_comm != MPI_COMM_NULL && d_comm != MPI_COMM_SELF && d_comm != MPI_COMM_WORLD )
         d_manage = true;
     // Create the count (Note: we do not need to worry about thread safety)
-    if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+    if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_count = &d_global_count_world1;
         ++( *d_count );
     } else if ( d_comm == MPI_COMM_WORLD ) {
@@ -485,7 +481,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     if ( d_isNull )
         d_size       = 0;
 #endif
-    if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+    if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_currentTag = d_global_currentTag_world1;
         ++( this->d_currentTag[1] );
     } else if ( d_comm == MPI_COMM_WORLD ) {
@@ -515,7 +511,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
     if ( myGlobalRank == -1 ) {
 #ifdef USE_MPI
         if ( MPI_Active() )
-            MPI_Comm_rank( AMP::AMPManager::comm_world.d_comm, &myGlobalRank );
+            MPI_Comm_rank( AMP::AMPManager::getCommWorld().d_comm, &myGlobalRank );
 #else
         myGlobalRank = 0;
 #endif
@@ -527,7 +523,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
         return std::vector<int>();
     // Fill d_ranks if necessary
     if ( d_ranks[0] == -1 ) {
-        if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+        if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
             for ( int i = 0; i < d_size; i++ )
                 d_ranks[i] = i;
         } else {
@@ -1534,16 +1530,16 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
             MPI_CLASS_ERROR( "AMP was unable to initialize MPI" );
         if ( provided < MPI_THREAD_MULTIPLE )
             AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
-        called_MPI_Init        = true;
-        AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
+        called_MPI_Init = true;
+        AMPManager::setCommWorld( MPI_COMM_WORLD );
     }
 #else
-    AMPManager::comm_world = AMP_MPI( MPI_COMM_SELF );
+    AMPManager::setCommWorld( MPI_COMM_SELF );
 #endif
 }
 void MPI_CLASS::stop_MPI()
 {
-    AMPManager::comm_world = AMP_MPI( AMP_COMM_NULL );
+    AMPManager::setCommWorld( AMP_COMM_NULL );
 #ifdef USE_MPI
     int finalized;
     MPI_Finalized( &finalized );

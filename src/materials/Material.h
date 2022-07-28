@@ -21,6 +21,14 @@
             AMP::Materials::registerMaterial( #NAME, fun );       \
         }                                                         \
     } NAME##_init
+#define REGISTER_MATERIAL2( NAME, MAT )                          \
+    static struct NAME##_INIT {                                  \
+        NAME##_INIT()                                            \
+        {                                                        \
+            auto fun = []() { return std::make_unique<MAT>(); }; \
+            AMP::Materials::registerMaterial( #NAME, fun );      \
+        }                                                        \
+    } NAME##_init
 
 
 namespace AMP::Materials {
@@ -133,6 +141,9 @@ std::unique_ptr<Material> getMaterial( const std::string &name );
 
 //! Get the list of materials available
 std::vector<std::string> getMaterialList();
+
+//! Check if the given material exists (is registered)
+bool isMaterial( const std::string &name );
 
 
 } // namespace AMP::Materials

@@ -112,6 +112,9 @@ void registerMaterial( const std::string &name, std::function<std::unique_ptr<Ma
 {
     AMP::FactoryStrategy<Material>::registerFactory( name, fun );
 }
-
+bool isMaterial( const std::string &name )
+{
+    return AMP::FactoryStrategy<Material>::exists( name );
+}
 
 } // namespace AMP::Materials

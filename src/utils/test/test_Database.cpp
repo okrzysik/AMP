@@ -253,6 +253,20 @@ void runBasicTests( UnitTest &ut )
     pass = Units( Units( "W/m^2" ).str() ) == Units( "uW/mm^2" );
     pass = pass && Units( ( Units( "V" ) * Units( "A" ) ).str() ) == Units( "W" );
     checkResult( ut, pass, "Units" );
+
+    // Test getting a key that doesn't exists
+    try {
+        db.getScalar<double>( "garbage" );
+        ut.failure( "Unknown key" );
+    } catch ( StackTrace::abort_error &err ) {
+        std::string file = std::string( err.source.file_name() );
+        if ( file.find( "test_Database.cpp" ) != std::string::npos )
+            ut.passes( "Unknown key (source file/line detected)" );
+        else
+            ut.passes( "Unknown key (default error)" );
+    } catch ( ... ) {
+        ut.failure( "Unknown key (unknown exception)" );
+    }
 }
 
 
