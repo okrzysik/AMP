@@ -1091,8 +1091,32 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 void MPI_CLASS::barrier() const
 {
 #ifdef USE_MPI
-    if ( d_size > 1 )
-        MPI_Barrier( d_comm );
+    if ( d_size <= 1 )
+        return;
+    PROFILE_START( "barrier", profile_level );
+    MPI_Barrier( d_comm );
+    PROFILE_STOP( "barrier", profile_level );
+#endif
+}
+void MPI_CLASS::sleepBarrier() const
+{
+#ifdef USE_MPI
+    if ( d_size <= 1 )
+        return;
+    using namespace std::chrono_literals;
+    PROFILE_START( "sleepBarrier", profile_level );
+    int flag = 0;
+    MPI_Request request;
+    MPI_Ibarrier( d_comm, &request );
+    int err = MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
+    MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    while ( !flag ) {
+        // Put the current thread to sleep to allow other threads to run
+        std::this_thread::sleep_for( 10ms );
+        // Check if the request has finished
+        MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
+    }
+    PROFILE_STOP( "sleepBarrier", profile_level );
 #endif
 }
 

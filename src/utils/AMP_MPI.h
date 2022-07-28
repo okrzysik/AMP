@@ -733,6 +733,20 @@ public: // Member functions
     void barrier() const;
 
 
+    /**
+     *
+     */
+    /**
+     * \brief   Perform a global barrier putting idle processors to sleep
+     * \details  This function uses an MPI_Ibarrier to start the barrier then
+     *    waits for completion using sleep.  Note: this version will sleep in
+     *    increments of 10 ms and should not be used in performance critical
+     *    regions.  It's primary use is to allow the CPU to go idle if unused
+     *    for a long time.
+     */
+    void sleepBarrier() const;
+
+
     /*!
      * @brief This function sends an MPI message with an array to another processor.
      *
