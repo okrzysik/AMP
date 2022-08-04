@@ -112,10 +112,6 @@ IF( NOT DEFINED N_PROCS )
 ENDIF()
 
 
-# Use fewer processes to build to reduce memory usage
-MATH(EXPR N_PROCS_BUILD "(3*(${N_PROCS}+1))/4" )
-
-
 # Set the nightly start time
 # This controls the version of a checkout from cvs/svn (ignored for mecurial/git)
 # This does not control the start of the day displayed on CDash, that is controled by the CDash project settings
@@ -139,7 +135,7 @@ SET( CTEST_COMMAND "\"${CTEST_EXECUTABLE_NAME}\" -D ${CTEST_DASHBOARD}" )
 IF ( BUILD_SERIAL )
     SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i build-test" )
 ELSE()
-    SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS_BUILD} build-test" )
+    SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS} build-test" )
 ENDIF()
 SET( CTEST_CUSTOM_WARNING_EXCEPTION 
     "has no symbols"
