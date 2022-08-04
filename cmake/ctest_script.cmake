@@ -29,6 +29,7 @@ SET( TPL_LIST_OPTIONAL "$ENV{TPL_LIST_OPTIONAL}" )
 SET( USE_CUDA           $ENV{USE_CUDA}          )
 SET( CUDA_FLAGS        "$ENV{CUDA_FLAGS}"       )
 SET( CTEST_SITE        "$ENV{CTEST_SITE}"       )
+SET( CTEST_URL         "$ENV{CTEST_URL}"        )
 
 
 # Get the source directory based on the current directory
@@ -208,14 +209,19 @@ MESSAGE("   ${CTEST_OPTIONS}")
 
 
 # Configure the drop site
-IF ( NOT CTEST_SITE )
-    SET( CTEST_SITE ${HOSTNAME} )
+IF ( CTEST_URL )
+    STRING( REPLACE "PROJECT" "AMP" CTEST_URL "${CTEST_URL}" )
+    SET( CTEST_SUBMIT_URL "${CTEST_URL}" )
+ELSE()
+    IF ( NOT CTEST_SITE )
+        SET( CTEST_SITE ${HOSTNAME} )
+    ENDIF()
+    SET( CTEST_DROP_METHOD "http" )
+    SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
+    SET( CTEST_DROP_SITE_CDASH TRUE )
+    SET( DROP_SITE_CDASH TRUE )
+    SET( CTEST_DROP_SITE ${CTEST_SITE} )
 ENDIF()
-SET( CTEST_DROP_METHOD "http" )
-SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
-SET( CTEST_DROP_SITE_CDASH TRUE )
-SET( DROP_SITE_CDASH TRUE )
-SET( CTEST_DROP_SITE ${CTEST_SITE} )
 
 
 # Configure and run the tests
