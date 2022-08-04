@@ -29,6 +29,7 @@ SET( TPL_LIST_OPTIONAL "$ENV{TPL_LIST_OPTIONAL}" )
 SET( USE_CUDA           $ENV{USE_CUDA}          )
 SET( CUDA_FLAGS        "$ENV{CUDA_FLAGS}"       )
 SET( CTEST_SITE        "$ENV{CTEST_SITE}"       )
+SET( CTEST_URL         "$ENV{CTEST_URL}"        )
 
 
 # Get the source directory based on the current directory
@@ -111,10 +112,6 @@ IF( NOT DEFINED N_PROCS )
 ENDIF()
 
 
-# Use fewer processes to build to reduce memory usage
-MATH(EXPR N_PROCS_BUILD "(3*(${N_PROCS}+1))/4" )
-
-
 # Set the nightly start time
 # This controls the version of a checkout from cvs/svn (ignored for mecurial/git)
 # This does not control the start of the day displayed on CDash, that is controled by the CDash project settings
@@ -138,7 +135,7 @@ SET( CTEST_COMMAND "\"${CTEST_EXECUTABLE_NAME}\" -D ${CTEST_DASHBOARD}" )
 IF ( BUILD_SERIAL )
     SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i build-test" )
 ELSE()
-    SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS_BUILD} build-test" )
+    SET( CTEST_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM} -i -j ${N_PROCS} build-test" )
 ENDIF()
 SET( CTEST_CUSTOM_WARNING_EXCEPTION 
     "has no symbols"
@@ -208,14 +205,19 @@ MESSAGE("   ${CTEST_OPTIONS}")
 
 
 # Configure the drop site
-IF ( NOT CTEST_SITE )
-    SET( CTEST_SITE ${HOSTNAME} )
+IF ( CTEST_URL )
+    STRING( REPLACE "PROJECT" "AMP" CTEST_URL "${CTEST_URL}" )
+    SET( CTEST_SUBMIT_URL "${CTEST_URL}" )
+ELSE()
+    IF ( NOT CTEST_SITE )
+        SET( CTEST_SITE ${HOSTNAME} )
+    ENDIF()
+    SET( CTEST_DROP_METHOD "http" )
+    SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
+    SET( CTEST_DROP_SITE_CDASH TRUE )
+    SET( DROP_SITE_CDASH TRUE )
+    SET( CTEST_DROP_SITE ${CTEST_SITE} )
 ENDIF()
-SET( CTEST_DROP_METHOD "http" )
-SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
-SET( CTEST_DROP_SITE_CDASH TRUE )
-SET( DROP_SITE_CDASH TRUE )
-SET( CTEST_DROP_SITE ${CTEST_SITE} )
 
 
 # Configure and run the tests

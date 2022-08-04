@@ -57,6 +57,12 @@ public:
         return keys;
     }
 
+    static bool exists( const std::string &name )
+    {
+        const auto &factories = getFactory().d_factories;
+        return factories.find( name ) != factories.end();
+    }
+
 
 protected:
     //! Private constructor

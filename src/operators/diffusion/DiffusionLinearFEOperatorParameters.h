@@ -18,11 +18,11 @@ public:
 
     std::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_temperature;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_temperature;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_concentration;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_concentration;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_burnup;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_burnup;
 
 protected:
 private:

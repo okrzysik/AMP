@@ -68,10 +68,6 @@ namespace AMP {
 static_assert( sizeof( MPI_CLASS ) % 8 == 0 );
 
 
-// Define the AMPManager comm_world
-AMP_MPI AMPManager::comm_world = AMP::AMP_MPI();
-
-
 // Initialized the static member variables
 volatile uint32_t MPI_CLASS::N_MPI_Comm_created   = 0;
 volatile uint32_t MPI_CLASS::N_MPI_Comm_destroyed = 0;
@@ -92,16 +88,16 @@ struct Isendrecv_struct {
     MPI_CLASS::Comm comm; // Communicator
     int tag;              // Tag
 };
-std::map<MPI_CLASS::Request, Isendrecv_struct> global_isendrecv_list;
-static MPI_CLASS::Request getRequest( MPI_CLASS::Comm comm, int tag )
+std::map<MPI_CLASS::Request2, Isendrecv_struct> global_isendrecv_list;
+static MPI_CLASS::Request2 getRequest( MPI_CLASS::Comm comm, int tag )
 {
     MPI_CLASS_ASSERT( tag >= 0 && tag <= mpi_max_tag );
     // Use hashing function: 2^64*0.5*(sqrt(5)-1)
     uint64_t a    = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
     uint64_t b    = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
     uint64_t hash = a ^ b;
-    MPI_CLASS::Request request;
-    memcpy( &request, &hash, sizeof( MPI_CLASS::Request ) );
+    MPI_CLASS::Request2 request;
+    memcpy( &request, &hash, sizeof( MPI_CLASS::Request2 ) );
     return request;
 }
 #endif
@@ -410,7 +406,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     d_manage = false;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
-        d_comm = AMP::AMPManager::comm_world.d_comm;
+        d_comm = AMP::AMPManager::getCommWorld().d_comm;
     } else if ( comm == MPI_CLASS_COMM_SELF ) {
         d_comm = MPI_COMM_SELF;
     } else if ( comm == MPI_CLASS_COMM_NULL ) {
@@ -451,7 +447,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     if ( manage && d_comm != MPI_COMM_NULL && d_comm != MPI_COMM_SELF && d_comm != MPI_COMM_WORLD )
         d_manage = true;
     // Create the count (Note: we do not need to worry about thread safety)
-    if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+    if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_count = &d_global_count_world1;
         ++( *d_count );
     } else if ( d_comm == MPI_COMM_WORLD ) {
@@ -485,7 +481,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     if ( d_isNull )
         d_size       = 0;
 #endif
-    if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+    if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_currentTag = d_global_currentTag_world1;
         ++( this->d_currentTag[1] );
     } else if ( d_comm == MPI_COMM_WORLD ) {
@@ -515,7 +511,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
     if ( myGlobalRank == -1 ) {
 #ifdef USE_MPI
         if ( MPI_Active() )
-            MPI_Comm_rank( AMP::AMPManager::comm_world.d_comm, &myGlobalRank );
+            MPI_Comm_rank( AMP::AMPManager::getCommWorld().d_comm, &myGlobalRank );
 #else
         myGlobalRank = 0;
 #endif
@@ -527,7 +523,7 @@ std::vector<int> MPI_CLASS::globalRanks() const
         return std::vector<int>();
     // Fill d_ranks if necessary
     if ( d_ranks[0] == -1 ) {
-        if ( d_comm == AMP::AMPManager::comm_world.d_comm ) {
+        if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
             for ( int i = 0; i < d_size; i++ )
                 d_ranks[i] = i;
         } else {
@@ -1095,8 +1091,32 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 void MPI_CLASS::barrier() const
 {
 #ifdef USE_MPI
-    if ( d_size > 1 )
-        MPI_Barrier( d_comm );
+    if ( d_size <= 1 )
+        return;
+    PROFILE_START( "barrier", profile_level );
+    MPI_Barrier( d_comm );
+    PROFILE_STOP( "barrier", profile_level );
+#endif
+}
+void MPI_CLASS::sleepBarrier() const
+{
+#ifdef USE_MPI
+    if ( d_size <= 1 )
+        return;
+    using namespace std::chrono_literals;
+    PROFILE_START( "sleepBarrier", profile_level );
+    int flag = 0;
+    MPI_Request request;
+    MPI_Ibarrier( d_comm, &request );
+    int err = MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
+    MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
+    while ( !flag ) {
+        // Put the current thread to sleep to allow other threads to run
+        std::this_thread::sleep_for( 10ms );
+        // Check if the request has finished
+        MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
+    }
+    PROFILE_STOP( "sleepBarrier", profile_level );
 #endif
 }
 
@@ -1115,11 +1135,11 @@ void MPI_CLASS::recvBytes( void *buf, int bytes, const int send_proc, int tag ) 
     int bytes2 = bytes;
     recv<char>( (char *) buf, bytes2, send_proc, false, tag );
 }
-MPI_Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int recv_proc, int tag ) const
+MPI_CLASS::Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int recv_proc, int tag ) const
 {
     return Isend<char>( (const char *) buf, bytes, recv_proc, tag );
 }
-MPI_Request MPI_CLASS::IrecvBytes( void *buf, int bytes, int send_proc, const int tag ) const
+MPI_CLASS::Request MPI_CLASS::IrecvBytes( void *buf, int bytes, int send_proc, const int tag ) const
 {
     return Irecv<char>( (char *) buf, bytes, send_proc, tag );
 }
@@ -1168,7 +1188,8 @@ MPI_CLASS::Request MPI_CLASS::IsendBytes( const void *buf, int bytes, int, int t
         data.status = 1;
         data.comm = d_comm;
         data.tag = tag;
-        global_isendrecv_list.insert( std::pair<MPI_CLASS::Request, Isendrecv_struct>( id, data ) );
+        global_isendrecv_list.insert(
+            std::pair<MPI_CLASS::Request2, Isendrecv_struct>( id, data ) );
     } else {
         // We called irecv first
         MPI_CLASS_ASSERT( it->second.status == 2 );
@@ -1210,37 +1231,6 @@ MPI_CLASS::IrecvBytes( void *buf, const int bytes, const int, const int tag ) co
 
 
 /************************************************************************
- *  call_allGather                                                       *
- *  Note: these specializations are only called when using MPI.          *
- ************************************************************************/
-#ifdef USE_MPI
-template<>
-void MPI_CLASS::call_allGather<std::string>( const std::string &x_in, std::string *x_out ) const
-{
-    // Get the bytes recvied per processor
-    std::vector<int> recv_cnt( d_size, 0 );
-    allGather<int>( (int) x_in.size() + 1, &recv_cnt[0] );
-    std::vector<int> recv_disp( d_size, 0 );
-    for ( int i = 1; i < d_size; i++ )
-        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    // Call the vector form of allGather for the char arrays
-    char *recv_data = new char[recv_disp[d_size - 1] + recv_cnt[d_size - 1]];
-    allGather<char>(
-        x_in.c_str(), (int) x_in.size() + 1, recv_data, &recv_cnt[0], &recv_disp[0], true );
-    for ( int i = 0; i < d_size; i++ )
-        x_out[i] = std::string( &recv_data[recv_disp[i]] );
-    delete[] recv_data;
-}
-template<>
-void MPI_CLASS::call_allGather<std::string>(
-    const std::string *, int, std::string *, int *, int * ) const
-{
-    throw std::logic_error( "Implimentation of allgatherv for std::string not implemented yet" );
-}
-#endif
-
-
-/************************************************************************
  *  Communicate ranks for communication                                  *
  ************************************************************************/
 std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
@@ -1276,84 +1266,77 @@ std::vector<int> MPI_CLASS::commRanks( const std::vector<int> &ranks ) const
  *  Wait functions                                                       *
  ************************************************************************/
 #ifdef USE_MPI
-void MPI_CLASS::wait( Request request )
+void MPI_CLASS::wait( Request2 request )
 {
     PROFILE_START( "wait", profile_level );
-    MPI_Status status;
     int flag = 0;
-    int err  = MPI_Test( &request, &flag, &status );
+    int err  = MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
         // Check if the request has finished
-        MPI_Test( &request, &flag, &status );
+        MPI_Test( &request, &flag, MPI_STATUS_IGNORE );
     }
     PROFILE_STOP( "wait", profile_level );
 }
-int MPI_CLASS::waitAny( int count, Request *request )
+int MPI_CLASS::waitAny( int count, Request2 *request )
 {
     if ( count == 0 )
         return -1;
     PROFILE_START( "waitAny", profile_level );
-    int index   = -1;
-    int flag    = 0;
-    auto status = new MPI_Status[count];
-    int err     = MPI_Testany( count, request, &index, &flag, status );
+    int index = -1;
+    int flag  = 0;
+    int err   = MPI_Testany( count, request, &index, &flag, MPI_STATUS_IGNORE );
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
         // Check if the request has finished
-        MPI_Testany( count, request, &index, &flag, status );
+        MPI_Testany( count, request, &index, &flag, MPI_STATUS_IGNORE );
     }
     MPI_CLASS_ASSERT( index >= 0 ); // Check that the index is valid
-    delete[] status;
     PROFILE_STOP( "waitAny", profile_level );
     return index;
 }
-void MPI_CLASS::waitAll( int count, Request *request )
+void MPI_CLASS::waitAll( int count, Request2 *request )
 {
     if ( count == 0 )
         return;
     PROFILE_START( "waitAll", profile_level );
-    int flag    = 0;
-    auto status = new MPI_Status[count];
-    int err     = MPI_Testall( count, request, &flag, status );
+    int flag = 0;
+    int err  = MPI_Testall( count, request, &flag, MPI_STATUS_IGNORE );
     MPI_CLASS_ASSERT( err == MPI_SUCCESS ); // Check that the first call is valid
     while ( !flag ) {
         // Put the current thread to sleep to allow other threads to run
         std::this_thread::yield();
         // Check if the request has finished
-        MPI_Testall( count, request, &flag, status );
+        MPI_Testall( count, request, &flag, MPI_STATUS_IGNORE );
     }
     PROFILE_STOP( "waitAll", profile_level );
-    delete[] status;
 }
-std::vector<int> MPI_CLASS::waitSome( int count, Request *request )
+std::vector<int> MPI_CLASS::waitSome( int count, Request2 *request )
 {
     if ( count == 0 )
         return std::vector<int>();
     PROFILE_START( "waitSome", profile_level );
     std::vector<int> indicies( count, -1 );
-    auto *status = new MPI_Status[count];
     int outcount = 0;
-    int err      = MPI_Testsome( count, request, &outcount, &indicies[0], status );
+    int err      = MPI_Testsome( count, request, &outcount, &indicies[0], MPI_STATUS_IGNORE );
     MPI_CLASS_ASSERT( err == MPI_SUCCESS );        // Check that the first call is valid
     MPI_CLASS_ASSERT( outcount != MPI_UNDEFINED ); // Check that the first call is valid
     while ( outcount == 0 ) {
         // Put the current thread to sleep to allow other threads to run
         sched_yield();
         // Check if the request has finished
-        MPI_Testsome( count, request, &outcount, &indicies[0], status );
+        MPI_Testsome( count, request, &outcount, &indicies[0], MPI_STATUS_IGNORE );
     }
     indicies.resize( outcount );
-    delete[] status;
     PROFILE_STOP( "waitSome", profile_level );
     return indicies;
 }
 #else
-void MPI_CLASS::wait( Request request )
+void MPI_CLASS::wait( Request2 request )
 {
     PROFILE_START( "wait", profile_level );
     while ( 1 ) {
@@ -1365,7 +1348,7 @@ void MPI_CLASS::wait( Request request )
     }
     PROFILE_STOP( "wait", profile_level );
 }
-int MPI_CLASS::waitAny( int count, Request *request )
+int MPI_CLASS::waitAny( int count, Request2 *request )
 {
     if ( count == 0 )
         return -1;
@@ -1388,7 +1371,7 @@ int MPI_CLASS::waitAny( int count, Request *request )
     PROFILE_STOP( "waitAny", profile_level );
     return index;
 }
-void MPI_CLASS::waitAll( int count, Request *request )
+void MPI_CLASS::waitAll( int count, Request2 *request )
 {
     if ( count == 0 )
         return;
@@ -1407,7 +1390,7 @@ void MPI_CLASS::waitAll( int count, Request *request )
     }
     PROFILE_STOP( "waitAll", profile_level );
 }
-std::vector<int> MPI_CLASS::waitSome( int count, Request *request )
+std::vector<int> MPI_CLASS::waitSome( int count, Request2 *request )
 {
     if ( count == 0 )
         return std::vector<int>();
@@ -1428,6 +1411,26 @@ std::vector<int> MPI_CLASS::waitSome( int count, Request *request )
     return indicies;
 }
 #endif
+static std::vector<MPI_CLASS::Request2> getRequests( int count, const MPI_CLASS::Request *request )
+{
+    std::vector<MPI_CLASS::Request2> request2( count );
+    for ( int i = 0; i < count; i++ )
+        request2[i] = request[i];
+    return request2;
+}
+void MPI_CLASS::wait( const Request &request ) { wait( static_cast<Request2>( request ) ); }
+int MPI_CLASS::waitAny( int count, const Request *request )
+{
+    return waitAny( count, getRequests( count, request ).data() );
+}
+void MPI_CLASS::waitAll( int count, const Request *request )
+{
+    waitAll( count, getRequests( count, request ).data() );
+}
+std::vector<int> MPI_CLASS::waitSome( int count, const Request *request )
+{
+    return waitSome( count, getRequests( count, request ).data() );
+}
 
 
 /************************************************************************
@@ -1551,16 +1554,16 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
             MPI_CLASS_ERROR( "AMP was unable to initialize MPI" );
         if ( provided < MPI_THREAD_MULTIPLE )
             AMP::perr << "Warning: Failed to start MPI with MPI_THREAD_MULTIPLE\n";
-        called_MPI_Init        = true;
-        AMPManager::comm_world = AMP_MPI( MPI_COMM_WORLD );
+        called_MPI_Init = true;
+        AMPManager::setCommWorld( MPI_COMM_WORLD );
     }
 #else
-    AMPManager::comm_world = AMP_MPI( MPI_COMM_SELF );
+    AMPManager::setCommWorld( MPI_COMM_SELF );
 #endif
 }
 void MPI_CLASS::stop_MPI()
 {
-    AMPManager::comm_world = AMP_MPI( AMP_COMM_NULL );
+    AMPManager::setCommWorld( AMP_COMM_NULL );
 #ifdef USE_MPI
     int finalized;
     MPI_Finalized( &finalized );
@@ -1572,104 +1575,85 @@ void MPI_CLASS::stop_MPI()
 #endif
 }
 
+/****************************************************************************
+ * Request                                                                   *
+ ****************************************************************************/
+MPI_CLASS::Request::Request( MPI_CLASS::Request2 request, std::any data )
+{
+    using TYPE = typename std::remove_reference<decltype( *( d_data.get() ) )>::type;
+    if ( data.has_value() ) {
+        auto deleter = []( TYPE *p ) {
+            MPI_CLASS::wait( p->first );
+            delete p;
+        };
+        d_data.reset( new TYPE, deleter );
+    } else {
+        d_data.reset( new TYPE );
+    }
+    d_data->first  = request;
+    d_data->second = std::move( data );
+}
+MPI_CLASS::Request::~Request() {}
+
 
 /****************************************************************************
- * call_bcast                                                                *
+ * pack/unpack routines                                                      *
  ****************************************************************************/
-#ifdef USE_MPI
 template<>
-void MPI_CLASS::call_bcast<std::string>( std::string *str, int n, int root ) const
+size_t packSize( const std::string &s )
 {
-    // Send the length of the strings
-    std::vector<int> length( n, 0 );
-    if ( root == d_rank ) {
-        for ( int i = 0; i < n; i++ )
-            length[i] = str[i].size();
-    }
-    bcast( length.data(), n, root );
-    // Allocate space for the temporary buffer
-    size_t N = 0;
-    for ( int i = 0; i < n; i++ )
-        N += length[i];
-    auto buffer = new char[N];
-    // Create and send the buffer
-    if ( root == d_rank ) {
-        for ( int i = 0, j = 0; i < n; i++ ) {
-            memcpy( &buffer[j], str[i].data(), length[i] );
-            j += length[i];
-        }
-    }
-    MPI_Bcast( buffer, N, MPI_CHAR, root, d_comm );
-    // Unpack the strings
-    if ( root != d_rank ) {
-        for ( int i = 0, j = 0; i < n; i++ ) {
-            str[i].resize( length[i] );
-            memcpy( str[i].data(), &buffer[j], length[i] );
-            j += length[i];
-        }
-    }
-    delete[] buffer;
+    return s.size() + 1;
 }
-#endif
+template<>
+size_t pack( const std::string &s, std::byte *buf )
+{
+    memcpy( buf, s.data(), s.size() + 1 );
+    return s.size() + 1;
+}
+template<>
+size_t unpack( std::string &s, const std::byte *buf )
+{
+    s = std::string( reinterpret_cast<const char *>( buf ) );
+    return s.size() + 1;
+}
+/*template<>
+size_t packSize( const std::vector<bool>::reference &s )
+{
+    return s.size() + 1;
+}
+template<>
+size_t pack( const std::vector<bool>::reference &s, std::byte *buf )
+{
+    memcpy( buf, s.data(), s.size() + 1 );
+    return s.size() + 1;
+}
+template<>
+size_t unpack( std::vector<bool>::reference &s, const std::byte *buf )
+{
+    s = std::vector<bool>::reference( reinterpret_cast<const char *>( buf ) );
+    return s.size() + 1;
+}*/
+
+
+} // namespace AMP
 
 
 /****************************************************************************
  * Explicit instantiation                                                    *
  ****************************************************************************/
-// clang-format off
-#define INSTANTIATE( TYPE )                                                             \
-    template TYPE MPI_CLASS::sumReduce<TYPE>( const TYPE ) const;                       \
-    template TYPE MPI_CLASS::minReduce<TYPE>( const TYPE ) const;                       \
-    template TYPE MPI_CLASS::maxReduce<TYPE>( const TYPE ) const;                       \
-    template void MPI_CLASS::sumReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int ) const;                       \
-    template void MPI_CLASS::minReduce<TYPE>( TYPE*, int, int* ) const;                 \
-    template void MPI_CLASS::maxReduce<TYPE>( TYPE*, int, int* ) const;                 \
-    template void MPI_CLASS::sumReduce<TYPE>( const TYPE*, TYPE*, int ) const;          \
-    template void MPI_CLASS::minReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
-    template void MPI_CLASS::maxReduce<TYPE>( const TYPE*, TYPE*, int, int* ) const;    \
-    template TYPE MPI_CLASS::sumScan<TYPE>( const TYPE& ) const;                        \
-    template TYPE MPI_CLASS::minScan<TYPE>( const TYPE& ) const;                        \
-    template TYPE MPI_CLASS::maxScan<TYPE>( const TYPE& ) const;                        \
-    template void MPI_CLASS::sumScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
-    template void MPI_CLASS::minScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
-    template void MPI_CLASS::maxScan<TYPE>( const TYPE*, TYPE*, int ) const;            \
-    template TYPE MPI_CLASS::bcast<TYPE>( TYPE, int ) const;                            \
-    template void MPI_CLASS::bcast<TYPE>( TYPE*, int, int ) const;                      \
-    template void MPI_CLASS::send<TYPE>( const TYPE*, int, int, int ) const;            \
-    template MPI_CLASS::Request MPI_CLASS::Isend<TYPE>( const TYPE*, int, int, int ) const; \
-    template void MPI_CLASS::recv<TYPE>( TYPE*, int, int, int ) const;                  \
-    template void MPI_CLASS::recv<TYPE>( TYPE*, int&, int, const bool, int ) const;     \
-    template MPI_CLASS::Request MPI_CLASS::Irecv<TYPE>( TYPE* buf, int, int, int ) const; \
-    template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const TYPE & ) const;        \
-    template std::vector<TYPE> MPI_CLASS::allGather<TYPE>( const std::vector<TYPE>& ) const; \
-    template void MPI_CLASS::allGather<TYPE>( const TYPE&, TYPE* ) const;               \
-    template int MPI_CLASS::allGather<TYPE>( const TYPE*, int, TYPE*, int*, int*, bool ) const; \
-    template void MPI_CLASS::setGather<TYPE>( std::set<TYPE>& ) const;                  \
-    template void MPI_CLASS::allToAll<TYPE>( int, const TYPE*, TYPE* ) const;           \
-    template int MPI_CLASS::allToAll<TYPE>( const TYPE*, const int[], const int[], TYPE*, int*, int*, bool ) const;
-// Instantiate basic types
-INSTANTIATE( char )
-INSTANTIATE( int8_t )
-INSTANTIATE( uint8_t )
-INSTANTIATE( int16_t )
-INSTANTIATE( uint16_t )
-INSTANTIATE( int32_t )
-INSTANTIATE( uint32_t )
-INSTANTIATE( int64_t )
-INSTANTIATE( uint64_t )
-INSTANTIATE( float )
-INSTANTIATE( double )
-INSTANTIATE( std::complex<float> )
-INSTANTIATE( std::complex<double> )
-// Instantiate std::string
-template std::string MPI_CLASS::bcast<std::string>( std::string, int ) const;
-template void MPI_CLASS::bcast<std::string>( std::string*, int, int ) const;
-template std::vector<std::string> MPI_CLASS::allGather<std::string>( const std::string & ) const;
-template void MPI_CLASS::allGather<std::string>( const std::string&, std::string* ) const;
-template int MPI_CLASS::allGather<std::string>( const std::string*, int, std::string*, int*, int*, bool ) const;
-// clang-format on
-
-
-} // namespace AMP
+INSTANTIATE_MPI_TYPE( char );
+INSTANTIATE_MPI_TYPE( int8_t );
+INSTANTIATE_MPI_TYPE( uint8_t );
+INSTANTIATE_MPI_TYPE( int16_t );
+INSTANTIATE_MPI_TYPE( uint16_t );
+INSTANTIATE_MPI_TYPE( int32_t );
+INSTANTIATE_MPI_TYPE( uint32_t );
+INSTANTIATE_MPI_TYPE( int64_t );
+INSTANTIATE_MPI_TYPE( uint64_t );
+INSTANTIATE_MPI_TYPE( float );
+INSTANTIATE_MPI_TYPE( double );
+INSTANTIATE_MPI_TYPE( std::complex<float> );
+INSTANTIATE_MPI_TYPE( std::complex<double> );
+INSTANTIATE_MPI_BCAST( std::string );
+INSTANTIATE_MPI_SENDRECV( std::string );
+INSTANTIATE_MPI_GATHER( std::string );

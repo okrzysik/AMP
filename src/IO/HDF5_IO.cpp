@@ -270,7 +270,7 @@ void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
 {
     readHDF5complex( fid, name, data );
 }
-// clang-format off
+    // clang-format off
 #define readWriteHDF5Array( TYPE )                                                          \
     template<>                                                                              \
     void writeHDF5<AMP::Array<TYPE>>( hid_t fid, const std::string_view &name, const AMP::Array<TYPE> &data ) \
@@ -329,7 +329,7 @@ void writeHDF5<std::string>( hid_t fid, const std::string_view &name, const std:
     tmp.viewRaw( { data.length() }, (char *) data.data() );
     writeHDF5( fid, name, tmp );
 }
-// clang-format off
+    // clang-format off
 #define readWriteHDF5Scalar( TYPE )                                                         \
     template<>                                                                              \
     void writeHDF5<TYPE>( hid_t fid, const std::string_view &name, const TYPE &data )       \
@@ -369,36 +369,9 @@ readWriteHDF5Scalar( std::complex<double> )
 
 
     /******************************************************************
-     * Create custom error handler                                     *
+     * Open/close HDF5 files                                           *
      ******************************************************************/
-    herr_t hdf5_error_handler( hid_t err_stack, void * )
-{
-    FILE *fid = tmpfile();
-    H5Eprint2( err_stack, fid );
-    H5Eclear2( err_stack );
-    rewind( fid );
-    char msg[1024];
-    size_t N = fread( msg, 1, sizeof( msg ) - 1, fid );
-    fclose( fid );
-    msg[N]           = 0;
-    std::string msg2 = "Error calling HDF5 routine:\n";
-    AMP_ERROR( msg2 + msg );
-    return 0;
-}
-bool set_hdf5_error_handler()
-{
-    hid_t error_stack = 0;
-    H5E_auto2_t fun   = hdf5_error_handler;
-    H5Eset_auto2( error_stack, fun, nullptr );
-    return true;
-}
-bool global_is_hdf5_error_handler_set = set_hdf5_error_handler();
-
-
-/******************************************************************
- * Open/close HDF5 files                                           *
- ******************************************************************/
-hid_t openHDF5( const std::string_view &filename, const char *mode, Compression compress )
+    hid_t openHDF5( const std::string_view &filename, const char *mode, Compression compress )
 {
     // Set cache size to 3MBs and instruct the cache to discard the fully read chunk
     auto pid = H5P_DEFAULT;
@@ -632,7 +605,7 @@ void writeHDF5<std::vector<bool>>( hid_t fid,
  ***********************************************************************/
 template void readHDF5<bool>( hid_t, const std::string_view &, bool & );
 template void writeHDF5<bool>( hid_t, const std::string_view &, const bool & );
-// clang-format off
+    // clang-format off
 #define instantiate( FUN )       \
     FUN( char );                 \
     FUN( int8_t );               \

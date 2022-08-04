@@ -1,7 +1,10 @@
 #ifndef included_AMP_Database_hpp
 #define included_AMP_Database_hpp
 
+#include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/FactoryStrategy.hpp"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <iomanip>
 #include <limits>
@@ -9,29 +12,49 @@
 #include <type_traits>
 
 
-#define DATABASE_ERROR( ... )                        \
-    do {                                             \
-        char msg[1000];                              \
-        snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-        throw std::logic_error( msg );               \
+#define DATABASE_ERROR( SRC, ... )                                          \
+    do {                                                                    \
+        char msg[1000];                                                     \
+        snprintf( msg, sizeof( msg ), __VA_ARGS__ );                        \
+        if ( SRC.empty() )                                                  \
+            StackTrace::Utilities::abort( msg, SOURCE_LOCATION_CURRENT() ); \
+        else                                                                \
+            StackTrace::Utilities::abort( msg, SRC );                       \
     } while ( 0 )
 #define DATABASE_WARNING( ... )                      \
     do {                                             \
         char msg[1000];                              \
         snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-        AMP::pout << msg << std::endl;               \
+        AMP_WARNING( msg );                          \
     } while ( 0 )
-#define DATABASE_INSIST( TEST, ... )                     \
-    do {                                                 \
-        if ( !( TEST ) ) {                               \
-            char msg[1000];                              \
-            snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-            throw std::logic_error( msg );               \
-        }                                                \
+#define DATABASE_INSIST( TEST, SRC, ... )                                       \
+    do {                                                                        \
+        if ( !( TEST ) ) {                                                      \
+            char msg[1000];                                                     \
+            snprintf( msg, sizeof( msg ), __VA_ARGS__ );                        \
+            if ( SRC.empty() )                                                  \
+                StackTrace::Utilities::abort( msg, SOURCE_LOCATION_CURRENT() ); \
+            else                                                                \
+                StackTrace::Utilities::abort( msg, SRC );                       \
+        }                                                                       \
     } while ( 0 )
 
 
 namespace AMP {
+
+
+/********************************************************************
+ * Macro to register KeyData with the factory                        *
+ ********************************************************************/
+#define REGISTER_KEYDATA( TYPE, CLASS_NAME )                                  \
+    static struct CLASS_NAME##_INIT {                                         \
+        CLASS_NAME##_INIT()                                                   \
+        {                                                                     \
+            auto fun            = []() { return std::make_unique<TYPE>(); };  \
+            constexpr auto type = AMP::getTypeID<TYPE>();                     \
+            AMP::FactoryStrategy<KeyData>::registerFactory( type.name, fun ); \
+        }                                                                     \
+    } CLASS_NAME##_init
 
 
 /********************************************************************
@@ -76,6 +99,7 @@ class EmptyKeyData final : public KeyData
 public:
     EmptyKeyData() {}
     virtual ~EmptyKeyData() {}
+    typeID getClassType() const override { return getTypeID<EmptyKeyData>(); }
     std::unique_ptr<KeyData> clone() const override { return std::make_unique<EmptyKeyData>(); }
     void print( std::ostream &os, std::string_view = "", bool = true, bool = false ) const override
     {
@@ -88,6 +112,9 @@ public:
     Array<double> convertToDouble() const override { return Array<double>(); }
     Array<int64_t> convertToInt64() const override { return Array<int64_t>(); }
     bool operator==( const KeyData &rhs ) const override { return rhs.convertToDouble().empty(); }
+    size_t packSize() const override { return 0; }
+    size_t pack( std::byte * ) const override { return 0; }
+    size_t unpack( const std::byte * ) override { return 0; }
 };
 class EquationKeyData final : public KeyData
 {
@@ -96,6 +123,7 @@ public:
     EquationKeyData( std::string_view eq, const Units &unit = Units() );
     EquationKeyData( std::shared_ptr<const MathExpr> eq, const Units &unit = Units() );
     virtual ~EquationKeyData() = default;
+    typeID getClassType() const override { return getTypeID<EquationKeyData>(); }
     std::unique_ptr<KeyData> clone() const override;
     void print( std::ostream &, std::string_view = "", bool = true, bool = false ) const override;
     typeID getDataType() const override;
@@ -106,6 +134,9 @@ public:
     Array<int64_t> convertToInt64() const override;
     bool operator==( const KeyData &rhs ) const override;
     auto getEq() const { return d_eq; }
+    size_t packSize() const override;
+    size_t pack( std::byte *buf ) const override;
+    size_t unpack( const std::byte * ) override;
 
 private:
     std::shared_ptr<const MathExpr> d_eq;
@@ -118,8 +149,10 @@ public:
     explicit KeyDataScalar( TYPE data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
+        static_assert( !std::is_same<TYPE, std::_Bit_reference>::value );
     }
     virtual ~KeyDataScalar() {}
+    typeID getClassType() const override { return getTypeID<KeyDataScalar>(); }
     std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<KeyDataScalar>( d_data, d_unit );
@@ -148,7 +181,8 @@ public:
             x( 0 ) = d_data;
             return convert<TYPE, double>( x );
         } else {
-            DATABASE_ERROR( "Unable to convert type" );
+            DATABASE_ERROR( SOURCE_LOCATION_CURRENT(), "Unable to convert type" );
+            return {};
         }
     }
     Array<int64_t> convertToInt64() const override
@@ -158,11 +192,27 @@ public:
             x( 0 ) = d_data;
             return convert<TYPE, int64_t>( x );
         } else {
-            DATABASE_ERROR( "Unable to convert type" );
+            DATABASE_ERROR( SOURCE_LOCATION_CURRENT(), "Unable to convert type" );
+            return {};
         }
     }
     bool operator==( const KeyData &rhs ) const override;
     const TYPE &get() const { return d_data; }
+    size_t packSize() const override { return AMP::packSize( d_unit ) + AMP::packSize( d_data ); }
+    size_t pack( std::byte *buf ) const override
+    {
+        size_t N = 0;
+        N += AMP::pack( d_unit, &buf[N] );
+        N += AMP::pack( d_data, &buf[N] );
+        return N;
+    }
+    size_t unpack( const std::byte *buf ) override
+    {
+        size_t N = 0;
+        N += AMP::unpack( d_unit, &buf[N] );
+        N += AMP::unpack( d_data, &buf[N] );
+        return N;
+    }
 
 private:
     TYPE d_data;
@@ -175,9 +225,11 @@ public:
     explicit KeyDataArray( Array<TYPE> data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
+        static_assert( !std::is_same<TYPE, std::_Bit_reference>::value );
         data.clear(); // Suppress cppclean warning
     }
     virtual ~KeyDataArray() {}
+    typeID getClassType() const override { return getTypeID<KeyDataArray>(); }
     std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<KeyDataArray>( d_data, d_unit );
@@ -234,6 +286,21 @@ public:
     Array<int64_t> convertToInt64() const override { return convert<TYPE, int64_t>( d_data ); }
     bool operator==( const KeyData &rhs ) const override;
     const Array<TYPE> &get() const { return d_data; }
+    size_t packSize() const override { return AMP::packSize( d_unit ) + AMP::packSize( d_data ); }
+    size_t pack( std::byte *buf ) const override
+    {
+        size_t N = 0;
+        N += AMP::pack( d_unit, &buf[N] );
+        N += AMP::pack( d_data, &buf[N] );
+        return N;
+    }
+    size_t unpack( const std::byte *buf ) override
+    {
+        size_t N = 0;
+        N += AMP::unpack( d_unit, &buf[N] );
+        N += AMP::unpack( d_data, &buf[N] );
+        return N;
+    }
 
 private:
     Array<TYPE> d_data;
@@ -256,6 +323,7 @@ public:
         return *this;
     }
     virtual ~DatabaseVector() {}
+    typeID getClassType() const override { return getTypeID<DatabaseVector>(); }
     std::unique_ptr<KeyData> clone() const override
     {
         return std::make_unique<DatabaseVector>( d_data );
@@ -290,6 +358,30 @@ public:
         return d_data == rhs2->d_data;
     }
     const std::vector<Database> &get() const { return d_data; }
+    size_t packSize() const override
+    {
+        size_t bytes = sizeof( size_t );
+        for ( const auto &db : d_data )
+            bytes += db.packSize();
+        return bytes;
+    }
+    size_t pack( std::byte *buf ) const override
+    {
+        size_t N = AMP::pack( d_data.size(), buf );
+        for ( const auto &db : d_data )
+            N += db.pack( &buf[N] );
+        return N;
+    }
+    size_t unpack( const std::byte *buf ) override
+    {
+        size_t N_db;
+        size_t N = AMP::unpack( N_db, buf );
+        d_data.clear();
+        d_data.resize( N_db );
+        for ( auto &db : d_data )
+            N += db.unpack( &buf[N] );
+        return N;
+    }
 
 private:
     std::vector<Database> d_data;
@@ -304,10 +396,10 @@ void scaleData( Array<TYPE> &data, double factor );
 template<class TYPE>
 void scaleData( TYPE &data, double factor );
 template<class TYPE>
-TYPE Database::getScalar( std::string_view key, const Units &unit ) const
+TYPE Database::getScalar( std::string_view key, const Units &unit, source_location src ) const
 {
     auto keyData = getData( key );
-    DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
     TYPE data;
     double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
@@ -317,40 +409,41 @@ TYPE Database::getScalar( std::string_view key, const Units &unit ) const
             data = scalarData->get();
         } else if ( arrayData ) {
             const auto &data2 = arrayData->get();
-            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            DATABASE_INSIST( data2.length() == 1, src, "Variable %s is not a scalar", key.data() );
             data = data2( 0 );
         } else if ( keyData->is_integral() ) {
             auto data2 = convert<int64_t, TYPE>( keyData->convertToInt64() );
-            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            DATABASE_INSIST( data2.length() == 1, src, "Variable %s is not a scalar", key.data() );
             data = data2( 0 );
         } else if ( keyData->is_floating_point() ) {
             auto data2 = convert<double, TYPE>( keyData->convertToDouble() );
-            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            DATABASE_INSIST( data2.length() == 1, src, "Variable %s is not a scalar", key.data() );
             data = data2( 0 );
         } else {
-            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
         }
         if ( factor != 1.0 )
             scaleData( data, factor );
     } else {
-        DATABASE_INSIST( factor == 1.0, "Only arithmetic types can convert units" );
+        DATABASE_INSIST( factor == 1.0, src, "Only arithmetic types can convert units" );
         if ( scalarData ) {
             data = scalarData->get();
         } else if ( arrayData ) {
             const auto &data2 = arrayData->get();
-            DATABASE_INSIST( data2.length() == 1, "Variable %s is not a scalar", key.data() );
+            DATABASE_INSIST( data2.length() == 1, src, "Variable %s is not a scalar", key.data() );
             data = data2( 0 );
         } else {
-            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
         }
     }
     return data;
 }
 template<class TYPE>
-std::vector<TYPE> Database::getVector( std::string_view key, const Units &unit ) const
+std::vector<TYPE>
+Database::getVector( std::string_view key, const Units &unit, source_location src ) const
 {
     auto keyData = getData( key );
-    DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
     Array<TYPE> data;
     double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
@@ -367,12 +460,12 @@ std::vector<TYPE> Database::getVector( std::string_view key, const Units &unit )
         } else if ( keyData->is_floating_point() ) {
             data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
         } else {
-            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
         }
         if ( factor != 1.0 )
             scaleData( data, factor );
     } else {
-        DATABASE_INSIST( factor == 1.0, "Only arithmetic types can convert units" );
+        DATABASE_INSIST( factor == 1.0, src, "Only arithmetic types can convert units" );
         if ( scalarData ) {
             const auto &data2 = scalarData->get();
             data.resize( 1 );
@@ -380,20 +473,21 @@ std::vector<TYPE> Database::getVector( std::string_view key, const Units &unit )
         } else if ( arrayData ) {
             data = arrayData->get();
         } else {
-            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
         }
     }
-    DATABASE_INSIST( data.ndim() <= 1, "Variable %s cannot be converted to a vector", key.data() );
+    DATABASE_INSIST(
+        data.ndim() <= 1, src, "Variable %s cannot be converted to a vector", key.data() );
     std::vector<TYPE> data2( data.length() );
     for ( size_t i = 0; i < data.length(); i++ )
         data2[i] = data( i );
     return data2;
 }
 template<class TYPE>
-Array<TYPE> Database::getArray( std::string_view key, const Units &unit ) const
+Array<TYPE> Database::getArray( std::string_view key, const Units &unit, source_location src ) const
 {
     auto keyData = getData( key );
-    DATABASE_INSIST( keyData, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
     Array<TYPE> data;
     double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
@@ -410,12 +504,12 @@ Array<TYPE> Database::getArray( std::string_view key, const Units &unit ) const
         } else if ( keyData->is_floating_point() ) {
             data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
         } else {
-            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
         }
         if ( factor != 1.0 )
             scaleData( data, factor );
     } else {
-        DATABASE_INSIST( factor == 1.0, "Only arithmetic types can convert units" );
+        DATABASE_INSIST( factor == 1.0, src, "Only arithmetic types can convert units" );
         if ( scalarData ) {
             const auto &data2 = scalarData->get();
             data.resize( 1 );
@@ -423,7 +517,7 @@ Array<TYPE> Database::getArray( std::string_view key, const Units &unit ) const
         } else if ( arrayData ) {
             data = arrayData->get();
         } else {
-            DATABASE_ERROR( "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
         }
     }
     return data;
@@ -496,10 +590,10 @@ void Database::putArray( std::string_view key, Array<TYPE> data, Units unit, Che
  * isType                                                            *
  ********************************************************************/
 template<class TYPE>
-bool Database::isType( std::string_view key ) const
+bool Database::isType( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
         // Guard against checking a bit reference (use a bool instead)
         return data->isType<bool>();

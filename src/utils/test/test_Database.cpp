@@ -48,7 +48,7 @@ static TYPE random()
         static std::uniform_real_distribution<float> dist( 0, 1 );
         return std::complex<float>( random<float>(), random<float>() );
     } else {
-        AMP_ERROR( "Invalid TYPE: " + std::string( typeid( TYPE ).name() ) );
+        AMP_ERROR( "Invalid TYPE: " + std::string( AMP::getTypeID<TYPE>().name ) );
     }
     return 0;
 }
@@ -58,9 +58,9 @@ static TYPE random()
 template<class TYPE>
 static void addType( Database &db, UnitTest &ut )
 {
-    bool pass            = true;
-    std::string typeName = typeid( TYPE ).name();
-    TYPE rand            = random<TYPE>();
+    bool pass = true;
+    std::string typeName( AMP::getTypeID<TYPE>().name );
+    TYPE rand = random<TYPE>();
     db.putScalar<TYPE>( "scalar-" + typeName, rand );
     db.putVector<TYPE>( "vector-" + typeName, { rand } );
     auto v1 = db.getScalar<TYPE>( "scalar-" + typeName );
@@ -253,6 +253,20 @@ void runBasicTests( UnitTest &ut )
     pass = Units( Units( "W/m^2" ).str() ) == Units( "uW/mm^2" );
     pass = pass && Units( ( Units( "V" ) * Units( "A" ) ).str() ) == Units( "W" );
     checkResult( ut, pass, "Units" );
+
+    // Test getting a key that doesn't exists
+    try {
+        db.getScalar<double>( "garbage" );
+        ut.failure( "Unknown key" );
+    } catch ( StackTrace::abort_error &err ) {
+        std::string file = std::string( err.source.file_name() );
+        if ( file.find( "test_Database.cpp" ) != std::string::npos )
+            ut.passes( "Unknown key (source file/line detected)" );
+        else
+            ut.passes( "Unknown key (default error)" );
+    } catch ( ... ) {
+        ut.failure( "Unknown key (unknown exception)" );
+    }
 }
 
 
@@ -320,6 +334,9 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         checkResult( ut, ( *eq2 )( { 3.0 } ) == 12, "eq2" );
     }
     printf( "\n" );
+    // Try sending/receiving database
+    auto db2 = AMP::AMP_MPI( AMP_COMM_WORLD ).bcast( db, 0 );
+    checkResult( ut, *db == *db2, filename + " - send/recv" );
 }
 
 
@@ -330,7 +347,7 @@ int main( int argc, char *argv[] )
     UnitTest ut;
 
     // Run the tests
-    // runBasicTests( ut );
+    runBasicTests( ut );
     for ( int i = 1; i < argc; i++ )
         runFileTests( ut, argv[i] );
 

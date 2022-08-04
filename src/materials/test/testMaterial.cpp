@@ -115,14 +115,7 @@ void testMaterial( std::string &name, AMP::UnitTest &ut )
         return;
 
     // check for undefined property
-    try {
-        mat->property( "RiDiCuLoUs#!$^&*Name" );
-        record( matPrefix, false, "RiDiCuLoUs#!$^&*Name", ut );
-    } catch ( const std::exception &e ) {
-        record( matPrefix, true, "RiDiCuLoUs#!$^&*Name", ut );
-    } catch ( ... ) {
-        record( matPrefix, false, "RiDiCuLoUs#!$^&*Name", ut );
-    }
+    record( matPrefix, !mat->property( "RiDiCuLoUs#!$^&*Name" ), "RiDiCuLoUs#!$^&*Name", ut );
 
     // test property evaluations
     auto proplist = mat->list();
