@@ -506,20 +506,6 @@ std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x )
 /********************************************************
  * Instantiate communication of MeshElementID            *
  ********************************************************/
-namespace AMP {
-using ID = AMP::Mesh::MeshElementID;
-template ID AMP_MPI::bcast<ID>( ID, int ) const;
-template void AMP_MPI::bcast<ID>( ID *, int, int ) const;
-template void AMP_MPI::send<ID>( const ID *, int, int, int ) const;
-template AMP_MPI::Request AMP_MPI::Isend<ID>( const ID *, int, int, int ) const;
-template void AMP_MPI::recv<ID>( ID *, int &, int, const bool, int ) const;
-template AMP_MPI::Request AMP_MPI::Irecv<ID>( ID *buf, int, int, int ) const;
-template std::vector<ID> AMP_MPI::allGather<ID>( const ID & ) const;
-template std::vector<ID> AMP_MPI::allGather<ID>( const std::vector<ID> & ) const;
-template void AMP_MPI::allGather<ID>( const ID &, ID * ) const;
-template int AMP_MPI::allGather<ID>( const ID *, int, ID *, int *, int *, bool ) const;
-template void AMP_MPI::setGather<ID>( std::set<ID> & ) const;
-template void AMP_MPI::allToAll<ID>( int, const ID *, ID * ) const;
-template int
-AMP_MPI::allToAll<ID>( const ID *, const int[], const int[], ID *, int *, int *, bool ) const;
-} // namespace AMP
+INSTANTIATE_MPI_BCAST( AMP::Mesh::MeshElementID );
+INSTANTIATE_MPI_SENDRECV( AMP::Mesh::MeshElementID );
+INSTANTIATE_MPI_GATHER( AMP::Mesh::MeshElementID );

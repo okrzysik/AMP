@@ -15,6 +15,10 @@ extern std::ostream plog;
 } // namespace AMP
 
 
+template<class T>
+inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
+
+
 /*! \defgroup Macros Set of utility macro functions used in AMP
  *  \details  These functions are a list of C++ macros that are used within AMP
  *     for common operations, including checking for errors and profiling.
@@ -36,6 +40,15 @@ extern std::ostream plog;
             t++;                                \
         }                                       \
     } while ( 0 )
+
+
+/*! \def STATIC_ERROR(variable)
+ *  \brief      Fail assert
+ *  \details    Fail assert at compile time
+ *  \param MSG  Error message to print
+ */
+#undef STATIC_ERROR
+#define STATIC_ERROR( MSG ) static_assert( failed_assert_v<TYPE>, MSG )
 
 
 /*! \def AMP_ERROR(MSG)
@@ -180,6 +193,7 @@ extern std::ostream plog;
             _Pragma( "GCC diagnostic ignored \"-Wimplicit-fallthrough\"" )      \
             _Pragma( "GCC diagnostic ignored \"-Wmaybe-uninitialized\"" )       \
             _Pragma( "GCC diagnostic ignored \"-Winaccessible-base\"" )         \
+            _Pragma( "GCC diagnostic ignored \"-Wclass-memaccess\"" )           \
             _Pragma( "GCC diagnostic ignored \"-Waggressive-loop-optimizations\"" )
         #define ENABLE_WARNINGS _Pragma( "GCC diagnostic pop" )
     #elif defined( USING_ICC )

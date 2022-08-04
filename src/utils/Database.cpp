@@ -35,7 +35,7 @@ static std::vector<char> readFile( const std::string &filename )
 {
     // Read the input file into memory
     FILE *fid = fopen( filename.data(), "rb" );
-    DATABASE_INSIST( fid, "Error opening file %s", filename.data() );
+    DATABASE_INSIST( fid, SOURCE_LOCATION_CURRENT(), "Error opening file %s", filename.data() );
     fseek( fid, 0, SEEK_END );
     size_t bytes = ftell( fid );
     rewind( fid );
@@ -136,24 +136,33 @@ static void strrep( std::string &str, std::string_view s, std::string_view r )
 /********************************************************************
  * Constructors/destructor                                           *
  ********************************************************************/
-Database::Database() : d_check( Check::WarnOverwrite ) {}
+Database::Database() : KeyData(), d_check( Check::WarnOverwrite ) {}
 Database::Database( std::string name )
-    : d_check( Check::WarnOverwrite ), d_name( std::move( name ) )
+    : KeyData(), d_check( Check::WarnOverwrite ), d_name( std::move( name ) )
 {
 }
 Database::Database( Database &&rhs )
 {
     std::swap( d_check, rhs.d_check );
     std::swap( d_name, rhs.d_name );
+    std::swap( d_used, rhs.d_used );
     std::swap( d_hash, rhs.d_hash );
     std::swap( d_keys, rhs.d_keys );
     std::swap( d_data, rhs.d_data );
+}
+Database::Database( const Database &rhs ) : KeyData() { copy( rhs ); }
+Database &Database::operator=( const Database &rhs )
+{
+    if ( &rhs != this )
+        copy( rhs );
+    return *this;
 }
 Database &Database::operator=( Database &&rhs )
 {
     if ( this != &rhs ) {
         std::swap( d_check, rhs.d_check );
         std::swap( d_name, rhs.d_name );
+        std::swap( d_used, rhs.d_used );
         std::swap( d_hash, rhs.d_hash );
         std::swap( d_keys, rhs.d_keys );
         std::swap( d_data, rhs.d_data );
@@ -181,29 +190,10 @@ void Database::setDefaultAddKeyBehavior( Check check, bool setChildren )
 /********************************************************************
  * Clone the database                                                *
  ********************************************************************/
-std::unique_ptr<KeyData> Database::clone() const
-{
-    auto db     = std::make_unique<Database>();
-    db->d_check = d_check;
-    db->d_name  = d_name;
-    db->d_hash  = d_hash;
-    db->d_keys  = d_keys;
-    db->d_data.resize( d_data.size() );
-    for ( size_t i = 0; i < d_data.size(); i++ )
-        db->d_data[i] = d_data[i]->clone();
-    return db;
-}
+std::unique_ptr<KeyData> Database::clone() const { return std::make_unique<Database>( *this ); }
 std::unique_ptr<Database> Database::cloneDatabase() const
 {
-    auto db     = std::make_unique<Database>();
-    db->d_check = d_check;
-    db->d_name  = d_name;
-    db->d_hash  = d_hash;
-    db->d_keys  = d_keys;
-    db->d_data.resize( d_data.size() );
-    for ( size_t i = 0; i < d_data.size(); i++ )
-        db->d_data[i] = d_data[i]->clone();
-    return db;
+    return std::make_unique<Database>( *this );
 }
 void Database::copy( const Database &rhs )
 {
@@ -211,9 +201,11 @@ void Database::copy( const Database &rhs )
     d_name  = rhs.d_name;
     d_hash  = rhs.d_hash;
     d_keys  = rhs.d_keys;
+    d_used  = std::vector<bool>( rhs.d_used.size(), false );
     d_data.resize( rhs.d_data.size() );
     for ( size_t i = 0; i < d_data.size(); i++ )
         d_data[i] = rhs.d_data[i]->clone();
+    rhs.d_used = std::vector<bool>( rhs.d_used.size(), true );
 }
 
 
@@ -249,60 +241,61 @@ bool Database::operator==( const KeyData &rhs ) const
 bool Database::keyExists( std::string_view key ) const
 {
     auto hash = hashString( key );
-    int index = find( hash );
+    int index = find( hash, false );
     return index != -1;
 }
 KeyData *Database::getData( std::string_view key )
 {
     auto hash = hashString( key );
-    int index = find( hash );
+    int index = find( hash, true );
     return index == -1 ? nullptr : d_data[index].get();
 }
 const KeyData *Database::getData( std::string_view key ) const
 {
     auto hash = hashString( key );
-    int index = find( hash );
+    int index = find( hash, true );
     return index == -1 ? nullptr : d_data[index].get();
 }
 typeID Database::getDataType( std::string_view key ) const
 {
     auto hash = hashString( key );
-    int index = find( hash );
+    int index = find( hash, true );
     return index == -1 ? typeID() : d_data[index]->getDataType();
 }
-bool Database::isDatabase( std::string_view key ) const
+bool Database::isDatabase( std::string_view key, source_location src ) const
 {
     auto hash = hashString( key );
-    int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    int index = find( hash, false );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = dynamic_cast<const Database *>( d_data[index].get() );
     return ptr2 != nullptr;
 }
-std::shared_ptr<Database> Database::getDatabase( std::string_view key )
+std::shared_ptr<Database> Database::getDatabase( std::string_view key, source_location src )
 {
     auto hash = hashString( key );
-    int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    int index = find( hash, true );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = std::dynamic_pointer_cast<Database>( d_data[index] );
-    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-std::shared_ptr<const Database> Database::getDatabase( std::string_view key ) const
+std::shared_ptr<const Database> Database::getDatabase( std::string_view key,
+                                                       source_location src ) const
 {
     auto hash = hashString( key );
-    int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    int index = find( hash, true );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
-    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return ptr2;
 }
-const Database &Database::operator()( std::string_view key ) const
+const Database &Database::operator()( std::string_view key, source_location src ) const
 {
     auto hash = hashString( key );
-    int index = find( hash );
-    DATABASE_INSIST( index != -1, "Variable %s is not in database", key.data() );
+    int index = find( hash, true );
+    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
     auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
-    DATABASE_INSIST( ptr2, "Variable %s is not a database", key.data() );
+    DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return *ptr2;
 }
 std::vector<std::string> Database::getAllKeys( bool sort ) const
@@ -317,10 +310,11 @@ void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Che
     if ( check == Check::GetDatabaseDefault )
         check = d_check;
     auto hash = hashString( key );
-    int index = find( hash );
+    int index = find( hash, false );
     if ( index != -1 ) {
         if ( check == Check::Error )
-            DATABASE_ERROR( "Error: Variable '%s' already exists in database",
+            DATABASE_ERROR( SOURCE_LOCATION_CURRENT(),
+                            "Error: Variable '%s' already exists in database",
                             std::string( key ).data() );
         if ( check == Check::WarnOverwrite || check == Check::WarnKeep )
             DATABASE_WARNING( "Warning: variable '%s' already exists in database",
@@ -328,6 +322,7 @@ void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Che
         if ( check == Check::Overwrite || check == Check::WarnOverwrite )
             d_data[index] = std::move( data );
     } else {
+        d_used.emplace_back( false );
         d_hash.emplace_back( hash );
         d_keys.emplace_back( key );
         d_data.emplace_back( std::move( data ) );
@@ -336,15 +331,17 @@ void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Che
 void Database::erase( std::string_view key, bool check )
 {
     auto hash = hashString( key );
-    int index = find( hash );
+    int index = find( hash, false );
     if ( index == -1 ) {
         if ( check )
             AMP_ERROR( std::string( key ) + " does not exist in database" );
         return;
     }
+    std::swap( d_used[index], d_used.back() );
     std::swap( d_hash[index], d_hash.back() );
     std::swap( d_keys[index], d_keys.back() );
     std::swap( d_data[index], d_data.back() );
+    d_used.pop_back();
     d_hash.pop_back();
     d_keys.pop_back();
     d_data.pop_back();
@@ -358,7 +355,8 @@ double KeyData::convertUnits( const Units &unit, std::string_view key ) const
 {
     if ( unit.isNull() )
         return 1.0;
-    DATABASE_INSIST( !d_unit.isNull(), "Field %s must have units", key.data() );
+    DATABASE_INSIST(
+        !d_unit.isNull(), SOURCE_LOCATION_CURRENT(), "Field %s must have units", key.data() );
     return d_unit.convert( unit );
 }
 
@@ -415,7 +413,8 @@ bool KeyData::isType<Database>() const
 template<class TYPE>
 bool KeyData::isType() const
 {
-    if ( getDataType() == getTypeID<TYPE>() )
+    constexpr auto id0 = getTypeID<TYPE>();
+    if ( getDataType() == id0 )
         return true;
     if ( is_integral() ) {
         auto data2 = convertToInt64();
@@ -444,23 +443,24 @@ template bool KeyData::isType<int32_t>() const;
 template bool KeyData::isType<int64_t>() const;
 template bool KeyData::isType<float>() const;
 template bool KeyData::isType<long double>() const;
-bool Database::isString( std::string_view key ) const
+bool Database::isString( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     return data->isType<std::string>();
 }
 
-bool Database::isEquation( std::string_view key ) const
+bool Database::isEquation( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     return data->isType<MathExpr>();
 }
-std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key ) const
+std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key,
+                                                       source_location src ) const
 {
     auto data = getData( key );
-    DATABASE_INSIST( data, "Variable %s was not found in database", key.data() );
+    DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
     auto eq_data = dynamic_cast<const EquationKeyData *>( data );
     if ( eq_data )
         return eq_data->getEq();
@@ -468,7 +468,7 @@ std::shared_ptr<const MathExpr> Database::getEquation( std::string_view key ) co
         double v = data->convertToDouble()( 0 );
         return std::make_shared<MathExpr>( std::to_string( v ) );
     }
-    DATABASE_ERROR( "Variable %s was not an equation", key.data() );
+    DATABASE_ERROR( src, "Variable %s was not an equation", key.data() );
     return nullptr;
 }
 
@@ -481,7 +481,9 @@ void Database::print( std::ostream &os, std::string_view indent, bool sort, bool
     auto keys = getAllKeys( sort ); //  We want the keys in sorted order
     for ( const auto &key : keys ) {
         os << indent << key;
-        auto data  = getData( key );
+        auto hash  = hashString( key );
+        auto index = find( hash, false );
+        auto data  = d_data[index].get();
         auto db    = dynamic_cast<const Database *>( data );
         auto dbVec = dynamic_cast<const DatabaseVector *>( data );
         if ( db ) {
@@ -502,6 +504,23 @@ std::string Database::print( std::string_view indent, bool sort, bool printType 
     std::stringstream ss;
     print( ss, indent, sort, printType );
     return ss.str();
+}
+std::vector<std::string> Database::getUnused( bool recursive ) const
+{
+    AMP_ASSERT( d_keys.size() == d_used.size() );
+    std::vector<std::string> unused;
+    for ( size_t i = 0; i < d_used.size(); i++ ) {
+        if ( !d_used[i] ) {
+            unused.push_back( d_keys[i] );
+        } else if ( recursive ) {
+            auto db = std::dynamic_pointer_cast<const Database>( d_data[i] );
+            if ( db ) {
+                for ( auto tmp : db->getUnused( true ) )
+                    unused.push_back( db->d_name + "::" + tmp );
+            }
+        }
+    }
+    return unused;
 }
 
 
@@ -1098,7 +1117,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
             pos += i;
         } else if ( type == token_type::equal ) {
             // Reading key/value pair
-            DATABASE_INSIST( !key.empty(), "Empty key" );
+            DATABASE_INSIST( !key.empty(), SOURCE_LOCATION_CURRENT(), "Empty key" );
             pos += i;
             std::unique_ptr<KeyData> data;
             try {
@@ -1119,7 +1138,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
             pos += i;
         } else if ( type == token_type::bracket ) {
             // Read database
-            DATABASE_INSIST( !key.empty(), "Empty key" );
+            DATABASE_INSIST( !key.empty(), SOURCE_LOCATION_CURRENT(), "Empty key" );
             pos += i;
             auto database = std::make_unique<Database>();
             pos += loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys );
@@ -1286,6 +1305,10 @@ std::unique_ptr<KeyData> Database::readYAML( std::string_view filename )
     // Return the result
     return makeKeyData( std::move( data ) );
 }
+
+
+// Register Database
+REGISTER_KEYDATA( Database, Database );
 
 
 } // namespace AMP

@@ -7,6 +7,8 @@
 #include "AMP/utils/Units.h"
 #include "AMP/utils/typeid.h"
 
+#include "StackTrace/source_location.h"
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -35,6 +37,8 @@ class KeyData
 public:
     //! Destructor
     virtual ~KeyData() {}
+    //! Return class type
+    virtual typeID getClassType() const = 0;
     //! Copy the data
     virtual std::unique_ptr<KeyData> clone() const = 0;
     //! Print the data to a stream
@@ -65,6 +69,12 @@ public:
     const Units &unit() const { return d_unit; }
     //! Return the conversion factor (if used)
     double convertUnits( const Units &, std::string_view = "" ) const;
+    //! Return the number of bytes required to pack the data
+    virtual size_t packSize() const = 0;
+    //! Pack the data to a buffer
+    virtual size_t pack( std::byte * ) const = 0;
+    //! Unpack the data from a buffer
+    virtual size_t unpack( const std::byte * ) = 0;
 
 protected:
     KeyData() {}
@@ -77,6 +87,10 @@ protected:
 protected:
     Units d_unit;
 };
+
+
+//! Register KeyData with the factory
+void registerKeyData( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun );
 
 
 //! Class to a database
@@ -97,6 +111,8 @@ public:
     struct IdentityType {
         typedef T type;
     };
+
+    using source_location = StackTrace::source_location;
 
 public:
     //! Empty constructor
@@ -141,10 +157,10 @@ public:
     static std::unique_ptr<Database> createFromString( std::string_view data );
 
     //! Copy constructor
-    Database( const Database & ) = delete;
+    Database( const Database & );
 
     //! Assignment operator
-    Database &operator=( const Database & ) = delete;
+    Database &operator=( const Database & );
 
     //! Move constructor
     Database( Database &&rhs );
@@ -161,6 +177,8 @@ public:
      */
     void readDatabase( const std::string &filename );
 
+    //! Return class type
+    typeID getClassType() const override { return getTypeID<Database>(); }
 
     //! Get the default behavior when adding keys
     inline Check getDefaultAddKeyBehavior() const { return d_check; }
@@ -231,9 +249,10 @@ public:
      *
      * @param[in] key           Key name in database.
      */
-    inline std::string getString( std::string_view key ) const
+    inline std::string getString( std::string_view key,
+                                  source_location src = source_location::current() ) const
     {
-        return getScalar<std::string>( key );
+        return getScalar<std::string>( key, {}, src );
     }
 
 
@@ -247,7 +266,9 @@ public:
      * @param[in] unit          Desired units
      */
     template<class TYPE>
-    TYPE getScalar( std::string_view key, const Units &unit = Units() ) const;
+    TYPE getScalar( std::string_view key,
+                    const Units &unit   = Units(),
+                    source_location src = source_location::current() ) const;
 
 
     /**
@@ -275,7 +296,9 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    Array<TYPE> getArray( std::string_view key, const Units &unit = Units() ) const;
+    Array<TYPE> getArray( std::string_view key,
+                          const Units &unit   = Units(),
+                          source_location src = source_location::current() ) const;
 
 
     /**
@@ -288,7 +311,9 @@ public:
      * @param unit          Desired units
      */
     template<class TYPE>
-    std::vector<TYPE> getVector( std::string_view key, const Units &unit = Units() ) const;
+    std::vector<TYPE> getVector( std::string_view key,
+                                 const Units &unit   = Units(),
+                                 source_location src = source_location::current() ) const;
 
 
     /**
@@ -371,11 +396,11 @@ public:
 
 
     //! Check if the key is a database object
-    bool isDatabase( std::string_view key ) const;
+    bool isDatabase( std::string_view key, source_location src = source_location::current() ) const;
 
 
     //! Check if the named entry is a string
-    bool isString( std::string_view key ) const;
+    bool isString( std::string_view key, source_location src = source_location::current() ) const;
 
     /**
      * Check if the named entry is an equation
@@ -383,7 +408,7 @@ public:
      *
      * @param key       Key name in database
      */
-    bool isEquation( std::string_view key ) const;
+    bool isEquation( std::string_view key, source_location src = source_location::current() ) const;
 
 
     /**
@@ -392,12 +417,13 @@ public:
      *
      * @param key       Key name in database
      */
-    std::shared_ptr<const MathExpr> getEquation( std::string_view key ) const;
+    std::shared_ptr<const MathExpr>
+    getEquation( std::string_view key, source_location src = source_location::current() ) const;
 
 
     //! Check if the entry can be stored as the given type
     template<class TYPE>
-    bool isType( std::string_view key ) const;
+    bool isType( std::string_view key, source_location src = source_location::current() ) const;
 
     //! Get the fundamental type (e.g. double, int, float, ...)
     typeID getDataType( std::string_view key ) const;
@@ -408,7 +434,8 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<Database> getDatabase( std::string_view key );
+    std::shared_ptr<Database> getDatabase( std::string_view key,
+                                           source_location src = source_location::current() );
 
     /**
      * Get a raw pointer to the database for a key in the database.
@@ -416,7 +443,8 @@ public:
      *
      * @param key Key name in database.
      */
-    std::shared_ptr<const Database> getDatabase( std::string_view key ) const;
+    std::shared_ptr<const Database>
+    getDatabase( std::string_view key, source_location src = source_location::current() ) const;
 
 
     /**
@@ -424,7 +452,8 @@ public:
      *
      * @param key Key name in database.
      */
-    const Database &operator()( std::string_view key ) const;
+    const Database &operator()( std::string_view key,
+                                source_location src = source_location::current() ) const;
 
 
     /**
@@ -491,6 +520,20 @@ public:
     print( std::string_view indent = "", bool sort = true, bool printType = false ) const;
 
 
+    /**
+     * Get unused entries
+     * @param recursive Check sub databases (pre-pending by DatabaseName::)
+     * @return          Output string
+     */
+    std::vector<std::string> getUnused( bool recursive = true ) const;
+
+
+public: // Pack/unpack data
+    size_t packSize() const override;
+    size_t pack( std::byte * ) const override;
+    size_t unpack( const std::byte * ) override;
+
+
 #ifdef AMP_USE_SAMRAI
 public: // SAMRAI interfaces
     //! Construct a database from a SAMRAI database
@@ -514,6 +557,7 @@ protected: // Internal data and functions
     std::vector<uint32_t> d_hash;
     std::vector<std::string> d_keys;
     std::vector<std::shared_ptr<KeyData>> d_data;
+    mutable std::vector<bool> d_used;
 
     // Function to add arguments to the database
     template<class TYPE, class... Args>
@@ -533,13 +577,16 @@ protected: // Internal data and functions
     }
 
     // Find an entry
-    inline int find( uint32_t hash ) const
+    inline int find( uint32_t hash, bool use ) const
     {
-        int index = -1;
-        for ( size_t i = 0; i < d_hash.size(); i++ )
-            if ( hash == d_hash[i] )
-                index = i;
-        return index;
+        for ( size_t i = 0; i < d_hash.size(); i++ ) {
+            if ( hash == d_hash[i] ) {
+                if ( use && !d_used[i] )
+                    d_used[i] = true;
+                return i;
+            }
+        }
+        return -1;
     }
 
     // Functions inherited from KeyData that really aren't valid
@@ -601,6 +648,12 @@ private:
     uint8_t d_dim;
     std::array<int, 5> d_lower, d_upper;
 };
+
+
+/********************************************************************
+ * Register KeyData with the factory                                 *
+ ********************************************************************/
+void registerKeyData( const std::string &name, std::function<std::unique_ptr<KeyData>()> fun );
 
 
 /********************************************************************

@@ -2,9 +2,9 @@
 #define included_AMP_AMPManager
 
 #include "AMP/utils/AMP_MPI.h"
-#include <memory>
 
 #include <array>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -154,26 +154,25 @@ public:
     //! Decrement a resource counter
     static void decrementResource( const std::string &resource );
 
+    //! Get the global comm
+    static const AMP::AMP_MPI &getCommWorld();
+
+    //! Set the global comm
+    static void setCommWorld( const AMP::AMP_MPI & );
+
+
 private:
     // Private constructor (we do not actually want to create an object)
-    AMPManager() {}
+    AMPManager() = delete;
 
     // Static variables
     static int initialized;
-    static int rank;
-    static bool called_PetscInitialize;
     static bool use_MPI_Abort;
+    static int abort_stackType;
     static bool print_times;
-    static AMP_MPI comm_world;
     static int argc;
     static char **argv;
     static AMPManagerProperties properties;
-
-    //! AMP_MPI must be a friend to access comm_world and the MPI error handler
-    friend class AMP::AMP_MPI;
-
-    //! Function to create the arguments to pass to petsc
-    static std::vector<char *> getPetscArgs();
 
     // Function to control exit behavior
     static void exitFun();

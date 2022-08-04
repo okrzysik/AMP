@@ -108,9 +108,27 @@ public:
                     unit,
                     std::move( source ),
                     eq->getVars(),
-                    getRanges( ranges, eq ),
+                    getRanges( ranges, eq->getVars() ),
                     std::move( argUnits ) ),
           d_eq( eq )
+    {
+        AMP_ASSERT( d_eq );
+    }
+    EquationProperty( std::string name,
+                      const std::string &expression,
+                      const AMP::Units &unit                    = {},
+                      std::vector<std::string> args             = {},
+                      std::vector<std::array<double, 2>> ranges = {},
+                      std::vector<AMP::Units> argUnits          = {},
+                      std::string source                        = "" )
+        : Property( std::move( name ),
+                    { 1 },
+                    unit,
+                    std::move( source ),
+                    args,
+                    getRanges( ranges, args ),
+                    std::move( argUnits ) ),
+          d_eq( std::make_shared<MathExpr>( expression, args ) )
     {
         AMP_ASSERT( d_eq );
     }
@@ -127,10 +145,10 @@ public:
 
 private:
     static std::vector<std::array<double, 2>> getRanges( std::vector<std::array<double, 2>> ranges,
-                                                         std::shared_ptr<const MathExpr> eq )
+                                                         const std::vector<std::string> vars )
     {
         if ( ranges.empty() )
-            ranges.resize( eq->getVars().size(), { { -1e100, 1e100 } } );
+            ranges.resize( vars.size(), { { -1e100, 1e100 } } );
         return ranges;
     }
 

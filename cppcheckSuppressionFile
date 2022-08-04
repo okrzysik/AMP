@@ -15,6 +15,7 @@ redundantAssignment:*       // Suppress redundantAssignment, can be better pract
 redundantCopy:*             // Suppress redundantCopy, can be better practice in many instances
 preprocessorErrorDirective:* // Suppress #error messages (may be valid and will be caught by compiler)
 virtualCallInConstructor:*  // False errors
+nullPointerRedundantCheck:*
 
 
 //***********************************************************
@@ -114,6 +115,7 @@ nullPointerRedundantCheck:*/src/utils/Scanner.cpp
 arrayIndexOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/test/test_AMP_MPI.cpp
+containerOutOfBounds:*/src/mesh/MeshElement.cpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
 unreadVariable:*/src/utils/DelaunayInterpolation.cpp
 unreadVariable:*/src/utils/DelaunayTessellation.cpp
@@ -143,6 +145,7 @@ constParameter:*/src/vectors/petsc/PetscHelpers.cpp
 constParameter:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
 constParameter:*/src/operators/mechanics/GeneralCladThermalCreepPlasticModel.cpp
 constParameter:*/src/operators/trilinos/TrilinosMatrixShellOperator.cpp
+arrayIndexOutOfBoundsCond:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
 
 
 //***********************************************************
