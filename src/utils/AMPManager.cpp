@@ -36,7 +36,7 @@
     #include "SAMRAI/tbox/StartupShutdownManager.h"
 #endif
 #ifdef AMP_USE_KOKKOS
-    #include "AMP/utils/KokkopetscsManager.h"
+    #include "AMP/utils/KokkosManager.h"
 #endif
 // clang-format on
 
@@ -115,9 +115,10 @@ static size_t getStartupMemoryAllocations()
     auto memory = MemoryApp::getMemoryStats();
     if ( memory.N_new > memory.N_delete )
         return memory.N_new - memory.N_delete;
+#endif
     return 0;
 }
-#endif
+
 static size_t N_memory_startup = getStartupMemoryAllocations();
 void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperties &properties_in )
 {

@@ -29,7 +29,7 @@
     #include "SAMRAI/tbox/StartupShutdownManager.h"
 #endif
 #ifdef AMP_USE_KOKKOS
-    #include "AMP/utils/KokkopetscsManager.h"
+    #include "AMP/utils/KokkosManager.h"
 #endif
 #ifdef AMP_USE_HDF5
     #include "hdf5.h"
