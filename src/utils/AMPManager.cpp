@@ -328,8 +328,8 @@ double AMPManager::stop_SAMRAI()
     return Utilities::time() - start;
 }
 #else
-    double AMPManager::start_SAMRAI() { return 0; }
-    double AMPManager::stop_SAMRAI() { return 0; }
+double AMPManager::start_SAMRAI() { return 0; }
+double AMPManager::stop_SAMRAI() { return 0; }
 #endif
 
 
@@ -371,8 +371,8 @@ double AMPManager::stop_PETSc()
     return time;
 }
 #else
-    double AMPManager::start_PETSc() { return 0; }
-    double AMPManager::stop_PETSc() { return 0; }
+double AMPManager::start_PETSc() { return 0; }
+double AMPManager::stop_PETSc() { return 0; }
 #endif
 
 
@@ -417,8 +417,8 @@ double AMPManager::stop_Kokkos()
     return 0;
 }
 #else
-    double AMPManager::start_Kokkos( int, char ** ) { return 0; }
-    double AMPManager::stop_Kokkos() { return 0; }
+double AMPManager::start_Kokkos( int, char ** ) { return 0; }
+double AMPManager::stop_Kokkos() { return 0; }
 #endif
 
 
