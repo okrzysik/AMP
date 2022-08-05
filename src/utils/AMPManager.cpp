@@ -147,6 +147,10 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     comm_world = AMP_MPI( AMP_COMM_WORLD );
     if ( properties.COMM_WORLD != AMP_COMM_WORLD )
         comm_world = AMP_MPI( properties.COMM_WORLD );
+    // Initialize cuda
+    start_CUDA();
+    // Initialize Kokkos
+    start_Kokkos( argc, argv );
     // Initialize PETSc
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
@@ -207,12 +211,12 @@ void AMPManager::shutdown()
     PROFILE_DISABLE();
     // Syncronize all ranks
     comm_world.barrier();
-    // shutdown Kokkos
-    stop_Kokkos();
     // Shutdown SAMRAI
     double SAMRAI_time = stop_SAMRAI();
     // Shudown PETSc
     double petsc_time = stop_PETSc();
+    // shutdown Kokkos
+    stop_Kokkos();
     // Shutdown MPI
     double MPI_start = Utilities::time();
     AMP_MPI::stop_MPI();
