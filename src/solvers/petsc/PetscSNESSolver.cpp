@@ -17,15 +17,14 @@
 #include "petscksp.h"
 #include "petscmat.h"
 #include "petscsnes.h"
+#include "petscversion.h"
 
 #include <numeric>
 
 namespace AMP::Solver {
 
 
-#if PETSC_VERSION_LT( 3, 15, 0 )
-    #error AMP only supports PETSc 3.15.0 or greater
-#endif
+static_assert( PETSC_VERSION_GE( 3, 15, 0 ), "AMP only supports PETSc 3.15.0 or greater" );
 
 
 static inline void checkErr( PetscErrorCode ierr )

@@ -1,5 +1,5 @@
 # ctest script for building, running, and submitting the test results 
-# Usage:  ctest -s script,build
+# Usage:  ctest -S script,build
 #   build = debug / optimized / weekly / valgrind
 # Note: this test will use use the number of processors defined in the variable N_PROCS,
 #   the enviornmental variable N_PROCS, or the number of processors availible (if not specified)
@@ -12,24 +12,24 @@ SET( PROJ AMP )
 # Set platform specific variables
 SITE_NAME( HOSTNAME )
 STRING( REGEX REPLACE  "-(ext|login)(..|.)"  ""  HOSTNAME  "${HOSTNAME}" )
-SET( MPIEXEC            $ENV{MPIEXEC}           )
-SET( TPL_DIRECTORY     "$ENV{TPL_DIRECTORY}"    )
-SET( AMP_DATA           $ENV{AMP_DATA}          )
-SET( DISABLE_GXX_DEBUG  $ENV{DISABLE_GXX_DEBUG} )
-SET( COVERAGE_COMMAND   $ENV{COVERAGE_COMMAND}  )
-SET( VALGRIND_COMMAND   $ENV{VALGRIND_COMMAND}  )
-SET( CMAKE_MAKE_PROGRAM $ENV{CMAKE_MAKE_PROGRAM} )
+SET( MPIEXEC             $ENV{MPIEXEC}            )
+SET( TPL_DIRECTORY      "$ENV{TPL_DIRECTORY}"     )
+SET( AMP_DATA            $ENV{AMP_DATA}           )
+SET( DISABLE_GXX_DEBUG   $ENV{DISABLE_GXX_DEBUG}  )
+SET( COVERAGE_COMMAND    $ENV{COVERAGE_COMMAND}   )
+SET( VALGRIND_COMMAND    $ENV{VALGRIND_COMMAND}   )
+SET( CMAKE_MAKE_PROGRAM  $ENV{CMAKE_MAKE_PROGRAM} )
 SET( CTEST_CMAKE_GENERATOR $ENV{CTEST_CMAKE_GENERATOR} )
-SET( BUILD_SERIAL       $ENV{BUILD_SERIAL}      )
-SET( DISABLE_FORTRAN    $ENV{DISABLE_FORTRAN}   )
-SET( SKIP_TESTS         $ENV{SKIP_TESTS}        )
-SET( BUILDNAME_POSTFIX "$ENV{BUILDNAME_POSTFIX}" )
-SET( TPL_LIST_REQUIRED "$ENV{TPL_LIST_REQUIRED}" )
-SET( TPL_LIST_OPTIONAL "$ENV{TPL_LIST_OPTIONAL}" )
-SET( USE_CUDA           $ENV{USE_CUDA}          )
-SET( CUDA_FLAGS        "$ENV{CUDA_FLAGS}"       )
-SET( CTEST_SITE        "$ENV{CTEST_SITE}"       )
-SET( CTEST_URL         "$ENV{CTEST_URL}"        )
+SET( BUILD_SERIAL        $ENV{BUILD_SERIAL}       )
+SET( DISABLE_FORTRAN     $ENV{DISABLE_FORTRAN}    )
+SET( SKIP_TESTS          $ENV{SKIP_TESTS}         )
+SET( BUILDNAME_POSTFIX  "$ENV{BUILDNAME_POSTFIX}" )
+SET( TPL_LIST_REQUIRED  "$ENV{TPL_LIST_REQUIRED}" )
+SET( TPL_LIST_OPTIONAL  "$ENV{TPL_LIST_OPTIONAL}" )
+SET( USE_CUDA            $ENV{USE_CUDA}           )
+SET( CUDA_FLAGS         "$ENV{CUDA_FLAGS}"        )
+SET( CTEST_SITE         "$ENV{CTEST_SITE}"        )
+SET( CTEST_URL          "$ENV{CTEST_URL}"         )
 
 
 # Get the source directory based on the current directory
@@ -205,18 +205,18 @@ MESSAGE("   ${CTEST_OPTIONS}")
 
 
 # Configure the drop site
-IF ( CTEST_URL )
-    STRING( REPLACE "PROJECT" "AMP" CTEST_URL "${CTEST_URL}" )
-    SET( CTEST_SUBMIT_URL "${CTEST_URL}" )
-ELSE()
-    IF ( NOT CTEST_SITE )
-        SET( CTEST_SITE ${HOSTNAME} )
-    ENDIF()
+IF ( NOT CTEST_SITE )
+    SET( CTEST_SITE ${HOSTNAME} )
+ENDIF()
+IF ( NOT CTEST_URL )
     SET( CTEST_DROP_METHOD "http" )
     SET( CTEST_DROP_LOCATION "/CDash/submit.php?project=AMP" )
     SET( CTEST_DROP_SITE_CDASH TRUE )
     SET( DROP_SITE_CDASH TRUE )
     SET( CTEST_DROP_SITE ${CTEST_SITE} )
+ELSE()
+    STRING( REPLACE "PROJECT" "AMP" CTEST_URL "${CTEST_URL}" )
+    SET( CTEST_SUBMIT_URL "${CTEST_URL}" )
 ENDIF()
 
 
@@ -232,7 +232,7 @@ CTEST_CONFIGURE(
 CTEST_SUBMIT( PARTS Configure )
 
 
-# Run the configure, build and tests
+# Run the configure/build/test
 CTEST_BUILD()
 CTEST_SUBMIT( PARTS Build )
 EXECUTE_PROCESS( COMMAND ${CMAKE_MAKE_PROGRAM} install )
