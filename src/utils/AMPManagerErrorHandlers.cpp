@@ -1,4 +1,5 @@
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
@@ -164,8 +165,8 @@ void AMPManager::setMPIErrorHandler()
 #ifdef AMP_USE_MPI
     StackTrace::setMPIErrorHandler( getCommWorld().getCommunicator() );
     #ifdef AMP_USE_SAMRAI
-    // StackTrace::setMPIErrorHandler( SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator()
-    // );
+    auto comm = SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator();
+    StackTrace::setMPIErrorHandler( comm );
     #endif
 #endif
 }
@@ -174,8 +175,8 @@ void AMPManager::clearMPIErrorHandler()
 #ifdef AMP_USE_MPI
     StackTrace::clearMPIErrorHandler( getCommWorld().getCommunicator() );
     #ifdef AMP_USE_SAMRAI
-    // StackTrace::clearMPIErrorHandler(
-    //    SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator() );
+    auto comm = SAMRAI::tbox::SAMRAI_MPI::getSAMRAIWorld().getCommunicator();
+    StackTrace::clearMPIErrorHandler( comm );
     #endif
 #endif
 }
@@ -215,10 +216,10 @@ void AMPManager::setHandlers()
 #endif
     // Set the error handlers for SAMRAI
 #ifdef AMP_USE_SAMRAI
-    // SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
-    // SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
-    // auto appender = std::make_shared<SAMRAIAbortAppender>();
-    // SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
+    SAMRAI::tbox::SAMRAI_MPI::setCallAbortInSerialInsteadOfExit( true );
+    SAMRAI::tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort( true );
+    auto appender = std::make_shared<SAMRAIAbortAppender>();
+    SAMRAI::tbox::Logger::getInstance()->setAbortAppender( appender );
 #endif
     // Set the error handlers for HDF5
 #ifdef AMP_USE_HDF5
