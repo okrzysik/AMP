@@ -39,6 +39,7 @@ public:
         for ( size_t i = 0; i < N2; i++ )
             memcpy( &result( 0, i ), d_value.data(), N1 * sizeof( double ) );
     }
+    const AMP::Array<double> &getValue() const { return d_value; }
 
 private:
     AMP::Array<double> d_value;
