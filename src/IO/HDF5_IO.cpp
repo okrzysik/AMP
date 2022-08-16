@@ -270,7 +270,7 @@ void readHDF5<AMP::Array<std::complex<double>>>( hid_t fid,
 {
     readHDF5complex( fid, name, data );
 }
-    // clang-format off
+// clang-format off
 #define readWriteHDF5Array( TYPE )                                                          \
     template<>                                                                              \
     void writeHDF5<AMP::Array<TYPE>>( hid_t fid, const std::string_view &name, const AMP::Array<TYPE> &data ) \
@@ -329,7 +329,7 @@ void writeHDF5<std::string>( hid_t fid, const std::string_view &name, const std:
     tmp.viewRaw( { data.length() }, (char *) data.data() );
     writeHDF5( fid, name, tmp );
 }
-    // clang-format off
+// clang-format off
 #define readWriteHDF5Scalar( TYPE )                                                         \
     template<>                                                                              \
     void writeHDF5<TYPE>( hid_t fid, const std::string_view &name, const TYPE &data )       \
@@ -605,7 +605,7 @@ void writeHDF5<std::vector<bool>>( hid_t fid,
  ***********************************************************************/
 template void readHDF5<bool>( hid_t, const std::string_view &, bool & );
 template void writeHDF5<bool>( hid_t, const std::string_view &, const bool & );
-    // clang-format off
+// clang-format off
 #define instantiate( FUN )       \
     FUN( char );                 \
     FUN( int8_t );               \
