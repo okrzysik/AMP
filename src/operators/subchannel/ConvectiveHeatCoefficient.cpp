@@ -21,11 +21,7 @@ ConvectiveHeatCoefficient::ConvectiveHeatCoefficient(
     auto propname = params->d_db->getString( "Property" );
     d_property    = d_material->property( propname );
 
-    d_defaults.resize( d_property->get_number_arguments() );
-    auto ranges = d_property->get_arg_ranges();
-    for ( size_t i = 0; i < d_defaults.size(); ++i ) {
-        d_defaults[i] = ranges[i][0] * ( 1.0000001 );
-    }
+    d_defaults = d_property->get_defaults();
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
         auto defaults_db = params->d_db->getDatabase( "Defaults" );

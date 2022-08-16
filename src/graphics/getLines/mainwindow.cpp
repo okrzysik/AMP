@@ -224,7 +224,7 @@ void MainWindow::open()
     QString filename = QFileDialog::getOpenFileName( this, "Select the image", lastPath.c_str() );
     loadFile( filename.toStdString() );
 }
-void MainWindow::loadFile( std::string filename, bool showFailure )
+void MainWindow::loadFile( const std::string &filename, bool showFailure )
 {
     if ( !filename.empty() ) {
         // Load the image

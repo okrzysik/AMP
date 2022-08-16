@@ -63,7 +63,7 @@ private:
     void createStatusBar();
     void readSettings();
     void writeSettings();
-    void loadFile( std::string filename, bool showFailure = true );
+    void loadFile( const std::string &filename, bool showFailure = true );
     void setCurrentFile( const QString &fileName );
     void updateDisplay();
     void mousePressEvent( QMouseEvent *event );

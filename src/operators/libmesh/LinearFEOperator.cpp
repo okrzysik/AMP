@@ -36,11 +36,9 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     const bool reuse_matrix = params->d_db->getWithDefault<bool>( "reset_reuses_matrix", true );
 
     if ( ( d_matrix.get() == nullptr ) || ( !reuse_matrix ) ) {
-        AMP::LinearAlgebra::Vector::shared_ptr inVec =
-            AMP::LinearAlgebra::createVector( d_inDofMap, getInputVariable(), true );
-        AMP::LinearAlgebra::Vector::shared_ptr outVec =
-            AMP::LinearAlgebra::createVector( d_outDofMap, getOutputVariable(), true );
-        d_matrix = AMP::LinearAlgebra::createMatrix( inVec, outVec );
+        auto inVec  = AMP::LinearAlgebra::createVector( d_inDofMap, getInputVariable(), true );
+        auto outVec = AMP::LinearAlgebra::createVector( d_outDofMap, getOutputVariable(), true );
+        d_matrix    = AMP::LinearAlgebra::createMatrix( inVec, outVec );
         d_matrix->zero();
         d_matrix->makeConsistent();
         d_matrix->makeConsistent();
@@ -48,16 +46,13 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
     AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *d_inDofMap ) == ( *d_matrix->getRightDOFManager() ) );
 
-    AMP::Mesh::MeshIterator el           = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-    const AMP::Mesh::MeshIterator end_el = el.end();
-
     this->preAssembly( params );
 
-    for ( ; el != end_el; ++el ) {
-        this->preElementOperation( *el );
+    for ( const auto &elem : d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ) ) {
+        this->preElementOperation( elem );
         d_elemOp->apply();
         this->postElementOperation();
-    } // end for el
+    }
 
     this->postAssembly();
 
