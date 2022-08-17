@@ -19,6 +19,16 @@
 #include <thread>
 #include <vector>
 
+
+#include <QCategoryAxis>
+#include <QChart>
+#include <QChartView>
+#include <QFont>
+#include <QLineSeries>
+#include <QPainter>
+using namespace QtCharts;
+
+
 #include "mainwindow.h"
 
 
@@ -100,25 +110,12 @@ protected:
 /***********************************************************************
  * Constructor/destructor                                               *
  ***********************************************************************/
-MainWindow::MainWindow()
-    : ThreadedSlotsClass(),
-      mainMenu( nullptr ),
-      backButton( nullptr ),
-      processorButton( nullptr ),
-      imageWindow( nullptr )
+MainWindow::MainWindow() : ThreadedSlotsClass(), mainMenu( nullptr ), imageWindow( nullptr )
 {
     QWidget::setWindowTitle( QString( "GetLines" ) );
 
-    // Back button
-    backButton = new QPushButton( "Back" );
-    connect( backButton, SIGNAL( released() ), this, SLOT( backButtonPressed() ) );
-    backButton->hide();
-
     // Create the image plot
-    imageWindow = new QLabel;
-    // imageWindow->setMinimumSize( 100, 100 );
-    // imageWindow->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-
+    imageWindow  = new QLabel;
     auto *layout = new QVBoxLayout;
     layout->setMargin( 0 );
     layout->setContentsMargins( QMargins( 0, 0, 0, 0 ) );
@@ -144,6 +141,95 @@ MainWindow::MainWindow()
     reset();
     updateDisplay();
     qApp->processEvents();
+
+
+    /*
+        auto series = new QLineSeries();
+        *series << QPointF(0, 6) << QPointF(9, 4) << QPointF(15, 20) << QPointF(25, 12) <<
+       QPointF(29, 26); auto chart = new QChart(); chart->legend()->hide();
+        chart->addSeries(series);
+
+        // First we customize the series and the chart's title and background.
+
+        // Customize series
+        QPen pen(QRgb(0xfdb157));
+        pen.setWidth(5);
+        series->setPen(pen);
+
+        // Customize chart title
+        QFont font;
+        font.setPixelSize(18);
+        chart->setTitleFont(font);
+        chart->setTitleBrush(QBrush(Qt::white));
+        chart->setTitle("Customchart example");
+
+        // Customize chart background
+        QLinearGradient backgroundGradient;
+        backgroundGradient.setStart(QPointF(0, 0));
+        backgroundGradient.setFinalStop(QPointF(0, 1));
+        backgroundGradient.setColorAt(0.0, QRgb(0xd2d0d1));
+        backgroundGradient.setColorAt(1.0, QRgb(0x4c4547));
+        backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        chart->setBackgroundBrush(backgroundGradient);
+
+        // Customize plot area background
+        QLinearGradient plotAreaGradient;
+        plotAreaGradient.setStart(QPointF(0, 1));
+        plotAreaGradient.setFinalStop(QPointF(1, 0));
+        plotAreaGradient.setColorAt(0.0, QRgb(0x555555));
+        plotAreaGradient.setColorAt(1.0, QRgb(0x55aa55));
+        plotAreaGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        chart->setPlotAreaBackgroundBrush(plotAreaGradient);
+        chart->setPlotAreaBackgroundVisible(true);
+
+        // Then we customize the axes.
+        QCategoryAxis *axisX = new QCategoryAxis();
+        QCategoryAxis *axisY = new QCategoryAxis();
+
+        // Customize axis label font
+        QFont labelsFont;
+        labelsFont.setPixelSize(12);
+        axisX->setLabelsFont(labelsFont);
+        axisY->setLabelsFont(labelsFont);
+
+        // Customize axis colors
+        QPen axisPen(QRgb(0xd18952));
+        axisPen.setWidth(2);
+        axisX->setLinePen(axisPen);
+        axisY->setLinePen(axisPen);
+
+        // Customize axis label colors
+        QBrush axisBrush(Qt::white);
+        axisX->setLabelsBrush(axisBrush);
+        axisY->setLabelsBrush(axisBrush);
+
+        // Customize grid lines and shades
+        axisX->setGridLineVisible(false);
+        axisY->setGridLineVisible(false);
+        axisY->setShadesPen(Qt::NoPen);
+        axisY->setShadesBrush(QBrush(QColor(0x99, 0xcc, 0xcc, 0x55)));
+        axisY->setShadesVisible(true);
+
+        // Then the axis label values and ranges. Once the axes are ready, we set them to be used by
+       the chart. axisX->append("low", 10); axisX->append("optimal", 20); axisX->append("high", 30);
+        axisX->setRange(0, 30);
+        axisY->append("slow", 10);
+        axisY->append("med", 20);
+        axisY->append("fast", 30);
+        axisY->setRange(0, 30);
+        chart->addAxis(axisX, Qt::AlignBottom);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+
+        // Finally, we create a view containing the chart.
+        QChartView *chartView = new QChartView(chart);
+        chartView->setRenderHint(QPainter::Antialiasing);
+        chartView->setRubberBand( QChartView::RectangleRubberBand );
+
+        // Now we are ready to show the chart on a main window.
+        setCentralWidget(chartView);
+    */
 }
 MainWindow::~MainWindow()
 {
@@ -153,15 +239,12 @@ MainWindow::~MainWindow()
     disconnect( openAct, SIGNAL( triggered() ), this, SLOT( open() ) );
     disconnect( closeAct, SIGNAL( triggered() ), this, SLOT( close() ) );
     disconnect( resetAct, SIGNAL( triggered() ), this, SLOT( reset() ) );
-    disconnect( exclusiveAct, SIGNAL( triggered() ), this, SLOT( exclusiveFun() ) );
-    disconnect( subfunctionsAct, SIGNAL( triggered() ), this, SLOT( subfunctionFun() ) );
     disconnect( exitAct, SIGNAL( triggered() ), this, SLOT( exit() ) );
     disconnect( aboutAct, SIGNAL( triggered() ), this, SLOT( about() ) );
     disconnect( savePerformanceTimers, SIGNAL( triggered() ), this, SLOT( savePerformance() ) );
     disconnect( runUnitTestAction, SIGNAL( triggered() ), this, SLOT( runUnitTestsSlot() ) );
     // Disconnect signals created by createToolbars
-    disconnect( exclusiveButton, SIGNAL( released() ), this, SLOT( exclusiveFun() ) );
-    disconnect( subfunctionButton, SIGNAL( released() ), this, SLOT( subfunctionFun() ) );
+
     // Delete objects
     delete mainMenu;
 }
@@ -203,17 +286,7 @@ void MainWindow::about()
 /***********************************************************************
  * Save the timers for the application                                  *
  ***********************************************************************/
-void MainWindow::savePerformance()
-{
-    /*std::string filename = QFileDialog::getSaveFileName(
-        this, "Name of file to save", lastPath.c_str(), "*.0.timer *.1.timer" )
-                               .toStdString();
-    if ( !filename.empty() ) {
-        size_t i = filename.rfind( '.', filename.rfind( ".timer" ) - 1 );
-        filename = filename.substr( 0, i );
-        PROFILE_SAVE( filename );
-    }*/
-}
+void MainWindow::savePerformance() {}
 
 
 /***********************************************************************
@@ -221,20 +294,29 @@ void MainWindow::savePerformance()
  ***********************************************************************/
 void MainWindow::open()
 {
-    QString filename = QFileDialog::getOpenFileName( this, "Select the image", lastPath.c_str() );
+    QString filename = QFileDialog::getOpenFileName( this, "Select the image", d_lastPath.c_str() );
     loadFile( filename.toStdString() );
 }
 void MainWindow::loadFile( const std::string &filename, bool showFailure )
 {
     if ( !filename.empty() ) {
+        // Get the ath
+        int pos = -1;
+        if ( filename.rfind( (char) 47 ) != std::string::npos )
+            pos = std::max<int>( pos, filename.rfind( (char) 47 ) );
+        if ( filename.rfind( (char) 92 ) != std::string::npos )
+            pos = std::max<int>( pos, filename.rfind( (char) 92 ) );
+        if ( pos != -1 )
+            d_lastPath = filename.substr( 0, pos );
         // Load the image
         QImage image( QString( filename.data() ) );
-        data.resize( image.width(), image.height() );
-        data.fill( 0 );
-        for ( int i = 0; i < image.width(); i++ ) {
-            for ( int j = 0; j < image.height(); j++ ) {
-                auto rgb     = image.pixel( i, j );
-                data( i, j ) = AMP::RGBA( qRed( rgb ), qGreen( rgb ), qBlue( rgb ) );
+        d_data.resize( image.width(), image.height() );
+        d_data.fill( AMP::ARGB32() );
+        for ( size_t i = 0; i < d_data.size( 0 ); i++ ) {
+            for ( size_t j = 0; j < d_data.size( 1 ); j++ ) {
+                auto rgb = image.pixel( i, j );
+                d_data( i, j ) =
+                    AMP::ARGB32( qRed( rgb ), qGreen( rgb ), qBlue( rgb ), qAlpha( rgb ) );
             }
         }
         // Set the title window
@@ -267,31 +349,20 @@ inline TYPE getTableData( const std::vector<TYPE> &x, int rank )
 }
 void MainWindow::updateDisplay()
 {
-    if ( data.empty() ) {
+    if ( d_data.empty() ) {
         // No data, hide objects
         imageWindow->setVisible( false );
         return;
     }
     // Plot the image
-    QImage image( (uchar *) data.data(), data.size( 0 ), data.size( 1 ), QImage::Format_RGB32 );
+    QImage image(
+        (uchar *) d_data.data(), d_data.size( 0 ), d_data.size( 1 ), QImage::Format_ARGB32 );
     QPixmap imagePixelMap( QPixmap::fromImage( image ) );
     int w       = imageWindow->rect().width();
     int h       = imageWindow->rect().height();
     auto image2 = imagePixelMap.scaled( w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation );
     imageWindow->setPixmap( image2 );
     imageWindow->setVisible( true );
-}
-
-
-/***********************************************************************
- * Back button                                                          *
- ***********************************************************************/
-void MainWindow::backButtonPressed()
-{
-    /*if ( callList.empty() )
-        return;
-    callList.pop_back();
-    updateDisplay();*/
 }
 
 
@@ -449,7 +520,7 @@ void MainWindow::runUnitTestsSlot()
 {
     // Get the filename to test
     QString filename = QFileDialog::getOpenFileName(
-        this, "Select the timer file to test", lastPath.c_str(), "*.0.timer *.1.timer" );
+        this, "Select the timer file to test", d_lastPath.c_str(), "*.0.timer *.1.timer" );
     // Run the unit tests
     bool pass = runUnitTests( filename.toStdString() );
     if ( pass ) {

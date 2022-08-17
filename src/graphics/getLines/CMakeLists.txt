@@ -19,6 +19,7 @@ TARGET_LINK_LIBRARIES( get_lines ${${QT}_QTMAIN_LIBRARY} ${${QT}_LIBRARIES} )
 FOREACH ( tmp ${QT_COMPONENTS} )
     TARGET_LINK_LIBRARIES( get_lines ${Qt}::${tmp} )
 ENDFOREACH()
+TARGET_LINK_LIBRARIES( get_lines ${Qt}::Charts )
 ADD_PROJ_EXE_DEP( get_lines )
 GLOBAL_SET( get_lines-BINDIR "${CMAKE_CURRENT_BINARY_DIR}" )
 

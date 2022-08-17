@@ -47,7 +47,6 @@ private slots:
     void open();
     void reset();
     void about();
-    void backButtonPressed();
 
     void resizeEvent( QResizeEvent *e );
     void resizeDone();
@@ -72,10 +71,6 @@ private:
     QString strippedName( const QString &fullFileName );
 
     QMenuBar *mainMenu;
-    QPushButton *backButton;
-    QToolButton *processorButton;
-    QPushButton *exclusiveButton;
-    QPushButton *subfunctionButton;
 
     QMenu *fileMenu;
     QMenu *editMenu;
@@ -89,8 +84,7 @@ private:
     QAction *aboutAct;
     QAction *savePerformanceTimers;
     QAction *runUnitTestAction;
-    QAction *exclusiveAct;
-    QAction *subfunctionsAct;
+
     QTimer resizeTimer;
     std::unique_ptr<QMenu> processorButtonMenu;
 
@@ -99,8 +93,8 @@ private:
     std::shared_ptr<DrawBoxClass> gbox;
 
 protected: // Internal data
-    std::string lastPath;
-    AMP::Array<AMP::RGBA> data;
+    std::string d_lastPath;
+    AMP::Array<AMP::ARGB32> d_data;
 
 public: // Data for unit testing
     bool runUnitTests( const std::string &file );
