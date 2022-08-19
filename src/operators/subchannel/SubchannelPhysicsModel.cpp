@@ -101,12 +101,9 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
             auto property      = d_properties.find( propertie )->second; // pointer to property
             size_t n_arguments = property->get_number_arguments();       // number of arguments
             auto argnames      = property->get_arguments();              // argument names
-            std::vector<double> prop_defaults( n_arguments );            // argument default values
-            auto ranges = property->get_arg_ranges();                    // argument ranges
+            auto prop_defaults = property->get_defaults();               // argument default values
             // for each argument
             for ( size_t i = 0; i < n_arguments; ++i ) {
-                // initially set default value to 1.0000001*(argument range minimum)
-                prop_defaults[i] = ranges[i][0] * ( 1.0000001 );
                 // try to find argument in Defaults keys
                 auto hit = std::find( defaultkeys.begin(), defaultkeys.end(), argnames[i] );
                 // if found,

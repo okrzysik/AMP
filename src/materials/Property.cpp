@@ -34,9 +34,10 @@ Property::Property( std::string name,
     AMP_ASSERT( d_arguments.size() == d_argUnits.size() );
     for ( size_t i = 0; i < d_arguments.size(); i++ )
         d_argToIndexMap[d_arguments[i]] = i;
+    // Set the defaults
     d_defaults.resize( d_arguments.size() );
     for ( size_t i = 0; i < d_arguments.size(); i++ )
-        d_defaults[i] = d_ranges[i][0];
+        d_defaults[i] = d_ranges[i][0] * ( 1.0000001 );
 }
 
 
