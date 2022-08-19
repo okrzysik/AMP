@@ -37,21 +37,22 @@ void VectorTests::InstantiateVector( AMP::UnitTest *ut )
 }
 
 
+template<typename T>
 void VectorTests::CopyVectorConsistency( AMP::UnitTest *ut )
 {
     auto vec1        = d_factory->getVector();
     auto vec2        = vec1->cloneVector();
     auto vec3        = vec1->cloneVector();
     auto commList    = vec1->getCommunicationList();
-    double *t1       = nullptr;
-    double *t2       = nullptr;
+    T *t1            = nullptr;
+    T *t2            = nullptr;
     size_t *ndx      = nullptr;
     size_t numGhosts = commList->getGhostIDList().size();
     vec1->setRandomValues();
     vec2->copyVector( vec1 );
     if ( numGhosts ) {
-        t1  = new double[numGhosts];
-        t2  = new double[numGhosts];
+        t1  = new T[numGhosts];
+        t2  = new T[numGhosts];
         ndx = new size_t[numGhosts];
         std::copy( commList->getGhostIDList().begin(), commList->getGhostIDList().end(), ndx );
         vec1->getValuesByGlobalID( numGhosts, ndx, t1 );
@@ -122,7 +123,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
     PASS_FAIL( !fail, "Set ghost data to 5" );
 }
 
-
+template<typename T>
 void VectorTests::CloneVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
@@ -132,19 +133,19 @@ void VectorTests::CloneVector( AMP::UnitTest *ut )
     ut->passes( "Clone created " + d_factory->name() );
     bool pass = true;
     for ( size_t i = 0; i != vector->numberOfDataBlocks(); i++ ) {
-        auto *clone_ptr  = clone->getRawDataBlock<double>( i );
-        auto *vector_ptr = vector->getRawDataBlock<double>( i );
+        auto *clone_ptr  = clone->getRawDataBlock<T>( i );
+        auto *vector_ptr = vector->getRawDataBlock<T>( i );
         if ( clone_ptr == vector_ptr )
             pass = false;
     }
     PASS_FAIL( pass, "CloneVector: allocated" );
     clone->setToScalar( 1. );
-    double t = static_cast<double>( clone->L1Norm() );
+    T t = static_cast<T>( clone->L1Norm() );
     PASS_FAIL( clone->getGlobalSize() == vector->getGlobalSize(),
                "CloneVector: global size equality" );
     PASS_FAIL( clone->getLocalSize() == vector->getLocalSize(),
                "CloneVector: local size equality" );
-    PASS_FAIL( fabs( t - (double) clone->getGlobalSize() ) < 0.0000001,
+    PASS_FAIL( fabs( t - (T) clone->getGlobalSize() ) < 0.0000001,
                "CloneVector: trivial set data" );
 }
 

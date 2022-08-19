@@ -32,19 +32,23 @@ void EpetraVectorTests::VerifyNorms( AMP::UnitTest *ut )
     AMP_ASSERT( NVec == 1 );
 
     double ans1, ans2;
-    vec->setRandomValues();
+    if ( vec->isType<double>( 0 ) ) {
+        vec->setRandomValues();
 
-    ans1 = static_cast<double>( vec->L1Norm() );
-    Vec.Norm1( &ans2 );
-    PASS_FAIL( fabs( ans1 - ans2 ) < 1e-12, "L1 norms match" );
+        ans1 = static_cast<double>( vec->L1Norm() );
+        Vec.Norm1( &ans2 );
+        PASS_FAIL( fabs( ans1 - ans2 ) < 1e-12, "L1 norms match" );
 
-    ans1 = static_cast<double>( vec->L2Norm() );
-    Vec.Norm2( &ans2 );
-    PASS_FAIL( fabs( ans1 - ans2 ) < 1e-12, "L2 norms match" );
+        ans1 = static_cast<double>( vec->L2Norm() );
+        Vec.Norm2( &ans2 );
+        PASS_FAIL( fabs( ans1 - ans2 ) < 1e-12, "L2 norms match" );
 
-    ans1 = static_cast<double>( vec->maxNorm() );
-    Vec.NormInf( &ans2 );
-    PASS_FAIL( fabs( ans1 - ans2 ) < 1e-12, "Inf norms match" );
+        ans1 = static_cast<double>( vec->maxNorm() );
+        Vec.NormInf( &ans2 );
+        PASS_FAIL( fabs( ans1 - ans2 ) < 1e-12, "Inf norms match" );
+    } else {
+        ut->expected_failure( "Petsc tests currently only work for double" );
+    }
 }
 
 

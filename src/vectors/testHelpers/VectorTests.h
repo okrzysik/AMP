@@ -60,6 +60,7 @@ public:
 public:
     void InstantiateVector( AMP::UnitTest *utils );
 
+    template<typename T>
     void CopyVectorConsistency( AMP::UnitTest *utils );
 
     template<typename VIEWER>
@@ -69,6 +70,7 @@ public:
 
     void SetToScalarVector( AMP::UnitTest *utils );
 
+    template<typename T>
     void CloneVector( AMP::UnitTest *utils );
 
     void DotProductVector( AMP::UnitTest *utils );
