@@ -154,6 +154,7 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
 void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_from_restart )
 {
+    NULL_USE( is_from_restart );
 
     if ( db->keyExists( "variable_names" ) ) {
         d_var_names = db->getVector<std::string>( "variable_names" );
@@ -872,6 +873,9 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
                                      const double current_dt,
                                      const double old_dt )
 {
+    NULL_USE( current_dt );
+    NULL_USE( old_dt );
+
     PROFILE_START( "setInitialGuess" );
     (void) current_time;
 

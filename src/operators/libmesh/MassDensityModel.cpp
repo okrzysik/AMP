@@ -127,11 +127,7 @@ MassDensityModel::MassDensityModel( std::shared_ptr<const MassDensityModelParame
 
         // load and check defaults
         // initially set them to the minimum of the range plus a bit
-        std::vector<double> defaults( property->get_number_arguments() );
-        auto ranges = property->get_arg_ranges();
-        for ( size_t i = 0; i < defaults.size(); ++i ) {
-            defaults[i] = ranges[i][0] * ( 1.0000001 );
-        }
+        auto defaults = property->get_defaults();
         if ( params->d_db->keyExists( "Defaults" ) ) {
             // check for correct names
             auto defaults_db = params->d_db->getDatabase( "Defaults" );
