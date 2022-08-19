@@ -38,7 +38,7 @@ public:
     static inline Scalar create( TYPE x );
 
     /**
-     * \brief Construct a sclar value
+     * \brief Construct a scalar value
      * \param[in] tol       Tolerance to allow for the conversion (absolute error)
      * \return              Returns the scalar value
      */

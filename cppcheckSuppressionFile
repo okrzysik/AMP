@@ -29,6 +29,7 @@ noExplicitConstructor:*/AMP/mesh/MeshID.h
 noExplicitConstructor:*/AMP/mesh/MeshPoint.h
 noExplicitConstructor:*/AMP/mesh/MeshElement.h
 noExplicitConstructor:*/AMP/mesh/MeshUtilities.h
+noExplicitConstructor:*/graphics/RGBA.h
 noExplicitConstructor:*/AMP/utils/Array.h
 noExplicitConstructor:*/AMP/utils/ArraySize.h
 noExplicitConstructor:*/AMP/utils/AMP_MPI.h
@@ -66,6 +67,7 @@ passedByValue:*/utils/FactoryStrategy.hpp
 //***********************************************************
 // Suppress cpp files                                       *
 //***********************************************************
+noExplicitConstructor:*/src/graphics/getLines/mainwindow.cpp
 duplicateExpression:*/src/mesh/testHelpers/meshTests.cpp
 duplicateExpression:*/src/mesh/structured/BoxMesh.cpp
 oppositeInnerCondition:*/src/mesh/MultiMesh.cpp

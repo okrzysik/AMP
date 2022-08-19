@@ -17,28 +17,13 @@ public:
     ScalarProperty( std::string name,
                     double value,
                     const AMP::Units &unit = AMP::Units(),
-                    std::string source     = "" )
-        : Property( std::move( name ), { 1 }, unit, std::move( source ) )
-    {
-        d_value.resize( 1 );
-        d_value( 0 ) = value;
-    }
+                    std::string source     = "" );
     ScalarProperty( std::string name,
                     AMP::Array<double> value,
                     const AMP::Units &unit = AMP::Units(),
-                    std::string source     = "" )
-        : Property( std::move( name ), value.size(), unit, std::move( source ) ),
-          d_value( std::move( value ) )
-    {
-    }
-    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override
-    {
-        size_t N1 = d_value.length();
-        size_t N2 = result.size( d_value.ndim() );
-        AMP_ASSERT( N1 * N2 == result.length() );
-        for ( size_t i = 0; i < N2; i++ )
-            memcpy( &result( 0, i ), d_value.data(), N1 * sizeof( double ) );
-    }
+                    std::string source     = "" );
+    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override;
+    inline const AMP::Array<double> &getValue() const { return d_value; }
 
 private:
     AMP::Array<double> d_value;
@@ -56,43 +41,36 @@ public:
                         std::vector<double> params                = {},
                         std::vector<std::string> args             = {},
                         std::vector<std::array<double, 2>> ranges = {},
-                        std::vector<AMP::Units> argUnits          = {} )
-        : Property( std::move( name ),
-                    { 1 },
-                    unit,
-                    std::move( source ),
-                    std::move( args ),
-                    std::move( ranges ),
-                    std::move( argUnits ) ),
-          d_p( params )
-    {
-        if ( d_p.size() > 1 )
-            AMP_ASSERT( d_arguments.size() == 1 );
-        else
-            AMP_ASSERT( d_arguments.empty() );
-    }
-    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
-    {
-        if ( d_p.size() == 1 )
-            return result.fill( d_p[0] );
-        for ( size_t i = 0; i < result.length(); i++ ) {
-            double x  = args( i );
-            double y  = 0;
-            double x2 = 1.0;
-            for ( size_t i = 0; i < d_p.size(); i++ ) {
-                y += d_p[i] * x2;
-                x2 *= x;
-            }
-            result( i ) = y;
-        }
-    }
+                        std::vector<AMP::Units> argUnits          = {} );
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override;
 
 private:
     std::vector<double> d_p;
 };
 
 
-//! Polynomial based property class
+//! Interpolated property class
+class InterpolatedProperty final : public Property
+{
+public:
+    InterpolatedProperty( std::string name,
+                          const AMP::Units &unit,
+                          const std::string &var_name,
+                          std::vector<double> x,
+                          std::vector<double> y,
+                          const std::array<double, 2> range,
+                          const AMP::Units &argUnit,
+                          double default_value,
+                          std::string source = "" );
+    void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override;
+
+private:
+    std::vector<double> d_x;
+    std::vector<double> d_y;
+};
+
+
+//! Equation based property class
 class EquationProperty : public Property
 {
 public:
@@ -102,55 +80,15 @@ public:
                       const AMP::Units &unit                    = {},
                       std::vector<std::array<double, 2>> ranges = {},
                       std::vector<AMP::Units> argUnits          = {},
-                      std::string source                        = "" )
-        : Property( std::move( name ),
-                    { 1 },
-                    unit,
-                    std::move( source ),
-                    eq->getVars(),
-                    getRanges( ranges, eq->getVars() ),
-                    std::move( argUnits ) ),
-          d_eq( eq )
-    {
-        AMP_ASSERT( d_eq );
-    }
+                      std::string source                        = "" );
     EquationProperty( std::string name,
                       const std::string &expression,
                       const AMP::Units &unit                    = {},
                       std::vector<std::string> args             = {},
                       std::vector<std::array<double, 2>> ranges = {},
                       std::vector<AMP::Units> argUnits          = {},
-                      std::string source                        = "" )
-        : Property( std::move( name ),
-                    { 1 },
-                    unit,
-                    std::move( source ),
-                    args,
-                    getRanges( ranges, args ),
-                    std::move( argUnits ) ),
-          d_eq( std::make_shared<MathExpr>( expression, args ) )
-    {
-        AMP_ASSERT( d_eq );
-    }
-    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
-    {
-        AMP_ASSERT( d_eq );
-        for ( size_t i = 0; i < result.length(); i++ ) {
-            if ( args.empty() )
-                result( i ) = ( *d_eq )();
-            else
-                result( i ) = ( *d_eq )( &args( 0, i ) );
-        }
-    }
-
-private:
-    static std::vector<std::array<double, 2>> getRanges( std::vector<std::array<double, 2>> ranges,
-                                                         const std::vector<std::string> vars )
-    {
-        if ( ranges.empty() )
-            ranges.resize( vars.size(), { { -1e100, 1e100 } } );
-        return ranges;
-    }
+                      std::string source                        = "" );
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override;
 
 private:
     std::shared_ptr<const MathExpr> d_eq;
