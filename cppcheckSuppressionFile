@@ -148,6 +148,8 @@ constParameter:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
 constParameter:*/src/operators/mechanics/GeneralCladThermalCreepPlasticModel.cpp
 constParameter:*/src/operators/trilinos/TrilinosMatrixShellOperator.cpp
 arrayIndexOutOfBoundsCond:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
+arrayIndexOutOfBoundsCond:*/src/mesh/edge_t.cpp
+arrayIndexOutOfBoundsCond:*/src/mesh/triangle_t.cpp
 
 
 //***********************************************************

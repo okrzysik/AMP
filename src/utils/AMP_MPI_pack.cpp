@@ -5,33 +5,31 @@
 #include <vector>
 
 
-#define PACK_VECTOR( TYPE )                                          \
-    template<>                                                       \
-    size_t AMP::packSize( const std::vector<TYPE> &x )               \
-    {                                                                \
-        return sizeof( size_t ) + sizeof( TYPE ) * x.size();         \
-    }                                                                \
-    template<>                                                       \
-    size_t AMP::pack( const std::vector<TYPE> &x, std::byte *buf )   \
-    {                                                                \
-        pack<size_t>( x.size(), buf );                               \
-        buf += sizeof( size_t );                                     \
-        if ( !x.empty() )                                            \
-            memcpy( buf, x.data(), sizeof( TYPE ) * x.size() );      \
-        return sizeof( size_t ) + sizeof( TYPE ) * x.size();         \
-    }                                                                \
-    template<>                                                       \
-    size_t AMP::unpack( std::vector<TYPE> &x, const std::byte *buf ) \
-    {                                                                \
-        size_t N;                                                    \
-        unpack<size_t>( N, buf );                                    \
-        x.resize( N );                                               \
-        buf += sizeof( size_t );                                     \
-        DISABLE_WARNINGS                                             \
-        if ( !x.empty() )                                            \
-            memcpy( x.data(), buf, sizeof( TYPE ) * x.size() );      \
-        ENABLE_WARNINGS                                              \
-        return sizeof( size_t ) + sizeof( TYPE ) * x.size();         \
+#define PACK_VECTOR( TYPE )                                              \
+    template<>                                                           \
+    size_t AMP::packSize( const std::vector<TYPE> &x )                   \
+    {                                                                    \
+        return sizeof( size_t ) + sizeof( TYPE ) * x.size();             \
+    }                                                                    \
+    template<>                                                           \
+    size_t AMP::pack( const std::vector<TYPE> &x, std::byte *buf )       \
+    {                                                                    \
+        pack<size_t>( x.size(), buf );                                   \
+        buf += sizeof( size_t );                                         \
+        if ( !x.empty() )                                                \
+            memcpy( buf, (void *) x.data(), sizeof( TYPE ) * x.size() ); \
+        return sizeof( size_t ) + sizeof( TYPE ) * x.size();             \
+    }                                                                    \
+    template<>                                                           \
+    size_t AMP::unpack( std::vector<TYPE> &x, const std::byte *buf )     \
+    {                                                                    \
+        size_t N;                                                        \
+        unpack<size_t>( N, buf );                                        \
+        x.resize( N );                                                   \
+        buf += sizeof( size_t );                                         \
+        if ( !x.empty() )                                                \
+            memcpy( (void *) x.data(), buf, sizeof( TYPE ) * x.size() ); \
+        return sizeof( size_t ) + sizeof( TYPE ) * x.size();             \
     }
 
 //clang-format off
