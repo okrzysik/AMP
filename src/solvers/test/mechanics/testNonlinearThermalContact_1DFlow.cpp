@@ -29,7 +29,6 @@
 #include "AMP/operators/map/libmesh/Map1Dto3D.h"
 #include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"

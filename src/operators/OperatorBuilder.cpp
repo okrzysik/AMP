@@ -122,14 +122,11 @@ OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
 std::shared_ptr<Operator>
 OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                  std::string operatorName,
-                                 std::shared_ptr<AMP::Database> tmp_input_db,
+                                 std::shared_ptr<AMP::Database> input_db,
                                  std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
                                  std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
 {
 
-    std::shared_ptr<Operator> retOperator;
-
-    auto input_db = tmp_input_db;
 
     auto operator_db = input_db->getDatabase( operatorName );
 
@@ -139,7 +136,7 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
     // we create the element physics model if a database entry exists
     // and the incoming element physics model pointer is NULL
-    if ( ( elementPhysicsModel.get() == nullptr ) && ( operator_db->keyExists( "LocalModel" ) ) ) {
+    if ( !elementPhysicsModel && operator_db->keyExists( "LocalModel" ) ) {
         // extract the name of the local model from the operator database
         auto localModelName = operator_db->getString( "LocalModel" );
         // check whether a database exists in the global database
@@ -167,7 +164,7 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     }
 
     auto operatorType = operator_db->getString( "name" );
-
+    std::shared_ptr<Operator> retOperator;
     if ( operatorType == "IdentityOperator" ) {
         retOperator = OperatorBuilder::createIdentityOperator( meshAdapter, operator_db );
     } else if ( operatorType == "MechanicsLinearFEOperator" ) {
@@ -268,14 +265,11 @@ OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdap
     } else {
         AMP_INSIST( input_db->keyExists( "name" ), "Key ''name'' is missing!" );
     }
-
     AMP_INSIST( flowOp_db, "Error: The database object for FlowFrapconOperator is NULL" );
 
     auto flowOpParams    = std::make_shared<FlowFrapconOperatorParameters>( flowOp_db );
     flowOpParams->d_Mesh = meshAdapter;
-    auto flowOp          = std::make_shared<FlowFrapconOperator>( flowOpParams );
-
-    return flowOp;
+    return std::make_shared<FlowFrapconOperator>( flowOpParams );
 }
 
 Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinearOperator(
@@ -285,7 +279,6 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinearOperator(
 {
     // first create a SubchannelPhysicsModel
     std::shared_ptr<SubchannelPhysicsModel> transportModel;
-
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
     } else {
@@ -316,9 +309,7 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinearOperator(
     subchannelParams->d_Mesh = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel;
 
-    auto subchannelOp = std::make_shared<SubchannelTwoEqLinearOperator>( subchannelParams );
-
-    return subchannelOp;
+    return std::make_shared<SubchannelTwoEqLinearOperator>( subchannelParams );
 }
 
 
@@ -330,7 +321,6 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlinearOperator(
 
     // first create a SubchannelPhysicsModel
     std::shared_ptr<SubchannelPhysicsModel> transportModel;
-
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
     } else {
@@ -344,7 +334,6 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlinearOperator(
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
         transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
     }
-
     AMP_INSIST( transportModel, "NULL transport model" );
 
     // create the operator
@@ -361,9 +350,7 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlinearOperator(
     auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( subchannel_db );
     subchannelParams->d_Mesh = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel;
-    auto subchannelOp = std::make_shared<SubchannelTwoEqNonlinearOperator>( subchannelParams );
-
-    return subchannelOp;
+    return std::make_shared<SubchannelTwoEqNonlinearOperator>( subchannelParams );
 }
 
 
@@ -375,7 +362,6 @@ Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonlinearOperator(
 
     // first create a SubchannelPhysicsModel
     std::shared_ptr<SubchannelPhysicsModel> transportModel;
-
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
     } else {
@@ -389,7 +375,6 @@ Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonlinearOperator(
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
         transportModel = std::dynamic_pointer_cast<SubchannelPhysicsModel>( elementPhysicsModel );
     }
-
     AMP_INSIST( transportModel, "NULL transport model" );
 
     // create the operator
@@ -406,9 +391,7 @@ Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonlinearOperator(
     auto subchannelParams    = std::make_shared<SubchannelOperatorParameters>( subchannel_db );
     subchannelParams->d_Mesh = meshAdapter;
     subchannelParams->d_subchannelPhysicsModel = transportModel;
-    auto subchannelOp = std::make_shared<SubchannelFourEqNonlinearOperator>( subchannelParams );
-
-    return subchannelOp;
+    return std::make_shared<SubchannelFourEqNonlinearOperator>( subchannelParams );
 }
 
 
@@ -416,7 +399,6 @@ Operator::shared_ptr
 OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                               std::shared_ptr<AMP::Database> input_db )
 {
-
     // now create the Neutronics operator
     std::shared_ptr<AMP::Database> NeutronicsOp_db;
     if ( input_db->getString( "name" ) == "NeutronicsRhsOperator" ) {
@@ -430,9 +412,7 @@ OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAd
 
     auto neutronicsOpParams    = std::make_shared<NeutronicsRhsParameters>( NeutronicsOp_db );
     neutronicsOpParams->d_Mesh = meshAdapter;
-    auto neutronicsOp          = std::make_shared<NeutronicsRhs>( neutronicsOpParams );
-
-    return neutronicsOp;
+    return std::make_shared<NeutronicsRhs>( neutronicsOpParams );
 }
 
 
@@ -444,7 +424,6 @@ Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
 
     // first create a DiffusionTransportModel
     std::shared_ptr<DiffusionTransportModel> transportModel;
-
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     } else {
@@ -458,7 +437,6 @@ Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     }
-
     AMP_INSIST( transportModel, "NULL transport model" );
 
     // next create a ElementOperation object
@@ -502,7 +480,6 @@ Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
     std::shared_ptr<SourcePhysicsModel> sourcePhysicsModel;
-
     if ( elementPhysicsModel ) {
         sourcePhysicsModel = std::dynamic_pointer_cast<SourcePhysicsModel>( elementPhysicsModel );
     } else {
@@ -529,9 +506,7 @@ Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
     volumeIntegralParameters->d_sourcePhysicsModel = sourcePhysicsModel;
     volumeIntegralParameters->d_elemOp             = sourceNonlinearElem;
     volumeIntegralParameters->d_Mesh               = meshAdapter;
-    auto nonlinearSourceOp = std::make_shared<VolumeIntegralOperator>( volumeIntegralParameters );
-
-    return nonlinearSourceOp;
+    return std::make_shared<VolumeIntegralOperator>( volumeIntegralParameters );
 }
 
 
@@ -543,7 +518,6 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
 
     // first create a DiffusionTransportModel
     std::shared_ptr<DiffusionTransportModel> transportModel;
-
     if ( elementPhysicsModel ) {
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     } else {
@@ -557,7 +531,6 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
         transportModel = std::dynamic_pointer_cast<DiffusionTransportModel>( elementPhysicsModel );
     }
-
     AMP_INSIST( transportModel, "NULL transport model" );
 
     // next create an ElementOperation object
@@ -621,10 +594,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
     }
 
     // create the nonlinear diffusion operator
-    auto nonlinearDiffusionOp =
-        std::make_shared<DiffusionNonlinearFEOperator>( diffusionNLOpParams );
-
-    return nonlinearDiffusionOp;
+    return std::make_shared<DiffusionNonlinearFEOperator>( diffusionNLOpParams );
 }
 
 
@@ -669,9 +639,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOperator(
     params->d_SoretOperator =
         std::dynamic_pointer_cast<DiffusionNonlinearFEOperator>( soretOperator );
     params->d_name = operatorName;
-    auto fsOp      = std::make_shared<FickSoretNonlinearFEOperator>( params );
-
-    return fsOp;
+    return std::make_shared<FickSoretNonlinearFEOperator>( params );
 }
 
 
@@ -682,7 +650,7 @@ Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperator(
 {
 
     // first create a MechanicsMaterialModel
-    if ( elementPhysicsModel.get() == nullptr ) {
+    if ( !elementPhysicsModel ) {
         AMP_INSIST( input_db->keyExists( "MechanicsMaterialModel" ),
                     "Key ''MechanicsMaterialModel'' is missing!" );
 
@@ -690,7 +658,6 @@ Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperator(
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( materialModel_db );
     }
-
     AMP_INSIST( elementPhysicsModel, "NULL material model" );
 
     // next create a ElementOperation object
@@ -720,9 +687,7 @@ Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperator(
     mechanicsOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
 
-    auto mechanicsOp = std::make_shared<MechanicsLinearFEOperator>( mechanicsOpParams );
-
-    return mechanicsOp;
+    return std::make_shared<MechanicsLinearFEOperator>( mechanicsOpParams );
 }
 
 
@@ -733,7 +698,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
 {
 
     // first create a MechanicsMaterialModel
-    if ( elementPhysicsModel.get() == nullptr ) {
+    if ( !elementPhysicsModel ) {
         AMP_INSIST( input_db->keyExists( "MechanicsMaterialModel" ),
                     "Key ''MechanicsMaterialModel'' is missing!" );
 
@@ -741,7 +706,6 @@ Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     }
-
     AMP_INSIST( elementPhysicsModel, "NULL material model" );
 
     // next create a ElementOperation object
@@ -780,9 +744,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
     mechanicsOpParams->d_dofMap[Mechanics::LHGR] = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
-    auto mechanicsOp = std::make_shared<MechanicsNonlinearFEOperator>( mechanicsOpParams );
-
-    return mechanicsOp;
+    return std::make_shared<MechanicsNonlinearFEOperator>( mechanicsOpParams );
 }
 
 Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSWFOperator(
@@ -791,7 +753,7 @@ Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSWFOperator(
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
 
-    if ( elementPhysicsModel.get() == nullptr ) {
+    if ( !elementPhysicsModel ) {
         AMP_INSIST( input_db->keyExists( "FlowTransportModel" ),
                     "Key ''FlowTransportModel'' is missing!" );
 
@@ -799,7 +761,6 @@ Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSWFOperator(
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     }
-
     AMP_INSIST( elementPhysicsModel, "NULL transport model" );
 
     // next create a ElementOperation object
@@ -827,9 +788,7 @@ Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSWFOperator(
     flowOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
 
-    auto flowOp = std::make_shared<NavierStokesLSWFLinearFEOperator>( flowOpParams );
-
-    return flowOp;
+    return std::make_shared<NavierStokesLSWFLinearFEOperator>( flowOpParams );
 }
 
 
@@ -839,7 +798,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokesLSWFOperator(
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
 
-    if ( elementPhysicsModel.get() == nullptr ) {
+    if ( !elementPhysicsModel ) {
         AMP_INSIST( input_db->keyExists( "FlowTransportModel" ),
                     "Key ''FlowTransportModel'' is missing!" );
 
@@ -847,7 +806,6 @@ Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokesLSWFOperator(
         elementPhysicsModel =
             ElementPhysicsModelFactory::createElementPhysicsModel( transportModel_db );
     }
-
     AMP_INSIST( elementPhysicsModel, "NULL material model" );
 
     // next create a ElementOperation object
@@ -872,9 +830,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokesLSWFOperator(
     flowOpParams->d_Mesh   = meshAdapter;
     flowOpParams->d_dofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 10, true );
-    auto flowOp = std::make_shared<NavierStokesLSWFFEOperator>( flowOpParams );
-
-    return flowOp;
+    return std::make_shared<NavierStokesLSWFFEOperator>( flowOpParams );
 }
 
 
@@ -886,7 +842,6 @@ Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
 
     // first create a MassDensityModel
     std::shared_ptr<MassDensityModel> densityModel;
-
     if ( elementPhysicsModel ) {
         densityModel = std::dynamic_pointer_cast<MassDensityModel>( elementPhysicsModel );
     } else {
@@ -897,7 +852,6 @@ Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
             ElementPhysicsModelFactory::createElementPhysicsModel( densityModel_db );
         densityModel = std::dynamic_pointer_cast<MassDensityModel>( elementPhysicsModel );
     }
-
     AMP_INSIST( densityModel, "NULL density model" );
 
     // next create a ElementOperation object
@@ -923,9 +877,7 @@ Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     densityOpParams->d_outDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    auto densityOp = std::make_shared<MassLinearFEOperator>( densityOpParams );
-
-    return densityOp;
+    return std::make_shared<MassLinearFEOperator>( densityOpParams );
 }
 
 
@@ -936,18 +888,13 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
     std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
 {
-    std::shared_ptr<Operator> retOperator;
     AMP_INSIST( input_db, "NULL database object passed" );
 
     auto operator_db = input_db->getDatabase( operatorName );
     AMP_INSIST( operator_db, "NULL database object passed" );
 
     // create the volume operator
-    std::string volumeOperatorName = operator_db->getString( "VolumeOperator" );
-    // if this flag is true the same local physics model will be used for both boundary and volume
-    // operators
-    bool useSameLocalModelForVolumeAndBoundaryOperators = operator_db->getWithDefault<bool>(
-        "useSameLocalModelForVolumeAndBoundaryOperators", false );
+    auto volumeOperatorName = operator_db->getString( "VolumeOperator" );
 
     auto volumeOperator = OperatorBuilder::createOperator(
         meshAdapter, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
@@ -967,25 +914,25 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
 
     std::shared_ptr<ElementPhysicsModel> boundaryLocalModel;
 
-    if ( useSameLocalModelForVolumeAndBoundaryOperators ) {
+    // Use the same local physics model for both boundary and volume operators?
+    bool flag = operator_db->getWithDefault<bool>( "useSameLocalModelForVolumeAndBoundaryOperators",
+                                                   false );
+    if ( flag ) {
         boundaryLocalModel = elementPhysicsModel;
     }
 
-    std::shared_ptr<BoundaryOperator> boundaryOperator =
-        OperatorBuilder::createBoundaryOperator( meshAdapter,
-                                                 boundaryOperatorName,
-                                                 input_db,
-                                                 volumeLinearOp,
-                                                 boundaryLocalModel,
-                                                 localModelFactory );
+    auto boundaryOperator = OperatorBuilder::createBoundaryOperator( meshAdapter,
+                                                                     boundaryOperatorName,
+                                                                     input_db,
+                                                                     volumeLinearOp,
+                                                                     boundaryLocalModel,
+                                                                     localModelFactory );
 
     auto bvpOperatorParams                = std::make_shared<BVPOperatorParameters>( input_db );
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
 
-    retOperator.reset( new LinearBVPOperator( bvpOperatorParams ) );
-
-    return retOperator;
+    return std::make_shared<LinearBVPOperator>( bvpOperatorParams );
 }
 
 
@@ -996,7 +943,6 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
     std::shared_ptr<ElementPhysicsModelFactory> localModelFactory )
 {
-    std::shared_ptr<Operator> retOperator;
     AMP_INSIST( input_db, "NULL database object passed" );
 
     auto operator_db = input_db->getDatabase( operatorName );
@@ -1004,10 +950,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
 
     // create the volume operator
     std::string volumeOperatorName = operator_db->getString( "VolumeOperator" );
-    // if this flag is true the same local physics model will be used for both boundary and volume
-    // operators
-    bool useSameLocalModelForVolumeAndBoundaryOperators = operator_db->getWithDefault<bool>(
-        "useSameLocalModelForVolumeAndBoundaryOperators", false );
+
 
     auto volumeOperator = OperatorBuilder::createOperator(
         meshAdapter, volumeOperatorName, input_db, elementPhysicsModel, localModelFactory );
@@ -1025,7 +968,10 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
 
     std::shared_ptr<ElementPhysicsModel> boundaryLocalModel;
 
-    if ( useSameLocalModelForVolumeAndBoundaryOperators ) {
+    // Use the same local physics model for both boundary and volume operators?
+    bool flag = operator_db->getWithDefault<bool>( "useSameLocalModelForVolumeAndBoundaryOperators",
+                                                   false );
+    if ( flag ) {
         boundaryLocalModel = elementPhysicsModel;
     }
 
@@ -1040,9 +986,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
     bvpOperatorParams->d_volumeOperator   = volumeOperator;
     bvpOperatorParams->d_boundaryOperator = boundaryOperator;
 
-    retOperator.reset( new NonlinearBVPOperator( bvpOperatorParams ) );
-
-    return retOperator;
+    return std::make_shared<NonlinearBVPOperator>( bvpOperatorParams );
 }
 
 
@@ -1050,7 +994,6 @@ Operator::shared_ptr
 OperatorBuilder::createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                                             std::shared_ptr<AMP::Database> input_db )
 {
-
     // now create the flow frapcon operator
     std::shared_ptr<AMP::Database> flowOp_db;
     if ( input_db->getString( "name" ) == "FlowFrapconJacobian" ) {
@@ -1063,9 +1006,7 @@ OperatorBuilder::createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdap
 
     auto flowOpParams    = std::make_shared<FlowFrapconJacobianParameters>( flowOp_db );
     flowOpParams->d_Mesh = meshAdapter;
-    std::shared_ptr<FlowFrapconJacobian> flowOp( new FlowFrapconJacobian( flowOpParams ) );
-
-    return flowOp;
+    return std::make_shared<FlowFrapconJacobian>( flowOpParams );
 }
 
 std::shared_ptr<BoundaryOperator> OperatorBuilder::createBoundaryOperator(
@@ -1225,7 +1166,6 @@ OperatorBuilder::createMassMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAda
                                              Operator::shared_ptr volumeOperator,
                                              std::shared_ptr<ElementPhysicsModel> )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto linearOperator = std::dynamic_pointer_cast<LinearOperator>( volumeOperator );
     auto matrixCorrectionParameters =
         std::make_shared<DirichletMatrixCorrectionParameters>( input_db );
@@ -1233,9 +1173,7 @@ OperatorBuilder::createMassMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAda
     matrixCorrectionParameters->d_inputMatrix = linearOperator->getMatrix();
     matrixCorrectionParameters->d_Mesh        = meshAdapter;
 
-    retOperator.reset( new MassMatrixCorrection( matrixCorrectionParameters ) );
-
-    return retOperator;
+    return std::make_shared<MassMatrixCorrection>( matrixCorrectionParameters );
 }
 
 
@@ -1245,7 +1183,6 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinMatrixCorrection(
     Operator::shared_ptr volumeOperator,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto linearOperator             = std::dynamic_pointer_cast<LinearOperator>( volumeOperator );
     auto matrixCorrectionParameters = std::make_shared<RobinMatrixCorrectionParameters>( input_db );
     matrixCorrectionParameters->d_variable    = linearOperator->getOutputVariable();
@@ -1259,9 +1196,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinMatrixCorrection(
         matrixCorrectionParameters->d_robinPhysicsModel = robinPhysicsModel;
     }
 
-    retOperator.reset( new RobinMatrixCorrection( matrixCorrectionParameters ) );
-
-    return retOperator;
+    return std::make_shared<RobinMatrixCorrection>( matrixCorrectionParameters );
 }
 
 
@@ -1271,7 +1206,6 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinVectorCorrection(
     Operator::shared_ptr volumeOperator,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto vectorCorrectionParameters =
         std::make_shared<NeumannVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
@@ -1283,9 +1217,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinVectorCorrection(
         vectorCorrectionParameters->d_robinPhysicsModel = robinPhysicsModel;
     }
 
-    retOperator.reset( new RobinVectorCorrection( vectorCorrectionParameters ) );
-
-    return retOperator;
+    return std::make_shared<RobinVectorCorrection>( vectorCorrectionParameters );
 }
 
 
@@ -1295,7 +1227,6 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createNeumannVectorCorrection
     Operator::shared_ptr volumeOperator,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto vectorCorrectionParameters =
         std::make_shared<NeumannVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
@@ -1307,9 +1238,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createNeumannVectorCorrection
         vectorCorrectionParameters->d_robinPhysicsModel = robinPhysicsModel;
     }
 
-    retOperator.reset( new NeumannVectorCorrection( vectorCorrectionParameters ) );
-
-    return retOperator;
+    return std::make_shared<NeumannVectorCorrection>( vectorCorrectionParameters );
 }
 
 
@@ -1319,15 +1248,11 @@ OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr me
                                                   Operator::shared_ptr volumeOperator,
                                                   std::shared_ptr<ElementPhysicsModel> )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto vectorCorrectionParameters =
         std::make_shared<DirichletVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_variable = volumeOperator->getOutputVariable();
     vectorCorrectionParameters->d_Mesh     = meshAdapter;
-
-    retOperator.reset( new DirichletVectorCorrection( vectorCorrectionParameters ) );
-
-    return retOperator;
+    return std::make_shared<DirichletVectorCorrection>( vectorCorrectionParameters );
 }
 
 
@@ -1336,14 +1261,10 @@ OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr me
                                                   std::shared_ptr<AMP::Database> input_db,
                                                   std::shared_ptr<ElementPhysicsModel> )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto vectorCorrectionParameters =
         std::make_shared<DirichletVectorCorrectionParameters>( input_db );
     vectorCorrectionParameters->d_Mesh = meshAdapter;
-
-    retOperator.reset( new DirichletVectorCorrection( vectorCorrectionParameters ) );
-
-    return retOperator;
+    return std::make_shared<DirichletVectorCorrection>( vectorCorrectionParameters );
 }
 
 
@@ -1352,13 +1273,9 @@ OperatorBuilder::createPressureBoundaryOperator( AMP::Mesh::Mesh::shared_ptr mes
                                                  std::shared_ptr<AMP::Database> input_db,
                                                  std::shared_ptr<ElementPhysicsModel> )
 {
-    std::shared_ptr<BoundaryOperator> retOperator;
     auto params    = std::make_shared<OperatorParameters>( input_db );
     params->d_Mesh = meshAdapter;
-
-    retOperator.reset( new PressureBoundaryOperator( params ) );
-
-    return retOperator;
+    return std::make_shared<PressureBoundaryOperator>( params );
 }
 
 
@@ -1368,7 +1285,6 @@ std::shared_ptr<Operator> OperatorBuilder::createOperator( AMP::Mesh::Mesh::shar
                                                            std::shared_ptr<AMP::Database> input_db )
 {
     std::shared_ptr<Operator> retOperator;
-
     std::string name = input_db->getString( "name" );
     if ( name == "MapSurface" ) {
         auto mapOperatorParameters       = std::make_shared<MapOperatorParameters>( input_db );

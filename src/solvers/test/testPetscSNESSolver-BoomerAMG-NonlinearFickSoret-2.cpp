@@ -18,7 +18,6 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"

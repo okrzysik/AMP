@@ -144,7 +144,7 @@ void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator
                         true,
                     "Null space construction only available for mechanics (PDE_equations=3)" );
 
-        std::shared_ptr<AMP::Operator::LinearOperator> linearOperator =
+        auto linearOperator =
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
@@ -155,7 +155,7 @@ void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator
         d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
             d_matrix->getEpetra_CrsMatrix(), d_MLParameterList, false ) );
     } else {
-        std::shared_ptr<AMP::Operator::TrilinosMatrixShellOperator> matShellOperator =
+        auto matShellOperator =
             std::dynamic_pointer_cast<AMP::Operator::TrilinosMatrixShellOperator>( d_pOperator );
         AMP_ASSERT( matShellOperator );
 

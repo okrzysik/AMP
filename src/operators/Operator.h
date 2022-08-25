@@ -82,45 +82,21 @@ public:
     virtual std::shared_ptr<OperatorParameters>
     getParameters( const std::string &type,
                    std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
-                   std::shared_ptr<OperatorParameters> params = nullptr )
-    {
-
-        NULL_USE( params );
-
-        std::shared_ptr<OperatorParameters> rPointer;
-
-        if ( type == "Jacobian" ) {
-            rPointer = getJacobianParameters( u );
-        } else {
-            AMP_ERROR( "Unknown OperatorParameters type specified" );
-            // should be implemented in derived class
-        }
-        return rPointer;
-    }
+                   std::shared_ptr<OperatorParameters> params = nullptr );
 
     /**
      * Specify level of diagnostic information printed during iterations.
-     * \param print_level
+     * \param level
      *    zero prints none or minimal information, higher numbers provide increasingly
      *    verbose debugging information.
      */
-    virtual void setDebugPrintInfoLevel( int print_level ) { d_iDebugPrintInfoLevel = print_level; }
+    virtual void setDebugPrintInfoLevel( int level ) { d_iDebugPrintInfoLevel = level; }
 
     //! Return the output variable
-    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable()
-    {
-        // Implemented in derived classes
-        std::shared_ptr<AMP::LinearAlgebra::Variable> emptyPointer;
-        return emptyPointer;
-    }
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getOutputVariable() { return nullptr; }
 
     //! Return the input variable
-    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable()
-    {
-        // Implemented in derived classes
-        std::shared_ptr<AMP::LinearAlgebra::Variable> emptyPointer;
-        return emptyPointer;
-    }
+    virtual std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() { return nullptr; }
 
     //! Subset output vector
     virtual std::shared_ptr<AMP::LinearAlgebra::Vector>
@@ -176,12 +152,9 @@ protected:
      * to give users more flexibility.
      */
     virtual std::shared_ptr<OperatorParameters>
-    getJacobianParameters( std::shared_ptr<const AMP::LinearAlgebra::Vector> u )
+        getJacobianParameters( std::shared_ptr<const AMP::LinearAlgebra::Vector> )
     {
-        NULL_USE( u );
-        // Implemented in derived class.
-        std::shared_ptr<OperatorParameters> emptyPointer;
-        return emptyPointer;
+        return nullptr;
     }
 
     int d_iDebugPrintInfoLevel = 0;
