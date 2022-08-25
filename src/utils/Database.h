@@ -128,7 +128,8 @@ public:
     static std::shared_ptr<Database> parseInputFile( const std::string &filename );
 
     // Read a YAML database
-    static std::unique_ptr<KeyData> readYAML( std::string_view filename );
+    static std::unique_ptr<KeyData> readYAML( std::string_view filename,
+                                              source_location src = source_location::current() );
 
     /** \brief Create a database from key/value pairs
      * \details  This function will create a database from a set of key/value pairs
@@ -175,7 +176,8 @@ public:
      * Open an database file
      * @param filename       Name of input file to open
      */
-    void readDatabase( const std::string &filename );
+    void readDatabase( const std::string &filename,
+                       source_location src = source_location::current() );
 
     //! Return class type
     typeID getClassType() const override { return getTypeID<Database>(); }
@@ -326,8 +328,9 @@ public:
     template<class TYPE>
     void putScalar( std::string_view key,
                     TYPE value,
-                    Units unit  = Units(),
-                    Check check = Check::GetDatabaseDefault );
+                    Units unit          = Units(),
+                    Check check         = Check::GetDatabaseDefault,
+                    source_location src = source_location::current() );
 
 
     /**
@@ -344,8 +347,9 @@ public:
     template<class TYPE>
     void putArray( std::string_view key,
                    Array<TYPE> data,
-                   Units unit  = Units(),
-                   Check check = Check::GetDatabaseDefault );
+                   Units unit          = Units(),
+                   Check check         = Check::GetDatabaseDefault,
+                   source_location src = source_location::current() );
 
 
     /**
@@ -362,8 +366,9 @@ public:
     template<class TYPE>
     void putVector( std::string_view key,
                     const std::vector<TYPE> &data,
-                    Units unit  = Units(),
-                    Check check = Check::GetDatabaseDefault );
+                    Units unit          = Units(),
+                    Check check         = Check::GetDatabaseDefault,
+                    source_location src = source_location::current() );
 
 
     /**
@@ -392,7 +397,8 @@ public:
      */
     void putData( std::string_view key,
                   std::unique_ptr<KeyData> data,
-                  Check check = Check::GetDatabaseDefault );
+                  Check check         = Check::GetDatabaseDefault,
+                  source_location src = source_location::current() );
 
 
     //! Check if the key is a database object
@@ -466,6 +472,26 @@ public:
     inline void putDatabase( std::string_view key, std::unique_ptr<Database> db )
     {
         putData( key, std::move( db ) );
+    }
+
+
+    /**
+     * Create a new empty database in the current database and return a pointer.
+     * If the specified key already exists in the database an error is thrown.
+     * This is equivalent to:
+     * \code
+         auto tmp = std::make_unique<Database>( key );
+         this->putDatabase( key, std::move( tmp ) );
+         return this->getDatabase( key );
+     * \endcode
+     *
+     * @param key       Key name in database.
+     * @param db        Database to store
+     */
+    inline std::shared_ptr<Database> createAddDatabase( std::string_view key )
+    {
+        putDatabase( key, std::move( std::make_unique<Database>( std::string( key ) ) ) );
+        return getDatabase( key );
     }
 
 

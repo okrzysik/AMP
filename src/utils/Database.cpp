@@ -25,17 +25,18 @@ loadDatabase( const std::string &,
               std::string_view,
               size_t,
               Database &,
-              std::map<std::string, const KeyData *> = std::map<std::string, const KeyData *>() );
+              std::map<std::string, const KeyData *> = std::map<std::string, const KeyData *>(),
+              int line                               = 0 );
 
 
 /********************************************************************
  * Read the input file into memory                                   *
  ********************************************************************/
-static std::vector<char> readFile( const std::string &filename )
+static std::vector<char> readFile( const std::string &filename, Database::source_location src )
 {
     // Read the input file into memory
     FILE *fid = fopen( filename.data(), "rb" );
-    DATABASE_INSIST( fid, SOURCE_LOCATION_CURRENT(), "Error opening file %s", filename.data() );
+    DATABASE_INSIST( fid, src, "Error opening file %s", filename.data() );
     fseek( fid, 0, SEEK_END );
     size_t bytes = ftell( fid );
     rewind( fid );
@@ -274,7 +275,8 @@ std::shared_ptr<Database> Database::getDatabase( std::string_view key, source_lo
 {
     auto hash = hashString( key );
     int index = find( hash, true );
-    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
+    if ( index == -1 )
+        return nullptr;
     auto ptr2 = std::dynamic_pointer_cast<Database>( d_data[index] );
     DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return ptr2;
@@ -284,7 +286,8 @@ std::shared_ptr<const Database> Database::getDatabase( std::string_view key,
 {
     auto hash = hashString( key );
     int index = find( hash, true );
-    DATABASE_INSIST( index != -1, src, "Variable %s is not in database", key.data() );
+    if ( index == -1 )
+        return nullptr;
     auto ptr2 = std::dynamic_pointer_cast<const Database>( d_data[index] );
     DATABASE_INSIST( ptr2, src, "Variable %s is not a database", key.data() );
     return ptr2;
@@ -305,7 +308,10 @@ std::vector<std::string> Database::getAllKeys( bool sort ) const
         std::sort( keys.begin(), keys.end() );
     return keys;
 }
-void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Check check )
+void Database::putData( std::string_view key,
+                        std::unique_ptr<KeyData> data,
+                        Check check,
+                        source_location src )
 {
     if ( check == Check::GetDatabaseDefault )
         check = d_check;
@@ -313,11 +319,11 @@ void Database::putData( std::string_view key, std::unique_ptr<KeyData> data, Che
     int index = find( hash, false );
     if ( index != -1 ) {
         if ( check == Check::Error )
-            DATABASE_ERROR( SOURCE_LOCATION_CURRENT(),
-                            "Error: Variable '%s' already exists in database",
-                            std::string( key ).data() );
+            DATABASE_ERROR(
+                src, "Error: Variable '%s' already exists in database", std::string( key ).data() );
         if ( check == Check::WarnOverwrite || check == Check::WarnKeep )
-            DATABASE_WARNING( "Warning: variable '%s' already exists in database",
+            DATABASE_WARNING( src,
+                              "Warning: variable '%s' already exists in database",
                               std::string( key ).data() );
         if ( check == Check::Overwrite || check == Check::WarnOverwrite )
             d_data[index] = std::move( data );
@@ -555,10 +561,10 @@ std::shared_ptr<Database> Database::parseInputFile( const std::string &filename 
     }
     return db;
 }
-void Database::readDatabase( const std::string &filename )
+void Database::readDatabase( const std::string &filename, source_location src )
 {
     // Read the input file into memory
-    auto buffer = readFile( filename );
+    auto buffer = readFile( filename, src );
     // Create the database entries
     loadDatabase( "Error loading database from file \"" + filename + "\"\n",
                   buffer.data(),
@@ -1092,11 +1098,22 @@ read_value( std::string_view buffer,
     auto data = createKeyData( key, data_type, values, databaseKeys );
     return std::make_tuple( pos, std::move( data ) );
 }
+static std::string generateMsg( const std::string &errMsgPrefix,
+                                const char *msg,
+                                int line,
+                                const std::string_view &key = "" )
+{
+    auto out = errMsgPrefix + msg;
+    if ( !key.empty() )
+        out += ": " + std::string( key );
+    return out + " in input at line " + std::to_string( line );
+}
 static size_t loadDatabase( const std::string &errMsgPrefix,
                             std::string_view buffer,
                             size_t N,
                             Database &db,
-                            std::map<std::string, const KeyData *> databaseKeys )
+                            std::map<std::string, const KeyData *> databaseKeys,
+                            int line0 )
 {
     size_t pos = 0;
     while ( pos < N ) {
@@ -1105,43 +1122,50 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
         std::tie( i, type ) = find_next_token( &buffer[pos] );
         std::string_view tmp( &buffer[pos], i - length( type ) );
         const auto key = deblank( tmp );
+        int line =
+            line0 + std::count_if( &buffer[0], &buffer[pos], []( char c ) { return c == '\n'; } );
         if ( type == token_type::line_comment || type == token_type::block_start ) {
             // Comment
-            AMP_INSIST( key.empty(), errMsgPrefix + "  Error reading comment" );
-            pos += skip_comment( &buffer[pos] );
+            AMP_INSIST( key.empty(), generateMsg( errMsgPrefix, "Error reading comment", line ) );
+            size_t k = skip_comment( &buffer[pos] );
+            pos += k;
         } else if ( type == token_type::newline ) {
             if ( !key.empty() ) {
                 auto msg = errMsgPrefix + "Key is not assigned a value: " + std::string( key );
-                AMP_ERROR( msg );
+                AMP_ERROR( generateMsg( errMsgPrefix, "Key is not assigned a value", line, key ) );
             }
             pos += i;
         } else if ( type == token_type::equal ) {
             // Reading key/value pair
-            DATABASE_INSIST( !key.empty(), SOURCE_LOCATION_CURRENT(), "Empty key" );
+            AMP_INSIST( !key.empty(), generateMsg( errMsgPrefix, "Empty key", line ) );
             pos += i;
             std::unique_ptr<KeyData> data;
             try {
                 std::tie( i, data ) = read_value( &buffer[pos], key, databaseKeys );
             } catch ( StackTrace::abort_error &err ) {
-                AMP_ERROR( errMsgPrefix + "   Error loading key '" + std::string( key ) + "'\n" +
-                           "      in file " + err.source.file_name() + " at line " +
-                           std::to_string( err.source.line() ) + "\n" + "   " + err.message );
+                auto msg = generateMsg( errMsgPrefix, "Error loading key", line, key );
+                msg += "\nCaught error in file " + std::string( err.source.file_name() ) +
+                       " at line " + std::to_string( err.source.line() ) + "\n" + "   " +
+                       err.message;
+                AMP_ERROR( msg );
             } catch ( std::exception &err ) {
-                AMP_ERROR( errMsgPrefix + "    Error loading key '" + std::string( key ) +
-                           "', unhandled exception:\n" + err.what() );
+                auto msg = generateMsg( errMsgPrefix, "Error loading key", line, key );
+                msg += "\nUnhandled exception:\n" + std::string( err.what() );
+                AMP_ERROR( msg );
             }
             if ( !data )
-                AMP_ERROR( errMsgPrefix + "    Error loading key '" + std::string( key ) + "'\n" +
-                           " - empty data\n" );
+                AMP_ERROR(
+                    generateMsg( errMsgPrefix, "Error loading key (empty data)", line, key ) );
             databaseKeys[std::string( key )] = data.get();
             db.putData( key, std::move( data ) );
             pos += i;
         } else if ( type == token_type::bracket ) {
             // Read database
-            DATABASE_INSIST( !key.empty(), SOURCE_LOCATION_CURRENT(), "Empty key" );
+            AMP_INSIST( !key.empty(), generateMsg( errMsgPrefix, "Empty key", line ) );
             pos += i;
             auto database = std::make_unique<Database>();
-            pos += loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys );
+            pos +=
+                loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys, line );
             database->setName( std::string( key ) );
             databaseKeys[std::string( key )] = database.get();
             db.putData( key, std::move( database ) );
@@ -1292,10 +1316,10 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
     }
     return pos;
 }
-std::unique_ptr<KeyData> Database::readYAML( std::string_view filename )
+std::unique_ptr<KeyData> Database::readYAML( std::string_view filename, source_location src )
 {
     // Read the file into memory
-    auto buffer = readFile( std::string( filename ) );
+    auto buffer = readFile( std::string( filename ), src );
     // Read the file
     std::vector<Database> data;
     for ( size_t i = 0; i < buffer.size(); ) {

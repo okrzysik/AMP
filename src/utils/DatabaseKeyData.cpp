@@ -487,7 +487,7 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
 #define instantiateIsType( TYPE ) \
     template bool Database::isType<TYPE>( std::string_view, source_location ) const
 #define instantiatePutScalar( TYPE ) \
-    template void Database::putScalar<TYPE>( std::string_view, TYPE, Units, Database::Check )
+    template void Database::putScalar<TYPE>( std::string_view, TYPE, Units, Check, source_location )
 #define instantiateGetScalar( TYPE )                                                            \
     template TYPE Database::getScalar<TYPE>( std::string_view, const Units &, source_location ) \
         const
@@ -499,9 +499,10 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
         std::string_view, const Units &, source_location ) const
 #define instantiatePutVector( TYPE )         \
     template void Database::putVector<TYPE>( \
-        std::string_view, const std::vector<TYPE> &, Units, Database::Check )
-#define instantiatePutArray( TYPE ) \
-    template void Database::putArray<TYPE>( std::string_view, Array<TYPE>, Units, Database::Check )
+        std::string_view, const std::vector<TYPE> &, Units, Check, source_location )
+#define instantiatePutArray( TYPE )         \
+    template void Database::putArray<TYPE>( \
+        std::string_view, Array<TYPE>, Units, Check, source_location )
 #define instantiateGetWithDefault( TYPE )                                                          \
     template TYPE Database::getWithDefault<TYPE>(                                                  \
         std::string_view, Database::IdentityType<TYPE const &>::type, const Units & ) const;       \
@@ -524,9 +525,9 @@ instantiate( instantiatePutVector );      // Database::putVector
 instantiate( instantiatePutArray );       // Database::putArray
 instantiate( instantiateGetWithDefault ); // Database::getWithDefault
 template void
-Database::putScalar<const char *>( std::string_view, const char *, Units, Database::Check );
-template void
-Database::putScalar<std::_Bit_reference>( std::string_view key, std::_Bit_reference, Units, Check );
+Database::putScalar<const char *>( std::string_view, const char *, Units, Check, source_location );
+template void Database::putScalar<std::_Bit_reference>(
+    std::string_view key, std::_Bit_reference, Units, Check, source_location );
 
 
 /********************************************************

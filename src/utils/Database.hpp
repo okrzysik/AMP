@@ -21,11 +21,18 @@
         else                                                                \
             StackTrace::Utilities::abort( msg, SRC );                       \
     } while ( 0 )
-#define DATABASE_WARNING( ... )                      \
-    do {                                             \
-        char msg[1000];                              \
-        snprintf( msg, sizeof( msg ), __VA_ARGS__ ); \
-        AMP_WARNING( msg );                          \
+#define DATABASE_WARNING( SRC, ... )                                                          \
+    do {                                                                                      \
+        char msg[4096] = "WARNING: ";                                                         \
+        char *ptr      = &msg[9];                                                             \
+        ptr += snprintf( ptr, 4000, __VA_ARGS__ );                                            \
+        if ( SRC.empty() ) {                                                                  \
+            sprintf( ptr, "\nWarning called in %s on line %i", __FILE__, __LINE__ );          \
+        } else {                                                                              \
+            sprintf( ptr, "\nWarning called in %s on line %i", SRC.file_name(), SRC.line() ); \
+        }                                                                                     \
+        AMP::pout << msg << std::endl;                                                        \
+        AMP::plog << msg << std::endl << std::flush;                                          \
     } while ( 0 )
 #define DATABASE_INSIST( TEST, SRC, ... )                                       \
     do {                                                                        \
@@ -551,38 +558,41 @@ TYPE Database::getWithDefault( std::string_view key,
  * Put data                                                          *
  ********************************************************************/
 template<class TYPE>
-void Database::putScalar( std::string_view key, TYPE value, Units unit, Check check )
+void Database::putScalar(
+    std::string_view key, TYPE value, Units unit, Check check, source_location src )
 {
     if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
         // Guard against storing a bit reference (store a bool instead)
-        putScalar<bool>( key, value, unit, check );
+        putScalar<bool>( key, value, unit, check, src );
     } else if constexpr ( std::is_same<TYPE, char *>::value ||
                           std::is_same<TYPE, const char *>::value ||
                           std::is_same<TYPE, std::string_view>::value ) {
         // Guard against storing a char* or string_view (store a std::string instead)
-        putScalar<std::string>( key, std::string( value ), unit, check );
+        putScalar<std::string>( key, std::string( value ), unit, check, src );
     } else {
         // Store the scalar value
         auto keyData = std::make_unique<KeyDataScalar<TYPE>>( std::move( value ), unit );
-        putData( key, std::move( keyData ), check );
+        putData( key, std::move( keyData ), check, src );
     }
 }
 template<class TYPE>
 void Database::putVector( std::string_view key,
                           const std::vector<TYPE> &data,
                           Units unit,
-                          Check check )
+                          Check check,
+                          source_location src )
 {
     Array<TYPE> x;
     x            = data;
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( x ), unit );
-    putData( key, std::move( keyData ), check );
+    putData( key, std::move( keyData ), check, src );
 }
 template<class TYPE>
-void Database::putArray( std::string_view key, Array<TYPE> data, Units unit, Check check )
+void Database::putArray(
+    std::string_view key, Array<TYPE> data, Units unit, Check check, source_location src )
 {
     auto keyData = std::make_unique<KeyDataArray<TYPE>>( std::move( data ), unit );
-    putData( key, std::move( keyData ), check );
+    putData( key, std::move( keyData ), check, src );
 }
 
 
