@@ -88,7 +88,7 @@ public:
     {
         AMP_INSIST( defaults.size() == d_arguments.size(),
                     "incorrect number of defaults specified" );
-        d_defaults = defaults;
+        d_defaults = std::move( defaults );
     }
 
     //! Determine if a string is an argument
@@ -122,15 +122,15 @@ public: // Functions dealing with the ranges of the arguments
     //! Determine if a value is within range or not
     inline bool in_range( const std::string &argname,
                           double value,
-                          Units unit      = Units(),
-                          bool throwError = false ) const;
+                          const Units &unit = Units(),
+                          bool throwError   = false ) const;
 
     //! Determine if a set of values are all within range or not
     template<class INPUT_VTYPE>
     inline bool in_range( const std::string &argname,
                           const INPUT_VTYPE &values,
-                          Units unit      = Units(),
-                          bool throwError = false ) const;
+                          const Units &unit = Units(),
+                          bool throwError   = false ) const;
 
 
     //! Get auxiliary data

@@ -172,8 +172,8 @@ void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator
             ML_Set_Amatrix_Matvec(
                 d_ml, 0, &( AMP::Operator::TrilinosMatrixShellOperator::matVec ) );
         } else {
-            AMP_ERROR( "The option, increasingordecreasing = \""
-                       << ( d_mlOptions->d_increasingDecreasing ) << "\" , is not supported." );
+            AMP_ERROR( "The option, increasingordecreasing = \"" +
+                       d_mlOptions->d_increasingDecreasing + "\" , is not supported." );
         }
     }
     d_bCreationPhase = true;
@@ -371,8 +371,8 @@ void TrilinosMLSolver::buildML()
     if ( ( d_mlOptions->d_aggregationType ) == "Uncoupled-MIS" ) {
         ML_Aggregate_Set_CoarsenScheme_UncoupledMIS( d_mlAggregate );
     } else {
-        AMP_ERROR( "The option, aggregationtype = \"" << ( d_mlOptions->d_aggregationType )
-                                                      << "\" , is not supported." );
+        AMP_ERROR( "The option, aggregationtype = \"" + d_mlOptions->d_aggregationType +
+                   "\" , is not supported." );
     }
 
     int nlevels = ML_Gen_MGHierarchy_UsingAggregation( d_ml, 0, ML_INCREASING, d_mlAggregate );
@@ -399,13 +399,13 @@ void TrilinosMLSolver::buildML()
                                                 ( d_mlOptions->d_smootherSweeps ),
                                                 ( d_mlOptions->d_smootherDampingFactor ) );
             } else {
-                AMP_ERROR( "The option, smoother_preorpost = \"" << ( d_mlOptions->d_prePost )
-                                                                 << "\" , is not supported." );
+                AMP_ERROR( "The option, smoother_preorpost = \"" + d_mlOptions->d_prePost +
+                           "\" , is not supported." );
             }
         }
     } else {
-        AMP_ERROR( "The option, smoothertype = \"" << ( d_mlOptions->d_smootherType )
-                                                   << "\" , is not supported." );
+        AMP_ERROR( "The option, smoothertype = \"" + d_mlOptions->d_smootherType +
+                   "\" , is not supported." );
     }
 
     if ( ( d_mlOptions->d_coarseType ) == "Amesos-KLU" ) {
@@ -415,8 +415,8 @@ void TrilinosMLSolver::buildML()
         ML_Gen_Smoother_Amesos( d_ml, ( nlevels - 1 ), ML_AMESOS_KLU, -1, 0.0 );
 #endif
     } else {
-        AMP_ERROR( "The option, coarse_type = \"" << ( d_mlOptions->d_coarseType )
-                                                  << "\" , is not supported." );
+        AMP_ERROR( "The option, coarse_type = \"" + d_mlOptions->d_coarseType +
+                   "\" , is not supported." );
     }
 
     if ( ( d_mlOptions->d_precType ) == "MGV" ) {
@@ -424,8 +424,8 @@ void TrilinosMLSolver::buildML()
     } else if ( ( d_mlOptions->d_precType ) == "MGW" ) {
         ML_Gen_Solver( d_ml, ML_MGW, 0, ( nlevels - 1 ) );
     } else {
-        AMP_ERROR( "The option, prec_type = \"" << ( d_mlOptions->d_precType )
-                                                << "\" , is not supported." );
+        AMP_ERROR( "The option, prec_type = \"" + d_mlOptions->d_precType +
+                   "\" , is not supported." );
     }
 }
 

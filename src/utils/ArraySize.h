@@ -109,15 +109,15 @@ public:
     CONSTEXPR TYPE get( size_t index ) const
     {
         if CONSTEXPR_IF ( std::is_integral<TYPE>::value ) {
-            return i + index * k;
+            return static_cast<TYPE>( i + index * k );
         } else if CONSTEXPR_IF ( std::is_floating_point<TYPE>::value ) {
-            return k * ( i / k + index );
+            return static_cast<TYPE>( k * ( i / k + index ) );
         } else if CONSTEXPR_IF ( std::is_same<TYPE, std::complex<float>>::value ||
                                  std::is_same<TYPE, std::complex<double>>::value ) {
-            return k * ( i / k + static_cast<TYPE>( index ) );
+            return static_cast<TYPE>( k * ( i / k + static_cast<TYPE>( index ) ) );
         } else {
             static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
-            return index;
+            return static_cast<TYPE>( index );
         }
     }
 

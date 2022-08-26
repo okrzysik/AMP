@@ -6,6 +6,6 @@
 
 void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
                     AMP::LinearAlgebra::Vector::shared_ptr solVec,
-                    std::string name );
+                    const std::string &name );
 
 #endif

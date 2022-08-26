@@ -4,6 +4,8 @@
 #include "AMP/utils/UtilityMacros.h"
 
 #include <cstring>
+#include <tuple>
+#include <vector>
 
 
 namespace AMP {

@@ -88,7 +88,7 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
     return solver;
 }
 
-void linearThermalTest( AMP::UnitTest *ut, std::string inputFileName )
+void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
     // Input and output file names
     std::string input_file = inputFileName;

@@ -321,7 +321,9 @@ void registerMapswithThermalOperator(
 }
 
 //       Main Program
-void myTest( AMP::UnitTest *ut, std::shared_ptr<AMP::Database> input_db, AMP::AMP_MPI globalComm )
+void myTest( AMP::UnitTest *ut,
+             std::shared_ptr<AMP::Database> input_db,
+             const AMP::AMP_MPI &globalComm )
 {
     auto mesh_db       = input_db->getDatabase( "Mesh" );
     auto meshmgrParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );

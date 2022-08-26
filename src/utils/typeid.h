@@ -77,6 +77,7 @@ constexpr typeID getTypeID()
         copy( name0, __PRETTY_FUNCTION__, sizeof( name0 ) );
 #elif defined( _MSC_VER )
         copy( name0, __FUNCSIG__, sizeof( name0 ) );
+#elif defined( __cppcheck__ )
 #else
     #error "Not finished";
 #endif

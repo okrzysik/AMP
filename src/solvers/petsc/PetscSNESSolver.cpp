@@ -431,9 +431,8 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     } else if ( d_sForcingTermStrategy == "EWCHOICE3" ) {
         d_iForcingTermFlag = 3;
     } else if ( !( d_sForcingTermStrategy == "CONSTANT" ) ) {
-        AMP_ERROR( d_sName << ": "
-                           << "Key data `forcing_term_strategy' = " << d_sForcingTermStrategy
-                           << " in input not recognized." );
+        AMP_ERROR( d_sName + ": Key data `forcing_term_strategy' = " + d_sForcingTermStrategy +
+                   " in input not recognized." );
     }
 
     d_dConstantForcingTerm = db->getWithDefault<double>( "constant_forcing_term", PETSC_DEFAULT );

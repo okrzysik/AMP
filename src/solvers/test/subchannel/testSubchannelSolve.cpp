@@ -171,7 +171,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         // CREATE OPERATORS
         for ( auto pinMeshID : pinMeshIDs ) {
             auto adapter = manager->Subset( pinMeshID );
-            if ( adapter.get() == nullptr )
+            if ( !adapter )
                 continue;
 
             std::string meshName = adapter->getName();
@@ -267,7 +267,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         for ( auto subChannelMeshID : subChannelMeshIDs ) {
             auto adapter = manager->Subset( subChannelMeshID );
-            if ( adapter.get() == nullptr )
+            if ( !adapter )
                 continue;
 
             auto meshName = adapter->getName();
@@ -365,7 +365,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         int curOperator = 0;
         for ( auto pinMeshID : pinMeshIDs ) {
             auto adapter = manager->Subset( pinMeshID );
-            if ( adapter.get() == nullptr )
+            if ( !adapter )
                 continue;
 
             std::string meshName = adapter->getName();
@@ -396,7 +396,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                 if ( opNames[curBCentry] == "P2CRobinVectorCorrection" ) {
                     auto gapBC = std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                         curBCcol->getBoundaryOperator( curBCentry ) );
-                    AMP_ASSERT( thermalMapVec != nullptr );
+                    AMP_ASSERT( thermalMapVec );
                     gapBC->setVariableFlux( thermalMapVec );
                     gapBC->reset( gapBC->getOperatorParameters() );
                 } else if ( ( opNames[curBCentry] == "BottomP2PNonlinearRobinVectorCorrection" ) ||
@@ -404,7 +404,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                             ( opNames[curBCentry] == "TopP2PNonlinearRobinBoundaryCondition" ) ) {
                     auto p2pBC = std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                         curBCcol->getBoundaryOperator( curBCentry ) );
-                    AMP_ASSERT( thermalMapVec != nullptr );
+                    AMP_ASSERT( thermalMapVec );
                     p2pBC->setVariableFlux( thermalMapVec );
                     p2pBC->reset( p2pBC->getOperatorParameters() );
                 } else if ( opNames[curBCentry] == "C2WBoundaryVectorCorrection" ) {
@@ -414,7 +414,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                         auto c2wBC =
                             std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                                 curBCcol->getBoundaryOperator( curBCentry ) );
-                        AMP_ASSERT( thermalMapVec != nullptr );
+                        AMP_ASSERT( thermalMapVec );
                         c2wBC->setVariableFlux( thermalMapVec );
                         c2wBC->setFrozenVector( density_map_vec );
                         c2wBC->setFrozenVector( ChannelDiameterVec );
@@ -423,7 +423,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                 } else if ( opNames[curBCentry] == "C2PRobinVectorCorrection" ) {
                     auto gapBC = std::dynamic_pointer_cast<AMP::Operator::RobinVectorCorrection>(
                         curBCcol->getBoundaryOperator( curBCentry ) );
-                    AMP_ASSERT( thermalMapVec != nullptr );
+                    AMP_ASSERT( thermalMapVec );
                     gapBC->setVariableFlux( thermalMapVec );
                     gapBC->reset( gapBC->getOperatorParameters() );
                 } else {
@@ -539,10 +539,10 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         }
 
         // Create the subchannel preconditioner
-        if ( subchannelLinearOperator != nullptr ) {
+        if ( subchannelLinearOperator ) {
             auto subchannelPreconditioner_db =
                 columnPreconditioner_db->getDatabase( "SubchannelPreconditioner" );
-            AMP_ASSERT( subchannelPreconditioner_db != nullptr );
+            AMP_ASSERT( subchannelPreconditioner_db );
             auto subchannelPreconditionerParams =
                 std::make_shared<AMP::Solver::SolverStrategyParameters>(
                     subchannelPreconditioner_db );
@@ -667,7 +667,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         globalRhsMultiVector, globalSolMultiVector, globalResMultiVector );
 
     size_t totalOp;
-    if ( subchannelMesh != nullptr ) {
+    if ( subchannelMesh ) {
         totalOp = nonlinearColumnOperator->getNumberOfOperators() - 1;
     } else {
         totalOp = nonlinearColumnOperator->getNumberOfOperators();
@@ -696,9 +696,9 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 #if 0
     double tempResNorm = 0.0;
     double flowResNorm = 0.0;
-    if ( pinMesh != nullptr )
+    if ( pinMesh )
         tempResNorm = globalThermalResVec->L2Norm();
-    if ( subchannelMesh != nullptr )
+    if ( subchannelMesh )
         flowResNorm = flowResVec->L2Norm();
     tempResNorm = globalComm.maxReduce( tempResNorm );
     flowResNorm = globalComm.maxReduce( flowResNorm );
@@ -720,13 +720,15 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr flowTempVec;
     AMP::LinearAlgebra::Vector::shared_ptr deltaFlowTempVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowDensityVec;
-    if ( subchannelMesh != nullptr ) {
+    if ( subchannelMesh ) {
         flowTempVec        = subchannelFuelTemp->cloneVector();
         flowDensityVec     = subchannelFuelTemp->cloneVector();
         int DOFsPerFace[3] = { 0, 0, 2 };
-        auto faceDOFManager =std::make_shared<AMP::Discretization::structuredFaceDOFManager>( subchannelMesh, DOFsPerFace, 0 );
+        auto faceDOFManager =
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
         DOFsPerFace[2] = 1;
-        auto scalarFaceDOFManager =std::make_shared<AMP::Discretization::structuredFaceDOFManager>( subchannelMesh, DOFsPerFace, 0 );
+        auto scalarFaceDOFManager =
+            AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
         auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         std::vector<size_t> dofs;
         std::vector<size_t> scalarDofs;
@@ -762,7 +764,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     }
     double flowTempMin = 1e100;
     double flowTempMax = -1e100;
-    if ( flowTempVec != nullptr ) {
+    if ( flowTempVec ) {
         flowTempMin = flowTempVec->min();
         flowTempMax = flowTempVec->max();
     }
@@ -779,7 +781,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     subchannelToPointMapParams->d_comm                   = globalComm;
     subchannelToPointMapParams->d_subchannelPhysicsModel = subchannelPhysicsModel;
     subchannelToPointMapParams->d_outputVar.reset( new AMP::LinearAlgebra::Variable( "Density" ) );
-    if ( subchannelMesh != nullptr ) {
+    if ( subchannelMesh ) {
         auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         for ( size_t i = 0; i < face.size(); i++ ) {
             auto pos = face->centroid();
@@ -801,7 +803,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         subchannelToPointMapParams->x.size(), subchannelTemperatureToPointMap.getOutputVariable() );
     subchannelDensityToPointMap.residual( nullVec, flowSolVec, densityMapVec );
     subchannelTemperatureToPointMap.residual( nullVec, flowSolVec, temperatureMapVec );
-    if ( subchannelMesh != nullptr ) {
+    if ( subchannelMesh ) {
         auto face = xyFaceMesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
         std::vector<size_t> dofs;
         bool pass_density     = true;
@@ -840,7 +842,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     }
     // Register the quantities to plot
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
-    if ( xyFaceMesh != nullptr ) {
+    if ( xyFaceMesh ) {
         siloWriter->registerVector(
             flowSolVec, xyFaceMesh, AMP::Mesh::GeomType::Face, "SubchannelFlow" );
         siloWriter->registerVector(

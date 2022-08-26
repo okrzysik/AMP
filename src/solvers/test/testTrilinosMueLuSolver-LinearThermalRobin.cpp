@@ -32,7 +32,7 @@
 #include <string>
 
 
-void linearThermalTest( AMP::UnitTest *ut, std::string exeName )
+void linearThermalTest( AMP::UnitTest *ut, const std::string &exeName )
 {
     // Input and output file names
     std::string input_file = "input_" + exeName;

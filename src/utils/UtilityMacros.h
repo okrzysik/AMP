@@ -4,7 +4,13 @@
 
 #include <sstream>
 
-#include "StackTrace/Utilities.h"
+#include "StackTrace/source_location.h"
+
+
+// Forward declare StackTrace abort
+namespace StackTrace::Utilities {
+[[noreturn]] void abort( const std::string &message, const source_location &source );
+}
 
 
 // Forward declare stream operators
@@ -58,12 +64,7 @@ inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
  *     line number of the abort are also printed.
  *  \param MSG  Error message to print
  */
-#define AMP_ERROR( MSG )                                                         \
-    do {                                                                         \
-        std::ostringstream stream;                                               \
-        stream << MSG;                                                           \
-        StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
-    } while ( 0 )
+#define AMP_ERROR( MSG ) StackTrace::Utilities::abort( MSG, SOURCE_LOCATION_CURRENT() )
 
 
 /*! \def AMP_WARNING(MSG)
@@ -89,13 +90,11 @@ inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
  *     The file and line number of the abort are printed along with the stack trace (if available).
  *  \param EXP  Expression to evaluate
  */
-#define AMP_ASSERT( EXP )                                                            \
-    do {                                                                             \
-        if ( !( EXP ) ) {                                                            \
-            std::ostringstream stream;                                               \
-            stream << "Failed assertion: " << #EXP;                                  \
-            StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
-        }                                                                            \
+#define AMP_ASSERT( EXP )                                                                         \
+    do {                                                                                          \
+        if ( !( EXP ) ) {                                                                         \
+            StackTrace::Utilities::abort( "Failed assertion: " #EXP, SOURCE_LOCATION_CURRENT() ); \
+        }                                                                                         \
     } while ( 0 )
 
 
@@ -108,14 +107,13 @@ inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
  *  \param EXP  Expression to evaluate
  *  \param MSG  Debug message to print
  */
-#define AMP_INSIST( EXP, MSG )                                                       \
-    do {                                                                             \
-        if ( !( EXP ) ) {                                                            \
-            std::ostringstream stream;                                               \
-            stream << "Failed insist: " << #EXP << std::endl;                        \
-            stream << "Message: " << MSG << std::ends;                               \
-            StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
-        }                                                                            \
+#define AMP_INSIST( EXP, MSG )                                                   \
+    do {                                                                         \
+        if ( !( EXP ) ) {                                                        \
+            StackTrace::Utilities::abort( "Failed insist: " #EXP "\nMessage: " + \
+                                              std::string( MSG ),                \
+                                          SOURCE_LOCATION_CURRENT() );           \
+        }                                                                        \
     } while ( 0 )
 
 

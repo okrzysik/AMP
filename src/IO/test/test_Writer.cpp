@@ -82,7 +82,7 @@ void printMeshNames( const std::string &filename )
 // Function to build a vector using a mesh
 template<int SIZE_X, int SIZE_Y, int SIZE_Z>
 AMP::LinearAlgebra::Vector::shared_ptr
-createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, AMP::AMP_MPI comm )
+createVector( std::shared_ptr<AMP::LinearAlgebra::Variable> var, const AMP::AMP_MPI &comm )
 {
     // Create an AMP mesh
     auto size     = { SIZE_X, SIZE_Y, SIZE_Z };

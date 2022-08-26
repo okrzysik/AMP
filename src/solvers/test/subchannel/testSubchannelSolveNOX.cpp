@@ -168,7 +168,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         // CREATE OPERATORS
         for ( auto pinMeshID : pinMeshIDs ) {
             auto adapter = manager->Subset( pinMeshID );
-            if ( adapter )
+            if ( !adapter )
                 continue;
 
             std::string meshName = adapter->getName();
@@ -264,7 +264,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         for ( auto subChannelMeshID : subChannelMeshIDs ) {
             auto adapter = manager->Subset( subChannelMeshID );
-            if ( adapter )
+            if ( !adapter )
                 continue;
 
             auto meshName = adapter->getName();
@@ -362,7 +362,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         int curOperator = 0;
         for ( auto pinMeshID : pinMeshIDs ) {
             auto adapter = manager->Subset( pinMeshID );
-            if ( adapter )
+            if ( !adapter )
                 continue;
 
             std::string meshName = adapter->getName();
