@@ -43,6 +43,8 @@ SET( DISABLE_LTO TRUE)
 
 
 # Build the TPLs if necessary
+ADD_CUSTOM_TARGET( build-test )     # Deprecated, remove
+ADD_CUSTOM_TARGET( build-examples ) # Deprecated, remove
 IF ( TPL_URL )
     INCLUDE( cmake/configure_TPLs.cmake )
     CONFIGURE_TPL_BUILDER()
@@ -157,10 +159,7 @@ ENDIF()
 
 
 # Create custom targets for build-test, check, and distclean
-SET( EXCLUDE_TESTS_FROM_ALL 0 )
-ADD_CUSTOM_TARGET( build-test )
-ADD_CUSTOM_TARGET( build-examples )
-ADD_CUSTOM_TARGET( check COMMAND  make test  )
+ADD_CUSTOM_TARGET( check COMMAND make test  )
 ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
 
 
@@ -175,7 +174,7 @@ ENDIF()
 # Add the src directory
 IF ( NOT ONLY_BUILD_DOCS )
     WRITE_REPO_VERSION()
-    SET( EXCLUDE_TESTS_FROM_ALL 1 )
+    CHECK_ENABLE_FLAG( EXCLUDE_TESTS_FROM_ALL 1 )
     ADD_SUBDIRECTORY( src )
 ENDIF()
 

@@ -1,4 +1,6 @@
 #include "AMP/utils/cuda/helper_cuda.h"
+#include <iostream>
+
 
 int main()
 {
