@@ -64,7 +64,7 @@ std::tuple<size_t, std::byte *> packArray( const TYPE *data, size_t length )
         N += b;
     }
     AMP_ASSERT( N == tot_bytes );
-    return std::tie( tot_bytes, buf );
+    return std::tuple<size_t, std::byte *>( tot_bytes, buf );
 }
 template<class TYPE>
 size_t unpackArray( TYPE *data, size_t length, const std::byte *buf )
