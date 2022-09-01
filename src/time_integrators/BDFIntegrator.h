@@ -273,9 +273,6 @@ protected:
     //! names of variables to associate with different components of a vector
     std::vector<std::string> d_var_names;
 
-    //! name of this object
-    std::string d_object_name = "BDFIntegrator";
-
     //! norm type used for truncation error calculation
     std::string d_timeTruncationErrorNormType = "l2Norm";
 
