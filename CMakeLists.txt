@@ -171,6 +171,21 @@ IF ( TIME_BUILD )
 ENDIF()
 
 
+# Add cppcheck as part of build (still needs testing/development)
+# IF ( CMAKE_CXX_CPPCHECK )
+#     LIST( APPEND CMAKE_CXX_CPPCHECK
+#             "--enable=warning"
+#             "--inconclusive"
+#             "--force"
+#             "-iIO/test/test_HDF5.cpp"               # Causes cppcheck 2.6 to segfault
+#             "-iutils/DelaunayTessellation.cpp"      # Very slow
+#             "-ihost_defines.h"
+#             "--suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/cppcheckSuppressionFile"
+#     )
+# ENDIF()
+# MESSAGE( "CMAKE_CXX_CPPCHECK=${CMAKE_CXX_CPPCHECK}")
+
+
 # Add the src directory
 IF ( NOT ONLY_BUILD_DOCS )
     WRITE_REPO_VERSION()

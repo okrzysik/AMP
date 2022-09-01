@@ -71,13 +71,12 @@ constexpr typeID getTypeID()
     } else {
         // Get the name of the function to create the type name
         char name0[1024] = { 0 };
-#ifdef __clang__
+#if defined( __clang__ ) || defined( USING_CLANG )
         copy( name0, __PRETTY_FUNCTION__, sizeof( name0 ) );
-#elif defined( __GNUC__ )
+#elif defined( __GNUC__ ) || defined( USING_GCC )
         copy( name0, __PRETTY_FUNCTION__, sizeof( name0 ) );
-#elif defined( _MSC_VER )
+#elif defined( _MSC_VER ) || defined( USING_MSVC )
         copy( name0, __FUNCSIG__, sizeof( name0 ) );
-#elif defined( __cppcheck__ )
 #else
     #error "Not finished";
 #endif

@@ -4,6 +4,7 @@
 #include "AMP/utils/UtilityMacros.h"
 
 #include <cstring>
+#include <limits>
 #include <tuple>
 #include <vector>
 
