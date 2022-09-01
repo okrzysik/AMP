@@ -20,17 +20,6 @@ namespace TimeIntegrator {
 
 using DataManagerCallBack = std::function<void( std::shared_ptr<AMP::LinearAlgebra::Vector> )>;
 
-class BDFIntegratorParameters : public AMP::TimeIntegrator::TimeIntegratorParameters
-{
-public:
-    explicit BDFIntegratorParameters( std::shared_ptr<AMP::Database> db )
-        : AMP::TimeIntegrator::TimeIntegratorParameters( db )
-    {
-    }
-    ~BDFIntegratorParameters() {}
-    std::shared_ptr<AMP::Operator::Operator> d_operator = nullptr;
-};
-
 class BDFIntegrator : public AMP::TimeIntegrator::ImplicitIntegrator
 {
 public:
