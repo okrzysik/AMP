@@ -44,6 +44,12 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
     d_localStart = d_CommList->getStartGID();
 }
 
+void MultiVectorData::reset()
+{
+    for ( auto &vdata : d_data )
+        vdata->reset();
+}
+
 /****************************************************************
  * Return basic properties                                       *
  ****************************************************************/
