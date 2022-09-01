@@ -21,6 +21,7 @@ BDFIntegrator::BDFIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::ImplicitIntegrator( params )
 {
+    d_object_name = "BDFIntegrator";
     auto parameters =
         std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );

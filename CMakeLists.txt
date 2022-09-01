@@ -107,7 +107,7 @@ ENDIF()
 
 
 # Include the TPL inclde paths and libraries
-INCLUDE_DIRECTORIES( ${TPL_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES( SYSTEM ${TPL_INCLUDE_DIRS} )
 SET( TPL_LIBS ${TPL_LIBRARIES} )
 
 
@@ -183,7 +183,11 @@ ENDIF()
 # Add the cppcheck tests
 SET( CPPCHECK_TIMEOUT 700 )
 SET( CPPCHECK_INCLUDE "${TIMER_INCLUDE}" "${${PROJ}_INSTALL_DIR}/include" )
-SET( CPPCHECK_IGNORE "IO/test/test_HDF5.cpp" )  # Causes cppcheck 2.6 to segfault
+SET( CPPCHECK_IGNORE
+    "IO/test/test_HDF5.cpp"                 # Causes cppcheck 2.6 to segfault
+    "utils/DelaunayTessellation.cpp"        # Very slow
+    "${CMAKE_BINARY_DIR}/src/graphics/getLines/moc_mainwindow.cpp" ) # Generated file
+SET( CPPCHECK_USE_JSON TRUE )
 FIND_PACKAGE( Cppcheck )
 
 

@@ -45,8 +45,7 @@ static void clean_triangles( const int N,
 
 // Function to swap the indicies of two triangles
 template<int NDIM>
-static void swap_triangles( size_t N_tri,
-                            int i1,
+static void swap_triangles( int i1,
                             int i2,
                             std::array<int, NDIM + 1> *tri,
                             std::array<int, NDIM + 1> *tri_nab );
@@ -81,12 +80,9 @@ static bool find_flip( const std::array<TYPE, NDIM> *x,
  * Note: We are already using an increased precision, and want to    *
  * maintain the maximum degree of accuracy possible.                 *
  ********************************************************************/
-template<class TYPE>
-inline double dot( int N, const TYPE *x, const TYPE *y );
-// Approximate dot product for long double precision
-template<>
-inline double dot<long double>( int N, const long double *x, const long double *y )
+static inline double dot( int N, const long double *x, const long double *y )
 {
+    // Approximate dot product for long double precision
     bool sign[8];
     long double z[8];
     for ( int i = 0; i < N; i++ ) {
@@ -114,32 +110,28 @@ inline double dot<long double>( int N, const long double *x, const long double *
     return static_cast<double>( ans );
 }
 // Integer based dot products
-template<>
-inline double dot<int>( int N, const int *x, const int *y )
+static inline double dot( int N, const int *x, const int *y )
 {
     int64_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int64_t( x[i] ) * int64_t( y[i] );
     return static_cast<double>( ans );
 }
-template<>
-inline double dot<int64_t>( int N, const int64_t *x, const int64_t *y )
+static inline double dot( int N, const int64_t *x, const int64_t *y )
 {
     int128_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int128_t( x[i] ) * int128_t( y[i] );
     return static_cast<double>( ans );
 }
-template<>
-inline double dot<int128_t>( int N, const int128_t *x, const int128_t *y )
+static inline double dot( int N, const int128_t *x, const int128_t *y )
 {
     int256_t ans( 0 );
     for ( int i = 0; i < N; i++ )
         ans += int256_t( x[i] ) * int256_t( y[i] );
     return static_cast<double>( ans );
 }
-template<>
-inline double dot<int256_t>( int N, const int256_t *x, const int256_t *y )
+static inline double dot( int N, const int256_t *x, const int256_t *y )
 {
     int512_t ans( 0 );
     for ( int i = 0; i < N; i++ )
@@ -828,17 +820,16 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
 /********************************************************************
  * Function to remove sliver triangles on the surface                *
  ********************************************************************/
-template<int NDIM>
-constexpr double vol_sphere( double r )
+constexpr double vol_sphere( int NDIM, double r )
 {
-    if constexpr ( NDIM == 1 )
+    if ( NDIM == 1 )
         return 2.0 * r;
-    else if constexpr ( NDIM == 2 )
+    else if ( NDIM == 2 )
         return 3.141592653589793 * r * r;
-    else if constexpr ( NDIM == 3 )
+    else if ( NDIM == 3 )
         return 4.188790204786391 * r * r * r;
     else
-        static_assert( NDIM > 0 && NDIM <= 3 );
+        throw std::logic_error( "vol_sphere is undefined for the NDIM" );
 }
 template<int NDIM, class TYPE, class ETYPE>
 void clean_triangles( const int N,
@@ -867,7 +858,7 @@ void clean_triangles( const int N,
             double vol = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
             double R, center[NDIM];
             get_circumsphere<NDIM, TYPE, ETYPE>( x2, R, center );
-            double quality = vol_sphere<NDIM, TYPE, ETYPE>( R ) / vol;
+            double quality = vol_sphere( NDIM, R ) / vol;
             index.emplace_back( quality, i );
         }
     }
@@ -908,7 +899,7 @@ void clean_triangles( const int N,
         // Remove the triangle
         if ( remove ) {
             size_t i2 = N_tri - 1;
-            swap_triangles<NDIM, TYPE, ETYPE>( N_tri, i, i2, tri, tri_nab );
+            swap_triangles( i, i2, tri, tri_nab );
             for ( int j = 0; j < NDIM + 1; j++ ) {
                 int k          = tri_nab[i2][j];
                 tri[i2][j]     = -1;
@@ -928,13 +919,9 @@ void clean_triangles( const int N,
  * Function to swap two triangle indicies                            *
  ********************************************************************/
 template<int NDIM>
-void swap_triangles( size_t N_tri,
-                     int i1,
-                     int i2,
-                     std::array<int, NDIM + 1> *tri,
-                     std::array<int, NDIM + 1> *tri_nab )
+static void
+swap_triangles( int i1, int i2, std::array<int, NDIM + 1> *tri, std::array<int, NDIM + 1> *tri_nab )
 {
-    NULL_USE( N_tri );
     // First swap the triangle data
     for ( int j = 0; j < NDIM + 1; j++ ) {
         std::swap( tri[i1][j], tri[i2][j] );
@@ -1028,7 +1015,7 @@ int test_in_circumsphere( const std::array<TYPE, NDIM> x[],
         det2[d]           = sign * DelaunayHelpers::det<ETYPE, NDIM>( A2 );
     }
     // Compute the determinate (requires N^(NDIM+2) precision, used internally in dot)
-    double det_A = dot<ETYPE>( NDIM + 1, det2, R );
+    double det_A = dot( NDIM + 1, det2, R );
     if ( fabs( det_A ) <= 0.1 * R2 * TOL_VOL ) {
         // We are on the circumsphere
         return 0;
