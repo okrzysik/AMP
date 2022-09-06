@@ -269,7 +269,7 @@ bool EquationKeyData::is_integral() const
 }
 ArraySize EquationKeyData::arraySize() const
 {
-    return d_eq->getVars().empty() ? ArraySize() : ArraySize( 1 );
+    return d_eq->getVars().empty() ? ArraySize( 1 ) : ArraySize();
 }
 Array<double> EquationKeyData::convertToDouble() const
 {
