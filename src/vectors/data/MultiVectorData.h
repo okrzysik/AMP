@@ -139,6 +139,8 @@ public:
     void resetMultiVectorData( AMP::Discretization::DOFManager *manager,
                                const std::vector<VectorData *> &data );
 
+    void reset() override;
+
 protected:
     // Internal data
     AMP::AMP_MPI d_comm;
