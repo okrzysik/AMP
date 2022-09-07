@@ -21,7 +21,7 @@ namespace AMP::Mesh {
 
 
 // Function to check if a string contains another string as the prefix
-static bool check_prefix( std::string prefix, std::string str )
+static bool check_prefix( const std::string &prefix, const std::string &str )
 {
     if ( str.size() < prefix.size() )
         return false;

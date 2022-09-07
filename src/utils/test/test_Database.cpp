@@ -316,7 +316,7 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         checkResult( ut, pass, "Found material" );
     }
     if ( filename == "library.yml" ) {
-        auto name = ( *db )( "3d" )( "plastics" )( "pmma" ).getString( "name" );
+        auto name = ( *db )("3d") ("plastics") ( "pmma" ).getString( "name" );
         bool pass = name == "PMMA - Poly(methyl methacrylate)";
         checkResult( ut, pass, "Found material" );
     }
@@ -326,12 +326,15 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         checkResult( ut, pass, "Found material" );
     }
     if ( filename == "input_Database" ) {
-        auto db2 = db->getDatabase( "Try" );
+        auto db2 = db->getDatabase( "db1" );
         checkResult( ut, db2->getScalar<int>( "eq1" ) == 9, "eq1 evaluates to a scalar int" );
         auto eq1 = db2->getEquation( "eq1" );
         auto eq2 = db2->getEquation( "eq2" );
         checkResult( ut, ( *eq1 )() == 9, "eq1" );
         checkResult( ut, ( *eq2 )( { 3.0 } ) == 12, "eq2" );
+        auto db3 = db->getDatabase( "db2" )->getDatabase( "db" );
+        AMP_ASSERT( db3 );
+        checkResult( ut, *db2 == *db3, "db2->db == db3" );
     }
     printf( "\n" );
     // Try sending/receiving database

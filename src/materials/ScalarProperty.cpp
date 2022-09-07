@@ -52,7 +52,7 @@ PolynomialProperty::PolynomialProperty( std::string name,
                 std::move( args ),
                 std::move( ranges ),
                 std::move( argUnits ) ),
-      d_p( params )
+      d_p( std::move( params ) )
 {
     if ( d_p.size() > 1 )
         AMP_ASSERT( d_arguments.size() == 1 );
@@ -115,7 +115,7 @@ void InterpolatedProperty::eval( AMP::Array<double> &result, const AMP::Array<do
  *  EquationProperty                                                *
  *******************************************************************/
 static std::vector<std::array<double, 2>> getRanges( std::vector<std::array<double, 2>> ranges,
-                                                     const std::vector<std::string> vars )
+                                                     const std::vector<std::string> &vars )
 {
     if ( ranges.empty() )
         ranges.resize( vars.size(), { { -1e100, 1e100 } } );
@@ -132,7 +132,7 @@ EquationProperty::EquationProperty( std::string name,
                 unit,
                 std::move( source ),
                 eq->getVars(),
-                getRanges( ranges, eq->getVars() ),
+                getRanges( std::move( ranges ), eq->getVars() ),
                 std::move( argUnits ) ),
       d_eq( eq )
 {
@@ -149,8 +149,8 @@ EquationProperty::EquationProperty( std::string name,
                 { 1 },
                 unit,
                 std::move( source ),
-                args,
-                getRanges( ranges, args ),
+                std::move( args ),
+                getRanges( std::move( ranges ), args ),
                 std::move( argUnits ) ),
       d_eq( std::make_shared<MathExpr>( expression, args ) )
 {

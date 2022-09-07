@@ -123,7 +123,7 @@ int myGetRow( ML_Operator *data,
 }
 
 
-void myTest( AMP::UnitTest *ut, std::string exeName, int type )
+void myTest( AMP::UnitTest *ut, const std::string &exeName, int type )
 {
     std::string input_file = "input_" + exeName;
     auto log_file          = "output_" + exeName + "_" + std::to_string( type );
@@ -379,7 +379,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName, int type )
     ut->passes( exeName );
 }
 
-void myTest2( AMP::UnitTest *ut, std::string exeName, bool useTwoMeshes )
+void myTest2( AMP::UnitTest *ut, const std::string &exeName, bool useTwoMeshes )
 {
     std::string input_file = "input_" + exeName;
     int type               = 4;

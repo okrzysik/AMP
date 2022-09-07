@@ -17,7 +17,6 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"

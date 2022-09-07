@@ -106,7 +106,7 @@ void MLoptions::addDefaults( const std::string &problemType, std::shared_ptr<AMP
         addEntry( db, "null_space_dimension", 3 );
         addEntry( db, "null_space_add_default_vectors", false );
     } else {
-        AMP_ERROR( "The option, problem_type = \"" << problemType << "\" , is not supported." );
+        AMP_ERROR( "The option, problem_type = \"" + problemType + "\" , is not supported." );
     }
 }
 } // namespace AMP::Solver

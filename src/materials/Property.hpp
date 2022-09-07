@@ -227,8 +227,10 @@ void Property::evalArgs( AMP::Array<double> &args2,
 /************************************************************************
  *  Determine if a set of values are all within range or not             *
  ************************************************************************/
-inline bool
-Property::in_range( const std::string &name, double value, Units unit, bool throwError ) const
+inline bool Property::in_range( const std::string &name,
+                                double value,
+                                const Units &unit,
+                                bool throwError ) const
 {
     auto index = get_arg_index( name );
     if ( index == -1 )
@@ -250,7 +252,7 @@ Property::in_range( const std::string &name, double value, Units unit, bool thro
 template<class INPUT_VTYPE>
 inline bool Property::in_range( const std::string &name,
                                 const INPUT_VTYPE &values,
-                                Units unit,
+                                const Units &unit,
                                 bool throwError ) const
 {
     auto index = get_arg_index( name );

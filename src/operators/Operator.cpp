@@ -69,6 +69,23 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
+
+std::shared_ptr<OperatorParameters>
+Operator::getParameters( const std::string &type,
+                         std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                         std::shared_ptr<OperatorParameters> params )
+{
+    NULL_USE( params );
+    if ( type == "Jacobian" ) {
+        return getJacobianParameters( u );
+    } else {
+        // Derived class should implement this
+        AMP_ERROR( "Unknown OperatorParameters type specified" );
+    }
+    return nullptr;
+}
+
+
 void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     AMP_INSIST( ( ( db.get() ) != nullptr ), "NULL database" );

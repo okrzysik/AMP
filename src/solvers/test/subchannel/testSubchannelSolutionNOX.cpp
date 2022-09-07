@@ -12,7 +12,6 @@
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/operators/subchannel/SubchannelTwoEqLinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"

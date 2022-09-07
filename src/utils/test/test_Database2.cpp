@@ -33,7 +33,7 @@ void readInputDatabase( AMP::UnitTest &ut )
     // Create input database and parse all data in input file.
     auto input_db = AMP::Database::parseInputFile( input_file );
 
-    auto tmp_db = input_db->getDatabase( "Try" );
+    auto tmp_db = input_db->getDatabase( "db1" );
     int number  = tmp_db->getScalar<int>( "number" );
 
     if ( number > 0 ) {

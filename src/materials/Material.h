@@ -60,7 +60,7 @@ public:
      *    If it does not exist, return a nullptr.
      * \param type  Name of desired property
      */
-    std::shared_ptr<Property> property( std::string type );
+    std::shared_ptr<Property> property( const std::string &type );
 
     /*!
      * \brief  Get the desired property
@@ -68,7 +68,7 @@ public:
      *    If it does not exist, return a nullptr.
      * \param type  Name of desired property
      */
-    std::shared_ptr<const Property> property( std::string type ) const;
+    std::shared_ptr<const Property> property( const std::string &type ) const;
 
     //! return a list of all properties in this material
     std::vector<std::string> list() const;

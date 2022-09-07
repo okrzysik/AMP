@@ -26,7 +26,7 @@
 #include <string>
 
 
-static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int exampleNum )
+static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, int exampleNum )
 {
     NULL_USE( exampleNum );
     std::string input_file = "input_" + exeName;

@@ -25,8 +25,7 @@ ColumnBoundaryOperator::getParameters( const std::string &type,
     opParameters->d_OperatorParameters.resize( d_Operators.size() );
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        ( opParameters->d_OperatorParameters )[i] =
-            ( d_Operators[i]->getParameters( type, u, params ) );
+        opParameters->d_OperatorParameters[i] = d_Operators[i]->getParameters( type, u, params );
     }
 
     return opParameters;

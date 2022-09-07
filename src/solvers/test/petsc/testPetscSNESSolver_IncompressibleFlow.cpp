@@ -16,7 +16,6 @@
 #include "AMP/operators/flow/NavierStokesLSWFFEOperator.h"
 #include "AMP/operators/flow/NavierStokesLSWFLinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"

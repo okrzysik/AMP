@@ -1,6 +1,7 @@
 #include "AMP/vectors/Scalar.h"
 
 #include <chrono>
+#include <iostream>
 #include <string_view>
 
 

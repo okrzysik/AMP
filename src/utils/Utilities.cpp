@@ -219,16 +219,18 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
         if ( pos >= 0 ) {
             if ( !S_ISDIR( status.st_mode ) ) {
                 AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           << "    Cannot create directories in path = " << path
-                           << "\n    because some intermediate item in path exists and"
-                           << "is NOT a directory" << std::endl );
+                           "    Cannot create directories in path = " +
+                           path +
+                           "\n    because some intermediate item in path exists and"
+                           "is NOT a directory" );
             }
         }
         // make all directories that do not already exist
         if ( pos < 0 ) {
             if ( mkdir( path_buf, mode ) != 0 ) {
                 AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           << "    Cannot create directory  = " << path_buf << std::endl );
+                           "    Cannot create directory  = " +
+                           std::string( path_buf ) );
             }
             pos = 0;
         }
@@ -247,7 +249,8 @@ void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_
             if ( pos < length ) {
                 if ( mkdir( path_buf, mode ) != 0 ) {
                     AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                               << "    Cannot create directory  = " << path_buf << std::endl );
+                               "    Cannot create directory  = " +
+                               std::string( path_buf ) );
                 }
             }
         } while ( pos < length );

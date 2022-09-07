@@ -43,6 +43,8 @@ SET( DISABLE_LTO TRUE)
 
 
 # Build the TPLs if necessary
+ADD_CUSTOM_TARGET( build-test )     # Deprecated, remove
+ADD_CUSTOM_TARGET( build-examples ) # Deprecated, remove
 IF ( TPL_URL )
     INCLUDE( cmake/configure_TPLs.cmake )
     CONFIGURE_TPL_BUILDER()
@@ -157,10 +159,7 @@ ENDIF()
 
 
 # Create custom targets for build-test, check, and distclean
-SET( EXCLUDE_TESTS_FROM_ALL 0 )
-ADD_CUSTOM_TARGET( build-test )
-ADD_CUSTOM_TARGET( build-examples )
-ADD_CUSTOM_TARGET( check COMMAND  make test  )
+ADD_CUSTOM_TARGET( check COMMAND make test  )
 ADD_DISTCLEAN( src ampdir AMP compile_commands.json AMP-Data.tar.gz tpl-build tpl-builder )
 
 
@@ -172,10 +171,25 @@ IF ( TIME_BUILD )
 ENDIF()
 
 
+# Add cppcheck as part of build (still needs testing/development)
+# IF ( CMAKE_CXX_CPPCHECK )
+#     LIST( APPEND CMAKE_CXX_CPPCHECK
+#             "--enable=warning"
+#             "--inconclusive"
+#             "--force"
+#             "-iIO/test/test_HDF5.cpp"               # Causes cppcheck 2.6 to segfault
+#             "-iutils/DelaunayTessellation.cpp"      # Very slow
+#             "-ihost_defines.h"
+#             "--suppressions-list=${CMAKE_CURRENT_SOURCE_DIR}/cppcheckSuppressionFile"
+#     )
+# ENDIF()
+# MESSAGE( "CMAKE_CXX_CPPCHECK=${CMAKE_CXX_CPPCHECK}")
+
+
 # Add the src directory
 IF ( NOT ONLY_BUILD_DOCS )
     WRITE_REPO_VERSION()
-    SET( EXCLUDE_TESTS_FROM_ALL 1 )
+    CHECK_ENABLE_FLAG( EXCLUDE_TESTS_FROM_ALL 1 )
     ADD_SUBDIRECTORY( src )
 ENDIF()
 

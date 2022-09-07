@@ -61,7 +61,9 @@ arrayIndexOutOfBounds:*/AMP/utils/DelaunayFaceList.hpp
 templateRecursion:*/AMP/utils/AMP_MPI.I
 invalidLifetime:*/AMP/utils/kdtree2.hpp
 pointerOutOfBoundsCond:*/AMP/utils/kdtree2.hpp
-passedByValue:*/utils/FactoryStrategy.hpp
+passedByValue:*/AMP/utils/Database.h
+passedByValue:*/AMP/utils/Database.hpp
+passedByValue:*/AMP/utils/FactoryStrategy.hpp
 
 
 //***********************************************************
@@ -106,6 +108,7 @@ incorrectLogicOperator:*/src/mesh/triangle/TriangleMeshElement.cpp
 invalidLifetime:*/src/mesh/libmesh/libmeshMesh.cpp
 autovarInvalidDeallocation:*/src/vectors/petsc/PetscHelpers.cpp
 exceptNew:*/src/matrices/trilinos/ManagedEpetraMatrix.cpp
+passedByValue:*/src/utils/Database.cpp
 passedByValue:*/src/operators/subchannel/SubchannelHelpers.cpp
 syntaxError:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
 redundantPointerOp:*/src/vectors/trilinos/thyra/ThyraVectorWrapper.cpp
@@ -150,6 +153,7 @@ constParameter:*/src/operators/trilinos/TrilinosMatrixShellOperator.cpp
 arrayIndexOutOfBoundsCond:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
 arrayIndexOutOfBoundsCond:*/src/mesh/edge_t.cpp
 arrayIndexOutOfBoundsCond:*/src/mesh/triangle_t.cpp
+arrayIndexOutOfBoundsCond:*/src/geometry/shapes/SquareFrustum.cpp
 
 
 //***********************************************************
@@ -170,7 +174,6 @@ constArgument:*/mesh/test/testHex8ElementMapping.cpp
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator-2.cpp
 passedByValue:*/src/operators/test/maps/testMultiDofDTKMapOperator.cpp
 *:*/operators/test/dendro/*
-duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cpp
 knownConditionTrueFalse:*/src/solvers/test/trilinos/testTrilinosMLSolver_LinearFickOperator_bar.cpp
 knownConditionTrueFalse:*/src/time_integrators/test/testIDA_NonlinearColumnOperator.cpp
 passedByValue:*/utils/test/test_AMP_MPI.cpp
@@ -179,7 +182,6 @@ passedByValue:*/utils/threadpool/test/test_thread_pool.cpp
 memleak:*/utils/test/test_AMPManager.cpp
 duplicateExpression:*/discretization/test/DOFManager_tests.h
 redundantCondition:*/discretization/test/test_Discretization.h
-duplicateAssignExpression:*/src/utils/test/test_MathExpr.cpp
 knownConditionTrueFalse:*/utils/test/test_AsciiWriter.cpp
 knownConditionTrueFalse:*/src/utils/test/test_AMP_MPI.cpp
 resourceLeak:*/src/utils/test/test_DelaunayInterpolation.cpp
@@ -193,12 +195,18 @@ unreadVariable:*/src/utils/DelaunayInterpolation.cpp
 unreadVariable:*/src/utils/DelaunayTessellation.cpp
 uninitvar:*/src/utils/DelaunayInterpolation.cpp
 uninitvar:*/src/utils/DelaunayTessellation.cpp
+uninitvar:*/src/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.cpp
+uninitMemberVar:*/src/solvers/petsc/PetscKrylovSolver.cpp
 redundantAssignment:*/src/utils/kdtree.cpp
 shadowVariable:*/utils/DelaunayTessellation.cpp
 shiftTooManyBits:*/src/utils/extended_int.cpp
 operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
+duplicateAssignExpression:*/src/utils/test/test_MathExpr.cpp
+duplicateAssignExpression:*/src/solvers/test/mechanics/testMaterialModels_VonMisesPlasticity_2.cpp
 duplicateAssignExpression:*/src/operators/test/diffusion/testLinearOperatorFromMatrix-1.cpp
 duplicateAssignExpression:*/src/solvers/test/testSolversForUserMatrix.cpp
+duplicateAssignExpression:*/src/operators/test/mechanics/testLinearMechanics_reset.cpp
+duplicateAssignExpression:*/src/operators/test/mechanics/testNonlinearMechanics_reset.cpp
 constParameter:*/src/solvers/test/testMatrixFreeML.cpp
 
 

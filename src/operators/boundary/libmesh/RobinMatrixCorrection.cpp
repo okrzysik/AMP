@@ -109,11 +109,13 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
     d_robinPhysicsModel = myparams->d_robinPhysicsModel;
 
-    d_NeumannParams->d_db->putScalar(
-        "constant_flux", myparams->d_db->getWithDefault<bool>( "constant_flux", true ) );
+    d_NeumannParams->d_db->putScalar( "constant_flux",
+                                      myparams->d_db->getWithDefault<bool>( "constant_flux", true ),
+                                      {},
+                                      AMP::Database::Check::Overwrite );
     d_NeumannParams->d_variableFlux      = myparams->d_variableFlux;
     d_NeumannParams->d_robinPhysicsModel = myparams->d_robinPhysicsModel;
-    d_NeumannParams->d_db->putScalar( "gamma", d_gamma );
+    d_NeumannParams->d_db->putScalar( "gamma", d_gamma, {}, AMP::Database::Check::Overwrite );
     d_NeumannCorrection->reset( d_NeumannParams );
 
     bool skipMatrixCorrection =

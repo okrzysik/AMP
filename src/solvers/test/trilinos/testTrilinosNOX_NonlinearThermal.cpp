@@ -15,7 +15,6 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolver.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"

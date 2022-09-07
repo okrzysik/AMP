@@ -92,17 +92,13 @@ void NonlinearKrylovAccelerator<T>::getFromInput( std::shared_ptr<AMP::Database>
     if ( db->keyExists( "max_vectors" ) ) {
         d_mvec = db->getScalar<int>( "max_vectors" );
     } else {
-        AMP_ERROR( "NonlinearKrylovAccelerator"
-                   << " -- Key data `max_vectors'"
-                   << " missing in input." );
+        AMP_ERROR( "NonlinearKrylovAccelerator -- Key data `max_vectors' missing in input." );
     }
 
     if ( db->keyExists( "angle_tolerance" ) ) {
         d_vtol = db->getScalar<T>( "angle_tolerance" );
     } else {
-        AMP_ERROR( "NonlinearKrylovAccelerator"
-                   << " -- Key data `angle_tolerance'"
-                   << " missing in input." );
+        AMP_ERROR( "NonlinearKrylovAccelerator -- Key data `angle_tolerance' missing in input." );
     }
 
     d_maximum_function_evals = db->getWithDefault<int>( "maximum_function_evals", 50 );
