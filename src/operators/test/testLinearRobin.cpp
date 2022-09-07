@@ -25,7 +25,7 @@
 
 
 static void bcTests( AMP::UnitTest *ut,
-                     std::string msgPrefix,
+                     const std::string &msgPrefix,
                      std::shared_ptr<AMP::Operator::Operator> feOperator,
                      std::shared_ptr<AMP::Operator::Operator> bcOperator,
                      std::shared_ptr<AMP::Database> bcDatabase,

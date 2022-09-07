@@ -29,10 +29,24 @@ using AMP::UnitTest;
 using AMP::Utilities::stringf;
 
 
+// Set some global define variables
+#ifdef USE_MPI
+bool useMPI = true;
+#else
+bool useMPI   = false;
+#endif
+#ifdef __APPLE__
+bool useApple = true;
+#else
+bool useApple = false;
+#endif
+
+
 // Return the time elapsed in seconds
 static inline double time() { return MPI_CLASS::time(); }
 
 
+// Custom user type
 struct mytype {
     int a;
     double b;
@@ -66,42 +80,46 @@ struct mytype {
 };
 
 
+// Record pass/fail/expected message
+void record( AMP::UnitTest &ut, bool pass, const std::string &msg, bool expected = false )
+{
+    if ( pass )
+        ut.passes( msg );
+    else if ( expected )
+        ut.expected_failure( msg );
+    else
+        ut.failure( msg );
+}
+
+
 // Routines to test Reduce with known data types
 template<class type>
-int testReduce( MPI_CLASS comm, UnitTest *ut );
+int testReduce( MPI_CLASS comm, UnitTest &ut );
 template<>
-int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest *ut )
+int testReduce<std::complex<double>>( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testReduce<complex double>" );
+    PROFILE_SCOPED( profiler, "testReduce<complex double>" );
+    std::string typeName      = typeid( std::complex<double> ).name();
     std::complex<double> rank = comm.getRank() + 1;
     std::complex<double> N    = ( ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2 );
     // Test sumReduce
-    auto msg = stringf( "sumReduce (%s)", typeid( std::complex<double> ).name() );
-    if ( comm.sumReduce<std::complex<double>>( rank ) == N )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
-    msg = stringf( "sumReduce (%s) (x,y)", typeid( std::complex<double> ).name() );
+    record( ut, comm.sumReduce<std::complex<double>>( rank ) == N, "sumReduce: " + typeName );
     std::complex<double> y;
     comm.sumReduce<std::complex<double>>( &rank, &y, 1 );
-    if ( y == N )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
-    PROFILE_STOP( "testReduce<complex double>" );
+    record( ut, y == N, "sumReduce (x,y): " + typeName );
     return 2; // Return the number of tests
 }
 template<class type>
-int testReduce( MPI_CLASS comm, UnitTest *ut )
+int testReduce( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testReduce" );
-    auto rank = (type) comm.getRank();
-    auto size = (type) comm.getSize();
+    PROFILE_SCOPED( profiler, "testReduce" );
+    std::string typeName = typeid( std::complex<double> ).name();
+    auto rank            = (type) comm.getRank();
+    auto size            = (type) comm.getSize();
     if ( (int) ( size ) != comm.getSize() ) {
         auto msg = stringf( "Reduce (%s) cannot represent the number of processors",
                             typeid( type ).name() );
-        ut->expected_failure( msg );
-        PROFILE_STOP2( "testReduce<class type>" );
+        ut.expected_failure( msg );
         return 0;
     }
     type x = 0, y = 0;
@@ -109,44 +127,28 @@ int testReduce( MPI_CLASS comm, UnitTest *ut )
     // Test sumReduce
     auto msg = stringf( "sumReduce (%s)", typeid( type ).name() );
     if ( ( (int) ( (type) N ) ) != N )
-        ut->expected_failure( msg ); // type cannot represent N
-    else if ( comm.sumReduce<type>( rank + 1 ) == (type) N )
-        ut->passes( msg );
+        ut.expected_failure( msg ); // type cannot represent N
     else
-        ut->failure( msg );
+        record( ut, comm.sumReduce<type>( rank + 1 ) == (type) N, msg );
     msg = stringf( "sumReduce (%s) (x,y)", typeid( type ).name() );
     x   = rank + 1;
     comm.sumReduce<type>( &x, &y, 1 );
     if ( ( (int) ( (type) N ) ) != N )
-        ut->expected_failure( msg );
-    else if ( y == (type) N )
-        ut->passes( msg );
+        ut.expected_failure( msg );
     else
-        ut->failure( msg );
+        record( ut, y == (type) N, msg );
     // Test minReduce
     msg = stringf( "minReduce (%s)", typeid( type ).name() );
-    if ( comm.minReduce<type>( rank + 1 ) == 1 )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, comm.minReduce<type>( rank + 1 ) == 1, msg );
     msg = stringf( "minReduce (%s) (x,y)", typeid( type ).name() );
     comm.minReduce<type>( &x, &y, 1, nullptr );
-    if ( y == 1 )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, y == 1, msg );
     // Test maxReduce
     msg = stringf( "maxReduce (%s)", typeid( type ).name() );
-    if ( comm.maxReduce<type>( rank + 1 ) == size )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, comm.maxReduce<type>( rank + 1 ) == size, msg );
     msg = stringf( "maxReduce (%s) (x,y)", typeid( type ).name() );
     comm.maxReduce<type>( &x, &y, 1, nullptr );
-    if ( y == size )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, y == size, msg );
     // Test minReduce with rank
     int rank_of_min = -1;
     int rank_of_max = -1;
@@ -155,106 +157,79 @@ int testReduce( MPI_CLASS comm, UnitTest *ut )
     msg             = stringf( "minReduce-rank (%s)", typeid( type ).name() );
     try {
         comm.minReduce<type>( &rank_min, 1, &rank_of_min );
-        if ( rank_min == 1 && rank_of_min == 0 )
-            ut->passes( msg );
-        else
-            ut->failure( msg );
+        record( ut, rank_min == 1 && rank_of_min == 0, msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( msg ) + " - " + err.message );
+        ut.failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( msg ) + " - caught unknown exception" );
+        ut.failure( std::string( msg ) + " - caught unknown exception" );
     }
     msg = stringf( "minReduce-rank (%s) (x,y)", typeid( type ).name() );
     try {
         comm.minReduce<type>( &x, &rank_min, 1, &rank_of_min );
-        if ( rank_min == 1 && rank_of_min == 0 )
-            ut->passes( msg );
-        else
-            ut->failure( msg );
+        record( ut, rank_min == 1 && rank_of_min == 0, msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( msg ) + " - " + err.message );
+        ut.failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( msg ) + " - caught unknown exception" );
+        ut.failure( std::string( msg ) + " - caught unknown exception" );
     }
     // Test maxReduce with rank
     msg = stringf( "maxReduce-rank (%s)", typeid( type ).name() );
     try {
         comm.maxReduce<type>( &rank_max, 1, &rank_of_max );
-        if ( rank_max == size && rank_of_max == comm.getSize() - 1 )
-            ut->passes( msg );
-        else
-            ut->failure( msg );
+        record( ut, rank_max == size && rank_of_max == comm.getSize() - 1, msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( msg ) + " - " + err.message );
+        ut.failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( msg ) + " - caught unknown exception" );
+        ut.failure( std::string( msg ) + " - caught unknown exception" );
     }
     msg = stringf( "maxReduce-rank (%s) (x,y)", typeid( type ).name() );
     try {
         comm.maxReduce<type>( &x, &rank_max, 1, &rank_of_max );
-        if ( rank_max == size && rank_of_max == comm.getSize() - 1 )
-            ut->passes( msg );
-        else
-            ut->failure( msg );
+        record( ut, rank_max == size && rank_of_max == comm.getSize() - 1, msg );
     } catch ( StackTrace::abort_error &err ) {
-        ut->failure( std::string( msg ) + " - " + err.message );
+        ut.failure( std::string( msg ) + " - " + err.message );
     } catch ( ... ) {
-        ut->failure( std::string( msg ) + " - caught unknown exception" );
+        ut.failure( std::string( msg ) + " - caught unknown exception" );
     }
-    PROFILE_STOP( "testReduce" );
     return 10; // Return the number of tests
 }
 
 
 // Routine to test Scan with known data types
 template<class type>
-int testScan( MPI_CLASS comm, UnitTest *ut )
+int testScan( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testScan" );
+    PROFILE_SCOPED( profiler, "testScan" );
     auto x   = (type) ( comm.getRank() + 1 );
     type y   = 0;
     auto msg = stringf( "sumScan (%s)", typeid( type ).name() );
     comm.sumScan<type>( &x, &y, 1 );
     auto N = (type) ( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
-    if ( y == N )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, y == N, msg );
     if ( std::is_same<type, std::complex<double>>::value ) {
-        PROFILE_STOP2( "testScan" );
         return 1;
     }
     msg = stringf( "minScan (%s)", typeid( type ).name() );
     comm.minScan<type>( &x, &y, 1 );
-    if ( y == (type) 1 )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, y == (type) 1, msg );
     msg = stringf( "maxScan (%s)", typeid( type ).name() );
     comm.maxScan<type>( &x, &y, 1 );
-    if ( y == x )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
-    PROFILE_STOP( "testScan" );
+    record( ut, y == x, msg );
     return 3; // Return the number of tests
 }
 
 
 // Routine to test bcast
 template<class type>
-int testBcast( MPI_CLASS comm, UnitTest *ut, type default_val, type new_val )
+int testBcast( MPI_CLASS comm, UnitTest &ut, type default_val, type new_val )
 {
-    PROFILE_START( "testBcast" );
+    PROFILE_SCOPED( profiler, "testBcast" );
     for ( int i = 0; i < comm.getSize(); i++ ) {
         type tmp1 = default_val;
         if ( comm.getRank() == i )
             tmp1 = new_val;
         auto msg = stringf( "bcast scalar (%s) from rank %i", typeid( type ).name(), i );
-        if ( comm.bcast( tmp1, i ) == new_val )
-            ut->passes( msg );
-        else
-            ut->failure( msg );
+        record( ut, comm.bcast( tmp1, i ) == new_val, msg );
         type tmp2[2];
         tmp2[0] = default_val;
         tmp2[1] = default_val;
@@ -264,21 +239,17 @@ int testBcast( MPI_CLASS comm, UnitTest *ut, type default_val, type new_val )
         }
         msg = stringf( "bcast vector (%s) from rank %i", typeid( type ).name(), i );
         comm.bcast( tmp2, 2, i );
-        if ( tmp2[0] == new_val && tmp2[1] == new_val )
-            ut->passes( msg );
-        else
-            ut->failure( msg );
+        record( ut, tmp2[0] == new_val && tmp2[1] == new_val, msg );
     }
-    PROFILE_STOP( "testBcast" );
     return 2 * comm.getSize(); // Return the number of tests
 }
 
 
 // Routine to test allGather
 template<class type>
-int testAllGather( MPI_CLASS comm, UnitTest *ut )
+int testAllGather( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testAllGather" );
+    PROFILE_SCOPED( profiler, "testAllGather" );
     // Test scalar allGather
     auto x1  = (type) comm.getRank();
     auto *x2 = new type[comm.getSize()];
@@ -290,10 +261,7 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
             pass = false;
     }
     auto msg = stringf( "allGather scalar (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     // Test vector allGather
     int N     = ( comm.getSize() * ( comm.getSize() + 1 ) ) / 2;
     auto *x3  = new type[comm.getRank() + 1];
@@ -321,10 +289,7 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
         }
     }
     msg = stringf( "allGather vector (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     delete[] x2;
     delete[] x3;
     delete[] x4;
@@ -363,10 +328,7 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     }
     msg = stringf( "allGather vector with known recv and non-zero displacements (%s)",
                    typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     delete[] send;
     delete[] recv;
     delete[] recv_size;
@@ -376,21 +338,20 @@ int testAllGather( MPI_CLASS comm, UnitTest *ut )
     msg  = stringf( "allGather scalar (%s)", typeid( type ).name() );
     try {
         comm.allGather( &x1, 0, (type *) nullptr, size );
-        ut->passes( msg );
+        ut.passes( msg );
     } catch ( ... ) {
-        ut->failure( msg );
+        ut.failure( msg );
     }
     delete[] size;
-    PROFILE_STOP( "testAllGather" );
     return 4; // Return the number of tests
 }
 
 
 // Routine to test setGather
 template<class type>
-int testSetGather( MPI_CLASS comm, UnitTest *ut )
+int testSetGather( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testSetGather" );
+    PROFILE_SCOPED( profiler, "testSetGather" );
     auto x1 = (type) comm.getRank();
     std::set<type> set;
     set.insert( x1 );
@@ -402,20 +363,16 @@ int testSetGather( MPI_CLASS comm, UnitTest *ut )
             pass = false;
     }
     auto msg = stringf( "setGather (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
-    PROFILE_STOP( "testSetGather" );
+    record( ut, pass, msg );
     return 1; // Return the number of tests
 }
 
 
 // Routine to test mapGather
 template<class type>
-int testMapGather( MPI_CLASS comm, UnitTest *ut )
+int testMapGather( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testMapGather" );
+    PROFILE_SCOPED( profiler, "testMapGather" );
     auto x1 = (type) comm.getRank();
     std::map<int, type> map;
     map.insert( std::pair<int, type>( comm.getRank(), x1 ) );
@@ -430,20 +387,16 @@ int testMapGather( MPI_CLASS comm, UnitTest *ut )
             pass = false;
     }
     auto msg = stringf( "mapGather (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
-    PROFILE_STOP( "testMapGather" );
+    record( ut, pass, msg );
     return 1; // Return the number of tests
 }
 
 
 // Routine to test allToAll
 template<class type>
-int testAllToAll( MPI_CLASS comm, UnitTest *ut )
+int testAllToAll( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testAllToAll" );
+    PROFILE_SCOPED( profiler, "testAllToAll" );
     bool pass;
     int size = 0;
     type *send_data, *recv_data;
@@ -466,10 +419,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     delete[] send_data;
     delete[] recv_data;
     auto msg = stringf( "allToAll with scalar (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     // Test allToAll vector with a scalar value to each processor
     send_data = new type[comm.getSize()];
     recv_data = new type[comm.getSize()];
@@ -493,10 +443,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     delete[] send_data;
     delete[] recv_data;
     msg = stringf( "allToAll vector with scalar (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     // Test allToAll with a variable number of values per processor and spacing
     send_data = new type[comm.getSize() * comm.getSize()];
     recv_data = new type[2 * comm.getRank() * comm.getSize()];
@@ -535,10 +482,7 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     delete[] recv_data;
     msg = stringf( "allToAll with vector of known size and displacements (%s)",
                    typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     // Test allToAll with a unknown receive length
     send_data        = new type[comm.getSize() * comm.getSize()];
     auto *recv_data1 = new type[comm.getSize() * comm.getSize()];
@@ -583,31 +527,24 @@ int testAllToAll( MPI_CLASS comm, UnitTest *ut )
     delete[] recv_data1;
     delete[] recv_data2;
     msg = stringf( "allToAll with vector of unknown size (%s)", typeid( type ).name() );
-    if ( pass1 )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass1, msg );
     msg =
         stringf( "allToAll with vector of unknown size with NULL recv(%s)", typeid( type ).name() );
-    if ( pass2 )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass2, msg );
     // Free temporary variables
     delete[] send_cnt;
     delete[] recv_cnt;
     delete[] send_disp;
     delete[] recv_disp;
-    PROFILE_STOP( "testAllToAll" );
     return 5; // Return the number of tests
 }
 
 
 // Routine to test send/recv
 template<class type>
-int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
+int testSendRecv( MPI_CLASS comm, UnitTest &ut, type v1, type v2 )
 {
-    PROFILE_START( "testSendRecv" );
+    PROFILE_SCOPED( profiler, "testSendRecv" );
     // Test send-recv with a known length
     for ( int i = 0; i < comm.getSize(); i++ ) {
         for ( int j = 0; j < comm.getSize(); j++ ) {
@@ -625,10 +562,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
                 // We are recieving
                 int size = 1;
                 comm.recv( &x, size, i, false, tag );
-                if ( size == 1 && x == v2 )
-                    ut->passes( msg );
-                else
-                    ut->failure( msg );
+                record( ut, size == 1 && x == v2, msg );
             }
         }
     }
@@ -650,10 +584,7 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
                 // We are recieving
                 int size = 1;
                 comm.recv( &x, size, i, true, tag );
-                if ( size == 1 && x == v2 )
-                    ut->passes( msg );
-                else
-                    ut->failure( msg );
+                record( ut, size == 1 && x == v2, msg );
             }
         }
     }
@@ -674,23 +605,19 @@ int testSendRecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
                 // We are recieving
                 int size = comm.probe( i, tag );
                 comm.recv( &x, size, i, false, tag );
-                if ( size == 0 )
-                    ut->passes( msg );
-                else
-                    ut->failure( msg );
+                record( ut, size == 0, msg );
             }
         }
     }
-    PROFILE_STOP( "testSendRecv" );
     return 3 * comm.getSize() * comm.getSize(); // Return the number of tests
 }
 
 
 // Routine to test Isend/Irecv
 template<class type>
-int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
+int testIsendIrecv( MPI_CLASS comm, UnitTest &ut, type v1, type v2 )
 {
-    PROFILE_START( "testIsendIrecv" );
+    PROFILE_SCOPED( profiler, "testIsendIrecv" );
     std::vector<MPI_CLASS::Request> sendRequest;
     std::vector<MPI_CLASS::Request> recvRequest;
     // Send all msgs
@@ -744,18 +671,14 @@ int testIsendIrecv( MPI_CLASS comm, UnitTest *ut, type v1, type v2 )
             pass = false;
     }
     auto msg = stringf( "Isend-Irecv (%s)", typeid( type ).name() );
-    if ( pass )
-        ut->passes( msg );
-    else
-        ut->failure( msg );
+    record( ut, pass, msg );
     delete[] recv_buffer;
-    PROFILE_STOP( "testIsendIrecv" );
     return comm.getSize() * comm.getSize(); // Return the number of tests
 }
 
 
 // Routine to test CommRanks
-int testCommRanks( MPI_CLASS comm, UnitTest *ut )
+int testCommRanks( MPI_CLASS comm, UnitTest &ut )
 {
     std::vector<int> neighbors;
     for ( int i = 0; i < comm.getSize(); i++ )
@@ -780,103 +703,58 @@ int testCommRanks( MPI_CLASS comm, UnitTest *ut )
     AMP::Utilities::unique( ranks2 );
     pass = pass && ranks.size() == ranks2.size();
     comm.barrier();
-    if ( pass )
-        ut->passes( "commRanks" );
-    else
-        ut->failure( "commRanks" );
+    record( ut, pass, "commRanks" );
     return 1; // Return the number of tests
 }
 
 
 // Structure to contain timer results
 struct testCommTimerResults {
-    int N_reduce;
-    int N_scan;
-    int N_bcast;
-    int N_allGather;
-    int N_setGather;
-    int N_mapGather;
-    int N_allToAll;
-    int N_sendRecv;
-    int N_IsendIrecv;
-    double t_reduce;
-    double t_scan;
-    double t_bcast;
-    double t_allGather;
-    double t_setGather;
-    double t_mapGather;
-    double t_allToAll;
-    double t_sendRecv;
-    double t_IsendIrecv;
-    // Constructor
-    testCommTimerResults()
-    {
-        N_reduce     = 0;
-        N_scan       = 0;
-        N_bcast      = 0;
-        N_allGather  = 0;
-        N_setGather  = 0;
-        N_mapGather  = 0;
-        N_allToAll   = 0;
-        N_sendRecv   = 0;
-        N_IsendIrecv = 0;
-        t_reduce     = 0.0;
-        t_scan       = 0.0;
-        t_bcast      = 0.0;
-        t_allGather  = 0.0;
-        t_setGather  = 0.0;
-        t_mapGather  = 0.0;
-        t_allToAll   = 0.0;
-        t_sendRecv   = 0.0;
-        t_IsendIrecv = 0.0;
-    }
+    int N_reduce        = 0;
+    int N_scan          = 0;
+    int N_bcast         = 0;
+    int N_allGather     = 0;
+    int N_setGather     = 0;
+    int N_mapGather     = 0;
+    int N_allToAll      = 0;
+    int N_sendRecv      = 0;
+    int N_IsendIrecv    = 0;
+    double t_reduce     = 0;
+    double t_scan       = 0;
+    double t_bcast      = 0;
+    double t_allGather  = 0;
+    double t_setGather  = 0;
+    double t_mapGather  = 0;
+    double t_allToAll   = 0;
+    double t_sendRecv   = 0;
+    double t_IsendIrecv = 0;
     // Print the results
     void print()
     {
-        printf( "   Reduce:      N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_reduce,
-                t_reduce,
-                1e6 * t_reduce / N_reduce );
-        printf( "   Scan:        N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_scan,
-                t_scan,
-                1e6 * t_scan / N_scan );
-        printf( "   Bcast:       N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_bcast,
-                t_bcast,
-                1e6 * t_bcast / N_bcast );
-        printf( "   allGather:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_allGather,
-                t_allGather,
-                1e6 * t_allGather / N_allGather );
-        printf( "   allToAll:    N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_allToAll,
-                t_allToAll,
-                1e6 * t_allToAll / N_allToAll );
-        printf( "   send-recv:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_sendRecv,
-                t_sendRecv,
-                1e6 * t_sendRecv / N_sendRecv );
-        printf( "   Isend-Irecv: N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_IsendIrecv,
-                t_IsendIrecv,
-                1e6 * t_IsendIrecv / N_IsendIrecv );
-        printf( "   setGather:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_setGather,
-                t_setGather,
-                1e6 * t_setGather / N_setGather );
-        printf( "   mapGather:   N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                N_mapGather,
-                t_mapGather,
-                1e6 * t_mapGather / N_mapGather );
+        auto printLine = []( const char *msg, int N, double time ) {
+            printf( "   %s:      N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
+                    msg,
+                    N,
+                    time,
+                    1e6 * time / N );
+        };
+        printLine( "Reduce", N_reduce, t_reduce );
+        printLine( "Scan", N_scan, t_scan );
+        printLine( "Bcast", N_bcast, t_bcast );
+        printLine( "allGather", N_allGather, t_allGather );
+        printLine( "allToAll", N_allToAll, t_allToAll );
+        printLine( "send-recv", N_sendRecv, t_sendRecv );
+        printLine( "Isend-Irecv", N_IsendIrecv, t_IsendIrecv );
+        printLine( "setGather", N_setGather, t_setGather );
+        printLine( "mapGather", N_mapGather, t_mapGather );
     }
 };
 
 
 // This routine will test a single MPI communicator
-testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
+testCommTimerResults testComm( MPI_CLASS comm, UnitTest &ut )
 {
-    PROFILE_START( "testComm" );
+    PROFILE_SCOPED( profiler, "testComm" );
     testCommTimerResults timer;
     double start_time;
     // Test the tag
@@ -896,10 +774,7 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
         if ( comm3.newTag() != tag0 + 127 + i )
             pass = false;
     }
-    if ( pass )
-        ut->passes( "newTag" );
-    else
-        ut->failure( "newTag" );
+    record( ut, pass, "newTag" );
     // Test min, max, and sum reduce
     start_time = time();
     timer.N_reduce += testReduce<unsigned char>( comm, ut );
@@ -919,23 +794,23 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
         try {
             // This should fail
             tmp2 = comm.sumReduce<mytype>( tmp1 );
-            ut->failure( "sumReduce should give an error with an unknown type" );
+            ut.failure( "sumReduce should give an error with an unknown type" );
         } catch ( ... ) {
-            ut->passes( "sumReduce should give an error with an unknown type" );
+            ut.passes( "sumReduce should give an error with an unknown type" );
         }
         try {
             // This should fail
             tmp2 = comm.minReduce<mytype>( tmp1 );
-            ut->failure( "minReduce should give an error with an unknown type" );
+            ut.failure( "minReduce should give an error with an unknown type" );
         } catch ( ... ) {
-            ut->passes( "minReduce should give an error with an unknown type" );
+            ut.passes( "minReduce should give an error with an unknown type" );
         }
         try {
             // This should fail
             tmp2 = comm.maxReduce<mytype>( tmp1 );
-            ut->failure( "maxReduce should give an error with an unknown type" );
+            ut.failure( "maxReduce should give an error with an unknown type" );
         } catch ( ... ) {
-            ut->passes( "maxReduce should give an error with an unknown type" );
+            ut.passes( "maxReduce should give an error with an unknown type" );
         }
         timer.N_reduce += 3;
     }
@@ -957,23 +832,23 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
         try {
             // This should fail
             comm.sumScan<mytype>( &tmp1, &tmp2, 1 );
-            ut->failure( "sumReduce should give an error with an unknown type" );
+            ut.failure( "sumReduce should give an error with an unknown type" );
         } catch ( ... ) {
-            ut->passes( "sumReduce should give an error with an unknown type" );
+            ut.passes( "sumReduce should give an error with an unknown type" );
         }
         try {
             // This should fail
             comm.minScan<mytype>( &tmp1, &tmp2, 1 );
-            ut->failure( "minReduce should give an error with an unknown type" );
+            ut.failure( "minReduce should give an error with an unknown type" );
         } catch ( ... ) {
-            ut->passes( "minReduce should give an error with an unknown type" );
+            ut.passes( "minReduce should give an error with an unknown type" );
         }
         try {
             // This should fail
             comm.maxScan<mytype>( &tmp1, &tmp2, 1 );
-            ut->failure( "maxReduce should give an error with an unknown type" );
+            ut.failure( "maxReduce should give an error with an unknown type" );
         } catch ( ... ) {
-            ut->passes( "maxReduce should give an error with an unknown type" );
+            ut.passes( "maxReduce should give an error with an unknown type" );
         }
         timer.N_scan += 3;
     }
@@ -1087,10 +962,7 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
     pass = pass && any[size] && all[size] && !any[size + 1] && !all[size + 1];
     for ( int i = 0; i < rank; i++ )
         pass = pass && any[i] && !all[i];
-    if ( pass )
-        ut->passes( "anyReduce/allReduce" );
-    else
-        ut->failure( "anyReduce/allReduce" );
+    record( ut, pass, "anyReduce/allReduce" );
     // Test serializeStart()
     if ( size < 64 ) {
         double start = MPI_CLASS::time();
@@ -1100,36 +972,35 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest *ut )
         double stop = MPI_CLASS::time();
         double avg  = 1e3 * ( stop - start ) / size;
         if ( avg > 98 && avg < 120 )
-            ut->passes( "serialize" );
+            ut.passes( "serialize" );
         else
-            ut->failure( "serialize: " + std::to_string( avg ) );
+            ut.failure( "serialize: " + std::to_string( avg ) );
     }
     // Test commRanks
     testCommRanks( comm, ut );
-    PROFILE_STOP( "testComm" );
     return timer;
 }
 
 
 // Test comm dup and the number of communicators that can be created
-void testCommDup( UnitTest *ut )
+void testCommDup( UnitTest &ut )
 {
 #if defined( USING_CLANG ) && defined( __APPLE__ )
     // The MPI error handler crashes so this test fails
     // This seems to be a MAC? + Clang + MPICH? issue only
-    ut->expected_failure( "testCommDup skipped for this architecture/compiler" );
+    ut.expected_failure( "testCommDup skipped for this architecture/compiler" );
 #else
     MPI_CLASS globalComm( COMM_WORLD );
     MPI_CLASS dupComm = globalComm.dup();
     if ( globalComm.getCommunicator() != dupComm.getCommunicator() &&
          dupComm.getSize() == globalComm.getSize() && dupComm.getRank() == globalComm.getRank() ) {
-        ut->passes( "dup comm" );
+        ut.passes( "dup comm" );
     } else {
-        ut->failure( "dup comm" );
+        ut.failure( "dup comm" );
         return;
     }
     #if defined( USE_PETSC ) && !defined( USE_MPI )
-    ut->expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
+    ut.expected_failure( "Skipping dup tests, PETSc (no-mpi) has a limit of 128 unique comms" );
     return;
     #endif
     int N_comm_try = 2000; // Maximum number of comms to try and create
@@ -1143,13 +1014,13 @@ void testCommDup( UnitTest *ut )
             MPI_ASSERT( comms.back().sumReduce<int>( 1 ) ==
                         globalComm.getSize() ); // We need to communicate as part of the test
         }
-        ut->passes( AMP::Utilities::stringf( "Created %i comms", N_comm_try ) );
+        ut.passes( AMP::Utilities::stringf( "Created %i comms", N_comm_try ) );
     } catch ( ... ) {
         if ( comms.size() < 252 ) {
-            ut->failure( "Could not create 252 different communicators" );
+            ut.failure( "Could not create 252 different communicators" );
         } else {
             int N = comms.size();
-            ut->expected_failure( AMP::Utilities::stringf(
+            ut.expected_failure( AMP::Utilities::stringf(
                 "Failed to create an unlimited number of comms (%i)", N ) );
         }
         AMP::pout << "Maximum number of concurrent communicators: " << comms.size() << std::endl;
@@ -1172,12 +1043,12 @@ void testCommDup( UnitTest *ut )
             N_dup += 2;
         }
         double stop = MPI_CLASS::time();
-        ut->passes( "Created/Destroyed an unlimited number of comms" );
+        ut.passes( "Created/Destroyed an unlimited number of comms" );
         auto msg = stringf( "Time to create/destroy comm using MPI_CLASS::dup() is: %0.1f us",
                             1e6 * ( stop - start ) / N_dup );
         AMP::pout << msg << std::endl;
     } catch ( ... ) {
-        ut->failure( "Failed to create/destroy an unlimited number of comms" );
+        ut.failure( "Failed to create/destroy an unlimited number of comms" );
         AMP::pout << "Maximum number of communicators created with destruction: " << N_dup
                   << std::endl;
     }
@@ -1213,25 +1084,17 @@ int main( int argc, char *argv[] )
 
         // Test the global communicator (AMP_COMM_WORLD)
         MPI_CLASS globalComm = MPI_CLASS( AMP_COMM_WORLD );
-        if ( !globalComm.isNull() )
-            ut.passes( "Global communicator created" );
-        else
-            ut.failure( "Global communicator created" );
-        if ( globalComm.getSize() == global_size )
-            ut.passes( "Global communicator size" );
-        else
-            ut.failure( "Global communicator size" );
+        record( ut, !globalComm.isNull(), "Global communicator created" );
+        record( ut, globalComm.getSize() == global_size, "Global communicator size" );
         if ( globalComm.getRank() == 0 ) {
             std::cout << "MPI_COMM_WORLD = " << global_size << " processors" << std::endl;
             std::cout << "   Largest tag value = " << globalComm.maxTag() << std::endl << std::endl;
         }
 #ifdef AMP_USE_MPI
-        if ( globalComm.getCommunicator() == MPI_COMM_WORLD )
-            ut.passes( "Communicator == MPI_COMM_WORLD" );
-        else
-            ut.failure( "Communicator == MPI_COMM_WORLD" );
+        record(
+            ut, globalComm.getCommunicator() == MPI_COMM_WORLD, "Communicator == MPI_COMM_WORLD" );
 #endif
-        testCommTimerResults commTimer = testComm( globalComm, &ut );
+        auto commTimer = testComm( globalComm, ut );
         if ( globalComm.getRank() == 0 ) {
             std::cout << "Results for global timer (rank 0)" << std::endl;
             commTimer.print();
@@ -1243,82 +1106,48 @@ int main( int argc, char *argv[] )
         if ( globalComm.getRank() == 0 )
             rank_string = "Rank 0";
         rank_string = globalComm.bcast( rank_string, 0 );
-        if ( rank_string == "Rank 0" )
-            ut.passes( "Bcast std::string" );
-        else
-            ut.failure( "Bcast std::string: " + rank_string );
+        record( ut, rank_string == "Rank 0", "Bcast std::string" );
 
         // Test AMP_COMM_SELF
         MPI_CLASS selfComm = MPI_CLASS( AMP_COMM_SELF );
-        if ( !selfComm.isNull() )
-            ut.passes( "Self communicator created" );
-        else
-            ut.failure( "Self communicator created" );
-#ifdef AMP_USE_MPI
-        if ( selfComm.getCommunicator() == MPI_COMM_SELF )
-            ut.passes( "Communicator == MPI_COMM_SELF" );
-        else
-            ut.failure( "Communicator == MPI_COMM_SELF" );
-#endif
-        testComm( selfComm, &ut );
+        record( ut, !selfComm.isNull(), "Self communicator created" );
+        record( ut,
+                selfComm.getCommunicator() == MPI_COMM_SELF,
+                "Communicator == MPI_COMM_SELF",
+                !useMPI );
+        testComm( selfComm, ut );
 
         // Test == and !=
-        if ( globalComm == globalComm && !( selfComm == globalComm ) )
-            ut.passes( "==" );
-        else
-            ut.failure( "==" );
-        if ( selfComm != globalComm && !( globalComm != globalComm ) )
-            ut.passes( "!=" );
-        else
-            ut.failure( "!=" );
+        record( ut, globalComm == globalComm && !( selfComm == globalComm ), "==", !useMPI );
+        record( ut, selfComm != globalComm && !( globalComm != globalComm ), "!=", !useMPI );
 
         // Test AMP_COMM_NULL
         MPI_CLASS nullComm = MPI_CLASS( AMP_COMM_NULL );
-        if ( nullComm.isNull() )
-            ut.passes( "Null communicator created" );
-        else
-            ut.failure( "Null communicator created" );
-        if ( nullComm.getSize() == 0 )
-            ut.passes( "Null communicator has zero size" );
-        else
-            ut.failure( "Null communicator has zero size" );
-#ifdef AMP_USE_MPI
-        if ( nullComm.getCommunicator() == MPI_COMM_NULL )
-            ut.passes( "Communicator == MPI_COMM_NULL" );
-        else
-            ut.failure( "Communicator == MPI_COMM_NULL" );
-#endif
+        record( ut, nullComm.isNull(), "Null communicator created" );
+        record( ut, nullComm.getSize() == 0, "Null communicator has zero size" );
+        record( ut,
+                nullComm.getCommunicator() == MPI_COMM_NULL,
+                "Communicator == MPI_COMM_NULL",
+                !useMPI );
 
-            // Test dup
+        // Test dup
 #if !defined( AMP_USE_MPI ) && defined( AMP_USE_PETSC )
         MPI_CLASS dupComm2 = globalComm.dup();
 #endif
         MPI_CLASS dupComm = globalComm.dup();
-        if ( nullComm.dup().isNull() )
-            ut.passes( "Null communicator duplicates a Null communicator" );
-        else
-            ut.failure( "Null communicator duplicates a Null communicator" );
-        testCommDup( &ut );
+        record( ut, nullComm.dup().isNull(), "Null communicator duplicates a Null communicator" );
+        testCommDup( ut );
 
         // Test compare
-        if ( globalComm.compare( globalComm ) == 1 )
-            ut.passes( "compare comm global==global" );
-        else
-            ut.failure( "compare comm global==global" );
-        if ( globalComm.compare( dupComm ) == 3 )
-            ut.passes( "compare comm global~=dup" );
-        else
-            ut.failure( "compare comm global~=dup" );
+        record( ut, globalComm.compare( globalComm ) == 1, "compare comm global==global" );
+        record( ut, globalComm.compare( dupComm ) == 3, "compare comm global~=dup" );
         if ( global_size == 1 ) {
-            if ( globalComm.compare( selfComm ) == 3 )
-                ut.passes( "compare comm global~=self (global size=1)" );
-            else
-                ut.failure( "compare comm global~=self (global size=1)" );
+            record( ut,
+                    globalComm.compare( selfComm ) == 3,
+                    "compare comm global~=self (global size=1)",
+                    !useMPI );
         } else {
-            if ( globalComm.compare( selfComm ) == 0 )
-                ut.passes( "compare comm global!=self" );
-            else
-                ut.failure( "compare comm global!=self" );
+            record( ut, globalComm.compare( selfComm ) == 0, "compare comm global!=self" );
         }
 
         // Split the global comm and test
@@ -1333,28 +1162,18 @@ int main( int argc, char *argv[] )
         std::vector<MPI_CLASS> splitComms( 4 );
         splitComms[0] = globalComm.split( color );
         splitComms[1] = globalComm.split( color, globalComm.getRank() );
-        if ( splitComms[0].getCommunicator() != globalComm.getCommunicator() &&
-             splitComms[1].getCommunicator() != globalComm.getCommunicator() &&
-             splitComms[0].getCommunicator() != splitComms[1].getCommunicator() )
-            ut.passes( "split comm has different communicator" );
-        else
-            ut.failure( "split comm has different communicator" );
+        record( ut,
+                splitComms[0].getCommunicator() != globalComm.getCommunicator() &&
+                    splitComms[1].getCommunicator() != globalComm.getCommunicator() &&
+                    splitComms[0].getCommunicator() != splitComms[1].getCommunicator(),
+                "split comm has different communicator" );
         if ( globalComm.getSize() > 1 ) {
-            if ( splitComms[0].getSize() < globalComm.getSize() )
-                ut.passes( "split comm is smaller" );
-            else
-                ut.failure( "split comm is smaller" );
+            record( ut, splitComms[0].getSize() < globalComm.getSize(), "split comm is smaller" );
         }
-        if ( splitComms[0].getRank() == splitComms[1].getRank() )
-            ut.passes( "split sort by rank" );
-        else
-            ut.failure( "split sort by rank" );
-        testComm( splitComms[0], &ut );
+        record( ut, splitComms[0].getRank() == splitComms[1].getRank(), "split sort by rank" );
+        testComm( splitComms[0], ut );
         splitComms[2] = globalComm.split( -1 );
-        if ( splitComms[2].isNull() )
-            ut.passes( "split with color=-1 returns NULL communicator" );
-        else
-            ut.failure( "split with color=-1 returns NULL communicator" );
+        record( ut, splitComms[2].isNull(), "split with color=-1 returns NULL communicator" );
         splitComms[3] = splitComms[0]; // Make a copy to ensure there are no memory leaks
         splitComms[3] = splitComms[2]; // Perform assignement to check memory leaks
         MPI_ASSERT( splitComms[3] == splitComms[2] );
@@ -1362,26 +1181,18 @@ int main( int argc, char *argv[] )
 
         // Test  <  <=  >  >=
         if ( globalComm.getSize() > 1 ) {
-            if ( splitComms[0] < globalComm && splitComms[1] < globalComm &&
-                 !( globalComm < globalComm ) && !( globalComm < splitComms[0] ) )
-                ut.passes( " < comm" );
-            else
-                ut.failure( " < comm" );
-            if ( splitComms[0] <= globalComm && splitComms[1] <= globalComm &&
-                 globalComm <= globalComm && !( globalComm <= splitComms[0] ) )
-                ut.passes( " <= comm" );
-            else
-                ut.failure( " <= comm" );
-            if ( globalComm > splitComms[0] && globalComm > splitComms[1] &&
-                 !( globalComm > globalComm ) && !( splitComms[0] > globalComm ) )
-                ut.passes( " > comm" );
-            else
-                ut.failure( " > comm" );
-            if ( globalComm >= splitComms[0] && globalComm >= splitComms[1] &&
-                 globalComm >= globalComm && !( splitComms[0] >= globalComm ) )
-                ut.passes( " >= comm" );
-            else
-                ut.failure( " >= comm" );
+            bool test1 = splitComms[0] < globalComm && splitComms[1] < globalComm &&
+                         !( globalComm < globalComm ) && !( globalComm < splitComms[0] );
+            bool test2 = splitComms[0] <= globalComm && splitComms[1] <= globalComm &&
+                         globalComm <= globalComm && !( globalComm <= splitComms[0] );
+            bool test3 = globalComm > splitComms[0] && globalComm > splitComms[1] &&
+                         !( globalComm > globalComm ) && !( splitComms[0] > globalComm );
+            bool test4 = globalComm >= splitComms[0] && globalComm >= splitComms[1] &&
+                         globalComm >= globalComm && !( splitComms[0] >= globalComm );
+            record( ut, test1, "< comm" );
+            record( ut, test2, "<= comm" );
+            record( ut, test3, "> comm" );
+            record( ut, test4, ">= comm" );
         }
 
         // Test intersection
@@ -1390,21 +1201,17 @@ int main( int argc, char *argv[] )
             MPI_CLASS comm1 = MPI_CLASS::intersect( globalComm, selfComm );
             MPI_CLASS comm2 = MPI_CLASS::intersect( selfComm, globalComm );
             MPI_CLASS comm3 = MPI_CLASS::intersect( globalComm, globalComm );
-            if ( comm1.compare( globalComm ) == 0 && comm1.compare( selfComm ) != 0 &&
-                 comm2.compare( globalComm ) == 0 && comm2.compare( selfComm ) != 0 &&
-                 comm3.compare( globalComm ) != 0 && comm3.compare( selfComm ) == 0 )
-                ut.passes( "intersection of globalComm and selfComm" );
-            else
-                ut.failure( "intersection of globalComm and selfComm" );
+            record( ut,
+                    comm1.compare( globalComm ) == 0 && comm1.compare( selfComm ) != 0 &&
+                        comm2.compare( globalComm ) == 0 && comm2.compare( selfComm ) != 0 &&
+                        comm3.compare( globalComm ) != 0 && comm3.compare( selfComm ) == 0,
+                    "intersection of globalComm and selfComm" );
         }
 
         // Test case where we have disjoint sets (this can only happen of one of the comms is null)
         {
             MPI_CLASS intersection = MPI_CLASS::intersect( globalComm, nullComm );
-            if ( intersection.isNull() )
-                ut.passes( "intersection of non-overlapping comms" );
-            else
-                ut.failure( "intersection of non-overlapping comms" );
+            record( ut, intersection.isNull(), "intersection of non-overlapping comms" );
         }
 
         // Test case where the comms partially overlap
@@ -1436,10 +1243,7 @@ int main( int argc, char *argv[] )
             //         intersection.getSize()!=globalComm.getSize()-2 )
             //        pass = false;
             //}
-            if ( pass )
-                ut.passes( "intersection of partially overlapping comms" );
-            else
-                ut.failure( "intersection of partially overlapping comms" );
+            record( ut, pass, "intersection of partially overlapping comms" );
         }
 
         // Test splitByNode
@@ -1459,10 +1263,9 @@ int main( int argc, char *argv[] )
             if ( globalString == localName )
                 N_global++;
         }
-        if ( !nodeComm.isNull() && N_local == nodeComm.getSize() && N_local == N_global )
-            ut.passes( "splitByNode" );
-        else
-            ut.failure( "splitByNode" );
+        record( ut,
+                !nodeComm.isNull() && N_local == nodeComm.getSize() && N_local == N_global,
+                "splitByNode" );
 
         // Test the call to load balance the processes
         MPI_CLASS::balanceProcesses( globalComm, 1 );
@@ -1473,15 +1276,7 @@ int main( int argc, char *argv[] )
         cpus = MPI_CLASS::getProcessAffinity();
         if ( cpus.size() < 1 || cpus.size() > maxProcNode / nodeComm.getSize() )
             pass_balance = false;
-        if ( pass_balance ) {
-            ut.passes( "balanceProcesses" );
-        } else {
-#ifdef __APPLE__
-            ut.expected_failure( "balanceProcesses" );
-#else
-            ut.failure( "balanceProcesses" );
-#endif
-        }
+        record( ut, pass_balance, "balanceProcesses", useApple );
 
         // Test the performance of yield (used internally by AMP_MPI wait routines)
         globalComm.barrier();

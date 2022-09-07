@@ -130,7 +130,7 @@ SubchannelPhysicsModel::SubchannelPhysicsModel(
 }
 
 void SubchannelPhysicsModel::getProperty(
-    std::string property,
+    const std::string &property,
     std::vector<double> &result,
     std::map<std::string, std::shared_ptr<std::vector<double>>> &args )
 {

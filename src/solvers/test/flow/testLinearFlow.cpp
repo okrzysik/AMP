@@ -17,7 +17,6 @@
 #include "AMP/operators/trilinos/EpetraMatrixOperator.h"
 #include "AMP/operators/trilinos/EpetraMatrixOperatorParameters.h"
 #include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"

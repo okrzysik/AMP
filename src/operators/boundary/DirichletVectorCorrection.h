@@ -10,15 +10,11 @@ namespace AMP::Operator {
 /**
   A class used to impose Dirichlet boundary conditions for a nonlinear operator. This involves the
   following steps:
-  1) Make the intial guess vector for the nonlinear problem satisfy the specified Dirichlet boundary
-  conditions.
-  2) Make the entries corresponding to Dirichlet boundary conditions in the residual vector always
-  be equal to zero.
-  3) Make the entries corresponding to Dirichlet boundary conditions in the vector containing
-  updates to the
-  solution always be equal to zero.
-  (1) and (3) together ensure that the solution always satisfies the specified Dirichlet boundary
-  conditions.
+  1) Make the initial guess vector for the nonlinear problem satisfy the specified Dirichlet
+  boundary conditions. 2) Make the entries corresponding to Dirichlet boundary conditions in the
+  residual vector always be equal to zero. 3) Make the entries corresponding to Dirichlet boundary
+  conditions in the vector containing updates to the solution always be equal to zero. (1) and (3)
+  together ensure that the solution always satisfies the specified Dirichlet boundary conditions.
   This can also be used to easily form a RHS vector corresponding to point forces (Dirac delta
   functions).
   */

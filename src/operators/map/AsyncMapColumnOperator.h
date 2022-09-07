@@ -44,7 +44,7 @@ public:
 
     void append( std::shared_ptr<Operator> op ) override;
 
-    // Overload the apply operator to include makeConsistent
+    //@ Overload the apply operator to include makeConsistent
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
@@ -62,16 +62,17 @@ public:
     static std::shared_ptr<AsyncMapColumnOperator> build( AMP::Mesh::Mesh::shared_ptr manager,
                                                           std::shared_ptr<AMP::Database> database );
 
-    // Function to determine if a makeConsistentSet is required
+    //@ Function to determine if a makeConsistentSet is required
     virtual bool requiresMakeConsistentSet();
+
+
+    //@ Function to create database for the individual maps
+    static std::vector<std::shared_ptr<AMP::Database>>
+    createDatabases( std::shared_ptr<AMP::Database> database );
 
 private:
     // Frozen vector for the output results
     AMP::LinearAlgebra::Vector::shared_ptr d_OutputVector;
-
-    // Function to create the databases for the individual maps
-    static std::vector<std::shared_ptr<AMP::Database>>
-    createDatabases( std::shared_ptr<AMP::Database> database );
 };
 
 } // namespace AMP::Operator
