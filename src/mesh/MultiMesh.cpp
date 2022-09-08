@@ -348,11 +348,11 @@ MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
                 "MeshDatabasePrefix must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshArrayDatabasePrefix" ),
                 "MeshArrayDatabasePrefix must exist in input database" );
-    std::string MeshPrefix      = database->getString( "MeshDatabasePrefix" );
-    std::string MeshArrayPrefix = database->getString( "MeshArrayDatabasePrefix" );
+    auto MeshPrefix      = database->getString( "MeshDatabasePrefix" );
+    auto MeshArrayPrefix = database->getString( "MeshArrayDatabasePrefix" );
     AMP_ASSERT( !check_prefix( MeshPrefix, MeshArrayPrefix ) );
     AMP_ASSERT( !check_prefix( MeshArrayPrefix, MeshPrefix ) );
-    std::vector<std::string> keys = database->getAllKeys();
+    auto keys = database->getAllKeys();
     std::vector<std::string> meshes, meshArrays;
     for ( auto &key : keys ) {
         if ( check_prefix( MeshPrefix, key ) ) {

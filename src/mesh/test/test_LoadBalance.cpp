@@ -1,13 +1,8 @@
 // This program simulates the load balance with a given input file on a given number of processors
 
-#include "AMP/mesh/Mesh.h"
-#include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
-
-#include "ProfilerApp.h"
 
 #include <cmath>
 #include <iomanip>
@@ -65,8 +60,6 @@ int run( int N_procs, const std::string &filename, double ratio )
 int main( int argc, char **argv )
 {
     AMP::AMPManager::startup( argc, argv );
-    PROFILE_ENABLE( 3 );
-    PROFILE_START( "Main" );
 
     // Load the inputs
     if ( argc < 3 ) {
@@ -84,7 +77,6 @@ int main( int argc, char **argv )
     int N_errors = run( N_procs, filename, ratio );
 
     // Shutdown AMP
-    PROFILE_SAVE( filename );
     AMP::AMPManager::shutdown();
     return N_errors;
 }
