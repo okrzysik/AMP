@@ -52,15 +52,14 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     #endif
     getFromInput( parameters->d_db );
 
-    std::shared_ptr<IDATimeIntegratorParameters> params =
-        std::dynamic_pointer_cast<IDATimeIntegratorParameters>( parameters );
+    auto params      = std::dynamic_pointer_cast<IDATimeIntegratorParameters>( parameters );
     d_solution_prime = ( params->d_ic_vector_prime )->cloneVector();
     d_solution_prime->copyVector( params->d_ic_vector_prime );
 
     d_pPreconditioner = params->d_pPreconditioner;
 
     // reuse the time integrator database, and put additional fields in
-    std::shared_ptr<AMP::Database> timeOperator_db = params->d_db;
+    auto timeOperator_db = params->d_db;
     timeOperator_db->putScalar( "CurrentDt", d_current_dt );
     timeOperator_db->putScalar( "CurrentTime", d_current_time );
     timeOperator_db->putScalar( "name", "TimeOperator" );
@@ -82,7 +81,7 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     // if we want to create the LinearTimeOperator internally
     if ( d_createLinearOperatorInternally ) {
         if ( d_bLinearRhsOperator && d_bLinearMassOperator ) {
-            std::shared_ptr<AMP::TimeIntegrator::TimeOperatorParameters> linearTimeOperatorParams =
+            auto linearTimeOperatorParams =
                 std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperatorParameters>(
                     idaTimeOp->getParameters( "Jacobian", d_solution_vector ) );
             std::shared_ptr<AMP::Database> linearTimeOperator_db = linearTimeOperatorParams->d_db;
@@ -233,31 +232,31 @@ void IDATimeIntegrator::getFromInput( std::shared_ptr<AMP::Database> input_db )
     if ( input_db->keyExists( "bLinearMassOperator" ) ) {
         d_bLinearMassOperator = input_db->getScalar<bool>( "bLinearMassOperator" );
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `bLinearMassOperator' missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `bLinearMassOperator' missing in input." );
     }
 
     if ( input_db->keyExists( "bLinearRhsOperator" ) ) {
         d_bLinearRhsOperator = input_db->getScalar<bool>( "bLinearRhsOperator" );
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `bLinearRhsOperator' missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `bLinearRhsOperator' missing in input." );
     }
 
     if ( input_db->keyExists( "linear_solver_type" ) ) {
         d_linear_solver_type = input_db->getScalar<int>( "linear_solver_type" );
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `linear_solver_type' missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `linear_solver_type' missing in input." );
     }
 
     if ( input_db->keyExists( "relative_tolerance" ) ) {
         d_relative_tolerance = input_db->getScalar<double>( "relative_tolerance" );
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `relative_tolerance' missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `relative_tolerance' missing in input." );
     }
 
     if ( input_db->keyExists( "absolute_tolerance" ) ) {
         d_absolute_tolerance = input_db->getScalar<double>( "absolute_tolerance" );
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `absolute_tolerance' missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `absolute_tolerance' missing in input." );
     }
 
     d_bCallCalcIC        = input_db->getWithDefault<bool>( "CallCalcIC", true );

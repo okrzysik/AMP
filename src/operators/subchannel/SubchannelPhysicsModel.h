@@ -37,7 +37,7 @@ public:
       @param [out] result   output vector
       @param [in]  args of input argument strings and input vectors
       */
-    void getProperty( std::string property,
+    void getProperty( const std::string &property,
                       std::vector<double> &result,
                       std::map<std::string, std::shared_ptr<std::vector<double>>> &args );
 

@@ -7,7 +7,6 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"

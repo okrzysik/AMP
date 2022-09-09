@@ -21,6 +21,7 @@ BDFIntegrator::BDFIntegrator(
     std::shared_ptr<AMP::TimeIntegrator::TimeIntegratorParameters> params )
     : AMP::TimeIntegrator::ImplicitIntegrator( params )
 {
+    d_object_name = "BDFIntegrator";
     auto parameters =
         std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorParameters>( params );
     AMP_ASSERT( parameters.get() != nullptr );
@@ -169,8 +170,7 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             d_implicit_integrator = "BE";
 
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `implicit_integrator'"
-                                 << " missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `implicit_integrator' missing in input." );
     }
 
     if ( d_implicit_integrator == "BE" ) {
@@ -186,15 +186,14 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
     }
 
     if ( ( d_bdf_starting_integrator != "BE" ) && ( d_bdf_starting_integrator != "CN" ) ) {
-        AMP_ERROR( d_object_name << " -- Key data `d_bdf_starting_integrator'"
-                                 << " valid values are BE and CN" );
+        AMP_ERROR( d_object_name +
+                   " -- Key data `d_bdf_starting_integrator' valid values are BE and CN" );
     }
 
     if ( db->keyExists( "timestep_selection_strategy" ) ) {
         d_timestep_strategy = db->getString( "timestep_selection_strategy" );
     } else {
-        AMP_ERROR( d_object_name << " -- Key data `timestep_selection_strategy'"
-                                 << " missing in input." );
+        AMP_ERROR( d_object_name + " -- Key data `timestep_selection_strategy' missing in input." );
     }
 
     d_use_predictor = db->getWithDefault<bool>( "use_predictor", true );
@@ -205,9 +204,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
         if ( db->keyExists( "predictor_type" ) ) {
             d_predictor_type = db->getString( "predictor_type" );
         } else {
-            AMP_ERROR( "Time integrator parameters::"
-                       << " -- Required key `predictor_type'"
-                       << " missing in input." );
+            AMP_ERROR(
+                "Time integrator parameters:: -- Required key `predictor_type' missing in input." );
         }
 
         // override and set to true if we are using the predictor
@@ -266,8 +264,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             if ( db->keyExists( "target_relative_change" ) ) {
                 d_target_relative_change = db->getScalar<double>( "target_relative_change" );
             } else {
-                AMP_ERROR( d_object_name << " -- Key data `target_relative_change'"
-                                         << " missing in input." );
+                AMP_ERROR( d_object_name +
+                           " -- Key data `target_relative_change' missing in input." );
             }
         }
     }
@@ -288,8 +286,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             if ( db->keyExists( "problem_fixed_scaling" ) ) {
                 d_problem_scales = db->getVector<double>( "problem_fixed_scaling" );
             } else {
-                AMP_ERROR( d_object_name << " -- Key data `problem_fixed_scaling'"
-                                         << " missing in input." );
+                AMP_ERROR( d_object_name +
+                           " -- Key data `problem_fixed_scaling' missing in input." );
             }
         }
     }
@@ -674,8 +672,8 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                 } else if ( d_timestep_strategy == "limit relative change" ) {
                     d_current_dt = estimateDynamicalTimeScale( d_current_dt );
                 } else {
-                    AMP_ERROR(
-                        "Unknown time step control strategy selected:  " << d_timestep_strategy );
+                    AMP_ERROR( "Unknown time step control strategy selected:  " +
+                               d_timestep_strategy );
                 }
             }
 

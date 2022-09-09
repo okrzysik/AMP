@@ -114,9 +114,9 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
 
 void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal         = mySubsetVector( r, d_variable );
-    std::shared_ptr<AMP::Discretization::DOFManager> dof_map = rInternal->getDOFManager();
-    size_t numIds                                            = d_boundaryIds.size();
+    auto rInternal = mySubsetVector( r, d_variable );
+    auto dof_map   = rInternal->getDOFManager();
+    size_t numIds  = d_boundaryIds.size();
     for ( size_t j = 0; j < numIds; j++ ) {
         auto bnd =
             d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[j], 0 );

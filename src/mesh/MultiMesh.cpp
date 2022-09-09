@@ -21,7 +21,7 @@ namespace AMP::Mesh {
 
 
 // Function to check if a string contains another string as the prefix
-static bool check_prefix( std::string prefix, std::string str )
+static bool check_prefix( const std::string &prefix, const std::string &str )
 {
     if ( str.size() < prefix.size() )
         return false;
@@ -348,11 +348,11 @@ MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
                 "MeshDatabasePrefix must exist in input database" );
     AMP_INSIST( database->keyExists( "MeshArrayDatabasePrefix" ),
                 "MeshArrayDatabasePrefix must exist in input database" );
-    std::string MeshPrefix      = database->getString( "MeshDatabasePrefix" );
-    std::string MeshArrayPrefix = database->getString( "MeshArrayDatabasePrefix" );
+    auto MeshPrefix      = database->getString( "MeshDatabasePrefix" );
+    auto MeshArrayPrefix = database->getString( "MeshArrayDatabasePrefix" );
     AMP_ASSERT( !check_prefix( MeshPrefix, MeshArrayPrefix ) );
     AMP_ASSERT( !check_prefix( MeshArrayPrefix, MeshPrefix ) );
-    std::vector<std::string> keys = database->getAllKeys();
+    auto keys = database->getAllKeys();
     std::vector<std::string> meshes, meshArrays;
     for ( auto &key : keys ) {
         if ( check_prefix( MeshPrefix, key ) ) {

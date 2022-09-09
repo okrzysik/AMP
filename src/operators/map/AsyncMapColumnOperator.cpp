@@ -126,7 +126,6 @@ static void copyKey( std::shared_ptr<AMP::Database> database1,
 std::vector<std::shared_ptr<AMP::Database>>
 AsyncMapColumnOperator::createDatabases( std::shared_ptr<AMP::Database> database1 )
 {
-    AMP_INSIST( database1->keyExists( "N_maps" ), "N_maps must exist in input database" );
     int N_maps = database1->getScalar<int>( "N_maps" );
     // Create the basic databases for each mesh
     std::vector<std::shared_ptr<AMP::Database>> meshDatabases;

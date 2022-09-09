@@ -1,6 +1,6 @@
 #include "AMP/AMP_TPLs.h"
-#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 
 #include "StackTrace/ErrorHandlers.h"

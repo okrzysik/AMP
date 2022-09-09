@@ -11,7 +11,6 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
-#include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"

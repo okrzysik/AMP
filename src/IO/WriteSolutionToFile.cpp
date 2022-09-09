@@ -2,7 +2,7 @@
 
 void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
                     AMP::LinearAlgebra::Vector::shared_ptr solVec,
-                    std::string exeName )
+                    const std::string &exeName )
 {
 
     auto dof_map = solVec->getDOFManager();

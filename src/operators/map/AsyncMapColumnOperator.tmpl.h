@@ -36,19 +36,15 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
     AMP_ASSERT( database->keyExists( "MapType" ) );
     AMP_ASSERT( MAP_TYPE::validMapType( database->getString( "MapType" ) ) );
 
-    // Get the number of maps in the database
-    AMP_INSIST( database->keyExists( "N_maps" ), "N_maps must exist in input database" );
-    int N_maps = database->getScalar<int>( "N_maps" );
-
     // Create the databases for the individual maps
     auto map_databases = createDatabases( database );
 
     // Loop through the maps
     AMP_MPI managerComm = manager->getComm();
-    for ( int i = 0; i < N_maps; i++ ) {
+    for ( auto db : map_databases ) {
         // Get the names of the 2 meshes involved
-        auto meshName1 = map_databases[i]->getString( "Mesh1" );
-        auto meshName2 = map_databases[i]->getString( "Mesh2" );
+        auto meshName1 = db->getString( "Mesh1" );
+        auto meshName2 = db->getString( "Mesh2" );
 
         // Subset the multmesh for the 2 meshes
         auto mesh1 = manager->Subset( meshName1 );
@@ -66,18 +62,17 @@ AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
             continue;
 
         // Create the map parameters
-        std::shared_ptr<AsyncMapOperatorParameters> mapParams(
-            new typename MAP_TYPE::Parameters( map_databases[i] ) );
+        auto mapParams                   = std::make_shared<typename MAP_TYPE::Parameters>( db );
         mapParams->d_MapComm             = mapComm;
         mapParams->d_Mesh1               = mesh1;
         mapParams->d_Mesh2               = mesh2;
-        mapParams->d_BoundaryID1         = map_databases[i]->getScalar<int>( "Surface1" );
-        mapParams->d_BoundaryID2         = map_databases[i]->getScalar<int>( "Surface2" );
+        mapParams->d_BoundaryID1         = db->getScalar<int>( "Surface1" );
+        mapParams->d_BoundaryID2         = db->getScalar<int>( "Surface2" );
         mapParams->d_commTag             = globalMapTagOffset;
         mapParams->callMakeConsistentSet = false;
 
         // Create the map
-        std::shared_ptr<AsyncMapOperator> mapOp( new MAP_TYPE( mapParams ) );
+        auto mapOp = std::make_shared<MAP_TYPE>( mapParams );
         newMapColumn->append( mapOp );
     }
 

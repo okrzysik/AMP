@@ -20,17 +20,6 @@ namespace TimeIntegrator {
 
 using DataManagerCallBack = std::function<void( std::shared_ptr<AMP::LinearAlgebra::Vector> )>;
 
-class BDFIntegratorParameters : public AMP::TimeIntegrator::TimeIntegratorParameters
-{
-public:
-    explicit BDFIntegratorParameters( std::shared_ptr<AMP::Database> db )
-        : AMP::TimeIntegrator::TimeIntegratorParameters( db )
-    {
-    }
-    ~BDFIntegratorParameters() {}
-    std::shared_ptr<AMP::Operator::Operator> d_operator = nullptr;
-};
-
 class BDFIntegrator : public AMP::TimeIntegrator::ImplicitIntegrator
 {
 public:
@@ -283,9 +272,6 @@ protected:
 
     //! names of variables to associate with different components of a vector
     std::vector<std::string> d_var_names;
-
-    //! name of this object
-    std::string d_object_name = "BDFIntegrator";
 
     //! norm type used for truncation error calculation
     std::string d_timeTruncationErrorNormType = "l2Norm";

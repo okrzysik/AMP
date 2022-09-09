@@ -1,4 +1,4 @@
-Try{
+db1 {
 number = 5
 
     string = "test with wildcards .\/*'"
@@ -18,3 +18,12 @@ number = 5
     eq1 = @() 3^2;
     eq2 = @(x) 4*x;
 }
+
+
+global_int = 4
+
+db2 {
+   int = global_int
+   db = db1
+}
+

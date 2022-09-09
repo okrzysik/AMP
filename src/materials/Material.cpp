@@ -13,14 +13,14 @@ bool Material::hasProperty( const std::string &type ) const
 {
     return d_propertyMap.find( type ) != d_propertyMap.end();
 }
-std::shared_ptr<Property> Material::property( std::string type )
+std::shared_ptr<Property> Material::property( const std::string &type )
 {
     auto it = d_propertyMap.find( type );
     if ( it == d_propertyMap.end() )
         return nullptr;
     return it->second;
 }
-std::shared_ptr<const Property> Material::property( std::string type ) const
+std::shared_ptr<const Property> Material::property( const std::string &type ) const
 {
     auto it = d_propertyMap.find( type );
     if ( it == d_propertyMap.end() )

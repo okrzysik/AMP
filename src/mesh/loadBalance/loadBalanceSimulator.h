@@ -54,6 +54,9 @@ public:
     //! Function to get the current ranks in the load balance
     size_t getMethod() const { return d_method; }
 
+    //! Return the number of assigned ranks
+    inline int nRanks() const { return d_end - d_begin; }
+
     //! Function to get the ranks for the mesh
     std::vector<int> getRanks() const;
 
@@ -61,10 +64,10 @@ public:
     inline std::vector<int> getRanks( int i ) const { return d_submeshes[i].getRanks(); }
 
     //! Function to change the ranks
-    void setProcs( int N_ranks );
+    inline int maxProcs() const { return d_max_procs; }
 
     //! Function to change the ranks
-    void setRanks( std::vector<int> ranks );
+    void setProcs( int N_ranks );
 
     //! Return the submeshes
     inline const auto &getSubmeshes() const { return d_submeshes; }
@@ -92,21 +95,23 @@ public:
     void print( uint8_t detail = 0, uint8_t indent = 0 );
 
 
-private:
-    // Internal data
-    std::string d_name;
-    double d_cost;
-    double d_maxCostRank;
-    size_t d_max_procs;
-    int d_method;
-    bool d_allEqual;
-    std::vector<int> d_ranks;
-    std::vector<loadBalanceSimulator> d_submeshes;
+private:                                           // Internal data
+    std::string d_name;                            // Name of mesh
+    double d_cost;                                 // Total cost of the mesh
+    double d_maxCostRank;                          // Current maximum cost of any rank
+    int d_max_procs;                               // Maximum number of allowed ranks
+    int d_method;                                  // Load balance method (see MultiMesh)
+    bool d_allEqual;                               // Is the cost of all meshes equal
+    int d_begin;                                   // Begin assigned rank
+    int d_end;                                     // End assigned rank
+    std::vector<loadBalanceSimulator> d_submeshes; // list of sub-meshes
 
-    void addRank( int rank );
 
-    // Function to add the rank cost
+private: // Private functions
+    void setRanks( int begin, int end );
+    inline void setRanks( int rank ) { setRanks( rank, rank + 1 ); }
     void addRankCost( std::vector<double> &cost ) const;
+    void addRank();
     void loadBalance( int, std::vector<int> &N );
 };
 
