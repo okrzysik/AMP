@@ -68,7 +68,6 @@ RobinVectorCorrection1 {
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
-    fConductivity  = 1.0
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
@@ -124,7 +123,6 @@ RobinMatrixCorrection1 {
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
-    fConductivity  = 1.0
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
@@ -178,7 +176,6 @@ RobinMatrixCorrection2 {
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
-    fConductivity  = 1.0
     alpha          = 1.0
     beta           = 2920
     gamma          = 1.0
@@ -198,7 +195,6 @@ RobinMatrixCorrection3 {
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
-    fConductivity  = 1.0
     alpha          = 1.0
     beta           = 10000
     gamma          = 1.0

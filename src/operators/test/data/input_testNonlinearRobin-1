@@ -91,24 +91,23 @@ DiffusionNonlinearFEOperator{
     }
 
 RobinVectorCorrection{
-      name = "RobinVectorCorrection"
-      FE_ORDER = "FIRST"  
-      FE_FAMILY = "LAGRANGE"
-      QRULE_TYPE = "QGAUSS"
-      QRULE_ORDER = "DEFAULT"
-      fConductivity  = 1.0
-      alpha          = 1.0
-      beta           = 2920.
-      gamma          = 1.0
-      print_info_level = 3
-      IsFluxGaussPtVector = FALSE
-      skip_params = FALSE
-      number_of_ids = 1
-      id_0         =   3
-      number_of_dofs_0 =   1
-      dof_0_0          =   0
-      value_0_0        =  905200.0
-  }
+    name = "RobinVectorCorrection"
+    FE_ORDER = "FIRST"  
+    FE_FAMILY = "LAGRANGE"
+    QRULE_TYPE = "QGAUSS"
+    QRULE_ORDER = "DEFAULT"
+    alpha          = 1.0
+    beta           = 2920.
+    gamma          = 1.0
+    print_info_level = 3
+    IsFluxGaussPtVector = FALSE
+    skip_params = FALSE
+    number_of_ids = 1
+    id_0         =   3
+    number_of_dofs_0 =   1
+    dof_0_0          =   0
+    value_0_0        =  905200.0
+}
 
 DiffusionLinearFEOperator{
       name = "DiffusionLinearFEOperator"
@@ -137,7 +136,6 @@ RobinMatrixCorrection{
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920
    gamma          = 1.0
@@ -148,24 +146,24 @@ RobinMatrixCorrection{
    number_of_dofs_0 =   1
    dof_0_0          =   0
    value_0_0        = 1234567891234567.0 
-  }
+}
 
 DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-          Material = "Independent"
-          Property = "ThermalConductivity"
-          Default_Concentration = .1
-          Default_Temperature   = 557.
-          Default_Burnup   = 0.0
-      } 
+    name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 557.
+    Default_Burnup   = 0.0
+} 
 
 SourcePhysicsModel {
-      name = "SourcePhysicsModel"
-        Material = "Independent"
-        USE_ELEMENT_PHYSICS = "MassDensityModel"
-	Equation = "ThermalSource"
-        USE_MATERIALS_LIBRARY = TRUE 
-	Default_Concentration = .1
-	Default_Temperature   = 557.
-	Default_Burnup   = 0.0
-    }
+    name = "SourcePhysicsModel"
+    Material = "Independent"
+    USE_ELEMENT_PHYSICS = "MassDensityModel"
+    Equation = "ThermalSource"
+    USE_MATERIALS_LIBRARY = TRUE 
+    Default_Concentration = .1
+    Default_Temperature   = 557.
+    Default_Burnup   = 0.0
+}
