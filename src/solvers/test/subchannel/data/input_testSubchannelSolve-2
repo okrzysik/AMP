@@ -197,7 +197,6 @@ C2WBoundaryVectorCorrection {
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
-    fConductivity  = 1.0
     alpha          = 1.0
     beta           = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
     gamma          = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
@@ -219,7 +218,6 @@ C2WBoundaryMatrixCorrection {
     FE_FAMILY = "LAGRANGE"
     QRULE_TYPE = "QGAUSS"
     QRULE_ORDER = "DEFAULT"
-    fConductivity  = 1.0
     alpha          = 1.0
     beta           = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.
     gamma          = 9732.805 // This corresponds to the Dittus-Bolter heff in FlowFrapon with the constants defined in the FlowFrapconOperator below.

@@ -165,7 +165,6 @@ NonlinearThermalOperator1 {
       FE_FAMILY = "LAGRANGE"
       QRULE_TYPE = "QGAUSS"
       QRULE_ORDER = "DEFAULT"
-      fConductivity  = 1.0
       alpha          = 1.0
       beta           = 2920.0
       gamma          = 2920.0
@@ -219,7 +218,6 @@ LinearThermalOperator1 {
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920.0
    gamma          = 2920.0
@@ -294,7 +292,6 @@ NonlinearThermalOperator2 {
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920.0
    gamma          = 2920.0
@@ -370,7 +367,6 @@ LinearThermalOperator2 {
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920.0
    gamma          = 2920.0
