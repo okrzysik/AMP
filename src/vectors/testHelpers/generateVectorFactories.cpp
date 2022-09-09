@@ -311,10 +311,14 @@ std::vector<std::string> getSimpleVectorFactories()
     std::vector<std::string> list;
     list.emplace_back( "SimpleVectorFactory<15,false,double>" );
     list.emplace_back( "SimpleVectorFactory<45,true,double>" );
-    list.emplace_back( "SimpleVectorFactory<15,true,float>" );
     list.emplace_back( "SimpleVectorFactory<15,false,double,openmp,cpu>" );
     // list.push_back( "SimpleVectorFactory<15,false,double,default,gpu>" ); // Requires UVM
     list.emplace_back( "SimpleVectorFactory<15,false,double,cuda,gpu>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,float>" );
+    list.emplace_back( "SimpleVectorFactory<15,true,float>" );
+    list.emplace_back( "SimpleVectorFactory<15,false,float,openmp,cpu>" );
+    // list.push_back( "SimpleVectorFactory<15,false,float,default,gpu>" ); // Requires UVM
+    list.emplace_back( "SimpleVectorFactory<15,false,float,cuda,gpu>" );
     list = cleanList( list );
     return list;
 }
@@ -323,6 +327,8 @@ std::vector<std::string> getArrayVectorFactories()
     std::vector<std::string> list;
     list.emplace_back( "ArrayVectorFactory<4,10,false,double>" );
     list.emplace_back( "ArrayVectorFactory<4,10,true,double>" );
+    list.emplace_back( "ArrayVectorFactory<4,10,false,float>" );
+    list.emplace_back( "ArrayVectorFactory<4,10,true,float>" );
     list = cleanList( list );
     return list;
 }
@@ -398,6 +404,7 @@ std::vector<std::string> getCloneVectorFactories()
     list = cleanList( list );
     return list;
 }
+
 std::vector<std::string> getViewVectorFactories()
 {
     std::vector<std::string> list;

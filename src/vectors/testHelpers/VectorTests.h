@@ -60,7 +60,6 @@ public:
 public:
     void InstantiateVector( AMP::UnitTest *utils );
 
-    template<typename T>
     void CopyVectorConsistency( AMP::UnitTest *utils );
 
     template<typename VIEWER>
@@ -70,7 +69,6 @@ public:
 
     void SetToScalarVector( AMP::UnitTest *utils );
 
-    template<typename T>
     void CloneVector( AMP::UnitTest *utils );
 
     void DotProductVector( AMP::UnitTest *utils );
@@ -97,7 +95,7 @@ public:
 
     void VectorIteratorLengthTest( AMP::UnitTest *utils );
 
-    template<typename ITERATOR>
+    template<typename T, typename ITERATOR>
     void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils );
 
     void VectorIteratorTests( AMP::UnitTest *utils );

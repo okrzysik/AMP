@@ -33,19 +33,42 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> para
     } else {
         AMP_ERROR( "Internal error with SubsetVector" );
     }
-    // Get a pointer to every value in the subset
-    std::vector<double *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
-    auto iterator   = d_ViewVector->constBegin();
-    size_t last_pos = d_ViewVector->getCommunicationList()->getStartGID();
-    for ( size_t i = 0; i < data_ptr.size(); i++ ) {
-        iterator += (int) ( d_SubsetLocalIDToViewGlobalID[i] - last_pos );
-        last_pos    = d_SubsetLocalIDToViewGlobalID[i];
-        data_ptr[i] = const_cast<double *>( &( *iterator ) );
+
+    if ( d_ViewVector->getVectorData()->isType<double>() ) {
+        d_typeID = getTypeID<double>();
+        std::vector<double *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
+        // Get a pointer to every value in the subset
+        auto iterator   = d_ViewVector->constBegin();
+        size_t last_pos = d_ViewVector->getCommunicationList()->getStartGID();
+        for ( size_t i = 0; i < data_ptr.size(); i++ ) {
+            iterator += (int) ( d_SubsetLocalIDToViewGlobalID[i] - last_pos );
+            last_pos    = d_SubsetLocalIDToViewGlobalID[i];
+            data_ptr[i] = const_cast<double *>( std::addressof( *iterator ) );
+        }
+        // Create the data blocks
+        // For now use one datablock for each value, this needs to be changed
+        for ( auto &addr : data_ptr )
+            d_dataBlockPtr.push_back( addr );
+        d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+    } else if ( d_ViewVector->getVectorData()->isType<float>() ) {
+        // Get a pointer to every value in the subset
+        d_typeID = getTypeID<float>();
+        std::vector<float *> data_ptr( d_SubsetLocalIDToViewGlobalID.size(), nullptr );
+        auto iterator   = d_ViewVector->constBegin<float>();
+        size_t last_pos = d_ViewVector->getCommunicationList()->getStartGID();
+        for ( size_t i = 0; i < data_ptr.size(); i++ ) {
+            iterator += (int) ( d_SubsetLocalIDToViewGlobalID[i] - last_pos );
+            last_pos    = d_SubsetLocalIDToViewGlobalID[i];
+            data_ptr[i] = const_cast<float *>( std::addressof( *iterator ) );
+        }
+        // Create the data blocks
+        // For now use one datablock for each value, this needs to be changed
+        for ( auto &addr : data_ptr )
+            d_dataBlockPtr.push_back( addr );
+        d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
+    } else {
+        AMP_ERROR( "scalar data type no handled at present" );
     }
-    // Create the data blocks
-    // For now use one datablock for each value, this needs to be changed
-    d_dataBlockPtr  = data_ptr;
-    d_dataBlockSize = std::vector<size_t>( data_ptr.size(), 1 );
     // Cache the local/global size
     AMP_ASSERT( d_ViewVector );
     d_localSize  = d_CommList->numLocalRows();
@@ -58,34 +81,57 @@ SubsetVectorData::SubsetVectorData( std::shared_ptr<SubsetVectorParameters> para
  ****************************************************************/
 size_t SubsetVectorData::numberOfDataBlocks() const { return d_dataBlockSize.size(); }
 size_t SubsetVectorData::sizeOfDataBlock( size_t i ) const { return d_dataBlockSize[i]; }
-void *SubsetVectorData::getRawDataBlockAsVoid( size_t i )
+void *SubsetVectorData::getRawDataBlockAsVoid( size_t i ) { return d_dataBlockPtr[i]; }
+const void *SubsetVectorData::getRawDataBlockAsVoid( size_t i ) const { return d_dataBlockPtr[i]; }
+
+template<typename T>
+static void putData( const void *in,
+                     std::vector<void *> &dataBlockPtr,
+                     const std::vector<size_t> &dataBlockSize )
 {
-    double *ptr = d_dataBlockPtr[i];
-    return (void *) ptr;
+    auto data = reinterpret_cast<const T *>( in );
+    size_t k  = 0;
+    for ( size_t i = 0; i < dataBlockPtr.size(); i++ ) {
+        auto block_i = reinterpret_cast<T *>( dataBlockPtr[i] );
+        for ( size_t j = 0; j < dataBlockSize[i]; j++, k++ )
+            block_i[j] = data[k];
+    }
 }
-const void *SubsetVectorData::getRawDataBlockAsVoid( size_t i ) const
+
+template<typename T>
+static void getData( void *out,
+                     const std::vector<void *> &dataBlockPtr,
+                     const std::vector<size_t> &dataBlockSize )
 {
-    double *ptr = d_dataBlockPtr[i];
-    return (const void *) ptr;
+    auto data = reinterpret_cast<T *>( out );
+    size_t k  = 0;
+    for ( size_t i = 0; i < dataBlockPtr.size(); i++ ) {
+        auto block_i = reinterpret_cast<const T *>( dataBlockPtr[i] );
+        for ( size_t j = 0; j < dataBlockSize[i]; j++, k++ )
+            data[k] = block_i[j];
+    }
 }
+
 void SubsetVectorData::putRawData( const void *in, const typeID &id )
 {
-    AMP_ASSERT( id == getTypeID<double>() );
-    auto data = reinterpret_cast<const double *>( in );
-    size_t k  = 0;
-    for ( size_t i = 0; i < d_dataBlockPtr.size(); i++ ) {
-        for ( size_t j = 0; j < d_dataBlockSize[i]; j++, k++ )
-            d_dataBlockPtr[i][j] = data[k];
+    AMP_ASSERT( id == d_typeID );
+    if ( id == getTypeID<double>() ) {
+        putData<double>( in, d_dataBlockPtr, d_dataBlockSize );
+    } else if ( id == getTypeID<float>() ) {
+        putData<float>( in, d_dataBlockPtr, d_dataBlockSize );
+    } else {
+        AMP_ERROR( "scalar data type no handled at present" );
     }
 }
 void SubsetVectorData::getRawData( void *out, const typeID &id ) const
 {
     AMP_ASSERT( id == getTypeID<double>() );
-    auto data = reinterpret_cast<double *>( out );
-    size_t k  = 0;
-    for ( size_t i = 0; i < d_dataBlockPtr.size(); i++ ) {
-        for ( size_t j = 0; j < d_dataBlockSize[i]; j++, k++ )
-            data[k] = d_dataBlockPtr[i][j];
+    if ( id == getTypeID<double>() ) {
+        getData<double>( out, d_dataBlockPtr, d_dataBlockSize );
+    } else if ( id == getTypeID<float>() ) {
+        getData<float>( out, d_dataBlockPtr, d_dataBlockSize );
+    } else {
+        AMP_ERROR( "scalar data type no handled at present" );
     }
 }
 

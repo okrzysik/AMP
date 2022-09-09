@@ -26,7 +26,7 @@ void VectorTests::testBasicVector( AMP::UnitTest *ut )
         InstantiateVector( ut );
         SetToScalarVector( ut );
         SetRandomValuesVector( ut );
-        CloneVector<double>( ut );
+        CloneVector( ut );
         DotProductVector( ut );
         AbsVector( ut );
         L1NormVector( ut );

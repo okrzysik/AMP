@@ -93,8 +93,9 @@ private:
     Vector::shared_ptr d_ViewVector;                   // Vector we subsetted for the view
     size_t d_parentLocalStartID;                       // Offset for the parent
     std::vector<size_t> d_SubsetLocalIDToViewGlobalID; // The list of global ID in the parent vector
-    std::vector<size_t> d_dataBlockSize;               // The size of the data blocks
-    std::vector<double *> d_dataBlockPtr;              // The pointers to the data blocks
+    AMP::typeID d_typeID;
+    std::vector<size_t> d_dataBlockSize; // The size of the data blocks
+    std::vector<void *> d_dataBlockPtr;  // The pointers to the data blocks
     std::shared_ptr<AMP::Discretization::DOFManager>
         d_DOFManager; // this will contain the subset DOF
 };
