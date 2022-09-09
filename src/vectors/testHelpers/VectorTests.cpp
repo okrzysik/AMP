@@ -147,13 +147,15 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
                 fail = true;
         }
     } else if ( vector->getVectorData()->isType<std::complex<double>>() ) {
+        const std::complex<double> five( 5.0, 0 );
         for ( auto &remoteDof : remoteDofs ) {
-            if ( vector->getValueByGlobalID<std::complex<double>>( remoteDof ) != 5. )
+            if ( vector->getValueByGlobalID<std::complex<double>>( remoteDof ) != five )
                 fail = true;
         }
     } else if ( vector->getVectorData()->isType<std::complex<float>>() ) {
+        const std::complex<float> five( 5.0, 0 );
         for ( auto &remoteDof : remoteDofs ) {
-            if ( vector->getValueByGlobalID<std::complex<float>>( remoteDof ) != 5. )
+            if ( vector->getValueByGlobalID<std::complex<float>>( remoteDof ) != five )
                 fail = true;
         }
     } else {
