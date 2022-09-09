@@ -95,7 +95,7 @@ public:
 
     void VectorIteratorLengthTest( AMP::UnitTest *utils );
 
-    template<typename ITERATOR>
+    template<typename T, typename ITERATOR>
     void both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p, AMP::UnitTest *utils );
 
     void VectorIteratorTests( AMP::UnitTest *utils );

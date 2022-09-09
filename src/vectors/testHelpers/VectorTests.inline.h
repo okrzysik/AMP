@@ -28,24 +28,24 @@ void VectorTests::DeepCloneOfView( AMP::UnitTest *utils )
 }
 
 
-template<typename ITERATOR>
+template<typename T, typename ITERATOR>
 void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_ptr p,
                                             AMP::UnitTest *utils )
 {
     int kk = p->getLocalSize();
-    if ( ( p->end() - p->begin() ) == (int) p->getLocalSize() )
+    if ( ( p->end<T>() - p->begin<T>() ) == (int) p->getLocalSize() )
         utils->passes( "Subtracting begin from end " );
     else
         utils->failure( "Subtracting begin from end " );
 
-    if ( (int) ( p->begin() - p->end() ) == -(int) p->getLocalSize() )
+    if ( (int) ( p->begin<T>() - p->end<T>() ) == -(int) p->getLocalSize() )
         utils->passes( "Subtracting end from beginning " );
     else
         utils->failure( "Subtracting end from beginning " );
 
-    auto cur1 = p->begin();
-    auto cur2 = p->begin();
-    auto end  = p->end();
+    auto cur1 = p->begin<T>();
+    auto cur2 = p->begin<T>();
+    auto end  = p->end<T>();
     ++cur1;
     ++cur2;
     int i = 0;
@@ -63,7 +63,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
 
     p->setToScalar( 5.0 );
     i = 0;
-    for ( cur1 = p->begin(); cur1 != end; ++cur1 ) {
+    for ( cur1 = p->begin<T>(); cur1 != end; ++cur1 ) {
         if ( ( *cur1 ) != 5.0 )
             break;
         i++;
@@ -80,7 +80,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
         if ( ( *cur1 ) != 5.0 )
             break;
         i++;
-    } while ( cur1 != p->begin() );
+    } while ( cur1 != p->begin<T>() );
 
     if ( i == kk )
         utils->passes( "Iterating backward data access" );
@@ -88,7 +88,7 @@ void VectorTests::both_VectorIteratorTests( AMP::LinearAlgebra::Vector::shared_p
         utils->failure( "Iterating backward data access" );
 
     if ( p->getLocalSize() > 7 ) {
-        cur1 = p->begin();
+        cur1 = p->begin<T>();
         cur2 = cur1 + 5;
         if ( ( cur2 - cur1 ) == 5 )
             utils->passes( "Adding and subtracting" );

@@ -77,12 +77,20 @@ void VectorOperationsOpenMP<TYPE>::setRandomValues( VectorData &x )
     static std::mt19937 gen( rd() );
     if constexpr ( std::is_floating_point<TYPE>::value ) {
         static std::uniform_real_distribution<TYPE> dis( 0, 1 );
-        for ( auto &y : x )
-            y = dis( gen );
+        auto y    = x.begin<TYPE>();
+        auto last = x.end<TYPE>();
+        while ( y != last ) {
+            *y = dis( gen );
+            ++y;
+        }
     } else if constexpr ( std::is_integral<TYPE>::value ) {
         static std::uniform_int_distribution<TYPE> dis;
-        for ( auto &y : x )
-            y = dis( gen );
+        auto y    = x.begin<TYPE>();
+        auto last = x.end<TYPE>();
+        while ( y != last ) {
+            *y = dis( gen );
+            ++y;
+        }
     } else {
         AMP_ERROR( "Not finished" );
     }

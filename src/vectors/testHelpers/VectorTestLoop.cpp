@@ -104,13 +104,20 @@ void VectorTests::testSundials( AMP::UnitTest *ut )
 #ifdef AMP_USE_SUNDIALS
     auto viewFactory =
         std::make_shared<ViewFactory<AMP::LinearAlgebra::SundialsVector>>( d_factory );
+    auto viewVec = viewFactory->getVector();
+    if ( viewVec->getVectorData()->isType<double>() ) {
+        VectorTests test1( viewFactory );
+        test1.testBasicVector( ut );
+    }
     auto cloneFactory = std::make_shared<CloneFactory>( viewFactory );
-    VectorTests test1( viewFactory );
-    VectorTests test2( cloneFactory );
+    auto cloneVec     = cloneFactory->getVector();
+    if ( cloneVec->getVectorData()->isType<double>() ) {
+        VectorTests test2( cloneFactory );
+        test2.testBasicVector( ut );
+    }
+
     SundialsVectorTests test3( viewFactory );
     SundialsVectorTests test4( cloneFactory );
-    test1.testBasicVector( ut );
-    test2.testBasicVector( ut );
     test3.testSundialsVector( ut );
     test4.testSundialsVector( ut );
 #endif

@@ -1,4 +1,5 @@
 #include "AMP/operators/ParameterFactory.h"
+#include "AMP/AMP_TPLs.h"
 
 #ifdef AMP_USE_LIBMESH
     #include "AMP/operators/NeutronicsRhsParameters.h"
@@ -22,25 +23,18 @@ std::shared_ptr<OperatorParameters>
 ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
                                    AMP::Mesh::Mesh::shared_ptr mesh )
 {
-    std::shared_ptr<OperatorParameters> retParameters;
-    std::string name;
-
-    AMP_INSIST( input_db, "ParameterFactory::createParameter:: NULL Database object input" );
-    AMP_INSIST( input_db->keyExists( "name" ),
-                "ParameterFactory::createParameter:: key 'name' must be a part of database " );
-
-    name = input_db->getString( "name" );
+    AMP_ASSERT( input_db );
+    auto name = input_db->getString( "name" );
     NULL_USE( name );
-
+    std::shared_ptr<OperatorParameters> retParameters;
 #ifdef AMP_USE_LIBMESH
     resetParameters( DirichletMatrixCorrection );
     resetParameters( MechanicsLinearFEOperator );
     resetParameters( MechanicsNonlinearFEOperator );
     resetParameters( NeutronicsRhs );
-    AMP_ASSERT( retParameters != nullptr );
 #endif
-    retParameters->d_Mesh = mesh;
-
+    if ( retParameters )
+        retParameters->d_Mesh = mesh;
     return retParameters;
 }
 
