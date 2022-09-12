@@ -910,14 +910,14 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
         // Copy a std::string (checking for the index)
         auto data = database1->getVector<std::string>( key );
         AMP_ASSERT( !data.empty() );
-        if ( data.size() == database2.size() ) {
-            for ( size_t i = 0; i < database2.size(); i++ )
-                database2[i]->putScalar( key, data[i] );
-        } else if ( data.size() == 1 ) {
+        if ( data.size() == 1 ) {
             for ( size_t i = 0; i < database2.size(); i++ ) {
                 auto data2 = strrep( data[0], iterator, index[i] );
                 database2[i]->putScalar( key, data2 );
             }
+        } else if ( data.size() == database2.size() ) {
+            for ( size_t i = 0; i < database2.size(); i++ )
+                database2[i]->putScalar( key, data[i] );
         } else {
             for ( auto &db : database2 )
                 db->putVector( key, data );

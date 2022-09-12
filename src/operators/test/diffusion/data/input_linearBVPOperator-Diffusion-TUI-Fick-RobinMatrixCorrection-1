@@ -38,7 +38,6 @@ RobinMatrixCorrection{
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 1.0
    gamma          = 1.0
@@ -51,10 +50,10 @@ RobinMatrixCorrection{
   }
 
 DiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Independent"
-        Property = "FickCoefficient"
-        Default_Concentration = .1
-        Default_Temperature   = 300.
-        Default_Burnup   = 0.0
-    } 
+    name = "DiffusionTransportModel"
+    Material = "Independent"
+    Property = "FickCoefficient"
+    Default_Concentration = .1
+    Default_Temperature   = 300.
+    Default_Burnup   = 0.0
+} 

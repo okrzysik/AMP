@@ -331,7 +331,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localMin( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::min( data[j], ans );
     }
-    return Scalar::create( ans );
+    return ans;
 }
 
 template<typename TYPE>
@@ -346,7 +346,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localMax( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( data[j], ans );
     }
-    return Scalar::create( ans );
+    return ans;
 }
 
 template<typename TYPE>
@@ -361,7 +361,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localL1Norm( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans += std::abs( data[j] );
     }
-    return Scalar::create( ans );
+    return ans;
 }
 
 template<typename TYPE>
@@ -378,7 +378,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localL2Norm( const VectorData &x ) const
             ans += tmp * tmp;
         }
     }
-    return Scalar::create( sqrt( ans ) );
+    return sqrt( ans );
 }
 
 template<typename TYPE>
@@ -393,7 +393,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localMaxNorm( const VectorData &x ) const
         for ( size_t j = 0; j < size; j++ )
             ans = std::max( std::abs( data[j] ), ans );
     }
-    return Scalar::create( ans );
+    return ans;
 }
 
 template<typename TYPE>
@@ -411,7 +411,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localDot( const VectorData &x, const Vector
         ++curXRhs;
         ++curMe;
     }
-    return Scalar::create( ans );
+    return ans;
 }
 
 template<typename TYPE>
@@ -431,7 +431,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localMinQuotient( const VectorData &x,
         ++curx;
         ++cury;
     }
-    return Scalar::create( ans );
+    return ans;
 }
 
 template<typename TYPE>
@@ -450,7 +450,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localWrmsNorm( const VectorData &x, const V
         ++cury;
         ++N;
     }
-    return Scalar::create( sqrt( ans / N ) );
+    return sqrt( ans / N );
 }
 
 template<typename TYPE>
@@ -475,7 +475,7 @@ Scalar VectorOperationsOpenMP<TYPE>::localWrmsNormMask( const VectorData &x,
         ++curm;
         ++N;
     }
-    return Scalar::create( sqrt( ans / N ) );
+    return sqrt( ans / N );
 }
 
 template<typename TYPE>

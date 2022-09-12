@@ -81,7 +81,6 @@ RobinMatrixCorrection{
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 1.0
    gamma          = 1.0
