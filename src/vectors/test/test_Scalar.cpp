@@ -15,8 +15,8 @@ template<class TYPE>
 bool testGet( TYPE x )
 {
     // Store the scalar
-    AMP::Scalar y = AMP::Scalar::create( x );
-    bool pass     = true;
+    AMP::Scalar y( x );
+    bool pass = true;
     // Test getting the scalar
     auto z = std::real( x );
     pass   = pass && y.get<int>() == static_cast<int>( z );
@@ -34,16 +34,37 @@ bool testGet( TYPE x )
 template<class TYPE>
 bool testArithmetic()
 {
-    TYPE a        = 17.2;
-    TYPE b        = 3.7;
-    AMP::Scalar x = AMP::Scalar::create( a );
-    AMP::Scalar y = AMP::Scalar::create( b );
-    bool pass     = true;
+    TYPE a = 17.2;
+    TYPE b = 3.7;
+    AMP::Scalar x( a );
+    AMP::Scalar y( b );
+    bool pass = true;
     // Test some different operations
     pass = pass && fabs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
     pass = pass && fabs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
     pass = pass && fabs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
     pass = pass && fabs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
+    // Test NaNs/Inf
+    if ( std::numeric_limits<TYPE>::has_infinity ) {
+        x       = (TYPE) 1;
+        y       = (TYPE) 0;
+        auto z1 = x / y;
+        AMP::Scalar z2( (TYPE) 1 / (TYPE) 0 );
+        auto v1 = z1.get<double>();
+        auto v2 = z2.get<double>();
+        pass    = pass && v1 == std::numeric_limits<double>::infinity();
+        pass    = pass && v2 == std::numeric_limits<double>::infinity();
+    }
+    if ( std::numeric_limits<TYPE>::has_quiet_NaN ) {
+        x       = (TYPE) 0;
+        y       = (TYPE) 0;
+        auto z1 = x / y;
+        AMP::Scalar z2( (TYPE) 0 / (TYPE) 0 );
+        auto v1 = z1.get<double>();
+        auto v2 = z2.get<double>();
+        pass    = pass && v1 != v1;
+        pass    = pass && v2 != v2;
+    }
     return pass;
 }
 
@@ -93,7 +114,7 @@ int main( int, char ** )
     pass = pass && fun( 4.0 );
 
     // Test complex
-    auto c1 = AMP::Scalar::create( std::complex<float>( 3.0, 1.0 ) );
+    auto c1 = AMP::Scalar( std::complex<float>( 3.0, 1.0 ) );
     pass    = pass && c1.get<std::complex<float>>() == std::complex<float>( 3.0, 1.0 );
 
     // Test copy

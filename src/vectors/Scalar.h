@@ -5,6 +5,8 @@
     #include <cstddef>
     #include <cstdint>
 
+    #include "AMP/utils/typeid.h"
+
 namespace AMP {
 
 
@@ -20,22 +22,23 @@ public:
 
     /**
      * \brief Construct a Scalar value
-     * \details Default constructor allowing implict conversion to double
-     * \param[in] x         Input scalar
-     */
-    inline Scalar( double x );
-
-    /**
-     * \brief Construct a Scalar value
-     * \details Construct a Scalar value from the given input.
-     *    The input type may be any type.  If it can be converted to one of a few internal
-     *    primitive types (double int64_t, etc) without loss of precision, then it will be
-     *    stored in that type and automatic conversion is possible.  If it is an arbitrary type,
-     *    then the user is responsible for ensuring that the get function matches the type.
+     * \details Default constructor allowing implicit conversion to double
      * \param[in] x         Input scalar
      */
     template<class TYPE>
-    static inline Scalar create( TYPE x );
+    inline Scalar( const TYPE &x );
+
+    //! Copy constructor
+    Scalar( const Scalar & ) = default;
+
+    //! Move constructor
+    Scalar( Scalar && ) = default;
+
+    //! Assignment operator
+    Scalar &operator=( const Scalar & ) = default;
+
+    //! Move operator
+    Scalar &operator=( Scalar && ) = default;
 
     /**
      * \brief Construct a scalar value
@@ -84,21 +87,12 @@ public: // Math functions
     Scalar sqrt() const;
 
 private: // Helper functions
-    template<class T1, class T2>
-    static inline std::tuple<T1, double> convert( const std::any &x0 );
-
-    template<class TYPE>
-    static inline size_t get_hash();
-
     template<class TYPE>
     inline void store( const TYPE &x );
 
-    template<class TYPE>
-    static constexpr char get_type();
-
 private: // Internal data
     char d_type;
-    size_t d_hash;
+    uint32_t d_hash;
     std::any d_data;
 };
 

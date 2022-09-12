@@ -1,4 +1,3 @@
-
 #ifndef included_AMP_RobinVectorCorrection
 #define included_AMP_RobinVectorCorrection
 
@@ -15,14 +14,15 @@ namespace AMP::Operator {
 
 typedef NeumannVectorCorrectionParameters RobinVectorCorrectionParameters;
 
+
 /**
-  A class to impose Robin Boundary conditions for a nonlinear operator. This can
-  be written as \f$\alpha k(u)*\frac{\partial u}{\partial n} + \beta h*u = \gamma*c \f$.
+  A class to impose Robin Boundary conditions for a nonlinear operator.
+  This can be written as:
+     \f$\alpha k(u)*\frac{\partial u}{\partial n} + \beta h*u = \gamma*c \f$.
   Imposing this condition would involve evaluating the expression and adding the
   contribution to the residual vector. This class is derived from NeumannVectorCorrection
   as it implements similar functionality.
-  */
-
+*/
 class RobinVectorCorrection : public NeumannVectorCorrection
 {
 public:
