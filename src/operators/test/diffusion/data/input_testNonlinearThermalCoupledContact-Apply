@@ -170,7 +170,6 @@ PelletRobinVectorCorrection{
       FE_FAMILY = "LAGRANGE"
       QRULE_TYPE = "QGAUSS"
       QRULE_ORDER = "DEFAULT"
-      fConductivity  = 1.0
       alpha          = 1.0
       beta           = 2920
       gamma          = 2920.0
@@ -212,7 +211,6 @@ PelletRobinMatrixCorrection{
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920
    gamma          = 2920.0
@@ -270,7 +268,6 @@ CladRobinVectorCorrection {
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920
    gamma          = 2920.0
@@ -336,7 +333,6 @@ CladRobinMatrixCorrection {
    FE_FAMILY = "LAGRANGE"
    QRULE_TYPE = "QGAUSS"
    QRULE_ORDER = "DEFAULT"
-   fConductivity  = 1.0
    alpha          = 1.0
    beta           = 2920
    gamma          = 2920.0
@@ -364,13 +360,13 @@ CladDirichletMatrixCorrection{
   }
 
 CladDiffusionTransportModel{
-        name = "DiffusionTransportModel"
-        Material = "Steel316_MSRZC_09"
-        Property = "ThermalConductivity"
-        Default_Concentration = .1
-        Default_Temperature   = 513.2
-        Default_Burnup   = 0.0
-     } 
+    name = "DiffusionTransportModel"
+    Material = "Steel316_MSRZC_09"
+    Property = "ThermalConductivity"
+    Default_Concentration = .1
+    Default_Temperature   = 513.2
+    Default_Burnup   = 0.0
+ } 
 
 SourcePhysicsModel {
     name = "SourcePhysicsModel"
@@ -378,10 +374,10 @@ SourcePhysicsModel {
     USE_ELEMENT_PHYSICS = "MassDensityModel"
     Equation = "ThermalSource"
     USE_MATERIALS_LIBRARY = TRUE 
-     Default_Concentration = .1
-     Default_Temperature   = 557.2 
-     Default_Burnup   = 0.0
-  }
+    Default_Concentration = .1
+    Default_Temperature   = 557.2 
+    Default_Burnup   = 0.0
+}
 
 
 

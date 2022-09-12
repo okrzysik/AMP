@@ -32,48 +32,36 @@ namespace AMP {
 DISABLE_WARNINGS
 #endif
 template<class TYPE>
-constexpr char Scalar::get_type()
-{
-    if constexpr ( std::is_integral<TYPE>::value ) {
-        return 'i';
-    } else if constexpr ( std::is_floating_point<TYPE>::value ) {
-        return 'f';
-    } else if constexpr ( AMP::is_complex<TYPE>::value ) {
-        return 'c';
-    } else {
-        return 0;
-    }
-}
-template<class TYPE>
 constexpr double Scalar::getTol()
 {
     if constexpr ( std::is_integral<TYPE>::value ) {
         return 0;
     } else if constexpr ( std::is_floating_point<TYPE>::value ) {
-        return 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
+        constexpr double tol = 10 * std::numeric_limits<TYPE>::epsilon();
+        return tol;
+    } else if constexpr ( AMP::is_complex<TYPE>::value ) {
+        constexpr double tol = std::numeric_limits<TYPE>::epsilon().real();
+        return tol;
     } else {
-        return 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
+        constexpr double tol = 10 * std::numeric_limits<TYPE>::epsilon();
+        return tol;
     }
-}
-template<class T1, class T2>
-inline std::tuple<T1, double> Scalar::convert( const std::any &x0 )
-{
-    T2 x     = std::any_cast<T2>( x0 );
-    T1 y     = static_cast<T1>( x );
-    double e = std::abs<double>( x - static_cast<T2>( std::real( y ) ) );
-    return std::tie( y, e );
-}
-template<class TYPE>
-inline size_t Scalar::get_hash()
-{
-    static auto hash = typeid( TYPE ).hash_code();
-    return hash;
 }
 template<class TYPE>
 inline void Scalar::store( const TYPE &x )
 {
-    d_hash = get_hash<TYPE>();
-    d_data = std::make_any<TYPE>( x );
+    constexpr auto hash = getTypeID<TYPE>().hash;
+    d_hash              = hash;
+    d_data              = std::make_any<TYPE>( x );
+    if constexpr ( std::is_integral<TYPE>::value ) {
+        d_type = 'i';
+    } else if constexpr ( std::is_floating_point<TYPE>::value ) {
+        d_type = 'f';
+    } else if constexpr ( AMP::is_complex<TYPE>::value ) {
+        d_type = 'c';
+    } else {
+        d_type = 0;
+    }
 }
 #if defined( USING_ICC )
 ENABLE_WARNINGS
@@ -85,53 +73,57 @@ ENABLE_WARNINGS
  ********************************************************************/
 inline Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
 template<class TYPE>
-Scalar Scalar::create( TYPE x )
+Scalar::Scalar( const TYPE &x )
 {
     // Special case if we are dealing with a Scalar
-    if constexpr ( std::is_same<TYPE, Scalar>::value )
-        return x;
-    // Store the scalar
-    Scalar y;
-    y.d_type = get_type<TYPE>();
-    if constexpr ( std::is_integral<TYPE>::value ) {
-        if constexpr ( std::is_signed<TYPE>::value ) {
-            if ( x >= std::numeric_limits<int64_t>::min() &&
-                 x <= std::numeric_limits<int64_t>::max() ) {
-                y.store( static_cast<int64_t>( x ) );
+    if constexpr ( std::is_same<TYPE, Scalar>::value ) {
+        d_type = x.d_type;
+        d_hash = x.d_hash;
+        d_data = x.d_data;
+    } else {
+        // Store the data
+        if constexpr ( std::is_integral<TYPE>::value ) {
+            if constexpr ( std::is_signed<TYPE>::value ) {
+                if ( x >= std::numeric_limits<int64_t>::min() &&
+                     x <= std::numeric_limits<int64_t>::max() ) {
+                    store<int64_t>( x );
+                } else {
+                    store<TYPE>( x );
+                }
             } else {
-                y.store( x );
+                if ( x <= static_cast<uint64_t>( std::numeric_limits<int64_t>::max() ) ) {
+                    store<int64_t>( x );
+                } else {
+                    store<TYPE>( x );
+                }
             }
+        } else if constexpr ( std::is_same<TYPE, float>::value ) {
+            store<double>( x );
+        } else if constexpr ( std::is_same<TYPE, double>::value ) {
+            store<double>( x );
+        } else if constexpr ( std::is_same<TYPE, long double>::value ) {
+            store<long double>( x );
+        } else if constexpr ( AMP::is_complex<TYPE>::value ) {
+            store( std::complex<double>( x.real(), x.imag() ) );
         } else {
-            if ( x <= static_cast<uint64_t>( std::numeric_limits<int64_t>::max() ) ) {
-                y.store( static_cast<int64_t>( x ) );
-            } else {
-                y.store( x );
+            store<TYPE>( x );
+        }
+        // Check that we can get the data back
+#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
+        if constexpr ( std::is_integral<TYPE>::value ) {
+            auto z = get<TYPE>();
+            AMP_ASSERT( x == z );
+        } else if constexpr ( std::is_floating_point<TYPE>::value ) {
+            constexpr TYPE inf = std::numeric_limits<TYPE>::infinity();
+            constexpr TYPE tol = 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
+            if ( x != inf && x != -inf && x == x ) {
+                auto z = get<TYPE>();
+                AMP_ASSERT( std::abs( x - z ) <= tol * std::abs( x ) );
             }
         }
-    } else if constexpr ( std::is_same<TYPE, float>::value ) {
-        y.store( static_cast<double>( x ) );
-    } else if constexpr ( std::is_same<TYPE, double>::value ) {
-        y.store( x );
-    } else if constexpr ( std::is_same<TYPE, long double>::value ) {
-        y.store( static_cast<long double>( x ) );
-    } else if constexpr ( AMP::is_complex<TYPE>::value ) {
-        y.store( std::complex<double>( x.real(), x.imag() ) );
-    } else {
-        y.store( x );
-    }
-    // Check that we can get the data back
-#if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-    auto z = y.get<TYPE>();
-    if constexpr ( std::is_integral<TYPE>::value ) {
-        AMP_ASSERT( x == z );
-    } else {
-        auto tol = 10 * std::abs( std::numeric_limits<TYPE>::epsilon() );
-        AMP_ASSERT( std::abs( x - z ) <= tol * std::abs( x ) );
-    }
 #endif
-    return y;
+    }
 }
-Scalar::Scalar( double x ) : d_type( get_type<double>() ), d_hash( 0 ) { store( x ); }
 
 
 /********************************************************************
@@ -141,35 +133,54 @@ template<class TYPE>
 inline TYPE Scalar::get( double tol ) const
 {
     // Special cases for performance
-    if ( d_hash == get_hash<TYPE>() )
+    constexpr auto typeHash = getTypeID<TYPE>().hash;
+    if ( d_hash == typeHash )
         return std::any_cast<TYPE>( d_data );
-    // Check that the data exists
-    if ( !d_data.has_value() )
-        AMP_ERROR( "Scalar has no data" );
     // Convert the data
-    TYPE y   = 0;
-    double e = 0;
-    if ( d_hash == get_hash<double>() ) {
-        std::tie( y, e ) = convert<TYPE, double>( d_data );
-    } else if ( d_hash == get_hash<long double>() ) {
-        std::tie( y, e ) = convert<TYPE, long double>( d_data );
-    } else if ( d_hash == get_hash<int64_t>() ) {
-        std::tie( y, e ) = convert<TYPE, int64_t>( d_data );
-    } else if ( d_hash == get_hash<std::complex<double>>() ) {
-        auto x = std::any_cast<std::complex<double>>( d_data );
-        if constexpr ( AMP::is_complex<TYPE>::value ) {
+    TYPE y;
+    if constexpr ( AMP::is_complex<TYPE>::value ) {
+        // Return complex data
+        constexpr auto complexHash = getTypeID<std::complex<double>>().hash;
+        if ( d_hash == complexHash ) {
+            auto x = std::any_cast<std::complex<double>>( d_data );
             return TYPE( x.real(), x.imag() );
         } else {
-            y = x.real();
-            e = std::abs<double>( x - static_cast<std::complex<double>>( std::real( y ) ) );
+            double x = get<double>( tol );
+            return TYPE( x );
         }
     } else {
-        std::string t1 = d_data.type().name();
-        std::string t2 = typeid( TYPE ).name();
-        AMP_ERROR( "Unable to convert data: " + t1 + " -> " + t2 );
+        double e;
+        constexpr auto doubleHash  = getTypeID<double>().hash;
+        constexpr auto longHash    = getTypeID<long double>().hash;
+        constexpr auto int64Hash   = getTypeID<int64_t>().hash;
+        constexpr auto complexHash = getTypeID<std::complex<double>>().hash;
+        if ( d_hash == doubleHash ) {
+            auto x = std::any_cast<double>( d_data );
+            y      = static_cast<TYPE>( x );
+            e      = std::abs<double>( x - static_cast<double>( y ) );
+        } else if ( d_hash == longHash ) {
+            auto x = std::any_cast<long double>( d_data );
+            y      = static_cast<TYPE>( x );
+            e      = std::abs<double>( x - static_cast<long double>( y ) );
+        } else if ( d_hash == int64Hash ) {
+            auto x = std::any_cast<int64_t>( d_data );
+            y      = static_cast<TYPE>( x );
+            e      = std::abs<double>( x - static_cast<int64_t>( y ) );
+        } else if ( d_hash == complexHash ) {
+            auto x = std::any_cast<std::complex<double>>( d_data );
+            y      = x.real();
+            e      = std::abs<double>( x - static_cast<std::complex<double>>( y ) );
+        } else if ( !d_data.has_value() ) {
+            // Data does not exist
+            AMP_ERROR( "Scalar has no data" );
+        } else {
+            std::string t1 = d_data.type().name();
+            std::string t2 = typeid( TYPE ).name();
+            AMP_ERROR( "Unable to convert data: " + t1 + " -> " + t2 );
+        }
+        if ( e > tol )
+            AMP_ERROR( "Error exceeds tolerance converting data" );
     }
-    if ( e > tol )
-        AMP_ERROR( "Error exceeds tolerance converting data" );
     return y;
 }
 

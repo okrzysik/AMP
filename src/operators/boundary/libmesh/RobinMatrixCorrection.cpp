@@ -135,33 +135,24 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
         auto inVec   = inputMatrix->getRightVector();
         d_dofManager = inVec->getDOFManager();
 
-        /*
-            std::vector<std::string> variableNames;
-            if(d_robinPhysicsModel.get() != NULL)
-            {
-              variableNames = d_robinPhysicsModel->getVariableName();
-            }
-        */
-        unsigned int numIds = d_boundaryIds.size();
-        std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> elementInputVec =
-            myparams->d_elementInputVec;
+        unsigned int numIds  = d_boundaryIds.size();
+        auto elementInputVec = myparams->d_elementInputVec;
 
         std::vector<size_t> gpDofs, dofsElementVec;
         std::vector<std::vector<size_t>> dofIndices;
         std::vector<size_t> dofs;
 
         std::shared_ptr<AMP::Discretization::DOFManager> gpDOFManager;
-        if ( d_isFluxGaussPtVector && myparams->d_variableFlux ) {
-            gpDOFManager = ( myparams->d_variableFlux )->getDOFManager();
-        }
+        if ( d_isFluxGaussPtVector && myparams->d_variableFlux )
+            gpDOFManager = myparams->d_variableFlux->getDOFManager();
 
         for ( unsigned int nid = 0; nid < numIds; nid++ ) {
             unsigned int numDofIds = d_dofIds[nid].size();
 
             for ( unsigned int k = 0; k < numDofIds; k++ ) {
-                AMP::Mesh::MeshIterator bnd1 = d_Mesh->getBoundaryIDIterator(
+                auto bnd1 = d_Mesh->getBoundaryIDIterator(
                     AMP::Mesh::GeomType::Face, d_boundaryIds[nid], 0 );
-                AMP::Mesh::MeshIterator end_bnd1 = bnd1.end();
+                auto end_bnd1 = bnd1.end();
                 for ( ; bnd1 != end_bnd1; ++bnd1 ) {
 
                     auto d_feType = std::make_shared<libMesh::FEType>( d_feTypeOrder, d_feFamily );
@@ -219,9 +210,8 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
                     if ( d_robinPhysicsModel ) {
                         unsigned int startIdx = 0;
                         if ( d_isFluxGaussPtVector ) {
-                            ( myparams->d_variableFlux )
-                                ->getValuesByGlobalID(
-                                    gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
+                            myparams->d_variableFlux->getValuesByGlobalID(
+                                gpDofs.size(), &gpDofs[0], &inputArgsAtGpts[0][0] );
                             startIdx = 1;
                         }
 
