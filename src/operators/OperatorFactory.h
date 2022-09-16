@@ -17,11 +17,8 @@ class OperatorFactory : public FactoryStrategy<Operator, std::shared_ptr<Operato
 {
 public:
     static std::unique_ptr<Operator> create( std::shared_ptr<OperatorParameters> parameters );
+    using FactoryStrategy::create;
 };
-
-
-//! Register operators known by AMP
-void registerOperatorFactories();
 
 
 } // namespace AMP::Operator

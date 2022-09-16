@@ -1,10 +1,13 @@
-#include "NonlinearBVPOperator.h"
-
+#include "AMP/operators/NonlinearBVPOperator.h"
 #include "AMP/utils/Utilities.h"
+
 #include "ProfilerApp.h"
+
 #include <stdexcept>
 
+
 namespace AMP::Operator {
+
 
 NonlinearBVPOperator::NonlinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> params )
     : Operator( params ),
@@ -23,11 +26,10 @@ void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u
         AMP_ASSERT( u->getUpdateStatus() ==
                     AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
 
-    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
+    AMP_INSIST( r, "NULL Residual Vector" );
 
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
-
-    AMP_INSIST( ( ( rInternal.get() ) != nullptr ), "NULL Internal Residual Vector" );
+    auto rInternal = subsetOutputVector( r );
+    AMP_INSIST( rInternal, "NULL Internal Residual Vector" );
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of u in NonlinearBVPOperator volumeOperator::apply is : "
@@ -74,28 +76,30 @@ void NonlinearBVPOperator::reset( std::shared_ptr<const OperatorParameters> para
 
 std::shared_ptr<OperatorParameters>
 NonlinearBVPOperator::getParameters( const std::string &type,
-                                     AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                     std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                                      std::shared_ptr<OperatorParameters> params )
 {
     PROFILE_START( "getParameters" );
-    std::shared_ptr<AMP::Database> db;
-    std::shared_ptr<BVPOperatorParameters> outParams( new BVPOperatorParameters( db ) );
-
+    auto db = std::make_shared<Database>();
+    db->putScalar( "name", "LinearBVPOperator" );
+    auto outParams                      = std::make_shared<BVPOperatorParameters>( db );
+    outParams->d_Mesh                   = d_Mesh;
     outParams->d_volumeOperatorParams   = d_volumeOperator->getParameters( type, u, params );
     outParams->d_boundaryOperatorParams = d_boundaryOperator->getParameters( type, u, params );
-
     PROFILE_STOP( "getParameters" );
     return outParams;
 }
 
 void NonlinearBVPOperator::modifyRHSvector( AMP::LinearAlgebra::Vector::shared_ptr rhs )
 {
-    ( this->getBoundaryOperator() )->addRHScorrection( rhs );
-    ( this->getBoundaryOperator() )->setRHScorrection( rhs );
+    getBoundaryOperator()->addRHScorrection( rhs );
+    getBoundaryOperator()->setRHScorrection( rhs );
 }
 
 void NonlinearBVPOperator::modifyInitialSolutionVector( AMP::LinearAlgebra::Vector::shared_ptr sol )
 {
-    ( this->getBoundaryOperator() )->modifyInitialSolutionVector( sol );
+    getBoundaryOperator()->modifyInitialSolutionVector( sol );
 }
+
+
 } // namespace AMP::Operator

@@ -37,8 +37,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
 
         if ( d_preconditioner ) {
             if ( d_pOperator ) {
-                std::shared_ptr<AMP::Operator::Operator> pcOperator =
-                    createPreconditionerOperator( d_pOperator );
+                auto pcOperator = createPreconditionerOperator( d_pOperator );
                 d_preconditioner->registerOperator( pcOperator );
             }
         } else {
@@ -52,8 +51,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
                 auto pcSolverParameters =
                     std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
                 if ( d_pOperator ) {
-                    std::shared_ptr<AMP::Operator::Operator> pcOperator =
-                        createPreconditionerOperator( d_pOperator );
+                    auto pcOperator                 = createPreconditionerOperator( d_pOperator );
                     pcSolverParameters->d_pOperator = pcOperator;
                 }
 
@@ -657,7 +655,7 @@ void NonlinearKrylovAccelerator<T>::registerOperator( std::shared_ptr<AMP::Opera
     d_pOperator = op;
     if ( d_uses_preconditioner ) {
         AMP_ASSERT( d_preconditioner );
-        std::shared_ptr<AMP::Operator::Operator> pc_operator = createPreconditionerOperator( op );
+        auto pc_operator = createPreconditionerOperator( op );
         d_preconditioner->registerOperator( pc_operator );
     }
 }
