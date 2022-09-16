@@ -214,12 +214,13 @@ void CommunicationList::buildCommunicationArrays( const std::vector<size_t> &DOF
  ************************************************************************/
 void CommunicationList::scatter_set( VectorData &vec ) const
 {
-    if ( d_SendSizes.empty() )
+    if ( d_SendSizes.empty() && d_ReceiveSizes.empty() )
         return;
     // Pack the set buffers
     std::vector<double> send( getVectorSendBufferSize() );
     std::vector<double> recv( getVectorReceiveBufferSize() );
-    vec.getLocalValuesByGlobalID( send.size(), d_SendDOFList.data(), send.data() );
+    if ( !send.empty() )
+        vec.getLocalValuesByGlobalID( send.size(), d_SendDOFList.data(), send.data() );
     // Communicate
     d_comm.allToAll<double>( send.data(),
                              d_SendSizes.data(),
@@ -229,16 +230,18 @@ void CommunicationList::scatter_set( VectorData &vec ) const
                              (int *) d_ReceiveDisplacements.data(),
                              true );
     // Unpack the set buffers
-    vec.setGhostValuesByGlobalID( recv.size(), d_ReceiveDOFList.data(), recv.data() );
+    if ( !recv.empty() )
+        vec.setGhostValuesByGlobalID( recv.size(), d_ReceiveDOFList.data(), recv.data() );
 }
 void CommunicationList::scatter_add( VectorData &vec ) const
 {
-    if ( d_SendSizes.empty() )
+    if ( d_SendSizes.empty() && d_ReceiveSizes.empty() )
         return;
     // Pack the add buffers
     std::vector<double> send( getVectorReceiveBufferSize() );
     std::vector<double> recv( getVectorSendBufferSize() );
-    vec.getGhostAddValuesByGlobalID( send.size(), d_ReceiveDOFList.data(), send.data() );
+    if ( !send.empty() )
+        vec.getGhostAddValuesByGlobalID( send.size(), d_ReceiveDOFList.data(), send.data() );
     // Communicate
     d_comm.allToAll<double>( send.data(),
                              d_ReceiveSizes.data(),
@@ -248,7 +251,8 @@ void CommunicationList::scatter_add( VectorData &vec ) const
                              (int *) d_SendDisplacements.data(),
                              true );
     // Unpack the add buffers
-    vec.addLocalValuesByGlobalID( recv.size(), d_SendDOFList.data(), recv.data() );
+    if ( !recv.empty() )
+        vec.addLocalValuesByGlobalID( recv.size(), d_SendDOFList.data(), recv.data() );
 }
 
 

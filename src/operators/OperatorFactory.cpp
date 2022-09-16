@@ -23,7 +23,7 @@ namespace AMP::Operator {
 // Create the operator
 std::unique_ptr<Operator> OperatorFactory::create( std::shared_ptr<OperatorParameters> parameters )
 {
-    AMP_ASSERT( parameters != nullptr );
+    AMP_ASSERT( parameters );
     auto inputDatabase = parameters->d_db;
     AMP_ASSERT( inputDatabase );
     auto objectName = inputDatabase->getString( "name" );
