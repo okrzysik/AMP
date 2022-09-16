@@ -65,7 +65,7 @@ void run( AMP::UnitTest &ut )
     auto firstVec  = AMP::LinearAlgebra::createSimpleVector<double>( 1, firstVar );
     auto secondVec = AMP::LinearAlgebra::createSimpleVector<double>( 1, secondVar );
 
-    auto commList = AMP::LinearAlgebra::CommunicationList::createEmpty( 1, AMP_COMM_SELF );
+    auto commList = std::make_shared<AMP::LinearAlgebra::CommunicationList>( 1, AMP_COMM_SELF );
 
     firstVec->setCommunicationList( commList );
     secondVec->setCommunicationList( commList );

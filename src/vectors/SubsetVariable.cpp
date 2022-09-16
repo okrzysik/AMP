@@ -75,8 +75,8 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     bool ghosts      = subsetDOF->getComm().anyReduce( !remote_DOFs.empty() );
     std::shared_ptr<CommunicationList> commList;
     if ( !ghosts ) {
-        commList = AMP::LinearAlgebra::CommunicationList::createEmpty( subsetDOF->numLocalDOF(),
-                                                                       subsetDOF->getComm() );
+        commList =
+            std::make_shared<CommunicationList>( subsetDOF->numLocalDOF(), subsetDOF->getComm() );
     } else {
         // Construct the communication list
         auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();

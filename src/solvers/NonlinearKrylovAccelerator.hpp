@@ -135,6 +135,8 @@ void NonlinearKrylovAccelerator<T>::initialize(
 {
     AMP_ASSERT( params->d_vectors.size() > 0 );
     d_solution_vector = params->d_vectors[0]->cloneVector( "NKAInternalSolution" );
+    d_solution_vector->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     int n = d_mvec + 1;
 
@@ -388,10 +390,9 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         this->correction( d_correction_vector );
 
         // correct current solution
-        //      d_solution_vector->axpy(1.0, d_correction_vector,
-        //      d_solution_vector);
-        // correct current solution
         d_solution_vector->axpy( -1.0, *d_correction_vector, *d_solution_vector );
+        d_solution_vector->makeConsistent(
+            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
         // compute the residual
         d_pOperator->residual( f, d_solution_vector, d_residual_vector );

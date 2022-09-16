@@ -38,8 +38,7 @@ std::shared_ptr<ArrayVectorData<T, FUN, Allocator>> ArrayVectorData<T, FUN, Allo
                                   localSize[1] * N_blocks[1],
                                   localSize[2] * N_blocks[2] };
     retVal->d_offset          = blockOffset * localSize.length();
-    retVal->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( localSize.length(), comm ) );
+    retVal->setCommunicationList( std::make_shared<CommunicationList>( localSize.length(), comm ) );
     retVal->d_localSize  = localSize.length();
     retVal->d_globalSize = retVal->d_globalArraySize.length();
     retVal->d_localStart = retVal->d_CommList->getStartGID();
@@ -84,8 +83,7 @@ void ArrayVectorData<T, FUN, Allocator>::resize( const ArraySize &localDims )
     AMP_ASSERT( getComm().getSize() == 1 );
     d_array.resize( localDims );
     d_globalArraySize = localDims;
-    setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( localDims.length(), getComm() ) );
+    setCommunicationList( std::make_shared<CommunicationList>( localDims.length(), getComm() ) );
     d_localSize  = localDims.length();
     d_globalSize = d_globalArraySize.length();
     d_localStart = d_CommList->getStartGID();

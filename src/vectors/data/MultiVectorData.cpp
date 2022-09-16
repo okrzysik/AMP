@@ -28,8 +28,8 @@ void MultiVectorData::resetMultiVectorData( AMP::Discretization::DOFManager *man
     auto remote_DOFs = globalMgr->getRemoteDOFs();
     bool ghosts      = globalMgr->getComm().anyReduce( !remote_DOFs.empty() );
     if ( !ghosts ) {
-        d_CommList = AMP::LinearAlgebra::CommunicationList::createEmpty( globalMgr->numLocalDOF(),
-                                                                         globalMgr->getComm() );
+        d_CommList =
+            std::make_shared<CommunicationList>( globalMgr->numLocalDOF(), globalMgr->getComm() );
     } else {
         auto params           = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
         params->d_comm        = globalMgr->getComm();

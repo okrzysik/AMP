@@ -122,21 +122,12 @@ void VectorData::makeConsistent( ScatterType t )
     if ( d_CommList ) {
         if ( t == ScatterType::CONSISTENT_ADD ) {
             AMP_ASSERT( *d_UpdateState != UpdateState::SETTING );
-            std::vector<double> send_vec_add( d_CommList->getVectorReceiveBufferSize() );
-            std::vector<double> recv_vec_add( d_CommList->getVectorSendBufferSize() );
-            d_CommList->packReceiveBuffer( send_vec_add, *this );
-            d_CommList->scatter_add( send_vec_add, recv_vec_add );
-            d_CommList->unpackSendBufferAdd( recv_vec_add, *this );
-            for ( auto &elem : *d_AddBuffer ) {
+            d_CommList->scatter_add( *this );
+            for ( auto &elem : *d_AddBuffer )
                 elem = 0.0;
-            }
         }
         *d_UpdateState = UpdateState::SETTING;
-        std::vector<double> send_vec( d_CommList->getVectorSendBufferSize() );
-        std::vector<double> recv_vec( d_CommList->getVectorReceiveBufferSize() );
-        d_CommList->packSendBuffer( send_vec, *this );
-        d_CommList->scatter_set( send_vec, recv_vec );
-        d_CommList->unpackReceiveBufferSet( recv_vec, *this );
+        d_CommList->scatter_set( *this );
         *d_UpdateState = UpdateState::UNCHANGED;
     }
     this->setUpdateStatus( UpdateState::UNCHANGED );
@@ -234,7 +225,8 @@ std::shared_ptr<const VectorData> VectorData::getComponent( size_t i ) const
 void VectorData::copyGhostValues( const VectorData &rhs )
 {
     if ( getGhostSize() == 0 ) {
-        // No ghosts to fill, we don't need to do anything
+        // No ghosts to fill, copy the consistency state from the rhs
+        *d_UpdateState = *rhs.getUpdateStatusPtr();
     } else if ( getGhostSize() == rhs.getGhostSize() ) {
         // The ghosts in the src vector match the current vector
         // Copy the ghosts from the rhs
@@ -243,12 +235,12 @@ void VectorData::copyGhostValues( const VectorData &rhs )
         rhs.getGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         this->setGhostValuesByGlobalID( ghostIDs.size(), &ghostIDs[0], &values[0] );
         // Copy the consistency state from the rhs
-        *d_UpdateState = *( rhs.getUpdateStatusPtr() );
+        *d_UpdateState = *rhs.getUpdateStatusPtr();
     } else {
         // We can't copy the ghosts from the rhs
         // Use makeConsistent to fill the ghosts
         // Note: this will insure global communication
-        *d_UpdateState = *( rhs.getUpdateStatusPtr() );
+        *d_UpdateState = *rhs.getUpdateStatusPtr();
         if ( *d_UpdateState == UpdateState::UNCHANGED )
             *d_UpdateState = UpdateState::LOCAL_CHANGED;
     }
