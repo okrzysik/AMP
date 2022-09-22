@@ -130,6 +130,7 @@ public: // Virtual functions
 
     virtual void copyVector( std::shared_ptr<const Vector> x )
     {
+        AMP_ASSERT( x );
         d_VectorOps->copy( *( x->getVectorData() ), *d_VectorData );
     }
 
