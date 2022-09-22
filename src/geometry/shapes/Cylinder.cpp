@@ -188,14 +188,12 @@ double Cylinder::volume() const
 std::vector<int> Cylinder::getLogicalGridSize( const std::vector<int> &x ) const
 {
     AMP_INSIST( x.size() == 2u, "Size must be an array of length 2" );
-    return { x[1], x[1], x[0] };
+    return { 2 * x[1], 2 * x[1], x[0] };
 }
 std::vector<int> Cylinder::getLogicalGridSize( const std::vector<double> &res ) const
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
-    return { (int) ( 2 * d_r / res[0] ),
-             (int) ( 2 * d_r / res[1] ),
-             (int) ( ( d_z_max - d_z_min ) / res[2] ) };
+    return { (int) ( ( d_z_max - d_z_min ) / res[2] ), (int) ( d_r / std::min( res[0], res[1] ) ) };
 }
 
 

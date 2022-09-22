@@ -1,7 +1,10 @@
 #include "AMP/operators/ColumnOperator.h"
+#include "AMP/operators/OperatorFactory.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
+
 #include "ProfilerApp.h"
+
 
 namespace AMP::Operator {
 
@@ -13,6 +16,11 @@ ColumnOperator::ColumnOperator() : Operator() {}
 ColumnOperator::ColumnOperator( std::shared_ptr<const OperatorParameters> params )
     : Operator( params )
 {
+    auto columnOpParams = std::dynamic_pointer_cast<const ColumnOperatorParameters>( params );
+    if ( columnOpParams ) {
+        for ( auto p : columnOpParams->d_OperatorParameters )
+            d_operators.push_back( AMP::Operator::OperatorFactory::create( p ) );
+    }
 }
 
 
@@ -46,9 +54,11 @@ ColumnOperator::getParameters( const std::string &type,
                                std::shared_ptr<OperatorParameters> params )
 {
     std::shared_ptr<AMP::Database> db;
-    auto opParameters = std::make_shared<ColumnOperatorParameters>( db );
+    auto opParameters    = std::make_shared<ColumnOperatorParameters>( db );
+    opParameters->d_Mesh = d_Mesh;
+    opParameters->d_db   = std::make_shared<AMP::Database>( "ColumnOperator" );
+    opParameters->d_db->putScalar( "name", "ColumnOperator" );
     opParameters->d_OperatorParameters.resize( d_operators.size() );
-
     for ( unsigned int i = 0; i < d_operators.size(); i++ ) {
         opParameters->d_OperatorParameters[i] = d_operators[i]->getParameters( type, u, params );
     }

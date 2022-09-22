@@ -37,8 +37,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
 
         if ( d_preconditioner ) {
             if ( d_pOperator ) {
-                std::shared_ptr<AMP::Operator::Operator> pcOperator =
-                    createPreconditionerOperator( d_pOperator );
+                auto pcOperator = createPreconditionerOperator( d_pOperator );
                 d_preconditioner->registerOperator( pcOperator );
             }
         } else {
@@ -52,8 +51,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
                 auto pcSolverParameters =
                     std::make_shared<AMP::Solver::SolverStrategyParameters>( pc_solver_db );
                 if ( d_pOperator ) {
-                    std::shared_ptr<AMP::Operator::Operator> pcOperator =
-                        createPreconditionerOperator( d_pOperator );
+                    auto pcOperator                 = createPreconditionerOperator( d_pOperator );
                     pcSolverParameters->d_pOperator = pcOperator;
                 }
 
@@ -134,7 +132,9 @@ void NonlinearKrylovAccelerator<T>::initialize(
     std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
 {
     AMP_ASSERT( params->d_vectors.size() > 0 );
-    d_solution_vector = params->d_vectors[0]->cloneVector( "NKAInternalSolution" );
+    d_solution_vector = params->d_vectors[0]->cloneVector();
+    d_solution_vector->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     int n = d_mvec + 1;
 
@@ -152,7 +152,7 @@ void NonlinearKrylovAccelerator<T>::initialize(
             d_w[j] = d_solution_vector->cloneVector( "correction differences" );
         }
 
-        d_residual_vector   = d_solution_vector->cloneVector( "residual vector" );
+        d_residual_vector   = d_solution_vector->cloneVector();
         d_correction_vector = d_solution_vector->cloneVector( "correction vector" );
 
         d_solver_initialized = true;
@@ -341,7 +341,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
     if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
         AMP::pout << std::setprecision( 16 )
-                  << "Nonlinear Krylov iteration : " << d_iNumberIterations
+                  << "Nonlinear Krylov iteration : " << (int64_t) d_iNumberIterations
                   << ", residual: " << residual_norm << std::endl;
     }
 
@@ -388,10 +388,9 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         this->correction( d_correction_vector );
 
         // correct current solution
-        //      d_solution_vector->axpy(1.0, d_correction_vector,
-        //      d_solution_vector);
-        // correct current solution
         d_solution_vector->axpy( -1.0, *d_correction_vector, *d_solution_vector );
+        d_solution_vector->makeConsistent(
+            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
         // compute the residual
         d_pOperator->residual( f, d_solution_vector, d_residual_vector );
@@ -656,7 +655,7 @@ void NonlinearKrylovAccelerator<T>::registerOperator( std::shared_ptr<AMP::Opera
     d_pOperator = op;
     if ( d_uses_preconditioner ) {
         AMP_ASSERT( d_preconditioner );
-        std::shared_ptr<AMP::Operator::Operator> pc_operator = createPreconditionerOperator( op );
+        auto pc_operator = createPreconditionerOperator( op );
         d_preconditioner->registerOperator( pc_operator );
     }
 }

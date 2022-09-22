@@ -43,6 +43,7 @@ noExplicitConstructor:*/AMP/vectors/Vector.h
 noExplicitConstructor:*/AMP/vectors/VectorSelector.h
 noExplicitConstructor:*/AMP/vectors/petsc/PetscHelpers.h
 noExplicitConstructor:*/AMP/vectors/testHelpers/petsc/PetscVectorFactory.h
+noExplicitConstructor:*/AMP/vectors/CommunicationList.h
 duplicateExpression:*/AMP/utils/Array.hpp
 duplicateExpression:*/AMP/utils/Database.hpp
 duplicateExpression:*/AMP/utils/Array.hpp
@@ -154,6 +155,7 @@ arrayIndexOutOfBoundsCond:*/src/operators/mechanics/UpdatedLagrangianUtils.cpp
 arrayIndexOutOfBoundsCond:*/src/mesh/edge_t.cpp
 arrayIndexOutOfBoundsCond:*/src/mesh/triangle_t.cpp
 arrayIndexOutOfBoundsCond:*/src/geometry/shapes/SquareFrustum.cpp
+unknownMacro:*/src/utils/Array.cpp
 
 
 //***********************************************************

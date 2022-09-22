@@ -1151,7 +1151,7 @@ void MPI_CLASS::sendBytes( const void *buf, int bytes, int, int tag ) const
     PROFILE_START( "sendBytes", profile_level );
     auto id = getRequest( d_comm, tag );
     auto it = global_isendrecv_list.find( id );
-    MPI_CLASS_INSIST( it == global_isendrecv_list.end(),
+    MPI_CLASS_INSIST( it != global_isendrecv_list.end(),
                       "send must be paired with a previous call to irecv in serial" );
     MPI_CLASS_ASSERT( it->second.status == 2 );
     memcpy( (char *) it->second.data, buf, bytes );
