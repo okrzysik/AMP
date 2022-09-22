@@ -17,7 +17,7 @@ VectorCopyOperator::VectorCopyOperator( std::shared_ptr<const VectorCopyOperator
 void VectorCopyOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                 AMP::LinearAlgebra::Vector::shared_ptr )
 {
-    AMP::LinearAlgebra::Vector::const_shared_ptr vecToCopy = subsetOutputVector( u );
+    auto vecToCopy = subsetOutputVector( u );
     d_copyVector->copyVector( vecToCopy );
 }
 

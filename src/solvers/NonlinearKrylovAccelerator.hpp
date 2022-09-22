@@ -132,7 +132,7 @@ void NonlinearKrylovAccelerator<T>::initialize(
     std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
 {
     AMP_ASSERT( params->d_vectors.size() > 0 );
-    d_solution_vector = params->d_vectors[0]->cloneVector( "NKAInternalSolution" );
+    d_solution_vector = params->d_vectors[0]->cloneVector();
     d_solution_vector->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -152,7 +152,7 @@ void NonlinearKrylovAccelerator<T>::initialize(
             d_w[j] = d_solution_vector->cloneVector( "correction differences" );
         }
 
-        d_residual_vector   = d_solution_vector->cloneVector( "residual vector" );
+        d_residual_vector   = d_solution_vector->cloneVector();
         d_correction_vector = d_solution_vector->cloneVector( "correction vector" );
 
         d_solver_initialized = true;
@@ -341,7 +341,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
     if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
         AMP::pout << std::setprecision( 16 )
-                  << "Nonlinear Krylov iteration : " << d_iNumberIterations
+                  << "Nonlinear Krylov iteration : " << (int64_t) d_iNumberIterations
                   << ", residual: " << residual_norm << std::endl;
     }
 
