@@ -347,11 +347,10 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
     const auto initial_residual_norm = residual_norm;
 
-    auto pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
-    AMP_ASSERT( pc_parameters.get() != nullptr );
-
     std::shared_ptr<AMP::Operator::Operator> pc_operator;
     if ( d_uses_preconditioner ) {
+        auto pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
+        AMP_ASSERT( pc_parameters.get() != nullptr );
         pc_operator = d_preconditioner->getOperator();
         AMP_ASSERT( pc_operator.get() != nullptr );
 
@@ -368,7 +367,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     while ( ( d_iNumberIterations < d_iMaxIterations ) && ( !converged ) ) {
         if ( d_uses_preconditioner ) {
             if ( !d_freeze_pc ) {
-                pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
+                auto pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
                 AMP_ASSERT( pc_parameters != nullptr );
 
                 pc_operator->reset( pc_parameters );
