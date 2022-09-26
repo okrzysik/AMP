@@ -378,7 +378,7 @@ std::vector<int> CircleFrustum::getLogicalGridSize( const std::vector<double> &r
 {
     AMP_INSIST( res.size() == 3u, "Resolution must be an array of length 3" );
     double R = std::max( d_r[0], d_r[1] );
-    return { ( (int) R / std::min( res[0], res[1] ) ), (int) ( d_h / res[2] ) };
+    return { (int) ( R / res[0] ), (int) ( R / res[1] ), (int) ( d_h / res[2] ) };
 }
 
 

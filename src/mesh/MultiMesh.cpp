@@ -673,7 +673,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
     if ( !isGlobal && iterator_in.size() == 0 )
         return std::shared_ptr<Mesh>();
     // Check the iterator
-    auto type = AMP::Mesh::GeomType::null;
+    auto type = AMP::Mesh::GeomType::Nullity;
     if ( iterator_in.size() > 0 ) {
         type          = iterator_in->elementType();
         auto iterator = iterator_in.begin();

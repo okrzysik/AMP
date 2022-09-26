@@ -33,14 +33,14 @@ void testMultiMeshSubset( AMP::UnitTest &ut )
     AMP::Mesh::MeshIterator it;
     if ( fooMesh ) {
         auto ids = fooMesh->getBoundaryIDs();
-        it       = fooMesh->getSurfaceIterator( AMP::Mesh::GeomType::Volume, ids[0] );
+        it       = fooMesh->getSurfaceIterator( AMP::Mesh::GeomType::Cell, ids[0] );
     }
     auto fooBoundaryMesh = mesh->Subset( it );
 
     // Check the number of elements in the subset
     size_t N_local = 0;
     if ( fooBoundaryMesh )
-        N_local = fooBoundaryMesh->numLocalElements( AMP::Mesh::GeomType::Volume );
+        N_local = fooBoundaryMesh->numLocalElements( AMP::Mesh::GeomType::Cell );
     size_t N_global = globalComm.sumReduce( N_local );
     if ( N_global == 24 )
         ut.passes( "Subset worked correctly" );

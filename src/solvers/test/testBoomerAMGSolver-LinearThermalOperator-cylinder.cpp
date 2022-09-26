@@ -62,7 +62,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     // CREATE THE NEUTRONICS SOURCE
@@ -153,7 +153,7 @@ void linearThermalTest( AMP::UnitTest *ut )
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector(
-        SpecificPowerVec, meshAdapter, AMP::Mesh::GeomType::Volume, "SpecificPower" );
+        SpecificPowerVec, meshAdapter, AMP::Mesh::GeomType::Cell, "SpecificPower" );
     siloWriter->registerVector(
         PowerInWattsVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "PowerInWatts" );
     siloWriter->registerVector(

@@ -36,7 +36,7 @@ Mesh::Mesh( std::shared_ptr<const MeshParameters> params_in )
     // Set the base properties
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );
     d_params    = params_in;
-    GeomDim     = GeomType::null;
+    GeomDim     = GeomType::Nullity;
     PhysicalDim = 0;
     d_max_gcw   = 0;
     d_comm      = d_params->comm;
@@ -497,6 +497,31 @@ std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x )
     out << "(" << is_local << "," << x.type() << "," << x.local_id() << "," << x.owner_rank() << ","
         << x.meshID() << ")";
     return out;
+}
+
+
+/********************************************************
+ * Arithmetic operators                                  *
+ ********************************************************/
+GeomType operator+( GeomType x, int y ) noexcept
+{
+    int z = static_cast<int>( x ) + y;
+    return ( z >= 0 && z <= 5 ) ? static_cast<GeomType>( z ) : GeomType::Nullity;
+}
+GeomType operator-( GeomType x, int y ) noexcept
+{
+    int z = static_cast<int>( x ) - y;
+    return ( z >= 0 && z <= 5 ) ? static_cast<GeomType>( z ) : GeomType::Nullity;
+}
+GeomType operator+( int x, GeomType y ) noexcept
+{
+    int z = x + static_cast<int>( y );
+    return ( z >= 0 && z <= 5 ) ? static_cast<GeomType>( z ) : GeomType::Nullity;
+}
+GeomType operator-( int x, GeomType y ) noexcept
+{
+    int z = x - static_cast<int>( y );
+    return ( z >= 0 && z <= 5 ) ? static_cast<GeomType>( z ) : GeomType::Nullity;
 }
 
 

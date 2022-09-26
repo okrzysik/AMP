@@ -19,9 +19,6 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
     std::shared_ptr<AMP::Solver::SolverStrategyParameters> params )
     : AMP::Solver::SolverStrategy( params )
 {
-
-    int j, n;
-
     getFromInput( d_db );
 
     // initialize the preconditioner
@@ -60,12 +57,12 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
         }
     }
 
-    n = d_mvec + 1;
+    int n = d_mvec + 1;
 
     d_h    = new T *[n];
     d_h[0] = new T[n * n];
 
-    for ( j = 1; j < n; j++ ) {
+    for ( int j = 1; j < n; j++ ) {
         d_h[j] = d_h[j - 1] + n;
     }
 
@@ -143,17 +140,17 @@ void NonlinearKrylovAccelerator<T>::initialize(
         d_v.resize( n );
 
         for ( int j = 0; j < n; j++ ) {
-            d_v[j] = d_solution_vector->cloneVector( "correction vectors" );
+            d_v[j] = d_solution_vector->cloneVector();
         }
 
         d_w.resize( n );
 
         for ( int j = 0; j < n; j++ ) {
-            d_w[j] = d_solution_vector->cloneVector( "correction differences" );
+            d_w[j] = d_solution_vector->cloneVector();
         }
 
         d_residual_vector   = d_solution_vector->cloneVector();
-        d_correction_vector = d_solution_vector->cloneVector( "correction vector" );
+        d_correction_vector = d_solution_vector->cloneVector();
 
         d_solver_initialized = true;
     }
@@ -171,8 +168,6 @@ void NonlinearKrylovAccelerator<T>::reset( std::shared_ptr<AMP::Solver::SolverSt
 template<typename T>
 void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgebra::Vector> f )
 {
-    std::shared_ptr<AMP::LinearAlgebra::Vector> v, w;
-
     d_current_correction++;
 
     /*
@@ -182,7 +177,7 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
     if ( d_pending ) {
 
         /* next function difference w_1 */
-        w = d_w[d_first];
+        auto w = d_w[d_first];
 
         w->axpy( -1.0, *f, *w );
 
@@ -199,7 +194,7 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
             relax();
         }
 
-        v = d_v[d_first];
+        auto v = d_v[d_first];
 
         /* Normalize w_1 and apply same factor to v_1. */
         w->scale( 1.0 / s, *w );
@@ -435,8 +430,6 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 template<typename T>
 void NonlinearKrylovAccelerator<T>::restart( void )
 {
-    int k;
-
     d_current_correction = 0;
 
     /* No vectors are stored. */
@@ -448,7 +441,7 @@ void NonlinearKrylovAccelerator<T>::restart( void )
     /* Initialize the free storage linked list. */
     d_free = 0;
 
-    for ( k = 0; k < d_mvec; ++k ) {
+    for ( int k = 0; k < d_mvec; ++k ) {
         d_next[k] = k + 1;
     }
 
@@ -461,7 +454,7 @@ void NonlinearKrylovAccelerator<T>::restart( void )
         d_residual_vector->getVectorData()->reset();
         d_correction_vector->getVectorData()->reset();
 
-        for ( k = 0; k < d_mvec + 1; ++k ) {
+        for ( int k = 0; k < d_mvec + 1; ++k ) {
             if ( d_v[k].get() != nullptr ) {
                 d_v[k]->getVectorData()->reset();
             }
@@ -621,7 +614,7 @@ void NonlinearKrylovAccelerator<T>::setMaxNonlinearIterations( int max_nli )
 template<typename T>
 int NonlinearKrylovAccelerator<T>::getMaxFunctionEvaluations() const
 {
-    return ( d_maximum_function_evals );
+    return d_maximum_function_evals;
 }
 
 template<typename T>

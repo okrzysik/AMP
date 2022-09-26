@@ -108,7 +108,7 @@ void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
     std::shared_ptr<AMP::Discretization::DOFManager> dof_map_1 =
         currTemperatureVec->getDOFManager();
 
-    AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {

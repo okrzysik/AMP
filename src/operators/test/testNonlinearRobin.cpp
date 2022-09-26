@@ -103,7 +103,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int ghostWidth     = 1;
     bool split         = true;
     auto gauss_dof_map = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
 
     auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
     auto SpecificPowerVec =
@@ -111,7 +111,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    // Integrate Nuclear Rhs over Desnity * GeomType::Volume
+    // Integrate Nuclear Rhs over Desnity * GeomType::Cell
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(

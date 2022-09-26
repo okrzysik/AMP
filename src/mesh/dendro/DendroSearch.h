@@ -126,7 +126,7 @@ struct DendroSearch::ProjectOnBoundaryData {
     double d_ProjectionLocalCoordsOnGeomType::Face[2];
     double d_ShiftGlobalCoords[3];
     size_t d_GeomType::FaceLocalIndex;
-    AMP::Mesh::MeshElementID d_GeomType::VolumeID;
+    AMP::Mesh::MeshElementID d_GeomType::CellID;
 };
 } // namespace AMP::Mesh
 

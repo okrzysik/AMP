@@ -35,7 +35,7 @@ MechanicsLinearFEOperator::MechanicsLinearFEOperator(
         d_refXYZ = AMP::LinearAlgebra::createVector( d_inDofMap, d_inputVariable, true );
         d_refXYZ->zero();
 
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         for ( ; el != end_el; ++el ) {
@@ -188,7 +188,7 @@ void MechanicsLinearFEOperator::printStressAndStrain( AMP::LinearAlgebra::Vector
     disp->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     d_materialModel->preLinearAssembly();
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     for ( ; el != end_el; ++el ) {

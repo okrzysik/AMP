@@ -36,7 +36,7 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     this->preAssembly( u, rInternal );
 
     PROFILE_START( "loop over elements" );
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     for ( d_currElemIdx = 0; d_currElemIdx < el.size(); ++d_currElemIdx, ++el ) {
         this->preElementOperation( *el );
         d_elemOp->apply();
@@ -61,8 +61,8 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 void NonlinearFEOperator::createLibMeshElementList()
 {
-    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
-    d_currElemPtrs.resize( d_Mesh->numLocalElements( AMP::Mesh::GeomType::Volume ) );
+    AMP::Mesh::MeshIterator el = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
+    d_currElemPtrs.resize( d_Mesh->numLocalElements( AMP::Mesh::GeomType::Cell ) );
     for ( size_t i = 0; i < el.size(); ++el, ++i ) {
         std::vector<AMP::Mesh::MeshElement> currNodes =
             el->getElements( AMP::Mesh::GeomType::Vertex );

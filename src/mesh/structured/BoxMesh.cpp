@@ -323,7 +323,7 @@ BoxMesh::ElementBlocks BoxMesh::getSurface( int s, GeomType type ) const
             last.d_side  = 0;
             return { std::make_pair( first, last ) };
         }
-    } else if ( type == GeomType::Edge && GeomDim == GeomType::Volume ) {
+    } else if ( type == GeomType::Edge && GeomDim == GeomType::Cell ) {
         // We are dealing with the Edges of Volume data
         MeshElementIndex first( GeomType::Edge, 0, 0, 0, 0 );
         MeshElementIndex last( GeomType::Edge, 0, lastCell[0], lastCell[1], lastCell[2] );
@@ -356,7 +356,7 @@ BoxMesh::ElementBlocks BoxMesh::getSurface( int s, GeomType type ) const
             list.push_back( std::make_pair( first, last ) );
         }
         return list;
-    } else if ( type == GeomType::Face && GeomDim == GeomType::Volume ) {
+    } else if ( type == GeomType::Face && GeomDim == GeomType::Cell ) {
         // We are dealing with the Faces of Volume data
         MeshElementIndex first( GeomType::Face, d, 0, 0, 0 );
         MeshElementIndex last( GeomType::Face, d, lastCell[0], lastCell[1], lastCell[2] );
@@ -485,7 +485,7 @@ BoxMesh::MeshElementIndex BoxMesh::getElementFromLogical( const AMP::Geometry::P
         } else if ( ijk == 2 ) {
             index = MeshElementIndex( GeomType::Face, 2, x[0], x[1], k );
         }
-    } else if ( type == GeomType::Volume ) {
+    } else if ( type == GeomType::Cell ) {
         AMP_ERROR( "Not finished" );
     } else {
         AMP_ERROR( "Unknown mesh element type" );
@@ -607,7 +607,7 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
                              MeshElementIndex( type, 0, range1[1], range1[3], range1[5] ) );
         blocks.emplace_back( MeshElementIndex( type, 1, range2[0], range2[2], range2[4] ),
                              MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) );
-    } else if ( type == GeomType::Edge && GeomDim == GeomType::Volume ) {
+    } else if ( type == GeomType::Edge && GeomDim == GeomType::Cell ) {
         auto range1 = range;
         auto range2 = range;
         auto range3 = range;
@@ -629,7 +629,7 @@ BoxMesh::getIteratorRange( std::array<int, 6> range, const GeomType type, const 
                              MeshElementIndex( type, 1, range2[1], range2[3], range2[5] ) );
         blocks.emplace_back( MeshElementIndex( type, 2, range3[0], range3[2], range3[4] ),
                              MeshElementIndex( type, 2, range3[1], range3[3], range3[5] ) );
-    } else if ( type == GeomType::Face && GeomDim == GeomType::Volume ) {
+    } else if ( type == GeomType::Face && GeomDim == GeomType::Cell ) {
         auto range1 = range;
         auto range2 = range;
         auto range3 = range;

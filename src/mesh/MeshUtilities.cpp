@@ -474,7 +474,7 @@ void ElementFinder::initialize() const
             data = sampleTri( { nodes[0], nodes[1], nodes[2] }, d_dist, true );
         } else if ( type == AMP::Mesh::GeomType::Face && nodes.size() == 4u ) {
             data = sampleQuad( { nodes[0], nodes[1], nodes[2], nodes[3] }, d_dist, true );
-        } else if ( type == AMP::Mesh::GeomType::Volume && nodes.size() == 4u ) {
+        } else if ( type == AMP::Mesh::GeomType::Cell && nodes.size() == 4u ) {
             data = sampleTet( { nodes[0], nodes[1], nodes[2], nodes[3] }, d_dist, true );
         } else {
             printf( "type = %i\n", static_cast<int>( type ) );

@@ -32,8 +32,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( std::shared_ptr<const OperatorPa
     std::shared_ptr<AMP::Discretization::DOFManager> targetDofManager12, targetDofManager21;
 
     if ( mesh1 ) {
-        boundaryMesh1_vol = mesh1->Subset(
-            mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID1 ) );
+        boundaryMesh1_vol =
+            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Cell, boundaryID1 ) );
         boundaryMesh1_ver = mesh1->Subset(
             mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID1 ) );
         // Build map 1 -> 2
@@ -59,7 +59,7 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( std::shared_ptr<const OperatorPa
 
     if ( mesh2 ) {
         AMP::Mesh::MeshIterator iterator_vol =
-            mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID2 );
+            mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Cell, boundaryID2 );
         AMP::Mesh::MeshIterator iterator_ver =
             mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, boundaryID2 );
         boundaryMesh2_vol = mesh2->Subset( iterator_vol );
@@ -142,8 +142,8 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     AMP::Mesh::Mesh::shared_ptr boundaryMesh1;
     AMP::Mesh::Mesh::shared_ptr boundaryMesh2;
     if ( mesh1 ) {
-        boundaryMesh1 = mesh1->Subset(
-            mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID1 ) );
+        boundaryMesh1 =
+            mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Cell, boundaryID1 ) );
     }
     auto bndMesh1CommSelect =
         createCommSelect( d_multiDofDTKMapOpParams->d_globalComm, boundaryMesh1 != nullptr );
@@ -158,8 +158,8 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     }
 
     if ( mesh2 ) {
-        boundaryMesh2 = mesh2->Subset(
-            mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, boundaryID2 ) );
+        boundaryMesh2 =
+            mesh2->Subset( mesh2->getBoundaryIDIterator( AMP::Mesh::GeomType::Cell, boundaryID2 ) );
     }
     auto bndMesh2CommSelect =
         createCommSelect( d_multiDofDTKMapOpParams->d_globalComm, boundaryMesh2 != nullptr );

@@ -27,10 +27,9 @@
 // Get the surface element type given the volume type
 inline AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 {
-    AMP_ASSERT( volume != AMP::Mesh::GeomType::null );
     if ( volume == AMP::Mesh::GeomType::Vertex )
         return AMP::Mesh::GeomType::Vertex;
-    return static_cast<AMP::Mesh::GeomType>( static_cast<int>( volume ) - 1 );
+    return volume - 1;
 }
 
 

@@ -9,7 +9,15 @@ namespace AMP::Mesh {
 
 
 //! Enumeration for basic mesh-based quantities
-enum class GeomType : uint8_t { Vertex = 0, Edge = 1, Face = 2, Volume = 3, null = 0xFF };
+enum class GeomType : uint8_t {
+    Vertex      = 0,
+    Edge        = 1,
+    Face        = 2,
+    Cell        = 3,
+    Polytope_4D = 4,
+    Polytope_5D = 5,
+    Nullity     = 0xFF
+};
 
 
 struct MeshElementID;
@@ -118,11 +126,10 @@ public:
     }
 
 private:
-    // We will store the data as a 128-bit data type
-    // The first 64 bits refer to the meshID
-    // The next  1 bits refer to if the element is local
+    // We will store the data as a 64-bit unsigned integer
+    // The first bit refer to if the element is local
     // The next 23 bits refer to the processor id
-    // The next  8 bits refer to the element type
+    // The next 8 bits refer to the element type
     // The next 32 bits refer to the local id
     uint64_t data;
 };
@@ -198,10 +205,17 @@ private:
 
 
 // Stream operators
-std::ostream &operator<<( std::ostream &out, AMP::Mesh::GeomType x );
-std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshID x );
-std::ostream &operator<<( std::ostream &out, AMP::Mesh::ElementID x );
-std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x );
+std::ostream &operator<<( std::ostream &out, GeomType x );
+std::ostream &operator<<( std::ostream &out, MeshID x );
+std::ostream &operator<<( std::ostream &out, ElementID x );
+std::ostream &operator<<( std::ostream &out, MeshElementID x );
+
+
+// Arithmetic operators
+GeomType operator+( GeomType, int ) noexcept;
+GeomType operator-( GeomType, int ) noexcept;
+GeomType operator+( int, GeomType ) noexcept;
+GeomType operator-( int, GeomType ) noexcept;
 
 
 } // namespace AMP::Mesh

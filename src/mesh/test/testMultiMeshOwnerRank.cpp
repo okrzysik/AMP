@@ -120,9 +120,9 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
     // Do a reduction to make sure we only get one instance of locally owned elements.
     std::vector<size_t> local_ids( 0 );
     if ( arrayBoundaryMesh ) {
-        auto it         = arrayMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Volume, 0 );
+        auto it         = arrayMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Cell, 0 );
         auto volBndMesh = arrayMesh->Subset( it );
-        it              = volBndMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        it              = volBndMesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         auto it_begin   = it.begin();
         auto it_end     = it.end();
         for ( it = it_begin; it != it_end; ++it ) {

@@ -370,14 +370,14 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     int ghostWidth     = 0;
     bool split         = true;
     auto dof_map       = AMP::Discretization::simpleDOFManager::create(
-        d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
+        d_Mesh, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of
     // apply.
     r->setToScalar( 1. );
 
-    auto elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    auto elem      = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, ghostWidth );
     auto end_elems = elem.end();
 
     if ( d_coordinateSystem == "cartesian" ) {
@@ -827,7 +827,7 @@ double PowerShape::getVolumeIntegralSum( double rmax, double cx, double cy )
     double integralFr            = 0;
     double numerator             = 0;
     int ghostWidth               = 0;
-    AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, ghostWidth );
     AMP::Mesh::MeshIterator end_elems = elem.end();
     for ( ; elem != end_elems; ++elem ) {
         d_currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );

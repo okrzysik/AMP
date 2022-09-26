@@ -155,7 +155,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
         auto center = el->centroid();
         int index   = getSubchannelIndex( center[0], center[1] );
@@ -239,7 +239,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
     const double height = box[5] - box[4];
 
     // iterator for cells of mesh
-    auto cell = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto cell = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
 
     // put elements in array by subchannel
     std::vector<std::vector<AMP::Mesh::MeshElement>> d_elem( d_numSubchannels );
@@ -462,7 +462,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                     double w = w_scale * d_frozenVec->getValueByGlobalID( gapDofs[0] );
                     // get index of neighboring subchannel
                     auto adjacentCells =
-                        d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Volume );
+                        d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Cell );
                     AMP_INSIST( adjacentCells.size() == 2,
                                 "There were not 2 adjacent cells to a lateral gap face" );
                     auto subchannelCentroid1 = adjacentCells[0].centroid();
@@ -746,7 +746,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
 
             // get adjacent cells
             std::vector<AMP::Mesh::MeshElement> adjacentCells =
-                d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Volume );
+                d_Mesh->getElementParents( lateralFace, AMP::Mesh::GeomType::Cell );
             AMP_INSIST( adjacentCells.size() == 2,
                         "There were not 2 adjacent cells to a lateral gap face" );
             AMP::Mesh::MeshElement cell1 = adjacentCells[0];
@@ -772,9 +772,9 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                 // get cells below bottom faces
                 // get adjacent cells
                 std::vector<AMP::Mesh::MeshElement> cell1MinusFaceAdjacentCells =
-                    d_Mesh->getElementParents( cell1MinusFace, AMP::Mesh::GeomType::Volume );
+                    d_Mesh->getElementParents( cell1MinusFace, AMP::Mesh::GeomType::Cell );
                 std::vector<AMP::Mesh::MeshElement> cell2MinusFaceAdjacentCells =
-                    d_Mesh->getElementParents( cell2MinusFace, AMP::Mesh::GeomType::Volume );
+                    d_Mesh->getElementParents( cell2MinusFace, AMP::Mesh::GeomType::Cell );
                 AMP_INSIST( cell1MinusFaceAdjacentCells.size() == 2,
                             "There were not 2 adjacent cells to an axial face" );
                 AMP_INSIST( cell2MinusFaceAdjacentCells.size() == 2,
@@ -926,7 +926,7 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                     w_plus = w_mid;
                 else {
                     std::vector<AMP::Mesh::MeshElement> cell1PlusFaceAdjacentCells =
-                        d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::GeomType::Volume );
+                        d_Mesh->getElementParents( cell1PlusFace, AMP::Mesh::GeomType::Cell );
                     AMP_INSIST( cell1PlusFaceAdjacentCells.size() == 2,
                                 "There were not 2 adjacent cells to an axial gap face" );
                     AMP::Mesh::MeshElement axialCell1 = cell1PlusFaceAdjacentCells[0];
@@ -1134,7 +1134,7 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
         // if the face is vertical
         if ( perpindicular_to_x || perpindicular_to_y ) {
             // if the face has more than 1 adjacent cell
-            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Volume ) ).size() > 1 ) {
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Cell ) ).size() > 1 ) {
                 // insert face into interior lateral face map with centroid
                 interiorLateralFaceMap.insert(
                     std::pair<AMP::Mesh::Point, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
@@ -1164,7 +1164,7 @@ SubchannelFourEqLinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
         auto faceCentroid = face->centroid();
         if ( AMP::Utilities::approx_equal_abs( faceCentroid[2], topZ, 1.0e-12 ) ) {
             // if the face has more than 1 adjacent cell
-            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Volume ) ).size() > 1 ) {
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Cell ) ).size() > 1 ) {
                 // create vector of xy position of gap face
                 AMP::Mesh::Point xyPos( faceCentroid[0], faceCentroid[1] );
                 // get vertices of current face
@@ -1276,7 +1276,7 @@ void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared
     size_t Nz = d_z.size() - 1; // number of mesh divisions along z-axis
     if ( mesh )
         // check that computed number of elements matches that found by numGlobalElements()
-        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) );
+        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Cell ) );
     // compute number of subchannels
     d_numSubchannels = Nx * Ny;
 }

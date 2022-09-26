@@ -173,7 +173,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vecto
 
     // Get size of Gauss-point vectors
     // We're explicitly assuming every element has 8 Gauss points
-    unsigned int numGauss = DOFsPerElement * mesh->numLocalElements( AMP::Mesh::GeomType::Volume );
+    unsigned int numGauss = DOFsPerElement * mesh->numLocalElements( AMP::Mesh::GeomType::Cell );
 
     // Resize vector
     xyz.resize( 3 * numGauss, 0.0 );
@@ -184,9 +184,9 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vecto
     //  Moab meshes aren't all going to be in cm.
     double m_to_cm = 100.0;
 
-    // Build GeomType::Volume Integral Operator
+    // Build GeomType::Cell Integral Operator
     std::shared_ptr<AMP::Operator::VolumeIntegralOperator> volIntOp;
-    buildGeomType::VolumeIntOp( volIntOp, mesh );
+    buildGeomType::CellIntOp( volIntOp, mesh );
     AMP_ASSERT( volIntOp );
 
     // Get FE Base from volume integral operator
@@ -194,7 +194,7 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vecto
 
     // Extract coordinates of each Gauss point
     unsigned int zeroGhostWidth = 0;
-    auto elem                   = mesh->getIterator( AMP::Mesh::GeomType::Volume, zeroGhostWidth );
+    auto elem                   = mesh->getIterator( AMP::Mesh::GeomType::Cell, zeroGhostWidth );
     int gp_ctr                  = 0;
     for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
@@ -267,7 +267,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vec
  *\brief Build volume integral operator
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::buildGeomType::VolumeIntOp(
+void MoabMapOperator::buildGeomType::CellIntOp(
     std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
     AMP::Mesh::Mesh::shared_ptr &mesh )
 {
@@ -283,7 +283,7 @@ void MoabMapOperator::buildGeomType::VolumeIntOp(
     volume_db->putScalar( "Number_Active_Variables", 1 );
     volume_db->putScalar( "Number_Auxillary_Variables", 0 );
     volume_db->putScalar( "Constant_Source", 1 );
-    volume_db->putScalar( "OutputVariable", "GeomType::VolumeIntegrated" );
+    volume_db->putScalar( "OutputVariable", "GeomType::CellIntegrated" );
     volume_db->putScalar( "print_info_level", 1 );
     volume_db->putDatabase( "ActiveInputVariables" );
     volume_db->putDatabase( "SourceElement" );

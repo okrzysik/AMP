@@ -71,7 +71,7 @@ void calculateManufacturedSolution(
     auto dof_map       = manufacturedSolution->getDOFManager();
     auto bottomAdapter = meshAdapter->Subset( "Bottom" );
     if ( bottomAdapter ) {
-        auto el     = bottomAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        auto el     = bottomAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         auto end_el = el.end();
 
         for ( ; el != end_el; ++el ) {
@@ -108,7 +108,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 {
     // Compute the source on the gauss point
 
-    auto el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el     = meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end_el = el.end();
 
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
@@ -147,7 +147,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
                     double *discretizationErrorNorm2 )
 {
     // CALCULATE THE L2Norm OF (U-Uh)
-    auto el                        = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el                        = meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     auto dof_map = TemperatureVec->getDOFManager();
@@ -359,7 +359,7 @@ void myTest( AMP::UnitTest *ut,
 
     int DOFsPerElement = 8;
     auto gaussPointDOF = AMP::Discretization::simpleDOFManager::create(
-        manager, AMP::Mesh::GeomType::Volume, 1, DOFsPerElement, true );
+        manager, AMP::Mesh::GeomType::Cell, 1, DOFsPerElement, true );
 
     AMP::pout << "Creating gauss Vectors " << std::endl;
 
@@ -392,7 +392,7 @@ void myTest( AMP::UnitTest *ut,
     siloWriter->registerVector(
         solutionError, manager, AMP::Mesh::GeomType::Vertex, "SolutionErro" );
     siloWriter->registerVector(
-        manufacturedRHS, manager, AMP::Mesh::GeomType::Volume, "ManufacturedRhs" );
+        manufacturedRHS, manager, AMP::Mesh::GeomType::Cell, "ManufacturedRhs" );
     std::string silo_file = "testMeshRefinementDiffusion-1";
     siloWriter->writeFile( silo_file, 0 );
 

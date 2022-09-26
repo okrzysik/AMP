@@ -46,13 +46,13 @@ static void test_with_shape( AMP::UnitTest *ut )
     int ghostWidth  = 0;
     bool split      = true;
     auto dof_map    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
 
     auto shapeVar   = std::make_shared<AMP::LinearAlgebra::Variable>( "PowerShape" );
     auto shapeVec   = AMP::LinearAlgebra::createVector( dof_map, shapeVar, split );
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( meshAdapter );
-    siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::GeomType::Volume, "PowerShape" );
+    siloWriter->registerVector( shapeVec, meshAdapter, AMP::Mesh::GeomType::Cell, "PowerShape" );
 
     for ( int nMoments = 0; nMoments < 3; nMoments++ ) {
         shape_db->putScalar( "numMoments", nMoments );

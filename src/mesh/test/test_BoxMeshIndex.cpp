@@ -107,12 +107,12 @@ bool run( const std::array<int, 3> &size, const std::array<bool, 3> &periodic, i
         // Get the box and check the global size
         globalElemBox = mesh->getGlobalBox();
         globalNodeBox = getNodeBox( globalElemBox );
-        AMP_ASSERT( mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) ==
+        AMP_ASSERT( mesh->numGlobalElements( AMP::Mesh::GeomType::Cell ) ==
                     globalElemBox.size().length() );
         AMP_ASSERT( mesh->numGlobalElements( AMP::Mesh::GeomType::Vertex ) ==
                     globalNodeBox.size().length() );
         // Check if we have any empty ranks and the minimum (used) box size
-        if ( mesh->numLocalElements( AMP::Mesh::GeomType::Volume ) == 0 ) {
+        if ( mesh->numLocalElements( AMP::Mesh::GeomType::Cell ) == 0 ) {
             printf( "Proc %i is empty for %i processors: (%i,%i,%i)\n",
                     rank + 1,
                     N_proc,
@@ -134,9 +134,9 @@ bool run( const std::array<int, 3> &size, const std::array<bool, 3> &periodic, i
         size_t N_elem2    = localElemBox.size().length();
         size_t N_node2    = localNodeBox.size().length();
         AMP_ASSERT( mesh->numLocalElements( AMP::Mesh::GeomType::Vertex ) == N_node2 );
-        AMP_ASSERT( mesh->numLocalElements( AMP::Mesh::GeomType::Volume ) == N_elem2 );
+        AMP_ASSERT( mesh->numLocalElements( AMP::Mesh::GeomType::Cell ) == N_elem2 );
         AMP_ASSERT( mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 ).size() == N_node2 );
-        AMP_ASSERT( mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ).size() == N_elem2 );
+        AMP_ASSERT( mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 ).size() == N_elem2 );
         // Loop through the global nodes to make sure we can correctly convert all node indices
         for ( int k = 0; k <= globalNodeBox.last[2]; k++ ) {
             for ( int j = 0; j <= globalNodeBox.last[1]; j++ ) {
@@ -166,11 +166,11 @@ bool run( const std::array<int, 3> &size, const std::array<bool, 3> &periodic, i
             for ( int j = 0; j <= globalElemBox.last[1]; j++ ) {
                 for ( int i = 0; i <= globalElemBox.last[0]; i++ ) {
                     AMP::Mesh::BoxMesh::MeshElementIndex id1(
-                        AMP::Mesh::GeomType::Volume, 0, i, j, k );
+                        AMP::Mesh::GeomType::Cell, 0, i, j, k );
                     auto id2 = mesh->convert( id1 );
                     auto id3 = mesh->convert( id2 );
                     AMP_ASSERT( id1 == id3 );
-                    AMP_ASSERT( id2.type() == AMP::Mesh::GeomType::Volume );
+                    AMP_ASSERT( id2.type() == AMP::Mesh::GeomType::Cell );
                     if ( id2.is_local() )
                         N_elem++;
                     bool local = i >= localElemBox.first[0] && i <= localElemBox.last[0] &&

@@ -203,7 +203,7 @@ static void sourceTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create a DOF manager for a gauss point vector
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, 0, 8, true );
+        meshAdapter, AMP::Mesh::GeomType::Cell, 0, 8, true );
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto solVec  = AMP::LinearAlgebra::createVector( gaussPointDofMap, inputVariable, true );

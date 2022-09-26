@@ -64,7 +64,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     FILE *fp = fopen( "InverseJacobian.txt", "w" );
 
-    auto el     = ampMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el     = ampMesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end_el = el.end();
 
     while ( el != end_el ) {
@@ -105,7 +105,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
     std::vector<size_t> d_dofIndices;
-    el          = ampMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    el          = ampMesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );
 
     std::vector<AMP::Mesh::MeshElementID> globalIDs( d_currNodes.size() );
