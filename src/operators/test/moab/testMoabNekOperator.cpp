@@ -104,7 +104,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     int nodalGhostWidth      = 1;
     bool split               = true;
     auto gaussPointDofMap    = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+        mesh, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 
@@ -160,7 +160,7 @@ static void nekPipeOperator( AMP::UnitTest *ut )
     // How about some output?
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->registerMesh( mesh );
-    siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Volume, "AllGaussPointPressures" );
+    siloWriter->registerVector( r_gp, mesh, AMP::Mesh::GeomType::Cell, "AllGaussPointPressures" );
     siloWriter->registerVector( r_node, mesh, AMP::Mesh::GeomType::Vertex, "AllNodalPressures" );
     siloWriter->writeFile( "Nek_Pressure", 0 );
 

@@ -303,9 +303,8 @@ void run( const std::string &meshFileName,
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto meshAdapter = AMP::Mesh::MeshFactory::create( meshParams );
     globalComm.barrier();
-    double meshEndTime = MPI_Wtime();
-    size_t numberGlobalVolumeElements =
-        meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    double meshEndTime                = MPI_Wtime();
+    size_t numberGlobalVolumeElements = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Cell );
     //  AMP_ASSERT(static_cast<size_t>(npes) * size_radius * size_radius * 4 * size_height ==
     //  numberGlobalVolumeElements);
     if ( !rank ) {

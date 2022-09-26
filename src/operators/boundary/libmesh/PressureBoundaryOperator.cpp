@@ -42,7 +42,7 @@ PressureBoundaryOperator::PressureBoundaryOperator(
     std::vector<std::vector<unsigned int>> sideMap( npes );
     std::vector<std::vector<AMP::Mesh::MeshElementID>> idMap( npes );
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
     for ( ; el != end_el; ++el ) {
         std::vector<AMP::Mesh::MeshElement> sides = el->getElements( AMP::Mesh::GeomType::Face );

@@ -241,7 +241,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     // put all cells in an array by subchannel
     AMP::Mesh::MeshElement
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
-    auto cell = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Volume,
+    auto cell = subchannelOpParams->d_Mesh->getIterator( AMP::Mesh::GeomType::Cell,
                                                          0 ); // iterator for cells of mesh
     for ( ; cell != cell.end(); ++cell ) {                    // loop over all cells
         auto center = cell->centroid();

@@ -39,7 +39,7 @@ static void myTest( AMP::UnitTest *ut )
     auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     int gcw            = 0;
-    auto mesh_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, gcw );
+    auto mesh_iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell, gcw );
 
     // Make an entity set.
     auto dtk_entity_set = std::make_shared<AMP::Operator::AMPMeshEntitySet>( mesh );

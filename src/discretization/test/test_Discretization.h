@@ -64,7 +64,7 @@ void testSubsetDOFManager( AMP::UnitTest *ut )
     testGetDOFIterator( ut, submesh->getIterator( AMP::Mesh::GeomType::Vertex, 1 ), subsetDOF );
 
     // Test subsetting for a subset mesh
-    if ( mesh->getGeomType() == AMP::Mesh::GeomType::Volume ) {
+    if ( mesh->getGeomType() == AMP::Mesh::GeomType::Cell ) {
         auto surface_mesh =
             mesh->Subset( mesh->getSurfaceIterator( AMP::Mesh::GeomType::Face, 1 ) );
         subsetDOF = DOF->subset( surface_mesh );
@@ -242,7 +242,7 @@ void testStructureDOFManager( AMP::UnitTest *ut )
     // Check getRowDOFs
     if ( Nx > 0 && Ny > 0 && Nz > 0 ) {
         bool pass = true;
-        auto it   = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        auto it   = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         for ( size_t ii = 0; ii < it.size(); ++ii, ++it ) {
             auto faces = it->getElements( AMP::Mesh::GeomType::Face );
             for ( size_t i = 0; i < faces.size(); i++ ) {

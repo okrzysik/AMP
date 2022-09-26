@@ -42,7 +42,7 @@ static void myTest( AMP::UnitTest *ut )
     auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     // get the volume iterator
-    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell );
 
     // get the vertex iterator
     auto vert_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );

@@ -62,7 +62,7 @@ std::shared_ptr<Operator> createOperator( std::shared_ptr<AMP::Mesh::Mesh> mesh1
  * \param meshAdapter           Mesh for the operator
  * \param boundaryOperatorName  Name of the operator to create
  * \param input_db              Input database
- * \param volumeOperator        GeomType::Volume operator to use
+ * \param volumeOperator        GeomType::Cell operator to use
  * \param elementPhysicsModel   Element physics model to use
  * \param localModelFactory     Local model factor to use
  */
@@ -82,7 +82,7 @@ std::shared_ptr<BoundaryOperator> createColumnBoundaryOperator(
  * \param meshAdapter           Mesh for the operator
  * \param boundaryOperatorName  Name of the operator to create
  * \param input_db              Input database
- * \param volumeOperator        GeomType::Volume operator to use
+ * \param volumeOperator        GeomType::Cell operator to use
  * \param elementPhysicsModel   Element physics model to use
  * \param localModelFactory     Local model factor to use
  */

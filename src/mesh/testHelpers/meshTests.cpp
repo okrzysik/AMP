@@ -176,7 +176,7 @@ void meshTests::ElementIteratorTest( AMP::UnitTest &ut,
             if ( element.volume() <= 0.0 )
                 volume_pass = false;
         }
-        if ( id.type() == AMP::Mesh::GeomType::Volume ) {
+        if ( id.type() == AMP::Mesh::GeomType::Cell ) {
             bool in_a_block = false;
             for ( int blockId : blockIds ) {
                 if ( element.isInBlock( blockId ) )
@@ -752,13 +752,13 @@ void meshTests::testID( AMP::UnitTest &ut )
     AMP::Mesh::MeshElementID id0;
     AMP::Mesh::MeshElementID id1( false, AMP::Mesh::GeomType::Vertex, 2, 1, 103 );
     AMP::Mesh::MeshElementID id2( true, AMP::Mesh::GeomType::Vertex, 2, 1, 103 );
-    AMP::Mesh::MeshElementID id3( true, AMP::Mesh::GeomType::Volume, 2, 1, 103 );
+    AMP::Mesh::MeshElementID id3( true, AMP::Mesh::GeomType::Cell, 2, 1, 103 );
     AMP::Mesh::MeshElementID id4( true, AMP::Mesh::GeomType::Vertex, 3, 1, 103 );
     AMP::Mesh::MeshElementID id5( true, AMP::Mesh::GeomType::Vertex, 2, 4, 103 );
     AMP::Mesh::MeshElementID id6( true, AMP::Mesh::GeomType::Vertex, 2, 1, 105 );
     // Test the default values
     if ( id0.meshID() != 0xFFFFFFFFFFFFFFFF || id0.is_local() ||
-         id0.type() != AMP::Mesh::GeomType::null || id0.owner_rank() != 0 ||
+         id0.type() != AMP::Mesh::GeomType::Nullity || id0.owner_rank() != 0 ||
          id0.local_id() != 0xFFFFFFFF )
         ut.failure( "MeshElementID test defaults" );
     // Test == and != operators

@@ -39,7 +39,7 @@ static void myTest( AMP::UnitTest *ut )
     auto mesh = AMP::Mesh::MeshFactory::create( meshParams );
 
     // get iterators
-    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell );
 
     // map the volume ids to dtk ids
     int counter = 0;

@@ -90,26 +90,26 @@ void DendroSearch::projectOnBoundaryID(
     unsigned int const *faceOrdering = hex8_element_t::get_faces();
     std::vector<size_t> mapGeomType::Faces( 6, 6 );
     if ( !d_foundPts.empty() ) {
-        AMP::Mesh::MeshElement controlGeomType::VolumeElement = d_localElems[0];
-        std::vector<AMP::Mesh::MeshElement> controlGeomType::VolumeElementVertices =
-            controlGeomType::VolumeElement.getElements( AMP::Mesh::GeomType::Vertex );
-        AMP_CHECK_ASSERT( controlGeomType::VolumeElementVertices.size() == 8 );
+        AMP::Mesh::MeshElement controlGeomType::CellElement = d_localElems[0];
+        std::vector<AMP::Mesh::MeshElement> controlGeomType::CellElementVertices =
+            controlGeomType::CellElement.getElements( AMP::Mesh::GeomType::Vertex );
+        AMP_CHECK_ASSERT( controlGeomType::CellElementVertices.size() == 8 );
         AMP::Mesh::MeshElement hex8ElementGeomType::FaceVertices[24];
         for ( size_t f = 0; f < 6; ++f ) {
             for ( size_t v = 0; v < 4; ++v ) {
                 hex8ElementGeomType::FaceVertices[4 * f + v] =
-                    controlGeomType::VolumeElementVertices[faceOrdering[4 * f + v]];
+                    controlGeomType::CellElementVertices[faceOrdering[4 * f + v]];
             } // end for v
             std::sort( &( hex8ElementGeomType::FaceVertices[4 * f] ),
                        &( hex8ElementGeomType::FaceVertices[4 * f] ) + 4 );
         } // end for f
-        std::vector<AMP::Mesh::MeshElement> controlGeomType::VolumeElementGeomType::Faces =
-            controlGeomType::VolumeElement.getElements( AMP::Mesh::GeomType::Face );
-        AMP_CHECK_ASSERT( controlGeomType::VolumeElementGeomType::Faces.size() == 6 );
+        std::vector<AMP::Mesh::MeshElement> controlGeomType::CellElementGeomType::Faces =
+            controlGeomType::CellElement.getElements( AMP::Mesh::GeomType::Face );
+        AMP_CHECK_ASSERT( controlGeomType::CellElementGeomType::Faces.size() == 6 );
         //        std::vector<size_t> mapGeomType::Faces(6, 6);
         for ( size_t f = 0; f < 6; ++f ) {
             std::vector<AMP::Mesh::MeshElement> faceVertices =
-                controlGeomType::VolumeElementGeomType::Faces[f].getElements(
+                controlGeomType::CellElementGeomType::Faces[f].getElements(
                     AMP::Mesh::GeomType::Vertex );
             AMP_CHECK_ASSERT( faceVertices.size() == 4 );
             std::sort( faceVertices.begin(), faceVertices.end() );
@@ -142,7 +142,7 @@ void DendroSearch::projectOnBoundaryID(
                     tmpData.d_SearchStatus = FoundOnBoundary;
                     //              tmpData.d_GeomType::FaceLocalIndex = f;
                     tmpData.d_GeomType::FaceLocalIndex = mapGeomType::Faces[f];
-                    tmpData.d_GeomType::VolumeID       = d_localElems[elementLocalID].globalID();
+                    tmpData.d_GeomType::CellID         = d_localElems[elementLocalID].globalID();
                     //              std::vector<AMP::Mesh::MeshElement> faceVertices =
                     //              meshElementGeomType::Faces[f].getElements(AMP::Mesh::GeomType::Vertex);
                     //              AMP_CHECK_ASSERT( faceVertices.size() == 4 );
@@ -167,8 +167,8 @@ void DendroSearch::projectOnBoundaryID(
                 }          // end if
             }              // end for f
         } else {           // point was found but element is not on boundary
-            tmpData.d_SearchStatus       = FoundNotOnBoundary;
-            tmpData.d_GeomType::VolumeID = d_localElems[elementLocalID].globalID();
+            tmpData.d_SearchStatus     = FoundNotOnBoundary;
+            tmpData.d_GeomType::CellID = d_localElems[elementLocalID].globalID();
         } // end if
         sendData[d_sendDisps[pointOwnerRank] + tmpSendCnts[pointOwnerRank]] = tmpData;
         ++tmpSendCnts[pointOwnerRank];
@@ -224,7 +224,7 @@ void DendroSearch::projectOnBoundaryID(
             if ( tmpData.d_SearchStatus >
                  flags[pointLocalID] ) { // FoundOnBoundary overwrites FoundNotOnBoundary
                 flags[pointLocalID]           = tmpData.d_SearchStatus;
-                volumeGlobalIDs[pointLocalID] = tmpData.d_GeomType::VolumeID;
+                volumeGlobalIDs[pointLocalID] = tmpData.d_GeomType::CellID;
                 if ( flags[pointLocalID] == FoundOnBoundary ) {
                     for ( size_t d = 0; d < 2; ++d ) {
                         projectionLocalCoordsOnGeomType::Face[2 * pointLocalID + d] =
@@ -284,7 +284,7 @@ void DendroSearch::setupDSforSearch()
         d_scalingFactor[i] = 1.0 / ( 1.0e-10 + maxCoord - d_minCoords[i] );
     } // end i
 
-    size_t globalNumElems = d_meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    size_t globalNumElems = d_meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Cell );
     if ( d_verbose ) {
         meshComm.barrier();
         if ( !rank ) {
@@ -310,7 +310,7 @@ void DendroSearch::setupDSforSearch()
 
     unsigned int twoPowFactor = ( 1u << ( MaxDepth - d_boxLevel ) );
 
-    size_t localNumElems = d_meshAdapter->numLocalElements( AMP::Mesh::GeomType::Volume );
+    size_t localNumElems = d_meshAdapter->numLocalElements( AMP::Mesh::GeomType::Cell );
     AMP_CHECK_ASSERT( localNumElems > 0 );
 
     std::vector<ot::TreeNode> tmpNodeList;
@@ -320,7 +320,7 @@ void DendroSearch::setupDSforSearch()
     d_localElems.clear();
     d_volume_elements.reserve( localNumElems );
     d_localElems.reserve( localNumElems );
-    AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Mesh::MeshIterator el = d_meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     for ( size_t eId = 0; eId < localNumElems; ++eId, ++el ) {
         std::vector<int> eIdSingleton( 1, eId );
         d_localElems.push_back( *el );
@@ -716,9 +716,9 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
     //    std::fstream d_fout;
     //    d_fout.open(fileName.c_str(), std::fstream::out);
     //    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ?
-    //    static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::GeomType::Volume)) : -1)
+    //    static_cast<int>(d_meshAdapter->numLocalElements(AMP::Mesh::GeomType::Cell)) : -1)
     //        <<"  global="<<(d_meshAdapter.get() != NULL ?
-    //        static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::GeomType::Volume)) :
+    //        static_cast<int>(d_meshAdapter->numGlobalElements(AMP::Mesh::GeomType::Cell)) :
     //        -1)<<"\n";
 
     double coarseSearchBeginTime = MPI_Wtime();

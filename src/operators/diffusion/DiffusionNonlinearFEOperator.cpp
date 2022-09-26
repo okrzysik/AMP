@@ -292,7 +292,7 @@ void DiffusionNonlinearFEOperator::init(
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::init, entering" << std::endl;
 
-    auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end_el = el.end();
     for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
         d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );

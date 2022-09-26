@@ -32,15 +32,15 @@ SubsetMesh::SubsetMesh( std::shared_ptr<const Mesh> mesh,
     this->PhysicalDim = mesh->getDim();
     this->d_name      = mesh->getName() + "_subset";
     // Check the iterator
-    auto type = GeomType::null;
+    auto type = GeomType::Nullity;
     for ( const auto &elem : iterator_in ) {
-        if ( type == GeomType::null )
+        if ( type == GeomType::Nullity )
             type = elem.elementType();
         if ( type != elem.elementType() )
             AMP_ERROR( "Subset mesh requires all of the elements to be the same type" );
     }
     int type2 = d_comm.minReduce( (int) type );
-    if ( type != GeomType::null && type2 != (int) type )
+    if ( type != GeomType::Nullity && type2 != (int) type )
         AMP_ERROR( "Subset mesh requires all of the elements to be the same type" );
     this->GeomDim = static_cast<GeomType>( type2 );
     auto mesh_ids = mesh->getBaseMeshIDs();

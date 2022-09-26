@@ -106,7 +106,7 @@ static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
 
     if ( pinMesh ) {
         auto gaussPtDOFManager = AMP::Discretization::simpleDOFManager::create(
-            pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
+            pinMesh, AMP::Mesh::GeomType::Cell, 1, 8 );
         specificPowerGpVec = AMP::LinearAlgebra::createVector( gaussPtDOFManager, powerVariable );
         specificPowerGpVec->setToScalar( 0.0 );
     }
@@ -598,13 +598,13 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     // Desired power of the fuel pin (W)
     auto P = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                  ->getScalar<double>( "Rod_Power" );
-    // GeomType::Volume of fuel in a 3.81m pin
+    // GeomType::Cell of fuel in a 3.81m pin
     if ( pinMesh ) {
         const double V = 1.939e-4;
         globalThermalSolVec->setToScalar( 600 );
         auto gaussPtDOFManager = AMP::Discretization::simpleDOFManager::create(
-            pinMesh, AMP::Mesh::GeomType::Volume, 1, 8 );
-        auto it = pinMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+            pinMesh, AMP::Mesh::GeomType::Cell, 1, 8 );
+        auto it = pinMesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         std::vector<size_t> dofs;
         for ( size_t i = 0; i < it.size(); i++ ) {
             gaussPtDOFManager->getDOFs( it->globalID(), dofs );
@@ -853,7 +853,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         siloWriter->registerVector(
             globalThermalSolVec, pinMesh, AMP::Mesh::GeomType::Vertex, "Temperature" );
         siloWriter->registerVector(
-            specificPowerGpVec, pinMesh, AMP::Mesh::GeomType::Volume, "Power" );
+            specificPowerGpVec, pinMesh, AMP::Mesh::GeomType::Cell, "Power" );
     }
     siloWriter->writeFile( exeName, 0 );
     ut->passes( "test runs to completion" );

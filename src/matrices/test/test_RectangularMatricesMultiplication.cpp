@@ -47,7 +47,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto firstDofManager = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto secondDofManager = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Volume, 0, 2, true );
+        mesh, AMP::Mesh::GeomType::Cell, 0, 2, true );
     size_t n = firstDofManager->numGlobalDOF();
     size_t m = secondDofManager->numGlobalDOF();
     AMP_ASSERT( n != m );

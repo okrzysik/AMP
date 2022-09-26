@@ -783,8 +783,7 @@ void TriangleMesh<NG, NP>::initializeIterators()
     if constexpr ( NG >= 2 )
         d_iterators[0][2] = createIterator( createLocalList( d_tri.size(), GeomType::Face, rank ) );
     if constexpr ( NG >= 3 )
-        d_iterators[0][3] =
-            createIterator( createLocalList( d_tet.size(), GeomType::Volume, rank ) );
+        d_iterators[0][3] = createIterator( createLocalList( d_tet.size(), GeomType::Cell, rank ) );
     for ( int gcw = 1; gcw <= max_gcw; gcw++ ) {
         AMP_ERROR( "Not finished" );
     }
@@ -836,7 +835,7 @@ TriangleMesh<NG, NP>::createIterator( std::shared_ptr<std::vector<ElementID>> li
             return TriangleMeshIterator<NG, NP, 2>( this, list );
     }
     if constexpr ( NG >= 3 ) {
-        if ( type == GeomType::Volume )
+        if ( type == GeomType::Cell )
             return TriangleMeshIterator<NG, NP, 3>( this, list );
     }
     AMP_ERROR( "Internal error" );
@@ -955,7 +954,7 @@ MeshElement *TriangleMesh<NG, NP>::getElement2( const MeshElementID &id ) const
         if ( id.type() == AMP::Mesh::GeomType::Face )
             return new TriangleMeshElement<NG, NP, 2>( id, this );
     if constexpr ( NG > 2 )
-        if ( id.type() == AMP::Mesh::GeomType::Volume )
+        if ( id.type() == AMP::Mesh::GeomType::Cell )
             return new TriangleMeshElement<NG, NP, 3>( id, this );
     return nullptr;
 }
@@ -1012,7 +1011,7 @@ size_t TriangleMesh<NG, NP>::numLocalElements( const GeomType type ) const
         return d_edge.size();
     if ( type == GeomType::Face )
         return d_tri.size();
-    if ( type == GeomType::Volume )
+    if ( type == GeomType::Cell )
         return d_tet.size();
     return 0;
 }
@@ -1205,7 +1204,7 @@ void TriangleMesh<NG, NP>::getVerticies( const ElementID &id, ElementID *IDs ) c
         IDs[0] = tri[0];
         IDs[1] = tri[1];
         IDs[2] = tri[2];
-    } else if ( type == GeomType::Volume ) {
+    } else if ( type == GeomType::Cell ) {
         Tetrahedron tet;
         if ( id.is_local() )
             tet = d_tet[id.local_id()];
@@ -1238,10 +1237,10 @@ void TriangleMesh<NG, NP>::getElementsIDs( const ElementID &id,
     if ( id.type() == GeomType::Face && type == GeomType::Edge ) {
         for ( int i = 0; i < 3; i++ )
             IDs[i] = d_tri_edge[index][i];
-    } else if ( id.type() == GeomType::Volume && type == GeomType::Face ) {
+    } else if ( id.type() == GeomType::Cell && type == GeomType::Face ) {
         for ( int i = 0; i < 4; i++ )
             IDs[i] = d_tet_tri[index][i];
-    } else if ( id.type() == GeomType::Volume && type == GeomType::Edge ) {
+    } else if ( id.type() == GeomType::Cell && type == GeomType::Edge ) {
         for ( int i = 0; i < 6; i++ )
             IDs[i] = d_tet_edge[index][i];
     } else {
@@ -1387,7 +1386,7 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it->rawIterator() );
         AMP_INSIST( it2, errMsg( it ) );
         return find( id, it2 );
-    } else if ( type == AMP::Mesh::GeomType::Volume ) {
+    } else if ( type == AMP::Mesh::GeomType::Cell ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it->rawIterator() );
         AMP_INSIST( it2, errMsg( it ) );
         return find( id, it2 );

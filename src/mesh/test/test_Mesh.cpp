@@ -101,7 +101,7 @@ void testAMPMesh( AMP::UnitTest &ut )
         ut.passes( "Simple structured mesh has expected number of faces" );
     else
         ut.failure( "Simple structured mesh has expected number of faces" );
-    if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) == N_elements_global )
+    if ( mesh->numGlobalElements( AMP::Mesh::GeomType::Cell ) == N_elements_global )
         ut.passes( "Simple structured mesh has expected number of elements" );
     else
         ut.failure( "Simple structured mesh has expected number of elements" );
@@ -132,7 +132,7 @@ void testAMPMesh( AMP::UnitTest &ut )
         ut.passes( "Simple structured mesh has correct face area" );
     else
         ut.failure( "Simple structured mesh has correct face area" );
-    iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell );
     passes   = true;
     for ( size_t i = 0; i < iterator.size(); i++ ) {
         if ( !AMP::Utilities::approx_equal( iterator->volume(), dx * dx * dx, 1e-12 ) )

@@ -136,7 +136,7 @@ void SubchannelTwoEqNonlinearOperator::reset( std::shared_ptr<const OperatorPara
     d_ownSubChannel  = std::vector<bool>( d_numSubchannels, false );
     d_subchannelElem = std::vector<std::vector<AMP::Mesh::MeshElement>>(
         d_numSubchannels, std::vector<AMP::Mesh::MeshElement>( 0 ) );
-    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     for ( size_t i = 0; i < el.size(); i++ ) {
         auto center = el->centroid();
         int index   = getSubchannelIndex( center[0], center[1] );

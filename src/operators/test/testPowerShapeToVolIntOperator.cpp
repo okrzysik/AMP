@@ -53,7 +53,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     int nodalGhostWidth   = 1;
     bool split            = true;
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerElement, split );
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
 

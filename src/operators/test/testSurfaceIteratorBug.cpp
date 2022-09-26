@@ -116,8 +116,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             vol1 += djxw[qp];
         double vol2 = bnd->volume();
         if ( fabs( vol1 - vol2 ) > ( 1.0e-8 * vol2 ) ) {
-            std::cout << "GeomType::Volume 1 = " << std::setprecision( 15 ) << vol1 << std::endl;
-            std::cout << "GeomType::Volume 2 = " << std::setprecision( 15 ) << vol2 << std::endl
+            std::cout << "GeomType::Cell 1 = " << std::setprecision( 15 ) << vol1 << std::endl;
+            std::cout << "GeomType::Cell 2 = " << std::setprecision( 15 ) << vol2 << std::endl
                       << std::endl;
             volume_passes = false;
         }
@@ -150,9 +150,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     } // end for bnd
 
     if ( volume_passes == true )
-        ut->passes( "GeomType::Volume passes" );
+        ut->passes( "GeomType::Cell passes" );
     else
-        ut->failure( "GeomType::Volume passes" );
+        ut->failure( "GeomType::Cell passes" );
 
     vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
 

@@ -59,7 +59,7 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
     size_t Ny = y.size() - 1;
     size_t Nz = z.size() - 1;
     if ( check )
-        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Volume ) );
+        AMP_ASSERT( Nx * Ny * Nz == mesh->numGlobalElements( AMP::Mesh::GeomType::Cell ) );
 }
 
 

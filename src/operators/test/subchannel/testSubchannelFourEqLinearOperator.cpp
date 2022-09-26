@@ -211,7 +211,7 @@ getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
         // if the face is vertical
         if ( perpindicular_to_x || perpindicular_to_y ) {
             // if the face has more than 1 adjacent cell
-            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Volume ) ).size() > 1 ) {
+            if ( ( mesh->getElementParents( *face, AMP::Mesh::GeomType::Cell ) ).size() > 1 ) {
                 // insert face into map with centroid
                 lateralFaceMap.insert(
                     std::pair<AMP::Mesh::Point, AMP::Mesh::MeshElement>( faceCentroid, *face ) );
@@ -458,7 +458,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
 
     // check number of cells
     size_t expected_number_of_cells = numSubchannels * numAxialIntervals;
-    size_t numCells = subchannelMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    size_t numCells = subchannelMesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
     if ( numCells == expected_number_of_cells )
         ut->passes( exeName + ": number of cells" );
     else {
@@ -542,8 +542,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Mesh::MeshElement
         d_elem[numSubchannels][numAxialIntervals]; // array of array of elements for each subchannel
     auto cell =
-        subchannelMesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ); // iterator for cells of mesh
-    for ( ; cell != cell.end(); ++cell ) {                             // loop over all cells
+        subchannelMesh->getIterator( AMP::Mesh::GeomType::Cell, 0 ); // iterator for cells of mesh
+    for ( ; cell != cell.end(); ++cell ) {                           // loop over all cells
         auto center = cell->centroid();
         // get the index of the subchannel
         int isub               = subchannelOperator->getSubchannelIndex( center[0], center[1] );

@@ -42,7 +42,7 @@ static void myTest( AMP::UnitTest *ut )
     sourceMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto sourceMesh                = AMP::Mesh::MeshFactory::create( sourceMeshParams );
     size_t numVerticesOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
-    size_t numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    size_t numElementsOnSourceMesh = sourceMesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
     AMP::pout << "source mesh contains " << numVerticesOnSourceMesh << " vertices\n";
     AMP::pout << "source mesh contains " << numElementsOnSourceMesh << " elements\n";
 
@@ -83,7 +83,7 @@ static void myTest( AMP::UnitTest *ut )
     targetMeshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto targetMesh                = AMP::Mesh::MeshFactory::create( targetMeshParams );
     size_t numVerticesOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Vertex );
-    size_t numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    size_t numElementsOnTargetMesh = targetMesh->numGlobalElements( AMP::Mesh::GeomType::Cell );
     AMP::pout << "target mesh contains " << numVerticesOnTargetMesh << " vertices\n";
     AMP::pout << "target mesh contains " << numElementsOnTargetMesh << " elements\n";
 
