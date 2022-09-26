@@ -36,8 +36,7 @@ createSimpleVector( size_t localSize, std::shared_ptr<Variable> var, AMP_MPI com
     auto ops  = std::make_shared<OPS>();
     auto data =
         std::make_shared<DATA>( DOFs->beginDOF(), DOFs->numLocalDOF(), DOFs->numGlobalDOF() );
-    data->setCommunicationList(
-        AMP::LinearAlgebra::CommunicationList::createEmpty( localSize, comm ) );
+    data->setCommunicationList( std::make_shared<CommunicationList>( localSize, comm ) );
     return std::make_shared<Vector>( data, ops, var, DOFs );
 }
 template<typename TYPE, typename OPS, typename DATA>

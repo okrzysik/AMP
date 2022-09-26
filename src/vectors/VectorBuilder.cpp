@@ -83,7 +83,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
         bool ghosts      = comm.anyReduce( !remote_DOFs.empty() );
         if ( !ghosts ) {
             // No need for a communication list
-            comm_list = CommunicationList::createEmpty( DOFs->numLocalDOF(), DOFs->getComm() );
+            comm_list = std::make_shared<CommunicationList>( DOFs->numLocalDOF(), DOFs->getComm() );
         } else {
             // Construct the communication list
             auto params           = std::make_shared<CommunicationListParameters>();

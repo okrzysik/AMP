@@ -73,7 +73,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto nodalDofMap         = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
 
     // create two nonlinear thermal BVP operators
     AMP_INSIST( input_db->keyExists( "NonlinearThermalOperator" ), "key missing!" );
@@ -178,7 +178,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    // Integrate Nuclear Rhs over Density * GeomType::Volume //
+    // Integrate Nuclear Rhs over Density * GeomType::Cell //
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> sourceTransportModel;
     auto sourceOperator = std::dynamic_pointer_cast<AMP::Operator::VolumeIntegralOperator>(

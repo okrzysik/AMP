@@ -15,7 +15,7 @@ namespace WaterLibrary_NS {
 
 static const char *source =
     "M. P. Paulsen, et. al, RETRAN-3D, Electric Power Research Institute, Technical Document "
-    "NP-7450, GeomType::Volume 1, September 1998";
+    "NP-7450, GeomType::Cell 1, September 1998";
 
 // Temperature as a function of enthalpy and pressure
 static const double TempParams[] = {

@@ -81,7 +81,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nodalDofMap2 = AMP::Discretization::simpleDOFManager::create(
         meshAdapter2, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap1 = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter1, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+        meshAdapter1, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
     AMP::LinearAlgebra::VS_Mesh vectorSelector1( meshAdapter1 );
     AMP::LinearAlgebra::VS_Mesh vectorSelector2( meshAdapter2 );
 
@@ -136,7 +136,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Cell
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> stransportModel;

@@ -62,10 +62,9 @@ private:
     // Get Node Coordinates on mesh
     void getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz );
 
-    // Build GeomType::Volume integral operator
-    void
-    buildGeomType::VolumeIntOp( std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
-                                AMP::Mesh::Mesh::shared_ptr &mesh );
+    // Build GeomType::Cell integral operator
+    void buildGeomType::CellIntOp( std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
+                                   AMP::Mesh::Mesh::shared_ptr &mesh );
 
     // Parameters
     std::shared_ptr<MoabMapOperatorParameters> d_params;

@@ -174,16 +174,15 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         rInternal->setToScalar( value );
     } else {
         rInternal->zero();
-        int ghostWidth = 0;
-        AMP::Mesh::MeshIterator elem =
-            d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+        int ghostWidth               = 0;
+        AMP::Mesh::MeshIterator elem = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, ghostWidth );
         AMP::Mesh::MeshIterator end_elems = elem.end();
 
         unsigned int DOFsPerVolume = 8;
         bool split                 = true;
         std::shared_ptr<AMP::Discretization::DOFManager> dof_map =
             AMP::Discretization::simpleDOFManager::create(
-                d_Mesh, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerVolume, split );
+                d_Mesh, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerVolume, split );
 
         int gp = 0;
         std::vector<size_t> gid;

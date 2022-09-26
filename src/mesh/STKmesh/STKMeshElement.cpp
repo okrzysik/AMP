@@ -30,7 +30,7 @@ AMP::Mesh::GeomType geom_type( const stk::mesh::EntityRank rank )
     case stk::mesh::fem::FEMMetaData::NODE_RANK + 2:
         return GeomType::Face;
     case stk::mesh::fem::FEMMetaData::NODE_RANK + 3:
-        return GeomType::Volume;
+        return GeomType::Cell;
     }
     return GeomType::Vertex;
 }

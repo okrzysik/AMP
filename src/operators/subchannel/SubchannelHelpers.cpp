@@ -36,7 +36,7 @@ subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j 
     size_t Nx = x.size() - 1;
     size_t Ny = y.size() - 1;
     // Get the elements in the subchannel of interest
-    auto el       = subchannel->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el       = subchannel->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto elements = std::make_shared<std::vector<AMP::Mesh::MeshElement>>();
     elements->reserve( el.size() / ( Nx * Ny ) );
     for ( size_t k = 0; k < el.size(); ++k, ++el ) {

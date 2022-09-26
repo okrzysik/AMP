@@ -14,7 +14,7 @@ namespace AMP::Discretization {
  * Constructors                                                  *
  ****************************************************************/
 simpleDOFManager::simpleDOFManager()
-    : d_isBaseMesh( false ), d_type( AMP::Mesh::GeomType::null ), DOFsPerElement( 0 )
+    : d_isBaseMesh( false ), d_type( AMP::Mesh::GeomType::Nullity ), DOFsPerElement( 0 )
 {
 }
 DOFManager::shared_ptr simpleDOFManager::create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
@@ -23,7 +23,7 @@ DOFManager::shared_ptr simpleDOFManager::create( std::shared_ptr<AMP::Mesh::Mesh
                                                  int DOFsPerObject,
                                                  bool split )
 {
-    if ( mesh.get() == nullptr )
+    if ( !mesh )
         return DOFManager::shared_ptr();
     if ( split && std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh ) ) {
         // We want to split the DOFs by the mesh

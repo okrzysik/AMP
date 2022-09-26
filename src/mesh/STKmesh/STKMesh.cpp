@@ -592,7 +592,7 @@ MeshIterator STKMesh::getIterator( const GeomType type, const int gcw ) const
 {
     stk::mesh::EntityRank entity_rank = 0xFF;
     switch ( type ) {
-    case GeomType::Volume:
+    case GeomType::Cell:
         entity_rank = d_STKMeshMeta->element_rank();
         break;
     case GeomType::Vertex:

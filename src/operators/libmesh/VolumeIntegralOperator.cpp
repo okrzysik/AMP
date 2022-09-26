@@ -201,7 +201,7 @@ void VolumeIntegralOperator::postAssembly()
 
 void VolumeIntegralOperator::init( std::shared_ptr<const VolumeIntegralOperatorParameters> )
 {
-    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     d_srcNonlinElem->setElementFlags( d_isInputType );
     for ( d_currElemIdx = 0; d_currElemIdx < el.size(); ++d_currElemIdx, ++el ) {
         d_currNodes = el->getElements( AMP::Mesh::GeomType::Vertex );

@@ -331,7 +331,7 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
     matrix->zero();
 
     // Fill all the node-node entries
-    auto it  = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto it  = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end = it.end();
     std::vector<size_t> dofs;
     dofs.reserve( 24 );

@@ -86,7 +86,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nodalDofMap   = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, ghostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerElement, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerElement, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of apply.
@@ -174,7 +174,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     robinBoundaryOp->reset( correctionParameters );
 
     //----------------------------------------------------------
-    //  Integrate Nuclear Rhs over Desnity * GeomType::Volume //
+    //  Integrate Nuclear Rhs over Desnity * GeomType::Cell //
     //----------------------------------------------------------
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );

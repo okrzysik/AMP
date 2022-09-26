@@ -22,7 +22,7 @@ structuredFaceDOFManager::structuredFaceDOFManager( std::shared_ptr<AMP::Mesh::M
 {
     AMP_ASSERT( mesh );
     AMP_INSIST( mesh->getDim() == 3, "The mesh must be a 3D mesh" );
-    AMP_INSIST( mesh->getGeomType() == AMP::Mesh::GeomType::Volume,
+    AMP_INSIST( mesh->getGeomType() == AMP::Mesh::GeomType::Cell,
                 "The mesh must be a volume mesh" );
     d_comm = mesh->getComm();
     d_mesh = mesh;
@@ -226,7 +226,7 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
     // Get a list of all element ids that are part of the row
     // Only faces that share an element are part of the row
     std::vector<AMP::Mesh::MeshElement> parents =
-        d_mesh->getElementParents( obj, AMP::Mesh::GeomType::Volume );
+        d_mesh->getElementParents( obj, AMP::Mesh::GeomType::Cell );
     AMP_ASSERT( parents.size() == 1 || parents.size() == 2 );
     // Temporarily add neighbor elements
     size_t p_size = parents.size();

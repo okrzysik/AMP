@@ -63,7 +63,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto nodalDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
     auto gaussPointDofMap = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, gaussPointGhostWidth, DOFsPerElement, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, gaussPointGhostWidth, DOFsPerElement, split );
 
     // create a nonlinear BVP operator for nonlinear BVP operator
     AMP_INSIST( input_db->keyExists( "NonlinearOperator" ), "key missing!" );
@@ -101,7 +101,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
 
-    //  Integrate Nuclear Rhs over Density * GeomType::Volume //
+    //  Integrate Nuclear Rhs over Density * GeomType::Cell //
 
     AMP_INSIST( input_db->keyExists( "VolumeIntegralOperator" ), "key missing!" );
 

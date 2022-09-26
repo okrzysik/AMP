@@ -40,12 +40,12 @@ int AMPMeshEntityImpl::topologicalDimension() const
     case Mesh::GeomType::Face:
         entity_dim = 2;
         break;
-    case Mesh::GeomType::Volume:
+    case Mesh::GeomType::Cell:
         entity_dim = 3;
         break;
     default:
         AMP_INSIST( geom_type == Mesh::GeomType::Vertex || geom_type == Mesh::GeomType::Edge ||
-                        geom_type == Mesh::GeomType::Face || geom_type == Mesh::GeomType::Volume,
+                        geom_type == Mesh::GeomType::Face || geom_type == Mesh::GeomType::Cell,
                     "Invalid geometry type!" );
         entity_dim = 0;
         break;

@@ -191,9 +191,9 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     int shapecnt  = elements.size();
     int shapesize = nodelist.size( 0 );
     int shapetype;
-    if ( shapesize == 8 && type == AMP::Mesh::GeomType::Volume )
+    if ( shapesize == 8 && type == AMP::Mesh::GeomType::Cell )
         shapetype = DB_ZONETYPE_HEX;
-    else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Volume )
+    else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Cell )
         shapetype = DB_ZONETYPE_TET;
     else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Face )
         shapetype = DB_ZONETYPE_QUAD;

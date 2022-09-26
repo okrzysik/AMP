@@ -46,7 +46,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     int ghostWidth  = 1;
     bool split      = true;
     auto dof_map    = AMP::Discretization::simpleDOFManager::create(
-        meshAdapter, AMP::Mesh::GeomType::Volume, ghostWidth, DOFsPerNode, split );
+        meshAdapter, AMP::Mesh::GeomType::Cell, ghostWidth, DOFsPerNode, split );
 
     // Create a shared pointer to a Variable - Power - Output because it will be used in the
     // "residual" location of apply
@@ -75,7 +75,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( SpecificPowerShapeVec,
                                 meshAdapter,
-                                AMP::Mesh::GeomType::Volume,
+                                AMP::Mesh::GeomType::Cell,
                                 "SpecificPowerInWattsPerKg" );
     siloWriter->writeFile( input_file, 0 );
 
@@ -84,7 +84,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
               << std::endl;
     // Check that the data is non-negative
     bool itpasses  = true;
-    auto elem      = meshAdapter->getIterator( AMP::Mesh::GeomType::Volume, ghostWidth );
+    auto elem      = meshAdapter->getIterator( AMP::Mesh::GeomType::Cell, ghostWidth );
     auto end_elems = elem.end();
 
     for ( ; elem != end_elems; ++elem ) {

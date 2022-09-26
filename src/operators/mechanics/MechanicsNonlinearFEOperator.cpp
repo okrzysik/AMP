@@ -277,7 +277,7 @@ void MechanicsNonlinearFEOperator::init()
 {
     d_isInitialized = true;
 
-    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Mesh::MeshIterator end_el = el.end();
 
     d_materialModel->preNonlinearInit( d_resetReusesRadialReturn, d_jacobianReusesRadialReturn );
@@ -356,7 +356,7 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
     if ( d_resetReusesRadialReturn ) {
         d_materialModel->globalReset();
     } else {
-        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        AMP::Mesh::MeshIterator el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         AMP::Mesh::MeshIterator end_el = el.end();
 
         setVector( Mechanics::DISPLACEMENT, myParams->d_EquilibriumVec[Mechanics::DISPLACEMENT] );
@@ -500,7 +500,7 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
 
         d_materialModel->preNonlinearJacobian();
 
-        auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
         auto end_el = el.end();
 
         for ( d_currElemIdx = 0; el != end_el; ++el, ++d_currElemIdx ) {
@@ -526,7 +526,7 @@ void MechanicsNonlinearFEOperator::printStressAndStrain(
         init();
     }
 
-    auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    auto el     = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     auto end_el = el.end();
 
     auto fp = fopen( fname.c_str(), "w" );

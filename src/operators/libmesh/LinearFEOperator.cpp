@@ -48,7 +48,7 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 
     this->preAssembly( params );
 
-    for ( const auto &elem : d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ) ) {
+    for ( const auto &elem : d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 ) ) {
         this->preElementOperation( elem );
         d_elemOp->apply();
         this->postElementOperation();

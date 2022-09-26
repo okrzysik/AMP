@@ -10,7 +10,7 @@ void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
 {
     AMP::Discretization::createLibmeshElements list;
     try {
-        auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, 1 );
+        auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell, 1 );
         list.reinit( iterator );
         for ( size_t i = 0; i < iterator.size(); i++ ) {
             auto elem = list.getElement( iterator->globalID() );

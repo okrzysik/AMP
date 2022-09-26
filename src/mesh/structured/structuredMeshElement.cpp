@@ -37,7 +37,7 @@ void structuredMeshElement::reset()
     typeID        = getTypeID();
     element       = nullptr;
     d_index       = BoxMesh::MeshElementIndex();
-    d_meshType    = GeomType::null;
+    d_meshType    = GeomType::Nullity;
     d_physicalDim = 0;
 }
 structuredMeshElement::structuredMeshElement( const BoxMesh::MeshElementIndex &index,
@@ -166,7 +166,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
                 index[1].reset( GeomType::Vertex, 0, ijk[0] + 1, ijk[1] );
                 index[2].reset( GeomType::Vertex, 0, ijk[0] + 1, ijk[1] + 1 );
                 index[3].reset( GeomType::Vertex, 0, ijk[0], ijk[1] + 1 );
-            } else if ( d_meshType == GeomType::Volume ) {
+            } else if ( d_meshType == GeomType::Cell ) {
                 N = 8;
                 index[0].reset( GeomType::Vertex, 0, ijk[0], ijk[1], ijk[2] );
                 index[1].reset( GeomType::Vertex, 0, ijk[0] + 1, ijk[1], ijk[2] );
@@ -204,7 +204,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
             } else {
                 AMP_ERROR( "Internal error" );
             }
-        } else if ( d_index.type() == GeomType::Volume ) {
+        } else if ( d_index.type() == GeomType::Cell ) {
             AMP_ERROR( "Not ready for dimensions > 3" );
         } else {
             AMP_ERROR( "Not finished" );
@@ -216,7 +216,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
             index[1].reset( GeomType::Edge, 1, ijk[0] + 1, ijk[1], 0 );
             index[2].reset( GeomType::Edge, 0, ijk[0], ijk[1] + 1, 0 );
             index[3].reset( GeomType::Edge, 1, ijk[0], ijk[1], 0 );
-        } else if ( d_meshType == GeomType::Volume ) {
+        } else if ( d_meshType == GeomType::Cell ) {
             if ( d_index.type() == GeomType::Face ) {
                 N = 4;
                 if ( d_index.d_side == 0 ) {
@@ -240,7 +240,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
                 } else {
                     AMP_ERROR( "Internal error" );
                 }
-            } else if ( d_index.type() == GeomType::Volume ) {
+            } else if ( d_index.type() == GeomType::Cell ) {
                 AMP_ASSERT( d_index.d_side == 0 );
                 N = 12;
                 index[0].reset( GeomType::Edge, 0, ijk[0], ijk[1], ijk[2] );
@@ -262,7 +262,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
             AMP_ERROR( "Dimensions > 3 are not supported yet" );
         }
     } else if ( type == GeomType::Face ) {
-        if ( d_index.type() == GeomType::Volume ) {
+        if ( d_index.type() == GeomType::Cell ) {
             N = 6;
             index[0].reset( GeomType::Face, 1, ijk[0], ijk[1], ijk[2] );
             index[1].reset( GeomType::Face, 0, ijk[0] + 1, ijk[1], ijk[2] );
@@ -273,7 +273,7 @@ void structuredMeshElement::getElementIndex( const GeomType type,
         } else {
             AMP_ERROR( "Dimensions > 3 are not supported yet" );
         }
-    } else if ( type == GeomType::Volume ) {
+    } else if ( type == GeomType::Cell ) {
         AMP_ERROR( "Dimensions > 3 are not supported yet" );
     } else {
         AMP_ERROR( "Not finished" );
@@ -355,7 +355,7 @@ void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex 
             index[5].reset( GeomType::Vertex, 0, ijk[0] - 1, ijk[1] + 1 );
             index[6].reset( GeomType::Vertex, 0, ijk[0], ijk[1] + 1 );
             index[7].reset( GeomType::Vertex, 0, ijk[0] + 1, ijk[1] + 1 );
-        } else if ( d_meshType == GeomType::Volume ) {
+        } else if ( d_meshType == GeomType::Cell ) {
             N = 0;
             for ( int k = -1; k <= 1; k++ ) {
                 for ( int j = -1; j <= 1; j++ ) {
@@ -388,17 +388,17 @@ void structuredMeshElement::getNeighborIndex( int &N, BoxMesh::MeshElementIndex 
         } else {
             // GeomType::Face neighbors in dimensions > 2 are not supported yet
         }
-    } else if ( d_index.type() == GeomType::Volume ) {
-        if ( d_meshType == GeomType::Volume ) {
+    } else if ( d_index.type() == GeomType::Cell ) {
+        if ( d_meshType == GeomType::Cell ) {
             N = 6;
-            index[0].reset( GeomType::Volume, 0, ijk[0], ijk[1] - 1, ijk[2] );
-            index[1].reset( GeomType::Volume, 0, ijk[0] + 1, ijk[1], ijk[2] );
-            index[2].reset( GeomType::Volume, 0, ijk[0], ijk[1] + 1, ijk[2] );
-            index[3].reset( GeomType::Volume, 0, ijk[0] - 1, ijk[1], ijk[2] );
-            index[4].reset( GeomType::Volume, 0, ijk[0], ijk[1], ijk[2] - 1 );
-            index[5].reset( GeomType::Volume, 0, ijk[0], ijk[1], ijk[2] + 1 );
+            index[0].reset( GeomType::Cell, 0, ijk[0], ijk[1] - 1, ijk[2] );
+            index[1].reset( GeomType::Cell, 0, ijk[0] + 1, ijk[1], ijk[2] );
+            index[2].reset( GeomType::Cell, 0, ijk[0], ijk[1] + 1, ijk[2] );
+            index[3].reset( GeomType::Cell, 0, ijk[0] - 1, ijk[1], ijk[2] );
+            index[4].reset( GeomType::Cell, 0, ijk[0], ijk[1], ijk[2] - 1 );
+            index[5].reset( GeomType::Cell, 0, ijk[0], ijk[1], ijk[2] + 1 );
         } else {
-            // GeomType::Volume neighbors in dimensions > 3 are not supported yet
+            // GeomType::Cell neighbors in dimensions > 3 are not supported yet
         }
     } else {
         AMP_ERROR( "Unknown entity type" );
@@ -454,7 +454,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
                 index.d_index[d]--;
                 index_list.emplace_back( index );
             }
-        } else if ( type == GeomType::Face && d_meshType == GeomType::Volume ) {
+        } else if ( type == GeomType::Face && d_meshType == GeomType::Cell ) {
             index_list.resize( 12 );
             index_list[0].reset( type, 0, ijk[0], ijk[1] - 1, ijk[2] - 1 );
             index_list[1].reset( type, 0, ijk[0], ijk[1] - 1, ijk[2] );
@@ -477,7 +477,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
         int i = ijk[0];
         int j = ijk[1];
         int k = ijk[2];
-        if ( type == GeomType::Face && d_meshType == GeomType::Volume ) {
+        if ( type == GeomType::Face && d_meshType == GeomType::Cell ) {
             if ( d_index.d_side == 0 ) {
                 index_list.emplace_back( type, 2, i, j - 1, k );
                 index_list.emplace_back( type, 2, i, j, k );
@@ -496,7 +496,7 @@ std::vector<MeshElement> structuredMeshElement::getParents( GeomType type ) cons
             } else {
                 AMP_ERROR( "Internal error" );
             }
-        } else if ( type == GeomType::Volume && d_meshType == GeomType::Volume ) {
+        } else if ( type == GeomType::Cell && d_meshType == GeomType::Cell ) {
             if ( d_index.d_side == 0 ) {
                 index_list.emplace_back( type, 0, i, j - 1, k - 1 );
                 index_list.emplace_back( type, 0, i, j, k - 1 );
@@ -673,7 +673,7 @@ double structuredMeshElement::volume() const
             }
             return 0.25 * vol;
         }
-    } else if ( type == GeomType::Volume ) {
+    } else if ( type == GeomType::Cell ) {
         // Compute the volume of the tri-linear hex by splitting it
         // into 6 sub-pyramids and applying the formula in:
         //   "Calculation of the Volume of a General Hexahedron for Flow Predictions",
@@ -754,7 +754,7 @@ Point structuredMeshElement::norm() const
         d_mesh->coord( nodes[2], p[2].data() );
         d_mesh->coord( nodes[3], p[3].data() );
         return AMP::Geometry::GeometryHelpers::normalToQuadrilateral( p );
-    } else if ( d_index.type() == GeomType::Volume ) {
+    } else if ( d_index.type() == GeomType::Cell ) {
         AMP_ERROR( "Not finished (dimension>3)" );
     }
     AMP_ERROR( "Internal error" );
@@ -863,7 +863,7 @@ MeshPoint<double> structuredMeshElement::nearest( const MeshPoint<double> &pos0 
             y = y3;
         else
             y = y4;
-    } else if ( d_index.type() == GeomType::Volume ) {
+    } else if ( d_index.type() == GeomType::Cell ) {
         AMP_ASSERT( N == 8 );
         AMP_ERROR( "structuredMeshElement::nearest is not implemented for Volume" );
     } else {
@@ -933,7 +933,7 @@ double structuredMeshElement::distance( const MeshPoint<double> &pos,
         } else {
             AMP_ERROR( "Not finished" );
         }
-    } else if ( d_index.type() == GeomType::Volume ) {
+    } else if ( d_index.type() == GeomType::Cell ) {
         AMP_ASSERT( N == 8 );
         AMP_ERROR( "Not finished" );
     } else {

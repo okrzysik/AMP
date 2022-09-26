@@ -51,7 +51,7 @@ public:
  * computation.  This class tracks which local data need to be communicated with other cores
  * and which data should be received from those cores.
  */
-class CommunicationList
+class CommunicationList final
 {
 public:
     /**
@@ -61,12 +61,15 @@ public:
      * compute the communication lists.  Derived classes are expected to call
      * buildCommunicationArrays with appropriate data to compute the communication list
      */
-    explicit CommunicationList( std::shared_ptr<CommunicationListParameters> params );
+    CommunicationList( std::shared_ptr<const CommunicationListParameters> params );
 
     /**
-     * \brief Destroy the communication list
+     * \brief  Construct a CommunicationList with no comunication
+     * \param[in]  local  The number of local elements in the vector
+     * \param[in]  comm   The AMP_MPI for the vector.
+     * \details  Create a communication list with no communication.
      */
-    virtual ~CommunicationList();
+    CommunicationList( size_t local, const AMP_MPI &comm );
 
     /**
      * \brief Retrieve list of global indices shared locally stored elsewhere
@@ -109,7 +112,7 @@ public:
      * the owner of data scatters the data out which overwrites the data on cores
      * that share the data
      */
-    void scatter_set( std::vector<double> &in, std::vector<double> &out ) const;
+    void scatter_set( VectorData &vec ) const;
 
     /**
      * \brief Scatter data shared here to processors that own the data.
@@ -120,56 +123,7 @@ public:
      * that is shared to the core that owns it.  A call to scatter_add is generally
      * followed by a call to scatter_set to ensure parallel consistency.
      */
-    void scatter_add( std::vector<double> &in, std::vector<double> &out ) const;
-
-    /**
-     * \brief Given an AMP vector, this will create the appropriate send buffer used
-     * in an all-to-all.
-     * \param[out]  buffer  The output buffer
-     * \param[in]  vector  The input vector
-     * \details  This will put data owned by this core and shared elsewhere where it needs
-     * to be for an all-to-all, given the communication lists computed by
-     * buildCommunicationArrays.
-     */
-    void packSendBuffer( std::vector<double> &buffer, const VectorData &vector ) const;
-
-    /**
-     * \brief Given an AMP vector, this will create the appropriate receive buffer used
-     * in an all-to-all.
-     * \param[out]  buffer  The output buffer
-     * \param[in]  vector  The input vector
-     * \details  This will put data shared by this core and owned elsewhere where it needs
-     * to be for an all-to-all, given the communication lists computed by
-     * buildCommunicationArrays.
-     */
-    void packReceiveBuffer( std::vector<double> &buffer, const VectorData &vector ) const;
-
-    /**
-     * \brief Given a buffer from all-to-all, unpack it into a vector
-     * \param[in]  buffer  The input buffer
-     * \param[in]  vector  The vector to be updated
-     * \details  After an all-to-all, this method will unpack the result and set the data
-     * in appropriate places in the vector.
-     */
-    void unpackReceiveBufferSet( const std::vector<double> &buffer, VectorData &vector ) const;
-
-    /**
-     * \brief Given a buffer from all-to-all, unpack it into a vector
-     * \param[in]  buffer  The input buffer
-     * \param[in]  vector  The vector to be updated
-     * \details  After an all-to-all, this method will unpack the result and add the data
-     * in appropriate places in the vector.
-     */
-    void unpackSendBufferAdd( const std::vector<double> &buffer, VectorData &vector ) const;
-
-    /**
-     * \brief Given a buffer from all-to-all, unpack it into a vector
-     * \param[in]  buffer  The input buffer
-     * \param[in]  vector  The vector to be updated
-     * \details  After an all-to-all, this method will unpack the result and set the data
-     * in appropriate places in the vector.
-     */
-    void unpackSendBufferSet( const std::vector<double> &buffer, VectorData &vector ) const;
+    void scatter_add( VectorData &vec ) const;
 
     /**
      * \brief  Return the first d.o.f. on this core
@@ -204,20 +158,6 @@ public:
     const AMP_MPI &getComm() const;
 
 
-    /**
-     * \brief  A call to ensure the communication lists are constructed
-     */
-    void finalize();
-
-
-    /**
-     * \brief  Construct a CommunicationList with no comunication
-     * \param[in]  local  The number of local elements in the vector
-     * \param[in]  comm   The AMP_MPI for the vector.
-     * \details  Create a communication list with no communication.
-     */
-    static std::shared_ptr<CommunicationList> createEmpty( size_t local, AMP_MPI comm );
-
 protected:
     /**
      * \brief Construct the arrays that track which data are sent/received to/from where
@@ -230,8 +170,8 @@ protected:
      * \details  Given dofs, the list of needed data for this core, it will compute the send
      * and receive lists for this processor so that scatters can be done in minimal space.
      */
-    void buildCommunicationArrays( std::vector<size_t> &dofs,
-                                   std::vector<size_t> &partition,
+    void buildCommunicationArrays( const std::vector<size_t> &dofs,
+                                   const std::vector<size_t> &partition,
                                    int commRank );
 
 private:
@@ -242,12 +182,11 @@ private:
     std::vector<int> d_SendSizes;
     std::vector<int> d_SendDisplacements;
     std::vector<size_t> d_SendDOFList;
-    size_t d_iBegin;
 
     AMP_MPI d_comm;
+    size_t d_iBegin;
     size_t d_iNumRows;
     size_t d_iTotalRows;
-    bool d_bFinalized;
 
     CommunicationList();
 };

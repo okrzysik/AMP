@@ -72,7 +72,7 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<OperatorParameters> params = nullptr ) override
     {
-        return ( d_operators[3]->getParameters( type, u, params ) );
+        return d_operators[3]->getParameters( type, u, params );
     }
 
     virtual ~CoupledOperator() {}

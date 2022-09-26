@@ -64,7 +64,7 @@ computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
                      bool verbose = false )
 {
     // Create libMesh elements
-    const auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+    const auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     AMP::Discretization::createLibmeshElements libMeshElements;
     libMeshElements.reinit( iterator );
     // Create DOF managers
@@ -73,8 +73,8 @@ computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
     size_t nQuad = volumeOp->getSourceElement()->getFEBase()->get_xyz().size();
     auto NodalVectorDOF =
         AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Vertex, 1, 1 );
-    auto QuadPointVectorDOF = AMP::Discretization::simpleDOFManager::create(
-        mesh, AMP::Mesh::GeomType::Volume, 1, nQuad );
+    auto QuadPointVectorDOF =
+        AMP::Discretization::simpleDOFManager::create( mesh, AMP::Mesh::GeomType::Cell, 1, nQuad );
     // Create integration point vectors and compute values
     auto multivariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         volumeOp->getInputVariable() );
@@ -88,7 +88,7 @@ computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
     // Loop over all elements
     std::vector<size_t> dofs( nQuad );
     std::vector<double> U( nQuad ), V( nQuad ), W( nQuad );
-    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 ) ) {
+    for ( const auto &elem : mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 ) ) {
         auto id = elem.globalID();
         el      = libMeshElements.getElement( id );
         volumeOp->getSourceElement()->getFEBase()->reinit( el );
@@ -430,7 +430,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     double Lx          = 10.0 * scaleMeshFactor;
     double Ly          = Lx;
     double Lz          = Lx;
-    double nElements   = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Volume );
+    double nElements   = meshAdapter->numGlobalElements( AMP::Mesh::GeomType::Cell );
     double scaleFactor = sqrt( Lx * Ly * Lz / nElements );
     AMP::pout << "number of elements = " << nElements << "\n";
     AMP::pout << "scale factor = " << scaleFactor << "\n";

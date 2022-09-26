@@ -48,7 +48,7 @@ static void myTest( AMP::UnitTest *ut )
         mesh, AMP::Mesh::GeomType::Vertex, ghostWidth, dofsPerNode );
 
     // get the volume iterator
-    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto vol_iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell );
 
     // get the vertex iterator
     auto vert_iterator = mesh->getIterator( AMP::Mesh::GeomType::Vertex );
@@ -154,7 +154,7 @@ static void myTest( AMP::UnitTest *ut )
     ref_node_8[1] = 1.0;
     ref_node_8[2] = 1.0;
 
-    auto elem_iterator = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto elem_iterator = mesh->getIterator( AMP::Mesh::GeomType::Cell );
     auto dtk_elem_iterator =
         AMP::Operator::AMPMeshEntityIterator( rank_map, vol_id_map, elem_iterator, selectAll );
 

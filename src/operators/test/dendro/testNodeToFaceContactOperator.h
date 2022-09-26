@@ -351,9 +351,9 @@ static void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
 
     size_t numLocalVertices = mesh->numLocalElements( AMP::Mesh::GeomType::Vertex );
     size_t countVertices    = 0;
-    std::vector<size_t> verticesInHowManyGeomType::VolumeElements( numLocalVertices, 1 );
+    std::vector<size_t> verticesInHowManyGeomType::CellElements( numLocalVertices, 1 );
     std::vector<size_t> verticesDOFIndex( numLocalVertices );
-    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Volume );
+    auto meshIterator       = mesh->getIterator( AMP::Mesh::GeomType::Cell );
     auto meshIterator_begin = meshIterator.begin();
     auto meshIterator_end   = meshIterator.end();
     for ( meshIterator = meshIterator_begin; meshIterator != meshIterator_end; ++meshIterator ) {
@@ -423,7 +423,7 @@ static void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
                 sigma_eff->setLocalValueByGlobalID( indices[0], vonMisesStress );
             } else {
                 // sigh...
-                ++verticesInHowManyGeomType::VolumeElements[dummy.first->second];
+                ++verticesInHowManyGeomType::CellElements[dummy.first->second];
                 sigma_xx->addLocalValueByGlobalID( indices[0], stressTensor[0] );
                 sigma_yy->addLocalValueByGlobalID( indices[0], stressTensor[1] );
                 sigma_zz->addLocalValueByGlobalID( indices[0], stressTensor[2] );
@@ -468,41 +468,41 @@ static void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
     }     // end for
     AMP_ASSERT( verticesGlobalIDsAndCount.size() == numLocalVertices );
     AMP_ASSERT( countVertices == numLocalVertices );
-    AMP_ASSERT( find( verticesInHowManyGeomType::VolumeElements.begin(),
-                      verticesInHowManyGeomType::VolumeElements.end(),
-                      0 ) == verticesInHowManyGeomType::VolumeElements.end() );
+    AMP_ASSERT( find( verticesInHowManyGeomType::CellElements.begin(),
+                      verticesInHowManyGeomType::CellElements.end(),
+                      0 ) == verticesInHowManyGeomType::CellElements.end() );
 
     for ( size_t v = 0; v < numLocalVertices; ++v ) {
-        if ( verticesInHowManyGeomType::VolumeElements[v] > 1 ) {
-            //      AMP_ASSERT(verticesInHowManyGeomType::VolumeElements[v] < 9);
+        if ( verticesInHowManyGeomType::CellElements[v] > 1 ) {
+            //      AMP_ASSERT(verticesInHowManyGeomType::CellElements[v] < 9);
             sigma_xx->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_xx->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
             sigma_yy->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_yy->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
             sigma_zz->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_zz->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
             sigma_yz->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_yz->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
             sigma_xz->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_xz->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
             sigma_xy->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_xy->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
             sigma_eff->setLocalValueByGlobalID(
                 verticesDOFIndex[v],
                 sigma_eff->getLocalValueByGlobalID( verticesDOFIndex[v] ) /
-                    static_cast<double>( verticesInHowManyGeomType::VolumeElements[v] ) );
+                    static_cast<double>( verticesInHowManyGeomType::CellElements[v] ) );
         } // end if
     }     // end for v
 }

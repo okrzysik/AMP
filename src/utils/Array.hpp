@@ -15,26 +15,6 @@
 #include <memory>
 
 
-namespace AMP {
-
-
-/********************************************************
- *  External instantiations                              *
- ********************************************************/
-extern template class Array<bool>;
-extern template class Array<char>;
-extern template class Array<uint8_t>;
-extern template class Array<uint16_t>;
-extern template class Array<uint32_t>;
-extern template class Array<uint64_t>;
-extern template class Array<int8_t>;
-extern template class Array<int16_t>;
-extern template class Array<int32_t>;
-extern template class Array<int64_t>;
-extern template class Array<double>;
-extern template class Array<float>;
-
-
 /********************************************************
  *  Macros to help instantiate functions                 *
  ********************************************************/
@@ -70,7 +50,31 @@ extern template class Array<float>;
     template bool AMP::Array<TYPE>::empty() const;                                 \
     template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const std::vector<TYPE>& ); \
     template bool AMP::Array<TYPE>::operator==( const AMP::Array<TYPE>& ) const
+#define PACK_UNPACK_ARRAY( TYPE )                                                  \
+    template<> size_t AMP::packSize( const AMP::Array<TYPE> &x ) { return x.packSize(); } \
+    template<> size_t AMP::pack( const AMP::Array<TYPE> &x, std::byte *b ) { return x.pack(b); } \
+    template<> size_t AMP::unpack( AMP::Array<TYPE> &x, const std::byte *b ) { return x.unpack(b); }
 // clang-format on
+
+
+namespace AMP {
+
+
+/********************************************************
+ *  External instantiations                              *
+ ********************************************************/
+extern template class Array<bool>;
+extern template class Array<char>;
+extern template class Array<uint8_t>;
+extern template class Array<uint16_t>;
+extern template class Array<uint32_t>;
+extern template class Array<uint64_t>;
+extern template class Array<int8_t>;
+extern template class Array<int16_t>;
+extern template class Array<int32_t>;
+extern template class Array<int64_t>;
+extern template class Array<double>;
+extern template class Array<float>;
 
 
 /********************************************************
@@ -1393,21 +1397,6 @@ size_t AMP::Array<TYPE, FUN, Allocator>::unpack( const std::byte *buf )
     }
     return N;
 }
-#define PACK_UNPACK_ARRAY( TYPE )                                   \
-    template<>                                                      \
-    size_t AMP::packSize( const AMP::Array<TYPE> &x )               \
-    {                                                               \
-        return x.packSize();                                        \
-    }                                                               \
-    template<>                                                      \
-    size_t AMP::pack( const AMP::Array<TYPE> &x, std::byte *buf )   \
-    {                                                               \
-        return x.pack( buf );                                       \
-    }                                                               \
-    template<>                                                      \
-    size_t AMP::unpack( AMP::Array<TYPE> &x, const std::byte *buf ) \
-    {                                                               \
-        return x.unpack( buf );                                     \
-    }
+
 
 #endif

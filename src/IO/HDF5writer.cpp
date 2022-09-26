@@ -180,7 +180,7 @@ static AMP::Xdmf::Center getCenter( AMP::Mesh::GeomType meshType, AMP::Mesh::Geo
         return AMP::Xdmf::Center::Edge;
     if ( vecType == AMP::Mesh::GeomType::Face )
         return AMP::Xdmf::Center::Face;
-    if ( vecType == AMP::Mesh::GeomType::Volume )
+    if ( vecType == AMP::Mesh::GeomType::Cell )
         return AMP::Xdmf::Center::Cell;
     return AMP::Xdmf::Center::Null;
 }
@@ -200,9 +200,9 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
     getNodeElemList( mesh.mesh, elements, x, nodelist, nodelist_ids );
     auto shapetype = AMP::Xdmf::TopologyType::Null;
     int shapesize  = nodelist.size( 0 );
-    if ( shapesize == 8 && type == AMP::Mesh::GeomType::Volume )
+    if ( shapesize == 8 && type == AMP::Mesh::GeomType::Cell )
         shapetype = AMP::Xdmf::TopologyType::Hexahedron;
-    else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Volume )
+    else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Cell )
         shapetype = AMP::Xdmf::TopologyType::Tetrahedron;
     else if ( shapesize == 4 && type == AMP::Mesh::GeomType::Face )
         shapetype = AMP::Xdmf::TopologyType::Quadrilateral;

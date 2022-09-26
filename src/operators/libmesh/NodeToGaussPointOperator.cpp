@@ -40,7 +40,7 @@ NodeToGaussPointOperator::NodeToGaussPointOperator(
         d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );
     } else {
         d_dim      = 3;
-        d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Volume, 0 );
+        d_iterator = d_Mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
     }
     // Initialize some libmesh variables
     auto feTypeOrder = libMesh::Utility::string_to_enum<libMeshEnums::Order>( "FIRST" );
