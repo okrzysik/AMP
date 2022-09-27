@@ -36,10 +36,6 @@ public:
     virtual double getGamma( void ) const { return d_gamma; }
 
 protected:
-    //! stores linear weighted sum of previous time solutions that becomes a source term
-    //! for the nonlinear system of equations
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_integrator_source_vector = nullptr;
-
     double d_gamma = 0.0;
 };
 } // namespace AMP::TimeIntegrator
