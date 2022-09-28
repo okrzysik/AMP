@@ -6,6 +6,20 @@
 
 namespace AMP::Operator {
 
+DirichletVectorCorrection::DirichletVectorCorrection(
+    std::shared_ptr<const OperatorParameters> inParams )
+    : BoundaryOperator( inParams )
+{
+    auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( inParams );
+    AMP_ASSERT( params );
+    d_variable                   = params->d_variable;
+    d_isAttachedToVolumeOperator = false;
+    d_setResidual                = false;
+    d_valuesType                 = 0;
+    d_scalingFactor              = 0.0;
+    reset( params );
+}
+
 void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters> tmpParams )
 {
     auto params = std::dynamic_pointer_cast<const DirichletVectorCorrectionParameters>( tmpParams );
@@ -170,10 +184,11 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
 std::shared_ptr<OperatorParameters>
     DirichletVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
 {
-    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
-    tmp_db->putScalar( "skip_params", true );
+    auto db = std::make_shared<AMP::Database>( "Dummy" );
+    db->putScalar( "name", "DirichletMatrixCorrection" );
+    db->putScalar( "skip_params", true );
 
-    auto outParams = std::make_shared<DirichletMatrixCorrectionParameters>( tmp_db );
+    auto outParams = std::make_shared<DirichletMatrixCorrectionParameters>( db );
 
     return outParams;
 }

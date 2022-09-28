@@ -2,9 +2,9 @@
 #ifndef included_AMP_NonlinearBVPOperator
 #define included_AMP_NonlinearBVPOperator
 
+#include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/boundary/BoundaryOperator.h"
-#include "BVPOperatorParameters.h"
 
 namespace AMP::Operator {
 
@@ -35,7 +35,7 @@ public:
      FALSE, when set to
      to TRUE the same local model is used for both the volume and boundary operators
      */
-    explicit NonlinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> parameters );
+    explicit NonlinearBVPOperator( std::shared_ptr<const OperatorParameters> parameters );
 
     /**
      * virtual destructor which does nothing

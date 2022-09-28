@@ -23,9 +23,13 @@ namespace AMP::Operator {
 
 // Constructor
 NeumannVectorCorrection::NeumannVectorCorrection(
-    std::shared_ptr<const NeumannVectorCorrectionParameters> params )
-    : BoundaryOperator( params ), d_params( params )
+    std::shared_ptr<const OperatorParameters> inParams )
+    : BoundaryOperator( inParams )
 {
+    auto params = std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( inParams );
+    AMP_ASSERT( params );
+    d_params = params;
+
     d_isConstantFlux      = false;
     d_isFluxGaussPtVector = false;
     d_numBndIds           = 0;
@@ -56,12 +60,11 @@ void NeumannVectorCorrection::reset( std::shared_ptr<const OperatorParameters> p
 {
     auto myparams = std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( params );
 
-    AMP_INSIST( ( ( myparams.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( myparams->d_db ).get() ) != nullptr ), "NULL database" );
-
+    AMP_INSIST( myparams, "NULL parameters" );
+    AMP_INSIST( myparams->d_db, "NULL database" );
     AMP_INSIST( myparams->d_db->keyExists( "number_of_ids" ), "Key ''number_of_ids'' is missing!" );
-    d_numBndIds = myparams->d_db->getScalar<int>( "number_of_ids" );
 
+    d_numBndIds           = myparams->d_db->getScalar<int>( "number_of_ids" );
     d_isConstantFlux      = myparams->d_db->getWithDefault<bool>( "constant_flux", true );
     d_isFluxGaussPtVector = myparams->d_db->getWithDefault<bool>( "IsFluxGaussPtVector", true );
 

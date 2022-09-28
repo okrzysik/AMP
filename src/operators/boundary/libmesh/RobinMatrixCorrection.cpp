@@ -18,16 +18,18 @@ ENABLE_WARNINGS
 
 namespace AMP::Operator {
 
-RobinMatrixCorrection::RobinMatrixCorrection(
-    std::shared_ptr<const RobinMatrixCorrectionParameters> params )
-    : BoundaryOperator( params )
+RobinMatrixCorrection::RobinMatrixCorrection( std::shared_ptr<const OperatorParameters> inParams )
+    : BoundaryOperator( inParams ),
+      d_hef( 0 ),
+      d_alpha( 0 ),
+      d_beta( 0 ),
+      d_gamma( 0 ),
+      d_JxW( nullptr ),
+      d_phi( nullptr )
 {
-    d_hef   = 0;
-    d_alpha = 0;
-    d_beta  = 0;
-    d_gamma = 0;
-    d_JxW   = nullptr;
-    d_phi   = nullptr;
+    auto params = std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( inParams );
+    AMP_ASSERT( params );
+
 
     auto feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
     auto feFamilyName    = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
@@ -40,7 +42,9 @@ RobinMatrixCorrection::RobinMatrixCorrection(
 
     d_variable = params->d_variable;
 
-    d_NeumannParams.reset( new AMP::Operator::NeumannVectorCorrectionParameters( params->d_db ) );
+    std::shared_ptr<Database> neumann_db = params->d_db->cloneDatabase();
+    neumann_db->putScalar( "number_of_ids", 0, {}, AMP::Database::Check::Keep );
+    d_NeumannParams.reset( new AMP::Operator::NeumannVectorCorrectionParameters( neumann_db ) );
     d_NeumannParams->d_variable     = params->d_variable;
     d_NeumannParams->d_Mesh         = params->d_Mesh;
     d_NeumannParams->d_variableFlux = params->d_variableFlux;
@@ -57,7 +61,6 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
     AMP_INSIST( myparams.get(), "NULL parameters" );
     AMP_INSIST( myparams->d_db, "NULL database" );
 
-    AMP_INSIST( myparams->d_db, "NULL database" );
     bool skipParams = myparams->d_db->getWithDefault<bool>( "skip_params", true );
 
     bool d_isFluxGaussPtVector =
@@ -232,11 +235,10 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
                         d_robinPhysicsModel->getConductance( beta, gamma, inputArgsAtGpts );
                     }
 
-                    double temp;
                     for ( unsigned int qp = 0; qp < d_qrule->n_points(); qp++ ) {
                         for ( unsigned int j = 0; j < currNodes.size(); j++ ) {
                             for ( unsigned int i = 0; i < currNodes.size(); i++ ) {
-                                temp = beta[qp] * ( JxW[qp] * phi[j][qp] * phi[i][qp] );
+                                double temp = beta[qp] * ( JxW[qp] * phi[j][qp] * phi[i][qp] );
                                 inputMatrix->addValueByGlobalID( dofs[j], dofs[i], temp );
                             } // end for i
                         }     // end for j
@@ -251,4 +253,11 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
     } // skip matrix
 }
+
+void RobinMatrixCorrection::addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs )
+{
+    d_NeumannCorrection->addRHScorrection( rhs );
+}
+
+
 } // namespace AMP::Operator

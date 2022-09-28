@@ -1,4 +1,5 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationParameters.h"
 #include "AMP/operators/diffusion/DiffusionConstants.h"
@@ -95,12 +96,11 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
     : NonlinearFEOperator( params ), d_Frozen( Diffusion::NUMBER_VARIABLES )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter!" );
+    AMP_INSIST( params, "NULL parameter!" );
 
     d_diffNonlinElem = std::dynamic_pointer_cast<DiffusionNonlinearElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_diffNonlinElem.get() ) != nullptr ),
-                "d_elemOp is not of type DiffusionNonlinearElement" );
+    AMP_INSIST( d_diffNonlinElem, "d_elemOp is not of type DiffusionNonlinearElement" );
 
     d_transportModel = params->d_transportModel;
 
@@ -108,8 +108,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     d_isFrozen.resize( Diffusion::NUMBER_VARIABLES );
     d_inVec.resize( Diffusion::NUMBER_VARIABLES );
 
-    std::shared_ptr<AMP::Database> activeVariables_db =
-        params->d_db->getDatabase( "ActiveInputVariables" );
+    auto activeVariables_db = params->d_db->getDatabase( "ActiveInputVariables" );
 
     for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
         auto namespec   = activeVariables_db->getWithDefault<std::string>( Diffusion::names[var],
@@ -156,7 +155,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
             d_inpVariables->setVariable( var, dummyVar );
             if ( d_isFrozen[var] ) {
                 d_inVec[var] = d_Frozen[var];
-                if ( d_inVec[var] != nullptr )
+                if ( d_inVec[var] )
                     AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                                 AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
             }
@@ -176,7 +175,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                                                 AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP_INSIST( ( u != nullptr ), "NULL Input Vector!" );
+    AMP_INSIST( u, "NULL Input Vector!" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     auto u_meshVec = u->select( meshSelector, "u_mesh" );
 
@@ -196,7 +195,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
                     AMP_ERROR( "Unable to subset for " + tvar->getName() );
             }
 
-            AMP_ASSERT( d_inVec[var] != nullptr );
+            AMP_ASSERT( d_inVec[var] );
             AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
             if ( d_iDebugPrintInfoLevel > 5 )
@@ -337,31 +336,37 @@ void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
 std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianParameters(
     AMP::LinearAlgebra::Vector::const_shared_ptr u )
 {
-    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
+    auto db = std::make_shared<AMP::Database>( "Dummy" );
     AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
     auto u_meshVec = u->select( meshSelector, "u_mesh" );
 
     // set up a database for the linear operator params
-    tmp_db->putScalar( "name", "DiffusionLinearFEOperator" );
-    tmp_db->putScalar( "InputVariable", Diffusion::names[d_PrincipalVariable] );
-    tmp_db->putScalar( "OutputVariable", d_outVariable->getName() );
-    tmp_db->putScalar( "FixedTemperature", d_isActive[Diffusion::TEMPERATURE] ? false : true );
-    tmp_db->putScalar( "FixedConcentration", d_isActive[Diffusion::CONCENTRATION] ? false : true );
-    tmp_db->putScalar( "FixedBurnup", d_isActive[Diffusion::BURNUP] ? false : true );
+    db->putScalar( "name", "DiffusionLinearFEOperator" );
+    db->putScalar( "InputVariable", Diffusion::names[d_PrincipalVariable] );
+    db->putScalar( "OutputVariable", d_outVariable->getName() );
+    db->putScalar( "FixedTemperature", d_isActive[Diffusion::TEMPERATURE] ? false : true );
+    db->putScalar( "FixedConcentration", d_isActive[Diffusion::CONCENTRATION] ? false : true );
+    db->putScalar( "FixedBurnup", d_isActive[Diffusion::BURNUP] ? false : true );
 
     // create the linear operator params
-    auto outParams = std::make_shared<DiffusionLinearFEOperatorParameters>( tmp_db );
+    auto outParams = std::make_shared<DiffusionLinearFEOperatorParameters>( db );
 
     // create the linear element object
     auto elem_db = std::make_shared<AMP::Database>( "Dummy" );
-    tmp_db->putScalar( "TransportAtGaussPoints", d_diffNonlinElem->getTransportAtGauss() );
+    db->putScalar( "TransportAtGaussPoints", d_diffNonlinElem->getTransportAtGauss() );
     auto eparams       = std::make_shared<ElementOperationParameters>( elem_db );
     auto linearElement = std::make_shared<DiffusionLinearElement>( eparams );
 
     // add miscellaneous to output parameters
+    auto createDOFManager = []( std::shared_ptr<AMP::Mesh::Mesh> mesh ) {
+        return AMP::Discretization::simpleDOFManager::create(
+            mesh, AMP::Mesh::GeomType::Vertex, 1, 1, true );
+    };
     outParams->d_transportModel = d_transportModel;
     outParams->d_elemOp         = linearElement;
     outParams->d_Mesh           = d_Mesh;
+    outParams->d_inDofMap       = createDOFManager( d_Mesh );
+    outParams->d_outDofMap      = outParams->d_inDofMap;
 
     // add variables to parameters
     if ( d_isActive[Diffusion::TEMPERATURE] ) {

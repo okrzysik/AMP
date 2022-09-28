@@ -1,4 +1,3 @@
-
 #include "DirichletMatrixCorrection.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -10,9 +9,12 @@ namespace AMP::Operator {
  * Constructors                                                  *
  ****************************************************************/
 DirichletMatrixCorrection::DirichletMatrixCorrection(
-    std::shared_ptr<const DirichletMatrixCorrectionParameters> params )
-    : BoundaryOperator( params ), d_variable( params->d_variable )
+    std::shared_ptr<const OperatorParameters> inParams )
+    : BoundaryOperator( inParams )
 {
+    auto params = std::dynamic_pointer_cast<const DirichletMatrixCorrectionParameters>( inParams );
+    AMP_ASSERT( params );
+    d_variable                 = params->d_variable;
     d_computedAddRHScorrection = false;
     d_symmetricCorrection      = params->d_db->getWithDefault<bool>( "symmetric_correction", true );
     d_zeroDirichletBlock   = params->d_db->getWithDefault<bool>( "zero_dirichlet_block", false );
@@ -37,7 +39,7 @@ void DirichletMatrixCorrection::reset( std::shared_ptr<const OperatorParameters>
     parseParams( myParams );
 
     d_inputMatrix = myParams->d_inputMatrix;
-    AMP_INSIST( ( ( d_inputMatrix.get() ) != nullptr ), "NULL matrix" );
+    AMP_INSIST( d_inputMatrix, "NULL matrix" );
     d_inputMatrix->makeConsistent(); // Check that we can call makeConsistent
 
     if ( d_skipRHSsetCorrection )
@@ -206,7 +208,7 @@ void DirichletMatrixCorrection::initRhsCorrectionSet()
         setDispOpParams->d_variable = d_variable;
         setDispOpParams->d_Mesh     = d_Mesh;
 
-        if ( d_rhsCorrectionSet.get() == nullptr ) {
+        if ( !d_rhsCorrectionSet ) {
             d_rhsCorrectionSet.reset( new DirichletVectorCorrection( setDispOpParams ) );
         } else {
             d_rhsCorrectionSet->reset( setDispOpParams );
@@ -221,7 +223,7 @@ void DirichletMatrixCorrection::initRhsCorrectionAdd( AMP::LinearAlgebra::Vector
 
     if ( !d_skipRHSsetCorrection ) {
         if ( !d_skipRHSaddCorrection ) {
-            if ( d_dispVals.get() == nullptr ) {
+            if ( !d_dispVals ) {
                 d_dispVals = ( subsetOutputVector( rhs ) )->cloneVector();
                 AMP_ASSERT( ( *( d_dispVals->getVariable() ) ) == ( *d_variable ) );
             }
@@ -231,7 +233,7 @@ void DirichletMatrixCorrection::initRhsCorrectionAdd( AMP::LinearAlgebra::Vector
             AMP::LinearAlgebra::Vector::shared_ptr emptyVec;
             d_rhsCorrectionSet->apply( emptyVec, d_dispVals );
 
-            if ( d_rhsCorrectionAdd.get() == nullptr ) {
+            if ( !d_rhsCorrectionAdd ) {
                 d_rhsCorrectionAdd = d_dispVals->cloneVector();
             }
 

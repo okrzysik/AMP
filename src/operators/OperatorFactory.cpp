@@ -1,7 +1,18 @@
 #include "AMP/operators/OperatorFactory.h"
+#include "AMP/AMP_TPLs.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/CoupledOperator.h"
+#include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/Operator.h"
+#include "AMP/operators/boundary/ColumnBoundaryOperator.h"
+#include "AMP/operators/boundary/DirichletMatrixCorrection.h"
+#include "AMP/operators/boundary/DirichletVectorCorrection.h"
+
+#ifdef AMP_USE_LIBMESH
+    #include "AMP/operators/boundary/libmesh/RobinMatrixCorrection.h"
+    #include "AMP/operators/boundary/libmesh/RobinVectorCorrection.h"
+    #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#endif
 
 
 namespace AMP::Operator {
@@ -21,19 +32,28 @@ namespace AMP::Operator {
 
 
 // Create the operator
-std::unique_ptr<Operator> OperatorFactory::create( std::shared_ptr<OperatorParameters> parameters )
+std::unique_ptr<Operator> OperatorFactory::create( std::shared_ptr<OperatorParameters> params )
 {
-    AMP_ASSERT( parameters );
-    auto inputDatabase = parameters->d_db;
-    AMP_ASSERT( inputDatabase );
-    auto objectName = inputDatabase->getString( "name" );
-    return create( objectName, parameters );
+    AMP_ASSERT( params );
+    auto db = params->d_db;
+    AMP_ASSERT( db );
+    auto objectName = db->getString( "name" );
+    return create( objectName, params );
 }
 
 
 // Register operators
 REGISTER_OPERATOR( CoupledOperator );
 REGISTER_OPERATOR( ColumnOperator );
+REGISTER_OPERATOR( LinearBVPOperator );
+REGISTER_OPERATOR( ColumnBoundaryOperator );
+REGISTER_OPERATOR( DirichletMatrixCorrection );
+REGISTER_OPERATOR( DirichletVectorCorrection );
+#ifdef AMP_USE_LIBMESH
+REGISTER_OPERATOR( DiffusionLinearFEOperator );
+REGISTER_OPERATOR( RobinMatrixCorrection );
+REGISTER_OPERATOR( RobinVectorCorrection );
+#endif
 
 
 } // namespace AMP::Operator

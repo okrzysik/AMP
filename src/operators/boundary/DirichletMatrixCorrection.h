@@ -22,8 +22,7 @@ class DirichletMatrixCorrection : public BoundaryOperator
 {
 public:
     //! Constructor
-    explicit DirichletMatrixCorrection(
-        std::shared_ptr<const DirichletMatrixCorrectionParameters> params );
+    explicit DirichletMatrixCorrection( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~DirichletMatrixCorrection() {}

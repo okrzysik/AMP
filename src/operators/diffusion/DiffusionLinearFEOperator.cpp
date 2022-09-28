@@ -5,25 +5,25 @@
 namespace AMP::Operator {
 
 DiffusionLinearFEOperator::DiffusionLinearFEOperator(
-    std::shared_ptr<const DiffusionLinearFEOperatorParameters> params )
-    : LinearFEOperator( params )
+    std::shared_ptr<const OperatorParameters> inParams )
+    : LinearFEOperator( inParams )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
+    auto params = std::dynamic_pointer_cast<const DiffusionLinearFEOperatorParameters>( inParams );
+    AMP_INSIST( params, "NULL parameter" );
 
     d_diffLinElem = std::dynamic_pointer_cast<DiffusionLinearElement>( d_elemOp );
 
-    AMP_INSIST( ( ( d_diffLinElem.get() ) != nullptr ),
-                "d_elemOp is not of type DiffusionLinearElement" );
+    AMP_INSIST( d_diffLinElem, "d_elemOp is not of type DiffusionLinearElement" );
 
     d_useConstantTemperature   = params->d_db->getWithDefault<bool>( "FixedTemperature", false );
     d_useConstantConcentration = params->d_db->getWithDefault<bool>( "FixedConcentration", false );
     d_useConstantBurnup        = params->d_db->getWithDefault<bool>( "FixedBurnup", false );
 
-    std::string inpVar = params->d_db->getString( "InputVariable" );
-    d_inputVariable.reset( new AMP::LinearAlgebra::Variable( inpVar ) );
+    auto inpVar     = params->d_db->getString( "InputVariable" );
+    d_inputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( inpVar );
 
-    std::string outVar = params->d_db->getString( "OutputVariable" );
-    d_outputVariable.reset( new AMP::LinearAlgebra::Variable( outVar ) );
+    auto outVar      = params->d_db->getString( "OutputVariable" );
+    d_outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( outVar );
 
     reset( params );
 }

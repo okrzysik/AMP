@@ -35,7 +35,7 @@ public:
    FALSE, when set to
       to TRUE the same local model is used for both the volume and boundary operators
       */
-    explicit LinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> parameters );
+    explicit LinearBVPOperator( std::shared_ptr<const OperatorParameters> parameters );
 
     /**
      * virtual destructor which does nothing
