@@ -77,10 +77,10 @@ void RK12TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
-    d_new_solution = d_solution_vector->cloneVector( "new solution" );
-    d_k1_vec       = d_solution_vector->cloneVector( "k1 term" );
-    d_k2_vec       = d_solution_vector->cloneVector( "k2 term" );
-    d_z_vec        = d_solution_vector->cloneVector( "z term" );
+    d_new_solution = d_solution_vector->cloneVector();
+    d_k1_vec       = d_solution_vector->cloneVector();
+    d_k2_vec       = d_solution_vector->cloneVector();
+    d_z_vec        = d_solution_vector->cloneVector();
 
     /*
      * Set initial value of vectors to 0.

@@ -77,21 +77,12 @@ void RK23TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
-#if 1
     d_new_solution = d_solution_vector->cloneVector();
     d_k1_vec       = d_solution_vector->cloneVector();
     d_k2_vec       = d_solution_vector->cloneVector();
     d_k3_vec       = d_solution_vector->cloneVector();
     d_k4_vec       = d_solution_vector->cloneVector();
     d_z_vec        = d_solution_vector->cloneVector();
-#else
-    d_new_solution = d_solution_vector->cloneVector( "new solution" );
-    d_k1_vec       = d_solution_vector->cloneVector( "k1 term" );
-    d_k2_vec       = d_solution_vector->cloneVector( "k2 term" );
-    d_k3_vec       = d_solution_vector->cloneVector( "k3 term" );
-    d_k4_vec       = d_solution_vector->cloneVector( "k4 term" );
-    d_z_vec        = d_solution_vector->cloneVector( "z term" );
-#endif
     /*
      * Set initial value of vectors to 0.
      */
