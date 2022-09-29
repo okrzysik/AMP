@@ -179,7 +179,7 @@ void MultiVector::resetVectorData()
 
 void MultiVector::addVectorHelper( Vector::shared_ptr vec )
 {
-    if ( vec.get() == nullptr )
+    if ( !vec )
         return;
     auto id = vec->getDataID();
     if ( id == 0 ) {

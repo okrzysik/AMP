@@ -112,7 +112,7 @@ DiffusionNonlinearFEOperator{
 	 ActiveInputVariables { 
 	   concentration = "concentration"
 	 }
-	 PrincipalVariable = 1
+	 PrincipalVariable = "concentration"
 
 	 DiffusionElement {
 	      name = "DiffusionNonlinearElement"

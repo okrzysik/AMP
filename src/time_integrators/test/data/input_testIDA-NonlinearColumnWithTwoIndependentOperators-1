@@ -62,7 +62,7 @@ NonlinearThermalOperator1 {
          temperature = "temperature1"
      }
      OutputVariable = "temperature1"
-     PrincipalVariable = 0 
+     PrincipalVariable = "temperature" 
 
      DiffusionElement{
         name = "DiffusionNonlinearElement"
@@ -216,7 +216,7 @@ NonlinearThermalOperator2 {
          temperature = "temperature2"
      }
      OutputVariable = "temperature2"
-     PrincipalVariable = 0 
+     PrincipalVariable = "temperature" 
 
      DiffusionElement{
         name = "DiffusionNonlinearElement"

@@ -1,11 +1,10 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -102,20 +101,16 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto resVec = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
     // create parameters for reset test and reset fick and soret operators
-
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
-
-    fickOp->setVector( 0, tVec );
-    soretOp->setVector( 0, tVec );
+    fickOp->setVector( "temperature", tVec );
+    soretOp->setVector( "temperature", tVec );
 
     auto fickFrozen  = fickOp->getFrozen();
     auto soretFrozen = soretOp->getFrozen();
 
     auto lenscale = input_db->getScalar<double>( "LengthScale" );
-    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(
-        300. ); // Fill in manufactured solution
-    const int zeroGhostWidth = 0;
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar( 300. );
+    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x = ( iterator->coord() )[0];
         double y = ( iterator->coord() )[1];
@@ -189,7 +184,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto soretModel    = soretOp->getTransportModel();
 
     {
-        iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+        iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t nnodes = fickCoeffVec->getLocalSize(), node;
         std::vector<size_t> gids( nnodes );
         std::vector<double> temp( nnodes ), conc( nnodes ), fickCoeff( nnodes ),
@@ -237,14 +232,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     // store result
     {
-        iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-        iterator        = iterator.begin();
-        size_t numNodes = 0;
-        for ( ; iterator != iterator.end(); ++iterator )
-            numNodes++;
-        results.resize( numNodes );
-
-        iterator     = iterator.begin();
+        iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+        results.resize( iterator.size() );
         size_t iNode = 0;
         for ( ; iterator != iterator.end(); ++iterator ) {
             std::vector<size_t> gid;

@@ -100,17 +100,15 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     // create parameters for reset test and reset fick and soret operators
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
 
-    fickOp->setVector( 0, tVec );
-    soretOp->setVector( 0, tVec );
+    fickOp->setVector( "temperature", tVec );
+    soretOp->setVector( "temperature", tVec );
 
     auto fickFrozen  = fickOp->getFrozen();
     auto soretFrozen = soretOp->getFrozen();
 
     double lenscale = input_db->getDouble( "LengthScale" );
-    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar(
-        300. ); // Fill in manufactured solution
-    const int zeroGhostWidth = 0;
-    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar( 300. );
+    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y;
         std::valarray<double> poly( 10 );
@@ -191,7 +189,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     auto soretModel    = soretOp->getTransportModel();
 
     {
-        iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+        iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         size_t nnodes = fickCoeffVec->getLocalSize(), node;
         std::vector<size_t> gids( nnodes );
         std::vector<double> temp( nnodes ), conc( nnodes ), fickCoeff( nnodes ),
@@ -237,7 +235,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
 
     // store result
     {
-        iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+        iterator        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         iterator        = iterator.begin();
         size_t numNodes = 0;
         for ( ; iterator != iterator.end(); iterator++ )

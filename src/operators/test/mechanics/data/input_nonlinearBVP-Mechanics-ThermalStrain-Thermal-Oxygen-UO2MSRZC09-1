@@ -169,7 +169,7 @@ DiffusionNonlinearFEOperator{
 	   temperature="temperature"
 	   concentration="concentration"
 	 }
-	 PrincipalVariable = 0
+	 PrincipalVariable = "temperature"
 	 Freezeconcentration = FALSE
 
 	 DiffusionElement {
@@ -247,7 +247,7 @@ OxygenDiffusionNonlinearFEOperator{
 	   temperature="temperature"
 	   concentration="concentration"
 	 }
-	 PrincipalVariable = 1
+	 PrincipalVariable = "concentration"
 	 Freezetemperature = FALSE
 
          LocalModel = "OxygenDiffusionTransportModel"

@@ -16,6 +16,10 @@ ENABLE_WARNINGS
 
 #include <string>
 
+
+using AMP::Utilities::stringf;
+
+
 namespace AMP::Operator {
 
 RobinMatrixCorrection::RobinMatrixCorrection( std::shared_ptr<const OperatorParameters> inParams )
@@ -30,6 +34,9 @@ RobinMatrixCorrection::RobinMatrixCorrection( std::shared_ptr<const OperatorPara
     auto params = std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( inParams );
     AMP_ASSERT( params );
 
+    d_alpha = params->d_db->getWithDefault<double>( "alpha", 0 );
+    d_beta  = params->d_db->getWithDefault<double>( "beta", 0 );
+    d_gamma = params->d_db->getWithDefault<double>( "gamma", 0 );
 
     auto feTypeOrderName = params->d_db->getWithDefault<std::string>( "FE_ORDER", "FIRST" );
     auto feFamilyName    = params->d_db->getWithDefault<std::string>( "FE_FAMILY", "LAGRANGE" );
@@ -58,7 +65,7 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
 
     auto myparams = std::dynamic_pointer_cast<const RobinMatrixCorrectionParameters>( params );
 
-    AMP_INSIST( myparams.get(), "NULL parameters" );
+    AMP_INSIST( myparams, "NULL parameters" );
     AMP_INSIST( myparams->d_db, "NULL database" );
 
     bool skipParams = myparams->d_db->getWithDefault<bool>( "skip_params", true );
@@ -67,45 +74,28 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
         myparams->d_db->getWithDefault<bool>( "IsFluxGaussPtVector", true );
 
     if ( !skipParams ) {
-        AMP_INSIST( myparams->d_db->keyExists( "alpha" ), "Missing key: prefactor alpha" );
         d_alpha = myparams->d_db->getScalar<double>( "alpha" );
-        AMP_INSIST( d_alpha != 0.0, "prefactor alpha must be != 0.0" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "beta" ), "Missing key: prefactor beta" );
-        d_beta = myparams->d_db->getScalar<double>( "beta" );
-
-        AMP_INSIST( myparams->d_db->keyExists( "gamma" ), "Missing key: total prefactor gamma" );
+        d_beta  = myparams->d_db->getScalar<double>( "beta" );
         d_gamma = myparams->d_db->getScalar<double>( "gamma" );
+        AMP_INSIST( d_alpha != 0.0, "prefactor alpha must be != 0.0" );
+        AMP_INSIST( myparams->d_db->keyExists( "beta" ), "Missing key: prefactor beta" );
+        AMP_INSIST( myparams->d_db->keyExists( "gamma" ), "Missing key: total prefactor gamma" );
 
-        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
-                    "Key ''number_of_ids'' is missing!" );
         int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
         d_robinValues.resize( numIds );
 
-        char key[100];
         for ( int j = 0; j < numIds; j++ ) {
-
-            snprintf( key, sizeof key, "id_%d", j );
-            AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = myparams->d_db->getScalar<int>( key );
-
-            snprintf( key, sizeof key, "number_of_dofs_%d", j );
-            AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
-            int numDofIds = myparams->d_db->getScalar<int>( key );
-
+            d_boundaryIds[j] = myparams->d_db->getScalar<int>( stringf( "id_%d", j ) );
+            int numDofIds    = myparams->d_db->getScalar<int>( stringf( "number_of_dofs_%d", j ) );
             d_dofIds[j].resize( numDofIds );
             d_robinValues[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; i++ ) {
-                snprintf( key, sizeof key, "dof_%d_%d", j, i );
-                AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = myparams->d_db->getScalar<int>( key );
-
-                snprintf( key, sizeof key, "value_%d_%d", j, i );
-                AMP_INSIST( myparams->d_db->keyExists( key ), "Key is missing!" );
-                d_robinValues[j][i] = myparams->d_db->getScalar<double>( key );
+                d_dofIds[j][i] = myparams->d_db->getScalar<int>( stringf( "dof_%d_%d", j, i ) );
+                d_robinValues[j][i] =
+                    myparams->d_db->getScalar<double>( stringf( "value_%d_%d", j, i ) );
             }
         }
     }
@@ -133,7 +123,7 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
         libmeshElements.reinit( iterator );
 
         auto inputMatrix = myparams->d_inputMatrix;
-        AMP_INSIST( ( ( inputMatrix.get() ) != nullptr ), "NULL matrix" );
+        AMP_INSIST( inputMatrix, "NULL matrix" );
 
         auto inVec   = inputMatrix->getRightVector();
         d_dofManager = inVec->getDOFManager();

@@ -356,7 +356,7 @@ PelletDiffusionNonlinearFEOperator {
       temperature = "Temperature"
     }
     OutputVariable = "Temperature"
-    PrincipalVariable = 0
+    PrincipalVariable = "temperature"
     DiffusionElement{
       name = "DiffusionNonlinearElement"
         TransportAtGaussPoints = TRUE
@@ -491,7 +491,7 @@ CladDiffusionNonlinearFEOperator {
       temperature = "Temperature"
     }
   OutputVariable = "Temperature"
-    PrincipalVariable = 0
+    PrincipalVariable = "temperature"
     DiffusionElement{
       name = "DiffusionNonlinearElement"
         TransportAtGaussPoints = TRUE

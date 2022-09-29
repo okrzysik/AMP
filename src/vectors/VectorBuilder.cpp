@@ -17,7 +17,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
                                  std::shared_ptr<Variable> variable,
                                  bool split )
 {
-    if ( DOFs.get() == nullptr )
+    if ( !DOFs )
         return Vector::shared_ptr();
     AMP_ASSERT( variable );
     // Check if we are dealing with a multiDOFManager

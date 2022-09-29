@@ -100,12 +100,12 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto bVec = AMP::LinearAlgebra::createVector( nodalDofMap, bVar );
 
     // set vectors in parameters
-    fickOpParams->d_FrozenTemperature    = tVec;
-    fickOpParams->d_FrozenConcentration  = cVec;
-    fickOpParams->d_FrozenBurnup         = bVec;
-    soretOpParams->d_FrozenTemperature   = tVec;
-    soretOpParams->d_FrozenConcentration = cVec;
-    soretOpParams->d_FrozenBurnup        = bVec;
+    fickOpParams->d_FrozenVecs["temperature"]    = tVec;
+    fickOpParams->d_FrozenVecs["concentration"]  = cVec;
+    fickOpParams->d_FrozenVecs["burnup"]         = bVec;
+    soretOpParams->d_FrozenVecs["temperature"]   = tVec;
+    soretOpParams->d_FrozenVecs["concentration"] = cVec;
+    soretOpParams->d_FrozenVecs["burnup"]        = bVec;
 
     // Test reset
     {

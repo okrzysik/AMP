@@ -32,7 +32,7 @@ FickSoretNonlinearFEOperator1 {
         }
         Freezetemperature = TRUE
         OutputVariable = "conc"
-        PrincipalVariable = 1
+        PrincipalVariable = "concentration"
 
         DiffusionElement{
           name = "DiffusionNonlinearElement"
@@ -55,7 +55,7 @@ FickSoretNonlinearFEOperator1 {
       }
       Freezetemperature = TRUE
       OutputVariable = "conc"
-      PrincipalVariable = 0 
+      PrincipalVariable = "temperature" 
 
       DiffusionElement{
         name = "DiffusionNonlinearElement"

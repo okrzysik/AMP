@@ -138,7 +138,7 @@ NonlinearThermalOperator1 {
         }
       OutputVariable = "Temperature"
       Freezeburnup = TRUE 
-        PrincipalVariable = 0 
+        PrincipalVariable = "temperature" 
 
         DiffusionElement{
           name = "DiffusionNonlinearElement"
@@ -260,7 +260,7 @@ NonlinearThermalOperator2 {
           temperature = "Temperature"
         }
       OutputVariable = "Temperature"
-        PrincipalVariable = 0 
+        PrincipalVariable = "temperature" 
 
         DiffusionElement{
           name = "DiffusionNonlinearElement"
@@ -579,7 +579,7 @@ NonlinearOxygenOperator {
          concentration = "Concentration"
      }
      OutputVariable = "Concentration"
-     PrincipalVariable = 1 
+     PrincipalVariable = "concentration" 
 
      DiffusionElement{
         name = "DiffusionNonlinearElement"

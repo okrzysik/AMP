@@ -116,10 +116,6 @@ protected:
     std::vector<bool> d_IsCoupledBoundary;
     bool d_isFluxGaussPtVector;
 
-    int d_numBndIds;
-
-    std::vector<short int> d_numDofIds;
-
     std::shared_ptr<const NeumannVectorCorrectionParameters> d_params;
 
     std::shared_ptr<RobinPhysicsModel> d_robinPhysicsModel;

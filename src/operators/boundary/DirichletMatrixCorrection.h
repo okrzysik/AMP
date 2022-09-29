@@ -49,8 +49,6 @@ public:
         // Do Nothing
     }
 
-    void parseParams( std::shared_ptr<const DirichletMatrixCorrectionParameters> );
-
     /**
       This function modifies the entries of the matrix formed by the volume operator
       in order to impose Dirichlet boundary conditions. This function can also be used
@@ -75,6 +73,11 @@ public:
 
     std::vector<std::vector<unsigned int>> getDofIds() { return d_dofIds; }
 
+
+protected:
+    void parseParams( std::shared_ptr<const DirichletMatrixCorrectionParameters> );
+
+
 protected:
     // This must be a simple variable not a dual or multivariable
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
@@ -91,15 +94,17 @@ protected:
 
     std::shared_ptr<DirichletVectorCorrection> d_rhsCorrectionSet;
 
-    bool d_symmetricCorrection;
+    bool d_symmetricCorrection = false;
 
-    bool d_zeroDirichletBlock;
+    bool d_zeroDirichletBlock = false;
 
-    bool d_skipRHSaddCorrection;
+    bool d_skipRHSaddCorrection = false;
 
-    bool d_skipRHSsetCorrection;
+    bool d_skipRHSsetCorrection = false;
 
-    bool d_computedAddRHScorrection;
+    bool d_computedAddRHScorrection = false;
+
+    bool d_initialized = false;
 
     void initRhsCorrectionSet();
 

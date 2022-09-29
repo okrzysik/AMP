@@ -32,7 +32,7 @@ DiffusionNonlinearFEOperator{
 	 ActiveInputVariables { 
 	   temperature="temperature"
 	 }
-	 PrincipalVariable = 0
+	 PrincipalVariable = "temperature"
          LocalModel = "DiffusionTransportModel"
 	
 	 DiffusionElement {

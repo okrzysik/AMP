@@ -127,8 +127,7 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     //------------------------------------------
     // check the solution
-    int zeroGhostWidth = 0;
-    auto nodeIt        = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    auto nodeIt = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
     for ( const auto &node : nodeIt ) {
         std::vector<size_t> gid;

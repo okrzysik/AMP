@@ -32,7 +32,7 @@ DiffusionNonlinearFEOperator{
 	 ActiveInputVariables { 
 		Concentration = "concentration"
 	 }
-	 PrincipalVariable = 1
+	 PrincipalVariable = "concentration"
          LocalModel = "DiffusionTransportModel"
 
 	   DiffusionElement {

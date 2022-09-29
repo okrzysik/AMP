@@ -556,9 +556,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
     // populate the parameters with frozen active variable vectors
 
     // nullify vectors in parameters
-    diffusionNLOpParams->d_FrozenTemperature.reset();
-    diffusionNLOpParams->d_FrozenConcentration.reset();
-    diffusionNLOpParams->d_FrozenBurnup.reset();
+    diffusionNLOpParams->d_FrozenVecs.clear();
 
     // create variables and vectors for frozen material inputs
     auto active_db      = diffusionNLinFEOp_db->getDatabase( "ActiveInputVariables" );
@@ -576,21 +574,21 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
         tVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         tVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tVar, true );
         if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeTemperature", false ) )
-            diffusionNLOpParams->d_FrozenTemperature = tVec;
+            diffusionNLOpParams->d_FrozenVecs["temperature"] = tVec;
     }
     name = active_db->getWithDefault<std::string>( "Concentration", "not_specified" );
     if ( name != "not_specified" ) {
         cVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         cVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, cVar, true );
         if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeConcentration", false ) )
-            diffusionNLOpParams->d_FrozenConcentration = cVec;
+            diffusionNLOpParams->d_FrozenVecs["concentration"] = cVec;
     }
     name = active_db->getWithDefault<std::string>( "Burnup", "not_specified" );
     if ( name != "not_specified" ) {
         bVar.reset( new AMP::LinearAlgebra::Variable( name ) );
         bVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, bVar, true );
         if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeBurnup", false ) )
-            diffusionNLOpParams->d_FrozenBurnup = bVec;
+            diffusionNLOpParams->d_FrozenVecs["burnup"] = bVec;
     }
 
     // create the nonlinear diffusion operator

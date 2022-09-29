@@ -181,7 +181,7 @@ void ManagedVectorData::getGhostValuesByGlobalID( size_t N,
                                                   const typeID &id ) const
 {
     auto vec = getVectorEngine();
-    if ( vec.get() == nullptr ) {
+    if ( !vec ) {
         VectorData::getGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
         vec->getVectorData()->getGhostValuesByGlobalID( N, ndx, vals, id );
@@ -204,7 +204,7 @@ void ManagedVectorData::setGhostValuesByGlobalID( size_t N,
                                                   const typeID &id )
 {
     auto vec = getVectorEngine();
-    if ( vec.get() == nullptr ) {
+    if ( !vec ) {
         VectorData::setGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
         vec->getVectorData()->setGhostValuesByGlobalID( N, ndx, vals, id );
@@ -227,7 +227,7 @@ void ManagedVectorData::addGhostValuesByGlobalID( size_t N,
                                                   const typeID &id )
 {
     auto vec = getVectorEngine();
-    if ( vec.get() == nullptr ) {
+    if ( !vec ) {
         VectorData::addGhostValuesByGlobalID( N, ndx, vals, id );
     } else {
         vec->getVectorData()->addGhostValuesByGlobalID( N, ndx, vals, id );

@@ -2,6 +2,10 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
+
+using AMP::Utilities::stringf;
+
+
 namespace AMP::Operator {
 
 
@@ -22,7 +26,6 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
     d_skipRHSaddCorrection =
         params->d_db->getWithDefault<bool>( "skip_rhs_add_correction", d_skipRHSsetCorrection );
     d_applyMatrixCorrectionWasCalled = false;
-
     reset( params );
 }
 
@@ -33,9 +36,6 @@ DirichletMatrixCorrection::DirichletMatrixCorrection(
 void DirichletMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> params )
 {
     auto myParams = std::dynamic_pointer_cast<const DirichletMatrixCorrectionParameters>( params );
-
-    AMP_INSIST( myParams, "NULL parameters" );
-
     parseParams( myParams );
 
     d_inputMatrix = myParams->d_inputMatrix;
@@ -51,9 +51,8 @@ void DirichletMatrixCorrection::reset( std::shared_ptr<const OperatorParameters>
 
     initRhsCorrectionSet();
 
-    if ( d_skipRHSaddCorrection ) {
+    if ( d_skipRHSaddCorrection )
         applyMatrixCorrection();
-    } // end if
 }
 void DirichletMatrixCorrection::parseParams(
     std::shared_ptr<const DirichletMatrixCorrectionParameters> params )
@@ -61,10 +60,9 @@ void DirichletMatrixCorrection::parseParams(
     AMP_INSIST( params->d_db, "NULL database" );
     bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
-    if ( !skipParams ) {
+    if ( !skipParams || !d_initialized ) {
         d_symmetricCorrection = params->d_db->getWithDefault<bool>( "symmetric_correction", true );
         d_zeroDirichletBlock  = params->d_db->getWithDefault<bool>( "zero_dirichlet_block", false );
-
         d_skipRHSsetCorrection = params->d_db->getWithDefault<bool>( "skip_rhs_correction", true );
         d_skipRHSaddCorrection =
             params->d_db->getWithDefault<bool>( "skip_rhs_add_correction", d_skipRHSsetCorrection );
@@ -72,43 +70,33 @@ void DirichletMatrixCorrection::parseParams(
         if ( d_symmetricCorrection == false )
             d_skipRHSaddCorrection = true;
 
-        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
-                    "Key ''number_of_ids'' is missing!" );
         int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
 
-        char key[100];
         for ( int j = 0; j < numIds; ++j ) {
-            snprintf( key, sizeof key, "id_%d", j );
-            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = params->d_db->getScalar<int>( key );
-
-            snprintf( key, sizeof key, "number_of_dofs_%d", j );
-            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-            int numDofIds = params->d_db->getScalar<int>( key );
-
+            d_boundaryIds[j] = params->d_db->getScalar<int>( stringf( "id_%d", j ) );
+            int numDofIds    = params->d_db->getScalar<int>( stringf( "number_of_dofs_%d", j ) );
             d_dofIds[j].resize( numDofIds );
             for ( int i = 0; i < numDofIds; ++i ) {
-                snprintf( key, sizeof key, "dof_%d_%d", j, i );
-                AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = params->d_db->getScalar<int>( key );
-            } // end for i
-        }     // end for j
+                d_dofIds[j][i] = params->d_db->getScalar<int>( stringf( "dof_%d_%d", j, i ) );
+            }
+        }
 
         if ( !d_skipRHSsetCorrection ) {
             d_dirichletValues.resize( numIds );
             for ( int j = 0; j < numIds; ++j ) {
                 int numDofIds = d_dofIds[j].size();
                 d_dirichletValues[j].resize( numDofIds );
-
                 for ( int i = 0; i < numDofIds; ++i ) {
-                    snprintf( key, sizeof key, "value_%d_%d", j, i );
+                    auto key                = stringf( "value_%d_%d", j, i );
                     d_dirichletValues[j][i] = params->d_db->getWithDefault<double>( key, 0.0 );
-                } // end for i
-            }     // end for j
+                }
+            }
         }
+
+        d_initialized = true;
     }
 }
 
@@ -128,20 +116,17 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
 
     std::vector<size_t> bndDofIds, nhDofIds;
     for ( size_t k = 0; k < d_boundaryIds.size(); ++k ) {
-        auto bnd =
-            d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[k], 0 );
-        auto end_bnd = bnd.end();
+        for ( auto &node :
+              d_Mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_boundaryIds[k], 0 ) ) {
+            dof_map->getDOFs( node.globalID(), bndDofIds );
 
-        for ( ; bnd != end_bnd; ++bnd ) {
-            dof_map->getDOFs( bnd->globalID(), bndDofIds );
-
-            // Get neighbors does not include the calling node (bnd) itself.
+            // Get neighbors does not include the calling node itself.
             // Get neighbors also returns remote neighbors
-            // The calling node (bnd) must be owned locally.
-            auto neighbors = bnd->getNeighbors();
+            // The calling node must be owned locally.
+            auto neighbors = node.getNeighbors();
             for ( auto &neighbor : neighbors ) {
-                AMP_INSIST( *neighbor != *bnd, "boundary node neighbor includes self" );
-            } // end for i
+                AMP_INSIST( *neighbor != node, "boundary node neighbor includes self" );
+            }
 
             for ( auto &elem : d_dofIds[k] ) {
                 for ( unsigned int i = 0; i < bndDofIds.size(); ++i ) {
@@ -157,7 +142,7 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
                             d_inputMatrix->setValueByGlobalID( bndDofIds[i], bndDofIds[elem], 0.0 );
                         }
                     }
-                } // end for i
+                }
                 for ( auto &neighbor : neighbors ) {
                     dof_map->getDOFs( neighbor->globalID(), nhDofIds );
                     for ( auto &nhDofId : nhDofIds ) {
@@ -165,11 +150,11 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
                         if ( d_symmetricCorrection ) {
                             d_inputMatrix->setValueByGlobalID( nhDofId, bndDofIds[elem], 0.0 );
                         }
-                    } // end for i
-                }     // end for n
-            }         // end for j
-        }             // end for bnd
-    }                 // end for k
+                    }
+                }
+            }
+        }
+    }
 
     // This does consistent for both "Sum-into" and "set".
     d_inputMatrix->makeConsistent();

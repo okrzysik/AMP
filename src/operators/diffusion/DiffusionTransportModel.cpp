@@ -26,7 +26,7 @@ const std::vector<libMesh::Point> DiffusionTransportModel::d_DummyCoords =
 
 DiffusionTransportModel::DiffusionTransportModel(
     std::shared_ptr<const DiffusionTransportModelParameters> params )
-    : ElementPhysicsModel( params ), d_defaults( Diffusion::NUMBER_VARIABLES ), d_IsTensor( false )
+    : ElementPhysicsModel( params ), d_IsTensor( false )
 {
     AMP_INSIST( params->d_db->keyExists( "Material" ), "Diffusion Key ''Material'' is missing!" );
     std::string matname = params->d_db->getString( "Material" );
@@ -38,7 +38,7 @@ DiffusionTransportModel::DiffusionTransportModel(
     d_property           = d_material->property( propname );
 
     // load and check defaults
-    d_defaults = d_property->get_defaults();
+    auto defaults = d_property->get_defaults();
     if ( params->d_db->keyExists( "Defaults" ) ) {
         // check for correct names
         auto defaults_db = params->d_db->getDatabase( "Defaults" );
@@ -55,13 +55,13 @@ DiffusionTransportModel::DiffusionTransportModel(
 
         // load defaults into the material property, checking range validity
         for ( size_t i = 0; i < argnames.size(); ++i ) {
-            d_defaults[i] = defaults_db->getScalar<double>( argnames[i] );
-            AMP_INSIST( d_property->in_range( argnames[i], d_defaults[i] ),
+            defaults[i] = defaults_db->getScalar<double>( argnames[i] );
+            AMP_INSIST( d_property->in_range( argnames[i], defaults[i] ),
                         std::string( "Default for argument " ) + argnames[i] +
                             std::string( " is out of range" ) );
         }
     }
-    d_property->set_defaults( d_defaults );
+    d_property->set_defaults( defaults );
 
     // process bilog scaling details
     d_UseBilogScaling = params->d_db->getWithDefault<bool>( "UseBilogScaling", false );

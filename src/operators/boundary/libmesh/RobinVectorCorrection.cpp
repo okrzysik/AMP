@@ -38,8 +38,8 @@ void RobinVectorCorrection::reset( std::shared_ptr<const OperatorParameters> par
 {
     NeumannVectorCorrection::reset( params );
 
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( params, "NULL parameters" );
+    AMP_INSIST( params->d_db, "NULL database" );
 
     d_skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
@@ -242,26 +242,32 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     PROFILE_STOP( "integration loop" );
 
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
-    // std::cout << rInternal << std::endl;
 
     PROFILE_STOP( "apply" );
 }
 
 
 std::shared_ptr<OperatorParameters>
-    RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
+RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    auto db = std::make_shared<AMP::Database>( "Dummy" );
-    db->putScalar( "name", "RobinMatrixCorrection" );
-    db->putScalar( "skip_params", true );
+    auto db = NeumannVectorCorrection::getJacobianParameters( vec )->d_db;
+    db->putScalar( "name", "RobinMatrixCorrection", {}, AMP::Database::Check::Overwrite );
+    db->putScalar( "skip_params", d_skipParams, {}, AMP::Database::Check::Overwrite );
     db->putScalar( "skip_rhs_correction", true );
     db->putScalar( "skip_matrix_correction", false );
     db->putScalar( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
+    db->putScalar( "alpha", d_alpha );
+    db->putScalar( "beta", d_beta );
+    db->putScalar( "gamma", d_gamma );
     auto outParams                 = std::make_shared<RobinMatrixCorrectionParameters>( db );
     outParams->d_robinPhysicsModel = d_robinPhysicsModel;
     outParams->d_elementInputVec   = d_elementInputVec;
     outParams->d_variableFlux      = d_variableFlux;
-
+    outParams->d_Mesh              = d_Mesh;
+    // outParams->d_variable = linearDiffusion->getOutputVariable();
+    // outParams->d_inputMatrix = linearDiffusion->getMatrix();
     return outParams;
 }
+
+
 } // namespace AMP::Operator

@@ -56,12 +56,16 @@ void DiffusionLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParam
 
     d_transportModel = params->d_transportModel;
 
-    if ( params->d_temperature )
-        d_temperature = params->d_temperature;
-    if ( params->d_concentration )
-        params->d_concentration;
-    if ( params->d_burnup )
-        d_burnup = params->d_burnup;
+    for ( auto [name, vec] : params->d_inputVecs ) {
+        if ( name == "temperature" )
+            d_temperature = vec;
+        else if ( name == "concentration" )
+            d_concentration = vec;
+        else if ( name == "burnup" )
+            d_burnup = vec;
+        else
+            AMP_ERROR( "Unknown input vector: " + name );
+    }
 
     d_matrix->zero();
 

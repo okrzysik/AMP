@@ -155,7 +155,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto masterMeshID      = contactOperator->getMasterMeshID();
     auto masterMeshAdapter = meshAdapter->Subset( masterMeshID );
     //  rotateMesh(masterMeshAdapter);
-    if ( masterMeshAdapter.get() != NULL ) {
+    if ( masterMeshAdapter ) {
         auto masterElementPhysicsModel;
         masterBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
@@ -185,7 +185,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
     auto slaveMeshAdapter = meshAdapter->Subset( slaveMeshID );
-    if ( slaveMeshAdapter.get() != NULL ) {
+    if ( slaveMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
         slaveBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
@@ -482,10 +482,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     int numMasterLocalNodes = 0;
     int numSlaveLocalNodes  = 0;
-    if ( masterMeshAdapter.get() != NULL ) {
+    if ( masterMeshAdapter ) {
         numMasterLocalNodes = masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
-    if ( slaveMeshAdapter.get() != NULL ) {
+    if ( slaveMeshAdapter ) {
         numSlaveLocalNodes = slaveMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     int matLocalSize = dofsPerNode * ( numMasterLocalNodes + numSlaveLocalNodes );
@@ -558,17 +558,17 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             }
 
             // apply dirichlet rhs correction on f
-            if ( masterBVPOperator.get() != NULL ) {
+            if ( masterBVPOperator ) {
                 masterBVPOperator->modifyRHSvector( columnRhsVec );
             } // end if
-            if ( slaveBVPOperator.get() != NULL ) {
+            if ( slaveBVPOperator ) {
                 slaveBVPOperator->modifyRHSvector( columnRhsVec );
             } // end if
 
             {
                 auto masterMat = masterBVPOperator->getMatrix();
                 auto masterRhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( masterCor.get() == nullptr ) {
+                if ( !masterCor ) {
                     masterCor = masterRhs->cloneVector();
                     applyCustomDirichletCondition(
                         masterRhs, masterCor, meshAdapter, masterConstraints, masterMat );
@@ -579,12 +579,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    masterConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( masterCor.get() != nullptr );
+                AMP_ASSERT( masterCorptr );
             }
             {
                 auto slaveMat = slaveBVPOperator->getMatrix();
                 auto slaveRhs = slaveBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( slaveCor.get() == nullptr ) {
+                if ( !slaveCor ) {
                     slaveCor = slaveRhs->cloneVector();
                     applyCustomDirichletCondition(
                         slaveRhs, slaveCor, meshAdapter, slaveConstraints, slaveMat );
@@ -595,7 +595,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    slaveConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( slaveCor.get() != nullptr );
+                AMP_ASSERT( slaveCorptr );
             }
 
             // get d

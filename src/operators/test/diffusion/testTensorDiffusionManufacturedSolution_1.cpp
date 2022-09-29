@@ -126,9 +126,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName, const std::
         size_t len = geom.size();
         isCylindrical = (pos < len);
     }*/
-    int zeroGhostWidth = 1;
-    auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    auto mfgName       = mfgSolution->get_name();
+    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 1 );
+    auto mfgName  = mfgSolution->get_name();
     if ( mfgName.find( "Cylindrical" ) < mfgName.size() ) {
         for ( ; iterator != iterator.end(); ++iterator ) {
             double x, y, z, r, th = 0.;

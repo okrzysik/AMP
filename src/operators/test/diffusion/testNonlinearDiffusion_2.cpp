@@ -60,8 +60,6 @@ static void nonlinearTest( AMP::UnitTest *ut,
     // Create the meshes from the input database
     auto meshAdapter = AMP::Mesh::MeshFactory::create( params );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
-
     std::shared_ptr<AMP::Operator::ElementPhysicsModel> elementModel;
     auto diffFEOp_db       = input_db->getDatabase( "NonlinearDiffusionOp" );
     auto nonlinearOperator = AMP::Operator::OperatorBuilder::createOperator(
@@ -88,9 +86,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
         std::make_shared<AMP::Operator::DiffusionNonlinearFEOperatorParameters>( diffFEOp_db );
 
     // nullify vectors in parameters
-    diffOpParams->d_FrozenTemperature.reset();
-    diffOpParams->d_FrozenConcentration.reset();
-    diffOpParams->d_FrozenBurnup.reset();
+    diffOpParams->d_FrozenVecs.clear();
 
     // create vectors for parameters
     auto active_db = diffFEOp_db->getDatabase( "ActiveInputVariables" );
@@ -101,14 +97,12 @@ static void nonlinearTest( AMP::UnitTest *ut,
     auto bVar = std::make_shared<AMP::LinearAlgebra::Variable>(
         active_db->getWithDefault<std::string>( "Burnup", "not_specified" ) );
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
     // Create a DOF manager for a nodal vector
     int DOFsPerNode     = 1;
     int nodalGhostWidth = 1;
     bool split          = true;
     auto nodalDofMap    = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, DOFsPerNode, split );
-    //----------------------------------------------------------------------------------------------------------------------------------------------//
 
     // create solution, rhs, and residual vectors
     auto tVec = AMP::LinearAlgebra::createVector( nodalDofMap, tVar );
@@ -120,19 +114,19 @@ static void nonlinearTest( AMP::UnitTest *ut,
 
     // set principal variable vector
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE )
-        diffOpParams->d_FrozenTemperature = tVec;
+        diffOpParams->d_FrozenVecs["temperature"] = tVec;
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION )
-        diffOpParams->d_FrozenConcentration = cVec;
+        diffOpParams->d_FrozenVecs["concentration"] = cVec;
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::BURNUP )
-        diffOpParams->d_FrozenBurnup = bVec;
+        diffOpParams->d_FrozenVecs["burnup"] = bVec;
 
     // set frozen vectors in parameters
     if ( diffFEOp_db->getWithDefault<bool>( "FreezeTemperature", false ) )
-        diffOpParams->d_FrozenTemperature = tVec;
+        diffOpParams->d_FrozenVecs["temperature"] = tVec;
     if ( diffFEOp_db->getWithDefault<bool>( "FreezeConcentration", false ) )
-        diffOpParams->d_FrozenConcentration = cVec;
+        diffOpParams->d_FrozenVecs["concentration"] = cVec;
     if ( diffFEOp_db->getWithDefault<bool>( "FreezeBurnup", false ) )
-        diffOpParams->d_FrozenBurnup = bVec;
+        diffOpParams->d_FrozenVecs["burnup"] = bVec;
 
     // set transport model
     diffOpParams->d_transportModel = transportModel;
@@ -174,9 +168,8 @@ static void nonlinearTest( AMP::UnitTest *ut,
     }
     diffRhsVec->setToScalar( 0.0 );
 
-    int zeroGhostWidth = 0;
-    auto curNode       = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    auto endNode       = curNode.end();
+    auto curNode = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto endNode = curNode.end();
 
     for ( curNode = curNode.begin(); curNode != endNode; ++curNode ) {
         // double x = curNode->x();
@@ -230,8 +223,7 @@ static void nonlinearTest( AMP::UnitTest *ut,
             file << "values={"
                  << "\n";
         }
-        AMP::Mesh::MeshIterator node =
-            meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+        auto node = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
         int i = 0;
         for ( ; node != node.end(); ++node ) {

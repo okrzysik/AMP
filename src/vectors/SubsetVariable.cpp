@@ -60,7 +60,7 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     // Subset the DOFManager and create a new communication list
     auto parentDOF = v->getDOFManager();
     auto subsetDOF = var->getSubsetDOF( parentDOF );
-    if ( subsetDOF.get() == nullptr ) {
+    if ( !subsetDOF ) {
         PROFILE_STOP2( "view", 2 );
         return Vector::shared_ptr();
     } else if ( subsetDOF->numGlobalDOF() == 0 ) {

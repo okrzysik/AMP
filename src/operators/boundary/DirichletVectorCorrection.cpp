@@ -4,7 +4,12 @@
 #include "AMP/vectors/VectorSelector.h"
 #include "DirichletMatrixCorrectionParameters.h"
 
+
+using AMP::Utilities::stringf;
+
+
 namespace AMP::Operator {
+
 
 DirichletVectorCorrection::DirichletVectorCorrection(
     std::shared_ptr<const OperatorParameters> inParams )
@@ -27,36 +32,28 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
     AMP_INSIST( params, "NULL parameters" );
     AMP_INSIST( params->d_db, "NULL database" );
 
-    bool skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
+    d_skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
-    if ( !skipParams ) {
+    if ( !d_skipParams ) {
         d_scalingFactor = params->d_db->getWithDefault<double>( "SCALING_FACTOR", 1.0 );
         d_setResidual   = params->d_db->getWithDefault<bool>( "setResidual", false );
         d_isAttachedToVolumeOperator =
             params->d_db->getWithDefault<bool>( "isAttachedToVolumeOperator", false );
         d_valuesType = params->d_db->getWithDefault<int>( "valuesType", 1 );
-        AMP_INSIST( ( ( d_valuesType == 1 ) || ( d_valuesType == 2 ) ), "Wrong value." );
+        AMP_INSIST( ( d_valuesType == 1 ) || ( d_valuesType == 2 ), "Wrong value." );
 
-        AMP_INSIST( params->d_db->keyExists( "number_of_ids" ),
-                    "Key ''number_of_ids'' is missing!" );
         int numIds = params->d_db->getScalar<int>( "number_of_ids" );
 
         d_boundaryIds.resize( numIds );
         d_dofIds.resize( numIds );
 
-        if ( d_valuesType == 1 ) {
+        if ( d_valuesType == 1 )
             d_dirichletValues1.resize( numIds );
-        }
 
-        char key[100];
         for ( int j = 0; j < numIds; j++ ) {
-            snprintf( key, sizeof key, "id_%d", j );
-            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-            d_boundaryIds[j] = params->d_db->getScalar<int>( key );
+            d_boundaryIds[j] = params->d_db->getScalar<int>( stringf( "id_%d", j ) );
 
-            snprintf( key, sizeof key, "number_of_dofs_%d", j );
-            AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-            int numDofIds = params->d_db->getScalar<int>( key );
+            int numDofIds = params->d_db->getScalar<int>( stringf( "number_of_dofs_%d", j ) );
 
             d_dofIds[j].resize( numDofIds );
 
@@ -64,16 +61,14 @@ void DirichletVectorCorrection::reset( std::shared_ptr<const OperatorParameters>
                 d_dirichletValues1[j].resize( numDofIds );
             }
             for ( int i = 0; i < numDofIds; i++ ) {
-                snprintf( key, sizeof key, "dof_%d_%d", j, i );
-                AMP_INSIST( params->d_db->keyExists( key ), "Key is missing!" );
-                d_dofIds[j][i] = params->d_db->getScalar<int>( key );
+                d_dofIds[j][i] = params->d_db->getScalar<int>( stringf( "dof_%d_%d", j, i ) );
 
                 if ( d_valuesType == 1 ) {
-                    snprintf( key, sizeof key, "value_%d_%d", j, i );
+                    auto key                 = stringf( "value_%d_%d", j, i );
                     d_dirichletValues1[j][i] = params->d_db->getWithDefault<double>( key, 0.0 );
                 }
-            } // end for i
-        }     // end for j
+            }
+        }
     }
 }
 
@@ -120,9 +115,9 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
             const double val = 0.0;
             for ( auto &elem : d_dofIds[j] ) {
                 rInternal->setLocalValuesByGlobalID( 1, &bndGlobalIds[elem], &val );
-            } // end for i
-        }     // end for bnd
-    }         // end for j
+            }
+        }
+    }
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
@@ -147,9 +142,9 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
                         d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
                 dVal *= d_scalingFactor;
                 rInternal->setLocalValuesByGlobalID( 1, &bndGlobalIds[d_dofIds[j][i]], &dVal );
-            } // end for i
-        }     // end for bnd
-    }         // end for j
+            }
+        }
+    }
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
@@ -175,9 +170,9 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
                         d_dirichletValues2->getLocalValueByGlobalID( bndGlobalIds[d_dofIds[j][i]] );
                 dVal = d_scalingFactor * ( uVal - dVal );
                 r->setLocalValuesByGlobalID( 1, &bndGlobalIds[d_dofIds[j][i]], &dVal );
-            } // end for i
-        }     // end for bnd
-    }         // end for j
+            }
+        }
+    }
     r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 }
 
@@ -187,9 +182,22 @@ std::shared_ptr<OperatorParameters>
     auto db = std::make_shared<AMP::Database>( "Dummy" );
     db->putScalar( "name", "DirichletMatrixCorrection" );
     db->putScalar( "skip_params", true );
+    db->putScalar( "setResidual", true );
+    db->putScalar( "isAttachedToVolumeOperator", true );
+    db->putScalar( "number_of_ids", d_boundaryIds.size() );
+    for ( int i = 0; i < (int) d_boundaryIds.size(); i++ ) {
+        db->putScalar( stringf( "id_%i", i ), d_boundaryIds[i] );
+        db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds.size() );
+        for ( int j = 0; j < (int) d_dofIds.size(); j++ ) {
+            db->putScalar( stringf( "dof_%i_%i", i, j ), d_dofIds[i][j] );
+            db->putScalar( stringf( "value_%i_%i", i, j ), d_dirichletValues1[i][j] );
+        }
+    }
 
     auto outParams = std::make_shared<DirichletMatrixCorrectionParameters>( db );
-
+    // outParams->d_variable    = linearDiffusion->getOutputVariable();
+    // outParams->d_inputMatrix = linearDiffusion->getMatrix();
+    outParams->d_Mesh = d_Mesh;
     return outParams;
 }
 

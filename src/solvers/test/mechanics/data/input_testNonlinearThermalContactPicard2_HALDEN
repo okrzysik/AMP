@@ -179,7 +179,7 @@ DiffusionNonlinearFEOperator1{
       temperature = "Temperature"
     }
   OutputVariable = "Temperature"
-    PrincipalVariable = 0 
+    PrincipalVariable = "temperature" 
 
     DiffusionElement{
       name = "DiffusionNonlinearElement"
@@ -264,7 +264,7 @@ DiffusionNonlinearFEOperator2{
       temperature = "Temperature"
     }
   OutputVariable = "Temperature"
-    PrincipalVariable = 0 
+    PrincipalVariable = "temperature" 
 
     DiffusionElement{
       name = "DiffusionNonlinearElement"

@@ -50,7 +50,7 @@ void DiffusionNonlinearElement::apply()
     if ( d_transportAtGauss ) {
         // construct material evalv arguments
         const auto &q_point = d_fe->get_xyz();
-        for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
+        for ( size_t var = 0; var < d_elementInputVectors.size(); var++ ) {
             if ( d_elementInputVectors[var].size() > 0 ) {
                 std::shared_ptr<std::vector<double>> values(
                     new std::vector<double>( d_qrule->n_points(), 0.0 ) );
@@ -83,7 +83,7 @@ void DiffusionNonlinearElement::apply()
         AMP::Array<std::shared_ptr<std::vector<double>>> nodalTransportCoeffTensor( 3, 3 );
 
         // construct material evalv arguments
-        for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
+        for ( size_t var = 0; var < d_elementInputVectors.size(); var++ ) {
             if ( d_elementInputVectors[var].size() > 0 ) {
                 transport_args.insert( std::make_pair(
                     Diffusion::names[var],

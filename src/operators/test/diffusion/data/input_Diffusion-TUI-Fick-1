@@ -36,7 +36,7 @@ NonlinearDiffusionOp{
          concentration = "concentration"
     }
     OutputVariable = "concentration"
-    PrincipalVariable = 1   
+    PrincipalVariable = "concentration"   
   
     DiffusionElement{
         name = "DiffusionNonlinearElement"
