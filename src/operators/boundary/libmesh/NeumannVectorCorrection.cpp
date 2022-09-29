@@ -243,7 +243,7 @@ std::shared_ptr<OperatorParameters>
     db->putScalar( "constant_flux", d_isConstantFlux );
     for ( int i = 0; i < (int) d_boundaryIds.size(); i++ ) {
         db->putScalar( stringf( "id_%i", i ), d_boundaryIds[i] );
-        db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds.size() );
+        db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds[i].size() );
         db->putScalar( stringf( "IsCoupledBoundary_%i", i ), d_IsCoupledBoundary[i] );
         for ( int j = 0; j < (int) d_dofIds[i].size(); j++ ) {
             db->putScalar( stringf( "dof_%i_%i", i, j ), d_dofIds[i][j] );

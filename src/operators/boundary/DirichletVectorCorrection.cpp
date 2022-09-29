@@ -187,8 +187,8 @@ std::shared_ptr<OperatorParameters>
     db->putScalar( "number_of_ids", d_boundaryIds.size() );
     for ( int i = 0; i < (int) d_boundaryIds.size(); i++ ) {
         db->putScalar( stringf( "id_%i", i ), d_boundaryIds[i] );
-        db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds.size() );
-        for ( int j = 0; j < (int) d_dofIds.size(); j++ ) {
+        db->putScalar( stringf( "number_of_dofs_%i", i ), d_dofIds[i].size() );
+        for ( int j = 0; j < (int) d_dofIds[i].size(); j++ ) {
             db->putScalar( stringf( "dof_%i_%i", i, j ), d_dofIds[i][j] );
             db->putScalar( stringf( "value_%i_%i", i, j ), d_dirichletValues1[i][j] );
         }
