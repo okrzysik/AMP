@@ -122,7 +122,7 @@ public:
      * returns a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      */
-    inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver( void )
+    inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver( void ) override
     {
         return d_pPreconditioner;
     }

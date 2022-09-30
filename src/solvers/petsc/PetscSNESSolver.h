@@ -143,6 +143,8 @@ public:
      */
     std::shared_ptr<PetscKrylovSolver> getKrylovSolver( void ) { return d_pKrylovSolver; }
 
+    std::shared_ptr<SolverStrategy> getNestedSolver( void ) override { return getKrylovSolver(); }
+
     /**
      * Return a shared pointer to the solution vector
      */
