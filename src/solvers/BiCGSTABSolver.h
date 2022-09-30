@@ -61,6 +61,8 @@ public:
      */
     virtual ~BiCGSTABSolver();
 
+    std::string type() const override { return "BiCGSTABSolver"; }
+
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector

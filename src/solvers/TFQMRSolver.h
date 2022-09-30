@@ -60,6 +60,8 @@ public:
      */
     virtual ~TFQMRSolver() = default;
 
+    std::string type() const override { return "TFQMRSolver"; }
+
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector

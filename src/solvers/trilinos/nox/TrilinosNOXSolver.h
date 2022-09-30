@@ -79,6 +79,8 @@ public:
      */
     virtual ~TrilinosNOXSolver();
 
+    std::string type() const override { return "TrilinosNOXSolver"; }
+
     /**
      * Resets the solver internally with new parameters if necessary
      * @param parameters

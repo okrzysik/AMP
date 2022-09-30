@@ -59,6 +59,8 @@ public:
      */
     virtual ~QMRCGSTABSolver() = default;
 
+    std::string type() const override { return "QMRCGSTABSolver"; }
+
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector

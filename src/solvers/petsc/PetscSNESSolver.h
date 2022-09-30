@@ -106,6 +106,8 @@ public:
      */
     virtual ~PetscSNESSolver();
 
+    std::string type() const override { return "PetscSNESSolver"; }
+
     //! static create routine that is used by SolverFactory
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )

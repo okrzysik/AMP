@@ -62,6 +62,8 @@ public:
      */
     virtual ~GMRESSolver() = default;
 
+    std::string type() const override { return "GMRESSolver"; }
+
     /**
      * Solve the system Au=f.
      * The implementation is based on the paper

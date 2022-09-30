@@ -29,6 +29,8 @@ public:
         return std::make_unique<NonlinearKrylovAccelerator<T>>( solverStrategyParameters );
     }
 
+    std::string type() const override { return "NKASolver"; }
+
     void
     initialize( std::shared_ptr<const AMP::Solver::SolverStrategyParameters> parameters ) override;
 

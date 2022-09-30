@@ -54,6 +54,9 @@ public:
      */
     virtual ~SolverStrategy();
 
+    //! Return the name of the solver
+    virtual std::string type() const = 0;
+
     enum class SolverStatus {
         ConvergedOnAbsTol,
         ConvergedOnRelTol,

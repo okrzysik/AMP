@@ -85,6 +85,7 @@ public:
      */
     virtual ~PetscKrylovSolver();
 
+    std::string type() const override { return "PetscKrylovSolver"; }
 
     //! static create routine that is used by SolverFactory
     static std::unique_ptr<SolverStrategy>

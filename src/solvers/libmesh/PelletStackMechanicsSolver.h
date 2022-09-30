@@ -17,6 +17,8 @@ public:
 
     virtual ~PelletStackMechanicsSolver() {}
 
+    std::string type() const override { return "PelletStackMechanicsSolver"; }
+
     virtual void
     resetOperator( std::shared_ptr<const AMP::Operator::OperatorParameters> params ) override;
 
