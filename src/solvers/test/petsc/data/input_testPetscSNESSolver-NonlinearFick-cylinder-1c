@@ -21,9 +21,9 @@ DiffusionNonlinearFEOperator1 {
       name = "DiffusionNonlinearFEOperator" 
         print_info_level = 0
         ActiveInputVariables {
-          concentration = "conc"
+          concentration = "concentration"
         }
-      OutputVariable = "conc"
+      OutputVariable = "concentration"
         PrincipalVariable = "concentration"
 
         DiffusionElement{
@@ -74,8 +74,8 @@ DiffusionLinearFEOperator2 {
       name = "DiffusionLinearFEOperator"
         print_info_level = 0
         reset_reuses_matrix = TRUE
-        InputVariable = "conc"
-        OutputVariable = "conc"
+        InputVariable = "concentration"
+        OutputVariable = "concentration"
         FixedTemperature = TRUE
         FixedBurnup = TRUE
 

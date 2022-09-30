@@ -16,8 +16,7 @@ public:
     explicit DiffusionNonlinearElement( std::shared_ptr<const ElementOperationParameters> params )
         : DiffusionElement( params ),
           d_elementOutputVector( nullptr ),
-          d_transportOutputVector( nullptr ),
-          d_PrincipalVariable( 0 )
+          d_transportOutputVector( nullptr )
     {
         d_JxW = &( d_fe->get_JxW() );
 
@@ -51,7 +50,7 @@ public:
 
     void initTransportModel();
 
-    void setPrincipalVariable( const unsigned int var ) { d_PrincipalVariable = var; }
+    void setPrincipalVariable( const std::string &var ) { d_PrincipalVariable = var; }
 
     bool getTransportAtGauss() { return d_transportAtGauss; }
 
@@ -66,7 +65,7 @@ protected:
 
     bool d_transportAtGauss;
 
-    unsigned int d_PrincipalVariable;
+    std::string d_PrincipalVariable;
 
 private:
 };

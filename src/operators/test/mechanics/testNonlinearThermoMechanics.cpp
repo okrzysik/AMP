@@ -138,13 +138,12 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto matTh         = transportModel->getMaterial();
     auto thermOperator = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nonlinearThermalOperator->getVolumeOperator() );
-    if ( thermOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
+    if ( thermOperator->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalConductivity";
         if ( ( matTh->property( property ) )->is_argument( "temperature" ) ) {
-            auto range =
-                ( matTh->property( property ) )->get_arg_range( "temperature" ); // Compile error
-            scale[1] = range[1] - range[0];
-            shift[1] = range[0] + 0.001 * scale[1];
+            auto range = matTh->property( property )->get_arg_range( "temperature" );
+            scale[1]   = range[1] - range[0];
+            shift[1]   = range[0] + 0.001 * scale[1];
             scale[1] *= 0.999;
         }
     }
