@@ -1,8 +1,8 @@
 #ifndef included_AMP_BiCGSTABSolver
 #define included_AMP_BiCGSTABSolver
 
-#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 
 
