@@ -3,8 +3,8 @@
 #include <iomanip>
 
 #include "AMP/operators/OperatorFactory.h"
-#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 
 #include "ProfilerApp.h"
 
