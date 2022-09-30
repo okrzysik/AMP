@@ -41,9 +41,9 @@ public:
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> getVariableForDOFMap( unsigned int id );
 
-    unsigned int getPrincipalVariableId();
+    std::string getPrincipalVariable();
 
-    std::vector<unsigned int> getNonPrincipalVariableIds();
+    std::vector<std::string> getNonPrincipalVariableIds();
 
     std::shared_ptr<DiffusionTransportModel> getTransportModel();
 
@@ -108,7 +108,7 @@ private:
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;
 
-    unsigned int d_PrincipalVariable;
+    std::string d_PrincipalVariable;
 
     unsigned int d_numberActive;
 

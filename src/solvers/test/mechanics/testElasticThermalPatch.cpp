@@ -70,7 +70,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         std::dynamic_pointer_cast<AMP::Operator::MechanicsNonlinearFEOperator>(
             nonlinearMechanicsBVPoperator->getVolumeOperator() );
     auto dispVar    = mechanicsNonlinearVolumeOperator->getOutputVariable();
-    auto tempVar    = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto tempVar    = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto tempDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     auto dispDofMap = AMP::Discretization::simpleDOFManager::create(

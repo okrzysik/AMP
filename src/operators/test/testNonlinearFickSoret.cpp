@@ -83,8 +83,8 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     fsOpParams->d_SoretParameters = soretOpParams;
 
     // create vectors for parameters
-    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
-    auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( "conc" );
+    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
+    auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( "concentration" );
     auto bVar = std::make_shared<AMP::LinearAlgebra::Variable>( "burnup" );
 
     // Create a DOF manager for a nodal vector
@@ -125,7 +125,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto matFick  = fickModel->getMaterial();  // compile error
     auto matSoret = soretModel->getMaterial(); // compile error
     // the Soret has a principal variable of temperature
-    if ( soretOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
+    if ( soretOp->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalDiffusionCoefficient";
         if ( ( matSoret->property( property ) )->is_argument( "temperature" ) ) {
             auto range =
@@ -137,7 +137,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     // the fick has a principal variable of oxygen
-    if ( fickOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
+    if ( fickOp->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
         if ( ( matFick->property( property ) )->is_argument( "concentration" ) ) {
             auto range = ( matFick->property( property ) )
@@ -161,10 +161,10 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     fsInpVar->add( bVar );
     auto fsOutVar = fickOp->getOutputVariable();
 
-    std::string msgPrefix = exeName + ": apply ";
-    auto solVec           = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
-    auto rhsVec           = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
-    auto resVec           = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+    auto msgPrefix = exeName + ": apply ";
+    auto solVec    = AMP::LinearAlgebra::createVector( nodalDofMap, fsInpVar );
+    auto rhsVec    = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
+    auto resVec    = AMP::LinearAlgebra::createVector( nodalDofMap, fsOutVar );
 
     // set default values of input variables
     auto inTempVec = solVec->subsetVectorForVariable( tVar );

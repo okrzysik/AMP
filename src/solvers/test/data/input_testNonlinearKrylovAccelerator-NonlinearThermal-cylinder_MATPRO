@@ -22,9 +22,9 @@ BoundaryOperator = "DirichletVectorCorrection1"
    DiffusionNonlinearFEOperator1 {
      name = "DiffusionNonlinearFEOperator" 
      ActiveInputVariables {
-         temperature = "temp"
+         temperature = "temperature"
      }
-     OutputVariable = "temp"
+     OutputVariable = "temperature"
      PrincipalVariable = "temperature" 
 
      DiffusionElement{
@@ -70,8 +70,8 @@ BoundaryOperator = "DirichletMatrixCorrection2"
    DiffusionLinearFEOperator2 {
      name = "DiffusionLinearFEOperator"
      reset_reuses_matrix = TRUE
-     InputVariable = "temp"
-     OutputVariable = "temp"
+     InputVariable = "temperature"
+     OutputVariable = "temperature"
      FixedConcentration = TRUE
      FixedBurnup = TRUE
 

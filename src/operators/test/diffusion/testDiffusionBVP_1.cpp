@@ -93,7 +93,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
     auto mat = transportModel->getMaterial();
-    if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
+    if ( nlinOp->getPrincipalVariable() == "temperature" ) {
         if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
             auto range =
                 ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
@@ -102,7 +102,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
             scale *= 0.999;
         }
     }
-    if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
+    if ( nlinOp->getPrincipalVariable() == "concentration" ) {
         if ( ( mat->property( property ) )->is_argument( "concentration" ) ) {
             auto range =
                 ( mat->property( property ) )->get_arg_range( "concentration" ); // Compile error
@@ -111,7 +111,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
             scale *= 0.999;
         }
     }
-    if ( nlinOp->getPrincipalVariableId() == AMP::Operator::Diffusion::BURNUP ) {
+    if ( nlinOp->getPrincipalVariable() == "burnup" ) {
         AMP_INSIST( false, "do not know what to do" );
     }
 

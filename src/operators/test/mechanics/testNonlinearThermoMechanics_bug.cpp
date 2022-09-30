@@ -134,19 +134,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create the following shared pointers for ease of use
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
-
-    // IMPORTANT:: call init before proceeding any further on the nonlinear mechanics operator
-    //  previous line:
-    //  auto referenceTemperatureVec = meshAdapter->createVector(
-    //  thermalVolumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE) );
-    //  converted line:
-    //  auto referenceTemperatureVec = AMP::LinearAlgebra::createVector( nodalDofMap,
-    //  (thermalVolumeOperator->getInputVariable())->getVariable(AMP::Operator::Diffusion::TEMPERATURE)
-    //  );
-    //  placeholder line till diffusion is converted:
-    auto temperatureVariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
-                                   thermalVolumeOperator->getInputVariable() )
-                                   ->getVariable( AMP::Operator::Diffusion::TEMPERATURE );
+    auto temperatureVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto referenceTemperatureVec =
         AMP::LinearAlgebra::createVector( nodalDofMap, temperatureVariable );
     referenceTemperatureVec->setToScalar( 300.0 );

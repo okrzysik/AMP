@@ -8,9 +8,9 @@ const unsigned int DISPLACEMENT =
 const unsigned int TEMPERATURE =
     1; /**<  Global constant used to identify temperature variables within mechanics operators. */
 const unsigned int BURNUP =
-    2; /**< Global constant used to indentify burnup variables within mechanics operators. */
+    2; /**< Global constant used to identify burnup variables within mechanics operators. */
 const unsigned int OXYGEN_CONCENTRATION =
-    3; /**< Global constant used to indentify oxygen concentration variables within mechanics
+    3; /**< Global constant used to identify oxygen concentration variables within mechanics
           operators. */
 const unsigned int LHGR = 4; /**< Global constant used to identify Linear Heat Generation Rate
                                 variable within mechanics operators

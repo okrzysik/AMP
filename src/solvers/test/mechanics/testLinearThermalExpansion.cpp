@@ -48,7 +48,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::pout << "Constructed BVP operator" << std::endl;
 
     auto dispVar = bvpOperator->getOutputVariable();
-    auto tempVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto tempVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
 
     auto tempDofMap = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );

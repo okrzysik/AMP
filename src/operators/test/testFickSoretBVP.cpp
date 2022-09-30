@@ -80,35 +80,31 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::vector<double> defaults( 2, 0 );
     auto fmat = fickTransportModel->getMaterial();
     // the Soret has a principal variable of temperature
-    if ( soretOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
+    if ( soretOp->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalDiffusionCoefficient";
-        if ( ( fmat->property( property ) )->is_argument( "temperature" ) ) {
-            auto trange = ( fmat->property( property ) )->get_arg_range( "temperature" );
+        if ( fmat->property( property )->is_argument( "temperature" ) ) {
+            auto trange = fmat->property( property )->get_arg_range( "temperature" );
             scale[1]    = trange[1] - trange[0];
             shift[1]    = trange[0] + 0.001 * scale[1];
             scale[1] *= 0.999;
-            defaults = ( fmat->property( property ) )->get_defaults();
+            defaults = fmat->property( property )->get_defaults();
         }
     }
     // the Fick has a principal variable of temperature
-    if ( fickOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
+    if ( fickOp->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
-        if ( ( fmat->property( property ) )->is_argument( "concentration" ) ) {
-            auto crange = ( fmat->property( property ) )->get_arg_range( "concentration" );
+        if ( fmat->property( property )->is_argument( "concentration" ) ) {
+            auto crange = fmat->property( property )->get_arg_range( "concentration" );
             scale[0]    = crange[1] - crange[0];
             shift[0]    = crange[0] + 0.001 * scale[0];
             scale[0] *= 0.999;
-            defaults = ( fmat->property( property ) )->get_defaults();
+            defaults = fmat->property( property )->get_defaults();
         }
     }
 
     // Set up input and output vectors
-    auto cVar =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( fickOp->getInputVariable() )
-            ->getVariable( AMP::Operator::Diffusion::CONCENTRATION );
-    auto tVar =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( soretOp->getInputVariable() )
-            ->getVariable( AMP::Operator::Diffusion::TEMPERATURE );
+    auto cVar     = std::make_shared<AMP::LinearAlgebra::Variable>( "concentration" );
+    auto tVar     = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto fsInpVar = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "fsInput" );
     fsInpVar->add( cVar );
     fsInpVar->add( tVar );

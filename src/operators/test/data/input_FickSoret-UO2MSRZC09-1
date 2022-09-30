@@ -19,10 +19,10 @@ FickDiffusionNonlinearFEOperator{
 
     print_info_level = 1    
     ActiveInputVariables {
-         concentration = "conc"
-         temperature = "temp"
+         concentration = "concentration"
+         temperature = "temperature"
     }
-    OutputVariable = "conc"
+    OutputVariable = "concentration"
     PrincipalVariable = "concentration"   
   
     DiffusionElement{
@@ -42,10 +42,10 @@ SoretDiffusionNonlinearFEOperator{
 
     print_info_level = 1    
     ActiveInputVariables {
-         concentration = "conc"
-         temperature = "temp"
+         concentration = "concentration"
+         temperature = "temperature"
     }
-    OutputVariable = "conc"
+    OutputVariable = "concentration"
     PrincipalVariable = "temperature" 
   
     DiffusionElement{
