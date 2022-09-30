@@ -464,7 +464,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     }
 
     // Call the preconditioner
-    auto preconditioner = solver->getPreconditioner();
+    auto preconditioner = solver->getNestedSolver();
     if ( preconditioner != nullptr ) {
         preconditioner->apply( sp_r, sp_z );
     } else {

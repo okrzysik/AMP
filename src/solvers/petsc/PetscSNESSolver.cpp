@@ -345,7 +345,7 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
                         "ERROR: The LinearOperator pointer in the PetscKrylovSolver is NULL" );
         }
     }
-    auto pcSolver  = d_pKrylovSolver->getPreconditioner();
+    auto pcSolver  = d_pKrylovSolver->getNestedSolver();
     Mat PCJacobian = d_Jacobian;
     std::shared_ptr<AMP::LinearAlgebra::PetscMatrix> view2;
     if ( pcSolver ) {
@@ -932,7 +932,7 @@ PetscErrorCode PetscSNESSolver::setupPreconditioner( PC pc )
     auto krylovSolver = snesSolver->getKrylovSolver();
     AMP_ASSERT( krylovSolver );
 
-    auto preconditioner = krylovSolver->getPreconditioner();
+    auto preconditioner = krylovSolver->getNestedSolver();
     AMP_ASSERT( preconditioner );
 
     auto pcOperator = preconditioner->getOperator();
@@ -956,7 +956,7 @@ PetscErrorCode PetscSNESSolver::applyPreconditioner( PC pc,
     AMP_ASSERT( snesSolver );
     auto krylovSolver = snesSolver->getKrylovSolver();
     AMP_ASSERT( krylovSolver );
-    auto preconditioner = krylovSolver->getPreconditioner();
+    auto preconditioner = krylovSolver->getNestedSolver();
     AMP_ASSERT( preconditioner );
 
     AMP_ASSERT( xin );

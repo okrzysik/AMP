@@ -127,6 +127,12 @@ public:
     virtual void setNestedSolver( std::shared_ptr<SolverStrategy> ) {}
 
     /**
+     * Return a nested solver (eg preconditioner) if it exists. By default return a nullptr
+     */
+
+    virtual std::shared_ptr<SolverStrategy> getNestedSolver( void ) { return nullptr; }
+
+    /**
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator \f$A()\f$ for equation \f$A(u) = f\f$
      */

@@ -76,15 +76,6 @@ public:
     void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     /**
-     * returns a shared pointer to a preconditioner object. The preconditioner is derived from
-     * a SolverStrategy class
-     */
-    inline std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
-    {
-        return d_pPreconditioner;
-    }
-
-    /**
      * sets a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      * @param pc shared pointer to preconditioner
@@ -92,6 +83,11 @@ public:
     inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
         d_pPreconditioner = pc;
+    }
+
+    inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver() override
+    {
+        return d_pPreconditioner;
     }
 
     /**
