@@ -20,6 +20,7 @@
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
