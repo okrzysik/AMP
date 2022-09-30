@@ -230,8 +230,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     time_Params->d_pMassOperator = massOperator;
     // time_Params->d_pMassOperator = massLinearOperator;
-    time_Params->d_operator      = nonlinearOperator;
-    time_Params->d_pNestedSolver = pcSolver;
+    time_Params->d_operator        = nonlinearOperator;
+    time_Params->d_pPreconditioner = pcSolver;
 
     time_Params->d_ic_vector       = initialCondition;
     time_Params->d_ic_vector_prime = initialConditionPrime;
