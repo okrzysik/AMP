@@ -1,7 +1,7 @@
 #ifndef included_AMP_CGSolver
 #define included_AMP_CGSolver
 
-#include "AMP/solvers/KrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/AMP_MPI.h"
 
