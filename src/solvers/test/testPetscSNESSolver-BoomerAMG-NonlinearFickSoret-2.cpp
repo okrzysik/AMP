@@ -88,7 +88,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         meshAdapter, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
-    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto cVar( fickOp->getOutputVariable() );
     auto fsOutVar = nlinBVPOp->getOutputVariable();
 
@@ -107,7 +107,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     auto soretFrozen = soretOp->getFrozen();
 
     double lenscale = input_db->getDouble( "LengthScale" );
-    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar( 300. );
+    soretFrozen["temperature"]->setToScalar( 300. );
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y;
@@ -118,8 +118,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
         nodalDofMap->getDOFs( iterator->globalID(), gid );
         double value =
             300. + 450 * ( 1. - ( x * x / lenscale / lenscale + y * y / lenscale / lenscale ) );
-        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID( gid[0], value );
-        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValueByGlobalID( gid[0], value );
+        fickFrozen["temperature"]->setValueByGlobalID( gid[0], value );
+        soretFrozen["temperature"]->setValueByGlobalID( gid[0], value );
     }
 
     // Initial guess
@@ -201,8 +201,7 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
             node++;
         }
         AMP_INSIST( node == nnodes, "invalid count" );
-        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->getValuesByGlobalID(
-            nnodes, &gids[0], &temp[0] );
+        fickFrozen["temperature"]->getValuesByGlobalID( nnodes, &gids[0], &temp[0] );
         solVec->getValuesByGlobalID( nnodes, &gids[0], &conc[0] );
         // This is kevin - i found out because the vector wasn't used when silo is not enabled.
         std::map<std::string, std::shared_ptr<std::vector<double>>> args;
@@ -223,10 +222,8 @@ void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<double> 
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->registerVector( fickFrozen[AMP::Operator::Diffusion::TEMPERATURE],
-                                meshAdapter,
-                                AMP::Mesh::GeomType::Vertex,
-                                "Temperature" );
+    siloWriter->registerVector(
+        fickFrozen["temperature"], meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
     siloWriter->registerVector(
         fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
     siloWriter->registerVector(

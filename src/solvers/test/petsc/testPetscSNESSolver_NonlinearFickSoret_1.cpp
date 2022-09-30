@@ -199,7 +199,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
         meshAdapter, "testLinearFickBVPOperator", input_db, elementPhysicsModel );
     auto linBVPOp = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linBVPOperator );
 
-    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto tVar = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto cVar = std::make_shared<AMP::LinearAlgebra::Variable>( *fickOp->getOutputVariable() );
     auto fsOutVar =
         std::make_shared<AMP::LinearAlgebra::Variable>( *nlinBVPOp->getOutputVariable() );

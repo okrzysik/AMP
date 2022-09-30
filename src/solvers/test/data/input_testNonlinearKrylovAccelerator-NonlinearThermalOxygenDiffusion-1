@@ -46,10 +46,10 @@ testNonlinearThermalOperator {
 DiffusionNonlinearFEOperator1 {
   name = "DiffusionNonlinearFEOperator" 
     ActiveInputVariables {
-      temperature = "temp"
+      temperature = "temperature"
         concentration = "concentration"
     }
-  OutputVariable = "temp"
+  OutputVariable = "temperature"
     PrincipalVariable = "temperature" 
 
     DiffusionElement{
@@ -93,8 +93,8 @@ testLinearThermalOperator {
 DiffusionLinearFEOperator2 {
   name = "DiffusionLinearFEOperator"
     reset_reuses_matrix = TRUE
-    InputVariable = "temp"
-    OutputVariable = "temp"
+    InputVariable = "temperature"
+    OutputVariable = "temperature"
     FixedConcentration = TRUE
     FixedBurnup = TRUE
 
@@ -138,7 +138,7 @@ testNonlinearOxygenOperator {
 DiffusionNonlinearFEOperator3 {
   name = "DiffusionNonlinearFEOperator" 
     ActiveInputVariables {
-      temperature = "temp"
+      temperature = "temperature"
         concentration = "concentration"
     }
   OutputVariable = "concentration"

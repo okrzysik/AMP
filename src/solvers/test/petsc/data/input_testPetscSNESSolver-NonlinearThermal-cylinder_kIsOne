@@ -23,9 +23,9 @@ DiffusionNonlinearFEOperator1 {
   name = "DiffusionNonlinearFEOperator" 
     print_info_level = 1
     ActiveInputVariables {
-      temperature = "temp"
+      temperature = "temperature"
     }
-  OutputVariable = "temp"
+  OutputVariable = "temperature"
     PrincipalVariable = "temperature" 
 
     DiffusionElement{
@@ -75,8 +75,8 @@ DiffusionLinearFEOperator2 {
   name = "DiffusionLinearFEOperator"
     print_info_level = 1
     reset_reuses_matrix = TRUE
-    InputVariable = "temp"
-    OutputVariable = "temp"
+    InputVariable = "temperature"
+    OutputVariable = "temperature"
     FixedConcentration = TRUE
     FixedBurnup = TRUE
 

@@ -63,7 +63,7 @@ static void myTest( AMP::UnitTest *ut )
             nonlinBvpOperator->getVolumeOperator() );
     auto elementPhysicsModel = nonlinearMechanicsVolumeOperator->getMaterialModel();
 
-    auto temperatureVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "temp" );
+    auto temperatureVariable  = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto displacementVariable = nonlinBvpOperator->getOutputVariable();
 
     auto tempDofMap = AMP::Discretization::simpleDOFManager::create(
