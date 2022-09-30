@@ -97,8 +97,8 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> vecs;
 
-    for ( const auto &name : d_vector_names ) {
-        auto vec = d_solution_vector->cloneVector( name );
+    for ( size_t i = 0u; i < d_vector_names.size(); ++i ) {
+        auto vec = d_solution_vector->cloneVector();
         vec->zero();
         vecs.push_back( vec );
     }
@@ -145,7 +145,7 @@ void BDFIntegrator::integratorSpecificInitialize( void )
         }
     }
 
-    d_scratch_vector = d_solution_vector->cloneVector( "ScratchVector" );
+    d_scratch_vector = d_solution_vector->cloneVector();
     d_scratch_vector->zero();
 
     auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
@@ -1559,7 +1559,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
         double errorFactor = 0.0;
 
         if ( d_scratch_vector.get() == nullptr ) {
-            d_scratch_vector = d_solution_vector->cloneVector( "scratchVector" );
+            d_scratch_vector = d_solution_vector->cloneVector();
         }
 
         // debugging
@@ -1916,7 +1916,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
-    auto rhs = in->cloneVector( "RHS" );
+    auto rhs = in->cloneVector();
     rhs->scale( -1.0, *d_integrator_source_vector );
     d_solver->apply( rhs, d_solution_vector );
     d_solver_retcode = d_solver->getConvergenceStatus();
