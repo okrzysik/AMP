@@ -31,7 +31,7 @@ public:
        Constructor. This function reads all the parameters required for surface elements.
        This also constructs new NeumannVectorCorrection parameters and calls it reset.
     */
-    explicit RobinMatrixCorrection( std::shared_ptr<const RobinMatrixCorrectionParameters> params );
+    explicit RobinMatrixCorrection( std::shared_ptr<const OperatorParameters> params );
 
     /**
        Set the variable for the vector that will used with this operator.
@@ -66,10 +66,7 @@ public:
     /**
        Adds a Neumann Correction Vector to the RHS vector.
     */
-    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override
-    {
-        d_NeumannCorrection->addRHScorrection( rhs );
-    }
+    void addRHScorrection( AMP::LinearAlgebra::Vector::shared_ptr rhs ) override;
 
 
 protected:

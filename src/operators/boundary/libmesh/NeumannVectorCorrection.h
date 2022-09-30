@@ -26,8 +26,7 @@ class NeumannVectorCorrection : public BoundaryOperator
 {
 public:
     //! Constructor. This function reads all the parameters required for surface elements.
-    explicit NeumannVectorCorrection(
-        std::shared_ptr<const NeumannVectorCorrectionParameters> params );
+    explicit NeumannVectorCorrection( std::shared_ptr<const OperatorParameters> params );
 
     /**
       Set the variable for the vector that will used with this operator.
@@ -116,10 +115,6 @@ protected:
 
     std::vector<bool> d_IsCoupledBoundary;
     bool d_isFluxGaussPtVector;
-
-    int d_numBndIds;
-
-    std::vector<short int> d_numDofIds;
 
     std::shared_ptr<const NeumannVectorCorrectionParameters> d_params;
 

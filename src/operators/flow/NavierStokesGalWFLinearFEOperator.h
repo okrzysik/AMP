@@ -33,10 +33,6 @@ public:
 
     unsigned int numberOfDOFMaps() { return 1; }
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getVariableForDOFMap( unsigned int )
-    {
-        return d_inputVariable;
-    }
 
 protected:
     void gettype0DofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );

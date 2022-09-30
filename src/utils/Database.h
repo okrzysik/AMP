@@ -285,7 +285,8 @@ public:
     template<class TYPE>
     TYPE getWithDefault( std::string_view key,
                          typename IdentityType<const TYPE &>::type value,
-                         const Units &unit = Units() ) const;
+                         const Units &unit   = Units(),
+                         source_location src = source_location::current() ) const;
 
 
     /**

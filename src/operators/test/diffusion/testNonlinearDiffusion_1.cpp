@@ -92,9 +92,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Operator::DiffusionNonlinearFEOperatorParameters>( diffFEOp_db );
 
     // nullify vectors in parameters
-    diffOpParams->d_FrozenTemperature.reset();
-    diffOpParams->d_FrozenConcentration.reset();
-    diffOpParams->d_FrozenBurnup.reset();
+    diffOpParams->d_FrozenVecs.clear();
 
     // create vectors for parameters
     auto active_db = diffFEOp_db->getDatabase( "ActiveInputVariables" );
@@ -124,7 +122,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     double shift = 0., scale = 1.;
     auto mat = transportModel->getMaterial();
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
-        diffOpParams->d_FrozenTemperature = tVec;
+        diffOpParams->d_FrozenVecs["temperature"] = tVec;
         if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
             auto range =
                 ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
@@ -134,7 +132,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
-        diffOpParams->d_FrozenConcentration = cVec;
+        diffOpParams->d_FrozenVecs["concentration"] = cVec;
         if ( ( mat->property( property ) )->is_argument( "concentration" ) ) {
             auto range =
                 ( mat->property( property ) )->get_arg_range( "concentration" ); // Compile error
@@ -149,11 +147,11 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // set frozen vectors in parameters
     if ( diffFEOp_db->getWithDefault<bool>( "Freezetemperature", false ) )
-        diffOpParams->d_FrozenTemperature = tVec;
+        diffOpParams->d_FrozenVecs["temperature"] = tVec;
     if ( diffFEOp_db->getWithDefault<bool>( "Freezeconcentration", false ) )
-        diffOpParams->d_FrozenConcentration = cVec;
+        diffOpParams->d_FrozenVecs["concentration"] = cVec;
     if ( diffFEOp_db->getWithDefault<bool>( "Freezeburnup", false ) )
-        diffOpParams->d_FrozenBurnup = bVec;
+        diffOpParams->d_FrozenVecs["burnup"] = bVec;
 
     // set transport model
     diffOpParams->d_transportModel = transportModel;

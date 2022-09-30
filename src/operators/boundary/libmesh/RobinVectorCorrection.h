@@ -31,8 +31,7 @@ public:
       conditions. Since it is derived from NeumannVectorCorrection, its constructor
       will be called to read the required parameters.
       */
-    explicit RobinVectorCorrection(
-        std::shared_ptr<const NeumannVectorCorrectionParameters> params );
+    explicit RobinVectorCorrection( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~RobinVectorCorrection() {}
 

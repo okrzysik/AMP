@@ -215,8 +215,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto tVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tVar, true );
     tVec->setToScalar( 300. );
 
-    fickOp->setVector( 0, tVec );
-    soretOp->setVector( 0, tVec );
+    fickOp->setVector( "temperature", tVec );
+    soretOp->setVector( "temperature", tVec );
 
     // Initial guess
 

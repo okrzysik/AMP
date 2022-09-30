@@ -158,9 +158,8 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     sourceOperator->apply( SpecificPowerVec, powerInWattsVec );
 
     // set initial conditions, initialize created vectors
-    int zeroGhostWidth = 0;
-    auto node          = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    auto end_node      = node.end();
+    auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    auto end_node = node.end();
 
     AMP::LinearAlgebra::VS_Mesh vectorSelector( meshAdapter );
     auto thermalIC = initialCondition->select( vectorSelector, outputVar->getName() );
@@ -207,7 +206,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     auto columnPreconditioner_db = ida_db->getDatabase( "Preconditioner" );
     auto columnPreconditionerParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( columnPreconditioner_db );
-    if ( columnPreconditionerParams.get() == nullptr ) {
+    if ( !columnPreconditionerParams ) {
         ut->failure( "Testing SolverStrategyParameters's constructor: FAIL" );
     } else {
         ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
@@ -226,7 +225,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
     columnPreconditioner->append( linearThermalPreconditioner );
 
-    if ( columnPreconditioner.get() == nullptr ) {
+    if ( !columnPreconditioner ) {
         ut->failure( "Testing column preconditioner's constructor: FAIL" );
     } else {
         ut->passes( "Testing column preconditioner's constructor: PASS" );
@@ -235,7 +234,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
     // create the IDA time integrator
     auto time_Params = std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );
 
-    if ( ( time_Params.get() ) == nullptr ) {
+    if ( !time_Params ) {
         ut->failure( "Testing IDATimeIntegratorParameters' Constructor" );
     } else {
         ut->passes( "Testing IDATimeIntegratorParameters' Constructor" );

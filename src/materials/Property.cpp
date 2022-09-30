@@ -160,6 +160,19 @@ std::unique_ptr<Property> createProperty( const std::string &key, const Database
 }
 
 
+/************************************************************************
+ *  Get default value                                                    *
+ ************************************************************************/
+double Property::get_default( const std::string &name ) const
+{
+    for ( size_t i = 0; i < d_arguments.size(); i++ ) {
+        if ( name == d_arguments[i] )
+            return d_defaults[i];
+    }
+    return std::numeric_limits<double>::quiet_NaN();
+}
+
+
 } // namespace AMP::Materials
 
 

@@ -39,7 +39,7 @@ NonlinearDiffusionOp{
     }
     OutputVariable = "concentration"
     Freezetemperature = TRUE
-    PrincipalVariable = 1   
+    PrincipalVariable = "concentration"   
   
     DiffusionElement{
         name = "DiffusionNonlinearElement"

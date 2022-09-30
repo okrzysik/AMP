@@ -50,7 +50,7 @@ DiffusionNonlinearFEOperator1 {
         concentration = "concentration"
     }
   OutputVariable = "temp"
-    PrincipalVariable = 0 
+    PrincipalVariable = "temperature" 
 
     DiffusionElement{
       name = "DiffusionNonlinearElement"
@@ -143,7 +143,7 @@ DiffusionNonlinearFEOperator3 {
     }
   OutputVariable = "concentration"
 
-    PrincipalVariable = 1 
+    PrincipalVariable = "concentration" 
 
     DiffusionElement{
       name = "DiffusionNonlinearElement"

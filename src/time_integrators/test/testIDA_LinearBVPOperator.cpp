@@ -124,8 +124,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto f                     = AMP::LinearAlgebra::createVector( nodalDofMap, outputVar );
 
         // set initial conditions, initialize created vectors
-        int zeroGhostWidth = 0;
-        auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+        auto node     = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
         auto end_node = node.end();
 
         // int counter=0;
@@ -162,7 +161,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto pcSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( pcSolver_db );
 
-        if ( pcSolverParams.get() == nullptr ) {
+        if ( !pcSolverParams ) {
             ut->failure( "Testing SolverStrategyParameters's constructor: FAIL" );
         } else {
             ut->passes( "Testing SolverStrategyParameters's constructor: PASS" );
@@ -170,7 +169,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
 
         auto pcSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( pcSolverParams );
 
-        if ( pcSolver.get() == nullptr ) {
+        if ( !pcSolver ) {
             ut->failure( "Testing TrilinosMLSolver's constructor: FAIL" );
         } else {
             ut->passes( "Testing TrilinosMLSolver's constructor: PASS" );
@@ -180,7 +179,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto time_Params =
             std::make_shared<AMP::TimeIntegrator::IDATimeIntegratorParameters>( ida_db );
 
-        if ( ( time_Params.get() ) == nullptr ) {
+        if ( !time_Params ) {
             ut->failure( "Testing IDATimeIntegratorParameters' Constructor" );
         } else {
             ut->passes( "Testing IDATimeIntegratorParameters' Constructor" );
@@ -201,7 +200,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         auto pIDATimeIntegrator =
             std::make_shared<AMP::TimeIntegrator::IDATimeIntegrator>( time_Params );
 
-        if ( pIDATimeIntegrator.get() == nullptr ) {
+        if ( !pIDATimeIntegrator ) {
             ut->failure( "Testing IDATimeIntegrator's constructor" );
         } else {
             ut->passes( "Tested IDATimeIntegrator's constructor" );

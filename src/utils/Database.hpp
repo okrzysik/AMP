@@ -501,7 +501,8 @@ Database::getVector( std::string_view key, const Units &unit, source_location sr
 template<class TYPE>
 TYPE Database::getWithDefault( std::string_view key,
                                const typename IdentityType<const TYPE &>::type value,
-                               const Units &unit ) const
+                               const Units &unit,
+                               source_location src ) const
 {
     // Check if the key exists and return if it does not
     auto keyData = getData( key );
@@ -509,11 +510,11 @@ TYPE Database::getWithDefault( std::string_view key,
         return value;
     // Call the appropriate getScalar/getArray/getVector function
     if constexpr ( is_vector<TYPE>::value ) {
-        return getVector<typename TYPE::value_type>( key, unit );
+        return getVector<typename TYPE::value_type>( key, unit, src );
     } else if constexpr ( is_Array<TYPE>::value ) {
-        return getArray<typename TYPE::value_type>( key, unit );
+        return getArray<typename TYPE::value_type>( key, unit, src );
     } else {
-        return getScalar<TYPE>( key, unit );
+        return getScalar<TYPE>( key, unit, src );
     }
 }
 

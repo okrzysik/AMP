@@ -23,15 +23,9 @@ public:
 
     std::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    AMP::LinearAlgebra::Vector::shared_ptr d_FrozenTemperature;
-
-    AMP::LinearAlgebra::Vector::shared_ptr d_FrozenConcentration;
-
-    AMP::LinearAlgebra::Vector::shared_ptr d_FrozenBurnup;
-
-protected:
-private:
+    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> d_FrozenVecs;
 };
+
 } // namespace AMP::Operator
 
 #endif

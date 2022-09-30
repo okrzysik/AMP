@@ -80,6 +80,9 @@ public:
     //! Return the number of arguments to eval
     inline size_t get_number_arguments() const { return d_arguments.size(); }
 
+    //! Get the default for the given argument (NaN if it is an invalid argument)
+    double get_default( const std::string &name ) const;
+
     //! Get the defaults
     inline const std::vector<double> &get_defaults() const { return d_defaults; }
 

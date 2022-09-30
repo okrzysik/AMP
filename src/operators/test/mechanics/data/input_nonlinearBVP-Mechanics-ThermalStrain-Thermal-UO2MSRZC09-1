@@ -147,7 +147,7 @@ ThermalDiffusionNonlinearFEOperator{
     ActiveInputVariables { 
       temperature="temperature"
     }
-  PrincipalVariable = 0
+  PrincipalVariable = "temperature"
 
     LocalModel = "ThermalDiffusionTransportModel"
 

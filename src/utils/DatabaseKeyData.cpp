@@ -503,14 +503,20 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
 #define instantiatePutArray( TYPE )         \
     template void Database::putArray<TYPE>( \
         std::string_view, Array<TYPE>, Units, Check, source_location )
-#define instantiateGetWithDefault( TYPE )                                                          \
-    template TYPE Database::getWithDefault<TYPE>(                                                  \
-        std::string_view, Database::IdentityType<TYPE const &>::type, const Units & ) const;       \
-    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                        \
-        std::string_view, Database::IdentityType<std::vector<TYPE> const &>::type, const Units & ) \
-        const;                                                                                     \
-    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                                    \
-        std::string_view, Database::IdentityType<Array<TYPE> const &>::type, const Units & ) const
+#define instantiateGetWithDefault( TYPE )                                                    \
+    template TYPE Database::getWithDefault<TYPE>(                                            \
+        std::string_view, IdentityType<TYPE const &>::type, const Units &, source_location ) \
+        const;                                                                               \
+    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                  \
+        std::string_view,                                                                    \
+        IdentityType<std::vector<TYPE> const &>::type,                                       \
+        const Units &,                                                                       \
+        source_location ) const;                                                             \
+    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                              \
+        std::string_view,                                                                    \
+        IdentityType<Array<TYPE> const &>::type,                                             \
+        const Units &,                                                                       \
+        source_location ) const
 
 instantiate( instantiateConvert );        // convert
 instantiate( instantiateScaleData );      // scaleData

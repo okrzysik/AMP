@@ -3,12 +3,16 @@
 #define included_AMP_ColumnBoundaryOperator
 
 #include "AMP/operators/ColumnOperatorParameters.h"
+#include "AMP/operators/boundary/BoundaryOperator.h"
 #include "AMP/vectors/Vector.h"
-#include "BoundaryOperator.h"
 
 #include <vector>
 
 namespace AMP::Operator {
+
+
+typedef ColumnOperatorParameters ColumnBoundaryOperatorParameters;
+
 
 /**
   A class for representing a composite boundary operator, F=(F1, F2, F3, .., Fk),
@@ -17,17 +21,11 @@ namespace AMP::Operator {
   boundary
   conditions for a volume operator over the boundary
   */
-
-typedef ColumnOperatorParameters ColumnBoundaryOperatorParameters;
-
 class ColumnBoundaryOperator : public BoundaryOperator
 {
 
 public:
-    explicit ColumnBoundaryOperator( std::shared_ptr<const OperatorParameters> params )
-        : BoundaryOperator( params )
-    {
-    }
+    explicit ColumnBoundaryOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~ColumnBoundaryOperator() {}
 
@@ -44,8 +42,7 @@ public:
     void reset( std::shared_ptr<const OperatorParameters> params ) override;
 
     /**
-     * \param op
-     *            shared pointer to an operator to append to the existing column of operators
+     * \param op    shared pointer to an operator to append to the existing column of operators
      */
     virtual void append( std::shared_ptr<BoundaryOperator> op );
 

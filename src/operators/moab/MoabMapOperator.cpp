@@ -193,9 +193,8 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vecto
     auto fe_ptr = volIntOp->getSourceElement()->getFEBase();
 
     // Extract coordinates of each Gauss point
-    unsigned int zeroGhostWidth = 0;
-    auto elem                   = mesh->getIterator( AMP::Mesh::GeomType::Cell, zeroGhostWidth );
-    int gp_ctr                  = 0;
+    auto elem  = mesh->getIterator( AMP::Mesh::GeomType::Cell, 0 );
+    int gp_ctr = 0;
     for ( ; elem != elem.end(); ++elem ) {
         std::vector<AMP::Mesh::MeshElement> currNodes;
         currNodes = elem->getElements( AMP::Mesh::GeomType::Vertex );
@@ -251,9 +250,8 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vec
     double m_to_cm = 100.0;
 
     // Extract coordinates of each node
-    unsigned int zeroGhostWidth = 0;
-    auto node                   = mesh->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
-    int node_ctr                = 0;
+    auto node    = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
+    int node_ctr = 0;
     for ( ; node != node.end(); ++node ) {
         xyz[3 * node_ctr]     = ( node->coord() )[0] * m_to_cm;
         xyz[3 * node_ctr + 1] = ( node->coord() )[1] * m_to_cm;

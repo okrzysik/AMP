@@ -61,7 +61,7 @@ DiffusionNonlinearFEOperator {
         }
         Freezeconcentration = FALSE
         Freezeburnup = FALSE
-        PrincipalVariable = 0
+        PrincipalVariable = "temperature"
 	OutputVariable = "woohoo"
 }
 
@@ -81,7 +81,7 @@ TempOperator_1 {
         }
         Freezeconcentration = FALSE
         Freezeburnup = FALSE
-        PrincipalVariable = 0
+        PrincipalVariable = "temperature"
         OutputVariable = "woohoo"
 }
 
@@ -93,7 +93,7 @@ TempOperator_2 {
         }
         Freezeconcentration = FALSE
         Freezeburnup = FALSE
-        PrincipalVariable = 0
+        PrincipalVariable = "temperature"
         OutputVariable = "woohoo"
 }
 

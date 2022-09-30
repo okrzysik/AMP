@@ -11,19 +11,22 @@
 namespace AMP::Operator {
 
 
-LinearFEOperator::LinearFEOperator( std::shared_ptr<const LinearFEOperatorParameters> params )
-    : LinearOperator( params ),
+LinearFEOperator::LinearFEOperator( std::shared_ptr<const OperatorParameters> inParams )
+    : LinearOperator( inParams ),
       d_currElemPtr( nullptr ),
-      d_elemOp( params->d_elemOp ),
-      d_inDofMap( params->d_inDofMap ),
-      d_outDofMap( params->d_outDofMap )
+      d_elemOp( nullptr ),
+      d_inDofMap( nullptr ),
+      d_outDofMap( nullptr )
 {
-    if ( d_inDofMap == nullptr ) {
+    auto params = std::dynamic_pointer_cast<const LinearFEOperatorParameters>( inParams );
+    AMP_ASSERT( params );
+    d_elemOp    = params->d_elemOp;
+    d_inDofMap  = params->d_inDofMap;
+    d_outDofMap = params->d_outDofMap;
+    if ( !d_inDofMap )
         d_inDofMap = d_outDofMap;
-    }
-    if ( d_outDofMap == nullptr ) {
+    if ( !d_outDofMap )
         d_outDofMap = d_inDofMap;
-    }
 }
 
 
@@ -35,7 +38,7 @@ void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 
     const bool reuse_matrix = params->d_db->getWithDefault<bool>( "reset_reuses_matrix", true );
 
-    if ( ( d_matrix.get() == nullptr ) || ( !reuse_matrix ) ) {
+    if ( !d_matrix || !reuse_matrix ) {
         auto inVec  = AMP::LinearAlgebra::createVector( d_inDofMap, getInputVariable(), true );
         auto outVec = AMP::LinearAlgebra::createVector( d_outDofMap, getOutputVariable(), true );
         d_matrix    = AMP::LinearAlgebra::createMatrix( inVec, outVec );

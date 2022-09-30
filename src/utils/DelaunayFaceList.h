@@ -2,6 +2,7 @@
 #define included_AMP_DelaunayFaceList
 
 #include <array>
+#include <cstdint>
 #include <stdint.h>
 #include <stdlib.h>
 #include <vector>
@@ -37,22 +38,14 @@ public:
     FaceList(
         const int N, const Point *x, const int tri_id, const Triangle &tri, const TYPE TOL_VOL );
 
-    //! Empty destructor.
-    ~FaceList();
-
     //! Function to get the number of faces on the convex hull
-    int get_N_face() { return N_face; }
+    int get_N_face() { return data.size(); }
 
     /*! @brief  Function to add a node to the convex hull
      *  @details  This function will add a new node to the convex hull.  In the process of
      *     of adding the node, some faces will be removed, new faces will be added,
      *     and new triangles will be generated.  This function will return the new triangles
      *     which must be added.  Note: the new triangles are not necessarilly Delaunay.
-     *     This function returns the number of new triangles if successful, 0 if the node
-     *     is inside the convex hull, and an error code for all other errors.
-     *  Error codes:
-     *     -1 - Invalid triangle created (eg. the triangle is flat in 3d or a line in 2D)
-     *     -2 - All other errors
      * @param[in] node_id       The vertex index to add
      * @param[in,out] unused    A list of unused triangle ids
      * @param[in,out] N_tri     The number of triangles
@@ -64,14 +57,14 @@ public:
      * @param[out] face_id      The list of existing triangle faces that are neighbors to the
      * new triangles
      */
-    int add_node( const int node_id,
-                  std::vector<size_t> &unused,
-                  size_t &N_tri,
-                  unsigned int *new_tri_id,
-                  Triangle *new_tri,
-                  Triangle *new_tri_nab,
-                  int *neighbor,
-                  int *face_id );
+    void add_node( const int node_id,
+                   std::vector<size_t> &unused,
+                   size_t &N_tri,
+                   std::vector<uint32_t> &new_tri_id,
+                   std::vector<Triangle> &new_tri,
+                   std::vector<Triangle> &new_tri_nab,
+                   std::vector<int> &neighbor,
+                   std::vector<int> &face_id );
 
 
     //! Function to update faces on the convex hull
@@ -106,25 +99,21 @@ private:
 
     // Structure to store face information
     struct face_data_struct {
-        int prev;
-        int next;
-        int tri_id;      // Triangle id
-        int face_id;     // Face id
-        int index[NDIM]; // Indicies of the face vertices
-        Point x[NDIM];   // Coordinates of the face vertices
-        // Function to reset data to a NULL state
-        void reset();
+        int prev        = -1;
+        int next        = -1;
+        int tri_id      = -1;        // Triangle id
+        int face_id     = -1;        // Face id
+        int index[NDIM] = { -1 };    // Indicies of the face vertices
+        Point x[NDIM]   = { { 0 } }; // Coordinates of the face vertices
     };
 
     // Data members
-    const int Nx; // The number of vertices
-    int N_face;   // The number of faces on the convex hull
-    int size;
+    const int Nx;         // The number of vertices
     int hash_table[1024]; // Internal hash table to improve performance when search for a given face
     const Point *x0;      // The vertex coordinates
     double xc[NDIM];      // A point within the centroid
     double TOL_vol;       // Tolerance to use for calculation
-    face_data_struct *data; // The stored data
+    std::vector<face_data_struct> data; // The stored data
 
     // Function that calculates the distance between a plane and a point
     double calc_surface_distance( const Point x[NDIM], const Point &xi ) const;
@@ -134,7 +123,7 @@ private:
     inline size_t get_face_index( int face, int tri ) { return face + tri * ( NDIM + 1 ); }
 
     // Function to delete a set of faces
-    void delete_faces( int N_delete, int *ids );
+    void delete_faces( std::vector<int> &ids );
 
     // Function to check that the internal data is valid
     void check_data();

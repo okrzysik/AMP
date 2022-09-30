@@ -40,7 +40,7 @@ FickDiffusionNonlinearFEOperator{
           concentration = "conc"
         }
         OutputVariable = "conc"
-        PrincipalVariable = 1
+        PrincipalVariable = "concentration"
 
         DiffusionElement{
           name = "DiffusionNonlinearElement"
@@ -63,7 +63,7 @@ SoretDiffusionNonlinearFEOperator{
           concentration = "conc"
         }
         OutputVariable = "conc"
-        PrincipalVariable = 0 
+        PrincipalVariable = "temperature" 
   
         DiffusionElement{
           name = "DiffusionNonlinearElement"

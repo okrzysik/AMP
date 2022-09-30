@@ -52,12 +52,11 @@ public:
     /**
       This function is used to set frozen vectors in this operator. This is used when some of the
       variables are solved for in an uncoupled manner.
-      @param [in] id Variable Identifier - One of
-      AMP::Diffusion::TEMPERATURE/BURNUP/OXYGEN_CONCENTRATION
+      @param [in] name      Variable Identifier
       @param [in] frozenVec Frozen vector
       @see DiffusionConstants.h
       */
-    void setVector( unsigned int id, AMP::LinearAlgebra::Vector::shared_ptr frozenVec );
+    void setVector( const std::string &name, AMP::LinearAlgebra::Vector::shared_ptr frozenVec );
 
     /**
      * checks input to apply operator for satisfaction of range conditions
@@ -85,8 +84,6 @@ protected:
 
     std::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;
-
     std::vector<AMP::Mesh::MeshElement> d_currNodes;
 
     AMP::LinearAlgebra::Vector::shared_ptr d_outVec;
@@ -94,9 +91,17 @@ protected:
     std::shared_ptr<std::vector<double>> d_TransportGauss;
     AMP::LinearAlgebra::Vector::shared_ptr d_TransportNodal;
 
-    std::vector<bool> d_isActive;
+protected:
+    /*struct InputVectorStruct {
+        bool active = false;
+        bool frozen = false;
+        AMP::LinearAlgebra::Vector::const_shared_ptr> vec;
+    };
+    std::map<std::string,InputVectorStruct> d_inVec;*/
 
+    std::vector<bool> d_isActive;
     std::vector<bool> d_isFrozen;
+    std::vector<AMP::LinearAlgebra::Vector::const_shared_ptr> d_inVec;
 
 private:
     std::shared_ptr<AMP::LinearAlgebra::MultiVariable> d_inpVariables;

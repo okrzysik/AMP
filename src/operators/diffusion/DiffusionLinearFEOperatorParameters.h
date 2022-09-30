@@ -6,6 +6,7 @@
 
 namespace AMP::Operator {
 
+
 class DiffusionLinearFEOperatorParameters : public LinearFEOperatorParameters
 {
 public:
@@ -18,15 +19,10 @@ public:
 
     std::shared_ptr<DiffusionTransportModel> d_transportModel;
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_temperature;
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_concentration;
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_burnup;
-
-protected:
-private:
+    std::map<std::string, std::shared_ptr<AMP::LinearAlgebra::Vector>> d_inputVecs;
 };
+
+
 } // namespace AMP::Operator
 
 #endif
