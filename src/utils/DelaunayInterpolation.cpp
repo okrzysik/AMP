@@ -22,12 +22,12 @@
 namespace AMP {
 
 
-static void Gauss_Seidel( const unsigned int Nb,
-                          const unsigned int N,
-                          const unsigned int M,
+static void Gauss_Seidel( const uint32_t Nb,
+                          const uint32_t N,
+                          const uint32_t M,
                           const double D[],
-                          const unsigned int N_row[],
-                          unsigned int *icol[],
+                          const uint32_t N_row[],
+                          uint32_t *icol[],
                           const double A[],
                           const double rhs[],
                           double *x,
@@ -58,16 +58,11 @@ static void get_interpolant_points( const int ndim,
                                     double *xi2,
                                     bool check );
 static void compute_gradient( const int ndim, const double *x, const double *f, double *g );
-
-template<class type_a>
-static void quicksort1( int n, type_a *arr );
-template<class type_a, class type_b>
-static void quicksort2( int n, type_a *arr, type_b *brr );
 static int intersect_sorted( const int N_lists,
                              const int size[],
-                             unsigned int *list[],
+                             uint32_t *list[],
                              const int N_max,
-                             unsigned int *intersection );
+                             uint32_t *intersection );
 
 
 static inline size_t log2ceil( size_t x )
@@ -198,22 +193,20 @@ void DelaunayInterpolation<TYPE>::create_tessellation( const AMP::Array<TYPE> &x
     size_t ndim = x.size( 0 );
     size_t N    = x.size( 1 );
     if ( x.size( 0 ) == 1 ) {
-        // The triangles are just the sorted points (note the duplicate indicies)
-        auto x_tmp = new TYPE[N];
-        auto i_tmp = new int[N];
+        // The triangles are just the sorted points (note the duplicate indices)
+        std::vector<TYPE> x_tmp( N );
+        std::vector<int> i_tmp( N );
         for ( size_t i = 0; i < N; i++ )
             x_tmp[i] = d_x( i );
         for ( size_t i = 0; i < N; i++ )
             i_tmp[i] = (int) i;
-        quicksort2( N, x_tmp, i_tmp );
+        AMP::Utilities::quicksort( x_tmp, i_tmp );
         int N_tri = N - 1;
         d_tri.resize( 2, N_tri );
         for ( int i = 0; i < N_tri; i++ ) {
             d_tri( 0, i ) = i_tmp[i + 0];
             d_tri( 1, i ) = i_tmp[i + 1];
         }
-        delete[] x_tmp;
-        delete[] i_tmp;
         create_tri_neighbors();
     } else if ( ndim == 2 || ndim == 3 ) {
         std::tie( d_tri, d_tri_nab ) = DelaunayTessellation::create_tessellation( x );
@@ -323,7 +316,7 @@ Array<int> DelaunayInterpolation<TYPE>::find_tri( const Array<TYPE2> &xi, bool e
     create_node_tri();
     // First choose a starting triangle
     auto index_node = find_nearest( xi );
-    for ( unsigned int i = 0; i < xi.size( 1 ); i++ )
+    for ( uint32_t i = 0; i < xi.size( 1 ); i++ )
         index( i ) = d_node_tri[index_node( i )];
     // Loop through the query points
     int ndim         = d_x.size( 0 );
@@ -331,7 +324,7 @@ Array<int> DelaunayInterpolation<TYPE>::find_tri( const Array<TYPE2> &xi, bool e
     double x2[NDIM_MAX * ( NDIM_MAX + 1 )], xi2[NDIM_MAX], L[NDIM_MAX + 1];
     bool failed_search = false;
     size_t N_it_tot    = 0;
-    for ( unsigned int i = 0; i < xi.size( 1 ); i++ ) {
+    for ( uint32_t i = 0; i < xi.size( 1 ); i++ ) {
         for ( int j = 0; j < ndim; j++ )
             xi2[j] = xi( j, i );
         int current_tri = index( i );
@@ -443,7 +436,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         // Calculate the derivative for each edge that touches the node, then
         // use a weighted least-squares minimization to get the gradient
         double M[NDIM_MAX * NDIM_MAX], rhs[NDIM_MAX], rh[NDIM_MAX];
-        for ( unsigned int i = 0; i < N; i++ ) {
+        for ( uint32_t i = 0; i < N; i++ ) {
             // Initialize M, rhs
             for ( double &j : M )
                 j = 0.0;
@@ -452,7 +445,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                 rh[j]  = 0.0;
             }
             // Loop through the neighbor nodes, contructing the matrix and rhs
-            for ( unsigned int j = 0; j < d_N_node[i]; j++ ) {
+            for ( uint32_t j = 0; j < d_N_node[i]; j++ ) {
                 int k = d_node_list[i][j];
                 // Comupute the distance beween the neighbors and the direction vector
                 double r = 0.0;
@@ -508,18 +501,17 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
             return;
         }
         // First, allocate storage to store the matrix components
-        auto A   = new double[ndim * ndim * d_N_node_sum];
-        auto D   = new double[ndim * ndim * N];
-        auto rhs = new double[ndim * N];
-        // Initialize the matrix elements and rhs to zero
-        memset( A, 0, ndim * ndim * d_N_node_sum * sizeof( double ) );
-        memset( D, 0, ndim * ndim * N * sizeof( double ) );
-        memset( rhs, 0, ndim * N * sizeof( double ) );
+        AMP::Array<double> A( ndim, ndim, d_N_node_sum );
+        AMP::Array<double> D( ndim, ndim, N );
+        AMP::Array<double> rhs( ndim, N );
+        A.fill( 0 );
+        D.fill( 0 );
+        rhs.fill( 0 );
         // Loop through the nodes, constructing the matrix elements
         int m = 0;
-        for ( unsigned int i = 0; i < N; i++ ) {
+        for ( uint32_t i = 0; i < N; i++ ) {
             // Loop through the neighbor nodes, contructing the matrix and rhs
-            for ( unsigned int j = 0; j < d_N_node[i]; j++ ) {
+            for ( uint32_t j = 0; j < d_N_node[i]; j++ ) {
                 int k = d_node_list[i][j];
                 // Comupute the distance beween the neighbors and the direction vector
                 double r = 0.0;
@@ -538,10 +530,10 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                 // Construct the linear system
                 for ( int j1 = 0; j1 < ndim; j1++ ) {
                     for ( int j2 = 0; j2 < ndim; j2++ ) {
-                        A[j1 + j2 * ndim + m * ndim * ndim] = 2.0 * wi * rh[j1] * rh[j2];
-                        D[j1 + j2 * ndim + i * ndim * ndim] += A[j1 + j2 * ndim + m * ndim * ndim];
+                        A( j1, j2, m ) = 2.0 * wi * rh[j1] * rh[j2];
+                        D( j1, j2, i ) += A( j1, j2, m );
                     }
-                    rhs[j1 + i * ndim] += 2.0 * wi * rh[j1] * 2.0 * df_dr;
+                    rhs( j1, i ) += 2.0 * wi * rh[j1] * 2.0 * df_dr;
                 }
                 m++;
             }
@@ -556,29 +548,25 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
             // That D(:,:,i) is the same as method 1, and the rhs is a factor of 2 larger
             // than in method 1
             double rhs2[NDIM_MAX];
-            for ( unsigned int i = 0; i < N; i++ ) {
+            for ( uint32_t i = 0; i < N; i++ ) {
                 for ( int j = 0; j < ndim; j++ )
-                    rhs2[j] = 0.5 * rhs[j + i * ndim];
-                DelaunayHelpers::solve( ndim, &D[i * ndim * ndim], rhs2, &grad[i * ndim] );
+                    rhs2[j] = 0.5 * rhs( j, i );
+                DelaunayHelpers::solve( ndim, &D( 0, 0, i ), rhs2, &grad[i * ndim] );
             }
             // Now we can perform a block Gauss-Seidel iteration to improve the solution
             Gauss_Seidel( ndim,
                           (unsigned int) N,
                           (unsigned int) d_N_node_sum,
-                          D,
+                          D.data(),
                           d_N_node,
                           d_node_list,
-                          A,
-                          rhs,
+                          A.data(),
+                          rhs.data(),
                           grad,
                           n_it );
         } else {
             AMP::perr << "Unknown method\n";
         }
-        // Free the temporary memory
-        delete[] A;
-        delete[] D;
-        delete[] rhs;
     } else if ( method == 4 ) {
         // This is the same as method 3 (Gauss-Seidel) but does not store the matrix entries,
         //    instead they are re-created every time
@@ -592,7 +580,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
         for ( int it = 0; it < n_it; it++ ) {
             // Loop through the nodes updating x
             //    x(k+1) = aii^-1*(bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i))
-            for ( unsigned int i = 0; i < N; i++ ) {
+            for ( uint32_t i = 0; i < N; i++ ) {
                 for ( int j = 0; j < ndim * ndim; j++ )
                     D[j] = 0.0;
                 for ( int j = 0; j < ndim; j++ ) {
@@ -600,7 +588,7 @@ void DelaunayInterpolation<TYPE>::calc_node_gradient( const double *f,
                     Ax[j]  = 0.0;
                 }
                 // Loop through the neighbor nodes, contructing D, A*x and rhs
-                for ( unsigned int j = 0; j < d_N_node[i]; j++ ) {
+                for ( uint32_t j = 0; j < d_N_node[i]; j++ ) {
                     int k = d_node_list[i][j];
                     // Comupute the distance beween the neighbors and the direction vector
                     double r = 0.0;
@@ -695,7 +683,7 @@ DelaunayInterpolation<TYPE>::interp_linear( const AMP::Array<double> &f,
         }
         // Compute the Barycentric coordinates
         for ( int j = 0; j < ndim + 1; j++ ) {
-            unsigned int k = d_tri( j, index( i ) );
+            uint32_t k = d_tri( j, index( i ) );
             for ( int j2 = 0; j2 < ndim; j2++ )
                 x2[j2 + j * ndim] = d_x( j2, k );
             f2[j] = f( k );
@@ -754,7 +742,7 @@ DelaunayInterpolation<TYPE>::interp_cubic( const AMP::Array<double> &f,
     fi.fill( 0 );
     gi.fill( 0 );
     double xi0[NDIM_MAX];
-    for ( unsigned int i = 0; i < Ni; i++ ) {
+    for ( uint32_t i = 0; i < Ni; i++ ) {
         for ( int d = 0; d < ndim; d++ )
             xi0[d] = xi( d, i );
         interp_cubic_single( f.data(), g.data(), xi0, index( i ), fi( i ), &gi( 0, i ), extrap );
@@ -788,7 +776,7 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
     }
     // Compute the Barycentric coordinates
     for ( int j = 0; j < ndim + 1; j++ ) {
-        unsigned int k = d_tri( j, index );
+        uint32_t k = d_tri( j, index );
         for ( int j2 = 0; j2 < ndim; j2++ ) {
             x2[j2 + j * ndim] = d_x( j2, k );
             g2[j2 + j * ndim] = g[j2 + k * ndim];
@@ -1209,21 +1197,21 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
     int ndim           = d_x.size( 0 );
     size_t N_tri       = d_tri.size( 1 );
     d_N_node           = new unsigned int[N];
-    auto node_list_tmp = new unsigned int *[N];
+    auto node_list_tmp = new uint32_t *[N];
     node_list_tmp[0]   = new unsigned int[2 * ndim * ( ndim + 1 ) * N_tri];
     // Count the number of nodes that are connected to any other node
-    for ( unsigned int i = 0; i < N; i++ )
+    for ( uint32_t i = 0; i < N; i++ )
         d_N_node[i] = 0;
     for ( size_t i = 0; i < N_tri * ( ndim + 1 ); i++ ) {
         d_N_node[d_tri( i )] += ndim;
     }
     // Break the node list array into sub arrays to store the neighbor nodes
-    for ( unsigned int i = 1; i < N; i++ )
+    for ( uint32_t i = 1; i < N; i++ )
         node_list_tmp[i] = &node_list_tmp[i - 1][d_N_node[i - 1]];
     // For each triangle, add the neighbor nodes
-    for ( unsigned int i = 0; i < N; i++ )
+    for ( uint32_t i = 0; i < N; i++ )
         d_N_node[i] = 0;
-    for ( unsigned int i = 0; i < N_tri; i++ ) {
+    for ( uint32_t i = 0; i < N_tri; i++ ) {
         for ( int j = 0; j <= ndim; j++ ) {
             int j1 = d_tri( j, i );
             int j2 = d_N_node[j1];
@@ -1237,10 +1225,10 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
         }
     }
     // Eliminate duplicate entries in the node list and sort the list
-    for ( unsigned int i = 0; i < N; i++ ) {
-        quicksort1( d_N_node[i], node_list_tmp[i] );
+    for ( uint32_t i = 0; i < N; i++ ) {
+        AMP::Utilities::quicksort( d_N_node[i], node_list_tmp[i] );
         int k = 0;
-        for ( unsigned int j = 1; j < d_N_node[i]; j++ ) {
+        for ( uint32_t j = 1; j < d_N_node[i]; j++ ) {
             if ( node_list_tmp[i][j] != node_list_tmp[i][k] ) {
                 node_list_tmp[i][k + 1] = node_list_tmp[i][j];
                 k++;
@@ -1250,16 +1238,16 @@ void DelaunayInterpolation<TYPE>::create_node_neighbors() const
     }
     // Create the final list that contains storage only for the needed values
     d_N_node_sum = 0;
-    for ( unsigned int i = 0; i < N; i++ )
+    for ( uint32_t i = 0; i < N; i++ )
         d_N_node_sum += d_N_node[i];
-    d_node_list    = new unsigned int *[N];
+    d_node_list    = new uint32_t *[N];
     d_node_list[0] = new unsigned int[d_N_node_sum];
-    for ( unsigned int i = 0; i < d_N_node_sum; i++ )
+    for ( uint32_t i = 0; i < d_N_node_sum; i++ )
         d_node_list[0][i] = static_cast<unsigned int>( -1 );
-    for ( unsigned int i = 1; i < N; i++ )
+    for ( uint32_t i = 1; i < N; i++ )
         d_node_list[i] = &d_node_list[i - 1][d_N_node[i - 1]];
-    for ( unsigned int i = 0; i < N; i++ ) {
-        for ( unsigned int j = 0; j < d_N_node[i]; j++ )
+    for ( uint32_t i = 0; i < N; i++ ) {
+        for ( uint32_t j = 0; j < d_N_node[i]; j++ )
             d_node_list[i][j] = node_list_tmp[i][j];
     }
     // Delete the temporary memory
@@ -1300,8 +1288,8 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
         return;
     // Allocate memory
     const unsigned char Nd = ndim + 1;
-    auto N_tri_nab         = new unsigned int[N];   // Number of triangles connected each node (N)
-    auto tri_list          = new unsigned int *[N]; // List of triangles connected each node (N)
+    auto N_tri_nab         = new unsigned int[N]; // Number of triangles connected each node (N)
+    auto tri_list          = new uint32_t *[N];   // List of triangles connected each node (N)
     tri_list[0]            = new unsigned int[( ndim + 1 ) * N_tri];
     PROFILE_START( "create_tri_neighbors", PROFILE_LEVEL );
     // For each node, get a list of the triangles that connect to that node
@@ -1325,9 +1313,9 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
         }
     }
     for ( size_t i = 0; i < N; i++ ) {
-        quicksort1( N_tri_nab[i], tri_list[i] );
+        AMP::Utilities::quicksort( N_tri_nab[i], tri_list[i] );
     }
-    unsigned int N_tri_max = 0;
+    uint32_t N_tri_max = 0;
     for ( size_t i = 0; i < N; i++ ) {
         if ( N_tri_nab[i] > N_tri_max )
             N_tri_max = N_tri_nab[i];
@@ -1335,11 +1323,11 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
     // Note, if a triangle is a neighbor, it will share all but the current node
     int size[NDIM_MAX];
     int error = 0;
-    for ( unsigned int i = 0; i < N_tri; i++ ) {
+    for ( uint32_t i = 0; i < N_tri; i++ ) {
         // Loop through the different faces of the triangle
         for ( int j = 0; j < Nd; j++ ) {
-            unsigned int *list[NDIM_MAX] = { nullptr };
-            int k1                       = 0;
+            uint32_t *list[NDIM_MAX] = { nullptr };
+            int k1                   = 0;
             for ( int k2 = 0; k2 < Nd; k2++ ) {
                 if ( k2 == j )
                     continue;
@@ -1349,10 +1337,10 @@ void DelaunayInterpolation<TYPE>::create_tri_neighbors() const
                 k1++;
             }
             // Find the intersection of all triangle lists except the current node
-            const auto neg_1             = static_cast<unsigned int>( -1 );
-            unsigned int intersection[5] = { neg_1, neg_1, neg_1, neg_1, neg_1 };
-            int N_int                    = intersect_sorted( ndim, size, list, 5, intersection );
-            unsigned int m               = 0;
+            const auto neg_1         = static_cast<unsigned int>( -1 );
+            uint32_t intersection[5] = { neg_1, neg_1, neg_1, neg_1, neg_1 };
+            int N_int                = intersect_sorted( ndim, size, list, 5, intersection );
+            uint32_t m               = 0;
             if ( N_int == 0 || N_int > 2 ) {
                 // We cannot have less than 1 triangle or more than 2 triangles sharing ndim nodes
                 error = 1;
@@ -1509,213 +1497,18 @@ static void compute_gradient( const int ndim, const double *x, const double *f, 
 }
 
 
-/**************************************************************************
- * Subroutine to perform a quicksort                                       *
- **************************************************************************/
-template<class type_a>
-static void quicksort1( int n, type_a *arr )
-{
-    bool test;
-    int i, ir, j, jstack, k, l, istack[100];
-    type_a a, tmp_a;
-    jstack = 0;
-    l      = 0;
-    ir     = n - 1;
-    while ( true ) {
-        if ( ir - l < 7 ) { // Insertion sort when subarray small enough.
-            for ( j = l + 1; j <= ir; j++ ) {
-                a    = arr[j];
-                test = true;
-                for ( i = j - 1; i >= 0; i-- ) {
-                    if ( arr[i] < a ) {
-                        arr[i + 1] = a;
-                        test       = false;
-                        break;
-                    }
-                    arr[i + 1] = arr[i];
-                }
-                if ( test ) {
-                    i          = l - 1;
-                    arr[i + 1] = a;
-                }
-            }
-            if ( jstack == 0 )
-                return;
-            ir = istack[jstack]; // Pop stack and begin a new round of partitioning.
-            l  = istack[jstack - 1];
-            jstack -= 2;
-
-        } else {
-            k = ( l + ir ) / 2; // Choose median of left, center and right elements as partitioning
-                                // element a. Also rearrange so that a(l) ? a(l+1) ? a(ir).
-            tmp_a      = arr[k];
-            arr[k]     = arr[l + 1];
-            arr[l + 1] = tmp_a;
-            if ( arr[l] > arr[ir] ) {
-                tmp_a   = arr[l];
-                arr[l]  = arr[ir];
-                arr[ir] = tmp_a;
-            }
-            if ( arr[l + 1] > arr[ir] ) {
-                tmp_a      = arr[l + 1];
-                arr[l + 1] = arr[ir];
-                arr[ir]    = tmp_a;
-            }
-            if ( arr[l] > arr[l + 1] ) {
-                tmp_a      = arr[l];
-                arr[l]     = arr[l + 1];
-                arr[l + 1] = tmp_a;
-            }
-            // Scan up to find element > a
-            j = ir;
-            a = arr[l + 1]; // Partitioning element.
-            for ( i = l + 2; i <= ir; i++ ) {
-                if ( arr[i] < a )
-                    continue;
-                while ( arr[j] > a ) // Scan down to find element < a.
-                    j--;
-                if ( j < i )
-                    break;       // Pointers crossed. Exit with partitioning complete.
-                tmp_a  = arr[i]; // Exchange elements of both arrays.
-                arr[i] = arr[j];
-                arr[j] = tmp_a;
-            }
-            arr[l + 1] = arr[j]; // Insert partitioning element in both arrays.
-            arr[j]     = a;
-            jstack += 2;
-            // Push pointers to larger subarray on stack, process smaller subarray immediately.
-            if ( ir - i + 1 >= j - l ) {
-                istack[jstack]     = ir;
-                istack[jstack - 1] = i;
-                ir                 = j - 1;
-            } else {
-                istack[jstack]     = j - 1;
-                istack[jstack - 1] = l;
-                l                  = i;
-            }
-        }
-    }
-}
-template<class type_a, class type_b>
-void quicksort2( int n, type_a *arr, type_b *brr )
-{
-    bool test;
-    int i, ir, j, jstack, k, l, istack[100];
-    type_a a, tmp_a;
-    type_b b, tmp_b;
-    jstack = 0;
-    l      = 0;
-    ir     = n - 1;
-    while ( true ) {
-        if ( ir - l < 9 ) { // Insertion sort when subarray small enough.
-            for ( j = l + 1; j <= ir; j++ ) {
-                a    = arr[j];
-                b    = brr[j];
-                test = true;
-                for ( i = j - 1; i >= 0; i-- ) {
-                    if ( arr[i] < a ) {
-                        arr[i + 1] = a;
-                        brr[i + 1] = b;
-                        test       = false;
-                        break;
-                    }
-                    arr[i + 1] = arr[i];
-                    brr[i + 1] = brr[i];
-                }
-                if ( test ) {
-                    i          = l - 1;
-                    arr[i + 1] = a;
-                    brr[i + 1] = b;
-                }
-            }
-            if ( jstack == 0 )
-                return;
-            ir = istack[jstack]; // Pop stack and begin a new round of partitioning.
-            l  = istack[jstack - 1];
-            jstack -= 2;
-        } else {
-            k = ( l + ir ) / 2; // Choose median of left, center and right elements as partitioning
-                                // element a. Also rearrange so that a(l) ? a(l+1) ? a(ir).
-            tmp_a      = arr[k];
-            arr[k]     = arr[l + 1];
-            arr[l + 1] = tmp_a;
-            tmp_b      = brr[k];
-            brr[k]     = brr[l + 1];
-            brr[l + 1] = tmp_b;
-            if ( arr[l] > arr[ir] ) {
-                tmp_a   = arr[l];
-                arr[l]  = arr[ir];
-                arr[ir] = tmp_a;
-                tmp_b   = brr[l];
-                brr[l]  = brr[ir];
-                brr[ir] = tmp_b;
-            }
-            if ( arr[l + 1] > arr[ir] ) {
-                tmp_a      = arr[l + 1];
-                arr[l + 1] = arr[ir];
-                arr[ir]    = tmp_a;
-                tmp_b      = brr[l + 1];
-                brr[l + 1] = brr[ir];
-                brr[ir]    = tmp_b;
-            }
-            if ( arr[l] > arr[l + 1] ) {
-                tmp_a      = arr[l];
-                arr[l]     = arr[l + 1];
-                arr[l + 1] = tmp_a;
-                tmp_b      = brr[l];
-                brr[l]     = brr[l + 1];
-                brr[l + 1] = tmp_b;
-            }
-            // Scan up to find element > a
-            j = ir;
-            a = arr[l + 1]; // Partitioning element.
-            b = brr[l + 1];
-            for ( i = l + 2; i <= ir; i++ ) {
-                if ( arr[i] < a )
-                    continue;
-                while ( arr[j] > a ) // Scan down to find element < a.
-                    j--;
-                if ( j < i )
-                    break;       // Pointers crossed. Exit with partitioning complete.
-                tmp_a  = arr[i]; // Exchange elements of both arrays.
-                arr[i] = arr[j];
-                arr[j] = tmp_a;
-                tmp_b  = brr[i];
-                brr[i] = brr[j];
-                brr[j] = tmp_b;
-            }
-            arr[l + 1] = arr[j]; // Insert partitioning element in both arrays.
-            arr[j]     = a;
-            brr[l + 1] = brr[j];
-            brr[j]     = b;
-            jstack += 2;
-            // Push pointers to larger subarray on stack, process smaller subarray immediately.
-            if ( ir - i + 1 >= j - l ) {
-                istack[jstack]     = ir;
-                istack[jstack - 1] = i;
-                ir                 = j - 1;
-            } else {
-                istack[jstack]     = j - 1;
-                istack[jstack - 1] = l;
-                l                  = i;
-            }
-        }
-    }
-}
-
-
 /********************************************************************
  * Function to perform block Gauss-Seidel iteration                  *
  * Note: the performance of this algorithum is strongly dependent on *
  * the memory storage.  For example even passing the row and column  *
  * index instead of N_row and icol increased runtime by ~100x.       *
  ********************************************************************/
-static void Gauss_Seidel( const unsigned int Nb,
-                          const unsigned int N,
+static void Gauss_Seidel( const uint32_t Nb,
+                          const uint32_t N,
                           const unsigned int,
                           const double D[],
-                          const unsigned int N_row[],
-                          unsigned int *icol[],
+                          const uint32_t N_row[],
+                          uint32_t *icol[],
                           const double A[],
                           const double rhs[],
                           double *x,
@@ -1723,7 +1516,7 @@ static void Gauss_Seidel( const unsigned int Nb,
 {
     // First we will compute the inverse of each block
     auto D_inv = new double[Nb * Nb * N];
-    for ( unsigned int i = 0; i < N; i++ )
+    for ( uint32_t i = 0; i < N; i++ )
         DelaunayHelpers::inverse( Nb, &D[i * Nb * Nb], &D_inv[i * Nb * Nb] );
     // Next perform the Gauss-Seidel iterations:
     //    x(k+1) = aii^-1*(bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i))
@@ -1735,12 +1528,12 @@ static void Gauss_Seidel( const unsigned int Nb,
             int m           = 0;
             double L2_norm  = 0.0;
             double L2_error = 0.0;
-            for ( unsigned int i = 0; i < N; i++ ) {
+            for ( uint32_t i = 0; i < N; i++ ) {
                 // Compute bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i)
                 tmp[0] = rhs[0 + i * 2];
                 tmp[1] = rhs[1 + i * 2];
-                for ( unsigned int j = 0; j < N_row[i]; j++ ) {
-                    unsigned int k = icol[i][j];
+                for ( uint32_t j = 0; j < N_row[i]; j++ ) {
+                    uint32_t k = icol[i][j];
                     tmp[0] -= ( A[0 + m * 4] * x[0 + k * 2] + A[2 + m * 4] * x[1 + k * 2] );
                     tmp[1] -= ( A[1 + m * 4] * x[0 + k * 2] + A[3 + m * 4] * x[1 + k * 2] );
                     m++;
@@ -1768,13 +1561,13 @@ static void Gauss_Seidel( const unsigned int Nb,
             int m           = 0;
             double L2_norm  = 0.0;
             double L2_error = 0.0;
-            for ( unsigned int i = 0; i < N; i++ ) {
+            for ( uint32_t i = 0; i < N; i++ ) {
                 // Compute bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i)
                 tmp[0] = rhs[0 + i * 3];
                 tmp[1] = rhs[1 + i * 3];
                 tmp[2] = rhs[2 + i * 3];
-                for ( unsigned int j = 0; j < N_row[i]; j++ ) {
-                    unsigned int k   = icol[i][j];
+                for ( uint32_t j = 0; j < N_row[i]; j++ ) {
+                    uint32_t k       = icol[i][j];
                     const double *A2 = &A[m * 9];
                     double *x2       = &x[k * 3];
                     tmp[0] -= ( A2[0] * x2[0] + A2[3] * x2[1] + A2[6] * x2[2] );
@@ -1810,23 +1603,23 @@ static void Gauss_Seidel( const unsigned int Nb,
             int m           = 0;
             double L2_norm  = 0.0;
             double L2_error = 0.0;
-            for ( unsigned int i = 0; i < N; i++ ) {
+            for ( uint32_t i = 0; i < N; i++ ) {
                 // Compute bi-sum(aij*x(j,k),j>i)-sum(aij*x(j+1,k),j<i)
-                for ( unsigned int j = 0; j < Nb; j++ )
+                for ( uint32_t j = 0; j < Nb; j++ )
                     tmp[j] = rhs[j + i * Nb];
-                for ( unsigned int j = 0; j < N_row[i]; j++ ) {
-                    unsigned int k = icol[i][j];
-                    for ( unsigned int j1 = 0; j1 < Nb; j1++ ) {
-                        for ( unsigned int j2 = 0; j2 < Nb; j2++ ) {
+                for ( uint32_t j = 0; j < N_row[i]; j++ ) {
+                    uint32_t k = icol[i][j];
+                    for ( uint32_t j1 = 0; j1 < Nb; j1++ ) {
+                        for ( uint32_t j2 = 0; j2 < Nb; j2++ ) {
                             tmp[j1] -= A[j1 + j2 * Nb + m * Nb * Nb] * x[j2 + k * Nb];
                         }
                     }
                     m++;
                 }
                 // Update x(:,i)
-                for ( unsigned int j1 = 0; j1 < Nb; j1++ ) {
+                for ( uint32_t j1 = 0; j1 < Nb; j1++ ) {
                     double x_new = 0.0;
-                    for ( unsigned int j2 = 0; j2 < Nb; j2++ ) {
+                    for ( uint32_t j2 = 0; j2 < Nb; j2++ ) {
                         x_new += D_inv[j1 + j2 * Nb + i * Nb * Nb] * tmp[j2];
                     }
                     double x_old   = x[j1 + i * Nb];
@@ -1850,11 +1643,8 @@ static void Gauss_Seidel( const unsigned int Nb,
 
 // Subroutine to find the first n intersections in multiple lists
 // This function assumes the lists are in sorted order
-static int intersect_sorted( const int N_lists,
-                             const int size[],
-                             unsigned int *list[],
-                             const int N_max,
-                             unsigned int *intersection )
+static int intersect_sorted(
+    const int N_lists, const int size[], uint32_t *list[], const int N_max, uint32_t *intersection )
 {
     if ( N_max <= 0 )
         return ~( (unsigned int) 0 );
@@ -1862,10 +1652,10 @@ static int intersect_sorted( const int N_lists,
     auto index = new int[N_lists];
     for ( int i = 0; i < N_lists; i++ )
         index[i] = 0;
-    unsigned int current_val = list[0][0];
-    bool finished            = false;
+    uint32_t current_val = list[0][0];
+    bool finished        = false;
     while ( true ) {
-        unsigned int min_val = 2147483647;
+        uint32_t min_val     = 2147483647;
         bool in_intersection = true;
         for ( int i = 0; i < N_lists; i++ ) {
             if ( index[i] >= size[i] ) {

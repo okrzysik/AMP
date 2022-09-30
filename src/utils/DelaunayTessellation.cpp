@@ -53,9 +53,9 @@ static void swap_triangles( int i1,
 
 // Structure to hold surfaces that need to be tested
 struct check_surface_struct {
-    unsigned char test;
-    unsigned char f1;
-    unsigned char f2;
+    uint8_t test;
+    uint8_t f1;
+    uint8_t f2;
     int t1;
     int t2;
 };
@@ -393,37 +393,16 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
 
     // Subsequently add each point to the convex hull
     PROFILE_START( "create-add_points", 3 );
-    int N_new_max    = 1024;
-    auto new_tri     = new Triangle[N_new_max];
-    auto new_tri_nab = new Triangle[N_new_max];
-    auto neighbor    = new int[N_new_max];
-    auto face        = new int[N_new_max];
-    auto new_tri_id  = new unsigned int[N_new_max];
+    std::vector<Triangle> new_tri;
+    std::vector<Triangle> new_tri_nab;
+    std::vector<int> neighbor;
+    std::vector<int> face;
+    std::vector<uint32_t> new_tri_id;
     for ( int i = NDIM + 1; i < N; i++ ) {
         PROFILE_START_L2( "create-add_triangles" );
         // Add a point to the convex hull and create the new triangles
-        while ( face_list.get_N_face() > N_new_max ) {
-            N_new_max *= 2;
-            delete[] new_tri;
-            new_tri = new Triangle[N_new_max];
-            delete[] new_tri_nab;
-            new_tri_nab = new Triangle[N_new_max];
-            delete[] neighbor;
-            neighbor = new int[N_new_max];
-            delete[] face;
-            face = new int[N_new_max];
-            delete[] new_tri_id;
-            new_tri_id = new unsigned int[N_new_max];
-        }
-        int N_tri_new = face_list.add_node(
-            I[i], unused, N_tri, new_tri_id, new_tri, new_tri_nab, neighbor, face );
-        if ( N_tri_new == 0 ) {
-            throw std::logic_error( "Error: point is inside or on the convex hull" );
-        } else if ( N_tri_new == -1 ) {
-            throw std::logic_error( "Error:  Invalid triangle created\n" );
-        } else if ( N_tri_new < 0 ) {
-            throw std::logic_error( "Error:  unknown error calling add_node\n" );
-        }
+        face_list.add_node( I[i], unused, N_tri, new_tri_id, new_tri, new_tri_nab, neighbor, face );
+        int N_tri_new = new_tri_id.size();
         // Increase the storage for tri and tri_nab if necessary
         check_tri_size<NDIM>( N_tri, tri, tri_nab );
         // Add each triangle and update the structures
@@ -711,11 +690,6 @@ create_tessellation( const std::vector<std::array<TYPE, NDIM>> &x )
             throw std::logic_error( "Failed internal triangle check" );
 #endif
     }
-    delete[] new_tri_id;
-    delete[] new_tri;
-    delete[] new_tri_nab;
-    delete[] neighbor;
-    delete[] face;
     PROFILE_STOP( "create-add_points", 3 );
     check_surface.clear();
     I = std::vector<int>();
