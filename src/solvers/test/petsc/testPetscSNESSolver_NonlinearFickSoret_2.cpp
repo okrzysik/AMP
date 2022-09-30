@@ -19,7 +19,7 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
@@ -145,7 +145,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;

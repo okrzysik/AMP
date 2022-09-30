@@ -13,7 +13,7 @@
 #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -139,7 +139,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinBvpOperator;

@@ -169,7 +169,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;

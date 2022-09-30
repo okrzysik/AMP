@@ -2,7 +2,6 @@
 #define included_AMP_PetscKrylovSolver
 
 #include "AMP/solvers/SolverStrategy.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscMonitor.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
@@ -155,7 +154,7 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
-    void initializePreconditioner( std::shared_ptr<const PetscKrylovSolverParameters> parameters );
+    void initializePreconditioner( std::shared_ptr<const SolverStrategyParameters> parameters );
     std::shared_ptr<AMP::Operator::Operator> createPCOperator();
     void setupPetscMatInterface( std::shared_ptr<AMP::Operator::Operator> op, Mat &mat );
 

@@ -3,7 +3,7 @@
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorFactory.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
@@ -41,7 +41,7 @@ PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> para
     : SolverStrategy( params )
 {
     d_sName         = "PetscSNESSolver";
-    auto parameters = std::dynamic_pointer_cast<const NonlinearSolverParameters>( params );
+    auto parameters = std::dynamic_pointer_cast<const SolverStrategyParameters>( params );
     // we have to figure out a more general factory strategy that
     // alllows for solvers with different inputs to be initialized.
     // In the meantime we attempt to initialize as best we can
@@ -175,10 +175,10 @@ void PetscSNESSolver::createPetscObjects(
             preconditionerSolver = createPreconditioner( preconditionerName );
         }
         AMP_ASSERT( linearSolverDB );
-        auto linearSolverParams = std::make_shared<PetscKrylovSolverParameters>( linearSolverDB );
-        linearSolverParams->d_comm            = d_comm;
-        linearSolverParams->d_global_db       = d_global_db;
-        linearSolverParams->d_pPreconditioner = preconditionerSolver;
+        auto linearSolverParams    = std::make_shared<SolverStrategyParameters>( linearSolverDB );
+        linearSolverParams->d_comm = d_comm;
+        linearSolverParams->d_global_db     = d_global_db;
+        linearSolverParams->d_pNestedSolver = preconditionerSolver;
         std::shared_ptr<SolverStrategy> linearSolver =
             AMP::Solver::SolverFactory::create( linearSolverParams );
         d_pKrylovSolver = std::dynamic_pointer_cast<PetscKrylovSolver>( linearSolver );

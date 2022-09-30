@@ -14,7 +14,7 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/operators/mechanics/ThermalVonMisesMatModel.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -157,7 +157,7 @@ static void myTest( AMP::UnitTest *ut )
     linearSolverParams->d_pPreconditioner = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;

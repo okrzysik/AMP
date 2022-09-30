@@ -1,6 +1,5 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/GMRESSolver.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 
 
@@ -32,9 +31,8 @@ GMRESSolver<T>::GMRESSolver( std::shared_ptr<SolverStrategyParameters> parameter
  *  Initialize                                                   *
  ****************************************************************/
 template<typename T>
-void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> params )
+void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
     getFromInput( parameters->d_db );
@@ -49,7 +47,7 @@ void GMRESSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters>
     d_dw.resize( max_dim + 1, 0.0 );
     d_dy.resize( max_dim, 0.0 );
 
-    d_pPreconditioner = parameters->d_pPreconditioner;
+    d_pPreconditioner = parameters->d_pNestedSolver;
 
     if ( d_pOperator ) {
         registerOperator( d_pOperator );

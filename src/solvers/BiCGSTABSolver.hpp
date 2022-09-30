@@ -1,6 +1,5 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/BiCGSTABSolver.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 
 #include "ProfilerApp.h"
 
@@ -38,12 +37,11 @@ BiCGSTABSolver<T>::~BiCGSTABSolver() = default;
  *  Initialize                                                   *
  ****************************************************************/
 template<typename T>
-void BiCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> params )
+void BiCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
-    d_pPreconditioner = parameters->d_pPreconditioner;
+    d_pPreconditioner = parameters->d_pNestedSolver;
 
     getFromInput( parameters->d_db );
 

@@ -16,7 +16,7 @@
 #include "AMP/operators/mechanics/PericElastoViscoPlasticModel.h"
 #include "AMP/operators/mechanics/VonMisesElastoPlasticModel.h"
 #include "AMP/operators/mechanics/VonMises_IsotropicKinematicHardening.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"

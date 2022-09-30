@@ -17,7 +17,7 @@
 #include "AMP/operators/map/AsyncMapColumnOperator.h"
 #include "AMP/operators/map/ScalarZAxisMap.h"
 #include "AMP/solvers/ColumnSolver.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
@@ -256,7 +256,7 @@ void createThermalSolvers( std::shared_ptr<AMP::Database> &global_input_db,
     // initialize the nonlinear solver
     auto nonlinearSolver_db = global_input_db->getDatabase( "NonlinearThermalSolver" );
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = AMP::AMP_MPI( AMP_COMM_WORLD );

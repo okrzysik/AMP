@@ -1,5 +1,4 @@
 #include "AMP/operators/LinearOperator.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "AMP/solvers/TFQMRSolver.h"
 #include "ProfilerApp.h"
 
@@ -28,12 +27,11 @@ TFQMRSolver<T>::TFQMRSolver( std::shared_ptr<SolverStrategyParameters> parameter
  *  Initialize                                                   *
  ****************************************************************/
 template<typename T>
-void TFQMRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> params )
+void TFQMRSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
-    d_pPreconditioner = parameters->d_pPreconditioner;
+    d_pPreconditioner = parameters->d_pNestedSolver;
 
     getFromInput( parameters->d_db );
 

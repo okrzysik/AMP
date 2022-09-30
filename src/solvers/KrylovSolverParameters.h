@@ -21,10 +21,6 @@ public:
     explicit KrylovSolverParameters( std::shared_ptr<AMP::Database> db );
     virtual ~KrylovSolverParameters() {}
 
-    AMP_MPI d_comm;
-
-    std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
-
 protected:
 private:
 };

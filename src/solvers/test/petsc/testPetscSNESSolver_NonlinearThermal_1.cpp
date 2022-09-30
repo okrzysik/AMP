@@ -18,7 +18,7 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
@@ -145,7 +145,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // Crete the solvers
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = AMP::AMP_MPI( AMP_COMM_WORLD );
     nonlinearSolverParams->d_pOperator     = nonlinearThermalOperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;

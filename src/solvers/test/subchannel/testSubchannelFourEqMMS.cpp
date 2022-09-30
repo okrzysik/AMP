@@ -11,7 +11,7 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
@@ -282,7 +282,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create nonlinear solver parameters
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
