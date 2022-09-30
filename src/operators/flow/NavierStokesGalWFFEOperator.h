@@ -70,7 +70,6 @@ public:
 
     unsigned int numberOfDOFMaps();
 
-    std::shared_ptr<AMP::LinearAlgebra::Variable> getVariableForDOFMap( unsigned int id );
 
 protected:
     void gettype0DofIndicesForCurrentElement( int varId, std::vector<std::vector<size_t>> &dofIds );

@@ -37,6 +37,8 @@ public:
      */
     virtual ~ColumnSolver() {}
 
+    std::string type() const override { return "ColumnSolver"; }
+
     /**
      * Solve the system \f$A(u) = f\f$.
      Assumptions: $A(.)$ is assumed to be a ColumnOperator

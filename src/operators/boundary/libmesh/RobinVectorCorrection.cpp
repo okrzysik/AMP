@@ -19,10 +19,11 @@ ENABLE_WARNINGS
 namespace AMP::Operator {
 
 
-RobinVectorCorrection::RobinVectorCorrection(
-    std::shared_ptr<const NeumannVectorCorrectionParameters> params )
-    : NeumannVectorCorrection( params )
+RobinVectorCorrection::RobinVectorCorrection( std::shared_ptr<const OperatorParameters> inParams )
+    : NeumannVectorCorrection( inParams )
 {
+    auto params = std::dynamic_pointer_cast<const NeumannVectorCorrectionParameters>( inParams );
+    AMP_ASSERT( params );
     d_hef        = 0;
     d_alpha      = 0;
     d_beta       = 0;
@@ -37,8 +38,8 @@ void RobinVectorCorrection::reset( std::shared_ptr<const OperatorParameters> par
 {
     NeumannVectorCorrection::reset( params );
 
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameters" );
-    AMP_INSIST( ( ( ( params->d_db ).get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( params, "NULL parameters" );
+    AMP_INSIST( params->d_db, "NULL database" );
 
     d_skipParams = params->d_db->getWithDefault<bool>( "skip_params", false );
 
@@ -57,8 +58,8 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                                    AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     PROFILE_START( "apply" );
-    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
-    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
+    AMP_INSIST( r, "NULL Residual Vector" );
+    AMP_INSIST( u, "NULL Solution Vector" );
 
     auto rInternal = this->subsetInputVector( r );
     auto uInternal = this->subsetInputVector( u );
@@ -82,7 +83,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
             std::string cview = variableNames[i] + " view";
             if ( d_Frozen ) {
                 if ( d_Frozen->select( AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ),
-                                       cview ) != nullptr ) {
+                                       cview ) ) {
                     d_elementInputVec[i + 1] = d_Frozen->select(
                         AMP::LinearAlgebra::VS_ByVariableName( variableNames[i] ), cview );
                 } else {
@@ -162,8 +163,8 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                 // Get the current libmesh element
                 auto fe   = d_libmeshElements.getFEBase( elem.globalID() );
                 auto rule = d_libmeshElements.getQBase( elem.globalID() );
-                AMP_ASSERT( fe != nullptr );
-                AMP_ASSERT( rule != nullptr );
+                AMP_ASSERT( fe );
+                AMP_ASSERT( rule );
                 auto numGaussPts = rule->n_points();
 
                 auto JxW = fe->get_JxW();
@@ -229,7 +230,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
                             phi_val = gpValues[qp];
                         }
                         for ( unsigned int j = 0; j < numNodesInCurrElem; j++ )
-                            addValues[j] += -1 * ( JxW[qp] * phi[j][qp] * gamma[qp] * phi_val );
+                            addValues[j] -= JxW[qp] * phi[j][qp] * gamma[qp] * phi_val;
                     } // end for qp
                 }     // coupled
                 rInternal->addValuesByGlobalID( dofs.size(), &dofs[0], &addValues[0] );
@@ -241,25 +242,32 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     PROFILE_STOP( "integration loop" );
 
     rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
-    // std::cout << rInternal << std::endl;
 
     PROFILE_STOP( "apply" );
 }
 
 
 std::shared_ptr<OperatorParameters>
-    RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr )
+RobinVectorCorrection::getJacobianParameters( AMP::LinearAlgebra::Vector::const_shared_ptr vec )
 {
-    auto tmp_db = std::make_shared<AMP::Database>( "Dummy" );
-    tmp_db->putScalar( "skip_params", true );
-    tmp_db->putScalar( "skip_rhs_correction", true );
-    tmp_db->putScalar( "skip_matrix_correction", false );
-    tmp_db->putScalar( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
-    auto outParams                 = std::make_shared<RobinMatrixCorrectionParameters>( tmp_db );
+    auto db = NeumannVectorCorrection::getJacobianParameters( vec )->d_db;
+    db->putScalar( "name", "RobinMatrixCorrection", {}, AMP::Database::Check::Overwrite );
+    db->putScalar( "skip_params", d_skipParams, {}, AMP::Database::Check::Overwrite );
+    db->putScalar( "skip_rhs_correction", true );
+    db->putScalar( "skip_matrix_correction", false );
+    db->putScalar( "IsFluxGaussPtVector", d_isFluxGaussPtVector );
+    db->putScalar( "alpha", d_alpha );
+    db->putScalar( "beta", d_beta );
+    db->putScalar( "gamma", d_gamma );
+    auto outParams                 = std::make_shared<RobinMatrixCorrectionParameters>( db );
     outParams->d_robinPhysicsModel = d_robinPhysicsModel;
     outParams->d_elementInputVec   = d_elementInputVec;
     outParams->d_variableFlux      = d_variableFlux;
-
+    outParams->d_Mesh              = d_Mesh;
+    // outParams->d_variable = linearDiffusion->getOutputVariable();
+    // outParams->d_inputMatrix = linearDiffusion->getMatrix();
     return outParams;
 }
+
+
 } // namespace AMP::Operator

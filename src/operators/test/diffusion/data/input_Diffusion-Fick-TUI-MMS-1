@@ -55,7 +55,7 @@ ThermalDiffusionNonlinearFEOperator{
 	 ActiveInputVariables { 
 	   concentration = "concentration"
 	 }
-	 PrincipalVariable = 1
+	 PrincipalVariable = "concentration"
 
          LocalModel = "DiffusionTransportModel"
 

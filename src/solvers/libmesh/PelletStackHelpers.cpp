@@ -253,10 +253,10 @@ void helperBuildColumnSolverForPelletMechanics(
 
 #ifdef AMP_USE_PETSC
         auto ikspSolverParams =
-            std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( ikspSolver_db );
-        ikspSolverParams->d_pOperator       = currOp;
-        ikspSolverParams->d_comm            = ( currOp->getMesh() )->getComm();
-        ikspSolverParams->d_pPreconditioner = mlSolver;
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( ikspSolver_db );
+        ikspSolverParams->d_pOperator     = currOp;
+        ikspSolverParams->d_comm          = ( currOp->getMesh() )->getComm();
+        ikspSolverParams->d_pNestedSolver = mlSolver;
         auto ikspSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( ikspSolverParams );
         columnSolver->append( ikspSolver );
 #else

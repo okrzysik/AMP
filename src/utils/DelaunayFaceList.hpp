@@ -242,9 +242,8 @@ bool check_current_triangles( int N,
 /********************************************************************
  * FaceList constructor                                              *
  ********************************************************************/
-static inline unsigned int get_hash_key( size_t index )
+static inline uint32_t get_hash_key( uint32_t key )
 {
-    auto key = static_cast<unsigned int>( index );
     key *= 0x9E3779B9; // 2^32*0.5*(sqrt(5)-1)
     key >>= 22;        // mod(key,1024)
     return key;
@@ -257,21 +256,15 @@ DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::FaceList( const int Nx_in,
                                                              const TYPE TOL_VOL )
     : Nx( Nx_in ), x0( x_in ), TOL_vol( TOL_VOL )
 {
-    AMP_ASSERT( sizeof( unsigned int ) ==
-                4 ); // We need an unsigned int to be 4 bytes (32 bits) for the hash function
-    N_face = 0;
     for ( auto &elem : hash_table )
         elem = -1; // Initialize the hash table to -1
-    size = 1024;   // We will maintain internal storage using blocks of 2^k
-    data = new face_data_struct[size / sizeof( face_data_struct )];
-    for ( size_t i = 0; i < size / sizeof( face_data_struct ); i++ )
-        data[i].reset();
+    data.resize( NDIM + 1 );
     for ( int i = 0; i <= NDIM; i++ ) {
-        unsigned int key = get_hash_key( get_face_index( i, 0 ) );
-        int k            = hash_table[key];
-        hash_table[key]  = i;
-        data[i].prev     = -static_cast<int>( key + 1 );
-        data[i].next     = k;
+        auto key        = get_hash_key( get_face_index( i, 0 ) );
+        int k           = hash_table[key];
+        hash_table[key] = i;
+        data[i].prev    = -static_cast<int>( key + 1 );
+        data[i].next    = k;
         if ( k != -1 )
             data[k].prev = i;
         data[i].tri_id  = tri0_id;
@@ -285,12 +278,11 @@ DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::FaceList( const int Nx_in,
             data[i].x[j1]     = x0[m];
             j1++;
         }
-        N_face++;
     }
     // Initialize the "center" of the volume
     for ( auto &elem : xc )
         elem = 0.0;
-    for ( int i = 0; i <= NDIM; i++ ) {
+    for ( size_t i = 0; i < data.size(); i++ ) {
         for ( int j = 0; j < NDIM; j++ ) {
             for ( int d = 0; d < NDIM; d++ )
                 xc[d] += static_cast<double>( data[i].x[j][d] );
@@ -303,27 +295,15 @@ DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::FaceList( const int Nx_in,
 
 
 /********************************************************************
- * This is the de-constructor for the NodeTriList class              *
- ********************************************************************/
-template<int NDIM, class TYPE, class ETYPE>
-DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::~FaceList()
-{
-    delete[] data;
-    size   = 0;
-    N_face = 0;
-}
-
-
-/********************************************************************
  * Delete a face                                                     *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::delete_faces( int N_delete, int *ids )
+void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::delete_faces( std::vector<int> &ids )
 {
     // Sort the ids to delete
-    AMP::Utilities::quicksort( N_delete, ids );
+    AMP::Utilities::quicksort( ids );
     // We delete in reverse order so that we can safely swap entries
-    for ( int i = N_delete - 1; i >= 0; i-- ) {
+    for ( int i = (int) ids.size() - 1; i >= 0; i-- ) {
         // Delete the entry and remove it from the hash table
         int k = ids[i];
         if ( data[k].prev >= 0 ) {
@@ -331,26 +311,25 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::delete_faces( int N_dele
             if ( data[k].next != -1 )
                 data[data[k].next].prev = data[k].prev;
         } else {
-            unsigned int key = -data[k].prev - 1;
-            int j            = data[k].next;
-            hash_table[key]  = j;
+            auto key        = -data[k].prev - 1;
+            int j           = data[k].next;
+            hash_table[key] = j;
             if ( j != -1 )
                 data[j].prev = -static_cast<int>( key + 1 );
         }
-        if ( k < N_face - 1 ) {
+        if ( k + 1 < (int) data.size() ) {
             // Move the last entry to the current entry and update the hash table
-            data[k] = data[N_face - 1];
+            std::swap( data[k], data.back() );
             if ( data[k].prev >= 0 ) {
                 data[data[k].prev].next = k;
             } else {
-                unsigned int key = -data[k].prev - 1;
-                hash_table[key]  = k;
+                auto key        = -data[k].prev - 1;
+                hash_table[key] = k;
             }
             if ( data[k].next != -1 )
                 data[data[k].next].prev = k;
         }
-        data[N_face - 1].reset();
-        N_face--;
+        data.pop_back();
     }
 }
 
@@ -360,25 +339,29 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::delete_faces( int N_dele
  * Note: currently this algorithum scales as O(N)                    *
  ********************************************************************/
 template<int NDIM, class TYPE, class ETYPE>
-int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
+void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
     const int node_id,
     std::vector<size_t> &unused,
     size_t &N_tri,
-    unsigned int *new_tri_id,
-    std::array<int, NDIM + 1> *new_tri,
-    std::array<int, NDIM + 1> *new_tri_nab,
-    int *neighbor,
-    int *face_id )
+    std::vector<uint32_t> &new_tri_id,
+    std::vector<std::array<int, NDIM + 1>> &new_tri,
+    std::vector<std::array<int, NDIM + 1>> &new_tri_nab,
+    std::vector<int> &neighbor,
+    std::vector<int> &face_id )
 {
     PROFILE_START_L2( "FaceList::add_node" );
 #if DEBUG_CHECK == 2
     check_data();
 #endif
     // Create the new triangles
-    auto ids      = new int[N_face];
-    int N_tri_new = 0;
+    new_tri_id.clear();
+    new_tri.clear();
+    new_tri_nab.clear();
+    neighbor.clear();
+    face_id.clear();
+    std::vector<int> ids;
     Point x2[NDIM + 1];
-    for ( int i = 0; i < N_face; i++ ) {
+    for ( size_t i = 0; i < data.size(); i++ ) {
         // Get the triangle number and face id
         int tri_num  = data[i].tri_id;
         int face_num = data[i].face_id;
@@ -414,22 +397,20 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
             id = N_tri;
             N_tri++;
         }
-        new_tri_id[N_tri_new]  = id;
-        new_tri[N_tri_new]     = tri;
-        new_tri_nab[N_tri_new] = nab;
-        neighbor[N_tri_new]    = tri_num;
-        face_id[N_tri_new]     = face_num;
-        ids[N_tri_new]         = i;
-        N_tri_new++;
+        new_tri_id.push_back( id );
+        new_tri.push_back( tri );
+        new_tri_nab.push_back( nab );
+        neighbor.push_back( tri_num );
+        face_id.push_back( face_num );
+        ids.push_back( i );
     }
-    if ( N_tri_new == 0 ) {
+    if ( ids.empty() ) {
         // No triangles were created, the point must be inside (or on) the convex hull
-        delete[] ids;
         PROFILE_STOP2_L2( "FaceList::add_node" );
-        return 0;
+        AMP_ERROR( "Error: point is inside or on the convex hull" );
     }
     // Check that the new triangles are valid and have the proper point ordering
-    for ( int i = 0; i < N_tri_new; i++ ) {
+    for ( size_t i = 0; i < ids.size(); i++ ) {
         for ( int j1 = 0; j1 <= NDIM; j1++ ) {
             int k  = new_tri[i][j1];
             x2[j1] = x0[k];
@@ -437,9 +418,8 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
         double volume = DelaunayHelpers::calcVolume<NDIM, TYPE, ETYPE>( x2 );
         if ( fabs( volume ) <= TOL_vol ) {
             // The triangle is invalid
-            delete[] ids;
             PROFILE_STOP2_L2( "FaceList::add_node" );
-            return -1;
+            AMP_ERROR( "Invalid triangle created" );
         } else if ( volume < 0 ) {
             // The volume is negitive, swap the order of the last two points
             std::swap( new_tri[i][NDIM - 1], new_tri[i][NDIM] );
@@ -454,8 +434,8 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
             printf( "Warning: volume is still negitive\n" );
     }
     // Check if the current triangle shares a face with one of the other new triangles
-    for ( int i1 = 0; i1 < N_tri_new; i1++ ) {
-        for ( int i2 = i1 + 1; i2 < N_tri_new; i2++ ) {
+    for ( size_t i1 = 0; i1 < ids.size(); i1++ ) {
+        for ( size_t i2 = i1 + 1; i2 < ids.size(); i2++ ) {
             int f1, f2;
             bool is_neighbor =
                 are_tri_neighbors( NDIM, new_tri[i1].data(), new_tri[i2].data(), &f1, &f2 );
@@ -470,22 +450,10 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
         }
     }
     // Remove the old faces that were used to create the triangles
-    delete_faces( N_tri_new, ids );
-    // Allocate more memory if necessary (we will add a max of N_tri_new*NDIM faces)
-    if ( ( N_face + N_tri_new * NDIM ) > (int) ( size / sizeof( face_data_struct ) ) ) {
-        while ( ( N_face + N_tri_new * NDIM ) > (int) ( size / sizeof( face_data_struct ) ) )
-            size *= 2;
-        face_data_struct *tmp_data = data;
-        data                       = new face_data_struct[size / sizeof( face_data_struct )];
-        for ( size_t i = 0; i < size / sizeof( face_data_struct ); i++ )
-            data[i].reset();
-        for ( int i = 0; i < N_face; i++ )
-            data[i] = tmp_data[i];
-        delete[] tmp_data;
-    }
+    delete_faces( ids );
     // Add the new faces for each triangle
     int N_add = 0;
-    for ( int i = 0; i < N_tri_new; i++ ) {
+    for ( size_t i = 0; i < new_tri_nab.size(); i++ ) {
         for ( int d = 0; d <= NDIM; d++ ) {
             if ( new_tri_nab[i][d] == -1 )
                 N_add++;
@@ -495,60 +463,57 @@ int DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::add_node(
         AMP_ASSERT( N_add == 2 );
     } else if constexpr ( NDIM == 3 ) {
         AMP_ASSERT( N_add >= 3 );
-        AMP_ASSERT( N_add <= 2 * N_tri_new + 1 );
+        AMP_ASSERT( N_add <= (int) ( 2 * ids.size() + 1 ) );
     }
-    for ( int i = 0; i < N_tri_new; i++ ) {
+    for ( size_t i = 0; i < new_tri_id.size(); i++ ) {
         for ( int j = 0; j <= NDIM; j++ ) {
             if ( new_tri_nab[i][j] == -1 ) {
                 // Add the face
-                data[N_face].tri_id  = new_tri_id[i];
-                data[N_face].face_id = j;
-                int j1               = 0;
+                face_data_struct tmp;
+                tmp.tri_id  = new_tri_id[i];
+                tmp.face_id = j;
+                int j1      = 0;
                 for ( int j2 = 0; j2 <= NDIM; j2++ ) {
                     if ( j2 == j )
                         continue;
-                    int k                  = new_tri[i][j2];
-                    data[N_face].index[j1] = k;
-                    data[N_face].x[j1]     = x0[k];
+                    int k         = new_tri[i][j2];
+                    tmp.index[j1] = k;
+                    tmp.x[j1]     = x0[k];
                     j1++;
                 }
                 // Update the hash table
-                unsigned int key  = get_hash_key( get_face_index( j, new_tri_id[i] ) );
-                int k             = hash_table[key];
-                hash_table[key]   = N_face;
-                data[N_face].prev = -static_cast<int>( key + 1 );
-                data[N_face].next = k;
+                auto key        = get_hash_key( get_face_index( j, new_tri_id[i] ) );
+                int k           = hash_table[key];
+                hash_table[key] = data.size();
+                tmp.prev        = -static_cast<int>( key + 1 );
+                tmp.next        = k;
                 if ( k != -1 )
-                    data[k].prev = N_face;
-                N_face++;
+                    data[k].prev = data.size();
+                data.push_back( tmp );
             }
         }
     }
 #if DEBUG_CHECK == 2
     check_data();
 #endif
-    delete[] ids;
 // Check the triangle neighbors
 #if DEBUG_CHECK == 2
-    auto tri_nab_tmp = new Triangle[N_tri_new];
-    memcpy( tri_nab_tmp, new_tri_nab, N_tri_new * sizeof( Triangle ) );
-    for ( int i = 0; i < N_tri_new; i++ ) {
+    auto tri_nab_tmp = new_tri_nab;
+    for ( size_t i = 0; i < new_tri_nab.size(); i++ ) {
         for ( int d = 0; d <= NDIM; d++ ) {
             int k = -1;
-            for ( int j = 0; j < N_tri_new; j++ )
+            for ( size_t j = 0; j < new_tri_id.size(); j++ )
                 if ( tri_nab_tmp[i][d] == (int) new_tri_id[j] )
                     k = j;
             tri_nab_tmp[i][d] = k;
         }
     }
     bool all_valid = check_current_triangles<NDIM, TYPE, ETYPE>(
-        Nx, x0, N_tri_new, new_tri, tri_nab_tmp, std::vector<size_t>(), 0 );
+        Nx, x0, new_tri.size(), new_tri, tri_nab_tmp, std::vector<size_t>(), 0 );
     if ( !all_valid )
         printf( "Warning: new triangle neighbors are inconsistent\n" );
-    delete[] tri_nab_tmp;
 #endif
     PROFILE_STOP_L2( "FaceList::add_node" );
-    return N_tri_new;
 }
 
 
@@ -572,9 +537,9 @@ inline bool compare_index<3>( const int *i1, const int *i2 )
 template<int NDIM, class TYPE, class ETYPE>
 void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::check_data()
 {
-    for ( int i = 0; i < N_face; i++ ) {
+    for ( size_t i = 0; i < data.size(); i++ ) {
         int Nf = 0;
-        for ( int j = 0; j < N_face; j++ ) {
+        for ( size_t j = 0; j < data.size(); j++ ) {
             bool c1 = data[i].tri_id == data[j].tri_id && data[i].face_id == data[j].face_id;
             bool c2 = compare_index<NDIM>( data[i].index, data[j].index );
             if ( c1 && c2 )
@@ -586,16 +551,14 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::check_data()
     }
     if constexpr ( NDIM == 2 ) {
         // No node should be on the face list more than twice
-        auto tmp = new unsigned char[Nx];
-        memset( tmp, 0, Nx );
-        for ( int i = 0; i < N_face; i++ ) {
+        std::vector<uint8_t> tmp( Nx );
+        for ( size_t i = 0; i < data.size(); i++ ) {
             tmp[data[i].index[0]]++;
             tmp[data[i].index[1]]++;
         }
         bool pass = true;
         for ( int i = 0; i < Nx; i++ )
             pass = pass && tmp[i] <= 2;
-        delete[] tmp;
         if ( !pass )
             AMP_ERROR( "Internal error" );
     }
@@ -653,10 +616,10 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
     // have changed)
     for ( int i = 0; i < N_update; i++ ) {
         // Find the face
-        unsigned int key = get_hash_key( index_update[i] );
-        auto tri_id      = static_cast<int>( index_update[i] / ( NDIM + 1 ) );
-        auto face_id     = static_cast<int>( index_update[i] % ( NDIM + 1 ) );
-        int j            = hash_table[key];
+        auto key     = get_hash_key( index_update[i] );
+        auto tri_id  = static_cast<int>( index_update[i] / ( NDIM + 1 ) );
+        auto face_id = static_cast<int>( index_update[i] % ( NDIM + 1 ) );
+        int j        = hash_table[key];
         while ( j != -1 ) {
             if ( data[j].tri_id == tri_id && data[j].face_id == face_id )
                 break;
@@ -678,10 +641,10 @@ void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::update_face( const int N
     // Replace each face that needs updating
     for ( int i = 0; i < N2; i++ ) {
         // Find the old face
-        unsigned int key = get_hash_key( index_old[i] );
-        auto old_tri     = static_cast<int>( index_old[i] / ( NDIM + 1 ) );
-        auto old_face    = static_cast<int>( index_old[i] % ( NDIM + 1 ) );
-        int j            = hash_table[key];
+        auto key      = get_hash_key( index_old[i] );
+        auto old_tri  = static_cast<int>( index_old[i] / ( NDIM + 1 ) );
+        auto old_face = static_cast<int>( index_old[i] % ( NDIM + 1 ) );
+        int j         = hash_table[key];
         while ( j != -1 ) {
             if ( data[j].tri_id == old_tri && data[j].face_id == old_face )
                 break;
@@ -858,24 +821,6 @@ bool DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::outside_triangle(
         dist += norm[i] * ETYPE( xi[i] - x[0][i] );
     }
     return dot * static_cast<double>( dist ) > 0;
-}
-
-
-/********************************************************************
- * FaceList::face_data_struct functions                              *
- ********************************************************************/
-template<int NDIM, class TYPE, class ETYPE>
-void DelaunayTessellation::FaceList<NDIM, TYPE, ETYPE>::face_data_struct::reset()
-{
-    prev    = -1;
-    next    = -1;
-    tri_id  = -1;
-    face_id = -1;
-    for ( int i = 0; i < NDIM; i++ ) {
-        index[i] = -1;
-        for ( int j = 0; j < NDIM; j++ )
-            x[i][j] = 0;
-    }
 }
 
 

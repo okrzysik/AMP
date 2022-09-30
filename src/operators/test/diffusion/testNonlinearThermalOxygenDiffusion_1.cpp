@@ -107,13 +107,12 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
 
     // set up the frozen variables for each operator
     // first get defaults
-    double defTemp, defConc;
     auto thermalTransportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( thermalMaterialModel );
     auto oxyModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( oxygenTransportModel );
-    defConc = thermalTransportModel->getDefault( AMP::Operator::Diffusion::CONCENTRATION );
-    defTemp = thermalTransportModel->getDefault( AMP::Operator::Diffusion::TEMPERATURE );
+    double defTemp = thermalTransportModel->getProperty()->get_default( "temperature" );
+    double defConc = thermalTransportModel->getProperty()->get_default( "concentration" );
 
     // next get vectors
     auto tempVec = solVec->subsetVectorForVariable( inputVariable->getVariable( 0 ) );

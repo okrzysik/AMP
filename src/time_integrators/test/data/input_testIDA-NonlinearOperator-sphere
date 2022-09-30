@@ -20,7 +20,7 @@ Mesh_1{
          temperature = "temperature"
      }
      OutputVariable = "temperature"
-     PrincipalVariable = 0 
+     PrincipalVariable = "temperature" 
 
      DiffusionElement{
         name = "DiffusionNonlinearElement"

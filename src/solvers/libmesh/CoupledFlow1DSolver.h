@@ -17,6 +17,8 @@ public:
 
     virtual ~CoupledFlow1DSolver();
 
+    std::string type() const override { return "CoupledFlow1DSolver"; }
+
     void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 

@@ -126,8 +126,7 @@ static void linearFickTest( AMP::UnitTest *ut )
     }
 
     // CHECK THE SOLUTION
-    int zeroGhostWidth = 0;
-    auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
 
     // The analytical solution is:  T = a + b*z + c*z*z
     //   c = -power/2

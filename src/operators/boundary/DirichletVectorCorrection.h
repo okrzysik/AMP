@@ -24,16 +24,7 @@ public:
     /**
       Constructor
       */
-    explicit DirichletVectorCorrection(
-        std::shared_ptr<const DirichletVectorCorrectionParameters> params )
-        : BoundaryOperator( params ), d_variable( params->d_variable )
-    {
-        d_isAttachedToVolumeOperator = false;
-        d_setResidual                = false;
-        d_valuesType                 = 0;
-        d_scalingFactor              = 0.0;
-        reset( params );
-    }
+    explicit DirichletVectorCorrection( std::shared_ptr<const OperatorParameters> params );
 
     /**
       Destructor
@@ -122,13 +113,15 @@ protected:
     // This must be a simple variable not a dual or multivariable
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_variable;
 
-    bool d_isAttachedToVolumeOperator;
+    bool d_isAttachedToVolumeOperator = false;
 
-    bool d_setResidual;
+    bool d_setResidual = false;
 
-    int d_valuesType;
+    bool d_skipParams = false;
 
-    double d_scalingFactor;
+    int d_valuesType = 0;
+
+    double d_scalingFactor = 0;
 
 private:
 };

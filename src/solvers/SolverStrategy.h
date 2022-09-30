@@ -54,6 +54,9 @@ public:
      */
     virtual ~SolverStrategy();
 
+    //! Return the name of the solver
+    virtual std::string type() const = 0;
+
     enum class SolverStatus {
         ConvergedOnAbsTol,
         ConvergedOnRelTol,
@@ -119,6 +122,18 @@ public:
     {
         d_bUseZeroInitialGuess = use_zero_guess;
     }
+
+    /**
+     * Set a nested solver, eg, Krylov for Newton, preconditioner for Krylov etc. Null op in base
+     * class
+     */
+    virtual void setNestedSolver( std::shared_ptr<SolverStrategy> ) {}
+
+    /**
+     * Return a nested solver (eg preconditioner) if it exists. By default return a nullptr
+     */
+
+    virtual std::shared_ptr<SolverStrategy> getNestedSolver( void ) { return nullptr; }
 
     /**
      * Register the operator that the solver will use during solves

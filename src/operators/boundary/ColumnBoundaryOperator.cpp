@@ -1,8 +1,25 @@
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
+#include "AMP/operators/OperatorFactory.h"
 #include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Operator {
+
+
+ColumnBoundaryOperator::ColumnBoundaryOperator( std::shared_ptr<const OperatorParameters> params )
+    : BoundaryOperator( params )
+{
+    auto columnOpParams =
+        std::dynamic_pointer_cast<const ColumnBoundaryOperatorParameters>( params );
+    if ( columnOpParams ) {
+        for ( auto p : columnOpParams->d_OperatorParameters ) {
+            std::shared_ptr<Operator> op = AMP::Operator::OperatorFactory::create( p );
+            auto boundaryOp              = std::dynamic_pointer_cast<BoundaryOperator>( op );
+            AMP_ASSERT( boundaryOp );
+            d_Operators.push_back( boundaryOp );
+        }
+    }
+}
 
 
 void ColumnBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -20,14 +37,12 @@ ColumnBoundaryOperator::getParameters( const std::string &type,
 {
 
     std::shared_ptr<AMP::Database> db;
-    auto opParameters = std::make_shared<ColumnBoundaryOperatorParameters>( db );
-
+    auto opParameters  = std::make_shared<ColumnBoundaryOperatorParameters>( db );
+    opParameters->d_db = std::make_shared<AMP::Database>( "ColumnBoundaryOperator" );
+    opParameters->d_db->putScalar( "name", "ColumnBoundaryOperator" );
     opParameters->d_OperatorParameters.resize( d_Operators.size() );
-
-    for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
+    for ( unsigned int i = 0; i < d_Operators.size(); i++ )
         opParameters->d_OperatorParameters[i] = d_Operators[i]->getParameters( type, u, params );
-    }
-
     return opParameters;
 }
 
@@ -39,7 +54,7 @@ void ColumnBoundaryOperator::reset( std::shared_ptr<const OperatorParameters> pa
     AMP_INSIST( columnParameters, "ColumnBoundaryOperator::reset parameter object is NULL" );
 
     AMP_INSIST( columnParameters->d_OperatorParameters.size() == d_Operators.size(),
-                " std::vector sizes do not match! " );
+                "std::vector sizes do not match!" );
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ )
         d_Operators[i]->reset( columnParameters->d_OperatorParameters[i] );

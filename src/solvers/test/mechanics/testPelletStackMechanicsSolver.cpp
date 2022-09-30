@@ -80,14 +80,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         pelletStackSolver_db, pelletStackOp, linearColumnOperator, pelletStackSolver );
 
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = coupledOp;
     nonlinearSolverParams->d_pInitialGuess = solVec;
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( pelletStackSolver );
+    linearSolver->setNestedSolver( pelletStackSolver );
 
     siloWriter->registerVector( solVec, manager, AMP::Mesh::GeomType::Vertex, "Displacement" );
 

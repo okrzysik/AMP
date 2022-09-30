@@ -27,7 +27,7 @@ class LinearFEOperator : public LinearOperator
 public:
     //! Constructor. This copies the share pointer to the element operation from the input parameter
     //! object.
-    explicit LinearFEOperator( std::shared_ptr<const LinearFEOperatorParameters> params );
+    explicit LinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     //! Destructor
     virtual ~LinearFEOperator() {}
@@ -85,7 +85,7 @@ protected:
 
     libMesh::Elem *d_currElemPtr;
 
-    std::shared_ptr<ElementOperation> d_elemOp; /**< Shared pointer to the element operation */
+    std::shared_ptr<ElementOperation> d_elemOp;
     std::shared_ptr<AMP::Discretization::DOFManager> d_inDofMap;
     std::shared_ptr<AMP::Discretization::DOFManager> d_outDofMap;
 };

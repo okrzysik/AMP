@@ -100,10 +100,10 @@ static void linearTest( AMP::UnitTest *ut,
         burnVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar, true );
         burnVec->setToScalar( defBurn );
     }
-    diffOpParams->d_transportModel = transportModel;
-    diffOpParams->d_temperature    = tempVec;
-    diffOpParams->d_concentration  = concVec;
-    diffOpParams->d_burnup         = burnVec;
+    diffOpParams->d_transportModel             = transportModel;
+    diffOpParams->d_inputVecs["temperature"]   = tempVec;
+    diffOpParams->d_inputVecs["concentration"] = concVec;
+    diffOpParams->d_inputVecs["burnup"]        = burnVec;
 
     // reset with parameters
     diffOp->reset( diffOpParams );

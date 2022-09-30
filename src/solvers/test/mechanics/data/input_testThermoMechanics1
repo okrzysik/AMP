@@ -28,7 +28,7 @@ DiffusionNonlinearFEOperator1 {
   OutputVariable = "temp"
     Freezeconcentration = TRUE
     Freezeburnup = TRUE
-    PrincipalVariable = 0 
+    PrincipalVariable = "temperature" 
 
     DiffusionElement{
       name = "DiffusionNonlinearElement"

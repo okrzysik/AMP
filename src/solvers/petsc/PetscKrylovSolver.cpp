@@ -75,12 +75,9 @@ PetscKrylovSolver::PetscKrylovSolver( std::shared_ptr<SolverStrategyParameters> 
     d_sName = "PetscKrylovSolver";
     AMP_ASSERT( parameters );
 
-    auto params = std::dynamic_pointer_cast<PetscKrylovSolverParameters>( parameters );
-    AMP_ASSERT( params );
-
     // Create a default KrylovSolver
     d_bKSPCreatedInternally = true;
-    KSPCreate( params->d_comm.getCommunicator(), &d_KrylovSolver );
+    KSPCreate( parameters->d_comm.getCommunicator(), &d_KrylovSolver );
 
     // Initialize
     initialize( parameters );
@@ -100,9 +97,8 @@ PetscKrylovSolver::~PetscKrylovSolver()
 /****************************************************************
  *  Initialize                                                   *
  ****************************************************************/
-void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParameters> params )
+void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    auto parameters = std::dynamic_pointer_cast<const PetscKrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
     // the comm is set here of instead of the constructor because this routine
@@ -366,9 +362,9 @@ void PetscKrylovSolver::resetOperator(
 }
 
 void PetscKrylovSolver::initializePreconditioner(
-    std::shared_ptr<const PetscKrylovSolverParameters> parameters )
+    std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    d_pPreconditioner = parameters->d_pPreconditioner;
+    d_pPreconditioner = parameters->d_pNestedSolver;
 
     if ( d_pPreconditioner ) {
 
@@ -468,7 +464,7 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     }
 
     // Call the preconditioner
-    auto preconditioner = solver->getPreconditioner();
+    auto preconditioner = solver->getNestedSolver();
     if ( preconditioner != nullptr ) {
         preconditioner->apply( sp_r, sp_z );
     } else {

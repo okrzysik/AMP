@@ -11,10 +11,9 @@
 #include "AMP/operators/subchannel/SubchannelFourEqLinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelFourEqNonlinearOperator.h"
 #include "AMP/operators/subchannel/SubchannelHelpers.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -282,7 +281,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create nonlinear solver parameters
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -303,7 +302,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearFlowPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( PreconditionerParams );
     // set preconditioner
-    linearSolver->setPreconditioner( linearFlowPreconditioner );
+    linearSolver->setNestedSolver( linearFlowPreconditioner );
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );

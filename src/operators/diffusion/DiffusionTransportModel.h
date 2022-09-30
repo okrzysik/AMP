@@ -99,8 +99,6 @@ public:
 
     virtual void nonlinearJacobianGaussPointOperation( const double * ) {}
 
-    double getDefault( size_t i ) { return d_defaults[i]; }
-
     static std::shared_ptr<std::vector<double>>
     bilogTransform( const std::vector<double> &u, const double a, const double b );
 
@@ -174,8 +172,6 @@ protected:
     bool d_BilogScaleCoefficient;
 
 protected: // used to be private
-    std::vector<double> d_defaults;
-
     std::array<double, 2> d_BilogRange;
     double d_BilogEpsilonRangeLimit;
 

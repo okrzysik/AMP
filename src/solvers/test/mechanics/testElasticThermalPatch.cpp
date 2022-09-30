@@ -14,10 +14,9 @@
 #include "AMP/operators/mechanics/MechanicsNonlinearElement.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/operators/mechanics/ThermalStrainMaterialModel.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -117,14 +116,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     if ( usesJacobian ) {
         auto linearSolverParams =
-            std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
         linearSolverParams->d_pOperator = linearMechanicsBVPoperator;
         linearSolverParams->d_comm      = globalComm;
         linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     }
 
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = globalComm;
     nonlinearSolverParams->d_pOperator     = nonlinearMechanicsBVPoperator;
     nonlinearSolverParams->d_pInitialGuess = solVec;
@@ -152,7 +151,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     preconditionerParams->d_pOperator = linearMechanicsBVPoperator;
     auto preconditioner = std::make_shared<AMP::Solver::TrilinosMLSolver>( preconditionerParams );
 
-    linearSolver->setPreconditioner( preconditioner );
+    linearSolver->setNestedSolver( preconditioner );
 
     nonlinearSolver->apply( rhsVec, solVec );
 

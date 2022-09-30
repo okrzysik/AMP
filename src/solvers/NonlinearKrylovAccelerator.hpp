@@ -3,8 +3,8 @@
 #include <iomanip>
 
 #include "AMP/operators/OperatorFactory.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 
 #include "ProfilerApp.h"
 
@@ -28,7 +28,7 @@ NonlinearKrylovAccelerator<T>::NonlinearKrylovAccelerator(
         // 2. A preconditioner solver name is being specified
         // 3. A preconditioner solver name is not specified but the user will set on their own
         auto parameters =
-            std::dynamic_pointer_cast<AMP::Solver::NonlinearSolverParameters>( params );
+            std::dynamic_pointer_cast<AMP::Solver::SolverStrategyParameters>( params );
         if ( parameters != nullptr )
             d_preconditioner = parameters->d_pNestedSolver;
 
@@ -586,7 +586,7 @@ NonlinearKrylovAccelerator<T>::forwardbackwardSolve( std::shared_ptr<AMP::Linear
 }
 
 template<typename T>
-void NonlinearKrylovAccelerator<T>::setPreconditioner(
+void NonlinearKrylovAccelerator<T>::setNestedSolver(
     std::shared_ptr<AMP::Solver::SolverStrategy> pc )
 {
     d_preconditioner = pc;

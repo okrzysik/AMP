@@ -110,8 +110,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     rhsVec->setToScalar( 0.0 );
 
     // Fill in manufactured solution
-    int zeroGhostWidth = 0;
-    auto iterator      = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, zeroGhostWidth );
+    auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x, y, z;
         std::valarray<double> poly( 10 );

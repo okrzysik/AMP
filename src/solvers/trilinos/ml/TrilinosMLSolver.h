@@ -129,6 +129,7 @@ public:
      */
     virtual ~TrilinosMLSolver();
 
+    std::string type() const override { return "TrilinosMLSolver"; }
 
     //! static create routine that is used by SolverFactory
     static std::unique_ptr<SolverStrategy>

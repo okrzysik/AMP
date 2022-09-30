@@ -17,8 +17,7 @@ namespace AMP::Operator {
 class DiffusionLinearFEOperator : public LinearFEOperator
 {
 public:
-    explicit DiffusionLinearFEOperator(
-        std::shared_ptr<const DiffusionLinearFEOperatorParameters> params );
+    explicit DiffusionLinearFEOperator( std::shared_ptr<const OperatorParameters> params );
 
     virtual ~DiffusionLinearFEOperator() {}
 

@@ -568,7 +568,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
 
         // create nonlinear solver parameters
         auto nonlinearSolverParams =
-            std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
         nonlinearSolverParams->d_comm          = globalComm;
         nonlinearSolverParams->d_pOperator     = nonlinearCoupledOperator;
         nonlinearSolverParams->d_pInitialGuess = globalSolMultiVector;
@@ -579,7 +579,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             std::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>( nonlinearSolver )
                 ->getKrylovSolver();
         // set preconditioner
-        linearSolver->setPreconditioner( columnPreconditioner );
+        linearSolver->setNestedSolver( columnPreconditioner );
     }
 
     // don't use zero initial guess

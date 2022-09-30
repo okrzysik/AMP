@@ -51,7 +51,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
     siloWriter->setDecomposition( 1 );
 
-    //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
     std::fstream fout;
     std::string fileName = "debug_driver_" + AMP::Utilities::intToString( rank );
@@ -192,7 +191,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::Mesh::MeshID bottomPelletMeshID = bottomPelletTopPelletContactOperator->getMasterMeshID();
     AMP_ASSERT( bottomPelletMeshID == bottomPelletCladContactOperator->getMasterMeshID() );
     auto bottomPelletMeshAdapter = meshAdapter->Subset( bottomPelletMeshID );
-    if ( bottomPelletMeshAdapter.get() != NULL ) {
+    if ( bottomPelletMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> bottomPelletElementPhysicsModel;
         bottomPelletBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator( bottomPelletMeshAdapter,
@@ -204,7 +203,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto bottomPelletSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto bottomPelletSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( bottomPelletSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( bottomPelletSolver_db );
             bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
             bottomPelletSolverParams->d_comm      = bottomPelletMeshAdapter->getComm();
             auto bottomPelletSolver =
@@ -224,7 +223,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto topPelletMeshID = bottomPelletTopPelletContactOperator->getSlaveMeshID();
     AMP_ASSERT( topPelletMeshID == topPelletCladContactOperator->getMasterMeshID() );
     auto topPelletMeshAdapter = meshAdapter->Subset( topPelletMeshID );
-    if ( topPelletMeshAdapter.get() != NULL ) {
+    if ( topPelletMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> topPelletElementPhysicsModel;
         topPelletBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator( topPelletMeshAdapter,
@@ -236,7 +235,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto topPelletSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto topPelletSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( topPelletSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( topPelletSolver_db );
             topPelletSolverParams->d_pOperator = topPelletBVPOperator;
             topPelletSolverParams->d_comm      = topPelletMeshAdapter->getComm();
             auto topPelletSolver =
@@ -256,7 +255,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto cladMeshID = bottomPelletCladContactOperator->getSlaveMeshID();
     AMP_ASSERT( cladMeshID == topPelletCladContactOperator->getSlaveMeshID() );
     auto cladMeshAdapter = meshAdapter->Subset( cladMeshID );
-    if ( cladMeshAdapter.get() != NULL ) {
+    if ( cladMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> cladElementPhysicsModel;
         cladBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
@@ -273,7 +272,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else {
             auto cladSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto cladSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( cladSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( cladSolver_db );
             cladSolverParams->d_pOperator = cladBVPOperator;
             cladSolverParams->d_comm      = cladMeshAdapter->getComm();
             auto cladSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( cladSolverParams );
@@ -595,15 +594,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     int numBottomPelletLocalNodes = 0;
     int numTopPelletLocalNodes    = 0;
     int numCladLocalNodes         = 0;
-    if ( bottomPelletMeshAdapter.get() != NULL ) {
+    if ( bottomPelletMeshAdapter ) {
         numBottomPelletLocalNodes =
             bottomPelletMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
-    if ( topPelletMeshAdapter.get() != NULL ) {
+    if ( topPelletMeshAdapter ) {
         numTopPelletLocalNodes =
             topPelletMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
-    if ( cladMeshAdapter.get() != NULL ) {
+    if ( cladMeshAdapter ) {
         numCladLocalNodes = cladMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     int matLocalSize =
@@ -615,10 +614,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     matrixShellOperator->setOperator( columnOperator );
 
     auto linearSolverParams =
-        std::make_shared < AMP::Solver::PetscKrylovSolverParameters ? ( linearSolver_db );
-    linearSolverParams->d_pOperator       = matrixShellOperator;
-    linearSolverParams->d_comm            = globalComm;
-    linearSolverParams->d_pPreconditioner = columnPreconditioner;
+        std::make_shared < AMP::Solver::SolverStrategyParameters ? ( linearSolver_db );
+    linearSolverParams->d_pOperator     = matrixShellOperator;
+    linearSolverParams->d_comm          = globalComm;
+    linearSolverParams->d_pNestedSolver = columnPreconditioner;
     auto linearSolver = std::make_shared < AMP::Solver::PetscKrylovSolver ? ( linearSolverParams );
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );
@@ -701,19 +700,19 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             }
 
             // apply dirichlet rhs correction on f
-            if ( bottomPelletBVPOperator.get() != NULL ) {
+            if ( bottomPelletBVPOperator ) {
                 bottomPelletBVPOperator->modifyRHSvector( columnRhsVec );
             }
-            if ( topPelletBVPOperator.get() != NULL ) {
+            if ( topPelletBVPOperator ) {
                 topPelletBVPOperator->modifyRHSvector( columnRhsVec );
             }
-            if ( cladBVPOperator.get() != NULL ) {
+            if ( cladBVPOperator ) {
                 cladBVPOperator->modifyRHSvector( columnRhsVec );
             }
             {
                 auto bottomPelletMat = bottomPelletBVPOperator->getMatrix();
                 auto bottomPelletRhs = bottomPelletBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( bottomPelletCor.get() == nullptr ) {
+                if ( !bottomPelletCor ) {
                     bottomPelletCor = bottomPelletRhs->cloneVector();
                     applyCustomDirichletCondition( bottomPelletRhs,
                                                    bottomPelletCor,
@@ -727,11 +726,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    bottomPelletConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( bottomPelletCor.get() != nullptr );
+                AMP_ASSERT( bottomPelletCorptr );
 
                 auto topPelletMat = topPelletBVPOperator->getMatrix();
                 auto topPelletRhs = topPelletBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( topPelletCor.get() == nullptr ) {
+                if ( !topPelletCor ) {
                     topPelletCor = topPelletRhs->cloneVector();
                     applyCustomDirichletCondition( topPelletRhs,
                                                    topPelletCor,
@@ -745,11 +744,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    topPelletConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( topPelletCor.get() != nullptr );
+                AMP_ASSERT( topPelletCorptr );
 
                 auto cladMat = cladBVPOperator->getMatrix();
                 auto cladRhs = cladBVPOperator->subsetOutputVector( columnRhsVec );
-                if ( cladCor.get() == nullptr ) {
+                if ( !cladCor ) {
                     cladCor = cladRhs->cloneVector();
                     applyCustomDirichletCondition(
                         cladRhs, cladCor, cladMeshAdapter, cladConstraints, cladMat );
@@ -760,7 +759,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                    cladConstraints,
                                                    std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
                 } // end if
-                AMP_ASSERT( topPelletCor.get() != nullptr );
+                AMP_ASSERT( topPelletCorptr );
             }
 
             // get d

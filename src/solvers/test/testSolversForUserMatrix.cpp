@@ -8,7 +8,6 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -57,10 +56,9 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
                 AMP_INSIST( pcSolver, "null preconditioner" );
             }
 
-            auto params               = std::make_shared<AMP::Solver::KrylovSolverParameters>( db );
-            params->d_comm            = comm;
-            params->d_pPreconditioner = pcSolver;
-            parameters                = params;
+            auto parameters    = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+            parameters->d_comm = comm;
+            parameters->d_pNestedSolver = pcSolver;
 
         } else {
             parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );

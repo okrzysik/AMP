@@ -25,7 +25,7 @@ BoundaryOperator = "DirichletVectorCorrection1"
          temperature = "temp"
      }
      OutputVariable = "temp"
-     PrincipalVariable = 0 
+     PrincipalVariable = "temperature" 
 
      DiffusionElement{
         name = "DiffusionNonlinearElement"

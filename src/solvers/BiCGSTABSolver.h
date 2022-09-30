@@ -1,8 +1,8 @@
 #ifndef included_AMP_BiCGSTABSolver
 #define included_AMP_BiCGSTABSolver
 
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMP_MPI.h"
 
 
@@ -61,6 +61,8 @@ public:
      */
     virtual ~BiCGSTABSolver();
 
+    std::string type() const override { return "BiCGSTABSolver"; }
+
     /**
      * Solve the system \f$Au = 0\f$.
      * @param [in] f : shared pointer to right hand side vector
@@ -76,22 +78,18 @@ public:
     void initialize( std::shared_ptr<const SolverStrategyParameters> parameters ) override;
 
     /**
-     * returns a shared pointer to a preconditioner object. The preconditioner is derived from
-     * a SolverStrategy class
-     */
-    inline std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
-    {
-        return d_pPreconditioner;
-    }
-
-    /**
      * sets a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      * @param pc shared pointer to preconditioner
      */
-    inline void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> pc )
+    inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
         d_pPreconditioner = pc;
+    }
+
+    inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver() override
+    {
+        return d_pPreconditioner;
     }
 
     /**

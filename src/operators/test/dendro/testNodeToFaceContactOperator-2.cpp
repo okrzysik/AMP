@@ -228,7 +228,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::LinearBVPOperator> dummyMasterBVPOperator;
     auto masterMeshID = contactOperator->getMasterMeshID();
     auto              = meshAdapter->Subset( masterMeshID );
-    if ( masterMeshAdapter.get() != NULL ) {
+    if ( masterMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> masterElementPhysicsModel;
         masterBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
@@ -238,7 +238,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto masterSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto masterSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( masterSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( masterSolver_db );
             masterSolverParams->d_pOperator = masterBVPOperator;
             masterSolverParams->d_comm      = masterMeshAdapter->getComm();
             auto masterSolver =
@@ -264,7 +264,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     std::shared_ptr<AMP::Operator::LinearBVPOperator> slaveBVPOperator;
     auto slaveMeshID      = contactOperator->getSlaveMeshID();
     auto slaveMeshAdapter = meshAdapter->Subset( slaveMeshID );
-    if ( slaveMeshAdapter.get() != NULL ) {
+    if ( slaveMeshAdapter ) {
         std::shared_ptr<AMP::Operator::ElementPhysicsModel> slaveElementPhysicsModel;
         slaveBVPOperator = std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>(
             AMP::Operator::OperatorBuilder::createOperator(
@@ -273,7 +273,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto slaveSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto slaveSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( slaveSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( slaveSolver_db );
             slaveSolverParams->d_pOperator = slaveBVPOperator;
             slaveSolverParams->d_comm      = slaveMeshAdapter->getComm();
             auto slaveSolver =
@@ -359,10 +359,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     int numMasterLocalNodes = 0;
     int numSlaveLocalNodes  = 0;
-    if ( masterMeshAdapter.get() != NULL ) {
+    if ( masterMeshAdapter ) {
         numMasterLocalNodes = masterMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
-    if ( slaveMeshAdapter.get() != NULL ) {
+    if ( slaveMeshAdapter ) {
         numSlaveLocalNodes = slaveMeshAdapter->numLocalElements( AMP::Mesh::GeomType::Vertex );
     }
     int matLocalSize = dofsPerNode * ( numMasterLocalNodes + numSlaveLocalNodes );
@@ -391,7 +391,6 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     columnSolVec->zero();
     columnRhsVec->zero();
     AMP::LinearAlgebra::Vector::shared_ptr cor;
-    AMP_ASSERT( cor.get() == nullptr );
 
     auto tempVar        = std::make_shared<AMP::LinearAlgebra::Variable>( "temperature" );
     auto dispVar        = columnOperator->getOutputVariable();
@@ -482,10 +481,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( "TITI_0", 0 );
 
     auto linearSolverParams =
-        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
-    linearSolverParams->d_pOperator       = petscMatrixShellOperator;
-    linearSolverParams->d_comm            = globalComm;
-    linearSolverParams->d_pPreconditioner = columnPreconditioner;
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
+    linearSolverParams->d_pOperator     = petscMatrixShellOperator;
+    linearSolverParams->d_comm          = globalComm;
+    linearSolverParams->d_pNestedSolver = columnPreconditioner;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );
@@ -533,16 +532,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             columnRhsVec->scale( scalingFactor );
 
             // apply dirichlet rhs correction
-            if ( masterBVPOperator.get() != NULL ) {
+            if ( masterBVPOperator ) {
                 masterBVPOperator->modifyRHSvector( columnRhsVec );
             } // end if
-            if ( slaveBVPOperator.get() != NULL ) {
+            if ( slaveBVPOperator ) {
                 slaveBVPOperator->modifyRHSvector( columnRhsVec );
             } // end if
 
             auto mat = masterBVPOperator->getMatrix();
             auto rhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
-            if ( cor.get() == nullptr ) {
+            if ( !cor ) {
                 cor = rhs->cloneVector();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
             } else {
@@ -552,7 +551,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                                                constraints,
                                                std::shared_ptr<AMP::LinearAlgebra::Matrix>() );
             } // end if
-            AMP_ASSERT( cor.get() != nullptr );
+            AMP_ASSERT( cor );
 
             // get d
             contactOperator->addShiftToSlave( columnSolVec );

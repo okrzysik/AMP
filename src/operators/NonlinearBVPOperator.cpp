@@ -9,12 +9,13 @@
 namespace AMP::Operator {
 
 
-NonlinearBVPOperator::NonlinearBVPOperator( std::shared_ptr<const BVPOperatorParameters> params )
-    : Operator( params ),
-      d_volumeOperator( params->d_volumeOperator ),
-      d_boundaryOperator( params->d_boundaryOperator )
+NonlinearBVPOperator::NonlinearBVPOperator( std::shared_ptr<const OperatorParameters> params )
+    : Operator( params )
 {
-    d_Mesh = d_volumeOperator->getMesh();
+    auto parmeters     = std::dynamic_pointer_cast<const BVPOperatorParameters>( params );
+    d_volumeOperator   = parmeters->d_volumeOperator;
+    d_boundaryOperator = parmeters->d_boundaryOperator;
+    d_Mesh             = d_volumeOperator->getMesh();
 }
 
 void NonlinearBVPOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
