@@ -15,7 +15,6 @@
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/ConstraintsEliminationSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -75,7 +74,7 @@ static void myTest( AMP::UnitTest *ut )
         colOp->append( bvpOp );
 
         auto solver_db    = preconditioner_db->getDatabase( "Solver" );
-        auto solverParams = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( solver_db );
+        auto solverParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( solver_db );
         solverParams->d_pOperator = bvpOp;
         solverParams->d_comm      = globalComm;
         auto solver = std::make_shared<AMP::Solver::PetscKrylovSolver>( solverParams );
@@ -175,7 +174,7 @@ static void myTest( AMP::UnitTest *ut )
         }
 
         auto linearSolverParams =
-            std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
         linearSolverParams->d_pOperator       = shellOp;
         linearSolverParams->d_comm            = globalComm;
         linearSolverParams->d_pPreconditioner = colPre;
