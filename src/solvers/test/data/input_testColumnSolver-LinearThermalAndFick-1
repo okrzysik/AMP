@@ -117,8 +117,8 @@ FickDiffusionTransportModel{
 ThermalDiffusionLinearFEOperator{
      name = "DiffusionLinearFEOperator"
      reset_reuses_matrix = TRUE
-     InputVariable = "temp"
-     OutputVariable = "temp"
+     InputVariable = "temperature"
+     OutputVariable = "temperature"
      FixedConcentration = TRUE
      FixedBurnup = TRUE
 

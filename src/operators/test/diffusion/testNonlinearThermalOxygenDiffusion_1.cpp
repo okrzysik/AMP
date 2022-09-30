@@ -81,9 +81,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     auto volumeOperator = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nonlinearThermalOperator->getVolumeOperator() );
     auto inputVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "inputVariable" );
-    // inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Diffusion::TEMPERATURE));
-    // inputVariable->add(volumeOperator->getInputVariable(AMP::Operator::Diffusion::CONCENTRATION));
-    auto tmp = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
+    auto tmp           = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         volumeOperator->getInputVariable() );
     for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
         if ( tmp->getVariable( i ) )
@@ -129,7 +127,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     scale[1]  = 1.;
     auto matt = thermalTransportModel->getMaterial();
     auto mato = oxyModel->getMaterial();
-    if ( volumeOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
+    if ( volumeOperator->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalConductivity";
         if ( ( matt->property( property ) )->is_argument( "temperature" ) ) {
             auto range =
@@ -140,7 +138,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
         }
     }
     // the Fick has a principal variable of oxygen
-    if ( fickOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
+    if ( fickOperator->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
         if ( ( mato->property( property ) )->is_argument( "concentration" ) ) {
             auto range =
@@ -186,6 +184,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
 
     ut->passes( exeName + " : Linear::reset" );
 }
+
 
 int testNonlinearThermalOxygenDiffusion_1( int argc, char *argv[] )
 {

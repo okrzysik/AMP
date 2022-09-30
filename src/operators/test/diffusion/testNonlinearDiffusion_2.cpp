@@ -113,11 +113,11 @@ static void nonlinearTest( AMP::UnitTest *ut,
     bVec->setToScalar( defBurn );
 
     // set principal variable vector
-    if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE )
+    if ( diffOp->getPrincipalVariable() == "temperature" )
         diffOpParams->d_FrozenVecs["temperature"] = tVec;
-    if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION )
+    if ( diffOp->getPrincipalVariable() == "concentration" )
         diffOpParams->d_FrozenVecs["concentration"] = cVec;
-    if ( diffOp->getPrincipalVariableId() == AMP::Operator::Diffusion::BURNUP )
+    if ( diffOp->getPrincipalVariable() == "burnup" )
         diffOpParams->d_FrozenVecs["burnup"] = bVec;
 
     // set frozen vectors in parameters
@@ -138,17 +138,13 @@ static void nonlinearTest( AMP::UnitTest *ut,
     // auto diffOp->getInputVariable(diffOp->getPrincipalVariableId());
     auto diffSolVar = diffOp->getOutputVariable();
 
-    auto diffRhsVar     = diffOp->getOutputVariable();
-    auto diffResVar     = diffOp->getOutputVariable();
-    auto nonPrincIds    = diffOp->getNonPrincipalVariableIds();
-    auto numNonPrincIds = nonPrincIds.size();
-    std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> nonPrincVars( numNonPrincIds );
+    auto diffRhsVar  = diffOp->getOutputVariable();
+    auto diffResVar  = diffOp->getOutputVariable();
+    auto nonPrincIds = diffOp->getNonPrincipalVariableIds();
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> nonPrincVars( nonPrincIds.size() );
     auto inputVar = diffOp->getInputVariable();
-    for ( size_t i = 0; i < numNonPrincIds; i++ ) {
-        // nonPrincVars[i] = diffOp->getInputVariable(nonPrincIds[i]);
-        nonPrincVars[i] = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>( inputVar )
-                              ->getVariable( i );
-    }
+    for ( size_t i = 0; i < nonPrincIds.size(); i++ )
+        nonPrincVars[i] = std::make_shared<AMP::LinearAlgebra::Variable>( nonPrincIds[i] );
 
     // set up vectors for apply tests
     // std::string msgPrefix=exeName+": apply";
@@ -156,14 +152,14 @@ static void nonlinearTest( AMP::UnitTest *ut,
     auto diffRhsVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffRhsVar );
     auto diffResVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffResVar );
 
-    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nonPrincVecs( numNonPrincIds );
-    for ( unsigned int i = 0; i < numNonPrincIds; i++ ) {
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> nonPrincVecs( nonPrincIds.size() );
+    for ( unsigned int i = 0; i < nonPrincIds.size(); i++ ) {
         nonPrincVecs[i] = AMP::LinearAlgebra::createVector( nodalDofMap, nonPrincVars[i] );
-        if ( nonPrincIds[i] == AMP::Operator::Diffusion::TEMPERATURE )
+        if ( nonPrincIds[i] == "temperature" )
             nonPrincVecs[i]->setToScalar( defTemp );
-        if ( nonPrincIds[i] == AMP::Operator::Diffusion::CONCENTRATION )
+        if ( nonPrincIds[i] == "concentration" )
             nonPrincVecs[i]->setToScalar( defConc );
-        if ( nonPrincIds[i] == AMP::Operator::Diffusion::BURNUP )
+        if ( nonPrincIds[i] == "burnup" )
             nonPrincVecs[i]->setToScalar( defBurn );
     }
     diffRhsVec->setToScalar( 0.0 );
@@ -173,9 +169,9 @@ static void nonlinearTest( AMP::UnitTest *ut,
 
     for ( curNode = curNode.begin(); curNode != endNode; ++curNode ) {
         // double x = curNode->x();
-        double x = ( curNode->coord() )[0];
-        double y = ( curNode->coord() )[1];
-        double z = ( curNode->coord() )[2];
+        double x = curNode->coord()[0];
+        double y = curNode->coord()[1];
+        double z = curNode->coord()[2];
         std::vector<size_t> dofs;
         nodalDofMap->getDOFs( curNode->globalID(), dofs );
         double fval = function( x, y, z );

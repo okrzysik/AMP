@@ -5,6 +5,20 @@
 
 namespace AMP::Operator {
 
+
+static int getVariableID( const std::string &name )
+{
+    int id = -1;
+    for ( size_t i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
+        if ( name == Diffusion::names[i] )
+            id = i;
+    }
+    if ( id == 100000 )
+        AMP_ERROR( "Unknown variable: " + name );
+    return id;
+}
+
+
 void DiffusionNonlinearElement::initTransportModel()
 {
     d_fe->reinit( d_elem );
@@ -17,6 +31,7 @@ void DiffusionNonlinearElement::initTransportModel()
 
     d_transportModel->postNonlinearInitElementOperation();
 }
+
 
 void DiffusionNonlinearElement::apply()
 {
@@ -130,27 +145,27 @@ void DiffusionNonlinearElement::apply()
         }
     }
 
+    int id = getVariableID( d_PrincipalVariable );
     for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
         libMesh::RealGradient grad_phi = 0.0;
 
-        for ( size_t n = 0; n < num_nodes; n++ ) {
-            grad_phi += dphi[n][qp] * d_elementInputVectors[d_PrincipalVariable][n];
-        }
+        for ( size_t n = 0; n < num_nodes; n++ )
+            grad_phi += dphi[n][qp] * d_elementInputVectors[id][n];
 
         d_transportModel->preNonlinearAssemblyGaussPointOperation();
 
         if ( not d_transportModel->isaTensor() ) {
             for ( size_t n = 0; n < num_nodes; n++ ) {
                 ( *d_elementOutputVector )[n] +=
-                    ( JxW[qp] * transportCoeff[qp] * dphi[n][qp] * grad_phi );
+                    JxW[qp] * transportCoeff[qp] * dphi[n][qp] * grad_phi;
             } // end for n
         } else {
             for ( size_t n = 0; n < num_nodes; n++ ) {
                 for ( int i = 0; i < 3; i++ )
                     for ( int j = 0; j < 3; j++ ) {
-                        ( *d_elementOutputVector )[n] +=
-                            ( JxW[qp] * ( *transportCoeffTensor( i, j ) )[qp] * dphi[n][qp]( i ) *
-                              grad_phi( j ) );
+                        ( *d_elementOutputVector )[n] += JxW[qp] *
+                                                         ( *transportCoeffTensor( i, j ) )[qp] *
+                                                         dphi[n][qp]( i ) * grad_phi( j );
                     }
             } // end for n
         }

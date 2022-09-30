@@ -71,7 +71,7 @@ MechanicsNonlinearFEOperator{
         print_info_level = 1
         ActiveInputVariables {
           DISPLACEMENT = "disp"
-            TEMPERATURE = "temp"
+            TEMPERATURE = "temperature"
         }
       OutputVariable = "disp"
         RESET_REUSES_RADIAL_RETURN = TRUE

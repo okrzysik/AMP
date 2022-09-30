@@ -174,7 +174,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     scale[1]   = 1.;
     auto matTh = transportModelTh->getMaterial();
     auto matOx = transportModelOx->getMaterial();
-    if ( thermOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::TEMPERATURE ) {
+    if ( thermOperator->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalConductivity";
         if ( ( matTh->property( property ) )->is_argument( "temperature" ) ) {
             auto range =
@@ -185,7 +185,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
         }
     }
     // the Fick has a principal variable of oxygen
-    if ( fickOperator->getPrincipalVariableId() == AMP::Operator::Diffusion::CONCENTRATION ) {
+    if ( fickOperator->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
         if ( ( matOx->property( property ) )->is_argument( "concentration" ) ) {
             auto range =

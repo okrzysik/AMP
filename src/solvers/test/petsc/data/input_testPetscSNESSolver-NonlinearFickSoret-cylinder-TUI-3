@@ -30,11 +30,11 @@ FickDiffusionNonlinearFEOperator{
       name = "DiffusionNonlinearFEOperator" 
         print_info_level = 3
         ActiveInputVariables {
-          temperature = "temp"
-          concentration = "conc"
+          temperature = "temperature"
+          concentration = "concentration"
         }
         Freezetemperature = TRUE
-        OutputVariable = "conc"
+        OutputVariable = "concentration"
         PrincipalVariable = "concentration"
 
         DiffusionElement{
@@ -53,11 +53,11 @@ SoretDiffusionNonlinearFEOperator{
 
       print_info_level = 3    
       ActiveInputVariables {
-        temperature = "temp"
-        concentration = "conc"
+        temperature = "temperature"
+        concentration = "concentration"
       }
       Freezetemperature = TRUE
-      OutputVariable = "conc"
+      OutputVariable = "concentration"
       PrincipalVariable = "temperature" 
 
       DiffusionElement{
@@ -94,8 +94,8 @@ DiffusionLinearFEOperator2 {
         name = "DiffusionLinearFEOperator"
         print_info_level = 0
         reset_reuses_matrix = TRUE
-        InputVariable = "conc"
-        OutputVariable = "conc"
+        InputVariable = "concentration"
+        OutputVariable = "concentration"
         FixedTemperature = TRUE
         FixedBurnup = TRUE
 
