@@ -240,9 +240,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         ut->passes( "Testing IDATimeIntegratorParameters' Constructor" );
     }
 
-    time_Params->d_pMassOperator   = columnMassOperator;
-    time_Params->d_operator        = columnNonlinearRhsOperator;
-    time_Params->d_pPreconditioner = columnPreconditioner;
+    time_Params->d_pMassOperator = columnMassOperator;
+    time_Params->d_operator      = columnNonlinearRhsOperator;
+    time_Params->d_pNestedSolver = columnPreconditioner;
 
     time_Params->d_ic_vector       = initialCondition;
     time_Params->d_ic_vector_prime = initialConditionPrime;

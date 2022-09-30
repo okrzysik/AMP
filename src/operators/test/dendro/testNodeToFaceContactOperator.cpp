@@ -19,8 +19,8 @@
 #include "AMP/operators/petsc/PetscMatrixShellOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/ConstraintsEliminationSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -443,9 +443,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             auto linearSolverParams =
                 std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
-            linearSolverParams->d_pOperator       = matrixShellOperator;
-            linearSolverParams->d_comm            = globalComm;
-            linearSolverParams->d_pPreconditioner = columnPreconditioner;
+            linearSolverParams->d_pOperator     = matrixShellOperator;
+            linearSolverParams->d_comm          = globalComm;
+            linearSolverParams->d_pNestedSolver = columnPreconditioner;
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
             //  linearSolver->setZeroInitialGuess(true);

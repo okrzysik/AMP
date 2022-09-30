@@ -56,7 +56,7 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     d_solution_prime = ( params->d_ic_vector_prime )->cloneVector();
     d_solution_prime->copyVector( params->d_ic_vector_prime );
 
-    d_pPreconditioner = params->d_pPreconditioner;
+    d_pPreconditioner = params->d_pNestedSolver;
 
     // reuse the time integrator database, and put additional fields in
     auto timeOperator_db = params->d_db;

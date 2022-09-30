@@ -7,8 +7,8 @@
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/mechanics/ConstructLinearMechanicsRHSVector.h"
-#include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
+#include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
@@ -89,9 +89,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto linearSolverParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
-    linearSolverParams->d_pOperator       = bvpOperator;
-    linearSolverParams->d_comm            = AMP_COMM_WORLD;
-    linearSolverParams->d_pPreconditioner = pcSolver;
+    linearSolverParams->d_pOperator     = bvpOperator;
+    linearSolverParams->d_comm          = AMP_COMM_WORLD;
+    linearSolverParams->d_pNestedSolver = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     linearSolver->apply( mechRhsVec, mechSolVec );

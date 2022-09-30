@@ -21,7 +21,6 @@
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"

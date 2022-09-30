@@ -16,7 +16,6 @@
 #include "AMP/operators/mechanics/ThermalStrainMaterialModel.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -137,9 +136,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // initialize the linear solver
     auto linearSolverParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
-    linearSolverParams->d_pOperator       = linearMechanicsBVPoperator;
-    linearSolverParams->d_comm            = globalComm;
-    linearSolverParams->d_pPreconditioner = pcSolver;
+    linearSolverParams->d_pOperator     = linearMechanicsBVPoperator;
+    linearSolverParams->d_comm          = globalComm;
+    linearSolverParams->d_pNestedSolver = pcSolver;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
 
     // initialize the nonlinear solver

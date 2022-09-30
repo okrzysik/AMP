@@ -18,7 +18,6 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -114,9 +113,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // initialize the linear solver
     auto linearSolverParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
-    linearSolverParams->d_pOperator       = linearFlowOperator;
-    linearSolverParams->d_comm            = globalComm;
-    linearSolverParams->d_pPreconditioner = linearFlowPreconditioner;
+    linearSolverParams->d_pOperator     = linearFlowOperator;
+    linearSolverParams->d_comm          = globalComm;
+    linearSolverParams->d_pNestedSolver = linearFlowPreconditioner;
     //    std::shared_ptr<AMP::Solver::PetscKrylovSolver> linearSolver(new
     //    AMP::Solver::PetscKrylovSolver(linearSolverParams));
 

@@ -590,9 +590,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto linearSolverParams =
         std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
-    linearSolverParams->d_pOperator       = petscMatrixShellOperator;
-    linearSolverParams->d_comm            = globalComm;
-    linearSolverParams->d_pPreconditioner = columnPreconditioner;
+    linearSolverParams->d_pOperator     = petscMatrixShellOperator;
+    linearSolverParams->d_comm          = globalComm;
+    linearSolverParams->d_pNestedSolver = columnPreconditioner;
     auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );

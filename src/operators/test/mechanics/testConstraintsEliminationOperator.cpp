@@ -175,9 +175,9 @@ static void myTest( AMP::UnitTest *ut )
 
         auto linearSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
-        linearSolverParams->d_pOperator       = shellOp;
-        linearSolverParams->d_comm            = globalComm;
-        linearSolverParams->d_pPreconditioner = colPre;
+        linearSolverParams->d_pOperator     = shellOp;
+        linearSolverParams->d_comm          = globalComm;
+        linearSolverParams->d_pNestedSolver = colPre;
         auto linearSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
         linearSolver->setInitialGuess( solVec );
 
