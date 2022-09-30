@@ -21,7 +21,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -157,7 +157,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( linearFickPreconditioner );
+    linearSolver->setNestedSolver( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
 

@@ -220,7 +220,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
         std::make_shared<AMP::Solver::TrilinosNOXSolver>( nonlinearSolverParams );
 
     // create linear solver
-    // nonlinearSolver->getKrylovSolver()->setPreconditioner(linearFlowPreconditioner);
+    // nonlinearSolver->getKrylovSolver()->setNestedSolver(linearFlowPreconditioner);
 
 
     // don't use zero initial guess

@@ -19,7 +19,7 @@
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -290,7 +290,7 @@ void createThermalSolvers( std::shared_ptr<AMP::Database> &global_input_db,
     //--------------------------------------------------------------------//
     // register the preconditioner with the Jacobian free Krylov solver
     linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( columnPreconditioner );
+    linearSolver->setNestedSolver( columnPreconditioner );
 }
 
 void createThermalMaps( std::shared_ptr<AMP::Database> input_db,

@@ -16,7 +16,7 @@
 #include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -136,7 +136,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->setZeroInitialGuess( false );
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( pcSolver );
+    linearSolver->setNestedSolver( pcSolver );
 
     for ( int step = 0; step < NumberOfLoadingSteps; step++ ) {
         AMP::pout << "########################################" << std::endl;

@@ -116,7 +116,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( pcSolver );
+    linearSolver->setNestedSolver( pcSolver );
 
     nonlinearSolver->setZeroInitialGuess( false );
 

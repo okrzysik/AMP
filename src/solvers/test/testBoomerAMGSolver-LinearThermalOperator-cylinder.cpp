@@ -18,7 +18,7 @@
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -127,7 +127,7 @@ void linearThermalTest( AMP::UnitTest *ut )
 
     // initialize the linear solver
     auto linearSolverParams =
-        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = diffusionOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;

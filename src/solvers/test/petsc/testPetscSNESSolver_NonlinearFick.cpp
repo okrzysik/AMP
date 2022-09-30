@@ -21,7 +21,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -124,7 +124,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( linearFickPreconditioner );
+    linearSolver->setNestedSolver( linearFickPreconditioner );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
 

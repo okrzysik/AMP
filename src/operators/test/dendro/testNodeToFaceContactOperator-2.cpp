@@ -238,7 +238,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto masterSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto masterSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( masterSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( masterSolver_db );
             masterSolverParams->d_pOperator = masterBVPOperator;
             masterSolverParams->d_comm      = masterMeshAdapter->getComm();
             auto masterSolver =
@@ -273,7 +273,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto slaveSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto slaveSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( slaveSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( slaveSolver_db );
             slaveSolverParams->d_pOperator = slaveBVPOperator;
             slaveSolverParams->d_comm      = slaveMeshAdapter->getComm();
             auto slaveSolver =
@@ -481,7 +481,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     siloWriter->writeFile( "TITI_0", 0 );
 
     auto linearSolverParams =
-        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = petscMatrixShellOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = columnPreconditioner;

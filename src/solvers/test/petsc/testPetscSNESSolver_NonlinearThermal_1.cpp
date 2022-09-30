@@ -21,7 +21,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -151,7 +151,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolverParams->d_pInitialGuess = solVec;
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     auto linearSolver    = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( linearThermalPreconditioner );
+    linearSolver->setNestedSolver( linearThermalPreconditioner );
 
     nonlinearThermalOperator->residual( rhsVec, solVec, resVec );
     double initialResidualNorm = static_cast<double>( resVec->L2Norm() );

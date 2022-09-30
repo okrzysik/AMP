@@ -36,7 +36,7 @@
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -170,7 +170,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( thermalPreconditioner );
+    linearSolver->setNestedSolver( thermalPreconditioner );
 
     nonlinearSolver->setZeroInitialGuess( false );
 

@@ -8,7 +8,7 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -114,7 +114,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         luParams->d_pOperator = bvpOperator;
         auto luPC             = std::make_shared<AMP::Solver::TrilinosMLSolver>( luParams );
 
-        auto richParams = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( rich_db );
+        auto richParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( rich_db );
         richParams->d_pOperator       = bvpOperator;
         richParams->d_comm            = globalComm;
         richParams->d_pPreconditioner = luPC;
@@ -153,7 +153,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         mlParams->d_pOperator = bvpOperator;
         auto mlPC             = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlParams );
 
-        auto cgParams         = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( cg_db );
+        auto cgParams         = std::make_shared<AMP::Solver::SolverStrategyParameters>( cg_db );
         cgParams->d_pOperator = bvpOperator;
         cgParams->d_comm      = globalComm;
         cgParams->d_pPreconditioner = mlPC;

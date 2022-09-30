@@ -586,7 +586,7 @@ NonlinearKrylovAccelerator<T>::forwardbackwardSolve( std::shared_ptr<AMP::Linear
 }
 
 template<typename T>
-void NonlinearKrylovAccelerator<T>::setPreconditioner(
+void NonlinearKrylovAccelerator<T>::setNestedSolver(
     std::shared_ptr<AMP::Solver::SolverStrategy> pc )
 {
     d_preconditioner = pc;

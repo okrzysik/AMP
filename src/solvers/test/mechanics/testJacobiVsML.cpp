@@ -6,7 +6,7 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
@@ -130,7 +130,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             // initialize the linear solver
             auto linearSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
             linearSolverParams->d_pOperator = bvpOperator;
             linearSolverParams->d_comm      = globalComm;
             auto linearSolver =
@@ -146,7 +146,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             // initialize the linear solver
             auto linearSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
             linearSolverParams->d_pOperator = bvpOperator;
             linearSolverParams->d_comm      = globalComm;
             auto linearSolver =
@@ -169,7 +169,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             // initialize the linear solver
             auto linearSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
             linearSolverParams->d_pOperator       = bvpOperator;
             linearSolverParams->d_comm            = globalComm;
             linearSolverParams->d_pPreconditioner = pcSolver;

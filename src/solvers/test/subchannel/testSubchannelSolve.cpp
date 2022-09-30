@@ -579,7 +579,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             std::dynamic_pointer_cast<AMP::Solver::PetscSNESSolver>( nonlinearSolver )
                 ->getKrylovSolver();
         // set preconditioner
-        linearSolver->setPreconditioner( columnPreconditioner );
+        linearSolver->setNestedSolver( columnPreconditioner );
     }
 
     // don't use zero initial guess

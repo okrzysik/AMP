@@ -121,6 +121,12 @@ public:
     }
 
     /**
+     * Set a nested solver, eg, Krylov for Newton, preconditioner for Krylov etc. Null op in base
+     * class
+     */
+    virtual void setNestedSolver( std::shared_ptr<SolverStrategy> ) {}
+
+    /**
      * Register the operator that the solver will use during solves
      * @param [in] op shared pointer to operator \f$A()\f$ for equation \f$A(u) = f\f$
      */

@@ -79,7 +79,7 @@ public:
      * a SolverStrategy class
      * @param pc shared pointer to preconditioner
      */
-    inline void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> pc )
+    inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
         d_pPreconditioner = pc;
     }

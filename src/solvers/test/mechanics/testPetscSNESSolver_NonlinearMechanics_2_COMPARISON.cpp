@@ -18,7 +18,7 @@
 #include "AMP/operators/mechanics/ThermalVonMisesMatModel.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -165,7 +165,7 @@ static void myTest( AMP::UnitTest *ut )
 
     // initialize the linear solver
     auto linearSolverParams =
-        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = linBvpOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;

@@ -14,7 +14,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -303,7 +303,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     auto linearFlowPreconditioner =
         std::make_shared<AMP::Solver::TrilinosMLSolver>( PreconditionerParams );
     // set preconditioner
-    linearSolver->setPreconditioner( linearFlowPreconditioner );
+    linearSolver->setNestedSolver( linearFlowPreconditioner );
 
     // don't use zero initial guess
     nonlinearSolver->setZeroInitialGuess( false );

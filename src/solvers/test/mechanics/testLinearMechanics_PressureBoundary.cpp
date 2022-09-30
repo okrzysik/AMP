@@ -10,7 +10,7 @@
 #include "AMP/operators/boundary/libmesh/PressureBoundaryOperator.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -110,7 +110,7 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
 
     // initialize the linear solver
     auto linearSolverParams =
-        std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
     linearSolverParams->d_pOperator       = bvpOperator;
     linearSolverParams->d_comm            = globalComm;
     linearSolverParams->d_pPreconditioner = pcSolver;

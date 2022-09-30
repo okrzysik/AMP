@@ -80,7 +80,7 @@ public:
     void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override;
 
-    void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> pc );
+    void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override;
 
     void printStatistics( std::ostream &os ) override;
 

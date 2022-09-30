@@ -87,7 +87,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( pelletStackSolver );
+    linearSolver->setNestedSolver( pelletStackSolver );
 
     siloWriter->registerVector( solVec, manager, AMP::Mesh::GeomType::Vertex, "Displacement" );
 

@@ -206,7 +206,7 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
 
     // Register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( preconditioner );
+    linearSolver->setNestedSolver( preconditioner );
 
     // Get initial residual
     nlinBVPOp->residual( rhsVec, solVec, resVec );

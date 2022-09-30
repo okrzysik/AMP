@@ -206,7 +206,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( columnPreconditioner );
+    linearSolver->setNestedSolver( columnPreconditioner );
 
     nonlinearThermoMechanicsOperator->residual( rhsVec, solVec, resVec );
     double initialResidualNorm = static_cast<double>( resVec->L2Norm() );

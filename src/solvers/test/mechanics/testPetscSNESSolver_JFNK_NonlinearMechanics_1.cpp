@@ -13,7 +13,7 @@
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -114,7 +114,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto nonlinearSolver = std::make_shared<AMP::Solver::PetscSNESSolver>( nonlinearSolverParams );
     auto linearSolver    = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( pcSolver );
+    linearSolver->setNestedSolver( pcSolver );
 
     nonlinearSolver->setZeroInitialGuess( false );
 
