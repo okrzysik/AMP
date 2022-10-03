@@ -1,11 +1,10 @@
+#include "AMP/IO/PIO.h"
+#include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
-
-#include "AMP/IO/PIO.h"
-#include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearBVPOperator.h"
@@ -219,7 +218,6 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     soretOp->setVector( "temperature", tVec );
 
     // Initial guess
-
     solVec->setToScalar( .05 );
     std::cout << "initial guess norm = " << solVec->L2Norm() << "\n";
     nlinBVPOp->modifyInitialSolutionVector( solVec );
@@ -298,12 +296,12 @@ int testPetscSNESSolver_NonlinearFickSoret_1( int argc, char *argv[] )
     std::vector<double> fickOnly, fickSoretOff, fickSoretZero, fickOnlyReal, fickSoretOffReal;
 
     fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-1", fickOnly );
+    fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-2", fickOnlyReal );
     fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-1", fickSoretOff );
     fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-2", fickSoretZero );
-    fickTest( &ut, "testPetscSNESSolver-NonlinearFick-cylinder-TUI-2", fickOnlyReal );
     fickSoretTest( &ut, "testPetscSNESSolver-NonlinearFickSoret-cylinder-TUI-3", fickSoretOffReal );
-    AMP_INSIST( fickOnly.size() == fickSoretOff.size() and
-                    fickSoretOff.size() == fickSoretZero.size() and
+    AMP_INSIST( fickOnly.size() == fickSoretOff.size() &&
+                    fickSoretOff.size() == fickSoretZero.size() &&
                     fickOnlyReal.size() == fickSoretOffReal.size(),
                 "sizes of results do not match" );
 

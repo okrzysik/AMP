@@ -185,7 +185,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::pout << "Final Residual Norm for loading step " << ( step + 1 ) << " is "
                   << finalResidualNorm << std::endl;
 
-        if ( finalResidualNorm > ( 1.0e-10 * initialResidualNorm ) ) {
+        if ( finalResidualNorm > ( 1e-9 * initialResidualNorm ) ) {
             ut->failure( "Nonlinear solve for current loading step" );
         } else {
             ut->passes( "Nonlinear solve for current loading step" );

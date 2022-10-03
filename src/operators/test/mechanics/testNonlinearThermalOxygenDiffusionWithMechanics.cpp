@@ -166,33 +166,28 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     concVec->setToScalar( defConc );
 
     // set up the shift and scale parameters
-    double shift[2];
-    double scale[2];
-    shift[0]   = 0.;
-    shift[1]   = 0.;
-    scale[0]   = 1.;
-    scale[1]   = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     auto matTh = transportModelTh->getMaterial();
     auto matOx = transportModelOx->getMaterial();
     if ( thermOperator->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalConductivity";
-        if ( ( matTh->property( property ) )->is_argument( "temperature" ) ) {
+        if ( matTh->property( property )->is_argument( "temperature" ) ) {
             auto range =
-                ( matTh->property( property ) )->get_arg_range( "temperature" ); // Compile error
-            scale[1] = range[1] - range[0];
-            shift[1] = range[0] + 0.001 * scale[1];
-            scale[1] *= 0.999;
+                matTh->property( property )->get_arg_range( "temperature" ); // Compile error
+            double scale              = 0.999 * ( range[1] - range[0] );
+            double shift              = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
         }
     }
     // the Fick has a principal variable of oxygen
     if ( fickOperator->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
-        if ( ( matOx->property( property ) )->is_argument( "concentration" ) ) {
+        if ( matOx->property( property )->is_argument( "concentration" ) ) {
             auto range =
-                ( matOx->property( property ) )->get_arg_range( "concentration" ); // Compile error
-            scale[0] = range[1] - range[0];
-            shift[0] = range[0] + 0.001 * scale[0];
-            scale[0] *= 0.999;
+                matOx->property( property )->get_arg_range( "concentration" ); // Compile error
+            double scale                = 0.999 * ( range[1] - range[0] );
+            double shift                = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["concentration"] = std::pair<int, int>( scale, shift );
         }
     }
 
@@ -234,7 +229,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOxygenDiffusionMechanicsOperator );
     if ( rank == 0 )
         std::cout << "Running apply tests" << std::endl;
-    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, shift, scale, 3 );
+    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, adjustment );
     AMP::AMP_MPI( AMP_COMM_WORLD ).barrier();
     if ( rank == 0 )
         std::cout << "Finished apply tests" << std::endl;

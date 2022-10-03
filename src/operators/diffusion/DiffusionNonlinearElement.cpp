@@ -6,19 +6,6 @@
 namespace AMP::Operator {
 
 
-static int getVariableID( const std::string &name )
-{
-    int id = -1;
-    for ( size_t i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        if ( name == Diffusion::names[i] )
-            id = i;
-    }
-    if ( id == 100000 )
-        AMP_ERROR( "Unknown variable: " + name );
-    return id;
-}
-
-
 void DiffusionNonlinearElement::initTransportModel()
 {
     d_fe->reinit( d_elem );
@@ -65,21 +52,18 @@ void DiffusionNonlinearElement::apply()
     if ( d_transportAtGauss ) {
         // construct material evalv arguments
         const auto &q_point = d_fe->get_xyz();
-        for ( size_t var = 0; var < d_elementInputVectors.size(); var++ ) {
-            if ( d_elementInputVectors[var].size() > 0 ) {
-                std::shared_ptr<std::vector<double>> values(
-                    new std::vector<double>( d_qrule->n_points(), 0.0 ) );
-                for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
-                    ( *values )[qp] = 0.0;
-                    for ( size_t j = 0; j < num_nodes; j++ )
-                        ( *values )[qp] += d_elementInputVectors[var][j] * phi[j][qp];
-                } // end for qp
-                transport_args.insert( std::make_pair( Diffusion::names[var], values ) );
+        for ( auto &[name, vec] : d_elementInputVectors ) {
+            auto values = std::make_shared<std::vector<double>>( d_qrule->n_points(), 0.0 );
+            for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
+                ( *values )[qp] = 0.0;
+                for ( size_t j = 0; j < num_nodes; j++ )
+                    ( *values )[qp] += vec[j] * phi[j][qp];
             }
+            transport_args[name] = values;
         }
 
         // evaluate for scalars or tensors
-        if ( not d_transportModel->isaTensor() ) {
+        if ( !d_transportModel->isaTensor() ) {
             d_transportModel->getTransport( transportCoeff, transport_args, q_point );
         } else {
             d_transportTensorModel->getTensorTransport(
@@ -98,16 +82,12 @@ void DiffusionNonlinearElement::apply()
         AMP::Array<std::shared_ptr<std::vector<double>>> nodalTransportCoeffTensor( 3, 3 );
 
         // construct material evalv arguments
-        for ( size_t var = 0; var < d_elementInputVectors.size(); var++ ) {
-            if ( d_elementInputVectors[var].size() > 0 ) {
-                transport_args.insert( std::make_pair(
-                    Diffusion::names[var],
-                    std::make_shared<std::vector<double>>( d_elementInputVectors[var] ) ) );
-            }
+        for ( auto &[name, vec] : d_elementInputVectors ) {
+            transport_args[name] = std::shared_ptr<std::vector<double>>( &vec, []( auto ) {} );
         }
 
         // evaluate for scalars
-        if ( not d_transportModel->isaTensor() ) {
+        if ( !d_transportModel->isaTensor() ) {
             std::vector<double> nodalTransportCoeff( num_nodes );
             d_transportModel->getTransport( nodalTransportCoeff, transport_args, elem_nodes );
 
@@ -145,16 +125,16 @@ void DiffusionNonlinearElement::apply()
         }
     }
 
-    int id = getVariableID( d_PrincipalVariable );
+    auto &primaryInputVec = d_elementInputVectors[d_PrincipalVariable];
     for ( size_t qp = 0; qp < d_qrule->n_points(); qp++ ) {
         libMesh::RealGradient grad_phi = 0.0;
 
         for ( size_t n = 0; n < num_nodes; n++ )
-            grad_phi += dphi[n][qp] * d_elementInputVectors[id][n];
+            grad_phi += dphi[n][qp] * primaryInputVec[n];
 
         d_transportModel->preNonlinearAssemblyGaussPointOperation();
 
-        if ( not d_transportModel->isaTensor() ) {
+        if ( !d_transportModel->isaTensor() ) {
             for ( size_t n = 0; n < num_nodes; n++ ) {
                 ( *d_elementOutputVector )[n] +=
                     JxW[qp] * transportCoeff[qp] * dphi[n][qp] * grad_phi;

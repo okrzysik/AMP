@@ -60,6 +60,21 @@ namespace AMP::Operator {
 using IdentityOperatorParameters = OperatorParameters;
 
 
+static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
+                                                    const std::string &key )
+{
+    std::vector<std::string> vars;
+    if ( db->isDatabase( key ) ) {
+        auto activeDB = db->getDatabase( key );
+        for ( auto key2 : activeDB->getAllKeys() )
+            vars.push_back( activeDB->getString( key2 ) );
+    } else {
+        vars = db->getVector<std::string>( key );
+    }
+    return vars;
+}
+
+
 std::shared_ptr<Operator>
 OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
 {
@@ -559,36 +574,13 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
     diffusionNLOpParams->d_FrozenVecs.clear();
 
     // create variables and vectors for frozen material inputs
-    auto active_db      = diffusionNLinFEOp_db->getDatabase( "ActiveInputVariables" );
     auto NodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
-    std::string name;
-    std::shared_ptr<AMP::LinearAlgebra::Variable> tVar;
-    AMP::LinearAlgebra::Vector::shared_ptr tVec;
-    std::shared_ptr<AMP::LinearAlgebra::Variable> cVar;
-    AMP::LinearAlgebra::Vector::shared_ptr cVec;
-    std::shared_ptr<AMP::LinearAlgebra::Variable> bVar;
-    AMP::LinearAlgebra::Vector::shared_ptr bVec;
-    name = active_db->getWithDefault<std::string>( "Temperature", "not_specified" );
-    if ( name != "not_specified" ) {
-        tVar.reset( new AMP::LinearAlgebra::Variable( name ) );
-        tVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tVar, true );
-        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeTemperature", false ) )
-            diffusionNLOpParams->d_FrozenVecs["temperature"] = tVec;
-    }
-    name = active_db->getWithDefault<std::string>( "Concentration", "not_specified" );
-    if ( name != "not_specified" ) {
-        cVar.reset( new AMP::LinearAlgebra::Variable( name ) );
-        cVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, cVar, true );
-        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeConcentration", false ) )
-            diffusionNLOpParams->d_FrozenVecs["concentration"] = cVec;
-    }
-    name = active_db->getWithDefault<std::string>( "Burnup", "not_specified" );
-    if ( name != "not_specified" ) {
-        bVar.reset( new AMP::LinearAlgebra::Variable( name ) );
-        bVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, bVar, true );
-        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "FreezeBurnup", false ) )
-            diffusionNLOpParams->d_FrozenVecs["burnup"] = bVec;
+    for ( auto name : getActiveVariables( diffusionNLinFEOp_db, "ActiveInputVariables" ) ) {
+        auto var = std::make_shared<AMP::LinearAlgebra::Variable>( name );
+        auto vec = AMP::LinearAlgebra::createVector( NodalScalarDOF, var, true );
+        if ( diffusionNLinFEOp_db->getWithDefault<bool>( "Freeze" + name, false ) )
+            diffusionNLOpParams->d_FrozenVecs[name] = vec;
     }
 
     // create the nonlinear diffusion operator

@@ -7,7 +7,6 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"

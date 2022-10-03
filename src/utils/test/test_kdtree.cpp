@@ -1,11 +1,3 @@
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <random>
-#include <set>
-#include <vector>
-
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -14,6 +6,15 @@
 #include "AMP/utils/kdtree2.hpp"
 
 #include "ProfilerApp.h"
+
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <random>
+#include <set>
+#include <vector>
+
 
 using namespace AMP;
 

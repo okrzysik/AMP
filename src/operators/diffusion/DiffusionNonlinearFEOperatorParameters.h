@@ -1,12 +1,11 @@
 #ifndef included_AMP_DiffusionNonlinearFEOperatorParameters
 #define included_AMP_DiffusionNonlinearFEOperatorParameters
 
-#include <vector>
-
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/FEOperatorParameters.h"
 #include "AMP/vectors/Vector.h"
+
+#include <vector>
 
 
 namespace AMP::Operator {

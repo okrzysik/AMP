@@ -8,7 +8,6 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
@@ -119,26 +118,25 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     bVec->setToScalar( defBurn );
 
     // set principal variable vector and shift for applyTests
-    double shift = 0., scale = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     auto mat = transportModel->getMaterial();
     if ( diffOp->getPrincipalVariable() == "temperature" ) {
         diffOpParams->d_FrozenVecs["temperature"] = tVec;
-        if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
-            auto range =
-                ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
-            scale = range[1] - range[0];
-            shift = range[0] + 0.001 * scale;
-            scale *= 0.999;
+        if ( mat->property( property )->is_argument( "temperature" ) ) {
+            auto range = mat->property( property )->get_arg_range( "temperature" ); // Compile error
+            double scale              = 0.999 * ( range[1] - range[0] );
+            double shift              = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
         }
     }
     if ( diffOp->getPrincipalVariable() == "concentration" ) {
         diffOpParams->d_FrozenVecs["concentration"] = cVec;
-        if ( ( mat->property( property ) )->is_argument( "concentration" ) ) {
+        if ( mat->property( property )->is_argument( "concentration" ) ) {
             auto range =
-                ( mat->property( property ) )->get_arg_range( "concentration" ); // Compile error
-            scale = range[1] - range[0];
-            shift = range[0] + 0.001 * scale;
-            scale *= 0.999;
+                mat->property( property )->get_arg_range( "concentration" ); // Compile error
+            double scale                = 0.999 * ( range[1] - range[0] );
+            double shift                = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["concentration"] = std::pair<int, int>( scale, shift );
         }
     }
     if ( diffOp->getPrincipalVariable() == "burnup" ) {
@@ -192,13 +190,13 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         }
         diffRhsVec->setToScalar( 0.0 );
         applyTests(
-            ut, msgPrefix, nonlinearOperator, diffRhsVec, diffSolVec, diffResVec, shift, scale );
+            ut, msgPrefix, nonlinearOperator, diffRhsVec, diffSolVec, diffResVec, adjustment );
         std::cout.flush();
 
         // Test getJacobianParameters and linear operator creation
         {
             diffSolVec->setRandomValues();
-            adjust( diffSolVec, shift, scale );
+            adjust( diffSolVec, adjustment );
             auto jacParams = diffOp->getParameters( "Jacobian", diffSolVec );
             linOp->reset(
                 std::dynamic_pointer_cast<AMP::Operator::DiffusionLinearFEOperatorParameters>(
@@ -235,7 +233,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         auto resVec           = AMP::LinearAlgebra::createVector( nodalDofMap, myMultiOutVar );
 
         // test apply with single variable vectors
-        applyTests( ut, msgPrefix, nonlinearOperator, rhsVec, solVec, resVec, shift, scale );
+        applyTests( ut, msgPrefix, nonlinearOperator, rhsVec, solVec, resVec, adjustment );
         std::cout.flush();
     }
 
@@ -244,7 +242,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         auto testVec = AMP::LinearAlgebra::createVector( nodalDofMap, diffSolVar );
 
         testVec->setToScalar( -1000. );
-        if ( not diffOp->isValidInput( testVec ) )
+        if ( !diffOp->isValidInput( testVec ) )
             ut->passes( exeName + ": validInput-1" );
         else {
             if ( ( diffOp->getPrincipalVariable() == "temperature" ) &&
@@ -256,7 +254,7 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
             }
         }
         testVec->setToScalar( 1.e99 );
-        if ( not diffOp->isValidInput( testVec ) )
+        if ( !diffOp->isValidInput( testVec ) )
             ut->passes( exeName + ": validInput-2" );
         else {
             if ( ( diffOp->getPrincipalVariable() == "temperature" ) &&

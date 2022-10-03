@@ -7,7 +7,6 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
@@ -88,15 +87,15 @@ static void linearTest( AMP::UnitTest *ut,
     auto concVar = std::make_shared<AMP::LinearAlgebra::Variable>( "testConcVar" );
     auto burnVar = std::make_shared<AMP::LinearAlgebra::Variable>( "testBurnVar" );
     std::shared_ptr<AMP::LinearAlgebra::Vector> tempVec, concVec, burnVec;
-    if ( not diffFEOp_db->getWithDefault<bool>( "FixedTemperature", false ) ) {
+    if ( !diffFEOp_db->getWithDefault<bool>( "FixedTemperature", false ) ) {
         tempVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, tempVar, true );
         tempVec->setToScalar( defTemp );
     }
-    if ( not diffFEOp_db->getWithDefault<bool>( "FixedConcentration", false ) ) {
+    if ( !diffFEOp_db->getWithDefault<bool>( "FixedConcentration", false ) ) {
         concVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, concVar, true );
         concVec->setToScalar( defConc );
     }
-    if ( not diffFEOp_db->getWithDefault<bool>( "FixedBurnup", false ) ) {
+    if ( !diffFEOp_db->getWithDefault<bool>( "FixedBurnup", false ) ) {
         burnVec = AMP::LinearAlgebra::createVector( NodalScalarDOF, burnVar, true );
         burnVec->setToScalar( defBurn );
     }

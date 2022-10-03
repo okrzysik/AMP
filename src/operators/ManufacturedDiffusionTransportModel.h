@@ -1,16 +1,15 @@
 #ifndef included_AMP_ManufacturedDiffusionTransportModel
 #define included_AMP_ManufacturedDiffusionTransportModel
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/operators/ElementPhysicsModel.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
+
+#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 
 namespace AMP::Operator {

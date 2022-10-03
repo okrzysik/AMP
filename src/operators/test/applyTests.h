@@ -4,37 +4,28 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 
+#include <map>
 #include <memory>
-
 #include <string>
 
 
 inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                    const double *shift,
-                    const double *scale,
-                    const size_t nshift )
+                    const std::map<std::string, std::pair<double, double>> &data )
 {
     auto mvec = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( vec );
-    if ( !mvec ) {
-        vec->scale( scale[0] );
-        vec->addScalar( *vec, shift[0] );
+    if ( mvec ) {
+        for ( auto vec2 : *mvec )
+            adjust( vec2, data );
     } else {
-        size_t nvecs = mvec->getNumberOfSubvectors();
-        AMP_INSIST( nshift <= nvecs, "not enough subvectors" );
-        for ( size_t i = 0; i < nshift; i++ ) {
-            auto subvec = mvec->getVector( i );
-            subvec->scale( scale[i] );
-            subvec->addScalar( *subvec, shift[i] );
-        }
+        double scale = 0;
+        double shift = 301;
+        auto it      = data.find( vec->getName() );
+        if ( it != data.end() )
+            std::tie( scale, shift ) = it->second;
+        vec->scale( scale );
+        vec->addScalar( *vec, shift );
+        vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     }
-    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-}
-
-inline void adjust( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                    const double shift = 301.,
-                    const double scale = 1.0 )
-{
-    adjust( vec, &shift, &scale, 1 );
 }
 
 
@@ -44,9 +35,7 @@ inline void applyTests( AMP::UnitTest *ut,
                         AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
                         AMP::LinearAlgebra::Vector::shared_ptr solVec,
                         AMP::LinearAlgebra::Vector::shared_ptr resVec,
-                        const double *shift,
-                        const double *scale,
-                        const size_t nshift )
+                        const std::map<std::string, std::pair<double, double>> &adjustment = {} )
 {
     auto testOperatorVariable = testOperator->getOutputVariable();
     AMP_ASSERT( testOperatorVariable );
@@ -58,7 +47,7 @@ inline void applyTests( AMP::UnitTest *ut,
         solVec->setRandomValues();
         rhsVec->setRandomValues();
         resVec->setRandomValues();
-        adjust( solVec, shift, scale, nshift );
+        adjust( solVec, adjustment );
         testOperator->residual( rhsVec, solVec, resVec );
     } // end for j
     ut->passes( msg );
@@ -71,7 +60,7 @@ inline void applyTests( AMP::UnitTest *ut,
         AMP::LinearAlgebra::Vector::shared_ptr fVec;
         solVec->setRandomValues();
         resVec->setRandomValues();
-        adjust( solVec, shift, scale, nshift );
+        adjust( solVec, adjustment );
         testOperator->residual( fVec, solVec, resVec );
     }
     ut->passes( msg );
@@ -101,7 +90,7 @@ inline void applyTests( AMP::UnitTest *ut,
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
             solVec->setRandomValues();
             rhsVec->setRandomValues();
-            adjust( solVec, shift, scale, nshift );
+            adjust( solVec, adjustment );
             testOperator->residual( rhsVec, solVec, rVec );
         } // end for j
         ut->failure( msg );
@@ -147,7 +136,7 @@ inline void applyTests( AMP::UnitTest *ut,
             AMP::LinearAlgebra::Vector::shared_ptr rVec;
             AMP::LinearAlgebra::Vector::shared_ptr fVec;
             solVec->setRandomValues();
-            adjust( solVec, shift, scale, nshift );
+            adjust( solVec, adjustment );
             testOperator->residual( fVec, solVec, rVec );
         } // end for j
         ut->failure( msg );
@@ -176,7 +165,7 @@ inline void applyTests( AMP::UnitTest *ut,
   rhsVec->setRandomValues();
   resVec->setRandomValues();
   solVec->setRandomValues();
-  adjust(solVec, shift, scale, nshift);
+  adjust(solVec, adjustment );
   testOperator->apply(rhsVec, solVec, resVec, 0.0, 1.0);
   rhsVec->subtract(rhsVec, resVec);
   double norm = rhsVec->subsetVectorForVariable(testOperatorVariable)->L2Norm();
@@ -191,7 +180,7 @@ inline void applyTests( AMP::UnitTest *ut,
   rhsVec->setRandomValues();
   resVec->setRandomValues();
   solVec->setRandomValues();
-  adjust(solVec, shift, scale, nshift);
+  adjust(solVec, adjustment );
   testOperator->apply(rhsVec, solVec, resVec, 0.0, -1.0);
   rhsVec->add(rhsVec, resVec);
   norm = rhsVec->subsetVectorForVariable(testOperatorVariable)->L2Norm();
@@ -236,17 +225,4 @@ inline void applyTests( AMP::UnitTest *ut,
         passed = true;
     }
 #endif
-}
-
-
-inline void applyTests( AMP::UnitTest *ut,
-                        const std::string &msgPrefix,
-                        std::shared_ptr<AMP::Operator::Operator> testOperator,
-                        AMP::LinearAlgebra::Vector::shared_ptr rhsVec,
-                        AMP::LinearAlgebra::Vector::shared_ptr solVec,
-                        AMP::LinearAlgebra::Vector::shared_ptr resVec,
-                        const double shift = 301.,
-                        const double scale = 1.0 )
-{
-    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, &shift, &scale, 1 );
 }
