@@ -42,14 +42,15 @@ PetscSNESSolver::PetscSNESSolver( std::shared_ptr<SolverStrategyParameters> para
 {
     d_sName         = "PetscSNESSolver";
     auto parameters = std::dynamic_pointer_cast<const SolverStrategyParameters>( params );
-    // we have to figure out a more general factory strategy that
-    // alllows for solvers with different inputs to be initialized.
-    // In the meantime we attempt to initialize as best we can
+
     if ( parameters ) {
-        d_comm = parameters->d_comm;
         d_pKrylovSolver =
             std::dynamic_pointer_cast<PetscKrylovSolver>( parameters->d_pNestedSolver );
         d_pSolutionVector = parameters->d_pInitialGuess;
+    }
+
+    if ( !parameters->d_comm.isNull() ) {
+        d_comm = parameters->d_comm;
     } else if ( d_pOperator ) {
         d_comm = d_pOperator->getMesh()->getComm();
     } else {

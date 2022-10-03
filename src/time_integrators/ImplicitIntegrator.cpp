@@ -38,8 +38,7 @@ ImplicitIntegrator::ImplicitIntegrator(
     auto solver_params = std::make_shared<AMP::Solver::SolverStrategyParameters>( solverDB );
     solver_params->d_pOperator = d_operator;
     solver_params->d_global_db = globalDB;
-    solver_params->d_comm = params->d_comm.isNull() ? AMP_MPI( AMP_COMM_WORLD ) : params->d_comm;
-    d_solver              = AMP::Solver::SolverFactory::create( solver_params );
+    d_solver                   = AMP::Solver::SolverFactory::create( solver_params );
 }
 
 ImplicitIntegrator::~ImplicitIntegrator() = default;
