@@ -1,8 +1,8 @@
 #ifndef included_AMP_PetscSNESSolver
 #define included_AMP_PetscSNESSolver
 
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #include "AMP/solvers/petsc/PetscMonitor.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -106,6 +106,8 @@ public:
      */
     virtual ~PetscSNESSolver();
 
+    std::string type() const override { return "PetscSNESSolver"; }
+
     //! static create routine that is used by SolverFactory
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
@@ -142,6 +144,8 @@ public:
      * Returns a shared pointer to the PetscKrylovSolver used internally for the linear solves
      */
     std::shared_ptr<PetscKrylovSolver> getKrylovSolver( void ) { return d_pKrylovSolver; }
+
+    std::shared_ptr<SolverStrategy> getNestedSolver( void ) override { return getKrylovSolver(); }
 
     /**
      * Return a shared pointer to the solution vector

@@ -19,8 +19,9 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategy.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
@@ -67,10 +68,10 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
                 AMP_INSIST( pcSolver, "null preconditioner" );
             }
 
-            auto params               = std::make_shared<AMP::Solver::KrylovSolverParameters>( db );
-            params->d_comm            = comm;
-            params->d_pPreconditioner = pcSolver;
-            parameters                = params;
+            auto params             = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );
+            params->d_comm          = comm;
+            params->d_pNestedSolver = pcSolver;
+            parameters              = params;
 
         } else {
             parameters = std::make_shared<AMP::Solver::SolverStrategyParameters>( db );

@@ -19,8 +19,8 @@
 #include "AMP/operators/petsc/PetscMatrixShellOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
 #include "AMP/solvers/ConstraintsEliminationSolver.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -270,7 +270,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         auto masterSolver_db = columnPreconditioner_db->getDatabase( "MasterSolver" );
         auto masterSolverParams =
-            std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( masterSolver_db );
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( masterSolver_db );
         masterSolverParams->d_pOperator = masterBVPOperator;
         masterSolverParams->d_comm      = masterMeshAdapter->getComm();
         //    masterSolverParams->d_comm = globalComm;
@@ -306,7 +306,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
         auto slaveSolver_db = columnPreconditioner_db->getDatabase( "SlaveSolver" );
         auto slaveSolverParams =
-            std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( slaveSolver_db );
+            std::make_shared<AMP::Solver::SolverStrategyParameters>( slaveSolver_db );
 
         //    bool useSlaveBVPOperator = input_db->getScalar<bool>("useSlaveBVPOperator");
         //    if (useSlaveBVPOperator) {
@@ -442,10 +442,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             matrixShellOperator->setOperator( columnOperator );
 
             auto linearSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( linearSolver_db );
-            linearSolverParams->d_pOperator       = matrixShellOperator;
-            linearSolverParams->d_comm            = globalComm;
-            linearSolverParams->d_pPreconditioner = columnPreconditioner;
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( linearSolver_db );
+            linearSolverParams->d_pOperator     = matrixShellOperator;
+            linearSolverParams->d_comm          = globalComm;
+            linearSolverParams->d_pNestedSolver = columnPreconditioner;
             auto linearSolver =
                 std::make_shared<AMP::Solver::PetscKrylovSolver>( linearSolverParams );
             //  linearSolver->setZeroInitialGuess(true);

@@ -12,10 +12,9 @@
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/solvers/ColumnSolver.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/PetscKrylovSolver.h"
-#include "AMP/solvers/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/PetscSNESSolver.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -148,7 +147,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -185,7 +184,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( columnPreconditioner );
+    linearSolver->setNestedSolver( columnPreconditioner );
 
     nonlinearThermalOxygenOperator->residual( rhsVec, solVec, resVec );
     double initialResidualNorm = resVec->L2Norm();

@@ -32,11 +32,10 @@
 #include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/operators/subchannel/FlowFrapconJacobian.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/libmesh/Flow1DSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -149,7 +148,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -170,7 +169,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
-    linearSolver->setPreconditioner( thermalPreconditioner );
+    linearSolver->setNestedSolver( thermalPreconditioner );
 
     nonlinearSolver->setZeroInitialGuess( false );
 

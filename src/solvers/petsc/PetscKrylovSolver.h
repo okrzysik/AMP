@@ -2,7 +2,6 @@
 #define included_AMP_PetscKrylovSolver
 
 #include "AMP/solvers/SolverStrategy.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscMonitor.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/petsc/PetscHelpers.h"
@@ -86,6 +85,7 @@ public:
      */
     virtual ~PetscKrylovSolver();
 
+    std::string type() const override { return "PetscKrylovSolver"; }
 
     //! static create routine that is used by SolverFactory
     static std::unique_ptr<SolverStrategy>
@@ -123,7 +123,7 @@ public:
      * returns a shared pointer to a preconditioner object. The preconditioner is derived from
      * a SolverStrategy class
      */
-    inline std::shared_ptr<AMP::Solver::SolverStrategy> getPreconditioner( void )
+    inline std::shared_ptr<AMP::Solver::SolverStrategy> getNestedSolver( void ) override
     {
         return d_pPreconditioner;
     }
@@ -133,7 +133,7 @@ public:
      * a SolverStrategy class
      * @param pc shared pointer to preconditioner
      */
-    inline void setPreconditioner( std::shared_ptr<AMP::Solver::SolverStrategy> pc )
+    inline void setNestedSolver( std::shared_ptr<AMP::Solver::SolverStrategy> pc ) override
     {
         d_pPreconditioner = pc;
     }
@@ -155,7 +155,7 @@ public:
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
-    void initializePreconditioner( std::shared_ptr<const PetscKrylovSolverParameters> parameters );
+    void initializePreconditioner( std::shared_ptr<const SolverStrategyParameters> parameters );
     std::shared_ptr<AMP::Operator::Operator> createPCOperator();
     void setupPetscMatInterface( std::shared_ptr<AMP::Operator::Operator> op, Mat &mat );
 

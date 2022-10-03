@@ -16,10 +16,9 @@
 #include "AMP/operators/diffusion/DiffusionNonlinearFEOperator.h"
 #include "AMP/operators/diffusion/FickSoretNonlinearFEOperator.h"
 #include "AMP/operators/libmesh/VolumeIntegralOperator.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -99,7 +98,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -118,7 +117,7 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( linearFickPreconditioner );
+    linearSolver->setNestedSolver( linearFickPreconditioner );
 
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;
@@ -231,7 +230,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -250,7 +249,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( linearFickPreconditioner );
+    linearSolver->setNestedSolver( linearFickPreconditioner );
 
     nlinBVPOp->residual( rhsVec, solVec, resVec );
     AMP::pout << "Initial Residual Norm: " << resVec->L2Norm() << std::endl;

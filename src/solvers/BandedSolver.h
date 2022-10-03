@@ -34,6 +34,8 @@ public:
      */
     virtual ~BandedSolver();
 
+    std::string type() const override { return "BandedSolver"; }
+
     /**
      * Solve the system \f$A(u) = f\f$.  This is a pure virtual function that the derived classes
      * need to provide an implementation of.

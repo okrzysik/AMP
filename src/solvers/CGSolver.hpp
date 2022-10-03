@@ -1,6 +1,5 @@
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/solvers/CGSolver.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "ProfilerApp.h"
 
 namespace AMP::Solver {
@@ -23,13 +22,12 @@ CGSolver<T>::CGSolver( std::shared_ptr<AMP::Solver::SolverStrategyParameters> pa
  *  Initialize                                                   *
  ****************************************************************/
 template<typename T>
-void CGSolver<T>::initialize( std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
+void CGSolver<T>::initialize(
+    std::shared_ptr<const AMP::Solver::SolverStrategyParameters> parameters )
 {
-    auto parameters =
-        std::dynamic_pointer_cast<const AMP::Solver::KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
-    d_pPreconditioner = parameters->d_pPreconditioner;
+    d_pPreconditioner = parameters->d_pNestedSolver;
 
     getFromInput( parameters->d_db );
 

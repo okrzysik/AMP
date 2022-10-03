@@ -1,5 +1,4 @@
 #include "AMP/operators/LinearOperator.h"
-#include "AMP/solvers/KrylovSolverParameters.h"
 #include "AMP/solvers/QMRCGSTABSolver.h"
 #include "ProfilerApp.h"
 
@@ -26,12 +25,11 @@ QMRCGSTABSolver<T>::QMRCGSTABSolver( std::shared_ptr<SolverStrategyParameters> p
  *  Initialize                                                   *
  ****************************************************************/
 template<typename T>
-void QMRCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> params )
+void QMRCGSTABSolver<T>::initialize( std::shared_ptr<const SolverStrategyParameters> parameters )
 {
-    auto parameters = std::dynamic_pointer_cast<const KrylovSolverParameters>( params );
     AMP_ASSERT( parameters );
 
-    d_pPreconditioner = parameters->d_pPreconditioner;
+    d_pPreconditioner = parameters->d_pNestedSolver;
 
     getFromInput( parameters->d_db );
 

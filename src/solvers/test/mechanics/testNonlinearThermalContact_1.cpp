@@ -28,9 +28,8 @@
 #include "AMP/operators/map/MapOperatorParameters.h"
 #include "AMP/operators/map/libmesh/Map1Dto3D.h"
 #include "AMP/operators/map/libmesh/Map3Dto1D.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -158,7 +157,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams1 =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db1 );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db1 );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams1->d_comm          = globalComm;
@@ -177,7 +176,7 @@ static void thermalContactTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver1 = nonlinearSolver1->getKrylovSolver();
-    linearSolver1->setPreconditioner( linearThermalPreconditioner1 );
+    linearSolver1->setNestedSolver( linearThermalPreconditioner1 );
     nonlinearThermalOperator1->residual( RightHandSideVec1, TemperatureInKelvinVec1, ResidualVec1 );
 
     // CREATE THE CONTACT GAP OPERATOR

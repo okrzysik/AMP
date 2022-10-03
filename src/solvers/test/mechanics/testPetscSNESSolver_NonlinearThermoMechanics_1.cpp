@@ -169,7 +169,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -206,7 +206,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // register the preconditioner with the Jacobian free Krylov solver
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( columnPreconditioner );
+    linearSolver->setNestedSolver( columnPreconditioner );
 
     nonlinearThermoMechanicsOperator->residual( rhsVec, solVec, resVec );
     double initialResidualNorm = static_cast<double>( resVec->L2Norm() );

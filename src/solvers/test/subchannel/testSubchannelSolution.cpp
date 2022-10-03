@@ -15,10 +15,9 @@
 #include "AMP/operators/subchannel/SubchannelTwoEqNonlinearOperator.h"
 #include "AMP/solvers/BandedSolver.h"
 #include "AMP/solvers/ColumnSolver.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
@@ -212,7 +211,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // create nonlinear solver parameters
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -234,13 +233,13 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( preconditioner == "ML" ) {
         auto linearFlowPreconditioner =
             std::make_shared<AMP::Solver::TrilinosMLSolver>( PreconditionerParams );
-        linearSolver->setPreconditioner( linearFlowPreconditioner );
+        linearSolver->setNestedSolver( linearFlowPreconditioner );
     } else if ( preconditioner == "Banded" ) {
         Preconditioner_db->putScalar( "KL", 3 );
         Preconditioner_db->putScalar( "KU", 3 );
         auto linearFlowPreconditioner =
             std::make_shared<AMP::Solver::BandedSolver>( PreconditionerParams );
-        linearSolver->setPreconditioner( linearFlowPreconditioner );
+        linearSolver->setNestedSolver( linearFlowPreconditioner );
     } else if ( preconditioner == "None" ) {
     } else {
         AMP_ERROR( "Invalid preconditioner type" );

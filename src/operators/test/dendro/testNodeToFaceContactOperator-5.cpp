@@ -203,7 +203,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto bottomPelletSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto bottomPelletSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( bottomPelletSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( bottomPelletSolver_db );
             bottomPelletSolverParams->d_pOperator = bottomPelletBVPOperator;
             bottomPelletSolverParams->d_comm      = bottomPelletMeshAdapter->getComm();
             auto bottomPelletSolver =
@@ -235,7 +235,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         if ( !useML ) {
             auto topPelletSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto topPelletSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( topPelletSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( topPelletSolver_db );
             topPelletSolverParams->d_pOperator = topPelletBVPOperator;
             topPelletSolverParams->d_comm      = topPelletMeshAdapter->getComm();
             auto topPelletSolver =
@@ -272,7 +272,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         } else {
             auto cladSolver_db = columnPreconditioner_db->getDatabase( "DummySolver" );
             auto cladSolverParams =
-                std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( cladSolver_db );
+                std::make_shared<AMP::Solver::SolverStrategyParameters>( cladSolver_db );
             cladSolverParams->d_pOperator = cladBVPOperator;
             cladSolverParams->d_comm      = cladMeshAdapter->getComm();
             auto cladSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( cladSolverParams );
@@ -614,10 +614,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     matrixShellOperator->setOperator( columnOperator );
 
     auto linearSolverParams =
-        std::make_shared < AMP::Solver::PetscKrylovSolverParameters ? ( linearSolver_db );
-    linearSolverParams->d_pOperator       = matrixShellOperator;
-    linearSolverParams->d_comm            = globalComm;
-    linearSolverParams->d_pPreconditioner = columnPreconditioner;
+        std::make_shared < AMP::Solver::SolverStrategyParameters ? ( linearSolver_db );
+    linearSolverParams->d_pOperator     = matrixShellOperator;
+    linearSolverParams->d_comm          = globalComm;
+    linearSolverParams->d_pNestedSolver = columnPreconditioner;
     auto linearSolver = std::make_shared < AMP::Solver::PetscKrylovSolver ? ( linearSolverParams );
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );

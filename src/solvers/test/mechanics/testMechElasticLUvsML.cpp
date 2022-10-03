@@ -7,8 +7,8 @@
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -114,10 +114,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         luParams->d_pOperator = bvpOperator;
         auto luPC             = std::make_shared<AMP::Solver::TrilinosMLSolver>( luParams );
 
-        auto richParams = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( rich_db );
-        richParams->d_pOperator       = bvpOperator;
-        richParams->d_comm            = globalComm;
-        richParams->d_pPreconditioner = luPC;
+        auto richParams = std::make_shared<AMP::Solver::SolverStrategyParameters>( rich_db );
+        richParams->d_pOperator     = bvpOperator;
+        richParams->d_comm          = globalComm;
+        richParams->d_pNestedSolver = luPC;
         auto richSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( richParams );
         richSolver->setZeroInitialGuess( true );
 
@@ -153,11 +153,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         mlParams->d_pOperator = bvpOperator;
         auto mlPC             = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlParams );
 
-        auto cgParams         = std::make_shared<AMP::Solver::PetscKrylovSolverParameters>( cg_db );
+        auto cgParams         = std::make_shared<AMP::Solver::SolverStrategyParameters>( cg_db );
         cgParams->d_pOperator = bvpOperator;
         cgParams->d_comm      = globalComm;
-        cgParams->d_pPreconditioner = mlPC;
-        auto cgSolver               = std::make_shared<AMP::Solver::PetscKrylovSolver>( cgParams );
+        cgParams->d_pNestedSolver = mlPC;
+        auto cgSolver             = std::make_shared<AMP::Solver::PetscKrylovSolver>( cgParams );
         cgSolver->setZeroInitialGuess( true );
 
         cgSolver->apply( rhsVec, solVec );

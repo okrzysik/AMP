@@ -54,7 +54,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     // initialize the nonlinear solver parameters
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
     nonlinearSolverParams->d_comm          = solverComm;
     nonlinearSolverParams->d_pInitialGuess = nullVec;
     nonlinearSolverParams->d_pOperator     = op;

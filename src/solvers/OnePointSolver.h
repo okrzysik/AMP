@@ -17,6 +17,8 @@ public:
     {
     }
 
+    std::string type() const override { return "OnePointSolver"; }
+
     virtual void apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                         std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override
     {

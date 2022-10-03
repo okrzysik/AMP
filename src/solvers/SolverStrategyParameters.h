@@ -9,6 +9,8 @@
 
 namespace AMP::Solver {
 
+class SolverStrategy;
+
 /**\class SolverStrategyParameters
  *
  * SolverStrategyParameters encapsulates parameters used to initialize
@@ -41,7 +43,17 @@ public:
      */
     std::shared_ptr<AMP::Database> d_db = nullptr;
 
+    AMP_MPI d_comm;
+
     std::shared_ptr<AMP::Operator::Operator> d_pOperator = nullptr;
+
+    /**
+     * Pointer to nested solver, e.g. Krylov for Newton, or preconditioner, can be null
+     */
+    std::shared_ptr<AMP::Solver::SolverStrategy> d_pNestedSolver = nullptr;
+
+    //! initial guess for solver -- probably can go away in favour of d_vectors
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pInitialGuess;
 
     /**
      * List of vectors to be used during solver initialization

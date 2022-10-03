@@ -10,11 +10,10 @@
 #include "AMP/operators/boundary/DirichletVectorCorrection.h"
 #include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
 #include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
-#include "AMP/solvers/NonlinearSolverParameters.h"
 #include "AMP/solvers/SolverFactory.h"
+#include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/solvers/petsc/PetscKrylovSolver.h"
-#include "AMP/solvers/petsc/PetscKrylovSolverParameters.h"
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -106,7 +105,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
     auto pcSolver = std::make_shared<AMP::Solver::BoomerAMGSolver>( pcSolverParams );
 
     auto nonlinearSolverParams =
-        std::make_shared<AMP::Solver::NonlinearSolverParameters>( nonlinearSolver_db );
+        std::make_shared<AMP::Solver::SolverStrategyParameters>( nonlinearSolver_db );
 
     // change the next line to get the correct communicator out
     nonlinearSolverParams->d_comm          = globalComm;
@@ -117,7 +116,7 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     auto linearSolver = nonlinearSolver->getKrylovSolver();
 
-    linearSolver->setPreconditioner( pcSolver );
+    linearSolver->setNestedSolver( pcSolver );
 
     nonlinearSolver->setZeroInitialGuess( false );
 

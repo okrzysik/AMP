@@ -51,6 +51,8 @@ public:
      */
     virtual ~BoomerAMGSolver();
 
+    std::string type() const override { return "BoomerAMGSolver"; }
+
     //! static create routine that is used by SolverFactory
     static std::unique_ptr<SolverStrategy>
     createSolver( std::shared_ptr<SolverStrategyParameters> solverStrategyParameters )
