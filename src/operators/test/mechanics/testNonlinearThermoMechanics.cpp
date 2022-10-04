@@ -127,12 +127,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // set up the shift and scale parameters
-    double shift[2];
-    double scale[2];
-    shift[0] = 0.;
-    shift[1] = 0.;
-    scale[0] = 1.;
-    scale[1] = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( thermalTransportModel );
     auto matTh         = transportModel->getMaterial();
@@ -141,10 +136,10 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     if ( thermOperator->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalConductivity";
         if ( ( matTh->property( property ) )->is_argument( "temperature" ) ) {
-            auto range = matTh->property( property )->get_arg_range( "temperature" );
-            scale[1]   = range[1] - range[0];
-            shift[1]   = range[0] + 0.001 * scale[1];
-            scale[1] *= 0.999;
+            auto range                = matTh->property( property )->get_arg_range( "temperature" );
+            double scale              = 0.999 * ( range[1] - range[0] );
+            double shift              = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
         }
     }
 
@@ -176,7 +171,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     // test apply
     std::string msgPrefix = exeName + " : apply";
     auto testOperator     = nonlinearThermoMechanicsOperator;
-    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, shift, scale, 2 );
+    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, adjustment );
 
     ut->passes( msgPrefix );
 

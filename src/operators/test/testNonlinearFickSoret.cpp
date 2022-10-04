@@ -7,7 +7,6 @@
 #include "AMP/operators/ElementPhysicsModelFactory.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
 #include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
@@ -113,47 +112,39 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
         ut->passes( exeName + ": reset" );
         std::cout.flush();
     }
-
     // set shift and scale for applyTests
-    double shift[2];
-    double scale[2];
-    shift[0] = 0.;
-    shift[1] = 0.;
-    scale[0] = 1.;
-    scale[1] = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     std::vector<double> defaults;
-    auto matFick  = fickModel->getMaterial();  // compile error
-    auto matSoret = soretModel->getMaterial(); // compile error
+    auto matFick  = fickModel->getMaterial();
+    auto matSoret = soretModel->getMaterial();
     // the Soret has a principal variable of temperature
     if ( soretOp->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalDiffusionCoefficient";
-        if ( ( matSoret->property( property ) )->is_argument( "temperature" ) ) {
-            auto range =
-                ( matSoret->property( property ) )->get_arg_range( "temperature" ); // Compile error
-            scale[0] = range[1] - range[0];
-            shift[0] = range[0] + 0.001 * scale[0];
-            scale[0] *= 0.999;
-            defaults = ( matSoret->property( property ) )->get_defaults(); // compile error
+        if ( matSoret->property( property )->is_argument( "temperature" ) ) {
+            auto range   = matSoret->property( property )->get_arg_range( "temperature" );
+            double scale = 0.999 * ( range[1] - range[0] );
+            double shift = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
+            defaults                  = matSoret->property( property )->get_defaults();
         }
     }
     // the fick has a principal variable of oxygen
     if ( fickOp->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
-        if ( ( matFick->property( property ) )->is_argument( "concentration" ) ) {
-            auto range = ( matFick->property( property ) )
-                             ->get_arg_range( "concentration" ); // Compile error
-            scale[1] = range[1] - range[0];
-            shift[1] = range[0] + 0.001 * scale[1];
-            scale[1] *= 0.999;
-            defaults = ( matFick->property( property ) )->get_defaults(); // compile error
+        if ( matFick->property( property )->is_argument( "concentration" ) ) {
+            auto range   = matFick->property( property )->get_arg_range( "concentration" );
+            double scale = 0.999 * ( range[1] - range[0] );
+            double shift = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["concentration"] = std::pair<int, int>( scale, shift );
+            defaults                    = ( matFick->property( property ) )->get_defaults();
         }
     }
     if ( defaults.size() > 0 )
-        tVec->setToScalar( defaults[0] ); // compile error
+        tVec->setToScalar( defaults[0] );
     if ( defaults.size() > 1 )
-        cVec->setToScalar( defaults[1] ); // compile error
+        cVec->setToScalar( defaults[1] );
     if ( defaults.size() > 2 )
-        bVec->setToScalar( defaults[2] ); // compile error
+        bVec->setToScalar( defaults[2] );
     // set up input multivariable and output variable
     auto fsInpVar = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "fsInput" );
     fsInpVar->add( tVar );
@@ -171,16 +162,16 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     auto inConcVec = solVec->subsetVectorForVariable( cVar );
     auto inBurnVec = solVec->subsetVectorForVariable( bVar );
     if ( defaults.size() > 0 )
-        inTempVec->setToScalar( defaults[0] ); // compile error
+        inTempVec->setToScalar( defaults[0] );
     if ( defaults.size() > 1 )
-        inConcVec->setToScalar( defaults[1] ); // compile error
+        inConcVec->setToScalar( defaults[1] );
     if ( defaults.size() > 2 )
-        inBurnVec->setToScalar( defaults[2] ); // compile error
+        inBurnVec->setToScalar( defaults[2] );
 
     AMP_INSIST( fsOp->isValidInput( solVec ), "input variable not set up correctly" );
 
     // test apply
-    applyTests( ut, msgPrefix, nonlinearOperator, rhsVec, solVec, resVec, shift, scale, 2 );
+    applyTests( ut, msgPrefix, nonlinearOperator, rhsVec, solVec, resVec, adjustment );
     std::cout.flush();
 }
 

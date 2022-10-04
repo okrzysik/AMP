@@ -2,7 +2,6 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationParameters.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
@@ -16,16 +15,18 @@
 namespace AMP::Operator {
 
 
-static int getVariableID( const std::string &name )
+static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
+                                                    const std::string &key )
 {
-    int id = -1;
-    for ( size_t i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        if ( name == Diffusion::names[i] )
-            id = i;
+    std::vector<std::string> vars;
+    if ( db->isDatabase( key ) ) {
+        auto activeDB = db->getDatabase( key );
+        for ( auto key2 : activeDB->getAllKeys() )
+            vars.push_back( activeDB->getString( key2 ) );
+    } else {
+        vars = db->getVector<std::string>( key );
     }
-    if ( id == 100000 )
-        AMP_ERROR( "Unknown variable: " + name );
-    return id;
+    return vars;
 }
 
 
@@ -71,35 +72,34 @@ std::shared_ptr<DiffusionTransportModel> DiffusionNonlinearFEOperator::getTransp
 }
 
 
-std::vector<AMP::LinearAlgebra::Vector::shared_ptr> DiffusionNonlinearFEOperator::getFrozen()
+std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr>
+DiffusionNonlinearFEOperator::getFrozen()
 {
-    return d_Frozen;
+    std::map<std::string, AMP::LinearAlgebra::Vector::shared_ptr> frozen;
+    for ( auto &[name, data] : d_active ) {
+        if ( data.isFrozen )
+            frozen[name] = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( data.frozen );
+    }
+    return frozen;
 }
 
 
 void DiffusionNonlinearFEOperator::setVector( const std::string &name,
                                               AMP::LinearAlgebra::Vector::shared_ptr frozenVec )
 {
-    bool set = false;
-    for ( size_t id = 0; id < Diffusion::NUMBER_VARIABLES; id++ ) {
-        if ( Diffusion::names[id] == name ) {
-            AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
-            auto meshSubsetVec = frozenVec->select( meshSelector, frozenVec->getName() );
-            d_Frozen[id] =
-                meshSubsetVec->subsetVectorForVariable( d_inpVariables->getVariable( id ) );
-            d_Frozen[id]->makeConsistent(
-                AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-            set = true;
-        }
-    }
-    if ( !set )
-        AMP_ERROR( "Variable " + name + " not found" );
+    auto it = d_active.find( name );
+    AMP_INSIST( it != d_active.end(), "Variable " + name + " not found" );
+    AMP::LinearAlgebra::VS_Mesh meshSelector( d_Mesh );
+    auto mVec = frozenVec->select( meshSelector, frozenVec->getName() );
+    auto vec  = mVec->subsetVectorForVariable( name );
+    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    it->second.frozen = vec;
 }
 
 
 DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
     std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
-    : NonlinearFEOperator( params ), d_Frozen( Diffusion::NUMBER_VARIABLES )
+    : NonlinearFEOperator( params )
 {
     AMP_INSIST( params, "NULL parameter!" );
 
@@ -109,60 +109,31 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 
     d_transportModel = params->d_transportModel;
 
-    d_isActive.resize( Diffusion::NUMBER_VARIABLES );
-    d_isFrozen.resize( Diffusion::NUMBER_VARIABLES );
-    d_inVec.resize( Diffusion::NUMBER_VARIABLES );
-
-    auto activeVariables_db = params->d_db->getDatabase( "ActiveInputVariables" );
-
-    for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        auto namespec   = activeVariables_db->getWithDefault<std::string>( Diffusion::names[var],
-                                                                         "not_specified" );
-        bool isthere    = namespec != "not_specified";
-        d_isActive[var] = isthere;
-        std::string frozenName = "Freeze" + Diffusion::names[var];
-        d_isFrozen[var]        = params->d_db->getWithDefault<bool>( frozenName, false );
-        if ( d_isFrozen[var] )
-            AMP_INSIST( d_isActive[var], "can not freeze a variable unless it is active" );
+    auto activeVariables = getActiveVariables( params->d_db, "ActiveInputVariables" );
+    for ( auto name : activeVariables ) {
+        InputVectorStruct data;
+        data.isFrozen  = params->d_db->getWithDefault<bool>( "Freeze" + name, false );
+        d_active[name] = data;
     }
 
-    d_numberActive = 0;
-    d_numberFrozen = 0;
-    for ( unsigned int i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        if ( d_isActive[i] )
-            d_numberActive++;
-        if ( d_isFrozen[i] )
-            d_numberFrozen++;
-    }
-
-    d_PrincipalVariable     = params->d_db->getString( "PrincipalVariable" );
-    int principalVariableId = getVariableID( d_PrincipalVariable );
-    AMP_INSIST( d_isActive[principalVariableId], "must have Principal_Variable active" );
+    d_PrincipalVariable = params->d_db->getString( "PrincipalVariable" );
+    if ( d_active.find( d_PrincipalVariable ) == d_active.end() )
+        AMP_ERROR( "must have Principal_Variable active" );
     d_diffNonlinElem->setPrincipalVariable( d_PrincipalVariable );
 
     resetFrozen( params );
 
     d_inpVariables.reset( new AMP::LinearAlgebra::MultiVariable( "InputVariables" ) );
-    for ( unsigned int i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
-        d_inpVariables->add( dummyVar );
-    } // end for i
 
-    for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        if ( d_isActive[var] ) {
-            std::string name = activeVariables_db->getString( Diffusion::names[var] );
-            auto dummyVar    = std::make_shared<AMP::LinearAlgebra::Variable>( name );
-            d_inpVariables->setVariable( var, dummyVar );
-            if ( d_isFrozen[var] ) {
-                d_inVec[var] = d_Frozen[var];
-                if ( d_inVec[var] )
-                    AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
-                                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-            }
-        } else {
-            std::shared_ptr<AMP::LinearAlgebra::Variable> dummyVar;
-            d_inpVariables->add( dummyVar );
+    for ( auto &[name, data] : d_active ) {
+        auto dummyVar = std::make_shared<AMP::LinearAlgebra::Variable>( name );
+        d_inpVariables->add( dummyVar );
+        if ( data.isFrozen ) {
+            data.vec = data.frozen;
         }
+        if ( data.vec )
+            AMP_ASSERT( data.vec->getUpdateStatus() ==
+                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
     }
 
     d_outVariable.reset(
@@ -182,25 +153,20 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::preAssembly, entering" << std::endl;
 
-    for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        if ( d_isActive[var] ) {
-            if ( d_isFrozen[var] ) {
-                d_Frozen[var]->makeConsistent(
-                    AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-                d_inVec[var] = d_Frozen[var];
-            } else {
-                auto tvar    = d_inpVariables->getVariable( var );
-                d_inVec[var] = u_meshVec->subsetVectorForVariable( tvar );
-                if ( !d_inVec[var] )
-                    AMP_ERROR( "Unable to subset for " + tvar->getName() );
-            }
-
-            AMP_ASSERT( d_inVec[var] );
-            AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
-                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-            if ( d_iDebugPrintInfoLevel > 5 )
-                std::cout << "Max Value inside preAssembly: " << d_inVec[var]->max() << std::endl;
+    for ( auto &[name, data] : d_active ) {
+        if ( data.isFrozen ) {
+            data.vec = data.frozen;
+            std::const_pointer_cast<AMP::LinearAlgebra::Vector>( data.frozen )
+                ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        } else {
+            data.vec = u_meshVec->subsetVectorForVariable( name );
         }
+
+        AMP_ASSERT( data.vec );
+        AMP_ASSERT( data.vec->getUpdateStatus() ==
+                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+        if ( d_iDebugPrintInfoLevel > 5 )
+            std::cout << "Max Value inside preAssembly: " << data.vec->max() << std::endl;
     }
 
     d_outVec = subsetOutputVector( r );
@@ -231,7 +197,7 @@ void DiffusionNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshEle
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionNonlinearFEOperator::preElementOperation, entering" << std::endl;
 
-    std::vector<std::vector<double>> elementInputVectors( Diffusion::NUMBER_VARIABLES );
+    std::map<std::string, std::vector<double>> elementInputVectors;
 
     d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
     std::vector<AMP::Mesh::MeshElementID> ids( d_currNodes.size() );
@@ -239,22 +205,20 @@ void DiffusionNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshEle
         ids[i] = d_currNodes[i].globalID();
 
     std::vector<size_t> dofs( d_currNodes.size() );
-    for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        if ( d_isActive[var] ) {
-            auto DOF = ( d_inVec[var] )->getDOFManager();
-            DOF->getDOFs( ids, dofs );
-            AMP_ASSERT( dofs.size() == d_currNodes.size() );
-            elementInputVectors[var].resize( dofs.size() );
-            d_inVec[var]->getValuesByGlobalID(
-                dofs.size(), &dofs[0], &elementInputVectors[var][0] );
-        }
+    for ( auto &[name, data] : d_active ) {
+        auto DOF = data.vec->getDOFManager();
+        DOF->getDOFs( ids, dofs );
+        AMP_ASSERT( dofs.size() == d_currNodes.size() );
+        std::vector<double> tmp( dofs.size() );
+        data.vec->getValuesByGlobalID( dofs.size(), &dofs[0], &tmp[0] );
+        elementInputVectors[name] = std::move( tmp );
     }
 
     d_elementOutputVector.resize( d_currNodes.size() );
     for ( unsigned int i = 0; i < d_currNodes.size(); i++ )
         d_elementOutputVector[i] = 0.0;
 
-    d_diffNonlinElem->setElementVectors( elementInputVectors, d_elementOutputVector );
+    d_diffNonlinElem->setElementVectors( std::move( elementInputVectors ), d_elementOutputVector );
 
     d_diffNonlinElem->initializeForCurrentElement( d_currElemPtrs[d_currElemIdx],
                                                    d_transportModel );
@@ -312,22 +276,23 @@ void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
         std::dynamic_pointer_cast<const DiffusionNonlinearFEOperatorParameters>( inParams );
 
     for ( auto [name, vec] : params->d_FrozenVecs ) {
-        if ( name == d_PrincipalVariable ) {
-            int id      = getVariableID( d_PrincipalVariable );
-            d_inVec[id] = vec;
+        auto it = d_active.find( name );
+        if ( it != d_active.end() ) {
+            it->second.vec = vec;
             AMP_ASSERT( vec->getUpdateStatus() ==
                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
         }
     }
 
     resetFrozen( params );
-    for ( unsigned int var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        if ( d_isActive[var] ) {
-            if ( d_isFrozen[var] ) {
-                d_inVec[var] = d_Frozen[var];
-                AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
-                            AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-            }
+    for ( auto [name, vec] : params->d_FrozenVecs ) {
+        auto it = d_active.find( name );
+        if ( it == d_active.end() )
+            continue;
+        if ( it->second.isFrozen ) {
+            it->second.vec = it->second.frozen;
+            AMP_ASSERT( it->second.vec->getUpdateStatus() ==
+                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
         }
     }
 }
@@ -344,9 +309,8 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     db->putScalar( "name", "DiffusionLinearFEOperator" );
     db->putScalar( "InputVariable", d_PrincipalVariable );
     db->putScalar( "OutputVariable", d_outVariable->getName() );
-    db->putScalar( "FixedTemperature", d_isActive[Diffusion::TEMPERATURE] ? false : true );
-    db->putScalar( "FixedConcentration", d_isActive[Diffusion::CONCENTRATION] ? false : true );
-    db->putScalar( "FixedBurnup", d_isActive[Diffusion::BURNUP] ? false : true );
+    for ( auto &[name, data] : d_active )
+        db->putScalar( "Fixed" + name, true );
 
     // create the linear operator params
     auto outParams = std::make_shared<DiffusionLinearFEOperatorParameters>( db );
@@ -369,18 +333,15 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
     outParams->d_outDofMap      = outParams->d_inDofMap;
 
     // add variables to parameters
-    for ( size_t i = 0; i < d_isActive.size(); i++ ) {
-        if ( d_isActive[i] ) {
-            auto name = Diffusion::names[i];
-            if ( d_isFrozen[i] ) {
-                outParams->d_inputVecs[name] = d_Frozen[i];
-            } else {
-                auto var = d_inpVariables->getVariable( i );
-                auto vec = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(
-                    u_meshVec->subsetVectorForVariable( var ) );
-                vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-                outParams->d_inputVecs[name] = vec;
-            }
+    for ( auto &[name, data] : d_active ) {
+        if ( data.isFrozen ) {
+            outParams->d_inputVecs[name] =
+                std::const_pointer_cast<AMP::LinearAlgebra::Vector>( data.frozen );
+        } else {
+            auto vec = std::const_pointer_cast<AMP::LinearAlgebra::Vector>(
+                u_meshVec->subsetVectorForVariable( name ) );
+            vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            outParams->d_inputVecs[name] = vec;
         }
     }
 
@@ -391,12 +352,12 @@ std::shared_ptr<OperatorParameters> DiffusionNonlinearFEOperator::getJacobianPar
 void DiffusionNonlinearFEOperator::resetFrozen(
     std::shared_ptr<const DiffusionNonlinearFEOperatorParameters> params )
 {
-    for ( size_t var = 0; var < Diffusion::NUMBER_VARIABLES; var++ ) {
-        if ( d_isActive[var] && d_isFrozen[var] ) {
-            d_Frozen[var].reset();
-            auto it = params->d_FrozenVecs.find( Diffusion::names[var] );
+    for ( auto &[name, data] : d_active ) {
+        if ( data.isFrozen ) {
+            data.frozen.reset();
+            auto it = params->d_FrozenVecs.find( name );
             if ( it != params->d_FrozenVecs.end() )
-                d_Frozen[var] = it->second;
+                data.frozen = it->second;
         }
     }
 }
@@ -438,10 +399,9 @@ bool DiffusionNonlinearFEOperator::isValidInput( AMP::LinearAlgebra::Vector::con
 std::vector<std::string> DiffusionNonlinearFEOperator::getNonPrincipalVariableIds()
 {
     std::vector<std::string> vars;
-    for ( size_t i = 0; i < Diffusion::NUMBER_VARIABLES; i++ ) {
-        auto var = Diffusion::names[i];
-        if ( d_isActive[i] && var != d_PrincipalVariable )
-            vars.push_back( var );
+    for ( auto &[name, data] : d_active ) {
+        if ( name != d_PrincipalVariable )
+            vars.push_back( name );
     }
     return vars;
 }

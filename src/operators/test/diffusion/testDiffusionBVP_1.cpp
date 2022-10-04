@@ -89,26 +89,25 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     auto property = model_db->getString( "Property" );
 
     // set shift, scale for applyTests
-    double shift = 0., scale = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     auto transportModel =
         std::dynamic_pointer_cast<AMP::Operator::DiffusionTransportModel>( elementPhysicsModel );
     auto mat = transportModel->getMaterial();
     if ( nlinOp->getPrincipalVariable() == "temperature" ) {
-        if ( ( mat->property( property ) )->is_argument( "temperature" ) ) {
-            auto range =
-                ( mat->property( property ) )->get_arg_range( "temperature" ); // Compile error
-            scale = range[1] - range[0];
-            shift = range[0] + 0.001 * scale;
-            scale *= 0.999;
+        if ( mat->property( property )->is_argument( "temperature" ) ) {
+            auto range = mat->property( property )->get_arg_range( "temperature" ); // Compile error
+            double scale              = 0.999 * ( range[1] - range[0] );
+            double shift              = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
         }
     }
     if ( nlinOp->getPrincipalVariable() == "concentration" ) {
-        if ( ( mat->property( property ) )->is_argument( "concentration" ) ) {
+        if ( mat->property( property )->is_argument( "concentration" ) ) {
             auto range =
-                ( mat->property( property ) )->get_arg_range( "concentration" ); // Compile error
-            scale = range[1] - range[0];
-            shift = range[0] + 0.001 * scale;
-            scale *= 0.999;
+                mat->property( property )->get_arg_range( "concentration" ); // Compile error
+            double scale                = 0.999 * ( range[1] - range[0] );
+            double shift                = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["concentration"] = std::pair<int, int>( scale, shift );
         }
     }
     if ( nlinOp->getPrincipalVariable() == "burnup" ) {
@@ -118,14 +117,14 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Test apply
     std::string msgPrefix = exeName + ": apply";
     {
-        applyTests( ut, msgPrefix, nlinBVPOperator, bvpRhsVec, bvpSolVec, bvpResVec, shift, scale );
+        applyTests( ut, msgPrefix, nlinBVPOperator, bvpRhsVec, bvpSolVec, bvpResVec, adjustment );
     }
     std::cout.flush();
 
     // Test linear reset from getJacobianParameters
     for ( int i = 0; i < 3; i++ ) {
         bvpSolVec->setRandomValues();
-        adjust( bvpSolVec, shift, scale );
+        adjust( bvpSolVec, adjustment );
         bvpRhsVec->setRandomValues();
         bvpResVec->setRandomValues();
         auto jacparams = nlinBVPOp->getParameters( "Jacobian", bvpSolVec );

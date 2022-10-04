@@ -90,13 +90,13 @@ void MechanicsLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParam
     if ( d_useUpdatedLagrangian ) {
         auto params =
             std::dynamic_pointer_cast<const MechanicsLinearFEOperatorParameters>( oparams );
-        AMP_INSIST( ( params != nullptr ), "NULL params" );
+        AMP_INSIST( params, "NULL params" );
 
-        if ( ( d_dispVec == nullptr ) and ( params->d_dispVec != nullptr ) ) {
+        if ( !d_dispVec && !params->d_dispVec ) {
             d_dispVec = ( params->d_dispVec )->cloneVector();
         }
-        if ( d_dispVec != nullptr ) {
-            if ( params->d_dispVec != nullptr ) {
+        if ( d_dispVec ) {
+            if ( params->d_dispVec ) {
                 d_dispVec->copyVector( params->d_dispVec );
                 d_dispVec->makeConsistent(
                     AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
@@ -135,7 +135,7 @@ void MechanicsLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
         elementRefXYZ.resize( num_local_dofs );
         for ( unsigned int r = 0; r < numNodesInCurrElem; r++ ) {
             for ( unsigned int d = 0; d < 3; d++ ) {
-                if ( d_dispVec != nullptr ) {
+                if ( d_dispVec ) {
                     elementInputVectors[Mechanics::DISPLACEMENT][( 3 * r ) + d] =
                         d_dispVec->getValueByGlobalID( d_dofIndices[r][d] );
                 } else {

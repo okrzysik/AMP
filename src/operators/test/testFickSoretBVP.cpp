@@ -70,12 +70,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::cout.flush();
 
     // set shift, scale for applyTests
-    double shift[2];
-    double scale[2];
-    shift[0]                = 0.;
-    shift[1]                = 0.;
-    scale[0]                = 1.;
-    scale[1]                = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     auto fickTransportModel = fickOp->getTransportModel();
     std::vector<double> defaults( 2, 0 );
     auto fmat = fickTransportModel->getMaterial();
@@ -83,22 +78,22 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     if ( soretOp->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalDiffusionCoefficient";
         if ( fmat->property( property )->is_argument( "temperature" ) ) {
-            auto trange = fmat->property( property )->get_arg_range( "temperature" );
-            scale[1]    = trange[1] - trange[0];
-            shift[1]    = trange[0] + 0.001 * scale[1];
-            scale[1] *= 0.999;
-            defaults = fmat->property( property )->get_defaults();
+            auto range                = fmat->property( property )->get_arg_range( "temperature" );
+            double scale              = 0.999 * ( range[1] - range[0] );
+            double shift              = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
+            defaults                  = fmat->property( property )->get_defaults();
         }
     }
     // the Fick has a principal variable of temperature
     if ( fickOp->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
         if ( fmat->property( property )->is_argument( "concentration" ) ) {
-            auto crange = fmat->property( property )->get_arg_range( "concentration" );
-            scale[0]    = crange[1] - crange[0];
-            shift[0]    = crange[0] + 0.001 * scale[0];
-            scale[0] *= 0.999;
-            defaults = fmat->property( property )->get_defaults();
+            auto range   = fmat->property( property )->get_arg_range( "concentration" );
+            double scale = 0.999 * ( range[1] - range[0] );
+            double shift = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["concentration"] = std::pair<int, int>( scale, shift );
+            defaults                    = fmat->property( property )->get_defaults();
         }
     }
 
@@ -128,8 +123,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // set default values of input variables
     auto inConcVec = solVec->subsetVectorForVariable( cVar );
     auto inTempVec = solVec->subsetVectorForVariable( tVar );
-    inConcVec->setToScalar( defaults[1] ); // compile error
-    inTempVec->setToScalar( defaults[0] ); // compile error
+    inConcVec->setToScalar( defaults[1] );
+    inTempVec->setToScalar( defaults[0] );
     rhsVec->setToScalar( 0. );
 
     AMP_INSIST( nlinOp->isValidInput( solVec ), "input variable not set up correctly" );
@@ -137,7 +132,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     // Test apply
     std::string msgPrefix = exeName + ": apply";
     {
-        applyTests( ut, msgPrefix, nlinBVPOperator, rhsVec, solVec, resVec, shift, scale, 2 );
+        applyTests( ut, msgPrefix, nlinBVPOperator, rhsVec, solVec, resVec, adjustment );
     }
     std::cout.flush();
 
@@ -145,7 +140,7 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     for ( int i = 0; i < 3; i++ ) {
         inConcVec->setRandomValues();
         inTempVec->setRandomValues();
-        adjust( solVec, shift, scale, 2 );
+        adjust( solVec, adjustment );
         rhsVec->setRandomValues();
         resVec->setRandomValues();
         auto jacparams = nlinBVPOp->getParameters( "Jacobian", solVec );

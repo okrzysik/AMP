@@ -31,18 +31,9 @@ public:
 
     std::shared_ptr<DiffusionTransportModel> getTransportModel();
 
-    void set_temperature( std::shared_ptr<const AMP::LinearAlgebra::Vector> );
-    void set_concentration( std::shared_ptr<const AMP::LinearAlgebra::Vector> );
-    void set_burnup( std::shared_ptr<const AMP::LinearAlgebra::Vector> );
-
 protected:
-    bool d_useConstantTemperature;
-    bool d_useConstantConcentration;
-    bool d_useConstantBurnup;
-
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> d_temperature;
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> d_concentration;
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> d_burnup;
+    std::set<std::string> d_constantVecs;
+    std::map<std::string, std::shared_ptr<const AMP::LinearAlgebra::Vector>> d_inputVecs;
 
     std::vector<std::vector<double>> d_elementStiffnessMatrix;
 

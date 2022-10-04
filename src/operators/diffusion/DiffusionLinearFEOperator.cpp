@@ -15,9 +15,13 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
 
     AMP_INSIST( d_diffLinElem, "d_elemOp is not of type DiffusionLinearElement" );
 
-    d_useConstantTemperature   = params->d_db->getWithDefault<bool>( "FixedTemperature", false );
-    d_useConstantConcentration = params->d_db->getWithDefault<bool>( "FixedConcentration", false );
-    d_useConstantBurnup        = params->d_db->getWithDefault<bool>( "FixedBurnup", false );
+    for ( auto &[name, vec] : d_inputVecs ) {
+        bool isConstant = params->d_db->getWithDefault<bool>( "Fixed" + name, false );
+        if ( isConstant )
+            d_constantVecs.insert( name );
+        else
+            d_inputVecs[name] = vec;
+    }
 
     auto inpVar     = params->d_db->getString( "InputVariable" );
     d_inputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( inpVar );
@@ -26,23 +30,6 @@ DiffusionLinearFEOperator::DiffusionLinearFEOperator(
     d_outputVariable = std::make_shared<AMP::LinearAlgebra::Variable>( outVar );
 
     reset( params );
-}
-
-
-void DiffusionLinearFEOperator::set_temperature(
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> temperature )
-{
-    d_temperature = temperature;
-}
-void DiffusionLinearFEOperator::set_concentration(
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> concentration )
-{
-    d_concentration = concentration;
-}
-void DiffusionLinearFEOperator::set_burnup(
-    std::shared_ptr<const AMP::LinearAlgebra::Vector> burnup )
-{
-    d_burnup = burnup;
 }
 
 
@@ -57,14 +44,8 @@ void DiffusionLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParam
     d_transportModel = params->d_transportModel;
 
     for ( auto [name, vec] : params->d_inputVecs ) {
-        if ( name == "temperature" )
-            d_temperature = vec;
-        else if ( name == "concentration" )
-            d_concentration = vec;
-        else if ( name == "burnup" )
-            d_burnup = vec;
-        else
-            AMP_ERROR( "Unknown input vector: " + name );
+        if ( d_constantVecs.find( name ) == d_constantVecs.end() )
+            d_inputVecs[name] = vec;
     }
 
     d_matrix->zero();
@@ -102,52 +83,34 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
     d_currNodes = elem.getElements( AMP::Mesh::GeomType::Vertex );
 
-    unsigned int num_local_dofs = d_currNodes.size();
+    size_t N_dofs = d_currNodes.size();
 
-    d_elementStiffnessMatrix.resize( num_local_dofs );
-    for ( unsigned int r = 0; r < num_local_dofs; r++ ) {
-        d_elementStiffnessMatrix[r].resize( num_local_dofs );
-        for ( unsigned int c = 0; c < num_local_dofs; c++ ) {
+    d_elementStiffnessMatrix.resize( N_dofs );
+    for ( unsigned int r = 0; r < N_dofs; r++ ) {
+        d_elementStiffnessMatrix[r].resize( N_dofs );
+        for ( unsigned int c = 0; c < N_dofs; c++ ) {
             d_elementStiffnessMatrix[r][c] = 0;
         }
     }
+
+    std::map<std::string, std::vector<double>> localVecs;
 
     std::vector<double> localTemperature;
     std::vector<double> localConcentration;
     std::vector<double> localBurnup;
 
-    if ( !d_useConstantTemperature && d_temperature ) {
-        localTemperature.resize( num_local_dofs );
-        auto DOF = d_temperature->getDOFManager();
+    for ( auto &[name, vec] : d_inputVecs ) {
+        if ( !vec )
+            continue;
+        std::vector<double> tmp( N_dofs );
+        auto DOF = vec->getDOFManager();
         std::vector<size_t> dofs;
         for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
             DOF->getDOFs( d_currNodes[r].globalID(), dofs );
             AMP_ASSERT( dofs.size() == 1 );
-            localTemperature[r] = d_temperature->getValueByGlobalID( dofs[0] );
+            tmp[r] = vec->getValueByGlobalID( dofs[0] );
         }
-    }
-
-
-    if ( !d_useConstantConcentration && d_concentration ) {
-        localConcentration.resize( num_local_dofs );
-        auto DOF = d_concentration->getDOFManager();
-        std::vector<size_t> dofs;
-        for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
-            DOF->getDOFs( d_currNodes[r].globalID(), dofs );
-            AMP_ASSERT( dofs.size() == 1 );
-            localConcentration[r] = d_concentration->getValueByGlobalID( dofs[0] );
-        }
-    }
-
-    if ( !d_useConstantBurnup && d_burnup ) {
-        localBurnup.resize( num_local_dofs );
-        auto DOF = d_burnup->getDOFManager();
-        std::vector<size_t> dofs;
-        for ( size_t r = 0; r < d_currNodes.size(); r++ ) {
-            DOF->getDOFs( d_currNodes[r].globalID(), dofs );
-            AMP_ASSERT( dofs.size() == 1 );
-            localBurnup[r] = d_burnup->getValueByGlobalID( dofs[0] );
-        }
+        localVecs[name] = std::move( tmp );
     }
 
     createCurrentLibMeshElement();
@@ -156,8 +119,7 @@ void DiffusionLinearFEOperator::preElementOperation( const AMP::Mesh::MeshElemen
 
     d_diffLinElem->setElementStiffnessMatrix( d_elementStiffnessMatrix );
 
-    d_diffLinElem->setElementVectors(
-        num_local_dofs, localTemperature, localConcentration, localBurnup );
+    d_diffLinElem->setElementVectors( std::move( localVecs ) );
 
     if ( d_iDebugPrintInfoLevel > 7 )
         AMP::pout << "DiffusionLinearFEOperator::preElementOperation, leaving" << std::endl;

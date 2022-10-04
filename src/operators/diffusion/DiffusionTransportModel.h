@@ -4,10 +4,9 @@
 #include "AMP/materials/Material.h"
 #include "AMP/materials/Property.h"
 #include "AMP/operators/ElementPhysicsModel.h"
-#include "AMP/operators/diffusion/DiffusionConstants.h"
-#include <memory>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

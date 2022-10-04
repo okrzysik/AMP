@@ -191,7 +191,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
 
     thermalNonlinearOperator->residual( globalRhsVec, globalSolVec, globalResVec );
     AMP::pout << "Initial Residual Norm for Step is: " << globalResVec->L2Norm() << std::endl;
-    expectedVal          = 4.84311;
+    expectedVal          = 6.64841;
     double globalResNorm = static_cast<double>( globalResVec->L2Norm() );
     if ( !AMP::Utilities::approx_equal( expectedVal, globalResNorm, 1e-5 ) ) {
         ut->failure( "the Initial Residual Norm has changed." );
@@ -201,7 +201,7 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     nonlinearSolver->apply( globalRhsVec, globalSolVec );
 
     std::cout << "Final Solution Norm: " << globalSolVec->L2Norm() << std::endl;
-    expectedVal        = 51541;
+    expectedVal        = 47924.7;
     auto globalSolNorm = static_cast<double>( globalSolVec->L2Norm() );
     if ( !AMP::Utilities::approx_equal( expectedVal, globalSolNorm, 1e-5 ) ) {
         ut->failure( "the Final Solution Norm has changed." );
@@ -239,7 +239,6 @@ int testThermalRobinFlow( int argc, char *argv[] )
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
     AMP::Solver::registerSolverFactories();
-#include "AMP/solvers/SolverFactory.h"
 
     flowTest( &ut, "testThermalRobinFlow-2" );
 
