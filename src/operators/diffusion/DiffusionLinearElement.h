@@ -16,7 +16,6 @@ public:
     explicit DiffusionLinearElement( std::shared_ptr<const ElementOperationParameters> params )
         : DiffusionElement( params ), d_elementStiffnessMatrix( nullptr )
     {
-        d_num_dofs         = 0;
         d_transportAtGauss = params->d_db->getWithDefault<bool>( "TransportAtGaussPoints", true );
     }
 
@@ -24,18 +23,12 @@ public:
 
     void setElementStiffnessMatrix( std::vector<std::vector<double>> &elementStiffnessMatrix )
     {
-        d_elementStiffnessMatrix = &( elementStiffnessMatrix );
+        d_elementStiffnessMatrix = &elementStiffnessMatrix;
     }
 
-    void setElementVectors( unsigned int num_dofs,
-                            const std::vector<double> &localTemp,
-                            const std::vector<double> &localConc,
-                            const std::vector<double> &localBurn )
+    void setElementVectors( std::map<std::string, std::vector<double>> vecs )
     {
-        d_num_dofs           = num_dofs;
-        d_LocalTemperature   = localTemp;
-        d_LocalConcentration = localConc;
-        d_LocalBurnup        = localBurn;
+        d_localVecs = std::move( vecs );
     }
 
     void apply() override;
@@ -45,13 +38,10 @@ protected:
 
     bool d_transportAtGauss;
 
-    std::vector<double> d_LocalTemperature;
-    std::vector<double> d_LocalConcentration;
-    std::vector<double> d_LocalBurnup;
-
-private:
-    unsigned int d_num_dofs;
+    std::map<std::string, std::vector<double>> d_localVecs;
 };
+
+
 } // namespace AMP::Operator
 
 #endif

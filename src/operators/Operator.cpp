@@ -37,7 +37,7 @@ Operator::Operator( std::shared_ptr<const OperatorParameters> params )
 
 void Operator::reset( std::shared_ptr<const OperatorParameters> params )
 {
-    AMP_INSIST( ( ( params.get() ) != nullptr ), "NULL parameter" );
+    AMP_INSIST( params, "NULL parameter" );
 
     // try and keep the next call the last in the function
     // so as not to override any parameters set through it
@@ -50,8 +50,8 @@ void Operator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
                          AMP::LinearAlgebra::Vector::const_shared_ptr u,
                          AMP::LinearAlgebra::Vector::shared_ptr r )
 {
-    AMP_INSIST( ( ( u.get() ) != nullptr ), "NULL Solution Vector" );
-    AMP_INSIST( ( ( r.get() ) != nullptr ), "NULL Residual Vector" );
+    AMP_INSIST( u, "NULL Solution Vector" );
+    AMP_INSIST( r, "NULL Residual Vector" );
 
     apply( u, r );
 
@@ -88,7 +88,7 @@ Operator::getParameters( const std::string &type,
 
 void Operator::getFromInput( std::shared_ptr<AMP::Database> db )
 {
-    AMP_INSIST( ( ( db.get() ) != nullptr ), "NULL database" );
+    AMP_INSIST( db, "NULL database" );
 
     d_iDebugPrintInfoLevel = db->getWithDefault<int>( "print_info_level", 0 );
 }

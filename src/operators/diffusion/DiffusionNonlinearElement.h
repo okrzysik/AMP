@@ -1,11 +1,10 @@
 #ifndef included_AMP_DiffusionNonlinearElement
 #define included_AMP_DiffusionNonlinearElement
 
-#include <vector>
-
-#include "AMP/operators/diffusion/DiffusionConstants.h"
 #include "AMP/operators/diffusion/DiffusionElement.h"
+
 #include <memory>
+#include <vector>
 
 
 namespace AMP::Operator {
@@ -27,23 +26,23 @@ public:
 
     virtual ~DiffusionNonlinearElement() {}
 
-    void setElementInputVector( const std::vector<std::vector<double>> &elementInputVectors )
+    void setElementInputVector( std::map<std::string, std::vector<double>> elementInputVectors )
     {
-        d_elementInputVectors = elementInputVectors;
+        d_elementInputVectors = std::move( elementInputVectors );
     }
 
-    void setElementVectors( const std::vector<std::vector<double>> &elementInputVectors,
+    void setElementVectors( std::map<std::string, std::vector<double>> elementInputVectors,
                             std::vector<double> &elementOutputVector )
     {
-        d_elementInputVectors = elementInputVectors;
-        d_elementOutputVector = &( elementOutputVector );
+        d_elementInputVectors = std::move( elementInputVectors );
+        d_elementOutputVector = &elementOutputVector;
     }
 
-    void setElementTransport( const std::vector<std::vector<double>> &elementInputVectors,
+    void setElementTransport( std::map<std::string, std::vector<double>> elementInputVectors,
                               std::vector<double> &elementOutputVector )
     {
-        d_elementInputVectors   = elementInputVectors;
-        d_transportOutputVector = &( elementOutputVector );
+        d_elementInputVectors   = std::move( elementInputVectors );
+        d_transportOutputVector = &elementOutputVector;
     }
 
     void apply() override;
@@ -55,7 +54,7 @@ public:
     bool getTransportAtGauss() { return d_transportAtGauss; }
 
 protected:
-    std::vector<std::vector<double>> d_elementInputVectors;
+    std::map<std::string, std::vector<double>> d_elementInputVectors;
 
     std::vector<double> *d_elementOutputVector;
 

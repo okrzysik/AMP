@@ -108,7 +108,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     auto soretFrozen = soretOp->getFrozen();
 
     auto lenscale = input_db->getScalar<double>( "LengthScale" );
-    soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setToScalar( 300. );
+    soretFrozen["temperature"]->setToScalar( 300. );
     auto iterator = meshAdapter->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; iterator != iterator.end(); ++iterator ) {
         double x = ( iterator->coord() )[0];
@@ -117,10 +117,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
         nodalDofMap->getDOFs( iterator->globalID(), gid );
         double value =
             300. + 450 * ( 1. - ( x * x / lenscale / lenscale + y * y / lenscale / lenscale ) );
-        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID(
-            1, &gid[0], &value );
-        soretFrozen[AMP::Operator::Diffusion::TEMPERATURE]->setValuesByGlobalID(
-            1, &gid[0], &value );
+        fickFrozen["temperature"]->setValuesByGlobalID( 1, &gid[0], &value );
+        soretFrozen["temperature"]->setValuesByGlobalID( 1, &gid[0], &value );
     }
 
     // Initial guess
@@ -195,8 +193,7 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
             node++;
         }
         AMP_INSIST( node == nnodes, "invalid count" );
-        fickFrozen[AMP::Operator::Diffusion::TEMPERATURE]->getValuesByGlobalID(
-            nnodes, &gids[0], &temp[0] );
+        fickFrozen["temperature"]->getValuesByGlobalID( nnodes, &gids[0], &temp[0] );
         solVec->getValuesByGlobalID( nnodes, &gids[0], &conc[0] );
         // this is  used to plot the fick and soret coefficnets used.  commenting it out till
         // someone finds out.
@@ -219,10 +216,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     siloWriter->registerMesh( meshAdapter );
     siloWriter->registerVector( solVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Solution" );
     siloWriter->registerVector( resVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "Residual" );
-    siloWriter->registerVector( fickFrozen[AMP::Operator::Diffusion::TEMPERATURE],
-                                meshAdapter,
-                                AMP::Mesh::GeomType::Vertex,
-                                "Temperature" );
+    siloWriter->registerVector(
+        fickFrozen["temperature"], meshAdapter, AMP::Mesh::GeomType::Vertex, "Temperature" );
     siloWriter->registerVector(
         fickCoeffVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "FickCoefficient" );
     siloWriter->registerVector(

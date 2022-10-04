@@ -80,13 +80,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     // initialize the input multi-variable
     auto volumeOperator = std::dynamic_pointer_cast<AMP::Operator::DiffusionNonlinearFEOperator>(
         nonlinearThermalOperator->getVolumeOperator() );
-    auto inputVariable = std::make_shared<AMP::LinearAlgebra::MultiVariable>( "inputVariable" );
-    auto tmp           = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
-        volumeOperator->getInputVariable() );
-    for ( size_t i = 0; i < tmp->numVariables(); i++ ) {
-        if ( tmp->getVariable( i ) )
-            inputVariable->add( tmp->getVariable( i ) );
-    }
+    auto inputVariable = volumeOperator->getInputVariable();
 
     // initialize the output multi-variable
     auto outputVariable = nonlinearThermalOxygenOperator->getOutputVariable();
@@ -113,39 +107,32 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     double defConc = thermalTransportModel->getProperty()->get_default( "concentration" );
 
     // next get vectors
-    auto tempVec = solVec->subsetVectorForVariable( inputVariable->getVariable( 0 ) );
-    auto concVec = solVec->subsetVectorForVariable( inputVariable->getVariable( 1 ) );
+    auto tempVec = solVec->subsetVectorForVariable( "temperature" );
+    auto concVec = solVec->subsetVectorForVariable( "concentration" );
     tempVec->setToScalar( defTemp );
     concVec->setToScalar( defConc );
 
     // set up the shift and scale parameters
-    double shift[2];
-    double scale[2];
-    shift[0]  = 0.;
-    shift[1]  = 0.;
-    scale[0]  = 1.;
-    scale[1]  = 1.;
+    std::map<std::string, std::pair<double, double>> adjustment;
     auto matt = thermalTransportModel->getMaterial();
     auto mato = oxyModel->getMaterial();
     if ( volumeOperator->getPrincipalVariable() == "temperature" ) {
         std::string property = "ThermalConductivity";
-        if ( ( matt->property( property ) )->is_argument( "temperature" ) ) {
-            auto range =
-                ( matt->property( property ) )->get_arg_range( "temperature" ); // Compile error
-            scale[0] = range[1] - range[0];
-            shift[0] = range[0] + 0.001 * scale[0];
-            scale[0] *= 0.999;
+        if ( matt->property( property )->is_argument( "temperature" ) ) {
+            auto range                = matt->property( property )->get_arg_range( "temperature" );
+            double scale              = 0.999 * ( range[1] - range[0] );
+            double shift              = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["temperature"] = std::pair<int, int>( scale, shift );
         }
     }
     // the Fick has a principal variable of oxygen
     if ( fickOperator->getPrincipalVariable() == "concentration" ) {
         std::string property = "FickCoefficient";
-        if ( ( mato->property( property ) )->is_argument( "concentration" ) ) {
-            auto range =
-                ( mato->property( property ) )->get_arg_range( "concentration" ); // Compile error
-            scale[1] = range[1] - range[0];
-            shift[1] = range[0] + 0.001 * scale[1];
-            scale[1] *= 0.999;
+        if ( mato->property( property )->is_argument( "concentration" ) ) {
+            auto range   = mato->property( property )->get_arg_range( "concentration" );
+            double scale = 0.999 * ( range[1] - range[0] );
+            double shift = range[0] + 0.001 * ( range[1] - range[0] );
+            adjustment["concentration"] = std::pair<int, int>( scale, shift );
         }
     }
 
@@ -172,7 +159,7 @@ static void thermalOxygenDiffusionTest( AMP::UnitTest *ut, const std::string &ex
     std::string msgPrefix = exeName + " : apply";
     auto testOperator =
         std::dynamic_pointer_cast<AMP::Operator::Operator>( nonlinearThermalOxygenOperator );
-    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, shift, scale, 2 );
+    applyTests( ut, msgPrefix, testOperator, rhsVec, solVec, resVec, adjustment );
 
     ut->passes( msgPrefix );
 

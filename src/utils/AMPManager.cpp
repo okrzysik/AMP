@@ -260,7 +260,7 @@ void AMPManager::shutdown()
 #ifdef AMP_USE_TIMER
     auto memory = MemoryApp::getMemoryStats();
     if ( rank == 0 && memory.N_new > ( memory.N_delete + N_memory_startup ) ) {
-        std::cout << "N_memory_startup: " << N_memory_startup << std::endl;
+        std::cout << std::endl << "N_memory_startup: " << N_memory_startup << std::endl;
         MemoryApp::print( std::cout );
     }
 #endif
