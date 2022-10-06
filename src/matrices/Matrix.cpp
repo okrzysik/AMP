@@ -9,58 +9,14 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Matrix::Matrix( const Matrix &rhs ) : d_comm( rhs.d_comm )
-{
-    AMPManager::incrementResource( "Matrix" );
-}
+Matrix::Matrix( const Matrix &rhs ) { AMPManager::incrementResource( "Matrix" ); }
 Matrix::Matrix() { AMPManager::incrementResource( "Matrix" ); }
-Matrix::Matrix( std::shared_ptr<MatrixParameters> params ) : d_comm( params->getComm() )
+
+Matrix::Matrix( std::shared_ptr<MatrixParameters> params )
 {
-    AMP_ASSERT( !d_comm.isNull() );
     AMPManager::incrementResource( "Matrix" );
 }
 Matrix::~Matrix() { AMPManager::decrementResource( "Matrix" ); }
-
-
-/********************************************************
- * Get the number of rows/columns in the matrix          *
- ********************************************************/
-size_t Matrix::numLocalRows() const
-{
-    auto DOF = getLeftDOFManager();
-    return DOF->numLocalDOF();
-}
-size_t Matrix::numGlobalRows() const
-{
-    auto DOF = getLeftDOFManager();
-    return DOF->numGlobalDOF();
-}
-size_t Matrix::numLocalColumns() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->numLocalDOF();
-}
-size_t Matrix::numGlobalColumns() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->numGlobalDOF();
-}
-
-
-/********************************************************
- * Get iterators                                         *
- ********************************************************/
-size_t Matrix::beginRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->beginDOF();
-}
-size_t Matrix::endRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->endDOF();
-}
-
 
 /********************************************************
  * multiply                                             *
