@@ -97,11 +97,11 @@ Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) co
  ********************************************************/
 Vector::shared_ptr NativePetscMatrix::getRightVector() const
 {
-    std::dynamic_pointer_cast<NativePetscMatrixData>( d_matrixData )->getRightVector();
+    return std::dynamic_pointer_cast<NativePetscMatrixData>( d_matrixData )->getRightVector();
 }
 Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
-    std::dynamic_pointer_cast<NativePetscMatrixData>( d_matrixData )->getLeftVector();
+    return std::dynamic_pointer_cast<NativePetscMatrixData>( d_matrixData )->getLeftVector();
 }
 Discretization::DOFManager::shared_ptr NativePetscMatrix::getRightDOFManager() const
 {

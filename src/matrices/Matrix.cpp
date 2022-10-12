@@ -16,6 +16,11 @@ Matrix::Matrix( std::shared_ptr<MatrixParameters> params )
 {
     AMPManager::incrementResource( "Matrix" );
 }
+
+Matrix::Matrix( std::shared_ptr<MatrixData> data ) : d_matrixData( data )
+{
+    AMPManager::incrementResource( "Matrix" );
+}
 Matrix::~Matrix() { AMPManager::decrementResource( "Matrix" ); }
 
 /********************************************************

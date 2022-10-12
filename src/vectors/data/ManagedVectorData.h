@@ -48,7 +48,7 @@ public:
     void receiveDataChanged() override { fireDataChange(); }
 
 protected:
-    //! The unterlying vector
+    //! The underlying vector
     std::shared_ptr<Vector> d_Engine;
 
 

@@ -38,6 +38,12 @@ public:
      */
     explicit Matrix( std::shared_ptr<MatrixParameters> params );
 
+
+    /** \brief Constructor
+     * \param[in] params  MatrixData object associated with matrix
+     */
+    explicit Matrix( std::shared_ptr<MatrixData> data );
+
     //! Destructor
     virtual ~Matrix();
 
@@ -339,7 +345,7 @@ inline std::shared_ptr<Matrix> Matrix::transpose() const
     return std::shared_ptr<Matrix>();
 }
 
-inline std::ostream &operator<<( std::ostream &out, const Matrix &p ) {}
+std::ostream &operator<<( std::ostream &out, const Matrix &p );
 
 inline std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
 {
