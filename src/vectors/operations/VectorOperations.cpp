@@ -37,6 +37,17 @@ Scalar VectorOperations::max( const VectorData &x ) const
         ans = maxReduce( x.getComm(), ans );
     return ans;
 }
+Scalar VectorOperations::sum( const VectorData &x ) const
+{
+    auto ans = localSum( x );
+    if ( x.hasComm() )
+        ans = sumReduce( x.getComm(), ans );
+    return ans;
+}
+Scalar VectorOperations::mean( const VectorData &x ) const
+{
+    return sum( x ) / Scalar( x.getGlobalSize() );
+}
 Scalar VectorOperations::dot( const VectorData &x, const VectorData &y ) const
 {
     auto ans = localDot( x, y );

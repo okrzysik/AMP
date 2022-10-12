@@ -350,6 +350,21 @@ Scalar VectorOperationsOpenMP<TYPE>::localMax( const VectorData &x ) const
 }
 
 template<typename TYPE>
+Scalar VectorOperationsOpenMP<TYPE>::localSum( const VectorData &x ) const
+{
+    size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans        = std::numeric_limits<TYPE>::lowest();
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+#pragma omp parallel for reduction( + : ans )
+        for ( size_t j = 0; j < size; j++ )
+            ans += data[j];
+    }
+    return ans;
+}
+
+template<typename TYPE>
 Scalar VectorOperationsOpenMP<TYPE>::localL1Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();

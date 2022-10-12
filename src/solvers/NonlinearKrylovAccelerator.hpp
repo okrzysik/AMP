@@ -398,7 +398,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         d_iNumberIterations++;
 
         if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
-            AMP::pout << "Nonlinear Krylov iteration : " << d_iNumberIterations
+            AMP::pout << "Nonlinear Krylov iteration : " << (int) d_iNumberIterations
                       << ", residual: " << residual_norm << std::endl;
         }
 

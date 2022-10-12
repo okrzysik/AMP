@@ -148,7 +148,7 @@ public: // the next set of functions defines the public math. interface for vect
      *\details This is equivalent (but more efficient) to calling setToScalar ( 0.0 ) followed by a
      *     makeConsistent(SET)
      */
-    void zero( void );
+    void zero();
 
     /**
      * \brief  Set all compenents of a vector to a scalar.
@@ -160,7 +160,7 @@ public: // the next set of functions defines the public math. interface for vect
     /**
      * \brief Set data in this vector to random values on [0,1).
      */
-    void setRandomValues( void );
+    void setRandomValues();
 
     /**
      * \brief  Set vector equal to scaled input.
@@ -261,30 +261,40 @@ public: // the next set of functions defines the public math. interface for vect
     /**
      * \brief Return the minimum value of the vector.  \f$\min_i \mathit{this}_i\f$.
      */
-    Scalar min( void ) const;
+    Scalar min() const;
 
     /**
      * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
-    Scalar max( void ) const;
+    Scalar max() const;
+
+    /**
+     * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     */
+    Scalar sum() const;
+
+    /**
+     * \brief Return the maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
+     */
+    Scalar mean() const;
 
     /**
      * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
      * \details Returns \f[\sum_i |\mathit{this}_i|\f]
      */
-    Scalar L1Norm( void ) const;
+    Scalar L1Norm() const;
 
     /**
      * \brief Return discrete @f$ L_2 @f$ -norm of this vector.
      * \details Returns \f[\sqrt{\sum_i \mathit{this}_i^2}\f]
      */
-    Scalar L2Norm( void ) const;
+    Scalar L2Norm() const;
 
     /**
      * \brief Return the @f$ L_\infty @f$ -norm of this vector.
      * \details Returns \f[\max_i |\mathit{this}_i|\f]
      */
-    Scalar maxNorm( void ) const;
+    Scalar maxNorm() const;
     /**
      * \brief Returns the minimum of the quotient of two vectors:
      *    \f[\min_{i,y_i\neq0} x_i/\mathit{this}_i\f]
@@ -361,6 +371,9 @@ public: // Clone vectors
 public: // Get/Set data/variables/operations
     //! Get the units for this Vector
     inline auto getUnits() const { return d_units; }
+
+    //! Get the units for this Vector
+    virtual void setUnits( AMP::Units );
 
     //! Get the DOFManager for this Vector
     inline std::shared_ptr<AMP::Discretization::DOFManager> getDOFManager() const;

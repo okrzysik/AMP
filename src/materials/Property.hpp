@@ -14,7 +14,7 @@ namespace AMP::Materials {
  *  evalv interfaces                                                     *
  ************************************************************************/
 template<class... Args>
-double Property::eval( const Units &unit, Args... args ) const
+double Property::eval( const Units &unit, const Args &...args ) const
 {
     double value = 0;
     auto result  = AMP::Array<double>::staticView( { 1 }, &value );
@@ -32,14 +32,14 @@ double Property::eval( const Units &unit, Args... args ) const
     return value;
 }
 template<class... Args>
-void Property::evalv( std::vector<double> &r, const Units &unit, Args... args ) const
+void Property::evalv( std::vector<double> &r, const Units &unit, const Args &...args ) const
 {
     AMP::Array<std::vector<double> *> r2( 1 );
     r2( 0 ) = &r;
     evalv( r2, unit, args... );
 }
 template<class... Args>
-void Property::evalv( AMP::LinearAlgebra::Vector &r, Args... args ) const
+void Property::evalv( AMP::LinearAlgebra::Vector &r, const Args &...args ) const
 {
     AMP::Array<AMP::LinearAlgebra::Vector *> r2( 1 );
     r2( 0 ) = &r;
@@ -48,7 +48,7 @@ void Property::evalv( AMP::LinearAlgebra::Vector &r, Args... args ) const
 template<class... Args>
 void Property::evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
                       const Units &unit,
-                      Args... args ) const
+                      const Args &...args ) const
 {
     AMP::Array<std::vector<double> *> r2( r.size() );
     for ( size_t i = 0; i < r2.length(); i++ )
@@ -57,7 +57,7 @@ void Property::evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
 }
 template<class... Args>
 void Property::evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                      Args... args ) const
+                      const Args &...args ) const
 {
     AMP::Array<AMP::LinearAlgebra::Vector *> r2( r.size() );
     for ( size_t i = 0; i < r2.length(); i++ )
@@ -67,7 +67,7 @@ void Property::evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &
 template<class... Args>
 void Property::evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
                       const Units &unit,
-                      Args... args ) const
+                      const Args &...args ) const
 {
     AMP::Array<std::vector<double> *> r2( r.size() );
     for ( size_t i = 0; i < r2.length(); i++ )
@@ -76,7 +76,7 @@ void Property::evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
 }
 template<class... Args>
 void Property::evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
-                      Args... args ) const
+                      const Args &...args ) const
 {
     AMP::Array<AMP::LinearAlgebra::Vector *> r2( r.size() );
     for ( size_t i = 0; i < r2.length(); i++ )
@@ -84,7 +84,9 @@ void Property::evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r
     evalv( r2, args... );
 }
 template<class... Args>
-void Property::evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, Args... args ) const
+void Property::evalv( AMP::Array<std::vector<double> *> &r,
+                      const Units &unit,
+                      const Args &...args ) const
 {
     // Load the arguments
     auto args2 = defaultArgs( r( 0 )->size() );
@@ -95,7 +97,7 @@ void Property::evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, A
     evalv( args2, r, unit );
 }
 template<class... Args>
-void Property::evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, Args... args ) const
+void Property::evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, const Args &...args ) const
 {
     // Load the arguments
     auto args2 = defaultArgs( getSize( *r( 0 ) ) );
@@ -120,7 +122,7 @@ template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          double v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     size_t N = args2.size( 1 );
     int i    = get_arg_index( name );
@@ -135,7 +137,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const Units &unit,
                          double v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     size_t N = args2.size( 1 );
     int i    = get_arg_index( name );
@@ -152,7 +154,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const Units &unit,
                          const std::vector<double> &v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     evalArg( args2, name, unit, v );
     evalArgs( args2, args... );
@@ -162,7 +164,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const Units &unit,
                          const AMP::LinearAlgebra::Vector &v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     evalArg( args2, name, unit, v );
     evalArgs( args2, args... );
@@ -171,7 +173,7 @@ template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const std::vector<double> &v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     evalArgs( args2, name, Units(), v, args... );
 }
@@ -179,7 +181,7 @@ template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const AMP::LinearAlgebra::Vector &v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     evalArgs( args2, name, getUnits( v ), v, args... );
 }
@@ -188,7 +190,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const Units &unit,
                          const std::shared_ptr<VEC> &v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     evalArgs( args2, name, unit, *v, args... );
 }
@@ -196,7 +198,7 @@ template<class VEC, class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
                          const std::string &name,
                          const std::shared_ptr<VEC> &v,
-                         Args... args ) const
+                         const Args &...args ) const
 {
     evalArgs( args2, name, *v, args... );
 }

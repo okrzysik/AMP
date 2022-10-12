@@ -215,6 +215,87 @@ void Vector::swapVectors( Vector &other )
 
 
 /****************************************************************
+ * Math API for Vector                                          *
+ ****************************************************************/
+void Vector::copy( const Vector &x ) { d_VectorOps->copy( *x.getVectorData(), *getVectorData() ); }
+void Vector::zero() { d_VectorOps->zero( *getVectorData() ); }
+void Vector::setToScalar( const Scalar &alpha )
+{
+    d_VectorOps->setToScalar( alpha, *getVectorData() );
+}
+void Vector::scale( const Scalar &alpha, const Vector &x )
+{
+    d_VectorOps->scale( alpha, *x.getVectorData(), *getVectorData() );
+}
+void Vector::scale( const Scalar &alpha ) { d_VectorOps->scale( alpha, *getVectorData() ); }
+void Vector::add( const Vector &x, const Vector &y )
+{
+    d_VectorOps->add( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
+}
+void Vector::subtract( const Vector &x, const Vector &y )
+{
+    d_VectorOps->subtract( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
+}
+void Vector::multiply( const Vector &x, const Vector &y )
+{
+    d_VectorOps->multiply( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
+}
+void Vector::divide( const Vector &x, const Vector &y )
+{
+    d_VectorOps->divide( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
+}
+void Vector::reciprocal( const Vector &x )
+{
+    d_VectorOps->reciprocal( *x.getVectorData(), *getVectorData() );
+}
+void Vector::linearSum( const Scalar &alpha, const Vector &x, const Scalar &beta, const Vector &y )
+{
+    d_VectorOps->linearSum( alpha, *x.getVectorData(), beta, *y.getVectorData(), *getVectorData() );
+}
+void Vector::axpy( const Scalar &alpha, const Vector &x, const Vector &y )
+{
+    d_VectorOps->axpy( alpha, *x.getVectorData(), *y.getVectorData(), *getVectorData() );
+}
+void Vector::axpby( const Scalar &alpha, const Scalar &beta, const Vector &x )
+{
+    d_VectorOps->axpby( alpha, beta, *x.getVectorData(), *getVectorData() );
+}
+void Vector::abs( const Vector &x ) { d_VectorOps->abs( *x.getVectorData(), *getVectorData() ); }
+void Vector::addScalar( const Vector &x, const Scalar &alpha_in )
+{
+    d_VectorOps->addScalar( *x.getVectorData(), alpha_in, *getVectorData() );
+}
+Scalar Vector::min() const { return d_VectorOps->min( *getVectorData() ); }
+Scalar Vector::max() const { return d_VectorOps->max( *getVectorData() ); }
+Scalar Vector::sum() const { return d_VectorOps->sum( *getVectorData() ); }
+Scalar Vector::mean() const { return d_VectorOps->mean( *getVectorData() ); }
+Scalar Vector::L1Norm() const { return d_VectorOps->L1Norm( *getVectorData() ); }
+Scalar Vector::L2Norm() const { return d_VectorOps->L2Norm( *getVectorData() ); }
+Scalar Vector::maxNorm() const { return d_VectorOps->maxNorm( *getVectorData() ); }
+Scalar Vector::minQuotient( const Vector &x ) const
+{
+    return d_VectorOps->minQuotient( *x.getVectorData(), *getVectorData() );
+}
+Scalar Vector::wrmsNorm( const Vector &x, const Vector &y ) const
+{
+    return d_VectorOps->wrmsNorm( *x.getVectorData(), *y.getVectorData() );
+}
+Scalar Vector::wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const
+{
+    return d_VectorOps->wrmsNormMask(
+        *x.getVectorData(), *mask.getVectorData(), *y.getVectorData() );
+}
+Scalar Vector::dot( const Vector &x ) const
+{
+    return d_VectorOps->dot( *getVectorData(), *x.getVectorData() );
+}
+bool Vector::equals( const Vector &a, const Scalar &tol ) const
+{
+    return d_VectorOps->equals( *a.getVectorData(), *getVectorData(), tol );
+}
+
+
+/****************************************************************
  * Misc                                                          *
  ****************************************************************/
 std::string Vector::getName() const
@@ -227,6 +308,7 @@ size_t Vector::getNumberOfComponents() const
 {
     return d_VectorData ? d_VectorData->getNumberOfComponents() : 0;
 }
+void Vector::setUnits( AMP::Units units ) { d_units = units; }
 std::ostream &operator<<( std::ostream &out, const Vector &v )
 {
     out << "Vector type: " << v.type() << "\n";

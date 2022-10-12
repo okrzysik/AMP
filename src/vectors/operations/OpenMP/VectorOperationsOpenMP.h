@@ -52,11 +52,12 @@ public:
     void abs( const VectorData &x, VectorData &z ) override;
     void addScalar( const VectorData &x, const Scalar &alpha_in, VectorData &y ) override;
 
-    Scalar localMin( const VectorData &x ) const override;
-    Scalar localMax( const VectorData &x ) const override;
-    Scalar localL1Norm( const VectorData &x ) const override;
-    Scalar localL2Norm( const VectorData &x ) const override;
-    Scalar localMaxNorm( const VectorData &x ) const override;
+    Scalar localMin( const VectorData & ) const override;
+    Scalar localMax( const VectorData & ) const override;
+    Scalar localSum( const VectorData & ) const override;
+    Scalar localL1Norm( const VectorData & ) const override;
+    Scalar localL2Norm( const VectorData & ) const override;
+    Scalar localMaxNorm( const VectorData & ) const override;
     Scalar localDot( const VectorData &x, const VectorData &y ) const override;
     Scalar localMinQuotient( const VectorData &x, const VectorData &y ) const override;
     Scalar localWrmsNorm( const VectorData &x, const VectorData &y ) const override;

@@ -30,6 +30,7 @@ public:
     static void addScalar( size_t N, const TYPE *x, TYPE alpha_in, TYPE *y );
     static TYPE localMin( size_t N, const TYPE *x );
     static TYPE localMax( size_t N, const TYPE *x );
+    static TYPE localSum( size_t N, const TYPE *x );
     static TYPE localL1Norm( size_t N, const TYPE *x );
     static TYPE localL2Norm( size_t N, const TYPE *x );
     static TYPE localMaxNorm( size_t N, const TYPE *x );

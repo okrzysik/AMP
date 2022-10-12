@@ -170,6 +170,16 @@ public:
     virtual Scalar max( const VectorData &x ) const;
 
     /**
+     * \brief Return the sum of the values of the vector.
+     */
+    virtual Scalar sum( const VectorData &x ) const;
+
+    /**
+     * \brief Return the mean of the values of the vector.
+     */
+    Scalar mean( const VectorData &x ) const;
+
+    /**
      * \brief Return discrete @f$ L_1 @f$ -norm of this vector.
      * \details Returns \f[\sum_i |\mathit{this}_i|\f]
      */
@@ -236,6 +246,11 @@ public:
      * \brief Return the local maximum value of the vector.  \f$\max_i \mathit{this}_i\f$.
      */
     virtual Scalar localMax( const VectorData &x ) const = 0;
+
+    /**
+     * \brief Return the local sumof the vector.
+     */
+    virtual Scalar localSum( const VectorData &x ) const = 0;
 
     /**
      * \brief Return local discrete @f$ L_1 @f$ -norm of this vector.

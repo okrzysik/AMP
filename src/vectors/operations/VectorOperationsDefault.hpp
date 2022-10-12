@@ -344,6 +344,20 @@ Scalar VectorOperationsDefault<TYPE>::localMax( const VectorData &x ) const
 }
 
 template<typename TYPE>
+Scalar VectorOperationsDefault<TYPE>::localSum( const VectorData &x ) const
+{
+    size_t N_blocks = x.numberOfDataBlocks();
+    TYPE ans        = 0;
+    for ( size_t i = 0; i < N_blocks; i++ ) {
+        size_t size      = x.sizeOfDataBlock( i );
+        const TYPE *data = x.getRawDataBlock<TYPE>( i );
+        for ( size_t j = 0; j < size; j++ )
+            ans += data[j];
+    }
+    return ans;
+}
+
+template<typename TYPE>
 Scalar VectorOperationsDefault<TYPE>::localL1Norm( const VectorData &x ) const
 {
     size_t N_blocks = x.numberOfDataBlocks();

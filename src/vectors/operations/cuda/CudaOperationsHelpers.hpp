@@ -104,8 +104,17 @@ TYPE CudaOperationsHelpers<TYPE>::localMin( size_t N, const TYPE *x )
 template<typename TYPE>
 TYPE CudaOperationsHelpers<TYPE>::localMax( size_t N, const TYPE *x )
 {
-    return thrust::reduce(
-        thrust::device, x, x + N, -std::numeric_limits<TYPE>::max(), thrust::maximum<TYPE>() );
+    auto lambda = [=] __device__( TYPE x ) { return x; };
+    auto result = thrust::transform_reduce(
+        thrust::device, x, x + N, lambda, (TYPE) 0, thrust::plus<TYPE>() );
+    return sqrt( result );
+}
+
+
+template<typename TYPE>
+TYPE CudaOperationsHelpers<TYPE>::localSum( size_t N, const TYPE *x )
+{
+    return thrust::reduce( thrust::device, x, x + N, 0, thrust::plus<TYPE>() );
 }
 
 template<typename TYPE>
