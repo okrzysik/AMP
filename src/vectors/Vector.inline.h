@@ -71,96 +71,14 @@ inline void Vector::setVariable( const std::shared_ptr<Variable> name )
 /****************************************************************
  * Wrappers for shared_ptr                                       *
  ****************************************************************/
-// clang-format off
 inline void Vector::swapVectors( shared_ptr other ) { swapVectors( *other ); }
-inline void Vector::aliasGhostBuffer( shared_ptr in ) { d_VectorData->aliasGhostBuffer(in->d_VectorData); }
-inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p ) { return operator<<( out, *p ); }
-// clang-format on
-
-
-/****************************************************************
- * Math API for Vector                                          *
- ****************************************************************/
-inline void Vector::copy( const Vector &x )
+inline void Vector::aliasGhostBuffer( shared_ptr in )
 {
-    d_VectorOps->copy( *x.getVectorData(), *getVectorData() );
+    d_VectorData->aliasGhostBuffer( in->d_VectorData );
 }
-inline void Vector::zero( void ) { d_VectorOps->zero( *getVectorData() ); }
-inline void Vector::setToScalar( const Scalar &alpha )
+inline std::ostream &operator<<( std::ostream &out, const Vector::shared_ptr p )
 {
-    d_VectorOps->setToScalar( alpha, *getVectorData() );
-}
-inline void Vector::scale( const Scalar &alpha, const Vector &x )
-{
-    d_VectorOps->scale( alpha, *x.getVectorData(), *getVectorData() );
-}
-inline void Vector::scale( const Scalar &alpha ) { d_VectorOps->scale( alpha, *getVectorData() ); }
-inline void Vector::add( const Vector &x, const Vector &y )
-{
-    d_VectorOps->add( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
-}
-inline void Vector::subtract( const Vector &x, const Vector &y )
-{
-    d_VectorOps->subtract( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
-}
-inline void Vector::multiply( const Vector &x, const Vector &y )
-{
-    d_VectorOps->multiply( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
-}
-inline void Vector::divide( const Vector &x, const Vector &y )
-{
-    d_VectorOps->divide( *x.getVectorData(), *y.getVectorData(), *getVectorData() );
-}
-inline void Vector::reciprocal( const Vector &x )
-{
-    d_VectorOps->reciprocal( *x.getVectorData(), *getVectorData() );
-}
-inline void
-Vector::linearSum( const Scalar &alpha, const Vector &x, const Scalar &beta, const Vector &y )
-{
-    d_VectorOps->linearSum( alpha, *x.getVectorData(), beta, *y.getVectorData(), *getVectorData() );
-}
-inline void Vector::axpy( const Scalar &alpha, const Vector &x, const Vector &y )
-{
-    d_VectorOps->axpy( alpha, *x.getVectorData(), *y.getVectorData(), *getVectorData() );
-}
-inline void Vector::axpby( const Scalar &alpha, const Scalar &beta, const Vector &x )
-{
-    d_VectorOps->axpby( alpha, beta, *x.getVectorData(), *getVectorData() );
-}
-inline void Vector::abs( const Vector &x )
-{
-    d_VectorOps->abs( *x.getVectorData(), *getVectorData() );
-}
-inline void Vector::addScalar( const Vector &x, const Scalar &alpha_in )
-{
-    d_VectorOps->addScalar( *x.getVectorData(), alpha_in, *getVectorData() );
-}
-inline Scalar Vector::min( void ) const { return d_VectorOps->min( *getVectorData() ); }
-inline Scalar Vector::max( void ) const { return d_VectorOps->max( *getVectorData() ); }
-inline Scalar Vector::L1Norm( void ) const { return d_VectorOps->L1Norm( *getVectorData() ); }
-inline Scalar Vector::L2Norm( void ) const { return d_VectorOps->L2Norm( *getVectorData() ); }
-inline Scalar Vector::maxNorm( void ) const { return d_VectorOps->maxNorm( *getVectorData() ); }
-inline Scalar Vector::minQuotient( const Vector &x ) const
-{
-    return d_VectorOps->minQuotient( *x.getVectorData(), *getVectorData() );
-}
-inline Scalar Vector::wrmsNorm( const Vector &x, const Vector &y ) const
-{
-    return d_VectorOps->wrmsNorm( *x.getVectorData(), *y.getVectorData() );
-}
-inline Scalar Vector::wrmsNormMask( const Vector &x, const Vector &mask, const Vector &y ) const
-{
-    return d_VectorOps->wrmsNormMask(
-        *x.getVectorData(), *mask.getVectorData(), *y.getVectorData() );
-}
-inline Scalar Vector::dot( const Vector &x ) const
-{
-    return d_VectorOps->dot( *getVectorData(), *x.getVectorData() );
-}
-inline bool Vector::equals( const Vector &a, const Scalar &tol ) const
-{
-    return d_VectorOps->equals( *a.getVectorData(), *getVectorData(), tol );
+    return operator<<( out, *p );
 }
 
 

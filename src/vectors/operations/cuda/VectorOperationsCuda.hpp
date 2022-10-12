@@ -340,6 +340,19 @@ Scalar VectorOperationsCuda<TYPE>::localMax( const VectorData &x ) const
 }
 
 template<typename TYPE>
+Scalar VectorOperationsCuda<TYPE>::localSum( const VectorData &x ) const
+{
+    if ( checkData( x ) ) {
+        auto xdata = x.getRawDataBlock<TYPE>( 0 );
+        size_t N   = x.sizeOfDataBlock( 0 );
+        return CudaOperationsHelpers<TYPE>::localSum( N, xdata );
+    } else {
+        // Default to VectorOperationsDefault (on cpu)
+        return getDefaultOps()->localSum( x );
+    }
+}
+
+template<typename TYPE>
 Scalar VectorOperationsCuda<TYPE>::localL1Norm( const VectorData &x ) const
 {
     if ( checkData( x ) ) {

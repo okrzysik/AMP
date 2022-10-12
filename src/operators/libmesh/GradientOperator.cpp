@@ -89,6 +89,8 @@ void GradientOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Subset the input/output vectors
     auto rhs = subsetInputVector( u );
     auto sol = subsetOutputVector( f );
+    AMP_ASSERT( rhs );
+    AMP_ASSERT( sol );
 
     // Initialize solution
     sol->zero();

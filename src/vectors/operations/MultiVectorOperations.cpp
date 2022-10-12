@@ -362,12 +362,12 @@ Scalar MultiVectorOperations::localMin( const VectorData &x ) const
 {
     AMP_ASSERT( getMultiVectorData( x ) );
     if ( d_operations.empty() )
-        return 0.0;
+        return 0;
     auto ans = d_operations[0]->localMin( *getVectorDataComponent( x, 0 ) );
     for ( size_t i = 1; i != d_operations.size(); i++ )
         ans = std::min( ans, d_operations[i]->localMin( *getVectorDataComponent( x, i ) ) );
     if ( !ans.has_value() )
-        return 0.0;
+        return 0;
     return ans;
 }
 
@@ -375,12 +375,25 @@ Scalar MultiVectorOperations::localMax( const VectorData &x ) const
 {
     AMP_ASSERT( getMultiVectorData( x ) );
     if ( d_operations.empty() )
-        return 0.0;
+        return 0;
     auto ans = d_operations[0]->localMax( *getVectorDataComponent( x, 0 ) );
     for ( size_t i = 1; i != d_operations.size(); i++ )
         ans = std::max( ans, d_operations[i]->localMax( *getVectorDataComponent( x, i ) ) );
     if ( !ans.has_value() )
-        return 0.0;
+        return 0;
+    return ans;
+}
+
+Scalar MultiVectorOperations::localSum( const VectorData &x ) const
+{
+    AMP_ASSERT( getMultiVectorData( x ) );
+    if ( d_operations.empty() )
+        return 0;
+    auto ans = d_operations[0]->localSum( *getVectorDataComponent( x, 0 ) );
+    for ( size_t i = 1; i != d_operations.size(); i++ )
+        ans = ans + d_operations[i]->localSum( *getVectorDataComponent( x, i ) );
+    if ( !ans.has_value() )
+        return 0;
     return ans;
 }
 
@@ -393,7 +406,7 @@ Scalar MultiVectorOperations::localL1Norm( const VectorData &x ) const
     for ( size_t i = 0; i != d_operations.size(); i++ )
         ans = ans + d_operations[i]->localL1Norm( *getVectorDataComponent( x, i ) );
     if ( !ans.has_value() )
-        return 0.0;
+        return 0;
     return ans;
 }
 
@@ -408,7 +421,7 @@ Scalar MultiVectorOperations::localL2Norm( const VectorData &x ) const
         ans      = ans + tmp * tmp;
     }
     if ( !ans.has_value() )
-        return 0.0;
+        return 0;
     return ans.sqrt();
 }
 
@@ -416,12 +429,12 @@ Scalar MultiVectorOperations::localMaxNorm( const VectorData &x ) const
 {
     AMP_ASSERT( getMultiVectorData( x ) );
     if ( d_operations.empty() )
-        return 0.0;
+        return 0;
     auto ans = d_operations[0]->localMaxNorm( *getVectorDataComponent( x, 0 ) );
     for ( size_t i = 1; i != d_operations.size(); i++ )
         ans = std::max( ans, d_operations[i]->localMaxNorm( *getVectorDataComponent( x, i ) ) );
     if ( !ans.has_value() )
-        return 0.0;
+        return 0;
     return ans;
 }
 
@@ -445,7 +458,7 @@ Scalar MultiVectorOperations::localDot( const VectorData &x, const VectorData &y
     } else {
         AMP_ERROR( "MultiVectorOperations::localDot requires x, y to be MultiVectorData" );
     }
-    return 0.0;
+    return 0;
 }
 
 Scalar MultiVectorOperations::localMinQuotient( const VectorData &x, const VectorData &y ) const
@@ -468,7 +481,7 @@ Scalar MultiVectorOperations::localMinQuotient( const VectorData &x, const Vecto
     } else {
         AMP_ERROR( "MultiVectorOperations::localMinQuotient requires x, y to be MultiVectorData" );
     }
-    return 0.0;
+    return 0;
 }
 
 Scalar MultiVectorOperations::localWrmsNorm( const VectorData &x, const VectorData &y ) const
@@ -492,7 +505,7 @@ Scalar MultiVectorOperations::localWrmsNorm( const VectorData &x, const VectorDa
     } else {
         AMP_ERROR( "MultiVectorOperations::localWrmsNorm requires x, y to be MultiVectorData" );
     }
-    return 0.0;
+    return 0;
 }
 
 Scalar MultiVectorOperations::localWrmsNormMask( const VectorData &x,
@@ -522,7 +535,7 @@ Scalar MultiVectorOperations::localWrmsNormMask( const VectorData &x,
         AMP_ERROR(
             "MultiVectorOperations::localWrmsNormMask requires x, mask, y to be MultiVectorData" );
     }
-    return 0.0;
+    return 0;
 }
 
 bool MultiVectorOperations::localEquals( const VectorData &x,
