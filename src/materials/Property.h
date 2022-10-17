@@ -160,7 +160,7 @@ public: // Evaluators
      * \return scalar value of property
      */
     template<class... Args>
-    double eval( const Units &unit = Units(), Args... args ) const;
+    double eval( const Units &unit = Units(), const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -173,7 +173,7 @@ public: // Evaluators
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
     template<class... Args>
-    void evalv( std::vector<double> &r, const Units &unit, Args... args ) const;
+    void evalv( std::vector<double> &r, const Units &unit, const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -186,7 +186,7 @@ public: // Evaluators
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
     template<class... Args>
-    void evalv( AMP::LinearAlgebra::Vector &r, Args... args ) const;
+    void evalv( AMP::LinearAlgebra::Vector &r, const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -201,7 +201,7 @@ public: // Evaluators
     template<class... Args>
     void evalv( std::vector<std::shared_ptr<std::vector<double>>> &r,
                 const Units &unit,
-                Args... args ) const;
+                const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -214,7 +214,8 @@ public: // Evaluators
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
     template<class... Args>
-    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r, Args... args ) const;
+    void evalv( std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -226,7 +227,7 @@ public: // Evaluators
     template<class... Args>
     void evalv( AMP::Array<std::shared_ptr<std::vector<double>>> &r,
                 const Units &unit,
-                Args... args ) const;
+                const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -239,7 +240,8 @@ public: // Evaluators
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
     template<class... Args>
-    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r, Args... args ) const;
+    void evalv( AMP::Array<std::shared_ptr<AMP::LinearAlgebra::Vector>> &r,
+                const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -252,7 +254,8 @@ public: // Evaluators
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
     template<class... Args>
-    void evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, Args... args ) const;
+    void
+    evalv( AMP::Array<std::vector<double> *> &r, const Units &unit, const Args &...args ) const;
 
     /**
      * \brief    Evaluate the property
@@ -265,7 +268,7 @@ public: // Evaluators
      *                     evalv( r, unit, "arg1", unit1, vec1, "arg2", unit2, vec2, ... ).
      */
     template<class... Args>
-    void evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, Args... args ) const;
+    void evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, const Args &...args ) const;
 
 
 protected: // Virtual function to override to load the property
@@ -298,21 +301,21 @@ protected: // Functions to load the arguments
     template<class VEC>
     void evalArgs( AMP::Array<double>&, const std::map<std::string, VEC>& ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, double, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, double, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, double, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, double, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const std::vector<double>&, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const std::vector<double>&, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const AMP::LinearAlgebra::Vector&, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const AMP::LinearAlgebra::Vector&, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>&, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>&, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector&, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector&, const Args&... ) const;
     template<class VEC, class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const std::shared_ptr<VEC>&, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const std::shared_ptr<VEC>&, const Args&... ) const;
     template<class VEC, class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::shared_ptr<VEC>&, Args... ) const;
+    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::shared_ptr<VEC>&, const Args&... ) const;
     template<class... Args>
     void evalArgs( AMP::Array<double>&, const std::vector<double> &args, const std::vector<std::string> &names, const std::vector<Units> &argUnits = {} ) const;
     // clang-format on

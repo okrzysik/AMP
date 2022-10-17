@@ -54,6 +54,7 @@ public:
 
     Scalar localMin( const VectorData &x ) const override;
     Scalar localMax( const VectorData &x ) const override;
+    Scalar localSum( const VectorData & ) const override;
     Scalar localL1Norm( const VectorData &x ) const override;
     Scalar localL2Norm( const VectorData &x ) const override;
     Scalar localMaxNorm( const VectorData &x ) const override;
