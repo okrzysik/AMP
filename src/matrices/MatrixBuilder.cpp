@@ -2,6 +2,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
 #include "AMP/matrices/ManagedMatrixParameters.h"
+#include "AMP/matrices/data/DenseSerialMatrixData.h"
 #include "AMP/utils/Utilities.h"
 
 #ifdef AMP_USE_PETSC
@@ -114,7 +115,8 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     params->d_VariableLeft  = leftVec->getVariable();
     params->d_VariableRight = rightVec->getVariable();
     // Create the matrix
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
+    auto data      = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( data );
     // Initialize the matrix
     newMatrix->zero();
     newMatrix->makeConsistent();

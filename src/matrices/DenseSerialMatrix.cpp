@@ -293,16 +293,19 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
     size_t N = this->numGlobalRows();
     size_t K = this->numGlobalColumns();
     size_t M = other_op->numGlobalColumns();
-    // Create the matrix parameters
-    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        other_op->getRightDOFManager(), getLeftDOFManager(), getComm() );
-    auto m1Data = std::dynamic_pointer_cast<DenseSerialMatrixData>( getMatrixData() );
-    AMP_ASSERT( m1Data );
-    params->d_VariableLeft  = m1Data->getLeftVariable();
-    params->d_VariableRight = m1Data->getRightVariable();
     // Create the matrix
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( params );
-    result         = newMatrix;
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        other_op->getRightDOFManager(), getRightDOFManager(), getComm() );
+
+    auto data = std::dynamic_pointer_cast<DenseSerialMatrixData>( d_matrixData );
+    AMP_ASSERT( data );
+    params->d_VariableLeft  = data->getLeftVariable();
+    params->d_VariableRight = data->getRightVariable();
+    // Create the matrix
+    auto newData   = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrix>( newData );
+    AMP_ASSERT( newMatrix );
+    result    = newMatrix;
     double *C = std::dynamic_pointer_cast<DenseSerialMatrixData>( newMatrix->getMatrixData() )->d_M;
     memset( C, 0, N * M * sizeof( double ) );
     // Perform the muliplication
@@ -311,7 +314,7 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
         AMP_ERROR( "Not programmed yet" );
     } else {
         // We are dealing with all DenseSerialMatrix classes
-        const double *A = m1Data->d_M;
+        const double *A = data->d_M;
         const double *B =
             std::dynamic_pointer_cast<DenseSerialMatrixData>( other_op->getMatrixData() )->d_M;
         for ( size_t m = 0; m < M; m++ ) {
