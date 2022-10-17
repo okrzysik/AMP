@@ -642,3 +642,11 @@ void Writer::getNodeElemList( std::shared_ptr<const AMP::Mesh::Mesh> mesh,
 
 
 } // namespace AMP::IO
+
+
+/****************************************************************************
+ * Explicit instantiation                                                    *
+ ****************************************************************************/
+INSTANTIATE_MPI_BCAST( AMP::IO::Writer::GlobalID );
+INSTANTIATE_MPI_GATHER( AMP::IO::Writer::GlobalID );
+INSTANTIATE_MPI_SENDRECV( AMP::IO::Writer::GlobalID );
