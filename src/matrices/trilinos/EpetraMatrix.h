@@ -10,9 +10,8 @@ class Epetra_CrsMatrix;
 
 namespace AMP::LinearAlgebra {
 
-/** \brief  Parameters class for creating an EpetraMatrix
- */
-typedef MatrixParameters EpetraMatrixParameters;
+
+class ManagedMatrixParameters;
 
 /** \class EpetraMatrix
   * \brief A Matrix with an Epetra_CrsMatrix interface
@@ -26,7 +25,7 @@ typedef MatrixParameters EpetraMatrixParameters;
   *  -# Provides a static method for creating an Epetra_CrsMatrix view of an AMP vector.
   */
 
-class EpetraMatrix : virtual public Matrix
+class EpetraMatrix : public Matrix
 {
 private:
     EpetraMatrix();
