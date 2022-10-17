@@ -4,7 +4,6 @@
 #include <string>
 
 
-#include "AMP/matrices/ManagedMatrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/sundials/IDATimeIntegratorParameters.h"

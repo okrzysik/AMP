@@ -1,7 +1,6 @@
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
-#include "AMP/matrices/ManagedMatrix.h"
 #include "AMP/matrices/ManagedMatrixParameters.h"
 #include "AMP/utils/Utilities.h"
 
@@ -39,58 +38,56 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
                      const std::function<std::vector<size_t>( size_t )> &getRow,
                      const std::string &type )
 {
-    // Get the DOFs
-    auto leftDOF  = leftVec->getDOFManager();
-    auto rightDOF = rightVec->getDOFManager();
-    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
-        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested" );
-    AMP_MPI comm = leftDOF->getComm();
-    if ( comm.getSize() == 1 )
-        comm = AMP_MPI( AMP_COMM_SELF );
-
-    // Create the matrix parameters
-    auto params =
-        std::make_shared<AMP::LinearAlgebra::ManagedMatrixParameters>( leftDOF, rightDOF, comm );
-    params->d_CommListLeft  = leftVec->getCommunicationList();
-    params->d_CommListRight = rightVec->getCommunicationList();
-    params->d_VariableLeft  = leftVec->getVariable();
-    params->d_VariableRight = rightVec->getVariable();
-
-    // Add the row sizes and local columns to the matrix parameters
-    std::set<size_t> columns;
-    size_t row_start = leftDOF->beginDOF();
-    size_t row_end   = leftDOF->endDOF();
-    for ( size_t row = row_start; row < row_end; row++ ) {
-        auto col = getRow( row );
-        params->setEntriesInRow( row - row_start, col.size() );
-        for ( auto &tmp : col )
-            columns.insert( tmp );
-    }
-    params->addColumns( columns );
-
-    // Create the matrix
-    std::shared_ptr<AMP::LinearAlgebra::ManagedMatrix> newMatrix;
     if ( type == "ManagedEpetraMatrix" ) {
 #if defined( AMP_USE_TRILINOS )
-        auto mat = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( params );
-        mat->setEpetraMaps( leftVec, rightVec );
-        newMatrix = mat;
+        // Get the DOFs
+        auto leftDOF  = leftVec->getDOFManager();
+        auto rightDOF = rightVec->getDOFManager();
+        if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+            AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested" );
+        AMP_MPI comm = leftDOF->getComm();
+        if ( comm.getSize() == 1 )
+            comm = AMP_MPI( AMP_COMM_SELF );
+
+        // Create the matrix parameters
+        auto params = std::make_shared<AMP::LinearAlgebra::ManagedMatrixParameters>(
+            leftDOF, rightDOF, comm );
+        params->d_CommListLeft  = leftVec->getCommunicationList();
+        params->d_CommListRight = rightVec->getCommunicationList();
+        params->d_VariableLeft  = leftVec->getVariable();
+        params->d_VariableRight = rightVec->getVariable();
+
+        // Add the row sizes and local columns to the matrix parameters
+        std::set<size_t> columns;
+        size_t row_start = leftDOF->beginDOF();
+        size_t row_end   = leftDOF->endDOF();
+        for ( size_t row = row_start; row < row_end; row++ ) {
+            auto col = getRow( row );
+            params->setEntriesInRow( row - row_start, col.size() );
+            for ( auto &tmp : col )
+                columns.insert( tmp );
+        }
+        params->addColumns( columns );
+
+        // Create the matrix
+        auto newMatrix = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( params );
+        newMatrix->setEpetraMaps( leftVec, rightVec );
+        // Initialize the matrix
+        for ( size_t row = row_start; row < row_end; row++ ) {
+            auto col = getRow( row );
+            newMatrix->createValuesByGlobalID( row, col );
+        }
+        newMatrix->fillComplete();
+        newMatrix->zero();
+        newMatrix->makeConsistent();
+        return newMatrix;
 #else
         AMP_ERROR( "Unable to build ManagedEpetraMatrix without Trilinos" );
 #endif
     } else {
         AMP_ERROR( "Unknown ManagedMatrix type" );
+        return nullptr;
     }
-
-    // Initialize the matrix
-    for ( size_t row = row_start; row < row_end; row++ ) {
-        auto col = getRow( row );
-        newMatrix->createValuesByGlobalID( row, col );
-    }
-    newMatrix->fillComplete();
-    newMatrix->zero();
-    newMatrix->makeConsistent();
-    return newMatrix;
 }
 
 

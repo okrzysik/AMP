@@ -4,7 +4,6 @@
 #include <set>
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/ManagedMatrix.h"
 #include "AMP/matrices/ManagedMatrixParameters.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 
@@ -17,7 +16,7 @@ namespace AMP::LinearAlgebra {
  * \details  This class stores an Epetra_FECrsMatrix and provides
  * the AMP interface to this matrix.
  */
-class ManagedEpetraMatrix : public EpetraMatrix, public ManagedMatrix
+class ManagedEpetraMatrix : public EpetraMatrix
 {
 protected:
     //!  Empty constructor
@@ -28,6 +27,9 @@ protected:
 
     //!  Assignment operator
     ManagedEpetraMatrix &operator=( const ManagedEpetraMatrix &rhs ) = delete;
+
+    //!  Parameters used to construct the matrix
+    std::shared_ptr<ManagedMatrixParameters> d_pParameters;
 
     //!  \f$A_{i,j}\f$ storage of off-core data
     std::map<int, std::map<int, double>> d_OtherData;
@@ -52,7 +54,7 @@ public:
     //! Destructor
     virtual ~ManagedEpetraMatrix() {}
 
-    void createValuesByGlobalID( size_t, const std::vector<size_t> & ) override;
+    void createValuesByGlobalID( size_t, const std::vector<size_t> & );
 
 
     void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
@@ -93,12 +95,9 @@ public:
     Vector::shared_ptr getLeftVector() const override;
     Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
     Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
-    void fillComplete() override;
+    void fillComplete();
     void setIdentity() override;
     void zero() override;
-
-protected:
-    void FillComplete();
 };
 
 

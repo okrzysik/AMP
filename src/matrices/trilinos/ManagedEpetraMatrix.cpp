@@ -47,17 +47,17 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedMatrixParameter
     : EpetraMatrix( *createEpetraMap( params->getLeftDOFManager(), params->getComm() ),
                     nullptr,
                     params->entryList() ),
-      ManagedMatrix( params )
+      d_pParameters( params )
 {
+    d_comm = params->getComm();
     AMP_ASSERT( !d_comm.isNull() );
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
-    : Matrix(),
-      EpetraMatrix(
+    : EpetraMatrix(
           *createEpetraMap( rhs.d_pParameters->getLeftDOFManager(), rhs.d_pParameters->getComm() ),
           nullptr,
           rhs.d_pParameters->entryList() ),
-      ManagedMatrix( rhs.d_pParameters )
+      d_pParameters( rhs.d_pParameters )
 {
     for ( size_t i = d_pParameters->getLeftDOFManager()->beginDOF();
           i != d_pParameters->getLeftDOFManager()->endDOF();
@@ -74,8 +74,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     d_DomainMap = rhs.d_DomainMap;
     makeConsistent();
 }
-ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele )
-    : EpetraMatrix( m, dele ), ManagedMatrix( nullptr )
+ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele ) : EpetraMatrix( m, dele )
 {
 }
 std::shared_ptr<Matrix> ManagedEpetraMatrix::cloneMatrix() const
@@ -461,8 +460,5 @@ void ManagedEpetraMatrix::makeConsistent()
     }
     setOtherData();
 }
-
-
-void ManagedEpetraMatrix::FillComplete() { d_epetraMatrix->FillComplete(); }
 
 } // namespace AMP::LinearAlgebra
