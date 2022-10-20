@@ -76,8 +76,7 @@ ColumnTimeOperator::ColumnTimeOperator(
 
     reset( in_params );
 
-    d_pSourceTerm           = params->d_pSourceTerm;
-    d_pPreviousTimeSolution = params->d_pPreviousTimeSolution;
+    d_pSourceTerm = params->d_pSourceTerm;
 }
 
 ColumnTimeOperator::~ColumnTimeOperator() = default;

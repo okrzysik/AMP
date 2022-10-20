@@ -54,6 +54,10 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
+    std::shared_ptr<AMP::Operator::OperatorParameters>
+    getParameters( const std::string &type,
+                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                   std::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
     /**
      * registers the time derivative vector provided by IDA with this operator
      @param [in] vec   shared pointer to time derivative computed by IDA
@@ -89,7 +93,6 @@ protected:
     // The test we want to run has a source term which depends on time
     // The time comes from TimeIntegrator
     double d_current_time;
-    double d_beta;
 
 private:
 };

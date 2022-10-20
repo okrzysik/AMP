@@ -7,7 +7,6 @@ TimeOperatorParameters::TimeOperatorParameters( std::shared_ptr<AMP::Database> d
 {
     d_pRhsOperator.reset();
     d_pMassOperator.reset();
-    d_pPreviousTimeSolution.reset();
     d_pSourceTerm.reset();
     d_pRhsOperatorParameters.reset();
     d_pMassOperatorParameters.reset();

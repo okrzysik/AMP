@@ -120,15 +120,6 @@ public:
     std::shared_ptr<AMP::Operator::Operator> getMassOperator( void ) { return d_pMassOperator; }
 
     /**
-     * register a vector consisting of the solution at the previous time step.
-     @param [in] previousSolution : shared pointer to Vector
-     */
-    void setPreviousSolution( std::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution )
-    {
-        d_pPreviousTimeSolution = previousSolution;
-    }
-
-    /**
      * set the value of the current time step
      @param [in] dt : value of current timestep
      */
@@ -143,24 +134,6 @@ public:
     {
         return d_pRhsOperator->getOutputVariable();
     }
-
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
-
-    /**
-     * implements the getJacobianParameters interface required by operators. This routine returns
-     * a shared pointer to a TimeOperatorParameters object, internally containing shares pointerst
-     to
-     * two OperatorParameter objects, one for the mass operator (if not a FD or FVM discretization)
-     * and one for the rhs operator.
-     @param [in] type : type of parameters to get
-     @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
-     @param [in] params : optional parameters object
-     */
-    std::shared_ptr<AMP::Operator::OperatorParameters>
-    getParameters( const std::string &type,
-                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                   std::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
 
 protected:
     TimeOperator();
@@ -192,11 +165,6 @@ protected:
      * algebraic variable
      */
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
-
-    /**
-     * solution at previous time step
-     */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
 
     /**
      * scratch vector for internal use
