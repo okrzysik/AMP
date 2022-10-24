@@ -78,6 +78,8 @@ public:
      */
     virtual ~TimeOperator();
 
+    std::string type() const override { return "TimeOperator"; }
+
     /**
      * This function is useful for re-initializing an operator
      * \param params
@@ -135,6 +137,33 @@ public:
         return d_pRhsOperator->getOutputVariable();
     }
 
+    /**
+     * Note this form is not correct for IDA and has to be overriden
+     */
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+
+    virtual void applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x,
+                           std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+
+    void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                   std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                   std::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
+
+    /**
+     * Set the scaling for implicit operators (at present not consistent with IDA interface)
+     */
+    virtual void setTimeOperatorScaling( const double gamma ) { d_dGamma = gamma; }
+    /**
+     * Get the scaling for implicit operators (at present not consistent with IDA interface)
+     */
+    virtual double getGamma( void ) const { return d_dGamma; }
+
+    std::shared_ptr<AMP::Operator::OperatorParameters>
+    getParameters( const std::string &type,
+                   AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                   std::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
+
 protected:
     TimeOperator();
 
@@ -175,6 +204,8 @@ protected:
      * vector containing source terms if any
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+
+    double d_dGamma = 0.0;
 
 private:
 };

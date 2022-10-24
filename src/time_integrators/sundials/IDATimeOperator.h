@@ -54,6 +54,10 @@ public:
     void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                 AMP::LinearAlgebra::Vector::shared_ptr f ) override;
 
+    void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                   std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                   std::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
+
     std::shared_ptr<AMP::Operator::OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,

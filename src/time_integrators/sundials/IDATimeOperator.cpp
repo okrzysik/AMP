@@ -66,6 +66,29 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     }
 }
 
+void IDATimeOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                AMP::LinearAlgebra::Vector::shared_ptr r )
+{
+    AMP_INSIST( u, "NULL Solution Vector" );
+    AMP_INSIST( r, "NULL Residual Vector" );
+
+    apply( u, r );
+
+    auto rInternal = subsetOutputVector( r );
+    AMP_INSIST( ( rInternal ), "rInternal is NULL" );
+
+    // the rhs can be NULL
+    if ( f ) {
+        auto fInternal = subsetOutputVector( f );
+        rInternal->subtract( *fInternal, *rInternal );
+    } else {
+        rInternal->scale( -1.0 );
+    }
+
+    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+}
+
 std::shared_ptr<AMP::Operator::OperatorParameters>
 IDATimeOperator::getParameters( const std::string &type,
                                 AMP::LinearAlgebra::Vector::const_shared_ptr u,
