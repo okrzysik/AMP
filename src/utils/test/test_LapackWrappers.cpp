@@ -1,11 +1,15 @@
 #include "LapackWrappers.h"
 
 #include <chrono>
+#include <complex>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <thread>
+
+
+using Complex = std::complex<double>;
 
 
 // Get the time difference in us
@@ -18,7 +22,7 @@ static inline int64_t diff( std::chrono::time_point<std::chrono::system_clock> t
 
 // Call Lapack::run_test
 template<typename TYPE>
-void run_test( const std::string &routine, int N, int &us, TYPE &error, int &err )
+void run_test( const std::string &routine, int N, int &us, double &error, int &err )
 {
     auto t1 = std::chrono::system_clock::now();
     err     = Lapack<TYPE>::run_test( routine, N, error );
@@ -40,6 +44,89 @@ void printTest(
 }
 
 
+// Run basic tests
+template<class TYPE>
+char getPrefix();
+template<class TYPE>
+const char *getTypeString();
+template<>
+char getPrefix<float>()
+{
+    return 's';
+}
+template<>
+char getPrefix<double>()
+{
+    return 'd';
+}
+template<>
+char getPrefix<Complex>()
+{
+    return 'z';
+}
+template<>
+const char *getTypeString<float>()
+{
+    return "single";
+}
+template<>
+const char *getTypeString<double>()
+{
+    return "double";
+}
+template<>
+const char *getTypeString<Complex>()
+{
+    return "complex";
+}
+template<class TYPE>
+int runBasic( bool print_all )
+{
+    if ( print_all ) {
+        printf( "\nRunning %s precision basic tests\n", getTypeString<TYPE>() );
+        auto tests = Lapack<TYPE>::list_all_tests();
+        if ( tests.empty() ) {
+            printf( "   No tests detected\n" );
+            return 0;
+        }
+        printf( "   %s", tests[0].data() );
+        for ( size_t i = 1; i < tests.size(); i++ )
+            printf( ", %s", tests[i].data() );
+    }
+    int N_errors = Lapack<TYPE>::run_all_test();
+    if ( N_errors == 0 && print_all ) {
+        printf( "  passed %cp tests\n", getPrefix<TYPE>() );
+    } else if ( N_errors != 0 ) {
+        printf( "  failed %i %cp tests\n", N_errors, getPrefix<TYPE>() );
+    }
+    return N_errors;
+}
+
+
+// Run performance tests
+template<class TYPE>
+int runPerformance( bool print_all, int N_test )
+{
+    if ( print_all )
+        printf( "\nGetting %s precision test times\n", getTypeString<TYPE>() );
+    auto tests = Lapack<TYPE>::list_all_tests();
+    std::vector<double> error( tests.size() );
+    std::vector<int> time( tests.size() );
+    std::vector<int> err( tests.size() );
+    int N_errors = 0;
+    for ( size_t i = 0; i < tests.size(); i++ ) {
+        run_test<TYPE>( tests[i], N_test, time[i], error[i], err[i] );
+        printTest( err[i] == 0, print_all, tests[i], time[i], error[i], N_errors );
+    }
+    if ( N_errors == 0 && print_all ) {
+        printf( "  passed %cp timing tests\n", getPrefix<TYPE>() );
+    } else if ( N_errors != 0 ) {
+        printf( "  failed %d %cp timing tests\n", N_errors, getPrefix<TYPE>() );
+    }
+    return N_errors;
+}
+
+
 // The main function to run all tests
 int runAll( bool print_all )
 {
@@ -51,66 +138,13 @@ int runAll( bool print_all )
     int N_errors = 0;
 
     // Run the basic tests
-    if ( print_all )
-        printf( "\nRunning double precision basic tests\n" );
-    int err0 = Lapack<double>::run_all_test();
-    if ( err0 == 0 && print_all ) {
-        printf( "  passed dp tests\n" );
-    } else if ( err0 != 0 ) {
-        printf( "  failed %d dp tests\n", err0 );
-        N_errors += err0;
-    }
-    if ( print_all )
-        printf( "\nRunning single precision basic tests\n" );
-    err0 = Lapack<float>::run_all_test();
-    if ( err0 == 0 && print_all ) {
-        printf( "  passed sp tests\n" );
-    } else if ( err0 != 0 ) {
-        printf( "  failed %d sp tests \n", err0 );
-        N_errors += err0;
-    }
+    N_errors += runBasic<double>( print_all );
+    N_errors += runBasic<float>( print_all );
+    N_errors += runBasic<Complex>( print_all );
 
-    // Get the times for the tests (double)
-    {
-        if ( print_all )
-            printf( "\nGetting double precision test times\n" );
-        auto tests = Lapack<double>::list_all_tests();
-        std::vector<double> error( tests.size() );
-        std::vector<int> time( tests.size() );
-        std::vector<int> err( tests.size() );
-        int N_err = 0;
-        for ( size_t i = 0; i < tests.size(); i++ ) {
-            run_test<double>( tests[i], N_test, time[i], error[i], err[i] );
-            printTest( err[i] == 0, print_all, tests[i], time[i], error[i], N_err );
-        }
-        if ( N_err == 0 && print_all ) {
-            printf( "  passed dp timing tests\n" );
-        } else if ( N_err != 0 ) {
-            printf( "  failed %d dp timing tests\n", N_err );
-            N_errors += N_err;
-        }
-    }
-
-    // Get the times for the tests (single)
-    {
-        if ( print_all )
-            printf( "\nGetting single precision test times\n" );
-        auto tests = Lapack<float>::list_all_tests();
-        std::vector<float> error( tests.size() );
-        std::vector<int> time( tests.size() );
-        std::vector<int> err( tests.size() );
-        int N_err = 0;
-        for ( size_t i = 0; i < tests.size(); i++ ) {
-            run_test<float>( tests[i], N_test, time[i], error[i], err[i] );
-            printTest( err[i] == 0, print_all, tests[i], time[i], error[i], N_err );
-        }
-        if ( N_err == 0 && print_all ) {
-            printf( "  passed sp timing tests\n" );
-        } else if ( N_err != 0 ) {
-            printf( "  failed %d sp timing tests\n", N_err );
-            N_errors += N_err;
-        }
-    }
+    // Get the times for the tests
+    N_errors += runPerformance<double>( print_all, N_test );
+    N_errors += runPerformance<float>( print_all, N_test );
 
     // Run the tests in parallel to check for parallel bugs
     {
