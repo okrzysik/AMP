@@ -142,7 +142,7 @@ TimeOperator::getParameters( const std::string &type,
     }
 
     auto nested_db = nestedParams->d_db;
-    nested_db->putScalar<bool>( "modify_for_implicit_time_op", true );
+    nested_db->putScalar<bool>( "time_dependent_Jacobian", true );
     nested_db->putScalar<double>( "gamma", d_dGamma );
 
     AMP_INSIST( !d_pMassOperator, "Not implemented for mass operator" );
