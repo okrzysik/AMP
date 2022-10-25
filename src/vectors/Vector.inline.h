@@ -113,6 +113,11 @@ TYPE Vector::getValueByLocalID( size_t ndx ) const
     getValuesByLocalID( 1, &ndx, &ans );
     return ans;
 }
+template<typename TYPE>
+void Vector::setValueByGlobalID( size_t i, TYPE v )
+{
+    setValuesByGlobalID<TYPE>( 1, &i, &v );
+}
 
 } // namespace AMP::LinearAlgebra
 
