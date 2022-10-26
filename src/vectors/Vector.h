@@ -797,6 +797,14 @@ public: // Get values
     template<typename TYPE = double>
     TYPE getValueByLocalID( size_t i ) const;
 
+public: // Set values
+    /**
+     * \brief Set a value in the vector.
+     * \param[in] i The global index into the vector
+     * \details This uses setValuesByGlobalID to set the value
+     */
+    template<typename TYPE>
+    void setValueByGlobalID( size_t i, TYPE v );
 
 protected:                                                         // Internal data
     AMP::Units d_units;                                            // Optional units for the data
