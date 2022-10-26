@@ -57,9 +57,6 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
     d_solution_vector = d_ic_vector->cloneVector();
     d_solution_vector->copyVector( d_ic_vector );
 
-    d_pPreviousTimeSolution = d_ic_vector->cloneVector();
-    d_pPreviousTimeSolution->copyVector( d_ic_vector );
-
     d_pSourceTerm = parameters->d_pSourceTerm;
 
     if ( d_solution_vector.get() == nullptr ) {

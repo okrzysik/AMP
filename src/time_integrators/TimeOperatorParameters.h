@@ -35,12 +35,6 @@ public:
      */
     std::shared_ptr<AMP::Operator::Operator> d_pMassOperator;
 
-
-    /**
-     * Approximate solution at previous time level
-     */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
-
     /**
      * Source/sink term as well as term containing boundary corrections from mass and rhs operators
      */
