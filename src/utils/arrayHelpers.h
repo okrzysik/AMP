@@ -2,6 +2,8 @@
 #define included_AMP_arrayHelpers
 
 #include <array>
+#include <cmath>
+#include <ostream>
 
 
 namespace AMP {
