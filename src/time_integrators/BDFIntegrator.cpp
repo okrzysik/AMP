@@ -1,6 +1,5 @@
 #include "AMP/time_integrators/BDFIntegrator.h"
 #include "AMP/solvers/SolverStrategy.h"
-#include "AMP/time_integrators/TimeIntegratorInterface.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/TimeOperator.h"
 #include "AMP/utils/Database.h"
