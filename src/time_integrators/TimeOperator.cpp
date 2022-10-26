@@ -44,16 +44,19 @@ void TimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameter
 {
     auto params = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
 
-    AMP_INSIST( params, "Error: NULL TimeOperatorParameters object" );
+    if ( params ) {
 
-    getFromInput( params->d_db );
+        getFromInput( params->d_db );
 
-    if ( params->d_pRhsOperatorParameters ) {
-        d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
-    }
+        if ( params->d_pRhsOperatorParameters ) {
+            d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
+        }
 
-    if ( d_pMassOperator && params->d_pMassOperatorParameters ) {
-        d_pMassOperator->reset( params->d_pMassOperatorParameters );
+        if ( d_pMassOperator && params->d_pMassOperatorParameters ) {
+            d_pMassOperator->reset( params->d_pMassOperatorParameters );
+        }
+    } else {
+        d_pRhsOperator->reset( nullptr );
     }
 }
 
