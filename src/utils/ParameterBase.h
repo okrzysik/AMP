@@ -2,9 +2,10 @@
 #ifndef included_AMP_ParameterBase
 #define included_AMP_ParameterBase
 
+#include <memory>
 #include <string>
 
-#include <memory>
+#include "AMP/utils/Database.h"
 
 namespace AMP {
 
@@ -19,7 +20,11 @@ public:
     ParameterBase();
     virtual ~ParameterBase();
 
+    explicit ParameterBase( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
+
     std::string d_name;
+
+    std::shared_ptr<AMP::Database> d_db;
 
 protected:
 private:
