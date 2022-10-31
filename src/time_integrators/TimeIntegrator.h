@@ -283,11 +283,6 @@ protected:
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_vector;
 
-    /*
-     * Solution vector at previous time
-     */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
-
     /**
      * The operator is the right hand side operator for an explicit integrator when the time
      * integration problem is :

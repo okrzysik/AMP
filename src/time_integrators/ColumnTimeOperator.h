@@ -141,8 +141,6 @@ protected:
 
     std::shared_ptr<AMP::Operator::ColumnOperator> d_pMassOperator;
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
-
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
 
 private:

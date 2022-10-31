@@ -11,9 +11,6 @@ IDATimeOperator::IDATimeOperator( std::shared_ptr<AMP::Operator::OperatorParamet
     // a reset and the reset called is the reset for the base
     // class which already has been called once
     //        reset(in_params);
-
-    // JL
-    d_beta = 1.0;
 }
 
 IDATimeOperator::~IDATimeOperator() = default;
@@ -67,5 +64,70 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP::pout << "Output of M * yp-frhs(y,t)-g in IDATimeOperator" << std::endl;
         AMP::pout << r << std::endl;
     }
+}
+
+void IDATimeOperator::residual( AMP::LinearAlgebra::Vector::const_shared_ptr f,
+                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                AMP::LinearAlgebra::Vector::shared_ptr r )
+{
+    AMP_INSIST( u, "NULL Solution Vector" );
+    AMP_INSIST( r, "NULL Residual Vector" );
+
+    apply( u, r );
+
+    auto rInternal = subsetOutputVector( r );
+    AMP_INSIST( ( rInternal ), "rInternal is NULL" );
+
+    // the rhs can be NULL
+    if ( f ) {
+        auto fInternal = subsetOutputVector( f );
+        rInternal->subtract( *fInternal, *rInternal );
+    } else {
+        rInternal->scale( -1.0 );
+    }
+
+    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+}
+
+std::shared_ptr<AMP::Operator::OperatorParameters>
+IDATimeOperator::getParameters( const std::string &type,
+                                AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                                std::shared_ptr<AMP::Operator::OperatorParameters> params )
+{
+
+    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+    timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
+    timeOperator_db->putScalar( "name", "TimeOperator" );
+    timeOperator_db->putScalar( "bLinearMassOperator", d_bLinearMassOperator );
+    timeOperator_db->putScalar( "bLinearRhsOperator", d_bLinearRhsOperator );
+    timeOperator_db->putScalar( "bAlgebraicComponent", d_bAlgebraicComponent );
+    timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
+
+    auto timeOperatorParameters =
+        std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+
+    timeOperatorParameters->d_Mesh = d_Mesh;
+    // if we have a linear rhs operator then just pass the pointer to the rhs operator instead of
+    // the parameter object
+    if ( d_bLinearRhsOperator ) {
+        timeOperatorParameters->d_pRhsOperator = d_pRhsOperator;
+    } else {
+        timeOperatorParameters->d_pRhsOperatorParameters =
+            d_pRhsOperator->getParameters( type, u, params );
+    }
+
+    if ( !d_bAlgebraicComponent ) {
+        // if we have a linear mass operator then just pass the pointer to the mass operator instead
+        // of the parameter
+        // object
+        if ( d_bLinearMassOperator ) {
+            timeOperatorParameters->d_pMassOperator = d_pMassOperator;
+        } else {
+            timeOperatorParameters->d_pMassOperatorParameters =
+                d_pMassOperator->getParameters( type, u, params );
+        }
+    }
+
+    return timeOperatorParameters;
 }
 } // namespace AMP::TimeIntegrator
