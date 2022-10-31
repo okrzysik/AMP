@@ -46,9 +46,16 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
         typedef decltype( *x.begin() ) TYPE2;
         typedef typename std::remove_reference<TYPE2>::type TYPE3;
         typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        AMP::Array<TYPE4> y;
-        y.viewRaw( { x.size() }, const_cast<TYPE4 *>( x.data() ) );
-        writeHDF5Array( fid, name, y );
+        if constexpr ( std::is_same_v<TYPE4, bool> ) {
+            AMP::Array<bool> y( x.size() );
+            for ( size_t i = 0; i < x.size(); i++ )
+                y( i ) = x[i];
+            writeHDF5Array( fid, name, y );
+        } else {
+            AMP::Array<TYPE4> y;
+            y.viewRaw( { x.size() }, const_cast<TYPE4 *>( x.data() ) );
+            writeHDF5Array( fid, name, y );
+        }
     } else if constexpr ( std::is_array<TYPE>::value ) {
         // We are dealing with a std::array
         typedef decltype( *x.begin() ) TYPE2;
@@ -89,12 +96,20 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
     } else if constexpr ( AMP::is_vector<TYPE>::value ) {
         // We are dealing with a std::vector
         typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
-        AMP::Array<TYPE2> y;
-        readHDF5Array( fid, name, y );
-        x.resize( y.length() );
-        // Swap the elements in the arrays to use the move operator
-        for ( size_t i = 0; i < x.size(); i++ )
-            std::swap( x[i], y( i ) );
+        if constexpr ( std::is_same_v<TYPE2, std::_Bit_reference> ) {
+            AMP::Array<bool> y;
+            readHDF5Array( fid, name, y );
+            x.resize( y.length() );
+            for ( size_t i = 0; i < x.size(); i++ )
+                x[i] = y( i );
+        } else {
+            AMP::Array<TYPE2> y;
+            readHDF5Array( fid, name, y );
+            x.resize( y.length() );
+            // Swap the elements in the arrays to use the move operator
+            for ( size_t i = 0; i < x.size(); i++ )
+                std::swap( x[i], y( i ) );
+        }
     } else if constexpr ( std::is_array<TYPE>::value ) {
         // We are dealing with a std::array
         typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
@@ -135,6 +150,66 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
 
 
 /************************************************************************
+ * readAndConvertHDF5Data                                                *
+ ************************************************************************/
+template<class T>
+typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value, void>::type
+readAndConvertHDF5Data( hid_t dataset, hid_t datatype, AMP::Array<T> &data )
+{
+    if ( H5Tequal( datatype, H5T_NATIVE_CHAR ) ) {
+        AMP::Array<char> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_UCHAR ) ) {
+        AMP::Array<unsigned char> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_INT8 ) ) {
+        AMP::Array<int8_t> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_UINT8 ) ) {
+        AMP::Array<uint8_t> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_INT ) ) {
+        AMP::Array<int> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_UINT ) ) {
+        AMP::Array<unsigned int> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_LONG ) ) {
+        AMP::Array<long int> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_ULONG ) ) {
+        AMP::Array<unsigned long int> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_FLOAT ) ) {
+        AMP::Array<float> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else if ( H5Tequal( datatype, H5T_NATIVE_DOUBLE ) ) {
+        AMP::Array<double> data2( data.size() );
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data2.data() );
+        data.copy( data2 );
+    } else {
+        AMP_ERROR( "We need to convert unknown data format" );
+    }
+}
+template<class T>
+typename std::enable_if<!std::is_integral<T>::value && !std::is_floating_point<T>::value,
+                        void>::type
+readAndConvertHDF5Data( hid_t, hid_t, AMP::Array<T> & )
+{
+    AMP_ERROR( "Unable to convert data" );
+}
+
+
+/************************************************************************
  * Helper function to get the size of an Array                           *
  * Note that HDF5 uses C ordered arrays so we need to flip the dimensions*
  ************************************************************************/
@@ -159,6 +234,68 @@ inline std::vector<size_t> convertSize( int N, const hsize_t *dims )
     for ( int i = 0; i < N; i++ )
         size[N - i - 1] = static_cast<size_t>( dims[i] );
     return size;
+}
+
+
+/******************************************************************
+ * Helper functions for reading/writing AMP::Array<TYPE>           *
+ ******************************************************************/
+template<class T>
+void readHDF5ArrayDefault( hid_t fid, const std::string_view &name, AMP::Array<T> &data )
+{
+    if ( !H5Dexists( fid, name ) ) {
+        // Dataset does not exist
+        data.resize( 0 );
+        return;
+    }
+    hid_t dataset   = H5Dopen2( fid, name.data(), H5P_DEFAULT );
+    hid_t datatype  = H5Dget_type( dataset );
+    hid_t dataspace = H5Dget_space( dataset );
+    hsize_t dims0[10];
+    int ndim  = H5Sget_simple_extent_dims( dataspace, dims0, NULL );
+    auto dims = convertSize( ndim, dims0 );
+    data.resize( dims );
+    hid_t datatype2 = getHDF5datatype<T>();
+    if ( data.empty() ) {
+        // The data is empty
+    } else if ( H5Tequal( datatype, datatype2 ) ) {
+        // The type of Array and the data in HDF5 match
+        H5Dread( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data() );
+    } else {
+        // Try to convert the data
+        readAndConvertHDF5Data( dataset, datatype, data );
+    }
+    H5Dclose( dataset );
+    H5Tclose( datatype );
+    H5Tclose( datatype2 );
+    H5Sclose( dataspace );
+}
+template<class T>
+void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::Array<T> &data )
+{
+    size_t N_bytes = data.length() * sizeof( T );
+    auto dim       = arraySize( data );
+    hid_t plist    = H5P_DEFAULT;
+    if ( N_bytes < 0x7500 ) {
+        // Use compact storage (limited to < 30K)
+        plist       = H5Pcreate( H5P_DATASET_CREATE );
+        auto status = H5Pset_layout( plist, H5D_COMPACT );
+        AMP_ASSERT( status == 0 );
+    } else {
+        // Use compression if available
+        plist = createChunk( data.size(), defaultCompression( fid ), sizeof( T ) );
+    }
+    hid_t dataspace = H5Screate_simple( dim.size(), dim.data(), NULL );
+    hid_t datatype  = getHDF5datatype<T>();
+    hid_t dataset =
+        H5Dcreate2( fid, name.data(), datatype, dataspace, H5P_DEFAULT, plist, H5P_DEFAULT );
+    const void *ptr = data.data() == NULL ? ( (void *) 1 ) : data.data();
+    H5Dwrite( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr );
+    H5Dclose( dataset );
+    H5Tclose( datatype );
+    H5Sclose( dataspace );
+    if ( plist != H5P_DEFAULT )
+        H5Pclose( plist );
 }
 
 

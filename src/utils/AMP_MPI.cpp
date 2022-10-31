@@ -1600,7 +1600,7 @@ MPI_CLASS::Request::~Request() {}
  * getComm                                                                   *
  ****************************************************************************/
 template<class TYPE>
-AMP_MPI getComm( const TYPE &obj )
+AMP_MPI getComm( const TYPE & )
 {
     return AMP_COMM_SELF;
 }
