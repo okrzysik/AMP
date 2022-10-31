@@ -1,5 +1,5 @@
 #include "AMP/IO/HDF5writer.h"
-#include "AMP/IO/HDF5_IO.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/IO/Xdmf.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"

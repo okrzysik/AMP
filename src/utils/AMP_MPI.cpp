@@ -1597,6 +1597,35 @@ MPI_CLASS::Request::~Request() {}
 
 
 /****************************************************************************
+ * getComm                                                                   *
+ ****************************************************************************/
+template<class TYPE>
+AMP_MPI getComm( const TYPE &obj )
+{
+    return AMP_COMM_SELF;
+}
+#define INSTANTIATE_GET_COMM( TYPE )                                    \
+    template AMP_MPI getComm<TYPE>( const TYPE & );                     \
+    template AMP_MPI getComm<std::set<TYPE>>( const std::set<TYPE> & ); \
+    template AMP_MPI getComm<std::vector<TYPE>>( const std::vector<TYPE> & )
+INSTANTIATE_GET_COMM( bool );
+INSTANTIATE_GET_COMM( char );
+INSTANTIATE_GET_COMM( int8_t );
+INSTANTIATE_GET_COMM( uint8_t );
+INSTANTIATE_GET_COMM( int16_t );
+INSTANTIATE_GET_COMM( uint16_t );
+INSTANTIATE_GET_COMM( int32_t );
+INSTANTIATE_GET_COMM( uint32_t );
+INSTANTIATE_GET_COMM( int64_t );
+INSTANTIATE_GET_COMM( uint64_t );
+INSTANTIATE_GET_COMM( float );
+INSTANTIATE_GET_COMM( double );
+INSTANTIATE_GET_COMM( std::complex<float> );
+INSTANTIATE_GET_COMM( std::complex<double> );
+INSTANTIATE_GET_COMM( std::string );
+
+
+/****************************************************************************
  * pack/unpack routines                                                      *
  ****************************************************************************/
 template<>

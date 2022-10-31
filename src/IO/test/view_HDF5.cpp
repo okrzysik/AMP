@@ -8,8 +8,8 @@
 #include <random>
 #include <string>
 
+#include "AMP/IO/HDF5.h"
 #include "AMP/IO/HDF5_Class.h"
-#include "AMP/IO/HDF5_IO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
