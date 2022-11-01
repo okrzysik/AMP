@@ -217,6 +217,13 @@ public:
     bool keyExists( std::string_view key ) const;
 
 
+    /**
+     * Delete the key if it exists
+     * @param[in] key           Key name to delete.
+     */
+    void deleteData( std::string_view key );
+
+
     /** \brief Return all keys in the database.
      * \details  This function will return the list of the keys available.
      *    The user may specify if they want the keys to be returned in
