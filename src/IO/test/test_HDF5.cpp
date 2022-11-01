@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "AMP/IO/HDF5.h"
+#include "AMP/IO/HDF5.hpp"
 #include "AMP/IO/HDF5_Class.h"
-#include "AMP/IO/HDF5_IO.h"
-#include "AMP/IO/HDF5_IO.hpp"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/UnitTest.h"
@@ -71,7 +71,7 @@ public: // Data members
 
 
 // Write the data to HDF5
-void writeHDF5( AMP::hid_t fid, const data_struct &data )
+void writeHDF5( hid_t fid, const data_struct &data )
 {
     AMP::writeHDF5( fid, "char", data.c );
     AMP::writeHDF5( fid, "int", data.i );
@@ -95,7 +95,7 @@ void writeHDF5( AMP::hid_t fid, const data_struct &data )
 
 
 // Read the data from HDF5
-void readHDF5( AMP::hid_t fid, data_struct &data )
+void readHDF5( hid_t fid, data_struct &data )
 {
     AMP::readHDF5( fid, "char", data.c );
     AMP::readHDF5( fid, "int", data.i );
@@ -152,7 +152,7 @@ void readArray( AMP::HDF5data &ptr, const std::string &name, AMP::Array<TYPE> &x
     auto ptr2 = ptr.getData( 0, name );
     ptr2->getData( x );
 }
-void readHDF52( AMP::hid_t fid, data_struct &data )
+void readHDF52( hid_t fid, data_struct &data )
 {
     auto ptr = AMP::readHDF5( fid, "/" );
     readScalar( *ptr, "char", data.c );
