@@ -39,6 +39,14 @@ typename std::enable_if<!std::is_trivially_copyable<TYPE>::value &&
                         !AMP::is_vector<TYPE>::value,
                         size_t>::type
 unpack( TYPE &x, const std::byte *buf );
+template<class TYPE>
+typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type packSize( const TYPE &x );
+template<class TYPE>
+typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type pack( const TYPE &x,
+                                                                             std::byte *buf );
+template<class TYPE>
+typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type
+unpack( TYPE &x, const std::byte *buf );
 // clang-format on
 
 
@@ -66,28 +74,6 @@ unpack( TYPE &x, const std::byte *buf )
     memcpy( &x, buf, sizeof( TYPE ) );
     ENABLE_WARNINGS
     return sizeof( TYPE );
-}
-
-
-/************************************************************************
- *  Functions for packing/unpacking shared_pointers                      *
- ************************************************************************/
-template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type packSize( const TYPE &x )
-{
-    return packSize( *x );
-}
-template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type pack( const TYPE &x,
-                                                                             std::byte *buf )
-{
-    return pack( *x, buf );
-}
-template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type
-unpack( TYPE &x, const std::byte *buf )
-{
-    return unpack( *x, buf );
 }
 
 
@@ -143,6 +129,28 @@ typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type unpack( TYPE 
     for ( size_t i = 0; i < x.size(); i++ )
         N += unpack( x[i], &buf[N] );
     return N;
+}
+
+
+/************************************************************************
+ *  Functions for packing/unpacking shared_pointers                      *
+ ************************************************************************/
+template<class TYPE>
+typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type packSize( const TYPE &x )
+{
+    return packSize( *x );
+}
+template<class TYPE>
+typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type pack( const TYPE &x,
+                                                                             std::byte *buf )
+{
+    return pack( *x, buf );
+}
+template<class TYPE>
+typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type
+unpack( TYPE &x, const std::byte *buf )
+{
+    return unpack( *x, buf );
 }
 
 

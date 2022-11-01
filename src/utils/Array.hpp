@@ -50,10 +50,14 @@
     template bool AMP::Array<TYPE>::empty() const;                                 \
     template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const std::vector<TYPE>& ); \
     template bool AMP::Array<TYPE>::operator==( const AMP::Array<TYPE>& ) const
-#define PACK_UNPACK_ARRAY( TYPE )                                                  \
-    template<> size_t AMP::packSize( const AMP::Array<TYPE> &x ) { return x.packSize(); } \
-    template<> size_t AMP::pack( const AMP::Array<TYPE> &x, std::byte *b ) { return x.pack(b); } \
-    template<> size_t AMP::unpack( AMP::Array<TYPE> &x, const std::byte *b ) { return x.unpack(b); }
+#define PACK_UNPACK_ARRAY( TYPE )                                         \
+    template size_t AMP::packSize( const AMP::Array<TYPE> & );            \
+    template size_t AMP::pack( const AMP::Array<TYPE> &, std::byte * );   \
+    template size_t AMP::unpack( AMP::Array<TYPE> &, const std::byte * )
+#define PACK_UNPACK_ARRAY2( TYPE )                                        \
+    template size_t AMP::Array<TYPE>::packSize() const;                   \
+    template size_t AMP::Array<TYPE>::pack( std::byte * ) const;          \
+    template size_t AMP::Array<TYPE>::unpack( const std::byte * )
 // clang-format on
 
 
