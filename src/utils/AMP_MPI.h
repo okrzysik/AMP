@@ -1389,6 +1389,11 @@ private: // static data members
 };
 
 
+//! Return the underlying MPI class for the object
+template<class TYPE>
+AMP_MPI getComm( const TYPE &obj );
+
+
 } // namespace AMP
 
 

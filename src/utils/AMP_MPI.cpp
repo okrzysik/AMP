@@ -1597,42 +1597,32 @@ MPI_CLASS::Request::~Request() {}
 
 
 /****************************************************************************
- * pack/unpack routines                                                      *
+ * getComm                                                                   *
  ****************************************************************************/
-template<>
-size_t packSize( const std::string &s )
+template<class TYPE>
+AMP_MPI getComm( const TYPE & )
 {
-    return s.size() + 1;
+    return AMP_COMM_SELF;
 }
-template<>
-size_t pack( const std::string &s, std::byte *buf )
-{
-    memcpy( buf, s.data(), s.size() + 1 );
-    return s.size() + 1;
-}
-template<>
-size_t unpack( std::string &s, const std::byte *buf )
-{
-    s = std::string( reinterpret_cast<const char *>( buf ) );
-    return s.size() + 1;
-}
-/*template<>
-size_t packSize( const std::vector<bool>::reference &s )
-{
-    return s.size() + 1;
-}
-template<>
-size_t pack( const std::vector<bool>::reference &s, std::byte *buf )
-{
-    memcpy( buf, s.data(), s.size() + 1 );
-    return s.size() + 1;
-}
-template<>
-size_t unpack( std::vector<bool>::reference &s, const std::byte *buf )
-{
-    s = std::vector<bool>::reference( reinterpret_cast<const char *>( buf ) );
-    return s.size() + 1;
-}*/
+#define INSTANTIATE_GET_COMM( TYPE )                                    \
+    template AMP_MPI getComm<TYPE>( const TYPE & );                     \
+    template AMP_MPI getComm<std::set<TYPE>>( const std::set<TYPE> & ); \
+    template AMP_MPI getComm<std::vector<TYPE>>( const std::vector<TYPE> & )
+INSTANTIATE_GET_COMM( bool );
+INSTANTIATE_GET_COMM( char );
+INSTANTIATE_GET_COMM( int8_t );
+INSTANTIATE_GET_COMM( uint8_t );
+INSTANTIATE_GET_COMM( int16_t );
+INSTANTIATE_GET_COMM( uint16_t );
+INSTANTIATE_GET_COMM( int32_t );
+INSTANTIATE_GET_COMM( uint32_t );
+INSTANTIATE_GET_COMM( int64_t );
+INSTANTIATE_GET_COMM( uint64_t );
+INSTANTIATE_GET_COMM( float );
+INSTANTIATE_GET_COMM( double );
+INSTANTIATE_GET_COMM( std::complex<float> );
+INSTANTIATE_GET_COMM( std::complex<double> );
+INSTANTIATE_GET_COMM( std::string );
 
 
 } // namespace AMP

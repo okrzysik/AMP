@@ -3,9 +3,11 @@
 #define included_AMP_HDF5_h
 
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/ArraySize.h"
 
 #include <cstring>
+#include <memory>
 #include <string_view>
 
 
@@ -101,6 +103,21 @@ void readHDF5( hid_t fid, const std::string_view &name, T &data );
 
 
 /**
+ * \brief Read a structure from HDF5
+ * \details This function reads a C++ class/struct from HDF5.
+ *    This is a templated function and users can implement their own data
+ *    types by creating explicit instantiations for a given type.
+ *    There is no default instantiation except when compiled without HDF5 which is a no-op.
+ * @param[in] fid       File or group to read from
+ * @param[in] name      The name of the variable
+ * @param[in] comm      The communicator of the object
+ */
+template<class T>
+std::unique_ptr<T>
+readHDF5( hid_t fid, const std::string_view &name, AMP_MPI comm = AMP_COMM_SELF );
+
+
+/**
  * \brief Check if group exists
  * \details This function checks if an HDF5 group exists in the file
  * @param[in] fid       ID of group or database to read
@@ -155,10 +172,11 @@ hid_t getHDF5datatype();
 // Default no-op implementations for use without HDF5
 // clang-format off
 #ifndef AMP_USE_HDF5
-template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
 template<class T> void writeHDF5( hid_t, const std::string_view&, const T& ) {}
-template<class T> void readHDF5Array( hid_t, const std::string_view&, AMP::Array<T>& ) {}
-template<class T> void writeHDF5Array( hid_t, const std::string_view&, const AMP::Array<T>& ) {}
+template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
+template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string_view &, AMP_MPI ) {}
+template<class T>
+std::unique_ptr<T> readHDF5( hid_t, const std::string_view&, AMP_MPI comm ) {}
 template<class T> hid_t getHDF5datatype() { return 0; }
 #endif
 // clang-format on

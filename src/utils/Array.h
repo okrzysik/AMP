@@ -24,6 +24,7 @@ class Array final
 public: // Typedefs
     typedef TYPE value_type;
     typedef FUN function_table;
+    static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
 
 public: // Constructors / assignment operators
     /*!
