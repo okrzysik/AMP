@@ -245,6 +245,17 @@ bool Database::keyExists( std::string_view key ) const
     int index = find( hash, false );
     return index != -1;
 }
+void Database::deleteData( std::string_view key )
+{
+    auto hash = hashString( key );
+    int index = find( hash, false );
+    std::swap( d_hash[index], d_hash.back() );
+    std::swap( d_keys[index], d_keys.back() );
+    std::swap( d_data[index], d_data.back() );
+    d_hash.pop_back();
+    d_keys.pop_back();
+    d_data.pop_back();
+}
 KeyData *Database::getData( std::string_view key )
 {
     auto hash = hashString( key );

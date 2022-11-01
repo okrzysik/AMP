@@ -111,7 +111,8 @@ void runBasicTests( UnitTest &ut )
     db.putVector<double>( "x", { 1.1, 2.2, 3.3 } );
     db.putScalar<double>( "x1", 1.5, "cm" );
     db.putVector<double>( "x2", { 2.5 }, "mm" );
-    db.putVector<std::shared_ptr<Database>>( "x2", {} );
+    db.putVector<std::shared_ptr<Database>>( "dummy", {} );
+    db.deleteData( "dummy" );
 
     // Test adding some different types
     addType<uint8_t>( db, ut );
