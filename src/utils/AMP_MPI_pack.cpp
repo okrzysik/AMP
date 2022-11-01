@@ -5,6 +5,7 @@
 #include <vector>
 
 
+// Pack some common vectors
 #define PACK_VECTOR( TYPE )                                              \
     template<>                                                           \
     size_t AMP::packSize( const std::vector<TYPE> &x )                   \
@@ -31,8 +32,7 @@
             memcpy( (void *) x.data(), buf, sizeof( TYPE ) * x.size() ); \
         return sizeof( size_t ) + sizeof( TYPE ) * x.size();             \
     }
-
-//clang-format off
+// clang-format off
 PACK_VECTOR( char )
 PACK_VECTOR( int8_t )
 PACK_VECTOR( int16_t )
@@ -46,33 +46,44 @@ PACK_VECTOR( float )
 PACK_VECTOR( double )
 PACK_VECTOR( std::complex<float> )
 PACK_VECTOR( std::complex<double> )
-// clang-format onn
+// clang-format on
 
 
-// std::vector<string>
+// std::string
 template<>
-size_t AMP::packSize( const std::vector<std::string> &x )
+size_t AMP::packSize<std::string>( const std::string &s )
 {
-    size_t N = sizeof( size_t );
-    for ( size_t i = 0; i < x.size(); i++ )
-        N += packSize( x[i] );
-    return N;
+    return s.size() + 1;
 }
 template<>
-size_t AMP::pack( const std::vector<std::string> &x, std::byte *buf )
+size_t AMP::pack<std::string>( const std::string &s, std::byte *buf )
 {
-    size_t N = pack<size_t>( x.size(), buf );
-    for ( size_t i = 0; i < x.size(); i++ )
-        N += pack( x[i], &buf[N] );
-    return N;
+    memcpy( buf, s.data(), s.size() + 1 );
+    return s.size() + 1;
 }
 template<>
-size_t AMP::unpack( std::vector<std::string> &x, const std::byte *buf )
+size_t AMP::unpack<std::string>( std::string &s, const std::byte *buf )
 {
-    size_t length;
-    size_t N = unpack<size_t>( length, buf );
-    x.resize( length );
-    for ( size_t i = 0; i < x.size(); i++ )
-        N += unpack( x[i], &buf[N] );
-    return N;
+    s = std::string( reinterpret_cast<const char *>( buf ) );
+    return s.size() + 1;
 }
+
+
+// std::vector<bool>
+/*template<>
+size_t AMP::packSize( const std::vector<bool>::reference &s )
+{
+    return s.size() + 1;
+}
+template<>
+size_t AMP::pack( const std::vector<bool>::reference &s, std::byte *buf )
+{
+    memcpy( buf, s.data(), s.size() + 1 );
+    return s.size() + 1;
+}
+template<>
+size_t AMP::unpack( std::vector<bool>::reference &s, const std::byte *buf )
+{
+    s = std::vector<bool>::reference( reinterpret_cast<const char *>( buf ) );
+    return s.size() + 1;
+}*/
