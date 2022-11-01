@@ -3,6 +3,6 @@ variables:
   GROUP: nerd-project
   
 include:
-  - project: 'AMP/dev-ops/ci'
+  - project: 'xcap/oss/solvers/dev-ops/ci'
     ref: master
     file: 'amp-darwin.yml'
