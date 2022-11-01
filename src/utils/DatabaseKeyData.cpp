@@ -426,4 +426,5 @@ REGISTER_KEYDATA( EquationKeyData, EquationKeyData );
  ********************************************************/
 #include "AMP/utils/Array.hpp"
 instantiateArrayConstructors( AMP::DatabaseBox );
-PACK_UNPACK_ARRAY( AMP::DatabaseBox )
+PACK_UNPACK_ARRAY( AMP::DatabaseBox );
+PACK_UNPACK_ARRAY2( AMP::DatabaseBox );

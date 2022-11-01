@@ -63,29 +63,30 @@ ENABLE_WARNINGS
 /********************************************************
  *  Pack/Unpack                                          *
  ********************************************************/
-// clang-format off
-PACK_UNPACK_ARRAY( bool )
-PACK_UNPACK_ARRAY( char )
-PACK_UNPACK_ARRAY( uint8_t )
-PACK_UNPACK_ARRAY( uint16_t )
-PACK_UNPACK_ARRAY( uint32_t )
-PACK_UNPACK_ARRAY( uint64_t )
-PACK_UNPACK_ARRAY( int8_t )
-PACK_UNPACK_ARRAY( int16_t )
-PACK_UNPACK_ARRAY( int32_t )
-PACK_UNPACK_ARRAY( int64_t )
-PACK_UNPACK_ARRAY( float )
-PACK_UNPACK_ARRAY( double )
-PACK_UNPACK_ARRAY( long double )
-PACK_UNPACK_ARRAY( std::complex<float> )
-PACK_UNPACK_ARRAY( std::complex<double> )
-PACK_UNPACK_ARRAY( std::byte )
-PACK_UNPACK_ARRAY( std::string )
-PACK_UNPACK_ARRAY( std::string_view )
-template size_t AMP::Array<bool>::packSize() const;
-template size_t AMP::Array<bool>::pack( std::byte * ) const;
-template size_t AMP::Array<bool>::unpack( const std::byte * );
-// clang-format on
+PACK_UNPACK_ARRAY( std::byte * );
+PACK_UNPACK_ARRAY( bool );
+PACK_UNPACK_ARRAY( char );
+PACK_UNPACK_ARRAY( uint8_t );
+PACK_UNPACK_ARRAY( uint16_t );
+PACK_UNPACK_ARRAY( uint32_t );
+PACK_UNPACK_ARRAY( uint64_t );
+PACK_UNPACK_ARRAY( int8_t );
+PACK_UNPACK_ARRAY( int16_t );
+PACK_UNPACK_ARRAY( int32_t );
+PACK_UNPACK_ARRAY( int64_t );
+PACK_UNPACK_ARRAY( float );
+PACK_UNPACK_ARRAY( double );
+PACK_UNPACK_ARRAY( long double );
+PACK_UNPACK_ARRAY( std::complex<float> );
+PACK_UNPACK_ARRAY( std::complex<double> );
+PACK_UNPACK_ARRAY( std::byte );
+PACK_UNPACK_ARRAY( std::string );
+PACK_UNPACK_ARRAY( std::string_view );
+PACK_UNPACK_ARRAY2( std::byte * );
+PACK_UNPACK_ARRAY2( bool );
+PACK_UNPACK_ARRAY2( std::complex<float> );
+PACK_UNPACK_ARRAY2( std::complex<double> );
+PACK_UNPACK_ARRAY2( std::string );
 
 
 } // namespace AMP
