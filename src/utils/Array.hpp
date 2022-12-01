@@ -453,7 +453,7 @@ Array<TYPE, FUN, Allocator>::checkSubsetIndex( const std::vector<Range<size_t>> 
 {
     bool test = (int) range.size() == d_size.ndim();
     for ( size_t d = 0; d < range.size(); d++ )
-        test = test && range[d].j <= d_size[d];
+        test = test && range[d].j < d_size[d];
     if ( !test )
         throw std::logic_error( "indices for subset are invalid" );
 }
@@ -943,6 +943,26 @@ Array<TYPE, FUN, Allocator>::find( const TYPE &value,
             result.push_back( i );
     }
     return result;
+}
+template<class TYPE, class FUN, class Allocator>
+int64_t Array<TYPE, FUN, Allocator>::findFirst(
+    const TYPE &value, std::function<bool( const TYPE &, const TYPE & )> compare ) const
+{
+    for ( size_t i = 0; i < d_size.length(); i++ ) {
+        if ( compare( d_data[i], value ) )
+            return i;
+    }
+    return -1;
+}
+template<class TYPE, class FUN, class Allocator>
+int64_t Array<TYPE, FUN, Allocator>::findLast(
+    const TYPE &value, std::function<bool( const TYPE &, const TYPE & )> compare ) const
+{
+    for ( size_t i = d_size.length(); i > 0; i-- ) {
+        if ( compare( d_data[i - 1], value ) )
+            return i - 1;
+    }
+    return -1;
 }
 
 

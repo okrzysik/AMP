@@ -1,6 +1,10 @@
 #include "AMP/utils/Units.h"
 #include "AMP/utils/Utilities.h"
 
+#if !defined( __INTEL_COMPILER )
+    #include "AMP/utils/Constants.h"
+#endif
+
 
 namespace AMP {
 

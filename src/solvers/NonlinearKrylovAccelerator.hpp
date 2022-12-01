@@ -2,6 +2,7 @@
 
 #include <iomanip>
 
+#include "AMP/IO/PIO.h"
 #include "AMP/operators/OperatorFactory.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
@@ -335,9 +336,9 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     auto residual_norm = d_residual_vector->L2Norm();
 
     if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
-        AMP::pout << std::setprecision( 16 )
-                  << "Nonlinear Krylov iteration : " << (int64_t) d_iNumberIterations
-                  << ", residual: " << residual_norm << std::endl;
+        AMP::printp( "Nonlinear Krylov iteration: %zu, residual: %0.12e\n",
+                     d_iNumberIterations,
+                     static_cast<double>( residual_norm ) );
     }
 
     const auto initial_residual_norm = residual_norm;
@@ -392,14 +393,15 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
         d_residual_vector->scale( -1.0, *d_residual_vector );
 
-        //        auto prev_residual_norm = residual_norm;
+        // auto prev_residual_norm = residual_norm;
         residual_norm = d_residual_vector->L2Norm();
 
         d_iNumberIterations++;
 
         if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
-            AMP::pout << "Nonlinear Krylov iteration : " << (int) d_iNumberIterations
-                      << ", residual: " << residual_norm << std::endl;
+            AMP::printp( "Nonlinear Krylov iteration: %zu, residual: %0.12e\n",
+                         d_iNumberIterations,
+                         static_cast<double>( residual_norm ) );
         }
 
         converged = ( residual_norm < d_dAbsoluteTolerance ) ||
