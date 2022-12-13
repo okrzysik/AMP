@@ -87,6 +87,10 @@ void Property::evalv( const AMP::Array<double> &args,
             ( *r( i ) )[j] = r2( i + j * N0 );
     }
 }
+std::string Property::evalString() const
+{
+    AMP_ERROR( "Evaluating a property as a string is not supported for " + d_name );
+}
 
 
 /************************************************************************

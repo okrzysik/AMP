@@ -6,6 +6,19 @@ namespace AMP::Materials {
 
 
 /*******************************************************************
+ *  StringProperty                                                  *
+ *******************************************************************/
+StringProperty::StringProperty( std::string name, std::string value, std::string source )
+    : Property( std::move( name ), { 1 }, {}, std::move( source ) ), d_value( std::move( value ) )
+{
+}
+void StringProperty::eval( AMP::Array<double> &, const AMP::Array<double> & ) const
+{
+    AMP_ERROR( "numerically evaluating StringProperty is not supported" );
+}
+
+
+/*******************************************************************
  *  ScalarProperty                                                  *
  *******************************************************************/
 ScalarProperty::ScalarProperty( std::string name,

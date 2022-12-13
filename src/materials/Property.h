@@ -69,6 +69,7 @@ public:
     //! Return name of property
     inline const std::string &get_name() const { return d_name; }
 
+    //! Get the source of the information
     inline const std::string &get_source() const { return d_source; }
 
     //! Return source reference
@@ -98,10 +99,13 @@ public:
     bool is_argument( const std::string &argname ) const;
 
     //! Indicator for scalar evaluator
+    virtual bool isString() const { return false; }
+
+    //! Indicator for scalar evaluator
     bool isScalar() const { return d_dim.length() == 1; }
 
     //! Indicator for vector evaluator
-    bool isVector() const { return d_dim.ndim() == 1; }
+    bool isVector() const { return d_dim.ndim() == 1 && d_dim.length() > 0; }
 
     //! Indicator for tensor evaluator
     bool isTensor() const { return d_dim.ndim() == 2; }
@@ -269,6 +273,9 @@ public: // Evaluators
      */
     template<class... Args>
     void evalv( AMP::Array<AMP::LinearAlgebra::Vector *> &r, const Args &...args ) const;
+
+    //! Get the string value of the property
+    virtual std::string evalString() const;
 
 
 protected: // Virtual function to override to load the property

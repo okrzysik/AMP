@@ -86,6 +86,9 @@ protected:
     }
 
     //! Add a constant-value fixed property
+    void addStringProperty( std::string name, std::string value, std::string source = "" );
+
+    //! Add a constant-value fixed property
     void addScalarProperty( std::string name,
                             double value,
                             const AMP::Units &unit = AMP::Units(),
