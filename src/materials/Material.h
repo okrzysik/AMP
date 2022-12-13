@@ -3,7 +3,6 @@
 
 #include "AMP/materials/Property.h"
 #include "AMP/utils/FactoryStrategy.hpp"
-#include "AMP/utils/Utilities.h"
 
 #include <map>
 #include <memory>

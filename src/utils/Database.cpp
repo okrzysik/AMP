@@ -743,6 +743,8 @@ createKeyData( std::string_view key,
     } else if ( data_type == class_type::STRING ) {
         // We are dealing with strings
         for ( auto &value : values ) {
+            if ( value.empty() )
+                continue;
             if ( value[0] != '"' || value.back() != '"' )
                 throw std::logic_error( "Error parsing string for key: " + std::string( key ) );
             value = value.substr( 1, value.size() - 2 );
@@ -1107,6 +1109,7 @@ read_value( std::string_view buffer,
     }
     // Convert the string value to the database value
     auto data = createKeyData( key, data_type, values, databaseKeys );
+    AMP_ASSERT( data );
     return std::make_tuple( pos, std::move( data ) );
 }
 static std::string generateMsg( const std::string &errMsgPrefix,

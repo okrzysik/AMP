@@ -1,5 +1,5 @@
 #include "AMP/solvers/petsc/PetscMonitor.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include "petsc/private/petscimpl.h"
 #include "petscksp.h"

@@ -281,13 +281,14 @@ int main( int argc, char *argv[] )
         test_interp( &ut );
 
         // Test quicksort performance
-        size_t N = 10000;
+        size_t N = 100000;
         std::vector<int> data1( N );
         srand( static_cast<unsigned int>( time( nullptr ) ) );
         for ( size_t i = 0; i < N; i++ )
             data1[i] = rand();
         auto data2 = data1;
         auto data3 = data1;
+        auto data4 = data1;
         double t1  = Utilities::time();
         Utilities::quicksort( data1 );
         double t2 = Utilities::time();
@@ -307,6 +308,28 @@ int main( int argc, char *argv[] )
         std::cout << "quicksort = " << t2 - t1 << ", std::sort = " << t3 - t2
                   << ", std::sort(2) = " << t4 - t3 << std::endl;
 
+        // Test quickselect
+        for ( size_t i = 0; i < N; i++ )
+            data1[i] = rand();
+        data2 = data1;
+        std::sort( data2.begin(), data2.end() );
+        double t    = 0;
+        pass        = true;
+        size_t N_it = 200;
+        for ( size_t i = 0; i < N_it; i++ ) {
+            data3    = data1;
+            size_t k = rand() % N;
+            t1       = Utilities::time();
+            auto v   = Utilities::quickselect( data3.size(), data3.data(), k );
+            t += Utilities::time() - t1;
+            pass = v == data2[k];
+        }
+        if ( pass )
+            ut.passes( "quickselect" );
+        else
+            ut.failure( "quickselect" );
+        std::cout << "quickselect = " << t / N_it << std::endl;
+
         // Test the hash key
         unsigned int key = Utilities::hash_char( "test" );
         if ( key == 2087956275 )
@@ -323,9 +346,9 @@ int main( int argc, char *argv[] )
             ut.failure( "Correctly factored 13958" );
         std::default_random_engine gen;
         std::uniform_int_distribution<int> dist( 1, 10000000 );
-        t1       = Utilities::time();
-        int N_it = 10000;
-        for ( int i = 0; i < N_it; i++ ) {
+        t1   = Utilities::time();
+        N_it = 10000;
+        for ( size_t i = 0; i < N_it; i++ ) {
             auto tmp = AMP::Utilities::factor( dist( gen ) );
             NULL_USE( tmp );
         }
@@ -339,7 +362,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "isPrime" );
         t1 = Utilities::time();
-        for ( int i = 0; i < N_it; i++ ) {
+        for ( size_t i = 0; i < N_it; i++ ) {
             auto tmp = AMP::Utilities::factor( dist( gen ) );
             NULL_USE( tmp );
         }
