@@ -65,7 +65,7 @@ public:
         DivergedMaxIterations,
         DivergedLineSearch,
         DivergedOnNan,
-        DivergedInternalSolver,
+        DivergedNestedSolver,
         DivergedOther
     };
 
@@ -222,6 +222,11 @@ public:
     virtual void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                            std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                            std::shared_ptr<AMP::LinearAlgebra::Vector> r );
+
+    virtual void printConvergenceStatus( SolverStrategy::SolverStatus status,
+                                         std::ostream &os = AMP::pout ) const
+    {
+    }
 
 protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
