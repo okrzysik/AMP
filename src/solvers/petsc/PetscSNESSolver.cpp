@@ -637,6 +637,39 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
     return ierr;
 }
 
+void PetscSNESSolver::printConvergenceStatus( SolverStrategy::SolverStatus status,
+                                              std::ostream &os ) const
+{
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        switch ( status ) {
+        case SolverStrategy::SolverStatus::ConvergedOnAbsTol:
+            os << type() << " converged on absolute tolerance" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::ConvergedOnRelTol:
+            os << type() << " converged on relative tolerance" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedOther:
+            os << type() << " diverged, solver type specific reason" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedOnNan:
+            os << type() << " diverged on NaNs" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedMaxIterations:
+            os << type() << " diverged on max iterations" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedNestedSolver:
+            os << type() << " diverged on nested solver divergence" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedLineSearch:
+            os << type() << " diverged on line search" << std::endl;
+            break;
+        default:
+            os << type() << " diverged, reason unknown" << std::endl;
+            break;
+        }
+    }
+}
+
 void PetscSNESSolver::setConvergenceStatus( void )
 {
     checkErr( SNESGetConvergedReason( d_SNESSolver, &d_SNES_completion_code ) );
@@ -660,14 +693,19 @@ void PetscSNESSolver::setConvergenceStatus( void )
     case SNES_DIVERGED_MAX_IT:
         d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
         break;
+    case SNES_DIVERGED_LINEAR_SOLVE:
+        d_ConvergenceStatus = SolverStatus::DivergedNestedSolver;
+        break;
     case SNES_DIVERGED_LINE_SEARCH:
         d_ConvergenceStatus = SolverStatus::DivergedLineSearch;
         break;
     default:
         d_ConvergenceStatus = SolverStatus::DivergedOther;
-        AMP_ERROR( "Unknown SNES completion code reported" );
+        AMP_WARNING( "Unknown SNES completion code reported" );
         break;
     }
+
+    printConvergenceStatus( d_ConvergenceStatus );
 }
 
 void PetscSNESSolver::setLineSearchPreCheck(
