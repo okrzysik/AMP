@@ -565,8 +565,8 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
 
-        AMP::pout << " SNES Iterations:  nonlinear: " << d_iNumberIterations << std::endl;
-        AMP::pout << "                      linear: " << iLinearIterations << std::endl;
+        AMP::pout << "  SNES Iterations:  nonlinear: " << d_iNumberIterations << std::endl;
+        AMP::pout << "                       linear: " << iLinearIterations << std::endl;
     }
 
     // Reset the solvers
@@ -644,37 +644,38 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
 void PetscSNESSolver::printConvergenceStatus( SolverStrategy::SolverStatus status,
                                               std::ostream &os ) const
 {
+    std::string offset = "  ";
     if ( d_iDebugPrintInfoLevel > 0 ) {
         switch ( status ) {
         case SolverStrategy::SolverStatus::ConvergedOnAbsTol:
-            os << type() << " converged on absolute tolerance" << std::endl;
+            os << offset << type() << " converged on absolute tolerance" << std::endl;
             break;
         case SolverStrategy::SolverStatus::ConvergedOnRelTol:
-            os << type() << " converged on relative tolerance" << std::endl;
+            os << offset << type() << " converged on relative tolerance" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedOther:
-            os << type() << " diverged, solver type specific reason" << std::endl;
+            os << offset << type() << " diverged, solver type specific reason" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedOnNan:
-            os << type() << " diverged on NaNs" << std::endl;
+            os << offset << type() << " diverged on NaNs" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedMaxIterations:
-            os << type() << " diverged on max iterations" << std::endl;
+            os << offset << type() << " diverged on max iterations" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedNestedSolver:
-            os << type() << " diverged on nested solver divergence" << std::endl;
+            os << offset << type() << " diverged on nested solver divergence" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedLineSearch:
-            os << type() << " diverged on line search" << std::endl;
+            os << offset << type() << " diverged on line search" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedStepSize:
-            os << type() << " diverged on step size less than tolerance" << std::endl;
+            os << offset << type() << " diverged on step size less than tolerance" << std::endl;
             break;
         case SolverStrategy::SolverStatus::DivergedFunctionCount:
-            os << type() << " diverged on function evaluations exceeded" << std::endl;
+            os << offset << type() << " diverged on function evaluations exceeded" << std::endl;
             break;
         default:
-            os << type() << " diverged, reason unknown" << std::endl;
+            os << offset << type() << " diverged, reason unknown" << std::endl;
             break;
         }
     }
