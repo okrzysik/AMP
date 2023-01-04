@@ -701,7 +701,7 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
 #endif
 
         } else {
-            d_current_dt = 0.0;
+            d_current_dt = 0.9 * d_tmp_dt;
         }
         PROFILE_STOP( "getNextDt-default", 1 );
     }
@@ -1350,21 +1350,21 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         //        const double safetyFactor = 0.5;
         const double safetyFactor = 0.8;
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "Error controller: Deadbeat" << std::endl;
         }
 
-        if ( ( d_iDebugPrintInfoLevel > 0 ) && ( !good_solution ) ) {
+        if ( ( d_iDebugPrintInfoLevel > 2 ) && ( !good_solution ) ) {
             AMP::pout << "Reason: Step rejected, high truncation error" << std::endl;
         }
 
-        if ( ( d_iDebugPrintInfoLevel > 0 ) &&
+        if ( ( d_iDebugPrintInfoLevel > 2 ) &&
              ( d_timesteps_after_regrid < d_enable_picontrol_regrid_steps ) ) {
             AMP::pout << "Reason: " << d_timesteps_after_regrid << " step(s) after regrid"
                       << std::endl;
         }
 
-        if ( d_prevSuccessiveRejects && ( d_iDebugPrintInfoLevel > 0 ) ) {
+        if ( d_prevSuccessiveRejects && ( d_iDebugPrintInfoLevel > 2 ) ) {
             AMP::pout << "Reason: Successive step rejections" << std::endl;
         }
 
@@ -1392,7 +1392,7 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         }
     }
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << std::setprecision( 16 )
                   << "Time local error estimate: " << d_timeTruncationErrorEstimate << std::endl;
         AMP::pout << std::setprecision( 16 )
@@ -1409,14 +1409,14 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
             dtFactor = 1.0;
         }
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 ) << "Current dt: " << current_dt << std::endl;
             AMP::pout << std::setprecision( 16 )
                       << "dtFactor after checking for small variations: " << dtFactor << std::endl;
         }
     }
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << std::setprecision( 16 ) << "Final dtFactor: " << dtFactor << std::endl;
     }
 
@@ -1480,7 +1480,7 @@ double BDFIntegrator::calculateLTEScalingFactor()
             }
         }
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 ) << "Predictor type: " << d_predictor_type
                       << ",  errorFactor " << errorFactor << std::endl;
             AMP::pout << std::setprecision( 16 ) << "Alpha = dt_new/dt_old = " << d_alpha
@@ -1576,7 +1576,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
         }
 
         // debugging
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
 
             printVectorComponentNorms( d_solution_vector, " of ", " new: ", "L2Norm" );
             printVectorComponentNorms( d_prev_solutions[0], " of ", " current: ", "L2Norm" );
@@ -1656,7 +1656,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
             }
         }
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
 
             AMP::pout << std::setprecision( 16 ) << "Error factor: " << errorFactor << std::endl;
 
@@ -1674,7 +1674,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
                           << ": " << truncErrorEstimate[i] << std::endl;
             }
 
-            if ( d_iDebugPrintInfoLevel > 1 ) {
+            if ( d_iDebugPrintInfoLevel > 2 ) {
                 AMP::pout << std::setprecision( 16 )
                           << "Old truncation error estimate prior to update "
                           << d_prevTimeTruncationErrorEstimate << std::endl;
@@ -1695,7 +1695,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
 
         //  AMP::pout << "Using the truncation error estimate!!" << std::endl;
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 ) << "Old truncation error estimate post update "
                       << d_prevTimeTruncationErrorEstimate << std::endl;
             AMP::pout << std::setprecision( 16 ) << "Truncation error estimate post update "
@@ -1716,7 +1716,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
         d_timeErrorEstimateRatio =
             d_prevTimeTruncationErrorEstimate / d_timeTruncationErrorEstimate;
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 )
                       << "Ratio of time local errors: " << d_timeErrorEstimateRatio << std::endl;
         }
