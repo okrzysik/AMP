@@ -64,6 +64,8 @@ public:
         ConvergedUserCondition,
         DivergedMaxIterations,
         DivergedLineSearch,
+        DivergedStepSize,
+        DivergedFunctionCount,
         DivergedOnNan,
         DivergedNestedSolver,
         DivergedOther
