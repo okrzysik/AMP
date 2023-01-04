@@ -149,7 +149,11 @@ void PetscSNESSolver::createPetscObjects(
                     // set the preconditioner type to be shell if a pc solver name is given
                     snes_create_pc = true;
                 }
+
+                auto pc_side = nonlinearSolverDB->getWithDefault<std::string>( "pc_side", "RIGHT" );
+                linearSolverDB->putScalar<std::string>( "pc_side", pc_side );
             }
+
             pc_type = nonlinearSolverDB->getWithDefault<std::string>( "pc_type", pc_type );
             linearSolverDB->putScalar<std::string>( "pc_type", pc_type );
         }
