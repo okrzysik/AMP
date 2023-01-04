@@ -441,8 +441,22 @@ int main( int argc, char *argv[] )
                 ut.failure( "File deleted" );
         }
 
-        // Test creating an empty directory
+        // Test creating directories
         Utilities::recursiveMkdir( "." );
+        Utilities::recursiveMkdir( "testUtilitiesDir/a/b" );
+        globalComm.barrier();
+        pass = Utilities::fileExists( "testUtilitiesDir/a/b" );
+        if ( globalComm.getRank() == 0 ) {
+            Utilities::deleteFile( "testUtilitiesDir/a/b" );
+            Utilities::deleteFile( "testUtilitiesDir/a" );
+            Utilities::deleteFile( "testUtilitiesDir" );
+        }
+        globalComm.barrier();
+        pass = pass && !Utilities::fileExists( "testUtilitiesDir/a/b" );
+        if ( pass )
+            ut.passes( "Create/destroy directory" );
+        else
+            ut.failure( "Create/destroy directory" );
 
         // Test catching an error
         try {
