@@ -130,6 +130,8 @@ void NonlinearKrylovAccelerator<T>::initialize(
 {
     AMP_ASSERT( params->d_vectors.size() > 0 );
     d_solution_vector = params->d_vectors[0]->cloneVector();
+    d_solution_vector->setToScalar( 0.0 );
+
     d_solution_vector->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -168,6 +170,9 @@ void NonlinearKrylovAccelerator<T>::reset( std::shared_ptr<AMP::Solver::SolverSt
 template<typename T>
 void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgebra::Vector> f )
 {
+    T s;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> w;
+
     d_current_correction++;
 
     /*
@@ -177,11 +182,11 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
     if ( d_pending ) {
 
         /* next function difference w_1 */
-        auto w = d_w[d_first];
+        w = d_w[d_first];
 
         w->axpy( -1.0, *f, *w );
 
-        auto s = static_cast<T>( w->L2Norm() );
+        s = static_cast<T>( w->L2Norm() );
 
         /* If the function difference is 0, we can't update the subspace with
            this data; so we toss it out and continue.  In this case it is likely
@@ -193,6 +198,11 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
             AMP_WARNING( "current vector not valid!!, relax() being called " );
             relax();
         }
+    }
+
+    // The above if statement can go into relax and d_pending can become false,
+    // hence the second if
+    if ( d_pending ) {
 
         auto v = d_v[d_first];
 
