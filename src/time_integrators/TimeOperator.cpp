@@ -155,9 +155,25 @@ void TimeOperator::residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
 std::shared_ptr<AMP::Operator::OperatorParameters>
 TimeOperator::getParameters( const std::string &type,
-                             AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                             AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
                              std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
+    AMP::LinearAlgebra::Vector::shared_ptr u;
+    if ( d_pSolutionScaling ) {
+
+        AMP_ASSERT( d_pFunctionScaling );
+
+        if ( !d_pScratchSolVector ) {
+            d_pScratchSolVector = u_in->cloneVector();
+        }
+
+        d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
+        u = d_pScratchSolVector;
+
+    } else {
+        u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
+    }
+
     std::shared_ptr<AMP::Operator::OperatorParameters> nestedParams;
     if ( params ) {
         nestedParams = params;
