@@ -549,7 +549,6 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                                                    const int solver_retcode )
 {
     PROFILE_START( "getNextDt" );
-    //    (void) solver_retcode;
     // store the current dt somewhere as this has to be transferred to d_old_dt after the various
     // estimators are done
     const double d_tmp_dt = d_current_dt;
@@ -697,6 +696,16 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
 #endif
 
         } else {
+
+            if ( solver_retcode == 0 ) {
+                // solution method failure, decrease step by 0.9 *d_current_dt
+                if ( d_iDebugPrintInfoLevel > 0 ) {
+                    AMP::pout << std::setprecision( 16 )
+                              << "The solution process failed. Timestep is being decreased by "
+                                 "max allowable factor:: "
+                              << 0.9 << std::endl;
+                }
+            }
             d_current_dt = 0.9 * d_tmp_dt;
         }
         PROFILE_STOP( "getNextDt-default", 1 );
@@ -973,9 +982,9 @@ bool BDFIntegrator::integratorSpecificCheckNewSolution( const int solver_retcode
                 d_current_stepaccepts++;
 
                 if ( d_current_steprejects > 1 ) {
-                    // set a bool to alert the time step controller there were previous successive
-                    // rejects
-                    // when there are successive rejects the standard deadbeat controller is used
+                    // set a bool to alert the time step controller there were previous
+                    // successive rejects when there are successive rejects the standard
+                    // deadbeat controller is used
                     d_prevSuccessiveRejects = true;
                 } else {
                     d_prevSuccessiveRejects = false;
@@ -1036,8 +1045,8 @@ void BDFIntegrator::estimateBDF2TimeDerivative( void )
 }
 
 /**
- Use the approach suggested in Gresho and Sani, Pg 267 to estimate
- what the time derivative is for CN
+   Use the approach suggested in Gresho and Sani, Pg 267 to estimate
+   what the time derivative is for CN
 */
 void BDFIntegrator::estimateCNTimeDerivative( void )
 {
@@ -1054,8 +1063,8 @@ void BDFIntegrator::estimateCNTimeDerivative( void )
 }
 
 /**
- Use the approach suggested in Gresho and Sani, Pg 267 to estimate
- what the time derivative is for CN
+   Use the approach suggested in Gresho and Sani, Pg 267 to estimate
+   what the time derivative is for CN
 */
 void BDFIntegrator::estimateBETimeDerivative( void )
 {
@@ -1272,7 +1281,8 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         AMP_ERROR( "Unknown time integrator, current implementation is for BDF1-6" );
     }
 
-    // the truncation error estimate should already have been calculated while checking the solution
+    // the truncation error estimate should already have been calculated while checking the
+    // solution
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << std::setprecision( 16 )
                   << "Truncation error estimate is: " << d_timeTruncationErrorEstimate << std::endl;
@@ -1285,8 +1295,8 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
     // exponent for truncation error
     const double p = d_integrator_order[d_integrator_index];
 
-    // When the PI controller is being used the code will force a switch to the deadbeat controller
-    // if any of the following happens
+    // When the PI controller is being used the code will force a switch to the deadbeat
+    // controller if any of the following happens
     // 1. There is a failure in the nonlinear solution process
     // 2. There were previous successive rejections of the timestep
     // 3. The number of timesteps after regrid is less than the number of timesteps before PI
@@ -1432,8 +1442,8 @@ double BDFIntegrator::calculateLTEScalingFactor()
 
         // immediately on regrid when we do a resolve we are still using BDF2
         // Trompert and Verwer approach
-        errorFactor = 2.0; // fairly arbitrary factor, used because the error estimator is coarse
-                           // and typically under-estimates
+        errorFactor = 2.0; // fairly arbitrary factor, used because the error estimator is
+        // coarse and typically under-estimates
         errorFactor = errorFactor * d_current_dt;
     } else {
         if ( d_first_step ) {
@@ -1443,8 +1453,8 @@ double BDFIntegrator::calculateLTEScalingFactor()
             } else if ( d_bdf_starting_integrator == "CN" ) {
                 // immediately on regrid when we do a resolve we are still using BDF2
                 // Trompert and Verwer approach
-                errorFactor = 1.5; // fairly arbitrary factor, used because the error estimator is
-                                   // coarse and typically under-estimates
+                errorFactor = 1.5; // fairly arbitrary factor, used because the error estimator
+                // is coarse and typically under-estimates
                 errorFactor = errorFactor * d_current_dt;
                 //          AMP_ERROR("ERROR: CN predictor not implemented for BDF2 starting");
             } else {
@@ -1544,8 +1554,8 @@ void BDFIntegrator::calculateTemporalTruncationError()
     if ( ( d_integrator_step > 0 ) || ( d_first_step && d_use_initial_predictor ) ) {
         /*
          * Compute a new time step based on truncation error estimates
-         * One of the truncation error estimate comes from a private communication with M. Pernice
-         * and is based on an AB2 predictor and BDF2 corrector
+         * One of the truncation error estimate comes from a private communication with M.
+         * Pernice and is based on an AB2 predictor and BDF2 corrector
          */
         if ( ( d_implicit_integrator != "BE" ) && ( d_implicit_integrator != "BDF2" ) &&
              ( d_implicit_integrator != "BDF3" ) && ( d_implicit_integrator != "BDF4" ) &&
