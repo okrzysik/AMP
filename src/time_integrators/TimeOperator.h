@@ -164,6 +164,16 @@ public:
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
 
+    //! for multiphysics problems it may be necessary to scale the solution
+    // and nonlinear function for correct solution of the implicit problem
+    // each timestep. The first vector is for solution scaling, the second for function
+    void setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+    {
+        d_pSolutionScaling = s;
+        d_pFunctionScaling = f;
+    }
+
 protected:
     TimeOperator();
 
@@ -198,12 +208,20 @@ protected:
     /**
      * scratch vector for internal use
      */
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchSolVector;
+
+    /**
+     * scratch vector for internal use
+     */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
 
     /**
      * vector containing source terms if any
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionScaling;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pFunctionScaling;
 
     double d_dGamma = 0.0;
 
