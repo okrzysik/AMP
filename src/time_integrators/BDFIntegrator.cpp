@@ -1937,10 +1937,10 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
     d_solver_retcode = d_solver->getConvergenceStatus();
 
     if ( d_solution_scaling ) {
-        out->multiply( *d_solution_vector, *d_solution_scaling );
-    } else {
-        out->copyVector( d_solution_vector );
+        d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );
     }
+
+    out->copyVector( d_solution_vector );
 
     return d_solver_retcode;
 }
