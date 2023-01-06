@@ -67,9 +67,27 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
     d_pRhsOperator->apply( x, f );
 }
 
-void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
                           AMP::LinearAlgebra::Vector::shared_ptr r )
 {
+
+    AMP::LinearAlgebra::Vector::const_shared_ptr u;
+
+    if ( d_pSolutionScaling ) {
+
+        AMP_ASSERT( d_pFunctionScaling );
+
+        if ( !d_pScratchSolVector ) {
+            d_pScratchSolVector = u_in->cloneVector();
+        }
+
+        d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
+        u = d_pScratchSolVector;
+
+    } else {
+        u = u_in;
+    }
+
     // fRhs(x^{n+1})
     applyRhs( u, r );
 
@@ -110,6 +128,10 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     if ( d_pSourceTerm ) {
         r->axpy( d_dGamma, *d_pSourceTerm, *r );
+    }
+
+    if ( d_pFunctionScaling ) {
+        r->divide( *r, *d_pFunctionScaling );
     }
 
     if ( d_iDebugPrintInfoLevel > 6 ) {
