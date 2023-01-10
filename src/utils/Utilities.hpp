@@ -259,6 +259,92 @@ void quicksort( size_t n, T1 *x, T2 *y )
 
 
 /************************************************************************
+ * templated quickselect routines                                        *
+ * Note: these routines modify the order of the array during processing  *
+ ************************************************************************/
+template<class T>
+T quickselect( size_t n, T *x, size_t k )
+{
+    AMP_ASSERT( n > 0 && k < n );
+    if ( n == 1 )
+        return x[0];
+    int64_t l  = 0;
+    int64_t ir = n - 1;
+    while ( 1 ) {
+        if ( ir - l < 7 ) {
+            // Insertion sort when subarray small enough
+            for ( int64_t j = l + 1; j <= ir; j++ ) {
+                T a       = x[j];
+                bool test = true;
+                int64_t i;
+                for ( i = j - 1; i >= 0; i-- ) {
+                    if ( x[i] < a ) {
+                        x[i + 1] = a;
+                        test     = false;
+                        break;
+                    }
+                    x[i + 1] = x[i];
+                }
+                if ( test ) {
+                    i        = l - 1;
+                    x[i + 1] = a;
+                }
+            }
+            return x[k];
+        } else {
+            // Choose partition: median of left/center/right and set a(l) < a(l+1) < a(ir)
+            int64_t m = ( l + ir ) / 2;
+            T tmp     = x[m];
+            x[m]      = x[l + 1];
+            x[l + 1]  = tmp;
+            if ( x[l] > x[ir] ) {
+                tmp   = x[l];
+                x[l]  = x[ir];
+                x[ir] = tmp;
+            }
+            if ( x[l + 1] > x[ir] ) {
+                tmp      = x[l + 1];
+                x[l + 1] = x[ir];
+                x[ir]    = tmp;
+            }
+            if ( x[l] > x[l + 1] ) {
+                tmp      = x[l];
+                x[l]     = x[l + 1];
+                x[l + 1] = tmp;
+            }
+            // Scan up to find element > a
+            int64_t i;
+            int64_t j = ir;
+            T a       = x[l + 1]; // Partitioning element.
+            for ( i = l + 2; i <= ir; i++ ) {
+                if ( x[i] < a )
+                    continue;
+                while ( x[j] > a ) // Scan down to find element < a.
+                    j--;
+                if ( j < i )
+                    break;   // Pointers crossed, exit with partitioning
+                tmp  = x[i]; // Exchange elements of both arrays.
+                x[i] = x[j];
+                x[j] = tmp;
+            }
+            x[l + 1] = x[j]; // Insert partitioning element in both arrays.
+            x[j]     = a;
+            while ( j > l && x[j] == x[j - 1] )
+                j--;
+            // Process appropriate half
+            if ( j <= (int64_t) k && i > (int64_t) k )
+                return x[k];
+            if ( (int64_t) k < j ) {
+                ir = j - 1;
+            } else {
+                l = i;
+            }
+        }
+    }
+}
+
+
+/************************************************************************
  * Subroutine to find the unique elements in a list                      *
  ************************************************************************/
 template<class T>

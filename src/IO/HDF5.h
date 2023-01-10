@@ -175,8 +175,6 @@ hid_t getHDF5datatype();
 template<class T> void writeHDF5( hid_t, const std::string_view&, const T& ) {}
 template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
 template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string_view &, AMP_MPI ) {}
-template<class T>
-std::unique_ptr<T> readHDF5( hid_t, const std::string_view&, AMP_MPI comm ) {}
 template<class T> hid_t getHDF5datatype() { return 0; }
 #endif
 // clang-format on
