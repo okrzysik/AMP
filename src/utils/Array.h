@@ -688,6 +688,13 @@ public: // Math operations
     std::vector<size_t> find( const TYPE &value,
                               std::function<bool( const TYPE &, const TYPE & )> compare ) const;
 
+    //! Find all elements that match the operator (if element is not found return -1)
+    int64_t findFirst( const TYPE &value,
+                       std::function<bool( const TYPE &, const TYPE & )> compare ) const;
+
+    //! Find all elements that match the operator (if element is not found return -1)
+    int64_t findLast( const TYPE &value,
+                      std::function<bool( const TYPE &, const TYPE & )> compare ) const;
 
     //! Print an array
     void

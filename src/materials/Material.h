@@ -3,7 +3,6 @@
 
 #include "AMP/materials/Property.h"
 #include "AMP/utils/FactoryStrategy.hpp"
-#include "AMP/utils/Utilities.h"
 
 #include <map>
 #include <memory>
@@ -85,6 +84,9 @@ protected:
         auto name2          = materialName() + "::" + name;
         d_propertyMap[name] = std::make_shared<PROPERTY>( name2, args... );
     }
+
+    //! Add a constant-value fixed property
+    void addStringProperty( std::string name, std::string value, std::string source = "" );
 
     //! Add a constant-value fixed property
     void addScalarProperty( std::string name,

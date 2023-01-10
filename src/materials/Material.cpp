@@ -39,6 +39,10 @@ std::vector<std::string> Material::list() const
 /********************************************************************
  * Add a property                                                    *
  ********************************************************************/
+void Material::addStringProperty( std::string name, std::string value, std::string source )
+{
+    addProperty<StringProperty>( std::move( name ), std::move( value ), std::move( source ) );
+}
 void Material::addScalarProperty( std::string name,
                                   double value,
                                   const AMP::Units &unit,

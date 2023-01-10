@@ -100,7 +100,7 @@ public:
 
     /**
      * \brief  Construct the units from a const char array
-     * \details  This is the default constructor for a const char array.
+     * \details  This is the default constructor for a string view.
      *    It can create a unit from a string of the format "W/(m^2)"
      * \param unit      Input string
      */
@@ -113,6 +113,15 @@ public:
      * \param unit      Input string
      */
     constexpr Units( const std::string_view &unit );
+
+    /**
+     * \brief  Construct the units from a const char array
+     * \details  This is the default constructor for a string view.
+     *    It can create a unit from a string of the format "W/(m^2)"
+     * \param unit      Input string
+     * \param value     Value of constant scalar
+     */
+    constexpr Units( const std::string_view &unit, double value );
 
     /**
      * \brief  Get the unit type

@@ -194,70 +194,40 @@ std::string Utilities::getSuffix( const std::string &filename )
 
 void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_node_zero_creates )
 {
+    if ( path.empty() )
+        return;
     AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
-    if ( ( !only_node_zero_creates ) || ( comm.getRank() == 0 ) ) {
-        auto length    = (int) path.length();
-        auto *path_buf = new char[length + 1];
-        memcpy( path_buf, path.data(), length );
-        path_buf[length] = '\0';
+    if ( only_node_zero_creates && comm.getRank() != 0 )
+        return;
+    // Create/check a directory
+    auto check = []( const std::string &path ) {
         struct stat status;
-        int pos = length - 1;
-        // find part of path that has not yet been created
-        while ( ( stat( path_buf, &status ) != 0 ) && ( pos >= 0 ) ) {
-            // slide backwards in string until next slash found
-            bool slash_found = false;
-            while ( ( !slash_found ) && ( pos >= 0 ) ) {
-                if ( path_buf[pos] == '/' || path_buf[pos] == 92 ) {
-                    slash_found = true;
-                    if ( pos >= 0 )
-                        path_buf[pos] = '\0';
-                } else
-                    pos--;
+        if ( stat( path.c_str(), &status ) == 0 ) {
+            if ( S_ISDIR( status.st_mode ) ) {
+                return true;
+            } else {
+                AMP_ERROR( "Cannot create directory \"" + path +
+                           "\" because it exists and is NOT a directory" );
             }
         }
-        // if there is a part of the path that already exists make sure it is really a directory
-        if ( pos >= 0 ) {
-            if ( !S_ISDIR( status.st_mode ) ) {
-                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           "    Cannot create directories in path = " +
-                           path +
-                           "\n    because some intermediate item in path exists and"
-                           "is NOT a directory" );
-            }
-        }
-        // make all directories that do not already exist
-        if ( pos < 0 ) {
-            if ( mkdir( path_buf, mode ) != 0 ) {
-                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           "    Cannot create directory  = " +
-                           std::string( path_buf ) );
-            }
-            pos = 0;
-        }
-        // make rest of directories
-        do {
-            // slide forward in string until next '\0' found
-            bool null_found = false;
-            while ( ( !null_found ) && ( pos < length ) ) {
-                if ( path_buf[pos] == '\0' ) {
-                    null_found    = true;
-                    path_buf[pos] = '/';
-                }
-                pos++;
-            }
-            // make directory if not at end of path
-            if ( pos < length ) {
-                if ( mkdir( path_buf, mode ) != 0 ) {
-                    AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                               "    Cannot create directory  = " +
-                               std::string( path_buf ) );
-                }
-            }
-        } while ( pos < length );
-        delete[] path_buf;
+        return false;
+    };
+    auto create = [check, mode]( const std::string &path ) {
+        if ( check( path ) )
+            return;
+        if ( mkdir( path.c_str(), mode ) != 0 )
+            AMP_ERROR( "Cannot create directory " + path );
+    };
+    // Create the parent directories (if they exist)
+    auto is_dir = []( char c ) { return c == '/' || c == 92; };
+    auto it     = std::find_if( path.begin(), path.end(), is_dir );
+    for ( ; it != path.end(); ++it ) {
+        auto path2 = path.substr( 0, std::distance( path.begin(), it ) );
+        create( path2 );
     }
+    create( path );
     // Make sure all processors wait until node zero creates the directory structure.
-    if ( only_node_zero_creates )
+    if ( !only_node_zero_creates )
         comm.barrier();
 }
 
