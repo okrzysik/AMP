@@ -95,6 +95,31 @@ std::shared_ptr<Vector> VS_Components::subset( std::shared_ptr<Vector> p ) const
         auto multivec = std::dynamic_pointer_cast<MultiVector>( p );
         std::vector<std::shared_ptr<Vector>> vecs;
         auto index = d_index;
+#if 1
+        std::vector<size_t> nc( N );
+        size_t i = 0;
+        for ( auto vec : *multivec ) {
+            nc[i] = vec->getNumberOfComponents();
+            ++i;
+        }
+
+        for ( i = 1u; i < N; ++i )
+            nc[i] += nc[i - 1];
+
+        for ( auto &ic : index ) {
+            for ( i = 0u; i < N; ++i ) {
+                if ( nc[i] > ic ) {
+                    auto cv = multivec->getVector( i );
+                    AMP_ASSERT( cv );
+                    auto sc   = ( i > 0 ) ? ic - nc[i - 1] : ic;
+                    auto vec2 = cv->selectInto( VS_Components( { sc } ) );
+                    if ( vec2 )
+                        vecs.push_back( vec2 );
+                    break;
+                }
+            }
+        }
+#else
         for ( auto vec : *multivec ) {
             auto N2   = vec->getNumberOfComponents();
             auto vec2 = vec->selectInto( VS_Components( index ) );
@@ -107,6 +132,7 @@ std::shared_ptr<Vector> VS_Components::subset( std::shared_ptr<Vector> p ) const
             }
             std::swap( index, index2 );
         }
+#endif
         return MultiVector::create( p->getName(), p->getComm(), vecs );
     } else {
         AMP_ERROR( "Not finished: " + p->type() );

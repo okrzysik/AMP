@@ -480,12 +480,8 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
     if ( d_pSourceTerm ) {
         f->axpy( -d_gamma, *d_pSourceTerm, *f );
     }
-#if 1
+
     auto timeOperator = std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-#else
-    auto timeOperator =
-        std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorInterface>( d_operator );
-#endif
     AMP_ASSERT( timeOperator );
     timeOperator->setTimeOperatorScaling( d_gamma );
 }
@@ -553,7 +549,6 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                                                    const int solver_retcode )
 {
     PROFILE_START( "getNextDt" );
-    //    (void) solver_retcode;
     // store the current dt somewhere as this has to be transferred to d_old_dt after the various
     // estimators are done
     const double d_tmp_dt = d_current_dt;
@@ -701,7 +696,17 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
 #endif
 
         } else {
-            d_current_dt = 0.0;
+
+            if ( solver_retcode == 0 ) {
+                // solution method failure, decrease step by 0.9 *d_current_dt
+                if ( d_iDebugPrintInfoLevel > 0 ) {
+                    AMP::pout << std::setprecision( 16 )
+                              << "The solution process failed. Timestep is being decreased by "
+                                 "max allowable factor:: "
+                              << 0.9 << std::endl;
+                }
+            }
+            d_current_dt = 0.9 * d_tmp_dt;
         }
         PROFILE_STOP( "getNextDt-default", 1 );
     }
@@ -831,13 +836,8 @@ void BDFIntegrator::evaluateForwardEulerPredictor()
     // need the time derivative at the initial time. While in general not a
     // good idea we use the function evaluation to approximate the time derivative
     if ( d_first_step ) {
-#if 1
         auto timeOperator =
             std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-#else
-        auto timeOperator =
-            std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorInterface>( d_operator );
-#endif
         AMP_ASSERT( timeOperator );
         d_scratch_vector->copyVector( d_prev_solutions[0] );
         timeOperator->applyRhs( d_scratch_vector, d_current_function_vector );
@@ -893,14 +893,8 @@ void BDFIntegrator::setInitialGuess( const bool first_step,
 
         // we compute f(u_{n-1}) and store it for the timestep here
         if ( current_integrator == "CN" ) {
-#if 1
             auto timeOperator =
                 std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-#else
-            auto timeOperator =
-                std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorInterface>(
-                    d_operator );
-#endif
             AMP_ASSERT( timeOperator );
             AMP_ASSERT( d_prev_solutions[0] != nullptr );
             AMP_ASSERT( d_prev_function_vector != nullptr );
@@ -988,9 +982,9 @@ bool BDFIntegrator::integratorSpecificCheckNewSolution( const int solver_retcode
                 d_current_stepaccepts++;
 
                 if ( d_current_steprejects > 1 ) {
-                    // set a bool to alert the time step controller there were previous successive
-                    // rejects
-                    // when there are successive rejects the standard deadbeat controller is used
+                    // set a bool to alert the time step controller there were previous
+                    // successive rejects when there are successive rejects the standard
+                    // deadbeat controller is used
                     d_prevSuccessiveRejects = true;
                 } else {
                     d_prevSuccessiveRejects = false;
@@ -1051,8 +1045,8 @@ void BDFIntegrator::estimateBDF2TimeDerivative( void )
 }
 
 /**
- Use the approach suggested in Gresho and Sani, Pg 267 to estimate
- what the time derivative is for CN
+   Use the approach suggested in Gresho and Sani, Pg 267 to estimate
+   what the time derivative is for CN
 */
 void BDFIntegrator::estimateCNTimeDerivative( void )
 {
@@ -1069,8 +1063,8 @@ void BDFIntegrator::estimateCNTimeDerivative( void )
 }
 
 /**
- Use the approach suggested in Gresho and Sani, Pg 267 to estimate
- what the time derivative is for CN
+   Use the approach suggested in Gresho and Sani, Pg 267 to estimate
+   what the time derivative is for CN
 */
 void BDFIntegrator::estimateBETimeDerivative( void )
 {
@@ -1287,7 +1281,8 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         AMP_ERROR( "Unknown time integrator, current implementation is for BDF1-6" );
     }
 
-    // the truncation error estimate should already have been calculated while checking the solution
+    // the truncation error estimate should already have been calculated while checking the
+    // solution
     if ( d_iDebugPrintInfoLevel > 1 ) {
         AMP::pout << std::setprecision( 16 )
                   << "Truncation error estimate is: " << d_timeTruncationErrorEstimate << std::endl;
@@ -1300,8 +1295,8 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
     // exponent for truncation error
     const double p = d_integrator_order[d_integrator_index];
 
-    // When the PI controller is being used the code will force a switch to the deadbeat controller
-    // if any of the following happens
+    // When the PI controller is being used the code will force a switch to the deadbeat
+    // controller if any of the following happens
     // 1. There is a failure in the nonlinear solution process
     // 2. There were previous successive rejections of the timestep
     // 3. The number of timesteps after regrid is less than the number of timesteps before PI
@@ -1350,21 +1345,21 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         //        const double safetyFactor = 0.5;
         const double safetyFactor = 0.8;
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 1 ) {
             AMP::pout << "Error controller: Deadbeat" << std::endl;
         }
 
-        if ( ( d_iDebugPrintInfoLevel > 0 ) && ( !good_solution ) ) {
+        if ( ( d_iDebugPrintInfoLevel > 2 ) && ( !good_solution ) ) {
             AMP::pout << "Reason: Step rejected, high truncation error" << std::endl;
         }
 
-        if ( ( d_iDebugPrintInfoLevel > 0 ) &&
+        if ( ( d_iDebugPrintInfoLevel > 2 ) &&
              ( d_timesteps_after_regrid < d_enable_picontrol_regrid_steps ) ) {
             AMP::pout << "Reason: " << d_timesteps_after_regrid << " step(s) after regrid"
                       << std::endl;
         }
 
-        if ( d_prevSuccessiveRejects && ( d_iDebugPrintInfoLevel > 0 ) ) {
+        if ( d_prevSuccessiveRejects && ( d_iDebugPrintInfoLevel > 2 ) ) {
             AMP::pout << "Reason: Successive step rejections" << std::endl;
         }
 
@@ -1392,7 +1387,7 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
         }
     }
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << std::setprecision( 16 )
                   << "Time local error estimate: " << d_timeTruncationErrorEstimate << std::endl;
         AMP::pout << std::setprecision( 16 )
@@ -1409,14 +1404,14 @@ double BDFIntegrator::estimateDtWithTruncationErrorEstimates( double current_dt,
             dtFactor = 1.0;
         }
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 ) << "Current dt: " << current_dt << std::endl;
             AMP::pout << std::setprecision( 16 )
                       << "dtFactor after checking for small variations: " << dtFactor << std::endl;
         }
     }
 
-    if ( d_iDebugPrintInfoLevel > 0 ) {
+    if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << std::setprecision( 16 ) << "Final dtFactor: " << dtFactor << std::endl;
     }
 
@@ -1447,8 +1442,8 @@ double BDFIntegrator::calculateLTEScalingFactor()
 
         // immediately on regrid when we do a resolve we are still using BDF2
         // Trompert and Verwer approach
-        errorFactor = 2.0; // fairly arbitrary factor, used because the error estimator is coarse
-                           // and typically under-estimates
+        errorFactor = 2.0; // fairly arbitrary factor, used because the error estimator is
+        // coarse and typically under-estimates
         errorFactor = errorFactor * d_current_dt;
     } else {
         if ( d_first_step ) {
@@ -1458,8 +1453,8 @@ double BDFIntegrator::calculateLTEScalingFactor()
             } else if ( d_bdf_starting_integrator == "CN" ) {
                 // immediately on regrid when we do a resolve we are still using BDF2
                 // Trompert and Verwer approach
-                errorFactor = 1.5; // fairly arbitrary factor, used because the error estimator is
-                                   // coarse and typically under-estimates
+                errorFactor = 1.5; // fairly arbitrary factor, used because the error estimator
+                // is coarse and typically under-estimates
                 errorFactor = errorFactor * d_current_dt;
                 //          AMP_ERROR("ERROR: CN predictor not implemented for BDF2 starting");
             } else {
@@ -1480,7 +1475,7 @@ double BDFIntegrator::calculateLTEScalingFactor()
             }
         }
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 ) << "Predictor type: " << d_predictor_type
                       << ",  errorFactor " << errorFactor << std::endl;
             AMP::pout << std::setprecision( 16 ) << "Alpha = dt_new/dt_old = " << d_alpha
@@ -1559,8 +1554,8 @@ void BDFIntegrator::calculateTemporalTruncationError()
     if ( ( d_integrator_step > 0 ) || ( d_first_step && d_use_initial_predictor ) ) {
         /*
          * Compute a new time step based on truncation error estimates
-         * One of the truncation error estimate comes from a private communication with M. Pernice
-         * and is based on an AB2 predictor and BDF2 corrector
+         * One of the truncation error estimate comes from a private communication with M.
+         * Pernice and is based on an AB2 predictor and BDF2 corrector
          */
         if ( ( d_implicit_integrator != "BE" ) && ( d_implicit_integrator != "BDF2" ) &&
              ( d_implicit_integrator != "BDF3" ) && ( d_implicit_integrator != "BDF4" ) &&
@@ -1576,7 +1571,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
         }
 
         // debugging
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
 
             printVectorComponentNorms( d_solution_vector, " of ", " new: ", "L2Norm" );
             printVectorComponentNorms( d_prev_solutions[0], " of ", " current: ", "L2Norm" );
@@ -1656,7 +1651,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
             }
         }
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
 
             AMP::pout << std::setprecision( 16 ) << "Error factor: " << errorFactor << std::endl;
 
@@ -1674,7 +1669,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
                           << ": " << truncErrorEstimate[i] << std::endl;
             }
 
-            if ( d_iDebugPrintInfoLevel > 1 ) {
+            if ( d_iDebugPrintInfoLevel > 2 ) {
                 AMP::pout << std::setprecision( 16 )
                           << "Old truncation error estimate prior to update "
                           << d_prevTimeTruncationErrorEstimate << std::endl;
@@ -1695,7 +1690,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
 
         //  AMP::pout << "Using the truncation error estimate!!" << std::endl;
 
-        if ( d_iDebugPrintInfoLevel > 1 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 ) << "Old truncation error estimate post update "
                       << d_prevTimeTruncationErrorEstimate << std::endl;
             AMP::pout << std::setprecision( 16 ) << "Truncation error estimate post update "
@@ -1716,7 +1711,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
         d_timeErrorEstimateRatio =
             d_prevTimeTruncationErrorEstimate / d_timeTruncationErrorEstimate;
 
-        if ( d_iDebugPrintInfoLevel > 0 ) {
+        if ( d_iDebugPrintInfoLevel > 2 ) {
             AMP::pout << std::setprecision( 16 )
                       << "Ratio of time local errors: " << d_timeErrorEstimateRatio << std::endl;
         }
@@ -1893,14 +1888,8 @@ void BDFIntegrator::reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegr
             // but probably the right approach would be to interpolate
             // the time derivative if we are following the Gresho/Sani approach
             // evaluate f(u_{n-1})
-#if 1
             auto timeOperator =
                 std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
-#else
-            auto timeOperator =
-                std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeIntegratorInterface>(
-                    d_operator );
-#endif
             AMP_ASSERT( timeOperator );
             d_scratch_vector->copyVector( d_prev_solutions[1] );
             timeOperator->applyRhs( d_scratch_vector, d_old_td_vector );
@@ -1936,8 +1925,21 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     auto rhs = in->cloneVector();
     rhs->scale( -1.0, *d_integrator_source_vector );
+
+    if ( d_solution_scaling ) {
+        // ensure both scalings are available
+        AMP_ASSERT( d_function_scaling );
+        d_solution_vector->divide( *d_solution_vector, *d_solution_scaling );
+        rhs->divide( *rhs, *d_function_scaling );
+    }
+
     d_solver->apply( rhs, d_solution_vector );
     d_solver_retcode = d_solver->getConvergenceStatus();
+
+    if ( d_solution_scaling ) {
+        d_solution_vector->multiply( *d_solution_vector, *d_solution_scaling );
+    }
+
     out->copyVector( d_solution_vector );
 
     return d_solver_retcode;

@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "AMP/mesh/Mesh.h"
-#include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
 
 
@@ -26,19 +25,12 @@ public:
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
+    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : ParameterBase( db ) {}
 
     /**
      * Destructor.
      */
     virtual ~OperatorParameters() {}
-
-    /**
-     *  Database object which needs to be initialized specific to the solver.
-     *  Documentation for parameters required by each solver can be found in the
-     *  documentation for the solver.
-     */
-    std::shared_ptr<AMP::Database> d_db;
 
     AMP::Mesh::Mesh::shared_ptr d_Mesh;
 

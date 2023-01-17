@@ -67,9 +67,27 @@ void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x
     d_pRhsOperator->apply( x, f );
 }
 
-void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
                           AMP::LinearAlgebra::Vector::shared_ptr r )
 {
+
+    AMP::LinearAlgebra::Vector::const_shared_ptr u;
+
+    if ( d_pSolutionScaling ) {
+
+        AMP_ASSERT( d_pFunctionScaling );
+
+        if ( !d_pScratchSolVector ) {
+            d_pScratchSolVector = u_in->cloneVector();
+        }
+
+        d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
+        u = d_pScratchSolVector;
+
+    } else {
+        u = u_in;
+    }
+
     // fRhs(x^{n+1})
     applyRhs( u, r );
 
@@ -112,6 +130,10 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         r->axpy( d_dGamma, *d_pSourceTerm, *r );
     }
 
+    if ( d_pFunctionScaling ) {
+        r->divide( *r, *d_pFunctionScaling );
+    }
+
     if ( d_iDebugPrintInfoLevel > 6 ) {
         AMP::pout << "Output of M * yp-gamma * ( fRhs(y,t)-g ) in TimeOperator" << std::endl;
         AMP::pout << r << std::endl;
@@ -133,9 +155,25 @@ void TimeOperator::residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
 std::shared_ptr<AMP::Operator::OperatorParameters>
 TimeOperator::getParameters( const std::string &type,
-                             AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                             AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
                              std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
+    AMP::LinearAlgebra::Vector::shared_ptr u;
+    if ( d_pSolutionScaling ) {
+
+        AMP_ASSERT( d_pFunctionScaling );
+
+        if ( !d_pScratchSolVector ) {
+            d_pScratchSolVector = u_in->cloneVector();
+        }
+
+        d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
+        u = d_pScratchSolVector;
+
+    } else {
+        u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
+    }
+
     std::shared_ptr<AMP::Operator::OperatorParameters> nestedParams;
     if ( params ) {
         nestedParams = params;
