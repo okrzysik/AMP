@@ -1,7 +1,6 @@
 #include "AMP/operators/mechanics/UpdatedLagrangianUtils.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 
 #include <iostream>
 

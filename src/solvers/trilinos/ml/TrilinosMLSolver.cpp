@@ -3,8 +3,8 @@
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+
 #include "ProfilerApp.h"
 
 DISABLE_WARNINGS

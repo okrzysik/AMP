@@ -1,7 +1,6 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"

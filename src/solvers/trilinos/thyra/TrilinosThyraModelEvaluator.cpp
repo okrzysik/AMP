@@ -1,7 +1,6 @@
 #include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 #include "AMP/operators/Operator.h"
 #include "AMP/solvers/trilinos/thyra/TrilinosLinearOP.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"

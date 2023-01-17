@@ -8,7 +8,7 @@
 #include "AMP/IO/HDF5_Class.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/TypeTraits.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/typeid.h"
 
 #include <array>

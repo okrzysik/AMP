@@ -12,14 +12,12 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
 
 #include "libmesh/mesh_generation.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
-
 
 static void myTest( AMP::UnitTest *ut )
 {

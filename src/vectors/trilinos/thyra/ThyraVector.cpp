@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"

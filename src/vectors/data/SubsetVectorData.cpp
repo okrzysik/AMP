@@ -1,6 +1,5 @@
 #include "AMP/vectors/data/SubsetVectorData.h"
 #include "AMP/discretization/subsetDOFManager.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "ProfilerApp.h"
