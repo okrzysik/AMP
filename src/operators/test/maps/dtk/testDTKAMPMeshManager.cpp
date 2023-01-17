@@ -8,14 +8,13 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
 
 #include <DTK_BasicEntityPredicates.hpp>
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 
 

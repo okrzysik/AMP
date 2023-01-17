@@ -7,7 +7,7 @@
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementPhysicsModel.h"
 #include "AMP/operators/ElementPhysicsModelParameters.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 
 // Libmesh headers

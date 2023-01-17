@@ -9,11 +9,8 @@ namespace AMP::Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MeshElement::MeshElement()
-{
-    typeID  = MeshElementTypeID;
-    element = nullptr;
-}
+constexpr auto MeshElementTypeID = AMP::getTypeID<MeshElement>();
+MeshElement::MeshElement() : typeID( MeshElementTypeID ), element( nullptr ) {}
 MeshElement::MeshElement( const MeshElement &rhs ) : typeID( MeshElementTypeID ), element( nullptr )
 {
     if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {

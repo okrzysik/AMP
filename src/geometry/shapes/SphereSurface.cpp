@@ -1,7 +1,7 @@
 #include "AMP/geometry/shapes/SphereSurface.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 
 namespace AMP::Geometry {

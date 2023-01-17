@@ -1,4 +1,5 @@
 #include "AMP/AMP_TPLs.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/Database.h"
@@ -286,7 +287,7 @@ void runFileTests( UnitTest &ut, const std::string &filename )
     printf( "Time to read %s: %i us\n", filename.c_str(), us );
     checkResult( ut, !db->empty(), prefix + "!empty()" );
     // Create database from string
-    if ( AMP::Utilities::getSuffix( filename ) != "yml" ) {
+    if ( AMP::IO::getSuffix( filename ) != "yml" ) {
         std::ifstream ifstream( filename );
         std::stringstream buffer;
         buffer << ifstream.rdbuf();

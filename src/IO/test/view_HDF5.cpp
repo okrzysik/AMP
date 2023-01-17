@@ -8,11 +8,11 @@
 #include <random>
 #include <string>
 
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/HDF5.h"
 #include "AMP/IO/HDF5_Class.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 
 
 // Main
@@ -28,7 +28,7 @@ int main( int argc, char *argv[] )
     // Loop through the input files loading and printing the variables
     for ( int i = 1; i < argc; i++ ) {
         std::cout << argv[i] << ":\n";
-        if ( !AMP::Utilities::fileExists( argv[i] ) ) {
+        if ( !AMP::IO::fileExists( argv[i] ) ) {
             std::cerr << "File does not exist\n";
             return -1;
         }

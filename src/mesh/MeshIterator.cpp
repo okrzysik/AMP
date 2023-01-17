@@ -1,6 +1,4 @@
 #include "AMP/mesh/MeshIterator.h"
-#include "AMP/utils/Utilities.h"
-
 
 namespace AMP::Mesh {
 
@@ -10,14 +8,9 @@ static MeshElement nullElement;
 
 
 /********************************************************
- * Set the base class type id                            *
- ********************************************************/
-const uint32_t MeshIterator::MeshIteratorTypeID = AMP::Utilities::hash_char( "MeshIterator" );
-
-
-/********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto MeshIteratorTypeID = AMP::getTypeID<MeshIterator>();
 MeshIterator::MeshIterator()
     : d_iterator( nullptr ),
       d_typeID( MeshIteratorTypeID ),

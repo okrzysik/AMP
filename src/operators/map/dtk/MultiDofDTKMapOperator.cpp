@@ -54,7 +54,7 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( std::shared_ptr<const OperatorPa
 
     int rank = multiDofDTKMapOpParams->d_globalComm.getRank();
     std::fstream fout;
-    std::string fileName = "debug_" + AMP::Utilities::intToString( rank );
+    std::string fileName = "debug_" + std::to_string( rank );
     fout.open( fileName.c_str(), std::fstream::out );
 
     if ( mesh2 ) {

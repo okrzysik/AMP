@@ -8,7 +8,6 @@
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 

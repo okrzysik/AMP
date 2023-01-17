@@ -2,7 +2,9 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
+
 #include "ProfilerApp.h"
 
 

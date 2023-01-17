@@ -93,7 +93,7 @@ static void myTest( AMP::UnitTest *ut )
         }
 
         // now run apply tests with multi-vectors
-        auto postfix   = AMP::Utilities::intToString( i );
+        auto postfix   = std::to_string( i );
         auto auxInpVar = std::make_shared<AMP::LinearAlgebra::Variable>(
             "testLinearOperator-1-auxInpVar" + postfix );
         auto auxOutVar = std::make_shared<AMP::LinearAlgebra::Variable>(

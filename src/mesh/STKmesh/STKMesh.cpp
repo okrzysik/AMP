@@ -1,4 +1,3 @@
-
 #include "AMP/mesh/STKmesh/STKMesh.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"

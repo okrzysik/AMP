@@ -135,10 +135,6 @@ protected:
     friend class AMP::Mesh::libmeshElemIterator;
 
 private:
-    static constexpr uint32_t getTypeID()
-    {
-        return AMP::Utilities::hash_char( "libmeshMeshElement" );
-    }
     MeshElementID d_globalID;
 };
 

@@ -1,6 +1,5 @@
 #include "AMP/operators/boundary/ColumnBoundaryOperator.h"
 #include "AMP/operators/OperatorFactory.h"
-#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Operator {

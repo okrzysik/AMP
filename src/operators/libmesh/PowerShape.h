@@ -7,7 +7,7 @@
     #include "AMP/operators/OperatorParameters.h"
     #include "AMP/operators/libmesh/PowerShapeParameters.h"
     #include "AMP/utils/Database.h"
-    #include "AMP/utils/Utilities.h"
+    #include "AMP/utils/UtilityMacros.h"
     #include "AMP/vectors/Variable.h"
     #include <memory>
 

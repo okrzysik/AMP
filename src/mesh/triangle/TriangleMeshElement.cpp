@@ -94,15 +94,6 @@ static constexpr uint8_t n_Simplex_elements[4][4] = {
  * Create a unique id for each class                     *
  ********************************************************/
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-constexpr uint32_t TriangleMeshElement<NG, NP, TYPE>::getTypeID()
-{
-    char name[] = "TriangleMeshElement<0,0,0>";
-    name[21]    = 48 + NG;
-    name[23]    = 48 + NP;
-    name[25]    = 48 + TYPE;
-    return AMP::Utilities::hash_char( name );
-}
-template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 std::string TriangleMeshElement<NG, NP, TYPE>::elementClass() const
 {
     return AMP::Utilities::stringf( "TriangleMeshElement<%u,%u,%u>", NG, NP, TYPE );
@@ -115,7 +106,7 @@ std::string TriangleMeshElement<NG, NP, TYPE>::elementClass() const
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement()
 {
-    typeID  = getTypeID();
+    typeID  = getTypeID<decltype( *this )>();
     element = nullptr;
     d_mesh  = nullptr;
 }
@@ -123,7 +114,7 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const MeshElementID &id,
                                                         const TriangleMesh<NG, NP> *mesh )
 {
-    typeID     = getTypeID();
+    typeID     = getTypeID<decltype( *this )>();
     element    = nullptr;
     d_globalID = id;
     d_mesh     = mesh;
@@ -138,7 +129,7 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const TriangleMeshElement &rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID( rhs.d_globalID )
 {
-    typeID  = getTypeID();
+    typeID  = getTypeID<decltype( *this )>();
     element = rhs.element;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>

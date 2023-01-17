@@ -5,12 +5,12 @@
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 #include <cstring>
 #include <iostream>
+
 
 namespace AMP::Operator {
 

@@ -1,10 +1,7 @@
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperator.h"
-
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
-
-#include "AMP/mesh/StructuredMeshHelper.h"
-#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Operator {

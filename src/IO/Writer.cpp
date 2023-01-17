@@ -1,4 +1,5 @@
 #include "AMP/IO/AsciiWriter.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/HDF5writer.h"
 #include "AMP/IO/NullWriter.h"
 #include "AMP/IO/SiloWriter.h"
@@ -159,8 +160,7 @@ void Writer::createDirectories( const std::string &filename )
 {
     size_t i = filename.rfind( '/' );
     if ( i != std::string::npos && d_comm.getRank() == 0 )
-        AMP::Utilities::recursiveMkdir(
-            filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+        recursiveMkdir( filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
     d_comm.barrier();
 }
 

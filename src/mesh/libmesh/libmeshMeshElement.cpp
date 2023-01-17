@@ -17,7 +17,7 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
  ********************************************************/
 libmeshMeshElement::libmeshMeshElement()
 {
-    typeID     = getTypeID();
+    typeID     = getTypeID<decltype( *this )>();
     element    = nullptr;
     d_dim      = -1;
     d_globalID = MeshElementID();
@@ -30,7 +30,7 @@ libmeshMeshElement::libmeshMeshElement( int dim,
                                         const libmeshMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
-    typeID          = getTypeID();
+    typeID          = getTypeID<decltype( *this )>();
     element         = nullptr;
     d_dim           = dim;
     d_rank          = rank;
@@ -65,7 +65,7 @@ libmeshMeshElement::libmeshMeshElement( int dim,
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element );
-    typeID          = getTypeID();
+    typeID          = getTypeID<decltype( *this )>();
     element         = nullptr;
     d_dim           = dim;
     d_rank          = rank;
@@ -95,7 +95,7 @@ libmeshMeshElement::libmeshMeshElement( const libmeshMeshElement &rhs )
       d_meshID( rhs.d_meshID ),
       d_delete_elem( false )
 {
-    typeID      = getTypeID();
+    typeID      = getTypeID<decltype( *this )>();
     element     = nullptr;
     d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
@@ -107,7 +107,7 @@ libmeshMeshElement &libmeshMeshElement::operator=( const libmeshMeshElement &rhs
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = getTypeID();
+    this->typeID        = getTypeID<decltype( *this )>();
     this->element       = nullptr;
     this->d_globalID    = rhs.d_globalID;
     this->d_dim         = rhs.d_dim;

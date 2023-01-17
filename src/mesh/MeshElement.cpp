@@ -9,13 +9,7 @@ namespace AMP::Mesh {
 
 
 /********************************************************
- * Set the base class type id                            *
- ********************************************************/
-const uint32_t MeshElement::MeshElementTypeID = AMP::Utilities::hash_char( "MeshElement" );
-
-
-/********************************************************
- * Function to return basic info         *
+ * Function to return basic info                         *
  ********************************************************/
 std::string MeshElement::elementClass() const
 {

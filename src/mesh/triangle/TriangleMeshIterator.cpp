@@ -16,7 +16,7 @@ static MeshElement nullElement;
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator()
 {
-    d_typeID   = getTypeID();
+    d_typeID   = getTypeID<decltype( *this )>();
     d_iterator = nullptr;
     d_size     = 0;
     d_pos      = -1;
@@ -29,7 +29,7 @@ TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator(
     std::shared_ptr<const std::vector<ElementID>> list,
     size_t pos )
 {
-    d_typeID   = getTypeID();
+    d_typeID   = getTypeID<decltype( *this )>();
     d_iterator = nullptr;
     d_size     = 0;
     d_pos      = pos;
@@ -176,11 +176,11 @@ bool TriangleMeshIterator<NG, NP, TYPE>::operator==( const MeshIterator &rhs ) c
     const TriangleMeshIterator *rhs2 = nullptr;
     // Convert rhs to a TriangleMeshIterator* so we can access the base class members
     auto *tmp = reinterpret_cast<const TriangleMeshIterator *>( &rhs );
-    if ( tmp->d_typeID == getTypeID() ) {
+    if ( tmp->d_typeID == getTypeID<decltype( *this )>() ) {
         rhs2 = tmp; // We can safely cast rhs to a TriangleMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const TriangleMeshIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == getTypeID() )
+        if ( tmp->d_typeID == getTypeID<decltype( *this )>() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a TriangleMeshIterator
     }
     // Perform direct comparisions if we are dealing with two TriangleMeshIterators

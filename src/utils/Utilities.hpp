@@ -14,20 +14,6 @@ namespace AMP::Utilities {
 
 
 /************************************************************************
- * Get the operating system                                              *
- ************************************************************************/
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-constexpr OS getOS() { return OS::Windows; }
-#elif defined( __APPLE__ )
-constexpr OS getOS() { return OS::macOS; }
-#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
-constexpr OS getOS() { return OS::Linux; }
-#else
-constexpr OS getOS() { return OS::Unknown; }
-#endif
-
-
-/************************************************************************
  * Functions to hash                                                     *
  ************************************************************************/
 constexpr unsigned int hash_char( const std::string_view &name )

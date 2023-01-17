@@ -1,4 +1,5 @@
 #include "AMP/IO/SiloWriter.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/Utilities.h"
 
 #include "AMP/matrices/Matrix.h"
@@ -141,7 +142,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
     } else if ( d_decomposition == 2 ) {
         // Every rank will write a seperate file
         if ( d_comm.getRank() == 0 )
-            Utilities::recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+            recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
         d_comm.barrier();
         auto fname_rank = fname_in + "_silo/" + std::to_string( cycle ) + "." +
                           std::to_string( d_comm.getRank() + 1 ) + "." + getExtension();

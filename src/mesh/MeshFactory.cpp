@@ -1,11 +1,11 @@
 #include "AMP/mesh/MeshFactory.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
-#include "AMP/utils/Utilities.h"
 
 #ifdef AMP_USE_TRILINOS_STKCLASSIC
 //#include "AMP/mesh/STKmesh/STKMesh.h"
@@ -37,7 +37,7 @@ std::shared_ptr<Mesh> MeshFactory::create( std::shared_ptr<MeshParameters> param
     } else if ( MeshType == "AMP" ) {
         // The mesh is a AMP mesh
         auto filename = db->getWithDefault<std::string>( "FileName", "" );
-        auto suffix   = Utilities::getSuffix( filename );
+        auto suffix   = IO::getSuffix( filename );
         if ( suffix == "stl" ) {
             // We are reading an stl file
             mesh = AMP::Mesh::TriangleHelpers::generateSTL( params );

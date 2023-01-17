@@ -1,8 +1,5 @@
-
 #include "AMP/mesh/dendro/DendroSearch.h"
-
 #include "AMP/mesh/latex_visualization_tools.h"
-#include "AMP/utils/Utilities.h"
 #include "externVars.h"
 #include <fstream>
 #include <iomanip>
@@ -712,7 +709,7 @@ void DendroSearch::search( AMP::AMP_MPI comm, const std::vector<double> &pts )
     int rank = comm.getRank();
     int npes = comm.getSize();
 
-    //    std::string fileName = "debug_dendro_" + AMP::Utilities::intToString(rank);
+    //    std::string fileName = "debug_dendro_" + std::to_string(rank);
     //    std::fstream d_fout;
     //    d_fout.open(fileName.c_str(), std::fstream::out);
     //    d_fout<<"local elements="<<(d_meshAdapter.get() != NULL ?

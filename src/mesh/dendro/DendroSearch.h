@@ -3,7 +3,6 @@
     #define DENDRO_SEARCH
 
     #include "AMP/utils/AMP_MPI.h"
-    #include "AMP/utils/Utilities.h"
 
     #include "AMP/vectors/Vector.h"
 

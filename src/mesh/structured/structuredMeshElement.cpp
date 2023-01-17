@@ -31,10 +31,11 @@ double dot3cross( const double a[3], const double b[3], const double c[3] )
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto elementTypeID = AMP::getTypeID<structuredMeshElement>();
 structuredMeshElement::structuredMeshElement() { reset(); }
 void structuredMeshElement::reset()
 {
-    typeID        = getTypeID();
+    typeID        = elementTypeID;
     element       = nullptr;
     d_index       = BoxMesh::MeshElementIndex();
     d_meshType    = GeomType::Nullity;
@@ -48,7 +49,7 @@ structuredMeshElement::structuredMeshElement( const BoxMesh::MeshElementIndex &i
 void structuredMeshElement::reset( const BoxMesh::MeshElementIndex &index,
                                    const AMP::Mesh::BoxMesh *mesh )
 {
-    typeID        = getTypeID();
+    typeID        = elementTypeID;
     d_mesh        = mesh;
     d_meshType    = d_mesh->getGeomType();
     d_physicalDim = d_mesh->getDim();
@@ -62,14 +63,14 @@ structuredMeshElement::structuredMeshElement( const structuredMeshElement &rhs )
       d_index( rhs.d_index ),
       d_mesh( rhs.d_mesh )
 {
-    typeID  = getTypeID();
+    typeID  = elementTypeID;
     element = nullptr;
 }
 structuredMeshElement &structuredMeshElement::operator=( const structuredMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = getTypeID();
+    this->typeID        = elementTypeID;
     this->element       = nullptr;
     this->d_meshType    = rhs.d_meshType;
     this->d_physicalDim = rhs.d_physicalDim;

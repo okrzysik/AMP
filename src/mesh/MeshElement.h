@@ -3,6 +3,7 @@
 
 #include "AMP/mesh/MeshID.h"
 #include "AMP/mesh/MeshPoint.h"
+#include "AMP/utils/typeid.h"
 
 #include <memory>
 #include <vector>
@@ -210,17 +211,14 @@ public: // Advanced functions
 
 
 protected:
-    // Unique (per class) ID for identifing the underlying iterator
-    unsigned int typeID;
+    // Unique (per class) ID for identifying the underlying element
+    AMP::typeID typeID;
 
     // A pointer to the derived class
     MeshElement *element;
 
     // Clone the element
     virtual inline MeshElement *clone() const;
-
-private:
-    static const uint32_t MeshElementTypeID;
 };
 
 

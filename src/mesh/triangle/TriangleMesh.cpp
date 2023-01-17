@@ -1,4 +1,5 @@
 #include "AMP/mesh/triangle/TriangleMesh.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
@@ -344,7 +345,7 @@ TriangleMesh<NG, NP>::generate( std::shared_ptr<const MeshParameters> params )
     auto db = params->getDatabase();
     // Create the mesh
     auto filename = db->getWithDefault<std::string>( "FileName", "" );
-    auto suffix   = Utilities::getSuffix( filename );
+    auto suffix   = IO::getSuffix( filename );
     std::shared_ptr<TriangleMesh<NG, NP>> mesh;
     if ( suffix == "stl" ) {
         AMP_ERROR( "Use AMP::Mesh::TriangleHelpers::generateSTL to load stl meshes" );
@@ -862,7 +863,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( std::shared_ptr<const MeshParamet
     size_t N      = 0;
     auto db       = params->getDatabase();
     auto filename = db->getWithDefault<std::string>( "FileName", "" );
-    auto suffix   = Utilities::getSuffix( filename );
+    auto suffix   = IO::getSuffix( filename );
     if ( suffix == "stl" ) {
         // We are reading an stl file
         N = TriangleHelpers::readSTLHeader( filename );
@@ -1368,11 +1369,12 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
     };
     AMP_ASSERT( it );
     auto errMsg = []( const MeshIterator *it ) {
-        constexpr uint32_t id0 = TriangleMeshIterator<NG, NP, 0>::getTypeID();
-        constexpr uint32_t id1 = TriangleMeshIterator<NG, NP, 1>::getTypeID();
-        constexpr uint32_t id2 = TriangleMeshIterator<NG, NP, 2>::getTypeID();
-        constexpr uint32_t id3 = TriangleMeshIterator<NG, NP, 3>::getTypeID();
-        return AMP::Utilities::stringf( "%u <%u,%u,%u,%u>", it->type_id(), id0, id1, id2, id3 );
+        constexpr uint32_t id0 = getTypeID<TriangleMeshIterator<NG, NP, 0>>().hash;
+        constexpr uint32_t id1 = getTypeID<TriangleMeshIterator<NG, NP, 1>>().hash;
+        constexpr uint32_t id2 = getTypeID<TriangleMeshIterator<NG, NP, 2>>().hash;
+        constexpr uint32_t id3 = getTypeID<TriangleMeshIterator<NG, NP, 3>>().hash;
+        return AMP::Utilities::stringf(
+            "%u <%u,%u,%u,%u>", it->type_id().hash, id0, id1, id2, id3 );
     };
     if ( type == AMP::Mesh::GeomType::Vertex ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it->rawIterator() );

@@ -6,8 +6,8 @@
 #include "AMP/operators/map/libmesh/Map3Dto1D.h"
 #include "AMP/operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
 #include "AMP/operators/subchannel/FlowFrapconOperator.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
+
 #include <vector>
 
 namespace AMP::Operator {

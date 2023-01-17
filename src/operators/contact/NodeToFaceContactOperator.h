@@ -5,7 +5,6 @@
 
     #include "AMP/matrices/Matrix.h"
     #include "AMP/operators/contact/ContactOperator.h"
-    #include "AMP/utils/Utilities.h"
     #include "AMP/vectors/Variable.h"
     #include "AMP/vectors/Vector.h"
     #include <fstream>
@@ -32,7 +31,7 @@ public:
         : ContactOperator( params ), d_ContactIsFrictionless( false )
     {
         size_t rank          = d_GlobalComm.getRank();
-        std::string fileName = "debug_operator_" + AMP::Utilities::intToString( rank );
+        std::string fileName = "debug_operator_" + std::to_string( rank );
         d_fout.open( fileName.c_str(), std::fstream::out );
     }
 

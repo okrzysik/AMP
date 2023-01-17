@@ -1,7 +1,6 @@
 #include "AMP/mesh/latex_visualization_tools.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/utils/UtilityMacros.h"
 
 #include <iomanip>
 #include <iostream>
