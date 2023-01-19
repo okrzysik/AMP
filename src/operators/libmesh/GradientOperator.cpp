@@ -1,4 +1,5 @@
 #include "AMP/operators/libmesh/GradientOperator.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Utilities.h"
 
 

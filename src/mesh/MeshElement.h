@@ -211,11 +211,11 @@ public: // Advanced functions
 
 
 protected:
-    // Unique (per class) ID for identifying the underlying element
-    AMP::typeID typeID;
+    // Unique hash for identifying the underlying element
+    uint32_t d_typeHash;
 
     // A pointer to the derived class
-    MeshElement *element;
+    MeshElement *d_element;
 
     // Clone the element
     virtual inline MeshElement *clone() const;

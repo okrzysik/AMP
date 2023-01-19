@@ -30,7 +30,7 @@ public:
      * \param comm  Comm over which the DOFManager will exist
      * \param managers  List of the DOFManagers on the current processor
      */
-    multiDOFManager( const AMP_MPI &comm, std::vector<DOFManager::shared_ptr> managers );
+    multiDOFManager( const AMP_MPI &comm, std::vector<std::shared_ptr<DOFManager>> managers );
 
     //! Deconstructor
     ~multiDOFManager() override;
@@ -96,7 +96,7 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    std::shared_ptr<DOFManager> subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+    std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
 
@@ -111,7 +111,7 @@ public:
 
 public:
     //! Get the DOFManagers that compose the multiDOFManager
-    std::vector<DOFManager::shared_ptr> getDOFManagers() const;
+    std::vector<std::shared_ptr<DOFManager>> getDOFManagers() const;
 
 
     /** \brief   Function to convert DOFs from a sub-manager DOF to the global DOF
@@ -190,7 +190,7 @@ private:
 
 
 private:
-    std::vector<DOFManager::shared_ptr> d_managers;
+    std::vector<std::shared_ptr<DOFManager>> d_managers;
     std::vector<size_t> d_ids;
     std::vector<size_t> d_localSize;
     std::vector<size_t> d_globalSize;

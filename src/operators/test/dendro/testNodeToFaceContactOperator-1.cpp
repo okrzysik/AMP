@@ -74,7 +74,7 @@ myGetRow( void *object, int row, std::vector<unsigned int> &cols, std::vector<do
     //  values.push_back(1.0);
 }
 
-static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
+static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                          std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
     auto meshIterator       = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4 );
@@ -91,7 +91,7 @@ static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
     }     // end for
 }
 
-static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
+static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                               std::vector<AMP::Mesh::MeshElementID> const &nodesGlobalIDs,
                               AMP::LinearAlgebra::Vector::shared_ptr vectorField1,
                               std::ostream &os = std::cout )
@@ -109,7 +109,7 @@ static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
 
 static void applySlaveLoadOperator( double loadParameterX,
                                     double loadParameterZ,
-                                    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                     AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                                     std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
@@ -173,7 +173,7 @@ static void applySlaveLoadOperator( double loadParameterX,
 
 static void applyMasterLoadOperator( double loadParameterX,
                                      double loadParameterZ,
-                                     AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                                     std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                      AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                                      std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {

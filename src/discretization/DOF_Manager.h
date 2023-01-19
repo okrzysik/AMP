@@ -21,21 +21,6 @@ namespace AMP::Discretization {
 class DOFManager : public AMP::enable_shared_from_this<AMP::Discretization::DOFManager>
 {
 public:
-    /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a DOF manager object.
-     */
-    typedef std::shared_ptr<AMP::Discretization::DOFManager> shared_ptr;
-
-    /**
-     *\typedef const_shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a DOF manager object.
-     */
-    typedef std::shared_ptr<const AMP::Discretization::DOFManager> const_shared_ptr;
-
-
     /** \brief Basic constructor for DOFManager
      * \details  This will create a very simple DOFManager with the given number
      *    of DOFs on each processor.  It will not contain info to relate that to a mesh.
@@ -146,7 +131,7 @@ public:
      * \details  This will subset a DOF manager for a given communicator.
      * \param[in]  comm         The communicator to use to subset
      */
-    virtual DOFManager::shared_ptr subset( const AMP_MPI &comm );
+    virtual std::shared_ptr<DOFManager> subset( const AMP_MPI &comm );
 
 
     /** \brief Subset the DOF Manager for a mesh
@@ -157,8 +142,8 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::Mesh::shared_ptr mesh,
-                                           bool useMeshComm = true );
+    virtual std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                bool useMeshComm = true );
 
 
     /** \brief Subset the DOF Manager for a mesh element iterator
@@ -167,8 +152,8 @@ public:
      * \param[in]  iterator     The mesh iterator for the subset
      * \param[in]  comm         The desired comm
      */
-    virtual DOFManager::shared_ptr subset( const AMP::Mesh::MeshIterator &iterator,
-                                           const AMP_MPI &comm );
+    virtual std::shared_ptr<DOFManager> subset( const AMP::Mesh::MeshIterator &iterator,
+                                                const AMP_MPI &comm );
 
 protected:
     //!  Empty constructor for a DOF manager object

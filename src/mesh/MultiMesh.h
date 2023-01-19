@@ -47,7 +47,7 @@ public:
      */
     MultiMesh( const std::string &name,
                const AMP_MPI &comm,
-               const std::vector<Mesh::shared_ptr> &meshes );
+               const std::vector<std::shared_ptr<Mesh>> &meshes );
 
 
     //! Deconstructor
@@ -267,13 +267,13 @@ public:
     /**
      *  Get the meshes composing the multimesh
      */
-    virtual std::vector<AMP::Mesh::Mesh::shared_ptr> getMeshes();
+    virtual std::vector<std::shared_ptr<AMP::Mesh::Mesh>> getMeshes();
 
 
     /**
      *  Get the meshes composing the multimesh
      */
-    virtual std::vector<AMP::Mesh::Mesh::const_shared_ptr> getMeshes() const;
+    virtual std::vector<std::shared_ptr<const AMP::Mesh::Mesh>> getMeshes() const;
 
 
     /**
@@ -348,7 +348,7 @@ public:
 
 private:
     //! A list of all meshes in the multimesh
-    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> d_meshes;
 };
 
 } // namespace AMP::Mesh

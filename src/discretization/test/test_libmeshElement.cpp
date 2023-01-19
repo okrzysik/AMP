@@ -6,7 +6,7 @@
 
 
 // Test the creation of libmesh elements
-void testLibmeshElement( AMP::UnitTest *ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void testLibmeshElement( AMP::UnitTest *ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP::Discretization::createLibmeshElements list;
     try {

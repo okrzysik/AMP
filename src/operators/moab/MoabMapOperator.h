@@ -56,14 +56,14 @@ private:
     void buildMoabCoupler();
 
     // Get GP Coordinates on mesh
-    void getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz );
+    void getGPCoords( std::shared_ptr<AMP::Mesh::Mesh> &mesh, std::vector<double> &xyz );
 
     // Get Node Coordinates on mesh
-    void getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz );
+    void getNodeCoords( std::shared_ptr<AMP::Mesh::Mesh> &mesh, std::vector<double> &xyz );
 
     // Build GeomType::Cell integral operator
     void buildGeomType::CellIntOp( std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
-                                   AMP::Mesh::Mesh::shared_ptr &mesh );
+                                   std::shared_ptr<AMP::Mesh::Mesh> &mesh );
 
     // Parameters
     std::shared_ptr<MoabMapOperatorParameters> d_params;
@@ -75,7 +75,7 @@ private:
     std::shared_ptr<MoabBasedOperator> d_moab;
 
     // Mesh adapter
-    AMP::Mesh::Mesh::shared_ptr d_meshMgr;
+    std::shared_ptr<AMP::Mesh::Mesh> d_meshMgr;
 
     // Variable name to be mapped
     std::string d_mapVar;

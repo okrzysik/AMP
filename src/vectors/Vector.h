@@ -1,7 +1,6 @@
 #ifndef included_AMP_Vector
 #define included_AMP_Vector
 
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Units.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
@@ -11,6 +10,11 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
+
+
+namespace AMP::Discretization {
+class DOFManager;
+}
 
 
 namespace AMP::LinearAlgebra {

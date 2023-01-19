@@ -38,7 +38,7 @@
 #include <fstream>
 
 
-static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
+static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                          std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
     auto meshIterator       = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3 );
@@ -55,7 +55,7 @@ static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
     }     // end for
 }
 
-static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
+static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                               std::vector<AMP::Mesh::MeshElementID> const &nodesGlobalIDs,
                               AMP::LinearAlgebra::Vector::shared_ptr vectorField,
                               std::ostream &os = std::cout )
@@ -74,7 +74,7 @@ static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
 static void
 getConcentratedLoadAtNodes( double loadParameter,
                             double loadCutoff,
-                            AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                            std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                             AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                             std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {

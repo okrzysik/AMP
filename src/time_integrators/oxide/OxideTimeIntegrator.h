@@ -99,7 +99,7 @@ private:
     OxideTimeIntegrator() = delete;
 
     // The mesh over which we define the oxide
-    AMP::Mesh::Mesh::shared_ptr d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
 
     // Some internal vectors
     AMP::LinearAlgebra::Vector::shared_ptr d_oxide; // Oxide depth of each point (m)

@@ -1373,8 +1373,7 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
         constexpr uint32_t id1 = getTypeID<TriangleMeshIterator<NG, NP, 1>>().hash;
         constexpr uint32_t id2 = getTypeID<TriangleMeshIterator<NG, NP, 2>>().hash;
         constexpr uint32_t id3 = getTypeID<TriangleMeshIterator<NG, NP, 3>>().hash;
-        return AMP::Utilities::stringf(
-            "%u <%u,%u,%u,%u>", it->type_id().hash, id0, id1, id2, id3 );
+        return AMP::Utilities::stringf( "%u <%u,%u,%u>", id0, id1, id2, id3 );
     };
     if ( type == AMP::Mesh::GeomType::Vertex ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it->rawIterator() );

@@ -171,7 +171,8 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
             continue;
         AMP::Mesh::MeshIterator localSubchannelIt =
             AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
+        std::shared_ptr<AMP::Mesh::Mesh> localSubchannel =
+            d_Mesh->Subset( localSubchannelIt, false );
         AMP::Mesh::MeshIterator face =
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {
@@ -1097,7 +1098,7 @@ bool SubchannelFourEqLinearOperator::getBoolParameter(
 
 // function used to get all lateral gaps
 void SubchannelFourEqLinearOperator::getLateralFaces(
-    AMP::Mesh::Mesh::shared_ptr mesh,
+    std::shared_ptr<AMP::Mesh::Mesh> mesh,
     std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> &interiorLateralFaceMap,
     std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> &exteriorLateralFaceMap )
 {
@@ -1149,7 +1150,7 @@ void SubchannelFourEqLinearOperator::getLateralFaces(
 
 // function to map x,y position to gap widths
 std::map<AMP::Mesh::Point, double>
-SubchannelFourEqLinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
+SubchannelFourEqLinearOperator::getGapWidths( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                               const std::vector<double> &clad_x,
                                               const std::vector<double> &clad_y,
                                               const std::vector<double> &clad_d )
@@ -1217,7 +1218,7 @@ SubchannelFourEqLinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
 }
 
 // function used to get all of the unique x,y,z points in subchannel mesh
-void SubchannelFourEqLinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
+void SubchannelFourEqLinearOperator::fillSubchannelGrid( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create the grid for all processors
     std::set<double> x, y, z;

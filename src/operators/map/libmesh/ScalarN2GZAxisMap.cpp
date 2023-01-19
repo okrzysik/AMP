@@ -87,7 +87,7 @@ bool ScalarN2GZAxisMap::validMapType( const std::string &t )
  ************************************************************************/
 std::multimap<double, double>
 ScalarN2GZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                             const AMP::Mesh::Mesh::shared_ptr,
+                             const std::shared_ptr<AMP::Mesh::Mesh>,
                              const AMP::Mesh::MeshIterator &iterator )
 {
     if ( iterator.size() == 0 )
@@ -166,7 +166,7 @@ ScalarN2GZAxisMap::getGaussPoints( const AMP::Mesh::MeshIterator &iterator )
  *  buildReturn                                                          *
  ************************************************************************/
 void ScalarN2GZAxisMap::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                     const AMP::Mesh::Mesh::shared_ptr,
+                                     const std::shared_ptr<AMP::Mesh::Mesh>,
                                      const AMP::Mesh::MeshIterator &iterator,
                                      const std::map<double, double> &map )
 {

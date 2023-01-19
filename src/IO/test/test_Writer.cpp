@@ -35,7 +35,7 @@ inline AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 
 
 // Calculate the volume of each element
-AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr mesh )
+AMP::LinearAlgebra::Vector::shared_ptr calcVolume( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     auto DOF =
         AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
@@ -54,7 +54,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 
 
 // Print the mesh names
-void printMeshNames( AMP::Mesh::Mesh::shared_ptr mesh, const std::string &prefix = "" )
+void printMeshNames( std::shared_ptr<AMP::Mesh::Mesh> mesh, const std::string &prefix = "" )
 {
     std::cout << prefix << mesh->getName() << std::endl;
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );

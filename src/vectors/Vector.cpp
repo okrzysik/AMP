@@ -1,5 +1,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/IO/PIO.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/MultiVector.h"

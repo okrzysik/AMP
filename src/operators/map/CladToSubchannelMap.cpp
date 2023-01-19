@@ -120,7 +120,7 @@ bool CladToSubchannelMap::validMapType( const std::string &t )
 /************************************************************************
  *  Function to fill the grid of the subchannel for all processors       *
  ************************************************************************/
-void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
+void CladToSubchannelMap::fillSubchannelGrid( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create the grid for all processors
     int root = -1;
@@ -168,7 +168,7 @@ void CladToSubchannelMap::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
  *  Get an iterator over the desired faces in the subchannel mesh        *
  ************************************************************************/
 AMP::Mesh::MeshIterator
-CladToSubchannelMap::getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr mesh )
+CladToSubchannelMap::getSubchannelIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
     auto iterator = mesh->getIterator( AMP::Mesh::GeomType::Face, 0 );

@@ -3,6 +3,7 @@
 #include "AMP/IO/HDF5writer.h"
 #include "AMP/IO/NullWriter.h"
 #include "AMP/IO/SiloWriter.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MultiMesh.h"
@@ -168,7 +169,9 @@ void Writer::createDirectories( const std::string &filename )
 /************************************************************
  * Register a mesh                                           *
  ************************************************************/
-void Writer::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, const std::string &path )
+void Writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                           int level,
+                           const std::string &path )
 {
     AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
     std::set<GlobalID> base_ids;

@@ -75,7 +75,7 @@ void testMultiMeshOwnerRank( AMP::UnitTest &ut )
 
     // Subset the mesh boundary on surface 0
     auto arrayMesh = mesh->Subset( "Mesh1" );
-    AMP::Mesh::Mesh::shared_ptr arrayBoundaryMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> arrayBoundaryMesh;
     if ( arrayMesh ) {
         auto it           = arrayMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 0 );
         arrayBoundaryMesh = arrayMesh->Subset( it );

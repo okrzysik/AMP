@@ -72,8 +72,8 @@ getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh:
 
 
 // Function to create the solution vectors
-static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
-                           AMP::Mesh::Mesh::shared_ptr subchannelMesh,
+static void createVectors( std::shared_ptr<AMP::Mesh::Mesh> pinMesh,
+                           std::shared_ptr<AMP::Mesh::Mesh> subchannelMesh,
                            AMP::LinearAlgebra::Vector::shared_ptr &globalMultiVector,
                            AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
 {
@@ -134,13 +134,13 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     // Get the meshes
     auto manager = AMP::Mesh::MeshFactory::create( meshParams );
     auto pinMesh = manager->Subset( "MultiPin" );
-    AMP::Mesh::Mesh::shared_ptr cladMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> cladMesh;
     if ( pinMesh ) {
         pinMesh->setName( "MultiPin" );
         cladMesh = pinMesh->Subset( "clad" );
     }
     auto subchannelMesh = manager->Subset( "subchannel" );
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> xyFaceMesh;
     if ( subchannelMesh ) {
         auto face  = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
         xyFaceMesh = subchannelMesh->Subset( face );

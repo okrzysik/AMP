@@ -111,9 +111,11 @@ constexpr typeID getTypeID()
     getTypeName<T>( sizeof( name ), name );
     copy( id.name, name, sizeof( id.name ) );
     // Create the hash
-    id.hash = 5381;
-    for ( unsigned char c : name )
-        id.hash = ( ( id.hash << 5 ) + id.hash ) ^ c;
+    if ( name[0] != 0 ) {
+        id.hash = 5381;
+        for ( unsigned char c : name )
+            id.hash = ( ( id.hash << 5 ) + id.hash ) ^ c;
+    }
     // Set the size
     id.bytes = sizeof( T );
     return id;

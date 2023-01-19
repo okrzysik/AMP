@@ -19,7 +19,7 @@ void NodeToGeomType::FaceContactOperator::initialize()
     d_ActiveSet.clear();
     d_InactiveSet.clear();
     /** get all slave boundary vertices and tag them as inactive */
-    AMP::Mesh::Mesh::shared_ptr slaveMesh = d_Mesh->Subset( d_SlaveMeshID );
+    std::shared_ptr<AMP::Mesh::Mesh> slaveMesh = d_Mesh->Subset( d_SlaveMeshID );
     if ( slaveMesh.get() != NULL ) {
         AMP::Mesh::MeshIterator slaveMeshIterator =
             slaveMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_SlaveBoundaryID );
@@ -68,7 +68,7 @@ size_t NodeToGeomType::FaceContactOperator::updateActiveSet(
     } // end for i
 
     /** perform a dendro search for all inactive slave vertices over the master mesh */
-    AMP::Mesh::Mesh::shared_ptr masterMesh = d_Mesh->Subset( d_MasterMeshID );
+    std::shared_ptr<AMP::Mesh::Mesh> masterMesh = d_Mesh->Subset( d_MasterMeshID );
     // TODO: read dummyVerboseFlag from input file
     bool const dummyVerboseFlag = false;
     AMP::Mesh::DendroSearch dendroSearchOnMaster( masterMesh, dummyVerboseFlag );

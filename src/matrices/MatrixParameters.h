@@ -1,8 +1,13 @@
 #ifndef included_AMP_MatrixParameters
 #define included_AMP_MatrixParameters
 
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/Vector.h"
+
+
+namespace AMP::Discretization {
+class DOFManager;
+}
+
 
 namespace AMP::LinearAlgebra {
 
@@ -30,33 +35,27 @@ public:
     virtual ~MatrixParameters(){};
 
     //! Return the local number of rows
-    inline size_t getLocalNumberOfRows() const { return d_DOFManagerLeft->numLocalDOF(); }
+    size_t getLocalNumberOfRows() const;
 
     //! Return the local number of columns
-    inline size_t getLocalNumberOfColumns() const { return d_DOFManagerRight->numLocalDOF(); }
+    size_t getLocalNumberOfColumns() const;
 
     //! Return the global number of rows
-    inline size_t getGlobalNumberOfRows() const { return d_DOFManagerLeft->numGlobalDOF(); }
+    size_t getGlobalNumberOfRows() const;
 
     //! Return the global number of columns
-    inline size_t getGlobalNumberOfColumns() const { return d_DOFManagerRight->numGlobalDOF(); }
+    size_t getGlobalNumberOfColumns() const;
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
-    inline std::shared_ptr<AMP::Discretization::DOFManager> getLeftDOFManager()
-    {
-        return d_DOFManagerLeft;
-    }
+    std::shared_ptr<AMP::Discretization::DOFManager> getLeftDOFManager();
 
     //!  Get the DOFManager for the right vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$x\f$ is a
     //!  right vector )
-    inline std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager()
-    {
-        return d_DOFManagerRight;
-    }
+    std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager();
 
     //!  Get the communicator for the matric
-    inline AMP::AMP_MPI &getComm() { return d_comm; }
+    AMP::AMP_MPI &getComm();
 
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )

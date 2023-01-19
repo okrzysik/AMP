@@ -9,40 +9,43 @@ namespace AMP::Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-constexpr auto MeshElementTypeID = AMP::getTypeID<MeshElement>();
-MeshElement::MeshElement() : typeID( MeshElementTypeID ), element( nullptr ) {}
-MeshElement::MeshElement( const MeshElement &rhs ) : typeID( MeshElementTypeID ), element( nullptr )
+constexpr auto MeshElementHash = AMP::getTypeID<MeshElement>().hash;
+static_assert( MeshElementHash != 0 );
+MeshElement::MeshElement() : d_typeHash( MeshElementHash ), d_element( nullptr ) {}
+MeshElement::MeshElement( const MeshElement &rhs )
+    : d_typeHash( MeshElementHash ), d_element( nullptr )
 {
-    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
-        element = nullptr;
-    } else if ( rhs.typeID != MeshElementTypeID ) {
-        element = rhs.clone();
+    if ( rhs.d_element == nullptr && rhs.d_typeHash == MeshElementHash ) {
+        d_element = nullptr;
+    } else if ( rhs.d_typeHash != MeshElementHash ) {
+        d_element = rhs.clone();
     } else {
-        element = rhs.element->clone();
+        d_element = rhs.d_element->clone();
     }
 }
-MeshElement::MeshElement( MeshElement &&rhs ) : typeID( MeshElementTypeID ), element( rhs.element )
+MeshElement::MeshElement( MeshElement &&rhs )
+    : d_typeHash( MeshElementHash ), d_element( rhs.d_element )
 {
-    if ( rhs.typeID != MeshElementTypeID )
-        element = rhs.clone();
-    rhs.element = nullptr;
+    if ( rhs.d_typeHash != MeshElementHash )
+        d_element = rhs.clone();
+    rhs.d_element = nullptr;
 }
 MeshElement &MeshElement::operator=( const MeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    if ( element != nullptr ) {
-        // Delete the existing element
-        delete element;
-        element = nullptr;
+    if ( d_element != nullptr ) {
+        // Delete the existing d_element
+        delete d_element;
+        d_element = nullptr;
     }
-    typeID = MeshElementTypeID;
-    if ( rhs.element == nullptr && rhs.typeID == MeshElementTypeID ) {
-        element = nullptr;
-    } else if ( rhs.typeID != MeshElementTypeID ) {
-        element = rhs.clone();
+    d_typeHash = MeshElementHash;
+    if ( rhs.d_element == nullptr && rhs.d_typeHash == MeshElementHash ) {
+        d_element = nullptr;
+    } else if ( rhs.d_typeHash != MeshElementHash ) {
+        d_element = rhs.clone();
     } else {
-        element = rhs.element->clone();
+        d_element = rhs.d_element->clone();
     }
     return *this;
 }
@@ -50,24 +53,24 @@ MeshElement &MeshElement::operator=( MeshElement &&rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    if ( element != nullptr ) {
-        // Delete the existing element
-        delete element;
-        element = nullptr;
+    if ( d_element != nullptr ) {
+        // Delete the existing d_element
+        delete d_element;
+        d_element = nullptr;
     }
-    typeID = MeshElementTypeID;
-    std::swap( element, rhs.element );
-    if ( rhs.typeID != MeshElementTypeID )
-        element = rhs.clone();
+    d_typeHash = MeshElementHash;
+    std::swap( d_element, rhs.d_element );
+    if ( rhs.d_typeHash != MeshElementHash )
+        d_element = rhs.clone();
     return *this;
 }
-MeshElement::MeshElement( MeshElement *rhs ) : typeID( MeshElementTypeID ), element( nullptr )
+MeshElement::MeshElement( MeshElement *rhs ) : d_typeHash( MeshElementHash ), d_element( nullptr )
 {
-    if ( rhs->element ) {
-        std::swap( element, rhs->element );
+    if ( rhs->d_element ) {
+        std::swap( d_element, rhs->d_element );
         delete rhs;
     } else {
-        element = rhs;
+        d_element = rhs;
     }
 }
 
@@ -77,24 +80,24 @@ MeshElement::MeshElement( MeshElement *rhs ) : typeID( MeshElementTypeID ), elem
  ********************************************************/
 MeshElement::~MeshElement()
 {
-    if ( element != nullptr )
-        delete element;
-    element = nullptr;
+    if ( d_element != nullptr )
+        delete d_element;
+    d_element = nullptr;
 }
 
 
 /********************************************************
- * Is the element null                                   *
+ * Is the d_element null                                   *
  ********************************************************/
-bool MeshElement::isNull() const { return typeID == MeshElementTypeID && element == nullptr; }
+bool MeshElement::isNull() const { return d_typeHash == MeshElementHash && d_element == nullptr; }
 
 
 /********************************************************
- * Function to clone the element                         *
+ * Function to clone the d_element                         *
  ********************************************************/
 MeshElement *MeshElement::clone() const
 {
-    if ( element == nullptr )
+    if ( d_element == nullptr )
         return new MeshElement();
     else
         AMP_ERROR( "clone must instantiated by the derived class" );
@@ -103,17 +106,17 @@ MeshElement *MeshElement::clone() const
 
 
 /********************************************************
- * Function to get the raw element                       *
+ * Function to get the raw d_element                       *
  ********************************************************/
-inline MeshElement *MeshElement::getRawElement() { return element == nullptr ? this : element; }
+inline MeshElement *MeshElement::getRawElement() { return d_element == nullptr ? this : d_element; }
 inline const MeshElement *MeshElement::getRawElement() const
 {
-    return element == nullptr ? this : element;
+    return d_element == nullptr ? this : d_element;
 }
 
 
 /********************************************************
- * Function to check if a point is within an element     *
+ * Function to check if a point is within an d_element     *
  ********************************************************/
 inline bool MeshElement::containsPoint( const std::vector<double> &pos, double TOL ) const
 {
@@ -126,14 +129,14 @@ inline bool MeshElement::containsPoint( const std::vector<double> &pos, double T
  ********************************************************/
 inline std::vector<MeshElement> MeshElement::getElements( const GeomType type ) const
 {
-    std::vector<MeshElement> elements;
-    ( element != nullptr ? element : this )->getElements( type, elements );
-    return elements;
+    std::vector<MeshElement> d_elements;
+    ( d_element != nullptr ? d_element : this )->getElements( type, d_elements );
+    return d_elements;
 }
 inline std::vector<std::shared_ptr<MeshElement>> MeshElement::getNeighbors() const
 {
     std::vector<std::shared_ptr<MeshElement>> neighbors;
-    ( element != nullptr ? element : this )->getNeighbors( neighbors );
+    ( d_element != nullptr ? d_element : this )->getNeighbors( neighbors );
     return neighbors;
 }
 

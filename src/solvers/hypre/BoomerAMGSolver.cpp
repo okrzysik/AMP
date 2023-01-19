@@ -1,5 +1,5 @@
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
-
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"

@@ -26,7 +26,7 @@ public:
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshTestLoop( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Run all mesh geometry based tests
@@ -34,7 +34,7 @@ public:
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshGeometryTestLoop( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshGeometryTestLoop( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -44,8 +44,9 @@ public:
      * \param[in] mesh          Mesh to test
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
-    static void
-    MeshVectorTestLoop( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh, bool fast = false );
+    static void MeshVectorTestLoop( AMP::UnitTest &ut,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    bool fast = false );
 
 
     /**
@@ -55,8 +56,9 @@ public:
      * \param[in] mesh          Mesh to test
      * \param[in] fast          Speed up testing by eliminating some of the tests
      */
-    static void
-    MeshMatrixTestLoop( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh, bool fast = false );
+    static void MeshMatrixTestLoop( AMP::UnitTest &ut,
+                                    std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                    bool fast = false );
 
 public: // Basic tests
     /**
@@ -74,7 +76,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshIteratorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -83,7 +85,8 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshIteratorOperationTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshIteratorOperationTest( AMP::UnitTest &ut,
+                                           std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks the mesh set operations
@@ -92,7 +95,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshIteratorSetOPTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshIteratorSetOPTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks the number of elements in a mesh
@@ -101,7 +104,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshCountTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshCountTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -110,7 +113,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshBasicTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshBasicTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -119,7 +122,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void VerifyGhostIsOwned( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyGhostIsOwned( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -128,7 +131,8 @@ public: // Mesh based tests
      * \param[out] ut           Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void VerifyBoundaryIDNodeIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyBoundaryIDNodeIterator( AMP::UnitTest &ut,
+                                              std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Check boundary
@@ -136,7 +140,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void VerifyBoundaryIterator( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyBoundaryIterator( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -145,7 +149,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void testBlockIDs( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void testBlockIDs( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -154,7 +158,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void getNodeNeighbors( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void getNodeNeighbors( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -163,7 +167,7 @@ public: // Mesh based tests
      * \param[out] ut           Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void DisplaceMeshScalar( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void DisplaceMeshScalar( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -172,7 +176,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void DisplaceMeshVector( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void DisplaceMeshVector( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -181,7 +185,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void getParents( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void getParents( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -190,7 +194,7 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void cloneMesh( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+    static void cloneMesh( AMP::UnitTest &ut, std::shared_ptr<const AMP::Mesh::Mesh> mesh );
 
 
     /**
@@ -199,14 +203,15 @@ public: // Mesh based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void MeshPerformance( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void MeshPerformance( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
 public: // Old tests
     static void VerifyNodeElemMapIteratorTest( AMP::UnitTest &ut,
-                                               AMP::Mesh::Mesh::shared_ptr mesh );
-    static void VerifyBoundaryIteratorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
-    static void VerifyElementForNode( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+                                               std::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void VerifyBoundaryIteratorTest( AMP::UnitTest &ut,
+                                            std::shared_ptr<AMP::Mesh::Mesh> mesh );
+    static void VerifyElementForNode( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 public: // Geometry based tests
     /**
@@ -215,7 +220,7 @@ public: // Geometry based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh contaning geometry to test
      */
-    static void TestBasicGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+    static void TestBasicGeometry( AMP::UnitTest &ut, std::shared_ptr<const AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks Geometry::inside
@@ -223,7 +228,7 @@ public: // Geometry based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void TestInside( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+    static void TestInside( AMP::UnitTest &ut, std::shared_ptr<const AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks Geometry::inside
@@ -231,7 +236,8 @@ public: // Geometry based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+    static void TestPhysicalLogical( AMP::UnitTest &ut,
+                                     std::shared_ptr<const AMP::Mesh::Mesh> mesh );
 
     /**
      * \brief Checks noraml
@@ -239,7 +245,8 @@ public: // Geometry based tests
      * \param[in,out] ut        Unit test class to report the results
      * \param[in] mesh          Mesh to test
      */
-    static void TestNormalGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh );
+    static void TestNormalGeometry( AMP::UnitTest &ut,
+                                    std::shared_ptr<const AMP::Mesh::Mesh> mesh );
 
 
 public: // Vector based tests
@@ -247,7 +254,7 @@ public: // Vector based tests
     class MeshVectorFactory : public AMP::LinearAlgebra::VectorFactory
     {
     public:
-        MeshVectorFactory( AMP::Mesh::Mesh::shared_ptr mesh,
+        MeshVectorFactory( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                            AMP::Mesh::GeomType type,
                            int gcw,
                            int dofs_per_node,
@@ -282,7 +289,7 @@ public: // Vector based tests
      */
     template<int DOF_PER_NODE, bool SPLIT>
     static void simpleNodalVectorTests( AMP::UnitTest &ut,
-                                        AMP::Mesh::Mesh::shared_ptr mesh,
+                                        std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                         int gcw );
 
@@ -294,15 +301,16 @@ public: // Vector based tests
      * \param[in] mesh          Mesh to test
      */
     template<int DOF_PER_NODE, bool SPLIT>
-    static void VerifyGetVectorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyGetVectorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
 public: // Matrix based tests
     template<int DOF_PER_NODE, bool SPLIT>
-    static void VerifyGetMatrixTrivialTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
+                                            std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
     template<int DOF_PER_NODE, bool SPLIT>
-    static void GhostWriteTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh );
+    static void GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
 
 private: // Private data
@@ -317,7 +325,7 @@ private: // Private data
           * \param[in] type          Geometric type
           */
     static void ElementIteratorTest( AMP::UnitTest &ut,
-                                     AMP::Mesh::Mesh::shared_ptr mesh,
+                                     std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                      const AMP::Mesh::MeshIterator &iterator,
                                      const size_t N_local,
                                      const size_t N_ghost,
@@ -326,9 +334,9 @@ private: // Private data
     // Helper function to create a map from the base mesh communicator rank to the main mesh
     // communicator
     static std::map<AMP::Mesh::MeshID, std::vector<int>>
-    createRankMap( AMP::Mesh::Mesh::shared_ptr mesh );
+    createRankMap( std::shared_ptr<AMP::Mesh::Mesh> mesh );
 
-    static AMP::Mesh::Mesh::shared_ptr globalMeshForMeshVectorFactory;
+    static std::shared_ptr<AMP::Mesh::Mesh> globalMeshForMeshVectorFactory;
 };
 
 

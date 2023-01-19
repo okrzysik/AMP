@@ -1,4 +1,5 @@
 #include "AMP/solvers/BandedSolver.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
 #include "ProfilerApp.h"

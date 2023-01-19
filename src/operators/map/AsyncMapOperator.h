@@ -42,7 +42,7 @@ public:
      * Get the meshes this map uses.
      * \param[in] which 1 for d_mesh1 and 2 for d_mesh2
      */
-    AMP::Mesh::Mesh::shared_ptr getMesh( int which );
+    std::shared_ptr<AMP::Mesh::Mesh> getMesh( int which );
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override
     {
@@ -58,8 +58,8 @@ protected:
     AMP_MPI d_MapComm;
 
     // Variables to store the individual meshes and the DOFManager
-    AMP::Mesh::Mesh::shared_ptr d_mesh1;
-    AMP::Mesh::Mesh::shared_ptr d_mesh2;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh1;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh2;
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager;
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_inpVariable;
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_outVariable;

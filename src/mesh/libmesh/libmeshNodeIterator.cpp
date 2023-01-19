@@ -14,6 +14,8 @@ static MeshElement nullElement;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto MeshIteratorType = AMP::getTypeID<libmeshNodeIterator>().hash;
+static_assert( MeshIteratorType != 0 );
 libmeshNodeIterator::libmeshNodeIterator( const AMP::Mesh::libmeshMesh *mesh,
                                           int gcw,
                                           const libMesh::Mesh::node_iterator &begin,
@@ -30,7 +32,7 @@ libmeshNodeIterator::libmeshNodeIterator( const AMP::Mesh::libmeshMesh *mesh,
       d_meshID( mesh->meshID() ),
       d_mesh( mesh )
 {
-    d_typeID       = getTypeID<decltype( *this )>();
+    d_typeHash     = MeshIteratorType;
     d_iteratorType = MeshIterator::Type::Forward;
     d_pos          = pos2;
     d_size         = size;
@@ -66,7 +68,7 @@ libmeshNodeIterator::libmeshNodeIterator( const libmeshNodeIterator &rhs )
       d_meshID( rhs.d_meshID ),
       d_mesh( rhs.d_mesh )
 {
-    d_typeID       = rhs.d_typeID;
+    d_typeHash     = rhs.d_typeHash;
     d_iteratorType = rhs.d_iteratorType;
     d_pos          = rhs.d_pos;
     d_size         = rhs.d_size;
@@ -78,7 +80,7 @@ libmeshNodeIterator &libmeshNodeIterator::operator=( const libmeshNodeIterator &
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
     this->d_iterator     = nullptr;
-    this->d_typeID       = getTypeID<decltype( *this )>();
+    this->d_typeHash     = MeshIteratorType;
     this->d_iteratorType = rhs.d_iteratorType;
     this->d_mesh         = rhs.d_mesh;
     this->d_gcw          = rhs.d_gcw;
@@ -188,11 +190,11 @@ bool libmeshNodeIterator::operator==( const MeshIterator &rhs ) const
     const libmeshNodeIterator *rhs2 = nullptr;
     // Convert rhs to a libmeshNodeIterator* so we can access the base class members
     auto *tmp = reinterpret_cast<const libmeshNodeIterator *>( &rhs );
-    if ( tmp->d_typeID == getTypeID<decltype( *this )>() ) {
+    if ( tmp->d_typeHash == MeshIteratorType ) {
         rhs2 = tmp; // We can safely cast rhs to a libmeshNodeIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const libmeshNodeIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == getTypeID<decltype( *this )>() )
+        if ( tmp->d_typeHash == MeshIteratorType )
             rhs2 = tmp; // We can safely cast rhs.iterator to a libmeshNodeIterator
     }
     // Perform direct comparisions if we are dealing with two libmeshNodeIterators;

@@ -69,7 +69,7 @@ public:
         return "unknown";
     }
 
-    AMP::Mesh::Mesh::shared_ptr getMesh() const override { return mesh; }
+    std::shared_ptr<AMP::Mesh::Mesh> getMesh() const override { return mesh; }
 
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
@@ -97,7 +97,7 @@ public:
     std::shared_ptr<AMP::Discretization::DOFManager> getDOFMapL() const override { return DOFs; }
 
 private:
-    AMP::Mesh::Mesh::shared_ptr mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
     std::shared_ptr<AMP::Discretization::DOFManager> DOFs;
 };
 

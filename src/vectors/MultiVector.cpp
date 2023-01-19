@@ -156,7 +156,7 @@ void MultiVector::resetVectorData()
 {
     // Create a new multiDOFManager for the multivector
     AMP_ASSERT( !getComm().isNull() );
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( d_vVectors.size() );
+    std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> managers( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
         AMP_ASSERT( d_vVectors[i] );
         managers[i] = d_vVectors[i]->getDOFManager();

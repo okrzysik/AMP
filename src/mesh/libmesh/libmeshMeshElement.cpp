@@ -15,10 +15,12 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto elementTypeID = AMP::getTypeID<libmeshMeshElement>().hash;
+static_assert( elementTypeID != 0 );
 libmeshMeshElement::libmeshMeshElement()
 {
-    typeID     = getTypeID<decltype( *this )>();
-    element    = nullptr;
+    d_typeHash = elementTypeID;
+    d_element  = nullptr;
     d_dim      = -1;
     d_globalID = MeshElementID();
 }
@@ -30,8 +32,8 @@ libmeshMeshElement::libmeshMeshElement( int dim,
                                         const libmeshMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
-    typeID          = getTypeID<decltype( *this )>();
-    element         = nullptr;
+    d_typeHash      = elementTypeID;
+    d_element       = nullptr;
     d_dim           = dim;
     d_rank          = rank;
     d_mesh          = mesh;
@@ -65,8 +67,8 @@ libmeshMeshElement::libmeshMeshElement( int dim,
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element );
-    typeID          = getTypeID<decltype( *this )>();
-    element         = nullptr;
+    d_typeHash      = elementTypeID;
+    d_element       = nullptr;
     d_dim           = dim;
     d_rank          = rank;
     d_mesh          = mesh;
@@ -95,8 +97,8 @@ libmeshMeshElement::libmeshMeshElement( const libmeshMeshElement &rhs )
       d_meshID( rhs.d_meshID ),
       d_delete_elem( false )
 {
-    typeID      = getTypeID<decltype( *this )>();
-    element     = nullptr;
+    d_typeHash  = elementTypeID;
+    d_element   = nullptr;
     d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
     ptr_element = rhs.ptr_element;
@@ -107,8 +109,8 @@ libmeshMeshElement &libmeshMeshElement::operator=( const libmeshMeshElement &rhs
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = getTypeID<decltype( *this )>();
-    this->element       = nullptr;
+    this->d_typeHash    = elementTypeID;
+    this->d_element     = nullptr;
     this->d_globalID    = rhs.d_globalID;
     this->d_dim         = rhs.d_dim;
     this->ptr_element   = rhs.ptr_element;
@@ -124,7 +126,7 @@ libmeshMeshElement &libmeshMeshElement::operator=( const libmeshMeshElement &rhs
 /****************************************************************
  * De-constructor                                                *
  ****************************************************************/
-libmeshMeshElement::~libmeshMeshElement() { element = nullptr; }
+libmeshMeshElement::~libmeshMeshElement() { d_element = nullptr; }
 
 
 /****************************************************************

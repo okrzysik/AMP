@@ -76,7 +76,7 @@ public:
 protected:
     unsigned int d_boundaryId;
 
-    AMP::Mesh::Mesh::shared_ptr d_MapMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_MapMesh;
 
     // Communicator for the Map
     AMP_MPI d_MapComm;

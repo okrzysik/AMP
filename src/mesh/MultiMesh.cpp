@@ -66,7 +66,7 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
         AMP_ASSERT( elem == 1 );
     }
     // Create the meshes
-    d_meshes = std::vector<AMP::Mesh::Mesh::shared_ptr>( 0 );
+    d_meshes = std::vector<std::shared_ptr<AMP::Mesh::Mesh>>( 0 );
     for ( size_t i = 0; i < comms.size(); i++ ) {
         if ( comms[i].isNull() )
             continue;
@@ -136,7 +136,7 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
         auto name = db->getString( "MeshName" );
         auto op   = db->getWithDefault<std::string>( "Operation", "" );
         auto list = db->getVector<std::string>( "MeshList" );
-        std::vector<Mesh::shared_ptr> meshes;
+        std::vector<std::shared_ptr<Mesh>> meshes;
         for ( const auto &tmp : list ) {
             auto mesh = this->Subset( tmp );
             if ( mesh )
@@ -170,13 +170,13 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
 }
 MultiMesh::MultiMesh( const std::string &name,
                       const AMP_MPI &comm,
-                      const std::vector<Mesh::shared_ptr> &meshes )
+                      const std::vector<std::shared_ptr<Mesh>> &meshes )
 {
     d_name = name;
     d_comm = comm;
     this->setMeshID();
     // Get the list of non-null meshes
-    d_meshes = std::vector<Mesh::shared_ptr>();
+    d_meshes = std::vector<std::shared_ptr<Mesh>>();
     for ( auto &mesh : meshes ) {
         if ( mesh )
             d_meshes.push_back( mesh );
@@ -442,10 +442,10 @@ size_t MultiMesh::numGhostElements( const GeomType type, int gcw ) const
         N += mesh->numGhostElements( type, gcw );
     return N;
 }
-std::vector<Mesh::shared_ptr> MultiMesh::getMeshes() { return d_meshes; }
-std::vector<Mesh::const_shared_ptr> MultiMesh::getMeshes() const
+std::vector<std::shared_ptr<Mesh>> MultiMesh::getMeshes() { return d_meshes; }
+std::vector<std::shared_ptr<const Mesh>> MultiMesh::getMeshes() const
 {
-    std::vector<Mesh::const_shared_ptr> list( d_meshes.size() );
+    std::vector<std::shared_ptr<const Mesh>> list( d_meshes.size() );
     for ( size_t i = 0; i < d_meshes.size(); i++ )
         list[i] = d_meshes[i];
     return list;
@@ -683,7 +683,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( const MeshIterator &iterator_in, bool i
         }
     }
     // Subset for the iterator in each submesh
-    std::vector<Mesh::shared_ptr> subset;
+    std::vector<std::shared_ptr<Mesh>> subset;
     std::set<MeshID> subsetID;
     for ( auto &mesh : d_meshes ) {
         MeshIterator iterator;
@@ -730,7 +730,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     if ( d_name == name )
         return std::const_pointer_cast<Mesh>( shared_from_this() );
     // Subset for the name in each submesh
-    std::vector<Mesh::shared_ptr> subset;
+    std::vector<std::shared_ptr<Mesh>> subset;
     std::set<MeshID> subsetID;
     for ( auto &mesh : d_meshes ) {
         auto mesh2 = mesh->Subset( name );

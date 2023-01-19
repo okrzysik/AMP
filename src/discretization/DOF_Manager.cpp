@@ -146,7 +146,7 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP_MPI &comm )
         local_dofs[i] += i;
     return subsetDOFManager::create( shared_from_this(), local_dofs, getIterator(), comm );
 }
-std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+std::shared_ptr<DOFManager> DOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                 bool useMeshComm )
 {
     if ( mesh.get() == nullptr )

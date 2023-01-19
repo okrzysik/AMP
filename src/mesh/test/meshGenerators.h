@@ -18,7 +18,7 @@ public:
     // Routine to build the mesh
     virtual void build_mesh() { AMP_ERROR( "ERROR" ); }
     // Routine to get the pointer to the mesh
-    virtual AMP::Mesh::Mesh::shared_ptr getMesh()
+    virtual std::shared_ptr<AMP::Mesh::Mesh> getMesh()
     {
         if ( mesh.get() == nullptr )
             this->build_mesh();
@@ -27,7 +27,7 @@ public:
     virtual ~MeshGenerator(){};
 
 protected:
-    AMP::Mesh::Mesh::shared_ptr mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
 };
 
 

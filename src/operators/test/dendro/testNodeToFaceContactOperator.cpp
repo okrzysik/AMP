@@ -34,7 +34,7 @@
 #include <fstream>
 
 
-static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void drawVerticesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,
@@ -56,7 +56,7 @@ static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     } // end for
 }
 
-static void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                              int boundaryID,
                                              std::ostream &os,
                                              double const *point_of_view,

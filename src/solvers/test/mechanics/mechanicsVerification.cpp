@@ -57,7 +57,7 @@ ENABLE_WARNINGS
 
 
 static void
-computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
+computeForcingTerms( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                      std::shared_ptr<AMP::Operator::VolumeIntegralOperator> volumeOp,
                      std::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
                      AMP::LinearAlgebra::Vector::shared_ptr forcingTermsVec,
@@ -148,7 +148,7 @@ computeForcingTerms( AMP::Mesh::Mesh::shared_ptr mesh,
 
 // Compute exact solution
 static void
-computeExactSolution( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+computeExactSolution( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                       std::shared_ptr<AMP::MechanicsManufacturedSolution::MMS> manufacturedSolution,
                       AMP::LinearAlgebra::Vector::shared_ptr exactSolutionsVec,
                       bool verbose = false )
@@ -193,7 +193,7 @@ static void linearElasticTest( AMP::UnitTest *ut, std::string exeName, int examp
     auto inputDatabase = AMP::Database::parseInputFile( inputFile );
     inputDatabase->print( AMP::plog );
 
-    AMP::Mesh::Mesh::shared_ptr meshAdapter;
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter;
     std::shared_ptr<AMP::Mesh::initializeLibMesh> libmeshInit;
 
     // Regular grid mesh file

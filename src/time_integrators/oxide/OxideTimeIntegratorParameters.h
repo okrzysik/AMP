@@ -16,7 +16,7 @@ public:
     explicit OxideTimeIntegratorParameters( std::shared_ptr<AMP::Database> db );
 
     // Surface mesh for the oxide calculation
-    AMP::Mesh::Mesh::shared_ptr d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
 
     // Temperature vector (K)
     AMP::LinearAlgebra::Vector::shared_ptr d_temp;

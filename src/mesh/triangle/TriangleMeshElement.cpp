@@ -106,16 +106,20 @@ std::string TriangleMeshElement<NG, NP, TYPE>::elementClass() const
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement()
 {
-    typeID  = getTypeID<decltype( *this )>();
-    element = nullptr;
-    d_mesh  = nullptr;
+    static constexpr auto hash = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( hash != 0 );
+    d_typeHash = hash;
+    d_element  = nullptr;
+    d_mesh     = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const MeshElementID &id,
                                                         const TriangleMesh<NG, NP> *mesh )
 {
-    typeID     = getTypeID<decltype( *this )>();
-    element    = nullptr;
+    static constexpr auto hash = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( hash != 0 );
+    d_typeHash = hash;
+    d_element  = nullptr;
     d_globalID = id;
     d_mesh     = mesh;
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
@@ -129,15 +133,17 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const TriangleMeshElement &rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID( rhs.d_globalID )
 {
-    typeID  = getTypeID<decltype( *this )>();
-    element = rhs.element;
+    static constexpr auto hash = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( hash != 0 );
+    d_typeHash = hash;
+    d_element  = rhs.d_element;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( TriangleMeshElement &&rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID{ rhs.d_globalID }
 {
-    typeID  = rhs.typeID;
-    element = nullptr;
+    d_typeHash = rhs.d_typeHash;
+    d_element  = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE> &
@@ -145,8 +151,8 @@ TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
 {
     if ( &rhs == this )
         return *this;
-    typeID     = rhs.typeID;
-    element    = nullptr;
+    d_typeHash = rhs.d_typeHash;
+    d_element  = nullptr;
     d_globalID = rhs.d_globalID;
     d_mesh     = rhs.d_mesh;
     return *this;
@@ -157,8 +163,8 @@ TriangleMeshElement<NG, NP, TYPE>::operator=( TriangleMeshElement &&rhs )
 {
     if ( &rhs == this )
         return *this;
-    typeID     = rhs.typeID;
-    element    = nullptr;
+    d_typeHash = rhs.d_typeHash;
+    d_element  = nullptr;
     d_globalID = rhs.d_globalID;
     d_mesh     = rhs.d_mesh;
     return *this;

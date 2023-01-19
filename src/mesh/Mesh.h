@@ -52,26 +52,13 @@ class Mesh : public AMP::enable_shared_from_this<AMP::Mesh::Mesh>
 {
 public:
     /**
-     *\typedef shared_ptr
-     *\brief  Name for the shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<AMP::Mesh::Mesh> shared_ptr;
-
-    /**
-     *\typedef const_shared_ptr
-     *\brief  Name for the const shared pointer.
-     *\details  Use this typedef for a reference counted pointer to a mesh manager object.
-     */
-    typedef std::shared_ptr<const AMP::Mesh::Mesh> const_shared_ptr;
-
-    /**
      *\typedef generatorType
      *\brief  Generator for meshes
      *\details  This is a user-supplied function to generate a mesh.  Users may register their
      *     own mesh generators using registerGenerator and the mesh builder will call them.
      */
-    typedef std::function<Mesh::shared_ptr( std::shared_ptr<const MeshParameters> )> generatorType;
+    typedef std::function<std::shared_ptr<Mesh>( std::shared_ptr<const MeshParameters> )>
+        generatorType;
 
     //! Enumeration for basic mesh-based quantities
     enum class Movable : uint8_t { Fixed = 0, Displace = 1, Deform = 2 };
@@ -99,7 +86,7 @@ public:
      * \param old_mesh  Existing mesh that we will use to construct the new mesh
      * \param iterator  Iterator over the existing mesh
      */
-    Mesh( const Mesh::shared_ptr &old_mesh, MeshIterator::shared_ptr &iterator );
+    Mesh( const std::shared_ptr<Mesh> &old_mesh, MeshIterator::shared_ptr &iterator );
 
 
     /**

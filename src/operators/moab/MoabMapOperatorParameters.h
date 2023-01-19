@@ -40,10 +40,10 @@ public:
 
     // Set functions
     void setMoabOperator( std::shared_ptr<MoabBasedOperator> &moabOp ) { d_moabOp = moabOp; }
-    void setMesh( AMP::Mesh::Mesh::shared_ptr &mesh ) { d_mesh = mesh; }
+    void setMesh( std::shared_ptr<AMP::Mesh::Mesh> &mesh ) { d_mesh = mesh; }
 
     // Mesh Manager
-    AMP::Mesh::Mesh::shared_ptr d_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
 };
 
 } // namespace AMP::Operator

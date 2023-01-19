@@ -1,5 +1,7 @@
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorFactory.h"

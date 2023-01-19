@@ -1,6 +1,9 @@
 #include "AMP/matrices/ManagedMatrixParameters.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
+
 
 namespace AMP::LinearAlgebra {
 

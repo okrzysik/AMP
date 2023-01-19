@@ -26,8 +26,8 @@ MultiDofDTKMapOperator::MultiDofDTKMapOperator( std::shared_ptr<const OperatorPa
     auto sourceVector     = multiDofDTKMapOpParams->d_SourceVector;
     auto targetVector     = multiDofDTKMapOpParams->d_TargetVector;
 
-    AMP::Mesh::Mesh::shared_ptr boundaryMesh1_vol, boundaryMesh1_ver;
-    AMP::Mesh::Mesh::shared_ptr boundaryMesh2_vol, boundaryMesh2_ver;
+    std::shared_ptr<AMP::Mesh::Mesh> boundaryMesh1_vol, boundaryMesh1_ver;
+    std::shared_ptr<AMP::Mesh::Mesh> boundaryMesh2_vol, boundaryMesh2_ver;
     std::shared_ptr<AMP::Discretization::DOFManager> sourceDofManager12, sourceDofManager21;
     std::shared_ptr<AMP::Discretization::DOFManager> targetDofManager12, targetDofManager21;
 
@@ -139,8 +139,8 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     size_t strideLength1  = d_multiDofDTKMapOpParams->d_StrideLength1;
     size_t strideLength2  = d_multiDofDTKMapOpParams->d_StrideLength2;
 
-    AMP::Mesh::Mesh::shared_ptr boundaryMesh1;
-    AMP::Mesh::Mesh::shared_ptr boundaryMesh2;
+    std::shared_ptr<AMP::Mesh::Mesh> boundaryMesh1;
+    std::shared_ptr<AMP::Mesh::Mesh> boundaryMesh2;
     if ( mesh1 ) {
         boundaryMesh1 =
             mesh1->Subset( mesh1->getBoundaryIDIterator( AMP::Mesh::GeomType::Cell, boundaryID1 ) );

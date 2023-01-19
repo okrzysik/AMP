@@ -107,7 +107,7 @@ void drawOctant( double const *space,
     drawOctant( octant, point_of_view, os );
 }
 
-void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void drawSpacePartition( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                          double const *point_of_view,
                          std::ostream &os )
 {
@@ -142,7 +142,7 @@ void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     drawOctant( &( space[0] ), 2, 1, 1, 2, 2, point_of_view, os );
 }
 
-void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,

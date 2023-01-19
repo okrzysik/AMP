@@ -86,7 +86,7 @@ protected:
      */
     virtual std::multimap<double, double>
     buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-              const AMP::Mesh::Mesh::shared_ptr mesh,
+              const std::shared_ptr<AMP::Mesh::Mesh> mesh,
               const AMP::Mesh::MeshIterator &it );
 
     /** \brief  A virtual method to construct a vector from a map
@@ -98,7 +98,7 @@ protected:
      * \param [in] map  The map containing all of the points
      */
     virtual void buildReturn( AMP::LinearAlgebra::Vector::shared_ptr vec,
-                              const AMP::Mesh::Mesh::shared_ptr mesh,
+                              const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                               const AMP::Mesh::MeshIterator &it,
                               const std::map<double, double> &map );
 

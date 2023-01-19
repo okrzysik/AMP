@@ -16,7 +16,8 @@ public:
     ~ParameterFactory() {}
 
     static std::shared_ptr<OperatorParameters>
-    createParameter( std::shared_ptr<AMP::Database> input_db, AMP::Mesh::Mesh::shared_ptr mesh );
+    createParameter( std::shared_ptr<AMP::Database> input_db,
+                     std::shared_ptr<AMP::Mesh::Mesh> mesh );
 };
 } // namespace AMP::Operator
 

@@ -1,7 +1,8 @@
 #ifndef included_AMP_MeshVariable_H
 #define included_AMP_MeshVariable_H
 
-#include "SubsetVariable.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/vectors/SubsetVariable.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -23,7 +24,7 @@ public:
                   std::shared_ptr<AMP::Mesh::Mesh> mesh,
                   bool useMeshComm = true );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
+    virtual std::shared_ptr<AMP::Discretization::DOFManager>
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
 public: // Functions inherited from Variable
@@ -52,7 +53,7 @@ public:
                           const AMP::Mesh::MeshIterator &iterator,
                           const AMP_MPI &comm );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
+    virtual std::shared_ptr<AMP::Discretization::DOFManager>
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
 public: // Functions inherited from Variable

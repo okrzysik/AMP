@@ -3,6 +3,7 @@
 
 
     // AMP files
+    #include "AMP/mesh/Mesh.h"
     #include "AMP/operators/Operator.h"
     #include "AMP/operators/OperatorParameters.h"
     #include "AMP/operators/libmesh/PowerShapeParameters.h"

@@ -153,7 +153,8 @@ void SubchannelTwoEqNonlinearOperator::reset( std::shared_ptr<const OperatorPara
             continue;
         AMP::Mesh::MeshIterator localSubchannelIt =
             AMP::Mesh::MultiVectorIterator( d_subchannelElem[i] );
-        AMP::Mesh::Mesh::shared_ptr localSubchannel = d_Mesh->Subset( localSubchannelIt, false );
+        std::shared_ptr<AMP::Mesh::Mesh> localSubchannel =
+            d_Mesh->Subset( localSubchannelIt, false );
         AMP::Mesh::MeshIterator face =
             AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( localSubchannel, 0 );
         for ( size_t j = 0; j < face.size(); j++ ) {

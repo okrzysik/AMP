@@ -24,7 +24,7 @@
 
 // Create a vector with the desired number of unknowns and run some simple tests
 static void simpleDOFManagerVectorTest( AMP::UnitTest *ut,
-                                        AMP::Mesh::Mesh::shared_ptr mesh,
+                                        std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         size_t N_DOFs,
                                         bool split )
 {

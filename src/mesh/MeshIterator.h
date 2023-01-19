@@ -191,9 +191,6 @@ public: // non-virtual functions
     //! Return the current position (from the beginning) in the iterator
     inline size_t position() const;
 
-    //! Return the Unique (per class) ID for identifing the underlying iterator
-    inline typeID type_id() const;
-
     //! Operator <
     inline bool operator<( const MeshIterator & ) const;
 
@@ -225,8 +222,8 @@ protected:
 protected:
     // A pointer to the derived class
     MeshIterator *d_iterator;
-    // Unique (per class) ID for identifying the underlying iterator
-    typeID d_typeID;
+    // Unique hash for identifying the underlying iterator
+    uint32_t d_typeHash;
     // Type of iterator
     Type d_iteratorType;
     // Size of the iterator

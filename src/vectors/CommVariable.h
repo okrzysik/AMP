@@ -20,7 +20,7 @@ public:
      */
     CommVariable( const std::string &name, const AMP_MPI &comm );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
+    virtual std::shared_ptr<AMP::Discretization::DOFManager>
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
 public: // Functions inherited from Variable

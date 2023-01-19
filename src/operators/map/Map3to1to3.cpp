@@ -319,7 +319,7 @@ void Map3to1to3::setVector( AMP::LinearAlgebra::Vector::shared_ptr result )
 
 
 std::multimap<double, double> Map3to1to3::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr,
-                                                    const AMP::Mesh::Mesh::shared_ptr,
+                                                    const std::shared_ptr<AMP::Mesh::Mesh>,
                                                     const AMP::Mesh::MeshIterator & )
 {
     AMP_ERROR( "buildMap should never be called for the BaseClass" );
@@ -328,7 +328,7 @@ std::multimap<double, double> Map3to1to3::buildMap( AMP::LinearAlgebra::Vector::
 
 
 void Map3to1to3::buildReturn( AMP::LinearAlgebra::Vector::shared_ptr,
-                              const AMP::Mesh::Mesh::shared_ptr,
+                              const std::shared_ptr<AMP::Mesh::Mesh>,
                               const AMP::Mesh::MeshIterator &,
                               const std::map<double, double> & )
 {

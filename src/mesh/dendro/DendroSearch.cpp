@@ -9,7 +9,9 @@
 namespace AMP::Mesh {
 
 
-DendroSearch::DendroSearch( AMP::Mesh::Mesh::shared_ptr mesh, bool verbose, std::ostream &oStream )
+DendroSearch::DendroSearch( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                            bool verbose,
+                            std::ostream &oStream )
     : d_meshAdapter( mesh ),
       d_verbose( verbose ),
       d_oStream( oStream ),

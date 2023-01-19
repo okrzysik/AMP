@@ -10,10 +10,11 @@ static MeshElement nullElement;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-static constexpr auto MeshIteratorTypeID = AMP::getTypeID<MeshIterator>();
+static constexpr auto MeshIteratorType = AMP::getTypeID<MeshIterator>().hash;
+static_assert( MeshIteratorType != 0 );
 MeshIterator::MeshIterator()
     : d_iterator( nullptr ),
-      d_typeID( MeshIteratorTypeID ),
+      d_typeHash( MeshIteratorType ),
       d_iteratorType( Type::RandomAccess ),
       d_size( 0 ),
       d_pos( 0 ),
@@ -22,15 +23,15 @@ MeshIterator::MeshIterator()
 }
 MeshIterator::MeshIterator( MeshIterator &&rhs )
     : d_iterator( nullptr ),
-      d_typeID( MeshIteratorTypeID ),
+      d_typeHash( MeshIteratorType ),
       d_iteratorType( rhs.d_iteratorType ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
 {
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeHash == MeshIteratorType ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+    } else if ( rhs.d_typeHash != MeshIteratorType ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator     = rhs.d_iterator;
@@ -39,15 +40,15 @@ MeshIterator::MeshIterator( MeshIterator &&rhs )
 }
 MeshIterator::MeshIterator( const MeshIterator &rhs )
     : d_iterator( nullptr ),
-      d_typeID( MeshIteratorTypeID ),
+      d_typeHash( MeshIteratorType ),
       d_iteratorType( rhs.d_iteratorType ),
       d_size( 0 ),
       d_pos( 0 ),
       d_element( nullptr )
 {
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeHash == MeshIteratorType ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+    } else if ( rhs.d_typeHash != MeshIteratorType ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator = rhs.d_iterator->clone();
@@ -62,14 +63,14 @@ MeshIterator &MeshIterator::operator=( MeshIterator &&rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID       = MeshIteratorTypeID;
+    d_typeHash     = MeshIteratorType;
     d_iteratorType = rhs.d_iteratorType;
     d_size         = 0;
     d_pos          = 0;
     d_element      = nullptr;
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeHash == MeshIteratorType ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+    } else if ( rhs.d_typeHash != MeshIteratorType ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator     = rhs.d_iterator;
@@ -86,14 +87,14 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
         delete d_iterator;
         d_iterator = nullptr;
     }
-    d_typeID       = MeshIteratorTypeID;
+    d_typeHash     = MeshIteratorType;
     d_iteratorType = rhs.d_iteratorType;
     d_size         = 0;
     d_pos          = 0;
     d_element      = nullptr;
-    if ( rhs.d_iterator == nullptr && rhs.d_typeID == MeshIteratorTypeID ) {
+    if ( rhs.d_iterator == nullptr && rhs.d_typeHash == MeshIteratorType ) {
         d_iterator = nullptr;
-    } else if ( rhs.d_typeID != MeshIteratorTypeID ) {
+    } else if ( rhs.d_typeHash != MeshIteratorType ) {
         d_iterator = rhs.clone();
     } else {
         d_iterator = rhs.d_iterator->clone();

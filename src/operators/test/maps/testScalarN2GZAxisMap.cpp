@@ -30,8 +30,9 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-static void
-setBoundary( int id, AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
+static void setBoundary( int id,
+                         AMP::LinearAlgebra::Vector::shared_ptr &v1,
+                         std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     if ( mesh.get() == nullptr )
         return;
@@ -52,7 +53,7 @@ setBoundary( int id, AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh
 
 static void setGpBoundary( int id,
                            AMP::LinearAlgebra::Vector::shared_ptr &v1,
-                           AMP::Mesh::Mesh::shared_ptr mesh )
+                           std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     if ( mesh.get() == nullptr )
         return;

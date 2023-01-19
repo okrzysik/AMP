@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
 
 DISABLE_WARNINGS

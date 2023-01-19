@@ -1,7 +1,7 @@
-
 #ifndef included_AMP_TractionBoundaryOperatorParameters
 #define included_AMP_TractionBoundaryOperatorParameters
 
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/OperatorParameters.h"
 
 namespace AMP::Operator {

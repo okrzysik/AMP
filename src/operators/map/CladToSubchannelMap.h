@@ -63,9 +63,9 @@ public:
 protected:
 private:
     // The grid of the subchannel mesh
-    void fillSubchannelGrid(
-        AMP::Mesh::Mesh::shared_ptr ); // Function to fill the subchannel data for all processors
-    size_t N_subchannels;              // The total number of subchannels
+    void fillSubchannelGrid( std::shared_ptr<AMP::Mesh::Mesh> ); // Function to fill the subchannel
+                                                                 // data for all processors
+    size_t N_subchannels;                                        // The total number of subchannels
     std::vector<double> d_x, d_y, d_z; // The x, y, z grid for the subchannel
     std::vector<bool>
         d_ownSubChannel; // Which subchannels do I own (multple procs my own a subchannel)
@@ -75,7 +75,7 @@ private:
         d_subchannelSend; // The processors that are sending data to fill each subchannel
 
     // Iterators over the mesh elemens of interest
-    static AMP::Mesh::MeshIterator getSubchannelIterator( AMP::Mesh::Mesh::shared_ptr );
+    static AMP::Mesh::MeshIterator getSubchannelIterator( std::shared_ptr<AMP::Mesh::Mesh> );
     AMP::Mesh::MeshIterator d_iterator1;
     AMP::Mesh::MeshIterator d_iterator2;
 

@@ -44,7 +44,7 @@ public:
         numTimingTypes
     };
 
-    DendroSearch( AMP::Mesh::Mesh::shared_ptr mesh,
+    DendroSearch( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                   bool verbose,
                   std::ostream &oStream = std::cout );
 
@@ -93,7 +93,7 @@ public:
     void reportTiming( size_t n, TimingType const *timingTypes, double *timingMeasurements );
 
 private:
-    AMP::Mesh::Mesh::shared_ptr d_meshAdapter;
+    std::shared_ptr<AMP::Mesh::Mesh> d_meshAdapter;
     std::vector<AMP::Mesh::MeshElement> d_localElems;
     std::vector<hex8_element_t *> d_volume_elements;
     std::vector<ot::TreeNode> d_nodeList;

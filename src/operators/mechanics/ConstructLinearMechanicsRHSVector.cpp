@@ -1,4 +1,5 @@
 #include "AMP/operators/mechanics/ConstructLinearMechanicsRHSVector.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -18,7 +19,7 @@ DISABLE_WARNINGS
 ENABLE_WARNINGS
 
 
-void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
+void computeTemperatureRhsVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                   std::shared_ptr<AMP::Database> input_db,
                                   std::shared_ptr<AMP::LinearAlgebra::Variable>,
                                   std::shared_ptr<AMP::LinearAlgebra::Variable> displacementVar,

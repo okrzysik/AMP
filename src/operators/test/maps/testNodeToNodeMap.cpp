@@ -15,8 +15,9 @@
 #include "AMP/vectors/VectorBuilder.h"
 
 
-static void
-setBoundary( int id, AMP::LinearAlgebra::Vector::shared_ptr &v1, AMP::Mesh::Mesh::shared_ptr mesh )
+static void setBoundary( int id,
+                         AMP::LinearAlgebra::Vector::shared_ptr &v1,
+                         std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     if ( mesh.get() == nullptr )
         return;
