@@ -17,12 +17,16 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
  ********************************************************/
 static constexpr auto elementTypeID = AMP::getTypeID<libmeshMeshElement>().hash;
 static_assert( elementTypeID != 0 );
-libmeshMeshElement::libmeshMeshElement()
+libmeshMeshElement::libmeshMeshElement():
+    d_dim( -1 ),
+    d_rank( 0 ),
+    ptr_element( nullptr ),
+    d_mesh( nullptr ),
+    d_delete_elem( false ),
+    d_globalID( MeshElementID() )
 {
     d_typeHash = elementTypeID;
-    d_element  = nullptr;
-    d_dim      = -1;
-    d_globalID = MeshElementID();
+    d_element = nullptr;
 }
 libmeshMeshElement::libmeshMeshElement( int dim,
                                         GeomType type,
@@ -95,11 +99,11 @@ libmeshMeshElement::libmeshMeshElement( const libmeshMeshElement &rhs )
     : MeshElement(), // Note: we never want to call the base copy constructor
       ptr2( rhs.ptr2 ),
       d_meshID( rhs.d_meshID ),
-      d_delete_elem( false )
+      d_delete_elem( false ),
+      d_globalID( rhs.d_globalID )
 {
     d_typeHash  = elementTypeID;
     d_element   = nullptr;
-    d_globalID  = rhs.d_globalID;
     d_dim       = rhs.d_dim;
     ptr_element = rhs.ptr_element;
     d_rank      = rhs.d_rank;
