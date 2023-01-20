@@ -208,8 +208,9 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
         auto v = d_v[d_first];
 
         /* Normalize w_1 and apply same factor to v_1. */
-        w->scale( 1.0 / s, *w );
-        v->scale( 1.0 / s, *v );
+        T const sinv = (T) 1.0 / s; // debug float to ScalarType issues later
+        w->scale( sinv, *w );
+        v->scale( sinv, *v );
 
         if ( !d_use_qr ) {
 
