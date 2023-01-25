@@ -420,10 +420,10 @@ protected:
                              const AMP::Database *db = nullptr );
 
     // Function to initialize the mesh data once the logical mesh info has been created
-    void initialize();
+    void initialize( std::shared_ptr<const AMP::Database> db );
 
     // Function to finalize the mesh data once the coordinates have been set
-    void finalize();
+    void finalize( std::shared_ptr<const AMP::Database> db );
 
     // Get the surface set for a given surface/type
     ElementBlocks getSurface( int surface, GeomType type ) const;
@@ -448,6 +448,10 @@ protected:
                                     const double *range,
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
+
+protected: // Write/read restart data
+    void writeRestart( int64_t ) const override;
+    BoxMesh( int64_t );
 
 protected:                            // Internal data
     int d_rank, d_size;               // Cached values for the rank and size

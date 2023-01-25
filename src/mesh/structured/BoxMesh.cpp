@@ -71,11 +71,10 @@ std::vector<size_t> BoxMesh::estimateLogicalMeshSize( std::shared_ptr<const Mesh
 /****************************************************************
  * Constructor                                                   *
  ****************************************************************/
-BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
+BoxMesh::BoxMesh( std::shared_ptr<const MeshParameters> params ) : Mesh( params )
 {
     // Check for valid inputs
-    AMP_INSIST( d_params != nullptr, "Params must not be null" );
-    AMP_INSIST( d_db.get(), "Database must exist" );
+    AMP_INSIST( params, "Params must not be null" );
     d_isPeriodic.fill( false );
     d_globalSize.fill( 1 );
     d_indexSize.fill( 0 );
@@ -111,6 +110,16 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
     }
     d_surfaceId = mesh.d_surfaceId;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void BoxMesh::writeRestart( int64_t fid ) const
+{
+    // AMP_ERROR( "writeRestart is not implemented for BoxMesh" );
+}
+BoxMesh::BoxMesh( int64_t fid ) { AMP_ERROR( "Not finished" ); }
 
 
 /****************************************************************
@@ -173,7 +182,7 @@ void BoxMesh::loadBalance( std::array<int, 3> size,
 /****************************************************************
  * Initialize the mesh                                           *
  ****************************************************************/
-void BoxMesh::initialize()
+void BoxMesh::initialize( std::shared_ptr<const AMP::Database> db )
 {
     PROFILE_SCOPED( timer, "initialize" );
     // Check some assumptions/variables
@@ -188,7 +197,7 @@ void BoxMesh::initialize()
         AMP_ASSERT( d_globalSize[d] > 0 );
     // Create the load balance
     AMP_INSIST( d_size > 0, "Communicator must be set" );
-    loadBalance( d_globalSize, d_size, d_startIndex, d_db.get() );
+    loadBalance( d_globalSize, d_size, d_startIndex, db.get() );
     // Set some cached values
     for ( int d = 0; d < 3; d++ ) {
         AMP_ASSERT( !d_startIndex[d].empty() );
@@ -234,21 +243,21 @@ void BoxMesh::createBoundingBox()
         d_box[2 * i + 1] = d_comm.maxReduce( d_box_local[2 * i + 1] );
     }
 }
-void BoxMesh::finalize()
+void BoxMesh::finalize( std::shared_ptr<const AMP::Database> db )
 {
     PROFILE_START( "finalize" );
     // Fill in the final info for the mesh
-    AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
-    d_name = d_db->getString( "MeshName" );
+    AMP_INSIST( db->keyExists( "MeshName" ), "MeshName must exist in input database" );
+    d_name = db->getString( "MeshName" );
     createBoundingBox();
     // Displace the mesh
     std::vector<double> displacement( PhysicalDim, 0.0 );
-    if ( d_db->keyExists( "x_offset" ) && PhysicalDim >= 1 )
-        displacement[0] = d_db->getScalar<double>( "x_offset" );
-    if ( d_db->keyExists( "y_offset" ) && PhysicalDim >= 2 )
-        displacement[1] = d_db->getScalar<double>( "y_offset" );
-    if ( d_db->keyExists( "z_offset" ) && PhysicalDim >= 3 )
-        displacement[2] = d_db->getScalar<double>( "z_offset" );
+    if ( db->keyExists( "x_offset" ) && PhysicalDim >= 1 )
+        displacement[0] = db->getScalar<double>( "x_offset" );
+    if ( db->keyExists( "y_offset" ) && PhysicalDim >= 2 )
+        displacement[1] = db->getScalar<double>( "y_offset" );
+    if ( db->keyExists( "z_offset" ) && PhysicalDim >= 3 )
+        displacement[2] = db->getScalar<double>( "z_offset" );
     bool test = false;
     for ( auto &elem : displacement ) {
         if ( elem != 0.0 )

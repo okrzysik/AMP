@@ -1,4 +1,5 @@
 #include "AMP/mesh/MultiMesh.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/geometry/MultiGeometry.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -43,12 +44,12 @@ static void copyKey( std::shared_ptr<const AMP::Database>,
  ********************************************************/
 MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( params_in )
 {
-
-    AMP_ASSERT( d_db != nullptr );
+    auto db = params_in->getDatabase();
+    AMP_INSIST( db, "Database must exist" );
     // Create an array of MeshParameters for each submesh
-    auto meshDatabases = MultiMesh::createDatabases( d_db );
+    auto meshDatabases = MultiMesh::createDatabases( db );
     // Create the load balancer and comms
-    loadBalanceSimulator loadBalance( d_db );
+    loadBalanceSimulator loadBalance( db );
     loadBalance.setProcs( d_comm.getSize() );
     const auto &submeshes = loadBalance.getSubmeshes();
     std::vector<std::vector<int>> groups( submeshes.size() );
@@ -117,12 +118,12 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
     }
     // Displace the meshes
     std::vector<double> displacement( PhysicalDim, 0.0 );
-    if ( d_db->keyExists( "x_offset" ) )
-        displacement[0] = d_db->getScalar<double>( "x_offset" );
-    if ( d_db->keyExists( "y_offset" ) )
-        displacement[1] = d_db->getScalar<double>( "y_offset" );
-    if ( d_db->keyExists( "z_offset" ) )
-        displacement[2] = d_db->getScalar<double>( "z_offset" );
+    if ( db->keyExists( "x_offset" ) )
+        displacement[0] = db->getScalar<double>( "x_offset" );
+    if ( db->keyExists( "y_offset" ) )
+        displacement[1] = db->getScalar<double>( "y_offset" );
+    if ( db->keyExists( "z_offset" ) )
+        displacement[2] = db->getScalar<double>( "z_offset" );
     bool test = false;
     for ( auto &elem : displacement ) {
         if ( elem != 0.0 )
@@ -131,11 +132,11 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
     if ( test )
         displaceMesh( displacement );
     // Create additional multi-mesh views
-    for ( int i = 1; d_db->keyExists( "MeshView_" + std::to_string( i ) ); i++ ) {
-        auto db   = d_db->getDatabase( "MeshView_" + std::to_string( i ) );
-        auto name = db->getString( "MeshName" );
-        auto op   = db->getWithDefault<std::string>( "Operation", "" );
-        auto list = db->getVector<std::string>( "MeshList" );
+    for ( int i = 1; db->keyExists( "MeshView_" + std::to_string( i ) ); i++ ) {
+        auto db2  = db->getDatabase( "MeshView_" + std::to_string( i ) );
+        auto name = db2->getString( "MeshName" );
+        auto op   = db2->getWithDefault<std::string>( "Operation", "" );
+        auto list = db2->getVector<std::string>( "MeshList" );
         std::vector<std::shared_ptr<Mesh>> meshes;
         for ( const auto &tmp : list ) {
             auto mesh = this->Subset( tmp );
@@ -946,6 +947,41 @@ std::vector<AMP_MPI> MultiMesh::createComms( const AMP_MPI &comm,
             AMP_ASSERT( comms[i].getSize() == (int) groups[i].size() );
     }
     return comms;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MultiMesh::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "MeshType", std::string( "MultiMesh" ) );
+    writeHDF5( fid, "MeshName", d_name );
+    writeHDF5( fid, "MeshID", d_meshID );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    std::vector<MeshID> meshIDs;
+    for ( auto &mesh : d_meshes )
+        meshIDs.push_back( mesh->meshID() );
+    writeHDF5( fid, "meshIDs", meshIDs );
+}
+static MultiMesh loadHDF5( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    AMP_MPI comm;
+    std::string name;
+    uint64_t commHash;
+    std::vector<MeshID> meshIDs;
+    readHDF5( fid, "MeshName", name );
+    readHDF5( fid, "comm", commHash );
+    readHDF5( fid, "meshIDs", meshIDs );
+    std::vector<std::shared_ptr<Mesh>> meshes;
+    for ( auto id : meshIDs )
+        meshes.push_back( manager->getData<Mesh>( id.getHash() ) );
+    return MultiMesh( name, manager->getComm( commHash ), meshes );
+}
+MultiMesh::MultiMesh( int64_t fid, AMP::IO::RestartManager *manager )
+    : MultiMesh( loadHDF5( fid, manager ) )
+{
+    readHDF5( fid, "MeshID", d_meshID );
 }
 
 

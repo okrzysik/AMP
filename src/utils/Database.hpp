@@ -1,6 +1,7 @@
 #ifndef included_AMP_Database_hpp
 #define included_AMP_Database_hpp
 
+#include "AMP/IO/HDF5.hpp"
 #include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/FactoryStrategy.hpp"
@@ -188,6 +189,8 @@ public:
     size_t packSize() const override { return 0; }
     size_t pack( std::byte * ) const override { return 0; }
     size_t unpack( const std::byte * ) override { return 0; }
+    void writeHDF5( int64_t, std::string_view ) const override {}
+    void readHDF5( int64_t, std::string_view ) override {}
 };
 class EquationKeyData final : public KeyData
 {
@@ -210,6 +213,8 @@ public:
     size_t packSize() const override;
     size_t pack( std::byte *buf ) const override;
     size_t unpack( const std::byte * ) override;
+    void writeHDF5( int64_t, std::string_view ) const override;
+    void readHDF5( int64_t, std::string_view ) override;
 
 private:
     std::shared_ptr<const MathExpr> d_eq;
@@ -285,6 +290,14 @@ public:
         N += AMP::unpack( d_unit, &buf[N] );
         N += AMP::unpack( d_data, &buf[N] );
         return N;
+    }
+    void writeHDF5( int64_t fid, std::string_view name ) const override
+    {
+        AMP::writeHDF5( fid, name, d_data );
+    }
+    void readHDF5( int64_t fid, std::string_view name ) override
+    {
+        AMP::readHDF5( fid, name, d_data );
     }
 
 private:
@@ -374,6 +387,14 @@ public:
         N += AMP::unpack( d_data, &buf[N] );
         return N;
     }
+    void writeHDF5( int64_t fid, std::string_view name ) const override
+    {
+        AMP::writeHDF5( fid, name, d_data );
+    }
+    void readHDF5( int64_t fid, std::string_view name ) override
+    {
+        AMP::readHDF5( fid, name, d_data );
+    }
 
 private:
     Array<TYPE> d_data;
@@ -454,6 +475,14 @@ public:
         for ( auto &db : d_data )
             N += db.unpack( &buf[N] );
         return N;
+    }
+    void writeHDF5( int64_t fid, std::string_view name ) const override
+    {
+        AMP::writeHDF5( fid, name, d_data );
+    }
+    void readHDF5( int64_t fid, std::string_view name ) override
+    {
+        AMP::readHDF5( fid, name, d_data );
     }
 
 private:

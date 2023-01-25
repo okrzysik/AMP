@@ -286,6 +286,15 @@ public: // Member functions
 
 
     /**
+     * \brief Return a hash global ranks
+     * \details  This returns a hash which is unique based on the global ranks.
+     *           It will also be different for null and self comms.
+     *           Two comms that share the same ranks (e.g. dup) will have the same hash
+     */
+    uint64_t hashRanks() const;
+
+
+    /**
      *  Get the current MPI communicator.
      *  Note: The underlying MPI_Comm object may be free'd by the object when it is no
      *  longer used by any communicators.  If the user has made a copy using the

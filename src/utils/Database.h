@@ -75,6 +75,10 @@ public:
     virtual size_t pack( std::byte * ) const = 0;
     //! Unpack the data from a buffer
     virtual size_t unpack( const std::byte * ) = 0;
+    //! Write the data to HDF5
+    virtual void writeHDF5( int64_t fid, std::string_view name ) const = 0;
+    //! Read the data from HDF5
+    virtual void readHDF5( int64_t fid, std::string_view name ) = 0;
 
 protected:
     KeyData() {}
@@ -566,7 +570,8 @@ public: // Pack/unpack data
     size_t packSize() const override;
     size_t pack( std::byte * ) const override;
     size_t unpack( const std::byte * ) override;
-
+    void writeHDF5( int64_t fid, std::string_view name ) const override;
+    void readHDF5( int64_t fid, std::string_view name ) override;
 
 #ifdef AMP_USE_SAMRAI
 public: // SAMRAI interfaces

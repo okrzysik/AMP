@@ -1,5 +1,6 @@
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/IO/FileSystem.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MeshPoint.h"
@@ -21,7 +22,9 @@
 namespace AMP::Mesh {
 
 
-// Create the operator
+/********************************************************
+ *  Create a mesh                                        *
+ ********************************************************/
 std::shared_ptr<Mesh> MeshFactory::create( std::shared_ptr<MeshParameters> params )
 {
     auto db = params->getDatabase();
@@ -86,3 +89,58 @@ std::shared_ptr<Mesh> MeshFactory::create( std::shared_ptr<MeshParameters> param
 
 
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ *  Restart operations for Mesh                          *
+ ********************************************************/
+template<>
+AMP::AMP_MPI AMP::getComm<AMP::Mesh::Mesh>( const AMP::Mesh::Mesh &mesh )
+{
+    return mesh.getComm();
+}
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
+    const std::string &name, std::shared_ptr<const AMP::Mesh::Mesh> mesh, RestartManager *manager )
+    : d_name( name ), d_data( mesh )
+{
+    // Register the comm
+    manager->registerComm( mesh->getComm() );
+    // Register child meshes
+    for ( auto id : mesh->getBaseMeshIDs() ) {
+        if ( id == mesh->meshID() )
+            continue;
+        auto mesh2 = mesh->Subset( id );
+        auto data2 = std::make_shared<DataStoreType<AMP::Mesh::Mesh>>( "", mesh2, manager );
+        manager->registerComm( mesh2->getComm() );
+        manager->registerData( data2 );
+    }
+}
+template<>
+uint64_t AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::getHash() const
+{
+    return d_data->meshID().getHash();
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::write( hid_t fid,
+                                                                     const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    d_data->writeRestart( gid );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::getData<AMP::Mesh::Mesh>( uint64_t hash )
+{
+    hid_t gid = openGroup( d_fid, hash2String( hash ) );
+    std::string type;
+    readHDF5( gid, "MeshType", type );
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
+    if ( type == "MultiMesh" ) {
+        mesh = std::make_shared<AMP::Mesh::MultiMesh>( gid, this );
+    } else {
+        AMP_ERROR( "Not finished: " + type );
+    }
+    closeGroup( gid );
+    return mesh;
+}

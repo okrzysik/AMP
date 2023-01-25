@@ -20,6 +20,9 @@ class Geometry;
 namespace AMP::LinearAlgebra {
 class Vector;
 }
+namespace AMP::IO {
+class RestartManager;
+}
 
 
 namespace AMP::Mesh {
@@ -459,17 +462,21 @@ public:
     virtual std::shared_ptr<AMP::LinearAlgebra::Vector>
     getPositionVector( std::string name, const int gcw = 0 ) const;
 
-    std::shared_ptr<AMP::Database> DB() const { return d_db; }
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const = 0;
+
 
 protected:
     //!  Empty constructor for a mesh
     Mesh() {}
 
-    //! The mesh parameters
-    std::shared_ptr<const MeshParameters> d_params = nullptr;
-
     //! The geometry parameters
-    std::shared_ptr<Geometry::Geometry> d_geometry = nullptr;
+    std::shared_ptr<Geometry::Geometry> d_geometry;
 
     //! The geometric dimension (equivalent to the highest geometric object that could be
     //! represented)
@@ -483,9 +490,6 @@ protected:
 
     //! The communicator over which the mesh is stored
     AMP_MPI d_comm;
-
-    //! A pointer to an AMP database containing the mesh info
-    std::shared_ptr<AMP::Database> d_db = nullptr;
 
     //! A unique id for each mesh
     MeshID d_meshID;

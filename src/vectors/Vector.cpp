@@ -1,5 +1,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/IO/PIO.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
@@ -344,3 +345,29 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 
 
 } // namespace AMP::LinearAlgebra
+
+
+/********************************************************
+ *  Restart operations for Mesh                          *
+ ********************************************************/
+template<>
+AMP::AMP_MPI AMP::getComm<AMP::LinearAlgebra::Vector>( const AMP::LinearAlgebra::Vector &vec )
+{
+    return vec.getComm();
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::LinearAlgebra::Vector>
+AMP::IO::RestartManager::getData<AMP::LinearAlgebra::Vector>( const std::string &name )
+{
+    hid_t gid = openGroup( d_fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}

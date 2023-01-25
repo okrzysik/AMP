@@ -1,6 +1,7 @@
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/typeid.h"
 
 #include <complex>
 
@@ -30,6 +31,7 @@ instantiateArrayConstructors( bool );
 instantiateArrayConstructors( std::byte );
 instantiateArrayConstructors( std::string );
 instantiateArrayConstructors( std::string_view );
+instantiateArrayConstructors( typeID );
 
 
 /********************************************************

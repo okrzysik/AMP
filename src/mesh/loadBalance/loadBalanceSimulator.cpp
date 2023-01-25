@@ -97,7 +97,7 @@ static std::vector<int> divideGroups( int N, const std::vector<double> &x )
 /********************************************************
  * Check if all the meshes in a multimesh are the same   *
  ********************************************************/
-static bool allMeshesMatch( std::shared_ptr<AMP::Database> db )
+static bool allMeshesMatch( std::shared_ptr<const AMP::Database> db )
 {
     AMP_ASSERT( db->getString( "MeshType" ) == "Multimesh" );
     auto prefix      = db->getString( "MeshDatabasePrefix" );
@@ -126,7 +126,7 @@ loadBalanceSimulator::loadBalanceSimulator()
       d_end( 0 )
 {
 }
-loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
+loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<const AMP::Database> db )
     : d_cost( 0 ),
       d_maxCostRank( 0 ),
       d_max_procs( 0 ),
@@ -190,7 +190,7 @@ loadBalanceSimulator::loadBalanceSimulator( std::shared_ptr<AMP::Database> db )
         d_max_procs = std::min( d_max_procs, MaxProcs );
     } else {
         d_submeshes.resize( 0 );
-        auto params = std::make_shared<MeshParameters>( db );
+        auto params = std::make_shared<MeshParameters>( db->cloneDatabase() );
         d_max_procs = Mesh::maxProcs( params );
         d_cost      = Mesh::estimateMeshSize( params );
     }

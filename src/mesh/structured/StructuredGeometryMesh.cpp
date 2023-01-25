@@ -1,4 +1,5 @@
 #include "AMP/mesh/structured/StructuredGeometryMesh.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/mesh/MeshParameters.h"
 
 
@@ -17,10 +18,11 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     d_numBlocks.fill( 1 );
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
+    auto db = params->getDatabase();
+    AMP_INSIST( db.get(), "Database must exist" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
-    AMP_INSIST( d_db.get(), "Database must exist" );
     // Construct the geometry
-    auto db2 = d_db->cloneDatabase();
+    auto db2 = db->cloneDatabase();
     db2->erase( "x_offset", false );
     db2->erase( "y_offset", false );
     db2->erase( "z_offset", false );
@@ -30,9 +32,9 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     // Fill basic mesh information
     PhysicalDim = d_geometry2->getDim();
     GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
-    d_max_gcw   = d_db->getWithDefault<int>( "GCW", 2 );
-    AMP_ASSERT( PhysicalDim == d_db->getWithDefault<int>( "dim", PhysicalDim ) );
-    auto size = d_geometry2->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
+    d_max_gcw   = db->getWithDefault<int>( "GCW", 2 );
+    AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
+    auto size = d_geometry2->getLogicalGridSize( db->getVector<int>( "Size" ) );
     AMP_ASSERT( size.size() == static_cast<size_t>( GeomDim ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];
@@ -43,14 +45,32 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     for ( size_t d = 0; d < surfaceIds.size(); d++ )
         d_surfaceId[d] = surfaceIds[d];
     // Initialize the logical mesh
-    BoxMesh::initialize();
-    BoxMesh::finalize();
+    BoxMesh::initialize( db );
+    BoxMesh::finalize( db );
 }
 StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &mesh )
     : BoxMesh( mesh )
 {
     d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
     d_pos_hash  = mesh.d_pos_hash;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void StructuredGeometryMesh::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "MeshType", std::string( "StructuredGeometryMesh" ) );
+    // BoxMesh::writeRestart( fid );
+    writeHDF5( fid, "MeshName", d_name );
+    writeHDF5( fid, "MeshID", d_meshID );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+}
+StructuredGeometryMesh::StructuredGeometryMesh( int64_t fid, AMP::IO::RestartManager *manager )
+    : BoxMesh( fid )
+{
+    AMP_ERROR( "Not finished" );
 }
 
 

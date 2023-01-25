@@ -17,16 +17,16 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
  ********************************************************/
 static constexpr auto elementTypeID = AMP::getTypeID<libmeshMeshElement>().hash;
 static_assert( elementTypeID != 0 );
-libmeshMeshElement::libmeshMeshElement():
-    d_dim( -1 ),
-    d_rank( 0 ),
-    ptr_element( nullptr ),
-    d_mesh( nullptr ),
-    d_delete_elem( false ),
-    d_globalID( MeshElementID() )
+libmeshMeshElement::libmeshMeshElement()
+    : d_dim( -1 ),
+      d_rank( 0 ),
+      ptr_element( nullptr ),
+      d_mesh( nullptr ),
+      d_delete_elem( false ),
+      d_globalID( MeshElementID() )
 {
     d_typeHash = elementTypeID;
-    d_element = nullptr;
+    d_element  = nullptr;
 }
 libmeshMeshElement::libmeshMeshElement( int dim,
                                         GeomType type,

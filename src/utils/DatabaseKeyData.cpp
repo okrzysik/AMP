@@ -189,6 +189,25 @@ size_t EquationKeyData::unpack( const std::byte *buf )
         d_eq = std::make_shared<MathExpr>( expr, vars );
     return N;
 }
+void EquationKeyData::writeHDF5( int64_t fid, std::string_view name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    AMP::writeHDF5( gid, "expr", d_eq->getExpr() );
+    AMP::writeHDF5( gid, "vars", d_eq->getVars() );
+    closeGroup( gid );
+}
+void EquationKeyData::readHDF5( int64_t fid, std::string_view name )
+{
+    std::string expr;
+    std::vector<std::string> vars;
+    hid_t gid = openGroup( fid, name );
+    AMP::readHDF5( gid, "expr", expr );
+    AMP::readHDF5( gid, "vars", vars );
+    closeGroup( gid );
+    d_eq.reset();
+    if ( !expr.empty() )
+        d_eq = std::make_shared<MathExpr>( expr, vars );
+}
 
 
 /********************************************************************

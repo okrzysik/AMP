@@ -481,8 +481,6 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> vertices
     AMP_ASSERT( block.size() == tri.size() );
     check( tri );
     // Set basic mesh info
-    d_db        = nullptr;
-    d_params    = nullptr;
     d_geometry  = nullptr;
     GeomDim     = static_cast<GeomType>( NG );
     PhysicalDim = NP;
@@ -882,9 +880,7 @@ TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params
     : Mesh( params_in )
 {
     // Check for valid inputs
-    AMP_INSIST( d_params != nullptr, "Params must not be null" );
     AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
-    AMP_INSIST( d_db.get(), "Database must exist" );
     AMP_ERROR( "Not finished" );
 }
 template<uint8_t NG, uint8_t NP>
@@ -1412,6 +1408,16 @@ bool TriangleMesh<NG, NP>::operator==( const Mesh &rhs ) const
     // Perform comparison on sub-meshes
     AMP_ERROR( "Not finished" );
     return false;
+}
+
+
+/****************************************************************
+ * Write restart data                                            *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP>
+void TriangleMesh<NG, NP>::writeRestart( int64_t fid ) const
+{
+    AMP_ERROR( "writeRestart is not implimented for TriangleMesh" );
 }
 
 

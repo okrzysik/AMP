@@ -1350,3 +1350,10 @@ REGISTER_KEYDATA( Database, Database );
 
 
 } // namespace AMP
+
+/********************************************************
+ *  Explicit instantiations of Array<Database>           *
+ ********************************************************/
+#include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( AMP::Database );
+instantiateArrayConstructors( AMP::Database::Check );

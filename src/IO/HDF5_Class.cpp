@@ -128,6 +128,8 @@ public:
             printf( " []\n" );
         } else if ( d_data.length() == 1 ) {
             AMP::pout << ": " << d_data( 0 ) << std::endl;
+        } else if ( std::is_same_v<TYPE, char> && d_data.ndim() == 1 && d_data.length() < 128 ) {
+            AMP::pout << ": '" << d_data.data() << "'" << std::endl;
         } else if ( d_data.length() <= 4 || level >= 4 ) {
             AMP::pout << " [";
             if constexpr ( std::is_same<TYPE, unsigned char>::value ) {

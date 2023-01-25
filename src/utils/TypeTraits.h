@@ -48,6 +48,24 @@ struct is_Array<Array<T>> : std::true_type {
 };
 
 
+//! Checks whether T is convertible to a string
+template<typename T>
+struct is_string : std::false_type {
+};
+template<>
+struct is_string<std::string> : std::true_type {
+};
+template<>
+struct is_string<std::string_view> : std::true_type {
+};
+template<>
+struct is_string<char *> : std::true_type {
+};
+template<std::size_t N>
+struct is_string<char[N]> : std::true_type {
+};
+
+
 //! Checks whether T has a size() function
 template<typename T>
 struct has_size {
@@ -64,6 +82,22 @@ public:
 };
 
 
+//! Checks whether T has a begin()/end() function
+using std::begin;
+template<typename T, typename = void>
+struct has_begin : std::false_type {
+};
+template<typename T>
+struct has_begin<T, decltype( void( std::begin( std::declval<T &>() ) ) )> : std::true_type {
+};
+template<typename T, typename = void>
+struct has_end : std::false_type {
+};
+template<typename T>
+struct has_end<T, decltype( void( std::end( std::declval<T &>() ) ) )> : std::true_type {
+};
+
+
 //! Checks whether T is an initializer_list
 template<typename T>
 struct is_initializer_list : std::false_type {
@@ -71,6 +105,29 @@ struct is_initializer_list : std::false_type {
 template<typename T>
 struct is_initializer_list<std::initializer_list<T>> : std::true_type {
 };
+
+
+// Helper functions
+template<class T>
+inline constexpr bool is_shared_ptr_v = is_shared_ptr<T>::value;
+template<class T>
+inline constexpr bool is_vector_v = is_vector<T>::value;
+template<class T>
+inline constexpr bool is_Array_v = is_Array<T>::value;
+template<class T>
+inline constexpr bool is_pair_v = is_pair<T>::value;
+template<class T>
+inline constexpr bool is_string_v = is_string<T>::value;
+template<class T>
+inline constexpr bool has_size_v = has_size<T>::value;
+template<class T>
+inline constexpr bool has_begin_v = has_begin<T>::value;
+template<class T>
+inline constexpr bool has_end_v = has_end<T>::value;
+template<class T>
+inline constexpr bool is_container_v = has_begin_v<T> &&has_end_v<T>;
+template<class T>
+inline constexpr bool is_initializer_list_v = is_initializer_list<T>::value;
 
 
 } // namespace AMP

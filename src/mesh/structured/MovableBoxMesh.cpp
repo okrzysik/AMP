@@ -1,5 +1,5 @@
 #include "AMP/mesh/structured/MovableBoxMesh.h"
-
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MultiIterator.h"
@@ -38,6 +38,23 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
         for ( size_t i = 0; i < d_index.size(); i++ )
             mesh.coord( d_index[i], d_coord[i].data() );
     }
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MovableBoxMesh::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "MeshType", std::string( "MovableBoxMesh" ) );
+    // BoxMesh::writeRestart( fid );
+    writeHDF5( fid, "MeshName", d_name );
+    writeHDF5( fid, "MeshID", d_meshID );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+}
+MovableBoxMesh::MovableBoxMesh( int64_t fid, AMP::IO::RestartManager *manager ) : BoxMesh( fid )
+{
+    AMP_ERROR( "Not finished" );
 }
 
 

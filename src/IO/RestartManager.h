@@ -2,18 +2,59 @@
 #define included_AMP_RestartManager
 
 #include "AMP/IO/HDF5.h"
+#include "AMP/utils/TypeTraits.h"
 
 #include <map>
 #include <string>
 
 
-namespace AMP {
+namespace AMP::IO {
 
 
 //! Class to manage reading/writing restart data
 class RestartManager final
 {
 public:
+    class DataStore
+    {
+    public:
+        virtual uint64_t getHash() const                               = 0;
+        virtual const std::string &getName() const                     = 0;
+        virtual void write( hid_t fid, const std::string &name ) const = 0;
+    };
+    template<class TYPE>
+    class DataStoreType : public DataStore
+    {
+    public:
+        DataStoreType( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
+        uint64_t getHash() const override;
+        const std::string &getName() const override { return d_name; }
+        void write( hid_t fid, const std::string &name ) const override;
+
+    private:
+        std::string d_name;
+        std::shared_ptr<const TYPE> d_data;
+    };
+
+public:
+    //! Create a writer for restart data
+    RestartManager();
+
+    //! Create a reader for restart data
+    RestartManager( const std::string &filename );
+
+    //! Copy constructor
+    RestartManager( const RestartManager & ) = delete;
+
+    //! Move operator
+    RestartManager( RestartManager && ) = default;
+
+    //! Move assignment
+    RestartManager &operator=( RestartManager && ) = default;
+
+    //! Destructor
+    ~RestartManager();
+
     /**
      * \brief  Write the data
      * \details  Write all of the data currently registered with the manager to the disk
@@ -22,11 +63,11 @@ public:
     void write( const std::string &filename, Compression compress = Compression::None );
 
     /**
-     * \brief  Open a restart file
-     * \details  Write all of the data currently registered with the manager to the disk
+     * \brief  Close the restart file
+     * \details  Close the restart file
      * @param[in] filename  Filename to use
      */
-    hid_t open( const std::string &filename );
+    void close( const std::string &filename );
 
     /**
      * \brief  Register data with the restart manager
@@ -35,47 +76,69 @@ public:
      * @param[in] data      Data to register
      */
     template<class TYPE>
-    void registerData( const std::string &name, std::shared_ptr<TYPE> data );
+    void registerData( const std::string &name, const TYPE &data );
+
+    /**
+     * \brief  Register data with the restart manager
+     * \details This function registers an object with the restart manager
+     * @param[in] data      Data to register
+     */
+    void registerData( std::shared_ptr<DataStore> data );
+
+    /**
+     * \brief  Register a communicator with the restart manager
+     * \details This function registers a communicator (based on ranks) with the restart manager
+     * @param[in] comm      Communicator to register
+     */
+    void registerComm( const AMP::AMP_MPI &comm );
 
     /**
      * \brief  Get data from the restart manager
      * \details This function will get a registered/loaded object from the restart manager
-     * @param[in] fid       Handle to data stored in restart manager
      * @param[in] name      Name to use for object
-     * @param[in] comm      Communicator to use for the object (if parallel)
      */
     template<class TYPE>
-    std::shared_ptr<TYPE>
-    getData( hid_t fid, const std::string &name, const AMP::AMP_MPI &comm = AMP_COMM_WORLD );
+    std::shared_ptr<TYPE> getData( const std::string &name );
 
-
-private:
-    class DataStore
-    {
-    public:
-        virtual AMP_MPI getComm() const                          = 0;
-        virtual void write( hid_t fid, const std::string &name ) = 0;
-    };
+    /**
+     * \brief  Get data from the restart manager
+     * \details This function will get a registered/loaded object from the restart manager
+     * @param[in] hash      Object ID
+     */
     template<class TYPE>
-    class DataStoreType : public DataStore
-    {
-    public:
-        DataStoreType( std::shared_ptr<TYPE> data );
-        AMP_MPI getComm() const override;
-        void write( hid_t fid, const std::string &name ) override;
+    std::shared_ptr<TYPE> getData( uint64_t hash );
 
-    private:
-        std::shared_ptr<TYPE> d_data;
-    };
+
+    /**
+     * \brief  Get the communicator from the restart manager
+     * \details This function will get a registered/loaded object from the restart manager
+     * @param[in] hash      Object ID
+     */
+    AMP_MPI getComm( uint64_t hash );
+
 
 private:
-    std::map<std::string, std::unique_ptr<DataStore>> d_data;
+    template<class TYPE>
+    std::shared_ptr<RestartManager::DataStore> create( const std::string &,
+                                                       std::shared_ptr<const TYPE> );
+
+    void writeCommData( const std::string &file, Compression compress );
+    void readCommData( const std::string &file );
+    std::string hash2String( uint64_t );
+
+private:
+    bool d_writer;
+    hid_t d_fid;                                           // fid for reading
+    std::map<uint64_t, std::shared_ptr<DataStore>> d_data; // Object data
+    std::map<std::string, uint64_t> d_names;               // Names to associate with the hashes
+    std::map<uint64_t, AMP_MPI> d_comms;                   // Registered communicators
 };
 
 
-} // namespace AMP
+} // namespace AMP::IO
 
 
 #include "AMP/IO/RestartManager.hpp"
+
 
 #endif

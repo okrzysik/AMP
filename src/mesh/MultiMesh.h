@@ -318,6 +318,7 @@ public:
      */
     void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 
+
     // Needed to prevent problems with virtual functions
     using Mesh::Subset;
 
@@ -344,6 +345,11 @@ public:
     //! Function to create the databases for the meshes within the multimesh
     static std::vector<std::shared_ptr<AMP::Database>>
     createDatabases( std::shared_ptr<const AMP::Database> database );
+
+
+public: // Write/read restart data
+    void writeRestart( int64_t ) const override;
+    MultiMesh( int64_t, AMP::IO::RestartManager * );
 
 
 private:

@@ -336,40 +336,27 @@ void writeHDF5Array( hid_t fid, const std::string_view &name, const AMP::Array<T
 }
 
 
-
-    // clang-format off
 /************************************************************************
  * Explicit instantiations                                              *
  ***********************************************************************/
-#define INSTANTIATE( TYPE )                                                                                  \
-    template hid_t getHDF5datatype<TYPE>();                                                                  \
-    template void readHDF5<TYPE>( hid_t, const std::string_view &, TYPE & );                                 \
-    template void readHDF5<AMP::Array<TYPE>>( hid_t, const std::string_view&, AMP::Array<TYPE>& );           \
-    template void readHDF5<std::vector<TYPE>>( hid_t, const std::string_view&, std::vector<TYPE>& );         \
-    template void writeHDF5<TYPE>( hid_t, const std::string_view &, const TYPE & );                          \
-    template void writeHDF5<AMP::Array<TYPE>>( hid_t, const std::string_view&, const AMP::Array<TYPE>& );    \
-    template void writeHDF5<std::vector<TYPE>>( hid_t, const std::string_view&, const std::vector<TYPE> & ); \
-    template void readHDF5Scalar<TYPE>( hid_t, const std::string_view &, TYPE & );                           \
-    template void writeHDF5Scalar<TYPE>( hid_t, const std::string_view &, const TYPE & );                    \
-    template void readHDF5Array<TYPE>( hid_t, const std::string_view &, AMP::Array<TYPE> & );                \
-    template void writeHDF5Array<TYPE>( hid_t, const std::string_view &, const AMP::Array<TYPE> & )
-// clang-format on
-INSTANTIATE( bool );
-INSTANTIATE( char );
-INSTANTIATE( int8_t );
-INSTANTIATE( int16_t );
-INSTANTIATE( int32_t );
-INSTANTIATE( int64_t );
-INSTANTIATE( uint8_t );
-INSTANTIATE( uint16_t );
-INSTANTIATE( uint32_t );
-INSTANTIATE( uint64_t );
-INSTANTIATE( float );
-INSTANTIATE( double );
-INSTANTIATE( std::complex<float> );
-INSTANTIATE( std::complex<double> );
-INSTANTIATE( std::string );
-INSTANTIATE( std::string_view );
+INSTANTIATE_HDF5( bool );
+INSTANTIATE_HDF5( char );
+INSTANTIATE_HDF5( int8_t );
+INSTANTIATE_HDF5( int16_t );
+INSTANTIATE_HDF5( int32_t );
+INSTANTIATE_HDF5( int64_t );
+INSTANTIATE_HDF5( uint8_t );
+INSTANTIATE_HDF5( uint16_t );
+INSTANTIATE_HDF5( uint32_t );
+INSTANTIATE_HDF5( uint64_t );
+INSTANTIATE_HDF5( float );
+INSTANTIATE_HDF5( double );
+INSTANTIATE_HDF5( long double );
+INSTANTIATE_HDF5( std::byte );
+INSTANTIATE_HDF5( std::complex<float> );
+INSTANTIATE_HDF5( std::complex<double> );
+INSTANTIATE_HDF5( std::string );
+INSTANTIATE_HDF5( std::string_view );
 
 
 } // namespace AMP

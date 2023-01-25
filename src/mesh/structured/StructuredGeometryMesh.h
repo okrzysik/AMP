@@ -45,6 +45,10 @@ public: // Functions derived from BoxMesh
     void coord( const MeshElementIndex &index, double *pos ) const override;
     std::unique_ptr<Mesh> clone() const override;
 
+protected: // Write/read restart data
+    void writeRestart( int64_t ) const override;
+    StructuredGeometryMesh( int64_t, AMP::IO::RestartManager * );
+
 private:
     uint32_t d_pos_hash;
     std::shared_ptr<AMP::Geometry::LogicalGeometry> d_geometry2;
