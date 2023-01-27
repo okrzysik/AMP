@@ -1599,7 +1599,7 @@ void MPI_CLASS::stop_MPI()
  ****************************************************************************/
 MPI_CLASS::Request::Request( MPI_CLASS::Request2 request, std::any data )
 {
-    using TYPE = typename std::remove_reference<decltype( *( d_data.get() ) )>::type;
+    using TYPE = typename AMP::remove_cvref_t<decltype( *( d_data.get() ) )>;
     if ( data.has_value() ) {
         auto deleter = []( TYPE *p ) {
             MPI_CLASS::wait( p->first );

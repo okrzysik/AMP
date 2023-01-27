@@ -87,25 +87,23 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
     } else if constexpr ( AMP::is_vector_v<TYPE> ) {
         // We are dealing with a std::vector
         typedef decltype( *x.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        if constexpr ( std::is_same_v<TYPE4, bool> ) {
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        if constexpr ( std::is_same_v<TYPE3, bool> ) {
             AMP::Array<bool> y( x.size() );
             for ( size_t i = 0; i < x.size(); i++ )
                 y( i ) = x[i];
             writeHDF5Array( fid, name, y );
         } else {
-            AMP::Array<TYPE4> y;
-            y.viewRaw( { x.size() }, const_cast<TYPE4 *>( x.data() ) );
+            AMP::Array<TYPE3> y;
+            y.viewRaw( { x.size() }, const_cast<TYPE3 *>( x.data() ) );
             writeHDF5( fid, name, y );
         }
     } else if constexpr ( std::is_array_v<TYPE> ) {
         // We are dealing with an C array
         typedef decltype( *x ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        AMP::Array<TYPE4> y;
-        y.viewRaw( { x.size() }, const_cast<TYPE4 *>( x.data() ) );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        AMP::Array<TYPE3> y;
+        y.viewRaw( { x.size() }, const_cast<TYPE3 *>( x.data() ) );
         writeHDF5( fid, name, y );
     } else if constexpr ( AMP::is_Array_v<TYPE> ) {
         // We are dealing with an Array
@@ -129,10 +127,9 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
     } else if constexpr ( AMP::is_container_v<TYPE> ) {
         // We are dealing with a container
         typedef decltype( *x.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> x2( x.begin(), x.end() );
-        writeHDF5<std::vector<TYPE4>>( fid, name, x2 );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        std::vector<TYPE3> x2( x.begin(), x.end() );
+        writeHDF5<std::vector<TYPE3>>( fid, name, x2 );
     } else {
         writeHDF5Scalar( fid, name, x );
     }
@@ -146,7 +143,7 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
         readHDF5( fid, name, *x );
     } else if constexpr ( AMP::is_vector_v<TYPE> ) {
         // We are dealing with a std::vector
-        typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
+        typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
         if constexpr ( std::is_same_v<TYPE2, std::_Bit_reference> ) {
             AMP::Array<bool> y;
             readHDF5Array( fid, name, y );
@@ -163,7 +160,7 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
         }
     } else if constexpr ( std::is_array_v<TYPE> ) {
         // We are dealing with a std::array
-        typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
+        typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
         AMP::Array<TYPE2> y;
         readHDF5( fid, name, y );
         AMP_ASSERT( y.length() == x.size() );
@@ -193,7 +190,7 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
             "Reading data into a string_view, char*, const char* is not supported" );
     } else if constexpr ( AMP::is_container_v<TYPE> ) {
         // We are dealing with a container
-        typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
+        typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
         AMP::Array<TYPE2> y;
         readHDF5( fid, name, y );
         if ( x.size() == y.length() ) {

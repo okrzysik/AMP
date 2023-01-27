@@ -716,9 +716,8 @@ inline void Database::addArgs( std::string_view key, TYPE value, Args... args )
         putScalar( key, value );
     } else if constexpr ( has_size<TYPE>::value || is_initializer_list<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> data( value.begin(), value.end() );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        std::vector<TYPE3> data( value.begin(), value.end() );
         putVector( key, std::move( data ) );
     } else {
         putScalar( key, value );
@@ -739,9 +738,8 @@ Database::addArgsWithUnits( std::string_view key, TYPE value, const Units &unit,
         putScalar( key, value, unit );
     } else if constexpr ( has_size<TYPE>::value || is_initializer_list<TYPE>::value ) {
         typedef decltype( *value.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> data( value.begin(), value.end() );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        std::vector<TYPE3> data( value.begin(), value.end() );
         putVector( key, std::move( data ), unit );
     } else {
         putScalar( key, value, unit );

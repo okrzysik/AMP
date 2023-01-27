@@ -1,7 +1,7 @@
 #ifndef included_AMP_Database_hpp
 #define included_AMP_Database_hpp
 
-#include "AMP/IO/HDF5.hpp"
+#include "AMP/IO/HDF5.h"
 #include "AMP/utils/AMP_MPI_pack.hpp"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/FactoryStrategy.hpp"
@@ -293,11 +293,32 @@ public:
     }
     void writeHDF5( int64_t fid, std::string_view name ) const override
     {
-        AMP::writeHDF5( fid, name, d_data );
+        if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
+            typedef typename TYPE::element_type TYPE1;
+            typedef typename std::remove_cv_t<TYPE1> TYPE2;
+            AMP::writeHDF5<TYPE2>( fid, name, *d_data );
+        } else {
+            typedef typename std::remove_reference_t<TYPE> TYPE1;
+            typedef typename std::remove_cv_t<TYPE1> TYPE2;
+            AMP::writeHDF5<TYPE2>( fid, name, d_data );
+        }
     }
     void readHDF5( int64_t fid, std::string_view name ) override
     {
-        AMP::readHDF5( fid, name, d_data );
+        if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
+            typedef typename TYPE::element_type TYPE2;
+            if constexpr ( std::is_const_v<TYPE2> )
+                AMP_ERROR( "Unable to read into const object" );
+            else
+                AMP::readHDF5( fid, name, *d_data );
+        } else if constexpr ( std::is_const_v<TYPE> ) {
+            NULL_USE( fid );
+            NULL_USE( name );
+            AMP_ERROR( "Unable to read into const object" );
+        } else {
+            typedef typename std::remove_reference_t<TYPE> TYPE2;
+            AMP::readHDF5<TYPE2>( fid, name, d_data );
+        }
     }
 
 private:
@@ -389,11 +410,30 @@ public:
     }
     void writeHDF5( int64_t fid, std::string_view name ) const override
     {
-        AMP::writeHDF5( fid, name, d_data );
+        if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
+            typedef typename TYPE::element_type TYPE1;
+            typedef typename AMP::remove_cvref_t<TYPE1> TYPE2;
+            AMP::Array<TYPE2> y( d_data.size() );
+            for ( size_t i = 0; i < d_data.length(); i++ )
+                y( i ) = *d_data( i );
+            AMP::writeHDF5( fid, name, y );
+        } else {
+            AMP::writeHDF5( fid, name, d_data );
+        }
     }
     void readHDF5( int64_t fid, std::string_view name ) override
     {
-        AMP::readHDF5( fid, name, d_data );
+        if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
+            typedef typename TYPE::element_type TYPE1;
+            typedef typename AMP::remove_cvref_t<TYPE1> TYPE2;
+            AMP::Array<TYPE2> y;
+            AMP::readHDF5( fid, name, y );
+            d_data.resize( y.size() );
+            for ( size_t i = 0; i < d_data.length(); i++ )
+                d_data( i ) = std::make_shared<TYPE2>( y( i ) );
+        } else {
+            AMP::writeHDF5( fid, name, d_data );
+        }
     }
 
 private:

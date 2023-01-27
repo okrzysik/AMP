@@ -579,7 +579,7 @@ TYPE MPI_CLASS::bcast( const TYPE &x, int root ) const
 {
     TYPE y;
     if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
-        using TYPE2 = typename std::remove_reference<decltype( *( x.get() ) )>::type;
+        using TYPE2 = typename AMP::remove_cvref_t<decltype( *( x.get() ) )>;
         y.reset( new TYPE2() );
         if ( d_rank == root )
             *y = *x;
@@ -759,7 +759,7 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
         MPI_CLASS_INSIST( length == 1 && get_length == false,
                           "Receiving arrays of pointers of objects is not supported" );
-        using TYPE2 = typename std::remove_reference<decltype( *( buf->get() ) )>::type;
+        using TYPE2 = typename AMP::remove_cvref_t<decltype( *( buf->get() ) )>;
         buf->reset( new TYPE2() );
         recv( buf->get(), length, send_proc, false, tag );
     } else {
@@ -826,7 +826,7 @@ MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int t
         MPI_Irecv2( buf, bytes, MPI_CLASS_BYTE, send_proc, tag, d_comm, request.get() );
     } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
         MPI_CLASS_INSIST( length == 1, "Receiving arrays of pointers of objects is not supported" );
-        using TYPE2 = typename std::remove_reference<decltype( *( buf->get() ) )>::type;
+        using TYPE2 = typename AMP::remove_cvref_t<decltype( *( buf->get() ) )>;
         buf->reset( new TYPE2() );
         request = Irecv( buf->get(), 1, send_proc, tag );
     } else {
