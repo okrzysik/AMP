@@ -145,6 +145,13 @@ public:
     //! Check if two geometries are not equal
     inline bool operator!=( const Geometry &rhs ) const { return !operator==( rhs ); }
 
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const = 0;
+
 
 public:
     /**

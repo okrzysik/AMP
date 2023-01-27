@@ -6,6 +6,9 @@
 #include "AMP/utils/UtilityMacros.h"
 
 
+namespace AMP::Geometry {
+class Geometry;
+}
 namespace AMP::Mesh {
 class Mesh;
 }

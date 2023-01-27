@@ -31,6 +31,9 @@ public:
      */
     explicit Box( const std::vector<double> &range );
 
+    //! ConstructGrid from restart
+    Box( int64_t );
+
 public: // Default constructors
     explicit Box( Box<NDIM> &&range )      = default;
     explicit Box( const Box<NDIM> &range ) = default;
@@ -57,6 +60,7 @@ public: // Functions inherited from Geometry
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override;
     bool operator==( const Geometry &rhs ) const override;
+    void writeRestart( int64_t ) const override;
 
 protected:
     Box();
@@ -88,6 +92,9 @@ public:
      */
     explicit Grid( const std::vector<std::vector<double>> &coord );
 
+    //! ConstructGrid from restart
+    Grid( int64_t );
+
 public: // Default constructors
     explicit Grid( Grid<NDIM> &&rhs )      = default;
     explicit Grid( const Grid<NDIM> &rhs ) = default;
@@ -101,6 +108,7 @@ public: // Functions inherited from Geometry
     void displace( const double *x ) override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
 
 protected:
     std::array<std::vector<double>, NDIM> d_coord; // Coordinates

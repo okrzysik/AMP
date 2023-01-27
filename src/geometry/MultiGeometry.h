@@ -48,6 +48,8 @@ public: // Functions inherited from Geometry
     void displace( const double *x ) override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
+    MultiGeometry( int64_t );
 
 private:
     //! Empty constructor for a mesh

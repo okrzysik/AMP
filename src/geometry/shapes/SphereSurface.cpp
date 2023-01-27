@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/SphereSurface.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -192,6 +193,13 @@ bool SphereSurface::operator==( const Geometry &rhs ) const
         return false;
     return d_r == geom->d_r && d_offset == geom->d_offset;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void SphereSurface::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+SphereSurface::SphereSurface( int64_t ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace AMP::Geometry

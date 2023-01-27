@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/SquareFrustum.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -369,6 +370,13 @@ bool SquareFrustum::operator==( const Geometry &rhs ) const
            d_pyramid_size == geom->d_pyramid_size && d_scale_height == geom->d_scale_height &&
            d_volume == geom->d_volume && d_face == geom->d_face && d_normal[0] == geom->d_normal[0];
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void SquareFrustum::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+SquareFrustum::SquareFrustum( int64_t ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace AMP::Geometry

@@ -138,4 +138,10 @@ bool MultiGeometry::operator==( const Geometry &rhs ) const
 }
 
 
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MultiGeometry::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+
+
 } // namespace AMP::Geometry

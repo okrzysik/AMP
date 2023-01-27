@@ -925,7 +925,7 @@ bool libmeshMesh::operator==( const Mesh &rhs ) const
 /****************************************************************
  * Write restart data                                            *
  ****************************************************************/
-void libmeshMesh::writeRestart( int64_t fid ) const
+void libmeshMesh::writeRestart( int64_t ) const
 {
     AMP_ERROR( "writeRestart is not implimented for libmeshMesh" );
 }

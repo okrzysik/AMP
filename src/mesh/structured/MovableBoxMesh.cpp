@@ -34,9 +34,10 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
         }
         AMP::Utilities::quicksort( d_index );
         // Generate coordinates
-        d_coord.resize( d_index.size(), { 0, 0, 0 } );
+        d_coord.resize( PhysicalDim, d_index.size() );
+        d_coord.fill( 0 );
         for ( size_t i = 0; i < d_index.size(); i++ )
-            mesh.coord( d_index[i], d_coord[i].data() );
+            mesh.coord( d_index[i], &d_coord( 0, i ) );
     }
 }
 
@@ -47,14 +48,69 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
 void MovableBoxMesh::writeRestart( int64_t fid ) const
 {
     writeHDF5( fid, "MeshType", std::string( "MovableBoxMesh" ) );
-    // BoxMesh::writeRestart( fid );
+    // Write BoxMesh data
     writeHDF5( fid, "MeshName", d_name );
     writeHDF5( fid, "MeshID", d_meshID );
     writeHDF5( fid, "comm", d_comm.hashRanks() );
+    writeHDF5( fid, "PhysicalDim", PhysicalDim );
+    writeHDF5( fid, "GeomDim", GeomDim );
+    writeHDF5( fid, "gcw", d_max_gcw );
+    writeHDF5( fid, "size", d_globalSize );
+    writeHDF5( fid, "periodic", d_isPeriodic );
+    writeHDF5( fid, "surfaceId", d_surfaceId );
+    writeHDF5( fid, "numBlocks", d_numBlocks );
+    writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    // Write MovableBoxMesh data
+    writeHDF5( fid, "pos_hash", d_pos_hash );
+    writeHDF5( fid, "index", d_index );
+    writeHDF5( fid, "coord", d_coord );
+    writeHDF5( fid, "ids", d_ids );
 }
-MovableBoxMesh::MovableBoxMesh( int64_t fid, AMP::IO::RestartManager *manager ) : BoxMesh( fid )
+MovableBoxMesh::MovableBoxMesh( int64_t fid, AMP::IO::RestartManager *manager ) : BoxMesh()
 {
-    AMP_ERROR( "Not finished" );
+    // Set the data for Mesh
+    readHDF5( fid, "MeshName", d_name );
+    uint64_t commHash;
+    readHDF5( fid, "comm", commHash );
+    d_comm = manager->getComm( commHash );
+    // Basic defaults
+    d_globalSize.fill( 1 );
+    d_isPeriodic.fill( false );
+    d_numBlocks.fill( 1 );
+    // Fill basic mesh information
+    // Note: we do not call initialize to avoid any changes to the parallel decomposition
+    readHDF5( fid, "PhysicalDim", PhysicalDim );
+    readHDF5( fid, "GeomDim", GeomDim );
+    readHDF5( fid, "gcw", d_max_gcw );
+    readHDF5( fid, "size", d_globalSize );
+    readHDF5( fid, "periodic", d_isPeriodic );
+    readHDF5( fid, "surfaceId", d_surfaceId );
+    readHDF5( fid, "numBlocks", d_numBlocks );
+    readHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    readHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    readHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    readHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    readHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    readHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    auto block   = getLocalBlock( d_rank );
+    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
+    d_localIndex = block;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
+            d_localIndex[2 * d + 1] = d_globalSize[d];
+        d_localIndex[2 * d + 1]++;
+    }
+    // Read MovableBoxMesh data
+    readHDF5( fid, "pos_hash", d_pos_hash );
+    readHDF5( fid, "index", d_index );
+    readHDF5( fid, "coord", d_coord );
+    readHDF5( fid, "ids", d_ids );
+    BoxMesh::finalize( d_name, {} );
 }
 
 
@@ -66,9 +122,9 @@ uint64_t MovableBoxMesh::positionHash() const { return d_pos_hash; }
 void MovableBoxMesh::displaceMesh( const std::vector<double> &x )
 {
     AMP_ASSERT( x.size() == PhysicalDim );
-    for ( auto &i : d_coord ) {
+    for ( size_t i = 0; i < d_coord.size( 1 ); i++ ) {
         for ( int d = 0; d < PhysicalDim; d++ )
-            i[d] += x[d];
+            d_coord( d, i ) += x[d];
     }
     for ( int d = 0; d < PhysicalDim; d++ ) {
         d_box[2 * d + 0] += x[d];
@@ -110,13 +166,13 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
     // Move all nodes (including the ghost nodes)
     std::vector<size_t> dofs( PhysicalDim );
     std::vector<double> disp( PhysicalDim );
-    for ( size_t i = 0; i < d_coord.size(); i++ ) {
+    for ( size_t i = 0; i < d_coord.size( 1 ); i++ ) {
         MeshElementID id = structuredMeshElement( d_index[i], this ).globalID();
         DOFs->getDOFs( id, dofs );
         AMP_ASSERT( dofs.size() == PhysicalDim );
         displacement->getValuesByGlobalID( (int) PhysicalDim, &dofs[0], &disp[0] );
         for ( int d = 0; d < PhysicalDim; d++ )
-            d_coord[i][d] += disp[d];
+            d_coord( d, i ) += disp[d];
     }
     // Compute the new bounding box of the mesh
     d_box_local = std::vector<double>( 2 * PhysicalDim );
@@ -124,10 +180,10 @@ void MovableBoxMesh::displaceMesh( const AMP::LinearAlgebra::Vector::const_share
         d_box_local[2 * d + 0] = 1e100;
         d_box_local[2 * d + 1] = -1e100;
     }
-    for ( auto &i : d_coord ) {
+    for ( size_t i = 0; i < d_coord.size( 1 ); i++ ) {
         for ( int d = 0; d < PhysicalDim; d++ ) {
-            d_box_local[2 * d + 0] = std::min( d_box_local[2 * d + 0], i[d] );
-            d_box_local[2 * d + 1] = std::max( d_box_local[2 * d + 1], i[d] );
+            d_box_local[2 * d + 0] = std::min( d_box_local[2 * d + 0], d_coord( d, i ) );
+            d_box_local[2 * d + 1] = std::max( d_box_local[2 * d + 1], d_coord( d, i ) );
         }
     }
     d_box = std::vector<double>( PhysicalDim * 2 );
@@ -176,7 +232,7 @@ void MovableBoxMesh::coord( const MeshElementIndex &index, double *pos ) const
         AMP_ERROR( msg );
     }
     for ( int d = 0; d < PhysicalDim; d++ )
-        pos[d] = d_coord[i][d];
+        pos[d] = d_coord( d, i );
 }
 
 

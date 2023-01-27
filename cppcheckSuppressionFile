@@ -64,6 +64,8 @@ invalidLifetime:*/AMP/utils/kdtree2.hpp
 pointerOutOfBoundsCond:*/AMP/utils/kdtree2.hpp
 passedByValue:*/AMP/utils/Database.h
 passedByValue:*/AMP/utils/Database.hpp
+passedByValue:*/AMP/utils/Database.cpp
+passedByValue:*/AMP/utils/DatabaseKeyData.cpp
 passedByValue:*/AMP/utils/FactoryStrategy.hpp
 
 

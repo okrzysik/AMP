@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/Parallelepiped.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -286,6 +287,13 @@ bool Parallelepiped::operator==( const Geometry &rhs ) const
            d_M_inv == geom->d_M_inv && d_V == geom->d_V && d_n_ab == geom->d_n_ab &&
            d_n_ac == geom->d_n_ac && d_n_bc == geom->d_n_bc;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void Parallelepiped::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+Parallelepiped::Parallelepiped( int64_t ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace AMP::Geometry

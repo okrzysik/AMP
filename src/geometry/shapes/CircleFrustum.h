@@ -32,6 +32,9 @@ public:
      */
     explicit CircleFrustum( const std::array<double, 2> &r, int dir, double height );
 
+    //! Construct from restart
+    CircleFrustum( int64_t );
+
 public: // Functions inherited from Geometry
     std::string getName() const override final { return "CircleFrustum"; }
     bool isConvex() const override final { return true; }
@@ -52,6 +55,7 @@ public: // Functions inherited from Geometry
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
 
 protected:              // Internal data
     uint8_t d_dir;      // The direction of the center axis

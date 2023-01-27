@@ -387,7 +387,7 @@ static std::unique_ptr<HDF5data> readPrimitive( hid_t fid, const std::string_vie
     } else if ( H5Tequal( tid, getHDF5datatype<std::complex<double>>() ) ) {
         data.reset( new HDF5_primitive<double>( fid, name ) );
     } else {
-        AMP_ERROR( "Unknown data" );
+        AMP_WARNING( "Unknown data" );
     }
     return data;
 }
@@ -420,7 +420,7 @@ static std::unique_ptr<HDF5data> readDatabase( hid_t fid, const std::string_view
     } else if ( classid == H5T_COMPOUND ) {
         data.reset( new HDF5_compound( fid, name ) );
     } else {
-        AMP_ERROR( "Unknown data" );
+        AMP_WARNING( "Unknown data" );
     }
     return data;
 }
@@ -455,7 +455,6 @@ HDF5_group::HDF5_group( hid_t fid, const std::string_view &name ) : HDF5data( fi
         if ( data2 )
             data.push_back( std::move( data2 ) );
         d_names.emplace_back( name2 );
-        AMP_ASSERT( data.back() );
     }
     d_data = data;
     // Check if variables represent an array

@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/Tube.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -261,5 +262,13 @@ bool Tube::operator==( const Geometry &rhs ) const
            d_z_max == geom->d_z_max && d_offset[0] == geom->d_offset[0] &&
            d_offset[1] == geom->d_offset[1] && d_offset[2] == geom->d_offset[2];
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void Tube::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+Tube::Tube( int64_t ) { AMP_ERROR( "Not finished" ); }
+
 
 } // namespace AMP::Geometry

@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/CircleFrustum.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -413,6 +414,13 @@ bool CircleFrustum::operator==( const Geometry &rhs ) const
     return d_dir == geom->d_dir && d_r == geom->d_r && d_h == geom->d_h &&
            d_offset == geom->d_offset && d_C == geom->d_C && d_theta == geom->d_theta;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void CircleFrustum::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+CircleFrustum::CircleFrustum( int64_t ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace AMP::Geometry

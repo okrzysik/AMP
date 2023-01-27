@@ -55,16 +55,16 @@ hid_t AMP::getHDF5datatype<AMP::Database>()
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::writeHDF5Array<AMP::Database>( hid_t fid,
-                                         const std::string_view &name,
-                                         const AMP::Array<AMP::Database> &data )
+void AMP::writeHDF5Array<AMP::Database>( hid_t,
+                                         const std::string_view &,
+                                         const AMP::Array<AMP::Database> & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::readHDF5Array<AMP::Database>( hid_t fid,
-                                        const std::string_view &name,
-                                        AMP::Array<AMP::Database> &data )
+void AMP::readHDF5Array<AMP::Database>( hid_t,
+                                        const std::string_view &,
+                                        AMP::Array<AMP::Database> & )
 {
     AMP_ERROR( "Not finished" );
 }
@@ -93,16 +93,16 @@ hid_t AMP::getHDF5datatype<AMP::Database::Check>()
     return getHDF5datatype<uint8_t>();
 }
 template<>
-void AMP::writeHDF5Array<AMP::Database::Check>( hid_t fid,
-                                                const std::string_view &name,
-                                                const AMP::Array<AMP::Database::Check> &data )
+void AMP::writeHDF5Array<AMP::Database::Check>( hid_t,
+                                                const std::string_view &,
+                                                const AMP::Array<AMP::Database::Check> & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::readHDF5Array<AMP::Database::Check>( hid_t fid,
-                                               const std::string_view &name,
-                                               AMP::Array<AMP::Database::Check> &data )
+void AMP::readHDF5Array<AMP::Database::Check>( hid_t,
+                                               const std::string_view &,
+                                               AMP::Array<AMP::Database::Check> & )
 {
     AMP_ERROR( "Not finished" );
 }
@@ -134,30 +134,26 @@ hid_t AMP::getHDF5datatype<AMP::DatabaseBox>()
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::writeHDF5Array<AMP::DatabaseBox>( hid_t fid,
-                                            const std::string_view &name,
-                                            const AMP::Array<DatabaseBox> &data )
+void AMP::writeHDF5Array<AMP::DatabaseBox>( hid_t,
+                                            const std::string_view &,
+                                            const AMP::Array<DatabaseBox> & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::readHDF5Array<AMP::DatabaseBox>( hid_t fid,
-                                           const std::string_view &name,
-                                           AMP::Array<DatabaseBox> &data )
+void AMP::readHDF5Array<AMP::DatabaseBox>( hid_t,
+                                           const std::string_view &,
+                                           AMP::Array<DatabaseBox> & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::writeHDF5Scalar<AMP::DatabaseBox>( hid_t fid,
-                                             const std::string_view &name,
-                                             const DatabaseBox &data )
+void AMP::writeHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, const DatabaseBox & )
 {
     AMP_ERROR( "Not finished" );
 }
 template<>
-void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t fid,
-                                            const std::string_view &name,
-                                            DatabaseBox &data )
+void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, DatabaseBox & )
 {
     AMP_ERROR( "Not finished" );
 }

@@ -21,7 +21,42 @@
 #ifdef AMP_USE_HDF5
 
 
+namespace AMP::Geometry {
+class Geometry;
+}
+namespace AMP::Mesh {
+class Mesh;
+}
+namespace AMP::LinearAlgebra {
+class Vector;
+class Matrix;
+} // namespace AMP::LinearAlgebra
+namespace AMP::Operator {
+class Operator;
+}
+namespace AMP::Solver {
+class SolverStrategy;
+}
+namespace AMP::TimeIntegrator {
+class TimeIntegrator;
+}
+
+
 namespace AMP {
+
+
+/******************************************************************
+ * Define some specializations                                     *
+ ******************************************************************/
+template<>
+void writeHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
+    hid_t, const std::string_view &, const std::shared_ptr<AMP::Geometry::Geometry> & );
+template<>
+void writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>(
+    hid_t, const std::string_view &, const std::shared_ptr<const AMP::Geometry::Geometry> & );
+template<>
+void readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
+    hid_t, const std::string_view &, std::shared_ptr<AMP::Geometry::Geometry> & );
 
 
 /******************************************************************
@@ -65,8 +100,8 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
             writeHDF5( fid, name, y );
         }
     } else if constexpr ( std::is_array_v<TYPE> ) {
-        // We are dealing with a std::array
-        typedef decltype( *x.begin() ) TYPE2;
+        // We are dealing with an C array
+        typedef decltype( *x ) TYPE2;
         typedef typename std::remove_reference<TYPE2>::type TYPE3;
         typedef typename std::remove_cv<TYPE3>::type TYPE4;
         AMP::Array<TYPE4> y;

@@ -1364,28 +1364,21 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
         return found;
     };
     AMP_ASSERT( it );
-    auto errMsg = []( const MeshIterator *it ) {
-        constexpr uint32_t id0 = getTypeID<TriangleMeshIterator<NG, NP, 0>>().hash;
-        constexpr uint32_t id1 = getTypeID<TriangleMeshIterator<NG, NP, 1>>().hash;
-        constexpr uint32_t id2 = getTypeID<TriangleMeshIterator<NG, NP, 2>>().hash;
-        constexpr uint32_t id3 = getTypeID<TriangleMeshIterator<NG, NP, 3>>().hash;
-        return AMP::Utilities::stringf( "%u <%u,%u,%u>", id0, id1, id2, id3 );
-    };
     if ( type == AMP::Mesh::GeomType::Vertex ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Edge ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 1> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Face ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Cell ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     }
     return false;
@@ -1415,7 +1408,7 @@ bool TriangleMesh<NG, NP>::operator==( const Mesh &rhs ) const
  * Write restart data                                            *
  ****************************************************************/
 template<uint8_t NG, uint8_t NP>
-void TriangleMesh<NG, NP>::writeRestart( int64_t fid ) const
+void TriangleMesh<NG, NP>::writeRestart( int64_t ) const
 {
     AMP_ERROR( "writeRestart is not implimented for TriangleMesh" );
 }

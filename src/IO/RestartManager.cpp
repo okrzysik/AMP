@@ -192,6 +192,7 @@ std::shared_ptr<TYPE> RestartManager::getData( uint64_t hash )
 #define INSTANTIATE( TYPE )                                                          \
     template class RestartManager::DataStoreType<TYPE>;                              \
     template void RestartManager::registerData( const std::string &, const TYPE & ); \
+    template std::shared_ptr<TYPE> RestartManager::getData( uint64_t );              \
     template std::shared_ptr<TYPE> RestartManager::getData( const std::string & )
 #define INSTANTIATE2( TYPE )          \
     INSTANTIATE( TYPE );              \

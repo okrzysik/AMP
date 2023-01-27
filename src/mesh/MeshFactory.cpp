@@ -6,6 +6,8 @@
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/mesh/structured/MovableBoxMesh.h"
+#include "AMP/mesh/structured/StructuredGeometryMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
 
 #ifdef AMP_USE_TRILINOS_STKCLASSIC
@@ -138,6 +140,10 @@ std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::getData<AMP::Mesh::Mes
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( type == "MultiMesh" ) {
         mesh = std::make_shared<AMP::Mesh::MultiMesh>( gid, this );
+    } else if ( type == "StructuredGeometryMesh" ) {
+        mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, this );
+    } else if ( type == "MovableBoxMesh" ) {
+        mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, this );
     } else {
         AMP_ERROR( "Not finished: " + type );
     }

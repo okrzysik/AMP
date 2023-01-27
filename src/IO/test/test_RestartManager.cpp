@@ -68,8 +68,8 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     record( ut, db2 != nullptr, "Database loaded" );
     if ( db2 )
         record( ut, *db == *db2, "Database match" );
-    //auto mesh2 = reader.getData<AMP::Mesh::Mesh>( "mesh" );
-    //record( ut, mesh2 != nullptr, "Load Mesh" );
+    auto mesh2 = reader.getData<AMP::Mesh::Mesh>( "mesh" );
+    record( ut, mesh2 != nullptr, "Mesh loaded" );
     // auto vec2  = reader.getData<AMP::LinearAlgebra::Vector>( fid, "vec" );
     // record( ut, Vec2 != nullptr, "Load Vector" );
 }

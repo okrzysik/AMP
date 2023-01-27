@@ -1,4 +1,5 @@
 #include "AMP/geometry/Geometry.h"
+#include "AMP/IO/HDF5.hpp"
 #include "AMP/geometry/MeshGeometry.h"
 #include "AMP/geometry/MultiGeometry.h"
 #include "AMP/geometry/shapes/Box.h"
@@ -36,49 +37,49 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
         int dim = db->getScalar<int>( "dim" );
         if ( db->keyExists( "Range" ) ) {
             if ( dim == 1 ) {
-                geom.reset( new Box<1>( db ) );
+                geom = std::make_shared<Box<1>>( db );
             } else if ( dim == 2 ) {
-                geom.reset( new Box<2>( db ) );
+                geom = std::make_shared<Box<2>>( db );
             } else if ( dim == 3 ) {
-                geom.reset( new Box<3>( db ) );
+                geom = std::make_shared<Box<3>>( db );
             } else {
                 AMP_ERROR( "Physical Dimensions > 3 are not supported yet" );
             }
         } else if ( db->keyExists( "x_grid" ) ) {
             if ( dim == 1 ) {
-                geom.reset( new Grid<1>( db ) );
+                geom = std::make_shared<Grid<1>>( db );
             } else if ( dim == 2 ) {
-                geom.reset( new Grid<2>( db ) );
+                geom = std::make_shared<Grid<2>>( db );
             } else if ( dim == 3 ) {
-                geom.reset( new Grid<3>( db ) );
+                geom = std::make_shared<Grid<3>>( db );
             } else {
                 AMP_ERROR( "Physical Dimensions > 3 are not supported yet" );
             }
         }
     } else if ( generator.compare( "tube" ) == 0 ) {
-        geom.reset( new Tube( db ) );
+        geom = std::make_shared<Tube>( db );
     } else if ( generator.compare( "circle" ) == 0 ) {
-        geom.reset( new Circle( db ) );
+        geom = std::make_shared<Circle>( db );
     } else if ( generator.compare( "cylinder" ) == 0 ) {
-        geom.reset( new Cylinder( db ) );
+        geom = std::make_shared<Cylinder>( db );
     } else if ( generator.compare( "shell" ) == 0 ) {
-        geom.reset( new Shell( db ) );
+        geom = std::make_shared<Shell>( db );
     } else if ( generator.compare( "sphere" ) == 0 ) {
-        geom.reset( new Sphere( db ) );
+        geom = std::make_shared<Sphere>( db );
     } else if ( generator.compare( "sphere_surface" ) == 0 ) {
-        geom.reset( new SphereSurface( db ) );
+        geom = std::make_shared<SphereSurface>( db );
     } else if ( generator.compare( "square_frustrum" ) == 0 ) {
-        geom.reset( new SquareFrustum( db ) );
+        geom = std::make_shared<SquareFrustum>( db );
     } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
-        geom.reset( new CircleFrustum( db ) );
+        geom = std::make_shared<CircleFrustum>( db );
     } else if ( generator.compare( "parallelepiped" ) == 0 ) {
-        geom.reset( new Parallelepiped( db ) );
+        geom = std::make_shared<Parallelepiped>( db );
     } else if ( generator.compare( "regular_polygon" ) == 0 ) {
-        geom.reset( new RegularPolygon( db ) );
+        geom = std::make_shared<RegularPolygon>( db );
     } else if ( generator.compare( "pentagon" ) == 0 ) {
         auto db2 = db->cloneDatabase();
         db2->putScalar( "N", 5 );
-        geom.reset( new RegularPolygon( std::move( db2 ) ) );
+        geom = std::make_shared<RegularPolygon>( std::move( db2 ) );
     } else if ( generator.compare( "mesh" ) == 0 ) {
         // Generate a mesh geometry
         auto mesh_db = db->getDatabase( "Mesh" );
@@ -112,3 +113,71 @@ AMP::Mesh::GeomType Geometry::getGeomType() const
 
 
 } // namespace AMP::Geometry
+
+
+/********************************************************
+ * Write/read geometry class                             *
+ ********************************************************/
+template<>
+void AMP::readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
+    hid_t fid, const std::string_view &name, std::shared_ptr<AMP::Geometry::Geometry> &geom )
+{
+    using namespace AMP::Geometry;
+    hid_t gid = openGroup( fid, name );
+    std::string type;
+    readHDF5( gid, "GeomType", type );
+    if ( type == "Box<1>" ) {
+        geom = std::make_shared<Box<1>>( gid );
+    } else if ( type == "Box<2>" ) {
+        geom = std::make_shared<Box<2>>( gid );
+    } else if ( type == "Box<3>" ) {
+        geom = std::make_shared<Box<3>>( gid );
+    } else if ( type == "Box<1>" ) {
+        geom = std::make_shared<Grid<1>>( gid );
+    } else if ( type == "Grid<2>" ) {
+        geom = std::make_shared<Grid<2>>( gid );
+    } else if ( type == "Grid<3>" ) {
+        geom = std::make_shared<Grid<3>>( gid );
+    } else if ( type == "tube" ) {
+        geom = std::make_shared<Tube>( gid );
+    } else if ( type == "circle" ) {
+        geom = std::make_shared<Circle>( gid );
+    } else if ( type == "cylinder" ) {
+        geom = std::make_shared<Cylinder>( gid );
+    } else if ( type == "shell" ) {
+        geom = std::make_shared<Shell>( gid );
+    } else if ( type == "sphere" ) {
+        geom = std::make_shared<Sphere>( gid );
+    } else if ( type == "sphere_surface" ) {
+        geom = std::make_shared<SphereSurface>( gid );
+    } else if ( type == "square_frustrum" ) {
+        geom = std::make_shared<SquareFrustum>( gid );
+    } else if ( type == "circle_frustrum" ) {
+        geom = std::make_shared<CircleFrustum>( gid );
+    } else if ( type == "parallelepiped" ) {
+        geom = std::make_shared<Parallelepiped>( gid );
+    } else if ( type == "regular_polygon" ) {
+        geom = std::make_shared<RegularPolygon>( gid );
+    } else if ( type == "mesh" ) {
+        geom = std::make_shared<MeshGeometry>( gid );
+    } else {
+        AMP_ERROR( "Unknown geometry " + type );
+    }
+    closeGroup( gid );
+}
+template<>
+void AMP::writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>(
+    hid_t fid,
+    const std::string_view &name,
+    const std::shared_ptr<const AMP::Geometry::Geometry> &geom )
+{
+    hid_t gid = createGroup( fid, name );
+    geom->writeRestart( gid );
+    closeGroup( gid );
+}
+template<>
+void AMP::writeHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
+    hid_t fid, const std::string_view &name, const std::shared_ptr<AMP::Geometry::Geometry> &geom )
+{
+    writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>( fid, name, geom );
+}

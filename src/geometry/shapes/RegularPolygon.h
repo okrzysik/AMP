@@ -30,7 +30,10 @@ public:
      */
     explicit RegularPolygon( int N, double R );
 
-    // Functions inherited from Geometry
+    //! Construct from restart
+    RegularPolygon( int64_t );
+
+public: // Functions inherited from Geometry
     std::string getName() const override { return "RegularPolygon"; }
     bool isConvex() const override final { return true; }
     Point nearest( const Point &pos ) const override final;
@@ -50,6 +53,7 @@ public:
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
 
 protected:
     // Internal data

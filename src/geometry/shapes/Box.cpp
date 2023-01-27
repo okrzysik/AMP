@@ -1,8 +1,8 @@
 #include "AMP/geometry/shapes/Box.h"
+#include "AMP/IO/HDF5.hpp"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
-
 
 #include <algorithm>
 #include <array>
@@ -398,6 +398,59 @@ bool Grid<NDIM>::operator==( const Geometry &rhs ) const
     for ( size_t d = 0; d < NDIM; d++ )
         test = test && d_coord[d] == geom->d_coord[d];
     return test;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+template<std::size_t NDIM>
+void Box<NDIM>::writeRestart( int64_t fid ) const
+{
+    AMP::writeHDF5( fid, "GeomType", getName() );
+    AMP::writeHDF5( fid, "physical", Geometry::d_physicalDim );
+    AMP::writeHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
+    AMP::writeHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
+    AMP::writeHDF5( fid, "ids", LogicalGeometry::d_ids );
+    AMP::writeHDF5( fid, "range", d_range );
+}
+template<std::size_t NDIM>
+void Grid<NDIM>::writeRestart( int64_t fid ) const
+{
+    AMP::writeHDF5( fid, "GeomType", getName() );
+    AMP::writeHDF5( fid, "physical", Geometry::d_physicalDim );
+    AMP::writeHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
+    AMP::writeHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
+    AMP::writeHDF5( fid, "ids", LogicalGeometry::d_ids );
+    AMP::writeHDF5( fid, "range", Box<NDIM>::d_range );
+    AMP::writeHDF5( fid, "coord_x", d_coord[0] );
+    if ( NDIM >= 2 )
+        AMP::writeHDF5( fid, "coord_y", d_coord[1] );
+    if ( NDIM >= 3 )
+        AMP::writeHDF5( fid, "coord_z", d_coord[2] );
+}
+template<std::size_t NDIM>
+Box<NDIM>::Box( int64_t fid )
+{
+    AMP::readHDF5( fid, "physical", Geometry::d_physicalDim );
+    AMP::readHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
+    AMP::readHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
+    AMP::readHDF5( fid, "ids", LogicalGeometry::d_ids );
+    AMP::readHDF5( fid, "range", d_range );
+}
+template<std::size_t NDIM>
+Grid<NDIM>::Grid( int64_t fid )
+{
+    AMP::readHDF5( fid, "physical", Geometry::d_physicalDim );
+    AMP::readHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
+    AMP::readHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
+    AMP::readHDF5( fid, "ids", LogicalGeometry::d_ids );
+    AMP::readHDF5( fid, "range", Box<NDIM>::d_range );
+    AMP::readHDF5( fid, "coord_x", d_coord[0] );
+    if ( NDIM >= 2 )
+        AMP::readHDF5( fid, "coord_y", d_coord[1] );
+    if ( NDIM >= 3 )
+        AMP::readHDF5( fid, "coord_z", d_coord[2] );
 }
 
 

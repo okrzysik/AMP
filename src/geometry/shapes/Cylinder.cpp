@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/Cylinder.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -228,6 +229,13 @@ bool Cylinder::operator==( const Geometry &rhs ) const
     return d_r == geom->d_r && d_z_min == geom->d_z_min && d_z_max == geom->d_z_max &&
            d_offset == geom->d_offset;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void Cylinder::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+Cylinder::Cylinder( int64_t ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace AMP::Geometry

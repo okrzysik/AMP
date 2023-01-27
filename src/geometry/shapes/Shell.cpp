@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/Shell.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -211,6 +212,13 @@ bool Shell::operator==( const Geometry &rhs ) const
         return false;
     return d_r_min == geom->d_r_min && d_r_max == geom->d_r_max && d_offset == geom->d_offset;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void Shell::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+Shell::Shell( int64_t ) { AMP_ERROR( "Not finished" ); }
 
 
 } // namespace AMP::Geometry

@@ -1,4 +1,5 @@
 #include "AMP/geometry/shapes/RegularPolygon.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -10,7 +11,7 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db )
+RegularPolygon::RegularPolygon( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
 {
     d_ids         = { 1, 1, 1, 1 };
     d_isPeriodic  = { false, false };
@@ -223,6 +224,35 @@ bool RegularPolygon::operator==( const Geometry &rhs ) const
         return false;
     return d_N == geom->d_N && d_R == geom->d_R && d_offset == geom->d_offset &&
            d_vertices == geom->d_vertices && d_norm == geom->d_norm;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void RegularPolygon::writeRestart( int64_t fid ) const
+{
+    AMP::writeHDF5( fid, "GeomType", std::string( "regular_polygon" ) );
+    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::writeHDF5( fid, "offset_x", d_offset[0] );
+    AMP::writeHDF5( fid, "offset_y", d_offset[1] );
+    AMP::writeHDF5( fid, "N", d_N );
+    AMP::writeHDF5( fid, "R", d_R );
+}
+RegularPolygon::RegularPolygon( int64_t fid )
+{
+    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::readHDF5( fid, "offset_x", d_offset[0] );
+    AMP::readHDF5( fid, "offset_y", d_offset[1] );
+    AMP::readHDF5( fid, "N", d_N );
+    AMP::readHDF5( fid, "R", d_R );
+    computeNorms();
 }
 
 

@@ -47,8 +47,8 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
         }
     }
     // Initialize the logical mesh
-    BoxMesh::initialize( db );
-    BoxMesh::finalize( db );
+    BoxMesh::initialize( db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
+    BoxMesh::finalize( db->getString( "MeshName" ), getDisplacement( db ) );
 }
 PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) = default;
 
@@ -125,7 +125,7 @@ bool PureLogicalMesh::operator==( const Mesh &rhs ) const
 /****************************************************************
  * Write restart data                                            *
  ****************************************************************/
-void PureLogicalMesh::writeRestart( int64_t fid ) const
+void PureLogicalMesh::writeRestart( int64_t ) const
 {
     AMP_ERROR( "writeRestart is not implimented for PureLogicalMesh" );
 }

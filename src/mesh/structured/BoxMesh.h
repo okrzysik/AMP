@@ -417,13 +417,16 @@ protected:
     static void loadBalance( std::array<int, 3> size,
                              int N_procs,
                              std::vector<int> *startIndex,
-                             const AMP::Database *db = nullptr );
+                             std::vector<int> minSize = {} );
 
     // Function to initialize the mesh data once the logical mesh info has been created
-    void initialize( std::shared_ptr<const AMP::Database> db );
+    void initialize( const std::vector<int> &minSize = {} );
 
     // Function to finalize the mesh data once the coordinates have been set
-    void finalize( std::shared_ptr<const AMP::Database> db );
+    void finalize( const std::string &name, const std::vector<double> &displacement );
+
+    // Function to finalize the mesh data once the coordinates have been set
+    std::vector<double> getDisplacement( std::shared_ptr<const AMP::Database> db );
 
     // Get the surface set for a given surface/type
     ElementBlocks getSurface( int surface, GeomType type ) const;
@@ -451,7 +454,6 @@ protected:
 
 protected: // Write/read restart data
     void writeRestart( int64_t ) const override;
-    BoxMesh( int64_t );
 
 protected:                            // Internal data
     int d_rank, d_size;               // Cached values for the rank and size
@@ -468,8 +470,8 @@ protected: // Friend functions to access protected functions
     friend class structuredMeshElement;
     friend class structuredMeshIterator;
 
-private:
-    BoxMesh(); // Private empty constructor
+protected:
+    BoxMesh();
 };
 
 
