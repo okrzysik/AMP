@@ -30,6 +30,15 @@ struct is_vector<std::vector<T>> : std::true_type {
 };
 
 
+//! Checks whether T is a std::vector
+template<typename T>
+struct is_array : std::false_type {
+};
+template<typename T, std::size_t N>
+struct is_array<std::array<T, N>> : std::true_type {
+};
+
+
 // Function to test if a type is a std::pair
 template<typename>
 struct is_pair : std::false_type {
@@ -112,6 +121,8 @@ template<class T>
 inline constexpr bool is_shared_ptr_v = is_shared_ptr<T>::value;
 template<class T>
 inline constexpr bool is_vector_v = is_vector<T>::value;
+template<class T>
+inline constexpr bool is_array_v = is_array<T>::value;
 template<class T>
 inline constexpr bool is_Array_v = is_Array<T>::value;
 template<class T>

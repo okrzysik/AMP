@@ -3,6 +3,7 @@
 
 #include "AMP/geometry/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -51,15 +52,15 @@ public: // Functions inherited from Geometry
 
 protected:
     // Internal data
-    double d_a[3];           // First edge vector
-    double d_b[3];           // Second edge vector
-    double d_c[3];           // Third edge vector
-    double d_offset[3];      // Offset
-    double d_M_inv[9];       // Inverse matrix used to compute logical coordinates
-    double d_V;              // Cached volume
-    AMP::Mesh::Point d_n_ab; // Normal to the plane defined by a-b
-    AMP::Mesh::Point d_n_ac; // Normal to the plane defined by a-c
-    AMP::Mesh::Point d_n_bc; // Normal to the plane defined by b-c
+    std::array<double, 3> d_a;      // First edge vector
+    std::array<double, 3> d_b;      // Second edge vector
+    std::array<double, 3> d_c;      // Third edge vector
+    std::array<double, 3> d_offset; // Offset
+    std::array<double, 9> d_M_inv;  // Inverse matrix used to compute logical coordinates
+    double d_V;                     // Cached volume
+    AMP::Mesh::Point d_n_ab;        // Normal to the plane defined by a-b
+    AMP::Mesh::Point d_n_ac;        // Normal to the plane defined by a-c
+    AMP::Mesh::Point d_n_bc;        // Normal to the plane defined by b-c
 
 private:
     // Private constructor

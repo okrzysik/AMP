@@ -3,9 +3,11 @@
 
     #include "AMP/IO/HDF5.h"
     #include "AMP/IO/HDF5.hpp"
-    #include "AMP/utils/Array.h"
+    #include "AMP/mesh/MeshPoint.h"
+    #include "AMP/utils/Array.hpp"
     #include "AMP/utils/Utilities.h"
 
+    #include <array>
     #include <complex>
     #include <sstream>
     #include <string>
@@ -357,6 +359,75 @@ INSTANTIATE_HDF5( std::complex<float> );
 INSTANTIATE_HDF5( std::complex<double> );
 INSTANTIATE_HDF5( std::string );
 INSTANTIATE_HDF5( std::string_view );
+
+
+/************************************************************************
+ * std::array                                                           *
+ ***********************************************************************/
+#define INSANTIATE_HDF5_ARRAY( TYPE, N ) \
+    template void AMP::readHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, std::array<TYPE,N> & ); \
+    template void AMP::writeHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, const std::array<TYPE,N> & )
+INSANTIATE_HDF5_ARRAY( int, 1 );
+INSANTIATE_HDF5_ARRAY( int, 2 );
+INSANTIATE_HDF5_ARRAY( int, 3 );
+INSANTIATE_HDF5_ARRAY( double, 1 );
+INSANTIATE_HDF5_ARRAY( double, 2 );
+INSANTIATE_HDF5_ARRAY( double, 3 );
+INSANTIATE_HDF5_ARRAY( double, 4 );
+INSANTIATE_HDF5_ARRAY( double, 6 );
+INSANTIATE_HDF5_ARRAY( double, 9 );
+
+
+/************************************************************************
+ * MeshPoint                                                            *
+ ***********************************************************************/
+template<>
+void AMP::readHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
+{
+    std::array<double,4> y;
+    readHDF5( fid, name, y );
+    x = AMP::Mesh::Point( y[0], { y[1], y[2], y[3] } );
+}
+template<>
+void AMP::writeHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
+{
+    std::array<double,4> y = { (double) x.ndim(), x[0], x[1], x[2] };
+    writeHDF5( fid, name, y );
+}
+template<>
+void AMP::readHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
+{
+    AMP::Array<double> y;
+    AMP::readHDF5Array( fid, name, y );
+    int ndim      = std::max( y.ndim() - 1, 1 );
+    size_t dims[] = { y.size( 1 ), y.size( 2 ), y.size( 3 ), y.size( 4 ) };
+    x.resize( AMP::ArraySize( ndim, dims ) );
+    for ( size_t i = 0; i < x.length(); i++ )
+        x( i ) = AMP::Mesh::Point( y(0,i), { y(1,i), y(2,i), y(3,i) } );
+}
+template<>
+void AMP::writeHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
+{
+    AMP::Array<double> y( AMP::cat( AMP::ArraySize( 4 ), x.size() ) );
+    for ( size_t i = 0; i < x.length(); i++ ) {
+        y( 0, i ) = x( i ).ndim();
+        y( 1, i ) = x( i )[0];
+        y( 2, i ) = x( i )[1];
+        y( 3, i ) = x( i )[2];
+    }
+    writeHDF5Array( fid, name, y );
+}
+template<>
+void AMP::readHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
+{
+    readHDF5Array( fid, name, x );
+}
+template<>
+void AMP::writeHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
+{
+    writeHDF5Array( fid, name, x );
+}
+instantiateArrayConstructors( AMP::Mesh::Point );
 
 
 } // namespace AMP

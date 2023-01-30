@@ -3,6 +3,7 @@
 
 #include "AMP/geometry/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -61,7 +62,7 @@ protected:
     double d_r;
     double d_z_min;
     double d_z_max;
-    double d_offset[3];
+    std::array<double, 3> d_offset;
 
 private:
     // Private constructor

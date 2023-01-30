@@ -292,8 +292,39 @@ bool Parallelepiped::operator==( const Geometry &rhs ) const
 /****************************************************************
  * Write/Read restart data                                       *
  ****************************************************************/
-void Parallelepiped::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
-Parallelepiped::Parallelepiped( int64_t ) { AMP_ERROR( "Not finished" ); }
+void Parallelepiped::writeRestart( int64_t fid ) const
+{
+    AMP::writeHDF5( fid, "GeomType", std::string( "parallelepiped" ) );
+    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::writeHDF5( fid, "a", d_a );
+    AMP::writeHDF5( fid, "b", d_b );
+    AMP::writeHDF5( fid, "c", d_c );
+    AMP::writeHDF5( fid, "offset", d_offset );
+    AMP::writeHDF5( fid, "M_inv", d_M_inv );
+    AMP::writeHDF5( fid, "V", d_V );
+    AMP::writeHDF5( fid, "n_ab", d_n_ab );
+    AMP::writeHDF5( fid, "n_ac", d_n_ac );
+    AMP::writeHDF5( fid, "n_bc", d_n_bc );
+}
+Parallelepiped::Parallelepiped( int64_t fid )
+{
+    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::readHDF5( fid, "a", d_a );
+    AMP::readHDF5( fid, "b", d_b );
+    AMP::readHDF5( fid, "c", d_c );
+    AMP::readHDF5( fid, "offset", d_offset );
+    AMP::readHDF5( fid, "M_inv", d_M_inv );
+    AMP::readHDF5( fid, "V", d_V );
+    AMP::readHDF5( fid, "n_ab", d_n_ab );
+    AMP::readHDF5( fid, "n_ac", d_n_ac );
+    AMP::readHDF5( fid, "n_bc", d_n_bc );
+}
 
 
 } // namespace AMP::Geometry

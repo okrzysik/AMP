@@ -97,16 +97,6 @@ public:
     static std::shared_ptr<const MultiVector>
     constView( Vector::const_shared_ptr vec, const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
 
-    /** \brief Encapsulate a vector in a MultiVector
-     * \param[in] vec  The vector to view
-     * \param[in] comm  Communicator to create the MultiVector on
-     * \details  If vec is a MultiVector, it is returned.  Otherwise, a MultiVector is created
-     * and vec is added to it.  If vec is not a parallel vector(such as a SimpleVector), comm
-     * must be specified.
-     */
-    static std::shared_ptr<MultiVector>
-    encapsulate( Vector::shared_ptr vec, const AMP_MPI &comm = AMP_MPI( AMP_COMM_NULL ) );
-
     /** \brief Replace a vector in a MultiVector
      * \details  This function will replace a given vector in the multivector with a different
      * vector.  The original and new vectors must share the same DOFManager.
@@ -164,9 +154,6 @@ protected:
     Vector::shared_ptr selectInto( const VectorSelector & ) override;
     Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const override;
 
-    //! The list of AMP Vectors that comprise this Vector
-    std::vector<Vector::shared_ptr> d_vVectors;
-
     /** \brief A convenience method for extracting vectors from a base class
      * \param[in]  vec  The vector to extract a vector from
      * \param[in]  which  Which vector to get
@@ -186,6 +173,9 @@ protected:
      */
     explicit MultiVector( const std::string &name, const AMP_MPI &comm );
 
+protected:
+    //! The list of AMP Vectors that comprise this Vector
+    std::vector<Vector::shared_ptr> d_vVectors;
 
 private:
     // Helper function to add a vector without updating the DOF manager

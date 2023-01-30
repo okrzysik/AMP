@@ -399,10 +399,9 @@ MultiMesh::createDatabases( std::shared_ptr<const AMP::Database> database )
         // Populate the databases with the proper keys
         keys = database1->getAllKeys();
         for ( auto &key : keys ) {
-            if ( key.compare( "N" ) == 0 || key.compare( "iterator" ) == 0 ||
-                 key.compare( "indicies" ) == 0 ) {
+            if ( key == "N" || key == "iterator" || key == "indicies" ) {
                 // These keys are used by the mesh-array and should not be copied
-            } else if ( key.compare( "Size" ) == 0 || key.compare( "Range" ) == 0 ) {
+            } else if ( key == "Size" || key == "Range" ) {
                 // These are special keys that should not be divided
                 copyKey( database1, databaseArray, key, false, std::string(), index );
             } else {

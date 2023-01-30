@@ -432,7 +432,7 @@ public:
             for ( size_t i = 0; i < d_data.length(); i++ )
                 d_data( i ) = std::make_shared<TYPE2>( y( i ) );
         } else {
-            AMP::writeHDF5( fid, name, d_data );
+            AMP::readHDF5( fid, name, d_data );
         }
     }
 

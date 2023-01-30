@@ -103,7 +103,7 @@ void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
         typedef decltype( *x ) TYPE2;
         typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
         AMP::Array<TYPE3> y;
-        y.viewRaw( { x.size() }, const_cast<TYPE3 *>( x.data() ) );
+        y.viewRaw( { std::size( x ) }, const_cast<TYPE3 *>( x ) );
         writeHDF5( fid, name, y );
     } else if constexpr ( AMP::is_Array_v<TYPE> ) {
         // We are dealing with an Array
@@ -159,6 +159,15 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
                 std::swap( x[i], y( i ) );
         }
     } else if constexpr ( std::is_array_v<TYPE> ) {
+        // We are dealing with a C array
+        typedef typename AMP::remove_cvref_t<decltype( *x )> TYPE2;
+        AMP::Array<TYPE2> y;
+        readHDF5( fid, name, y );
+        AMP_ASSERT( y.length() == std::size( x ) );
+        // Swap the elements in the arrays to use the move operator
+        for ( size_t i = 0; i < std::size( x ); i++ )
+            std::swap( x[i], y( i ) );
+    } else if constexpr ( AMP::is_array_v<TYPE> ) {
         // We are dealing with a std::array
         typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
         AMP::Array<TYPE2> y;

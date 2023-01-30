@@ -237,8 +237,7 @@ void RegularPolygon::writeRestart( int64_t fid ) const
     AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
     AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
     AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
-    AMP::writeHDF5( fid, "offset_x", d_offset[0] );
-    AMP::writeHDF5( fid, "offset_y", d_offset[1] );
+    AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "N", d_N );
     AMP::writeHDF5( fid, "R", d_R );
 }
@@ -248,8 +247,7 @@ RegularPolygon::RegularPolygon( int64_t fid )
     AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
     AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
     AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
-    AMP::readHDF5( fid, "offset_x", d_offset[0] );
-    AMP::readHDF5( fid, "offset_y", d_offset[1] );
+    AMP::readHDF5( fid, "offset", d_offset );
     AMP::readHDF5( fid, "N", d_N );
     AMP::readHDF5( fid, "R", d_R );
     computeNorms();

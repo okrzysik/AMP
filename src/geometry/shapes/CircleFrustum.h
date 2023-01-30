@@ -57,13 +57,13 @@ public: // Functions inherited from Geometry
     bool operator==( const Geometry &rhs ) const override final;
     void writeRestart( int64_t ) const override;
 
-protected:              // Internal data
-    uint8_t d_dir;      // The direction of the center axis
-    double d_r[2];      // The two radii
-    double d_h;         // The height of the frustrum
-    double d_offset[3]; // The offset
-    Point d_C;          // Apex of cone
-    double d_theta;     // Apex angle
+protected:                          // Internal data
+    uint8_t d_dir;                  // The direction of the center axis
+    double d_h;                     // The height of the frustrum
+    std::array<double, 2> d_r;      // The two radii
+    std::array<double, 3> d_offset; // The offset
+    Point d_C;                      // Apex of cone
+    double d_theta;                 // Apex angle
 
 private:
     // Private constructor

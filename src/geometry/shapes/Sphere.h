@@ -3,6 +3,7 @@
 
 #include "AMP/geometry/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -57,7 +58,7 @@ public: // Functions inherited from Geometry
 protected:
     // Internal data
     double d_r;
-    double d_offset[3];
+    std::array<double, 3> d_offset;
 
 private:
     // Private constructor

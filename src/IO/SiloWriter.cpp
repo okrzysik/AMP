@@ -568,7 +568,7 @@ void createSiloDirectory( DBfile *FileHandle, const std::string &path )
         DBtoc *toc  = DBGetToc( FileHandle );
         bool exists = false;
         for ( int j = 0; j < toc->ndir; ++j ) {
-            if ( subdir.compare( toc->dir_names[j] ) == 0 )
+            if ( subdir == toc->dir_names[j] )
                 exists = true;
         }
         if ( !exists )

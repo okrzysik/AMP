@@ -3,6 +3,7 @@
 
 #include "AMP/geometry/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -59,7 +60,7 @@ protected:
     // Internal data
     int d_N;
     double d_R;
-    double d_offset[2];
+    std::array<double, 2> d_offset;
     std::vector<std::array<double, 2>> d_vertices;
     std::vector<Point> d_norm;
 

@@ -33,7 +33,7 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
     auto generator = db->getString( "Generator" );
     std::for_each( generator.begin(), generator.end(), []( char &c ) { c = ::tolower( c ); } );
     std::shared_ptr<AMP::Geometry::Geometry> geom;
-    if ( generator.compare( "cube" ) == 0 ) {
+    if ( generator == "cube" ) {
         int dim = db->getScalar<int>( "dim" );
         if ( db->keyExists( "Range" ) ) {
             if ( dim == 1 ) {
@@ -56,31 +56,31 @@ Geometry::buildGeometry( std::shared_ptr<const AMP::Database> db )
                 AMP_ERROR( "Physical Dimensions > 3 are not supported yet" );
             }
         }
-    } else if ( generator.compare( "tube" ) == 0 ) {
+    } else if ( generator == "tube" ) {
         geom = std::make_shared<Tube>( db );
-    } else if ( generator.compare( "circle" ) == 0 ) {
+    } else if ( generator == "circle" ) {
         geom = std::make_shared<Circle>( db );
-    } else if ( generator.compare( "cylinder" ) == 0 ) {
+    } else if ( generator == "cylinder" ) {
         geom = std::make_shared<Cylinder>( db );
-    } else if ( generator.compare( "shell" ) == 0 ) {
+    } else if ( generator == "shell" ) {
         geom = std::make_shared<Shell>( db );
-    } else if ( generator.compare( "sphere" ) == 0 ) {
+    } else if ( generator == "sphere" ) {
         geom = std::make_shared<Sphere>( db );
-    } else if ( generator.compare( "sphere_surface" ) == 0 ) {
+    } else if ( generator == "sphere_surface" ) {
         geom = std::make_shared<SphereSurface>( db );
-    } else if ( generator.compare( "square_frustrum" ) == 0 ) {
+    } else if ( generator == "square_frustrum" || generator == "square_frustum" ) {
         geom = std::make_shared<SquareFrustum>( db );
-    } else if ( generator.compare( "circle_frustrum" ) == 0 ) {
+    } else if ( generator == "circle_frustrum" || generator == "circle_frustum" ) {
         geom = std::make_shared<CircleFrustum>( db );
-    } else if ( generator.compare( "parallelepiped" ) == 0 ) {
+    } else if ( generator == "parallelepiped" ) {
         geom = std::make_shared<Parallelepiped>( db );
-    } else if ( generator.compare( "regular_polygon" ) == 0 ) {
+    } else if ( generator == "regular_polygon" ) {
         geom = std::make_shared<RegularPolygon>( db );
-    } else if ( generator.compare( "pentagon" ) == 0 ) {
+    } else if ( generator == "pentagon" ) {
         auto db2 = db->cloneDatabase();
         db2->putScalar( "N", 5 );
         geom = std::make_shared<RegularPolygon>( std::move( db2 ) );
-    } else if ( generator.compare( "mesh" ) == 0 ) {
+    } else if ( generator == "mesh" ) {
         // Generate a mesh geometry
         auto mesh_db = db->getDatabase( "Mesh" );
         auto params  = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db->cloneDatabase() );
@@ -123,7 +123,7 @@ void AMP::readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
     hid_t fid, const std::string_view &name, std::shared_ptr<AMP::Geometry::Geometry> &geom )
 {
     using namespace AMP::Geometry;
-    hid_t gid = openGroup( fid, name );
+    int64_t gid = openGroup( fid, name );
     std::string type;
     readHDF5( gid, "GeomType", type );
     if ( type == "Box<1>" ) {
@@ -150,9 +150,9 @@ void AMP::readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
         geom = std::make_shared<Sphere>( gid );
     } else if ( type == "sphere_surface" ) {
         geom = std::make_shared<SphereSurface>( gid );
-    } else if ( type == "square_frustrum" ) {
+    } else if ( type == "square_frustum" ) {
         geom = std::make_shared<SquareFrustum>( gid );
-    } else if ( type == "circle_frustrum" ) {
+    } else if ( type == "circle_frustum" ) {
         geom = std::make_shared<CircleFrustum>( gid );
     } else if ( type == "parallelepiped" ) {
         geom = std::make_shared<Parallelepiped>( gid );
