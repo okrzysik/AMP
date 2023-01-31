@@ -2,6 +2,7 @@
 #define included_AMP_MovableBoxMesh
 
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/utils/Array.h"
 
 #include <array>
 #include <vector>
@@ -100,6 +101,12 @@ public: // BoxMesh specific functionality
      */
     AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
 
+    MovableBoxMesh( int64_t, AMP::IO::RestartManager * );
+
+
+protected: // Write/read restart data
+    void writeRestart( int64_t ) const override;
+
 
 private:
     MovableBoxMesh(); // Private empty constructor
@@ -109,7 +116,7 @@ private:
 
     // The coordinates of the nodes
     std::vector<MeshElementIndex> d_index;
-    std::vector<std::array<double, 3>> d_coord;
+    AMP::Array<double> d_coord;
 
     // Boundary information
     std::vector<int> d_ids;

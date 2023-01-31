@@ -40,7 +40,7 @@ protected:
     // For a given subchannel, fill the elements of interest using the coordinates
     virtual void fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                    double range[4],
-                                   AMP::Mesh::Mesh::shared_ptr mesh,
+                                   std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                    const std::vector<AMP::Mesh::MeshElementID> &ids,
                                    const std::vector<double> &z,
                                    const std::vector<double> &f ) override;
@@ -52,7 +52,7 @@ private:
         double z[4];
     };
     std::vector<gaussPointZCoord>
-    getGaussPoints( AMP::Mesh::Mesh::shared_ptr mesh,
+    getGaussPoints( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                     const std::vector<AMP::Mesh::MeshElementID> &ids );
 };
 

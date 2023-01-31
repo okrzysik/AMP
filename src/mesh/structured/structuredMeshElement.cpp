@@ -31,11 +31,13 @@ double dot3cross( const double a[3], const double b[3], const double c[3] )
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto elementTypeID = AMP::getTypeID<structuredMeshElement>().hash;
+static_assert( elementTypeID != 0 );
 structuredMeshElement::structuredMeshElement() { reset(); }
 void structuredMeshElement::reset()
 {
-    typeID        = getTypeID();
-    element       = nullptr;
+    d_typeHash    = elementTypeID;
+    d_element     = nullptr;
     d_index       = BoxMesh::MeshElementIndex();
     d_meshType    = GeomType::Nullity;
     d_physicalDim = 0;
@@ -48,7 +50,7 @@ structuredMeshElement::structuredMeshElement( const BoxMesh::MeshElementIndex &i
 void structuredMeshElement::reset( const BoxMesh::MeshElementIndex &index,
                                    const AMP::Mesh::BoxMesh *mesh )
 {
-    typeID        = getTypeID();
+    d_typeHash    = elementTypeID;
     d_mesh        = mesh;
     d_meshType    = d_mesh->getGeomType();
     d_physicalDim = d_mesh->getDim();
@@ -62,15 +64,15 @@ structuredMeshElement::structuredMeshElement( const structuredMeshElement &rhs )
       d_index( rhs.d_index ),
       d_mesh( rhs.d_mesh )
 {
-    typeID  = getTypeID();
-    element = nullptr;
+    d_typeHash = elementTypeID;
+    d_element  = nullptr;
 }
 structuredMeshElement &structuredMeshElement::operator=( const structuredMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = getTypeID();
-    this->element       = nullptr;
+    this->d_typeHash    = elementTypeID;
+    this->d_element     = nullptr;
     this->d_meshType    = rhs.d_meshType;
     this->d_physicalDim = rhs.d_physicalDim;
     this->d_index       = rhs.d_index;

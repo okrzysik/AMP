@@ -2,7 +2,6 @@
 #define included_AMP_MultiIterator
 
 #include "AMP/mesh/MeshIterator.h"
-#include "AMP/utils/Utilities.h"
 
 #include <memory>
 
@@ -84,9 +83,6 @@ private:
     std::vector<size_t> d_iteratorSize;
     std::vector<MeshIterator> d_iterators;
     MeshIterator cur_iterator;
-
-private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "MultiIterator" ); }
 };
 
 

@@ -19,7 +19,7 @@ public:
 
     unsigned int getTotalNumberOfPellets();
 
-    std::vector<AMP::Mesh::Mesh::shared_ptr> getLocalMeshes();
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> getLocalMeshes();
 
     std::vector<unsigned int> getLocalPelletIds();
 
@@ -56,7 +56,7 @@ protected:
     double d_scalingFactor;
     short int d_masterId;
     short int d_slaveId;
-    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> d_meshes;
     std::vector<unsigned int> d_pelletIds;
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_var;
     AMP::LinearAlgebra::Vector::shared_ptr d_frozenVectorForMaps;

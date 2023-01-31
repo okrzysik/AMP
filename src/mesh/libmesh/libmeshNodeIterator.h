@@ -3,7 +3,6 @@
 
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/mesh/libmesh/libmeshMesh.h"
-#include "AMP/utils/Utilities.h"
 
 // libMesh includes
 #include "libmesh/elem.h"
@@ -96,12 +95,6 @@ private:
     MeshElement d_cur_element;
 
     void setCurrentElement();
-
-private:
-    static constexpr uint32_t getTypeID()
-    {
-        return AMP::Utilities::hash_char( "libmeshNodeIterator" );
-    }
 };
 } // namespace AMP::Mesh
 

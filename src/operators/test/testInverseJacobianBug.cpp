@@ -6,10 +6,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
-
 #include "libmesh/auto_ptr.h"
 #include "libmesh/boundary_info.h"
 #include "libmesh/cell_hex8.h"
@@ -31,6 +28,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <memory>
 
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName )

@@ -12,7 +12,7 @@ namespace AMP::Mesh {
 
 
 // This runs the geometry only tests
-void meshTests::TestBasicGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestBasicGeometry( AMP::UnitTest &ut, std::shared_ptr<const AMP::Mesh::Mesh> mesh )
 {
     // If we are dealing with a MultiMesh, check each mesh independently
     if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
@@ -30,7 +30,7 @@ void meshTests::TestBasicGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_sha
 
 
 // This tests loops over the boundary
-void meshTests::TestInside( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestInside( AMP::UnitTest &ut, std::shared_ptr<const AMP::Mesh::Mesh> mesh )
 {
     // If we are dealing with a MultiMesh, check each mesh independently
     if ( std::dynamic_pointer_cast<const AMP::Mesh::MultiMesh>( mesh ) ) {
@@ -68,7 +68,8 @@ void meshTests::TestInside( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr
 
 
 // This tests checks physical-logical-physical transformations
-void meshTests::TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestPhysicalLogical( AMP::UnitTest &ut,
+                                     std::shared_ptr<const AMP::Mesh::Mesh> mesh )
 {
     bool pass = true;
     // If we are dealing with a MultiMesh, check each mesh independently
@@ -102,7 +103,7 @@ void meshTests::TestPhysicalLogical( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_s
 
 
 // This tests that the normal in the geometry and the mesh agree (within discretization error)
-void meshTests::TestNormalGeometry( AMP::UnitTest &ut, AMP::Mesh::Mesh::const_shared_ptr mesh )
+void meshTests::TestNormalGeometry( AMP::UnitTest &ut, std::shared_ptr<const AMP::Mesh::Mesh> mesh )
 {
     if ( mesh->getDim() <= 1 )
         return; // Normals are not defined for 1D

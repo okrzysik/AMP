@@ -175,7 +175,7 @@ std::shared_ptr<const Vector> VS_Comm::subset( std::shared_ptr<const Vector> p )
 /********************************************************
  * VS_Mesh                                               *
  ********************************************************/
-VS_Mesh::VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm )
+VS_Mesh::VS_Mesh( std::shared_ptr<AMP::Mesh::Mesh> mesh, bool useMeshComm )
     : d_useMeshComm( useMeshComm ), d_mesh( mesh )
 {
 }

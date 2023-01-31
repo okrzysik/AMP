@@ -2,6 +2,7 @@
 #define included_AMP_test_MatrixTests
 
 #include "AMP/matrices/Matrix.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"

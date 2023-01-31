@@ -1,7 +1,6 @@
 #include "AMP/mesh/triangle_t.h"
 #include "AMP/mesh/euclidean_geometry_tools.h"
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/utils/UtilityMacros.h"
 
 #include <iostream>
 

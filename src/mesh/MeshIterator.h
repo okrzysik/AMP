@@ -2,8 +2,11 @@
 #define included_AMP_MeshIterators
 
 #include "AMP/mesh/MeshElement.h"
+#include "AMP/utils/typeid.h"
+
 #include <iterator>
 #include <memory>
+
 
 namespace AMP::Mesh {
 
@@ -188,9 +191,6 @@ public: // non-virtual functions
     //! Return the current position (from the beginning) in the iterator
     inline size_t position() const;
 
-    //! Return the Unique (per class) ID for identifing the underlying iterator
-    inline unsigned int type_id() const;
-
     //! Operator <
     inline bool operator<( const MeshIterator & ) const;
 
@@ -222,8 +222,8 @@ protected:
 protected:
     // A pointer to the derived class
     MeshIterator *d_iterator;
-    // Unique (per class) ID for identifing the underlying iterator
-    unsigned int d_typeID;
+    // Unique hash for identifying the underlying iterator
+    uint32_t d_typeHash;
     // Type of iterator
     Type d_iteratorType;
     // Size of the iterator
@@ -232,9 +232,6 @@ protected:
     size_t d_pos;
     // Pointer to the current element
     MeshElement *d_element;
-
-private:
-    static const uint32_t MeshIteratorTypeID;
 };
 
 

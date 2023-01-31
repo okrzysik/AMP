@@ -58,7 +58,7 @@ constexpr Units mu0( "N*A^-2", 1.2566370621219e-6 );
 //! characteristic impedance of vacuum: mu0*c
 constexpr Units Z0( "ohm", 376.73031366857 );
 
-//! Stefan–Boltzmann constant: pi^2*kB^4/(60*k_bar^3*c^2)
+//! Stefan-Boltzmann constant: pi^2*kB^4/(60*k_bar^3*c^2)
 constexpr Units sigma( "W*m^-2*K^-4", 5.670374419e-8 );
 
 //! first radiation constant: 2*pi*h*c^2

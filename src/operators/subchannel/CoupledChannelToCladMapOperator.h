@@ -4,9 +4,10 @@
 #include "AMP/operators/Operator.h"
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelPhysicsModel.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
+
 #include <vector>
+
 
 namespace AMP::Operator {
 

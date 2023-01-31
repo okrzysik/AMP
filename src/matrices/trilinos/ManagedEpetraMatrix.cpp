@@ -110,11 +110,11 @@ std::shared_ptr<Vector> ManagedEpetraMatrix::getLeftVector() const
     vec->setVariable( d_pParameters->d_VariableLeft );
     return vec;
 }
-Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getRightDOFManager() const
+std::shared_ptr<Discretization::DOFManager> ManagedEpetraMatrix::getRightDOFManager() const
 {
     return d_pParameters->getRightDOFManager();
 }
-Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getLeftDOFManager() const
+std::shared_ptr<Discretization::DOFManager> ManagedEpetraMatrix::getLeftDOFManager() const
 {
     return d_pParameters->getLeftDOFManager();
 }

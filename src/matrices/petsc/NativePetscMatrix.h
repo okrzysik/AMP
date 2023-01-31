@@ -56,8 +56,8 @@ public:
 
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
-    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
-    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 
     size_t numGlobalRows() const override;
     size_t numGlobalColumns() const override;

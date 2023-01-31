@@ -102,7 +102,7 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
     auto meshParams = std::make_shared<AMP::Mesh::MeshParameters>( mesh_db );
     meshParams->setComm( AMP::AMP_MPI( AMP_COMM_WORLD ) );
     auto subchannelMesh = AMP::Mesh::MeshFactory::create( meshParams );
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> xyFaceMesh;
     xyFaceMesh = subchannelMesh->Subset(
         AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 ) );
 

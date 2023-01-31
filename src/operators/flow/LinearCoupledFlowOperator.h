@@ -1,7 +1,7 @@
 #ifndef included_AMP_LinearCoupledFlowOperator
 #define included_AMP_LinearCoupledFlowOperator
 
-#include "AMP/utils/Utilities.h"
+
 #include "AMP/vectors/Vector.h"
 #include "LinearCoupledFlowOperatorParameters.h"
 #include <vector>

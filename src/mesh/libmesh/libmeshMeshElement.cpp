@@ -15,12 +15,18 @@ static unsigned int generate_id( const std::vector<unsigned int> &ids );
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto elementTypeID = AMP::getTypeID<libmeshMeshElement>().hash;
+static_assert( elementTypeID != 0 );
 libmeshMeshElement::libmeshMeshElement()
+    : d_dim( -1 ),
+      d_rank( 0 ),
+      ptr_element( nullptr ),
+      d_mesh( nullptr ),
+      d_delete_elem( false ),
+      d_globalID( MeshElementID() )
 {
-    typeID     = getTypeID();
-    element    = nullptr;
-    d_dim      = -1;
-    d_globalID = MeshElementID();
+    d_typeHash = elementTypeID;
+    d_element  = nullptr;
 }
 libmeshMeshElement::libmeshMeshElement( int dim,
                                         GeomType type,
@@ -30,8 +36,8 @@ libmeshMeshElement::libmeshMeshElement( int dim,
                                         const libmeshMesh *mesh )
 {
     AMP_ASSERT( libmesh_element != nullptr );
-    typeID          = getTypeID();
-    element         = nullptr;
+    d_typeHash      = elementTypeID;
+    d_element       = nullptr;
     d_dim           = dim;
     d_rank          = rank;
     d_mesh          = mesh;
@@ -65,8 +71,8 @@ libmeshMeshElement::libmeshMeshElement( int dim,
     : d_delete_elem( false )
 {
     AMP_ASSERT( libmesh_element );
-    typeID          = getTypeID();
-    element         = nullptr;
+    d_typeHash      = elementTypeID;
+    d_element       = nullptr;
     d_dim           = dim;
     d_rank          = rank;
     d_mesh          = mesh;
@@ -93,11 +99,11 @@ libmeshMeshElement::libmeshMeshElement( const libmeshMeshElement &rhs )
     : MeshElement(), // Note: we never want to call the base copy constructor
       ptr2( rhs.ptr2 ),
       d_meshID( rhs.d_meshID ),
-      d_delete_elem( false )
+      d_delete_elem( false ),
+      d_globalID( rhs.d_globalID )
 {
-    typeID      = getTypeID();
-    element     = nullptr;
-    d_globalID  = rhs.d_globalID;
+    d_typeHash  = elementTypeID;
+    d_element   = nullptr;
     d_dim       = rhs.d_dim;
     ptr_element = rhs.ptr_element;
     d_rank      = rhs.d_rank;
@@ -107,8 +113,8 @@ libmeshMeshElement &libmeshMeshElement::operator=( const libmeshMeshElement &rhs
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = getTypeID();
-    this->element       = nullptr;
+    this->d_typeHash    = elementTypeID;
+    this->d_element     = nullptr;
     this->d_globalID    = rhs.d_globalID;
     this->d_dim         = rhs.d_dim;
     this->ptr_element   = rhs.ptr_element;
@@ -124,7 +130,7 @@ libmeshMeshElement &libmeshMeshElement::operator=( const libmeshMeshElement &rhs
 /****************************************************************
  * De-constructor                                                *
  ****************************************************************/
-libmeshMeshElement::~libmeshMeshElement() { element = nullptr; }
+libmeshMeshElement::~libmeshMeshElement() { d_element = nullptr; }
 
 
 /****************************************************************

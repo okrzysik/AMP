@@ -246,7 +246,7 @@ bool SubchannelFourEqNonlinearOperator::getBoolParameter(
 
 // function used to get all lateral gaps
 void SubchannelFourEqNonlinearOperator::getLateralFaces(
-    AMP::Mesh::Mesh::shared_ptr mesh,
+    std::shared_ptr<AMP::Mesh::Mesh> mesh,
     std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> &interiorLateralFaceMap,
     std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> &exteriorLateralFaceMap )
 {
@@ -297,7 +297,7 @@ void SubchannelFourEqNonlinearOperator::getLateralFaces(
 
 // function to map x,y position to gap widths
 std::map<AMP::Mesh::Point, double>
-SubchannelFourEqNonlinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mesh,
+SubchannelFourEqNonlinearOperator::getGapWidths( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                  const std::vector<double> &clad_x,
                                                  const std::vector<double> &clad_y,
                                                  const std::vector<double> &clad_d )
@@ -366,7 +366,7 @@ SubchannelFourEqNonlinearOperator::getGapWidths( AMP::Mesh::Mesh::shared_ptr mes
 }
 
 // function used to get all of the unique x,y,z points in subchannel mesh
-void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( AMP::Mesh::Mesh::shared_ptr mesh )
+void SubchannelFourEqNonlinearOperator::fillSubchannelGrid( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     // Create the grid for all processors
     std::set<double> x, y, z;

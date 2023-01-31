@@ -117,7 +117,7 @@ void testSubsetComm( std::shared_ptr<AMP::Discretization::DOFManager> DOF, AMP::
 
 
 // Test subsetting for different meshes
-void testSubsetMesh( AMP::Mesh::Mesh::shared_ptr mesh,
+void testSubsetMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                      std::shared_ptr<AMP::Discretization::DOFManager> DOF,
                      bool is_nodal,
                      int DOFsPerNode,

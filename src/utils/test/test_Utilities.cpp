@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 
+#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
@@ -430,29 +431,29 @@ int main( int argc, char *argv[] )
             FILE *fid = fopen( "testDeleteFile.txt", "w" );
             fputs( "Temporary test", fid );
             fclose( fid );
-            if ( Utilities::fileExists( "testDeleteFile.txt" ) )
+            if ( IO::fileExists( "testDeleteFile.txt" ) )
                 ut.passes( "File exists" );
             else
                 ut.failure( "File exists" );
-            Utilities::deleteFile( "testDeleteFile.txt" );
-            if ( !Utilities::fileExists( "testDeleteFile.txt" ) )
+            IO::deleteFile( "testDeleteFile.txt" );
+            if ( !IO::fileExists( "testDeleteFile.txt" ) )
                 ut.passes( "File deleted" );
             else
                 ut.failure( "File deleted" );
         }
 
         // Test creating directories
-        Utilities::recursiveMkdir( "." );
-        Utilities::recursiveMkdir( "testUtilitiesDir/a/b" );
+        IO::recursiveMkdir( "." );
+        IO::recursiveMkdir( "testUtilitiesDir/a/b" );
         globalComm.barrier();
-        pass = Utilities::fileExists( "testUtilitiesDir/a/b" );
+        pass = IO::fileExists( "testUtilitiesDir/a/b" );
         if ( globalComm.getRank() == 0 ) {
-            Utilities::deleteFile( "testUtilitiesDir/a/b" );
-            Utilities::deleteFile( "testUtilitiesDir/a" );
-            Utilities::deleteFile( "testUtilitiesDir" );
+            IO::deleteFile( "testUtilitiesDir/a/b" );
+            IO::deleteFile( "testUtilitiesDir/a" );
+            IO::deleteFile( "testUtilitiesDir" );
         }
         globalComm.barrier();
-        pass = pass && !Utilities::fileExists( "testUtilitiesDir/a/b" );
+        pass = pass && !IO::fileExists( "testUtilitiesDir/a/b" );
         if ( pass )
             ut.passes( "Create/destroy directory" );
         else

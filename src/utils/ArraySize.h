@@ -88,19 +88,19 @@ public:
     //! Get the number of values in the range
     CONSTEXPR size_t size() const
     {
-        if CONSTEXPR_IF ( std::is_integral<TYPE>::value ) {
+        if CONSTEXPR_IF ( std::is_integral_v<TYPE> ) {
             int64_t tmp = ( static_cast<int64_t>( j ) - static_cast<int64_t>( i ) ) /
                           static_cast<int64_t>( k );
             return tmp + 1;
-        } else if CONSTEXPR_IF ( std::is_floating_point<TYPE>::value ) {
+        } else if CONSTEXPR_IF ( std::is_floating_point_v<TYPE> ) {
             double tmp = static_cast<double>( ( j - i ) ) / static_cast<double>( k );
             return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
-        } else if CONSTEXPR_IF ( std::is_same<TYPE, std::complex<float>>::value ||
-                                 std::is_same<TYPE, std::complex<double>>::value ) {
+        } else if CONSTEXPR_IF ( std::is_same_v<TYPE, std::complex<float>> ||
+                                 std::is_same_v<TYPE, std::complex<double>> ) {
             double tmp = std::real( ( j - i ) / ( k ) );
             return static_cast<size_t>( floor( tmp + 1e-12 ) + 1 );
         } else {
-            static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
+            static_assert( !std::is_integral_v<TYPE>, "Unsupported type for range" );
             return 0;
         }
     }
@@ -108,15 +108,15 @@ public:
     //! Get the ith values in the range
     CONSTEXPR TYPE get( size_t index ) const
     {
-        if CONSTEXPR_IF ( std::is_integral<TYPE>::value ) {
+        if CONSTEXPR_IF ( std::is_integral_v<TYPE> ) {
             return static_cast<TYPE>( i + index * k );
-        } else if CONSTEXPR_IF ( std::is_floating_point<TYPE>::value ) {
+        } else if CONSTEXPR_IF ( std::is_floating_point_v<TYPE> ) {
             return static_cast<TYPE>( k * ( i / k + index ) );
-        } else if CONSTEXPR_IF ( std::is_same<TYPE, std::complex<float>>::value ||
-                                 std::is_same<TYPE, std::complex<double>>::value ) {
+        } else if CONSTEXPR_IF ( std::is_same_v<TYPE, std::complex<float>> ||
+                                 std::is_same_v<TYPE, std::complex<double>> ) {
             return static_cast<TYPE>( k * ( i / k + static_cast<TYPE>( index ) ) );
         } else {
-            static_assert( !std::is_integral<TYPE>::value, "Unsupported type for range" );
+            static_assert( !std::is_integral_v<TYPE>, "Unsupported type for range" );
             return static_cast<TYPE>( index );
         }
     }

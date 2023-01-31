@@ -1,4 +1,5 @@
 #include "AMP/geometry/MeshGeometry.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
@@ -251,5 +252,14 @@ bool MeshGeometry::operator==( const Geometry &rhs ) const
     return d_mesh == geom->d_mesh;
 }
 
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MeshGeometry::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+MeshGeometry::MeshGeometry( int64_t ) : d_pos_hash( -1 ), d_isConvex( false ), d_volume( 0 )
+{
+    AMP_ERROR( "Not finished" );
+}
 
 } // namespace AMP::Geometry

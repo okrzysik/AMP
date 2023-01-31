@@ -300,5 +300,5 @@ std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> );
 std::ostream &operator<<( std::ostream &out, const Matrix & );
 } // namespace AMP::LinearAlgebra
 
-#include "Matrix.inline.h"
+
 #endif

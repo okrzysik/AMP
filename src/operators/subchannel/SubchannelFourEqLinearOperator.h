@@ -60,12 +60,12 @@ public:
     auto getParams() { return d_params; }
 
     //! Makes map of lateral gaps to their centroids
-    void getLateralFaces( AMP::Mesh::Mesh::shared_ptr,
+    void getLateralFaces( std::shared_ptr<AMP::Mesh::Mesh>,
                           std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> &,
                           std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> & );
 
     //! Makes map of gap widths to their xy positions
-    std::map<AMP::Mesh::Point, double> getGapWidths( AMP::Mesh::Mesh::shared_ptr,
+    std::map<AMP::Mesh::Point, double> getGapWidths( std::shared_ptr<AMP::Mesh::Mesh>,
                                                      const std::vector<double> &,
                                                      const std::vector<double> &,
                                                      const std::vector<double> & );
@@ -74,8 +74,8 @@ public:
                         AMP::Mesh::MeshElement &,
                         AMP::Mesh::MeshElement & );
 
-    void fillSubchannelGrid(
-        AMP::Mesh::Mesh::shared_ptr ); // function to fill the subchannel data for all processors
+    void fillSubchannelGrid( std::shared_ptr<AMP::Mesh::Mesh> ); // function to fill the subchannel
+                                                                 // data for all processors
 
     int getSubchannelIndex( double x,
                             double y ); // function to give unique index for each subchannel

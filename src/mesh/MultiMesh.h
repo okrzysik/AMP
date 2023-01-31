@@ -47,7 +47,7 @@ public:
      */
     MultiMesh( const std::string &name,
                const AMP_MPI &comm,
-               const std::vector<Mesh::shared_ptr> &meshes );
+               const std::vector<std::shared_ptr<Mesh>> &meshes );
 
 
     //! Deconstructor
@@ -267,13 +267,13 @@ public:
     /**
      *  Get the meshes composing the multimesh
      */
-    virtual std::vector<AMP::Mesh::Mesh::shared_ptr> getMeshes();
+    virtual std::vector<std::shared_ptr<AMP::Mesh::Mesh>> getMeshes();
 
 
     /**
      *  Get the meshes composing the multimesh
      */
-    virtual std::vector<AMP::Mesh::Mesh::const_shared_ptr> getMeshes() const;
+    virtual std::vector<std::shared_ptr<const AMP::Mesh::Mesh>> getMeshes() const;
 
 
     /**
@@ -318,6 +318,7 @@ public:
      */
     void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 
+
     // Needed to prevent problems with virtual functions
     using Mesh::Subset;
 
@@ -346,9 +347,14 @@ public:
     createDatabases( std::shared_ptr<const AMP::Database> database );
 
 
+public: // Write/read restart data
+    void writeRestart( int64_t ) const override;
+    MultiMesh( int64_t, AMP::IO::RestartManager * );
+
+
 private:
     //! A list of all meshes in the multimesh
-    std::vector<AMP::Mesh::Mesh::shared_ptr> d_meshes;
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> d_meshes;
 };
 
 } // namespace AMP::Mesh

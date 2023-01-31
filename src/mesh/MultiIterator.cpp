@@ -1,6 +1,5 @@
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/utils/Utilities.h"
 
 namespace AMP::Mesh {
 
@@ -8,10 +7,15 @@ namespace AMP::Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 ) { d_typeID = getTypeID(); }
+static constexpr auto MeshIteratorType = AMP::getTypeID<MultiIterator>().hash;
+static_assert( MeshIteratorType != 0 );
+MultiIterator::MultiIterator() : d_localPos( 0 ), d_iteratorNum( 0 )
+{
+    d_typeHash = MeshIteratorType;
+}
 MultiIterator::MultiIterator( const std::vector<MeshIterator> &iterators, size_t global_pos )
 {
-    d_typeID   = getTypeID();
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_iterators.resize( 0 );
     d_iteratorType = MeshIterator::Type::RandomAccess;
@@ -60,7 +64,7 @@ MultiIterator::MultiIterator( const MultiIterator &rhs )
       cur_iterator( rhs.cur_iterator )
 {
     d_iterator     = nullptr;
-    d_typeID       = getTypeID();
+    d_typeHash     = MeshIteratorType;
     d_iteratorType = rhs.d_iteratorType;
     d_size         = rhs.d_size;
     d_pos          = rhs.d_pos;
@@ -70,7 +74,7 @@ MultiIterator &MultiIterator::operator=( const MultiIterator &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->d_typeID       = getTypeID();
+    this->d_typeHash     = MeshIteratorType;
     this->d_iteratorType = rhs.d_iteratorType;
     this->d_iterator     = nullptr;
     this->d_iterators    = rhs.d_iterators;
@@ -260,11 +264,11 @@ bool MultiIterator::operator==( const MeshIterator &rhs ) const
     const MultiIterator *rhs2 = nullptr;
     // Convert rhs to a MultiIterator* so we can access the base class members
     const auto *tmp = reinterpret_cast<const MultiIterator *>( &rhs );
-    if ( tmp->d_typeID == getTypeID() ) {
+    if ( tmp->d_typeHash == MeshIteratorType ) {
         rhs2 = tmp; // We can safely cast rhs to a MultiIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const MultiIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == getTypeID() )
+        if ( tmp->d_typeHash == MeshIteratorType )
             rhs2 = tmp; // We can safely cast rhs.iterator to a MultiIterator
     }
     // Perform direct comparisions if we are dealing with two MultiIterator

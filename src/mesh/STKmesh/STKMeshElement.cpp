@@ -42,11 +42,13 @@ using CartesianField = stk::mesh::Field<double, stk::mesh::Cartesian>;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto elementTypeID = AMP::getTypeID<STKMeshElement>().hash;
+static_assert( elementTypeID != 0 );
 STKMeshElement::STKMeshElement()
     : d_dim( 0 ), d_rank( 0 ), d_mesh( 0 ), d_meshID( 0 ), ptr_element( 0 )
 {
-    typeID     = getTypeID();
-    element    = 0;
+    d_typeHash = elementTypeID;
+    d_element  = 0;
     d_globalID = MeshElementID();
 }
 STKMeshElement::STKMeshElement( int dim,
@@ -60,8 +62,8 @@ STKMeshElement::STKMeshElement( int dim,
       d_meshID( meshID ),
       ptr_element( STKmesh_element )
 {
-    typeID  = getTypeID();
-    element = NULL;
+    d_typeHash = elementTypeID;
+    d_element  = NULL;
     AMP_ASSERT( STKmesh_element != NULL );
     unsigned int local_id   = ptr_element->identifier();
     unsigned int owner_rank = ptr_element->owner_rank();
@@ -80,8 +82,8 @@ STKMeshElement::STKMeshElement( int dim,
       d_meshID( meshID ),
       ptr_element( STKmesh_element.get() )
 {
-    typeID  = getTypeID();
-    element = NULL;
+    d_typeHash = elementTypeID;
+    d_element  = NULL;
     AMP_ASSERT( STKmesh_element.get() != NULL );
     unsigned int local_id   = ptr_element->identifier();
     unsigned int owner_rank = ptr_element->owner_rank();
@@ -96,7 +98,7 @@ STKMeshElement::STKMeshElement( const STKMeshElement &rhs )
       d_meshID( rhs.d_meshID ),
       ptr_element( rhs.ptr_element )
 {
-    typeID     = getTypeID();
+    d_typeHash = elementTypeID;
     element    = rhs.element;
     d_globalID = rhs.d_globalID;
 }
@@ -105,8 +107,8 @@ STKMeshElement &STKMeshElement::operator=( const STKMeshElement &rhs )
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID      = getTypeID();
-    this->element     = 0;
+    this->d_typeHash  = elementTypeID;
+    this->d_element   = 0;
     this->d_globalID  = rhs.d_globalID;
     this->d_dim       = rhs.d_dim;
     this->ptr_element = rhs.ptr_element;
@@ -346,7 +348,11 @@ bool STKMeshElement::containsPoint( const Point &pos, double TOL ) const
         std::vector<double> point = this->coord();
         double dist2              = 0.0;
         for ( size_t i = 0; i < point.size(); i++ )
-            dist2 += ( point[i] - pos[i] ) * ( point[i] - pos[i] );
+            dist2 += ( point[i] - static constexpr auto elementTypeID =
+                           AMP::getTypeID<structuredMeshIterator>().hash;
+                       static_assert( elementTypeID != 0 );
+                       pos[i] ) *
+                     ( point[i] - pos[i] );
         return dist2 <= TOL * TOL;
     }
     // stk::mesh::Entity* elem = (stk::mesh::Entity*) ptr_element;

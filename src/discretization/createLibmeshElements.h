@@ -4,7 +4,6 @@
 // AMP headers
 #include "AMP/AMP_TPLs.h"
 #include "AMP/mesh/MeshIterator.h"
-#include "AMP/utils/Utilities.h"
 
 
 #ifdef AMP_USE_LIBMESH

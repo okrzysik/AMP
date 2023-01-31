@@ -163,7 +163,8 @@ static void Test( AMP::UnitTest *ut, const std::string &exeName )
             AMP::Mesh::SetOP::Union,
             AMP::Mesh::StructuredMeshHelper::getXZFaceIterator( subchannelMesh, 1 ),
             AMP::Mesh::StructuredMeshHelper::getYZFaceIterator( subchannelMesh, 1 ) );
-        std::vector<AMP::Discretization::DOFManager::shared_ptr> subchannelChildrenDOFManagers( 2 );
+        std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> subchannelChildrenDOFManagers(
+            2 );
         subchannelChildrenDOFManagers[0] = AMP::Discretization::simpleDOFManager::create(
             subchannelMesh, axialFaces1, axialFaces0, 3 );
         subchannelChildrenDOFManagers[1] = AMP::Discretization::simpleDOFManager::create(

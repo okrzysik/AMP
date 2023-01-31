@@ -19,33 +19,33 @@ namespace AMP {
  ************************************************************************/
 // clang-format off
 template<class TYPE>
-typename std::enable_if<!std::is_trivially_copyable<TYPE>::value &&
-                        !AMP::is_shared_ptr<TYPE>::value &&
-                        !AMP::is_Array<TYPE>::value &&
-                        !AMP::is_vector<TYPE>::value,
-                        size_t>::type
+typename std::enable_if_t<!std::is_trivially_copyable_v<TYPE> &&
+                        !AMP::is_shared_ptr_v<TYPE> &&
+                        !AMP::is_Array_v<TYPE> &&
+                        !AMP::is_vector_v<TYPE>,
+                        size_t>
 packSize( const TYPE & );
 template<class TYPE>
-typename std::enable_if<!std::is_trivially_copyable<TYPE>::value &&
-                        !AMP::is_shared_ptr<TYPE>::value &&
-                        !AMP::is_Array<TYPE>::value &&
-                        !AMP::is_vector<TYPE>::value,
-                        size_t>::type
+typename std::enable_if_t<!std::is_trivially_copyable_v<TYPE> &&
+                        !AMP::is_shared_ptr_v<TYPE> &&
+                        !AMP::is_Array_v<TYPE> &&
+                        !AMP::is_vector_v<TYPE>,
+                        size_t>
 pack( const TYPE &x, std::byte *buf );
 template<class TYPE>
-typename std::enable_if<!std::is_trivially_copyable<TYPE>::value &&
-                        !AMP::is_shared_ptr<TYPE>::value &&
-                        !AMP::is_Array<TYPE>::value &&
-                        !AMP::is_vector<TYPE>::value,
-                        size_t>::type
+typename std::enable_if_t<!std::is_trivially_copyable_v<TYPE> &&
+                        !AMP::is_shared_ptr_v<TYPE> &&
+                        !AMP::is_Array_v<TYPE> &&
+                        !AMP::is_vector_v<TYPE>,
+                        size_t>
 unpack( TYPE &x, const std::byte *buf );
 template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type packSize( const TYPE &x );
+typename std::enable_if_t<AMP::is_shared_ptr_v<TYPE>, size_t> packSize( const TYPE &x );
 template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type pack( const TYPE &x,
+typename std::enable_if_t<AMP::is_shared_ptr_v<TYPE>, size_t> pack( const TYPE &x,
                                                                              std::byte *buf );
 template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type
+typename std::enable_if_t<AMP::is_shared_ptr_v<TYPE>, size_t>
 unpack( TYPE &x, const std::byte *buf );
 // clang-format on
 
@@ -54,21 +54,20 @@ unpack( TYPE &x, const std::byte *buf );
  *  Functions for packing/unpacking trivial data                         *
  ************************************************************************/
 template<class TYPE>
-typename std::enable_if<std::is_trivially_copyable<TYPE>::value, size_t>::type
-packSize( const TYPE & )
+typename std::enable_if_t<std::is_trivially_copyable_v<TYPE>, size_t> packSize( const TYPE & )
 {
     return sizeof( TYPE );
 }
 template<class TYPE>
-typename std::enable_if<std::is_trivially_copyable<TYPE>::value, size_t>::type
-pack( const TYPE &x, std::byte *buf )
+typename std::enable_if_t<std::is_trivially_copyable_v<TYPE>, size_t> pack( const TYPE &x,
+                                                                            std::byte *buf )
 {
     memcpy( buf, &x, sizeof( TYPE ) );
     return sizeof( TYPE );
 }
 template<class TYPE>
-typename std::enable_if<std::is_trivially_copyable<TYPE>::value, size_t>::type
-unpack( TYPE &x, const std::byte *buf )
+typename std::enable_if_t<std::is_trivially_copyable_v<TYPE>, size_t> unpack( TYPE &x,
+                                                                              const std::byte *buf )
 {
     DISABLE_WARNINGS
     memcpy( &x, buf, sizeof( TYPE ) );
@@ -81,19 +80,17 @@ unpack( TYPE &x, const std::byte *buf )
  *  Functions for packing/unpacking AMP::Array                           *
  ************************************************************************/
 template<class TYPE>
-typename std::enable_if<AMP::is_Array<TYPE>::value, size_t>::type packSize( const TYPE &x )
+typename std::enable_if_t<AMP::is_Array_v<TYPE>, size_t> packSize( const TYPE &x )
 {
     return x.packSize();
 }
 template<class TYPE>
-typename std::enable_if<AMP::is_Array<TYPE>::value, size_t>::type pack( const TYPE &x,
-                                                                        std::byte *buf )
+typename std::enable_if_t<AMP::is_Array_v<TYPE>, size_t> pack( const TYPE &x, std::byte *buf )
 {
     return x.pack( buf );
 }
 template<class TYPE>
-typename std::enable_if<AMP::is_Array<TYPE>::value, size_t>::type unpack( TYPE &x,
-                                                                          const std::byte *buf )
+typename std::enable_if_t<AMP::is_Array_v<TYPE>, size_t> unpack( TYPE &x, const std::byte *buf )
 {
     return x.unpack( buf );
 }
@@ -103,7 +100,7 @@ typename std::enable_if<AMP::is_Array<TYPE>::value, size_t>::type unpack( TYPE &
  *  Functions for packing/unpacking std::vector                          *
  ************************************************************************/
 template<class TYPE>
-typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type packSize( const TYPE &x )
+typename std::enable_if_t<AMP::is_vector_v<TYPE>, size_t> packSize( const TYPE &x )
 {
     size_t N = sizeof( size_t );
     for ( size_t i = 0; i < x.size(); i++ )
@@ -111,8 +108,7 @@ typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type packSize( con
     return N;
 }
 template<class TYPE>
-typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type pack( const TYPE &x,
-                                                                         std::byte *buf )
+typename std::enable_if_t<AMP::is_vector_v<TYPE>, size_t> pack( const TYPE &x, std::byte *buf )
 {
     size_t N = pack<size_t>( x.size(), buf );
     for ( size_t i = 0; i < x.size(); i++ )
@@ -120,8 +116,7 @@ typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type pack( const T
     return N;
 }
 template<class TYPE>
-typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type unpack( TYPE &x,
-                                                                           const std::byte *buf )
+typename std::enable_if_t<AMP::is_vector_v<TYPE>, size_t> unpack( TYPE &x, const std::byte *buf )
 {
     size_t length;
     size_t N = unpack<size_t>( length, buf );
@@ -136,19 +131,18 @@ typename std::enable_if<AMP::is_vector<TYPE>::value, size_t>::type unpack( TYPE 
  *  Functions for packing/unpacking shared_pointers                      *
  ************************************************************************/
 template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type packSize( const TYPE &x )
+typename std::enable_if_t<AMP::is_shared_ptr_v<TYPE>, size_t> packSize( const TYPE &x )
 {
     return packSize( *x );
 }
 template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type pack( const TYPE &x,
-                                                                             std::byte *buf )
+typename std::enable_if_t<AMP::is_shared_ptr_v<TYPE>, size_t> pack( const TYPE &x, std::byte *buf )
 {
     return pack( *x, buf );
 }
 template<class TYPE>
-typename std::enable_if<AMP::is_shared_ptr<TYPE>::value, size_t>::type
-unpack( TYPE &x, const std::byte *buf )
+typename std::enable_if_t<AMP::is_shared_ptr_v<TYPE>, size_t> unpack( TYPE &x,
+                                                                      const std::byte *buf )
 {
     return unpack( *x, buf );
 }

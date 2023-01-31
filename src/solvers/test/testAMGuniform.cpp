@@ -1,4 +1,3 @@
-
 #include "AMP/IO/PIO.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
@@ -10,16 +9,16 @@
 #include "AMP/operators/LinearBVPOperator.h"
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperator.h"
+#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "libmesh/mesh_communication.h"
+
 #include <string>
 
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 
 void myTest( AMP::UnitTest *ut )
 {

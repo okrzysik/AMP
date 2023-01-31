@@ -17,6 +17,7 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "PowerShapeParameters.h"

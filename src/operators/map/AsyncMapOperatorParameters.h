@@ -14,8 +14,8 @@ class AsyncMapOperatorParameters : public AsynchronousOperatorParameters
 {
 public:
     AMP_MPI d_MapComm;
-    AMP::Mesh::Mesh::shared_ptr d_Mesh1;
-    AMP::Mesh::Mesh::shared_ptr d_Mesh2;
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh1;
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh2;
     int d_BoundaryID1;
     int d_BoundaryID2;
     int d_commTag;

@@ -1,14 +1,18 @@
-
 #ifndef included_AMP_OperatorParameters
 #define included_AMP_OperatorParameters
 
+#include "AMP/utils/ParameterBase.h"
+
 #include <memory>
 
-#include "AMP/mesh/Mesh.h"
-#include "AMP/utils/ParameterBase.h"
+
+namespace AMP::Mesh {
+class Mesh;
+}
 
 
 namespace AMP::Operator {
+
 
 /**\class OperatorParameters
  *
@@ -32,11 +36,10 @@ public:
      */
     virtual ~OperatorParameters() {}
 
-    AMP::Mesh::Mesh::shared_ptr d_Mesh;
-
-protected:
-private:
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
 };
+
+
 } // namespace AMP::Operator
 
 #endif

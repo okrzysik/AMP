@@ -1,11 +1,11 @@
 // This file stores the routines to generate the meshes for AMP::Mesh::Mesh
 #include "AMP/AMP_TPLs.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
-#include "AMP/utils/Utilities.h"
 
 #ifdef AMP_USE_TRILINOS_STKCLASSIC
 //#include "AMP/mesh/STKmesh/STKMesh.h"
@@ -53,7 +53,7 @@ size_t Mesh::estimateMeshSize( std::shared_ptr<const MeshParameters> params )
     } else if ( MeshType == "AMP" ) {
         // The mesh is a AMP mesh
         auto filename = db->getWithDefault<std::string>( "FileName", "" );
-        auto suffix   = Utilities::getSuffix( filename );
+        auto suffix   = IO::getSuffix( filename );
         if ( suffix == "stl" ) {
             // We are reading an stl file
             meshSize = AMP::Mesh::TriangleHelpers::readSTLHeader( filename );
@@ -114,7 +114,7 @@ size_t Mesh::maxProcs( std::shared_ptr<const MeshParameters> params )
     } else if ( MeshType == std::string( "AMP" ) ) {
         // The mesh is a AMP mesh
         auto filename = db->getWithDefault<std::string>( "FileName", "" );
-        auto suffix   = Utilities::getSuffix( filename );
+        auto suffix   = IO::getSuffix( filename );
         if ( suffix == "stl" ) {
             // We are reading an stl file
             maxSize = AMP::Mesh::TriangleHelpers::readSTLHeader( filename );

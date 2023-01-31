@@ -1,4 +1,6 @@
 #include "AMP/mesh/structured/StructuredGeometryMesh.h"
+#include "AMP/IO/HDF5.hpp"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/mesh/MeshParameters.h"
 
 
@@ -17,10 +19,11 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     d_numBlocks.fill( 1 );
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
+    auto db = params->getDatabase();
+    AMP_INSIST( db.get(), "Database must exist" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
-    AMP_INSIST( d_db.get(), "Database must exist" );
     // Construct the geometry
-    auto db2 = d_db->cloneDatabase();
+    auto db2 = db->cloneDatabase();
     db2->erase( "x_offset", false );
     db2->erase( "y_offset", false );
     db2->erase( "z_offset", false );
@@ -30,9 +33,9 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     // Fill basic mesh information
     PhysicalDim = d_geometry2->getDim();
     GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
-    d_max_gcw   = d_db->getWithDefault<int>( "GCW", 2 );
-    AMP_ASSERT( PhysicalDim == d_db->getWithDefault<int>( "dim", PhysicalDim ) );
-    auto size = d_geometry2->getLogicalGridSize( d_db->getVector<int>( "Size" ) );
+    d_max_gcw   = db->getWithDefault<int>( "GCW", 2 );
+    AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
+    auto size = d_geometry2->getLogicalGridSize( db->getVector<int>( "Size" ) );
     AMP_ASSERT( size.size() == static_cast<size_t>( GeomDim ) );
     for ( size_t d = 0; d < size.size(); d++ )
         d_globalSize[d] = size[d];
@@ -43,14 +46,81 @@ StructuredGeometryMesh::StructuredGeometryMesh( std::shared_ptr<const MeshParame
     for ( size_t d = 0; d < surfaceIds.size(); d++ )
         d_surfaceId[d] = surfaceIds[d];
     // Initialize the logical mesh
-    BoxMesh::initialize();
-    BoxMesh::finalize();
+    BoxMesh::initialize( db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
+    BoxMesh::finalize( db->getString( "MeshName" ), getDisplacement( db ) );
 }
 StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &mesh )
     : BoxMesh( mesh )
 {
     d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
     d_pos_hash  = mesh.d_pos_hash;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void StructuredGeometryMesh::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "MeshType", std::string( "StructuredGeometryMesh" ) );
+    writeHDF5( fid, "MeshName", d_name );
+    writeHDF5( fid, "MeshID", d_meshID );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    writeHDF5( fid, "geometry", d_geometry );
+    writeHDF5( fid, "gcw", d_max_gcw );
+    writeHDF5( fid, "size", d_globalSize );
+    writeHDF5( fid, "periodic", d_isPeriodic );
+    writeHDF5( fid, "surfaceId", d_surfaceId );
+    writeHDF5( fid, "numBlocks", d_numBlocks );
+    writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    writeHDF5( fid, "d_pos_hash", d_pos_hash );
+}
+StructuredGeometryMesh::StructuredGeometryMesh( int64_t fid, AMP::IO::RestartManager *manager )
+    : BoxMesh()
+{
+    // Set the data for Mesh
+    readHDF5( fid, "MeshName", d_name );
+    uint64_t commHash;
+    readHDF5( fid, "comm", commHash );
+    d_comm = manager->getComm( commHash );
+    // Basic defaults
+    d_globalSize.fill( 1 );
+    d_isPeriodic.fill( false );
+    d_numBlocks.fill( 1 );
+    // Load the geometry
+    readHDF5( fid, "geometry", d_geometry );
+    d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
+    AMP_ASSERT( d_geometry2 );
+    // Fill basic mesh information
+    // Note: we do not call initialize to avoid any changes to the parallel decomposition
+    PhysicalDim = d_geometry2->getDim();
+    GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
+    readHDF5( fid, "gcw", d_max_gcw );
+    readHDF5( fid, "size", d_globalSize );
+    readHDF5( fid, "periodic", d_isPeriodic );
+    readHDF5( fid, "surfaceId", d_surfaceId );
+    readHDF5( fid, "numBlocks", d_numBlocks );
+    readHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    readHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    readHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    readHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    readHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    readHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    readHDF5( fid, "d_pos_hash", d_pos_hash );
+    auto block   = getLocalBlock( d_rank );
+    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
+    d_localIndex = block;
+    for ( int d = 0; d < 3; d++ ) {
+        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
+            d_localIndex[2 * d + 1] = d_globalSize[d];
+        d_localIndex[2 * d + 1]++;
+    }
+    BoxMesh::finalize( d_name, {} );
 }
 
 

@@ -11,7 +11,7 @@ namespace AMP::Discretization {
  * Constructors                                                  *
  ****************************************************************/
 multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
-                                  std::vector<DOFManager::shared_ptr> managers )
+                                  std::vector<std::shared_ptr<DOFManager>> managers )
     : d_managers( managers ),
       d_ids( managers.size(), 0 ),
       d_localSize( managers.size(), 0 ),
@@ -222,7 +222,10 @@ std::vector<size_t> multiDOFManager::getSubDOF( const int manager,
 /****************************************************************
  * Function to return the DOFManagers                            *
  ****************************************************************/
-std::vector<DOFManager::shared_ptr> multiDOFManager::getDOFManagers() const { return d_managers; }
+std::vector<std::shared_ptr<DOFManager>> multiDOFManager::getDOFManagers() const
+{
+    return d_managers;
+}
 
 
 /****************************************************************
@@ -236,7 +239,7 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
     // Get the comm for the new DOFManager
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
     // Subset all of the DOFManagers within this DOFManager
-    std::vector<DOFManager::shared_ptr> sub_managers;
+    std::vector<std::shared_ptr<DOFManager>> sub_managers;
     for ( auto &elem : d_managers ) {
         auto subset = elem->subset( comm );
         if ( subset != nullptr )
@@ -250,7 +253,7 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP_MPI &comm_in )
     // Create the new multiDOFManager
     return std::make_shared<multiDOFManager>( comm, sub_managers );
 }
-std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+std::shared_ptr<DOFManager> multiDOFManager::subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                      bool useMeshComm )
 {
     // Get the comm for the new DOFManager
@@ -265,7 +268,7 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::Mesh::shar
         return std::shared_ptr<DOFManager>();
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
-    std::vector<DOFManager::shared_ptr> sub_managers;
+    std::vector<std::shared_ptr<DOFManager>> sub_managers;
     for ( auto &elem : d_managers ) {
         auto subset = elem->subset( mesh, useMeshComm );
         if ( subset.get() != elem.get() )
@@ -294,7 +297,7 @@ std::shared_ptr<DOFManager> multiDOFManager::subset( const AMP::Mesh::MeshIterat
     AMP_MPI comm = AMP_MPI::intersect( comm_in, d_comm );
     // Subset all of the DOFManagers within this DOFManager
     bool changed = false;
-    std::vector<DOFManager::shared_ptr> sub_managers;
+    std::vector<std::shared_ptr<DOFManager>> sub_managers;
     for ( auto &elem : d_managers ) {
         auto subset = elem->subset( iterator, comm );
         if ( subset.get() != elem.get() )

@@ -1,4 +1,5 @@
 #include "AMP/operators/subchannel/SubchannelToPointMap.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
 #include "AMP/utils/Utilities.h"

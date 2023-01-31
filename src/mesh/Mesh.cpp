@@ -31,28 +31,28 @@ static unsigned int nextLocalMeshID = 1;
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Mesh::Mesh( std::shared_ptr<const MeshParameters> params_in )
+Mesh::Mesh( std::shared_ptr<const MeshParameters> params )
 {
     // Set the base properties
+    AMP_ASSERT( params );
     AMP_ASSERT( sizeof( MeshElementID ) == 16 );
-    d_params    = params_in;
     GeomDim     = GeomType::Nullity;
     PhysicalDim = 0;
     d_max_gcw   = 0;
-    d_comm      = d_params->comm;
-    d_db        = d_params->d_db;
+    d_comm      = params->comm;
     AMP_INSIST( !d_comm.isNull(), "Communicator in mesh params must be non NULL" );
     setMeshID();
-    d_name = d_db->getWithDefault<std::string>( "MeshName", "NULL" );
+    d_name  = "NULL";
+    auto db = params->getDatabase();
+    if ( db )
+        d_name = db->getWithDefault<std::string>( "MeshName", d_name );
 }
 Mesh::Mesh( const Mesh &rhs )
-    : d_params( rhs.d_params ),
-      d_geometry( nullptr ),
+    : d_geometry( nullptr ),
       GeomDim( rhs.GeomDim ),
       PhysicalDim( rhs.PhysicalDim ),
       d_max_gcw( rhs.d_max_gcw ),
       d_comm( rhs.d_comm ),
-      d_db( rhs.d_db ),
       d_meshID( 0 ),
       d_name( rhs.d_name ),
       d_box( rhs.d_box ),

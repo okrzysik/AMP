@@ -44,10 +44,6 @@ inline size_t MeshIterator::position() const
 {
     return d_iterator == nullptr ? d_pos : d_iterator->d_pos;
 }
-inline unsigned int MeshIterator::type_id() const
-{
-    return d_iterator == nullptr ? d_typeID : d_iterator->d_typeID;
-}
 
 
 /********************************************************

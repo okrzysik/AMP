@@ -12,7 +12,7 @@ CommVariable::CommVariable( const std::string &name, const AMP_MPI &comm ) : Sub
 }
 
 
-AMP::Discretization::DOFManager::shared_ptr
+std::shared_ptr<AMP::Discretization::DOFManager>
 CommVariable::getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> parentDOF ) const
 {
     return parentDOF->subset( d_comm );

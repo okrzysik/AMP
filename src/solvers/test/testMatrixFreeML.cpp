@@ -415,7 +415,7 @@ void myTest2( AMP::UnitTest *ut, const std::string &exeName, bool useTwoMeshes )
     auto firstMesh  = std::make_shared<AMP::Mesh::libmeshMesh>( firstFusedMesh, "Mesh_1" );
     auto secondMesh = std::make_shared<AMP::Mesh::libmeshMesh>( secondFusedMesh, "Mesh_2" );
 
-    std::vector<AMP::Mesh::Mesh::shared_ptr> vectorOfMeshes;
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> vectorOfMeshes;
     vectorOfMeshes.push_back( firstMesh );
     if ( useTwoMeshes ) {
         vectorOfMeshes.push_back( secondMesh );

@@ -179,9 +179,9 @@ inline TYPE ThreadPool::getFunctionRet( const ThreadPoolID &id )
     if ( work )
         return work->get_results();
     // Get default value
-    static_assert( std::is_arithmetic<bool>::value );
-    static_assert( std::is_arithmetic<char>::value );
-    if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    static_assert( std::is_arithmetic_v<bool> );
+    static_assert( std::is_arithmetic_v<char> );
+    if constexpr ( std::is_arithmetic_v<TYPE> ) {
         return 0;
     } else {
         return TYPE();

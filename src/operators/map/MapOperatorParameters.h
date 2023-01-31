@@ -18,7 +18,7 @@ public:
     virtual ~MapOperatorParameters() {}
 
     AMP_MPI d_MapComm;
-    AMP::Mesh::Mesh::shared_ptr d_MapMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_MapMesh;
 };
 } // namespace AMP::Operator
 

@@ -3,6 +3,7 @@
 
 #include "AMP/geometry/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -32,8 +33,10 @@ public:
      */
     explicit Tube( double r_min, double r_max, double z_min, double z_max );
 
+    //! Construct from restart
+    Tube( int64_t );
 
-    // Functions inherited from Geometry
+public: // Functions inherited from Geometry
     std::string getName() const override final { return "Tube"; }
     bool isConvex() const override final { return true; }
     Point nearest( const Point &pos ) const override final;
@@ -53,11 +56,12 @@ public:
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
 
 protected:
     // Internal data
     double d_r_min, d_r_max, d_z_min, d_z_max;
-    double d_offset[3];
+    std::array<double, 3> d_offset;
 
 private:
     // Private constructor

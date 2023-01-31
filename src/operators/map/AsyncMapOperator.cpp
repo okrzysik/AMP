@@ -19,7 +19,7 @@ AsyncMapOperator::AsyncMapOperator( std::shared_ptr<const OperatorParameters> p 
     AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh1 ? 1 : 0 ) > 0, "Somebody must own mesh 1" );
     AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh2 ? 1 : 0 ) > 0, "Somebody must own mesh 2" );
     // Create a multimesh to use for the operator base class for subsetting
-    std::vector<AMP::Mesh::Mesh::shared_ptr> meshes;
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> meshes;
     if ( d_mesh1 )
         meshes.push_back( d_mesh1 );
     if ( d_mesh2 )
@@ -66,7 +66,7 @@ void AsyncMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
 bool AsyncMapOperator::requiresMakeConsistentSet() { return false; }
 
-AMP::Mesh::Mesh::shared_ptr AsyncMapOperator::getMesh( int which )
+std::shared_ptr<AMP::Mesh::Mesh> AsyncMapOperator::getMesh( int which )
 {
     if ( which == 1 ) {
         return d_mesh1;
@@ -74,7 +74,7 @@ AMP::Mesh::Mesh::shared_ptr AsyncMapOperator::getMesh( int which )
         return d_mesh2;
     } else {
         AMP_ERROR( "Wrong option!" );
-        return AMP::Mesh::Mesh::shared_ptr();
+        return std::shared_ptr<AMP::Mesh::Mesh>();
     }
 }
 } // namespace AMP::Operator

@@ -1,6 +1,8 @@
 #include "MassMatrixCorrection.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

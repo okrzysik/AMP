@@ -163,7 +163,8 @@ void MoabMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr f,
  *\brief Get vector of Gauss points for single mesh
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz )
+void MoabMapOperator::getGPCoords( std::shared_ptr<AMP::Mesh::Mesh> &mesh,
+                                   std::vector<double> &xyz )
 {
     AMP_INSIST( mesh, "Must have a mesh" );
     AMP_INSIST( d_interpType == GAUSS_POINTS, "Wrong interpolation type" );
@@ -235,7 +236,8 @@ void MoabMapOperator::getGPCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vecto
  *\brief Get vector of node coordinates for single mesh
  */
 //---------------------------------------------------------------------------//
-void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vector<double> &xyz )
+void MoabMapOperator::getNodeCoords( std::shared_ptr<AMP::Mesh::Mesh> &mesh,
+                                     std::vector<double> &xyz )
 {
     AMP_INSIST( mesh, "Must have Mesh Adapter" );
     AMP_INSIST( d_interpType == NODES, "Wrong interpolation type" );
@@ -267,7 +269,7 @@ void MoabMapOperator::getNodeCoords( AMP::Mesh::Mesh::shared_ptr &mesh, std::vec
 //---------------------------------------------------------------------------//
 void MoabMapOperator::buildGeomType::CellIntOp(
     std::shared_ptr<AMP::Operator::VolumeIntegralOperator> &volIntOp,
-    AMP::Mesh::Mesh::shared_ptr &mesh )
+    std::shared_ptr<AMP::Mesh::Mesh> &mesh )
 {
     using AMP::Operator::OperatorBuilder;
 
