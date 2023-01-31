@@ -1,9 +1,10 @@
 #include "AMP/IO/SiloWriter.h"
-#include "AMP/utils/Utilities.h"
-
+#include "AMP/IO/FileSystem.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MultiMesh.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 
 #include "ProfilerApp.h"
@@ -141,7 +142,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
     } else if ( d_decomposition == 2 ) {
         // Every rank will write a seperate file
         if ( d_comm.getRank() == 0 )
-            Utilities::recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+            recursiveMkdir( fname_in + "_silo", ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
         d_comm.barrier();
         auto fname_rank = fname_in + "_silo/" + std::to_string( cycle ) + "." +
                           std::to_string( d_comm.getRank() + 1 ) + "." + getExtension();
@@ -567,7 +568,7 @@ void createSiloDirectory( DBfile *FileHandle, const std::string &path )
         DBtoc *toc  = DBGetToc( FileHandle );
         bool exists = false;
         for ( int j = 0; j < toc->ndir; ++j ) {
-            if ( subdir.compare( toc->dir_names[j] ) == 0 )
+            if ( subdir == toc->dir_names[j] )
                 exists = true;
         }
         if ( !exists )

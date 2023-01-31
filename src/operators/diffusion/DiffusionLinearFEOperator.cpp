@@ -1,5 +1,4 @@
 #include "DiffusionLinearFEOperator.h"
-#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Operator {

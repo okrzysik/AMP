@@ -1,6 +1,9 @@
 #include "AMP/matrices/Matrix.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/ParameterBase.h"
+
 #include <iomanip>
 
 namespace AMP::LinearAlgebra {
@@ -48,6 +51,25 @@ size_t Matrix::numGlobalColumns() const
 
 
 /********************************************************
+ * Add/Get values                                        *
+ ********************************************************/
+void Matrix::addValueByGlobalID( size_t row, size_t col, double value )
+{
+    addValuesByGlobalID( 1u, 1u, &row, &col, &value );
+}
+void Matrix::setValueByGlobalID( size_t row, size_t col, double value )
+{
+    setValuesByGlobalID( 1u, 1u, &row, &col, &value );
+}
+double Matrix::getValueByGlobalID( size_t row, size_t col ) const
+{
+    double rtn = 0.0;
+    getValuesByGlobalID( 1u, 1u, &row, &col, &rtn );
+    return rtn;
+}
+
+
+/********************************************************
  * Get iterators                                         *
  ********************************************************/
 size_t Matrix::beginRow() const
@@ -86,6 +108,16 @@ void Matrix::axpy( double alpha, std::shared_ptr<const Matrix> x )
     if ( N1 != N2 )
         AMP_ERROR( "Matrix sizes are not compatible" );
     axpy( alpha, *x );
+}
+
+
+/********************************************************
+ * transpose                                             *
+ ********************************************************/
+std::shared_ptr<Matrix> Matrix::transpose() const
+{
+    AMP_ERROR( "not implemented" );
+    return std::shared_ptr<Matrix>();
 }
 
 
@@ -134,4 +166,10 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
+std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
+{
+    return operator<<( out, *p );
+}
+
+
 } // namespace AMP::LinearAlgebra

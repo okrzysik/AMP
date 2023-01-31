@@ -8,19 +8,62 @@
 #include "AMP/IO/HDF5_Class.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/TypeTraits.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/typeid.h"
 
 #include <array>
 #include <complex>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
 #ifdef AMP_USE_HDF5
 
 
+namespace AMP::Geometry {
+class Geometry;
+}
+namespace AMP::Mesh {
+class Mesh;
+}
+namespace AMP::LinearAlgebra {
+class Vector;
+class Matrix;
+} // namespace AMP::LinearAlgebra
+namespace AMP::Operator {
+class Operator;
+}
+namespace AMP::Solver {
+class SolverStrategy;
+}
+namespace AMP::TimeIntegrator {
+class TimeIntegrator;
+}
+
+
 namespace AMP {
+
+
+/******************************************************************
+ * Define some specializations                                     *
+ ******************************************************************/
+template<>
+void writeHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
+    hid_t, const std::string_view &, const std::shared_ptr<AMP::Geometry::Geometry> & );
+template<>
+void writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>(
+    hid_t, const std::string_view &, const std::shared_ptr<const AMP::Geometry::Geometry> & );
+template<>
+void readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
+    hid_t, const std::string_view &, std::shared_ptr<AMP::Geometry::Geometry> & );
+
+
+/******************************************************************
+ * Get HDF5 datatype                                               *
+ ******************************************************************/
+template<class TYPE>
+hid_t getHDF5datatype();
 
 
 /******************************************************************
@@ -38,50 +81,55 @@ template<class TYPE>
 void writeHDF5( hid_t fid, const std::string_view &name, const TYPE &x )
 {
     NULL_USE( fid );
-    if constexpr ( AMP::is_shared_ptr<TYPE>::value ) {
+    if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
         // We are dealing with a std::shared_ptr
         writeHDF5( fid, name, *x );
-    } else if constexpr ( AMP::is_vector<TYPE>::value ) {
+    } else if constexpr ( AMP::is_vector_v<TYPE> ) {
         // We are dealing with a std::vector
         typedef decltype( *x.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        if constexpr ( std::is_same_v<TYPE4, bool> ) {
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        if constexpr ( std::is_same_v<TYPE3, bool> ) {
             AMP::Array<bool> y( x.size() );
             for ( size_t i = 0; i < x.size(); i++ )
                 y( i ) = x[i];
             writeHDF5Array( fid, name, y );
         } else {
-            AMP::Array<TYPE4> y;
-            y.viewRaw( { x.size() }, const_cast<TYPE4 *>( x.data() ) );
-            writeHDF5Array( fid, name, y );
+            AMP::Array<TYPE3> y;
+            y.viewRaw( { x.size() }, const_cast<TYPE3 *>( x.data() ) );
+            writeHDF5( fid, name, y );
         }
-    } else if constexpr ( std::is_array<TYPE>::value ) {
-        // We are dealing with a std::array
-        typedef decltype( *x.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        AMP::Array<TYPE4> y;
-        y.viewRaw( { x.size() }, const_cast<TYPE4 *>( x.data() ) );
-        writeHDF5Array( fid, name, y );
-    } else if constexpr ( AMP::is_Array<TYPE>::value ) {
+    } else if constexpr ( std::is_array_v<TYPE> ) {
+        // We are dealing with an C array
+        typedef decltype( *x ) TYPE2;
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        AMP::Array<TYPE3> y;
+        y.viewRaw( { std::size( x ) }, const_cast<TYPE3 *>( x ) );
+        writeHDF5( fid, name, y );
+    } else if constexpr ( AMP::is_Array_v<TYPE> ) {
         // We are dealing with an Array
-        writeHDF5Array( fid, name, x );
+        if constexpr ( AMP::is_shared_ptr_v<typename TYPE::value_type> ) {
+            typedef typename TYPE::value_type TYPE2;
+            typedef typename TYPE2::element_type TYPE3;
+            AMP::Array<TYPE3> y( x.size() );
+            for ( size_t i = 0; i < x.length(); i++ )
+                y( i ) = *x( i );
+            writeHDF5Array( fid, name, y );
+        } else {
+            writeHDF5Array( fid, name, x );
+        }
     } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         // We are dealing with a std::string
         writeHDF5Scalar( fid, name, x );
-    } else if constexpr ( std::is_same<TYPE, std::string_view>::value ||
-                          std::is_same<TYPE, char *>::value ||
-                          std::is_same<TYPE, const char *>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string_view> || std::is_same_v<TYPE, char *> ||
+                          std::is_same_v<TYPE, const char *> ) {
         // We are dealing with a string or char array
         writeHDF5( fid, name, std::string( x ) );
-    } else if constexpr ( AMP::has_size<TYPE>::value ) {
+    } else if constexpr ( AMP::is_container_v<TYPE> ) {
         // We are dealing with a container
         typedef decltype( *x.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> x2( x.begin(), x.end() );
-        writeHDF5<std::vector<TYPE4>>( fid, name, x2 );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        std::vector<TYPE3> x2( x.begin(), x.end() );
+        writeHDF5<std::vector<TYPE3>>( fid, name, x2 );
     } else {
         writeHDF5Scalar( fid, name, x );
     }
@@ -90,12 +138,12 @@ template<class TYPE>
 void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
 {
     NULL_USE( fid );
-    if constexpr ( AMP::is_shared_ptr<TYPE>::value ) {
+    if constexpr ( AMP::is_shared_ptr_v<TYPE> ) {
         // We are dealing with a std::shared_ptr
         readHDF5( fid, name, *x );
-    } else if constexpr ( AMP::is_vector<TYPE>::value ) {
+    } else if constexpr ( AMP::is_vector_v<TYPE> ) {
         // We are dealing with a std::vector
-        typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
+        typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
         if constexpr ( std::is_same_v<TYPE2, std::_Bit_reference> ) {
             AMP::Array<bool> y;
             readHDF5Array( fid, name, y );
@@ -104,38 +152,56 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
                 x[i] = y( i );
         } else {
             AMP::Array<TYPE2> y;
-            readHDF5Array( fid, name, y );
+            readHDF5( fid, name, y );
             x.resize( y.length() );
             // Swap the elements in the arrays to use the move operator
             for ( size_t i = 0; i < x.size(); i++ )
                 std::swap( x[i], y( i ) );
         }
-    } else if constexpr ( std::is_array<TYPE>::value ) {
-        // We are dealing with a std::array
-        typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
+    } else if constexpr ( std::is_array_v<TYPE> ) {
+        // We are dealing with a C array
+        typedef typename AMP::remove_cvref_t<decltype( *x )> TYPE2;
         AMP::Array<TYPE2> y;
-        readHDF5Array( fid, name, y );
+        readHDF5( fid, name, y );
+        AMP_ASSERT( y.length() == std::size( x ) );
+        // Swap the elements in the arrays to use the move operator
+        for ( size_t i = 0; i < std::size( x ); i++ )
+            std::swap( x[i], y( i ) );
+    } else if constexpr ( AMP::is_array_v<TYPE> ) {
+        // We are dealing with a std::array
+        typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
+        AMP::Array<TYPE2> y;
+        readHDF5( fid, name, y );
         AMP_ASSERT( y.length() == x.size() );
         // Swap the elements in the arrays to use the move operator
         for ( size_t i = 0; i < x.size(); i++ )
             std::swap( x[i], y( i ) );
-    } else if constexpr ( AMP::is_Array<TYPE>::value ) {
+    } else if constexpr ( AMP::is_Array_v<TYPE> ) {
         // We are dealing with an Array
-        readHDF5Array( fid, name, x );
+        if constexpr ( AMP::is_shared_ptr_v<typename TYPE::value_type> ) {
+            typedef typename TYPE::value_type TYPE2;
+            typedef typename TYPE2::element_type TYPE3;
+            AMP::Array<TYPE3> y( x.size() );
+            readHDF5Array( fid, name, y );
+            x.resize( y.size() );
+            for ( size_t i = 0; i < x.length(); i++ )
+                x( i ) = std::make_shared<TYPE3>( y( i ) );
+        } else {
+            readHDF5Array( fid, name, x );
+        }
     } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         // We are dealing with a std::string
         readHDF5Scalar( fid, name, x );
-    } else if constexpr ( std::is_same<TYPE, std::string_view>::value ||
-                          std::is_same<TYPE, char *>::value ||
-                          std::is_same<TYPE, const char *>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string_view> || std::is_same_v<TYPE, char *> ||
+                          std::is_same_v<TYPE, const char *> ) {
         // We are dealing with a string or char array
         throw std::logic_error(
             "Reading data into a string_view, char*, const char* is not supported" );
-    } else if constexpr ( AMP::has_size<TYPE>::value ) {
+    } else if constexpr ( AMP::is_container_v<TYPE> ) {
         // We are dealing with a container
-        typedef typename std::remove_reference<decltype( *x.begin() )>::type TYPE2;
+        typedef typename AMP::remove_cvref_t<decltype( *x.begin() )> TYPE2;
         AMP::Array<TYPE2> y;
-        readHDF5Array( fid, name, y );
+        readHDF5( fid, name, y );
         if ( x.size() == y.length() ) {
             auto it = x.begin();
             for ( size_t i = 0; i < y.length(); i++, ++it )
@@ -153,7 +219,7 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
  * readAndConvertHDF5Data                                                *
  ************************************************************************/
 template<class T>
-typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value, void>::type
+typename std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, void>
 readAndConvertHDF5Data( hid_t dataset, hid_t datatype, AMP::Array<T> &data )
 {
     if ( H5Tequal( datatype, H5T_NATIVE_CHAR ) ) {
@@ -201,8 +267,7 @@ readAndConvertHDF5Data( hid_t dataset, hid_t datatype, AMP::Array<T> &data )
     }
 }
 template<class T>
-typename std::enable_if<!std::is_integral<T>::value && !std::is_floating_point<T>::value,
-                        void>::type
+typename std::enable_if_t<!std::is_integral_v<T> && !std::is_floating_point_v<T>, void>
 readAndConvertHDF5Data( hid_t, hid_t, AMP::Array<T> & )
 {
     AMP_ERROR( "Unable to convert data" );
@@ -302,5 +367,27 @@ void writeHDF5ArrayDefault( hid_t fid, const std::string_view &name, const AMP::
 } // namespace AMP
 
 
+    #define INSTANTIATE_HDF5( TYPE )                                                               \
+        template hid_t AMP::getHDF5datatype<TYPE>();                                               \
+        template void AMP::readHDF5<TYPE>( hid_t, const std::string_view &, TYPE & );              \
+        template void AMP::readHDF5<AMP::Array<TYPE>>(                                             \
+            hid_t, const std::string_view &, AMP::Array<TYPE> & );                                 \
+        template void AMP::readHDF5<std::vector<TYPE>>(                                            \
+            hid_t, const std::string_view &, std::vector<TYPE> & );                                \
+        template void AMP::writeHDF5<TYPE>( hid_t, const std::string_view &, const TYPE & );       \
+        template void AMP::writeHDF5<AMP::Array<TYPE>>(                                            \
+            hid_t, const std::string_view &, const AMP::Array<TYPE> & );                           \
+        template void AMP::writeHDF5<std::vector<TYPE>>(                                           \
+            hid_t, const std::string_view &, const std::vector<TYPE> & );                          \
+        template void AMP::readHDF5Scalar<TYPE>( hid_t, const std::string_view &, TYPE & );        \
+        template void AMP::writeHDF5Scalar<TYPE>( hid_t, const std::string_view &, const TYPE & ); \
+        template void AMP::readHDF5Array<TYPE>(                                                    \
+            hid_t, const std::string_view &, AMP::Array<TYPE> & );                                 \
+        template void AMP::writeHDF5Array<TYPE>(                                                   \
+            hid_t, const std::string_view &, const AMP::Array<TYPE> & )
+
+
 #endif
+
+
 #endif

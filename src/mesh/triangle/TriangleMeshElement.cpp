@@ -94,15 +94,6 @@ static constexpr uint8_t n_Simplex_elements[4][4] = {
  * Create a unique id for each class                     *
  ********************************************************/
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-constexpr uint32_t TriangleMeshElement<NG, NP, TYPE>::getTypeID()
-{
-    char name[] = "TriangleMeshElement<0,0,0>";
-    name[21]    = 48 + NG;
-    name[23]    = 48 + NP;
-    name[25]    = 48 + TYPE;
-    return AMP::Utilities::hash_char( name );
-}
-template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 std::string TriangleMeshElement<NG, NP, TYPE>::elementClass() const
 {
     return AMP::Utilities::stringf( "TriangleMeshElement<%u,%u,%u>", NG, NP, TYPE );
@@ -115,16 +106,20 @@ std::string TriangleMeshElement<NG, NP, TYPE>::elementClass() const
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement()
 {
-    typeID  = getTypeID();
-    element = nullptr;
-    d_mesh  = nullptr;
+    static constexpr auto hash = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( hash != 0 );
+    d_typeHash = hash;
+    d_element  = nullptr;
+    d_mesh     = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const MeshElementID &id,
                                                         const TriangleMesh<NG, NP> *mesh )
 {
-    typeID     = getTypeID();
-    element    = nullptr;
+    static constexpr auto hash = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( hash != 0 );
+    d_typeHash = hash;
+    d_element  = nullptr;
     d_globalID = id;
     d_mesh     = mesh;
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
@@ -138,15 +133,17 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( const TriangleMeshElement &rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID( rhs.d_globalID )
 {
-    typeID  = getTypeID();
-    element = rhs.element;
+    static constexpr auto hash = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( hash != 0 );
+    d_typeHash = hash;
+    d_element  = rhs.d_element;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE>::TriangleMeshElement( TriangleMeshElement &&rhs )
     : MeshElement(), d_mesh( rhs.d_mesh ), d_globalID{ rhs.d_globalID }
 {
-    typeID  = rhs.typeID;
-    element = nullptr;
+    d_typeHash = rhs.d_typeHash;
+    d_element  = nullptr;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshElement<NG, NP, TYPE> &
@@ -154,8 +151,8 @@ TriangleMeshElement<NG, NP, TYPE>::operator=( const TriangleMeshElement &rhs )
 {
     if ( &rhs == this )
         return *this;
-    typeID     = rhs.typeID;
-    element    = nullptr;
+    d_typeHash = rhs.d_typeHash;
+    d_element  = nullptr;
     d_globalID = rhs.d_globalID;
     d_mesh     = rhs.d_mesh;
     return *this;
@@ -166,8 +163,8 @@ TriangleMeshElement<NG, NP, TYPE>::operator=( TriangleMeshElement &&rhs )
 {
     if ( &rhs == this )
         return *this;
-    typeID     = rhs.typeID;
-    element    = nullptr;
+    d_typeHash = rhs.d_typeHash;
+    d_element  = nullptr;
     d_globalID = rhs.d_globalID;
     d_mesh     = rhs.d_mesh;
     return *this;

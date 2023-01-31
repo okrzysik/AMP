@@ -75,6 +75,10 @@ public:
     virtual size_t pack( std::byte * ) const = 0;
     //! Unpack the data from a buffer
     virtual size_t unpack( const std::byte * ) = 0;
+    //! Write the data to HDF5
+    virtual void writeHDF5( int64_t fid, std::string_view name ) const = 0;
+    //! Read the data from HDF5
+    virtual void readHDF5( int64_t fid, std::string_view name ) = 0;
 
 protected:
     KeyData() {}
@@ -108,9 +112,11 @@ public:
     };
 
     template<typename T>
-    struct IdentityType {
+    struct IdentityTypeStruct {
         typedef T type;
     };
+    template<typename T>
+    using IdentityType = typename IdentityTypeStruct<const T &>::type;
 
     using source_location = StackTrace::source_location;
 
@@ -291,7 +297,7 @@ public:
      */
     template<class TYPE>
     TYPE getWithDefault( std::string_view key,
-                         typename IdentityType<const TYPE &>::type value,
+                         IdentityType<const TYPE &> value,
                          const Units &unit   = Units(),
                          source_location src = source_location::current() ) const;
 
@@ -566,7 +572,8 @@ public: // Pack/unpack data
     size_t packSize() const override;
     size_t pack( std::byte * ) const override;
     size_t unpack( const std::byte * ) override;
-
+    void writeHDF5( int64_t fid, std::string_view name ) const override;
+    void readHDF5( int64_t fid, std::string_view name ) override;
 
 #ifdef AMP_USE_SAMRAI
 public: // SAMRAI interfaces
@@ -702,18 +709,17 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox & );
 template<class TYPE, class... Args>
 inline void Database::addArgs( std::string_view key, TYPE value, Args... args )
 {
-    if constexpr ( is_vector<TYPE>::value ) {
+    if constexpr ( is_vector_v<TYPE> ) {
         putVector( key, value );
-    } else if constexpr ( is_Array<TYPE>::value ) {
+    } else if constexpr ( is_Array_v<TYPE> ) {
         putArray( key, value );
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, std::string_view>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string> ||
+                          std::is_same_v<TYPE, std::string_view> ) {
         putScalar( key, value );
-    } else if constexpr ( has_size<TYPE>::value || is_initializer_list<TYPE>::value ) {
+    } else if constexpr ( has_size_v<TYPE> || is_initializer_list_v<TYPE> ) {
         typedef decltype( *value.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> data( value.begin(), value.end() );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        std::vector<TYPE3> data( value.begin(), value.end() );
         putVector( key, std::move( data ) );
     } else {
         putScalar( key, value );
@@ -725,18 +731,17 @@ template<class TYPE, class... Args>
 inline void
 Database::addArgsWithUnits( std::string_view key, TYPE value, const Units &unit, Args... args )
 {
-    if constexpr ( is_vector<TYPE>::value ) {
+    if constexpr ( is_vector_v<TYPE> ) {
         putVector( key, value, unit );
-    } else if constexpr ( is_Array<TYPE>::value ) {
+    } else if constexpr ( is_Array_v<TYPE> ) {
         putArray( key, value );
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ||
-                          std::is_same<TYPE, std::string_view>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string> ||
+                          std::is_same_v<TYPE, std::string_view> ) {
         putScalar( key, value, unit );
-    } else if constexpr ( has_size<TYPE>::value || is_initializer_list<TYPE>::value ) {
+    } else if constexpr ( has_size_v<TYPE> || is_initializer_list_v<TYPE> ) {
         typedef decltype( *value.begin() ) TYPE2;
-        typedef typename std::remove_reference<TYPE2>::type TYPE3;
-        typedef typename std::remove_cv<TYPE3>::type TYPE4;
-        std::vector<TYPE4> data( value.begin(), value.end() );
+        typedef typename AMP::remove_cvref_t<TYPE2> TYPE3;
+        std::vector<TYPE3> data( value.begin(), value.end() );
         putVector( key, std::move( data ), unit );
     } else {
         putScalar( key, value, unit );

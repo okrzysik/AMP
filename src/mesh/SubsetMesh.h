@@ -251,6 +251,15 @@ public:
      */
     void displaceMesh( std::shared_ptr<const AMP::LinearAlgebra::Vector> x ) override;
 
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    void writeRestart( int64_t fid ) const override;
+
+
     // Needed to prevent problems with virtual functions
     using Mesh::Subset;
 

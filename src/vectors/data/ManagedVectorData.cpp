@@ -1,5 +1,4 @@
 #include "AMP/vectors/data/ManagedVectorData.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/operations/ManagedVectorOperations.h"

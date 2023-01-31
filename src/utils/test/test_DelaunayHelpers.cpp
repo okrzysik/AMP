@@ -85,7 +85,7 @@ std::string className<int512_t>()
 template<class TYPE>
 inline TYPE convert( const int128_t &x )
 {
-    if constexpr ( std::is_floating_point<TYPE>::value )
+    if constexpr ( std::is_floating_point_v<TYPE> )
         return static_cast<double>( x );
     else
         return TYPE( x );

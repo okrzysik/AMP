@@ -300,12 +300,12 @@ public:
     static constexpr bool value = sizeof( test<T>( 0 ) ) == sizeof( char );
 };
 template<typename T>
-typename std::enable_if<hasClearTimers<T>::value, void>::type clearTimers( const T &obj )
+typename std::enable_if_t<hasClearTimers<T>::value, void> clearTimers( const T &obj )
 {
     obj.clearTimers();
 }
 template<typename T>
-typename std::enable_if<!hasClearTimers<T>::value, void>::type clearTimers( const T & )
+typename std::enable_if_t<!hasClearTimers<T>::value, void> clearTimers( const T & )
 {
 }
 double AMPManager::start_SAMRAI()

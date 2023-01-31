@@ -206,7 +206,7 @@ int testScan( MPI_CLASS comm, UnitTest &ut )
     comm.sumScan<type>( &x, &y, 1 );
     auto N = (type) ( ( ( comm.getRank() + 1 ) * ( comm.getRank() + 2 ) ) / 2 );
     record( ut, y == N, msg );
-    if ( std::is_same<type, std::complex<double>>::value ) {
+    if ( std::is_same_v<type, std::complex<double>> ) {
         return 1;
     }
     msg = stringf( "minScan (%s)", typeid( type ).name() );

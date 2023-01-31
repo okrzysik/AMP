@@ -1,3 +1,4 @@
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/discretization/DOF_Manager.h"
@@ -34,7 +35,7 @@ inline AMP::Mesh::GeomType getSurfaceType( AMP::Mesh::GeomType volume )
 
 
 // Calculate the volume of each element
-AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr mesh )
+AMP::LinearAlgebra::Vector::shared_ptr calcVolume( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     auto DOF =
         AMP::Discretization::simpleDOFManager::create( mesh, mesh->getGeomType(), 0, 1, false );
@@ -53,7 +54,7 @@ AMP::LinearAlgebra::Vector::shared_ptr calcVolume( AMP::Mesh::Mesh::shared_ptr m
 
 
 // Print the mesh names
-void printMeshNames( AMP::Mesh::Mesh::shared_ptr mesh, const std::string &prefix = "" )
+void printMeshNames( std::shared_ptr<AMP::Mesh::Mesh> mesh, const std::string &prefix = "" )
 {
     std::cout << prefix << mesh->getName() << std::endl;
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
@@ -135,7 +136,7 @@ void testWriterVector( AMP::UnitTest &ut, const std::string &writerName )
     auto rankStr         = std::to_string( comm.getRank() + 1 );
     std::string filename = "output_test_Writer/vector-" + writerName + "-" + rankStr + "proc";
     writer->writeFile( filename, 0, 0.0 );
-    if ( AMP::Utilities::fileExists( filename + "_0." + properties.extension ) )
+    if ( AMP::IO::fileExists( filename + "_0." + properties.extension ) )
         ut.passes( writerName + " registered independent vector" );
     else
         ut.failure( writerName + " registered independent vector" );
@@ -181,7 +182,7 @@ void testWriterMatrix( AMP::UnitTest &ut, const std::string &writerName )
     std::string filename = "output_test_Writer/matrix-" + writerName + "-" + rankStr + "proc";
     writer->setDecomposition( 1 );
     writer->writeFile( filename, 0, 0.0 );
-    if ( AMP::Utilities::fileExists( filename + "_0." + properties.extension ) )
+    if ( AMP::IO::fileExists( filename + "_0." + properties.extension ) )
         ut.passes( writerName + " registered matrix" );
     else
         ut.failure( writerName + " registered matrix" );

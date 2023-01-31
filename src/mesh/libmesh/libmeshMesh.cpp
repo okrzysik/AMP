@@ -35,51 +35,53 @@ namespace AMP::Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params_in )
-    : Mesh( params_in ), d_pos_hash( 0 )
+libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params )
+    : Mesh( params ), d_pos_hash( 0 )
 {
     PROFILE_START( "constructor" );
     this->d_max_gcw = 1;
     // Check for valid inputs
-    AMP_INSIST( d_params.get(), "Params must not be null" );
     AMP_INSIST( d_comm != AMP_MPI( AMP_COMM_NULL ), "Communicator must be set" );
     // Intialize libMesh
     d_libMeshComm = std::make_shared<libMesh::Parallel::Communicator>( d_comm.getCommunicator() );
     libmeshInit   = std::make_shared<initializeLibMesh>( d_comm );
     // Load the mesh
-    if ( d_db.get() ) {
+    AMP_INSIST( params.get(), "Params must not be null" );
+    auto db = params->getDatabase();
+    AMP_INSIST( db.get(), "Database must exist" );
+    if ( db.get() ) {
         // Database exists
-        AMP_INSIST( d_db->keyExists( "dim" ), "Variable 'dim' must be set in the database" );
-        AMP_INSIST( d_db->keyExists( "MeshName" ), "MeshName must exist in input database" );
-        PhysicalDim = d_db->getScalar<int>( "dim" );
-        d_name      = d_db->getString( "MeshName" );
+        AMP_INSIST( db->keyExists( "dim" ), "Variable 'dim' must be set in the database" );
+        AMP_INSIST( db->keyExists( "MeshName" ), "MeshName must exist in input database" );
+        PhysicalDim = db->getScalar<int>( "dim" );
+        d_name      = db->getString( "MeshName" );
         AMP_INSIST( PhysicalDim > 0 && PhysicalDim < 10, "Invalid dimension" );
         GeomDim = (GeomType) PhysicalDim;
         // Create the libMesh objects
         d_libMesh = std::make_shared<libMesh::Mesh>( *d_libMeshComm, PhysicalDim );
-        if ( d_db->keyExists( "FileName" ) ) {
+        if ( db->keyExists( "FileName" ) ) {
             // Read an existing mesh
-            d_libMesh->read( d_db->getString( "FileName" ) );
-        } else if ( d_db->keyExists( "Generator" ) ) {
+            d_libMesh->read( db->getString( "FileName" ) );
+        } else if ( db->keyExists( "Generator" ) ) {
             // Generate a new mesh
-            std::string generator = d_db->getString( "Generator" );
+            std::string generator = db->getString( "Generator" );
             if ( generator.compare( "cube" ) == 0 ) {
                 // Generate a cube mesh
                 AMP_INSIST( PhysicalDim == 3,
                             "libMesh cube generation currently supports only 3d meshes" );
-                AMP_INSIST( d_db->keyExists( "size" ),
+                AMP_INSIST( db->keyExists( "size" ),
                             "Variable 'size' must be set in the database" );
-                auto size = d_db->getVector<int>( "size" );
+                auto size = db->getVector<int>( "size" );
                 AMP_INSIST( size.size() == (size_t) PhysicalDim,
                             "Variable 'size' must by an integer array of size dim" );
-                AMP_INSIST( d_db->keyExists( "xmin" ),
+                AMP_INSIST( db->keyExists( "xmin" ),
                             "Variable 'xmin' must be set in the database" );
-                auto xmin = d_db->getVector<double>( "xmin" );
+                auto xmin = db->getVector<double>( "xmin" );
                 AMP_INSIST( xmin.size() == (size_t) PhysicalDim,
                             "Variable 'xmin' must by an integer array of size dim" );
-                AMP_INSIST( d_db->keyExists( "xmax" ),
+                AMP_INSIST( db->keyExists( "xmax" ),
                             "Variable 'xmax' must be set in the database" );
-                auto xmax = d_db->getVector<double>( "xmax" );
+                auto xmax = db->getVector<double>( "xmax" );
                 AMP_INSIST( xmax.size() == (size_t) PhysicalDim,
                             "Variable 'xmax' must by an integer array of size dim" );
                 libMesh::MeshTools::Generation::build_cube( *d_libMesh,
@@ -103,12 +105,12 @@ libmeshMesh::libmeshMesh( std::shared_ptr<const MeshParameters> params_in )
         initialize();
         // Displace the mesh
         std::vector<double> displacement( PhysicalDim, 0.0 );
-        if ( d_db->keyExists( "x_offset" ) )
-            displacement[0] = d_db->getScalar<double>( "x_offset" );
-        if ( d_db->keyExists( "y_offset" ) )
-            displacement[1] = d_db->getScalar<double>( "y_offset" );
-        if ( d_db->keyExists( "z_offset" ) )
-            displacement[2] = d_db->getScalar<double>( "z_offset" );
+        if ( db->keyExists( "x_offset" ) )
+            displacement[0] = db->getScalar<double>( "x_offset" );
+        if ( db->keyExists( "y_offset" ) )
+            displacement[1] = db->getScalar<double>( "y_offset" );
+        if ( db->keyExists( "z_offset" ) )
+            displacement[2] = db->getScalar<double>( "z_offset" );
         bool test = false;
         for ( auto &elem : displacement ) {
             if ( elem != 0.0 )
@@ -917,6 +919,15 @@ bool libmeshMesh::operator==( const Mesh &rhs ) const
     // Perform comparison on sub-meshes
     AMP_ERROR( "Not finished" );
     return false;
+}
+
+
+/****************************************************************
+ * Write restart data                                            *
+ ****************************************************************/
+void libmeshMesh::writeRestart( int64_t ) const
+{
+    AMP_ERROR( "writeRestart is not implimented for libmeshMesh" );
 }
 
 

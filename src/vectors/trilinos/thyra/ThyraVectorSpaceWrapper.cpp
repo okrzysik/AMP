@@ -1,7 +1,6 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
-
-#include "AMP/utils/Utilities.h"
 
 DISABLE_WARNINGS
 #include "Thyra_DefaultSpmdVectorSpace.hpp"

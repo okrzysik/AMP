@@ -28,7 +28,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -39,7 +38,7 @@
 #include <fstream>
 
 
-static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
+static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                          std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
     auto meshIterator       = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 4 );
@@ -56,7 +55,7 @@ static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
     }     // end for
 }
 
-static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
+static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                               std::vector<AMP::Mesh::MeshElementID> const &nodesGlobalIDs,
                               AMP::LinearAlgebra::Vector::shared_ptr vectorField,
                               std::ostream &os = std::cout )
@@ -75,7 +74,7 @@ static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
 static void
 getConcentratedLoadAtNodes( double loadParameter,
                             double loadCutoff,
-                            AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                            std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                             AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                             std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
@@ -138,7 +137,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
     std::fstream fout;
-    std::string fileName = "debug_driver_" + AMP::Utilities::intToString( rank );
+    std::string fileName = "debug_driver_" + std::to_string( rank );
     fout.open( fileName.c_str(), std::fstream::out );
 
     // Load the input file

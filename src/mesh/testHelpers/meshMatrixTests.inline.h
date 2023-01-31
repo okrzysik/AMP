@@ -14,7 +14,8 @@ namespace AMP::Mesh {
 
 
 template<int DOF_PER_NODE, bool SPLIT>
-void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut,
+                                            std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     PROFILE_START( "VerifyGetMatrixTrivialTest", 1 );
 
@@ -67,7 +68,7 @@ void meshTests::VerifyGetMatrixTrivialTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::
 
 
 template<int DOF_PER_NODE, bool SPLIT>
-void meshTests::GhostWriteTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::GhostWriteTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     PROFILE_START( "GhostWriteTest", 1 );
 

@@ -125,7 +125,7 @@ void GaussPointToGaussPointMap::createIdxMap(
 
     auto variable = std::make_shared<AMP::LinearAlgebra::Variable>( "GaussPoints" );
 
-    std::vector<AMP::Mesh::Mesh::shared_ptr> meshesForMap( 2 );
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> meshesForMap( 2 );
     meshesForMap[0] = d_mesh1;
     meshesForMap[1] = d_mesh2;
     auto multiMesh = std::make_shared<AMP::Mesh::MultiMesh>( "MultiMesh", d_MapComm, meshesForMap );

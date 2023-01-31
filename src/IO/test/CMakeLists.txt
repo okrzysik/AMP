@@ -39,6 +39,7 @@ IF ( USE_HDF5 )
     ADD_AMP_TEST( view_HDF5 test_HDF5.hdf5 DEPENDS test_HDF5 )
     ADD_AMP_TEST( test_XDMF )
     ADD_AMP_TEST( test_XDMF PROCS 2 )
+    ADD_AMP_PROVISIONAL_TEST( test_RestartManager )
 ENDIF()
 
 

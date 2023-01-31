@@ -2,7 +2,6 @@
 #define included_AMP_structuredMeshElement
 
 #include "AMP/mesh/structured/BoxMesh.h"
-#include "AMP/utils/Utilities.h"
 
 #include <vector>
 
@@ -100,13 +99,6 @@ protected:
 
     friend class AMP::Mesh::BoxMesh;
     friend class AMP::Mesh::structuredMeshIterator;
-
-
-private:
-    static constexpr uint32_t getTypeID()
-    {
-        return AMP::Utilities::hash_char( "structuredMeshElement" );
-    }
 };
 
 

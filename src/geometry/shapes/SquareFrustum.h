@@ -31,6 +31,9 @@ public:
      */
     explicit SquareFrustum( const std::vector<double> &range, int dir, double height );
 
+    //! Construct from restart
+    SquareFrustum( int64_t );
+
 public: // Functions inherited from Geometry
     std::string getName() const override final { return "SquareFrustum"; }
     bool isConvex() const override final { return true; }
@@ -51,6 +54,7 @@ public: // Functions inherited from Geometry
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
 
 protected:
     // Internal data

@@ -78,6 +78,10 @@ public:
     virtual std::shared_ptr<VectorSelector> createVectorSelector() const;
 
 
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
+
+
 protected:
     /** \brief  A name given to the variable
      * \details Variables have names for easy identification.

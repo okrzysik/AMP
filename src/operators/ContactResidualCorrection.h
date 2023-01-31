@@ -38,9 +38,9 @@ public:
         d_slaveVariable = var;
     }
 
-    void setMasterMesh( const AMP::Mesh::Mesh::shared_ptr &mesh ) { d_Mesh = mesh; }
+    void setMasterMesh( const std::shared_ptr<AMP::Mesh::Mesh> &mesh ) { d_Mesh = mesh; }
 
-    void setSlaveMesh( const AMP::Mesh::Mesh::shared_ptr &mesh ) { d_slaveMesh = mesh; }
+    void setSlaveMesh( const std::shared_ptr<AMP::Mesh::Mesh> &mesh ) { d_slaveMesh = mesh; }
 
     void setMasterNodes( const std::vector<AMP::Mesh::MeshElementID> &vec ) { d_masterNodes = vec; }
 
@@ -85,7 +85,7 @@ private:
 
     std::vector<std::vector<unsigned int>> d_dofs;
 
-    AMP::Mesh::Mesh::shared_ptr d_slaveMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_slaveMesh;
 };
 } // namespace AMP::Operator
 

@@ -209,14 +209,14 @@ public:
      * a right vector )
      * \return  The DOFManager associated with a right vector
      */
-    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
 
     /** \brief Get the DOFManager associated with a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{y}\f$ is
      * a left vector )
      * \return  The DOFManager associated with a left vector
      */
-    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 
     /** \brief Compute the maximum column sum
      * \return  The L1 norm of the matrix

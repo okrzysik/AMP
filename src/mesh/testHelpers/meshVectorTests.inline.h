@@ -19,7 +19,7 @@ namespace AMP::Mesh {
 // Simple nodal vector tests
 template<int DOF_PER_NODE, bool SPLIT>
 void meshTests::simpleNodalVectorTests( AMP::UnitTest &ut,
-                                        AMP::Mesh::Mesh::shared_ptr mesh,
+                                        std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                         int gcw )
 {
@@ -67,7 +67,7 @@ void meshTests::simpleNodalVectorTests( AMP::UnitTest &ut,
 
 // VerifyGetVectorTest
 template<int DOF_PER_NODE, bool SPLIT>
-void meshTests::VerifyGetVectorTest( AMP::UnitTest &ut, AMP::Mesh::Mesh::shared_ptr mesh )
+void meshTests::VerifyGetVectorTest( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
 
     for ( int gcw = 0; gcw <= 1; gcw++ ) {

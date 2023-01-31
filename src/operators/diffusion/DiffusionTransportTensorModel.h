@@ -2,7 +2,7 @@
 #define included_AMP_DiffusionTransportTensorModel
 
 #include "AMP/operators/diffusion/DiffusionTransportModel.h"
-#include "AMP/utils/Utilities.h"
+
 
 namespace AMP::Operator {
 

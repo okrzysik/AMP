@@ -16,7 +16,9 @@ static MeshElement nullElement;
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator()
 {
-    d_typeID   = getTypeID();
+    static constexpr auto MeshIteratorType = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( MeshIteratorType != 0 );
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_size     = 0;
     d_pos      = -1;
@@ -29,7 +31,9 @@ TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator(
     std::shared_ptr<const std::vector<ElementID>> list,
     size_t pos )
 {
-    d_typeID   = getTypeID();
+    static constexpr auto MeshIteratorType = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( MeshIteratorType != 0 );
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_size     = 0;
     d_pos      = pos;
@@ -52,7 +56,9 @@ TriangleMeshIterator<NG, NP, TYPE>::TriangleMeshIterator( const TriangleMeshIter
     : MeshIterator(), d_mesh{ rhs.d_mesh }, d_list{ rhs.d_list }, d_cur_element{ rhs.d_cur_element }
 
 {
-    d_typeID   = rhs.d_typeID;
+    static constexpr auto MeshIteratorType = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( MeshIteratorType != 0 );
+    d_typeHash = rhs.d_typeHash;
     d_iterator = nullptr;
     d_size     = rhs.d_size;
     d_pos      = rhs.d_pos;
@@ -62,9 +68,11 @@ template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 TriangleMeshIterator<NG, NP, TYPE> &
 TriangleMeshIterator<NG, NP, TYPE>::operator=( const TriangleMeshIterator &rhs )
 {
+    static constexpr auto MeshIteratorType = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( MeshIteratorType != 0 );
     if ( this == &rhs )
         return *this;
-    d_typeID      = rhs.d_typeID;
+    d_typeHash    = rhs.d_typeHash;
     d_iterator    = nullptr;
     d_size        = rhs.d_size;
     d_pos         = rhs.d_pos;
@@ -173,14 +181,16 @@ MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator+=( int n )
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 bool TriangleMeshIterator<NG, NP, TYPE>::operator==( const MeshIterator &rhs ) const
 {
+    static constexpr auto MeshIteratorType = AMP::getTypeID<decltype( *this )>().hash;
+    static_assert( MeshIteratorType != 0 );
     const TriangleMeshIterator *rhs2 = nullptr;
     // Convert rhs to a TriangleMeshIterator* so we can access the base class members
     auto *tmp = reinterpret_cast<const TriangleMeshIterator *>( &rhs );
-    if ( tmp->d_typeID == getTypeID() ) {
+    if ( tmp->d_typeHash == MeshIteratorType ) {
         rhs2 = tmp; // We can safely cast rhs to a TriangleMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const TriangleMeshIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == getTypeID() )
+        if ( tmp->d_typeHash == MeshIteratorType )
             rhs2 = tmp; // We can safely cast rhs.iterator to a TriangleMeshIterator
     }
     // Perform direct comparisions if we are dealing with two TriangleMeshIterators

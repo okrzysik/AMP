@@ -7,7 +7,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
 
 
 // Compare meshes

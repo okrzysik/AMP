@@ -1,5 +1,5 @@
-
 #include "ContactResidualCorrection.h"
+#include "AMP/discretization/DOF_Manager.h"
 
 namespace AMP::Operator {
 

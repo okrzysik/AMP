@@ -2,9 +2,7 @@
 #define included_AMP_ThyraVectorSpaceWrapper
 
 // AMP includes
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
-
 
 // Trilinos includes
 DISABLE_WARNINGS

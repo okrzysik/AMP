@@ -98,10 +98,8 @@ private:
     std::shared_ptr<std::vector<stk::mesh::Entity *>> d_entries;
     std::vector<stk::mesh::Entity *>::iterator d_pos;
     MeshElement d_cur_element;
-
-private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "STKMeshIterator" ); }
 };
+
 } // namespace AMP::Mesh
 
 #endif

@@ -62,7 +62,7 @@ static inline double __FsnK__() { return 80000000; }
 
 
 void calculateManufacturedSolution(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     AMP::LinearAlgebra::Vector::shared_ptr manufacturedSolution,
     AMP::LinearAlgebra::Vector::shared_ptr manufacturedNormalGradient )
 {
@@ -101,7 +101,7 @@ void calculateManufacturedSolution(
 }
 
 
-void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void calculateSources( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                        std::shared_ptr<AMP::Discretization::DOFManager> gaussPointDOF,
                        std::shared_ptr<AMP::LinearAlgebra::Vector> manufacturedRHS )
 {
@@ -140,7 +140,7 @@ void calculateSources( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 }
 
 
-void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void computeL2Norm( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                     const AMP::AMP_MPI &globalComm,
                     AMP::LinearAlgebra::Vector::shared_ptr TemperatureVec,
                     double *discretizationErrorNorm2 )
@@ -210,7 +210,7 @@ void computeL2Norm( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
 void createThermalOperators(
     std::shared_ptr<AMP::Database> global_input_db,
-    AMP::Mesh::Mesh::shared_ptr manager,
+    std::shared_ptr<AMP::Mesh::Mesh> manager,
     std::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearColumnOperator,
     std::shared_ptr<AMP::Operator::ColumnOperator> &linearColumnOperator )
 {
@@ -293,7 +293,7 @@ void createThermalSolvers( std::shared_ptr<AMP::Database> &global_input_db,
 }
 
 void createThermalMaps( std::shared_ptr<AMP::Database> input_db,
-                        AMP::Mesh::Mesh::shared_ptr manager,
+                        std::shared_ptr<AMP::Mesh::Mesh> manager,
                         AMP::LinearAlgebra::Vector::shared_ptr &thermalMapVec,
                         std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> &mapsColumn )
 {

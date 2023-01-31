@@ -1,4 +1,6 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"

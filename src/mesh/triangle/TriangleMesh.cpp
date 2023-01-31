@@ -1,4 +1,5 @@
 #include "AMP/mesh/triangle/TriangleMesh.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/triangle/TriangleHelpers.h"
@@ -344,7 +345,7 @@ TriangleMesh<NG, NP>::generate( std::shared_ptr<const MeshParameters> params )
     auto db = params->getDatabase();
     // Create the mesh
     auto filename = db->getWithDefault<std::string>( "FileName", "" );
-    auto suffix   = Utilities::getSuffix( filename );
+    auto suffix   = IO::getSuffix( filename );
     std::shared_ptr<TriangleMesh<NG, NP>> mesh;
     if ( suffix == "stl" ) {
         AMP_ERROR( "Use AMP::Mesh::TriangleHelpers::generateSTL to load stl meshes" );
@@ -480,8 +481,6 @@ TriangleMesh<NG, NP>::TriangleMesh( std::vector<std::array<double, NP>> vertices
     AMP_ASSERT( block.size() == tri.size() );
     check( tri );
     // Set basic mesh info
-    d_db        = nullptr;
-    d_params    = nullptr;
     d_geometry  = nullptr;
     GeomDim     = static_cast<GeomType>( NG );
     PhysicalDim = NP;
@@ -862,7 +861,7 @@ size_t TriangleMesh<NG, NP>::estimateMeshSize( std::shared_ptr<const MeshParamet
     size_t N      = 0;
     auto db       = params->getDatabase();
     auto filename = db->getWithDefault<std::string>( "FileName", "" );
-    auto suffix   = Utilities::getSuffix( filename );
+    auto suffix   = IO::getSuffix( filename );
     if ( suffix == "stl" ) {
         // We are reading an stl file
         N = TriangleHelpers::readSTLHeader( filename );
@@ -881,9 +880,7 @@ TriangleMesh<NG, NP>::TriangleMesh( std::shared_ptr<const MeshParameters> params
     : Mesh( params_in )
 {
     // Check for valid inputs
-    AMP_INSIST( d_params != nullptr, "Params must not be null" );
     AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
-    AMP_INSIST( d_db.get(), "Database must exist" );
     AMP_ERROR( "Not finished" );
 }
 template<uint8_t NG, uint8_t NP>
@@ -1367,28 +1364,21 @@ bool TriangleMesh<NG, NP>::inIterator( const ElementID &id, const MeshIterator *
         return found;
     };
     AMP_ASSERT( it );
-    auto errMsg = []( const MeshIterator *it ) {
-        constexpr uint32_t id0 = TriangleMeshIterator<NG, NP, 0>::getTypeID();
-        constexpr uint32_t id1 = TriangleMeshIterator<NG, NP, 1>::getTypeID();
-        constexpr uint32_t id2 = TriangleMeshIterator<NG, NP, 2>::getTypeID();
-        constexpr uint32_t id3 = TriangleMeshIterator<NG, NP, 3>::getTypeID();
-        return AMP::Utilities::stringf( "%u <%u,%u,%u,%u>", it->type_id(), id0, id1, id2, id3 );
-    };
     if ( type == AMP::Mesh::GeomType::Vertex ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 0> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Edge ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 1> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Face ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 2> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     } else if ( type == AMP::Mesh::GeomType::Cell ) {
         auto it2 = dynamic_cast<const TriangleMeshIterator<NG, NP, 3> *>( it->rawIterator() );
-        AMP_INSIST( it2, errMsg( it ) );
+        AMP_ASSERT( it2 );
         return find( id, it2 );
     }
     return false;
@@ -1411,6 +1401,16 @@ bool TriangleMesh<NG, NP>::operator==( const Mesh &rhs ) const
     // Perform comparison on sub-meshes
     AMP_ERROR( "Not finished" );
     return false;
+}
+
+
+/****************************************************************
+ * Write restart data                                            *
+ ****************************************************************/
+template<uint8_t NG, uint8_t NP>
+void TriangleMesh<NG, NP>::writeRestart( int64_t ) const
+{
+    AMP_ERROR( "writeRestart is not implimented for TriangleMesh" );
 }
 
 

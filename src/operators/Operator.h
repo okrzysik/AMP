@@ -163,7 +163,7 @@ protected:
 
     static int d_iInstance_id;
 
-    AMP::Mesh::Mesh::shared_ptr d_Mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
 
 private:
 };

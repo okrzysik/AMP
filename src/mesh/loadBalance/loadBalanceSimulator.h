@@ -26,7 +26,7 @@ public:
      *                      (0: Get the number of elements through a call to
      * Mesh::estimateMeshSize())
      */
-    loadBalanceSimulator( std::shared_ptr<AMP::Database> params );
+    loadBalanceSimulator( std::shared_ptr<const AMP::Database> params );
 
     /**
      * \brief    Default constructor

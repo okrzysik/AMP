@@ -197,6 +197,48 @@ hid_t openGroup( hid_t fid, const std::string_view &name )
 void closeGroup( hid_t gid ) { H5Gclose( gid ); }
 
 
+/************************************************************************
+ * Read/write bytes to HDF5                                              *
+ ************************************************************************/
+void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const void *data )
+{
+    hsize_t dim[1] = { N_bytes };
+    hid_t plist    = H5P_DEFAULT;
+    if ( N_bytes < 0x7500 ) {
+        // Use compact storage (limited to < 30K)
+        plist       = H5Pcreate( H5P_DATASET_CREATE );
+        auto status = H5Pset_layout( plist, H5D_COMPACT );
+        AMP_ASSERT( status == 0 );
+    } else {
+        // Use compression if available
+        plist = createChunk( N_bytes, defaultCompression( fid ), 1 );
+    }
+    hid_t dataspace = H5Screate_simple( 1, dim, NULL );
+    hid_t dataset   = H5Dcreate2(
+        fid, name.data(), H5T_NATIVE_UCHAR, dataspace, H5P_DEFAULT, plist, H5P_DEFAULT );
+    H5Dwrite( dataset, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, data );
+    H5Dclose( dataset );
+    H5Sclose( dataspace );
+    if ( plist != H5P_DEFAULT )
+        H5Pclose( plist );
+}
+void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *data )
+{
+    if ( !H5Dexists( fid, name ) ) {
+        AMP_ERROR( "Variable does not exist in file: " + std::string( name ) );
+        return;
+    }
+    hid_t dataset   = H5Dopen2( fid, name.data(), H5P_DEFAULT );
+    hid_t dataspace = H5Dget_space( dataset );
+    hsize_t dims0[10];
+    int ndim = H5Sget_simple_extent_dims( dataspace, dims0, NULL );
+    AMP_ASSERT( ndim == 1 && dims0[0] == N_bytes );
+    H5Dread( dataset, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, data );
+    H5Dclose( dataset );
+    H5Sclose( dataspace );
+}
+
+
 #else // No HDF5
 // Dummy implementations for no HDF5
 hid_t openHDF5( const std::string_view &, const char *, Compression ) { return 0; }
@@ -206,6 +248,8 @@ bool H5Dexists( hid_t, const std::string_view & ) { return false; }
 hid_t createGroup( hid_t, const std::string_view & ) { return 0; }
 hid_t openGroup( hid_t, const std::string_view & ) { return 0; }
 void closeGroup( hid_t ) {}
+void writeHDF5( hid_t, const std::string_view &, size_t, const std::bytes * );
+void readHDF5( hid_t, const std::string_view &, size_t, std::bytes * );
 #endif
 
 } // namespace AMP

@@ -77,7 +77,7 @@ bool SubchannelToCladGPMap::validMapType( const std::string &t )
  ************************************************************************/
 void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared_ptr vec,
                                               double[4],
-                                              AMP::Mesh::Mesh::shared_ptr mesh,
+                                              std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                               const std::vector<AMP::Mesh::MeshElementID> &ids,
                                               const std::vector<double> &z,
                                               const std::vector<double> &f )
@@ -102,7 +102,7 @@ void SubchannelToCladGPMap::fillReturnVector( AMP::LinearAlgebra::Vector::shared
  *  Function to build the z-coordinates of the gauss points              *
  ************************************************************************/
 std::vector<SubchannelToCladGPMap::gaussPointZCoord>
-SubchannelToCladGPMap::getGaussPoints( AMP::Mesh::Mesh::shared_ptr,
+SubchannelToCladGPMap::getGaussPoints( std::shared_ptr<AMP::Mesh::Mesh>,
                                        const std::vector<AMP::Mesh::MeshElementID> &ids )
 {
     std::vector<SubchannelToCladGPMap::gaussPointZCoord> z_pos;

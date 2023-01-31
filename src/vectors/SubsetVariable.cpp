@@ -1,6 +1,5 @@
 #include "AMP/vectors/SubsetVariable.h"
 #include "AMP/discretization/subsetDOFManager.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/SubsetVectorData.h"

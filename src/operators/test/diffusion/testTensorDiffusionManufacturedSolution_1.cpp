@@ -21,7 +21,6 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/ManufacturedSolution.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"

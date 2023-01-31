@@ -17,7 +17,7 @@
     #include "hdf5.h"
 #else
 // Not using HDF5
-typedef int hid_t;
+typedef int64_t hid_t;
 typedef size_t hsize_t;
 #endif
 
@@ -35,7 +35,7 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
  * @param[in] filename  File to open
  * @param[in] mode      C string containing a file access mode. It can be:
  *                      "r"    read: Open file for input operations. The file must exist.
- *                      "w"    write: Create an empty file for output operations.
+ *                      "w"    write: Create an empty file for output operations. <cstddef>
  *                          If a file with the same name already exists, its contents
  *                          are discarded and the file is treated as a new empty file.
  *                      "rw" read+write: Open file for reading and writing.  The file must exist.
@@ -115,6 +115,28 @@ void readHDF5( hid_t fid, const std::string_view &name, T &data );
 template<class T>
 std::unique_ptr<T>
 readHDF5( hid_t fid, const std::string_view &name, AMP_MPI comm = AMP_COMM_SELF );
+
+
+/**
+ * \brief Write data to HDF5
+ * \details This function writes a fixed number of bytes from HDF5.
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the variable
+ * @param[in] N_bytes   The number of bytes to write
+ * @param[in] data      The data to write
+ */
+void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const void *data );
+
+
+/**
+ * \brief Read data from HDF5
+ * \details This function reads a fixed number of bytes from HDF5.
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the variable
+ * @param[in] N_bytes   The number of bytes to write
+ * @param[out] data     The data to read
+ */
+void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *data );
 
 
 /**

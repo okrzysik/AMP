@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <limits>
 #include <map>
 #include <random>
@@ -534,6 +535,24 @@ std::vector<int> MPI_CLASS::globalRanks() const
     }
     // Return d_ranks
     return std::vector<int>( d_ranks, d_ranks + d_size );
+}
+uint64_t MPI_CLASS::hashRanks() const
+{
+    uint64_t hash = 0x6BCDEEF696DCF9FF;
+    if ( d_comm == MPI_COMM_NULL ) {
+        return hash ^ 0x0;
+    } else if ( d_comm == MPI_COMM_SELF ) {
+        return hash ^ 0x1;
+    } else if ( d_comm == MPI_COMM_WORLD ) {
+        return hash ^ 0x2;
+    } else if ( d_comm == MPI_CLASS_COMM_WORLD ) {
+        return hash ^ 0x3;
+    } else {
+        auto ranks = globalRanks();
+        for ( auto rank : ranks )
+            hash = hash ^ std::hash<int>{}( rank );
+        return hash;
+    }
 }
 
 
@@ -1580,7 +1599,7 @@ void MPI_CLASS::stop_MPI()
  ****************************************************************************/
 MPI_CLASS::Request::Request( MPI_CLASS::Request2 request, std::any data )
 {
-    using TYPE = typename std::remove_reference<decltype( *( d_data.get() ) )>::type;
+    using TYPE = typename AMP::remove_cvref_t<decltype( *( d_data.get() ) )>;
     if ( data.has_value() ) {
         auto deleter = []( TYPE *p ) {
             MPI_CLASS::wait( p->first );
@@ -1620,9 +1639,11 @@ INSTANTIATE_GET_COMM( int64_t );
 INSTANTIATE_GET_COMM( uint64_t );
 INSTANTIATE_GET_COMM( float );
 INSTANTIATE_GET_COMM( double );
+INSTANTIATE_GET_COMM( std::byte );
 INSTANTIATE_GET_COMM( std::complex<float> );
 INSTANTIATE_GET_COMM( std::complex<double> );
 INSTANTIATE_GET_COMM( std::string );
+INSTANTIATE_GET_COMM( std::string_view );
 
 
 } // namespace AMP

@@ -36,6 +36,9 @@ public:
     //! Check if two meshes are equal
     bool operator==( const Mesh &mesh ) const override;
 
+    // Load a restart
+    StructuredGeometryMesh( int64_t, AMP::IO::RestartManager * );
+
 public: // Functions derived from BoxMesh
     Mesh::Movable isMeshMovable() const override;
     uint64_t positionHash() const override;
@@ -44,6 +47,7 @@ public: // Functions derived from BoxMesh
     AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
     void coord( const MeshElementIndex &index, double *pos ) const override;
     std::unique_ptr<Mesh> clone() const override;
+    void writeRestart( int64_t ) const override;
 
 private:
     uint32_t d_pos_hash;

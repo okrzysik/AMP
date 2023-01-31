@@ -225,8 +225,8 @@ public:
                            std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
                            std::shared_ptr<AMP::LinearAlgebra::Vector> r );
 
-    virtual void printConvergenceStatus( SolverStrategy::SolverStatus status,
-                                         std::ostream &os = AMP::pout ) const
+    virtual void printConvergenceStatus( SolverStrategy::SolverStatus,
+                                         std::ostream & = AMP::pout ) const
     {
     }
 

@@ -5,9 +5,8 @@
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/operators/libmesh/LinearFEOperator.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
 
+#include <memory>
 #include <vector>
 
 

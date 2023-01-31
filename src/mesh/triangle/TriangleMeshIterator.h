@@ -4,7 +4,6 @@
 
 #include "AMP/mesh/MeshIterator.h"
 #include "AMP/mesh/triangle/TriangleMeshElement.h"
-#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Mesh {
@@ -75,17 +74,6 @@ protected:
 
     //! Clone the iterator
     MeshIterator *clone() const override;
-
-    //! Get the type id
-    static constexpr uint32_t getTypeID()
-    {
-        char name[] = "TriangleMeshIterator<0,0,0>";
-        name[21]    = 48 + NG;
-        name[23]    = 48 + NP;
-        name[25]    = 48 + TYPE;
-        return AMP::Utilities::hash_char( name );
-    }
-
 
     friend class AMP::Mesh::TriangleMesh<NG, NP>;
 

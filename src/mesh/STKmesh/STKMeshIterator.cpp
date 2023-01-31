@@ -1,7 +1,5 @@
 #include "AMP/mesh/STKmesh/STKMeshIterator.h"
 #include "AMP/mesh/STKmesh/STKMeshElement.h"
-#include "AMP/utils/Utilities.h"
-
 
 #include "stk_mesh/base/BulkData.hpp"
 
@@ -26,7 +24,7 @@ STKMeshIterator::STKMeshIterator()
       d_cur_element()
 {
     iterator = NULL;
-    typeID   = getTypeID();
+    typeID   = getTypeID<decltype( *this )>();
 }
 
 STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
@@ -43,7 +41,7 @@ STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
       d_cur_element()
 {
     iterator = NULL;
-    typeID   = getTypeID();
+    typeID   = getTypeID<decltype( *this )>();
 }
 STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
                                   int gcw,
@@ -59,7 +57,7 @@ STKMeshIterator::STKMeshIterator( const AMP::Mesh::STKMesh *mesh,
       d_cur_element()
 {
     iterator = NULL;
-    typeID   = getTypeID();
+    typeID   = getTypeID<decltype( *this )>();
 }
 STKMeshIterator::STKMeshIterator( const STKMeshIterator &rhs )
     : MeshIterator(),
@@ -73,14 +71,14 @@ STKMeshIterator::STKMeshIterator( const STKMeshIterator &rhs )
       d_cur_element( rhs.d_cur_element )
 {
     iterator = NULL;
-    typeID   = getTypeID();
+    typeID   = getTypeID<decltype( *this )>();
 }
 STKMeshIterator &STKMeshIterator::operator=( const STKMeshIterator &rhs )
 {
     this->iterator = NULL;
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    this->typeID        = getTypeID();
+    this->typeID        = getTypeID<decltype( *this )>();
     this->d_gcw         = rhs.d_gcw;
     this->d_dim         = rhs.d_dim;
     this->d_rank        = rhs.d_rank;
@@ -171,11 +169,11 @@ bool STKMeshIterator::operator==( const MeshIterator &rhs ) const
     const STKMeshIterator *rhs2 = nullptr;
     // Convert rhs to a STKMeshIterator* so we can access the base class members
     const auto *tmp = reinterpret_cast<const STKMeshIterator *>( &rhs );
-    if ( tmp->typeID == getTypeID() ) {
+    if ( tmp->typeID == getTypeID<decltype( *this )>() ) {
         rhs2 = tmp // We can safely cast rhs to a STKMeshIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const STKMeshIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == getTypeID() )
+        if ( tmp->d_typeID == getTypeID<decltype( *this )>() )
             rhs2 = tmp; // We can safely cast rhs.iterator to a STKMeshIterator
     }
     // Perform direct comparisions if we are dealing with two STKMeshIterators

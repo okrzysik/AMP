@@ -1,4 +1,5 @@
 #include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/VectorSelector.h"
 
 // Libmesh includes

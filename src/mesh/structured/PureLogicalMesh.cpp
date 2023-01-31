@@ -16,24 +16,25 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
     d_numBlocks.fill( 1 );
     // Check for valid inputs
     AMP_INSIST( params.get(), "Params must not be null" );
-    AMP_INSIST( d_db.get(), "Database must exist" );
-    if ( d_db->keyExists( "commSize" ) ) {
-        d_rank = d_db->getScalar<int>( "commRank" );
-        d_size = d_db->getScalar<int>( "commSize" );
+    auto db = params->getDatabase();
+    AMP_INSIST( db.get(), "Database must exist" );
+    if ( db->keyExists( "commSize" ) ) {
+        d_rank = db->getScalar<int>( "commRank" );
+        d_size = db->getScalar<int>( "commSize" );
         d_comm = AMP_COMM_NULL;
     } else {
         AMP_INSIST( !d_comm.isNull(), "Communicator must be set" );
     }
     // Fill basic mesh information
-    auto size = d_db->getVector<int>( "Size" );
-    auto per  = d_db->getWithDefault<std::vector<bool>>( "Periodic",
-                                                        std::vector<bool>( size.size(), false ) );
+    auto size = db->getVector<int>( "Size" );
+    auto per  = db->getWithDefault<std::vector<bool>>( "Periodic",
+                                                      std::vector<bool>( size.size(), false ) );
     AMP_INSIST( size.size() >= 1u && size.size() <= 3u, "bad value for Size" );
     AMP_ASSERT( per.size() == size.size() );
     PhysicalDim = size.size();
     GeomDim     = static_cast<AMP::Mesh::GeomType>( size.size() );
-    d_max_gcw   = d_db->getWithDefault<int>( "GCW", 2 );
-    AMP_ASSERT( PhysicalDim == d_db->getWithDefault<int>( "dim", PhysicalDim ) );
+    d_max_gcw   = db->getWithDefault<int>( "GCW", 2 );
+    AMP_ASSERT( PhysicalDim == db->getWithDefault<int>( "dim", PhysicalDim ) );
     for ( size_t d = 0; d < size.size(); d++ ) {
         d_globalSize[d] = size[d];
         d_isPeriodic[d] = per[d];
@@ -46,8 +47,8 @@ PureLogicalMesh::PureLogicalMesh( std::shared_ptr<const MeshParameters> params )
         }
     }
     // Initialize the logical mesh
-    BoxMesh::initialize();
-    BoxMesh::finalize();
+    BoxMesh::initialize( db->getWithDefault<std::vector<int>>( "LoadBalanceMinSize", {} ) );
+    BoxMesh::finalize( db->getString( "MeshName" ), getDisplacement( db ) );
 }
 PureLogicalMesh::PureLogicalMesh( const PureLogicalMesh &mesh ) = default;
 
@@ -118,6 +119,15 @@ bool PureLogicalMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     return true;
+}
+
+
+/****************************************************************
+ * Write restart data                                            *
+ ****************************************************************/
+void PureLogicalMesh::writeRestart( int64_t ) const
+{
+    AMP_ERROR( "writeRestart is not implimented for PureLogicalMesh" );
 }
 
 

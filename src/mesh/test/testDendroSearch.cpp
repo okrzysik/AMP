@@ -10,7 +10,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -108,7 +107,7 @@ void drawOctant( double const *space,
     drawOctant( octant, point_of_view, os );
 }
 
-void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void drawSpacePartition( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                          double const *point_of_view,
                          std::ostream &os )
 {
@@ -143,7 +142,7 @@ void drawSpacePartition( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     drawOctant( &( space[0] ), 2, 1, 1, 2, 2, point_of_view, os );
 }
 
-void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,
@@ -496,7 +495,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
     void ( *randomPtsGenerators[] )( int, size_t, std::vector<double> & ) = { &genUniformPts };
     const std::string prefixes[]                                          = { "uniform" };
 
-    std::string suffix = AMP::Utilities::intToString( npes );
+    std::string suffix = std::to_string( npes );
 
 
     for ( size_t i = 0; i < n_i; ++i ) {

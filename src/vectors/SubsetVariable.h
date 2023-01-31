@@ -1,7 +1,6 @@
 #ifndef included_AMP_SubsetVariable_H
 #define included_AMP_SubsetVariable_H
 
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 
@@ -26,7 +25,7 @@ public:
      * \return The DOFManager
      * \param[in]  manager  The DOF manager we want to subset
      */
-    virtual AMP::Discretization::DOFManager::shared_ptr
+    virtual std::shared_ptr<AMP::Discretization::DOFManager>
     getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> manager ) const = 0;
 
 

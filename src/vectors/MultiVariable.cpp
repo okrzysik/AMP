@@ -1,5 +1,4 @@
 #include "AMP/vectors/MultiVariable.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorSelector.h"
 

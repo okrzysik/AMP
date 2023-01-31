@@ -1,4 +1,5 @@
 #include "AMP/IO/HDF5writer.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/HDF5.h"
 #include "AMP/IO/Xdmf.h"
 #include "AMP/matrices/Matrix.h"
@@ -97,7 +98,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     // Create the file
     auto filename  = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
     auto fid       = openHDF5( filename, "w", Compression::GZIP );
-    auto filename2 = AMP::Utilities::filename( filename );
+    auto filename2 = AMP::IO::filename( filename );
     writeHDF5( fid, "time", time );
     // Synchronize the vectors
     syncVectors();
@@ -144,7 +145,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
             sid = fopen( sname.data(), "w" );
         else
             sid = fopen( sname.data(), "a" );
-        fprintf( sid, "%s\n", AMP::Utilities::filename( fname ).data() );
+        fprintf( sid, "%s\n", AMP::IO::filename( fname ).data() );
         fclose( sid );
     }
 

@@ -2,6 +2,7 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorFactory.h"
 #include "AMP/solvers/SolverFactory.h"

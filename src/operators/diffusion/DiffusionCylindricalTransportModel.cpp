@@ -1,8 +1,9 @@
 #include "DiffusionCylindricalTransportModel.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
+
 #include <cmath>
 #include <map>
+
 
 // Libmesh headers
 DISABLE_WARNINGS

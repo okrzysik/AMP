@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 

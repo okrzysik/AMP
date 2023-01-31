@@ -1,31 +1,26 @@
-
 #include "AMP/IO/PIO.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/operators/LinearBVPOperator.h"
+#include "AMP/operators/NonlinearBVPOperator.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
-#include "AMP/mesh/Mesh.h"
-#include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/libmesh/libmeshMesh.h"
-
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/libmesh.h"
 #include "libmesh/mesh_communication.h"
 
-#include "AMP/operators/LinearBVPOperator.h"
-#include "AMP/operators/NonlinearBVPOperator.h"
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {

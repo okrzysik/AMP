@@ -23,7 +23,7 @@ inline std::shared_ptr<AMP::Discretization::DOFManager> Vector::getDOFManager() 
 template<typename VIEW_TYPE>
 std::shared_ptr<VIEW_TYPE> Vector::getView() const
 {
-    typedef typename std::remove_cv<VIEW_TYPE>::type TYPE;
+    typedef typename std::remove_cv_t<VIEW_TYPE> TYPE;
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
         if ( ( *d_Views )[i].type() == typeid( std::weak_ptr<TYPE> ) ) {
             auto ptr = std::any_cast<std::weak_ptr<TYPE>>( ( *d_Views )[i] );
@@ -42,7 +42,7 @@ bool Vector::hasView() const
 template<typename VIEW_TYPE>
 void Vector::registerView( std::shared_ptr<VIEW_TYPE> v ) const
 {
-    typedef typename std::remove_cv<VIEW_TYPE>::type TYPE;
+    typedef typename std::remove_cv_t<VIEW_TYPE> TYPE;
     for ( size_t i = 0; i != d_Views->size(); i++ ) {
         if ( ( *d_Views )[i].type() == typeid( std::weak_ptr<TYPE> ) ) {
             auto ptr = std::any_cast<std::weak_ptr<TYPE>>( ( *d_Views )[i] );

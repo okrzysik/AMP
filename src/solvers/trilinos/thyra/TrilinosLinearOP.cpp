@@ -1,5 +1,4 @@
 #include "AMP/solvers/trilinos/thyra/TrilinosLinearOP.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 

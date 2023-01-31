@@ -78,8 +78,7 @@ void DTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
             std::fstream fout;
             if ( Teuchos::nonnull( d_range_mesh->functionSpace()->entitySet() ) ) {
-                std::string filename =
-                    "debug_DTKMapOp_" + AMP::Utilities::intToString( d_comm.getRank() );
+                std::string filename = "debug_DTKMapOp_" + std::to_string( d_comm.getRank() );
                 fout.open( filename.c_str(), std::fstream::out | std::fstream::app );
                 fout << " Iterator size "
                      << d_range_mesh->functionSpace()->entitySet()->entityIterator( 0 ).size()

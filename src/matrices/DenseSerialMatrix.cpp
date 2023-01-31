@@ -283,11 +283,11 @@ Vector::shared_ptr DenseSerialMatrix::getLeftVector() const
 {
     return createVector( getLeftDOFManager(), d_VariableLeft );
 }
-Discretization::DOFManager::shared_ptr DenseSerialMatrix::getRightDOFManager() const
+std::shared_ptr<Discretization::DOFManager> DenseSerialMatrix::getRightDOFManager() const
 {
     return d_DOFManagerRight;
 }
-Discretization::DOFManager::shared_ptr DenseSerialMatrix::getLeftDOFManager() const
+std::shared_ptr<Discretization::DOFManager> DenseSerialMatrix::getLeftDOFManager() const
 {
     return d_DOFManagerLeft;
 }

@@ -21,7 +21,7 @@
 
 
 void helperCreateStackOperatorForPelletMechanics(
-    AMP::Mesh::Mesh::shared_ptr manager,
+    std::shared_ptr<AMP::Mesh::Mesh> manager,
     std::shared_ptr<AMP::Operator::AsyncMapColumnOperator> n2nmaps,
     std::shared_ptr<AMP::Database> global_input_db,
     std::shared_ptr<AMP::Operator::PelletStackOperator> &pelletStackOp )
@@ -41,7 +41,7 @@ void helperCreateStackOperatorForPelletMechanics(
 
 void helperCreateColumnOperatorsForPelletMechanics(
     std::vector<unsigned int> localPelletIds,
-    std::vector<AMP::Mesh::Mesh::shared_ptr> localMeshes,
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> localMeshes,
     std::shared_ptr<AMP::Database> global_input_db,
     std::shared_ptr<AMP::Operator::ColumnOperator> &nonlinearColumnOperator,
     std::shared_ptr<AMP::Operator::ColumnOperator> &linearColumnOperator )
@@ -89,7 +89,8 @@ void helperCreateCoupledOperatorForPelletMechanics(
 }
 
 void helperSetFrozenVectorForMapsForPelletMechanics(
-    AMP::Mesh::Mesh::shared_ptr manager, std::shared_ptr<AMP::Operator::CoupledOperator> coupledOp )
+    std::shared_ptr<AMP::Mesh::Mesh> manager,
+    std::shared_ptr<AMP::Operator::CoupledOperator> coupledOp )
 {
     auto n2nmaps = std::dynamic_pointer_cast<AMP::Operator::AsyncMapColumnOperator>(
         coupledOp->getOperator( 2 ) );
@@ -112,7 +113,7 @@ void helperSetFrozenVectorForMapsForPelletMechanics(
 }
 
 void helperCreateAllOperatorsForPelletMechanics(
-    AMP::Mesh::Mesh::shared_ptr manager,
+    std::shared_ptr<AMP::Mesh::Mesh> manager,
     AMP::AMP_MPI,
     std::shared_ptr<AMP::Database> global_input_db,
     std::shared_ptr<AMP::Operator::CoupledOperator> &coupledOp,
@@ -139,7 +140,7 @@ void helperCreateAllOperatorsForPelletMechanics(
 }
 
 void helperCreateVectorsForPelletMechanics(
-    AMP::Mesh::Mesh::shared_ptr manager,
+    std::shared_ptr<AMP::Mesh::Mesh> manager,
     std::shared_ptr<AMP::Operator::CoupledOperator> coupledOp,
     AMP::LinearAlgebra::Vector::shared_ptr &solVec,
     AMP::LinearAlgebra::Vector::shared_ptr &rhsVec,
@@ -192,7 +193,7 @@ void helperApplyBoundaryCorrectionsForPelletMechanics(
 }
 
 void helperCreateTemperatureVectorsForPelletMechanics(
-    AMP::Mesh::Mesh::shared_ptr manager,
+    std::shared_ptr<AMP::Mesh::Mesh> manager,
     AMP::LinearAlgebra::Vector::shared_ptr &initialTemperatureVec,
     AMP::LinearAlgebra::Vector::shared_ptr &finalTemperatureVec )
 {

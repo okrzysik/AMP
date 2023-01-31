@@ -176,7 +176,7 @@ static size_t getMATLABAxialIndex( const AMP::Mesh::MeshElement &face, bool is_a
 
 // function used to get all lateral gaps
 static std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement>
-getLateralFaces( AMP::Mesh::Mesh::shared_ptr mesh, bool )
+getLateralFaces( std::shared_ptr<AMP::Mesh::Mesh> mesh, bool )
 {
     // map of lateral gaps to their centroids
     std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> lateralFaceMap;
@@ -329,7 +329,7 @@ static void createGlobalIDMaps( std::shared_ptr<AMP::Discretization::DOFManager>
 static bool JacobianIsCorrect( std::shared_ptr<AMP::LinearAlgebra::Matrix> J_test_AMP,
                                double J_reference[num_dofs_MATLAB][num_dofs_MATLAB],
                                std::shared_ptr<AMP::Discretization::DOFManager> dof_manager,
-                               AMP::Mesh::Mesh::shared_ptr mesh,
+                               std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                std::map<AMP::Mesh::Point, AMP::Mesh::MeshElement> lateral_face_map,
                                std::map<size_t, AMP::Mesh::MeshElement> elements_by_globalID,
                                std::map<size_t, size_t> variables_by_globalID )

@@ -211,7 +211,7 @@ Array<TYPE, FUN, Allocator>::Array( std::string str ) : d_isCopyable( true ), d_
             i2 = str.length();
     }
     allocate( data.size() );
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         for ( size_t i = 0; i < data.size(); i++ )
             d_data[i] = data[i];
     } else {
@@ -312,7 +312,7 @@ template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator> &Array<TYPE, FUN, Allocator>::operator=( const std::vector<TYPE> &rhs )
 {
     allocate( ArraySize( rhs.size() ) );
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         for ( size_t i = 0; i < rhs.size(); i++ )
             d_data[i] = rhs[i];
     } else {
@@ -399,7 +399,7 @@ void Array<TYPE, FUN, Allocator>::resize( const ArraySize &N )
         if ( data0.use_count() <= 1 ) {
             // We own the data, use std:move
             moveValues( N0, N, data0.get(), d_data );
-        } else if constexpr ( std::is_copy_constructible<TYPE>::value ) {
+        } else if constexpr ( std::is_copy_constructible_v<TYPE> ) {
             // We do not own the data, copy
             copyValues( N0, N, data0.get(), d_data );
         } else {
@@ -1167,14 +1167,11 @@ Array<TYPE, FUN, Allocator>::cat( size_t N_array, const Array *x, int dim )
  *  Interpolate                                          *
  ********************************************************/
 template<class T>
-constexpr bool is_compatible_double()
-{
-    return std::is_floating_point<T>::value || std::is_integral<T>::value;
-}
+inline constexpr bool is_compatible_double = std::is_floating_point_v<T> || std::is_integral_v<T>;
 template<class TYPE>
 inline TYPE Array_interp_1D( double x, int N, const TYPE *data )
 {
-    if constexpr ( is_compatible_double<TYPE>() ) {
+    if constexpr ( is_compatible_double<TYPE> ) {
         int i = floor( x );
         i     = std::max( i, 0 );
         i     = std::min( i, N - 2 );
@@ -1186,7 +1183,7 @@ inline TYPE Array_interp_1D( double x, int N, const TYPE *data )
 template<class TYPE>
 inline TYPE Array_interp_2D( double x, double y, int Nx, int Ny, const TYPE *data )
 {
-    if constexpr ( is_compatible_double<TYPE>() ) {
+    if constexpr ( is_compatible_double<TYPE> ) {
         int i             = floor( x );
         i                 = std::max( i, 0 );
         i                 = std::min( i, Nx - 2 );
@@ -1210,7 +1207,7 @@ template<class TYPE>
 inline TYPE
 Array_interp_3D( double x, double y, double z, int Nx, int Ny, int Nz, const TYPE *data )
 {
-    if constexpr ( is_compatible_double<TYPE>() ) {
+    if constexpr ( is_compatible_double<TYPE> ) {
         int i             = floor( x );
         i                 = std::max( i, 0 );
         i                 = std::min( i, Nx - 2 );
@@ -1372,7 +1369,7 @@ size_t AMP::Array<TYPE, FUN, Allocator>::packSize() const
     N += AMP::packSize( d_isCopyable );
     N += AMP::packSize( d_isFixedSize );
     N += AMP::packSize( d_size );
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         N += length() * sizeof( TYPE );
     } else {
         for ( size_t i = 0; i < length(); i++ )
@@ -1387,7 +1384,7 @@ size_t AMP::Array<TYPE, FUN, Allocator>::pack( std::byte *buf ) const
     N += AMP::pack( d_isCopyable, &buf[N] );
     N += AMP::pack( d_isFixedSize, &buf[N] );
     N += AMP::pack( d_size, &buf[N] );
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         memcpy( &buf[N], d_data, length() * sizeof( TYPE ) );
         N += length() * sizeof( TYPE );
     } else {
@@ -1408,7 +1405,7 @@ size_t AMP::Array<TYPE, FUN, Allocator>::unpack( const std::byte *buf )
     resize( size );
     d_isCopyable  = copy;
     d_isFixedSize = fixed;
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         // clang-format off
         DISABLE_WARNINGS
         memcpy( d_data, &buf[N], length() * sizeof( TYPE ) );

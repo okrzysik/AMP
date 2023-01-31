@@ -1,5 +1,4 @@
 #include "DiffusionElement.h"
-#include "AMP/utils/Utilities.h"
 
 // Libmesh headers
 DISABLE_WARNINGS

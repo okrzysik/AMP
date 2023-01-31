@@ -15,7 +15,7 @@ struct MapConstructionParam {
     MapDominance dominance;
     std::shared_ptr<AMP::Database> database;
     std::string meshName;
-    AMP::Mesh::Mesh::shared_ptr mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh;
     std::string mapType;
     size_t tagOffset;
 };
@@ -25,7 +25,7 @@ extern size_t globalMapTagOffset; // We need a global unique tag offset for ever
 
 template<typename MAP_TYPE>
 std::shared_ptr<AsyncMapColumnOperator>
-AsyncMapColumnOperator::build( AMP::Mesh::Mesh::shared_ptr manager,
+AsyncMapColumnOperator::build( std::shared_ptr<AMP::Mesh::Mesh> manager,
                                std::shared_ptr<Database> database )
 {
 

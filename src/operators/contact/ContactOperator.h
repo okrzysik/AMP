@@ -69,7 +69,7 @@ protected:
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManager;
     size_t d_DOFsPerNode;
 
-    AMP::Mesh::Mesh::shared_ptr d_Mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
 
     AMP::Mesh::MeshID d_MasterMeshID;
     AMP::Mesh::MeshID d_SlaveMeshID;

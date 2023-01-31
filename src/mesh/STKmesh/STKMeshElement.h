@@ -119,10 +119,8 @@ protected:
 
     friend class AMP::Mesh::STKMesh;
     friend class AMP::Mesh::STKMeshIterator;
-
-private:
-    static constexpr uint32_t getTypeID() { return AMP::Utilities::hash_char( "STKMeshElement" ); }
 };
+
 } // namespace AMP::Mesh
 
 #endif

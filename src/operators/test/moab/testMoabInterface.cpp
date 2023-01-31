@@ -15,7 +15,6 @@
 #include "AMP/IO/PIO.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 
 // MOAB Includes
 #include "Coupler.hpp"

@@ -128,7 +128,7 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    std::shared_ptr<DOFManager> subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+    std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
 

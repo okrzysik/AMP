@@ -1,7 +1,6 @@
 #ifndef included_AMP_Vector
 #define included_AMP_Vector
 
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Units.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
@@ -11,6 +10,11 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
+
+
+namespace AMP::Discretization {
+class DOFManager;
+}
 
 
 namespace AMP::LinearAlgebra {
@@ -806,6 +810,10 @@ public: // Set values
     template<typename TYPE>
     void setValueByGlobalID( size_t i, TYPE v );
 
+public:
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
+
 protected:                                                         // Internal data
     AMP::Units d_units;                                            // Optional units for the data
     std::shared_ptr<Variable> d_Variable;                          // Variable
@@ -813,7 +821,6 @@ protected:                                                         // Internal d
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
     std::shared_ptr<VectorOperations> d_VectorOps;                 // Pointer to a VectorOperations
     std::shared_ptr<std::vector<std::any>> d_Views;                // Views of the vector
-    std::ostream *d_output_stream;                                 // output stream for vector data
 };
 
 

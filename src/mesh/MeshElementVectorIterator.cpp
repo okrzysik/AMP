@@ -1,6 +1,5 @@
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/mesh/MeshElement.h"
-#include "AMP/utils/Utilities.h"
 
 namespace AMP::Mesh {
 
@@ -8,9 +7,11 @@ namespace AMP::Mesh {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+static constexpr auto MeshIteratorType = AMP::getTypeID<MultiVectorIterator>().hash;
+static_assert( MeshIteratorType != 0 );
 MultiVectorIterator::MultiVectorIterator()
 {
-    d_typeID   = getTypeID();
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_pos      = 0;
     d_size     = 0;
@@ -20,7 +21,7 @@ MultiVectorIterator::MultiVectorIterator( std::shared_ptr<std::vector<MeshElemen
                                           size_t pos )
     : d_elements( elements )
 {
-    d_typeID   = getTypeID();
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_pos      = pos;
     d_size     = d_elements->size();
@@ -29,7 +30,7 @@ MultiVectorIterator::MultiVectorIterator( std::shared_ptr<std::vector<MeshElemen
 MultiVectorIterator::MultiVectorIterator( const std::vector<MeshElement> &elements, size_t pos )
     : d_elements( new std::vector<MeshElement>( elements ) )
 {
-    d_typeID   = getTypeID();
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_pos      = pos;
     d_size     = d_elements->size();
@@ -39,7 +40,7 @@ MultiVectorIterator::MultiVectorIterator( const MultiVectorIterator &rhs )
     : MeshIterator(), // Note: we never want to call the base copy constructor
       d_elements( rhs.d_elements )
 {
-    d_typeID   = getTypeID();
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_pos      = rhs.d_pos;
     d_size     = rhs.d_size;
@@ -49,7 +50,7 @@ MultiVectorIterator &MultiVectorIterator::operator=( const MultiVectorIterator &
 {
     if ( this == &rhs ) // protect against invalid self-assignment
         return *this;
-    d_typeID   = getTypeID();
+    d_typeHash = MeshIteratorType;
     d_iterator = nullptr;
     d_elements = rhs.d_elements;
     d_pos      = rhs.d_pos;
@@ -149,11 +150,11 @@ bool MultiVectorIterator::operator==( const MeshIterator &rhs ) const
     const MultiVectorIterator *rhs2 = nullptr;
     // Convert rhs to a MultiVectorIterator* so we can access the base class members
     const auto *tmp = reinterpret_cast<const MultiVectorIterator *>( &rhs );
-    if ( tmp->d_typeID == getTypeID() ) {
+    if ( tmp->d_typeHash == MeshIteratorType ) {
         rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
     } else if ( tmp->d_iterator != nullptr ) {
         tmp = reinterpret_cast<const MultiVectorIterator *>( tmp->d_iterator );
-        if ( tmp->d_typeID == getTypeID() )
+        if ( tmp->d_typeHash == MeshIteratorType )
             rhs2 = tmp; // We can safely cast rhs.iterator to a MultiVectorIterator
     }
     // Perform direct comparisions if we are dealing with two MultiVectorIterators

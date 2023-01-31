@@ -75,7 +75,7 @@ void VectorOperationsOpenMP<TYPE>::setRandomValues( VectorData &x )
 {
     static std::random_device rd;
     static std::mt19937 gen( rd() );
-    if constexpr ( std::is_floating_point<TYPE>::value ) {
+    if constexpr ( std::is_floating_point_v<TYPE> ) {
         static std::uniform_real_distribution<TYPE> dis( 0, 1 );
         auto y    = x.begin<TYPE>();
         auto last = x.end<TYPE>();
@@ -83,7 +83,7 @@ void VectorOperationsOpenMP<TYPE>::setRandomValues( VectorData &x )
             *y = dis( gen );
             ++y;
         }
-    } else if constexpr ( std::is_integral<TYPE>::value ) {
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
         static std::uniform_int_distribution<TYPE> dis;
         auto y    = x.begin<TYPE>();
         auto last = x.end<TYPE>();

@@ -1,4 +1,3 @@
-
 #include "AMP/IO/PIO.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/operators/BVPOperatorParameters.h"
@@ -15,10 +14,9 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 

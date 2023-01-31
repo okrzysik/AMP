@@ -1,16 +1,10 @@
-/*
- * DiffusionCylindricalTransportModel.h
- *
- *  Created on: Aug 19, 2011
- *      Author: gad
- */
-
 #ifndef DIFFUSIONCYLINDRICALTRANSPORTMODEL_H_
 #define DIFFUSIONCYLINDRICALTRANSPORTMODEL_H_
 
 #include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
-#include "AMP/utils/Utilities.h"
+
 #include <string>
+
 
 namespace AMP::Operator {
 typedef ElementPhysicsModelParameters DiffusionCylindricalTransportModelParameters;

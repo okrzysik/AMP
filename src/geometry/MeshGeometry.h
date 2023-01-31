@@ -134,6 +134,11 @@ public:
     //! Check if two geometries are equal
     bool operator==( const Geometry &rhs ) const override;
 
+    MeshGeometry( int64_t );
+
+protected: // Write/read restart data
+    void writeRestart( int64_t ) const override;
+
 private:
     void updateCache() const; // Update cached data if underlying mesh has moved
 
