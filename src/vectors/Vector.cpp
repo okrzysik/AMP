@@ -26,8 +26,7 @@ Vector::Vector()
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
-      d_Views( new std::vector<std::any>() ),
-      d_output_stream( &AMP::plog )
+      d_Views( new std::vector<std::any>() )
 {
     AMPManager::incrementResource( "Vector" );
 }
@@ -36,8 +35,7 @@ Vector::Vector( const std::string &name )
       d_DOFManager( new AMP::Discretization::DOFManager( 0, AMP_MPI( AMP_COMM_SELF ) ) ),
       d_VectorData( new VectorDataNull<double>() ),
       d_VectorOps( new VectorOperationsDefault<double>() ),
-      d_Views( new std::vector<std::any>() ),
-      d_output_stream( &AMP::plog )
+      d_Views( new std::vector<std::any>() )
 {
     AMPManager::incrementResource( "Vector" );
 }
@@ -49,8 +47,7 @@ Vector::Vector( std::shared_ptr<VectorData> data,
       d_DOFManager( DOFManager ),
       d_VectorData( data ),
       d_VectorOps( ops ),
-      d_Views( new std::vector<std::any>() ),
-      d_output_stream( &AMP::plog )
+      d_Views( new std::vector<std::any>() )
 {
     AMPManager::incrementResource( "Vector" );
     AMP_ASSERT( data && ops && var );
@@ -195,13 +192,12 @@ Vector::shared_ptr Vector::cloneVector( const std::shared_ptr<Variable> name ) c
 }
 std::unique_ptr<Vector> Vector::rawClone( const std::shared_ptr<Variable> name ) const
 {
-    auto vec             = std::make_unique<Vector>();
-    vec->d_units         = d_units;
-    vec->d_Variable      = name;
-    vec->d_DOFManager    = d_DOFManager;
-    vec->d_VectorData    = d_VectorData->cloneData();
-    vec->d_VectorOps     = d_VectorOps->cloneOperations();
-    vec->d_output_stream = d_output_stream;
+    auto vec          = std::make_unique<Vector>();
+    vec->d_units      = d_units;
+    vec->d_Variable   = name;
+    vec->d_DOFManager = d_DOFManager;
+    vec->d_VectorData = d_VectorData->cloneData();
+    vec->d_VectorOps  = d_VectorOps->cloneOperations();
     if ( !vec->d_VectorData )
         AMP_ERROR( "Failed to clone data: " + d_VectorData->VectorDataName() );
     if ( !vec->d_VectorOps )
@@ -309,6 +305,7 @@ size_t Vector::getNumberOfComponents() const
 {
     return d_VectorData ? d_VectorData->getNumberOfComponents() : 0;
 }
+uint64_t Vector::getID() const { return getComm().bcast( reinterpret_cast<uint64_t>( this ), 0 ); }
 void Vector::setUnits( AMP::Units units ) { d_units = units; }
 std::ostream &operator<<( std::ostream &out, const Vector &v )
 {
@@ -348,26 +345,51 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 
 
 /********************************************************
- *  Restart operations for Mesh                          *
+ *  Restart operations                                   *
  ********************************************************/
 template<>
-AMP::AMP_MPI AMP::getComm<AMP::LinearAlgebra::Vector>( const AMP::LinearAlgebra::Vector &vec )
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::LinearAlgebra::Vector> vec,
+    RestartManager *manager )
+    : d_data( vec )
 {
-    return vec.getComm();
+    d_name = name;
+    d_hash = vec->getID();
+    manager->registerData( vec->getVariable() );
+    manager->registerData( vec->getDOFManager() );
+    manager->registerData( vec->getVectorData() );
+    manager->registerData( vec->getVectorOperations() );
+    auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( vec );
+    if ( multivec ) {
+        for ( auto vec2 : *multivec )
+            manager->registerData( vec2 );
+    }
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::write(
     hid_t fid, const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
-    AMP_ERROR( "Not finished" );
+    writeHDF5( gid, "units", d_data->getUnits() );
+    writeHDF5( gid, "var", d_data->getVariable()->getID() );
+    writeHDF5( gid, "dofs", d_data->getDOFManager()->getID() );
+    writeHDF5( gid, "data", d_data->getVectorData()->getID() );
+    writeHDF5( gid, "ops", d_data->getVectorOperations()->getID() );
+    auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( d_data );
+    if ( multivec ) {
+        std::vector<uint64_t> vecs;
+        for ( auto vec2 : *multivec )
+            vecs.push_back( vec2->getID() );
+        writeHDF5( gid, "vecs", vecs );
+    }
     closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-AMP::IO::RestartManager::getData<AMP::LinearAlgebra::Vector>( const std::string &name )
+AMP::IO::RestartManager::getData<AMP::LinearAlgebra::Vector>( uint64_t hash )
 {
-    hid_t gid = openGroup( d_fid, name );
+    hid_t gid = openGroup( d_fid, hash2String( hash ) );
     AMP_ERROR( "Not finished" );
     closeGroup( gid );
 }

@@ -155,6 +155,11 @@ public:
     virtual std::shared_ptr<DOFManager> subset( const AMP::Mesh::MeshIterator &iterator,
                                                 const AMP_MPI &comm );
 
+
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
+
+
 protected:
     //!  Empty constructor for a DOF manager object
     DOFManager(){};

@@ -18,23 +18,25 @@ public:
     class DataStore
     {
     public:
-        virtual uint64_t getHash() const                               = 0;
-        virtual const std::string &getName() const                     = 0;
+        inline uint64_t getHash() const { return d_hash; }
+        inline const std::string &getName() const { return d_name; }
         virtual void write( hid_t fid, const std::string &name ) const = 0;
+
+    protected:
+        uint64_t d_hash = 0;
+        std::string d_name;
     };
     template<class TYPE>
     class DataStoreType : public DataStore
     {
     public:
         DataStoreType( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
-        uint64_t getHash() const override;
-        const std::string &getName() const override { return d_name; }
         void write( hid_t fid, const std::string &name ) const override;
 
-    private:
-        std::string d_name;
+    protected:
         std::shared_ptr<const TYPE> d_data;
     };
+    using DataStorePtr = std::shared_ptr<const DataStore>;
 
 public:
     //! Create a writer for restart data
@@ -76,14 +78,7 @@ public:
      * @param[in] data      Data to register
      */
     template<class TYPE>
-    void registerData( const std::string &name, const TYPE &data );
-
-    /**
-     * \brief  Register data with the restart manager
-     * \details This function registers an object with the restart manager
-     * @param[in] data      Data to register
-     */
-    void registerData( std::shared_ptr<DataStore> data );
+    void registerData( const TYPE &data, const std::string &name = "" );
 
     /**
      * \brief  Register a communicator with the restart manager
@@ -119,8 +114,7 @@ public:
 
 private:
     template<class TYPE>
-    std::shared_ptr<RestartManager::DataStore> create( const std::string &,
-                                                       std::shared_ptr<const TYPE> );
+    RestartManager::DataStorePtr create( const std::string &, std::shared_ptr<const TYPE> );
 
     void writeCommData( const std::string &file, Compression compress );
     void readCommData( const std::string &file );
@@ -128,10 +122,10 @@ private:
 
 private:
     bool d_writer;
-    hid_t d_fid;                                           // fid for reading
-    std::map<uint64_t, std::shared_ptr<DataStore>> d_data; // Object data
-    std::map<std::string, uint64_t> d_names;               // Names to associate with the hashes
-    std::map<uint64_t, AMP_MPI> d_comms;                   // Registered communicators
+    hid_t d_fid;                             // fid for reading
+    std::map<uint64_t, DataStorePtr> d_data; // Object data
+    std::map<std::string, uint64_t> d_names; // Names to associate with the hashes
+    std::map<uint64_t, AMP_MPI> d_comms;     // Registered communicators
 };
 
 

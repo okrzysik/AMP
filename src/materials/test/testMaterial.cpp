@@ -77,9 +77,9 @@ void testArgsRange( const std::shared_ptr<AMP::Materials::Property> &property,
     try {
         set( *vec, 5, outOfRange );
         using Vector = AMP::LinearAlgebra::Vector;
-        if constexpr ( std::is_same<VAL, Vector>::value ||
-                       std::is_same<VAL, std::vector<std::shared_ptr<Vector>>>::value ||
-                       std::is_same<VAL, AMP::Array<std::shared_ptr<Vector>>>::value )
+        if constexpr ( std::is_same_v<VAL, Vector> ||
+                       std::is_same_v<VAL, std::vector<std::shared_ptr<Vector>>> ||
+                       std::is_same_v<VAL, AMP::Array<std::shared_ptr<Vector>>> )
             property->evalv( value, args );
         else
             property->evalv( value, {}, args );

@@ -312,6 +312,10 @@ public:
     localEquals( const VectorData &x, const VectorData &y, const Scalar &tol = 1e-6 ) const = 0;
 
 
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
+
+
 protected:
     VectorOperations();
 };

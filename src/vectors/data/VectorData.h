@@ -617,6 +617,9 @@ public: // Non virtual functions
 
     std::vector<double> &getGhosts() { return *d_Ghosts; }
 
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
+
 
 protected:                   // Internal data
     size_t d_localSize  = 0; //! Number of local values

@@ -1081,13 +1081,13 @@ void get_circumsphere( const std::array<TYPE, NDIM> x0[], double &R, double *cen
 template<class TYPE>
 constexpr double getFlipTOL()
 {
-    if constexpr ( std::is_integral<TYPE>::value ) {
+    if constexpr ( std::is_integral_v<TYPE> ) {
         return 0;
-    } else if constexpr ( std::is_same<TYPE, float>::value || std::is_same<TYPE, double>::value ||
-                          std::is_same<TYPE, long double>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, float> || std::is_same_v<TYPE, double> ||
+                          std::is_same_v<TYPE, long double> ) {
         return 1e-12;
     } else {
-        static_assert( !std::is_same<TYPE, TYPE>::value, "Not programmed" );
+        static_assert( !std::is_same_v<TYPE, TYPE>, "Not programmed" );
     }
 }
 template<int NDIM, class TYPE, class ETYPE>
@@ -2294,7 +2294,7 @@ static inline uint64_t digits( const Array<TYPE> &x )
 template<class TYPE>
 std::tuple<AMP::Array<int>, AMP::Array<int>> create_tessellation( const Array<TYPE> &x )
 {
-    if constexpr ( std::is_integral<TYPE>::value ) {
+    if constexpr ( std::is_integral_v<TYPE> ) {
         int d = digits( x );
         if ( d <= 31 ) {
             return create_tessellation<TYPE, int>( x );

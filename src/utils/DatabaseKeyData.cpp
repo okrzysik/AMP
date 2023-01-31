@@ -34,13 +34,13 @@ void registerMaterial( const std::string &name, std::function<std::unique_ptr<Ke
 template<class TYPE>
 void scaleData( TYPE &data, double factor )
 {
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         throw std::logic_error( "Unable to scale bool" );
-    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<float>> ) {
         data = static_cast<float>( factor ) * data;
-    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         data = factor * data;
-    } else if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    } else if constexpr ( std::is_arithmetic_v<TYPE> ) {
         data = static_cast<TYPE>( factor ) * data;
     } else {
         NULL_USE( factor );
@@ -51,9 +51,9 @@ void scaleData( TYPE &data, double factor )
 template<class TYPE>
 void scaleData( Array<TYPE> &data, double factor )
 {
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         throw std::logic_error( "Unable to scale bool" );
-    } else if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    } else if constexpr ( std::is_arithmetic_v<TYPE> ) {
         data.scale( factor );
     } else {
         NULL_USE( factor );
@@ -376,20 +376,17 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
 #define instantiatePutArray( TYPE )         \
     template void Database::putArray<TYPE>( \
         std::string_view, Array<TYPE>, Units, Check, source_location )
-#define instantiateGetWithDefault( TYPE )                                                    \
-    template TYPE Database::getWithDefault<TYPE>(                                            \
-        std::string_view, IdentityType<TYPE const &>::type, const Units &, source_location ) \
-        const;                                                                               \
-    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                  \
-        std::string_view,                                                                    \
-        IdentityType<std::vector<TYPE> const &>::type,                                       \
-        const Units &,                                                                       \
-        source_location ) const;                                                             \
-    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                              \
-        std::string_view,                                                                    \
-        IdentityType<Array<TYPE> const &>::type,                                             \
-        const Units &,                                                                       \
-        source_location ) const
+#define instantiateGetWithDefault( TYPE )                                                     \
+    template TYPE Database::getWithDefault<TYPE>(                                             \
+        std::string_view, IdentityType<TYPE const &>, const Units &, source_location ) const; \
+    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                   \
+        std::string_view,                                                                     \
+        IdentityType<std::vector<TYPE> const &>,                                              \
+        const Units &,                                                                        \
+        source_location ) const;                                                              \
+    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                               \
+        std::string_view, IdentityType<Array<TYPE> const &>, const Units &, source_location ) \
+        const
 
 instantiate( instantiateConvert );        // convert
 instantiate( instantiateScaleData );      // scaleData

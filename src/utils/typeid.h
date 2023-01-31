@@ -103,9 +103,9 @@ constexpr typeID getTypeID()
 {
     typeID id = {};
     // Remove const/references
-    using T1 = typename std::remove_reference<T0>::type;
-    using T2 = typename std::remove_cv<T1>::type;
-    using T  = typename std::remove_cv<T2>::type;
+    using T1 = typename std::remove_reference_t<T0>;
+    using T2 = typename std::remove_cv_t<T1>;
+    using T  = typename std::remove_cv_t<T2>;
     // Get the name of the class
     char name[128] = { 0 };
     getTypeName<T>( sizeof( name ), name );

@@ -100,7 +100,7 @@ static std::tuple<TYPE, Units> readPair( std::string_view str )
 {
     auto str0 = str;
     auto tmp  = deblank( std::move( str0 ) );
-    if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         // We are trying to read a complex number
         if ( str[0] != '(' ) {
             // Read a double and convert to complex

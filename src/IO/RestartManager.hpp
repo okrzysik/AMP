@@ -34,7 +34,7 @@ namespace AMP::IO {
  *  Register data with the manager                       *
  ********************************************************/
 template<class TYPE>
-void RestartManager::registerData( const std::string &name, const TYPE &data )
+void RestartManager::registerData( const TYPE &data, const std::string &name )
 {
     using AMP::LinearAlgebra::Matrix;
     using AMP::LinearAlgebra::Vector;
@@ -42,34 +42,34 @@ void RestartManager::registerData( const std::string &name, const TYPE &data )
     using AMP::Solver::SolverStrategy;
     using AMP::TimeIntegrator::TimeIntegrator;
     if constexpr ( is_string_v<TYPE> ) {
-        registerData( name, std::make_shared<const std::string>( data ) );
-    } else if constexpr ( !AMP::is_shared_ptr<TYPE>::value ) {
-        registerData( name, std::make_shared<const TYPE>( data ) );
+        registerData( std::make_shared<const std::string>( data ), name );
+    } else if constexpr ( !AMP::is_shared_ptr_v<TYPE> ) {
+        registerData( std::make_shared<const TYPE>( data ), name );
     } else if constexpr ( !std::is_const_v<typename TYPE::element_type> ) {
-        registerData( name, std::const_pointer_cast<const typename TYPE::element_type>( data ) );
+        registerData( std::const_pointer_cast<const typename TYPE::element_type>( data ), name );
     } else {
-        std::shared_ptr<DataStore> obj;
-        typedef typename TYPE::element_type TYPE2;
-        if constexpr ( std::is_base_of_v<Mesh, TYPE2> &&
-                       !std::is_same_v<TYPE, std::shared_ptr<Mesh>> ) {
+        std::shared_ptr<const DataStore> obj;
+        using TYPE2 = remove_cvref_t<typename TYPE::element_type>;
+        if constexpr ( std::is_base_of_v<DataStore, TYPE2> || std::is_same_v<TYPE2, DataStore> ) {
+            obj = data;
+        } else if constexpr ( std::is_base_of_v<Mesh, TYPE2> && !std::is_same_v<TYPE2, Mesh> ) {
             obj = create( name, std::dynamic_pointer_cast<const Mesh>( data ) );
-        } else if constexpr ( std::is_base_of_v<Vector, TYPE2> &&
-                              !std::is_same_v<TYPE, std::shared_ptr<Vector>> ) {
+        } else if constexpr ( std::is_base_of_v<Vector, TYPE2> && !std::is_same_v<TYPE2, Vector> ) {
             obj = create( name, std::dynamic_pointer_cast<const Vector>( data ) );
-        } else if constexpr ( std::is_base_of_v<Matrix, TYPE2> &&
-                              !std::is_same_v<TYPE, std::shared_ptr<Matrix>> ) {
+        } else if constexpr ( std::is_base_of_v<Matrix, TYPE2> && !std::is_same_v<TYPE2, Matrix> ) {
             obj = create( name, std::dynamic_pointer_cast<const Matrix>( data ) );
         } else if constexpr ( std::is_base_of_v<SolverStrategy, TYPE2> &&
-                              !std::is_same_v<TYPE, std::shared_ptr<SolverStrategy>> ) {
+                              !std::is_same_v<TYPE2, SolverStrategy> ) {
             obj = create( name, std::dynamic_pointer_cast<const SolverStrategy>( data ) );
         } else if constexpr ( std::is_base_of_v<TimeIntegrator, TYPE2> &&
-                              !std::is_same_v<TYPE, std::shared_ptr<TimeIntegrator>> ) {
+                              !std::is_same_v<TYPE2, TimeIntegrator> ) {
             obj = create( name, std::dynamic_pointer_cast<const TimeIntegrator>( data ) );
         } else {
-            obj = create( name, data );
+            obj = create<TYPE2>( name, data );
         }
-        registerData( obj );
         auto hash = obj->getHash();
+        AMP_ASSERT( hash != 0 );
+        d_data[hash] = obj;
         if ( !name.empty() ) {
             auto it = d_names.find( name );
             if ( it == d_names.end() )
@@ -80,8 +80,8 @@ void RestartManager::registerData( const std::string &name, const TYPE &data )
     }
 }
 template<class TYPE>
-std::shared_ptr<RestartManager::DataStore>
-RestartManager::create( const std::string &name, std::shared_ptr<const TYPE> data )
+RestartManager::DataStorePtr RestartManager::create( const std::string &name,
+                                                     std::shared_ptr<const TYPE> data )
 {
     return std::make_shared<DataStoreType<TYPE>>( name, data, this );
 }

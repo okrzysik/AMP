@@ -139,16 +139,6 @@ void RestartManager::readCommData( const std::string &name )
 /********************************************************
  *  Register data with the manager                       *
  ********************************************************/
-void RestartManager::registerData( std::shared_ptr<DataStore> data )
-{
-    auto hash    = data->getHash();
-    d_data[hash] = data;
-}
-
-
-/********************************************************
- *  Register data with the manager                       *
- ********************************************************/
 std::string AMP::IO::RestartManager::hash2String( uint64_t id )
 {
     char id_chars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$";
@@ -168,13 +158,10 @@ template<class TYPE>
 AMP::IO::RestartManager::DataStoreType<TYPE>::DataStoreType( const std::string &name,
                                                              std::shared_ptr<const TYPE> data,
                                                              RestartManager * )
-    : d_name( name ), d_data( data )
+    : d_data( data )
 {
-}
-template<class TYPE>
-uint64_t AMP::IO::RestartManager::DataStoreType<TYPE>::getHash() const
-{
-    return AMP::Utilities::hash_char( d_name.data() );
+    d_name = name;
+    d_hash = AMP::Utilities::hash_char( d_name.data() );
 }
 template<class TYPE>
 void RestartManager::DataStoreType<TYPE>::write( hid_t fid, const std::string &name ) const
@@ -191,7 +178,7 @@ std::shared_ptr<TYPE> RestartManager::getData( uint64_t hash )
 }
 #define INSTANTIATE( TYPE )                                                          \
     template class RestartManager::DataStoreType<TYPE>;                              \
-    template void RestartManager::registerData( const std::string &, const TYPE & ); \
+    template void RestartManager::registerData( const TYPE &, const std::string & ); \
     template std::shared_ptr<TYPE> RestartManager::getData( uint64_t );              \
     template std::shared_ptr<TYPE> RestartManager::getData( const std::string & )
 #define INSTANTIATE2( TYPE )          \

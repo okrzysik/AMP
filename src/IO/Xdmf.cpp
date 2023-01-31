@@ -472,20 +472,18 @@ void Xdmf::clear() { d_meshData = std::map<std::string, std::vector<MeshData>>()
  * Pack/Unpack data                                              *
  ****************************************************************/
 template<class T>
-typename std::enable_if<std::is_trivially_copyable<T>::value, size_t>::type size( const T & )
+typename std::enable_if_t<std::is_trivially_copyable_v<T>, size_t> size( const T & )
 {
     return sizeof( T );
 }
 template<class T>
-typename std::enable_if<std::is_trivially_copyable<T>::value, char *>::type pack( char *ptr,
-                                                                                  const T &x )
+typename std::enable_if_t<std::is_trivially_copyable_v<T>, char *> pack( char *ptr, const T &x )
 {
     memcpy( ptr, &x, sizeof( T ) );
     return ptr + sizeof( T );
 }
 template<class T>
-typename std::enable_if<std::is_trivially_copyable<T>::value, char *>::type unpack( char *ptr,
-                                                                                    T &x )
+typename std::enable_if_t<std::is_trivially_copyable_v<T>, char *> unpack( char *ptr, T &x )
 {
     memcpy( &x, ptr, sizeof( T ) );
     return ptr + sizeof( T );

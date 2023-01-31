@@ -35,23 +35,23 @@ static inline std::string HDF5_getMemberName( hid_t id, unsigned idx )
 template<class TYPE>
 static const char *getTypeName()
 {
-    if constexpr ( std::is_same<TYPE, char>::value )
+    if constexpr ( std::is_same_v<TYPE, char> )
         return "char";
-    else if constexpr ( std::is_same<TYPE, int>::value )
+    else if constexpr ( std::is_same_v<TYPE, int> )
         return "int";
-    else if constexpr ( std::is_same<TYPE, uint32_t>::value )
+    else if constexpr ( std::is_same_v<TYPE, uint32_t> )
         return "uint32_t";
-    else if constexpr ( std::is_same<TYPE, int64_t>::value )
+    else if constexpr ( std::is_same_v<TYPE, int64_t> )
         return "int64_t";
-    else if constexpr ( std::is_same<TYPE, uint64_t>::value )
+    else if constexpr ( std::is_same_v<TYPE, uint64_t> )
         return "uint64_t";
-    else if constexpr ( std::is_same<TYPE, float>::value )
+    else if constexpr ( std::is_same_v<TYPE, float> )
         return "float";
-    else if constexpr ( std::is_same<TYPE, double>::value )
+    else if constexpr ( std::is_same_v<TYPE, double> )
         return "double";
-    else if constexpr ( std::is_same<TYPE, std::complex<float>>::value )
+    else if constexpr ( std::is_same_v<TYPE, std::complex<float>> )
         return "std::complex<float>";
-    else if constexpr ( std::is_same<TYPE, std::complex<double>>::value )
+    else if constexpr ( std::is_same_v<TYPE, std::complex<double>> )
         return "std::complex<double>";
     return typeid( TYPE ).name();
 }
@@ -132,7 +132,7 @@ public:
             AMP::pout << ": '" << d_data.data() << "'" << std::endl;
         } else if ( d_data.length() <= 4 || level >= 4 ) {
             AMP::pout << " [";
-            if constexpr ( std::is_same<TYPE, unsigned char>::value ) {
+            if constexpr ( std::is_same_v<TYPE, unsigned char> ) {
                 AMP::pout << " " << static_cast<int>( d_data( 0 ) );
                 for ( size_t i = 1; i < d_data.length(); i++ )
                     AMP::pout << ", " << static_cast<int>( d_data( i ) );

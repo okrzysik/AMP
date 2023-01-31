@@ -143,14 +143,16 @@ struct is_mpi_copyable {
     template<typename T>
     static constexpr bool test()
     {
-        if constexpr ( std::is_trivially_copyable<T>::value )
+        if constexpr ( std::is_trivially_copyable_v<T> )
             return true;
-        if constexpr ( is_pair<T>::value )
+        if constexpr ( is_pair_v<T> )
             return test<typename T::first_type>() && test<typename T::second_type>();
         return false;
     }
     static constexpr bool value = test<TYPE>();
 };
+template<class T>
+inline constexpr bool is_mpi_copyable_v = is_mpi_copyable<T>::value;
 
 
 /************************************************************************
@@ -179,60 +181,59 @@ template<typename T> struct TypeIntSelector { using type = TypeIntStruct<T>;    
 template<class TYPE>
 constexpr bool isMPItype()
 {
-    return std::is_same<TYPE, char>::value || std::is_same<TYPE, uint8_t>::value ||
-           std::is_same<TYPE, int8_t>::value || std::is_same<TYPE, uint16_t>::value ||
-           std::is_same<TYPE, int16_t>::value || std::is_same<TYPE, uint32_t>::value ||
-           std::is_same<TYPE, int32_t>::value || std::is_same<TYPE, uint64_t>::value ||
-           std::is_same<TYPE, int64_t>::value || std::is_same<TYPE, float>::value ||
-           std::is_same<TYPE, double>::value || std::is_same<TYPE, std::complex<float>>::value ||
-           std::is_same<TYPE, std::complex<double>>::value ||
-           std::is_same<TYPE, TypeIntStruct<short>>::value ||
-           std::is_same<TYPE, TypeIntStruct<int>>::value ||
-           std::is_same<TYPE, TypeIntStruct<long>>::value ||
-           std::is_same<TYPE, TypeIntStruct<float>>::value ||
-           std::is_same<TYPE, TypeIntStruct<double>>::value;
+    return std::is_same_v<TYPE, char> || std::is_same_v<TYPE, uint8_t> ||
+           std::is_same_v<TYPE, int8_t> || std::is_same_v<TYPE, uint16_t> ||
+           std::is_same_v<TYPE, int16_t> || std::is_same_v<TYPE, uint32_t> ||
+           std::is_same_v<TYPE, int32_t> || std::is_same_v<TYPE, uint64_t> ||
+           std::is_same_v<TYPE, int64_t> || std::is_same_v<TYPE, float> ||
+           std::is_same_v<TYPE, double> || std::is_same_v<TYPE, std::complex<float>> ||
+           std::is_same_v<TYPE, std::complex<double>> ||
+           std::is_same_v<TYPE, TypeIntStruct<short>> || std::is_same_v<TYPE, TypeIntStruct<int>> ||
+           std::is_same_v<TYPE, TypeIntStruct<long>> ||
+           std::is_same_v<TYPE, TypeIntStruct<float>> ||
+           std::is_same_v<TYPE, TypeIntStruct<double>>;
 }
 template<class TYPE>
 MPI_CLASS::Datatype MPI_getType()
 {
 #ifdef USE_MPI
-    if constexpr ( std::is_same<TYPE, std::byte>::value )
+    if constexpr ( std::is_same_v<TYPE, std::byte> )
         return MPI_BYTE;
-    if constexpr ( std::is_same<TYPE, char>::value )
+    if constexpr ( std::is_same_v<TYPE, char> )
         return MPI_CHAR;
-    if constexpr ( std::is_same<TYPE, uint8_t>::value )
+    if constexpr ( std::is_same_v<TYPE, uint8_t> )
         return MPI_UINT8_T;
-    if constexpr ( std::is_same<TYPE, int8_t>::value )
+    if constexpr ( std::is_same_v<TYPE, int8_t> )
         return MPI_INT8_T;
-    if constexpr ( std::is_same<TYPE, uint16_t>::value )
+    if constexpr ( std::is_same_v<TYPE, uint16_t> )
         return MPI_UINT16_T;
-    if constexpr ( std::is_same<TYPE, int16_t>::value )
+    if constexpr ( std::is_same_v<TYPE, int16_t> )
         return MPI_INT16_T;
-    if constexpr ( std::is_same<TYPE, uint32_t>::value )
+    if constexpr ( std::is_same_v<TYPE, uint32_t> )
         return MPI_UINT32_T;
-    if constexpr ( std::is_same<TYPE, int32_t>::value )
+    if constexpr ( std::is_same_v<TYPE, int32_t> )
         return MPI_INT32_T;
-    if constexpr ( std::is_same<TYPE, uint64_t>::value )
+    if constexpr ( std::is_same_v<TYPE, uint64_t> )
         return MPI_UINT64_T;
-    if constexpr ( std::is_same<TYPE, int64_t>::value )
+    if constexpr ( std::is_same_v<TYPE, int64_t> )
         return MPI_INT64_T;
-    if constexpr ( std::is_same<TYPE, float>::value )
+    if constexpr ( std::is_same_v<TYPE, float> )
         return MPI_FLOAT;
-    if constexpr ( std::is_same<TYPE, double>::value )
+    if constexpr ( std::is_same_v<TYPE, double> )
         return MPI_DOUBLE;
-    if constexpr ( std::is_same<TYPE, std::complex<float>>::value )
+    if constexpr ( std::is_same_v<TYPE, std::complex<float>> )
         return MPI_C_FLOAT_COMPLEX;
-    if constexpr ( std::is_same<TYPE, std::complex<double>>::value )
+    if constexpr ( std::is_same_v<TYPE, std::complex<double>> )
         return MPI_C_DOUBLE_COMPLEX;
-    if constexpr ( std::is_same<TYPE, TypeIntStruct<short>>::value )
+    if constexpr ( std::is_same_v<TYPE, TypeIntStruct<short>> )
         return MPI_SHORT_INT;
-    if constexpr ( std::is_same<TYPE, TypeIntStruct<int>>::value )
+    if constexpr ( std::is_same_v<TYPE, TypeIntStruct<int>> )
         return MPI_2INT;
-    if constexpr ( std::is_same<TYPE, TypeIntStruct<long>>::value )
+    if constexpr ( std::is_same_v<TYPE, TypeIntStruct<long>> )
         return MPI_LONG_INT;
-    if constexpr ( std::is_same<TYPE, TypeIntStruct<float>>::value )
+    if constexpr ( std::is_same_v<TYPE, TypeIntStruct<float>> )
         return MPI_FLOAT_INT;
-    if constexpr ( std::is_same<TYPE, TypeIntStruct<double>>::value )
+    if constexpr ( std::is_same_v<TYPE, TypeIntStruct<double>> )
         return MPI_DOUBLE_INT;
     return MPI_DATATYPE_NULL;
 #else
@@ -543,15 +544,15 @@ void MPI_CLASS::bcast( TYPE *x, int n, int root ) const
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Bcast( x, n, type, root, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         MPI_Bcast( x, n * sizeof( TYPE ), MPI_CLASS_BYTE, root, d_comm );
-    } else if constexpr ( is_vector<TYPE>::value ) {
+    } else if constexpr ( is_vector_v<TYPE> ) {
         for ( int i = 0; i < n; i++ ) {
             size_t N = bcast( x[i].size(), root );
             x[i].resize( N );
             bcast( x[i].data(), N, root );
         }
-    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         MPI_CLASS_INSIST( n == 1, "Broadcasting arrays of pointers of objects is not supported" );
         bcast( x->get(), 1, root );
     } else {
@@ -578,7 +579,7 @@ template<class TYPE>
 TYPE MPI_CLASS::bcast( const TYPE &x, int root ) const
 {
     TYPE y;
-    if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         using TYPE2 = typename AMP::remove_cvref_t<decltype( *( x.get() ) )>;
         y.reset( new TYPE2() );
         if ( d_rank == root )
@@ -636,10 +637,10 @@ void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) cons
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Send2( buf, length, type, recv_proc, tag, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         size_t bytes = length * sizeof( TYPE );
         MPI_Send2( buf, bytes, MPI_CLASS_BYTE, recv_proc, tag, d_comm );
-    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         send( getPointers( buf, length ).data(), length, recv_proc, tag );
     } else {
         auto [bytes, buf2] = packArray( buf, length );
@@ -694,10 +695,10 @@ MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc,
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Isend2( buf, length, type, recv_proc, tag, d_comm, request.get() );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         size_t bytes = length * sizeof( TYPE );
         MPI_Isend2( buf, bytes, MPI_CLASS_BYTE, recv_proc, tag, d_comm, request.get() );
-    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         request = Isend( buf->get(), 1, recv_proc, tag );
     } else {
         MPI_CLASS::Request2 request2;
@@ -753,10 +754,10 @@ void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, in
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Recv2( buf, length, type, send_proc, tag, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         size_t bytes = length * sizeof( TYPE );
         MPI_Recv2( buf, bytes, MPI_CLASS_BYTE, send_proc, tag, d_comm );
-    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         MPI_CLASS_INSIST( length == 1 && get_length == false,
                           "Receiving arrays of pointers of objects is not supported" );
         using TYPE2 = typename AMP::remove_cvref_t<decltype( *( buf->get() ) )>;
@@ -821,10 +822,10 @@ MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int t
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Irecv2( buf, length, type, send_proc, tag, d_comm, request.get() );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         size_t bytes = length * sizeof( TYPE );
         MPI_Irecv2( buf, bytes, MPI_CLASS_BYTE, send_proc, tag, d_comm, request.get() );
-    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         MPI_CLASS_INSIST( length == 1, "Receiving arrays of pointers of objects is not supported" );
         using TYPE2 = typename AMP::remove_cvref_t<decltype( *( buf->get() ) )>;
         buf->reset( new TYPE2() );
@@ -879,7 +880,7 @@ void MPI_CLASS::sendrecv( const TYPE *sendbuf,
                       recvtag,
                       d_comm,
                       MPI_STATUS_IGNORE );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         size_t sendbytes = sendcount * sizeof( TYPE );
         size_t recvbytes = recvcount * sizeof( TYPE );
         MPI_Sendrecv( sendbuf,
@@ -960,7 +961,7 @@ void MPI_CLASS::gather( const TYPE *sendbuf,
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Gatherv( sendbuf, sendcount, type, recvbuf, recv_cnt, recv_disp, type, root, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         size_t N = sizeof( TYPE );
         std::vector<int> recv_cnt2( d_size );
         std::vector<int> recv_disp2( d_size );
@@ -1017,7 +1018,7 @@ void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
 {
     NULL_USE( x );
     NULL_USE( y );
-    if constexpr ( !std::is_copy_assignable<TYPE>::value ) {
+    if constexpr ( !std::is_copy_assignable_v<TYPE> ) {
         STATIC_ERROR( "allGather is not valid for non-assignable objects" );
     } else {
         MPI_CLASS_ASSERT( y );
@@ -1030,10 +1031,10 @@ void MPI_CLASS::allGather( const TYPE &x, TYPE *y ) const
         if constexpr ( isMPItype<TYPE>() ) {
             auto type = MPI_getType<TYPE>();
             MPI_Allgather( &x, 1, type, y, 1, type, d_comm );
-        } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
             size_t N = sizeof( TYPE );
             MPI_Allgather( &x, N, MPI_CLASS_BYTE, y, N, MPI_CLASS_BYTE, d_comm );
-        } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
             STATIC_ERROR( "gathering array of pointers is not yet supported" );
         } else {
             auto [send_cnt, send_data] = packArray( &x, 1 );
@@ -1067,10 +1068,10 @@ int MPI_CLASS::allGather( const TYPE *send_data,
     NULL_USE( recv_cnt0 );
     NULL_USE( recv_disp0 );
     NULL_USE( known_recv );
-    if constexpr ( !std::is_copy_assignable<TYPE>::value ) {
+    if constexpr ( !std::is_copy_assignable_v<TYPE> ) {
         STATIC_ERROR( "allGather is not valid for non-assignable objects" );
         return 0;
-    } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+    } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         STATIC_ERROR( "allGather is not valid for pointers yet" );
     } else {
         if ( d_size == 1 ) {
@@ -1110,7 +1111,7 @@ int MPI_CLASS::allGather( const TYPE *send_data,
             auto type = MPI_getType<TYPE>();
             MPI_Allgatherv(
                 send_data, send_cnt, type, recv_data, recv_cnt, recv_disp, type, d_comm );
-        } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+        } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
             auto cnt  = new int[d_size];
             auto disp = new int[d_size];
             for ( int i = 0; i < d_size; i++ ) {
@@ -1122,7 +1123,7 @@ int MPI_CLASS::allGather( const TYPE *send_data,
                 send_data, N, MPI_CLASS_BYTE, recv_data, cnt, disp, MPI_CLASS_BYTE, d_comm );
             delete[] cnt;
             delete[] disp;
-        } else if constexpr ( std::is_pointer<TYPE>::value || is_shared_ptr<TYPE>::value ) {
+        } else if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
             STATIC_ERROR( "Pointers are not supported yet" );
         } else {
             auto [send_cnt2, send_data2] = packArray( send_data, send_cnt );
@@ -1335,7 +1336,7 @@ void MPI_CLASS::allToAll( int n, const TYPE *send, TYPE *recv ) const
     if constexpr ( isMPItype<TYPE>() ) {
         auto type = MPI_getType<TYPE>();
         MPI_Alltoall( send, n, type, recv, n, type, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         int N = n * sizeof( TYPE );
         MPI_Alltoall( send, N, MPI_CLASS_BYTE, recv, N, MPI_CLASS_BYTE, d_comm );
     } else {
@@ -1398,7 +1399,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
         auto type = MPI_getType<TYPE>();
         MPI_Alltoallv(
             send_data, send_cnt, send_disp, type, recv_data, recv_cnt2, recv_disp2, type, d_comm );
-    } else if constexpr ( is_mpi_copyable<TYPE>::value ) {
+    } else if constexpr ( is_mpi_copyable_v<TYPE> ) {
         auto send_cnt3  = new int[d_size];
         auto send_disp3 = new int[d_size];
         auto recv_cnt3  = new int[d_size];

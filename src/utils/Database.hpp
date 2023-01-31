@@ -90,9 +90,9 @@ static inline bool compare( const TYPE &x, const TYPE &y )
 template<class TYPE>
 static constexpr TYPE getTol()
 {
-    if constexpr ( std::is_same<TYPE, float>::value ) {
+    if constexpr ( std::is_same_v<TYPE, float> ) {
         return 1e-6;
-    } else if constexpr ( std::is_same<TYPE, double>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, double> ) {
         return 1e-12;
     } else {
         return 0;
@@ -101,7 +101,7 @@ static constexpr TYPE getTol()
 template<class TYPE>
 static constexpr TYPE abs( const TYPE &x )
 {
-    if constexpr ( std::is_signed<TYPE>::value ) {
+    if constexpr ( std::is_signed_v<TYPE> ) {
         return x < 0 ? -x : x;
     } else {
         return x;
@@ -110,9 +110,9 @@ static constexpr TYPE abs( const TYPE &x )
 template<class TYPE1, class TYPE2>
 Array<TYPE2> convert( const Array<TYPE1> &x )
 {
-    if constexpr ( std::is_same<TYPE1, TYPE2>::value ) {
+    if constexpr ( std::is_same_v<TYPE1, TYPE2> ) {
         return x;
-    } else if constexpr ( std::is_arithmetic<TYPE1>::value && std::is_arithmetic<TYPE2>::value ) {
+    } else if constexpr ( std::is_arithmetic_v<TYPE1> && std::is_arithmetic_v<TYPE2> ) {
         Array<TYPE2> y( x.size() );
         y.fill( 0 );
         bool pass = true;
@@ -144,7 +144,7 @@ Array<TYPE2> convert( const Array<TYPE1> &x )
 template<class TYPE>
 inline void printValue( std::ostream &os, const TYPE &value )
 {
-    if constexpr ( std::is_floating_point<TYPE>::value ) {
+    if constexpr ( std::is_floating_point_v<TYPE> ) {
         if ( value != value ) {
             os << "nan";
         } else if ( value == std::numeric_limits<TYPE>::infinity() ) {
@@ -154,15 +154,14 @@ inline void printValue( std::ostream &os, const TYPE &value )
         } else {
             os << std::setprecision( 14 ) << value;
         }
-    } else if constexpr ( std::is_same<TYPE, bool>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, bool> ) {
         if ( value )
             os << "true";
         else
             os << "false";
-    } else if constexpr ( std::is_same<TYPE, char>::value ||
-                          std::is_same<TYPE, std::string>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, char> || std::is_same_v<TYPE, std::string> ) {
         os << '"' << value << '"';
-    } else if constexpr ( std::is_integral<TYPE>::value ) {
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
         os << static_cast<int64_t>( value );
     } else {
         os << value;
@@ -227,7 +226,7 @@ public:
     explicit KeyDataScalar( TYPE data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
-        static_assert( !std::is_same<TYPE, std::_Bit_reference>::value );
+        static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
     }
     virtual ~KeyDataScalar() {}
     typeID getClassType() const override { return getTypeID<KeyDataScalar>(); }
@@ -254,7 +253,7 @@ public:
     ArraySize arraySize() const override { return ArraySize( 1 ); }
     Array<double> convertToDouble() const override
     {
-        if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        if constexpr ( std::is_arithmetic_v<TYPE> ) {
             Array<TYPE> x( 1 );
             x( 0 ) = d_data;
             return convert<TYPE, double>( x );
@@ -265,7 +264,7 @@ public:
     }
     Array<int64_t> convertToInt64() const override
     {
-        if constexpr ( std::is_arithmetic<TYPE>::value ) {
+        if constexpr ( std::is_arithmetic_v<TYPE> ) {
             Array<TYPE> x( 1 );
             x( 0 ) = d_data;
             return convert<TYPE, int64_t>( x );
@@ -332,7 +331,7 @@ public:
     explicit KeyDataArray( Array<TYPE> data, const Units &unit = Units() )
         : KeyData( unit ), d_data( std::move( data ) )
     {
-        static_assert( !std::is_same<TYPE, std::_Bit_reference>::value );
+        static_assert( !std::is_same_v<TYPE, std::_Bit_reference> );
         data.clear(); // Suppress cppclean warning
     }
     virtual ~KeyDataArray() {}
@@ -601,7 +600,7 @@ TYPE Database::getScalar( std::string_view key, const Units &unit, source_locati
     double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
     auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> ) {
         if ( scalarData ) {
             data = scalarData->get();
         } else if ( arrayData ) {
@@ -642,7 +641,7 @@ Array<TYPE> Database::getArray( std::string_view key, const Units &unit, source_
     double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
     auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    if constexpr ( std::is_arithmetic_v<TYPE> ) {
         if ( scalarData ) {
             const auto &data2 = scalarData->get();
             data.resize( 1 );
@@ -688,7 +687,7 @@ Database::getVector( std::string_view key, const Units &unit, source_location sr
  ********************************************************************/
 template<class TYPE>
 TYPE Database::getWithDefault( std::string_view key,
-                               const typename IdentityType<const TYPE &>::type value,
+                               const IdentityType<const TYPE &> value,
                                const Units &unit,
                                source_location src ) const
 {
@@ -697,9 +696,9 @@ TYPE Database::getWithDefault( std::string_view key,
     if ( !keyData )
         return value;
     // Call the appropriate getScalar/getArray/getVector function
-    if constexpr ( is_vector<TYPE>::value ) {
+    if constexpr ( is_vector_v<TYPE> ) {
         return getVector<typename TYPE::value_type>( key, unit, src );
-    } else if constexpr ( is_Array<TYPE>::value ) {
+    } else if constexpr ( is_Array_v<TYPE> ) {
         return getArray<typename TYPE::value_type>( key, unit, src );
     } else {
         return getScalar<TYPE>( key, unit, src );
@@ -714,12 +713,11 @@ template<class TYPE>
 void Database::putScalar(
     std::string_view key, TYPE value, Units unit, Check check, source_location src )
 {
-    if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
+    if constexpr ( std::is_same_v<TYPE, std::_Bit_reference> ) {
         // Guard against storing a bit reference (store a bool instead)
         putScalar<bool>( key, value, unit, check, src );
-    } else if constexpr ( std::is_same<TYPE, char *>::value ||
-                          std::is_same<TYPE, const char *>::value ||
-                          std::is_same<TYPE, std::string_view>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, char *> || std::is_same_v<TYPE, const char *> ||
+                          std::is_same_v<TYPE, std::string_view> ) {
         // Guard against storing a char* or string_view (store a std::string instead)
         putScalar<std::string>( key, std::string( value ), unit, check, src );
     } else {
@@ -757,7 +755,7 @@ bool Database::isType( std::string_view key, source_location src ) const
 {
     auto data = getData( key );
     DATABASE_INSIST( data, src, "Variable %s was not found in database", key.data() );
-    if constexpr ( std::is_same<TYPE, std::_Bit_reference>::value ) {
+    if constexpr ( std::is_same_v<TYPE, std::_Bit_reference> ) {
         // Guard against checking a bit reference (use a bool instead)
         return data->isType<bool>();
     } else {

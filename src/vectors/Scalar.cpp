@@ -215,7 +215,7 @@ Scalar Scalar::abs() const
  *  ostream operator                                     *
  ********************************************************/
 template<>
-std::enable_if<std::is_same<AMP::Scalar, AMP::Scalar>::value, std::ostream &>::type
+std::enable_if_t<std::is_same_v<AMP::Scalar, AMP::Scalar>, std::ostream &>
 operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
 {
     if ( !x.has_value() )

@@ -38,16 +38,16 @@ void checkResult( AMP::UnitTest &ut, bool pass, const std::string &msg )
 template<class TYPE>
 static TYPE random()
 {
-    if constexpr ( std::is_floating_point<TYPE>::value ) {
+    if constexpr ( std::is_floating_point_v<TYPE> ) {
         static std::uniform_real_distribution<double> dist( 0, 1 );
         return static_cast<TYPE>( dist( generator ) );
-    } else if constexpr ( std::is_integral<TYPE>::value ) {
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
         static std::uniform_int_distribution<int> dist( 0, 1000000000 );
         return static_cast<TYPE>( dist( generator ) );
-    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         static std::uniform_real_distribution<double> dist( 0, 1 );
         return std::complex<double>( random<double>(), random<double>() );
-    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<float>> ) {
         static std::uniform_real_distribution<float> dist( 0, 1 );
         return std::complex<float>( random<float>(), random<float>() );
     } else {
@@ -71,14 +71,14 @@ static void addType( Database &db, UnitTest &ut )
     pass    = pass && v1 == rand && v2.size() == 1 && v2[0] == rand;
     pass    = pass && db.isType<TYPE>( "scalar-" + typeName );
     pass    = pass && db.isType<TYPE>( "vector-" + typeName );
-    if ( std::is_floating_point<TYPE>::value ) {
+    if ( std::is_floating_point_v<TYPE> ) {
         auto v3 = db.getScalar<double>( "scalar-" + typeName );
         auto v4 = db.getVector<double>( "vector-" + typeName );
         pass    = pass && static_cast<TYPE>( v3 ) == rand;
         pass    = pass && v4.size() == 1 && static_cast<TYPE>( v4[0] ) == rand;
         pass    = pass && db.isType<double>( "scalar-" + typeName );
         pass    = pass && !db.isType<int>( "scalar-" + typeName );
-    } else if ( std::is_integral<TYPE>::value ) {
+    } else if ( std::is_integral_v<TYPE> ) {
         auto v3 = db.getScalar<int>( "scalar-" + typeName );
         auto v4 = db.getVector<int>( "vector-" + typeName );
         pass    = pass && static_cast<TYPE>( v3 ) == rand;

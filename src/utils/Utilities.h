@@ -27,11 +27,11 @@ class Database;
 template<class T>
 inline T type_default_tol()
 {
-    if constexpr ( std::is_integral<T>::value )
+    if constexpr ( std::is_integral_v<T> )
         return 0;
-    else if constexpr ( std::is_same<T, double>::value )
+    else if constexpr ( std::is_same_v<T, double> )
         return 1e-12;
-    else if constexpr ( std::is_floating_point<T>::value )
+    else if constexpr ( std::is_floating_point_v<T> )
         return pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
     else
         return T();

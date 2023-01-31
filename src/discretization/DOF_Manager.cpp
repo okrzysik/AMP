@@ -1,4 +1,5 @@
 #include "AMP/discretization/DOF_Manager.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/utils/Utilities.h"
@@ -222,4 +223,48 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
         return std::shared_ptr<DOFManager>();
     return subsetDOFManager::create( shared_from_this(), dofs, intersection, comm );
 }
+
+
+/****************************************************************
+ * Get an id                                                     *
+ ****************************************************************/
+uint64_t DOFManager::getID() const
+{
+    AMP_ERROR( "Not finished" );
+    return 0;
+}
+
+
 } // namespace AMP::Discretization
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::Discretization::DOFManager> data,
+    RestartManager *manager )
+    : d_data( data )
+{
+    d_name = name;
+    d_hash = data->getID();
+    AMP_ERROR( "Not finished" );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::Discretization::DOFManager>
+AMP::IO::RestartManager::getData<AMP::Discretization::DOFManager>( const std::string &name )
+{
+    hid_t gid = openGroup( d_fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}

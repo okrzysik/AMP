@@ -97,15 +97,12 @@ std::shared_ptr<Mesh> MeshFactory::create( std::shared_ptr<MeshParameters> param
  *  Restart operations for Mesh                          *
  ********************************************************/
 template<>
-AMP::AMP_MPI AMP::getComm<AMP::Mesh::Mesh>( const AMP::Mesh::Mesh &mesh )
-{
-    return mesh.getComm();
-}
-template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
     const std::string &name, std::shared_ptr<const AMP::Mesh::Mesh> mesh, RestartManager *manager )
-    : d_name( name ), d_data( mesh )
+    : d_data( mesh )
 {
+    d_name = name;
+    d_hash = d_data->meshID().getHash();
     // Register the comm
     manager->registerComm( mesh->getComm() );
     // Register child meshes
@@ -119,11 +116,6 @@ AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
     }
 }
 template<>
-uint64_t AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::getHash() const
-{
-    return d_data->meshID().getHash();
-}
-template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::write( hid_t fid,
                                                                      const std::string &name ) const
 {
@@ -131,6 +123,7 @@ void AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::write( hid_t fid,
     d_data->writeRestart( gid );
     closeGroup( gid );
 }
+
 template<>
 std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::getData<AMP::Mesh::Mesh>( uint64_t hash )
 {

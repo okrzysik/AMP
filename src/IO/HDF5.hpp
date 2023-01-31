@@ -219,7 +219,7 @@ void readHDF5( hid_t fid, const std::string_view &name, TYPE &x )
  * readAndConvertHDF5Data                                                *
  ************************************************************************/
 template<class T>
-typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value, void>::type
+typename std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, void>
 readAndConvertHDF5Data( hid_t dataset, hid_t datatype, AMP::Array<T> &data )
 {
     if ( H5Tequal( datatype, H5T_NATIVE_CHAR ) ) {
@@ -267,7 +267,7 @@ readAndConvertHDF5Data( hid_t dataset, hid_t datatype, AMP::Array<T> &data )
     }
 }
 template<class T>
-typename std::enable_if<!std::is_integral_v<T> && !std::is_floating_point_v<T>, void>::type
+typename std::enable_if_t<!std::is_integral_v<T> && !std::is_floating_point_v<T>, void>
 readAndConvertHDF5Data( hid_t, hid_t, AMP::Array<T> & )
 {
     AMP_ERROR( "Unable to convert data" );

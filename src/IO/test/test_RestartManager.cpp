@@ -43,15 +43,18 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     vec->setToScalar( 100 );
 
     // Create the restart manager and register data
+    int int_v    = 13;
+    double dbl_v = 15.3;
+    std::string str_v( "test" );
+    std::complex<double> cmplx( 15.3, 4.2 );
     AMP::IO::RestartManager writer;
-    std::complex<double> complex( 15.3, 4.2 );
-    writer.registerData( "int", 13 );
-    writer.registerData( "double", 15.3 );
-    writer.registerData( "complex", complex );
-    writer.registerData( "string", "test" );
-    writer.registerData( "inputs", db );
-    writer.registerData( "mesh", mesh );
-    // writer.registerData( "vec", vec );
+    writer.registerData( int_v, "int" );
+    writer.registerData( dbl_v, "double" );
+    writer.registerData( cmplx, "complex" );
+    writer.registerData( str_v, "string" );
+    writer.registerData( db, "inputs" );
+    writer.registerData( mesh, "mesh" );
+    writer.registerData( vec, "vec" );
 
     // Write the restart data
     writer.write( "testRestartData" );
@@ -62,7 +65,7 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     auto dbl  = *( reader.getData<double>( "double" ) );
     auto cmp  = *( reader.getData<std::complex<double>>( "complex" ) );
     auto str  = *( reader.getData<std::string>( "string" ) );
-    bool pass = int2 == 13 && dbl == 15.3 && cmp == complex && str == "test";
+    bool pass = int2 == int_v && dbl == dbl_v && cmp == cmplx && str == str_v;
     record( ut, pass, "Basic check" );
     auto db2 = reader.getData<AMP::Database>( "inputs" );
     record( ut, db2 != nullptr, "Database loaded" );
@@ -72,8 +75,8 @@ void testRestartManager( AMP::UnitTest &ut, const std::string &input_file )
     record( ut, mesh2 != nullptr, "Mesh loaded" );
     if ( mesh2 )
         record( ut, *mesh == *mesh2, "Mesh match" );
-    // auto vec2  = reader.getData<AMP::LinearAlgebra::Vector>( fid, "vec" );
-    // record( ut, Vec2 != nullptr, "Load Vector" );
+    auto vec2 = reader.getData<AMP::LinearAlgebra::Vector>( "vec" );
+    record( ut, vec2 != nullptr, "Load Vector" );
 }
 
 

@@ -71,9 +71,9 @@ static constexpr bool approx_equal( double a, double b )
     return e < 1e-8 * b;
 }
 static_assert( sizeof( Units ) == 48 );
-static_assert( std::is_final<Units>::value );
-static_assert( std::is_trivially_copyable<Units>::value );
-static_assert( !std::is_arithmetic<Units>::value );
+static_assert( std::is_final_v<Units> );
+static_assert( std::is_trivially_copyable_v<Units> );
+static_assert( !std::is_arithmetic_v<Units> );
 #if !defined( __INTEL_COMPILER )
 static_assert( Units().isNull() );
 static_assert( Units( "" ).isNull() );
@@ -128,3 +128,44 @@ static_assert( approx_equal( Units( "oz" ).convert( Units( "g" ) ), 28.349523125
 static_assert( approx_equal( Units( "ton" ).convert( Units( "lb" ) ), 2240 ) );
 #endif
 } // namespace AMP
+
+
+/************************************************************************
+ * read/write HDF5                                                      *
+ ***********************************************************************/
+#include "AMP/IO/HDF5.hpp"
+#include "AMP/utils/Array.hpp"
+#ifdef AMP_USE_HDF5
+template<>
+hid_t AMP::getHDF5datatype<AMP::Units>()
+{
+    AMP_ERROR( "Not finished" );
+    return 0;
+}
+template<>
+void AMP::writeHDF5Array<AMP::Units>( hid_t,
+                                      const std::string_view &,
+                                      const AMP::Array<AMP::Units> & )
+{
+    AMP_ERROR( "Not finished" );
+}
+template<>
+void AMP::readHDF5Array<AMP::Units>( hid_t, const std::string_view &, AMP::Array<AMP::Units> & )
+{
+    AMP_ERROR( "Not finished" );
+}
+template<>
+void AMP::writeHDF5Scalar<AMP::Units>( hid_t fid,
+                                       const std::string_view &name,
+                                       const AMP::Units &data )
+{
+    AMP::writeHDF5( fid, name, sizeof( data ), &data );
+}
+template<>
+void AMP::readHDF5Scalar<AMP::Units>( hid_t fid, const std::string_view &name, AMP::Units &data )
+{
+    AMP::readHDF5( fid, name, sizeof( data ), &data );
+}
+INSTANTIATE_HDF5( AMP::Units );
+instantiateArrayConstructors( AMP::Units );
+#endif

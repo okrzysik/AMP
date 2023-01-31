@@ -1,4 +1,5 @@
 #include "AMP/vectors/operations/VectorOperations.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
 
@@ -10,6 +11,7 @@ namespace AMP::LinearAlgebra {
  * Constructors                                                  *
  ****************************************************************/
 VectorOperations::VectorOperations() = default;
+
 
 /****************************************************************
  * equals                                                        *
@@ -112,4 +114,47 @@ Scalar VectorOperations::wrmsNormMask( const VectorData &x,
     return ans;
 }
 
+
+/****************************************************************
+ * Get an id                                                     *
+ ****************************************************************/
+uint64_t VectorOperations::getID() const
+{
+    AMP_ERROR( "Not finished" );
+    return 0;
+}
+
+
 } // namespace AMP::LinearAlgebra
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::LinearAlgebra::VectorOperations> data,
+    RestartManager *manager )
+    : d_data( data )
+{
+    d_name = name;
+    d_hash = data->getID();
+    AMP_ERROR( "Not finished" );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::LinearAlgebra::VectorOperations>
+AMP::IO::RestartManager::getData<AMP::LinearAlgebra::VectorOperations>( const std::string &name )
+{
+    hid_t gid = openGroup( d_fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}

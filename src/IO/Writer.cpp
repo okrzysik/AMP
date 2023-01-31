@@ -24,10 +24,10 @@ namespace AMP::IO {
 template<class TYPE>
 static inline void packData( char *ptr, size_t &pos, const TYPE &data )
 {
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         memcpy( &ptr[pos], &data, sizeof( TYPE ) );
         pos += sizeof( TYPE );
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         int N = data.size();
         memcpy( &ptr[pos], data.c_str(), N + 1 );
         pos += N + 1;
@@ -38,12 +38,12 @@ static inline void packData( char *ptr, size_t &pos, const TYPE &data )
 template<class TYPE>
 static inline TYPE unpackData( const char *ptr, size_t &pos )
 {
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         TYPE data;
         memcpy( &data, &ptr[pos], sizeof( TYPE ) );
         pos += sizeof( TYPE );
         return data;
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         std::string data( &ptr[pos] );
         pos += data.size() + 1;
         return data;

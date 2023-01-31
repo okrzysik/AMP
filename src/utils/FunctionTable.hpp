@@ -21,19 +21,19 @@ inline void FunctionTable::rand( Array<TYPE, FUN> &x )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
-    if constexpr ( std::is_integral<TYPE>::value ) {
+    if constexpr ( std::is_integral_v<TYPE> ) {
         std::uniform_int_distribution<TYPE> dis;
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = dis( gen );
-    } else if constexpr ( std::is_floating_point<TYPE>::value ) {
+    } else if constexpr ( std::is_floating_point_v<TYPE> ) {
         std::uniform_real_distribution<TYPE> dis;
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = dis( gen );
-    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<float>> ) {
         std::uniform_real_distribution<float> dis;
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = std::complex<float>( dis( gen ), dis( gen ) );
-    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         std::uniform_real_distribution<double> dis;
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = std::complex<double>( dis( gen ), dis( gen ) );
@@ -222,7 +222,7 @@ void FunctionTable::multiply( const Array<TYPE, FUN> &a,
  *  Check if two arrays are equal                        *
  ********************************************************/
 template<class TYPE, class FUN>
-inline typename std::enable_if<std::is_integral<TYPE>::value, bool>::type
+inline typename std::enable_if_t<std::is_integral_v<TYPE>, bool>
 FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE )
 {
     bool pass = true;
@@ -233,7 +233,7 @@ FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE
     return pass;
 }
 template<class TYPE, class FUN>
-inline typename std::enable_if<std::is_floating_point<TYPE>::value, bool>::type
+inline typename std::enable_if_t<std::is_floating_point_v<TYPE>, bool>
 FunctionTableCompare( const Array<TYPE, FUN> &a, const Array<TYPE, FUN> &b, TYPE tol )
 {
     bool pass = true;
