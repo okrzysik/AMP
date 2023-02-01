@@ -47,6 +47,10 @@
     template void AMP::Array<TYPE>::resize( size_t, size_t, size_t );              \
     template void AMP::Array<TYPE>::resize( AMP::ArraySize const& );               \
     template void AMP::Array<TYPE>::clear();                                       \
+    template int AMP::Array<TYPE>::ndim() const;                                   \
+    template const AMP::ArraySize& AMP::Array<TYPE>::size() const;                 \
+    template size_t AMP::Array<TYPE>::size( int ) const;                           \
+    template size_t AMP::Array<TYPE>::length() const;                              \
     template bool AMP::Array<TYPE>::empty() const;                                 \
     template AMP::Array<TYPE>& AMP::Array<TYPE>::operator=( const std::vector<TYPE>& ); \
     template bool AMP::Array<TYPE>::operator==( const AMP::Array<TYPE>& ) const

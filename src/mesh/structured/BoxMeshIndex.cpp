@@ -73,8 +73,8 @@ void AMP::readHDF5Scalar<MeshElementIndex>( hid_t fid,
     readHDF5( fid, name, data2 );
     data = convert( data2 );
 }
-INSTANTIATE_HDF5( MeshElementIndex );
 #endif
+INSTANTIATE_HDF5( MeshElementIndex );
 
 
 /********************************************************

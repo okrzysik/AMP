@@ -166,6 +166,6 @@ void AMP::readHDF5Scalar<AMP::Units>( hid_t fid, const std::string_view &name, A
 {
     AMP::readHDF5( fid, name, sizeof( data ), &data );
 }
+#endif
 INSTANTIATE_HDF5( AMP::Units );
 instantiateArrayConstructors( AMP::Units );
-#endif

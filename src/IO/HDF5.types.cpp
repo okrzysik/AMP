@@ -1,17 +1,18 @@
+#include "AMP/IO/HDF5.h"
 #include "AMP/AMP_TPLs.h"
+#include "AMP/IO/HDF5.hpp"
+#include "AMP/mesh/MeshPoint.h"
+#include "AMP/utils/Array.hpp"
+#include "AMP/utils/Utilities.h"
+
+#include <array>
+#include <complex>
+#include <sstream>
+#include <string>
+#include <vector>
+
+
 #ifdef AMP_USE_HDF5
-
-    #include "AMP/IO/HDF5.h"
-    #include "AMP/IO/HDF5.hpp"
-    #include "AMP/mesh/MeshPoint.h"
-    #include "AMP/utils/Array.hpp"
-    #include "AMP/utils/Utilities.h"
-
-    #include <array>
-    #include <complex>
-    #include <sstream>
-    #include <string>
-    #include <vector>
 
 
 namespace AMP {
@@ -339,46 +340,6 @@ void writeHDF5Array( hid_t fid, const std::string_view &name, const AMP::Array<T
 
 
 /************************************************************************
- * Explicit instantiations                                              *
- ***********************************************************************/
-INSTANTIATE_HDF5( bool );
-INSTANTIATE_HDF5( char );
-INSTANTIATE_HDF5( int8_t );
-INSTANTIATE_HDF5( int16_t );
-INSTANTIATE_HDF5( int32_t );
-INSTANTIATE_HDF5( int64_t );
-INSTANTIATE_HDF5( uint8_t );
-INSTANTIATE_HDF5( uint16_t );
-INSTANTIATE_HDF5( uint32_t );
-INSTANTIATE_HDF5( uint64_t );
-INSTANTIATE_HDF5( float );
-INSTANTIATE_HDF5( double );
-INSTANTIATE_HDF5( long double );
-INSTANTIATE_HDF5( std::byte );
-INSTANTIATE_HDF5( std::complex<float> );
-INSTANTIATE_HDF5( std::complex<double> );
-INSTANTIATE_HDF5( std::string );
-INSTANTIATE_HDF5( std::string_view );
-
-
-/************************************************************************
- * std::array                                                           *
- ***********************************************************************/
-#define INSANTIATE_HDF5_ARRAY( TYPE, N ) \
-    template void AMP::readHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, std::array<TYPE,N> & ); \
-    template void AMP::writeHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, const std::array<TYPE,N> & )
-INSANTIATE_HDF5_ARRAY( int, 1 );
-INSANTIATE_HDF5_ARRAY( int, 2 );
-INSANTIATE_HDF5_ARRAY( int, 3 );
-INSANTIATE_HDF5_ARRAY( double, 1 );
-INSANTIATE_HDF5_ARRAY( double, 2 );
-INSANTIATE_HDF5_ARRAY( double, 3 );
-INSANTIATE_HDF5_ARRAY( double, 4 );
-INSANTIATE_HDF5_ARRAY( double, 6 );
-INSANTIATE_HDF5_ARRAY( double, 9 );
-
-
-/************************************************************************
  * MeshPoint                                                            *
  ***********************************************************************/
 template<>
@@ -432,4 +393,52 @@ instantiateArrayConstructors( AMP::Mesh::Point );
 
 } // namespace AMP
 
+
 #endif
+
+
+/************************************************************************
+ * Explicit instantiations                                              *
+ ***********************************************************************/
+INSTANTIATE_HDF5( bool );
+INSTANTIATE_HDF5( char );
+INSTANTIATE_HDF5( int8_t );
+INSTANTIATE_HDF5( int16_t );
+INSTANTIATE_HDF5( int32_t );
+INSTANTIATE_HDF5( int64_t );
+INSTANTIATE_HDF5( uint8_t );
+INSTANTIATE_HDF5( uint16_t );
+INSTANTIATE_HDF5( uint32_t );
+INSTANTIATE_HDF5( uint64_t );
+INSTANTIATE_HDF5( float );
+INSTANTIATE_HDF5( double );
+INSTANTIATE_HDF5( long double );
+INSTANTIATE_HDF5( std::byte );
+INSTANTIATE_HDF5( std::complex<float> );
+INSTANTIATE_HDF5( std::complex<double> );
+INSTANTIATE_HDF5( std::string );
+INSTANTIATE_HDF5( std::string_view );
+INSTANTIATE_HDF5( AMP::Mesh::Point );
+
+
+/************************************************************************
+ * std::array                                                           *
+ ***********************************************************************/
+#define INSANTIATE_HDF5_ARRAY( TYPE, N ) \
+    template void AMP::readHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, std::array<TYPE,N> & ); \
+    template void AMP::writeHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, const std::array<TYPE,N> & )
+INSANTIATE_HDF5_ARRAY( bool, 1 );
+INSANTIATE_HDF5_ARRAY( bool, 2 );
+INSANTIATE_HDF5_ARRAY( bool, 3 );
+INSANTIATE_HDF5_ARRAY( int, 1 );
+INSANTIATE_HDF5_ARRAY( int, 2 );
+INSANTIATE_HDF5_ARRAY( int, 3 );
+INSANTIATE_HDF5_ARRAY( int, 6 );
+INSANTIATE_HDF5_ARRAY( double, 1 );
+INSANTIATE_HDF5_ARRAY( double, 2 );
+INSANTIATE_HDF5_ARRAY( double, 3 );
+INSANTIATE_HDF5_ARRAY( double, 4 );
+INSANTIATE_HDF5_ARRAY( double, 6 );
+INSANTIATE_HDF5_ARRAY( double, 9 );
+
+

@@ -241,15 +241,15 @@ void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *da
 
 #else // No HDF5
 // Dummy implementations for no HDF5
-hid_t openHDF5( const std::string_view &, const char *, Compression ) { return 0; }
+hid_t openHDF5( const std::string_view &, const char *, AMP::Compression ) { return 0; }
 void closeHDF5( hid_t ) {}
 bool H5Gexists( hid_t, const std::string_view & ) { return false; }
 bool H5Dexists( hid_t, const std::string_view & ) { return false; }
 hid_t createGroup( hid_t, const std::string_view & ) { return 0; }
 hid_t openGroup( hid_t, const std::string_view & ) { return 0; }
 void closeGroup( hid_t ) {}
-void writeHDF5( hid_t, const std::string_view &, size_t, const std::bytes * );
-void readHDF5( hid_t, const std::string_view &, size_t, std::bytes * );
+void writeHDF5( hid_t, const std::string_view &, size_t, const std::byte * );
+void readHDF5( hid_t, const std::string_view &, size_t, std::byte * );
 #endif
 
 } // namespace AMP

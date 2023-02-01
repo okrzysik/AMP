@@ -6,6 +6,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/ArraySize.h"
 
+#include <cstddef>
 #include <cstring>
 #include <memory>
 #include <string_view>
@@ -189,17 +190,6 @@ void closeGroup( hid_t fid );
  */
 template<class T>
 hid_t getHDF5datatype();
-
-
-// Default no-op implementations for use without HDF5
-// clang-format off
-#ifndef AMP_USE_HDF5
-template<class T> void writeHDF5( hid_t, const std::string_view&, const T& ) {}
-template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
-template<class T> std::unique_ptr<T> readHDF5( hid_t, const std::string_view &, AMP_MPI ) {}
-template<class T> hid_t getHDF5datatype() { return 0; }
-#endif
-// clang-format on
 
 
 } // namespace AMP

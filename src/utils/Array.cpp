@@ -15,6 +15,7 @@ namespace AMP {
 #if defined( USING_ICC )
 DISABLE_WARNINGS
 #endif
+template class Array<bool>;
 template class Array<char>;
 template class Array<uint8_t>;
 template class Array<uint16_t>;
@@ -27,7 +28,6 @@ template class Array<int64_t>;
 template class Array<float>;
 template class Array<double>;
 template class Array<long double>;
-instantiateArrayConstructors( bool );
 instantiateArrayConstructors( std::byte );
 instantiateArrayConstructors( std::string );
 instantiateArrayConstructors( std::string_view );
@@ -85,10 +85,9 @@ PACK_UNPACK_ARRAY( std::byte );
 PACK_UNPACK_ARRAY( std::string );
 PACK_UNPACK_ARRAY( std::string_view );
 PACK_UNPACK_ARRAY2( std::byte * );
-PACK_UNPACK_ARRAY2( bool );
+PACK_UNPACK_ARRAY2( std::string );
 PACK_UNPACK_ARRAY2( std::complex<float> );
 PACK_UNPACK_ARRAY2( std::complex<double> );
-PACK_UNPACK_ARRAY2( std::string );
 
 
 } // namespace AMP

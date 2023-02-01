@@ -49,7 +49,6 @@ void AMP::readHDF5Scalar<AMP::Mesh::MeshID>( hid_t fid,
     readHDF5Scalar<uint64_t>( fid, name, data2 );
     data = AMP::Mesh::MeshID( data2 );
 }
-INSTANTIATE_HDF5( AMP::Mesh::MeshID );
 #endif
 
 
@@ -98,12 +97,13 @@ void AMP::readHDF5Scalar<AMP::Mesh::GeomType>( hid_t fid,
     readHDF5Scalar<uint16_t>( fid, name, data2 );
     data = static_cast<AMP::Mesh::GeomType>( data2 );
 }
-INSTANTIATE_HDF5( AMP::Mesh::GeomType );
 #endif
 
 
 /********************************************************
- * HDF5 operators                                        *
+ * Explicit instantiations                               *
  ********************************************************/
+INSTANTIATE_HDF5( AMP::Mesh::GeomType );
+INSTANTIATE_HDF5( AMP::Mesh::MeshID );
 instantiateArrayConstructors( AMP::Mesh::MeshID );
 instantiateArrayConstructors( AMP::Mesh::GeomType );

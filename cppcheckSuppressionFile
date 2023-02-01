@@ -16,6 +16,7 @@ redundantCopy:*             // Suppress redundantCopy, can be better practice in
 preprocessorErrorDirective:* // Suppress #error messages (may be valid and will be caught by compiler)
 virtualCallInConstructor:*  // False errors
 nullPointerRedundantCheck:*
+internalAstError:*
 
 
 //***********************************************************
