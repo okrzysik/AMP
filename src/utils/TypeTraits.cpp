@@ -23,7 +23,7 @@ static_assert( !AMP::is_Array_v<double> );
 static_assert( AMP::is_Array_v<AMP::Array<double>> );
 
 static_assert( !AMP::is_container_v<double> );
-static_assert( AMP::has_begin_v<std::vector<double>> );
-static_assert( AMP::has_begin_v<std::array<double, 5>> );
-static_assert( AMP::has_begin_v<std::list<double>> );
-static_assert( AMP::has_begin_v<std::set<double>> );
+static_assert( AMP::is_container_v<std::vector<double>> );
+static_assert( AMP::is_container_v<std::array<double, 5>> );
+static_assert( AMP::is_container_v<std::list<double>> );
+static_assert( AMP::is_container_v<std::set<double>> );

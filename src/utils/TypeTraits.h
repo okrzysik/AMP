@@ -105,6 +105,12 @@ struct has_end : std::false_type {
 template<typename T>
 struct has_end<T, decltype( void( std::end( std::declval<T &>() ) ) )> : std::true_type {
 };
+template<typename T, typename = void>
+struct has_empty : std::false_type {
+};
+template<typename T>
+struct has_empty<T, decltype( void( std::empty( std::declval<T &>() ) ) )> : std::true_type {
+};
 
 
 //! Checks whether T is an initializer_list
@@ -136,7 +142,9 @@ inline constexpr bool has_begin_v = has_begin<T>::value;
 template<class T>
 inline constexpr bool has_end_v = has_end<T>::value;
 template<class T>
-inline constexpr bool is_container_v = has_begin_v<T> &&has_end_v<T>;
+inline constexpr bool has_empty_v = has_empty<T>::value;
+template<class T>
+inline constexpr bool is_container_v = has_begin_v<T> &&has_end_v<T> &&has_empty_v<T>;
 template<class T>
 inline constexpr bool is_initializer_list_v = is_initializer_list<T>::value;
 
