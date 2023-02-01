@@ -67,7 +67,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     const auto f_norm = static_cast<T>( f->L2Norm() );
 
     // enhance with convergence reason, number of iterations etc
-    if ( f_norm == 0.0 )
+    if ( f_norm == static_cast<T>( 0.0 ) )
         return;
 
     const T terminate_tol = d_dRelativeTolerance * f_norm;
@@ -125,7 +125,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
-        T beta = 1.0;
+        T beta = static_cast<T>( 1.0 );
 
         // w = Ap
         d_pOperator->apply( p, w );
@@ -134,7 +134,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         T alpha = static_cast<T>( w->dot( *p ) );
 
         // sanity check, the curvature should be positive
-        if ( alpha <= 0.0 ) {
+        if ( alpha <= static_cast<T>( 0.0 ) ) {
             // set diverged reason
             AMP_ERROR( "Negative curvature encountered in CG!!" );
         }
