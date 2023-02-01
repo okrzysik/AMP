@@ -21,7 +21,11 @@ inline void FunctionTable::rand( Array<TYPE, FUN> &x )
 {
     std::random_device rd;
     std::mt19937 gen( rd() );
-    if constexpr ( std::is_integral_v<TYPE> ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
+        std::uniform_int_distribution<uint8_t> dis( 0, 1 );
+        for ( size_t i = 0; i < x.length(); i++ )
+            x( i ) = dis( gen ) != 0;
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
         std::uniform_int_distribution<TYPE> dis;
         for ( size_t i = 0; i < x.length(); i++ )
             x( i ) = dis( gen );

@@ -19,6 +19,9 @@ public:
 
     virtual VectorIndexer::shared_ptr getIndexer() { return d_Indexer; }
     virtual size_t DOFsPerObject() const { return 0; }
+    std::string className() const override { return "RandomSubsetVariable"; }
+    void writeRestart( int64_t ) const override;
+    RandomSubsetVariable( int64_t );
 };
 } // namespace AMP::LinearAlgebra
 

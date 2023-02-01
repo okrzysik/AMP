@@ -28,7 +28,11 @@ public:
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
 public: // Functions inherited from Variable
+    std::string className() const override { return "MeshVariable"; }
+    uint64_t getID() const override;
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
+    void writeRestart( int64_t ) const override;
+    MeshVariable( int64_t );
 
 private:
     MeshVariable();
@@ -57,7 +61,11 @@ public:
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
 public: // Functions inherited from Variable
+    std::string className() const override { return "MeshIteratorVariable"; }
+    uint64_t getID() const override;
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
+    void writeRestart( int64_t ) const override;
+    MeshIteratorVariable( int64_t );
 
 private:
     MeshIteratorVariable();

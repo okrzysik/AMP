@@ -963,7 +963,7 @@ void MultiMesh::writeRestart( int64_t fid ) const
         meshIDs.push_back( mesh->meshID() );
     writeHDF5( fid, "meshIDs", meshIDs );
 }
-static MultiMesh loadHDF5( int64_t fid, AMP::IO::RestartManager *manager )
+static std::unique_ptr<MultiMesh> loadHDF5( int64_t fid, AMP::IO::RestartManager *manager )
 {
     AMP_MPI comm;
     std::string name;
@@ -975,10 +975,10 @@ static MultiMesh loadHDF5( int64_t fid, AMP::IO::RestartManager *manager )
     std::vector<std::shared_ptr<Mesh>> meshes;
     for ( auto id : meshIDs )
         meshes.push_back( manager->getData<Mesh>( id.getHash() ) );
-    return MultiMesh( name, manager->getComm( commHash ), meshes );
+    return std::make_unique<MultiMesh>( name, manager->getComm( commHash ), meshes );
 }
 MultiMesh::MultiMesh( int64_t fid, AMP::IO::RestartManager *manager )
-    : MultiMesh( loadHDF5( fid, manager ) )
+    : MultiMesh( *loadHDF5( fid, manager ) )
 {
     readHDF5( fid, "MeshID", d_meshID );
 }

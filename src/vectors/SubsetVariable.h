@@ -88,7 +88,10 @@ public:
     static Vector::const_shared_ptr view( Vector::const_shared_ptr, std::shared_ptr<Variable> );
 
 public: // Functions inherited from Variable
+    std::string className() const override { return "SubsetVariable"; }
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
+    void writeRestart( int64_t ) const override;
+    SubsetVariable( int64_t );
 };
 
 
