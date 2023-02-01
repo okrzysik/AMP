@@ -24,7 +24,11 @@ public:
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
 public: // Functions inherited from Variable
+    std::string className() const override { return "CommVariable"; }
+    uint64_t getID() const override;
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
+    void writeRestart( int64_t ) const override;
+    CommVariable( int64_t );
 
 private:
     CommVariable();

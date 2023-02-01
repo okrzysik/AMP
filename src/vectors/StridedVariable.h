@@ -26,6 +26,11 @@ public:
 
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
 
+    std::string className() const override { return "StridedVariable"; }
+
+    void writeRestart( int64_t ) const override;
+    StridedVariable( int64_t );
+
 private:
     StridedVariable();
     size_t d_offset;

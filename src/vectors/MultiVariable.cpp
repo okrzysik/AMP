@@ -1,4 +1,5 @@
 #include "AMP/vectors/MultiVariable.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorSelector.h"
 
@@ -166,6 +167,20 @@ std::shared_ptr<VectorSelector> MultiVariable::createVectorSelector() const
 {
     auto multivar = std::dynamic_pointer_cast<MultiVariable>( cloneVariable( getName() ) );
     return std::make_shared<VS_MultiVariable>( multivar );
+}
+
+
+/****************************************************************
+ * Restart                                                       *
+ ****************************************************************/
+MultiVariable::MultiVariable( int64_t fid ) : Variable( fid ) { AMP_ERROR( "Not finished" ); }
+void MultiVariable::writeRestart( int64_t fid ) const
+{
+    Variable::writeRestart( fid );
+    std::vector<uint64_t> var_ids;
+    for ( auto var : d_vVariables )
+        var_ids.push_back( var->getID() );
+    writeHDF5( fid, "vars", var_ids );
 }
 
 

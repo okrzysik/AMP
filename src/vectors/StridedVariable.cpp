@@ -1,4 +1,5 @@
 #include "AMP/vectors/StridedVariable.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/vectors/StridedVariable.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -38,6 +39,20 @@ StridedVariable::getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> 
 std::shared_ptr<VectorSelector> StridedVariable::createVectorSelector() const
 {
     return std::make_shared<VS_Stride>( d_offset, d_stride );
+}
+
+
+/****************************************************************
+ * Restart                                                       *
+ ****************************************************************/
+StridedVariable::StridedVariable( int64_t fid ) : SubsetVariable( fid )
+{
+    AMP_ERROR( "Not finished" );
+}
+void StridedVariable::writeRestart( int64_t fid ) const
+{
+    Variable::writeRestart( fid );
+    AMP_ERROR( "Not finished" );
 }
 
 

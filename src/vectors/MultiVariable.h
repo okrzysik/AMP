@@ -121,7 +121,10 @@ public:
     virtual void setUnits( const Units &units ) override;
 
 public: // Functions inherited from Variable
+    std::string className() const override { return "MultiVariable"; }
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
+    void writeRestart( int64_t ) const override;
+    MultiVariable( int64_t );
 
 protected:
     //! List of variables comprising the MultiVariable

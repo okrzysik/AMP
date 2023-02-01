@@ -97,4 +97,15 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
 }
 
 
+/****************************************************************
+ * Restart                                                       *
+ ****************************************************************/
+SubsetVariable::SubsetVariable( int64_t fid ) : Variable( fid ) { AMP_ERROR( "Not finished" ); }
+void SubsetVariable::writeRestart( int64_t fid ) const
+{
+    Variable::writeRestart( fid );
+    AMP_ERROR( "Not finished" );
+}
+
+
 } // namespace AMP::LinearAlgebra
