@@ -2,8 +2,6 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/FactoryStrategy.hpp"
 
-#ifdef AMP_USE_HDF5
-
 
 using KeyDataFactory = AMP::FactoryStrategy<AMP::KeyData>;
 
@@ -11,6 +9,7 @@ using KeyDataFactory = AMP::FactoryStrategy<AMP::KeyData>;
 /****************************************************************************
  * read/write HDF5                                                           *
  ****************************************************************************/
+#ifdef AMP_USE_HDF5
 void AMP::Database::writeHDF5( int64_t fid, std::string_view name ) const
 {
     hid_t gid = createGroup( fid, name );
@@ -44,11 +43,16 @@ void AMP::Database::readHDF5( int64_t fid, std::string_view name )
     }
     closeGroup( gid );
 }
+#else
+void AMP::Database::writeHDF5( int64_t, std::string_view ) const {}
+void AMP::Database::readHDF5( int64_t, std::string_view ) {}
+#endif
 
 
 /************************************************************************
  * read/write HDF5 (AMP::Database)                                      *
  ***********************************************************************/
+#ifdef AMP_USE_HDF5
 template<>
 hid_t AMP::getHDF5datatype<AMP::Database>()
 {
@@ -82,11 +86,13 @@ void AMP::readHDF5Scalar<AMP::Database>( hid_t fid,
 {
     data.readHDF5( fid, name );
 }
+#endif
 
 
 /************************************************************************
  * read/write HDF5 (AMP::Database::Check)                               *
  ***********************************************************************/
+#ifdef AMP_USE_HDF5
 template<>
 hid_t AMP::getHDF5datatype<AMP::Database::Check>()
 {
@@ -123,11 +129,13 @@ void AMP::readHDF5Scalar<AMP::Database::Check>( hid_t fid,
     AMP::readHDF5( fid, name, data2 );
     data = static_cast<AMP::Database::Check>( data2 );
 }
+#endif
 
 
 /************************************************************************
  * read/write HDF5 (AMP::DatabaseBox)                                   *
  ***********************************************************************/
+#ifdef AMP_USE_HDF5
 template<>
 hid_t AMP::getHDF5datatype<AMP::DatabaseBox>()
 {
@@ -157,6 +165,7 @@ void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, Dat
 {
     AMP_ERROR( "Not finished" );
 }
+#endif
 
 
 /************************************************************************
@@ -165,6 +174,3 @@ void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, Dat
 INSTANTIATE_HDF5( AMP::Database );
 INSTANTIATE_HDF5( AMP::DatabaseBox );
 INSTANTIATE_HDF5( AMP::Database::Check );
-
-
-#endif

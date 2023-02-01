@@ -8,20 +8,11 @@
 #include <string_view>
 
 #include "AMP/AMP_TPLs.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/utils/Array.h"
 
 
 namespace AMP {
-
-
-// Include the headers and define some basic types
-#ifdef AMP_USE_HDF5
-    // Using HDF5
-    #include "hdf5.h"
-#else
-// Not using HDF5
-typedef int hid_t;
-#endif
 
 
 //! Class to wrap HDF5 data
