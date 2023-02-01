@@ -427,9 +427,13 @@ INSTANTIATE_HDF5( AMP::Mesh::Point );
 #define INSANTIATE_HDF5_ARRAY( TYPE, N ) \
     template void AMP::readHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, std::array<TYPE,N> & ); \
     template void AMP::writeHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, const std::array<TYPE,N> & )
+INSANTIATE_HDF5_ARRAY( bool, 1 );
+INSANTIATE_HDF5_ARRAY( bool, 2 );
+INSANTIATE_HDF5_ARRAY( bool, 3 );
 INSANTIATE_HDF5_ARRAY( int, 1 );
 INSANTIATE_HDF5_ARRAY( int, 2 );
 INSANTIATE_HDF5_ARRAY( int, 3 );
+INSANTIATE_HDF5_ARRAY( int, 6 );
 INSANTIATE_HDF5_ARRAY( double, 1 );
 INSANTIATE_HDF5_ARRAY( double, 2 );
 INSANTIATE_HDF5_ARRAY( double, 3 );
