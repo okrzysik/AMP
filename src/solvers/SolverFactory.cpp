@@ -91,6 +91,25 @@ void registerSolverFactories()
     solverFactory.registerFactory( "QMRCGSTABSolver", QMRCGSTABSolver<double>::createSolver );
 
     solverFactory.registerFactory( "NKASolver", NonlinearKrylovAccelerator<double>::createSolver );
+
+    solverFactory.registerFactory( "CGSolver<double>", CGSolver<double>::createSolver );
+    solverFactory.registerFactory( "GMRESSolver<double>", GMRESSolver<double>::createSolver );
+    solverFactory.registerFactory( "BiCGSTABSolver<double>", BiCGSTABSolver<double>::createSolver );
+    solverFactory.registerFactory( "TFQMRSolver<double>", TFQMRSolver<double>::createSolver );
+    solverFactory.registerFactory( "QMRCGSTABSolver<double>",
+                                   QMRCGSTABSolver<double>::createSolver );
+
+    solverFactory.registerFactory( "NKASolver<double>",
+                                   NonlinearKrylovAccelerator<double>::createSolver );
+
+    solverFactory.registerFactory( "CGSolver<float>", CGSolver<float>::createSolver );
+    solverFactory.registerFactory( "GMRESSolver<float>", GMRESSolver<float>::createSolver );
+    solverFactory.registerFactory( "BiCGSTABSolver<float>", BiCGSTABSolver<float>::createSolver );
+    solverFactory.registerFactory( "TFQMRSolver<float>", TFQMRSolver<float>::createSolver );
+    solverFactory.registerFactory( "QMRCGSTABSolver<float>", QMRCGSTABSolver<float>::createSolver );
+
+    solverFactory.registerFactory( "NKASolver<float>",
+                                   NonlinearKrylovAccelerator<float>::createSolver );
 }
 
 

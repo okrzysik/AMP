@@ -162,14 +162,14 @@ inline TYPE Scalar::get( double tol ) const
         } else if ( d_hash == longHash ) {
             auto x = std::any_cast<long double>( d_data );
             y      = static_cast<TYPE>( x );
-            e      = std::abs<double>( x - static_cast<long double>( y ) );
+            e      = std::abs<double>( static_cast<double>( x - static_cast<long double>( y ) ) );
         } else if ( d_hash == int64Hash ) {
             auto x = std::any_cast<int64_t>( d_data );
             y      = static_cast<TYPE>( x );
             e      = std::abs<double>( x - static_cast<int64_t>( y ) );
         } else if ( d_hash == complexHash ) {
             auto x = std::any_cast<std::complex<double>>( d_data );
-            y      = x.real();
+            y      = static_cast<TYPE>( x.real() );
             e      = std::abs<double>( x - static_cast<std::complex<double>>( y ) );
         } else if ( !d_data.has_value() ) {
             // Data does not exist
