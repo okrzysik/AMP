@@ -230,7 +230,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     // 6.2.50 in hypre 11.2 manual
     if ( db->keyExists( "add_P_max_elmts" ) ) {
-        d_add_P_max_elmts = db->getScalar<double>( "add_P_max_elmts" );
+        d_add_P_max_elmts = db->getScalar<int>( "add_P_max_elmts" );
         HYPRE_BoomerAMGSetMultAddPMaxElmts( d_solver, d_add_P_max_elmts );
     }
 

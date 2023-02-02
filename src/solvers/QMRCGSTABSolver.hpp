@@ -73,11 +73,11 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     auto f_norm = static_cast<T>( f->L2Norm() );
 
     // if the rhs is zero we try to converge to the relative convergence
-    if ( f_norm == 0.0 ) {
-        f_norm = 1.0;
+    if ( f_norm == static_cast<T>( 0.0 ) ) {
+        f_norm = static_cast<T>( 1.0 );
     }
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "QMRCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
@@ -172,13 +172,13 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         auto rho2 = static_cast<T>( r0->dot( *v ) );
 
         // replace by soft-equal
-        if ( rho2 == 0.0 ) {
+        if ( rho2 == static_cast<T>( 0.0 ) ) {
             // the method breaks down as the vectors are orthogonal to r
             AMP_ERROR( "QMRCGSTAB breakdown, <r0,v> == 0 " );
         }
 
         // replace by soft-equal
-        if ( rho1 == 0.0 ) {
+        if ( rho1 == static_cast<T>( 0.0 ) ) {
             // the method breaks down as it stagnates
             AMP_ERROR( "QMRCGSTAB breakdown, rho1==0 " );
         }
@@ -189,9 +189,9 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
 
         // first quasi minimization and iterate update as per paper
         const auto theta2 = static_cast<T>( s->L2Norm() ) / tau;
-        auto c            = 1.0 / ( std::sqrt( 1.0 + theta2 * theta2 ) );
-        const auto tau2   = tau * theta2 * c;
-        const auto eta2   = c * c * alpha;
+        T c = static_cast<T>( 1.0 ) / ( std::sqrt( static_cast<T>( 1.0 ) + theta2 * theta2 ) );
+        const auto tau2 = tau * theta2 * c;
+        const auto eta2 = c * c * alpha;
 
         d2->axpy( theta * theta * eta / alpha, *d, *p );
 
@@ -210,13 +210,13 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         const auto uu = static_cast<T>( s->dot( *t ) );
         const auto vv = static_cast<T>( t->dot( *t ) );
 
-        if ( vv == 0.0 ) {
+        if ( vv == static_cast<T>( 0.0 ) ) {
             AMP_ERROR( "Matrix is singular" );
         }
 
         const auto omega = uu / vv;
 
-        if ( omega == 0.0 ) {
+        if ( omega == static_cast<T>( 0.0 ) ) {
             // the method breaks down as it stagnates
             AMP_ERROR( "QMRCGSTAB breakdown, omega==0.0 " );
         }
@@ -225,7 +225,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
 
         // second quasi minimization and iterate update as per paper
         theta = static_cast<T>( s->L2Norm() ) / tau2;
-        c     = 1.0 / ( std::sqrt( 1.0 + theta * theta ) );
+        c     = static_cast<T>( 1.0 ) / ( std::sqrt( static_cast<T>( 1.0 ) + theta * theta ) );
         tau   = tau2 * theta * c;
         eta   = c * c * omega;
 
@@ -247,7 +247,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
 
         rho2 = static_cast<T>( r->dot( *r0 ) );
         // replace by soft-equal
-        if ( rho2 == 0.0 ) {
+        if ( rho2 == static_cast<T>( 0.0 ) ) {
             // the method breaks down as rho2==0
             AMP_ERROR( "QMRCGSTAB breakdown, rho2 == 0 " );
         }

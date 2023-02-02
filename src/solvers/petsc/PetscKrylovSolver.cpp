@@ -209,7 +209,7 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
 
     d_sKspType             = db->getWithDefault<std::string>( "ksp_type", "fgmres" );
     d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );
-    d_iMaxIterations       = db->getWithDefault<double>( "max_iterations", 1000 );
+    d_iMaxIterations       = db->getWithDefault<int>( "max_iterations", 1000 );
 
     d_KSPAppendOptionsPrefix = db->getWithDefault<std::string>( "KSPAppendOptionsPrefix", "" );
 

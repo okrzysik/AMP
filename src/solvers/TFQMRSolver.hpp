@@ -75,11 +75,11 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto f_norm = static_cast<T>( f->L2Norm() );
 
     // if the rhs is zero we try to converge to the relative convergence
-    if ( f_norm == 0.0 ) {
-        f_norm = 1.0;
+    if ( f_norm == static_cast<T>( 0.0 ) ) {
+        f_norm = static_cast<T>( 1.0 );
     }
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "TFQMRSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
@@ -120,8 +120,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // parameters in TFQMR
-    T theta  = 0.0;
-    T eta    = 0.0;
+    T theta  = static_cast<T>( 0.0 );
+    T eta    = static_cast<T>( 0.0 );
     T tau    = res_norm;
     auto rho = tau * tau;
 
@@ -180,7 +180,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         auto sigma = static_cast<T>( res->dot( *v ) );
 
         // replace by soft-equal
-        if ( sigma == 0.0 ) {
+        if ( sigma == static_cast<T>( 0.0 ) ) {
             // the method breaks down as the vectors are orthogonal to r
             AMP_ERROR( "TFQMR breakdown, sigma == 0 " );
         }
@@ -208,10 +208,11 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             w->axpy( -alpha, *u[j], *w );
             d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
 
-            theta        = static_cast<T>( w->L2Norm() ) / tau;
-            const auto c = 1.0 / std::sqrt( 1 + theta * theta );
-            tau          = tau * theta * c;
-            eta          = c * c * alpha;
+            theta = static_cast<T>( w->L2Norm() ) / tau;
+            const auto c =
+                static_cast<T>( 1.0 ) / std::sqrt( static_cast<T>( 1.0 ) + theta * theta );
+            tau = tau * theta * c;
+            eta = c * c * alpha;
 
             // update the increment to the solution
             delta->axpy( eta, *d, *delta );
@@ -241,7 +242,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         // replace by soft-equal
-        if ( rho == 0.0 ) {
+        if ( rho == static_cast<T>( 0.0 ) ) {
             // the method breaks down as rho==0
             AMP_ERROR( "TFQMR breakdown, rho == 0 " );
         }
