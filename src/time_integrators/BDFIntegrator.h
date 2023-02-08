@@ -373,6 +373,10 @@ protected:
     //! time intervals before the final constant timestep is attained
     int d_number_of_time_intervals = -1;
 
+    //! used only with the final constant timestep scheme, number of
+    //! initial steps to take with d_initial_dt
+    int d_number_initial_fixed_steps = 0;
+
     //! whether to log statistics about time integrator
     bool d_log_statistics = true;
 
