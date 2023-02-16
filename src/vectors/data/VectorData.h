@@ -388,11 +388,16 @@ public: // Advanced functions
      */
     virtual size_t sizeofDataBlockType( size_t i ) const = 0;
 
+    /** \brief Return the typeid of the given block
+     * \param block    The block id to check
+     */
+    virtual typeID getType( size_t block ) const = 0;
+
     /** \brief Is the data of the given type
      * \param typeid   The typeid
      * \param block    The block id to check
      */
-    virtual bool isType( const typeID &id, size_t block ) const = 0;
+    inline bool isType( const typeID &id, size_t block ) const;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with

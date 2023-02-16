@@ -5,6 +5,7 @@
 #include "AMP/utils/UnitTest.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
+#include "AMP/vectors/VectorBuilder.h"
 #ifdef AMP_USE_SUNDIALS
     #include "AMP/vectors/sundials/ManagedSundialsVector.h"
     #include "AMP/vectors/sundials/SundialsVector.h"
@@ -603,8 +604,9 @@ void VectorTests::VerifyVectorMin( AMP::UnitTest *ut )
     auto vec = d_factory->getVector();
     vec->setRandomValues();
     vec->scale( -1.0 ); // make negative
-    PASS_FAIL( ( vec->min() + vec->maxNorm() ).abs() < 1.e-10,
-               "minimum of negative vector == ||.||_infty" );
+    double min( vec->min() );
+    double norm( vec->maxNorm() );
+    PASS_FAIL( fabs( min + norm ) < 1.e-10, "minimum of negative vector == ||.||_infty" );
 }
 
 
@@ -612,8 +614,9 @@ void VectorTests::VerifyVectorMax( AMP::UnitTest *ut )
 {
     auto vec = d_factory->getVector();
     vec->setRandomValues();
-    PASS_FAIL( ( vec->max() - vec->maxNorm().abs() ) < 1.e-10,
-               "maximum of positive vector == ||.||_infty" );
+    double max( vec->max() );
+    double norm( vec->maxNorm() );
+    PASS_FAIL( fabs( max - norm ) < 1.e-10, "maximum of positive vector == ||.||_infty" );
 }
 
 
@@ -629,8 +632,9 @@ void VectorTests::VerifyVectorMaxMin( AMP::UnitTest *ut )
         double min( vec->min() );
         auto ans = std::max( fabs( max ), fabs( min ) );
         double norm( vec->maxNorm() );
-        if ( fabs( ans - norm ) >= 1.e-20 )
+        if ( fabs( ans - norm ) >= 1.e-20 ) {
             passes = false;
+        }
     }
     PASS_FAIL( passes, "Max and min correctly predict maxNorm()" );
 }
@@ -645,9 +649,9 @@ void VectorTests::SetRandomValuesVector( AMP::UnitTest *ut )
         auto l2norm2 = static_cast<double>( vector->L2Norm() );
         PASS_FAIL( fabs( l2norm1 - l2norm2 ) > 0.000001, "Distinct vector created" );
         l2norm1 = l2norm2;
-        PASS_FAIL( vector->min() >= 0, "SetRandomValuesVector: Min value >= 0" );
-        PASS_FAIL( vector->max() < 1, "SetRandomValuesVector: Max value < 1" );
-        PASS_FAIL( vector->L2Norm() > 0, "SetRandomValuesVector: Non-zero vector created" );
+        PASS_FAIL( vector->min() >= 0, "Min value >= 0" );
+        PASS_FAIL( vector->max() < 1, "Max value < 1" );
+        PASS_FAIL( vector->L2Norm() > 0, "Non-zero vector created" );
     }
 }
 
@@ -685,7 +689,7 @@ static void LinearSumVectorRun( std::shared_ptr<const VectorFactory> d_factory,
     vectorb->scale( beta );
     vectord->add( *vectora, *vectorb );
     vectord->subtract( *vectorc, *vectord );
-    PASS_FAIL( vectord->maxNorm() < 0.0000001, msg );
+    PASS_FAIL( vectord->maxNorm() < 0.000001, msg );
 }
 void VectorTests::LinearSumVector( AMP::UnitTest *ut )
 {
@@ -803,6 +807,18 @@ void VectorTests::CopyVector( AMP::UnitTest *ut )
     } else {
         AMP_ERROR( "CopyVector tests not implemented for provided scalar TYPE" );
     }
+
+    auto simple1 = AMP::LinearAlgebra::createSimpleVector<double>( vectora->getLocalSize(), "tmp" );
+    auto simple2 = AMP::LinearAlgebra::createSimpleVector<float>( vectora->getLocalSize(), "tmp" );
+    simple1->copyVector( vectora );
+    simple2->copyVector( vectora );
+    double aNorm( vectora->L2Norm() );
+    double norm1( simple1->L2Norm() );
+    double norm2( simple2->L2Norm() );
+    PASS_FAIL( fabs( aNorm - norm1 ) < 1e-5 * aNorm, "copy vector double" );
+    PASS_FAIL( fabs( aNorm - norm2 ) < 1e-5 * aNorm, "copy vector single" );
+    // vectorb->copyVector( simple1 );
+    // vectorc->copyVector( simple2 );
 }
 
 

@@ -19,7 +19,9 @@ VectorDataIterator<TYPE>::VectorDataIterator()
       d_size( 0 ),
       d_hashcode( 0 ),
       d_blockSize( nullptr ),
-      d_data( nullptr )
+      d_data( nullptr ),
+      d_typeHash( nullptr ),
+      d_dataCast( 0 )
 {
 }
 template<typename TYPE>
@@ -31,13 +33,20 @@ VectorDataIterator<TYPE>::VectorDataIterator( const VectorDataIterator &rhs )
       d_size( rhs.d_size ),
       d_hashcode( rhs.d_hashcode ),
       d_blockSize( nullptr ),
-      d_data( nullptr )
+      d_data( nullptr ),
+      d_typeHash( nullptr ),
+      d_dataCast( rhs.d_dataCast )
 {
     d_data      = new TYPE *[d_N_blocks];
     d_blockSize = new size_t[d_N_blocks];
     for ( size_t i = 0; i < d_N_blocks; i++ ) {
         d_data[i]      = rhs.d_data[i];
         d_blockSize[i] = rhs.d_blockSize[i];
+    }
+    if ( rhs.d_typeHash ) {
+        d_typeHash = new uint64_t[d_N_blocks];
+        for ( size_t i = 0; i < d_N_blocks; i++ )
+            d_typeHash[i] = rhs.d_typeHash[i];
     }
 }
 template<typename TYPE>
@@ -49,10 +58,13 @@ VectorDataIterator<TYPE>::VectorDataIterator( VectorDataIterator &&rhs )
       d_size( rhs.d_size ),
       d_hashcode( rhs.d_hashcode ),
       d_blockSize( nullptr ),
-      d_data( nullptr )
+      d_data( nullptr ),
+      d_typeHash( nullptr ),
+      d_dataCast( rhs.d_dataCast )
 {
     std::swap( d_blockSize, rhs.d_blockSize );
     std::swap( d_data, rhs.d_data );
+    std::swap( d_typeHash, rhs.d_typeHash );
 }
 template<typename TYPE>
 VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( const VectorDataIterator &rhs )
@@ -73,6 +85,12 @@ VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( const VectorDataI
         d_data[i]      = rhs.d_data[i];
         d_blockSize[i] = rhs.d_blockSize[i];
     }
+    d_typeHash = nullptr;
+    if ( rhs.d_typeHash ) {
+        d_typeHash = new uint64_t[d_N_blocks];
+        for ( size_t i = 0; i < d_N_blocks; i++ )
+            d_typeHash[i] = rhs.d_typeHash[i];
+    }
     return *this;
 }
 template<typename TYPE>
@@ -86,8 +104,11 @@ VectorDataIterator<TYPE> &VectorDataIterator<TYPE>::operator=( VectorDataIterato
     d_pos       = rhs.d_pos;
     d_size      = rhs.d_size;
     d_hashcode  = rhs.d_hashcode;
+    d_typeHash  = nullptr;
     std::swap( d_blockSize, rhs.d_blockSize );
     std::swap( d_data, rhs.d_data );
+    std::swap( d_typeHash, rhs.d_typeHash );
+    d_dataCast = rhs.d_dataCast;
     return *this;
 }
 template<typename TYPE>
@@ -99,19 +120,29 @@ VectorDataIterator<TYPE>::VectorDataIterator( VectorData *vec, size_t position )
       d_size( 0 ),
       d_hashcode( 0 ),
       d_blockSize( nullptr ),
-      d_data( nullptr )
+      d_data( nullptr ),
+      d_typeHash( nullptr ),
+      d_dataCast( 0 )
 {
-    d_data      = new TYPE *[d_N_blocks];
-    d_blockSize = new size_t[d_N_blocks];
+    d_data       = new TYPE *[d_N_blocks];
+    d_blockSize  = new size_t[d_N_blocks];
+    bool allType = true;
     for ( size_t i = 0; i < d_N_blocks; i++ ) {
-        if ( vec->isBlockType<TYPE>( i ) ) {
-            d_data[i]      = vec->getRawDataBlock<TYPE>( i );
-            d_blockSize[i] = vec->sizeOfDataBlock( i );
-            d_size += d_blockSize[i];
-            d_hashcode ^= std::hash<TYPE *>()( d_data[i] ) + 0x9e3779b9 + ( d_hashcode << 6 ) +
-                          ( d_hashcode >> 2 );
+        d_data[i]      = vec->getRawDataBlock<TYPE>( i );
+        d_blockSize[i] = vec->sizeOfDataBlock( i );
+        d_size += d_blockSize[i];
+        d_hashcode ^= std::hash<TYPE *>()( d_data[i] ) + 0x9e3779b9 + ( d_hashcode << 6 ) +
+                      ( d_hashcode >> 2 );
+        allType = allType && vec->isBlockType<TYPE>( i );
+    }
+    if ( !allType ) {
+        if constexpr ( std::is_const_v<TYPE> ) {
+            d_typeHash = new uint64_t[d_N_blocks];
+            for ( size_t i = 0; i < d_N_blocks; i++ ) {
+                d_typeHash[i] = vec->getType( i ).hash;
+            }
         } else {
-            AMP_ERROR( "Data type does not match iterator type" );
+            AMP_ERROR( "Implicit conversion of non-const data is not allowed" );
         }
     }
     advance( position );
@@ -121,6 +152,7 @@ VectorDataIterator<TYPE>::~VectorDataIterator()
 {
     delete[] d_blockSize;
     delete[] d_data;
+    delete[] d_typeHash;
 }
 
 
@@ -281,6 +313,34 @@ int VectorDataIterator<TYPE>::operator-( const VectorDataIterator<TYPE> &rhs ) c
  * Assigment Operators                                           *
  ****************************************************************/
 template<typename TYPE>
+inline TYPE &VectorDataIterator<TYPE>::operator*()
+{
+    constexpr auto hash = getTypeID<TYPE>().hash;
+    if ( !d_typeHash ) {
+        return d_data[d_CurBlock][d_CurOffset];
+    } else if ( d_typeHash[d_CurBlock] == hash ) {
+        return d_data[d_CurBlock][d_CurOffset];
+    } else {
+        constexpr auto dblHash = getTypeID<double>().hash;
+        constexpr auto fltHash = getTypeID<float>().hash;
+        if ( d_typeHash[d_CurBlock] == dblHash ) {
+            auto ptr   = reinterpret_cast<const double *>( d_data[d_CurBlock] );
+            d_dataCast = ptr[d_CurOffset];
+        } else if ( d_typeHash[d_CurBlock] == fltHash ) {
+            auto ptr   = reinterpret_cast<const float *>( d_data[d_CurBlock] );
+            d_dataCast = ptr[d_CurOffset];
+        } else {
+            AMP_ERROR( "Unknown data type" );
+        }
+        return d_dataCast;
+    }
+}
+
+
+/****************************************************************
+ * Assigment Operators                                           *
+ ****************************************************************/
+template<typename TYPE>
 TYPE &VectorDataIterator<TYPE>::operator[]( int i )
 {
     VectorDataIterator<TYPE> tmp( *this ); // Create a temporary variable
@@ -288,7 +348,44 @@ TYPE &VectorDataIterator<TYPE>::operator[]( int i )
         tmp.advance( i );
     if ( i < 0 )
         tmp.recede( -i );
+    if ( d_typeHash )
+        AMP_ERROR( "random-access iterators do not support implicit conversion" );
     return tmp.d_data[tmp.d_CurBlock][tmp.d_CurOffset];
+}
+
+
+/****************************************************************
+ * Boolean Operators                                             *
+ ****************************************************************/
+template<typename TYPE>
+inline bool VectorDataIterator<TYPE>::operator==( const VectorDataIterator<TYPE> &rhs ) const
+{
+    return d_hashcode == rhs.d_hashcode && d_pos == rhs.d_pos;
+}
+template<typename TYPE>
+inline bool VectorDataIterator<TYPE>::operator!=( const VectorDataIterator<TYPE> &rhs ) const
+{
+    return d_hashcode != rhs.d_hashcode || d_pos != rhs.d_pos;
+}
+template<typename TYPE>
+inline bool VectorDataIterator<TYPE>::operator<( const VectorDataIterator<TYPE> &rhs ) const
+{
+    return d_hashcode == rhs.d_hashcode ? ( d_pos < rhs.d_pos ) : ( d_hashcode < rhs.d_hashcode );
+}
+template<typename TYPE>
+inline bool VectorDataIterator<TYPE>::operator>( const VectorDataIterator<TYPE> &rhs ) const
+{
+    return d_hashcode == rhs.d_hashcode ? ( d_pos > rhs.d_pos ) : ( d_hashcode > rhs.d_hashcode );
+}
+template<typename TYPE>
+inline bool VectorDataIterator<TYPE>::operator<=( const VectorDataIterator<TYPE> &rhs ) const
+{
+    return d_hashcode == rhs.d_hashcode ? ( d_pos <= rhs.d_pos ) : ( d_hashcode <= rhs.d_hashcode );
+}
+template<typename TYPE>
+inline bool VectorDataIterator<TYPE>::operator>=( const VectorDataIterator<TYPE> &rhs ) const
+{
+    return d_hashcode == rhs.d_hashcode ? ( d_pos >= rhs.d_pos ) : ( d_hashcode >= rhs.d_hashcode );
 }
 
 

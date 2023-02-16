@@ -243,10 +243,7 @@ void ManagedVectorData::getRawData( void *in, const typeID &id ) const
     getEngineData( *this )->getRawData( in, id );
 }
 
-bool ManagedVectorData::isType( const typeID &id, size_t i ) const
-{
-    return getEngineData( *this )->isType( id, i );
-}
+typeID ManagedVectorData::getType( size_t i ) const { return getEngineData( *this )->getType( i ); }
 
 std::shared_ptr<VectorData> ManagedVectorData::cloneData() const
 {

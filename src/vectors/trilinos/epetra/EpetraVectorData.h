@@ -87,7 +87,7 @@ public: // Virtual functions
     void *getRawDataBlockAsVoid( size_t i ) override;
     const void *getRawDataBlockAsVoid( size_t i ) const override;
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
-    bool isType( const typeID &id, size_t ) const override { return id == getTypeID<double>(); }
+    typeID getType( size_t ) const override { return getTypeID<double>(); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;
 

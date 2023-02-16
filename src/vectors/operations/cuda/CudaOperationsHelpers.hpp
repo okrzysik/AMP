@@ -106,7 +106,7 @@ TYPE CudaOperationsHelpers<TYPE>::localMax( size_t N, const TYPE *x )
 {
     auto lambda = [=] __device__( TYPE x ) { return x; };
     auto result = thrust::transform_reduce(
-        thrust::device, x, x + N, lambda, (TYPE) 0, thrust::plus<TYPE>() );
+        thrust::device, x, x + N, lambda, (TYPE) 0, thrust::maximum<TYPE>() );
     return sqrt( result );
 }
 
