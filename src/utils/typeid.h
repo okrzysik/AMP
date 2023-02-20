@@ -110,7 +110,7 @@ constexpr typeID getTypeID()
     char name[128] = { 0 };
     getTypeName<T>( sizeof( name ), name );
     copy( id.name, name, sizeof( id.name ) );
-    // Create the hash
+    // Create the hash (djb2)
     if ( name[0] != 0 ) {
         id.hash = 5381;
         for ( unsigned char c : name )

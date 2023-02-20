@@ -282,7 +282,7 @@ template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::DataStoreType(
     const std::string &name,
     std::shared_ptr<const AMP::LinearAlgebra::VectorData> data,
-    RestartManager *manager )
+    RestartManager * )
     : d_data( data )
 {
     d_name = name;
