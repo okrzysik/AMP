@@ -81,11 +81,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec       = AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
-    auto rhsVec       = solVec->cloneVector();
-    auto resVec       = solVec->cloneVector();
-    auto scaledRhsVec = solVec->cloneVector();
+    auto rhsVec       = solVec->clone();
+    auto resVec       = solVec->clone();
+    auto scaledRhsVec = solVec->clone();
     auto refTempVec   = AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
-    auto curTempVec   = refTempVec->cloneVector();
+    auto curTempVec   = refTempVec->clone();
 
     // Initial guess
     solVec->zero();

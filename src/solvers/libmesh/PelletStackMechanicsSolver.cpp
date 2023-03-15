@@ -29,7 +29,7 @@ void PelletStackMechanicsSolver::apply( std::shared_ptr<const AMP::LinearAlgebra
     std::shared_ptr<const AMP::LinearAlgebra::Vector> fInternal = f;
     if ( d_pelletStackOp->useScaling() ) {
         if ( d_fbuffer1 == nullptr ) {
-            d_fbuffer1 = f->cloneVector();
+            d_fbuffer1 = f->clone();
         }
         d_fbuffer1->copyVector( f );
         d_pelletStackOp->applyUnscaling( d_fbuffer1 );
@@ -46,7 +46,7 @@ void PelletStackMechanicsSolver::solveSerial( std::shared_ptr<const AMP::LinearA
                                               std::shared_ptr<AMP::LinearAlgebra::Vector> u )
 {
     if ( d_fbuffer2 == nullptr ) {
-        d_fbuffer2 = f->cloneVector();
+        d_fbuffer2 = f->clone();
     }
 
     unsigned int totalNumberOfPellets = d_pelletStackOp->getTotalNumberOfPellets();
@@ -95,7 +95,7 @@ void PelletStackMechanicsSolver::solveScan( std::shared_ptr<const AMP::LinearAlg
         d_pelletStackOp->apply( nullVec, u );
     } else {
         if ( d_fbuffer2 == nullptr ) {
-            d_fbuffer2 = f->cloneVector();
+            d_fbuffer2 = f->clone();
         }
         d_pelletStackOp->residual( f, u, d_fbuffer2 );
         d_columnSolver->apply( d_fbuffer2, u );

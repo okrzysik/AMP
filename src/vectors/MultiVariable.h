@@ -117,7 +117,7 @@ public:
 
     // These are adequately documented elsewhere.
     virtual bool operator==( const Variable &rhs ) const override;
-    virtual std::shared_ptr<Variable> cloneVariable( const std::string &name ) const override;
+    virtual std::shared_ptr<Variable> clone( const std::string &name ) const override;
     virtual void setUnits( const Units &units ) override;
 
 public: // Functions inherited from Variable

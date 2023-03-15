@@ -113,7 +113,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr res = f->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr res = f->clone();
 
     // z is only used if there is preconditioning
     AMP::LinearAlgebra::Vector::shared_ptr z;
@@ -121,9 +121,9 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     AMP::LinearAlgebra::Vector::shared_ptr z1;
 
     if ( d_bUsesPreconditioner ) {
-        z = f->cloneVector();
+        z = f->clone();
         if ( d_preconditioner_side == "right" ) {
-            z1 = f->cloneVector();
+            z1 = f->clone();
         }
     }
 
@@ -167,7 +167,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             v = d_vBasis[k + 1];
         } else {
             // clone off of the rhs to create a new basis vector
-            v = f->cloneVector();
+            v = f->clone();
             d_vBasis.push_back( v );
         }
 

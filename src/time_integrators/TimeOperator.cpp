@@ -78,7 +78,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
         AMP_ASSERT( d_pFunctionScaling );
 
         if ( !d_pScratchSolVector ) {
-            d_pScratchSolVector = u_in->cloneVector();
+            d_pScratchSolVector = u_in->clone();
         }
 
         d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
@@ -99,7 +99,7 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
     } else {
 
         if ( !d_pScratchVector ) {
-            d_pScratchVector = r->cloneVector();
+            d_pScratchVector = r->clone();
             d_pScratchVector->zero();
         }
 
@@ -164,7 +164,7 @@ TimeOperator::getParameters( const std::string &type,
         AMP_ASSERT( d_pFunctionScaling );
 
         if ( !d_pScratchSolVector ) {
-            d_pScratchSolVector = u_in->cloneVector();
+            d_pScratchSolVector = u_in->clone();
         }
 
         d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );

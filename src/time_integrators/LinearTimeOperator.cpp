@@ -67,7 +67,7 @@ void LinearTimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorPar
         // if it's not okay to modify the rhs matrix then copy it over
         if ( !d_matrix ) {
             AMP_INSIST( pMatrix, "ERROR: NULL matrix pointer" );
-            d_matrix = pMatrix->cloneMatrix();
+            d_matrix = pMatrix->clone();
             AMP_INSIST( d_matrix, "ERROR: NULL matrix pointer" );
         }
 

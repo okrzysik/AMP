@@ -53,8 +53,8 @@ void TimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> param
     AMP_ASSERT( d_ic_vector );
 
     // for now the solution is set to the initial conditions
-    //    d_solution_vector = d_ic_vector->cloneVector( "current solution" );
-    d_solution_vector = d_ic_vector->cloneVector();
+    //    d_solution_vector = d_ic_vector->clone( "current solution" );
+    d_solution_vector = d_ic_vector->clone();
     d_solution_vector->copyVector( d_ic_vector );
 
     d_pSourceTerm = parameters->d_pSourceTerm;

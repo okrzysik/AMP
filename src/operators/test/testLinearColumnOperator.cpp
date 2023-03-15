@@ -134,8 +134,8 @@ static void myTest( AMP::UnitTest *ut )
                     solVec->addVector(
                         AMP::LinearAlgebra::createVector( dofMapVec[iv], inputVariables[iv] ) );
             }
-            auto rhsVec = solVec->cloneVector();
-            auto resVec = solVec->cloneVector();
+            auto rhsVec = solVec->clone();
+            auto resVec = solVec->clone();
 
             for ( int iv = 0; iv < nVars; iv++ ) {
                 auto opVar = inputVariables[iv];

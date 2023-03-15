@@ -208,7 +208,7 @@ static void applyCustomDirichletCondition(
         char xyz[]   = "xyz";
         size_t count = 0;
         std::vector<double> coord;
-        auto dir = rhs->cloneVector();
+        auto dir = rhs->clone();
         dir->zero();
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
             AMP_ASSERT( ( meshAdapter->getElement( it->first ) ).isOnSurface() );
@@ -629,13 +629,13 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
                    bool verbose     = false,
                    std::ostream &os = std::cout )
 {
-    auto res    = sol->cloneVector();
-    auto dir    = sol->cloneVector();
-    auto ext    = sol->cloneVector();
-    auto oldSol = sol->cloneVector();
-    auto oldRes = sol->cloneVector();
-    auto oldDir = sol->cloneVector();
-    auto matVec = sol->cloneVector();
+    auto res    = sol->clone();
+    auto dir    = sol->clone();
+    auto ext    = sol->clone();
+    auto oldSol = sol->clone();
+    auto oldRes = sol->clone();
+    auto oldDir = sol->clone();
+    auto matVec = sol->clone();
     auto nullVec;
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );

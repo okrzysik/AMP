@@ -541,7 +541,7 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     double initialResNorm = 0., finalResNorm = 0.;
 
     if ( computeResidual ) {
-        r = f->cloneVector();
+        r = f->clone();
         d_pOperator->residual( f, u, r );
         initialResNorm = static_cast<double>( r->L2Norm() );
 

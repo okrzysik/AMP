@@ -24,7 +24,7 @@ CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
         AMP_ASSERT( d_subchannelPhysicsModel != nullptr );
     }
     if ( d_subchannelTemperature ) {
-        d_subchannelDensity = d_subchannelTemperature->cloneVector();
+        d_subchannelDensity = d_subchannelTemperature->clone();
         std::shared_ptr<AMP::LinearAlgebra::Variable> densityVariable(
             new AMP::LinearAlgebra::Variable( "Density" ) );
         d_subchannelDensity->setVariable( densityVariable );

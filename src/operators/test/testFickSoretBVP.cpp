@@ -116,8 +116,8 @@ static void bvpTest1( AMP::UnitTest *ut, const std::string &exeName )
     multivector->addVector( AMP::LinearAlgebra::createVector( nodalDofMap, cVar ) );
     multivector->addVector( AMP::LinearAlgebra::createVector( nodalDofMap, tVar ) );
     auto solVec = std::dynamic_pointer_cast<AMP::LinearAlgebra::Vector>( multivector );
-    auto rhsVec = solVec->cloneVector();
-    auto resVec = solVec->cloneVector();
+    auto rhsVec = solVec->clone();
+    auto resVec = solVec->clone();
 
     // set default values of input variables
     auto inConcVec = solVec->subsetVectorForVariable( cVar );

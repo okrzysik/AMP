@@ -73,9 +73,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechNlSolVec       = AMP::LinearAlgebra::createVector( dofMap, var, true );
-    auto mechNlRhsVec       = mechNlSolVec->cloneVector();
-    auto mechNlResVec       = mechNlSolVec->cloneVector();
-    auto mechNlScaledRhsVec = mechNlSolVec->cloneVector();
+    auto mechNlRhsVec       = mechNlSolVec->clone();
+    auto mechNlResVec       = mechNlSolVec->clone();
+    auto mechNlScaledRhsVec = mechNlSolVec->clone();
 
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );

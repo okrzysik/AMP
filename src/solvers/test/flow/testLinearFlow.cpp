@@ -90,7 +90,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         AMP::LinearAlgebra::MultiVector::create( "globalSolVec", manager->getComm() );
     globalSolVec->addVector( AMP::LinearAlgebra::createVector( DOF_scalar, pressureVar ) );
     globalSolVec->addVector( AMP::LinearAlgebra::createVector( DOF_vector, velocityVar ) );
-    auto globalRhsVec = globalSolVec->cloneVector( "globalRhsVec" );
+    auto globalRhsVec = globalSolVec->clone( "globalRhsVec" );
 
     // Get the matrices
     auto FMat  = ConsMomentumOperator->getMatrix();
@@ -131,14 +131,14 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     convdiffSolver->setZeroInitialGuess( false );
 
     auto diagonalVec    = FMat->extractDiagonal();
-    auto diagonalInvVec = diagonalVec->cloneVector();
+    auto diagonalInvVec = diagonalVec->clone();
     diagonalInvVec->reciprocal( *diagonalVec );
 
-    auto DMat = FMat->cloneMatrix();
+    auto DMat = FMat->clone();
     DMat->zero();
     DMat->setDiagonal( diagonalVec );
 
-    auto DInvMat = FMat->cloneMatrix();
+    auto DInvMat = FMat->clone();
     DInvMat->zero();
     DInvMat->setDiagonal( diagonalInvVec );
 
@@ -166,10 +166,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto velocitySolVec = globalSolVec->subsetVectorForVariable( velocityVar );
     auto pressureSolVec = globalSolVec->subsetVectorForVariable( pressureVar );
 
-    auto pressureUpdateVec = pressureSolVec->cloneVector();
-    auto velocityUpdateVec = velocitySolVec->cloneVector();
+    auto pressureUpdateVec = pressureSolVec->clone();
+    auto velocityUpdateVec = velocitySolVec->clone();
 
-    auto velocityPrimeVec = velocitySolVec->cloneVector();
+    auto velocityPrimeVec = velocitySolVec->clone();
 
     // SIMPLE(Semi Implicit Method for Pressure Linked Equations) ALGORITHM
 

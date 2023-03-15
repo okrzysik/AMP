@@ -49,7 +49,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
-    auto resVec = solVec->cloneVector();
+    auto resVec = solVec->clone();
 
     solVec->setToScalar( 5.0 );
 

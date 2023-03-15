@@ -91,7 +91,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     }
 
     // residual vector
-    auto r0 = f->cloneVector();
+    auto r0 = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -124,31 +124,31 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
     T theta   = 0.0;
     auto rho1 = tau * tau;
 
-    auto p = f->cloneVector();
+    auto p = f->clone();
     p->copyVector( r0 );
 
-    auto v = f->cloneVector();
+    auto v = f->clone();
     v->zero();
 
-    auto d = f->cloneVector();
+    auto d = f->clone();
     d->zero();
 
-    auto d2 = f->cloneVector();
+    auto d2 = f->clone();
     d2->zero();
 
-    auto r = f->cloneVector();
+    auto r = f->clone();
     r->zero();
 
-    auto s = f->cloneVector();
+    auto s = f->clone();
     s->zero();
 
-    auto t = f->cloneVector();
+    auto t = f->clone();
     t->zero();
 
-    auto z = f->cloneVector();
+    auto z = f->clone();
     z->zero();
 
-    auto x2 = f->cloneVector();
+    auto x2 = f->clone();
     x2->zero();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {

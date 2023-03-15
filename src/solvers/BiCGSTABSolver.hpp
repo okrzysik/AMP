@@ -98,7 +98,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr res = f->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr res = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -136,11 +136,11 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     // r_tilde is a non-zero initial direction chosen to be r
     std::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
     // traditional choice is the initial residual
-    r_tilde = res->cloneVector();
+    r_tilde = res->clone();
     r_tilde->copyVector( res );
 
-    auto p = res->cloneVector();
-    auto v = res->cloneVector();
+    auto p = res->clone();
+    auto v = res->clone();
     p->zero();
     v->zero();
 
@@ -177,7 +177,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
 
         if ( !p_hat ) {
-            p_hat = u->cloneVector();
+            p_hat = u->clone();
             p_hat->zero();
         }
 
@@ -195,7 +195,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         alpha = rho[1] / alpha;
 
         if ( !s ) {
-            s = res->cloneVector();
+            s = res->clone();
         }
         s->axpy( -alpha, *v, *res );
 
@@ -209,7 +209,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
 
         if ( !s_hat ) {
-            s_hat = u->cloneVector();
+            s_hat = u->clone();
             s_hat->zero();
         }
 
@@ -222,7 +222,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
 
         if ( !t ) {
-            t = res->cloneVector();
+            t = res->clone();
         }
         d_pOperator->apply( s_hat, t );
 

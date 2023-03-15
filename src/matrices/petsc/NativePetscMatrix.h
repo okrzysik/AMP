@@ -51,7 +51,7 @@ public:
     void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     void multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
 
-    shared_ptr cloneMatrix() const override;
+    shared_ptr clone() const override;
 
 
     Vector::shared_ptr getRightVector() const override;

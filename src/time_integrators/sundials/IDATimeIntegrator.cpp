@@ -53,7 +53,7 @@ void IDATimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> pa
     getFromInput( parameters->d_db );
 
     auto params      = std::dynamic_pointer_cast<IDATimeIntegratorParameters>( parameters );
-    d_solution_prime = ( params->d_ic_vector_prime )->cloneVector();
+    d_solution_prime = ( params->d_ic_vector_prime )->clone();
     d_solution_prime->copyVector( params->d_ic_vector_prime );
 
     d_pPreconditioner = params->d_pPreconditioner;
@@ -200,7 +200,7 @@ void IDATimeIntegrator::reset( std::shared_ptr<const TimeIntegratorParameters> p
 void IDATimeIntegrator::setupVectors()
 {
     // clone vectors so they have the same data layout as d_solution_vector
-    d_residual = d_solution_vector->cloneVector();
+    d_residual = d_solution_vector->clone();
     // Set initial value of vectors to 0.
     d_residual->setToScalar( (double) 0.0 );
 }

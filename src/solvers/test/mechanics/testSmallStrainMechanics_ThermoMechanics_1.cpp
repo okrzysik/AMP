@@ -88,10 +88,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempVec      = AMP::LinearAlgebra::createVector( scalarDofMap, tempVar, true );
     auto burnVec      = AMP::LinearAlgebra::createVector( scalarDofMap, burnVar, true );
     auto lhgrVec      = AMP::LinearAlgebra::createVector( scalarDofMap, lhgrVar, true );
-    auto rhsVec       = solVec->cloneVector();
-    auto resVec       = solVec->cloneVector();
-    auto scaledRhsVec = solVec->cloneVector();
-    auto tempVecRef   = tempVec->cloneVector();
+    auto rhsVec       = solVec->clone();
+    auto resVec       = solVec->clone();
+    auto scaledRhsVec = solVec->clone();
+    auto tempVecRef   = tempVec->clone();
 
     // Initial guess
     solVec->zero();

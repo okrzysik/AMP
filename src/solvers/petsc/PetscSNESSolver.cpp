@@ -314,8 +314,8 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         // to guard against the possibility of two consecutive solves having
         // different vector types (see the test testPetscSNESSolver)
         auto r            = spv->getManagedVec();
-        d_pResidualVector = r->cloneVector();
-        d_pScratchVector  = d_pResidualVector->cloneVector();
+        d_pResidualVector = r->clone();
+        d_pScratchVector  = d_pResidualVector->clone();
     }
 
     AMP_ASSERT( d_pResidualVector );

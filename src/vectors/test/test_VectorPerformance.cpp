@@ -123,10 +123,10 @@ test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
     test_times times;
     // Test the performance of clone
     auto t1     = std::chrono::steady_clock::now();
-    auto vec2   = vec->cloneVector();
+    auto vec2   = vec->clone();
     auto t2     = std::chrono::steady_clock::now();
     times.clone = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
-    auto vec3   = vec->cloneVector();
+    auto vec3   = vec->clone();
     vec2->setRandomValues();
     vec3->setRandomValues();
     // Run the tests

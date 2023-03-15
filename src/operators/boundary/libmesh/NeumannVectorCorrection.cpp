@@ -123,7 +123,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
     auto gammaValue = ( d_params->d_db )->getWithDefault<double>( "gamma", 1.0 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal            = myRhs->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal            = myRhs->clone();
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager = rInternal->getDOFManager();
     rInternal->zero();
 

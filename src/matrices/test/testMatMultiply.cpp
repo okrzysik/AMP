@@ -59,7 +59,7 @@ void myTest( AMP::UnitTest *ut, std::string mesh_file )
     auto mat1 = AMP::LinearAlgebra::createMatrix( vec1, vec1 );
     mat1->zero();
     mat1->setDiagonal( vec1 );
-    auto mat2 = mat1->cloneMatrix();
+    auto mat2 = mat1->clone();
     mat2->zero();
     mat2->setDiagonal( vec1 );
 

@@ -130,7 +130,7 @@ void NonlinearKrylovAccelerator<T>::initialize(
     std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
 {
     AMP_ASSERT( params->d_vectors.size() > 0 );
-    d_solution_vector = params->d_vectors[0]->cloneVector();
+    d_solution_vector = params->d_vectors[0]->clone();
     d_solution_vector->setToScalar( 0.0 );
 
     d_solution_vector->makeConsistent(
@@ -143,17 +143,17 @@ void NonlinearKrylovAccelerator<T>::initialize(
         d_v.resize( n );
 
         for ( int j = 0; j < n; j++ ) {
-            d_v[j] = d_solution_vector->cloneVector();
+            d_v[j] = d_solution_vector->clone();
         }
 
         d_w.resize( n );
 
         for ( int j = 0; j < n; j++ ) {
-            d_w[j] = d_solution_vector->cloneVector();
+            d_w[j] = d_solution_vector->clone();
         }
 
-        d_residual_vector   = d_solution_vector->cloneVector();
-        d_correction_vector = d_solution_vector->cloneVector();
+        d_residual_vector   = d_solution_vector->clone();
+        d_correction_vector = d_solution_vector->clone();
 
         d_solver_initialized = true;
     }

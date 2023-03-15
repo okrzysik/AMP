@@ -41,8 +41,8 @@ void VectorTests::InstantiateVector( AMP::UnitTest *ut )
 void VectorTests::CopyVectorConsistency( AMP::UnitTest *ut )
 {
     auto vec1        = d_factory->getVector();
-    auto vec2        = vec1->cloneVector();
-    auto vec3        = vec1->cloneVector();
+    auto vec2        = vec1->clone();
+    auto vec3        = vec1->clone();
     auto commList    = vec1->getCommunicationList();
     double *t1       = nullptr;
     double *t2       = nullptr;
@@ -79,7 +79,7 @@ void VectorTests::Bug_728( AMP::UnitTest *ut )
     auto var1   = vector->getVariable();
     if ( !var1 )
         return;
-    auto var2 = var1->cloneVariable( var1->getName() );
+    auto var2 = var1->clone( var1->getName() );
     PASS_FAIL( vector->subsetVectorForVariable( var1 ), "Found vector for same variable" );
     PASS_FAIL( vector->subsetVectorForVariable( var2 ), "Found vector for cloned variable" );
 }
@@ -168,7 +168,7 @@ void VectorTests::SetToScalarVector( AMP::UnitTest *ut )
 void VectorTests::CloneVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
-    auto clone  = vector->cloneVector( "cloned vector" );
+    auto clone  = vector->clone( "cloned vector" );
     vector->setToScalar( 3.0 );
     clone->setToScalar( 0.0 );
     ut->passes( "Clone created " + d_factory->name() );
@@ -234,7 +234,7 @@ void VectorTests::L2NormVector( AMP::UnitTest *ut )
 void VectorTests::AbsVector( AMP::UnitTest *ut )
 {
     auto vec1 = d_factory->getVector();
-    auto vec2 = vec1->cloneVector();
+    auto vec2 = vec1->clone();
     vec1->setRandomValues();
     vec2->copyVector( vec1 );
     vec2->scale( -1.0 );

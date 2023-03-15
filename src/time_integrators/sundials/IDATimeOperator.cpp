@@ -29,7 +29,7 @@ void IDATimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
                              AMP::LinearAlgebra::Vector::shared_ptr r )
 {
     if ( d_cloningHappened == 0 ) {
-        d_pScratchVector = r->cloneVector();
+        d_pScratchVector = r->clone();
         d_pScratchVector->zero();
         d_cloningHappened = true;
     }

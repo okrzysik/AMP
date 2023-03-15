@@ -72,8 +72,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName, in
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     auto mechSolVec =
         AMP::LinearAlgebra::createVector( DOF_vector, bvpOperator->getOutputVariable(), true );
-    auto mechRhsVec = mechSolVec->cloneVector();
-    auto mechResVec = mechSolVec->cloneVector();
+    auto mechRhsVec = mechSolVec->clone();
+    auto mechResVec = mechSolVec->clone();
 
     mechSolVec->setToScalar( 0.5 );
     mechRhsVec->setToScalar( 0.0 );

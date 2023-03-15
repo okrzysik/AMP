@@ -71,7 +71,7 @@ void myTest( AMP::UnitTest *ut )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec = AMP::LinearAlgebra::createVector( nodalDofMap, bvpOperator->getOutputVariable() );
-    auto rhsVec = solVec->cloneVector();
+    auto rhsVec = solVec->clone();
 
     solVec->setRandomValues();
     bvpOperator->apply( solVec, rhsVec );

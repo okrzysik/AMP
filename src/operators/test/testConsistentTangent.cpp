@@ -73,11 +73,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec       = AMP::LinearAlgebra::createVector( dofMap, var, true );
-    auto resVecNonlin = solVec->cloneVector();
-    auto resVecLin    = solVec->cloneVector();
-    auto resDiffVec   = solVec->cloneVector();
-    auto tmpNonlinVec = solVec->cloneVector();
-    auto tmpLinVec    = solVec->cloneVector();
+    auto resVecNonlin = solVec->clone();
+    auto resVecLin    = solVec->clone();
+    auto resDiffVec   = solVec->clone();
+    auto tmpNonlinVec = solVec->clone();
+    auto tmpLinVec    = solVec->clone();
 
     solVec->setToScalar( 0.0 );
     double solNorm = static_cast<double>( solVec->L2Norm() );

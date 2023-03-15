@@ -584,7 +584,7 @@ static inline bool verifyMemory( Vec in, Vec out )
 PetscErrorCode _AMP_duplicate( Vec in, Vec *out )
 {
     auto p = getAMP( in );
-    *out   = getVec( p->cloneVector() );
+    *out   = getVec( p->clone() );
     AMP_ASSERT( verifyMemory( in, *out ) );
     return 0;
 }

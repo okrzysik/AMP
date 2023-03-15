@@ -379,9 +379,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
-    auto absErrorVec = solVec->cloneVector();
+    auto absErrorVec = solVec->clone();
     absErrorVec->axpy( -1.0, *solVec, *manufacturedVec );
-    auto relErrorVec = solVec->cloneVector();
+    auto relErrorVec = solVec->clone();
     relErrorVec->divide( *absErrorVec, *manufacturedVec );
     for ( size_t i = 0; i < solVec->getLocalSize(); i++ ) {
         if ( manufacturedVec->getValueByLocalID( i ) == 0 ) {

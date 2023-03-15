@@ -139,7 +139,7 @@ void GaussPointToGaussPointMap::createIdxMap(
         submesh, AMP::Mesh::GeomType::Face, 0, dofsPerElem, true );
 
     auto inVec  = AMP::LinearAlgebra::createVector( dofMap, variable );
-    auto outVec = inVec->cloneVector();
+    auto outVec = inVec->clone();
 
     std::vector<size_t> localDofs( dofsPerElem );
     for ( auto &_i : d_sendList ) {

@@ -98,13 +98,13 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
                    bool verbose     = false,
                    std::ostream &os = std::cout )
 {
-    auto res    = sol->cloneVector();
-    auto dir    = sol->cloneVector();
-    auto ext    = sol->cloneVector();
-    auto oldSol = sol->cloneVector();
-    auto oldRes = sol->cloneVector();
-    auto oldDir = sol->cloneVector();
-    auto matVec = sol->cloneVector();
+    auto res    = sol->clone();
+    auto dir    = sol->clone();
+    auto ext    = sol->clone();
+    auto oldSol = sol->clone();
+    auto oldRes = sol->clone();
+    auto oldDir = sol->clone();
+    auto matVec = sol->clone();
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );

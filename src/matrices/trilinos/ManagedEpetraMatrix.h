@@ -90,7 +90,7 @@ public:
 
     void makeConsistent() override;
     double L1Norm() const override;
-    std::shared_ptr<Matrix> cloneMatrix() const override;
+    std::shared_ptr<Matrix> clone() const override;
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;

@@ -61,9 +61,9 @@ void AMP::LinearAlgebra::VectorTests::test_VS_ByVariableName( AMP::UnitTest *ut 
 {
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     auto vec1  = d_factory->getVector();
-    auto vec2  = vec1->cloneVector( "vec2" );
-    auto vec3a = vec1->cloneVector( "vec3" );
-    auto vec3b = vec1->cloneVector( "vec3" );
+    auto vec2  = vec1->clone( "vec2" );
+    auto vec3a = vec1->clone( "vec3" );
+    auto vec3b = vec1->clone( "vec3" );
     auto vec3  = AMP::LinearAlgebra::MultiVector::create( "multivec", globalComm );
     vec3->addVector( vec2 );
     vec3->addVector( vec3a );

@@ -83,7 +83,7 @@ void TrilinosLinearOP::applyImpl( const Thyra::EOpTransp M_trans,
     for ( size_t i = 0; i < x.size(); i++ ) {
         if ( d_operator != nullptr ) {
             // Apply the AMP::Operator to compute f = OP(M)*X
-            AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->cloneVector();
+            AMP::LinearAlgebra::Vector::shared_ptr f = y[i]->clone();
             d_operator->apply( x[i], f );
             // Compute Y = alpha*OP(M)*X + beta*Y
             y[i]->axpby( alpha, beta, *f );

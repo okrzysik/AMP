@@ -312,7 +312,7 @@ std::unique_ptr<Vector> MultiVector::rawClone( const std::shared_ptr<Variable> n
     retVec->setCommunicationList( getCommunicationList() );
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
+        retVec->d_vVectors[i] = d_vVectors[i]->clone();
     retVec->resetVectorData();
     retVec->resetVectorOperations();
     return retVec;

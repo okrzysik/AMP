@@ -30,7 +30,7 @@ void RowOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     rOriginal->zero();
 
     for ( unsigned int i = 0; i < d_Operators.size(); i++ ) {
-        rInternal[i] = rOriginal->cloneVector();
+        rInternal[i] = rOriginal->clone();
         rInternal[i]->zero();
         d_Operators[i]->apply( u, rInternal[i] );
         rInternal[i]->scale( scalea[i] );

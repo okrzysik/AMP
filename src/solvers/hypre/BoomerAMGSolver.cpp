@@ -551,7 +551,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     std::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
     if ( d_bComputeResidual ) {
-        r = f->cloneVector();
+        r = f->clone();
         d_pOperator->residual( f, u, r );
         const auto initialResNorm = r->L2Norm();
 

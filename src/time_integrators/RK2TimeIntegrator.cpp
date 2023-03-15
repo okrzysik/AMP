@@ -73,9 +73,9 @@ void RK2TimeIntegrator::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
-    d_new_solution = d_solution_vector->cloneVector();
-    d_k1_vec       = d_solution_vector->cloneVector();
-    d_k2_vec       = d_solution_vector->cloneVector();
+    d_new_solution = d_solution_vector->clone();
+    d_k1_vec       = d_solution_vector->clone();
+    d_k2_vec       = d_solution_vector->clone();
 
     /*
      * Set initial value of vectors to 0.

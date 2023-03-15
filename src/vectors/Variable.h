@@ -78,7 +78,7 @@ public:
      * \details This function will create a "deep" copy of this variable.
      * \param  name  The name of the new variable
      */
-    virtual std::shared_ptr<Variable> cloneVariable( const std::string &name ) const;
+    virtual std::shared_ptr<Variable> clone( const std::string &name ) const;
 
 
     /** \brief  Create a VectorSelector

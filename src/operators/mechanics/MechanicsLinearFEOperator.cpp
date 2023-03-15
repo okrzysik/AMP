@@ -93,7 +93,7 @@ void MechanicsLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParam
         AMP_INSIST( params, "NULL params" );
 
         if ( !d_dispVec && !params->d_dispVec ) {
-            d_dispVec = ( params->d_dispVec )->cloneVector();
+            d_dispVec = ( params->d_dispVec )->clone();
         }
         if ( d_dispVec ) {
             if ( params->d_dispVec ) {
