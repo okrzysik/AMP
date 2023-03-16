@@ -98,7 +98,7 @@ void BDFIntegrator::integratorSpecificInitialize( void )
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> vecs;
 
     for ( size_t i = 0u; i < d_vector_names.size(); ++i ) {
-        auto vec = d_solution_vector->cloneVector();
+        auto vec = d_solution_vector->clone();
         vec->zero();
         vecs.push_back( vec );
     }
@@ -145,7 +145,7 @@ void BDFIntegrator::integratorSpecificInitialize( void )
         }
     }
 
-    d_scratch_vector = d_solution_vector->cloneVector();
+    d_scratch_vector = d_solution_vector->clone();
     d_scratch_vector->zero();
 
     auto params = std::make_shared<AMP::Solver::SolverStrategyParameters>();
@@ -1573,7 +1573,7 @@ void BDFIntegrator::calculateTemporalTruncationError()
         double errorFactor = 0.0;
 
         if ( d_scratch_vector.get() == nullptr ) {
-            d_scratch_vector = d_solution_vector->cloneVector();
+            d_scratch_vector = d_solution_vector->clone();
         }
 
         // debugging
@@ -1929,7 +1929,7 @@ int BDFIntegrator::integratorSpecificAdvanceSolution(
 
     setInitialGuess( first_step, d_current_time, d_current_dt, d_old_dt );
 
-    auto rhs = in->cloneVector();
+    auto rhs = in->clone();
     rhs->scale( -1.0, *d_integrator_source_vector );
 
     if ( d_solution_scaling ) {

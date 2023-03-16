@@ -525,12 +525,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         tempDofManager, std::make_shared<AMP::LinearAlgebra::Variable>( "sigma_xy" ), split );
     auto sigma_eff = AMP::LinearAlgebra::createVector(
         tempDofManager, std::make_shared<AMP::LinearAlgebra::Variable>( "sigma_eff" ), split );
-    auto activeSetBeforeUpdateVec = sigma_eff->cloneVector();
-    auto activeSetAfterUpdateVec  = sigma_eff->cloneVector();
-    auto contactPressureVec       = sigma_eff->cloneVector();
-    auto surfaceTractionVec       = columnSolVec->cloneVector();
-    auto normalVectorVec          = columnSolVec->cloneVector();
-    auto contactShiftVec          = columnSolVec->cloneVector();
+    auto activeSetBeforeUpdateVec = sigma_eff->clone();
+    auto activeSetAfterUpdateVec  = sigma_eff->clone();
+    auto contactPressureVec       = sigma_eff->clone();
+    auto surfaceTractionVec       = columnSolVec->clone();
+    auto normalVectorVec          = columnSolVec->clone();
+    auto contactShiftVec          = columnSolVec->clone();
     contactPressureVec->zero();
     surfaceTractionVec->zero();
     normalVectorVec->zero();

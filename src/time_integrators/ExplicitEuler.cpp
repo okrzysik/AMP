@@ -72,8 +72,8 @@ void ExplicitEuler::setupVectors()
 {
 
     // clone vectors so they have the same data layout as d_solution_vector
-    d_new_solution = d_solution_vector->cloneVector( "new solution" );
-    d_f_vec        = d_solution_vector->cloneVector( "f term" );
+    d_new_solution = d_solution_vector->clone( "new solution" );
+    d_f_vec        = d_solution_vector->clone( "f term" );
 
     /*
      * Set initial value of vectors to 0.

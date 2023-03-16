@@ -13,7 +13,7 @@ Variable::Variable( const std::string &name ) : d_VariableName( name ) {}
 Variable::~Variable() = default;
 
 
-std::shared_ptr<Variable> Variable::cloneVariable( const std::string &name ) const
+std::shared_ptr<Variable> Variable::clone( const std::string &name ) const
 {
     return std::make_shared<Variable>( name );
 }

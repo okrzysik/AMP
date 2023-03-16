@@ -32,8 +32,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the solution and function variables
     auto var   = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto u     = AMP::LinearAlgebra::createSimpleVector<double>( 25, var, solverComm );
-    auto f     = u->cloneVector();
-    auto icVec = u->cloneVector();
+    auto f     = u->clone();
+    auto icVec = u->clone();
 
     // Create the operator
     auto op = std::make_shared<AMP::Operator::IdentityOperator>();
@@ -62,7 +62,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     f->setRandomValues();
     nonlinearSolver->apply( f, u );
     ut->passes( "TrilinosNOXSolver solve called with simple vector" );
-    auto x = u->cloneVector();
+    auto x = u->clone();
     x->subtract( *u, *f );
     auto x_norm  = static_cast<double>( x->L2Norm() );
     auto f_norm  = static_cast<double>( f->L2Norm() );

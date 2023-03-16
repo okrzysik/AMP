@@ -947,13 +947,13 @@ void meshTests::DisplaceMeshVector( AMP::UnitTest &ut, std::shared_ptr<AMP::Mesh
     // Get the position of the nodes
     auto posVec1 = mesh->getPositionVector( "pos_before" );
     // Displace the mesh
-    auto dispVec = posVec1->cloneVector( "displ" );
+    auto dispVec = posVec1->clone( "displ" );
     dispVec->copyVector( posVec1 );
     dispVec->scale( 1e-3 );
     mesh->displaceMesh( dispVec );
     // Get the new positions
     auto posVec2 = mesh->getPositionVector( "pos_after" );
-    auto diff    = dispVec->cloneVector( "diff" );
+    auto diff    = dispVec->clone( "diff" );
     diff->subtract( *posVec2, *posVec1 );
     if ( diff->equals( *dispVec ) )
         ut.passes( "displacement successfully applied" );

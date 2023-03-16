@@ -151,10 +151,10 @@ static void myTest( AMP::UnitTest *ut )
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, split );
-        auto rhsVec = solVec->cloneVector();
-        auto resVec = solVec->cloneVector();
-        auto dirVec = solVec->cloneVector();
-        auto corVec = solVec->cloneVector();
+        auto rhsVec = solVec->clone();
+        auto resVec = solVec->clone();
+        auto dirVec = solVec->clone();
+        auto corVec = solVec->clone();
 
         solVec->zero();
         rhsVec->zero();

@@ -27,7 +27,7 @@ std::shared_ptr<AMP::LinearAlgebra::Variable>
 FlowFrapconJacobian::createInputVariable( const std::string &name, int varId )
 {
     (void) varId;
-    return d_inpVariable->cloneVariable( name );
+    return d_inpVariable->clone( name );
 }
 
 
@@ -35,7 +35,7 @@ std::shared_ptr<AMP::LinearAlgebra::Variable>
 FlowFrapconJacobian::createOutputVariable( const std::string &name, int varId )
 {
     (void) varId;
-    return d_outVariable->cloneVariable( name );
+    return d_outVariable->clone( name );
 }
 
 

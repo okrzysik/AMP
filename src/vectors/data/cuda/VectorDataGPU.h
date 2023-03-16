@@ -127,11 +127,10 @@ public: // Advanced virtual functions
      */
     size_t sizeofDataBlockType( size_t i ) const override;
 
-    /** \brief Is the data of the given type
-     * \param hash     The hash code: typeid(myint).hash_code()
+    /** \brief Return the typeid of the given block
      * \param block    The block id to check
      */
-    bool isType( const typeID &id, size_t block ) const override;
+    typeID getType( size_t i ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with

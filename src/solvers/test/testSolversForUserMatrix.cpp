@@ -155,10 +155,10 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
-    auto f  = ampVector->cloneVector();
-    auto u  = ampVector->cloneVector();
-    auto ri = ampVector->cloneVector();
-    auto rf = ampVector->cloneVector();
+    auto f  = ampVector->clone();
+    auto u  = ampVector->clone();
+    auto ri = ampVector->clone();
+    auto rf = ampVector->clone();
 
     f->zero();
     u->setRandomValues();

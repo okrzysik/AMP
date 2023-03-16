@@ -46,7 +46,7 @@ std::shared_ptr<Matrix> DenseSerialMatrix::transpose() const
     }
     return newMatrix;
 }
-std::shared_ptr<Matrix> DenseSerialMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> DenseSerialMatrix::clone() const
 {
     // Create the matrix parameters
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(

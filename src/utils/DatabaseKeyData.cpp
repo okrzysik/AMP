@@ -78,7 +78,7 @@ EquationKeyData::EquationKeyData( std::string_view eq, const Units &unit ) : Key
     std::vector<std::string> vars;
     if ( !eq_var.empty() ) {
         for ( size_t i = 0; i < eq_var.size(); ) {
-            size_t j = std::min( eq_var.find( ',' ), eq_var.size() );
+            size_t j = std::min( eq_var.find( ',', i ), eq_var.size() );
             vars.emplace_back( deblank( eq_var.substr( i, j - i ) ) );
             i = j + 1;
         }

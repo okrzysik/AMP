@@ -177,8 +177,8 @@ static void myTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
         auto mechNlSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
-        auto mechNlRhsVec = mechNlSolVec->cloneVector();
-        auto mechNlResVec = mechNlSolVec->cloneVector();
+        auto mechNlRhsVec = mechNlSolVec->clone();
+        auto mechNlResVec = mechNlSolVec->clone();
 
         mechNlRhsVec->setToScalar( 0.0 );
         dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );

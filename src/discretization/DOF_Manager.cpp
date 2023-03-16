@@ -245,7 +245,7 @@ template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::DataStoreType(
     const std::string &name,
     std::shared_ptr<const AMP::Discretization::DOFManager> data,
-    RestartManager *manager )
+    RestartManager * )
     : d_data( data )
 {
     d_name = name;

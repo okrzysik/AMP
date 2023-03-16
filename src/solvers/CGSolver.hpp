@@ -88,7 +88,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     std::shared_ptr<AMP::LinearAlgebra::Vector> z;
 
     // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr r = f->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr r = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -106,7 +106,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         return;
     }
 
-    z = u->cloneVector();
+    z = u->clone();
 
     // apply the preconditioner if it exists
     if ( d_bUsesPreconditioner ) {
@@ -119,8 +119,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     rho[1] = static_cast<T>( z->dot( *r ) );
     rho[0] = rho[1];
 
-    auto p = z->cloneVector();
-    auto w = r->cloneVector();
+    auto p = z->clone();
+    auto w = r->clone();
     p->copyVector( z );
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {

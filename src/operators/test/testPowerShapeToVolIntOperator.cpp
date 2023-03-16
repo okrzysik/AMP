@@ -62,7 +62,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
 
     // Create input and output vectors associated with the Variable.
     auto shapeInpVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, shapeVar, split );
-    auto shapeOutVec = shapeInpVec->cloneVector();
+    auto shapeOutVec = shapeInpVec->clone();
 
     shapeInpVec->setToScalar( 1. );
 

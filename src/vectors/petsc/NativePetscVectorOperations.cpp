@@ -78,9 +78,13 @@ void NativePetscVectorOperations::copy( const VectorData &x, VectorData &y )
 {
     auto nx = getNativeVec( x );
     auto ny = getNativeVec( y );
-    ny->resetArray();
-    VecCopy( nx->getVec(), ny->getVec() );
-    y.copyGhostValues( x );
+    if ( nx && ny ) {
+        ny->resetArray();
+        VecCopy( nx->getVec(), ny->getVec() );
+        y.copyGhostValues( x );
+    } else {
+        VectorOperationsDefault<double>().copy( x, y );
+    }
 }
 
 void NativePetscVectorOperations::zero( VectorData &x ) { VecZeroEntries( getPetscVec( x ) ); }

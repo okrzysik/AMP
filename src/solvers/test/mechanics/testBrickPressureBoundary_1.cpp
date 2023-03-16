@@ -93,10 +93,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
     auto mechNlSolVec = AMP::LinearAlgebra::createVector( nodalDofMap, displacementVariable, true );
-    auto mechNlRhsVec = mechNlSolVec->cloneVector();
-    auto mechNlResVec = mechNlSolVec->cloneVector();
-    auto mechNlScaledRhsVec = mechNlSolVec->cloneVector();
-    auto mechPressureVec    = mechNlSolVec->cloneVector();
+    auto mechNlRhsVec = mechNlSolVec->clone();
+    auto mechNlResVec = mechNlSolVec->clone();
+    auto mechNlScaledRhsVec = mechNlSolVec->clone();
+    auto mechPressureVec    = mechNlSolVec->clone();
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions
     mechNlSolVec->setToScalar( 0.0 );

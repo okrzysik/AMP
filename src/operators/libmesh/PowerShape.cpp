@@ -641,8 +641,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             auto nodalVariable = std::make_shared<AMP::LinearAlgebra::Variable>( "Temperature" );
             auto nodalVector =
                 AMP::LinearAlgebra::createVector( nodalDofMap, nodalVariable, split );
-            auto unodalPower = nodalVector->cloneVector();
-            auto rnodalPower = nodalVector->cloneVector();
+            auto unodalPower = nodalVector->clone();
+            auto rnodalPower = nodalVector->clone();
 
             volumeIntegralOperator->apply( u, unodalPower );
             volumeIntegralOperator->apply( r, rnodalPower );

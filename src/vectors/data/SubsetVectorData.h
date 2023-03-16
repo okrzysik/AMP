@@ -75,9 +75,8 @@ public:
     void getValuesByLocalID( size_t, const size_t *, void *, const typeID & ) const override;
     void putRawData( const void *in, const typeID &id ) override;
     void getRawData( void *out, const typeID &id ) const override;
-
+    typeID getType( size_t ) const override { return d_typeID; }
     uint64_t getDataID() const override { return d_ViewVector->getDataID(); }
-    bool isType( const typeID &id, size_t ) const override { return id == getTypeID<double>(); }
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     void swapData( VectorData & ) override;
     std::shared_ptr<VectorData> cloneData() const override;

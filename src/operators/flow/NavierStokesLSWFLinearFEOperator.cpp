@@ -77,7 +77,7 @@ void NavierStokesLSWFLinearFEOperator::preAssembly(
             AMP::LinearAlgebra::Vector::shared_ptr vector = mySubsetVector(params->d_frozenVec[i],
        var);
             if((d_inVec[i].get() == NULL) and (vector.get() != NULL)) {
-              d_inVec[i] = vector->cloneVector();
+              d_inVec[i] = vector->clone();
             }
             if(d_inVec[i].get() != NULL) {
               if(params->d_frozenVec[i].get() != NULL) {

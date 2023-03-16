@@ -82,10 +82,10 @@ uint64_t VectorDataCPU<TYPE>::getDataID() const
     return reinterpret_cast<uint64_t>( d_Data.data() );
 }
 template<typename TYPE>
-bool VectorDataCPU<TYPE>::isType( const typeID &id, size_t ) const
+typeID VectorDataCPU<TYPE>::getType( size_t block ) const
 {
     constexpr auto type = getTypeID<TYPE>();
-    return id == type;
+    return type;
 }
 template<typename TYPE>
 size_t VectorDataCPU<TYPE>::sizeofDataBlockType( size_t ) const

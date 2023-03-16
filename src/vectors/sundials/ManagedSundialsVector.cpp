@@ -65,7 +65,7 @@ ManagedSundialsVector::~ManagedSundialsVector()
 std::unique_ptr<Vector> ManagedSundialsVector::rawClone( const std::shared_ptr<Variable> var ) const
 {
     auto vec    = getVectorEngine( getVectorData() );
-    auto vec2   = vec->cloneVector( "ManagedSundialsVectorClone" );
+    auto vec2   = vec->clone( "ManagedSundialsVectorClone" );
     auto retVal = std::make_unique<ManagedSundialsVector>( vec2 );
     retVal->setVariable( var );
     return retVal;
@@ -80,7 +80,7 @@ N_Vector_Ops ManagedSundialsVector::createNVectorOps()
 {
     N_Vector_Ops ops;
     ops               = (N_Vector_Ops) malloc( sizeof( struct _generic_N_Vector_Ops ) );
-    ops->nvclone      = cloneVector_AMP;
+    ops->nvclone      = clone_AMP;
     ops->nvcloneempty = cloneempty_no_impl;
     ops->nvdestroy    = freeVectorComponents_AMP;
     // ops->nvspace         = space_no_impl;
@@ -110,7 +110,7 @@ N_Vector_Ops ManagedSundialsVector::createNVectorOps()
 }
 
 
-N_Vector ManagedSundialsVector::cloneVector_AMP( N_Vector n_vector )
+N_Vector ManagedSundialsVector::clone_AMP( N_Vector n_vector )
 {
     // Extracts the content filed of n_vector
     auto srcAMPVector      = getAMP( n_vector );
@@ -211,7 +211,7 @@ void ManagedSundialsVector::addScalar_AMP( N_Vector x, realtype b, N_Vector z )
 {
     auto px              = getAMP( x );
     auto pz              = getAMP( z );
-    Vector::shared_ptr t = px->cloneVector();
+    Vector::shared_ptr t = px->clone();
     t->setToScalar( b );
     pz->add( *px, *t );
 }

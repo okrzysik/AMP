@@ -153,7 +153,7 @@ void helperCreateVectorsForPelletMechanics(
         manager, AMP::Mesh::GeomType::Vertex, 1, 3, true );
     solVec       = AMP::LinearAlgebra::createVector( nodal3VectorDOF, dispVar, true );
     rhsVec       = AMP::LinearAlgebra::createVector( nodal3VectorDOF, dispVar, true );
-    scaledRhsVec = rhsVec->cloneVector();
+    scaledRhsVec = rhsVec->clone();
 }
 
 void helperBuildPointLoadRHSForPelletMechanics(
@@ -201,7 +201,7 @@ void helperCreateTemperatureVectorsForPelletMechanics(
     auto nodalScalarDOF = AMP::Discretization::simpleDOFManager::create(
         manager, AMP::Mesh::GeomType::Vertex, 1, 1, true );
     initialTemperatureVec = AMP::LinearAlgebra::createVector( nodalScalarDOF, tempVar, true );
-    finalTemperatureVec   = initialTemperatureVec->cloneVector();
+    finalTemperatureVec   = initialTemperatureVec->clone();
 }
 
 void helperSetReferenceTemperatureForPelletMechanics(

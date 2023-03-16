@@ -609,12 +609,9 @@ protected: // Internal data and functions
     void addArgsWithUnits( std::string_view key, TYPE value, const Units &unit, Args... args );
 
     // Hash a string
-    static constexpr uint32_t hashString( std::string_view s )
+    static inline uint32_t hashString( std::string_view s )
     {
-        uint32_t hash = 5381;
-        for ( size_t i = 0; i < s.size(); i++ )
-            hash = ( ( hash << 5 ) + hash ) ^ s[i];
-        return hash;
+        return std::hash<std::string_view>{}( s );
     }
 
     // Find an entry

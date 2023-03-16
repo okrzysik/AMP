@@ -62,7 +62,7 @@ public:
     }
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
-        return d_factory->getVector()->cloneVector();
+        return d_factory->getVector()->clone();
     }
     std::string name() const override { return "PetscCloneFactory<" + d_factory->name() + ">"; }
 

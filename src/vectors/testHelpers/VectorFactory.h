@@ -20,7 +20,7 @@ public:
     AMP::LinearAlgebra::Vector::shared_ptr getVector() const override
     {
         auto vec = d_factory->getVector();
-        return vec->cloneVector();
+        return vec->clone();
     }
     std::string name() const override { return "CloneFactory<" + d_factory->name() + ">"; }
 

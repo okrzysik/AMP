@@ -283,7 +283,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempDofManager = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     auto tempVec    = AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
-    auto refTempVec = tempVec->cloneVector();
+    auto refTempVec = tempVec->clone();
 
     auto sigma_xx = AMP::LinearAlgebra::createVector(
         tempDofManager, std::make_shared<AMP::LinearAlgebra::Variable>( "sigma_xx" ), split );
@@ -403,11 +403,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     columnRhsVec->zero();
     AMP::LinearAlgebra::Vector::shared_ptr masterCor;
     AMP::LinearAlgebra::Vector::shared_ptr slaveCor;
-    auto activeSetBeforeUpdateVec = sigma_eff->cloneVector();
-    auto activeSetAfterUpdateVec  = sigma_eff->cloneVector();
-    auto contactPressureVec       = sigma_eff->cloneVector();
-    auto surfaceTractionVec       = columnSolVec->cloneVector();
-    auto normalVectorVec          = columnSolVec->cloneVector();
+    auto activeSetBeforeUpdateVec = sigma_eff->clone();
+    auto activeSetAfterUpdateVec  = sigma_eff->clone();
+    auto contactPressureVec       = sigma_eff->clone();
+    auto surfaceTractionVec       = columnSolVec->clone();
+    auto normalVectorVec          = columnSolVec->clone();
 
     if ( ( !bis ) && ( shrinkFactor != 0.0 ) ) {
         AMP_ASSERT( ( shrinkFactor > 0.0 ) && ( shrinkFactor < 1.0 ) );
@@ -503,7 +503,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );
 
-    auto fullThermalLoadingTempMinusRefTempVec = tempVec->cloneVector();
+    auto fullThermalLoadingTempMinusRefTempVec = tempVec->clone();
     fullThermalLoadingTempMinusRefTempVec->subtract( tempVec, refTempVec );
 
     int TOTO_count = 0;
@@ -568,7 +568,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 auto masterMat = masterBVPOperator->getMatrix();
                 auto masterRhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
                 if ( !masterCor ) {
-                    masterCor = masterRhs->cloneVector();
+                    masterCor = masterRhs->clone();
                     applyCustomDirichletCondition(
                         masterRhs, masterCor, meshAdapter, masterConstraints, masterMat );
                 } else {
@@ -584,7 +584,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 auto slaveMat = slaveBVPOperator->getMatrix();
                 auto slaveRhs = slaveBVPOperator->subsetOutputVector( columnRhsVec );
                 if ( !slaveCor ) {
-                    slaveCor = slaveRhs->cloneVector();
+                    slaveCor = slaveRhs->clone();
                     applyCustomDirichletCondition(
                         slaveRhs, slaveCor, meshAdapter, slaveConstraints, slaveMat );
                 } else {

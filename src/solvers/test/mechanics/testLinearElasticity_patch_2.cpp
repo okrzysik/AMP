@@ -58,8 +58,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
-        auto mechResVec = mechSolVec->cloneVector();
-        auto mechRhsVec = mechSolVec->cloneVector();
+        auto mechResVec = mechSolVec->clone();
+        auto mechRhsVec = mechSolVec->clone();
 
         mechSolVec->setToScalar( 0.5 );
         mechResVec->setToScalar( 0.0 );

@@ -73,7 +73,7 @@ static void test_with_shape( AMP::UnitTest *ut )
         // Create a vector associated with the Variable.
         auto SpecificPowerShapeVec =
             AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
-        auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
+        auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->clone();
         SpecificPowerMagnitudeVec->setToScalar( 1.0 );
 
         // Set the initial value for all nodes of SpecificPowerVec to zero.
@@ -128,7 +128,7 @@ static void test_with_shape( AMP::UnitTest *ut )
             // Create a vector associated with the Variable.
             auto SpecificPowerShapeVec =
                 AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
-            auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
+            auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->clone();
             SpecificPowerMagnitudeVec->setToScalar( 1.0 );
 
             // Set the initial value for all nodes of SpecificPowerVec to zero.

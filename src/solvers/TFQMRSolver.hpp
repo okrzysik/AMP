@@ -92,7 +92,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // residual vector
-    auto res = f->cloneVector();
+    auto res = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -126,36 +126,36 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto rho = tau * tau;
 
     std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> u;
-    u[0] = f->cloneVector();
-    u[1] = f->cloneVector();
+    u[0] = f->clone();
+    u[1] = f->clone();
     u[0]->zero();
     u[1]->zero();
 
     std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> y;
-    y[0] = f->cloneVector();
-    y[1] = f->cloneVector();
+    y[0] = f->clone();
+    y[1] = f->clone();
     y[0]->zero();
     y[1]->zero();
 
     // z is allocated only if the preconditioner is used
     AMP::LinearAlgebra::Vector::shared_ptr z;
     if ( d_bUsesPreconditioner ) {
-        z = f->cloneVector();
+        z = f->clone();
         z->zero();
     }
 
-    auto delta = f->cloneVector();
+    auto delta = f->clone();
     delta->zero();
 
-    auto w = res->cloneVector();
+    auto w = res->clone();
     w->copyVector( res );
 
     y[0]->copyVector( res );
 
-    auto d = res->cloneVector();
+    auto d = res->clone();
     d->zero();
 
-    auto v = res->cloneVector();
+    auto v = res->clone();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 

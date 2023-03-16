@@ -1119,7 +1119,7 @@ static std::string generateMsg( const std::string &errMsgPrefix,
 {
     auto out = errMsgPrefix + msg;
     if ( !key.empty() )
-        out += ": " + std::string( key );
+        out += ": '" + std::string( key ) + "'";
     return out + " in input at line " + std::to_string( line );
 }
 static size_t loadDatabase( const std::string &errMsgPrefix,
@@ -1164,7 +1164,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
                 AMP_ERROR( msg );
             } catch ( std::exception &err ) {
                 auto msg = generateMsg( errMsgPrefix, "Error loading key", line, key );
-                msg += "\nUnhandled exception:\n" + std::string( err.what() );
+                msg += "\nUnhandled exception:\n   " + std::string( err.what() );
                 AMP_ERROR( msg );
             }
             if ( !data )

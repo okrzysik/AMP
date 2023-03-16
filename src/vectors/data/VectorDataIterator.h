@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorIterators
 #define included_AMP_VectorIterators
 
+#include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #include <iterator>
@@ -30,10 +31,13 @@ template<class TYPE = double>
 class VectorDataIterator final
 {
 private:
+    using TYPE2 = typename AMP::remove_cvref_t<TYPE>;
     size_t d_N_blocks, d_CurBlock, d_CurOffset, d_pos, d_size;
     size_t d_hashcode;
     size_t *d_blockSize;
     TYPE **d_data;
+    uint64_t *d_typeHash;
+    mutable TYPE2 d_dataCast;
 
     void advance( size_t );
     void recede( size_t );
@@ -120,7 +124,7 @@ public:
      * \see DataChangeListener
      * \details  This returns a reference to the data pointed to by the iterator
      */
-    inline TYPE &operator*() { return d_data[d_CurBlock][d_CurOffset]; }
+    inline TYPE &operator*();
 
 
     /** \brief Test for equality
@@ -258,6 +262,6 @@ public:
 } // namespace AMP::LinearAlgebra
 
 
-#include "AMP/vectors/data/VectorDataIterator.inline.h"
+#include "AMP/vectors/data/VectorDataIterator.hpp"
 
 #endif

@@ -82,10 +82,10 @@ uint64_t VectorDataGPU<TYPE>::getDataID() const
     return reinterpret_cast<uint64_t>( d_Data );
 }
 template<typename TYPE>
-bool VectorDataGPU<TYPE>::isType( const typeID &id, size_t ) const
+typeID VectorDataGPU<TYPE>::getType( size_t i ) const
 {
     constexpr auto type = getTypeID<TYPE>();
-    return id == type;
+    return type;
 }
 template<typename TYPE>
 size_t VectorDataGPU<TYPE>::sizeofDataBlockType( size_t ) const

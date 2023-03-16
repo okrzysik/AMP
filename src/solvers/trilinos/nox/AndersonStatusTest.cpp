@@ -73,7 +73,7 @@ NOX::StatusTest::StatusType AndersonStatusTest::checkStatus( const NOX::Solver::
         auto thisPrevVec = prevSolAmpVec->subsetVectorForVariable( thisVar );
         if ( thisCurVec ) {
             AMP_ASSERT( thisPrevVec );
-            auto thisDiffVec = thisCurVec->cloneVector();
+            auto thisDiffVec = thisCurVec->clone();
             thisDiffVec->subtract( *thisCurVec, *thisPrevVec );
             d_relativeResiduals[i] =
                 double( thisDiffVec->L2Norm() ) / double( thisCurVec->L2Norm() );

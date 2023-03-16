@@ -90,8 +90,8 @@ static void myTest( AMP::UnitTest *ut )
             std::make_shared<AMP::Operator::DirichletMatrixCorrection>( dirichletOpParams );
 
         auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, mechVariable, true );
-        auto mechRhsVec = mechSolVec->cloneVector();
-        auto mechResVec = mechSolVec->cloneVector();
+        auto mechRhsVec = mechSolVec->clone();
+        auto mechResVec = mechSolVec->clone();
 
         for ( int i = 0; i < 3; i++ ) {
             mechSolVec->setRandomValues();

@@ -71,7 +71,7 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
 
     auto massMat = massOperator->getMatrix();
     auto diffMat = linearOperator->getMatrix();
-    auto sinMat  = diffMat->cloneMatrix();
+    auto sinMat  = diffMat->clone();
     sinMat->makeConsistent();
     sinMat->zero();
 

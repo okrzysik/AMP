@@ -57,7 +57,7 @@ public:
     /** \brief  Return a matrix with the same non-zero and distributed structure
      * \return  The new matrix
      */
-    shared_ptr cloneMatrix() const override;
+    shared_ptr clone() const override;
 
     /** \brief  Scale the matrix by a scalar
      * \param[in] alpha  The value to scale by

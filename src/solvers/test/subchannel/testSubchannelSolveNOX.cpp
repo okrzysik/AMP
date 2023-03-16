@@ -498,8 +498,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     createVectors( pinMesh, subchannelMesh, globalSolMultiVector, specificPowerGpVec );
 
     // Create the rhs and res vectors
-    auto globalRhsMultiVector = globalSolMultiVector->cloneVector();
-    auto globalResMultiVector = globalSolMultiVector->cloneVector();
+    auto globalRhsMultiVector = globalSolMultiVector->clone();
+    auto globalResMultiVector = globalSolMultiVector->clone();
     auto flowSolVec           = globalSolMultiVector->subsetVectorForVariable( flowVariable );
     auto flowRhsVec           = globalRhsMultiVector->subsetVectorForVariable( flowVariable );
     auto flowResVec           = globalResMultiVector->subsetVectorForVariable( flowVariable );
@@ -718,8 +718,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr deltaFlowTempVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowDensityVec;
     if ( subchannelMesh ) {
-        flowTempVec        = subchannelFuelTemp->cloneVector();
-        flowDensityVec     = subchannelFuelTemp->cloneVector();
+        flowTempVec        = subchannelFuelTemp->clone();
+        flowDensityVec     = subchannelFuelTemp->clone();
         int DOFsPerFace[3] = { 0, 0, 2 };
         auto faceDOFManager =
             AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
@@ -755,7 +755,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         flowTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                          ->getScalar<double>( "Inlet_Temperature" );
-        deltaFlowTempVec = flowTempVec->cloneVector();
+        deltaFlowTempVec = flowTempVec->clone();
         deltaFlowTempVec->copyVector( flowTempVec );
         deltaFlowTempVec->addScalar( deltaFlowTempVec, -Tin );
     }

@@ -213,7 +213,7 @@ void NativePetscMatrix::setValuesByGlobalID(
 /********************************************************
  * Clone the matrix                                      *
  ********************************************************/
-std::shared_ptr<Matrix> NativePetscMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> NativePetscMatrix::clone() const
 {
     Mat new_mat;
     MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );

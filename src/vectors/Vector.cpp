@@ -175,18 +175,18 @@ Vector::const_shared_ptr Vector::subsetVectorForComponent( size_t index ) const
 /****************************************************************
  * clone, swap                                                   *
  ****************************************************************/
-std::shared_ptr<Vector> Vector::cloneVector() const { return cloneVector( getVariable() ); }
-std::shared_ptr<Vector> Vector::cloneVector( const std::string &name ) const
+std::shared_ptr<Vector> Vector::clone() const { return clone( getVariable() ); }
+std::shared_ptr<Vector> Vector::clone( const std::string &name ) const
 {
     std::unique_ptr<Vector> retVal;
     if ( getVariable() ) {
-        retVal = rawClone( getVariable()->cloneVariable( name ) );
+        retVal = rawClone( getVariable()->clone( name ) );
     } else {
         retVal = rawClone( std::make_shared<Variable>( name ) );
     }
     return retVal;
 }
-Vector::shared_ptr Vector::cloneVector( const std::shared_ptr<Variable> name ) const
+Vector::shared_ptr Vector::clone( const std::shared_ptr<Variable> name ) const
 {
     return rawClone( name );
 }
