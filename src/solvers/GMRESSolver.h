@@ -180,6 +180,10 @@ private:
     //! boolean, for whether a preconditioner present or not
     bool d_bUsesPreconditioner = false;
 
+    //! boolean, for whether the flexible version of GMRES is used
+    //! note that it makes sense to use it only if right preconditioning is on
+    bool d_bFlexibleGMRES = false;
+
     //! stores the upper Hessenberg matrix formed during the GMRES iteration
     AMP::Array<T> d_dHessenberg;
 
@@ -200,6 +204,10 @@ private:
     //! stores the orthonormal basis for the Krylov space
     //! we do not preallocate by default
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vBasis;
+
+    //! stores the orthonormal basis for the Krylov space in case of FGMRES
+    //! we do not preallocate by default
+    std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_zBasis;
 };
 } // namespace AMP::Solver
 

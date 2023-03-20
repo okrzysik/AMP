@@ -197,7 +197,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Use a random initial guess?
     linearSolver->setZeroInitialGuess( false );
 
-    // Solve the prblem.
+    // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     // Compute the residual
@@ -255,6 +255,7 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
 #endif
@@ -262,6 +263,7 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_TRILINOS_ML
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 #endif
