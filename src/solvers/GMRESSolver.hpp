@@ -184,7 +184,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             v = f->clone();
             d_vBasis.push_back( v );
             if ( d_bFlexibleGMRES )
-                zb = f->cloneVector();
+                zb = f->clone();
         }
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
