@@ -808,8 +808,10 @@ void VectorTests::CopyVector( AMP::UnitTest *ut )
         AMP_ERROR( "CopyVector tests not implemented for provided scalar TYPE" );
     }
 
-    auto simple1 = AMP::LinearAlgebra::createSimpleVector<double>( vectora->getLocalSize(), "tmp" );
-    auto simple2 = AMP::LinearAlgebra::createSimpleVector<float>( vectora->getLocalSize(), "tmp" );
+    auto simple1 = AMP::LinearAlgebra::createSimpleVector<double>(
+        vectora->getLocalSize(), vectora->getVariable(), vectora->getComm() );
+    auto simple2 = AMP::LinearAlgebra::createSimpleVector<float>(
+        vectora->getLocalSize(), vectora->getVariable(), vectora->getComm() );
     simple1->copyVector( vectora );
     simple2->copyVector( vectora );
     double aNorm( vectora->L2Norm() );
