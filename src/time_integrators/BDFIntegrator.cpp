@@ -271,7 +271,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
     }
 
     if ( d_timestep_strategy == "final constant" ) {
-        d_number_of_time_intervals = db->getWithDefault<int>( "number_of_time_intervals", 100 );
+        d_number_of_time_intervals   = db->getWithDefault<int>( "number_of_time_intervals", 100 );
+        d_number_initial_fixed_steps = db->getWithDefault<int>( "number_initial_fixed_steps", 0 );
     }
 
     // keep this towards the end so if the d_calculateTimeTruncError has to be overridden it is done
@@ -659,11 +660,15 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                     d_current_dt = d_initial_dt;
                 } else if ( d_timestep_strategy == "final constant" ) {
                     static int i = 1;
-                    if ( i < d_number_of_time_intervals ) {
-                        d_current_dt = d_initial_dt + ( (double) i ) /
-                                                          ( (double) d_number_of_time_intervals ) *
-                                                          ( d_max_dt - d_initial_dt );
-                        i++;
+                    if ( i <= d_number_initial_fixed_steps ) {
+                        d_current_dt = d_initial_dt;
+                        ++i;
+                    } else if ( i < d_number_of_time_intervals + d_number_initial_fixed_steps ) {
+                        d_current_dt =
+                            d_initial_dt + ( (double) i - d_number_initial_fixed_steps ) /
+                                               ( (double) d_number_of_time_intervals ) *
+                                               ( d_max_dt - d_initial_dt );
+                        ++i;
                     } else {
                         d_current_dt = d_max_dt;
                     }
@@ -737,7 +742,6 @@ void BDFIntegrator::evaluatePredictor()
             if ( d_bdf_starting_integrator == "CN" ) {
                 // use forward Euler as a predictor
                 evaluateForwardEulerPredictor();
-                //          AMP_ERROR("ERROR: CN predictor not implemented for BDF2 starting");
             } else if ( d_bdf_starting_integrator == "BE" ) {
                 evaluateForwardEulerPredictor();
             } else {
@@ -1093,7 +1097,9 @@ void BDFIntegrator::estimateTimeDerivative( void )
         AMP_WARNING( "BDF 3-6 methods being used with low order BDF2 estimate of time derivative" );
         estimateBDF2TimeDerivative();
     } else if ( current_integrator == "CN" ) {
-        estimateCNTimeDerivative();
+        estimateBETimeDerivative();
+        // the CN estimate currently evaluates f(u^{n-1}) which introduces significant error
+        //        estimateCNTimeDerivative();
     } else if ( current_integrator == "BE" ) {
         estimateBETimeDerivative();
     } else {

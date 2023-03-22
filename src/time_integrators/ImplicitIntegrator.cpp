@@ -34,14 +34,19 @@ ImplicitIntegrator::ImplicitIntegrator(
         AMP_ERROR( "Field solver_name missing in time integrator database" );
     }
 
-    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
-    timeOperator_db->putScalar( "name", "TimeOperator" );
-    auto timeOperatorParameters =
-        std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
-    timeOperatorParameters->d_pRhsOperator = d_operator;
-    timeOperatorParameters->d_Mesh         = d_operator->getMesh();
+    // check if the operator is a TimeOperator
+    bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
 
-    d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
+    if ( !isTimeOperator ) {
+        auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+        timeOperator_db->putScalar( "name", "TimeOperator" );
+        auto timeOperatorParameters =
+            std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+        timeOperatorParameters->d_pRhsOperator = d_operator;
+        timeOperatorParameters->d_Mesh         = d_operator->getMesh();
+
+        d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
+    }
 
     auto solverDB = globalDB->getDatabase( solverName );
 

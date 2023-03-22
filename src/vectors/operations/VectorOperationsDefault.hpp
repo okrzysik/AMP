@@ -214,7 +214,7 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData 
     auto last   = y.end<TYPE>();
     auto curRhs = x.begin<TYPE>();
     while ( curMe != last ) {
-        *curMe = 1.0 / *curRhs;
+        *curMe = static_cast<TYPE>( 1.0 ) / *curRhs;
         ++curRhs;
         ++curMe;
     }
@@ -495,7 +495,7 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
     auto last  = x.constEnd<TYPE>();
     auto tol   = tol_in.get<double>();
     while ( cur1 != last ) {
-        if ( fabs( *cur1 - *cur2 ) > tol ) {
+        if ( std::abs( *cur1 - *cur2 ) > tol ) {
             equal = false;
             break;
         }

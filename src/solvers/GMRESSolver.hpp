@@ -60,7 +60,7 @@ void GMRESSolver<T>::getFromInput( std::shared_ptr<AMP::Database> db )
 {
     // the max iterations could be larger than the max Krylov dimension
     // in the case of restarted GMRES so we allow specification separately
-    d_iMaxKrylovDimension      = db->getWithDefault<T>( "max_dimension", 100 );
+    d_iMaxKrylovDimension      = db->getWithDefault<int>( "max_dimension", 100 );
     d_sOrthogonalizationMethod = db->getWithDefault<std::string>( "ortho_method", "MGS" );
 
     // default is right preconditioning, options are right, left, both
@@ -97,10 +97,10 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     // if the rhs is zero we try to converge to the relative convergence
     // NOTE:: update this test for a better 'almost equal'
     if ( f_norm < std::numeric_limits<T>::epsilon() ) {
-        f_norm = 1.0;
+        f_norm = static_cast<T>( 1.0 );
     }
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "GMRESSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -149,7 +149,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // normalize the first basis vector
-    res->scale( 1.0 / beta );
+    res->scale( static_cast<T>( 1.0 ) / beta );
 
     // push the residual as the first basis vector
     d_vBasis.push_back( res );
@@ -193,8 +193,8 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         v_norm = d_dHessenberg( k + 1, k );
         // replace the conditional by a soft equality
         // check for happy breakdown
-        if ( v_norm != 0.0 ) {
-            v->scale( 1.0 / v_norm );
+        if ( v_norm != static_cast<T>( 0.0 ) ) {
+            v->scale( static_cast<T>( 1.0 ) / v_norm );
             v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         }
 
@@ -204,26 +204,23 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             applyGivensRotation( i, k );
         }
 
-        if ( v_norm != 0.0 ) {
+        if ( v_norm != static_cast<T>( 0.0 ) ) {
             // compute and store the Givens rotation that zeroes out
             // the subdiagonal for the current column
             computeGivensRotation( k );
             // zero out the subdiagonal
             applyGivensRotation( k, k );
-            d_dHessenberg( k + 1, k ) = 0.0; // explicitly set subdiag to zero to prevent round-off
+            d_dHessenberg( k + 1, k ) =
+                static_cast<T>( 0.0 ); // explicitly set subdiag to zero to prevent round-off
 
             // explicitly apply the newly computed
             // Givens rotations to the rhs vector
             auto x = d_dw[k];
             auto c = d_dcos[k];
             auto s = d_dsin[k];
-#if 0
-            d_dw[k]     = c * x;
-            d_dw[k + 1] = s * x;
-#else
+
             d_dw[k]     = c * x;
             d_dw[k + 1] = -s * x;
-#endif
         }
 
         v_norm = std::fabs( d_dw[k + 1] );
@@ -245,7 +242,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 addCorrection( k - 1, z, z1, u );
                 computeInitialResidual( false, f, u, z, d_vBasis[0] );
                 v_norm = static_cast<T>( d_vBasis[0]->L2Norm() );
-                d_vBasis[0]->scale( 1.0 / v_norm );
+                d_vBasis[0]->scale( static_cast<T>( 1.0 ) / v_norm );
                 d_dw[0] = v_norm;
                 ++d_restarts;
                 k = 0;
@@ -306,13 +303,8 @@ void GMRESSolver<T>::applyGivensRotation( const int i, const int k )
     auto c = d_dcos[i];
     auto s = d_dsin[i];
 
-#if 0
-    d_dHessenberg( i, k )     = c * x - s * y;
-    d_dHessenberg( i + 1, k ) = s * x + c * y;
-#else
-    d_dHessenberg( i, k ) = c * x + s * y;
+    d_dHessenberg( i, k )     = c * x + s * y;
     d_dHessenberg( i + 1, k ) = -s * x + c * y;
-#endif
 }
 
 template<typename T>
@@ -330,16 +322,16 @@ void GMRESSolver<T>::computeGivensRotation( const int k )
     auto g = d_dHessenberg( k + 1, k );
 
     decltype( f ) c, s;
-    if ( g == 0.0 ) {
-        c = 1.0;
-        s = 0.0;
-    } else if ( f == 0.0 ) {
-        c = 0.0;
-        s = ( g < 0.0 ) ? -1.0 : 1.0;
+    if ( g == static_cast<T>( 0.0 ) ) {
+        c = static_cast<T>( 1.0 );
+        s = static_cast<T>( 0.0 );
+    } else if ( f == static_cast<T>( 0.0 ) ) {
+        c = static_cast<T>( 0.0 );
+        s = ( g < static_cast<T>( 0.0 ) ) ? static_cast<T>( -1.0 ) : static_cast<T>( 1.0 );
     } else {
         decltype( f ) r;
         r = std::sqrt( f * f + g * g );
-        r = 1.0 / r;
+        r = static_cast<T>( 1.0 ) / r;
         c = std::fabs( f ) * r;
         s = std::copysign( g * r, f );
     }
@@ -407,7 +399,7 @@ void GMRESSolver<T>::computeInitialResidual( bool use_zero_guess,
         } else {
             res->copyVector( f );
         }
-        u->setToScalar( 0.0 );
+        u->setToScalar( static_cast<T>( 0.0 ) );
     } else {
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->residual( f, u, tmp );
@@ -426,7 +418,7 @@ void GMRESSolver<T>::addCorrection( const int nr,
 {
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
-        z->setToScalar( 0.0 );
+        z->setToScalar( static_cast<T>( 0.0 ) );
 
         for ( int i = 0; i <= nr; ++i ) {
             z->axpy( d_dy[i], *d_vBasis[i], *z );
