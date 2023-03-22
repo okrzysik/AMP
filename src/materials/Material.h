@@ -72,12 +72,8 @@ public:
     //! return a list of all properties in this material
     std::vector<std::string> list() const;
 
-protected:
-    /// database of scalar properties
-    std::map<std::string, std::shared_ptr<Property>> d_propertyMap;
-
-protected:
-    //! Add a constant-value fixed property
+public:
+    //! Add a property
     template<class PROPERTY, class... Args>
     void addProperty( const std::string &name, Args &&...args )
     {
@@ -117,6 +113,11 @@ protected:
                               std::vector<std::array<double, 2>> ranges = {},
                               std::vector<AMP::Units> argUnits          = {},
                               std::string source                        = "" );
+
+
+protected:
+    /// database of scalar properties
+    std::map<std::string, std::shared_ptr<Property>> d_propertyMap;
 };
 
 

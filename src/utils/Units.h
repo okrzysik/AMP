@@ -148,7 +148,7 @@ public:
     /**
      * \brief  Convert the unit to a new type
      * \details  This function returns the scaling factor to convert between
-     *    two different units.  For example, converting "J" to "ergs" returns 1e-7.
+     *    two different units.  For example, converting "J" to "ergs" returns 1e7.
      *    If the two units are not compatible an exception will be thrown.
      * \param unit      Desired unit
      */

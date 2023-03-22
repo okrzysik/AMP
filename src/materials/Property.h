@@ -81,11 +81,34 @@ public:
     //! Return the number of arguments to eval
     inline size_t get_number_arguments() const { return d_arguments.size(); }
 
+    //! Return the argument index
+    inline int get_argument_index( const std::string &name ) const
+    {
+        int index = -1;
+        for ( size_t i = 0; i < d_arguments.size(); i++ ) {
+            if ( name == d_arguments[i] )
+                index = i;
+        }
+        return index;
+    }
+
     //! Get the default for the given argument (NaN if it is an invalid argument)
     double get_default( const std::string &name ) const;
 
     //! Get the defaults
     inline const std::vector<double> &get_defaults() const { return d_defaults; }
+
+    //! Set the default
+    inline void
+    set_default( const std::string &name, double value, const AMP::Units &unit = AMP::Units() )
+    {
+        int i = get_argument_index( name );
+        if ( i != -1 ) {
+            if ( !unit.isNull() )
+                value *= unit.convert( d_argUnits[i] );
+            d_defaults[i] = value;
+        }
+    }
 
     //! Set the defaults
     inline void set_defaults( std::vector<double> defaults )
