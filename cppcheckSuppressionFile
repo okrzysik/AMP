@@ -66,6 +66,7 @@ pointerOutOfBoundsCond:*/AMP/utils/kdtree2.hpp
 syntaxError:*/AMP/mesh/*Iterator.h
 templateRecursion:*/AMP/utils/AMP_MPI.I
 unusedPrivateFunction:*/AMP/materials/Property.h
+invalidPointerCast:*/AMP/vectors/data/VectorDataIterator.hpp
 
 
 //***********************************************************

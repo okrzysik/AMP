@@ -36,7 +36,7 @@ public: // Functions inherited from Variable
 
 private:
     MeshVariable();
-    bool d_useMeshComm;
+    bool d_useMeshComm = false;
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
 };
 

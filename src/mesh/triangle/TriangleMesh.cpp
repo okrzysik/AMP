@@ -5,7 +5,7 @@
 #include "AMP/mesh/triangle/TriangleHelpers.h"
 #include "AMP/mesh/triangle/TriangleMeshIterator.h"
 #include "AMP/utils/AMP_MPI.I"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"

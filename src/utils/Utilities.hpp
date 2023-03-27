@@ -2,45 +2,10 @@
 #define included_AMP_Utilities_hpp
 
 
-// Forward declare stream operators
-namespace AMP {
-extern std::ostream pout;
-extern std::ostream perr;
-extern std::ostream plog;
-} // namespace AMP
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Utilities {
-
-
-/************************************************************************
- * Functions to hash                                                     *
- ************************************************************************/
-constexpr unsigned int hash_char( const std::string_view &name )
-{
-    uint32_t hash = 5381;
-    for ( unsigned char c : name ) {
-        // hash = hash * 33 ^ c
-        hash = ( ( hash << 5 ) + hash ) ^ c;
-    }
-    return hash;
-}
-
-
-/************************************************************************
- * Function to wrap printf to std::string                                *
- ************************************************************************/
-inline std::string stringf( const char *format, ... )
-{
-    va_list ap;
-    va_start( ap, format );
-    char tmp[4096];
-    int n = vsnprintf( tmp, sizeof tmp, format, ap );
-    va_end( ap );
-    AMP_INSIST( n >= 0, "Error using stringf: encoding error" );
-    AMP_INSIST( n < (int) sizeof tmp, "Error using stringf: internal buffer size" );
-    return std::string( tmp );
-}
 
 
 /************************************************************************
@@ -125,7 +90,10 @@ void quicksort( size_t n, T *x )
                 istack[jstack - 1] = i;
                 ir                 = j - 1;
             } else {
-                istack[jstack]     = j - 1;
+                auto j2 = j - 1;
+                while ( j2 - l > 1 && arr[j2] == arr[j] )
+                    j2--;
+                istack[jstack]     = j2;
                 istack[jstack - 1] = l;
                 l                  = i;
             }
@@ -141,8 +109,8 @@ void quicksort( size_t n, T1 *x, T2 *y )
     T2 *brr = &y[0];
     bool test;
     long int i, ir, j, jstack, k, l, istack[100];
-    T1 a, tmp_a;
-    T2 b, tmp_b;
+    T1 a;
+    T2 b;
     jstack = 0;
     l      = 0;
     ir     = n - 1;
@@ -176,10 +144,10 @@ void quicksort( size_t n, T1 *x, T2 *y )
         } else {
             k = ( l + ir ) / 2; // Choose median of left, center and right elements as partitioning
                                 // element a. Also rearrange so that a(l) ? a(l+1) ? a(ir).
-            tmp_a      = arr[k];
+            auto tmp_a = arr[k];
             arr[k]     = arr[l + 1];
             arr[l + 1] = tmp_a;
-            tmp_b      = brr[k];
+            auto tmp_b = brr[k];
             brr[k]     = brr[l + 1];
             brr[l + 1] = tmp_b;
             if ( arr[l] > arr[ir] ) {
@@ -235,7 +203,10 @@ void quicksort( size_t n, T1 *x, T2 *y )
                 istack[jstack - 1] = i;
                 ir                 = j - 1;
             } else {
-                istack[jstack]     = j - 1;
+                auto j2 = j - 1;
+                while ( j2 - l > 1 && arr[j2] == arr[j] )
+                    j2--;
+                istack[jstack]     = j2;
                 istack[jstack - 1] = l;
                 l                  = i;
             }
