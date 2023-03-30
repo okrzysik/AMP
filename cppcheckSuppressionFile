@@ -107,6 +107,7 @@ knownConditionTrueFalse:*/src/time_integrators/oxide/OxideModel.cpp
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+missingReturn:*/src/utils/AMPManager.cpp
 operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
 noOperatorEq:*/src/utils/Utilities.cpp
