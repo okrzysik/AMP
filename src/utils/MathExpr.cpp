@@ -11,10 +11,11 @@ namespace AMP {
  ************************************************************/
 MathExpr::MathExpr() : d_fun( nullptr ) {}
 MathExpr::MathExpr( std::string expression, std::vector<std::string> variables )
-    : d_expr( std::move( expression ) ), d_fun( nullptr ), d_vars( std::move( variables ) )
+    : d_expr( std::move( expression ) ), d_vars( std::move( variables ) )
 {
     initialize();
 }
+MathExpr::MathExpr( double x ) : d_expr( std::to_string( x ) ) { initialize(); }
 MathExpr::MathExpr( MathExpr &&rhs ) : d_fun( nullptr )
 {
     std::swap( d_expr, rhs.d_expr );
@@ -23,6 +24,7 @@ MathExpr::MathExpr( MathExpr &&rhs ) : d_fun( nullptr )
     std::swap( d_tevar, rhs.d_tevar );
     std::swap( d_data, rhs.d_data );
 }
+MathExpr MathExpr::clone() const { return MathExpr( d_expr, d_vars ); }
 MathExpr &MathExpr::operator=( MathExpr &&rhs )
 {
     if ( this == &rhs )

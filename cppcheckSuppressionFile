@@ -66,6 +66,7 @@ pointerOutOfBoundsCond:*/AMP/utils/kdtree2.hpp
 syntaxError:*/AMP/mesh/*Iterator.h
 templateRecursion:*/AMP/utils/AMP_MPI.I
 unusedPrivateFunction:*/AMP/materials/Property.h
+invalidPointerCast:*/AMP/vectors/data/VectorDataIterator.hpp
 
 
 //***********************************************************
@@ -106,6 +107,7 @@ knownConditionTrueFalse:*/src/time_integrators/oxide/OxideModel.cpp
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+missingReturn:*/src/utils/AMPManager.cpp
 operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
 noOperatorEq:*/src/utils/Utilities.cpp

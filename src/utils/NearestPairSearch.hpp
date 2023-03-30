@@ -2,7 +2,7 @@
 #define included_AMP_NearestPairSearch_hpp
 
 #include "AMP/utils/NearestPairSearch.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 
 #include <math.h>
 

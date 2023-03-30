@@ -257,8 +257,17 @@ double trilinear( const std::vector<double> &x,
                   double yi,
                   double zi );
 
+
 //! Create a hash key from a char array
-constexpr unsigned int hash_char( const std::string_view & );
+constexpr unsigned int hash_char( const std::string_view &str )
+{
+    uint32_t hash = 5381;
+    for ( unsigned char c : str ) {
+        // hash = hash * 33 ^ c
+        hash = ( ( hash << 5 ) + hash ) ^ c;
+    }
+    return hash;
+}
 
 
 // Function to demangle a string (e.g. from typeid)
@@ -296,7 +305,17 @@ void printBanner();
 void nullUse( void * );
 
 //! std::string version of sprintf
-inline std::string stringf( const char *format, ... );
+inline std::string stringf( const char *format, ... )
+{
+    va_list ap;
+    va_start( ap, format );
+    char tmp[4096];
+    int n = vsnprintf( tmp, sizeof tmp, format, ap );
+    va_end( ap );
+    AMP_INSIST( n >= 0, "Error using stringf: encoding error" );
+    AMP_INSIST( n < (int) sizeof tmp, "Error using stringf: internal buffer size" );
+    return std::string( tmp );
+}
 
 
 //! Print a vector
@@ -362,9 +381,6 @@ private:
 
 } // namespace Utilities
 } // namespace AMP
-
-
-#include "AMP/utils/Utilities.hpp"
 
 
 #endif

@@ -1,4 +1,5 @@
 #include "AMP/materials/ScalarProperty.h"
+#include "AMP/utils/MathExpr.h"
 #include "AMP/utils/Utilities.h"
 
 

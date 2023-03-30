@@ -1,7 +1,7 @@
 #include "AMP/mesh/loadBalance/loadBalanceSimulator.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MultiMesh.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 
 #include <algorithm>
 #include <cstring>
