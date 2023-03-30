@@ -33,8 +33,8 @@ public:
 
 private:
     StridedVariable();
-    size_t d_offset;
-    size_t d_stride;
+    size_t d_offset = 0;
+    size_t d_stride = 1;
 };
 } // namespace AMP::LinearAlgebra
 

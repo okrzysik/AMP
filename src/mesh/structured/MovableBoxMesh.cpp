@@ -6,9 +6,11 @@
 #include "AMP/mesh/structured/BoxMesh.h"
 #include "AMP/mesh/structured/structuredMeshElement.h"
 #include "AMP/mesh/structured/structuredMeshIterator.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
+
 
 namespace AMP::Mesh {
 

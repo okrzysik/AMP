@@ -9,6 +9,7 @@
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorSelector.h"
 

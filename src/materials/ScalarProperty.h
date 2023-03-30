@@ -2,9 +2,14 @@
 #define included_AMP_ScalarProperty
 
 #include "AMP/materials/Property.h"
-#include "AMP/utils/MathExpr.h"
 
 #include <cstring>
+
+
+// Forward declares
+namespace AMP {
+class MathExpr;
+}
 
 
 namespace AMP::Materials {

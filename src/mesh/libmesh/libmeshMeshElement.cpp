@@ -1,5 +1,5 @@
 #include "AMP/mesh/libmesh/libmeshMeshElement.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 
 // libMesh includes
 #include "libmesh/boundary_info.h"

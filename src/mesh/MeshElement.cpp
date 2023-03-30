@@ -1,6 +1,6 @@
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/geometry/GeometryHelpers.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 
 #include <cstring>
 
@@ -215,3 +215,20 @@ std::ostream &operator<<( std::ostream &out, const AMP::Mesh::MeshElement &x )
 
 
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ * Explicit instantiations                               *
+ ********************************************************/
+#define INSTANTIATE_SORT( TYPE )                                                   \
+    template void AMP::Utilities::quicksort<TYPE>( size_t, TYPE * );               \
+    template void AMP::Utilities::quicksort<TYPE, TYPE>( size_t, TYPE *, TYPE * ); \
+    template void AMP::Utilities::unique<TYPE>( std::vector<TYPE> & );             \
+    template void AMP::Utilities::unique<TYPE>(                                    \
+        std::vector<TYPE> &, std::vector<size_t> &, std::vector<size_t> & );       \
+    template size_t AMP::Utilities::findfirst<TYPE>( size_t, const TYPE *, const TYPE & )
+using intTuple3 = std::tuple<int, int, int>;
+INSTANTIATE_SORT( intTuple3 );
+INSTANTIATE_SORT( AMP::Mesh::MeshElement );
+template void AMP::Utilities::quicksort<intTuple3, AMP::Mesh::MeshElement>(
+    size_t, intTuple3 *, AMP::Mesh::MeshElement * );
