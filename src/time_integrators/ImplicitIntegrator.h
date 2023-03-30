@@ -6,6 +6,7 @@
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
 #include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/vectors/Scalar.h"
 
 // Forward declares
 namespace AMP {
@@ -239,6 +240,11 @@ public:
         timeOperator->setComponentScalings( s, f );
     }
 
+    void setTimeScalingFunction( std::function<void( AMP::Scalar )> fnPtr )
+    {
+        d_fTimeScalingFnPtr = fnPtr;
+    }
+
 protected:
     /**
      * Set the initial guess for the time advanced solution at the start
@@ -283,6 +289,8 @@ protected:
                                        const bool first_step,
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> out );
+
+    std::function<void( AMP::Scalar )> d_fTimeScalingFnPtr;
 
 private:
     //! allows for specialization of the checkNewSolution for classes of time
