@@ -11,7 +11,7 @@
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/DelaunayInterpolation.h"
 #include "AMP/utils/DelaunayTessellation.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 
 #include "ProfilerApp.h"
 
