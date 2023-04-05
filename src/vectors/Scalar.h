@@ -60,6 +60,13 @@ public:
     //! Return the storage type
     inline const auto &type() const { return d_data.type(); }
 
+    /**
+     * \brief  Return the storage type
+     * \details  Return the hash value computed by typeID.
+     *    Equivalent to AMP::getTypeID<TYPE>().hash
+     */
+    inline uint32_t getTypeHash() const { return d_hash; }
+
     //! Check if we are storing a value
     inline bool has_value() const noexcept { return d_data.has_value(); }
 
