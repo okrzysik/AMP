@@ -11,9 +11,9 @@ namespace AMP {
 
 //! Class to store type info
 struct alignas( 8 ) typeID {
-    uint64_t bytes = 0;     // Size of object (bytes)
+    uint32_t bytes = 0;     // Size of object (bytes)
     uint32_t hash  = 0;     // Hash of function
-    char name[116] = { 0 }; // Name of function (may be truncated, null-terminated)
+    char name[120] = { 0 }; // Name of function (may be truncated, null-terminated)
     constexpr bool operator==( uint32_t rhs ) const { return hash == rhs; }
     constexpr bool operator!=( uint32_t rhs ) const { return hash != rhs; }
     constexpr bool operator==( const typeID &rhs ) const { return hash == rhs.hash; }
@@ -64,6 +64,8 @@ constexpr void getTypeName( uint64_t N, char *name )
         copy( name, "std::complex<double>", N );
     } else if constexpr ( std::is_same_v<T, std::string> ) {
         copy( name, "std::string", N );
+    } else if constexpr ( std::is_same_v<T, std::string_view> ) {
+        copy( name, "std::string_view", N );
     } else {
         // Get the name of the function to create the type name
         char name0[1024] = { 0 };
@@ -97,9 +99,36 @@ constexpr void getTypeName( uint64_t N, char *name )
 }
 
 
+//! Perform murmur hash (constexpr version that assumes key.size() is a multiple of 8)
+template<std::size_t N>
+constexpr uint64_t MurmurHash64A( const char *key )
+{
+    static_assert( N % 8 == 0 );
+    const uint64_t seed = 0x65ce2a5d390efa53LLU;
+    const uint64_t m    = 0xc6a4a7935bd1e995LLU;
+    const int r         = 47;
+    uint64_t h          = seed ^ ( N * m );
+    for ( size_t i = 0; i < N; i += 8 ) {
+        uint64_t k = ( uint64_t( key[i] ) << 56 ) ^ ( uint64_t( key[i + 1] ) << 48 ) ^
+                     ( uint64_t( key[i + 2] ) << 40 ) ^ ( uint64_t( key[i + 3] ) << 32 ) ^
+                     ( uint64_t( key[i + 4] ) << 24 ) ^ ( uint64_t( key[i + 5] ) << 16 ) ^
+                     ( uint64_t( key[i + 6] ) << 8 ) ^ ( uint64_t( key[i + 7] ) );
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+        h ^= k;
+        h *= m;
+    }
+    h ^= h >> r;
+    h *= m;
+    h ^= h >> r;
+    return h;
+}
+
+
 //! Get the type info (does not resolve dynamic types)
 template<typename T0>
-constexpr typeID getTypeID()
+constexpr typeID getTypeIDEval()
 {
     typeID id = {};
     // Remove const/references
@@ -110,14 +139,18 @@ constexpr typeID getTypeID()
     char name[128] = { 0 };
     getTypeName<T>( sizeof( name ), name );
     copy( id.name, name, sizeof( id.name ) );
-    // Create the hash (djb2)
-    if ( name[0] != 0 ) {
-        id.hash = 5381;
-        for ( unsigned char c : name )
-            id.hash = ( ( id.hash << 5 ) + id.hash ) ^ c;
-    }
+    // Create the hash
+    if ( name[0] != 0 )
+        id.hash = MurmurHash64A<sizeof( name )>( name );
     // Set the size
     id.bytes = sizeof( T );
+    return id;
+}
+template<typename TYPE>
+constexpr typeID getTypeID()
+{
+    constexpr auto id = getTypeIDEval<TYPE>();
+    static_assert( id != 0 );
     return id;
 }
 
