@@ -99,7 +99,7 @@ constexpr void getTypeName( uint64_t N, char *name )
 }
 
 
-//! Perform murmur hash (constexpr version that assumes key.size() is a multple of 8)
+//! Perform murmur hash (constexpr version that assumes key.size() is a multiple of 8)
 template<std::size_t N>
 constexpr uint64_t MurmurHash64A( const char *key )
 {
@@ -108,11 +108,11 @@ constexpr uint64_t MurmurHash64A( const char *key )
     const uint64_t m    = 0xc6a4a7935bd1e995LLU;
     const int r         = 47;
     uint64_t h          = seed ^ ( N * m );
-    for ( size_t i = 0; i < N; ) {
-        uint64_t k = ( uint64_t( key[i++] ) << 56 ) && ( uint64_t( key[i++] ) << 48 ) &&
-                     ( uint64_t( key[i++] ) << 40 ) && ( uint64_t( key[i++] ) << 32 ) &&
-                     ( uint64_t( key[i++] ) << 24 ) && ( uint64_t( key[i++] ) << 16 ) &&
-                     ( uint64_t( key[i++] ) << 8 ) && ( uint64_t( key[i++] ) );
+    for ( size_t i = 0; i < N; i += 8 ) {
+        uint64_t k = ( uint64_t( key[i] ) << 56 ) ^ ( uint64_t( key[i + 1] ) << 48 ) ^
+                     ( uint64_t( key[i + 2] ) << 40 ) ^ ( uint64_t( key[i + 3] ) << 32 ) ^
+                     ( uint64_t( key[i + 4] ) << 24 ) ^ ( uint64_t( key[i + 5] ) << 16 ) ^
+                     ( uint64_t( key[i + 6] ) << 8 ) ^ ( uint64_t( key[i + 7] ) );
         k *= m;
         k ^= k >> r;
         k *= m;
