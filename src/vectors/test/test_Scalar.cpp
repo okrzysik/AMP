@@ -91,6 +91,14 @@ void testPerformance()
 }
 
 
+// Test passing scalar by reference
+void passConstRef( const AMP::Scalar &x )
+{
+    auto y = x; // d_data for x has a bad address according to totalview
+    AMP_ASSERT( static_cast<double>( y ) == 1.0 );
+}
+
+
 int main( int, char ** )
 {
     bool pass = true;
@@ -128,6 +136,9 @@ int main( int, char ** )
 
     // Test the performance
     testPerformance();
+
+    // Test passing scalar by reference
+    passConstRef( 1.0 );
 
     if ( pass )
         std::cout << "All tests passed\n";
