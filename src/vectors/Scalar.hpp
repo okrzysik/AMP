@@ -1,26 +1,12 @@
 #ifndef included_AMP_Scalar_hpp
 #define included_AMP_Scalar_hpp
 
-
-#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/vectors/Scalar.h"
 
 #include <complex>
 #include <limits>
 #include <math.h>
-
-
-// is_complex
-// clang-format off
-namespace AMP {
-template<class T> struct is_complex : public std::false_type {};
-template<class T> struct is_complex<const T> : public is_complex<T> {};
-template<class T> struct is_complex<volatile const T> : public is_complex<T> {};
-template<class T> struct is_complex<volatile T> : public is_complex<T> {};
-template<class T> struct is_complex<std::complex<T>> : public std::true_type {};
-template<class T> inline constexpr bool is_complex_v = is_complex<T>::value;
-}
-// clang-format on
 
 
 namespace AMP {
@@ -33,23 +19,7 @@ namespace AMP {
 DISABLE_WARNINGS
 #endif
 template<class TYPE>
-constexpr double Scalar::getTol()
-{
-    if constexpr ( std::is_integral_v<TYPE> ) {
-        return 0;
-    } else if constexpr ( std::is_floating_point_v<TYPE> ) {
-        constexpr double tol = 10 * std::numeric_limits<TYPE>::epsilon();
-        return tol;
-    } else if constexpr ( AMP::is_complex_v<TYPE> ) {
-        constexpr double tol = std::numeric_limits<TYPE>::epsilon().real();
-        return tol;
-    } else {
-        constexpr double tol = 10 * std::numeric_limits<TYPE>::epsilon();
-        return tol;
-    }
-}
-template<class TYPE>
-inline void Scalar::store( const TYPE &x )
+void Scalar::store( const TYPE &x )
 {
     constexpr auto hash = getTypeID<TYPE>().hash;
     d_hash              = hash;
@@ -72,7 +42,6 @@ ENABLE_WARNINGS
 /********************************************************************
  * Contructor                                                        *
  ********************************************************************/
-inline Scalar::Scalar() : d_type( 0 ), d_hash( 0 ) {}
 template<class TYPE>
 Scalar::Scalar( const TYPE &x )
 {
@@ -131,14 +100,27 @@ Scalar Scalar::create( const TYPE &x ) const
     Scalar y;
     y.d_hash = d_hash;
     y.d_type = d_type;
-    if constexpr ( std::is_integral_v<TYPE> ) {
-        y.d_data = std::make_any<int64_t>( x );
-    } else if constexpr ( std::is_floating_point_v<TYPE> ) {
-        y.d_data = std::make_any<double>( x );
-    } else if constexpr ( AMP::is_complex_v<TYPE> ) {
-        y.d_data = std::make_any<std::complex<double>>( x );
+    if constexpr ( AMP::is_complex_v<TYPE> ) {
+        if ( d_type == 'i' ) {
+            y.d_data = std::make_any<int64_t>( x.real() );
+        } else if ( d_type == 'f' ) {
+            y.d_data = std::make_any<double>( x.real() );
+        } else if ( d_type == 'c' ) {
+            y.d_data = std::make_any<std::complex<double>>( x.real(), x.imag() );
+        } else {
+            AMP_ERROR( "Unknown type for Scalar::create" );
+        }
     } else {
-        AMP_ERROR( "Unknown type for Scalar::create" );
+        if ( d_type == 'i' ) {
+            y.d_data = std::make_any<int64_t>( static_cast<int64_t>( x ) );
+        } else if ( d_type == 'f' ) {
+            y.d_data = std::make_any<double>( static_cast<double>( x ) );
+        } else if ( d_type == 'c' ) {
+            y.d_data =
+                std::make_any<std::complex<double>>( static_cast<std::complex<double>>( x ) );
+        } else {
+            AMP_ERROR( "Unknown type for Scalar::create" );
+        }
     }
     return y;
 }
@@ -202,26 +184,12 @@ inline TYPE Scalar::get( double tol ) const
     return y;
 }
 
-
-/********************************************************************
- * Operator overloading                                              *
- ********************************************************************/
-Scalar operator-( const Scalar &x );
-Scalar operator+( const Scalar &x, const Scalar &y );
-Scalar operator-( const Scalar &x, const Scalar &y );
-Scalar operator*( const Scalar &x, const Scalar &y );
-Scalar operator/( const Scalar &x, const Scalar &y );
-inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); }
-
-
-/********************************************************
- *  ostream operator                                     *
- ********************************************************/
-template<class TYPE>
-typename std::enable_if_t<std::is_same_v<TYPE, Scalar>, std::ostream &>
-operator<<( std::ostream &out, const TYPE &x );
-
-
 } // namespace AMP
+
+
+#define INSTANTIATE_SCALAR( TYPE )                                        \
+    template AMP::Scalar::Scalar<TYPE>( const TYPE & );                   \
+    template AMP::Scalar AMP::Scalar::create<TYPE>( const TYPE & ) const; \
+    template TYPE AMP::Scalar::get<TYPE>( double tol ) const
 
 #endif

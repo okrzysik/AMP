@@ -1,4 +1,4 @@
-#include "AMP/vectors/Scalar.h"
+#include "AMP/vectors/Scalar.hpp"
 #include "AMP/utils/AMP_MPI.h"
 
 #include <math.h>
@@ -284,6 +284,27 @@ operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
     }
     return out;
 }
+
+
+/********************************************************
+ * Explicit instantiation                                *
+ ********************************************************/
+INSTANTIATE_SCALAR( char );
+INSTANTIATE_SCALAR( int8_t );
+INSTANTIATE_SCALAR( int16_t );
+INSTANTIATE_SCALAR( int32_t );
+INSTANTIATE_SCALAR( int64_t );
+INSTANTIATE_SCALAR( uint8_t );
+INSTANTIATE_SCALAR( uint16_t );
+INSTANTIATE_SCALAR( uint32_t );
+INSTANTIATE_SCALAR( uint64_t );
+INSTANTIATE_SCALAR( float );
+INSTANTIATE_SCALAR( double );
+INSTANTIATE_SCALAR( long double );
+INSTANTIATE_SCALAR( std::complex<int> );
+INSTANTIATE_SCALAR( std::complex<float> );
+INSTANTIATE_SCALAR( std::complex<double> );
+INSTANTIATE_SCALAR( Scalar );
 
 
 } // namespace AMP

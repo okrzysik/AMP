@@ -121,6 +121,23 @@ template<typename T>
 struct is_initializer_list<std::initializer_list<T>> : std::true_type {
 };
 
+//! Checks whether T is complex
+template<class T>
+struct is_complex : public std::false_type {
+};
+template<class T>
+struct is_complex<const T> : public is_complex<T> {
+};
+template<class T>
+struct is_complex<volatile const T> : public is_complex<T> {
+};
+template<class T>
+struct is_complex<volatile T> : public is_complex<T> {
+};
+template<class T>
+struct is_complex<std::complex<T>> : public std::true_type {
+};
+
 
 // Helper functions
 template<class T>
@@ -147,7 +164,8 @@ template<class T>
 inline constexpr bool is_container_v = has_begin_v<T> &&has_end_v<T> &&has_empty_v<T>;
 template<class T>
 inline constexpr bool is_initializer_list_v = is_initializer_list<T>::value;
-
+template<class T>
+inline constexpr bool is_complex_v = is_complex<T>::value;
 
 // Remove const and reference
 template<typename T>

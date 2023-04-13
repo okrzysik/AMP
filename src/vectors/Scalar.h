@@ -1,24 +1,27 @@
 #ifndef included_AMP_Scalar
-    #define included_AMP_Scalar
+#define included_AMP_Scalar
 
-    #include <any>
-    #include <cstddef>
-    #include <cstdint>
+#include <any>
+#include <cstddef>
+#include <cstdint>
 
-    #include "AMP/utils/typeid.h"
+#include "AMP/utils/TypeTraits.h"
+#include "AMP/utils/typeid.h"
+
 
 namespace AMP {
 
 
 /**
  *  \class  Scalar
- *  \brief  Scalar is a class used to store a scalar variable that may be different types/precision
+ *  \brief  Scalar is a class used to store a scalar variable
+ * that may be different types/precision
  */
 class Scalar
 {
 public:
     //! Empty constructor
-    inline Scalar();
+    inline Scalar() = default;
 
     /**
      * \brief Construct a Scalar value
@@ -26,7 +29,7 @@ public:
      * \param[in] x         Input scalar
      */
     template<class TYPE>
-    inline Scalar( const TYPE &x );
+    Scalar( const TYPE &x );
 
     //! Copy constructor
     Scalar( const Scalar & ) = default;
@@ -54,7 +57,7 @@ public:
      * \return              Returns the scalar value
      */
     template<class TYPE>
-    inline TYPE get( double tol = Scalar::getTol<TYPE>() ) const;
+    TYPE get( double tol = Scalar::getTol<TYPE>() ) const;
 
     //! Return true if the type is a floating point type
     inline bool is_floating_point() const { return d_type == 'f'; }
@@ -80,7 +83,21 @@ public:
 
     //! Get default tolerance
     template<class TYPE>
-    static constexpr double getTol();
+    static constexpr double getTol()
+    {
+        if constexpr ( std::is_integral_v<TYPE> ) {
+            return 0;
+        } else if constexpr ( std::is_floating_point_v<TYPE> ) {
+            constexpr double tol = 10 * std::numeric_limits<TYPE>::epsilon();
+            return tol;
+        } else if constexpr ( AMP::is_complex_v<TYPE> ) {
+            constexpr double tol = std::numeric_limits<TYPE>::epsilon().real();
+            return tol;
+        } else {
+            constexpr double tol = 10 * std::numeric_limits<TYPE>::epsilon();
+            return tol;
+        }
+    }
 
 
 public: // Comparison operators
@@ -133,15 +150,31 @@ private: // Helper functions
 
 
 private: // Internal data
-    char d_type;
-    uint32_t d_hash;
+    char d_type     = 0;
+    uint32_t d_hash = 0;
     std::any d_data;
 };
+
+
+/********************************************************************
+ * Operator overloading                                              *
+ ********************************************************************/
+Scalar operator-( const Scalar &x );
+Scalar operator+( const Scalar &x, const Scalar &y );
+Scalar operator-( const Scalar &x, const Scalar &y );
+Scalar operator*( const Scalar &x, const Scalar &y );
+Scalar operator/( const Scalar &x, const Scalar &y );
+inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); }
+
+
+/********************************************************
+ *  ostream operator                                     *
+ ********************************************************/
+template<class TYPE>
+typename std::enable_if_t<std::is_same_v<TYPE, Scalar>, std::ostream &>
+operator<<( std::ostream &out, const TYPE &x );
 
 
 } // namespace AMP
 
 #endif
-
-
-#include "AMP/vectors/Scalar.hpp"
