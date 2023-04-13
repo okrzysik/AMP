@@ -1,4 +1,5 @@
 #include "AMP/vectors/Scalar.h"
+#include "AMP/utils/AMP_MPI.h"
 
 #include <math.h>
 
@@ -133,53 +134,8 @@ Scalar operator/( const Scalar &x, const Scalar &y )
 
 
 /********************************************************************
- * Special functions                                                 *
+ * Math functions                                                    *
  ********************************************************************/
-Scalar minReduce( const AMP::AMP_MPI &comm, const Scalar &x )
-{
-    if ( comm.getSize() <= 1 )
-        return x;
-    if ( x.is_floating_point() ) {
-        return ( comm.minReduce( x.get<double>() ) );
-    } else if ( x.is_integral() ) {
-        return ( comm.minReduce( x.get<int64_t>() ) );
-    } else if ( x.is_complex() ) {
-        return ( comm.minReduce( x.get<std::complex<double>>() ) );
-    } else {
-        AMP_ERROR( "Unable to get types for Scalar" );
-    }
-    return Scalar();
-}
-Scalar maxReduce( const AMP::AMP_MPI &comm, const Scalar &x )
-{
-    if ( comm.getSize() <= 1 )
-        return x;
-    if ( x.is_floating_point() ) {
-        return ( comm.maxReduce( x.get<double>() ) );
-    } else if ( x.is_integral() ) {
-        return ( comm.maxReduce( x.get<int64_t>() ) );
-    } else if ( x.is_complex() ) {
-        return ( comm.maxReduce( x.get<std::complex<double>>() ) );
-    } else {
-        AMP_ERROR( "Unable to get types for Scalar" );
-    }
-    return Scalar();
-}
-Scalar sumReduce( const AMP::AMP_MPI &comm, const Scalar &x )
-{
-    if ( comm.getSize() <= 1 )
-        return x;
-    if ( x.is_floating_point() ) {
-        return ( comm.sumReduce( x.get<double>() ) );
-    } else if ( x.is_integral() ) {
-        return ( comm.sumReduce( x.get<int64_t>() ) );
-    } else if ( x.is_complex() ) {
-        return ( comm.sumReduce( x.get<std::complex<double>>() ) );
-    } else {
-        AMP_ERROR( "Unable to get types for Scalar" );
-    }
-    return Scalar();
-}
 Scalar Scalar::sqrt() const
 {
     if ( !has_value() )
@@ -211,6 +167,103 @@ Scalar Scalar::abs() const
     return Scalar();
 }
 
+
+/********************************************************************
+ * Reductions                                                        *
+ ********************************************************************/
+template<>
+Scalar AMP_MPI::minReduce( const Scalar x ) const
+{
+    if ( d_size <= 1 )
+        return x;
+    if ( x.is_floating_point() ) {
+        return minReduce( x.get<double>() );
+    } else if ( x.is_integral() ) {
+        return minReduce( x.get<int64_t>() );
+    } else if ( x.is_complex() ) {
+        return minReduce( x.get<std::complex<double>>() );
+    } else {
+        AMP_ERROR( "Unable to get types for Scalar" );
+    }
+    return Scalar();
+}
+template<>
+Scalar AMP_MPI::maxReduce( const Scalar x ) const
+{
+    if ( d_size <= 1 )
+        return x;
+    if ( x.is_floating_point() ) {
+        return maxReduce( x.get<double>() );
+    } else if ( x.is_integral() ) {
+        return maxReduce( x.get<int64_t>() );
+    } else if ( x.is_complex() ) {
+        return maxReduce( x.get<std::complex<double>>() );
+    } else {
+        AMP_ERROR( "Unable to get types for Scalar" );
+    }
+    return Scalar();
+}
+template<>
+Scalar AMP_MPI::sumReduce( const Scalar x ) const
+{
+    if ( d_size <= 1 )
+        return x;
+    if ( x.is_floating_point() ) {
+        return sumReduce( x.get<double>() );
+    } else if ( x.is_integral() ) {
+        return sumReduce( x.get<int64_t>() );
+    } else if ( x.is_complex() ) {
+        return sumReduce( x.get<std::complex<double>>() );
+    } else {
+        AMP_ERROR( "Unable to get types for Scalar" );
+    }
+    return Scalar();
+}
+
+
+/********************************************************
+ *  Limits                                               *
+ ********************************************************/
+static constexpr auto hash_double  = AMP::getTypeID<double>().hash;
+static constexpr auto hash_float   = AMP::getTypeID<float>().hash;
+static constexpr auto hash_complex = AMP::getTypeID<std::complex<double>>().hash;
+static constexpr auto hash_int32   = AMP::getTypeID<int32_t>().hash;
+static constexpr auto hash_int64   = AMP::getTypeID<int64_t>().hash;
+Scalar Scalar::limitsMax() const
+{
+    if ( d_hash == hash_double ) {
+        return std::numeric_limits<double>::max();
+    } else if ( d_hash == hash_float ) {
+        return std::numeric_limits<float>::max();
+    } else if ( d_hash == hash_complex ) {
+        return std::numeric_limits<std::complex<double>>::max();
+    } else if ( d_hash == hash_int32 ) {
+        return std::numeric_limits<int32_t>::max();
+    } else if ( d_hash == hash_int64 ) {
+        return std::numeric_limits<int32_t>::max();
+    } else {
+        AMP_ERROR( "Unknown type for limitsMax()" );
+    }
+}
+Scalar Scalar::limitsMin() const
+{
+    if ( d_hash == hash_double ) {
+        return std::numeric_limits<double>::min();
+    } else if ( d_hash == hash_float ) {
+        return std::numeric_limits<float>::min();
+    } else if ( d_hash == hash_complex ) {
+        return std::numeric_limits<std::complex<double>>::min();
+    } else if ( d_hash == hash_int32 ) {
+        return std::numeric_limits<int32_t>::min();
+    } else if ( d_hash == hash_int64 ) {
+        return std::numeric_limits<int64_t>::min();
+    } else {
+        AMP_ERROR( "Unknown type for limitsMin()" );
+    }
+}
+Scalar Scalar::zero() const { return create( 0 ); }
+
+
 /********************************************************
  *  ostream operator                                     *
  ********************************************************/
@@ -231,5 +284,6 @@ operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
     }
     return out;
 }
+
 
 } // namespace AMP

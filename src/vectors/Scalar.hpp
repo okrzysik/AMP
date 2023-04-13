@@ -125,6 +125,23 @@ Scalar::Scalar( const TYPE &x )
 #endif
     }
 }
+template<class TYPE>
+Scalar Scalar::create( const TYPE &x ) const
+{
+    Scalar y;
+    y.d_hash = d_hash;
+    y.d_type = d_type;
+    if constexpr ( std::is_integral_v<TYPE> ) {
+        y.d_data = std::make_any<int64_t>( x );
+    } else if constexpr ( std::is_floating_point_v<TYPE> ) {
+        y.d_data = std::make_any<double>( x );
+    } else if constexpr ( AMP::is_complex_v<TYPE> ) {
+        y.d_data = std::make_any<std::complex<double>>( x );
+    } else {
+        AMP_ERROR( "Unknown type for Scalar::create" );
+    }
+    return y;
+}
 
 
 /********************************************************************
@@ -195,14 +212,6 @@ Scalar operator-( const Scalar &x, const Scalar &y );
 Scalar operator*( const Scalar &x, const Scalar &y );
 Scalar operator/( const Scalar &x, const Scalar &y );
 inline bool operator==( double x, const Scalar &y ) { return y.operator==( x ); }
-
-
-/********************************************************************
- * Special functions                                                 *
- ********************************************************************/
-Scalar minReduce( const AMP::AMP_MPI &comm, const Scalar &x );
-Scalar maxReduce( const AMP::AMP_MPI &comm, const Scalar &x );
-Scalar sumReduce( const AMP::AMP_MPI &comm, const Scalar &x );
 
 
 /********************************************************

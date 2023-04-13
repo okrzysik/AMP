@@ -41,6 +41,14 @@ public:
     Scalar &operator=( Scalar && ) = default;
 
     /**
+     * \brief  Construct a Scalar value
+     * \details  Create a new Scalar with the same implied type as *this
+     * \param[in] x         Input scalar
+     */
+    template<class TYPE>
+    Scalar create( const TYPE &x ) const;
+
+    /**
      * \brief Construct a scalar value
      * \param[in] tol       Tolerance to allow for the conversion (absolute error)
      * \return              Returns the scalar value
@@ -74,6 +82,7 @@ public:
     template<class TYPE>
     static constexpr double getTol();
 
+
 public: // Comparison operators
     bool operator==( const Scalar &rhs ) const;
     bool operator!=( const Scalar &rhs ) const;
@@ -82,6 +91,7 @@ public: // Comparison operators
     bool operator<( const Scalar &rhs ) const;
     bool operator<=( const Scalar &rhs ) const;
 
+
 public: // Overload some typecast operators
     template<class TYPE>
     inline explicit operator TYPE() const
@@ -89,13 +99,38 @@ public: // Overload some typecast operators
         return get<TYPE>();
     }
 
+
+public: // Limits
+    /**
+     * \brief  Return the maximum allowed value
+     * \details  Return the maximum allowed value defined as the maximum value allowed
+     *    by both the type used to create the scalar and the internal storage limits
+     */
+    Scalar limitsMax() const;
+
+    /**
+     * \brief  Return the minimum allowed value
+     * \details  Return the minimum allowed value defined as the minimum value allowed
+     *    by both the type used to create the scalar and the internal storage limits
+     */
+    Scalar limitsMin() const;
+
+    /**
+     * \brief  Return a zero
+     * \details  Return a zero as if it were created by the same type used to create *this
+     */
+    Scalar zero() const;
+
+
 public: // Math functions
     Scalar abs() const;
     Scalar sqrt() const;
 
+
 private: // Helper functions
     template<class TYPE>
     inline void store( const TYPE &x );
+
 
 private: // Internal data
     char d_type;
