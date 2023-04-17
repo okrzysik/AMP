@@ -154,7 +154,7 @@ void testPointSearch( AMP::UnitTest *ut, const AMP::Array<TYPE> &x )
         ut->passes( msg );
     } else {
         auto msg2 = AMP::Utilities::stringf( "%s:  (%i,%i,%e) - (%i,%i,%e)",
-                                             msg,
+                                             msg.data(),
                                              index1.first,
                                              index1.second,
                                              dist1,

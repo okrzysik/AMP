@@ -81,8 +81,8 @@ void PolynomialProperty::eval( AMP::Array<double> &result, const AMP::Array<doub
         double x  = args( i );
         double y  = 0;
         double x2 = 1.0;
-        for ( size_t i = 0; i < d_p.size(); i++ ) {
-            y += d_p[i] * x2;
+        for ( size_t j = 0; j < d_p.size(); j++ ) {
+            y += d_p[j] * x2;
             x2 *= x;
         }
         result( i ) = y;
