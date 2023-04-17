@@ -73,7 +73,7 @@ public: // Derived from VectorData
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     std::string VectorDataName() const override;
     void swapData( VectorData & ) override;
-
+    void assemble() override;
     void dataChanged() override;
 
     std::shared_ptr<VectorData> cloneData() const override;

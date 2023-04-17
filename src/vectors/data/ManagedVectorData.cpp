@@ -163,6 +163,8 @@ void ManagedVectorData::swapData( VectorData &other )
         vec->getVectorData()->setUpdateStatusPtr( in->getUpdateStatusPtr() );
 }
 
+void ManagedVectorData::assemble() { d_Engine->getVectorData()->assemble(); }
+
 
 /****************************************************************
  * Get/Set values                                                *
