@@ -834,6 +834,7 @@ void VectorTests::CopyRawDataBlockVector( AMP::UnitTest *ut )
     auto buf = new double[vectora->getLocalSize()];
     vectora->getRawData( buf );
     vectorb->putRawData( buf );
+    vectorb->getVectorData()->assemble(); // required for petsc
     delete[] buf;
     vectorc->subtract( *vectora, *vectorb );
     PASS_FAIL( vectorc->maxNorm() == 0, "copy raw data block" );
