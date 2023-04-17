@@ -23,6 +23,7 @@ DISABLE_WARNINGS
 #include "libmesh/boundary_info.h"
 #include "libmesh/elem.h"
 #include "libmesh/exodusII_io_helper.h"
+#include "libmesh/libmesh_config.h"
 #include "libmesh/mesh.h"
 #include "libmesh/mesh_generation.h"
 #include "libmesh/parallel.h"
@@ -540,8 +541,13 @@ size_t libmeshMesh::estimateMeshSize( std::shared_ptr<const MeshParameters> para
             libMesh::Parallel::Communicator comm;
             libMesh::ExodusII_IO_Helper exio_helper( comm, false, true );
             exio_helper.open( fname.c_str(), true ); // Open the exodus file, if possible
-            exio_helper.read_header();               // Read the header
-            exio_helper.close();                     // Close the file
+#if ( LIBMESH_MINOR_VERSION < 6 )
+            exio_helper.read_header(); // Read the header
+#else
+            // the read_header function above now does something different!!
+            exio_helper.read_and_store_header_info(); // Read the header
+#endif
+            exio_helper.close(); // Close the file
             NumberOfElements = exio_helper.num_elem;
             AMP_ASSERT( NumberOfElements > 0 );
         } else {
