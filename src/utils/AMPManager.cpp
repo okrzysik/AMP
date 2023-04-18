@@ -162,9 +162,9 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     StackTrace::setDefaultStackType( static_cast<StackTrace::printStackType>( abort_stackType ) );
     // Initialize cuda
-    start_CUDA();
+    //    start_CUDA();
     // Initialize Kokkos
-    start_Kokkos( argc, argv );
+    //    start_Kokkos( argc, argv );
     // Set the signal/terminate handlers
     StackTrace::Utilities::setErrorHandlers();
     setHandlers();
