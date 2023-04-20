@@ -936,32 +936,35 @@ createKeyData( std::string_view key,
         if ( values.size() == 1 ) {
             data = data2[0]->clone();
         } else {
+            auto unit = data2[0]->unit();
             for ( size_t i = 0; i < values.size(); i++ ) {
                 if ( data2[i]->arraySize().length() != 1 )
                     throw std::logic_error(
                         "Using multiple values from database only works for scalars: " +
                         std::string( key ) );
+                AMP_INSIST( unit == data2[i]->unit(),
+                            "Copying array of values requires all values to share the same units" );
             }
             if ( isType<bool>( data2 ) ) {
                 AMP::Array<bool> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<bool> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<bool>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<bool>>( std::move( x ), unit );
             } else if ( isType<int>( data2 ) ) {
                 AMP::Array<int> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<int> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<int>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<int>>( std::move( x ), unit );
             } else if ( isType<double>( data2 ) ) {
                 AMP::Array<double> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<double> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<double>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<double>>( std::move( x ), unit );
             } else if ( isType<std::string>( data2 ) ) {
                 AMP::Array<std::string> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<std::string> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<std::string>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<std::string>>( std::move( x ), unit );
             } else {
                 throw std::logic_error(
                     "Using multiple values from database - unable to convert data: " +
