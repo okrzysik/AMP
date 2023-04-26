@@ -43,7 +43,7 @@ public:
 
 template<class TYPE       = double,
          typename VecOps  = VectorOperationsDefault<TYPE>,
-         typename VecData = VectorDataCPU<TYPE>>
+         typename VecData = VectorDataDefault<TYPE>>
 class SimpleVectorFactory : public VectorFactory
 {
 public:

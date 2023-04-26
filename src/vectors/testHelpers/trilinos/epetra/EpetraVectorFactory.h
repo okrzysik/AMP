@@ -25,8 +25,8 @@ public:
         const int nGlobal = nLocal * globalComm.getSize();
         auto commList     = std::make_shared<CommunicationList>( nLocal, globalComm );
         auto dofManager   = std::make_shared<AMP::Discretization::DOFManager>( nLocal, globalComm );
-        auto buffer =
-            std::make_shared<AMP::LinearAlgebra::VectorDataCPU<double>>( start, nLocal, nGlobal );
+        auto buffer       = std::make_shared<AMP::LinearAlgebra::VectorDataDefault<double>>(
+            start, nLocal, nGlobal );
         auto vec = createEpetraVector( commList, dofManager, buffer );
         return vec;
     }

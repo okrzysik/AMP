@@ -7,7 +7,6 @@
 #include "AMP/vectors/data/DataChangeFirer.h"
 
 #include <memory>
-#include <vector>
 
 
 namespace AMP::LinearAlgebra {

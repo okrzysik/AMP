@@ -768,6 +768,7 @@ public:
     size_t unpack( const std::byte * );
 
 private:
+    Allocator d_alloc;
     bool d_isCopyable;           // Can the array be copied
     bool d_isFixedSize;          // Can the array be resized
     ArraySize d_size;            // Size of each dimension

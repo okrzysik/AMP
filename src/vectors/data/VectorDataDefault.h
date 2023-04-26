@@ -1,6 +1,7 @@
-#ifndef included_AMP_VectorDataGPU
-#define included_AMP_VectorDataGPU
+#ifndef included_AMP_VectorDataDefault
+#define included_AMP_VectorDataDefault
 
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/VectorData.h"
 
 
@@ -13,20 +14,27 @@ class VectorDataIterator;
 
 /**
  * \brief  A class used to hold vector data
- * \details  VectorDataGPU is a default implementation of VectorData that stores
- *    the local values as a single block of data on the GPU.
+ * \details  VectorDataDefault is a default implementation of VectorData that stores
+ * the local values as a single block of data on the CPU.
  */
-template<typename TYPE = double>
-class VectorDataGPU : public VectorData
+template<typename TYPE = double, class Allocator = std::allocator<TYPE>>
+class VectorDataDefault : public VectorData
 {
-public: // Constructors
-    VectorDataGPU( size_t start, size_t localSize, size_t globalSize );
+public: // Member types
+    using value_type     = TYPE;
+    using allocator_type = Allocator;
 
-    VectorDataGPU( const VectorDataGPU & ) = delete;
+public: // Constructors
+    VectorDataDefault( size_t start,
+                   size_t localSize,
+                   size_t globalSize,
+                   const Allocator &alloc = Allocator() );
+
+    VectorDataDefault( const VectorDataDefault & ) = delete;
 
 public: // Virtual functions
     //! Virtual destructor
-    virtual ~VectorDataGPU();
+    virtual ~VectorDataDefault();
 
     //! Get the type name
     std::string VectorDataName() const override;
@@ -130,7 +138,7 @@ public: // Advanced virtual functions
     /** \brief Return the typeid of the given block
      * \param block    The block id to check
      */
-    typeID getType( size_t i ) const override;
+    typeID getType( size_t block ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
@@ -153,15 +161,16 @@ public: // Non-virtual functions
      */
     const TYPE &operator[]( size_t i ) const;
 
+    //! Return the allocator associated with the container
+    Allocator get_allocator() const noexcept;
 
 protected:
-    VectorDataGPU() : d_Data( nullptr ) {}
-
-    void allocate( size_t start, size_t localSize, size_t globalSize );
+    VectorDataDefault( const Allocator &alloc = Allocator() ) : d_alloc( alloc ) {}
 
 
 private:
-    TYPE *d_Data;
+    TYPE *d_data = nullptr;
+    Allocator d_alloc;
 };
 
 
