@@ -26,9 +26,9 @@ public: // Member types
 
 public: // Constructors
     VectorDataDefault( size_t start,
-                   size_t localSize,
-                   size_t globalSize,
-                   const Allocator &alloc = Allocator() );
+                       size_t localSize,
+                       size_t globalSize,
+                       const Allocator &alloc = Allocator() );
 
     VectorDataDefault( const VectorDataDefault & ) = delete;
 

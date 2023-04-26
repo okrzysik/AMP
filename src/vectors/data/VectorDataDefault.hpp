@@ -36,12 +36,12 @@ std::string VectorDataDefault<TYPE, Allocator>::VectorDataName() const
  ****************************************************************/
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::VectorDataDefault( size_t start,
-                                               size_t localSize,
-                                               size_t globalSize,
-                                               const Allocator &alloc )
+                                                       size_t localSize,
+                                                       size_t globalSize,
+                                                       const Allocator &alloc )
     : d_alloc( alloc )
 {
-    static_assert( std::is_same_v<typename Allocator::value_type,TYPE> );
+    static_assert( std::is_same_v<typename Allocator::value_type, TYPE> );
     d_localSize  = localSize;
     d_globalSize = globalSize;
     d_localStart = start;

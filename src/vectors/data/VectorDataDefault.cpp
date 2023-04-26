@@ -3,7 +3,7 @@
 
 
 #ifdef USE_CUDA
-#include "AMP/utils/cuda/CudaAllocator.h"
+    #include "AMP/utils/cuda/CudaAllocator.h"
 #endif
 
 
@@ -23,6 +23,7 @@ std::string AMP::LinearAlgebra::VectorDataDefault<float>::VectorDataName() const
 // Explicit instantiations
 template class AMP::LinearAlgebra::VectorDataDefault<double>;
 template class AMP::LinearAlgebra::VectorDataDefault<float>;
+
 #ifdef USE_CUDA
 template class AMP::LinearAlgebra::VectorDataDefault<double,AMP::CudaDevAllocator<double>>;
 template class AMP::LinearAlgebra::VectorDataDefault<float,AMP::CudaDevAllocator<float>>;
