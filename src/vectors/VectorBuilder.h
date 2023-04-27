@@ -5,7 +5,7 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/vectors/Vector.h"
-#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataDefault.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 #include <string>
@@ -91,7 +91,7 @@ std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> ve
  */
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
-         typename VecData = VectorDataCPU<TYPE>>
+         typename VecData = VectorDataDefault<TYPE>>
 Vector::shared_ptr createSimpleVector( size_t localSize, const std::string &var );
 
 
@@ -102,7 +102,7 @@ Vector::shared_ptr createSimpleVector( size_t localSize, const std::string &var 
  */
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
-         typename VecData = VectorDataCPU<TYPE>>
+         typename VecData = VectorDataDefault<TYPE>>
 Vector::shared_ptr createSimpleVector( size_t localSize, std::shared_ptr<Variable> var );
 
 
@@ -114,7 +114,7 @@ Vector::shared_ptr createSimpleVector( size_t localSize, std::shared_ptr<Variabl
  */
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
-         typename VecData = VectorDataCPU<TYPE>>
+         typename VecData = VectorDataDefault<TYPE>>
 Vector::shared_ptr
 createSimpleVector( size_t localSize, std::shared_ptr<Variable> var, AMP_MPI comm );
 
@@ -128,7 +128,7 @@ createSimpleVector( size_t localSize, std::shared_ptr<Variable> var, AMP_MPI com
  */
 template<typename TYPE,
          typename VecOps  = VectorOperationsDefault<TYPE>,
-         typename VecData = VectorDataCPU<TYPE>>
+         typename VecData = VectorDataDefault<TYPE>>
 Vector::shared_ptr createSimpleVector( std::shared_ptr<Variable> var,
                                        std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
                                        std::shared_ptr<CommunicationList> commlist );

@@ -5,8 +5,7 @@
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/cuda/GPUDevAllocator.h"
-#include "AMP/utils/cuda/GPUUmemAllocator.h"
+#include "AMP/utils/cuda/CudaAllocator.h"
 #include <cuda.h>
 
 
@@ -15,10 +14,9 @@ int main( int argc, char *argv[] )
     // Declare Arrays and utils
     AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
-    AMP::Array<double, AMP::FunctionTable, GPUUmemAllocator<double>> A;
-    AMP::Array<double, AMP::FunctionTable, GPUDevAllocator<double>> B;
+    AMP::Array<double, AMP::FunctionTable, AMP::CudaManagedAllocator<double>> A;
+    AMP::Array<double, AMP::FunctionTable, AMP::CudaDevAllocator<double>> B;
     AMP::Array<double> R;
-    bool pass = true;
 
     const size_t n             = 10;
     std::vector<size_t> v1     = { n };
@@ -43,6 +41,7 @@ int main( int argc, char *argv[] )
     K.opData( B.data(), B.length() );
     R.resize( v2 );
     cudaMemcpy( R.data(), B.data(), sizeof( double ) * R.length(), cudaMemcpyDeviceToHost );
+    bool pass = true;
     for ( size_t i = 0; i < R.length(); i++ ) {
         if ( A.data()[i] != R.data()[i] ) {
             pass = false;

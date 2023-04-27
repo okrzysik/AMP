@@ -1,5 +1,5 @@
 #include "AMP/vectors/trilinos/epetra/EpetraVectorData.h"
-#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataDefault.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -129,7 +129,7 @@ void EpetraVectorData::getRawData( void *out, const typeID &id ) const
 std::shared_ptr<VectorData> EpetraVectorData::cloneData() const
 {
     auto buffer =
-        std::make_shared<VectorDataCPU<double>>( d_localStart, d_localSize, d_globalSize );
+        std::make_shared<VectorDataDefault<double>>( d_localStart, d_localSize, d_globalSize );
     auto params = std::make_shared<EpetraVectorEngineParameters>(
         d_localSize, getComm(), getCommunicationList() );
     auto data = EpetraVectorData::create( params, buffer );

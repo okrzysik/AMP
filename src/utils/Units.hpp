@@ -617,7 +617,7 @@ constexpr double Units::convert( const Units &rhs ) const
 constexpr bool Units::operator==( const Units &rhs ) const noexcept
 {
     double err = d_scale >= rhs.d_scale ? d_scale - rhs.d_scale : rhs.d_scale - d_scale;
-    bool test  = err < 1e-10 * d_scale;
+    bool test  = err <= 1e-10 * d_scale;
     for ( size_t i = 0; i < d_SI.size(); i++ )
         test = test && d_SI[i] == rhs.d_SI[i];
     return test;

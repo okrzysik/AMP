@@ -3,8 +3,8 @@
 #include "AMP/utils/FunctionTable.h"
 #include "AMP/utils/FunctionTable.hpp"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/cuda/CudaAllocator.h"
 #include "AMP/utils/cuda/GPUFunctionTable.h"
-#include "AMP/utils/cuda/GPUUmemAllocator.h"
 #include <cuda.h>
 
 
@@ -201,8 +201,8 @@ int main( int argc, char *argv[] )
     TestFunctionTable( &ut, A, B );
 
 #if USE_CUDA
-    AMP::Array<double, AMP::GPUFunctionTable, GPUUmemAllocator<double>> C;
-    AMP::Array<double, AMP::GPUFunctionTable, GPUUmemAllocator<double>> D;
+    AMP::Array<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<double>> C;
+    AMP::Array<double, AMP::GPUFunctionTable, AMP::CudaManagedAllocator<double>> D;
     TestFunctionTable( &ut, C, D );
 #endif
 

@@ -2,7 +2,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataDefault.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
 #include "ProfilerApp.h"
@@ -93,8 +93,8 @@ std::shared_ptr<Vector> ManagedEpetraMatrix::getRightVector() const
     int localSize  = d_pParameters->getLocalNumberOfColumns();
     int globalSize = d_pParameters->getGlobalNumberOfColumns();
     int localStart = d_pParameters->getRightDOFManager()->beginDOF();
-    auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    auto vec       = createEpetraVector(
+    auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
+    auto vec    = createEpetraVector(
         d_pParameters->d_CommListRight, d_pParameters->getRightDOFManager(), buffer );
     vec->setVariable( d_pParameters->d_VariableRight );
     return vec;
@@ -104,8 +104,8 @@ std::shared_ptr<Vector> ManagedEpetraMatrix::getLeftVector() const
     int localSize  = d_pParameters->getLocalNumberOfRows();
     int globalSize = d_pParameters->getGlobalNumberOfRows();
     int localStart = d_pParameters->getRightDOFManager()->beginDOF();
-    auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    auto vec       = createEpetraVector(
+    auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
+    auto vec    = createEpetraVector(
         d_pParameters->d_CommListLeft, d_pParameters->getLeftDOFManager(), buffer );
     vec->setVariable( d_pParameters->d_VariableLeft );
     return vec;
