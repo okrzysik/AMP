@@ -9,13 +9,6 @@
 namespace AMP::LinearAlgebra {
 
 
-// Define some specializations
-template<>
-std::string VectorDataDefault<double>::VectorDataName() const;
-template<>
-std::string VectorDataDefault<float>::VectorDataName() const;
-
-
 // Suppresses implicit instantiation below
 extern template class VectorDataDefault<double>;
 extern template class VectorDataDefault<float>;
@@ -27,7 +20,8 @@ extern template class VectorDataDefault<float>;
 template<typename TYPE, class Allocator>
 std::string VectorDataDefault<TYPE, Allocator>::VectorDataName() const
 {
-    return "VectorDataDefault<" + std::string( typeid( TYPE ).name() ) + ">";
+    constexpr typeID id = getTypeID<TYPE>();
+    return "VectorDataDefault<" + std::string( id.name ) + ">";
 }
 
 
@@ -36,20 +30,28 @@ std::string VectorDataDefault<TYPE, Allocator>::VectorDataName() const
  ****************************************************************/
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::VectorDataDefault( size_t start,
-                                               size_t localSize,
-                                               size_t globalSize,
-                                               const Allocator &alloc )
+                                                       size_t localSize,
+                                                       size_t globalSize,
+                                                       const Allocator &alloc )
     : d_alloc( alloc )
 {
-    static_assert( std::is_same_v<typename Allocator::value_type,TYPE> );
+    static_assert( std::is_same_v<typename Allocator::value_type, TYPE> );
     d_localSize  = localSize;
     d_globalSize = globalSize;
     d_localStart = start;
     d_data       = d_alloc.allocate( localSize );
+    if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
+        for ( size_t i = 0; i < localSize; ++i )
+            new ( d_data + i ) TYPE();
+    }
 }
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
 {
+    if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
+        for ( size_t i = 0; i < d_localSize; ++i )
+            d_data[i].~TYPE();
+    }
     d_alloc.deallocate( d_data, d_localSize );
 }
 
@@ -60,8 +62,8 @@ VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
 template<typename TYPE, class Allocator>
 std::shared_ptr<VectorData> VectorDataDefault<TYPE, Allocator>::cloneData() const
 {
-    auto retVal =
-        std::make_shared<VectorDataDefault<TYPE, Allocator>>( d_localStart, d_localSize, d_globalSize );
+    auto retVal = std::make_shared<VectorDataDefault<TYPE, Allocator>>(
+        d_localStart, d_localSize, d_globalSize );
     retVal->setCommunicationList( getCommunicationList() );
     return retVal;
 }
@@ -137,9 +139,9 @@ inline const TYPE &VectorDataDefault<TYPE, Allocator>::operator[]( size_t i ) co
 }
 template<typename TYPE, class Allocator>
 inline void VectorDataDefault<TYPE, Allocator>::setValuesByLocalID( size_t num,
-                                                                const size_t *indices,
-                                                                const void *vals,
-                                                                const typeID &id )
+                                                                    const size_t *indices,
+                                                                    const void *vals,
+                                                                    const typeID &id )
 {
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
@@ -157,9 +159,9 @@ inline void VectorDataDefault<TYPE, Allocator>::setValuesByLocalID( size_t num,
 }
 template<typename TYPE, class Allocator>
 inline void VectorDataDefault<TYPE, Allocator>::addValuesByLocalID( size_t num,
-                                                                const size_t *indices,
-                                                                const void *vals,
-                                                                const typeID &id )
+                                                                    const size_t *indices,
+                                                                    const void *vals,
+                                                                    const typeID &id )
 {
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<const TYPE *>( vals );
@@ -177,9 +179,9 @@ inline void VectorDataDefault<TYPE, Allocator>::addValuesByLocalID( size_t num,
 }
 template<typename TYPE, class Allocator>
 inline void VectorDataDefault<TYPE, Allocator>::getValuesByLocalID( size_t num,
-                                                                const size_t *indices,
-                                                                void *vals,
-                                                                const typeID &id ) const
+                                                                    const size_t *indices,
+                                                                    void *vals,
+                                                                    const typeID &id ) const
 {
     if ( id == getTypeID<TYPE>() ) {
         auto data = reinterpret_cast<TYPE *>( vals );

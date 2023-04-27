@@ -257,14 +257,20 @@ void Array<TYPE, FUN, Allocator>::allocate( const ArraySize &N )
         throw std::logic_error( "Array cannot be resized" );
     d_size = N;
     d_data = nullptr;
-    if ( d_size.length() > 0 ) {
+    d_ptr.reset();
+    size_t length = d_size.length();
+    if ( length > 0 ) {
         try {
-            d_data = d_alloc.allocate( d_size.length() );
+            d_data = d_alloc.allocate( length );
+            if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
+                for ( size_t i = 0; i < length; ++i )
+                    new ( d_data + i ) TYPE();
+            }
+            d_ptr.reset( d_data, Deleter( d_alloc, length ) );
         } catch ( ... ) {
             throw std::logic_error( "Failed to allocate array" );
         }
     }
-    d_ptr.reset( d_data, [this]( TYPE *p ) { d_alloc.deallocate( p, d_size.length() ); } );
 }
 template<class TYPE, class FUN, class Allocator>
 Array<TYPE, FUN, Allocator>::Array( const Array &rhs )
@@ -338,9 +344,7 @@ void Array<TYPE, FUN, Allocator>::clear()
 {
     d_isCopyable  = true;
     d_isFixedSize = false;
-    d_size        = ArraySize();
-    d_ptr.reset();
-    d_data = nullptr;
+    allocate( {} );
 }
 
 
