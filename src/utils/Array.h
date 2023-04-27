@@ -784,6 +784,25 @@ private:
                                         std::array<size_t, 5> &last,
                                         std::array<size_t, 5> &inc,
                                         std::array<size_t, 5> &N );
+
+private:
+    class Deleter
+    {
+    public:
+        Deleter( const Allocator &alloc, size_t N ) : d_alloc( alloc ), d_N( N ) {}
+        void operator()( TYPE *p )
+        {
+            if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
+                for ( size_t i = 0; i < d_N; ++i )
+                    p[i].~TYPE();
+            }
+            d_alloc.deallocate( p, d_N );
+        }
+
+    private:
+        Allocator d_alloc;
+        size_t d_N;
+    };
 };
 
 

@@ -7,19 +7,6 @@
 #endif
 
 
-// Specializations
-template<>
-std::string AMP::LinearAlgebra::VectorDataDefault<double>::VectorDataName() const
-{
-    return "VectorDataDefault<double>";
-}
-template<>
-std::string AMP::LinearAlgebra::VectorDataDefault<float>::VectorDataName() const
-{
-    return "VectorDataDefault<float>";
-}
-
-
 // Explicit instantiations
 template class AMP::LinearAlgebra::VectorDataDefault<double>;
 template class AMP::LinearAlgebra::VectorDataDefault<float>;

@@ -9,13 +9,6 @@
 namespace AMP::LinearAlgebra {
 
 
-// Define some specializations
-template<>
-std::string VectorDataDefault<double>::VectorDataName() const;
-template<>
-std::string VectorDataDefault<float>::VectorDataName() const;
-
-
 // Suppresses implicit instantiation below
 extern template class VectorDataDefault<double>;
 extern template class VectorDataDefault<float>;
@@ -27,7 +20,8 @@ extern template class VectorDataDefault<float>;
 template<typename TYPE, class Allocator>
 std::string VectorDataDefault<TYPE, Allocator>::VectorDataName() const
 {
-    return "VectorDataDefault<" + std::string( typeid( TYPE ).name() ) + ">";
+    constexpr typeID id = getTypeID<TYPE>();
+    return "VectorDataDefault<" + std::string( id.name ) + ">";
 }
 
 
@@ -46,10 +40,18 @@ VectorDataDefault<TYPE, Allocator>::VectorDataDefault( size_t start,
     d_globalSize = globalSize;
     d_localStart = start;
     d_data       = d_alloc.allocate( localSize );
+    if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
+        for ( size_t i = 0; i < localSize; ++i )
+            new ( d_data + i ) TYPE();
+    }
 }
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
 {
+    if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
+        for ( size_t i = 0; i < d_localSize; ++i )
+            d_data[i].~TYPE();
+    }
     d_alloc.deallocate( d_data, d_localSize );
 }
 
