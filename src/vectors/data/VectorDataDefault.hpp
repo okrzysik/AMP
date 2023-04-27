@@ -40,18 +40,14 @@ VectorDataDefault<TYPE, Allocator>::VectorDataDefault( size_t start,
     d_globalSize = globalSize;
     d_localStart = start;
     d_data       = d_alloc.allocate( localSize );
-    if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
-        for ( size_t i = 0; i < localSize; ++i )
-            new ( d_data + i ) TYPE();
-    }
+    for ( size_t i = 0; i < localSize; ++i )
+        new ( d_data + i ) TYPE();
 }
 template<typename TYPE, class Allocator>
 VectorDataDefault<TYPE, Allocator>::~VectorDataDefault()
 {
-    if constexpr ( !std::is_trivially_copyable<TYPE>::value ) {
-        for ( size_t i = 0; i < d_localSize; ++i )
-            d_data[i].~TYPE();
-    }
+    for ( size_t i = 0; i < d_localSize; ++i )
+        d_data[i].~TYPE();
     d_alloc.deallocate( d_data, d_localSize );
 }
 
