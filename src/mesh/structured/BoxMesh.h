@@ -403,9 +403,26 @@ public: // BoxMesh specific functionality
                                                               int gcw = 0 );
 
 
-protected: // Convenience typedef
+public: // Convenience typedef
     typedef AMP::Utilities::stackVector<std::pair<MeshElementIndex, MeshElementIndex>, 32>
         ElementBlocks;
+
+
+public: // Advanced functions
+    // Get the surface set for a given surface/type
+    ElementBlocks getSurface( int surface, GeomType type ) const;
+
+    // Helper function to return the indices of the local block owned by the given processor
+    inline std::array<int, 6> getLocalBlock( int rank ) const;
+
+    // Helper functions to identify the iterator blocks
+    ElementBlocks
+    getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const;
+    ElementBlocks intersect( const ElementBlocks &v1, const ElementBlocks &v2 ) const;
+
+    // Helper function to create an iterator from an ElementBlocks list
+    inline MeshIterator createIterator( const ElementBlocks &list ) const;
+
 
 protected:
     // Constructor
@@ -428,22 +445,8 @@ protected:
     // Function to finalize the mesh data once the coordinates have been set
     std::vector<double> getDisplacement( std::shared_ptr<const AMP::Database> db );
 
-    // Get the surface set for a given surface/type
-    ElementBlocks getSurface( int surface, GeomType type ) const;
-
     // Function to finalize the mesh data once the coordinates have been set
     virtual void createBoundingBox();
-
-    // Helper function to return the indices of the local block owned by the given processor
-    inline std::array<int, 6> getLocalBlock( int rank ) const;
-
-    // Helper functions to identify the iterator blocks
-    ElementBlocks
-    getIteratorRange( std::array<int, 6> range, const GeomType type, const int gcw ) const;
-    ElementBlocks intersect( const ElementBlocks &v1, const ElementBlocks &v2 ) const;
-
-    // Helper function to create an iterator from an ElementBlocks list
-    inline MeshIterator createIterator( const ElementBlocks &list ) const;
 
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes( int dim,
@@ -451,6 +454,7 @@ protected:
                                     const double *range,
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
+
 
 protected: // Write/read restart data
     void writeRestart( int64_t ) const override;
