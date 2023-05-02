@@ -395,7 +395,7 @@ double AMPManager::start_CUDA()
     }
 
     void *tmp;
-    checkCudaError( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
+    checkCudaErrors( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
     cudaFree( tmp );
 #endif
     return 0;
