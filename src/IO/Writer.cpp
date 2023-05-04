@@ -327,7 +327,7 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
         for ( auto &[id0, mesh2] : d_baseMeshes ) {
             if ( id0.objID == id.getData() ) {
                 AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2.mesh );
-                auto vec2 = vec->select( meshSelector, vec->getName() );
+                auto vec2 = vec->selectInto( meshSelector );
                 if ( vec2 ) {
                     VectorData data( vec2, name_in );
                     data.type    = type;
