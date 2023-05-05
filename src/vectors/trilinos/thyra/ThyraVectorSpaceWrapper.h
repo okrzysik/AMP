@@ -26,8 +26,8 @@ public:
                                       bool is_range = true );
 
     // Deleted constructors
-    ThyraVectorSpaceWrapper()                                             = delete;
-    ThyraVectorSpaceWrapper( const ThyraVectorSpaceWrapper & )            = delete;
+    ThyraVectorSpaceWrapper()                                  = delete;
+    ThyraVectorSpaceWrapper( const ThyraVectorSpaceWrapper & ) = delete;
     ThyraVectorSpaceWrapper &operator=( const ThyraVectorSpaceWrapper & ) = delete;
 
     //! Destructor
