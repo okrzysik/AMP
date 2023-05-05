@@ -20,7 +20,7 @@ class MultiLevelPreconditioner;
 
 // Forward declare EpetraMatrix
 namespace AMP::LinearAlgebra {
-class EpetraMatrix;
+class ManagedEpetraMatrix;
 }
 
 namespace AMP::Solver {
@@ -215,7 +215,7 @@ private:
     std::shared_ptr<MLoptions> d_mlOptions;
 
     std::shared_ptr<ML_Epetra::MultiLevelPreconditioner> d_mlSolver;
-    std::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MLParameterList;
 
     std::vector<double> d_x_values;

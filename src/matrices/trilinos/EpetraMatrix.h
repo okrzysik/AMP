@@ -25,8 +25,7 @@ namespace AMP::LinearAlgebra {
 class EpetraMatrix : public Matrix
 {
 private:
-    EpetraMatrix();
-    explicit EpetraMatrix( std::shared_ptr<MatrixParameters> );
+    EpetraMatrix() = delete;
 
 protected:
     /** \brief Bare pointer to an Epetra_CrsMatrix
@@ -53,7 +52,7 @@ protected:
      */
     void VerifyEpetraReturn( int err, const char *func ) const;
 
-    /** \brief Constrcutor
+    /** \brief Constructor
      * \param[in]  m1  Rowmap to create the Epetra matrix
      * \param m2  Unused
      * \param[in] entriesRow  The number of entries in the matrix per local row
