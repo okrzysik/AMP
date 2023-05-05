@@ -11,7 +11,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include <memory>
 
@@ -91,8 +90,8 @@ static void myTest( AMP::UnitTest *ut )
             std::make_shared<AMP::Operator::DirichletMatrixCorrection>( dirichletOpParams );
 
         auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, mechVariable, true );
-        auto mechRhsVec = mechSolVec->cloneVector();
-        auto mechResVec = mechSolVec->cloneVector();
+        auto mechRhsVec = mechSolVec->clone();
+        auto mechResVec = mechSolVec->clone();
 
         for ( int i = 0; i < 3; i++ ) {
             mechSolVec->setRandomValues();

@@ -13,7 +13,7 @@ namespace AMP::Discretization {
 /**
  * \class simpleDOFManager
  * \brief A derived class to create a simple DOF_Manager
- * \details  This derived class impliments a concrete DOF_Manager for creating Vectors
+ * \details  This derived class implements a concrete DOF_Manager for creating Vectors
  *    over a mesh on a particular mesh entity.  For example it can create a NodalVector
  *    over the entire Mesh.  Note: this class will be replaced by a more complete
  *    Discretization interface.
@@ -30,7 +30,7 @@ public:
      * \param mesh          Mesh over which we want to construct the DOF map
      * \param type          The geometric entity type for the DOF map
      * \param gcw           The desired ghost width
-     * \param DOFsPerElement The desired number of DOFs pere element
+     * \param DOFsPerElement The desired number of DOFs per element
      * \param split         Do we want to split the DOFManager by the meshes returning a
      * multiDOFManager
      */
@@ -40,18 +40,34 @@ public:
                                                int DOFsPerElement,
                                                bool split = true );
 
+    /**
+     * \brief Create a new DOF manager object
+     * \details  This is the standard constructor for creating a new DOF manager object.
+     * \param mesh          Mesh over which we want to construct the DOF map
+     * \param it1           Local iterator
+     * \param it2           Ghost iterator
+     * \param type          The geometric entity type for the DOF map
+     * \param gcw           The desired ghost width
+     * \param DOFsPerElement The desired number of DOFs per element
+     */
+    simpleDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                      const AMP::Mesh::MeshIterator &local,
+                      const AMP::Mesh::MeshIterator &ghost,
+                      AMP::Mesh::GeomType type,
+                      int DOFsPerElement );
+
 
     /**
      * \brief Create a new DOF manager object
      * \details  This is will create a new simpleDOFManager from a mesh iterator
      * \param mesh          Mesh over which the iterators are defined
-     * \param it1           The iterator over the elements (including ghost cells)
-     * \param it2           The iterator over the elements (excluding ghost cells)
-     * \param DOFsPerElement The desired number of DOFs pere element
+     * \param ghost         Ghost iterator
+     * \param local         Local iterator
+     * \param DOFsPerElement The desired number of DOFs per element
      */
     static std::shared_ptr<DOFManager> create( std::shared_ptr<AMP::Mesh::Mesh> mesh,
-                                               const AMP::Mesh::MeshIterator &it1,
-                                               const AMP::Mesh::MeshIterator &it2,
+                                               const AMP::Mesh::MeshIterator &ghost,
+                                               const AMP::Mesh::MeshIterator &local,
                                                int DOFsPerElement );
 
 
@@ -128,13 +144,13 @@ public:
      *                          Note: if this is true, any processors that do not contain the mesh
      * will return NULL.
      */
-    std::shared_ptr<DOFManager> subset( const AMP::Mesh::Mesh::shared_ptr mesh,
+    std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
 
-private:
+protected:
     // Private constructor
-    simpleDOFManager();
+    simpleDOFManager() = delete;
 
     // Function to find the remote DOF given a set of mesh element IDs
     std::vector<size_t> getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids ) const;
@@ -145,18 +161,19 @@ private:
     // Append DOFs
     inline void appendDOFs( const AMP::Mesh::MeshElementID &id, std::vector<size_t> &dofs ) const;
 
-    // Data members
-    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
-    bool d_isBaseMesh;
-    AMP::Mesh::MeshID d_meshID;
-    std::vector<AMP::Mesh::MeshID> d_baseMeshIDs; // Must be global list
-    AMP::Mesh::GeomType d_type;
-    AMP::Mesh::MeshIterator d_localIterator;
-    AMP::Mesh::MeshIterator d_ghostIterator;
-    int DOFsPerElement;
-    std::vector<AMP::Mesh::MeshElementID> d_local_id;
-    std::vector<AMP::Mesh::MeshElementID> d_remote_id;
-    std::vector<size_t> d_remote_dof;
+
+protected:                                                     // Data members
+    bool d_isBaseMesh          = false;                        // Is the mesh a base mesh
+    AMP::Mesh::GeomType d_type = AMP::Mesh::GeomType::Nullity; // entity type
+    int d_DOFsPerElement       = 0;                            // # Of DOFs per type
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh;                   // Mesh
+    AMP::Mesh::MeshID d_meshID;                                // MeshID
+    std::vector<AMP::Mesh::MeshID> d_baseMeshIDs;              // Must be global list
+    AMP::Mesh::MeshIterator d_localIterator;                   // Local iterator
+    AMP::Mesh::MeshIterator d_ghostIterator;                   // global iterator
+    std::vector<AMP::Mesh::MeshElementID> d_local_id;          // List of local ids
+    std::vector<AMP::Mesh::MeshElementID> d_remote_id;         // List of remote ids
+    std::vector<size_t> d_remote_dof;                          // remote dofs
 };
 } // namespace AMP::Discretization
 

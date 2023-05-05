@@ -1,6 +1,5 @@
 #include "AMP/vectors/SubsetVariable.h"
 #include "AMP/discretization/subsetDOFManager.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/SubsetVectorData.h"
@@ -95,6 +94,17 @@ Vector::const_shared_ptr SubsetVariable::view( Vector::const_shared_ptr v,
     auto retVal          = std::make_shared<Vector>( data, ops, var, subsetDOF );
     PROFILE_STOP( "view", 2 );
     return retVal;
+}
+
+
+/****************************************************************
+ * Restart                                                       *
+ ****************************************************************/
+SubsetVariable::SubsetVariable( int64_t fid ) : Variable( fid ) { AMP_ERROR( "Not finished" ); }
+void SubsetVariable::writeRestart( int64_t fid ) const
+{
+    Variable::writeRestart( fid );
+    AMP_ERROR( "Not finished" );
 }
 
 

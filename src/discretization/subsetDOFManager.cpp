@@ -11,14 +11,15 @@ namespace AMP::Discretization {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-DOFManager::shared_ptr subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
-                                                 const std::vector<size_t> &dofs,
-                                                 const AMP::Mesh::MeshIterator &iterator,
-                                                 const AMP_MPI &comm_in )
+std::shared_ptr<DOFManager>
+subsetDOFManager::create( std::shared_ptr<const DOFManager> parentDOFManager,
+                          const std::vector<size_t> &dofs,
+                          const AMP::Mesh::MeshIterator &iterator,
+                          const AMP_MPI &comm_in )
 {
     // Limit the new comm to be <= the parent comm
     if ( parentDOFManager.get() == nullptr || comm_in.isNull() )
-        return DOFManager::shared_ptr();
+        return std::shared_ptr<DOFManager>();
     PROFILE_START( "subsetDOFManager", 2 );
     AMP_MPI comm = AMP_MPI::intersect( parentDOFManager->getComm(), comm_in );
     // Set the basic info
@@ -48,7 +49,7 @@ DOFManager::shared_ptr subsetDOFManager::create( std::shared_ptr<const DOFManage
     // Return if the subset DOF is empty
     if ( subsetDOF->d_global == 0 ) {
         PROFILE_STOP2( "subsetDOFManager", 2 );
-        return DOFManager::shared_ptr();
+        return std::shared_ptr<DOFManager>();
     }
     // Return if the subset DOF == parent DOF
     if ( subsetDOF->d_global == parentDOFManager->numGlobalDOF() ) {
@@ -86,7 +87,7 @@ DOFManager::shared_ptr subsetDOFManager::create( std::shared_ptr<const DOFManage
     }
     PROFILE_STOP( "subsetDOFManager", 2 );
     if ( subsetDOF->numGlobalDOF() == 0 )
-        return DOFManager::shared_ptr();
+        return std::shared_ptr<DOFManager>();
     return subsetDOF;
 }
 

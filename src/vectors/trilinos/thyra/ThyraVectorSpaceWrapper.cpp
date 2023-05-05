@@ -1,7 +1,6 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
-
-#include "AMP/utils/Utilities.h"
 
 DISABLE_WARNINGS
 #include "Thyra_DefaultSpmdVectorSpace.hpp"
@@ -69,7 +68,7 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorSpaceWrapper::createMember() 
 {
     AMP_ASSERT( d_is_range );
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( 1 );
-    vecs[0] = d_thyra_vec->getVec( 0 )->cloneVector();
+    vecs[0] = d_thyra_vec->getVec( 0 )->clone();
     return Teuchos::RCP<Thyra::VectorBase<double>>( new ThyraVectorWrapper( vecs ) );
 }
 Teuchos::RCP<Thyra::MultiVectorBase<double>>
@@ -78,7 +77,7 @@ ThyraVectorSpaceWrapper::createMembers( int numMembers ) const
     AMP_ASSERT( d_is_range );
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( numMembers );
     for ( int i = 0; i < numMembers; i++ )
-        vecs[i] = d_thyra_vec->getVec( 0 )->cloneVector();
+        vecs[i] = d_thyra_vec->getVec( 0 )->clone();
     return Teuchos::RCP<Thyra::VectorBase<double>>( new ThyraVectorWrapper( vecs ) );
 }
 Teuchos::RCP<Thyra::VectorBase<double>>

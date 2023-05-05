@@ -50,13 +50,13 @@ public:
     std::shared_ptr<AMP::LinearAlgebra::Variable> createInputVariable( const std::string &name,
                                                                        int = -1 ) override
     {
-        return d_inpVariable->cloneVariable( name );
+        return d_inpVariable->clone( name );
     }
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> createOutputVariable( const std::string &name,
                                                                         int = -1 ) override
     {
-        return d_outVariable->cloneVariable( name );
+        return d_outVariable->clone( name );
     }
 
     std::shared_ptr<AMP::LinearAlgebra::Variable> getInputVariable() override

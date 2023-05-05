@@ -70,7 +70,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
 {
     static std::random_device rd;
     static std::mt19937 gen( rd() );
-    if constexpr ( std::is_floating_point<TYPE>::value ) {
+    if constexpr ( std::is_floating_point_v<TYPE> ) {
         static std::uniform_real_distribution<TYPE> dis( 0, 1 );
         auto y    = x.begin<TYPE>();
         auto last = x.end<TYPE>();
@@ -78,7 +78,7 @@ void VectorOperationsDefault<TYPE>::setRandomValues( VectorData &x )
             *y = dis( gen );
             ++y;
         }
-    } else if constexpr ( std::is_integral<TYPE>::value ) {
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
         static std::uniform_int_distribution<TYPE> dis;
         auto y    = x.begin<TYPE>();
         auto last = x.end<TYPE>();
@@ -214,7 +214,7 @@ void VectorOperationsDefault<TYPE>::reciprocal( const VectorData &x, VectorData 
     auto last   = y.end<TYPE>();
     auto curRhs = x.begin<TYPE>();
     while ( curMe != last ) {
-        *curMe = 1.0 / *curRhs;
+        *curMe = static_cast<TYPE>( 1.0 ) / *curRhs;
         ++curRhs;
         ++curMe;
     }
@@ -495,7 +495,7 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
     auto last  = x.constEnd<TYPE>();
     auto tol   = tol_in.get<double>();
     while ( cur1 != last ) {
-        if ( fabs( *cur1 - *cur2 ) > tol ) {
+        if ( std::abs( *cur1 - *cur2 ) > tol ) {
             equal = false;
             break;
         }

@@ -403,33 +403,14 @@ public: // BoxMesh specific functionality
                                                               int gcw = 0 );
 
 
-protected: // Convenience typedef
+public: // Convenience typedef
     typedef AMP::Utilities::stackVector<std::pair<MeshElementIndex, MeshElementIndex>, 32>
         ElementBlocks;
 
-protected:
-    // Constructor
-    explicit BoxMesh( std::shared_ptr<const MeshParameters> );
-    explicit BoxMesh( const BoxMesh & );
-    BoxMesh &operator=( const BoxMesh & ) = delete;
 
-    // Function to create the load balancing
-    static void loadBalance( std::array<int, 3> size,
-                             int N_procs,
-                             std::vector<int> *startIndex,
-                             const AMP::Database *db = nullptr );
-
-    // Function to initialize the mesh data once the logical mesh info has been created
-    void initialize();
-
-    // Function to finalize the mesh data once the coordinates have been set
-    void finalize();
-
+public: // Advanced functions
     // Get the surface set for a given surface/type
     ElementBlocks getSurface( int surface, GeomType type ) const;
-
-    // Function to finalize the mesh data once the coordinates have been set
-    virtual void createBoundingBox();
 
     // Helper function to return the indices of the local block owned by the given processor
     inline std::array<int, 6> getLocalBlock( int rank ) const;
@@ -442,12 +423,41 @@ protected:
     // Helper function to create an iterator from an ElementBlocks list
     inline MeshIterator createIterator( const ElementBlocks &list ) const;
 
+
+protected:
+    // Constructor
+    explicit BoxMesh( std::shared_ptr<const MeshParameters> );
+    explicit BoxMesh( const BoxMesh & );
+    BoxMesh &operator=( const BoxMesh & ) = delete;
+
+    // Function to create the load balancing
+    static void loadBalance( std::array<int, 3> size,
+                             int N_procs,
+                             std::vector<int> *startIndex,
+                             std::vector<int> minSize = {} );
+
+    // Function to initialize the mesh data once the logical mesh info has been created
+    void initialize( const std::vector<int> &minSize = {} );
+
+    // Function to finalize the mesh data once the coordinates have been set
+    void finalize( const std::string &name, const std::vector<double> &displacement );
+
+    // Function to finalize the mesh data once the coordinates have been set
+    std::vector<double> getDisplacement( std::shared_ptr<const AMP::Database> db );
+
+    // Function to finalize the mesh data once the coordinates have been set
+    virtual void createBoundingBox();
+
     // Helper function to fill the node data for a uniform cartesian mesh
     static void fillCartesianNodes( int dim,
                                     const int *globalSize,
                                     const double *range,
                                     const std::vector<MeshElementIndex> &index,
                                     std::vector<double> *coord );
+
+
+protected: // Write/read restart data
+    void writeRestart( int64_t ) const override;
 
 protected:                            // Internal data
     int d_rank, d_size;               // Cached values for the rank and size
@@ -464,8 +474,8 @@ protected: // Friend functions to access protected functions
     friend class structuredMeshElement;
     friend class structuredMeshIterator;
 
-private:
-    BoxMesh(); // Private empty constructor
+protected:
+    BoxMesh();
 };
 
 

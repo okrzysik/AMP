@@ -25,7 +25,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -35,7 +34,7 @@
 #include <fstream>
 
 
-static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void drawVerticesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,
@@ -57,7 +56,7 @@ static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     } // end for
 }
 
-static void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                              int boundaryID,
                                              std::ostream &os,
                                              double const *point_of_view,
@@ -105,13 +104,13 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
                    bool verbose     = false,
                    std::ostream &os = std::cout )
 {
-    auto res    = sol->cloneVector();
-    auto dir    = sol->cloneVector();
-    auto ext    = sol->cloneVector();
-    auto oldSol = sol->cloneVector();
-    auto oldRes = sol->cloneVector();
-    auto oldDir = sol->cloneVector();
-    auto matVec = sol->cloneVector();
+    auto res    = sol->clone();
+    auto dir    = sol->clone();
+    auto ext    = sol->clone();
+    auto oldSol = sol->clone();
+    auto oldRes = sol->clone();
+    auto oldDir = sol->clone();
+    auto matVec = sol->clone();
     auto nullVec;
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );
@@ -179,7 +178,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //  int npes = globalComm.getSize();
     int rank = globalComm.getRank();
     std::fstream fout;
-    std::string fileName = "debug_driver_" + AMP::Utilities::intToString( rank );
+    std::string fileName = "debug_driver_" + std::to_string( rank );
     fout.open( fileName.c_str(), std::fstream::out );
 
     // Load the input file

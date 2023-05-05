@@ -97,7 +97,7 @@ kdtree2<NDIM, TYPE>::kdtree2( const std::vector<std::array<double, NDIM>> &x,
       d_data( nullptr )
 {
     AMP_ASSERT( x.size() == data.size() );
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         auto data2 = new bool[x.size()];
         for ( size_t i = 0; i < x.size(); i++ )
             data2[i] = data[i];

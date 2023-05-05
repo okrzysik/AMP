@@ -11,7 +11,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <algorithm>
@@ -62,8 +61,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, displacementVariable, true );
-    auto mechRhsVec = mechSolVec->cloneVector();
-    auto mechResVec = mechSolVec->cloneVector();
+    auto mechRhsVec = mechSolVec->clone();
+    auto mechResVec = mechSolVec->clone();
 
     mechRhsVec->zero();
     mechResVec->zero();
@@ -78,8 +77,8 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
             int maxIters = linearSolver_db->getScalar<int>( "max_iterations" );
 
-            auto matOutVec = mechSolVec->cloneVector();
-            auto pVec      = mechSolVec->cloneVector();
+            auto matOutVec = mechSolVec->clone();
+            auto pVec      = mechSolVec->clone();
 
             mechSolVec->zero();
 

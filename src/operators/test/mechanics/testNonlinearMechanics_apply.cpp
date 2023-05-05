@@ -11,7 +11,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -50,7 +49,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
-    auto resVec = solVec->cloneVector();
+    auto resVec = solVec->clone();
 
     solVec->setToScalar( 5.0 );
 

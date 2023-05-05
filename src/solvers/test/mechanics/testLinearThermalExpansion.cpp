@@ -13,7 +13,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <algorithm>
@@ -58,11 +57,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechSolVec = AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
-    auto mechRhsVec = mechSolVec->cloneVector();
-    auto mechResVec = mechSolVec->cloneVector();
+    auto mechRhsVec = mechSolVec->clone();
+    auto mechResVec = mechSolVec->clone();
 
     auto currTempVec = AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
-    auto prevTempVec = currTempVec->cloneVector();
+    auto prevTempVec = currTempVec->clone();
 
     mechSolVec->setToScalar( 0.0 );
     mechResVec->setToScalar( 0.0 );

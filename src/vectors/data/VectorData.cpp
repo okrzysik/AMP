@@ -1,9 +1,11 @@
 #include "AMP/vectors/data/VectorData.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/DataChangeListener.h"
 
 
 namespace AMP::LinearAlgebra {
+
 
 VectorData::VectorData()
     : d_UpdateState{ std::make_shared<UpdateState>() },
@@ -260,4 +262,46 @@ void VectorData::print( std::ostream &os, const std::string &name, const std::st
 }
 
 
+/****************************************************************
+ * Get an id                                                     *
+ ****************************************************************/
+uint64_t VectorData::getID() const
+{
+    AMP_ERROR( "Not finished" );
+    return 0;
+}
+
+
 } // namespace AMP::LinearAlgebra
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::LinearAlgebra::VectorData> data,
+    RestartManager * )
+    : d_data( data )
+{
+    d_name = name;
+    d_hash = data->getID();
+    AMP_ERROR( "Not finished" );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::LinearAlgebra::VectorData>
+AMP::IO::RestartManager::getData<AMP::LinearAlgebra::VectorData>( const std::string &name )
+{
+    hid_t gid = openGroup( d_fid, name );
+    AMP_ERROR( "Not finished" );
+    closeGroup( gid );
+}

@@ -1,6 +1,8 @@
 #include "AMP/IO/HDF5writer.h"
-#include "AMP/IO/HDF5_IO.h"
+#include "AMP/IO/FileSystem.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/IO/Xdmf.h"
+#include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshIterator.h"
@@ -97,7 +99,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
     // Create the file
     auto filename  = fname_in + "_" + std::to_string( cycle ) + ".hdf5";
     auto fid       = openHDF5( filename, "w", Compression::GZIP );
-    auto filename2 = AMP::Utilities::filename( filename );
+    auto filename2 = AMP::IO::filename( filename );
     writeHDF5( fid, "time", time );
     // Synchronize the vectors
     syncVectors();
@@ -144,7 +146,7 @@ void HDF5writer::writeFile( const std::string &fname_in, size_t cycle, double ti
             sid = fopen( sname.data(), "w" );
         else
             sid = fopen( sname.data(), "a" );
-        fprintf( sid, "%s\n", AMP::Utilities::filename( fname ).data() );
+        fprintf( sid, "%s\n", AMP::IO::filename( fname ).data() );
         fclose( sid );
     }
 
@@ -259,7 +261,7 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
         writeHDF5( fid, vec.name, data );
         AMP::Xdmf::VarData var;
         var.name     = vec.name;
-        var.rankType = getRankType( vec.numDOFs, mesh.mesh->getDim() );
+        var.rankType = getRankType( vec.numDOFs, ndim );
         var.center   = getCenter( mesh.mesh->getGeomType(), vec.type );
         var.size     = data.size();
         var.data     = path + "/" + vec.name;
@@ -267,21 +269,79 @@ Xdmf::MeshData HDF5writer::writeDefaultMesh( hid_t fid,
     }
     return XdmfData;
 }
+Array<double> getBoxMeshVar( const AMP::Mesh::BoxMesh &mesh,
+                             const AMP::LinearAlgebra::Vector &vec,
+                             AMP::Mesh::GeomType type,
+                             int numDOFs )
+{
+    AMP::Array<double> data;
+    auto DOFs = vec.getDOFManager();
+    // Check if the internal data is compatible with a raw Array
+    auto boxMeshDOFs =
+        std::dynamic_pointer_cast<const AMP::Discretization::boxMeshDOFManager>( DOFs );
+    if ( boxMeshDOFs ) {
+        auto size = boxMeshDOFs->getArraySize();
+        if ( size.length() == vec.getLocalSize() && vec.numberOfDataBlocks() == 1 ) {
+            auto ptr = vec.getRawDataBlock<double>();
+            data.viewRaw( size, const_cast<double *>( ptr ) );
+            return data;
+        }
+    }
+    // Copy the data
+    PROFILE_START( "convertData", 1 );
+    AMP::ArraySize size( mesh.size() );
+    auto size2 = size + (size_t) 1;
+    int ndim   = size2.ndim();
+    std::vector<size_t> dofs;
+    AMP::ArraySize size0;
+    if ( type == AMP::Mesh::GeomType::Vertex ) {
+        size2         = size + 1;
+        size0         = size;
+        auto periodic = mesh.periodic();
+        for ( size_t d = 0; d < periodic.size(); d++ )
+            size0.resize( d, periodic[d] ? size[d] : size2[d] );
+    } else if ( type == mesh.getGeomType() ) {
+        size2 = size;
+        size0 = size;
+    } else {
+        AMP_ERROR( "Not finished" );
+    }
+    data.resize( ArraySize( { (uint8_t) numDOFs, size2[0], size2[1], size2[2] }, ndim + 1 ) );
+    data.fill( 0 );
+    for ( size_t k = 0; k < size2[2]; k++ ) {
+        size_t k2 = k % size0[2];
+        for ( size_t j = 0; j < size2[1]; j++ ) {
+            size_t j2 = j % size0[1];
+            for ( size_t i = 0; i < size2[0]; i++ ) {
+                size_t i2  = i % size0[0];
+                auto index = AMP::Mesh::BoxMesh::MeshElementIndex( type, 0, i2, j2, k2 );
+                auto id    = mesh.convert( index );
+                DOFs->getDOFs( id, dofs );
+                AMP_ASSERT( (int) dofs.size() == numDOFs );
+                vec.getValuesByGlobalID( numDOFs, dofs.data(), &data( 0, i, j, k ) );
+            }
+        }
+    }
+    if ( numDOFs == 1 )
+        data.reshape( size2 );
+    PROFILE_STOP( "convertData", 1 );
+    return data;
+}
 Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
                                          const baseMeshData &mesh,
                                          const std::string &name,
                                          const std::string &path ) const
 {
-    PROFILE_SCOPED( timer, "writeBoxMesh", 1 );
     using AMP::Mesh::GeomType;
     using MeshElementIndex = AMP::Mesh::BoxMesh::MeshElementIndex;
     auto mesh2             = std::dynamic_pointer_cast<const AMP::Mesh::BoxMesh>( mesh.mesh );
+    AMP_ASSERT( mesh2 );
     Xdmf::MeshData XdmfData;
     AMP::ArraySize size( mesh2->size() );
     if ( size.ndim() != mesh2->getDim() )
         return writeDefaultMesh( fid, mesh, name, path ); // We have issues with surface meshes
+    PROFILE_START( "writeBoxMesh", 1 );
     auto size2      = size + (size_t) 1;
-    int ndim        = size2.ndim();
     auto isPeriodic = mesh2->periodic();
     AMP::Array<double> x( size2 ), y( size2 ), z( size2 );
     for ( size_t k = 0; k < size2[2]; k++ ) {
@@ -316,43 +376,11 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
     } else {
         AMP_ERROR( "Not finished" );
     }
+    PROFILE_STOP( "writeBoxMesh", 1 );
     // Write the vectors
+    PROFILE_START( "writeBoxMeshVars", 1 );
     for ( const auto &vec : mesh.vectors ) {
-        auto DOFs = vec.vec->getDOFManager();
-        AMP::Array<double> data;
-        std::vector<size_t> dofs;
-        AMP::ArraySize size0;
-        if ( vec.type == GeomType::Vertex ) {
-            size2         = size + 1;
-            size0         = size;
-            auto periodic = mesh2->periodic();
-            for ( size_t d = 0; d < periodic.size(); d++ )
-                size0.resize( d, periodic[d] ? size[d] : size2[d] );
-        } else if ( vec.type == mesh2->getGeomType() ) {
-            size2 = size;
-            size0 = size;
-        } else {
-            AMP_ERROR( "Not finished" );
-        }
-        data.resize(
-            ArraySize( { (uint8_t) vec.numDOFs, size2[0], size2[1], size2[2] }, ndim + 1 ) );
-        data.fill( 0 );
-        for ( size_t k = 0; k < size2[2]; k++ ) {
-            size_t k2 = k % size0[2];
-            for ( size_t j = 0; j < size2[1]; j++ ) {
-                size_t j2 = j % size0[1];
-                for ( size_t i = 0; i < size2[0]; i++ ) {
-                    size_t i2  = i % size0[0];
-                    auto index = MeshElementIndex( vec.type, 0, i2, j2, k2 );
-                    auto id    = mesh2->convert( index );
-                    DOFs->getDOFs( id, dofs );
-                    AMP_ASSERT( (int) dofs.size() == vec.numDOFs );
-                    vec.vec->getValuesByGlobalID( vec.numDOFs, dofs.data(), &data( 0, i, j, k ) );
-                }
-            }
-        }
-        if ( vec.numDOFs == 1 )
-            data.reshape( size2 );
+        auto data = getBoxMeshVar( *mesh2, *vec.vec, vec.type, vec.numDOFs );
         writeHDF5( fid, vec.name, data );
         AMP::Xdmf::VarData var;
         var.name     = vec.name;
@@ -362,6 +390,7 @@ Xdmf::MeshData HDF5writer::writeBoxMesh( hid_t fid,
         var.data     = path + "/" + vec.name;
         XdmfData.vars.push_back( var );
     }
+    PROFILE_STOP( "writeBoxMeshVars", 1 );
     return XdmfData;
 }
 static std::vector<std::string> splitPath( const std::string &path )

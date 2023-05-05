@@ -53,7 +53,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     int rank = globalComm.getRank();
     std::fstream fout;
-    std::string fileName = "debug_driver_" + AMP::Utilities::intToString( rank );
+    std::string fileName = "debug_driver_" + std::to_string( rank );
     fout.open( fileName.c_str(), std::fstream::out );
 
     // Load the input file
@@ -368,7 +368,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     auto tempDofManager        = AMP::Discretization::simpleDOFManager::create(
         meshAdapter, AMP::Mesh::GeomType::Vertex, nodalGhostWidth, 1, split );
     auto tempVec    = AMP::LinearAlgebra::createVector( tempDofManager, tempVar, split );
-    auto refTempVec = tempVec->cloneVector();
+    auto refTempVec = tempVec->clone();
     auto sigma_xx   = AMP::LinearAlgebra::createVector(
         tempDofManager, std::make_shared<AMP::LinearAlgebra::Variable>( "sigma_xx" ), split );
     auto sigma_yy = AMP::LinearAlgebra::createVector(
@@ -482,11 +482,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr topPelletCor;
     AMP::LinearAlgebra::Vector::shared_ptr cladCor;
 
-    auto activeSetBeforeUpdateVec = sigma_eff->cloneVector();
-    auto activeSetAfterUpdateVec  = sigma_eff->cloneVector();
-    auto contactPressureVec       = sigma_eff->cloneVector();
-    auto surfaceTractionVec       = columnSolVec->cloneVector();
-    auto normalVectorVec          = columnSolVec->cloneVector();
+    auto activeSetBeforeUpdateVec = sigma_eff->clone();
+    auto activeSetAfterUpdateVec  = sigma_eff->clone();
+    auto contactPressureVec       = sigma_eff->clone();
+    auto surfaceTractionVec       = columnSolVec->clone();
+    auto normalVectorVec          = columnSolVec->clone();
 
     if ( shrinkFactor != 0.0 ) {
         AMP_ASSERT( ( shrinkFactor > 0.0 ) && ( shrinkFactor < 1.0 ) );
@@ -622,7 +622,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     //  linearSolver->setZeroInitialGuess(true);
     linearSolver->setInitialGuess( columnSolVec );
 
-    auto fullThermalLoadingTempMinusRefTempVec = tempVec->cloneVector();
+    auto fullThermalLoadingTempMinusRefTempVec = tempVec->clone();
     fullThermalLoadingTempMinusRefTempVec->subtract( tempVec, refTempVec );
 
     size_t maxActiveSetIterations = input_db->getWithDefault<size_t>( "maxActiveSetIterations", 5 );
@@ -713,7 +713,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 auto bottomPelletMat = bottomPelletBVPOperator->getMatrix();
                 auto bottomPelletRhs = bottomPelletBVPOperator->subsetOutputVector( columnRhsVec );
                 if ( !bottomPelletCor ) {
-                    bottomPelletCor = bottomPelletRhs->cloneVector();
+                    bottomPelletCor = bottomPelletRhs->clone();
                     applyCustomDirichletCondition( bottomPelletRhs,
                                                    bottomPelletCor,
                                                    bottomPelletMeshAdapter,
@@ -731,7 +731,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 auto topPelletMat = topPelletBVPOperator->getMatrix();
                 auto topPelletRhs = topPelletBVPOperator->subsetOutputVector( columnRhsVec );
                 if ( !topPelletCor ) {
-                    topPelletCor = topPelletRhs->cloneVector();
+                    topPelletCor = topPelletRhs->clone();
                     applyCustomDirichletCondition( topPelletRhs,
                                                    topPelletCor,
                                                    topPelletMeshAdapter,
@@ -749,7 +749,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
                 auto cladMat = cladBVPOperator->getMatrix();
                 auto cladRhs = cladBVPOperator->subsetOutputVector( columnRhsVec );
                 if ( !cladCor ) {
-                    cladCor = cladRhs->cloneVector();
+                    cladCor = cladRhs->clone();
                     applyCustomDirichletCondition(
                         cladRhs, cladCor, cladMeshAdapter, cladConstraints, cladMat );
                 } else {

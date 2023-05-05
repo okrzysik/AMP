@@ -1,3 +1,4 @@
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/Writer.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
@@ -6,7 +7,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 
 #include <sstream>
 #include <string>
@@ -29,7 +29,7 @@ void createMesh( AMP::UnitTest *ut, const std::string &input_file )
     auto mesh = AMP::Mesh::MeshFactory::create( params );
 
     // Create the silo writer and write the mesh
-    AMP::Utilities::recursiveMkdir( "output" );
+    AMP::IO::recursiveMkdir( "output" );
     std::string output_file = "output/" + input_file;
     auto siloWriter         = AMP::IO::Writer::buildWriter( "Silo" );
     if ( siloWriter != nullptr ) {

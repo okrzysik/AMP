@@ -75,11 +75,11 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     auto f_norm = static_cast<T>( f->L2Norm() );
 
     // if the rhs is zero we try to converge to the relative convergence
-    if ( f_norm == 0.0 ) {
-        f_norm = 1.0;
+    if ( f_norm == static_cast<T>( 0.0 ) ) {
+        f_norm = static_cast<T>( 1.0 );
     }
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "TFQMRSolver<T>::solve: initial L2Norm of solution vector: " << x->L2Norm()
@@ -92,7 +92,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // residual vector
-    auto res = f->cloneVector();
+    auto res = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -120,42 +120,42 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     }
 
     // parameters in TFQMR
-    T theta  = 0.0;
-    T eta    = 0.0;
+    T theta  = static_cast<T>( 0.0 );
+    T eta    = static_cast<T>( 0.0 );
     T tau    = res_norm;
     auto rho = tau * tau;
 
     std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> u;
-    u[0] = f->cloneVector();
-    u[1] = f->cloneVector();
+    u[0] = f->clone();
+    u[1] = f->clone();
     u[0]->zero();
     u[1]->zero();
 
     std::array<AMP::LinearAlgebra::Vector::shared_ptr, 2> y;
-    y[0] = f->cloneVector();
-    y[1] = f->cloneVector();
+    y[0] = f->clone();
+    y[1] = f->clone();
     y[0]->zero();
     y[1]->zero();
 
     // z is allocated only if the preconditioner is used
     AMP::LinearAlgebra::Vector::shared_ptr z;
     if ( d_bUsesPreconditioner ) {
-        z = f->cloneVector();
+        z = f->clone();
         z->zero();
     }
 
-    auto delta = f->cloneVector();
+    auto delta = f->clone();
     delta->zero();
 
-    auto w = res->cloneVector();
+    auto w = res->clone();
     w->copyVector( res );
 
     y[0]->copyVector( res );
 
-    auto d = res->cloneVector();
+    auto d = res->clone();
     d->zero();
 
-    auto v = res->cloneVector();
+    auto v = res->clone();
 
     if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
 
@@ -180,7 +180,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         auto sigma = static_cast<T>( res->dot( *v ) );
 
         // replace by soft-equal
-        if ( sigma == 0.0 ) {
+        if ( sigma == static_cast<T>( 0.0 ) ) {
             // the method breaks down as the vectors are orthogonal to r
             AMP_ERROR( "TFQMR breakdown, sigma == 0 " );
         }
@@ -208,10 +208,11 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             w->axpy( -alpha, *u[j], *w );
             d->axpy( ( theta * theta * eta / alpha ), *d, *y[j] );
 
-            theta        = static_cast<T>( w->L2Norm() ) / tau;
-            const auto c = 1.0 / std::sqrt( 1 + theta * theta );
-            tau          = tau * theta * c;
-            eta          = c * c * alpha;
+            theta = static_cast<T>( w->L2Norm() ) / tau;
+            const auto c =
+                static_cast<T>( 1.0 ) / std::sqrt( static_cast<T>( 1.0 ) + theta * theta );
+            tau = tau * theta * c;
+            eta = c * c * alpha;
 
             // update the increment to the solution
             delta->axpy( eta, *d, *delta );
@@ -241,7 +242,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         }
 
         // replace by soft-equal
-        if ( rho == 0.0 ) {
+        if ( rho == static_cast<T>( 0.0 ) ) {
             // the method breaks down as rho==0
             AMP_ERROR( "TFQMR breakdown, rho == 0 " );
         }

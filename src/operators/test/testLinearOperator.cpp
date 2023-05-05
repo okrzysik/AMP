@@ -10,7 +10,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
@@ -93,7 +92,7 @@ static void myTest( AMP::UnitTest *ut )
         }
 
         // now run apply tests with multi-vectors
-        auto postfix   = AMP::Utilities::intToString( i );
+        auto postfix   = std::to_string( i );
         auto auxInpVar = std::make_shared<AMP::LinearAlgebra::Variable>(
             "testLinearOperator-1-auxInpVar" + postfix );
         auto auxOutVar = std::make_shared<AMP::LinearAlgebra::Variable>(

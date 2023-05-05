@@ -13,7 +13,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -41,7 +40,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the solution and function variables
     auto var = std::make_shared<AMP::LinearAlgebra::Variable>( "x" );
     auto u   = AMP::LinearAlgebra::createSimpleVector<double>( 10, var, solverComm );
-    auto f   = u->cloneVector();
+    auto f   = u->clone();
 
     // Create the operator
     auto op = std::make_shared<AMP::Operator::IdentityOperator>();
@@ -69,7 +68,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     f->setRandomValues();
     nonlinearSolver->apply( f, u );
     ut->passes( "PetscSNESSolver solve called with simple vector" );
-    auto x = u->cloneVector();
+    auto x = u->clone();
     x->subtract( *u, *f );
     double error = static_cast<double>( x->L2Norm() ) / static_cast<double>( f->L2Norm() );
     if ( fabs( error ) < 1e-8 )

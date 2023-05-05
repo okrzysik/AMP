@@ -6,20 +6,37 @@
 
 // Check
 template<typename T>
-void check( T result, char const *const func, const char *const file, int const line )
+void checkCudaErrors( T result, const StackTrace::source_location &source )
 {
     if ( result ) {
         fprintf( stderr,
                  "CUDA error at %s:%d code=%d(%s) \"%s\" \n",
-                 file,
-                 line,
+                 source.file_name(),
+                 source.line(),
                  static_cast<int>( result ),
                  cudaGetName( result ),
-                 func );
+                 source.function_name() );
         // Make sure we call CUDA Device Reset before exiting
         DEVICE_RESET
         exit( EXIT_FAILURE );
     }
+}
+void getLastCudaError( const char *errorMessage, const StackTrace::source_location &source )
+{
+#ifdef __DRIVER_TYPES_H__
+    cudaError_t err = cudaGetLastError();
+    if ( cudaSuccess != err ) {
+        fprintf( stderr,
+                 "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
+                 source.file_name(),
+                 source.line(),
+                 errorMessage,
+                 (int) err,
+                 cudaGetErrorString( err ) );
+        DEVICE_RESET
+        exit( EXIT_FAILURE );
+    }
+#endif
 }
 
 
@@ -29,7 +46,7 @@ const char *cudaGetName<cudaError_t>( cudaError_t error )
 {
     return cudaGetErrorName( error );
 }
-template void check<cudaError_t>( cudaError_t, char const *const, const char *const, int const );
+template void checkCudaErrors<cudaError_t>( cudaError_t, const StackTrace::source_location & );
 
 
 // CUDA Driver API errors
@@ -40,7 +57,7 @@ const char *cudaGetName<CUresult>( CUresult error )
     cuGetErrorName( error, &str );
     return str;
 }
-template void check<CUresult>( CUresult, char const *const, const char *const, int const );
+template void checkCudaErrors<CUresult>( CUresult, const StackTrace::source_location & );
 
 
 // cuBLAS API errors
@@ -72,8 +89,8 @@ const char *cudaGetName<cublasStatus_t>( cublasStatus_t error )
     }
     return "<unknown>";
 }
-template void
-check<cublasStatus_t>( cublasStatus_t, char const *const, const char *const, int const );
+template void checkCudaErrors<cublasStatus_t>( cublasStatus_t,
+                                               const StackTrace::source_location & );
 #endif
 
 
@@ -118,7 +135,7 @@ const char *cudaGetName<cufftResult>( cufftResult error )
     }
     return "<unknown>";
 }
-template void check<cufftResult>( cufftResult, char const *const, const char *const, int const );
+template void checkCudaErrors<cufftResult>( cufftResult, const StackTrace::source_location & );
 #endif
 
 
@@ -149,8 +166,7 @@ const char *cudaGetName<cusparseStatus_t>( cusparseStatus_t error )
     }
     return "<unknown>";
 }
-template void
-check<cusparseStatus_t>( cufftResult, char const *const, const char *const, int const );
+template void checkCudaErrors<cusparseStatus_t>( cufftResult, const StackTrace::source_location & );
 #endif
 
 
@@ -188,8 +204,7 @@ const char *cudaGetName<cusolverStatus_t>( cusolverStatus_t error )
 
     return "<unknown>";
 }
-template void
-check<cusolverStatus_t>( cufftResult, char const *const, const char *const, int const );
+template void checkCudaErrors<cusolverStatus_t>( cufftResult, const StackTrace::source_location & );
 #endif
 
 
@@ -228,7 +243,7 @@ const char *cudaGetName<curandStatus_t>( curandStatus_t error )
     }
     return "<unknown>";
 }
-template void check<curandStatus_t>( cufftResult, char const *const, const char *const, int const );
+template void checkCudaErrors<curandStatus_t>( cufftResult, const StackTrace::source_location & );
 #endif
 
 
@@ -367,5 +382,5 @@ const char *cudaGetName<NppStatus>( NppStatus error )
     }
     return "<unknown>";
 }
-template void check<curandStatus_t>( NppStatus, char const *const, const char *const, int const );
+template void checkCudaErrors<curandStatus_t>( NppStatus, const StackTrace::source_location & );
 #endif

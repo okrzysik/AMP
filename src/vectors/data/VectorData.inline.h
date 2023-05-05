@@ -50,6 +50,11 @@ bool VectorData::isBlockType( size_t i ) const
     constexpr auto type = getTypeID<TYPE>();
     return isType( type, i );
 }
+inline bool VectorData::isType( const typeID &id, size_t i ) const
+{
+    auto type = getType( i );
+    return id == type;
+}
 
 
 /****************************************************************

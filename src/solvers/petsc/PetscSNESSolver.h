@@ -192,6 +192,9 @@ public:
 
     int getTotalNumberOfLinearIterations( void ) const;
 
+    void printConvergenceStatus( SolverStrategy::SolverStatus status,
+                                 std::ostream &os = AMP::pout ) const override;
+
 protected:
 private:
     void getFromInput( std::shared_ptr<const AMP::Database> db );

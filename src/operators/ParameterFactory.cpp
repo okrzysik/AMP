@@ -21,7 +21,7 @@ namespace AMP::Operator {
 
 std::shared_ptr<OperatorParameters>
 ParameterFactory::createParameter( std::shared_ptr<AMP::Database> input_db,
-                                   AMP::Mesh::Mesh::shared_ptr mesh )
+                                   std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     AMP_ASSERT( input_db );
     auto name = input_db->getString( "name" );

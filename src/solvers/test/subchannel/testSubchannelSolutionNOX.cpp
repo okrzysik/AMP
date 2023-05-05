@@ -291,9 +291,9 @@ static void flowTest( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Outlet Computed Temperature = " << ToutSol << std::endl;
 
     // Compute the error
-    auto absErrorVec = solVec->cloneVector();
+    auto absErrorVec = solVec->clone();
     absErrorVec->axpy( -1.0, *solVec, *manufacturedVec );
-    auto relErrorVec = solVec->cloneVector();
+    auto relErrorVec = solVec->clone();
     relErrorVec->divide( *absErrorVec, *manufacturedVec );
     double absErrorNorm = static_cast<double>( absErrorVec->L2Norm() );
     double relErrorNorm = static_cast<double>( relErrorVec->L2Norm() );

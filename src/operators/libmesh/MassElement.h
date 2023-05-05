@@ -1,15 +1,12 @@
 #ifndef included_AMP_MassElement
 #define included_AMP_MassElement
 
+#include <memory>
 #include <vector>
-
 
 // AMP files
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/libmesh/MassDensityModel.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
-
 
 // Libmesh headers
 DISABLE_WARNINGS

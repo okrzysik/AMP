@@ -11,10 +11,11 @@
 #include <sstream>
 #include <vector>
 
+#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/utils/enable_shared_from_this.h"
 #include <memory>
 
@@ -30,25 +31,25 @@ size_t abs_diff( size_t a, size_t b ) { return ( a >= b ) ? a - b : b - a; }
 
 // This checks approx_equal
 template<class T>
-void testApproxEqualInt( UnitTest *ut )
+void testApproxEqualInt( UnitTest &ut )
 {
     std::string type = typeid( T ).name();
     if ( Utilities::approx_equal<T>( 100000, 100000 ) &&
          Utilities::approx_equal_abs<T>( 100000, 100000 ) &&
          !Utilities::approx_equal<T>( 100000, 100001 ) &&
          !Utilities::approx_equal_abs<T>( 100000, 100001 ) )
-        ut->passes( "Integer (" + type + ") passes simple check." );
+        ut.passes( "Integer (" + type + ") passes simple check." );
     else
-        ut->failure( "Integer (" + type + ") passes simple check." );
+        ut.failure( "Integer (" + type + ") passes simple check." );
 
     if ( Utilities::approx_equal_abs<T>( 100001, 100000, 1 ) &&
          !Utilities::approx_equal_abs<T>( 100002, 100000, 1 ) )
-        ut->passes( "Integer (" + type + ") passes close simple check." );
+        ut.passes( "Integer (" + type + ") passes close simple check." );
     else
-        ut->failure( "Integer (" + type + ") passes close simple check." );
+        ut.failure( "Integer (" + type + ") passes close simple check." );
 }
 template<class T>
-void testApproxEqual( UnitTest *ut )
+void testApproxEqual( UnitTest &ut )
 {
     std::string type = typeid( T ).name();
 
@@ -61,9 +62,9 @@ void testApproxEqual( UnitTest *ut )
          Utilities::approx_equal_abs( mine, close_abs ) &&
          !Utilities::approx_equal( mine, wrong_rel ) &&
          !Utilities::approx_equal_abs( mine, wrong_abs ) )
-        ut->passes( type + " passes simple check near 1" );
+        ut.passes( type + " passes simple check near 1" );
     else
-        ut->failure( type + " passes simple check near 1" );
+        ut.failure( type + " passes simple check near 1" );
 
     mine      = static_cast<T>( 1e-6 );
     close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
@@ -74,9 +75,9 @@ void testApproxEqual( UnitTest *ut )
          Utilities::approx_equal_abs( mine, close_abs ) &&
          !Utilities::approx_equal( mine, wrong_rel ) &&
          !Utilities::approx_equal_abs( mine, wrong_abs ) )
-        ut->passes( type + " passes simple check near 1e-6" );
+        ut.passes( type + " passes simple check near 1e-6" );
     else
-        ut->failure( type + " passes simple check near 1e-6" );
+        ut.failure( type + " passes simple check near 1e-6" );
 
     mine      = static_cast<T>( -1e-32 );
     close_rel = mine * static_cast<T>( 1.0 + pow( std::numeric_limits<T>::epsilon(), (T) 0.8 ) );
@@ -87,9 +88,9 @@ void testApproxEqual( UnitTest *ut )
          Utilities::approx_equal_abs( mine, close_abs ) &&
          !Utilities::approx_equal( mine, wrong_rel ) &&
          !Utilities::approx_equal_abs( mine, wrong_abs ) )
-        ut->passes( type + " passes simple check near -1e-32" );
+        ut.passes( type + " passes simple check near -1e-32" );
     else
-        ut->failure( type + " passes simple check near -1e-32" );
+        ut.failure( type + " passes simple check near -1e-32" );
 }
 
 
@@ -98,7 +99,7 @@ std::vector<StackTrace::stack_info> get_call_stack() { return StackTrace::getCal
 
 
 // Function to test the interpolants
-void test_interp( UnitTest *ut )
+void test_interp( UnitTest &ut )
 {
     const double a  = 1.0;
     const double bx = 1.0;
@@ -150,17 +151,17 @@ void test_interp( UnitTest *ut )
         }
     }
     if ( pass_linear )
-        ut->passes( "Linear interpolation" );
+        ut.passes( "Linear interpolation" );
     else
-        ut->failure( "Linear interpolation" );
+        ut.failure( "Linear interpolation" );
     if ( pass_bilinear )
-        ut->passes( "Bi-linear interpolation" );
+        ut.passes( "Bi-linear interpolation" );
     else
-        ut->failure( "Bi-linear interpolation" );
+        ut.failure( "Bi-linear interpolation" );
     if ( pass_trilinear )
-        ut->passes( "Tri-linear interpolation" );
+        ut.passes( "Tri-linear interpolation" );
     else
-        ut->failure( "Tri-linear interpolation" );
+        ut.failure( "Tri-linear interpolation" );
 }
 
 
@@ -200,7 +201,7 @@ static inline bool test_shared_from_this_pointer( const std::shared_ptr<dummy> &
     pass   = pass && p3.use_count() == 3 && p5.use_count() == 0;
     return pass;
 }
-void test_shared_from_this( UnitTest *ut )
+void test_shared_from_this( UnitTest &ut )
 {
     bool pass = true;
     try {
@@ -210,9 +211,9 @@ void test_shared_from_this( UnitTest *ut )
         pass = false;
     }
     if ( pass )
-        ut->passes( "shared_from_this 1" );
+        ut.passes( "shared_from_this 1" );
     else
-        ut->failure( "shared_from_this 1" );
+        ut.failure( "shared_from_this 1" );
     try {
         auto *p1 = new dummy;
         auto p2  = p1->getPtr();
@@ -221,9 +222,36 @@ void test_shared_from_this( UnitTest *ut )
         pass = false;
     }
     if ( pass )
-        ut->passes( "shared_from_this 2" );
+        ut.passes( "shared_from_this 2" );
     else
-        ut->failure( "shared_from_this 2" );
+        ut.failure( "shared_from_this 2" );
+}
+
+
+// Test sorting an array of points
+void test_quicksort( UnitTest &ut, std::vector<int> &data1, const std::string &str )
+{
+    auto data2 = data1;
+    auto data3 = data1;
+    auto data4 = data1;
+    double t1  = Utilities::time();
+    Utilities::quicksort( data1 );
+    double t2 = Utilities::time();
+    std::sort( data2.begin(), data2.end() );
+    double t3 = Utilities::time();
+    std::sort( &data3[0], &data3[0] + data3.size() );
+    double t4 = Utilities::time();
+    bool pass = true;
+    for ( size_t i = 0; i < data1.size(); i++ ) {
+        if ( data1[i] != data2[i] )
+            pass = false;
+    }
+    if ( pass )
+        ut.passes( "quicksort sorts correctly: " + str );
+    else
+        ut.failure( "quicksort sorts correctly: " + str );
+    std::cout << "quicksort:" << str << " = " << t2 - t1 << ", std::sort = " << t3 - t2
+              << ", std::sort(2) = " << t4 - t3 << std::endl;
 }
 
 
@@ -251,7 +279,7 @@ int main( int argc, char *argv[] )
         Utilities::printBanner();
 
         // Test enable_shared_from_this
-        test_shared_from_this( &ut );
+        test_shared_from_this( ut );
 
         // Check the OS
         constexpr auto OS = Utilities::getOS();
@@ -271,41 +299,49 @@ int main( int argc, char *argv[] )
             ut.failure( "Convert int to string" );
 
         // Test approx_equal
-        testApproxEqualInt<int>( &ut );
-        testApproxEqualInt<unsigned int>( &ut );
-        testApproxEqualInt<size_t>( &ut );
-        testApproxEqual<float>( &ut );
-        testApproxEqual<double>( &ut );
+        testApproxEqualInt<int>( ut );
+        testApproxEqualInt<unsigned int>( ut );
+        testApproxEqualInt<size_t>( ut );
+        testApproxEqual<float>( ut );
+        testApproxEqual<double>( ut );
 
         // Test interpolations
-        test_interp( &ut );
+        test_interp( ut );
 
         // Test quicksort performance
-        size_t N = 10000;
-        std::vector<int> data1( N );
+        size_t N = 500000;
+        std::vector<int> data( N, 31 );
+        test_quicksort( ut, data, "identical" );
+        for ( size_t i = 0; i < N; i++ )
+            data[i] = i;
+        test_quicksort( ut, data, "sorted" );
         srand( static_cast<unsigned int>( time( nullptr ) ) );
         for ( size_t i = 0; i < N; i++ )
-            data1[i] = rand();
-        auto data2 = data1;
-        auto data3 = data1;
-        double t1  = Utilities::time();
-        Utilities::quicksort( data1 );
-        double t2 = Utilities::time();
+            data[i] = rand();
+        test_quicksort( ut, data, "random" );
+
+        // Test quickselect
+        for ( size_t i = 0; i < N; i++ )
+            data[i] = rand();
+        auto data2 = data;
         std::sort( data2.begin(), data2.end() );
-        double t3 = Utilities::time();
-        std::sort( &data3[0], &data3[0] + data3.size() );
-        double t4 = Utilities::time();
-        bool pass = true;
-        for ( size_t i = 0; i < N; i++ ) {
-            if ( data1[i] != data2[i] )
-                pass = false;
+        double t    = 0;
+        bool pass   = true;
+        size_t N_it = 200;
+        std::vector<int> data3( data.size(), 0 );
+        for ( size_t i = 0; i < N_it; i++ ) {
+            data3    = data;
+            size_t k = rand() % N;
+            auto t1  = Utilities::time();
+            auto v   = Utilities::quickselect( data3.size(), data3.data(), k );
+            t += Utilities::time() - t1;
+            pass = v == data2[k];
         }
         if ( pass )
-            ut.passes( "quicksort sorts correctly" );
+            ut.passes( "quickselect" );
         else
-            ut.failure( "quicksort sorts correctly" );
-        std::cout << "quicksort = " << t2 - t1 << ", std::sort = " << t3 - t2
-                  << ", std::sort(2) = " << t4 - t3 << std::endl;
+            ut.failure( "quickselect" );
+        std::cout << "quickselect = " << t / N_it << std::endl;
 
         // Test the hash key
         unsigned int key = Utilities::hash_char( "test" );
@@ -323,13 +359,13 @@ int main( int argc, char *argv[] )
             ut.failure( "Correctly factored 13958" );
         std::default_random_engine gen;
         std::uniform_int_distribution<int> dist( 1, 10000000 );
-        t1       = Utilities::time();
-        int N_it = 10000;
-        for ( int i = 0; i < N_it; i++ ) {
+        auto t1 = Utilities::time();
+        N_it    = 10000;
+        for ( size_t i = 0; i < N_it; i++ ) {
             auto tmp = AMP::Utilities::factor( dist( gen ) );
             NULL_USE( tmp );
         }
-        t2 = Utilities::time();
+        auto t2 = Utilities::time();
         std::cout << "factor = " << round( 1e9 * ( t2 - t1 ) / N_it ) << " ns" << std::endl;
 
 
@@ -339,7 +375,7 @@ int main( int argc, char *argv[] )
         else
             ut.failure( "isPrime" );
         t1 = Utilities::time();
-        for ( int i = 0; i < N_it; i++ ) {
+        for ( size_t i = 0; i < N_it; i++ ) {
             auto tmp = AMP::Utilities::factor( dist( gen ) );
             NULL_USE( tmp );
         }
@@ -407,19 +443,33 @@ int main( int argc, char *argv[] )
             FILE *fid = fopen( "testDeleteFile.txt", "w" );
             fputs( "Temporary test", fid );
             fclose( fid );
-            if ( Utilities::fileExists( "testDeleteFile.txt" ) )
+            if ( IO::fileExists( "testDeleteFile.txt" ) )
                 ut.passes( "File exists" );
             else
                 ut.failure( "File exists" );
-            Utilities::deleteFile( "testDeleteFile.txt" );
-            if ( !Utilities::fileExists( "testDeleteFile.txt" ) )
+            IO::deleteFile( "testDeleteFile.txt" );
+            if ( !IO::fileExists( "testDeleteFile.txt" ) )
                 ut.passes( "File deleted" );
             else
                 ut.failure( "File deleted" );
         }
 
-        // Test creating an empty directory
-        Utilities::recursiveMkdir( "." );
+        // Test creating directories
+        IO::recursiveMkdir( "." );
+        IO::recursiveMkdir( "testUtilitiesDir/a/b" );
+        globalComm.barrier();
+        pass = IO::fileExists( "testUtilitiesDir/a/b" );
+        if ( globalComm.getRank() == 0 ) {
+            IO::deleteFile( "testUtilitiesDir/a/b" );
+            IO::deleteFile( "testUtilitiesDir/a" );
+            IO::deleteFile( "testUtilitiesDir" );
+        }
+        globalComm.barrier();
+        pass = pass && !IO::fileExists( "testUtilitiesDir/a/b" );
+        if ( pass )
+            ut.passes( "Create/destroy directory" );
+        else
+            ut.failure( "Create/destroy directory" );
 
         // Test catching an error
         try {

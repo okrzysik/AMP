@@ -1,12 +1,15 @@
 #include "AMP/IO/AsciiWriter.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/IO/HDF5writer.h"
 #include "AMP/IO/NullWriter.h"
 #include "AMP/IO/SiloWriter.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorSelector.h"
 
@@ -22,10 +25,10 @@ namespace AMP::IO {
 template<class TYPE>
 static inline void packData( char *ptr, size_t &pos, const TYPE &data )
 {
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         memcpy( &ptr[pos], &data, sizeof( TYPE ) );
         pos += sizeof( TYPE );
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         int N = data.size();
         memcpy( &ptr[pos], data.c_str(), N + 1 );
         pos += N + 1;
@@ -36,12 +39,12 @@ static inline void packData( char *ptr, size_t &pos, const TYPE &data )
 template<class TYPE>
 static inline TYPE unpackData( const char *ptr, size_t &pos )
 {
-    if constexpr ( std::is_trivially_copyable<TYPE>::value ) {
+    if constexpr ( std::is_trivially_copyable_v<TYPE> ) {
         TYPE data;
         memcpy( &data, &ptr[pos], sizeof( TYPE ) );
         pos += sizeof( TYPE );
         return data;
-    } else if constexpr ( std::is_same<TYPE, std::string>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::string> ) {
         std::string data( &ptr[pos] );
         pos += data.size() + 1;
         return data;
@@ -159,8 +162,7 @@ void Writer::createDirectories( const std::string &filename )
 {
     size_t i = filename.rfind( '/' );
     if ( i != std::string::npos && d_comm.getRank() == 0 )
-        AMP::Utilities::recursiveMkdir(
-            filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
+        recursiveMkdir( filename.substr( 0, i ), ( S_IRUSR | S_IWUSR | S_IXUSR ), false );
     d_comm.barrier();
 }
 
@@ -168,7 +170,9 @@ void Writer::createDirectories( const std::string &filename )
 /************************************************************
  * Register a mesh                                           *
  ************************************************************/
-void Writer::registerMesh( AMP::Mesh::Mesh::shared_ptr mesh, int level, const std::string &path )
+void Writer::registerMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                           int level,
+                           const std::string &path )
 {
     AMP_INSIST( level >= 0 && level <= 3, "Invalid value for level" );
     std::set<GlobalID> base_ids;
@@ -323,7 +327,7 @@ void Writer::registerVector( std::shared_ptr<AMP::LinearAlgebra::Vector> vec,
         for ( auto &[id0, mesh2] : d_baseMeshes ) {
             if ( id0.objID == id.getData() ) {
                 AMP::LinearAlgebra::VS_Mesh meshSelector( mesh2.mesh );
-                auto vec2 = vec->select( meshSelector, vec->getName() );
+                auto vec2 = vec->selectInto( meshSelector );
                 if ( vec2 ) {
                     VectorData data( vec2, name_in );
                     data.type    = type;

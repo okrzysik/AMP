@@ -1,6 +1,4 @@
 #include "FickSoretNonlinearFEOperator.h"
-
-#include "AMP/utils/Utilities.h"
 #include "DiffusionNonlinearFEOperatorParameters.h"
 #include "FickSoretNonlinearFEOperatorParameters.h"
 

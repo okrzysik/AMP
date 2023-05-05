@@ -97,12 +97,10 @@ public: // Advanced virtual functions
      */
     inline size_t sizeofDataBlockType( size_t ) const override { return sizeof( TYPE ); }
 
-    /** \brief Is the data of the given type
-     * \param hash     The hash code: typeid(myint).hash_code()
-     */
-    inline bool isType( const typeID &id, size_t ) const override
+    typeID getType( size_t ) const override
     {
-        return id == getTypeID<TYPE>();
+        constexpr auto type = getTypeID<TYPE>();
+        return type;
     }
 
     inline void swapData( VectorData & ) override { AMP_ERROR( "Not finished" ); }

@@ -207,9 +207,9 @@ static void nonlinearTest( AMP::UnitTest *ut, const std::string &exeName )
     }
 
     // now run apply tests with multi-vectors
-    auto auxInpVar  = diffSolVar->cloneVariable( "NonlinearDiffusionOperator-auxInpVar" );
-    auto auxOutVar  = diffResVar->cloneVariable( "NonlinearDiffusionOperator-auxOutVar" );
-    auto auxWorkVar = diffSolVar->cloneVariable( "NonlinearDiffusionOperator-auxWorkVar" );
+    auto auxInpVar  = diffSolVar->clone( "NonlinearDiffusionOperator-auxInpVar" );
+    auto auxOutVar  = diffResVar->clone( "NonlinearDiffusionOperator-auxOutVar" );
+    auto auxWorkVar = diffSolVar->clone( "NonlinearDiffusionOperator-auxWorkVar" );
 
     auto myMultiInpVar =
         std::make_shared<AMP::LinearAlgebra::MultiVariable>( "MultiInputVariable" );

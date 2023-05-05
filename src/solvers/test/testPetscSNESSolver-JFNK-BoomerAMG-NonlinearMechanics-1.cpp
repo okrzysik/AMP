@@ -19,7 +19,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -74,9 +73,9 @@ void myTest( AMP::UnitTest *ut, std::string exeName )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechNlSolVec       = AMP::LinearAlgebra::createVector( dofMap, var, true );
-    auto mechNlRhsVec       = mechNlSolVec->cloneVector();
-    auto mechNlResVec       = mechNlSolVec->cloneVector();
-    auto mechNlScaledRhsVec = mechNlSolVec->cloneVector();
+    auto mechNlRhsVec       = mechNlSolVec->clone();
+    auto mechNlResVec       = mechNlSolVec->clone();
+    auto mechNlScaledRhsVec = mechNlSolVec->clone();
 
     // Create the silo writer and register the data
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );

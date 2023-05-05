@@ -21,7 +21,7 @@
 static double getTemp( const AMP::Mesh::Point &x ) { return 500 + x[2] * 100; }
 
 
-static AMP::Mesh::MeshIterator getZFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel,
+static AMP::Mesh::MeshIterator getZFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> subChannel,
                                                  int ghostWidth )
 {
     std::multimap<double, AMP::Mesh::MeshElement> xyFace;
@@ -63,13 +63,13 @@ static void runTest( const std::string &fname, AMP::UnitTest *ut )
     // Create the meshes from the input database
     auto manager  = AMP::Mesh::MeshFactory::create( params );
     auto pin_mesh = manager->Subset( "MultiPin" );
-    AMP::Mesh::Mesh::shared_ptr clad_mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> clad_mesh;
     if ( pin_mesh ) {
         pin_mesh->setName( "MultiPin" );
         clad_mesh = pin_mesh->Subset( "clad" );
     }
     auto subchannel_mesh = manager->Subset( "subchannel" );
-    AMP::Mesh::Mesh::shared_ptr subchannel_face;
+    std::shared_ptr<AMP::Mesh::Mesh> subchannel_face;
     if ( subchannel_mesh ) {
         subchannel_mesh->setName( "subchannel" );
         subchannel_face = subchannel_mesh->Subset( getZFaceIterator( subchannel_mesh, 1 ) );

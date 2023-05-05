@@ -74,8 +74,8 @@ getPower( const std::vector<double> &range, double P, double V, const AMP::Mesh:
 
 
 // Function to create the solution vectors
-static void createVectors( AMP::Mesh::Mesh::shared_ptr pinMesh,
-                           AMP::Mesh::Mesh::shared_ptr subchannelMesh,
+static void createVectors( std::shared_ptr<AMP::Mesh::Mesh> pinMesh,
+                           std::shared_ptr<AMP::Mesh::Mesh> subchannelMesh,
                            AMP::LinearAlgebra::Vector::shared_ptr &globalMultiVector,
                            AMP::LinearAlgebra::Vector::shared_ptr &specificPowerGpVec )
 {
@@ -136,13 +136,13 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     // Get the meshes
     auto manager = AMP::Mesh::MeshFactory::create( meshParams );
     auto pinMesh = manager->Subset( "MultiPin" );
-    AMP::Mesh::Mesh::shared_ptr cladMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> cladMesh;
     if ( pinMesh ) {
         pinMesh->setName( "MultiPin" );
         cladMesh = pinMesh->Subset( "clad" );
     }
     auto subchannelMesh = manager->Subset( "subchannel" );
-    AMP::Mesh::Mesh::shared_ptr xyFaceMesh;
+    std::shared_ptr<AMP::Mesh::Mesh> xyFaceMesh;
     if ( subchannelMesh ) {
         auto face  = AMP::Mesh::StructuredMeshHelper::getXYFaceIterator( subchannelMesh, 0 );
         xyFaceMesh = subchannelMesh->Subset( face );
@@ -177,13 +177,13 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             std::string meshName = adapter->getName();
             std::string prefix, prefixPower;
 
-            if ( meshName.compare( "clad" ) == 0 ) {
+            if ( meshName == "clad" ) {
                 prefix      = "Clad";
                 prefixPower = "Clad";
-            } else if ( meshName.compare( "pellet_1" ) == 0 ) {
+            } else if ( meshName == "pellet_1" ) {
                 prefix      = "BottomPellet";
                 prefixPower = "Pellet";
-            } else if ( meshName.compare( "pellet_3" ) == 0 ) {
+            } else if ( meshName == "pellet_3" ) {
                 prefix      = "TopPellet";
                 prefixPower = "Pellet";
             } else if ( meshName.compare( 0, 7, "pellet_" ) == 0 ) {
@@ -271,7 +271,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
                 continue;
 
             auto meshName = adapter->getName();
-            if ( meshName.compare( "subchannel" ) == 0 ) {
+            if ( meshName == "subchannel" ) {
                 // create the non-linear operator
                 subchannelNonlinearOperator =
                     std::dynamic_pointer_cast<AMP::Operator::SubchannelTwoEqNonlinearOperator>(
@@ -371,11 +371,11 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             std::string meshName = adapter->getName();
             std::string prefix;
 
-            if ( meshName.compare( "clad" ) == 0 ) {
+            if ( meshName == "clad" ) {
                 prefix = "Clad";
-            } else if ( meshName.compare( "pellet_1" ) == 0 ) {
+            } else if ( meshName == "pellet_1" ) {
                 prefix = "BottomPellet";
-            } else if ( meshName.compare( "pellet_3" ) == 0 ) {
+            } else if ( meshName == "pellet_3" ) {
                 prefix = "TopPellet";
             } else if ( meshName.compare( 0, 7, "pellet_" ) == 0 ) {
                 prefix = "MiddlePellet";
@@ -501,8 +501,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     createVectors( pinMesh, subchannelMesh, globalSolMultiVector, specificPowerGpVec );
 
     // Create the rhs and res vectors
-    auto globalRhsMultiVector = globalSolMultiVector->cloneVector();
-    auto globalResMultiVector = globalSolMultiVector->cloneVector();
+    auto globalRhsMultiVector = globalSolMultiVector->clone();
+    auto globalResMultiVector = globalSolMultiVector->clone();
     auto flowSolVec           = globalSolMultiVector->subsetVectorForVariable( flowVariable );
     auto flowRhsVec           = globalRhsMultiVector->subsetVectorForVariable( flowVariable );
     auto flowResVec           = globalResMultiVector->subsetVectorForVariable( flowVariable );
@@ -721,8 +721,8 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
     AMP::LinearAlgebra::Vector::shared_ptr deltaFlowTempVec;
     AMP::LinearAlgebra::Vector::shared_ptr flowDensityVec;
     if ( subchannelMesh ) {
-        flowTempVec        = subchannelFuelTemp->cloneVector();
-        flowDensityVec     = subchannelFuelTemp->cloneVector();
+        flowTempVec        = subchannelFuelTemp->clone();
+        flowDensityVec     = subchannelFuelTemp->clone();
         int DOFsPerFace[3] = { 0, 0, 2 };
         auto faceDOFManager =
             AMP::Discretization::structuredFaceDOFManager::create( subchannelMesh, DOFsPerFace, 0 );
@@ -758,7 +758,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         flowTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                          ->getScalar<double>( "Inlet_Temperature" );
-        deltaFlowTempVec = flowTempVec->cloneVector();
+        deltaFlowTempVec = flowTempVec->clone();
         deltaFlowTempVec->copyVector( flowTempVec );
         deltaFlowTempVec->addScalar( deltaFlowTempVec, -Tin );
     }

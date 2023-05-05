@@ -2,12 +2,13 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/VectorBuilder.h"
+#include "AMP/vectors/data/VectorDataDefault.h"
 
 #ifdef USE_OPENMP
     #include "AMP/vectors/operations/OpenMP/VectorOperationsOpenMP.h"
 #endif
 #ifdef USE_CUDA
-    #include "AMP/vectors/data/cuda/VectorDataGPU.h"
+    #include "AMP/utils/cuda/CudaAllocator.h"
     #include "AMP/vectors/operations/cuda/VectorOperationsCuda.h"
 #endif
 
@@ -123,10 +124,10 @@ test_times testPerformance( AMP::LinearAlgebra::Vector::shared_ptr vec )
     test_times times;
     // Test the performance of clone
     auto t1     = std::chrono::steady_clock::now();
-    auto vec2   = vec->cloneVector();
+    auto vec2   = vec->clone();
     auto t2     = std::chrono::steady_clock::now();
     times.clone = std::chrono::duration_cast<std::chrono::nanoseconds>( t2 - t1 ).count();
-    auto vec3   = vec->cloneVector();
+    auto vec3   = vec->clone();
     vec2->setRandomValues();
     vec3->setRandomValues();
     // Run the tests
@@ -182,11 +183,10 @@ int main( int argc, char **argv )
 #endif
 
 #ifdef USE_CUDA
-        vec =
-            AMP::LinearAlgebra::createSimpleVector<double,
-                                                   AMP::LinearAlgebra::VectorOperationsCuda<double>,
-                                                   AMP::LinearAlgebra::VectorDataGPU<double>>(
-                N, var, globalComm );
+        using ALLOC = AMP::CudaManagedAllocator<double>;
+        using DATA  = AMP::LinearAlgebra::VectorDataDefault<double, ALLOC>;
+        using OPS   = AMP::LinearAlgebra::VectorOperationsCuda<double>;
+        vec = AMP::LinearAlgebra::createSimpleVector<double, OPS, DATA>( N, var, globalComm );
         auto time_cuda = testPerformance( vec );
         if ( rank == 0 ) {
             AMP::pout << "SimpleVector<CUDA>:" << std::endl;

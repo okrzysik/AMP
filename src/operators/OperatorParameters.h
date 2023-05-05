@@ -1,15 +1,18 @@
-
 #ifndef included_AMP_OperatorParameters
 #define included_AMP_OperatorParameters
 
+#include "AMP/utils/ParameterBase.h"
+
 #include <memory>
 
-#include "AMP/mesh/Mesh.h"
-#include "AMP/utils/Database.h"
-#include "AMP/utils/ParameterBase.h"
+
+namespace AMP::Mesh {
+class Mesh;
+}
 
 
 namespace AMP::Operator {
+
 
 /**\class OperatorParameters
  *
@@ -26,25 +29,17 @@ public:
      * Construct and initialize a parameter list according to input
      * data.  Guess what the required and optional keywords are.
      */
-    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
+    explicit OperatorParameters( std::shared_ptr<AMP::Database> db ) : ParameterBase( db ) {}
 
     /**
      * Destructor.
      */
     virtual ~OperatorParameters() {}
 
-    /**
-     *  Database object which needs to be initialized specific to the solver.
-     *  Documentation for parameters required by each solver can be found in the
-     *  documentation for the solver.
-     */
-    std::shared_ptr<AMP::Database> d_db;
-
-    AMP::Mesh::Mesh::shared_ptr d_Mesh;
-
-protected:
-private:
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh;
 };
+
+
 } // namespace AMP::Operator
 
 #endif

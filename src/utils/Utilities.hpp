@@ -2,59 +2,10 @@
 #define included_AMP_Utilities_hpp
 
 
-// Forward declare stream operators
-namespace AMP {
-extern std::ostream pout;
-extern std::ostream perr;
-extern std::ostream plog;
-} // namespace AMP
+#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Utilities {
-
-
-/************************************************************************
- * Get the operating system                                              *
- ************************************************************************/
-#if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 )
-constexpr OS getOS() { return OS::Windows; }
-#elif defined( __APPLE__ )
-constexpr OS getOS() { return OS::macOS; }
-#elif defined( __linux ) || defined( __linux__ ) || defined( __unix ) || defined( __posix )
-constexpr OS getOS() { return OS::Linux; }
-#else
-constexpr OS getOS() { return OS::Unknown; }
-#endif
-
-
-/************************************************************************
- * Functions to hash                                                     *
- ************************************************************************/
-constexpr unsigned int hash_char( const std::string_view &name )
-{
-    uint32_t hash = 5381;
-    for ( unsigned char c : name ) {
-        // hash = hash * 33 ^ c
-        hash = ( ( hash << 5 ) + hash ) ^ c;
-    }
-    return hash;
-}
-
-
-/************************************************************************
- * Function to wrap printf to std::string                                *
- ************************************************************************/
-inline std::string stringf( const char *format, ... )
-{
-    va_list ap;
-    va_start( ap, format );
-    char tmp[4096];
-    int n = vsnprintf( tmp, sizeof tmp, format, ap );
-    va_end( ap );
-    AMP_INSIST( n >= 0, "Error using stringf: encoding error" );
-    AMP_INSIST( n < (int) sizeof tmp, "Error using stringf: internal buffer size" );
-    return std::string( tmp );
-}
 
 
 /************************************************************************
@@ -139,7 +90,10 @@ void quicksort( size_t n, T *x )
                 istack[jstack - 1] = i;
                 ir                 = j - 1;
             } else {
-                istack[jstack]     = j - 1;
+                auto j2 = j - 1;
+                while ( j2 - l > 1 && arr[j2] == arr[j] )
+                    j2--;
+                istack[jstack]     = j2;
                 istack[jstack - 1] = l;
                 l                  = i;
             }
@@ -155,8 +109,8 @@ void quicksort( size_t n, T1 *x, T2 *y )
     T2 *brr = &y[0];
     bool test;
     long int i, ir, j, jstack, k, l, istack[100];
-    T1 a, tmp_a;
-    T2 b, tmp_b;
+    T1 a;
+    T2 b;
     jstack = 0;
     l      = 0;
     ir     = n - 1;
@@ -190,10 +144,10 @@ void quicksort( size_t n, T1 *x, T2 *y )
         } else {
             k = ( l + ir ) / 2; // Choose median of left, center and right elements as partitioning
                                 // element a. Also rearrange so that a(l) ? a(l+1) ? a(ir).
-            tmp_a      = arr[k];
+            auto tmp_a = arr[k];
             arr[k]     = arr[l + 1];
             arr[l + 1] = tmp_a;
-            tmp_b      = brr[k];
+            auto tmp_b = brr[k];
             brr[k]     = brr[l + 1];
             brr[l + 1] = tmp_b;
             if ( arr[l] > arr[ir] ) {
@@ -249,9 +203,98 @@ void quicksort( size_t n, T1 *x, T2 *y )
                 istack[jstack - 1] = i;
                 ir                 = j - 1;
             } else {
-                istack[jstack]     = j - 1;
+                auto j2 = j - 1;
+                while ( j2 - l > 1 && arr[j2] == arr[j] )
+                    j2--;
+                istack[jstack]     = j2;
                 istack[jstack - 1] = l;
                 l                  = i;
+            }
+        }
+    }
+}
+
+
+/************************************************************************
+ * templated quickselect routines                                        *
+ * Note: these routines modify the order of the array during processing  *
+ ************************************************************************/
+template<class T>
+T quickselect( size_t n, T *x, size_t k )
+{
+    AMP_ASSERT( n > 0 && k < n );
+    if ( n == 1 )
+        return x[0];
+    int64_t l  = 0;
+    int64_t ir = n - 1;
+    while ( 1 ) {
+        if ( ir - l < 7 ) {
+            // Insertion sort when subarray small enough
+            for ( int64_t j = l + 1; j <= ir; j++ ) {
+                T a       = x[j];
+                bool test = true;
+                int64_t i;
+                for ( i = j - 1; i >= 0; i-- ) {
+                    if ( x[i] < a ) {
+                        x[i + 1] = a;
+                        test     = false;
+                        break;
+                    }
+                    x[i + 1] = x[i];
+                }
+                if ( test ) {
+                    i        = l - 1;
+                    x[i + 1] = a;
+                }
+            }
+            return x[k];
+        } else {
+            // Choose partition: median of left/center/right and set a(l) < a(l+1) < a(ir)
+            int64_t m = ( l + ir ) / 2;
+            T tmp     = x[m];
+            x[m]      = x[l + 1];
+            x[l + 1]  = tmp;
+            if ( x[l] > x[ir] ) {
+                tmp   = x[l];
+                x[l]  = x[ir];
+                x[ir] = tmp;
+            }
+            if ( x[l + 1] > x[ir] ) {
+                tmp      = x[l + 1];
+                x[l + 1] = x[ir];
+                x[ir]    = tmp;
+            }
+            if ( x[l] > x[l + 1] ) {
+                tmp      = x[l];
+                x[l]     = x[l + 1];
+                x[l + 1] = tmp;
+            }
+            // Scan up to find element > a
+            int64_t i;
+            int64_t j = ir;
+            T a       = x[l + 1]; // Partitioning element.
+            for ( i = l + 2; i <= ir; i++ ) {
+                if ( x[i] < a )
+                    continue;
+                while ( x[j] > a ) // Scan down to find element < a.
+                    j--;
+                if ( j < i )
+                    break;   // Pointers crossed, exit with partitioning
+                tmp  = x[i]; // Exchange elements of both arrays.
+                x[i] = x[j];
+                x[j] = tmp;
+            }
+            x[l + 1] = x[j]; // Insert partitioning element in both arrays.
+            x[j]     = a;
+            while ( j > l && x[j] == x[j - 1] )
+                j--;
+            // Process appropriate half
+            if ( j <= (int64_t) k && i > (int64_t) k )
+                return x[k];
+            if ( (int64_t) k < j ) {
+                ir = j - 1;
+            } else {
+                l = i;
             }
         }
     }

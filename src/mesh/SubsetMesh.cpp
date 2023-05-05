@@ -538,4 +538,13 @@ bool SubsetMesh::operator==( const Mesh &rhs ) const
 }
 
 
+/****************************************************************
+ * Write restart data                                            *
+ ****************************************************************/
+void SubsetMesh::writeRestart( int64_t ) const
+{
+    AMP_ERROR( "writeRestart is not implimented for SubsetMesh" );
+}
+
+
 } // namespace AMP::Mesh

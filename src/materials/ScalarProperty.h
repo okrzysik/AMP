@@ -2,12 +2,31 @@
 #define included_AMP_ScalarProperty
 
 #include "AMP/materials/Property.h"
-#include "AMP/utils/MathExpr.h"
 
 #include <cstring>
 
 
+// Forward declares
+namespace AMP {
+class MathExpr;
+}
+
+
 namespace AMP::Materials {
+
+
+//! String property class
+class StringProperty final : public Property
+{
+public:
+    StringProperty( std::string name, std::string value, std::string source = "" );
+    bool isString() const override { return true; }
+    std::string evalString() const override { return d_value; }
+    void eval( AMP::Array<double> &, const AMP::Array<double> & ) const override;
+
+private:
+    std::string d_value;
+};
 
 
 //! Scalar property class (fixed value)

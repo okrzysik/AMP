@@ -1,6 +1,9 @@
 #include "AMP/AMP_TPLs.h"
+#include "AMP/IO/FileSystem.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Array.hpp"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Database.hpp"
 #include "AMP/utils/MathExpr.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
@@ -35,16 +38,16 @@ void checkResult( AMP::UnitTest &ut, bool pass, const std::string &msg )
 template<class TYPE>
 static TYPE random()
 {
-    if constexpr ( std::is_floating_point<TYPE>::value ) {
+    if constexpr ( std::is_floating_point_v<TYPE> ) {
         static std::uniform_real_distribution<double> dist( 0, 1 );
         return static_cast<TYPE>( dist( generator ) );
-    } else if constexpr ( std::is_integral<TYPE>::value ) {
+    } else if constexpr ( std::is_integral_v<TYPE> ) {
         static std::uniform_int_distribution<int> dist( 0, 1000000000 );
         return static_cast<TYPE>( dist( generator ) );
-    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         static std::uniform_real_distribution<double> dist( 0, 1 );
         return std::complex<double>( random<double>(), random<double>() );
-    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<float>> ) {
         static std::uniform_real_distribution<float> dist( 0, 1 );
         return std::complex<float>( random<float>(), random<float>() );
     } else {
@@ -68,14 +71,14 @@ static void addType( Database &db, UnitTest &ut )
     pass    = pass && v1 == rand && v2.size() == 1 && v2[0] == rand;
     pass    = pass && db.isType<TYPE>( "scalar-" + typeName );
     pass    = pass && db.isType<TYPE>( "vector-" + typeName );
-    if ( std::is_floating_point<TYPE>::value ) {
+    if ( std::is_floating_point_v<TYPE> ) {
         auto v3 = db.getScalar<double>( "scalar-" + typeName );
         auto v4 = db.getVector<double>( "vector-" + typeName );
         pass    = pass && static_cast<TYPE>( v3 ) == rand;
         pass    = pass && v4.size() == 1 && static_cast<TYPE>( v4[0] ) == rand;
         pass    = pass && db.isType<double>( "scalar-" + typeName );
         pass    = pass && !db.isType<int>( "scalar-" + typeName );
-    } else if ( std::is_integral<TYPE>::value ) {
+    } else if ( std::is_integral_v<TYPE> ) {
         auto v3 = db.getScalar<int>( "scalar-" + typeName );
         auto v4 = db.getVector<int>( "vector-" + typeName );
         pass    = pass && static_cast<TYPE>( v3 ) == rand;
@@ -109,6 +112,8 @@ void runBasicTests( UnitTest &ut )
     db.putVector<double>( "x", { 1.1, 2.2, 3.3 } );
     db.putScalar<double>( "x1", 1.5, "cm" );
     db.putVector<double>( "x2", { 2.5 }, "mm" );
+    db.putVector<std::shared_ptr<Database>>( "dummy", {} );
+    db.deleteData( "dummy" );
 
     // Test adding some different types
     addType<uint8_t>( db, ut );
@@ -282,7 +287,7 @@ void runFileTests( UnitTest &ut, const std::string &filename )
     printf( "Time to read %s: %i us\n", filename.c_str(), us );
     checkResult( ut, !db->empty(), prefix + "!empty()" );
     // Create database from string
-    if ( AMP::Utilities::getSuffix( filename ) != "yml" ) {
+    if ( AMP::IO::getSuffix( filename ) != "yml" ) {
         std::ifstream ifstream( filename );
         std::stringstream buffer;
         buffer << ifstream.rdbuf();
@@ -316,7 +321,7 @@ void runFileTests( UnitTest &ut, const std::string &filename )
         checkResult( ut, pass, "Found material" );
     }
     if ( filename == "library.yml" ) {
-        auto name = ( *db )("3d") ("plastics") ( "pmma" ).getString( "name" );
+        auto name = ( *db )( "3d" )( "plastics" )( "pmma" ).getString( "name" );
         bool pass = name == "PMMA - Poly(methyl methacrylate)";
         checkResult( ut, pass, "Found material" );
     }

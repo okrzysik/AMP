@@ -1,7 +1,8 @@
 #include "AMP/geometry/shapes/CircleFrustum.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 #include <algorithm>
 #include <vector>
@@ -14,7 +15,7 @@ namespace AMP::Geometry {
  * Constructors                                          *
  ********************************************************/
 CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db )
-    : d_dir( 0 ), d_r{ 0, 0 }, d_h( 0 ), d_offset{ 0, 0, 0 }
+    : d_dir( 0 ), d_h( 0 ), d_r{ 0, 0 }, d_offset{ 0, 0, 0 }
 {
     double r1 = db->getScalar<double>( "BaseRadius" );
     double r2 = db->getScalar<double>( "TopRadius" );
@@ -38,7 +39,7 @@ CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db )
     initialize( dir2, { r1, r2 }, h );
 }
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
-    : LogicalGeometry(), d_dir( 0 ), d_r{ 0, 0 }, d_h( 0 ), d_offset{ 0, 0, 0 }
+    : LogicalGeometry(), d_dir( 0 ), d_h( 0 ), d_r{ 0, 0 }, d_offset{ 0, 0, 0 }
 {
     initialize( dir, r, height );
 }
@@ -412,6 +413,38 @@ bool CircleFrustum::operator==( const Geometry &rhs ) const
         return false;
     return d_dir == geom->d_dir && d_r == geom->d_r && d_h == geom->d_h &&
            d_offset == geom->d_offset && d_C == geom->d_C && d_theta == geom->d_theta;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void CircleFrustum::writeRestart( int64_t fid ) const
+{
+    AMP::writeHDF5( fid, "GeomType", std::string( "circle_frustum" ) );
+    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::writeHDF5( fid, "offset", d_offset );
+    AMP::writeHDF5( fid, "dir", d_dir );
+    AMP::writeHDF5( fid, "h", d_h );
+    AMP::writeHDF5( fid, "r", d_r );
+    AMP::writeHDF5( fid, "C", d_C );
+    AMP::writeHDF5( fid, "theta", d_theta );
+}
+CircleFrustum::CircleFrustum( int64_t fid )
+{
+    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::readHDF5( fid, "offset", d_offset );
+    AMP::readHDF5( fid, "dir", d_dir );
+    AMP::readHDF5( fid, "h", d_h );
+    AMP::readHDF5( fid, "r", d_r );
+    AMP::readHDF5( fid, "C", d_C );
+    AMP::readHDF5( fid, "theta", d_theta );
 }
 
 

@@ -105,9 +105,9 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec       = AMP::LinearAlgebra::createVector( nodalDofMap, dispVar, true );
-    auto rhsVec       = solVec->cloneVector();
-    auto resVec       = solVec->cloneVector();
-    auto scaledRhsVec = solVec->cloneVector();
+    auto rhsVec       = solVec->clone();
+    auto resVec       = solVec->clone();
+    auto scaledRhsVec = solVec->clone();
 
     // Initial guess
     solVec->zero();

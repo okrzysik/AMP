@@ -3,7 +3,6 @@
 
 #include "AMP/materials/Property.h"
 #include "AMP/utils/FactoryStrategy.hpp"
-#include "AMP/utils/Utilities.h"
 
 #include <map>
 #include <memory>
@@ -73,18 +72,17 @@ public:
     //! return a list of all properties in this material
     std::vector<std::string> list() const;
 
-protected:
-    /// database of scalar properties
-    std::map<std::string, std::shared_ptr<Property>> d_propertyMap;
-
-protected:
-    //! Add a constant-value fixed property
+public:
+    //! Add a property
     template<class PROPERTY, class... Args>
     void addProperty( const std::string &name, Args &&...args )
     {
         auto name2          = materialName() + "::" + name;
         d_propertyMap[name] = std::make_shared<PROPERTY>( name2, args... );
     }
+
+    //! Add a constant-value fixed property
+    void addStringProperty( std::string name, std::string value, std::string source = "" );
 
     //! Add a constant-value fixed property
     void addScalarProperty( std::string name,
@@ -115,6 +113,11 @@ protected:
                               std::vector<std::array<double, 2>> ranges = {},
                               std::vector<AMP::Units> argUnits          = {},
                               std::string source                        = "" );
+
+
+protected:
+    /// database of scalar properties
+    std::map<std::string, std::shared_ptr<Property>> d_propertyMap;
 };
 
 

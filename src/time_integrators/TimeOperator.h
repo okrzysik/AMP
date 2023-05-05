@@ -78,6 +78,8 @@ public:
      */
     virtual ~TimeOperator();
 
+    std::string type() const override { return "TimeOperator"; }
+
     /**
      * This function is useful for re-initializing an operator
      * \param params
@@ -120,15 +122,6 @@ public:
     std::shared_ptr<AMP::Operator::Operator> getMassOperator( void ) { return d_pMassOperator; }
 
     /**
-     * register a vector consisting of the solution at the previous time step.
-     @param [in] previousSolution : shared pointer to Vector
-     */
-    void setPreviousSolution( std::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution )
-    {
-        d_pPreviousTimeSolution = previousSolution;
-    }
-
-    /**
      * set the value of the current time step
      @param [in] dt : value of current timestep
      */
@@ -144,23 +137,42 @@ public:
         return d_pRhsOperator->getOutputVariable();
     }
 
-    virtual void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
-                        AMP::LinearAlgebra::Vector::shared_ptr f ) override;
+    /**
+     * Note this form is not correct for IDA and has to be overriden
+     */
+    void apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                AMP::LinearAlgebra::Vector::shared_ptr r ) override;
+
+    virtual void applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x,
+                           std::shared_ptr<AMP::LinearAlgebra::Vector> f );
+
+    void residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                   std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                   std::shared_ptr<AMP::LinearAlgebra::Vector> r ) override;
 
     /**
-     * implements the getJacobianParameters interface required by operators. This routine returns
-     * a shared pointer to a TimeOperatorParameters object, internally containing shares pointerst
-     to
-     * two OperatorParameter objects, one for the mass operator (if not a FD or FVM discretization)
-     * and one for the rhs operator.
-     @param [in] type : type of parameters to get
-     @param [in] u : shared pointer to a Vector at which the Jacobian is to be evaluated.
-     @param [in] params : optional parameters object
+     * Set the scaling for implicit operators (at present not consistent with IDA interface)
      */
+    virtual void setTimeOperatorScaling( const double gamma ) { d_dGamma = gamma; }
+    /**
+     * Get the scaling for implicit operators (at present not consistent with IDA interface)
+     */
+    virtual double getGamma( void ) const { return d_dGamma; }
+
     std::shared_ptr<AMP::Operator::OperatorParameters>
     getParameters( const std::string &type,
                    AMP::LinearAlgebra::Vector::const_shared_ptr u,
                    std::shared_ptr<AMP::Operator::OperatorParameters> params = nullptr ) override;
+
+    //! for multiphysics problems it may be necessary to scale the solution
+    // and nonlinear function for correct solution of the implicit problem
+    // each timestep. The first vector is for solution scaling, the second for function
+    void setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+    {
+        d_pSolutionScaling = s;
+        d_pFunctionScaling = f;
+    }
 
 protected:
     TimeOperator();
@@ -194,9 +206,9 @@ protected:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_pAlgebraicVariable;
 
     /**
-     * solution at previous time step
+     * scratch vector for internal use
      */
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchSolVector;
 
     /**
      * scratch vector for internal use
@@ -207,6 +219,11 @@ protected:
      * vector containing source terms if any
      */
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSourceTerm;
+
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pSolutionScaling;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pFunctionScaling;
+
+    double d_dGamma = 0.0;
 
 private:
 };

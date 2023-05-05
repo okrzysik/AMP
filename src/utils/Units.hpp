@@ -84,6 +84,11 @@ constexpr Units::Units( const std::string_view &str )
         }
     }
 }
+constexpr Units::Units( const std::string_view &str, double value )
+    : Units( std::string_view( str ) )
+{
+    d_scale *= value;
+}
 constexpr Units::Units( const SI_type &SI, double s ) : d_unit( { 0 } ), d_SI( SI ), d_scale( s ) {}
 constexpr std::array<int8_t, 9> operator+( const std::array<int8_t, 9> &a,
                                            const std::array<int8_t, 9> &b )
@@ -169,7 +174,7 @@ constexpr Units Units::read( std::string_view str )
 {
     str = deblank( str );
     if ( str.empty() )
-        return Units( { 0 }, 1.0 );
+        return Units( SI_type{ 0 }, 1.0 );
     // Break the string into value/operator sets
     int N        = 0;
     char op[100] = { 0 };
@@ -210,7 +215,7 @@ constexpr Units Units::read( std::string_view str )
     if ( N == 1 )
         return read2( v[0] );
     // Evaluate and apply operators
-    Units u( { 0 }, 1.0 );
+    Units u( SI_type{ 0 }, 1.0 );
     char last_op = '*';
     for ( int i = 0; i < N; i++ ) {
         Units u2 = read( v[i] );
@@ -326,7 +331,7 @@ constexpr Units Units::read2( std::string_view str )
         u.d_scale *= convert( prefix );
         return u;
     }
-    return Units( { 0 }, 0.0 );
+    return Units( SI_type{ 0 }, 0.0 );
 }
 constexpr Units Units::readUnit( const std::string_view &str, bool throwErr )
 {
@@ -612,7 +617,7 @@ constexpr double Units::convert( const Units &rhs ) const
 constexpr bool Units::operator==( const Units &rhs ) const noexcept
 {
     double err = d_scale >= rhs.d_scale ? d_scale - rhs.d_scale : rhs.d_scale - d_scale;
-    bool test  = err < 1e-10 * d_scale;
+    bool test  = err <= 1e-10 * d_scale;
     for ( size_t i = 0; i < d_SI.size(); i++ )
         test = test && d_SI[i] == rhs.d_SI[i];
     return test;
@@ -652,10 +657,10 @@ constexpr Units operator/( const Units &a, const Units &b )
 constexpr Units Units::pow( int exponent ) const noexcept
 {
     if ( exponent == 0 )
-        return Units( { 0 }, 1.0 );
+        return Units( SI_type{ 0 }, 1.0 );
     auto base = *this;
     if ( exponent < 0 ) {
-        base     = Units( { 0 }, 1.0 ) / base;
+        base     = Units( SI_type{ 0 }, 1.0 ) / base;
         exponent = -exponent;
     }
     Units u = base;

@@ -1,6 +1,9 @@
 #include "AMP/matrices/Matrix.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/ParameterBase.h"
+
 #include <iomanip>
 
 namespace AMP::LinearAlgebra {
@@ -21,6 +24,7 @@ Matrix::Matrix( std::shared_ptr<MatrixData> data ) : d_matrixData( data )
 {
     AMPManager::incrementResource( "Matrix" );
 }
+
 Matrix::~Matrix() { AMPManager::decrementResource( "Matrix" ); }
 
 /********************************************************
@@ -47,6 +51,16 @@ void Matrix::axpy( double alpha, std::shared_ptr<const Matrix> x )
     if ( N1 != N2 )
         AMP_ERROR( "Matrix sizes are not compatible" );
     axpy( alpha, *x );
+}
+
+
+/********************************************************
+ * transpose                                             *
+ ********************************************************/
+std::shared_ptr<Matrix> Matrix::transpose() const
+{
+    AMP_ERROR( "not implemented" );
+    return std::shared_ptr<Matrix>();
 }
 
 
@@ -95,4 +109,10 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
+std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
+{
+    return operator<<( out, *p );
+}
+
+
 } // namespace AMP::LinearAlgebra

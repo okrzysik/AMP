@@ -1,5 +1,7 @@
 #include "AMP/solvers/petsc/PetscSNESSolver.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/petsc/PetscMatrix.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/ColumnOperator.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/OperatorFactory.h"
@@ -149,7 +151,11 @@ void PetscSNESSolver::createPetscObjects(
                     // set the preconditioner type to be shell if a pc solver name is given
                     snes_create_pc = true;
                 }
+
+                auto pc_side = nonlinearSolverDB->getWithDefault<std::string>( "pc_side", "RIGHT" );
+                linearSolverDB->putScalar<std::string>( "pc_side", pc_side );
             }
+
             pc_type = nonlinearSolverDB->getWithDefault<std::string>( "pc_type", pc_type );
             linearSolverDB->putScalar<std::string>( "pc_type", pc_type );
         }
@@ -308,8 +314,8 @@ void PetscSNESSolver::preApply( std::shared_ptr<const AMP::LinearAlgebra::Vector
         // to guard against the possibility of two consecutive solves having
         // different vector types (see the test testPetscSNESSolver)
         auto r            = spv->getManagedVec();
-        d_pResidualVector = r->cloneVector();
-        d_pScratchVector  = d_pResidualVector->cloneVector();
+        d_pResidualVector = r->clone();
+        d_pScratchVector  = d_pResidualVector->clone();
     }
 
     AMP_ASSERT( d_pResidualVector );
@@ -412,7 +418,7 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     if ( db->keyExists( "step_tolerance" ) )
         d_dStepTolerance = db->getScalar<double>( "step_tolerance" );
 
-    d_bEnableLineSearchPreCheck = db->getWithDefault<bool>( "enableLineSearchPreCheck", false );
+    d_bEnableLineSearchPreCheck = db->getWithDefault<bool>( "enableLineSearchPreCheckg", false );
 
     if ( d_bEnableLineSearchPreCheck )
         d_iNumberOfLineSearchPreCheckAttempts =
@@ -561,8 +567,8 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
 
     if ( d_iDebugPrintInfoLevel > 0 ) {
 
-        AMP::pout << " SNES Iterations:  nonlinear: " << d_iNumberIterations << std::endl;
-        AMP::pout << "                      linear: " << iLinearIterations << std::endl;
+        AMP::pout << "  SNES Iterations:  nonlinear: " << d_iNumberIterations << std::endl;
+        AMP::pout << "                       linear: " << iLinearIterations << std::endl;
     }
 
     // Reset the solvers
@@ -637,6 +643,46 @@ int PetscSNESSolver::defaultLineSearchPreCheck( std::shared_ptr<AMP::LinearAlgeb
     return ierr;
 }
 
+void PetscSNESSolver::printConvergenceStatus( SolverStrategy::SolverStatus status,
+                                              std::ostream &os ) const
+{
+    std::string offset = "  ";
+    if ( d_iDebugPrintInfoLevel > 0 ) {
+        switch ( status ) {
+        case SolverStrategy::SolverStatus::ConvergedOnAbsTol:
+            os << offset << type() << " converged on absolute tolerance" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::ConvergedOnRelTol:
+            os << offset << type() << " converged on relative tolerance" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedOther:
+            os << offset << type() << " diverged, solver type specific reason" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedOnNan:
+            os << offset << type() << " diverged on NaNs" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedMaxIterations:
+            os << offset << type() << " diverged on max iterations" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedNestedSolver:
+            os << offset << type() << " diverged on nested solver divergence" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedLineSearch:
+            os << offset << type() << " diverged on line search" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedStepSize:
+            os << offset << type() << " diverged on step size less than tolerance" << std::endl;
+            break;
+        case SolverStrategy::SolverStatus::DivergedFunctionCount:
+            os << offset << type() << " diverged on function evaluations exceeded" << std::endl;
+            break;
+        default:
+            os << offset << type() << " diverged, reason unknown" << std::endl;
+            break;
+        }
+    }
+}
+
 void PetscSNESSolver::setConvergenceStatus( void )
 {
     checkErr( SNESGetConvergedReason( d_SNESSolver, &d_SNES_completion_code ) );
@@ -649,10 +695,10 @@ void PetscSNESSolver::setConvergenceStatus( void )
         d_ConvergenceStatus = SolverStatus::ConvergedOnRelTol;
         break;
     case SNES_CONVERGED_SNORM_RELATIVE:
-        d_ConvergenceStatus = SolverStatus::DivergedOther;
+        d_ConvergenceStatus = SolverStatus::DivergedStepSize;
         break;
     case SNES_DIVERGED_FUNCTION_COUNT:
-        d_ConvergenceStatus = SolverStatus::DivergedOther;
+        d_ConvergenceStatus = SolverStatus::DivergedFunctionCount;
         break;
     case SNES_DIVERGED_FNORM_NAN:
         d_ConvergenceStatus = SolverStatus::DivergedOnNan;
@@ -660,14 +706,19 @@ void PetscSNESSolver::setConvergenceStatus( void )
     case SNES_DIVERGED_MAX_IT:
         d_ConvergenceStatus = SolverStatus::DivergedMaxIterations;
         break;
+    case SNES_DIVERGED_LINEAR_SOLVE:
+        d_ConvergenceStatus = SolverStatus::DivergedNestedSolver;
+        break;
     case SNES_DIVERGED_LINE_SEARCH:
         d_ConvergenceStatus = SolverStatus::DivergedLineSearch;
         break;
     default:
         d_ConvergenceStatus = SolverStatus::DivergedOther;
-        AMP_ERROR( "Unknown SNES completion code reported" );
+        AMP_WARNING( "Unknown SNES completion code reported" );
         break;
     }
+
+    printConvergenceStatus( d_ConvergenceStatus );
 }
 
 void PetscSNESSolver::setLineSearchPreCheck(

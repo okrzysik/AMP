@@ -29,72 +29,18 @@ void registerMaterial( const std::string &name, std::function<std::unique_ptr<Ke
 
 
 /********************************************************************
- * Helper function to perform data conversion                        *
- ********************************************************************/
-template<class TYPE>
-static constexpr TYPE getTol()
-{
-    if constexpr ( std::is_same<TYPE, float>::value ) {
-        return 1e-6;
-    } else if constexpr ( std::is_same<TYPE, double>::value ) {
-        return 1e-12;
-    } else {
-        return 0;
-    }
-}
-template<class TYPE>
-static constexpr TYPE abs( const TYPE &x )
-{
-    if constexpr ( std::is_signed<TYPE>::value ) {
-        return x < 0 ? -x : x;
-    } else {
-        return x;
-    }
-}
-template<class TYPE1, class TYPE2>
-Array<TYPE2> convert( const Array<TYPE1> &x )
-{
-    if constexpr ( std::is_same<TYPE1, TYPE2>::value ) {
-        return x;
-    } else if constexpr ( std::is_arithmetic<TYPE1>::value && std::is_arithmetic<TYPE2>::value ) {
-        Array<TYPE2> y( x.size() );
-        y.fill( 0 );
-        bool pass = true;
-        auto tol  = getTol<TYPE1>();
-        for ( size_t i = 0; i < x.length(); i++ ) {
-            y( i ) = static_cast<TYPE2>( x( i ) );
-            pass   = pass && abs( static_cast<TYPE1>( y( i ) - x( i ) ) ) <= tol * x( i );
-        }
-        if ( !pass ) {
-            std::string type1 = typeid( TYPE1 ).name();
-            std::string type2 = typeid( TYPE2 ).name();
-            std::string msg = "Converting " + type1 + "-" + type2 + " results in loss of precision";
-            AMP_WARNING( msg );
-        }
-        return y;
-    } else {
-        std::string type1 = typeid( TYPE1 ).name();
-        std::string type2 = typeid( TYPE2 ).name();
-        std::string msg =
-            "Invalid conversion: " + type1 + "-" + type2 + " results in loss of precision";
-        throw std::logic_error( msg );
-    }
-}
-
-
-/********************************************************************
  * Scale data                                                        *
  ********************************************************************/
 template<class TYPE>
 void scaleData( TYPE &data, double factor )
 {
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         throw std::logic_error( "Unable to scale bool" );
-    } else if constexpr ( std::is_same<TYPE, std::complex<float>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<float>> ) {
         data = static_cast<float>( factor ) * data;
-    } else if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    } else if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         data = factor * data;
-    } else if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    } else if constexpr ( std::is_arithmetic_v<TYPE> ) {
         data = static_cast<TYPE>( factor ) * data;
     } else {
         NULL_USE( factor );
@@ -105,107 +51,15 @@ void scaleData( TYPE &data, double factor )
 template<class TYPE>
 void scaleData( Array<TYPE> &data, double factor )
 {
-    if constexpr ( std::is_same<TYPE, bool>::value ) {
+    if constexpr ( std::is_same_v<TYPE, bool> ) {
         throw std::logic_error( "Unable to scale bool" );
-    } else if constexpr ( std::is_arithmetic<TYPE>::value ) {
+    } else if constexpr ( std::is_arithmetic_v<TYPE> ) {
         data.scale( factor );
     } else {
         NULL_USE( factor );
         std::string type = typeid( TYPE ).name();
         throw std::logic_error( "Unable to scale " + type );
     }
-}
-
-
-/********************************************************************
- * KeyDataScalar::operator==                                         *
- ********************************************************************/
-template<class TYPE>
-static inline bool compare( const TYPE &x, const TYPE &y );
-template<>
-inline bool compare( const double &x, const double &y )
-{
-    bool test = x == y;
-    test      = test || fabs( x - y ) <= 1e-12 * fabs( x + y );
-    test      = test || ( ( x != x ) && ( y != y ) );
-    return test;
-}
-template<>
-inline bool compare( const float &x, const float &y )
-{
-    bool test = x == y;
-    test      = test || fabs( x - y ) <= 1e-7 * fabs( x + y );
-    test      = test || ( ( x != x ) && ( y != y ) );
-    return test;
-}
-template<>
-inline bool compare( const std::complex<double> &x, const std::complex<double> &y )
-{
-    bool test = x == y;
-    test      = test || std::abs( x - y ) <= 1e-12 * std::abs( x + y );
-    test      = test || ( ( x != x ) && ( y != y ) );
-    return test;
-}
-template<>
-inline bool compare( const std::complex<float> &x, const std::complex<float> &y )
-{
-    bool test = x == y;
-    test      = test || std::abs( x - y ) <= 1e-7 * std::abs( x + y );
-    test      = test || ( ( x != x ) && ( y != y ) );
-    return test;
-}
-template<class TYPE>
-static inline bool compare( const TYPE &x, const TYPE &y )
-{
-    return x == y;
-}
-template<class TYPE>
-bool KeyDataScalar<TYPE>::operator==( const KeyData &rhs ) const
-{
-    auto tmp1 = dynamic_cast<const KeyDataScalar<TYPE> *>( &rhs );
-    auto tmp2 = dynamic_cast<const KeyDataArray<TYPE> *>( &rhs );
-    if ( tmp1 ) {
-        return compare( d_data, tmp1->d_data );
-    } else if ( tmp2 ) {
-        if ( tmp2->get().size() != 1 )
-            return false;
-        return compare( d_data, tmp2->get()( 0 ) );
-    } else if ( ( is_floating_point() || is_integral() ) &&
-                ( rhs.is_floating_point() || rhs.is_integral() ) ) {
-        auto data1 = convertToDouble();
-        auto data2 = rhs.convertToDouble();
-        if ( data1.size() != data2.size() )
-            return false;
-        bool test = true;
-        for ( size_t i = 0; i < data1.length(); i++ )
-            test = test && compare( data1( i ), data2( i ) );
-        return test;
-    }
-    return false;
-}
-template<class TYPE>
-bool KeyDataArray<TYPE>::operator==( const KeyData &rhs ) const
-{
-    auto tmp1 = dynamic_cast<const KeyDataScalar<TYPE> *>( &rhs );
-    auto tmp2 = dynamic_cast<const KeyDataArray<TYPE> *>( &rhs );
-    if ( tmp1 ) {
-        if ( d_data.size() != 1 )
-            return false;
-        return compare( d_data( 0 ), tmp1->get() );
-    } else if ( tmp2 ) {
-        return compare( d_data, tmp2->get() );
-    } else if ( ( is_floating_point() || is_integral() ) &&
-                ( rhs.is_floating_point() || rhs.is_integral() ) ) {
-        auto data1 = convertToDouble();
-        auto data2 = rhs.convertToDouble();
-        if ( data1.size() != data2.size() )
-            return false;
-        bool test = true;
-        for ( size_t i = 0; i < data1.length(); i++ )
-            test = test && compare( data1( i ), data2( i ) );
-        return test;
-    }
-    return false;
 }
 
 
@@ -224,7 +78,7 @@ EquationKeyData::EquationKeyData( std::string_view eq, const Units &unit ) : Key
     std::vector<std::string> vars;
     if ( !eq_var.empty() ) {
         for ( size_t i = 0; i < eq_var.size(); ) {
-            size_t j = std::min( eq_var.find( ',' ), eq_var.size() );
+            size_t j = std::min( eq_var.find( ',', i ), eq_var.size() );
             vars.emplace_back( deblank( eq_var.substr( i, j - i ) ) );
             i = j + 1;
         }
@@ -334,6 +188,25 @@ size_t EquationKeyData::unpack( const std::byte *buf )
     if ( !expr.empty() )
         d_eq = std::make_shared<MathExpr>( expr, vars );
     return N;
+}
+void EquationKeyData::writeHDF5( int64_t fid, std::string_view name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    AMP::writeHDF5( gid, "expr", d_eq->getExpr() );
+    AMP::writeHDF5( gid, "vars", d_eq->getVars() );
+    closeGroup( gid );
+}
+void EquationKeyData::readHDF5( int64_t fid, std::string_view name )
+{
+    std::string expr;
+    std::vector<std::string> vars;
+    hid_t gid = openGroup( fid, name );
+    AMP::readHDF5( gid, "expr", expr );
+    AMP::readHDF5( gid, "vars", vars );
+    closeGroup( gid );
+    d_eq.reset();
+    if ( !expr.empty() )
+        d_eq = std::make_shared<MathExpr>( expr, vars );
 }
 
 
@@ -503,20 +376,17 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
 #define instantiatePutArray( TYPE )         \
     template void Database::putArray<TYPE>( \
         std::string_view, Array<TYPE>, Units, Check, source_location )
-#define instantiateGetWithDefault( TYPE )                                                    \
-    template TYPE Database::getWithDefault<TYPE>(                                            \
-        std::string_view, IdentityType<TYPE const &>::type, const Units &, source_location ) \
-        const;                                                                               \
-    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                  \
-        std::string_view,                                                                    \
-        IdentityType<std::vector<TYPE> const &>::type,                                       \
-        const Units &,                                                                       \
-        source_location ) const;                                                             \
-    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                              \
-        std::string_view,                                                                    \
-        IdentityType<Array<TYPE> const &>::type,                                             \
-        const Units &,                                                                       \
-        source_location ) const
+#define instantiateGetWithDefault( TYPE )                                                     \
+    template TYPE Database::getWithDefault<TYPE>(                                             \
+        std::string_view, IdentityType<TYPE const &>, const Units &, source_location ) const; \
+    template std::vector<TYPE> Database::getWithDefault<std::vector<TYPE>>(                   \
+        std::string_view,                                                                     \
+        IdentityType<std::vector<TYPE> const &>,                                              \
+        const Units &,                                                                        \
+        source_location ) const;                                                              \
+    template Array<TYPE> Database::getWithDefault<Array<TYPE>>(                               \
+        std::string_view, IdentityType<Array<TYPE> const &>, const Units &, source_location ) \
+        const
 
 instantiate( instantiateConvert );        // convert
 instantiate( instantiateScaleData );      // scaleData
@@ -572,4 +442,5 @@ REGISTER_KEYDATA( EquationKeyData, EquationKeyData );
  ********************************************************/
 #include "AMP/utils/Array.hpp"
 instantiateArrayConstructors( AMP::DatabaseBox );
-PACK_UNPACK_ARRAY( AMP::DatabaseBox )
+PACK_UNPACK_ARRAY( AMP::DatabaseBox );
+PACK_UNPACK_ARRAY2( AMP::DatabaseBox );

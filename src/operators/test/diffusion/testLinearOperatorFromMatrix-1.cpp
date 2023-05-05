@@ -12,7 +12,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -102,8 +101,8 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
-    auto u = ampVector->cloneVector();
-    auto v = ampVector->cloneVector();
+    auto u = ampVector->clone();
+    auto v = ampVector->clone();
 
     u->setRandomValues();
     v->setRandomValues();

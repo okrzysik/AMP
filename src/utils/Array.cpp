@@ -1,6 +1,7 @@
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/UtilityMacros.h"
+#include "AMP/utils/typeid.h"
 
 #include <complex>
 
@@ -14,6 +15,7 @@ namespace AMP {
 #if defined( USING_ICC )
 DISABLE_WARNINGS
 #endif
+template class Array<bool>;
 template class Array<char>;
 template class Array<uint8_t>;
 template class Array<uint16_t>;
@@ -26,10 +28,10 @@ template class Array<int64_t>;
 template class Array<float>;
 template class Array<double>;
 template class Array<long double>;
-instantiateArrayConstructors( bool );
 instantiateArrayConstructors( std::byte );
 instantiateArrayConstructors( std::string );
 instantiateArrayConstructors( std::string_view );
+instantiateArrayConstructors( typeID );
 
 
 /********************************************************
@@ -63,29 +65,29 @@ ENABLE_WARNINGS
 /********************************************************
  *  Pack/Unpack                                          *
  ********************************************************/
-// clang-format off
-PACK_UNPACK_ARRAY( bool )
-PACK_UNPACK_ARRAY( char )
-PACK_UNPACK_ARRAY( uint8_t )
-PACK_UNPACK_ARRAY( uint16_t )
-PACK_UNPACK_ARRAY( uint32_t )
-PACK_UNPACK_ARRAY( uint64_t )
-PACK_UNPACK_ARRAY( int8_t )
-PACK_UNPACK_ARRAY( int16_t )
-PACK_UNPACK_ARRAY( int32_t )
-PACK_UNPACK_ARRAY( int64_t )
-PACK_UNPACK_ARRAY( float )
-PACK_UNPACK_ARRAY( double )
-PACK_UNPACK_ARRAY( long double )
-PACK_UNPACK_ARRAY( std::complex<float> )
-PACK_UNPACK_ARRAY( std::complex<double> )
-PACK_UNPACK_ARRAY( std::byte )
-PACK_UNPACK_ARRAY( std::string )
-PACK_UNPACK_ARRAY( std::string_view )
-template size_t AMP::Array<bool>::packSize() const;
-template size_t AMP::Array<bool>::pack( std::byte * ) const;
-template size_t AMP::Array<bool>::unpack( const std::byte * );
-// clang-format on
+PACK_UNPACK_ARRAY( std::byte * );
+PACK_UNPACK_ARRAY( bool );
+PACK_UNPACK_ARRAY( char );
+PACK_UNPACK_ARRAY( uint8_t );
+PACK_UNPACK_ARRAY( uint16_t );
+PACK_UNPACK_ARRAY( uint32_t );
+PACK_UNPACK_ARRAY( uint64_t );
+PACK_UNPACK_ARRAY( int8_t );
+PACK_UNPACK_ARRAY( int16_t );
+PACK_UNPACK_ARRAY( int32_t );
+PACK_UNPACK_ARRAY( int64_t );
+PACK_UNPACK_ARRAY( float );
+PACK_UNPACK_ARRAY( double );
+PACK_UNPACK_ARRAY( long double );
+PACK_UNPACK_ARRAY( std::complex<float> );
+PACK_UNPACK_ARRAY( std::complex<double> );
+PACK_UNPACK_ARRAY( std::byte );
+PACK_UNPACK_ARRAY( std::string );
+PACK_UNPACK_ARRAY( std::string_view );
+PACK_UNPACK_ARRAY2( std::byte * );
+PACK_UNPACK_ARRAY2( std::string );
+PACK_UNPACK_ARRAY2( std::complex<float> );
+PACK_UNPACK_ARRAY2( std::complex<double> );
 
 
 } // namespace AMP

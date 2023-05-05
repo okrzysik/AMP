@@ -7,7 +7,7 @@
 #include "AMP/vectors/Vector.h"
 #include <memory>
 
-void computeTemperatureRhsVector( AMP::Mesh::Mesh::shared_ptr mesh,
+void computeTemperatureRhsVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                   std::shared_ptr<AMP::Database> input_db,
                                   std::shared_ptr<AMP::LinearAlgebra::Variable> temperatureVar,
                                   std::shared_ptr<AMP::LinearAlgebra::Variable> displacementVar,

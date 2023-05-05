@@ -52,7 +52,7 @@ static void my_ijmf( double const &T, double const &f, double &ijmf, void *param
     ijmf      = -f / df;
 }
 
-static void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void computeFuelTemperature( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                     AMP::LinearAlgebra::Vector::shared_ptr temperatureField,
                                     double fuelOuterRadius,
                                     double fuelOuterRadiusTemperature,
@@ -84,7 +84,7 @@ static void computeFuelTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     } // end for
 }
 
-static void computeCladTemperature( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void computeCladTemperature( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                     AMP::LinearAlgebra::Vector::shared_ptr temperatureField,
                                     double cladInnerRadius,
                                     double cladOuterRadius,
@@ -198,7 +198,7 @@ makeConstraintsOnClad( AMP::Mesh::MeshIterator it,
 static void applyCustomDirichletCondition(
     AMP::LinearAlgebra::Vector::shared_ptr rhs,
     AMP::LinearAlgebra::Vector::shared_ptr &cor,
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::map<AMP::Mesh::MeshElementID, std::map<size_t, double>> const &constraints,
     std::shared_ptr<AMP::LinearAlgebra::Matrix> mat )
 {
@@ -208,7 +208,7 @@ static void applyCustomDirichletCondition(
         char xyz[]   = "xyz";
         size_t count = 0;
         std::vector<double> coord;
-        auto dir = rhs->cloneVector();
+        auto dir = rhs->clone();
         dir->zero();
         for ( auto it = constraints.begin(); it != constraints.end(); ++it ) {
             AMP_ASSERT( ( meshAdapter->getElement( it->first ) ).isOnSurface() );
@@ -259,7 +259,7 @@ static void applyCustomDirichletCondition(
     }     // end for it
 }
 
-static void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFactor )
+static void shrinkMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh, double const shrinkFactor )
 {
     auto dofManager = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
@@ -284,7 +284,7 @@ static void shrinkMesh( AMP::Mesh::Mesh::shared_ptr mesh, double const shrinkFac
     mesh->displaceMesh( dispVec );
 }
 
-static void rotateMesh( AMP::Mesh::Mesh::shared_ptr mesh )
+static void rotateMesh( std::shared_ptr<AMP::Mesh::Mesh> mesh )
 {
     auto dofManager = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 0, 3, false );
@@ -321,7 +321,7 @@ struct dummyClass {
 };
 
 
-static void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
+static void computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                  AMP::LinearAlgebra::Vector::shared_ptr displacementField,
                                  AMP::LinearAlgebra::Vector::shared_ptr sigma_xx,
                                  AMP::LinearAlgebra::Vector::shared_ptr sigma_yy,
@@ -509,7 +509,7 @@ static void computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
 
 
 static void
-computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
+computeStressTensor( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                      AMP::LinearAlgebra::Vector::shared_ptr displacementField,
                      AMP::LinearAlgebra::Vector::shared_ptr sigmaXX,
                      AMP::LinearAlgebra::Vector::shared_ptr sigmaYY,
@@ -563,7 +563,7 @@ computeStressTensor( AMP::Mesh::Mesh::shared_ptr mesh,
 }
 
 
-static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void drawVerticesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                       int boundaryID,
                                       std::ostream &os,
                                       double const *point_of_view,
@@ -583,7 +583,7 @@ static void drawVerticesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
     } // end for
 }
 
-static void drawGeomType::FacesOnBoundaryID( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+static void drawGeomType::FacesOnBoundaryID( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                              int boundaryID,
                                              std::ostream &os,
                                              double const *point_of_view,
@@ -629,13 +629,13 @@ static void myPCG( AMP::LinearAlgebra::Vector::shared_ptr rhs,
                    bool verbose     = false,
                    std::ostream &os = std::cout )
 {
-    auto res    = sol->cloneVector();
-    auto dir    = sol->cloneVector();
-    auto ext    = sol->cloneVector();
-    auto oldSol = sol->cloneVector();
-    auto oldRes = sol->cloneVector();
-    auto oldDir = sol->cloneVector();
-    auto matVec = sol->cloneVector();
+    auto res    = sol->clone();
+    auto dir    = sol->clone();
+    auto ext    = sol->clone();
+    auto oldSol = sol->clone();
+    auto oldRes = sol->clone();
+    auto oldDir = sol->clone();
+    auto matVec = sol->clone();
     auto nullVec;
 
     op->apply( nullVec, sol, matVec, 1.0, 0.0 );

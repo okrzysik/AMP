@@ -39,6 +39,7 @@ public:
     }
     constexpr MeshID( uint64_t id ) : data( id ) {}
     constexpr uint64_t getData() const { return data; }
+    constexpr uint64_t getHash() const { return 0xF958F86D61D1B36B ^ data; }
     // Overload key operators
     constexpr bool operator==( const MeshID &rhs ) const { return data == rhs.data; }
     constexpr bool operator!=( const MeshID &rhs ) const { return data != rhs.data; }

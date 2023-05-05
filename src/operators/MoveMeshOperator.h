@@ -1,4 +1,3 @@
-
 #ifndef included_AMP_MoveMeshOperator
 #define included_AMP_MoveMeshOperator
 

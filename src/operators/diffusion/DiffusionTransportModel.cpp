@@ -3,7 +3,6 @@
 #include "AMP/materials/ScalarProperty.h"
 #include "AMP/operators/diffusion/DiffusionTransportTensorModel.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
 

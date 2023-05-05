@@ -1,4 +1,6 @@
 #include "DirichletMatrixCorrection.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
 
@@ -209,7 +211,7 @@ void DirichletMatrixCorrection::initRhsCorrectionAdd( AMP::LinearAlgebra::Vector
     if ( !d_skipRHSsetCorrection ) {
         if ( !d_skipRHSaddCorrection ) {
             if ( !d_dispVals ) {
-                d_dispVals = ( subsetOutputVector( rhs ) )->cloneVector();
+                d_dispVals = ( subsetOutputVector( rhs ) )->clone();
                 AMP_ASSERT( ( *( d_dispVals->getVariable() ) ) == ( *d_variable ) );
             }
 
@@ -219,7 +221,7 @@ void DirichletMatrixCorrection::initRhsCorrectionAdd( AMP::LinearAlgebra::Vector
             d_rhsCorrectionSet->apply( emptyVec, d_dispVals );
 
             if ( !d_rhsCorrectionAdd ) {
-                d_rhsCorrectionAdd = d_dispVals->cloneVector();
+                d_rhsCorrectionAdd = d_dispVals->clone();
             }
 
             d_inputMatrix->mult( d_dispVals, d_rhsCorrectionAdd );

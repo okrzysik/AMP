@@ -2,7 +2,7 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include "AMP/vectors/data/VectorDataCPU.h"
+#include "AMP/vectors/data/VectorDataDefault.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
 #include "ProfilerApp.h"
@@ -77,7 +77,7 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
 ManagedEpetraMatrix::ManagedEpetraMatrix( Epetra_CrsMatrix *m, bool dele ) : EpetraMatrix( m, dele )
 {
 }
-std::shared_ptr<Matrix> ManagedEpetraMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> ManagedEpetraMatrix::clone() const
 {
     auto *r           = new ManagedEpetraMatrix( *this );
     r->d_DeleteMatrix = true;
@@ -93,8 +93,8 @@ std::shared_ptr<Vector> ManagedEpetraMatrix::getRightVector() const
     int localSize  = d_pParameters->getLocalNumberOfColumns();
     int globalSize = d_pParameters->getGlobalNumberOfColumns();
     int localStart = d_pParameters->getRightDOFManager()->beginDOF();
-    auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    auto vec       = createEpetraVector(
+    auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
+    auto vec    = createEpetraVector(
         d_pParameters->d_CommListRight, d_pParameters->getRightDOFManager(), buffer );
     vec->setVariable( d_pParameters->d_VariableRight );
     return vec;
@@ -104,17 +104,17 @@ std::shared_ptr<Vector> ManagedEpetraMatrix::getLeftVector() const
     int localSize  = d_pParameters->getLocalNumberOfRows();
     int globalSize = d_pParameters->getGlobalNumberOfRows();
     int localStart = d_pParameters->getRightDOFManager()->beginDOF();
-    auto buffer    = std::make_shared<VectorDataCPU<double>>( localStart, localSize, globalSize );
-    auto vec       = createEpetraVector(
+    auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
+    auto vec    = createEpetraVector(
         d_pParameters->d_CommListLeft, d_pParameters->getLeftDOFManager(), buffer );
     vec->setVariable( d_pParameters->d_VariableLeft );
     return vec;
 }
-Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getRightDOFManager() const
+std::shared_ptr<Discretization::DOFManager> ManagedEpetraMatrix::getRightDOFManager() const
 {
     return d_pParameters->getRightDOFManager();
 }
-Discretization::DOFManager::shared_ptr ManagedEpetraMatrix::getLeftDOFManager() const
+std::shared_ptr<Discretization::DOFManager> ManagedEpetraMatrix::getLeftDOFManager() const
 {
     return d_pParameters->getLeftDOFManager();
 }

@@ -9,6 +9,8 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/time_integrators/TimeOperatorParameters.h"
 #include "AMP/vectors/Vector.h"
 
 namespace AMP::TimeIntegrator {
@@ -30,6 +32,20 @@ ImplicitIntegrator::ImplicitIntegrator(
         solverName = timeIntegratorDB->getString( "solver_name" );
     } else {
         AMP_ERROR( "Field solver_name missing in time integrator database" );
+    }
+
+    // check if the operator is a TimeOperator
+    bool isTimeOperator = ( std::dynamic_pointer_cast<TimeOperator>( d_operator ) != nullptr );
+
+    if ( !isTimeOperator ) {
+        auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
+        timeOperator_db->putScalar( "name", "TimeOperator" );
+        auto timeOperatorParameters =
+            std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+        timeOperatorParameters->d_pRhsOperator = d_operator;
+        timeOperatorParameters->d_Mesh         = d_operator->getMesh();
+
+        d_operator = std::make_shared<TimeOperator>( timeOperatorParameters );
     }
 
     auto solverDB = globalDB->getDatabase( solverName );

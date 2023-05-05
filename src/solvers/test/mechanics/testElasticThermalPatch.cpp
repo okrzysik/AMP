@@ -22,7 +22,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -79,10 +78,10 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     // Create the vectors
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec       = AMP::LinearAlgebra::createVector( dispDofMap, dispVar, true );
-    auto rhsVec       = solVec->cloneVector();
-    auto resVec       = solVec->cloneVector();
+    auto rhsVec       = solVec->clone();
+    auto resVec       = solVec->clone();
     auto initTempVec  = AMP::LinearAlgebra::createVector( tempDofMap, tempVar, true );
-    auto finalTempVec = initTempVec->cloneVector();
+    auto finalTempVec = initTempVec->clone();
 
     // Set Initial Temperature
     AMP_INSIST( input_db->keyExists( "INIT_TEMP_CONST" ), "key missing!" );

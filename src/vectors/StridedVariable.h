@@ -21,15 +21,20 @@ public:
      */
     StridedVariable( const std::string &name, size_t offset, size_t stride );
 
-    virtual AMP::Discretization::DOFManager::shared_ptr
+    virtual std::shared_ptr<AMP::Discretization::DOFManager>
         getSubsetDOF( std::shared_ptr<AMP::Discretization::DOFManager> ) const override;
 
     std::shared_ptr<VectorSelector> createVectorSelector() const override;
 
+    std::string className() const override { return "StridedVariable"; }
+
+    void writeRestart( int64_t ) const override;
+    StridedVariable( int64_t );
+
 private:
     StridedVariable();
-    size_t d_offset;
-    size_t d_stride;
+    size_t d_offset = 0;
+    size_t d_stride = 1;
 };
 } // namespace AMP::LinearAlgebra
 

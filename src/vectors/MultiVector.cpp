@@ -1,7 +1,6 @@
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
@@ -62,25 +61,6 @@ MultiVector::const_create( const std::string &name,
     for ( size_t i = 0; i < vecs.size(); i++ )
         vecs2[i] = std::const_pointer_cast<Vector>( vecs[i] );
     return MultiVector::create( variable, comm, vecs2 );
-}
-std::shared_ptr<MultiVector> MultiVector::encapsulate( Vector::shared_ptr vec,
-                                                       const AMP_MPI &comm_in )
-{
-    auto comm     = comm_in;
-    auto multivec = std::dynamic_pointer_cast<MultiVector>( vec );
-    if ( multivec ) {
-        if ( !comm.isNull() )
-            AMP_ASSERT( comm.compare( vec->getComm() ) != 0 );
-        return multivec;
-    }
-    if ( comm.isNull() )
-        comm = vec->getComm();
-    multivec  = create( vec->getName(), comm, { vec } );
-    auto data = multivec->Vector::getVectorData();
-    AMP_ASSERT( data );
-    auto listener = std::dynamic_pointer_cast<DataChangeListener>( data );
-    vec->getVectorData()->registerListener( listener );
-    return multivec;
 }
 std::shared_ptr<MultiVector> MultiVector::view( Vector::shared_ptr vec, const AMP_MPI &comm_in )
 {
@@ -157,7 +137,7 @@ void MultiVector::resetVectorData()
 {
     // Create a new multiDOFManager for the multivector
     AMP_ASSERT( !getComm().isNull() );
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( d_vVectors.size() );
+    std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> managers( d_vVectors.size() );
     for ( size_t i = 0; i < d_vVectors.size(); i++ ) {
         AMP_ASSERT( d_vVectors[i] );
         managers[i] = d_vVectors[i]->getDOFManager();
@@ -332,7 +312,7 @@ std::unique_ptr<Vector> MultiVector::rawClone( const std::shared_ptr<Variable> n
     retVec->setCommunicationList( getCommunicationList() );
     retVec->d_vVectors.resize( d_vVectors.size() );
     for ( size_t i = 0; i != d_vVectors.size(); i++ )
-        retVec->d_vVectors[i] = d_vVectors[i]->cloneVector();
+        retVec->d_vVectors[i] = d_vVectors[i]->clone();
     retVec->resetVectorData();
     retVec->resetVectorOperations();
     return retVec;

@@ -23,8 +23,8 @@ public:
     AMP::LinearAlgebra::Vector::shared_ptr d_TargetVector;
 
     AMP_MPI d_globalComm;
-    AMP::Mesh::Mesh::shared_ptr d_Mesh1;
-    AMP::Mesh::Mesh::shared_ptr d_Mesh2;
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh1;
+    std::shared_ptr<AMP::Mesh::Mesh> d_Mesh2;
     int d_BoundaryID1;
     int d_BoundaryID2;
     std::string d_Variable1;

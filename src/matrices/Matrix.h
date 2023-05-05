@@ -73,7 +73,7 @@ public:
     /** \brief  Return a matrix with the same non-zero and distributed structure
      * \return  The new matrix
      */
-    virtual shared_ptr cloneMatrix() const = 0;
+    virtual shared_ptr clone() const = 0;
 
     /** \brief  Scale the matrix by a scalar
      * \param[in] alpha  The value to scale by
@@ -354,5 +354,4 @@ inline std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix
 
 } // namespace AMP::LinearAlgebra
 
-//#include "Matrix.inline.h"
 #endif

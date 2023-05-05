@@ -41,14 +41,18 @@ VectorOperationsCuda<TYPE>::~VectorOperationsCuda<TYPE>()
  * Check that all data can be passed to cuda                     *
  ****************************************************************/
 inline bool checkData( const VectorData &x ) { return x.numberOfDataBlocks() == 1; }
+template<class TYPE>
 inline bool checkData( const VectorData &x, const VectorData &y )
 {
-    return x.numberOfDataBlocks() == 1 && y.numberOfDataBlocks() == 1;
+    constexpr auto type = getTypeID<TYPE>();
+    return x.numberOfDataBlocks() == 1 && y.numberOfDataBlocks() == 1 && y.getType( 0 ) == type;
 }
+template<class TYPE>
 inline bool checkData( const VectorData &x, const VectorData &y, const VectorData &z )
 {
+    constexpr auto type = getTypeID<TYPE>();
     return x.numberOfDataBlocks() == 1 && y.numberOfDataBlocks() == 1 &&
-           z.numberOfDataBlocks() == 1;
+           z.numberOfDataBlocks() == 1 && y.getType( 0 ) == type && z.getType( 0 ) == type;
 }
 
 template<typename TYPE>
@@ -116,7 +120,7 @@ void VectorOperationsCuda<TYPE>::setRandomValues( VectorData &x )
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::copy( const VectorData &x, VectorData &y )
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
@@ -146,7 +150,7 @@ void VectorOperationsCuda<TYPE>::scale( const Scalar &alpha_in, VectorData &x )
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::scale( const Scalar &alpha_in, const VectorData &x, VectorData &y )
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto N     = y.sizeOfDataBlock( 0 );
@@ -162,7 +166,7 @@ void VectorOperationsCuda<TYPE>::scale( const Scalar &alpha_in, const VectorData
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::add( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
@@ -178,7 +182,7 @@ void VectorOperationsCuda<TYPE>::add( const VectorData &x, const VectorData &y, 
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::subtract( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( checkData( x, y, z ) ) {
+    if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
@@ -194,7 +198,7 @@ void VectorOperationsCuda<TYPE>::subtract( const VectorData &x, const VectorData
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::multiply( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( checkData( x, y, z ) ) {
+    if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
@@ -210,7 +214,7 @@ void VectorOperationsCuda<TYPE>::multiply( const VectorData &x, const VectorData
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::divide( const VectorData &x, const VectorData &y, VectorData &z )
 {
-    if ( checkData( x, y, z ) ) {
+    if ( checkData<TYPE>( x, y, z ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         auto zdata = z.getRawDataBlock<TYPE>( 0 );
@@ -227,7 +231,7 @@ void VectorOperationsCuda<TYPE>::divide( const VectorData &x, const VectorData &
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::reciprocal( const VectorData &x, VectorData &y )
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
@@ -247,7 +251,7 @@ void VectorOperationsCuda<TYPE>::linearSum( const Scalar &alpha_in,
                                             const VectorData &y,
                                             VectorData &z )
 {
-    if ( checkData( x, y, z ) ) {
+    if ( checkData<TYPE>( x, y, z ) ) {
         TYPE alpha = alpha_in.get<TYPE>();
         TYPE beta  = beta_in.get<TYPE>();
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
@@ -283,7 +287,7 @@ void VectorOperationsCuda<TYPE>::axpby( const Scalar &alpha_in,
 template<typename TYPE>
 void VectorOperationsCuda<TYPE>::abs( const VectorData &x, VectorData &y )
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
@@ -300,7 +304,7 @@ void VectorOperationsCuda<TYPE>::addScalar( const VectorData &x,
                                             const Scalar &alpha_in,
                                             VectorData &y )
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = y.sizeOfDataBlock( 0 );
@@ -394,7 +398,7 @@ Scalar VectorOperationsCuda<TYPE>::localMaxNorm( const VectorData &x ) const
 template<typename TYPE>
 Scalar VectorOperationsCuda<TYPE>::localDot( const VectorData &x, const VectorData &y ) const
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
@@ -409,7 +413,7 @@ template<typename TYPE>
 Scalar VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x,
                                                      const VectorData &y ) const
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
@@ -423,7 +427,7 @@ Scalar VectorOperationsCuda<TYPE>::localMinQuotient( const VectorData &x,
 template<typename TYPE>
 Scalar VectorOperationsCuda<TYPE>::localWrmsNorm( const VectorData &x, const VectorData &y ) const
 {
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         auto xdata = x.getRawDataBlock<TYPE>( 0 );
         auto ydata = y.getRawDataBlock<TYPE>( 0 );
         size_t N   = x.sizeOfDataBlock( 0 );
@@ -449,7 +453,7 @@ bool VectorOperationsCuda<TYPE>::localEquals( const VectorData &x,
                                               const Scalar &tol_in ) const
 {
     TYPE tol = tol_in.get<TYPE>();
-    if ( checkData( x, y ) ) {
+    if ( checkData<TYPE>( x, y ) ) {
         // Call Cuda
         return getDefaultOps()->localEquals( x, y, tol );
     } else {

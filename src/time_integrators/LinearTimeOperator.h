@@ -46,11 +46,6 @@ public:
     std::shared_ptr<Operator> getRhsOperator( void ) { return d_pRhsOperator; }
     std::shared_ptr<Operator> getMassOperator( void ) { return d_pMassOperator; }
 
-    void setPreviousSolution( std::shared_ptr<AMP::LinearAlgebra::Vector> previousSolution )
-    {
-        d_pPreviousTimeSolution = previousSolution;
-    }
-
     void setDt( double dt ) { d_dCurrentDt = dt; }
 
     // added by JL
@@ -95,8 +90,6 @@ protected:
     std::shared_ptr<AMP::Operator::LinearOperator> d_pRhsOperator;
 
     std::shared_ptr<AMP::Operator::LinearOperator> d_pMassOperator;
-
-    std::shared_ptr<AMP::LinearAlgebra::Vector> d_pPreviousTimeSolution;
 
     std::shared_ptr<AMP::LinearAlgebra::Vector> d_pScratchVector;
 

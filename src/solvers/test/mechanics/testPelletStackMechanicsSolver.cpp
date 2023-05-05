@@ -7,7 +7,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 
 #include <algorithm>
 #include <cmath>
@@ -109,7 +108,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             helperSetFinalTemperatureForPelletMechanics( coupledOp, finalTemperatureVec );
         }
 
-        auto resVec = solVec->cloneVector();
+        auto resVec = solVec->clone();
         resVec->zero();
         coupledOp->residual( scaledRhsVec, solVec, resVec );
         AMP::pout << "initial, rhsVec: " << scaledRhsVec->L2Norm() << std::endl;

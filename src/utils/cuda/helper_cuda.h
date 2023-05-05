@@ -8,6 +8,8 @@
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/utils/cuda/helper_string.h"
 
+#include "StackTrace/source_location.h"
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -33,32 +35,12 @@ const char *cudaGetName( T result );
 
 // Check the return code
 template<typename T>
-void check( T result, char const *const func, const char *const file, int const line );
+void checkCudaErrors( T result,
+                      const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
 
-#ifdef __DRIVER_TYPES_H__
-    // This will output the proper CUDA error strings in the event that a CUDA host call returns an
-    // error
-    #define checkCudaErrors( val ) check( ( val ), #val, __FILE__, __LINE__ )
-
-    // This will output the proper error string when calling cudaGetLastError
-    #define getLastCudaError( msg ) __getLastCudaError( msg, __FILE__, __LINE__ )
-
-inline void __getLastCudaError( const char *errorMessage, const char *file, const int line )
-{
-    cudaError_t err = cudaGetLastError();
-    if ( cudaSuccess != err ) {
-        fprintf( stderr,
-                 "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
-                 file,
-                 line,
-                 errorMessage,
-                 (int) err,
-                 cudaGetErrorString( err ) );
-        DEVICE_RESET
-        exit( EXIT_FAILURE );
-    }
-}
-#endif
+// Get the last cuda error
+void getLastCudaError( const char *errorMessage,
+                       const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
 
 #ifndef MAX
     #define MAX( a, b ) ( a > b ? a : b )

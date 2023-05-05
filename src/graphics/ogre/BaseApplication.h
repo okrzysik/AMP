@@ -17,7 +17,7 @@ This source file is part of the
 #ifndef __BaseApplication_h_
 #define __BaseApplication_h_
 
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 DISABLE_WARNINGS
 
 #include <OgreCamera.h>

@@ -80,11 +80,11 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     auto f_norm = static_cast<T>( f->L2Norm() );
 
     // if the rhs is zero we try to converge to the relative convergence
-    if ( f_norm == 0.0 ) {
-        f_norm = 1.0;
+    if ( f_norm == static_cast<T>( 0.0 ) ) {
+        f_norm = static_cast<T>( 1.0 );
     }
 
-    const auto terminate_tol = d_dRelativeTolerance * f_norm;
+    const T terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         std::cout << "BiCGSTABSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -98,7 +98,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     // residual vector
-    AMP::LinearAlgebra::Vector::shared_ptr res = f->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr res = f->clone();
 
     // compute the initial residual
     if ( d_bUseZeroInitialGuess ) {
@@ -127,20 +127,20 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
     }
 
     // parameters in BiCGSTAB
-    T alpha = 1.0;
-    T beta  = 0.0;
-    T omega = 1.0;
-    std::vector<T> rho( 2, 1.0 );
+    T alpha = static_cast<T>( 1.0 );
+    T beta  = static_cast<T>( 0.0 );
+    T omega = static_cast<T>( 1.0 );
+    std::vector<T> rho( 2, static_cast<T>( 1.0 ) );
     NULL_USE( beta );
 
     // r_tilde is a non-zero initial direction chosen to be r
     std::shared_ptr<AMP::LinearAlgebra::Vector> r_tilde;
     // traditional choice is the initial residual
-    r_tilde = res->cloneVector();
+    r_tilde = res->clone();
     r_tilde->copyVector( res );
 
-    auto p = res->cloneVector();
-    auto v = res->cloneVector();
+    auto p = res->clone();
+    auto v = res->clone();
     p->zero();
     v->zero();
 
@@ -177,7 +177,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
 
         if ( !p_hat ) {
-            p_hat = u->cloneVector();
+            p_hat = u->clone();
             p_hat->zero();
         }
 
@@ -191,11 +191,11 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         d_pOperator->apply( p_hat, v );
 
         alpha = static_cast<T>( r_tilde->dot( *v ) );
-        AMP_ASSERT( alpha != 0.0 );
+        AMP_ASSERT( alpha != static_cast<T>( 0.0 ) );
         alpha = rho[1] / alpha;
 
         if ( !s ) {
-            s = res->cloneVector();
+            s = res->clone();
         }
         s->axpy( -alpha, *v, *res );
 
@@ -209,7 +209,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         }
 
         if ( !s_hat ) {
-            s_hat = u->cloneVector();
+            s_hat = u->clone();
             s_hat->zero();
         }
 
@@ -222,13 +222,13 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
 
         if ( !t ) {
-            t = res->cloneVector();
+            t = res->clone();
         }
         d_pOperator->apply( s_hat, t );
 
         auto t_sqnorm = static_cast<T>( t->dot( *t ) );
         auto t_dot_s  = static_cast<T>( t->dot( *s ) );
-        omega         = ( t_sqnorm == 0.0 ) ? 0.0 : t_dot_s / t_sqnorm;
+        omega = ( t_sqnorm == static_cast<T>( 0.0 ) ) ? static_cast<T>( 0.0 ) : t_dot_s / t_sqnorm;
 
         u->axpy( alpha, *p_hat, *u );
         u->axpy( omega, *s_hat, *u );
@@ -250,7 +250,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             break;
         }
 
-        if ( omega == 0.0 ) {
+        if ( omega == static_cast<T>( 0.0 ) ) {
             // this is a breakdown of the iteration
             // need to flag
             if ( d_iDebugPrintInfoLevel > 0 ) {

@@ -1,5 +1,5 @@
-
 #include "AMP/operators/MoveMeshOperator.h"
+#include "AMP/mesh/Mesh.h"
 
 namespace AMP::Operator {
 
@@ -23,11 +23,11 @@ void MoveMeshOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     AMP::LinearAlgebra::Vector::const_shared_ptr dispVec = u->subsetVectorForVariable( d_var );
 
     if ( d_prevDisp == nullptr ) {
-        d_prevDisp = dispVec->cloneVector();
+        d_prevDisp = dispVec->clone();
         d_prevDisp->zero();
     }
 
-    AMP::LinearAlgebra::Vector::shared_ptr deltaDisp = dispVec->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr deltaDisp = dispVec->clone();
     deltaDisp->subtract( *dispVec, *d_prevDisp );
 
     d_Mesh->displaceMesh( deltaDisp );

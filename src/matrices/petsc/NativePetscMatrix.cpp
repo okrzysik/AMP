@@ -103,11 +103,11 @@ Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
     return std::dynamic_pointer_cast<NativePetscMatrixData>( d_matrixData )->getLeftVector();
 }
-Discretization::DOFManager::shared_ptr NativePetscMatrix::getRightDOFManager() const
+std::shared_ptr<Discretization::DOFManager> NativePetscMatrix::getRightDOFManager() const
 {
     return getRightVector()->getDOFManager();
 }
-Discretization::DOFManager::shared_ptr NativePetscMatrix::getLeftDOFManager() const
+std::shared_ptr<Discretization::DOFManager> NativePetscMatrix::getLeftDOFManager() const
 {
     return getLeftVector()->getDOFManager();
 }
@@ -115,7 +115,7 @@ Discretization::DOFManager::shared_ptr NativePetscMatrix::getLeftDOFManager() co
 /********************************************************
  * Clone the matrix                                      *
  ********************************************************/
-std::shared_ptr<Matrix> NativePetscMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> NativePetscMatrix::clone() const
 {
     Mat new_mat;
     MatDuplicate( getMat( this ), MAT_DO_NOT_COPY_VALUES, &new_mat );

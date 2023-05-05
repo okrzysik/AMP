@@ -17,7 +17,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -178,8 +177,8 @@ static void myTest( AMP::UnitTest *ut )
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
 
         auto mechNlSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
-        auto mechNlRhsVec = mechNlSolVec->cloneVector();
-        auto mechNlResVec = mechNlSolVec->cloneVector();
+        auto mechNlRhsVec = mechNlSolVec->clone();
+        auto mechNlResVec = mechNlSolVec->clone();
 
         mechNlRhsVec->setToScalar( 0.0 );
         dirichletLoadVecOp->apply( nullVec, mechNlRhsVec );

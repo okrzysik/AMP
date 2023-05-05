@@ -254,8 +254,20 @@ Vector::shared_ptr DenseSerialMatrix::getRightVector() const
 }
 Vector::shared_ptr DenseSerialMatrix::getLeftVector() const
 {
+<<<<<<< HEAD
     auto var = std::dynamic_pointer_cast<DenseSerialMatrixData>( d_matrixData )->getLeftVariable();
     return createVector( getLeftDOFManager(), var );
+=======
+    return createVector( getLeftDOFManager(), d_VariableLeft );
+}
+std::shared_ptr<Discretization::DOFManager> DenseSerialMatrix::getRightDOFManager() const
+{
+    return d_DOFManagerRight;
+}
+std::shared_ptr<Discretization::DOFManager> DenseSerialMatrix::getLeftDOFManager() const
+{
+    return d_DOFManagerLeft;
+>>>>>>> master
 }
 
 

@@ -20,9 +20,8 @@ TimeOperator::TimeOperator( std::shared_ptr<const AMP::Operator::OperatorParamet
     d_pRhsOperator  = params->d_pRhsOperator;
     d_pMassOperator = params->d_pMassOperator;
 
-    d_pSourceTerm           = params->d_pSourceTerm;
-    d_pPreviousTimeSolution = params->d_pPreviousTimeSolution;
-    d_pAlgebraicVariable    = params->d_pAlgebraicVariable;
+    d_pSourceTerm        = params->d_pSourceTerm;
+    d_pAlgebraicVariable = params->d_pAlgebraicVariable;
 
     reset( in_params );
 }
@@ -34,9 +33,9 @@ void TimeOperator::getFromInput( std::shared_ptr<AMP::Database> db )
     d_bLinearMassOperator = db->getWithDefault<bool>( "bLinearMassOperator", false );
     d_bLinearRhsOperator  = db->getWithDefault<bool>( "bLinearRhsOperator", false );
 
-    AMP_INSIST( db->keyExists( "CurrentDt" ), "key CurrentDt missing in input" );
+    //    AMP_INSIST( db->keyExists( "CurrentDt" ), "key CurrentDt missing in input" );
 
-    d_dCurrentDt = db->getScalar<double>( "CurrentDt" );
+    d_dCurrentDt = db->getWithDefault<double>( "CurrentDt", 0.0 );
 
     d_bAlgebraicComponent = db->getWithDefault<bool>( "bAlgebraicComponent", false );
 }
@@ -45,96 +44,150 @@ void TimeOperator::reset( std::shared_ptr<const AMP::Operator::OperatorParameter
 {
     auto params = std::dynamic_pointer_cast<const TimeOperatorParameters>( in_params );
 
-    AMP_INSIST( params, "Error: NULL TimeOperatorParameters object" );
+    if ( params ) {
 
-    getFromInput( params->d_db );
+        getFromInput( params->d_db );
 
-    if ( params->d_pRhsOperatorParameters ) {
-        d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
-    }
+        if ( params->d_pRhsOperatorParameters ) {
+            d_pRhsOperator->reset( params->d_pRhsOperatorParameters );
+        }
 
-    if ( params->d_pMassOperatorParameters ) {
-        d_pMassOperator->reset( params->d_pMassOperatorParameters );
+        if ( d_pMassOperator && params->d_pMassOperatorParameters ) {
+            d_pMassOperator->reset( params->d_pMassOperatorParameters );
+        }
+    } else {
+        d_pRhsOperator->reset( nullptr );
     }
 }
 
-void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
+void TimeOperator::applyRhs( std::shared_ptr<const AMP::LinearAlgebra::Vector> x,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+{
+    AMP_INSIST( d_pRhsOperator, "RHS Operator is NULL" );
+    d_pRhsOperator->apply( x, f );
+}
+
+void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
                           AMP::LinearAlgebra::Vector::shared_ptr r )
 {
 
-    // this routine evaluates a*[ ( M(u))/dt+fRhs(u) ] +b*f
-    // where the time operator is given by u_t = fRhs(u)
+    AMP::LinearAlgebra::Vector::const_shared_ptr u;
 
-    std::shared_ptr<AMP::LinearAlgebra::Vector> fTmp;
+    if ( d_pSolutionScaling ) {
 
-    AMP_INSIST( d_pMassOperator,
-                "ERROR: "
-                "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
-                "apply, the mass operator is NULL!" );
-    AMP_INSIST( d_pRhsOperator,
-                "ERROR: "
-                "AMP::TimeIntegrator::TimeIntegrator::TimeOperator::"
-                "apply, the rhs operator is NULL!" );
+        AMP_ASSERT( d_pFunctionScaling );
 
-    if ( u )
-        AMP_ASSERT( u->getUpdateStatus() ==
-                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+        if ( !d_pScratchSolVector ) {
+            d_pScratchSolVector = u_in->clone();
+        }
 
-    AMP_INSIST( ( r != nullptr ), "NULL Residual/Output Vector" );
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal = this->subsetOutputVector( r );
-    AMP_INSIST( ( rInternal != nullptr ), "NULL Residual/Output Vector" );
+        d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
+        u = d_pScratchSolVector;
 
-    d_pScratchVector = rInternal->cloneVector();
-    d_pScratchVector->zero();
+    } else {
+        u = u_in;
+    }
 
-    d_pMassOperator->apply( u, rInternal );
-    rInternal->scale( 1.0 / d_dCurrentDt );
+    // fRhs(x^{n+1})
+    applyRhs( u, r );
 
-    d_pRhsOperator->apply( u, d_pScratchVector );
+    if ( !d_pMassOperator ) {
 
-    rInternal->add( *rInternal, *d_pScratchVector );
+        // f =  x^{n+1} - \gamma*fRhs(x^{n+1}) (identity mass matrix)
+        r->axpy( -d_dGamma, *r, *u );
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    } else {
+
+        if ( !d_pScratchVector ) {
+            d_pScratchVector = r->clone();
+            d_pScratchVector->zero();
+        }
+
+        // f =  M x^{n+1}
+        d_pMassOperator->apply( u, d_pScratchVector );
+
+        if ( d_iDebugPrintInfoLevel > 4 ) {
+            AMP::pout << "Output of M * yp in TimeOperator" << std::endl;
+            AMP::pout << d_pScratchVector << std::endl;
+        }
+
+        if ( d_pAlgebraicVariable ) {
+            auto algebraicComponent =
+                d_pScratchVector->subsetVectorForVariable( d_pAlgebraicVariable );
+            algebraicComponent->zero();
+        }
+
+        // f =  M x^{n+1} - \gamma*fRhs(x^{n+1})
+        r->axpy( -d_dGamma, *r, *d_pScratchVector );
+    }
+
+    if ( d_iDebugPrintInfoLevel > 5 ) {
+        AMP::pout << "Output of M * yp-fRhs(y,t) in TimeOperator" << std::endl;
+        AMP::pout << r << std::endl;
+    }
+
+    if ( d_pSourceTerm ) {
+        r->axpy( d_dGamma, *d_pSourceTerm, *r );
+    }
+
+    if ( d_pFunctionScaling ) {
+        r->divide( *r, *d_pFunctionScaling );
+    }
+
+    if ( d_iDebugPrintInfoLevel > 6 ) {
+        AMP::pout << "Output of M * yp-gamma * ( fRhs(y,t)-g ) in TimeOperator" << std::endl;
+        AMP::pout << r << std::endl;
+    }
+}
+
+void TimeOperator::residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
+                             std::shared_ptr<const AMP::LinearAlgebra::Vector> u,
+                             std::shared_ptr<AMP::LinearAlgebra::Vector> r )
+{
+    apply( u, r );
+
+    if ( f ) {
+        r->axpy( -1.0, *r, *f );
+    } else {
+        r->scale( -1.0, *r );
+    }
 }
 
 std::shared_ptr<AMP::Operator::OperatorParameters>
 TimeOperator::getParameters( const std::string &type,
-                             AMP::LinearAlgebra::Vector::const_shared_ptr u,
+                             AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
                              std::shared_ptr<AMP::Operator::OperatorParameters> params )
 {
-    auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
-    timeOperator_db->putScalar( "CurrentDt", d_dCurrentDt );
-    timeOperator_db->putScalar( "name", "TimeOperator" );
-    timeOperator_db->putScalar( "bLinearMassOperator", d_bLinearMassOperator );
-    timeOperator_db->putScalar( "bLinearRhsOperator", d_bLinearRhsOperator );
-    timeOperator_db->putScalar( "bAlgebraicComponent", d_bAlgebraicComponent );
-    timeOperator_db->putScalar( "ScalingFactor", 1.0 / d_dCurrentDt );
+    AMP::LinearAlgebra::Vector::shared_ptr u;
+    if ( d_pSolutionScaling ) {
 
-    auto timeOperatorParameters =
-        std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
+        AMP_ASSERT( d_pFunctionScaling );
 
-    timeOperatorParameters->d_Mesh = d_Mesh;
-    // if we have a linear rhs operator then just pass the pointer to the rhs operator instead of
-    // the parameter object
-    if ( d_bLinearRhsOperator ) {
-        timeOperatorParameters->d_pRhsOperator = d_pRhsOperator;
-    } else {
-        timeOperatorParameters->d_pRhsOperatorParameters =
-            d_pRhsOperator->getParameters( type, u, params );
-    }
-
-    if ( !d_bAlgebraicComponent ) {
-        // if we have a linear mass operator then just pass the pointer to the mass operator instead
-        // of the parameter
-        // object
-        if ( d_bLinearMassOperator ) {
-            timeOperatorParameters->d_pMassOperator = d_pMassOperator;
-        } else {
-            timeOperatorParameters->d_pMassOperatorParameters =
-                d_pMassOperator->getParameters( type, u, params );
+        if ( !d_pScratchSolVector ) {
+            d_pScratchSolVector = u_in->clone();
         }
+
+        d_pScratchSolVector->multiply( *u_in, *d_pSolutionScaling );
+        u = d_pScratchSolVector;
+
+    } else {
+        u = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( u_in );
     }
 
-    return timeOperatorParameters;
+    std::shared_ptr<AMP::Operator::OperatorParameters> nestedParams;
+    if ( params ) {
+        nestedParams = params;
+    } else {
+        auto db      = std::make_shared<AMP::Database>( "nestedTimeOpParams" );
+        nestedParams = std::make_shared<AMP::Operator::OperatorParameters>( db );
+    }
+
+    auto nested_db = nestedParams->d_db;
+    nested_db->putScalar<bool>( "time_dependent_Jacobian", true );
+    nested_db->putScalar<double>( "gamma", d_dGamma );
+
+    AMP_INSIST( !d_pMassOperator, "Not implemented for mass operator" );
+    return d_pRhsOperator->getParameters( type, u, nestedParams );
 }
+
 } // namespace AMP::TimeIntegrator

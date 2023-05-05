@@ -1,30 +1,25 @@
-
 #include "AMP/IO/PIO.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
+#include "AMP/mesh/MeshFactory.h"
+#include "AMP/mesh/libmesh/ReadTestMesh.h"
+#include "AMP/mesh/libmesh/libmeshMesh.h"
+#include "AMP/operators/OperatorBuilder.h"
+#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
+#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
-
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
-#include "AMP/mesh/Mesh.h"
-#include "AMP/mesh/MeshFactory.h"
-#include "AMP/mesh/libmesh/libmeshMesh.h"
-
-#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include "libmesh/libmesh.h"
 #include "libmesh/mesh_communication.h"
 
-#include "AMP/operators/OperatorBuilder.h"
-#include "AMP/operators/mechanics/MechanicsLinearFEOperator.h"
-#include "AMP/operators/mechanics/MechanicsNonlinearFEOperator.h"
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
-#include "AMP/mesh/libmesh/ReadTestMesh.h"
 
 static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinReset )
 {
@@ -78,11 +73,11 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName, int callLinRe
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto solVec       = AMP::LinearAlgebra::createVector( dofMap, var, true );
-    auto resVecNonlin = solVec->cloneVector();
-    auto resVecLin    = solVec->cloneVector();
-    auto resDiffVec   = solVec->cloneVector();
-    auto tmpNonlinVec = solVec->cloneVector();
-    auto tmpLinVec    = solVec->cloneVector();
+    auto resVecNonlin = solVec->clone();
+    auto resVecLin    = solVec->clone();
+    auto resDiffVec   = solVec->clone();
+    auto tmpNonlinVec = solVec->clone();
+    auto tmpLinVec    = solVec->clone();
 
     solVec->setToScalar( 0.0 );
     double solNorm = static_cast<double>( solVec->L2Norm() );

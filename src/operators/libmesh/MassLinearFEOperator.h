@@ -6,9 +6,8 @@
 #include "AMP/operators/libmesh/LinearFEOperator.h"
 #include "AMP/operators/libmesh/MassLinearElement.h"
 #include "AMP/operators/libmesh/MassLinearFEOperatorParameters.h"
-#include "AMP/utils/Utilities.h"
-#include <memory>
 
+#include <memory>
 #include <vector>
 
 namespace AMP::Operator {

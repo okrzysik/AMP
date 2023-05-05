@@ -1,4 +1,5 @@
 #include "AMP/vectors/trilinos/thyra/ThyraVectorWrapper.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVectorSpaceWrapper.h"
 
@@ -154,7 +155,7 @@ Teuchos::RCP<Thyra::VectorBase<double>> ThyraVectorWrapper::clone_v() const
 {
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> vecs( d_vecs.size() );
     for ( size_t i = 0; i < d_vecs.size(); i++ )
-        vecs[i] = d_vecs[i]->cloneVector();
+        vecs[i] = d_vecs[i]->clone();
     Teuchos::RCP<Thyra::VectorBase<double>> new_vec(
         new ThyraVectorWrapper( vecs, d_cols, d_N_cols ) );
     return new_vec;
@@ -189,7 +190,7 @@ void ThyraVectorWrapper::applyImpl( const Thyra::EOpTransp M_trans,
         AMP_ASSERT( y != nullptr );
         AMP_ASSERT( M_dim[1] == X_dim[0] && M_dim[0] == Y_dim[0] && X_dim[1] == Y_dim[1] );
         AMP_ASSERT( M_dim[1] == d_vecs.size() && Y_dim[1] == y->d_vecs.size() );
-        auto tmp = d_vecs[0]->cloneVector();
+        auto tmp = d_vecs[0]->clone();
         for ( size_t i = 0; i < X_dim[1]; i++ ) { // Loop over the columns of y
             // We are performing a series of axpby operations:
             //    y(:,i) = alpha*sum(M(:,j)*X(j,i)) + beta*Y(:,i)

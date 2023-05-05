@@ -57,7 +57,7 @@ public:
         d_SlaveBoundaryID = params->d_db->getScalar<int>( "SlaveBoundaryID" );
 
         size_t rank          = d_GlobalComm.getRank();
-        std::string fileName = "debug_operator_" + AMP::Utilities::intToString( rank );
+        std::string fileName = "debug_operator_" + std::to_string( rank );
         d_fout.open( fileName.c_str(), std::fstream::out );
     }
 

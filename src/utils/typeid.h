@@ -11,11 +11,11 @@ namespace AMP {
 
 //! Class to store type info
 struct alignas( 8 ) typeID {
-    uint64_t bytes = 0;     // Size of object (bytes)
+    uint32_t bytes = 0;     // Size of object (bytes)
     uint32_t hash  = 0;     // Hash of function
-    char name[116] = { 0 }; // Name of function (may be truncated, null-terminated)
-    constexpr bool operator==( size_t rhs ) const { return hash == rhs; }
-    constexpr bool operator!=( size_t rhs ) const { return hash != rhs; }
+    char name[120] = { 0 }; // Name of function (may be truncated, null-terminated)
+    constexpr bool operator==( uint32_t rhs ) const { return hash == rhs; }
+    constexpr bool operator!=( uint32_t rhs ) const { return hash != rhs; }
     constexpr bool operator==( const typeID &rhs ) const { return hash == rhs.hash; }
     constexpr bool operator!=( const typeID &rhs ) const { return hash != rhs.hash; }
 };
@@ -32,42 +32,40 @@ constexpr void copy( char *dst, const char *src, size_t N )
 }
 
 
-//! Get the type info (does not resolve dynamic types)
-template<typename T0>
-constexpr typeID getTypeID()
+//! Get the type name
+template<typename T>
+constexpr void getTypeName( uint64_t N, char *name )
 {
-    typeID id = {};
-    // Remove const/references
-    using T1 = typename std::remove_reference<T0>::type;
-    using T2 = typename std::remove_cv<T1>::type;
-    using T  = typename std::remove_cv<T2>::type;
-    // Get the name of the class
-    if constexpr ( std::is_same<T, bool>::value ) {
-        copy( id.name, "bool", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, char>::value ) {
-        copy( id.name, "char", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, unsigned char>::value ) {
-        copy( id.name, "unsigned char", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, int8_t>::value ) {
-        copy( id.name, "int8_t", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, uint8_t>::value ) {
-        copy( id.name, "uint8_t", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, int>::value || std::is_same<T, int32_t>::value ) {
-        copy( id.name, "int32_t", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, int64_t>::value ) {
-        copy( id.name, "int64_t", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, unsigned>::value || std::is_same<T, uint32_t>::value ) {
-        copy( id.name, "uint32_t", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, uint64_t>::value ) {
-        copy( id.name, "unt64_t", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, float>::value ) {
-        copy( id.name, "float", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, double>::value ) {
-        copy( id.name, "double", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, std::complex<float>>::value ) {
-        copy( id.name, "std::complex<float>", sizeof( id.name ) );
-    } else if constexpr ( std::is_same<T, std::complex<double>>::value ) {
-        copy( id.name, "std::complex<double>", sizeof( id.name ) );
+    if constexpr ( std::is_same_v<T, bool> ) {
+        copy( name, "bool", N );
+    } else if constexpr ( std::is_same_v<T, char> ) {
+        copy( name, "char", N );
+    } else if constexpr ( std::is_same_v<T, unsigned char> ) {
+        copy( name, "unsigned char", N );
+    } else if constexpr ( std::is_same_v<T, int8_t> ) {
+        copy( name, "int8_t", N );
+    } else if constexpr ( std::is_same_v<T, uint8_t> ) {
+        copy( name, "uint8_t", N );
+    } else if constexpr ( std::is_same_v<T, int> || std::is_same_v<T, int32_t> ) {
+        copy( name, "int32_t", N );
+    } else if constexpr ( std::is_same_v<T, int64_t> ) {
+        copy( name, "int64_t", N );
+    } else if constexpr ( std::is_same_v<T, unsigned> || std::is_same_v<T, uint32_t> ) {
+        copy( name, "uint32_t", N );
+    } else if constexpr ( std::is_same_v<T, uint64_t> ) {
+        copy( name, "unt64_t", N );
+    } else if constexpr ( std::is_same_v<T, float> ) {
+        copy( name, "float", N );
+    } else if constexpr ( std::is_same_v<T, double> ) {
+        copy( name, "double", N );
+    } else if constexpr ( std::is_same_v<T, std::complex<float>> ) {
+        copy( name, "std::complex<float>", N );
+    } else if constexpr ( std::is_same_v<T, std::complex<double>> ) {
+        copy( name, "std::complex<double>", N );
+    } else if constexpr ( std::is_same_v<T, std::string> ) {
+        copy( name, "std::string", N );
+    } else if constexpr ( std::is_same_v<T, std::string_view> ) {
+        copy( name, "std::string_view", N );
     } else {
         // Get the name of the function to create the type name
         char name0[1024] = { 0 };
@@ -78,33 +76,81 @@ constexpr typeID getTypeID()
 #elif defined( _MSC_VER ) || defined( USING_MSVC )
         copy( name0, __FUNCSIG__, sizeof( name0 ) );
 #else
+    // Not finished, one possible workaround, pass default class name as string_view
     #error "Not finished";
 #endif
         // Get the type name from the function
-        std::string_view name( name0 );
-        if ( name.find( "]" ) != std::string::npos )
-            name = name.substr( 0, name.find( "]" ) );
-        if ( name.rfind( " = " ) != std::string::npos )
-            name = name.substr( name.rfind( " = " ) + 3 );
-        name = name.substr( 0, sizeof( id.name ) - 1 );
-        for ( size_t i = 0; i < name.size(); i++ )
-            id.name[i] = name[i];
-        id.name[name.size()] = 0;
-        // Hash the full name
-        id.hash = 5381;
-        if ( name0[0] != 0 ) {
-            for ( unsigned char c : name0 )
-                id.hash = ( ( id.hash << 5 ) + id.hash ) ^ c;
+        std::string_view name2( name0 );
+        if ( name2.find( "]" ) != std::string::npos )
+            name2 = name2.substr( 0, name2.find( "]" ) );
+        if ( name2.find( "T = " ) != std::string::npos ) {
+            name2 = name2.substr( name2.find( "T = " ) + 4 );
+            name2 = name2.substr( 0, name2.find( ';' ) );
         }
+        if ( name2.rfind( " = " ) != std::string::npos ) {
+            name2 = name2.substr( name2.rfind( " = " ) + 3 );
+        }
+        name2 = name2.substr( 0, N - 1 );
+        for ( size_t i = 0; i < N; i++ )
+            name[i] = 0;
+        for ( size_t i = 0; i < std::min( name2.size(), N - 1 ); i++ )
+            name[i] = name2[i];
     }
+}
+
+
+//! Perform murmur hash (constexpr version that assumes key.size() is a multiple of 8)
+template<std::size_t N>
+constexpr uint64_t MurmurHash64A( const char *key )
+{
+    static_assert( N % 8 == 0 );
+    const uint64_t seed = 0x65ce2a5d390efa53LLU;
+    const uint64_t m    = 0xc6a4a7935bd1e995LLU;
+    const int r         = 47;
+    uint64_t h          = seed ^ ( N * m );
+    for ( size_t i = 0; i < N; i += 8 ) {
+        uint64_t k = ( uint64_t( key[i] ) << 56 ) ^ ( uint64_t( key[i + 1] ) << 48 ) ^
+                     ( uint64_t( key[i + 2] ) << 40 ) ^ ( uint64_t( key[i + 3] ) << 32 ) ^
+                     ( uint64_t( key[i + 4] ) << 24 ) ^ ( uint64_t( key[i + 5] ) << 16 ) ^
+                     ( uint64_t( key[i + 6] ) << 8 ) ^ ( uint64_t( key[i + 7] ) );
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+        h ^= k;
+        h *= m;
+    }
+    h ^= h >> r;
+    h *= m;
+    h ^= h >> r;
+    return h;
+}
+
+
+//! Get the type info (does not resolve dynamic types)
+template<typename T0>
+constexpr typeID getTypeIDEval()
+{
+    typeID id = {};
+    // Remove const/references
+    using T1 = typename std::remove_reference_t<T0>;
+    using T2 = typename std::remove_cv_t<T1>;
+    using T  = typename std::remove_cv_t<T2>;
+    // Get the name of the class
+    char name[128] = { 0 };
+    getTypeName<T>( sizeof( name ), name );
+    copy( id.name, name, sizeof( id.name ) );
     // Create the hash
-    if ( id.name[0] != 0 && id.hash == 0 ) {
-        id.hash = 5381;
-        for ( unsigned char c : id.name )
-            id.hash = ( ( id.hash << 5 ) + id.hash ) ^ c;
-    }
+    if ( name[0] != 0 )
+        id.hash = MurmurHash64A<sizeof( name )>( name );
     // Set the size
     id.bytes = sizeof( T );
+    return id;
+}
+template<typename TYPE>
+constexpr typeID getTypeID()
+{
+    constexpr auto id = getTypeIDEval<TYPE>();
+    static_assert( id != 0 );
     return id;
 }
 

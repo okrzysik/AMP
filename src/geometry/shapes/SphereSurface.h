@@ -3,6 +3,7 @@
 
 #include "AMP/geometry/LogicalGeometry.h"
 
+#include <array>
 #include <vector>
 
 
@@ -29,7 +30,10 @@ public:
      */
     explicit SphereSurface( double R );
 
-    // Functions inherited from Geometry
+    //! Construct from restart
+    SphereSurface( int64_t );
+
+public: // Functions inherited from Geometry
     std::string getName() const override final { return "SphereSurface"; }
     AMP::Mesh::GeomType getGeomType() const override final { return AMP::Mesh::GeomType::Face; }
     bool isConvex() const override final { return true; }
@@ -50,11 +54,12 @@ public:
     getLogicalGridSize( const std::vector<double> &res ) const override final;
     std::unique_ptr<AMP::Geometry::Geometry> clone() const override final;
     bool operator==( const Geometry &rhs ) const override final;
+    void writeRestart( int64_t ) const override;
 
 protected:
     // Internal data
     double d_r;
-    double d_offset[3];
+    std::array<double, 3> d_offset;
 
 private:
     // Private constructor

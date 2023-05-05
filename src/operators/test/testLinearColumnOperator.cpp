@@ -75,7 +75,7 @@ static void myTest( AMP::UnitTest *ut )
         auto columnOperator = std::make_shared<AMP::Operator::ColumnOperator>();
 
         std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> inputVariables;
-        std::vector<AMP::Discretization::DOFManager::shared_ptr> dofMapVec;
+        std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> dofMapVec;
 
         double defTemp = -1.0;
         double defConc = -1.0;
@@ -134,8 +134,8 @@ static void myTest( AMP::UnitTest *ut )
                     solVec->addVector(
                         AMP::LinearAlgebra::createVector( dofMapVec[iv], inputVariables[iv] ) );
             }
-            auto rhsVec = solVec->cloneVector();
-            auto resVec = solVec->cloneVector();
+            auto rhsVec = solVec->clone();
+            auto resVec = solVec->clone();
 
             for ( int iv = 0; iv < nVars; iv++ ) {
                 auto opVar = inputVariables[iv];

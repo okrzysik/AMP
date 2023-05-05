@@ -20,14 +20,14 @@ void NodeToSegmentConstraintsOperator::reset( std::shared_ptr<const OperatorPara
     AMP_INSIST( ( params != NULL ), "NULL parameter" );
     AMP_INSIST( ( ( params->d_db ) != NULL ), "NULL database" );
 
-    AMP::Mesh::Mesh::shared_ptr mesh = params->d_Mesh;
+    std::shared_ptr<AMP::Mesh::Mesh> mesh = params->d_Mesh;
     //  AMP::AMP_MPI comm = mesh->getComm();
     AMP::AMP_MPI comm = d_GlobalComm;
 
     // get the boundary slave vertices coordinates and global IDs
     std::vector<double> tmpSlaveVerticesCoord;
     std::vector<AMP::Mesh::MeshElementID> tmpSlaveVerticesGlobalIDs;
-    AMP::Mesh::Mesh::shared_ptr slaveMesh = mesh->Subset( d_SlaveMeshID );
+    std::shared_ptr<AMP::Mesh::Mesh> slaveMesh = mesh->Subset( d_SlaveMeshID );
     if ( slaveMesh != NULL ) {
         auto slaveMeshIterator =
             slaveMesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, d_SlaveBoundaryID );
@@ -55,7 +55,7 @@ void NodeToSegmentConstraintsOperator::reset( std::shared_ptr<const OperatorPara
     } // end if
 
     /** do a dendro search for the boundary slave vertices on the master mesh */
-    AMP::Mesh::Mesh::shared_ptr masterMesh = mesh->Subset( d_MasterMeshID );
+    std::shared_ptr<AMP::Mesh::Mesh> masterMesh = mesh->Subset( d_MasterMeshID );
     // TODO: read dendroVerboseFlag from input
     bool const dendroVerboseFlag = false;
     AMP::Mesh::DendroSearch dendroSearchOnMaster( masterMesh, dendroVerboseFlag );

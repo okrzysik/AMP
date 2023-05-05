@@ -11,7 +11,7 @@
 #include "AMP/utils/DelaunayHelpers.h"
 #include "AMP/utils/DelaunayInterpolation.h"
 #include "AMP/utils/DelaunayTessellation.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 
 #include "ProfilerApp.h"
 
@@ -278,7 +278,7 @@ Array<size_t> DelaunayInterpolation<TYPE>::find_nearest( const Array<TYPE2> &xi 
     create_kdtree();
     // Use the kdtree to perform the nearest neighbor interpolation
     Array<size_t> index( xi.size( 1 ) );
-    if constexpr ( std::is_same<TYPE2, double>::value ) {
+    if constexpr ( std::is_same_v<TYPE2, double> ) {
         d_tree->find_nearest( xi.size( 1 ), xi.data(), index.data() );
     } else {
         Array<double> xi2;

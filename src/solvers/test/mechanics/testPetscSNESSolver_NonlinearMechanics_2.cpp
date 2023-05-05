@@ -22,7 +22,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 #include <iostream>
@@ -69,7 +68,7 @@ static void myTest( AMP::UnitTest *ut )
         meshAdapter, AMP::Mesh::GeomType::Vertex, 1, 1, true );
 
     auto initTempVec  = AMP::LinearAlgebra::createVector( tempDofMap, temperatureVariable, true );
-    auto finalTempVec = initTempVec->cloneVector();
+    auto finalTempVec = initTempVec->clone();
 
     initTempVec->setRandomValues();
     initTempVec->abs( *initTempVec );
@@ -118,9 +117,9 @@ static void myTest( AMP::UnitTest *ut )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto mechNlSolVec = AMP::LinearAlgebra::createVector( dispDofMap, displacementVariable, true );
-    auto mechNlRhsVec = mechNlSolVec->cloneVector();
-    auto mechNlResVec = mechNlSolVec->cloneVector();
-    auto mechNlScaledRhsVec = mechNlSolVec->cloneVector();
+    auto mechNlRhsVec = mechNlSolVec->clone();
+    auto mechNlResVec = mechNlSolVec->clone();
+    auto mechNlScaledRhsVec = mechNlSolVec->clone();
 
 
     // Initial guess for NL solver must satisfy the displacement boundary conditions

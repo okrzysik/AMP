@@ -47,7 +47,7 @@ private:
     void operator=( const ManagedSundialsVector & );
 
     static N_Vector_Ops createNVectorOps();
-    static N_Vector cloneVector_AMP( N_Vector w );
+    static N_Vector clone_AMP( N_Vector w );
     static N_Vector cloneempty_no_impl( N_Vector w );
     static void freeVectorComponents_AMP( N_Vector v );
     // static void space_no_impl(N_Vector v, long int *lrw, long int *liw);

@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <string>
 #include <string_view>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <vector>
 
 
@@ -24,25 +22,16 @@ namespace AMP {
 
 class Database;
 
-#ifdef _MSC_VER
-    #include <direct.h>
-typedef int mode_t;
-    #define S_ISDIR( m ) ( ( (m) &S_IFMT ) == S_IFDIR )
-    #define S_IRUSR 0
-    #define S_IWUSR 0
-    #define S_IXUSR 0
-#endif
-
 
 // \cond HIDDEN_SYMBOLS
 template<class T>
 inline T type_default_tol()
 {
-    if constexpr ( std::is_integral<T>::value )
+    if constexpr ( std::is_integral_v<T> )
         return 0;
-    else if constexpr ( std::is_same<T, double>::value )
+    else if constexpr ( std::is_same_v<T, double> )
         return 1e-12;
-    else if constexpr ( std::is_floating_point<T>::value )
+    else if constexpr ( std::is_floating_point_v<T> )
         return pow( std::numeric_limits<T>::epsilon(), (T) 0.77 );
     else
         return T();
@@ -62,16 +51,11 @@ namespace Utilities {
 using StackTrace::Utilities::abort;
 using StackTrace::Utilities::exec;
 using StackTrace::Utilities::getMemoryUsage;
+using StackTrace::Utilities::getOS;
 using StackTrace::Utilities::getSystemMemory;
+using StackTrace::Utilities::OS;
 using StackTrace::Utilities::tick;
 using StackTrace::Utilities::time;
-
-
-//! Enum for the operating system
-enum class OS { macOS, Linux, Windows, Unknown };
-
-//! Return the OS
-constexpr OS getOS();
 
 
 /*!
@@ -87,43 +71,6 @@ void setenv( const char *name, const char *value );
  * @return                  The value of the enviornmental variable
  */
 std::string getenv( const char *name );
-
-/*
- * Create the directory specified by the path string.  Permissions are set
- * by default to rwx by user.  The intermediate directories in the
- * path are created if they do not already exist.  When
- * only_node_zero_creates is true, only node zero creates the
- * directories.  Otherwise, all nodes create the directories.
- */
-void recursiveMkdir( const std::string &path,
-                     mode_t mode                 = ( S_IRUSR | S_IWUSR | S_IXUSR ),
-                     bool only_node_zero_creates = true );
-
-
-//! Return the path to the file
-std::string path( const std::string &filename );
-
-//! Return the filename (strip the path)
-std::string filename( const std::string &filename );
-
-
-//! Check if a file exists and return true if it does
-bool fileExists( const std::string &filename );
-
-//! Return the file size
-size_t fileSize( const std::string &filename );
-
-
-//! Rename a file from old file name to new file name.
-void renameFile( const std::string &old_filename, const std::string &new_filename );
-
-
-//! Delete a file.  If the file does not exist, nothing will happen.
-void deleteFile( const std::string &filename );
-
-
-//! Get the lower case suffix for a file
-std::string getSuffix( const std::string &filename );
 
 
 /*!
@@ -145,7 +92,7 @@ std::string intToString( int num, int min_width = 1 );
  * Convert common integer values to strings.
  *
  * These are simply wrappers around intToString that ensure the
- * same width is uniformally used when converting to string
+ * same width is uniformly used when converting to string
  * representations.
  */
 std::string nodeToString( int num );
@@ -310,8 +257,17 @@ double trilinear( const std::vector<double> &x,
                   double yi,
                   double zi );
 
+
 //! Create a hash key from a char array
-constexpr unsigned int hash_char( const std::string_view & );
+constexpr unsigned int hash_char( const std::string_view &str )
+{
+    uint32_t hash = 5381;
+    for ( unsigned char c : str ) {
+        // hash = hash * 33 ^ c
+        hash = ( ( hash << 5 ) + hash ) ^ c;
+    }
+    return hash;
+}
 
 
 // Function to demangle a string (e.g. from typeid)
@@ -349,7 +305,17 @@ void printBanner();
 void nullUse( void * );
 
 //! std::string version of sprintf
-inline std::string stringf( const char *format, ... );
+inline std::string stringf( const char *format, ... )
+{
+    va_list ap;
+    va_start( ap, format );
+    char tmp[4096];
+    int n = vsnprintf( tmp, sizeof tmp, format, ap );
+    va_end( ap );
+    AMP_INSIST( n >= 0, "Error using stringf: encoding error" );
+    AMP_INSIST( n < (int) sizeof tmp, "Error using stringf: internal buffer size" );
+    return std::string( tmp );
+}
 
 
 //! Print a vector
@@ -415,9 +381,6 @@ private:
 
 } // namespace Utilities
 } // namespace AMP
-
-
-#include "AMP/utils/Utilities.hpp"
 
 
 #endif

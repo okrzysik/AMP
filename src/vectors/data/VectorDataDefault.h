@@ -1,5 +1,5 @@
-#ifndef included_AMP_VectorDataCPU
-#define included_AMP_VectorDataCPU
+#ifndef included_AMP_VectorDataDefault
+#define included_AMP_VectorDataDefault
 
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -14,20 +14,27 @@ class VectorDataIterator;
 
 /**
  * \brief  A class used to hold vector data
- * \details  VectorDataCPU is a default implementation of VectorData that stores
+ * \details  VectorDataDefault is a default implementation of VectorData that stores
  * the local values as a single block of data on the CPU.
  */
-template<typename TYPE = double>
-class VectorDataCPU : public VectorData
+template<typename TYPE = double, class Allocator = std::allocator<TYPE>>
+class VectorDataDefault : public VectorData
 {
-public: // Constructors
-    VectorDataCPU( size_t start, size_t localSize, size_t globalSize );
+public: // Member types
+    using value_type     = TYPE;
+    using allocator_type = Allocator;
 
-    VectorDataCPU( const VectorDataCPU & ) = delete;
+public: // Constructors
+    VectorDataDefault( size_t start,
+                       size_t localSize,
+                       size_t globalSize,
+                       const Allocator &alloc = Allocator() );
+
+    VectorDataDefault( const VectorDataDefault & ) = delete;
 
 public: // Virtual functions
     //! Virtual destructor
-    virtual ~VectorDataCPU() {}
+    virtual ~VectorDataDefault();
 
     //! Get the type name
     std::string VectorDataName() const override;
@@ -128,11 +135,10 @@ public: // Advanced virtual functions
      */
     size_t sizeofDataBlockType( size_t i ) const override;
 
-    /** \brief Is the data of the given type
-     * \param hash     The hash code: typeid(myint).hash_code()
+    /** \brief Return the typeid of the given block
      * \param block    The block id to check
      */
-    bool isType( const typeID &id, size_t block ) const override;
+    typeID getType( size_t block ) const override;
 
     /** \brief Swap the data with another VectorData object
      * \param rhs      The VectorData to swap with
@@ -155,15 +161,16 @@ public: // Non-virtual functions
      */
     const TYPE &operator[]( size_t i ) const;
 
+    //! Return the allocator associated with the container
+    Allocator get_allocator() const noexcept;
 
 protected:
-    VectorDataCPU() {}
-
-    void allocate( size_t start, size_t localSize, size_t globalSize );
+    VectorDataDefault( const Allocator &alloc = Allocator() ) : d_alloc( alloc ) {}
 
 
 private:
-    std::vector<TYPE> d_Data;
+    TYPE *d_data = nullptr;
+    Allocator d_alloc;
 };
 
 

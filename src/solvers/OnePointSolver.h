@@ -30,7 +30,7 @@ public:
         if ( d_bUseZeroInitialGuess ) {
             myU->zero();
         }
-        AMP::LinearAlgebra::Vector::shared_ptr r = myU->cloneVector();
+        AMP::LinearAlgebra::Vector::shared_ptr r = myU->clone();
         d_onePointOp->residual( f, u, r );
         double inverseConstant = 1.0 / ( d_onePointOp->getConstant() );
         myU->axpy( inverseConstant, *r, *myU );

@@ -50,12 +50,17 @@ public:
     void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     void multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
 
+<<<<<<< HEAD
     std::shared_ptr<Matrix> cloneMatrix() const override;
+=======
+    shared_ptr clone() const override;
+
+>>>>>>> master
 
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
-    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
-    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 
     void scale( double alpha ) override;
     void axpy( double alpha, const Matrix &x ) override;

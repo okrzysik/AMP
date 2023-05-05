@@ -1,4 +1,5 @@
 #include "AMP/operators/boundary/libmesh/TractionBoundaryOperator.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/vectors/VectorSelector.h"
 
 // Libmesh includes
@@ -39,7 +40,7 @@ void TractionBoundaryOperator::addRHScorrection( AMP::LinearAlgebra::Vector::sha
     if ( !d_residualMode ) {
         AMP::LinearAlgebra::Vector::shared_ptr myRhs = mySubsetVector( rhs, d_var );
         if ( d_correction == nullptr ) {
-            d_correction = myRhs->cloneVector();
+            d_correction = myRhs->clone();
         }
         computeCorrection();
         myRhs->add( *myRhs, *d_correction );
@@ -53,7 +54,7 @@ void TractionBoundaryOperator::apply( AMP::LinearAlgebra::Vector::const_shared_p
     if ( d_residualMode ) {
         AMP::LinearAlgebra::Vector::shared_ptr rInternal = mySubsetVector( r, d_var );
         if ( d_correction == nullptr ) {
-            d_correction = rInternal->cloneVector();
+            d_correction = rInternal->clone();
         }
         computeCorrection();
         rInternal->subtract( *rInternal, *d_correction );

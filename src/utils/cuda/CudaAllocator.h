@@ -1,0 +1,60 @@
+#ifndef included_AMP_GPUDevAllocator
+#define included_AMP_GPUDevAllocator
+
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+#include "AMP/utils/cuda/helper_cuda.h"
+
+
+namespace AMP {
+
+
+template<typename T>
+class CudaDevAllocator
+{
+public:
+    using value_type = T;
+
+    T *allocate( size_t n )
+    {
+        T *ptr;
+        auto err = cudaMalloc( &ptr, n * sizeof( T ) );
+        checkCudaErrors( err );
+        return ptr;
+    }
+
+    void deallocate( T *p, size_t )
+    {
+        auto err = cudaFree( p );
+        checkCudaErrors( err );
+    }
+};
+
+template<typename T>
+class CudaManagedAllocator
+{
+public:
+    using value_type = T;
+
+    T *allocate( size_t n )
+    {
+        T *ptr;
+        auto err = cudaMallocManaged( &ptr, n * sizeof( T ), cudaMemAttachGlobal );
+        checkCudaErrors( err );
+        return ptr;
+    }
+
+    void deallocate( T *p, size_t )
+    {
+        auto err = cudaFree( p );
+        checkCudaErrors( err );
+    }
+};
+
+
+} // namespace AMP
+
+
+#endif

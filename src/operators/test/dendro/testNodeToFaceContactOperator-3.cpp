@@ -28,7 +28,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -39,7 +38,7 @@
 #include <fstream>
 
 
-static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
+static void selectNodes( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                          std::vector<AMP::Mesh::MeshElementID> &nodesGlobalIDs )
 {
     auto meshIterator       = mesh->getBoundaryIDIterator( AMP::Mesh::GeomType::Vertex, 3 );
@@ -56,7 +55,7 @@ static void selectNodes( AMP::Mesh::Mesh::shared_ptr mesh,
     }     // end for
 }
 
-static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
+static void printNodesValues( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                               std::vector<AMP::Mesh::MeshElementID> const &nodesGlobalIDs,
                               AMP::LinearAlgebra::Vector::shared_ptr vectorField,
                               std::ostream &os = std::cout )
@@ -75,7 +74,7 @@ static void printNodesValues( AMP::Mesh::Mesh::shared_ptr mesh,
 static void
 getConcentratedLoadAtNodes( double loadParameter,
                             double loadCutoff,
-                            AMP::Mesh::Mesh::shared_ptr meshAdapter,
+                            std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                             AMP::LinearAlgebra::Vector::shared_ptr loadVector,
                             std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
 {
@@ -385,12 +384,12 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
         tempDofManager, std::make_shared<AMP::LinearAlgebra::Variable>( "sigma_xy" ), split );
     auto sigma_eff = AMP::LinearAlgebra::createVector(
         tempDofManager, std::make_shared<AMP::LinearAlgebra::Variable>( "sigma_eff" ), split );
-    auto activeSetBeforeUpdateVec = sigma_eff->cloneVector();
-    auto activeSetAfterUpdateVec  = sigma_eff->cloneVector();
-    auto contactPressureVec       = sigma_eff->cloneVector();
-    auto surfaceTractionVec       = columnSolVec->cloneVector();
-    auto normalVectorVec          = columnSolVec->cloneVector();
-    auto contactShiftVec          = columnSolVec->cloneVector();
+    auto activeSetBeforeUpdateVec = sigma_eff->clone();
+    auto activeSetAfterUpdateVec  = sigma_eff->clone();
+    auto contactPressureVec       = sigma_eff->clone();
+    auto surfaceTractionVec       = columnSolVec->clone();
+    auto normalVectorVec          = columnSolVec->clone();
+    auto contactShiftVec          = columnSolVec->clone();
     contactPressureVec->zero();
     surfaceTractionVec->zero();
     normalVectorVec->zero();
@@ -493,7 +492,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
             auto mat = masterBVPOperator->getMatrix();
             auto rhs = masterBVPOperator->subsetOutputVector( columnRhsVec );
             if ( !cor ) {
-                cor = rhs->cloneVector();
+                cor = rhs->clone();
                 applyCustomDirichletCondition( rhs, cor, meshAdapter, constraints, mat );
             } else {
                 applyCustomDirichletCondition( rhs,

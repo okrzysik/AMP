@@ -18,7 +18,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -111,7 +110,7 @@ static void thermoMechanicsTest( AMP::UnitTest *ut, const std::string &exeName )
     auto inputMultiVariable = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVariable>(
         volumeOperator->getInputVariable() );
     std::vector<std::shared_ptr<AMP::LinearAlgebra::Variable>> inputVariables;
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> inputDOFs;
+    std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> inputDOFs;
     for ( size_t i = 0; i < inputMultiVariable->numVariables(); i++ ) {
         inputVariables.push_back( inputMultiVariable->getVariable( i ) );
         if ( i == AMP::Operator::Mechanics::DISPLACEMENT )

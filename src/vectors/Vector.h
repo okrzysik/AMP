@@ -1,7 +1,6 @@
 #ifndef included_AMP_Vector
 #define included_AMP_Vector
 
-#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/Units.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/vectors/Variable.h"
@@ -11,6 +10,11 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
+
+
+namespace AMP::Discretization {
+class DOFManager;
+}
 
 
 namespace AMP::LinearAlgebra {
@@ -346,7 +350,7 @@ public: // Clone vectors
      * entries.  The vector will
      * be associated with the same Variable.
      */
-    std::shared_ptr<Vector> cloneVector() const;
+    std::shared_ptr<Vector> clone() const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \param[in] name  Name to give the variable associated with this vector
@@ -356,7 +360,7 @@ public: // Clone vectors
      * number of entries.  The vector will be associated with a clone of the same Variable with the
      * given name
      */
-    std::shared_ptr<Vector> cloneVector( const std::string &name ) const;
+    std::shared_ptr<Vector> clone( const std::string &name ) const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \param[in] name  The variable to associate with the new vector
@@ -365,7 +369,7 @@ public: // Clone vectors
      * It will have the same number of blocks, each with the same engines and same number of
      * entries.
      */
-    std::shared_ptr<Vector> cloneVector( const std::shared_ptr<Variable> name ) const;
+    std::shared_ptr<Vector> clone( const std::shared_ptr<Variable> name ) const;
 
 
 public: // Get/Set data/variables/operations
@@ -797,6 +801,18 @@ public: // Get values
     template<typename TYPE = double>
     TYPE getValueByLocalID( size_t i ) const;
 
+public: // Set values
+    /**
+     * \brief Set a value in the vector.
+     * \param[in] i The global index into the vector
+     * \details This uses setValuesByGlobalID to set the value
+     */
+    template<typename TYPE>
+    void setValueByGlobalID( size_t i, TYPE v );
+
+public:
+    //! Get a unique id hash for the vector
+    uint64_t getID() const;
 
 protected:                                                         // Internal data
     AMP::Units d_units;                                            // Optional units for the data
@@ -805,7 +821,6 @@ protected:                                                         // Internal d
     std::shared_ptr<VectorData> d_VectorData;                      // Pointer to data
     std::shared_ptr<VectorOperations> d_VectorOps;                 // Pointer to a VectorOperations
     std::shared_ptr<std::vector<std::any>> d_Views;                // Views of the vector
-    std::ostream *d_output_stream;                                 // output stream for vector data
 };
 
 

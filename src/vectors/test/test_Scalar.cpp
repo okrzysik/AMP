@@ -1,3 +1,4 @@
+#include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/Scalar.h"
 
 #include <chrono>
@@ -8,6 +9,19 @@
 // Test auto creation of a Scalar
 bool fun( const AMP::Scalar &x ) { return x.get<double>() != 0.0; }
 bool fun2( const std::any &x ) { return std::any_cast<size_t>( x ) != 0; }
+
+
+// Test the create function
+bool testCreate()
+{
+    int x = 38;
+    AMP::Scalar y1( static_cast<double>( x ) );
+    auto y2   = y1.create( x );
+    auto y3   = y1.create( y1 );
+    bool pass = y1.type() == y2.type() && y1.getTypeHash() == y2.getTypeHash() &&
+                y1.type() == y3.type() && y1.getTypeHash() == y3.getTypeHash();
+    return pass;
+}
 
 
 // Test storing and getting a value (integer)
@@ -91,6 +105,14 @@ void testPerformance()
 }
 
 
+// Test passing scalar by reference
+void passConstRef( const AMP::Scalar &x )
+{
+    auto y = x; // d_data for x has a bad address according to totalview
+    AMP_ASSERT( static_cast<double>( y ) == 1.0 );
+}
+
+
 int main( int, char ** )
 {
     bool pass = true;
@@ -106,6 +128,9 @@ int main( int, char ** )
     pass = pass && testGet( std::complex<int>( 7.0, 0.0 ) );
     pass = pass && testGet( std::complex<float>( 8.0, 0.0 ) );
     pass = pass && testGet( std::complex<double>( 9.0, 0.0 ) );
+
+    // Test create
+    pass = pass && testCreate();
 
     // Test passing values
     pass = pass && fun( 1 );
@@ -128,6 +153,9 @@ int main( int, char ** )
 
     // Test the performance
     testPerformance();
+
+    // Test passing scalar by reference
+    passConstRef( 1.0 );
 
     if ( pass )
         std::cout << "All tests passed\n";

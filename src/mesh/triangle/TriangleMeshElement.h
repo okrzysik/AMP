@@ -149,7 +149,6 @@ protected:
     friend class AMP::Mesh::TriangleMeshIterator<NG, NP, TYPE>;
 
 private:
-    static constexpr uint32_t getTypeID();
     MeshElementID d_globalID;
 };
 

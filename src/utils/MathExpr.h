@@ -35,6 +35,13 @@ public:
     explicit MathExpr( std::string expression,
                        std::vector<std::string> variables = std::vector<std::string>() );
 
+    /**
+     * \brief Scalar
+     * \details  Construct a MathExpr object from a scalar value
+     * \param[in] value             Scalar value
+     */
+    explicit MathExpr( double value );
+
     //! Copy constructor
     MathExpr( const MathExpr & ) = delete;
 
@@ -49,6 +56,9 @@ public:
 
     //! Destructor
     ~MathExpr();
+
+    //! Clone the expression
+    MathExpr clone() const;
 
     //! Return the expression
     inline const auto &getExpr() const { return d_expr; }
@@ -82,7 +92,7 @@ private:
     void initialize();
 
     std::string d_expr;
-    te_expr *d_fun;
+    te_expr *d_fun = nullptr;
     std::vector<std::string> d_vars;
     std::vector<te_variable> d_tevar;
     mutable std::vector<double> d_data;

@@ -5,6 +5,8 @@
 
 #include "AMP/time_integrators/TimeIntegrator.h"
 #include "AMP/time_integrators/TimeIntegratorParameters.h"
+#include "AMP/time_integrators/TimeOperator.h"
+#include "AMP/vectors/Scalar.h"
 
 // Forward declares
 namespace AMP {
@@ -222,6 +224,27 @@ public:
     //! print the statistics on the solver
     void printStatistics( std::ostream &os = AMP::pout ) override;
 
+    //! for multiphysics problems it may be necessary to scale the solution
+    // and nonlinear function for correct solution of the implicit problem
+    // each timestep. The first vector is for solution scaling, the second for function
+    void setComponentScalings( std::shared_ptr<AMP::LinearAlgebra::Vector> s,
+                               std::shared_ptr<AMP::LinearAlgebra::Vector> f )
+    {
+        d_solution_scaling = s;
+        d_function_scaling = f;
+        AMP_INSIST( d_operator,
+                    "Operator must be registered prior to calling setComponentScalings" );
+        auto timeOperator =
+            std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
+        AMP_INSIST( timeOperator, "setComponentScalings only works with TimeOperator" );
+        timeOperator->setComponentScalings( s, f );
+    }
+
+    void setTimeScalingFunction( std::function<void( AMP::Scalar )> fnPtr )
+    {
+        d_fTimeScalingFnPtr = fnPtr;
+    }
+
 protected:
     /**
      * Set the initial guess for the time advanced solution at the start
@@ -245,6 +268,9 @@ protected:
      */
     std::shared_ptr<AMP::Solver::SolverStrategy> d_solver = nullptr;
 
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_solution_scaling;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> d_function_scaling;
+
     /*
      * Data members representing integrator times, time increments,
      * and step count information.
@@ -263,6 +289,8 @@ protected:
                                        const bool first_step,
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> in,
                                        std::shared_ptr<AMP::LinearAlgebra::Vector> out );
+
+    std::function<void( AMP::Scalar )> d_fTimeScalingFnPtr;
 
 private:
     //! allows for specialization of the checkNewSolution for classes of time

@@ -29,7 +29,7 @@ public:
      * \param z         z-coordinates
      * \param check     Check that the total number of nodes is unchanged
      */
-    static void getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
+    static void getXYZCoordinates( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                    std::vector<double> &x,
                                    std::vector<double> &y,
                                    std::vector<double> &z,
@@ -43,7 +43,7 @@ public:
      * \param mesh  Mesh that we want to use for the iterator
      * \param gcw   Desired ghost width
      */
-    static AMP::Mesh::MeshIterator getXYFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh,
+    static AMP::Mesh::MeshIterator getXYFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                       int gcw = 0 );
 
     /**
@@ -54,7 +54,7 @@ public:
      * \param mesh  Mesh that we want to use for the iterator
      * \param gcw   Desired ghost width
      */
-    static AMP::Mesh::MeshIterator getXZFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh,
+    static AMP::Mesh::MeshIterator getXZFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                       int gcw = 0 );
 
     /**
@@ -65,7 +65,8 @@ public:
      * \param mesh  Mesh that we want to use for the iterator
      * \param gcw   Desired ghost width
      */
-    static AMP::Mesh::MeshIterator getYZFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw );
+    static AMP::Mesh::MeshIterator getYZFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                      int gcw );
 
     /**
      * \brief Get an iterator over the faces
@@ -77,10 +78,10 @@ public:
      * \param direction Direction of faces to iterate
      */
     static AMP::Mesh::MeshIterator
-    getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction );
+    getFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh, int gcw, int direction );
 
 
-    static AMP::Mesh::MeshIterator getGapFaceIterator( AMP::Mesh::Mesh::shared_ptr subChannel,
+    static AMP::Mesh::MeshIterator getGapFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> subChannel,
                                                        int ghostWidth );
 
 protected:

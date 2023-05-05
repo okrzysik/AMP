@@ -1,5 +1,4 @@
 #include "AMP/vectors/data/ManagedVectorData.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/ManagedVectorData.h"
 #include "AMP/vectors/operations/ManagedVectorOperations.h"
@@ -164,6 +163,8 @@ void ManagedVectorData::swapData( VectorData &other )
         vec->getVectorData()->setUpdateStatusPtr( in->getUpdateStatusPtr() );
 }
 
+void ManagedVectorData::assemble() { d_Engine->getVectorData()->assemble(); }
+
 
 /****************************************************************
  * Get/Set values                                                *
@@ -244,16 +245,13 @@ void ManagedVectorData::getRawData( void *in, const typeID &id ) const
     getEngineData( *this )->getRawData( in, id );
 }
 
-bool ManagedVectorData::isType( const typeID &id, size_t i ) const
-{
-    return getEngineData( *this )->isType( id, i );
-}
+typeID ManagedVectorData::getType( size_t i ) const { return getEngineData( *this )->getType( i ); }
 
 std::shared_ptr<VectorData> ManagedVectorData::cloneData() const
 {
     auto vec = getVectorEngine();
     AMP_ASSERT( vec );
-    auto vec2   = vec->cloneVector( "ManagedVectorClone" );
+    auto vec2   = vec->clone( "ManagedVectorClone" );
     auto retVal = std::make_shared<ManagedVectorData>( vec2 );
     return retVal;
 }

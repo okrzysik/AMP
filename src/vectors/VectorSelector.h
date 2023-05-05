@@ -1,10 +1,9 @@
 #ifndef included_AMP_VectorSelector_h
 #define included_AMP_VectorSelector_h
 
-#include "AMP/vectors/Vector.h"
-
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshIterator.h"
+#include "AMP/vectors/Vector.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -179,7 +178,7 @@ public:
      * \param[in]  useMeshComm     Use the comm of the mesh (otherwise use the comm of the parent
      * DOFManager)
      */
-    explicit VS_Mesh( AMP::Mesh::Mesh::shared_ptr mesh, bool useMeshComm = true );
+    explicit VS_Mesh( std::shared_ptr<AMP::Mesh::Mesh> mesh, bool useMeshComm = true );
 
 public: // Functions inherited from VectorSelector
     virtual bool isSelected( const Vector &v ) const override;
@@ -189,8 +188,8 @@ public: // Functions inherited from VectorSelector
     virtual AMP_MPI communicator( const Vector &vec ) const override;
 
 protected:
-    bool d_useMeshComm;            // Use the comm of the mesh
-    Mesh::Mesh::shared_ptr d_mesh; // Mesh
+    bool d_useMeshComm;                      // Use the comm of the mesh
+    std::shared_ptr<AMP::Mesh::Mesh> d_mesh; // Mesh
 };
 
 

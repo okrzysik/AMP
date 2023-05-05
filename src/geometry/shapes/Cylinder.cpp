@@ -1,7 +1,8 @@
 #include "AMP/geometry/shapes/Cylinder.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/UtilityMacros.h"
 
 
 namespace AMP::Geometry {
@@ -227,6 +228,34 @@ bool Cylinder::operator==( const Geometry &rhs ) const
         return false;
     return d_r == geom->d_r && d_z_min == geom->d_z_min && d_z_max == geom->d_z_max &&
            d_offset == geom->d_offset;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void Cylinder::writeRestart( int64_t fid ) const
+{
+    AMP::writeHDF5( fid, "GeomType", std::string( "cylinder" ) );
+    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::writeHDF5( fid, "r", d_r );
+    AMP::writeHDF5( fid, "z_min", d_z_min );
+    AMP::writeHDF5( fid, "z_max", d_z_max );
+    AMP::writeHDF5( fid, "offset", d_offset );
+}
+Cylinder::Cylinder( int64_t fid )
+{
+    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
+    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
+    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
+    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    AMP::readHDF5( fid, "r", d_r );
+    AMP::readHDF5( fid, "z_min", d_z_min );
+    AMP::readHDF5( fid, "z_max", d_z_max );
+    AMP::readHDF5( fid, "offset", d_offset );
 }
 
 

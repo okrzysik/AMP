@@ -14,7 +14,7 @@ namespace AMP::Mesh {
 /************************************************************
  * Function to return the coordinates of a cube mesh         *
  ************************************************************/
-void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
+void StructuredMeshHelper::getXYZCoordinates( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                               std::vector<double> &x_out,
                                               std::vector<double> &y_out,
                                               std::vector<double> &z_out,
@@ -66,23 +66,23 @@ void StructuredMeshHelper::getXYZCoordinates( AMP::Mesh::Mesh::shared_ptr mesh,
 /************************************************************
  * Functions to iterators over particular sets of faces      *
  ************************************************************/
-AMP::Mesh::MeshIterator StructuredMeshHelper::getXYFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh,
-                                                                 int gcw )
+AMP::Mesh::MeshIterator
+StructuredMeshHelper::getXYFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh, int gcw )
 {
     return getFaceIterator( mesh, gcw, 2 );
 }
-AMP::Mesh::MeshIterator StructuredMeshHelper::getXZFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh,
-                                                                 int gcw )
+AMP::Mesh::MeshIterator
+StructuredMeshHelper::getXZFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh, int gcw )
 {
     return getFaceIterator( mesh, gcw, 1 );
 }
-AMP::Mesh::MeshIterator StructuredMeshHelper::getYZFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh,
-                                                                 int gcw )
+AMP::Mesh::MeshIterator
+StructuredMeshHelper::getYZFaceIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh, int gcw )
 {
     return getFaceIterator( mesh, gcw, 0 );
 }
-AMP::Mesh::MeshIterator
-StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw, int direction )
+AMP::Mesh::MeshIterator StructuredMeshHelper::getFaceIterator(
+    std::shared_ptr<AMP::Mesh::Mesh> mesh, int gcw, int direction )
 {
     auto multimesh = std::dynamic_pointer_cast<AMP::Mesh::MultiMesh>( mesh );
     auto boxmesh   = std::dynamic_pointer_cast<AMP::Mesh::BoxMesh>( mesh );
@@ -197,7 +197,8 @@ StructuredMeshHelper::getFaceIterator( AMP::Mesh::Mesh::shared_ptr mesh, int gcw
 }
 
 
-AMP::Mesh::MeshIterator StructuredMeshHelper::getGapFaceIterator( AMP::Mesh::Mesh::shared_ptr, int )
+AMP::Mesh::MeshIterator StructuredMeshHelper::getGapFaceIterator( std::shared_ptr<AMP::Mesh::Mesh>,
+                                                                  int )
 {
     AMP_ERROR( "Not finished" );
     return AMP::Mesh::MeshIterator();

@@ -5,12 +5,12 @@
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "ProfilerApp.h"
 
 #include <cstring>
 #include <iostream>
+
 
 namespace AMP::Operator {
 
@@ -34,9 +34,9 @@ std::shared_ptr<AMP::LinearAlgebra::Variable>
 DiffusionNonlinearFEOperator::createInputVariable( const std::string &name, int varId )
 {
     if ( varId == -1 ) {
-        return d_inpVariables->cloneVariable( name );
+        return d_inpVariables->clone( name );
     } else {
-        return d_inpVariables->getVariable( varId )->cloneVariable( name );
+        return d_inpVariables->getVariable( varId )->clone( name );
     }
 }
 
@@ -45,7 +45,7 @@ std::shared_ptr<AMP::LinearAlgebra::Variable>
 DiffusionNonlinearFEOperator::createOutputVariable( const std::string &name, int varId )
 {
     (void) varId;
-    return d_outVariable->cloneVariable( name );
+    return d_outVariable->clone( name );
 }
 
 

@@ -169,8 +169,8 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int type )
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto fusedSolVec = AMP::LinearAlgebra::createVector( NodalVectorDOF, fusedVar );
-    auto fusedRhsVec = fusedSolVec->cloneVector();
-    auto fusedResVec = fusedSolVec->cloneVector();
+    auto fusedRhsVec = fusedSolVec->clone();
+    auto fusedResVec = fusedSolVec->clone();
 
     fusedRhsVec->zero();
     loadOperator->apply( nullVec, fusedRhsVec );
@@ -194,7 +194,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName, int type )
 
         auto mat = fusedOperator->getMatrix();
 
-        auto matCopy = mat->cloneMatrix();
+        auto matCopy = mat->clone();
         matCopy->zero();
         matCopy->axpy( 1.0, mat );
 
@@ -415,7 +415,7 @@ void myTest2( AMP::UnitTest *ut, const std::string &exeName, bool useTwoMeshes )
     auto firstMesh  = std::make_shared<AMP::Mesh::libmeshMesh>( firstFusedMesh, "Mesh_1" );
     auto secondMesh = std::make_shared<AMP::Mesh::libmeshMesh>( secondFusedMesh, "Mesh_2" );
 
-    std::vector<AMP::Mesh::Mesh::shared_ptr> vectorOfMeshes;
+    std::vector<std::shared_ptr<AMP::Mesh::Mesh>> vectorOfMeshes;
     vectorOfMeshes.push_back( firstMesh );
     if ( useTwoMeshes ) {
         vectorOfMeshes.push_back( secondMesh );
@@ -461,8 +461,8 @@ void myTest2( AMP::UnitTest *ut, const std::string &exeName, bool useTwoMeshes )
     auto fusedColumnVar = fusedColumnOperator->getOutputVariable();
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     auto fusedColumnSolVec = AMP::LinearAlgebra::createVector( dofManager, fusedColumnVar );
-    auto fusedColumnRhsVec = fusedColumnSolVec->cloneVector();
-    auto fusedColumnResVec = fusedColumnSolVec->cloneVector();
+    auto fusedColumnRhsVec = fusedColumnSolVec->clone();
+    auto fusedColumnResVec = fusedColumnSolVec->clone();
 
     fusedColumnRhsVec->zero();
     loadColumnOperator->apply( nullVec, fusedColumnRhsVec );

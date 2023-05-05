@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <limits>
 #include <map>
 #include <random>
@@ -534,6 +535,24 @@ std::vector<int> MPI_CLASS::globalRanks() const
     }
     // Return d_ranks
     return std::vector<int>( d_ranks, d_ranks + d_size );
+}
+uint64_t MPI_CLASS::hashRanks() const
+{
+    uint64_t hash = 0x6BCDEEF696DCF9FF;
+    if ( d_comm == MPI_COMM_NULL ) {
+        return hash ^ 0x0;
+    } else if ( d_comm == MPI_COMM_SELF ) {
+        return hash ^ 0x1;
+    } else if ( d_comm == MPI_COMM_WORLD ) {
+        return hash ^ 0x2;
+    } else if ( d_comm == MPI_CLASS_COMM_WORLD ) {
+        return hash ^ 0x3;
+    } else {
+        auto ranks = globalRanks();
+        for ( auto rank : ranks )
+            hash = hash ^ std::hash<int>{}( rank );
+        return hash;
+    }
 }
 
 
@@ -1580,7 +1599,7 @@ void MPI_CLASS::stop_MPI()
  ****************************************************************************/
 MPI_CLASS::Request::Request( MPI_CLASS::Request2 request, std::any data )
 {
-    using TYPE = typename std::remove_reference<decltype( *( d_data.get() ) )>::type;
+    using TYPE = typename AMP::remove_cvref_t<decltype( *( d_data.get() ) )>;
     if ( data.has_value() ) {
         auto deleter = []( TYPE *p ) {
             MPI_CLASS::wait( p->first );
@@ -1597,42 +1616,34 @@ MPI_CLASS::Request::~Request() {}
 
 
 /****************************************************************************
- * pack/unpack routines                                                      *
+ * getComm                                                                   *
  ****************************************************************************/
-template<>
-size_t packSize( const std::string &s )
+template<class TYPE>
+AMP_MPI getComm( const TYPE & )
 {
-    return s.size() + 1;
+    return AMP_COMM_SELF;
 }
-template<>
-size_t pack( const std::string &s, std::byte *buf )
-{
-    memcpy( buf, s.data(), s.size() + 1 );
-    return s.size() + 1;
-}
-template<>
-size_t unpack( std::string &s, const std::byte *buf )
-{
-    s = std::string( reinterpret_cast<const char *>( buf ) );
-    return s.size() + 1;
-}
-/*template<>
-size_t packSize( const std::vector<bool>::reference &s )
-{
-    return s.size() + 1;
-}
-template<>
-size_t pack( const std::vector<bool>::reference &s, std::byte *buf )
-{
-    memcpy( buf, s.data(), s.size() + 1 );
-    return s.size() + 1;
-}
-template<>
-size_t unpack( std::vector<bool>::reference &s, const std::byte *buf )
-{
-    s = std::vector<bool>::reference( reinterpret_cast<const char *>( buf ) );
-    return s.size() + 1;
-}*/
+#define INSTANTIATE_GET_COMM( TYPE )                                    \
+    template AMP_MPI getComm<TYPE>( const TYPE & );                     \
+    template AMP_MPI getComm<std::set<TYPE>>( const std::set<TYPE> & ); \
+    template AMP_MPI getComm<std::vector<TYPE>>( const std::vector<TYPE> & )
+INSTANTIATE_GET_COMM( bool );
+INSTANTIATE_GET_COMM( char );
+INSTANTIATE_GET_COMM( int8_t );
+INSTANTIATE_GET_COMM( uint8_t );
+INSTANTIATE_GET_COMM( int16_t );
+INSTANTIATE_GET_COMM( uint16_t );
+INSTANTIATE_GET_COMM( int32_t );
+INSTANTIATE_GET_COMM( uint32_t );
+INSTANTIATE_GET_COMM( int64_t );
+INSTANTIATE_GET_COMM( uint64_t );
+INSTANTIATE_GET_COMM( float );
+INSTANTIATE_GET_COMM( double );
+INSTANTIATE_GET_COMM( std::byte );
+INSTANTIATE_GET_COMM( std::complex<float> );
+INSTANTIATE_GET_COMM( std::complex<double> );
+INSTANTIATE_GET_COMM( std::string );
+INSTANTIATE_GET_COMM( std::string_view );
 
 
 } // namespace AMP

@@ -100,7 +100,7 @@ static std::tuple<TYPE, Units> readPair( std::string_view str )
 {
     auto str0 = str;
     auto tmp  = deblank( std::move( str0 ) );
-    if constexpr ( std::is_same<TYPE, std::complex<double>>::value ) {
+    if constexpr ( std::is_same_v<TYPE, std::complex<double>> ) {
         // We are trying to read a complex number
         if ( str[0] != '(' ) {
             // Read a double and convert to complex
@@ -244,6 +244,17 @@ bool Database::keyExists( std::string_view key ) const
     auto hash = hashString( key );
     int index = find( hash, false );
     return index != -1;
+}
+void Database::deleteData( std::string_view key )
+{
+    auto hash = hashString( key );
+    int index = find( hash, false );
+    std::swap( d_hash[index], d_hash.back() );
+    std::swap( d_keys[index], d_keys.back() );
+    std::swap( d_data[index], d_data.back() );
+    d_hash.pop_back();
+    d_keys.pop_back();
+    d_data.pop_back();
 }
 KeyData *Database::getData( std::string_view key )
 {
@@ -732,6 +743,8 @@ createKeyData( std::string_view key,
     } else if ( data_type == class_type::STRING ) {
         // We are dealing with strings
         for ( auto &value : values ) {
+            if ( value.empty() )
+                continue;
             if ( value[0] != '"' || value.back() != '"' )
                 throw std::logic_error( "Error parsing string for key: " + std::string( key ) );
             value = value.substr( 1, value.size() - 2 );
@@ -923,32 +936,35 @@ createKeyData( std::string_view key,
         if ( values.size() == 1 ) {
             data = data2[0]->clone();
         } else {
+            auto unit = data2[0]->unit();
             for ( size_t i = 0; i < values.size(); i++ ) {
                 if ( data2[i]->arraySize().length() != 1 )
                     throw std::logic_error(
                         "Using multiple values from database only works for scalars: " +
                         std::string( key ) );
+                AMP_INSIST( unit == data2[i]->unit(),
+                            "Copying array of values requires all values to share the same units" );
             }
             if ( isType<bool>( data2 ) ) {
                 AMP::Array<bool> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<bool> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<bool>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<bool>>( std::move( x ), unit );
             } else if ( isType<int>( data2 ) ) {
                 AMP::Array<int> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<int> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<int>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<int>>( std::move( x ), unit );
             } else if ( isType<double>( data2 ) ) {
                 AMP::Array<double> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<double> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<double>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<double>>( std::move( x ), unit );
             } else if ( isType<std::string>( data2 ) ) {
                 AMP::Array<std::string> x( values.size() );
                 for ( size_t i = 0; i < values.size(); i++ )
                     x( i ) = dynamic_cast<const KeyDataScalar<std::string> *>( data2[i] )->get();
-                data = std::make_unique<KeyDataArray<std::string>>( std::move( x ) );
+                data = std::make_unique<KeyDataArray<std::string>>( std::move( x ), unit );
             } else {
                 throw std::logic_error(
                     "Using multiple values from database - unable to convert data: " +
@@ -1096,6 +1112,7 @@ read_value( std::string_view buffer,
     }
     // Convert the string value to the database value
     auto data = createKeyData( key, data_type, values, databaseKeys );
+    AMP_ASSERT( data );
     return std::make_tuple( pos, std::move( data ) );
 }
 static std::string generateMsg( const std::string &errMsgPrefix,
@@ -1105,7 +1122,7 @@ static std::string generateMsg( const std::string &errMsgPrefix,
 {
     auto out = errMsgPrefix + msg;
     if ( !key.empty() )
-        out += ": " + std::string( key );
+        out += ": '" + std::string( key ) + "'";
     return out + " in input at line " + std::to_string( line );
 }
 static size_t loadDatabase( const std::string &errMsgPrefix,
@@ -1150,7 +1167,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
                 AMP_ERROR( msg );
             } catch ( std::exception &err ) {
                 auto msg = generateMsg( errMsgPrefix, "Error loading key", line, key );
-                msg += "\nUnhandled exception:\n" + std::string( err.what() );
+                msg += "\nUnhandled exception:\n   " + std::string( err.what() );
                 AMP_ERROR( msg );
             }
             if ( !data )
@@ -1336,3 +1353,10 @@ REGISTER_KEYDATA( Database, Database );
 
 
 } // namespace AMP
+
+/********************************************************
+ *  Explicit instantiations of Array<Database>           *
+ ********************************************************/
+#include "AMP/utils/Array.hpp"
+instantiateArrayConstructors( AMP::Database );
+instantiateArrayConstructors( AMP::Database::Check );

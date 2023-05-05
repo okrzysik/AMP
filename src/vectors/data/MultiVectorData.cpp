@@ -82,19 +82,18 @@ size_t MultiVectorData::getGhostSize() const
         ans += data->getGhostSize();
     return ans;
 }
-
 uint64_t MultiVectorData::getDataID() const { return 0; }
-bool MultiVectorData::isType( const typeID &id, size_t block ) const
+typeID MultiVectorData::getType( size_t block ) const
 {
     size_t curOffset = 0;
     for ( const auto &data : d_data ) {
         curOffset += data->numberOfDataBlocks();
         if ( block < curOffset ) {
             size_t index = block + data->numberOfDataBlocks() - curOffset;
-            return data->isType( id, index );
+            return data->getType( index );
         }
     }
-    return false;
+    return typeID();
 }
 size_t MultiVectorData::sizeofDataBlockType( size_t block ) const
 {

@@ -2,6 +2,7 @@
 
 #include <iomanip>
 
+#include "AMP/IO/PIO.h"
 #include "AMP/operators/OperatorFactory.h"
 #include "AMP/solvers/SolverFactory.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
@@ -117,11 +118,11 @@ void NonlinearKrylovAccelerator<T>::getFromInput( std::shared_ptr<AMP::Database>
         d_use_damping = true;
 
     if ( d_use_damping ) {
-        d_eta = db->getWithDefault<T>( "damping_factor", 1.0 );
+        d_eta = db->getWithDefault<T>( "damping_factor", static_cast<T>( 1.0 ) );
     }
 
     AMP_ASSERT( d_mvec > 0 );
-    AMP_ASSERT( d_vtol > 0.0 );
+    AMP_ASSERT( d_vtol > static_cast<T>( 0.0 ) );
 }
 
 template<typename T>
@@ -129,7 +130,9 @@ void NonlinearKrylovAccelerator<T>::initialize(
     std::shared_ptr<const AMP::Solver::SolverStrategyParameters> params )
 {
     AMP_ASSERT( params->d_vectors.size() > 0 );
-    d_solution_vector = params->d_vectors[0]->cloneVector();
+    d_solution_vector = params->d_vectors[0]->clone();
+    d_solution_vector->setToScalar( static_cast<T>( 0.0 ) );
+
     d_solution_vector->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -140,23 +143,23 @@ void NonlinearKrylovAccelerator<T>::initialize(
         d_v.resize( n );
 
         for ( int j = 0; j < n; j++ ) {
-            d_v[j] = d_solution_vector->cloneVector();
+            d_v[j] = d_solution_vector->clone();
         }
 
         d_w.resize( n );
 
         for ( int j = 0; j < n; j++ ) {
-            d_w[j] = d_solution_vector->cloneVector();
+            d_w[j] = d_solution_vector->clone();
         }
 
-        d_residual_vector   = d_solution_vector->cloneVector();
-        d_correction_vector = d_solution_vector->cloneVector();
+        d_residual_vector   = d_solution_vector->clone();
+        d_correction_vector = d_solution_vector->clone();
 
         d_solver_initialized = true;
     }
 
-    d_residual_vector->setToScalar( 0.0 );
-    d_correction_vector->setToScalar( 0.0 );
+    d_residual_vector->setToScalar( static_cast<T>( 0.0 ) );
+    d_correction_vector->setToScalar( static_cast<T>( 0.0 ) );
 }
 
 template<typename T>
@@ -168,6 +171,9 @@ void NonlinearKrylovAccelerator<T>::reset( std::shared_ptr<AMP::Solver::SolverSt
 template<typename T>
 void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgebra::Vector> f )
 {
+    T s;
+    std::shared_ptr<AMP::LinearAlgebra::Vector> w;
+
     d_current_correction++;
 
     /*
@@ -177,11 +183,11 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
     if ( d_pending ) {
 
         /* next function difference w_1 */
-        auto w = d_w[d_first];
+        w = d_w[d_first];
 
-        w->axpy( -1.0, *f, *w );
+        w->axpy( static_cast<T>( -1.0 ), *f, *w );
 
-        auto s = static_cast<T>( w->L2Norm() );
+        s = static_cast<T>( w->L2Norm() );
 
         /* If the function difference is 0, we can't update the subspace with
            this data; so we toss it out and continue.  In this case it is likely
@@ -189,16 +195,22 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
            (unless the function value is itself 0), and we merely want to do
            something reasonable here and hope that situation is detected on the
            outside. */
-        if ( s == 0.0 ) {
+        if ( s == static_cast<T>( 0.0 ) ) {
             AMP_WARNING( "current vector not valid!!, relax() being called " );
             relax();
         }
+    }
+
+    // The above if statement can go into relax and d_pending can become false,
+    // hence the second if
+    if ( d_pending ) {
 
         auto v = d_v[d_first];
 
         /* Normalize w_1 and apply same factor to v_1. */
-        w->scale( 1.0 / s, *w );
-        v->scale( 1.0 / s, *v );
+        T const sinv = (T) 1.0 / s; // debug float to ScalarType issues later
+        w->scale( sinv, *w );
+        v->scale( sinv, *v );
 
         if ( !d_use_qr ) {
 
@@ -241,7 +253,7 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
 
         // create a row vector to store the solution components for
         // the correction vector
-        std::vector<T> cv( d_mvec + 1, 0.0 );
+        std::vector<T> cv( d_mvec + 1, static_cast<T>( 0.0 ) );
 
         if ( !d_use_qr ) {
             cv = forwardbackwardSolve( f );
@@ -260,7 +272,9 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
         if ( d_use_damping ) {
             auto eta = d_eta;
             if ( d_adaptive_damping ) {
-                eta = 1.0 - std::pow( 0.9, std::min( d_current_correction, d_mvec ) );
+                eta = static_cast<T>( 1.0 ) -
+                      std::pow( static_cast<T>( 0.9 ),
+                                static_cast<T>( std::min( d_current_correction, d_mvec ) ) );
             }
 
             // scale the residual vector
@@ -273,10 +287,10 @@ void NonlinearKrylovAccelerator<T>::correction( std::shared_ptr<AMP::LinearAlgeb
    // and it should include the damping
    if(d_use_damping && (d_current_correction==1))
       {
-         double eta = d_eta;
+         auto eta = d_eta;
          if(d_adaptive_damping)
             {
-               eta = 1.0-std::pow(0.9, std::min(d_current_correction, d_mvec));
+	      eta = static_cast<T>(1.0)-std::pow(static_cast<T>(0.9), static_cast<T>(std::min(d_current_correction, d_mvec)));
             }
          
          // scale the residual vector
@@ -316,8 +330,8 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     AMP_ASSERT( d_pOperator != nullptr );
 
     if ( d_uses_preconditioner ) {
-        AMP_ASSERT( d_preconditioner != nullptr );
-        AMP_ASSERT( d_preconditioner->getOperator() != nullptr );
+        AMP_ASSERT( d_preconditioner );
+        AMP_ASSERT( d_preconditioner->getOperator() );
     }
 
     d_iNumberIterations = 0;
@@ -330,14 +344,14 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
     d_pOperator->residual( f, d_solution_vector, d_residual_vector );
     d_function_apply_count++;
 
-    d_residual_vector->scale( -1.0, *d_residual_vector );
+    d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
 
     auto residual_norm = d_residual_vector->L2Norm();
 
     if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
-        AMP::pout << std::setprecision( 16 )
-                  << "Nonlinear Krylov iteration : " << (int64_t) d_iNumberIterations
-                  << ", residual: " << residual_norm << std::endl;
+        AMP::printp( "Nonlinear Krylov iteration: %zu, residual: %0.12e\n",
+                     d_iNumberIterations,
+                     static_cast<double>( residual_norm ) );
     }
 
     const auto initial_residual_norm = residual_norm;
@@ -363,12 +377,12 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         if ( d_uses_preconditioner ) {
             if ( !d_freeze_pc ) {
                 auto pc_parameters = d_pOperator->getParameters( "Jacobian", d_solution_vector );
-                AMP_ASSERT( pc_parameters != nullptr );
+                AMP_ASSERT( pc_parameters );
 
                 pc_operator->reset( pc_parameters );
             }
 
-            AMP_ASSERT( d_preconditioner->getOperator() != nullptr );
+            AMP_ASSERT( d_preconditioner->getOperator() );
             // apply the preconditioner
             d_preconditioner->apply( d_residual_vector, d_correction_vector );
             d_preconditioner_apply_count++;
@@ -382,7 +396,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         this->correction( d_correction_vector );
 
         // correct current solution
-        d_solution_vector->axpy( -1.0, *d_correction_vector, *d_solution_vector );
+        d_solution_vector->axpy( static_cast<T>( -1.0 ), *d_correction_vector, *d_solution_vector );
         d_solution_vector->makeConsistent(
             AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
@@ -390,16 +404,17 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
         d_pOperator->residual( f, d_solution_vector, d_residual_vector );
         d_function_apply_count++;
 
-        d_residual_vector->scale( -1.0, *d_residual_vector );
+        d_residual_vector->scale( static_cast<T>( -1.0 ), *d_residual_vector );
 
-        //        auto prev_residual_norm = residual_norm;
+        // auto prev_residual_norm = residual_norm;
         residual_norm = d_residual_vector->L2Norm();
 
         d_iNumberIterations++;
 
         if ( d_print_residuals || ( d_iDebugPrintInfoLevel > 0 ) ) {
-            AMP::pout << "Nonlinear Krylov iteration : " << (int) d_iNumberIterations
-                      << ", residual: " << residual_norm << std::endl;
+            AMP::printp( "Nonlinear Krylov iteration: %zu, residual: %0.12e\n",
+                         d_iNumberIterations,
+                         static_cast<double>( residual_norm ) );
         }
 
         converged = ( residual_norm < d_dAbsoluteTolerance ) ||
@@ -448,18 +463,18 @@ void NonlinearKrylovAccelerator<T>::restart( void )
     d_next[d_mvec] = EOL;
 
     // reset the number of levels for all the vectors
-    if ( d_solution_vector.get() != nullptr ) {
+    if ( d_solution_vector ) {
 
         d_solution_vector->getVectorData()->reset();
         d_residual_vector->getVectorData()->reset();
         d_correction_vector->getVectorData()->reset();
 
         for ( int k = 0; k < d_mvec + 1; ++k ) {
-            if ( d_v[k].get() != nullptr ) {
+            if ( d_v[k] ) {
                 d_v[k]->getVectorData()->reset();
             }
 
-            if ( d_w[k].get() != nullptr ) {
+            if ( d_w[k] ) {
                 d_w[k]->getVectorData()->reset();
             }
         }
@@ -501,7 +516,7 @@ void NonlinearKrylovAccelerator<T>::factorizeNormalMatrix( void )
 
     // Trivial initial factorization stage
     int nvec              = 1;
-    d_h[d_first][d_first] = 1.0;
+    d_h[d_first][d_first] = static_cast<T>( 1.0 );
 
     for ( int k = d_next[d_first]; k != EOL; k = d_next[k] ) {
         ++nvec;
@@ -522,7 +537,7 @@ void NonlinearKrylovAccelerator<T>::factorizeNormalMatrix( void )
         // Single stage of Choleski factorization
 
         auto *hk = d_h[k]; // row k of H
-        T hkk    = 1.0;
+        T hkk    = static_cast<T>( 1.0 );
         for ( int j = d_first; j != k; j = d_next[j] ) {
             auto *hj = d_h[j]; // row j of H
             T hkj    = hj[k];
@@ -559,7 +574,7 @@ template<typename T>
 std::vector<T>
 NonlinearKrylovAccelerator<T>::forwardbackwardSolve( std::shared_ptr<AMP::LinearAlgebra::Vector> f )
 {
-    std::vector<T> cv( d_mvec + 1, 0.0 );
+    std::vector<T> cv( d_mvec + 1, static_cast<T>( 0.0 ) );
 
     /* Project f onto the span of the w vectors: */
     /* forward substitution */

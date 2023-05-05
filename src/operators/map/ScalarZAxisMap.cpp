@@ -57,7 +57,7 @@ bool ScalarZAxisMap::validMapType( const std::string &t ) { return t == "ScalarZ
  ************************************************************************/
 std::multimap<double, double>
 ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
-                          const AMP::Mesh::Mesh::shared_ptr,
+                          const std::shared_ptr<AMP::Mesh::Mesh>,
                           const AMP::Mesh::MeshIterator &iterator )
 {
     PROFILE_START( "buildMap" );
@@ -83,7 +83,7 @@ ScalarZAxisMap::buildMap( AMP::LinearAlgebra::Vector::const_shared_ptr vec,
  *  buildReturn                                                          *
  ************************************************************************/
 void ScalarZAxisMap::buildReturn( const AMP::LinearAlgebra::Vector::shared_ptr vec,
-                                  const AMP::Mesh::Mesh::shared_ptr,
+                                  const std::shared_ptr<AMP::Mesh::Mesh>,
                                   const AMP::Mesh::MeshIterator &iterator,
                                   const std::map<double, double> &map )
 {

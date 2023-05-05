@@ -1,10 +1,11 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/operators/trilinos/TrilinosMatrixShellOperator.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
+
 #include "ProfilerApp.h"
 
 DISABLE_WARNINGS
@@ -243,7 +244,7 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     double initialResNorm = 0., finalResNorm = 0.;
 
     if ( computeResidual ) {
-        r = f->cloneVector();
+        r = f->clone();
         d_pOperator->residual( f, u, r );
         initialResNorm = static_cast<double>( r->L2Norm() );
 

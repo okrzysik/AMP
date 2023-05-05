@@ -7,6 +7,11 @@
 #include <string_view>
 
 
+namespace AMP::IO {
+class RestartManager;
+}
+
+
 namespace AMP::LinearAlgebra {
 
 
@@ -49,6 +54,12 @@ public:
     inline auto &getName() const { return d_VariableName; }
 
 
+    /** \brief  A function that returns the name of a variable
+     * \details  This gives access to the name
+     */
+    virtual std::string className() const { return "Variable"; }
+
+
     /** \brief  Compares two variables for equality.
      * \details This operation compares the names.
      * \param  rhs  Variable to compare
@@ -67,7 +78,7 @@ public:
      * \details This function will create a "deep" copy of this variable.
      * \param  name  The name of the new variable
      */
-    virtual std::shared_ptr<Variable> cloneVariable( const std::string &name ) const;
+    virtual std::shared_ptr<Variable> clone( const std::string &name ) const;
 
 
     /** \brief  Create a VectorSelector
@@ -76,6 +87,26 @@ public:
      *    which then calls Vector::selectInto.
      */
     virtual std::shared_ptr<VectorSelector> createVectorSelector() const;
+
+
+    //! Get a unique id hash for the vector
+    virtual uint64_t getID() const;
+
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will the variable to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+
+    /**
+     * \brief    Read restart data to file
+     * \details  This function will create a variable from the restart file
+     * \param fid    File identifier to write
+     */
+    Variable( int64_t fid );
 
 
 protected:

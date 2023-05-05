@@ -135,7 +135,7 @@ OperatorBuilder::createOperator( std::shared_ptr<OperatorParameters> in_params )
 
 
 std::shared_ptr<Operator>
-OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                  std::string operatorName,
                                  std::shared_ptr<AMP::Database> input_db,
                                  std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
@@ -254,7 +254,7 @@ OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
 
 // Create the identity operator
 Operator::shared_ptr
-OperatorBuilder::createIdentityOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createIdentityOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                          std::shared_ptr<AMP::Database> input_db )
 {
     AMP_INSIST( input_db, "Error: The database object for SubchannelTwoEqLinearOperator is NULL" );
@@ -269,7 +269,7 @@ OperatorBuilder::createIdentityOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter
 
 // Create the FlowFrapconOperator
 Operator::shared_ptr
-OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createFlowFrapconOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                             std::shared_ptr<AMP::Database> input_db )
 {
 
@@ -288,7 +288,7 @@ OperatorBuilder::createFlowFrapconOperator( AMP::Mesh::Mesh::shared_ptr meshAdap
 }
 
 Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinearOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -329,7 +329,7 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqLinearOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlinearOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -370,7 +370,7 @@ Operator::shared_ptr OperatorBuilder::createSubchannelTwoEqNonlinearOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonlinearOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -411,7 +411,7 @@ Operator::shared_ptr OperatorBuilder::createSubchannelFourEqNonlinearOperator(
 
 
 Operator::shared_ptr
-OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createNeutronicsRhsOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                               std::shared_ptr<AMP::Database> input_db )
 {
     // now create the Neutronics operator
@@ -432,7 +432,7 @@ OperatorBuilder::createNeutronicsRhsOperator( AMP::Mesh::Mesh::shared_ptr meshAd
 
 
 Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -490,7 +490,7 @@ Operator::shared_ptr OperatorBuilder::createLinearDiffusionOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -526,7 +526,7 @@ Operator::shared_ptr OperatorBuilder::createVolumeIntegralOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -589,7 +589,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearDiffusionOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::string operatorName,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel>,
@@ -634,7 +634,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearFickSoretOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -682,7 +682,7 @@ Operator::shared_ptr OperatorBuilder::createLinearMechanicsOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -738,7 +738,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearMechanicsOperator(
 }
 
 Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSWFOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -783,7 +783,7 @@ Operator::shared_ptr OperatorBuilder::createLinearNavierStokesLSWFOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokesLSWFOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -825,7 +825,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearNavierStokesLSWFOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
 {
@@ -872,7 +872,7 @@ Operator::shared_ptr OperatorBuilder::createMassLinearFEOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::string operatorName,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
@@ -927,7 +927,7 @@ Operator::shared_ptr OperatorBuilder::createLinearBVPOperator(
 
 
 Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::string operatorName,
     std::shared_ptr<AMP::Database> input_db,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel,
@@ -981,7 +981,7 @@ Operator::shared_ptr OperatorBuilder::createNonlinearBVPOperator(
 
 
 Operator::shared_ptr
-OperatorBuilder::createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createFlowFrapconJacobian( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                             std::shared_ptr<AMP::Database> input_db )
 {
     // now create the flow frapcon operator
@@ -1000,7 +1000,7 @@ OperatorBuilder::createFlowFrapconJacobian( AMP::Mesh::Mesh::shared_ptr meshAdap
 }
 
 std::shared_ptr<BoundaryOperator> OperatorBuilder::createBoundaryOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::string boundaryOperatorName,
     std::shared_ptr<AMP::Database> input_db,
     Operator::shared_ptr volumeOperator,
@@ -1089,7 +1089,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createBoundaryOperator(
 
 
 std::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::string boundaryOperatorName,
     std::shared_ptr<AMP::Database> input_db,
     Operator::shared_ptr volumeOperator,
@@ -1131,7 +1131,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createColumnBoundaryOperator(
 
 
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createDirichletMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createDirichletMatrixCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                                   std::shared_ptr<AMP::Database> input_db,
                                                   Operator::shared_ptr volumeOperator,
                                                   std::shared_ptr<ElementPhysicsModel> )
@@ -1151,7 +1151,7 @@ OperatorBuilder::createDirichletMatrixCorrection( AMP::Mesh::Mesh::shared_ptr me
 
 
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createMassMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createMassMatrixCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                              std::shared_ptr<AMP::Database> input_db,
                                              Operator::shared_ptr volumeOperator,
                                              std::shared_ptr<ElementPhysicsModel> )
@@ -1168,7 +1168,7 @@ OperatorBuilder::createMassMatrixCorrection( AMP::Mesh::Mesh::shared_ptr meshAda
 
 
 std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinMatrixCorrection(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     Operator::shared_ptr volumeOperator,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
@@ -1191,7 +1191,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinMatrixCorrection(
 
 
 std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinVectorCorrection(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     Operator::shared_ptr volumeOperator,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
@@ -1212,7 +1212,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createRobinVectorCorrection(
 
 
 std::shared_ptr<BoundaryOperator> OperatorBuilder::createNeumannVectorCorrection(
-    AMP::Mesh::Mesh::shared_ptr meshAdapter,
+    std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
     std::shared_ptr<AMP::Database> input_db,
     Operator::shared_ptr volumeOperator,
     std::shared_ptr<ElementPhysicsModel> elementPhysicsModel )
@@ -1233,7 +1233,7 @@ std::shared_ptr<BoundaryOperator> OperatorBuilder::createNeumannVectorCorrection
 
 
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                                   std::shared_ptr<AMP::Database> input_db,
                                                   Operator::shared_ptr volumeOperator,
                                                   std::shared_ptr<ElementPhysicsModel> )
@@ -1247,7 +1247,7 @@ OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr me
 
 
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createDirichletVectorCorrection( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                                   std::shared_ptr<AMP::Database> input_db,
                                                   std::shared_ptr<ElementPhysicsModel> )
 {
@@ -1259,7 +1259,7 @@ OperatorBuilder::createDirichletVectorCorrection( AMP::Mesh::Mesh::shared_ptr me
 
 
 std::shared_ptr<BoundaryOperator>
-OperatorBuilder::createPressureBoundaryOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter,
+OperatorBuilder::createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                                  std::shared_ptr<AMP::Database> input_db,
                                                  std::shared_ptr<ElementPhysicsModel> )
 {
@@ -1269,10 +1269,11 @@ OperatorBuilder::createPressureBoundaryOperator( AMP::Mesh::Mesh::shared_ptr mes
 }
 
 
-std::shared_ptr<Operator> OperatorBuilder::createOperator( AMP::Mesh::Mesh::shared_ptr meshAdapter1,
-                                                           AMP::Mesh::Mesh::shared_ptr meshAdapter2,
-                                                           const AMP::AMP_MPI &comm,
-                                                           std::shared_ptr<AMP::Database> input_db )
+std::shared_ptr<Operator>
+OperatorBuilder::createOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter1,
+                                 std::shared_ptr<AMP::Mesh::Mesh> meshAdapter2,
+                                 const AMP::AMP_MPI &comm,
+                                 std::shared_ptr<AMP::Database> input_db )
 {
     std::shared_ptr<Operator> retOperator;
     std::string name = input_db->getString( "name" );

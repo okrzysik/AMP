@@ -3,9 +3,12 @@
 #define included_AMP_HDF5_h
 
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/ArraySize.h"
 
+#include <cstddef>
 #include <cstring>
+#include <memory>
 #include <string_view>
 
 
@@ -15,7 +18,7 @@
     #include "hdf5.h"
 #else
 // Not using HDF5
-typedef int hid_t;
+typedef int64_t hid_t;
 typedef size_t hsize_t;
 #endif
 
@@ -33,7 +36,7 @@ enum class Compression : uint8_t { None, GZIP, SZIP };
  * @param[in] filename  File to open
  * @param[in] mode      C string containing a file access mode. It can be:
  *                      "r"    read: Open file for input operations. The file must exist.
- *                      "w"    write: Create an empty file for output operations.
+ *                      "w"    write: Create an empty file for output operations. <cstddef>
  *                          If a file with the same name already exists, its contents
  *                          are discarded and the file is treated as a new empty file.
  *                      "rw" read+write: Open file for reading and writing.  The file must exist.
@@ -101,6 +104,43 @@ void readHDF5( hid_t fid, const std::string_view &name, T &data );
 
 
 /**
+ * \brief Read a structure from HDF5
+ * \details This function reads a C++ class/struct from HDF5.
+ *    This is a templated function and users can implement their own data
+ *    types by creating explicit instantiations for a given type.
+ *    There is no default instantiation except when compiled without HDF5 which is a no-op.
+ * @param[in] fid       File or group to read from
+ * @param[in] name      The name of the variable
+ * @param[in] comm      The communicator of the object
+ */
+template<class T>
+std::unique_ptr<T>
+readHDF5( hid_t fid, const std::string_view &name, AMP_MPI comm = AMP_COMM_SELF );
+
+
+/**
+ * \brief Write data to HDF5
+ * \details This function writes a fixed number of bytes from HDF5.
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the variable
+ * @param[in] N_bytes   The number of bytes to write
+ * @param[in] data      The data to write
+ */
+void writeHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, const void *data );
+
+
+/**
+ * \brief Read data from HDF5
+ * \details This function reads a fixed number of bytes from HDF5.
+ * @param[in] fid       File or group to write to
+ * @param[in] name      The name of the variable
+ * @param[in] N_bytes   The number of bytes to write
+ * @param[out] data     The data to read
+ */
+void readHDF5( hid_t fid, const std::string_view &name, size_t N_bytes, void *data );
+
+
+/**
  * \brief Check if group exists
  * \details This function checks if an HDF5 group exists in the file
  * @param[in] fid       ID of group or database to read
@@ -150,18 +190,6 @@ void closeGroup( hid_t fid );
  */
 template<class T>
 hid_t getHDF5datatype();
-
-
-// Default no-op implementations for use without HDF5
-// clang-format off
-#ifndef AMP_USE_HDF5
-template<class T> void readHDF5( hid_t, const std::string_view&, T& ) {}
-template<class T> void writeHDF5( hid_t, const std::string_view&, const T& ) {}
-template<class T> void readHDF5Array( hid_t, const std::string_view&, AMP::Array<T>& ) {}
-template<class T> void writeHDF5Array( hid_t, const std::string_view&, const AMP::Array<T>& ) {}
-template<class T> hid_t getHDF5datatype() { return 0; }
-#endif
-// clang-format on
 
 
 } // namespace AMP

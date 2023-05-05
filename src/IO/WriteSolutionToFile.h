@@ -4,7 +4,7 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/vectors/Vector.h"
 
-void printSolution( AMP::Mesh::Mesh::shared_ptr mesh,
+void printSolution( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                     AMP::LinearAlgebra::Vector::shared_ptr solVec,
                     const std::string &name );
 

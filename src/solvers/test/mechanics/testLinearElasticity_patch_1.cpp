@@ -14,7 +14,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
@@ -68,8 +67,8 @@ static void linearElasticTest( AMP::UnitTest *ut, const std::string &exeName )
 
         AMP::LinearAlgebra::Vector::shared_ptr nullVec;
         auto mechSolVec = AMP::LinearAlgebra::createVector( dofMap, var, true );
-        auto mechRhsVec = mechSolVec->cloneVector();
-        auto mechResVec = mechSolVec->cloneVector();
+        auto mechRhsVec = mechSolVec->clone();
+        auto mechResVec = mechSolVec->clone();
 
         mechSolVec->setToScalar( 0.5 );
         mechRhsVec->setToScalar( 0.0 );

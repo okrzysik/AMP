@@ -1,10 +1,8 @@
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperator.h"
-
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/StructuredMeshHelper.h"
 #include "AMP/operators/subchannel/CoupledChannelToCladMapOperatorParameters.h"
 #include "AMP/operators/subchannel/SubchannelConstants.h"
-
-#include "AMP/mesh/StructuredMeshHelper.h"
-#include "AMP/utils/Utilities.h"
 
 
 namespace AMP::Operator {
@@ -26,7 +24,7 @@ CoupledChannelToCladMapOperator::CoupledChannelToCladMapOperator(
         AMP_ASSERT( d_subchannelPhysicsModel != nullptr );
     }
     if ( d_subchannelTemperature ) {
-        d_subchannelDensity = d_subchannelTemperature->cloneVector();
+        d_subchannelDensity = d_subchannelTemperature->clone();
         std::shared_ptr<AMP::LinearAlgebra::Variable> densityVariable(
             new AMP::LinearAlgebra::Variable( "Density" ) );
         d_subchannelDensity->setVariable( densityVariable );

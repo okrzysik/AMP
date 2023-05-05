@@ -13,7 +13,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -72,7 +71,7 @@ static void LinearTimeOperatorTest( AMP::UnitTest *ut )
 
     auto massMat = massOperator->getMatrix();
     auto diffMat = linearOperator->getMatrix();
-    auto sinMat  = diffMat->cloneMatrix();
+    auto sinMat  = diffMat->clone();
     sinMat->makeConsistent();
     sinMat->zero();
 

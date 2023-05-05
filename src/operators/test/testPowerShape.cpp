@@ -8,7 +8,6 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -56,7 +55,7 @@ static void test_with_shape( AMP::UnitTest *ut, const std::string &exeName )
     // Create a vector associated with the Variable
     auto SpecificPowerShapeVec =
         AMP::LinearAlgebra::createVector( dof_map, SpecificPowerShapeVar, split );
-    auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->cloneVector();
+    auto SpecificPowerMagnitudeVec = SpecificPowerShapeVec->clone();
     SpecificPowerMagnitudeVec->setToScalar( 4157. );
 
     // Set the initial value for all nodes of SpecificPowerVec to zero

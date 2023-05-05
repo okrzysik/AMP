@@ -21,6 +21,7 @@
 #ifdef USE_CUDA
     #include <cuda.h>
     #include <cuda_runtime_api.h>
+    #include "AMP/utils/cuda/helper_cuda.h"
 #endif
 #ifdef AMP_USE_PETSC
     #include "petsc.h"
@@ -161,10 +162,6 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     if ( abort_stackType == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
     StackTrace::setDefaultStackType( static_cast<StackTrace::printStackType>( abort_stackType ) );
-    // Initialize cuda
-    start_CUDA();
-    // Initialize Kokkos
-    start_Kokkos( argc, argv );
     // Set the signal/terminate handlers
     StackTrace::Utilities::setErrorHandlers();
     setHandlers();
@@ -300,12 +297,12 @@ public:
     static constexpr bool value = sizeof( test<T>( 0 ) ) == sizeof( char );
 };
 template<typename T>
-typename std::enable_if<hasClearTimers<T>::value, void>::type clearTimers( const T &obj )
+typename std::enable_if_t<hasClearTimers<T>::value, void> clearTimers( const T &obj )
 {
     obj.clearTimers();
 }
 template<typename T>
-typename std::enable_if<!hasClearTimers<T>::value, void>::type clearTimers( const T & )
+typename std::enable_if_t<!hasClearTimers<T>::value, void> clearTimers( const T & )
 {
 }
 double AMPManager::start_SAMRAI()
@@ -398,7 +395,7 @@ double AMPManager::start_CUDA()
     }
 
     void *tmp;
-    cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal );
+    checkCudaErrors( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
     cudaFree( tmp );
 #endif
     return 0;

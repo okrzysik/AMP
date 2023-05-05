@@ -1,6 +1,5 @@
 #include "AMP/operators/subchannel/CoupledFlowFrapconOperator.h"
 #include "AMP/operators/subchannel/CoupledFlowFrapconOperatorParameters.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
 
 

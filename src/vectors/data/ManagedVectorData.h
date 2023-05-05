@@ -65,7 +65,7 @@ public: // Derived from VectorData
     void getRawData( void *, const typeID & ) const override;
     UpdateState getUpdateStatus() const override;
     void setUpdateStatus( UpdateState state ) override;
-    bool isType( const typeID &, size_t ) const;
+    typeID getType( size_t ) const override;
     uint64_t getDataID() const override
     {
         return reinterpret_cast<uint64_t>( getRawDataBlockAsVoid( 0 ) );
@@ -73,7 +73,7 @@ public: // Derived from VectorData
     size_t sizeofDataBlockType( size_t ) const override { return sizeof( double ); }
     std::string VectorDataName() const override;
     void swapData( VectorData & ) override;
-
+    void assemble() override;
     void dataChanged() override;
 
     std::shared_ptr<VectorData> cloneData() const override;

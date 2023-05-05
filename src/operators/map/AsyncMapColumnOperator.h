@@ -59,7 +59,7 @@ public:
      *
      */
     template<typename MAP_TYPE>
-    static std::shared_ptr<AsyncMapColumnOperator> build( AMP::Mesh::Mesh::shared_ptr manager,
+    static std::shared_ptr<AsyncMapColumnOperator> build( std::shared_ptr<AMP::Mesh::Mesh> manager,
                                                           std::shared_ptr<AMP::Database> database );
 
     //@ Function to determine if a makeConsistentSet is required

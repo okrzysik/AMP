@@ -48,7 +48,10 @@ void PelletStackOperator::reset( std::shared_ptr<const OperatorParameters> param
     d_currentPellet = myParams->d_currentPellet;
 }
 
-std::vector<AMP::Mesh::Mesh::shared_ptr> PelletStackOperator::getLocalMeshes() { return d_meshes; }
+std::vector<std::shared_ptr<AMP::Mesh::Mesh>> PelletStackOperator::getLocalMeshes()
+{
+    return d_meshes;
+}
 
 std::vector<unsigned int> PelletStackOperator::getLocalPelletIds() { return d_pelletIds; }
 

@@ -8,8 +8,6 @@
 // AMP files
 #include "AMP/operators/ElementOperation.h"
 #include "AMP/operators/libmesh/SourcePhysicsModel.h"
-#include "AMP/utils/Utilities.h"
-
 
 // Libmesh headers
 DISABLE_WARNINGS

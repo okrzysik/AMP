@@ -2,7 +2,6 @@
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
 #include "AMP/operators/LinearOperator.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
 #include "ProfilerApp.h"
@@ -542,7 +541,7 @@ void TrilinosMueLuSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vecto
     double initialResNorm = 0., finalResNorm = 0.;
 
     if ( computeResidual ) {
-        r = f->cloneVector();
+        r = f->clone();
         d_pOperator->residual( f, u, r );
         initialResNorm = static_cast<double>( r->L2Norm() );
 

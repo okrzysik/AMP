@@ -71,7 +71,7 @@ void run( AMP::UnitTest &ut )
     secondVec->setCommunicationList( commList );
 
     auto rhsVec = AMP::LinearAlgebra::joinVectors( firstVec, secondVec );
-    auto solVec = rhsVec->cloneVector();
+    auto solVec = rhsVec->clone();
 
     std::cout << "Constructed Vectors." << std::endl;
 

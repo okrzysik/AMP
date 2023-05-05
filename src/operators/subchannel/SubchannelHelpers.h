@@ -17,7 +17,7 @@ namespace AMP::Operator::Subchannel {
  * \brief Function to get the number of subchannels from the mesh
  * \param[in] subchannel   The subchannel mesh
  */
-size_t getNumberOfSubchannels( AMP::Mesh::Mesh::shared_ptr subchannel );
+size_t getNumberOfSubchannels( std::shared_ptr<AMP::Mesh::Mesh> subchannel );
 
 
 /**
@@ -26,8 +26,8 @@ size_t getNumberOfSubchannels( AMP::Mesh::Mesh::shared_ptr subchannel );
  * \param[in] i            The x-index of the subchannel of interest
  * \param[in] j            The y-index of the subchannel of interest
  */
-AMP::Mesh::Mesh::shared_ptr
-subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j );
+std::shared_ptr<AMP::Mesh::Mesh>
+subsetForSubchannel( std::shared_ptr<AMP::Mesh::Mesh> subchannel, size_t i, size_t j );
 
 
 /**
@@ -47,7 +47,7 @@ subsetForSubchannel( AMP::Mesh::Mesh::shared_ptr subchannel, size_t i, size_t j 
  * \param[out] rod_diameter  The average rod diameter for each subchannel (Nx x Ny)
  * \param[out] channel_fraction  The fraction of the rod in each subchannel (Nx x Ny)
  */
-void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
+void getSubchannelProperties( std::shared_ptr<AMP::Mesh::Mesh> subchannel,
                               const std::vector<double> &clad_x,
                               const std::vector<double> &clad_y,
                               const std::vector<double> &clad_d,
@@ -71,7 +71,7 @@ void getSubchannelProperties( AMP::Mesh::Mesh::shared_ptr subchannel,
  * \param[out] diam        The diameters of the clad
  */
 void getCladProperties( AMP::AMP_MPI comm,
-                        AMP::Mesh::Mesh::shared_ptr clad,
+                        std::shared_ptr<AMP::Mesh::Mesh> clad,
                         std::vector<double> &x,
                         std::vector<double> &y,
                         std::vector<double> &diam );
@@ -142,8 +142,10 @@ std::vector<double> getHeatFluxClad( std::vector<double> z,
  * subchannel, may be
  * comm_world)
  */
-AMP::LinearAlgebra::Vector::shared_ptr getCladHydraulicDiameter(
-    AMP::Mesh::Mesh::shared_ptr clad, AMP::Mesh::Mesh::shared_ptr subchannel, AMP::AMP_MPI comm );
+AMP::LinearAlgebra::Vector::shared_ptr
+getCladHydraulicDiameter( std::shared_ptr<AMP::Mesh::Mesh> clad,
+                          std::shared_ptr<AMP::Mesh::Mesh> subchannel,
+                          AMP::AMP_MPI comm );
 } // namespace AMP::Operator::Subchannel
 
 #endif

@@ -2,7 +2,6 @@
 #define included_AMP_ThyraVectorWrapper
 
 // AMP includes
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/trilinos/thyra/ThyraVector.h"
 
@@ -53,7 +52,7 @@ public:
     size_t numColumns() const;
 
     //! Get the DOF Manager for the vector (all vectors must share compatible DOFManagers)
-    AMP::Discretization::DOFManager::const_shared_ptr getDOFManager() const
+    std::shared_ptr<const AMP::Discretization::DOFManager> getDOFManager() const
     {
         return d_vecs[0]->getDOFManager();
     }

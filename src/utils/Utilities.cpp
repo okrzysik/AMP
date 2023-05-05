@@ -1,7 +1,8 @@
 #define NOMINMAX
-#include "AMP/utils/Utilities.h"
+#include "AMP/utils/Utilities.hpp"
 #include "AMP/AMP_TPLs.h"
 #include "AMP/IO/PIO.h"
+#include "AMP/mesh/MeshID.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -51,7 +52,7 @@
 // clang-format on
 
 
-namespace AMP {
+namespace AMP::Utilities {
 
 
 // Mutex for Utility functions
@@ -61,7 +62,7 @@ static std::mutex Utilities_mutex;
 /*
  * Routine to convert an integer to a string.
  */
-std::string Utilities::intToString( int num, int min_width )
+std::string intToString( int num, int min_width )
 {
     int tmp_width = ( min_width > 0 ? min_width : 1 );
     std::ostringstream os;
@@ -71,25 +72,25 @@ std::string Utilities::intToString( int num, int min_width )
         os << std::setw( tmp_width ) << std::setfill( '0' ) << num;
     }
     os << std::flush;
-    return ( os.str() );
+    return os.str();
 }
-std::string Utilities::nodeToString( int num ) { return intToString( num, 5 ); }
-std::string Utilities::processorToString( int num ) { return intToString( num, 5 ); }
-std::string Utilities::patchToString( int num ) { return intToString( num, 4 ); }
-std::string Utilities::levelToString( int num ) { return intToString( num, 4 ); }
-std::string Utilities::blockToString( int num ) { return intToString( num, 4 ); }
+std::string nodeToString( int num ) { return intToString( num, 5 ); }
+std::string processorToString( int num ) { return intToString( num, 5 ); }
+std::string patchToString( int num ) { return intToString( num, 4 ); }
+std::string levelToString( int num ) { return intToString( num, 4 ); }
+std::string blockToString( int num ) { return intToString( num, 4 ); }
 
 
 /****************************************************************************
  *  Basic checks                                                             *
  ****************************************************************************/
-static_assert( AMP::Utilities::getOS() != AMP::Utilities::OS::Unknown );
+static_assert( getOS() != OS::Unknown );
 
 
 /****************************************************************************
  *  Function to set an environemental variable                               *
  ****************************************************************************/
-void Utilities::setenv( const char *name, const char *value )
+void setenv( const char *name, const char *value )
 {
     Utilities_mutex.lock();
 #if defined( WIN32 ) || defined( _WIN32 ) || defined( WIN64 ) || defined( _WIN64 ) || \
@@ -112,7 +113,7 @@ void Utilities::setenv( const char *name, const char *value )
         AMP_ERROR( msg );
     }
 }
-std::string Utilities::getenv( const char *name )
+std::string getenv( const char *name )
 {
     std::string var;
     Utilities_mutex.lock();
@@ -125,148 +126,10 @@ std::string Utilities::getenv( const char *name )
 
 
 /****************************************************************************
- *  Filesystem utilities                                                     *
- ****************************************************************************/
-bool Utilities::fileExists( const std::string &filename )
-{
-    std::ifstream ifile( filename.c_str() );
-    return ifile.good();
-}
-
-std::string Utilities::path( const std::string &filename )
-{
-    size_t pos = 0;
-    if ( filename.find_last_of( 47 ) != std::string::npos )
-        pos = filename.find_last_of( 47 );
-    if ( filename.find_last_of( 92 ) != std::string::npos )
-        pos = std::max( pos, filename.find_last_of( 92 ) );
-    return filename.substr( 0, pos );
-}
-
-std::string Utilities::filename( const std::string &filename )
-{
-    size_t pos = 0;
-    if ( filename.find_last_of( 47 ) != std::string::npos )
-        pos = filename.find_last_of( 47 );
-    if ( filename.find_last_of( 92 ) != std::string::npos )
-        pos = std::max( pos, filename.find_last_of( 92 ) );
-    if ( pos != 0 )
-        return filename.substr( pos + 1 );
-    return filename;
-}
-
-void Utilities::renameFile( const std::string &old_filename, const std::string &new_filename )
-{
-    AMP_ASSERT( !old_filename.empty() );
-    AMP_ASSERT( !new_filename.empty() );
-    rename( old_filename.c_str(), new_filename.c_str() );
-}
-
-void Utilities::deleteFile( const std::string &filename )
-{
-    AMP_ASSERT( !filename.empty() );
-    if ( fileExists( filename ) ) {
-        int error = remove( filename.c_str() );
-        AMP_INSIST( error == 0, "Error deleting file" );
-    }
-}
-size_t Utilities::fileSize( const std::string &filename )
-{
-    AMP_ASSERT( !filename.empty() );
-    if ( !fileExists( filename ) )
-        return 0;
-    auto f = fopen( filename.data(), "rb" );
-    fseek( f, 0, SEEK_END );
-    size_t bytes = ftell( f );
-    fclose( f );
-    return bytes;
-}
-std::string Utilities::getSuffix( const std::string &filename )
-{
-    size_t pos = filename.rfind( '.' );
-    if ( pos == std::string::npos )
-        return std::string();
-    std::string suffix = filename.substr( pos + 1 );
-    for ( auto &c : suffix )
-        c = std::tolower( c );
-    return suffix;
-}
-
-void Utilities::recursiveMkdir( const std::string &path, mode_t mode, bool only_node_zero_creates )
-{
-    AMP_MPI comm = AMP_MPI( AMP_COMM_WORLD );
-    if ( ( !only_node_zero_creates ) || ( comm.getRank() == 0 ) ) {
-        auto length    = (int) path.length();
-        auto *path_buf = new char[length + 1];
-        memcpy( path_buf, path.data(), length );
-        path_buf[length] = '\0';
-        struct stat status;
-        int pos = length - 1;
-        // find part of path that has not yet been created
-        while ( ( stat( path_buf, &status ) != 0 ) && ( pos >= 0 ) ) {
-            // slide backwards in string until next slash found
-            bool slash_found = false;
-            while ( ( !slash_found ) && ( pos >= 0 ) ) {
-                if ( path_buf[pos] == '/' || path_buf[pos] == 92 ) {
-                    slash_found = true;
-                    if ( pos >= 0 )
-                        path_buf[pos] = '\0';
-                } else
-                    pos--;
-            }
-        }
-        // if there is a part of the path that already exists make sure it is really a directory
-        if ( pos >= 0 ) {
-            if ( !S_ISDIR( status.st_mode ) ) {
-                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           "    Cannot create directories in path = " +
-                           path +
-                           "\n    because some intermediate item in path exists and"
-                           "is NOT a directory" );
-            }
-        }
-        // make all directories that do not already exist
-        if ( pos < 0 ) {
-            if ( mkdir( path_buf, mode ) != 0 ) {
-                AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                           "    Cannot create directory  = " +
-                           std::string( path_buf ) );
-            }
-            pos = 0;
-        }
-        // make rest of directories
-        do {
-            // slide forward in string until next '\0' found
-            bool null_found = false;
-            while ( ( !null_found ) && ( pos < length ) ) {
-                if ( path_buf[pos] == '\0' ) {
-                    null_found    = true;
-                    path_buf[pos] = '/';
-                }
-                pos++;
-            }
-            // make directory if not at end of path
-            if ( pos < length ) {
-                if ( mkdir( path_buf, mode ) != 0 ) {
-                    AMP_ERROR( "Error in Utilities::recursiveMkdir...\n"
-                               "    Cannot create directory  = " +
-                               std::string( path_buf ) );
-                }
-            }
-        } while ( pos < length );
-        delete[] path_buf;
-    }
-    // Make sure all processors wait until node zero creates the directory structure.
-    if ( only_node_zero_creates )
-        comm.barrier();
-}
-
-
-/****************************************************************************
  *  Print AMP Banner                                                         *
  ****************************************************************************/
 // clang-format off
-void Utilities::printBanner()
+void printBanner()
 {
     constexpr char banner[] =
         R"(            _____                    _____                    _____)" "\n"
@@ -298,7 +161,7 @@ void Utilities::printBanner()
 /****************************************************************************
  *  Prime number functions                                                   *
  ****************************************************************************/
-std::vector<int> Utilities::factor( uint64_t n )
+std::vector<int> factor( uint64_t n )
 {
     // Handle trival case
     if ( n <= 3 )
@@ -342,7 +205,7 @@ std::vector<int> Utilities::factor( uint64_t n )
     }
     return std::vector<int>( factors, factors + N );
 }
-bool Utilities::isPrime( uint64_t n )
+bool isPrime( uint64_t n )
 {
     if ( n <= 3 )
         return true;
@@ -357,7 +220,7 @@ bool Utilities::isPrime( uint64_t n )
     }
     return true;
 }
-std::vector<uint64_t> Utilities::primes( uint64_t n )
+std::vector<uint64_t> primes( uint64_t n )
 {
     // Handle special cases
     if ( n < 2 )
@@ -406,12 +269,12 @@ std::vector<uint64_t> Utilities::primes( uint64_t n )
 
 
 // Function to perform linear interpolation
-double Utilities::linear( const std::vector<double> &x, const std::vector<double> &f, double xi )
+double linear( const std::vector<double> &x, const std::vector<double> &f, double xi )
 {
     size_t Nx = x.size();
     AMP_ASSERT( Nx > 1 );
     AMP_ASSERT( f.size() == Nx );
-    size_t i = AMP::Utilities::findfirst( x, xi );
+    size_t i = findfirst( x, xi );
     if ( i == 0 ) {
         i = 1;
     }
@@ -424,18 +287,18 @@ double Utilities::linear( const std::vector<double> &x, const std::vector<double
 
 
 // Function to perform bi-linear interpolation
-double Utilities::bilinear( const std::vector<double> &x,
-                            const std::vector<double> &y,
-                            const std::vector<double> &f,
-                            double xi,
-                            double yi )
+double bilinear( const std::vector<double> &x,
+                 const std::vector<double> &y,
+                 const std::vector<double> &f,
+                 double xi,
+                 double yi )
 {
     size_t Nx = x.size();
     size_t Ny = y.size();
     AMP_ASSERT( Nx > 1 && Ny > 1 );
     AMP_ASSERT( f.size() == Nx * Ny );
-    size_t i = AMP::Utilities::findfirst( x, xi );
-    size_t j = AMP::Utilities::findfirst( y, yi );
+    size_t i = findfirst( x, xi );
+    size_t j = findfirst( y, yi );
     if ( i == 0 ) {
         i = 1;
     }
@@ -461,22 +324,22 @@ double Utilities::bilinear( const std::vector<double> &x,
 
 
 // Function to perform tri-linear interpolation
-double Utilities::trilinear( const std::vector<double> &x,
-                             const std::vector<double> &y,
-                             const std::vector<double> &z,
-                             const std::vector<double> &f,
-                             double xi,
-                             double yi,
-                             double zi )
+double trilinear( const std::vector<double> &x,
+                  const std::vector<double> &y,
+                  const std::vector<double> &z,
+                  const std::vector<double> &f,
+                  double xi,
+                  double yi,
+                  double zi )
 {
     size_t Nx = x.size();
     size_t Ny = y.size();
     size_t Nz = z.size();
     AMP_ASSERT( Nx > 1 && Ny > 1 && Nz > 1 );
     AMP_ASSERT( f.size() == Nx * Ny * Nz );
-    size_t i = AMP::Utilities::findfirst( x, xi );
-    size_t j = AMP::Utilities::findfirst( y, yi );
-    size_t k = AMP::Utilities::findfirst( z, zi );
+    size_t i = findfirst( x, xi );
+    size_t j = findfirst( y, yi );
+    size_t k = findfirst( z, zi );
     if ( i == 0 ) {
         i = 1;
     }
@@ -516,7 +379,7 @@ double Utilities::trilinear( const std::vector<double> &x,
 
 
 // Dummy function to prevent compiler from optimizing away variable
-void Utilities::nullUse( void *data ) { NULL_USE( data ); }
+void nullUse( void *data ) { NULL_USE( data ); }
 
 
 // Function to demangle a string (e.g. from typeid)
@@ -524,7 +387,7 @@ void Utilities::nullUse( void *data ) { NULL_USE( data ); }
     #define USE_ABI
     #include <cxxabi.h>
 #endif
-std::string Utilities::demangle( const std::string &name )
+std::string demangle( const std::string &name )
 {
     std::string out;
 #ifdef __GNUC__
@@ -555,10 +418,34 @@ static void printVar( const std::string &name,
     }
     os << std::endl;
 }
-void Utilities::printDatabase( const Database &db, std::ostream &os, const std::string &indent )
+void printDatabase( const Database &db, std::ostream &os, const std::string &indent )
 {
     db.print( os, indent );
 }
 
 
-} // namespace AMP
+} // namespace AMP::Utilities
+
+
+/************************************************************************
+ * Explicit instantiations                                               *
+ ************************************************************************/
+#define INSTANTIATE( TYPE )                                                            \
+    template std::string AMP::Utilities::to_string<TYPE>( std::vector<TYPE> const & ); \
+    template void AMP::Utilities::quicksort<TYPE>( size_t, TYPE * );                   \
+    template void AMP::Utilities::quicksort<TYPE, TYPE>( size_t, TYPE *, TYPE * );     \
+    template void AMP::Utilities::unique<TYPE>( std::vector<TYPE> & );                 \
+    template void AMP::Utilities::unique<TYPE>(                                        \
+        std::vector<TYPE> &, std::vector<size_t> &, std::vector<size_t> & );           \
+    template size_t AMP::Utilities::findfirst<TYPE>( size_t, const TYPE *, const TYPE & )
+INSTANTIATE( int8_t );
+INSTANTIATE( int16_t );
+INSTANTIATE( int32_t );
+INSTANTIATE( int64_t );
+INSTANTIATE( uint8_t );
+INSTANTIATE( uint16_t );
+INSTANTIATE( uint32_t );
+INSTANTIATE( uint64_t );
+INSTANTIATE( float );
+INSTANTIATE( double );
+INSTANTIATE( long double );

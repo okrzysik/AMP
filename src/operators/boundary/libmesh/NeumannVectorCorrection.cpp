@@ -1,4 +1,6 @@
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrection.h"
+#include "AMP/discretization/DOF_Manager.h"
+#include "AMP/mesh/Mesh.h"
 #include "AMP/operators/boundary/libmesh/NeumannVectorCorrectionParameters.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
@@ -121,7 +123,7 @@ void NeumannVectorCorrection::addRHScorrection(
 
     auto gammaValue = ( d_params->d_db )->getWithDefault<double>( "gamma", 1.0 );
 
-    AMP::LinearAlgebra::Vector::shared_ptr rInternal            = myRhs->cloneVector();
+    AMP::LinearAlgebra::Vector::shared_ptr rInternal            = myRhs->clone();
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager = rInternal->getDOFManager();
     rInternal->zero();
 

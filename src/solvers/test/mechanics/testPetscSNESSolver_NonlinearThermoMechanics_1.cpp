@@ -20,7 +20,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/MultiVector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/VectorSelector.h"
@@ -96,15 +95,15 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     multiVec->addVector( displacementVec );
     multiVec->addVector( temperatureVec );
 
-    auto rhsVec = solVec->cloneVector();
-    auto resVec = solVec->cloneVector();
+    auto rhsVec = solVec->clone();
+    auto resVec = solVec->clone();
 
     siloWriter->registerVector(
         displacementVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "MechanicsSolution" );
     siloWriter->registerVector(
         temperatureVec, meshAdapter, AMP::Mesh::GeomType::Vertex, "ThermalSolution" );
 
-    auto referenceTemperatureVec = temperatureVec->cloneVector();
+    auto referenceTemperatureVec = temperatureVec->clone();
     referenceTemperatureVec->setToScalar( 300.0 );
     mechanicsVolumeOperator->setReferenceTemperature( referenceTemperatureVec );
 

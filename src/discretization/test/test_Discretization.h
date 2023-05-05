@@ -204,7 +204,7 @@ void testMultiDOFManager( AMP::UnitTest *ut )
 
     // Create a multiDOFManager with repeated mesh elements and make sure the iterator only iterates
     // once through each element
-    std::vector<AMP::Discretization::DOFManager::shared_ptr> managers( 2, DOFs );
+    std::vector<std::shared_ptr<AMP::Discretization::DOFManager>> managers( 2, DOFs );
     auto DOF2 = std::make_shared<AMP::Discretization::multiDOFManager>( DOFs->getComm(), managers );
     auto iterator1 = DOFs->getIterator();
     auto iterator2 = DOF2->getIterator();

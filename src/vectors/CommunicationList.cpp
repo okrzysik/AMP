@@ -18,7 +18,10 @@ CommunicationListParameters::CommunicationListParameters() : d_comm( AMP_COMM_NU
     d_localsize = (size_t) -1;
 }
 CommunicationListParameters::CommunicationListParameters( const CommunicationListParameters &rhs )
-    : d_comm( rhs.d_comm ), d_localsize( rhs.d_localsize ), d_remote_DOFs( rhs.d_remote_DOFs )
+    : ParameterBase(),
+      d_comm( rhs.d_comm ),
+      d_localsize( rhs.d_localsize ),
+      d_remote_DOFs( rhs.d_remote_DOFs )
 {
 }
 CommunicationList::CommunicationList() : d_iBegin( 0 ), d_iNumRows( 0 ), d_iTotalRows( 0 ) {}

@@ -22,7 +22,6 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/Variable.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
@@ -101,9 +100,9 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto TemperatureInKelvinVec = AMP::LinearAlgebra::createVector(
         nodalDofMap, diffusionOperator->getOutputVariable(), split );
-    auto RightHandSideVec = TemperatureInKelvinVec->cloneVector();
-    auto ResidualVec      = TemperatureInKelvinVec->cloneVector();
-    auto variableFluxVec  = TemperatureInKelvinVec->cloneVector();
+    auto RightHandSideVec = TemperatureInKelvinVec->clone();
+    auto ResidualVec      = TemperatureInKelvinVec->clone();
+    auto variableFluxVec  = TemperatureInKelvinVec->clone();
 
     RightHandSideVec->zero();
     variableFluxVec->zero();
@@ -239,8 +238,8 @@ void linearRobinTest( AMP::UnitTest *ut, const std::string &exeName )
     double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    auto diffVec  = TemperatureInKelvinVec->cloneVector();
-    auto exactVec = TemperatureInKelvinVec->cloneVector();
+    auto diffVec  = TemperatureInKelvinVec->clone();
+    auto exactVec = TemperatureInKelvinVec->clone();
 
     diffVec->zero();
     exactVec->zero();

@@ -2,7 +2,6 @@
 #define included_AMP_SolverStrategyParameters
 
 #include "AMP/operators/Operator.h"
-#include "AMP/utils/Database.h"
 #include "AMP/utils/ParameterBase.h"
 #include <memory>
 
@@ -35,13 +34,6 @@ public:
      * Destructor.
      */
     virtual ~SolverStrategyParameters();
-
-    /**
-     *  Pointer to database object which needs to be initialized specific to the solver.
-     *  Documentation for parameters required by each solver can be found in the
-     *  documentation for the solver.
-     */
-    std::shared_ptr<AMP::Database> d_db = nullptr;
 
     AMP_MPI d_comm;
 

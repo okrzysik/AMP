@@ -7,14 +7,13 @@
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/UnitTest.h"
-#include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorBuilder.h"
-#include <memory>
-#include <utils/Database.h>
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <utils/Database.h>
 
 
 static void myTest( AMP::UnitTest *ut )

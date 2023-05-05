@@ -1,14 +1,8 @@
-/*
- * DiffusionTransportModel.cc
- *
- *  Created on: Jul 8, 2010
- *      Author: gad
- */
-
 #include "DiffusionTransportTensorModel.h"
 #include "AMP/utils/Database.h"
-#include "AMP/utils/Utilities.h"
+
 #include <cmath>
+
 
 namespace AMP::Operator {
 

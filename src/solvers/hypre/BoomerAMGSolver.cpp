@@ -1,5 +1,5 @@
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
-
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
@@ -230,7 +230,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
     // 6.2.50 in hypre 11.2 manual
     if ( db->keyExists( "add_P_max_elmts" ) ) {
-        d_add_P_max_elmts = db->getScalar<double>( "add_P_max_elmts" );
+        d_add_P_max_elmts = db->getScalar<int>( "add_P_max_elmts" );
         HYPRE_BoomerAMGSetMultAddPMaxElmts( d_solver, d_add_P_max_elmts );
     }
 
@@ -551,7 +551,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     std::shared_ptr<AMP::LinearAlgebra::Vector> r;
 
     if ( d_bComputeResidual ) {
-        r = f->cloneVector();
+        r = f->clone();
         d_pOperator->residual( f, u, r );
         const auto initialResNorm = r->L2Norm();
 
