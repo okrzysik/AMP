@@ -65,11 +65,11 @@ Vector::shared_ptr NativePetscMatrixData::getLeftVector() const
     MatCreateVecs( d_Mat, PETSC_NULL, &a );
     return createVector( a, true );
 }
-Discretization::DOFManager::shared_ptr NativePetscMatrixData::getRightDOFManager() const
+std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getRightDOFManager() const
 {
     return getRightVector()->getDOFManager();
 }
-Discretization::DOFManager::shared_ptr NativePetscMatrixData::getLeftDOFManager() const
+std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getLeftDOFManager() const
 {
     return getLeftVector()->getDOFManager();
 }

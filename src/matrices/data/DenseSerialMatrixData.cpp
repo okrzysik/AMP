@@ -24,7 +24,13 @@ DenseSerialMatrixData::DenseSerialMatrixData( std::shared_ptr<MatrixParameters> 
     memset( d_M, 0, d_rows * d_cols * sizeof( double ) );
 }
 
-DenseSerialMatrixData::~DenseSerialMatrixData() { delete[] d_M; }
+DenseSerialMatrixData::~DenseSerialMatrixData()
+{
+    if ( d_M ) {
+        delete[] d_M;
+        d_M = nullptr;
+    }
+}
 
 std::shared_ptr<MatrixData> DenseSerialMatrixData::cloneMatrixData() const
 {
@@ -114,11 +120,11 @@ std::vector<size_t> DenseSerialMatrixData::getColumnIDs( size_t row ) const
  * Get the left/right DOFManagers                       *
  ********************************************************/
 
-Discretization::DOFManager::shared_ptr DenseSerialMatrixData::getRightDOFManager() const
+std::shared_ptr<Discretization::DOFManager> DenseSerialMatrixData::getRightDOFManager() const
 {
     return d_DOFManagerRight;
 }
-Discretization::DOFManager::shared_ptr DenseSerialMatrixData::getLeftDOFManager() const
+std::shared_ptr<Discretization::DOFManager> DenseSerialMatrixData::getLeftDOFManager() const
 {
     return d_DOFManagerLeft;
 }

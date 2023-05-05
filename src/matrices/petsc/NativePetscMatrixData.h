@@ -30,9 +30,6 @@ public:
      */
     virtual ~NativePetscMatrixData();
 
-    //! Return the type of the matrix
-    virtual std::string type() const override { return "NativePetscMatrixData"; }
-
     /** \brief Create a NativePetscMatrixData with the same non-zero
      * structure
      * \param[in] m  The matrix to duplicate
@@ -45,15 +42,10 @@ public:
      */
     void copyFromMat( Mat m );
 
+    //! Return the type of the matrix
+    virtual std::string type() const override { return "NativePetscMatrixData"; }
+
     std::shared_ptr<MatrixData> cloneMatrixData() const override;
-
-    Vector::shared_ptr getRightVector() const;
-    Vector::shared_ptr getLeftVector() const;
-    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
-    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
-
-    size_t numGlobalRows() const override;
-    size_t numGlobalColumns() const override;
 
     void addValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
@@ -71,6 +63,14 @@ public:
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 
     void makeConsistent() override;
+
+    Vector::shared_ptr getRightVector() const;
+    Vector::shared_ptr getLeftVector() const;
+    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
+
+    size_t numGlobalRows() const override;
+    size_t numGlobalColumns() const override;
 
     Mat getMat() { return d_Mat; }
 

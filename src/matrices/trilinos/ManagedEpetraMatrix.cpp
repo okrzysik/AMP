@@ -49,8 +49,8 @@ ManagedEpetraMatrix::ManagedEpetraMatrix( std::shared_ptr<ManagedMatrixParameter
                     params->entryList() ),
       d_pParameters( params )
 {
-    d_comm = params->getComm();
-    AMP_ASSERT( !d_comm.isNull() );
+    //    d_comm = params->getComm();
+    //    AMP_ASSERT( !d_comm.isNull() );
 }
 ManagedEpetraMatrix::ManagedEpetraMatrix( const ManagedEpetraMatrix &rhs )
     : EpetraMatrix(
@@ -84,6 +84,13 @@ std::shared_ptr<Matrix> ManagedEpetraMatrix::clone() const
     return std::shared_ptr<Matrix>( r );
 }
 
+
+std::shared_ptr<Matrix> ManagedEpetraMatrix::transpose() const
+{
+    EpetraExt::RowMatrix_Transpose transposer;
+    return std::shared_ptr<Matrix>( new ManagedEpetraMatrix(
+        dynamic_cast<Epetra_CrsMatrix *>( &transposer( *d_epetraMatrix ) ), true ) );
+}
 
 /********************************************************
  * Get the left/right Vector/DOFManager                  *
@@ -120,6 +127,28 @@ std::shared_ptr<Discretization::DOFManager> ManagedEpetraMatrix::getLeftDOFManag
 }
 size_t ManagedEpetraMatrix::numGlobalRows() const { return d_epetraMatrix->NumGlobalRows(); }
 size_t ManagedEpetraMatrix::numGlobalColumns() const { return d_epetraMatrix->NumGlobalCols(); }
+
+size_t ManagedEpetraMatrix::numLocalRows() const { return d_pParameters->getLocalNumberOfRows(); }
+size_t ManagedEpetraMatrix::numLocalColumns() const
+{
+    return d_pParameters->getLocalNumberOfColumns();
+}
+
+AMP::AMP_MPI ManagedEpetraMatrix::getComm() const { return d_pParameters->getComm(); }
+
+/********************************************************
+ * Get iterators                                         *
+ ********************************************************/
+size_t ManagedEpetraMatrix::beginRow() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->beginDOF();
+}
+size_t ManagedEpetraMatrix::endRow() const
+{
+    auto DOF = getRightDOFManager();
+    return DOF->endDOF();
+}
 
 
 /********************************************************
@@ -283,10 +312,6 @@ void ManagedEpetraMatrix::setOtherData()
     delete[] aggregateCols;
     delete[] aggregateData;
 }
-
-
-void ManagedEpetraMatrix::fillComplete() { EpetraMatrix::fillComplete(); }
-
 
 /********************************************************
  * Get/set the diagonal                                  *

@@ -54,6 +54,8 @@ public:
     //! Destructor
     virtual ~ManagedEpetraMatrix() {}
 
+    std::shared_ptr<Matrix> transpose() const override;
+
     void createValuesByGlobalID( size_t, const std::vector<size_t> & );
 
 
@@ -63,8 +65,15 @@ public:
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
     void scale( double alpha ) override;
     void axpy( double alpha, const Matrix &rhs ) override;
+
     size_t numGlobalRows() const override;
     size_t numGlobalColumns() const override;
+    size_t numLocalRows() const override;
+    size_t numLocalColumns() const override;
+    AMP::AMP_MPI getComm() const override;
+    size_t beginRow() const override;
+    size_t endRow() const override;
+
     void addValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
     void setValuesByGlobalID(
@@ -95,7 +104,6 @@ public:
     Vector::shared_ptr getLeftVector() const override;
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
     std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
-    void fillComplete();
     void setIdentity() override;
     void zero() override;
 };

@@ -23,14 +23,14 @@ DenseSerialMatrix::~DenseSerialMatrix() {}
 /********************************************************
  * Copy/transpose the matrix                             *
  ********************************************************/
-std::shared_ptr<Matrix> DenseSerialMatrix::cloneMatrix() const
+std::shared_ptr<Matrix> DenseSerialMatrix::clone() const
 {
     return std::make_shared<DenseSerialMatrix>( d_matrixData->cloneMatrixData() );
 }
 
 std::shared_ptr<Matrix> DenseSerialMatrix::transpose() const
 {
-    auto M2 = cloneMatrix();
+    auto M2 = clone();
 
     auto m2Data       = std::dynamic_pointer_cast<DenseSerialMatrixData>( M2->getMatrixData() );
     const auto m1Data = std::dynamic_pointer_cast<const DenseSerialMatrixData>( getMatrixData() );
@@ -254,20 +254,8 @@ Vector::shared_ptr DenseSerialMatrix::getRightVector() const
 }
 Vector::shared_ptr DenseSerialMatrix::getLeftVector() const
 {
-<<<<<<< HEAD
     auto var = std::dynamic_pointer_cast<DenseSerialMatrixData>( d_matrixData )->getLeftVariable();
     return createVector( getLeftDOFManager(), var );
-=======
-    return createVector( getLeftDOFManager(), d_VariableLeft );
-}
-std::shared_ptr<Discretization::DOFManager> DenseSerialMatrix::getRightDOFManager() const
-{
-    return d_DOFManagerRight;
-}
-std::shared_ptr<Discretization::DOFManager> DenseSerialMatrix::getLeftDOFManager() const
-{
-    return d_DOFManagerLeft;
->>>>>>> master
 }
 
 
@@ -304,10 +292,11 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
         AMP_ERROR( "Inner matrix dimensions must agree" );
     size_t N = this->numGlobalRows();
     size_t K = this->numGlobalColumns();
+    AMP_ASSERT( K == other_op->numGlobalRows() );
     size_t M = other_op->numGlobalColumns();
     // Create the matrix
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
-        other_op->getRightDOFManager(), getRightDOFManager(), getComm() );
+        getLeftDOFManager(), other_op->getRightDOFManager(), getComm() );
 
     auto data = std::dynamic_pointer_cast<DenseSerialMatrixData>( d_matrixData );
     AMP_ASSERT( data );
@@ -319,7 +308,6 @@ void DenseSerialMatrix::multiply( std::shared_ptr<Matrix> other_op,
     AMP_ASSERT( newMatrix );
     result    = newMatrix;
     double *C = std::dynamic_pointer_cast<DenseSerialMatrixData>( newMatrix->getMatrixData() )->d_M;
-    memset( C, 0, N * M * sizeof( double ) );
     // Perform the muliplication
     if ( std::dynamic_pointer_cast<DenseSerialMatrix>( other_op ) == nullptr ) {
         // X is an unknown matrix type

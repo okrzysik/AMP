@@ -120,13 +120,14 @@ std::shared_ptr<Matrix> NativePetscMatrix::clone() const
     Mat new_mat;
     MatDuplicate( getMat( this ), MAT_DO_NOT_COPY_VALUES, &new_mat );
     AMP_ERROR( "not quite implemented" );
-    return shared_ptr( new NativePetscMatrix( new_mat, true ) );
+    return std::make_shared<NativePetscMatrix>( new_mat, true );
 }
+
 std::shared_ptr<Matrix> NativePetscMatrix::duplicateMat( Mat m )
 {
     Mat newMat;
     MatDuplicate( m, MAT_DO_NOT_COPY_VALUES, &newMat );
-    return std::shared_ptr<Matrix>( new NativePetscMatrix( newMat, true ) );
+    return std::make_shared<NativePetscMatrix>( newMat, true );
 }
 
 /********************************************************

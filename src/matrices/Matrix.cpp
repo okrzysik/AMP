@@ -12,20 +12,14 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Matrix::Matrix( const Matrix &rhs ) { AMPManager::incrementResource( "Matrix" ); }
-Matrix::Matrix() { AMPManager::incrementResource( "Matrix" ); }
+Matrix::Matrix( const Matrix &rhs ) {}
+Matrix::Matrix() {}
 
-Matrix::Matrix( std::shared_ptr<MatrixParameters> params )
-{
-    AMPManager::incrementResource( "Matrix" );
-}
+Matrix::Matrix( std::shared_ptr<MatrixParameters> params ) {}
 
-Matrix::Matrix( std::shared_ptr<MatrixData> data ) : d_matrixData( data )
-{
-    AMPManager::incrementResource( "Matrix" );
-}
+Matrix::Matrix( std::shared_ptr<MatrixData> data ) : d_matrixData( data ) {}
 
-Matrix::~Matrix() { AMPManager::decrementResource( "Matrix" ); }
+Matrix::~Matrix() {}
 
 /********************************************************
  * multiply                                             *
@@ -51,16 +45,6 @@ void Matrix::axpy( double alpha, std::shared_ptr<const Matrix> x )
     if ( N1 != N2 )
         AMP_ERROR( "Matrix sizes are not compatible" );
     axpy( alpha, *x );
-}
-
-
-/********************************************************
- * transpose                                             *
- ********************************************************/
-std::shared_ptr<Matrix> Matrix::transpose() const
-{
-    AMP_ERROR( "not implemented" );
-    return std::shared_ptr<Matrix>();
 }
 
 
@@ -109,10 +93,5 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
-std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
-{
-    return operator<<( out, *p );
-}
-
 
 } // namespace AMP::LinearAlgebra

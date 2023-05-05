@@ -54,7 +54,7 @@ public:
     //!  right vector )
     std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager();
 
-    //!  Get the communicator for the matric
+    //!  Get the communicator for the matrix
     AMP::AMP_MPI &getComm();
 
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a

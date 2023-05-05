@@ -1,8 +1,10 @@
 #ifndef included_AMP_DenseSerialMatrixData
 #define included_AMP_DenseSerialMatrixData
 
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/vectors/Vector.h"
+
 #include <memory>
 
 class DenseSerialMatrix;
@@ -105,14 +107,14 @@ public:
      * a right vector )
      * \return  The DOFManager associated with a right vector
      */
-    Discretization::DOFManager::shared_ptr getRightDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
 
     /** \brief Get the DOFManager associated with a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$\mathbf{y}\f$ is
      * a left vector )
      * \return  The DOFManager associated with a left vector
      */
-    Discretization::DOFManager::shared_ptr getLeftDOFManager() const override;
+    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 
     /** \brief  Get the number of local rows in the matrix
      * \return  The number of local rows
@@ -147,7 +149,7 @@ protected:
     // Data for the matrix
     size_t d_rows;
     size_t d_cols;
-    double *d_M;
+    double *d_M = nullptr;
 
     friend class DenseSerialMatrix;
 };

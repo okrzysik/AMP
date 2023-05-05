@@ -30,8 +30,8 @@ class Matrix
 {
 public:
     //! Convenience typedef
-    typedef std::shared_ptr<Matrix> shared_ptr;
-    typedef std::shared_ptr<const Matrix> const_shared_ptr;
+    using shared_ptr       = std::shared_ptr<Matrix>;
+    using const_shared_ptr = std::shared_ptr<const Matrix>;
 
     /** \brief Constructor
      * \param[in] params  Description of the matrix
@@ -68,7 +68,7 @@ public:
     /** \brief  Return a new matrix that is the transpose of this one
      * \return  A copy of this matrix transposed.
      */
-    virtual shared_ptr transpose() const;
+    virtual std::shared_ptr<Matrix> transpose() const;
 
     /** \brief  Return a matrix with the same non-zero and distributed structure
      * \return  The new matrix
@@ -249,7 +249,7 @@ public:
     virtual size_t endRow() const { return d_matrixData->endRow(); }
 
     //! Get the comm
-    inline auto getComm() const { return d_matrixData->getComm(); }
+    virtual AMP_MPI getComm() const { return d_matrixData->getComm(); }
 
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
@@ -347,7 +347,7 @@ inline std::shared_ptr<Matrix> Matrix::transpose() const
 
 std::ostream &operator<<( std::ostream &out, const Matrix &p );
 
-inline std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
+inline std::ostream &operator<<( std::ostream &out, std::shared_ptr<const Matrix> p )
 {
     return operator<<( out, *p );
 }

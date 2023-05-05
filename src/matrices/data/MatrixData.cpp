@@ -1,4 +1,5 @@
-#include "MatrixData.h"
+#include "AMP/matrices/data/MatrixData.h"
+#include "AMP/discretization/DOF_Manager.h"
 #include "AMP/utils/AMPManager.h"
 
 namespace AMP::LinearAlgebra {
