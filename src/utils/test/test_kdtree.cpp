@@ -1,9 +1,9 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/UnitTest.h"
 #include "AMP/utils/Utilities.h"
+#include "AMP/utils/arrayHelpers.h"
 #include "AMP/utils/kdtree.h"
 #include "AMP/utils/kdtree2.h"
-#include "AMP/utils/kdtree2.hpp"
 
 #include "ProfilerApp.h"
 

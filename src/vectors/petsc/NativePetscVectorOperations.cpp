@@ -201,14 +201,14 @@ void NativePetscVectorOperations::addScalar( const VectorData &x,
 Scalar NativePetscVectorOperations::min( const VectorData &x ) const
 {
     double val;
-    VecMin( getConstPetscVec( x ), PETSC_NULL, &val );
+    VecMin( getConstPetscVec( x ), nullptr, &val );
     return val;
 }
 
 Scalar NativePetscVectorOperations::max( const VectorData &x ) const
 {
     double val;
-    VecMax( getConstPetscVec( x ), PETSC_NULL, &val );
+    VecMax( getConstPetscVec( x ), nullptr, &val );
     return val;
 }
 

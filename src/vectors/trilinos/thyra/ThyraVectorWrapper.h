@@ -149,14 +149,14 @@ protected:
     // Internal data
     std::vector<AMP::LinearAlgebra::Vector::shared_ptr> d_vecs;
     std::vector<size_t> d_cols;
-    size_t d_N_cols;
+    size_t d_N_cols = 0;
 
 private:
     // Private constructor
     ThyraVectorWrapper() = default;
 
     // Comm
-    Teuchos::Comm<RTOpPack::index_type> *d_comm;
+    Teuchos::Comm<RTOpPack::index_type> *d_comm = nullptr;
 
     // Get shared_ptr to *this
     std::shared_ptr<const ThyraVectorWrapper> shared_from_this() const;

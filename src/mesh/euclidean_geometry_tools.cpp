@@ -47,8 +47,8 @@ void rotate_points( unsigned int rotation_axis,
                     double *points )
 {
     AMP_CHECK_ASSERT( rotation_axis < 3 );
-    unsigned int non_fixed_directions[2];
-    unsigned int i = 0;
+    unsigned int non_fixed_directions[2] = { 0 };
+    unsigned int i                       = 0;
     for ( unsigned int j = 0; j < 3; ++j ) {
         if ( j != rotation_axis ) {
             non_fixed_directions[i++] = j;

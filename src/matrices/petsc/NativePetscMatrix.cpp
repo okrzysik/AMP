@@ -84,9 +84,9 @@ Vector::shared_ptr NativePetscMatrix::getRightVector() const
 {
     Vec a;
 #if PETSC_VERSION_LE( 3, 2, 0 )
-    MatGetVecs( d_Mat, &a, PETSC_NULL );
+    MatGetVecs( d_Mat, &a, nullptr );
 #else
-    MatCreateVecs( d_Mat, &a, PETSC_NULL );
+    MatCreateVecs( d_Mat, &a, nullptr );
 #endif
     return createVector( a, true );
 }
@@ -94,9 +94,9 @@ Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 {
     Vec a;
 #if PETSC_VERSION_LE( 3, 2, 0 )
-    MatGetVecs( d_Mat, PETSC_NULL, &a );
+    MatGetVecs( d_Mat, nullptr, &a );
 #else
-    MatCreateVecs( d_Mat, PETSC_NULL, &a );
+    MatCreateVecs( d_Mat, nullptr, &a );
 #endif
     return createVector( a, true );
 }
@@ -140,7 +140,7 @@ void NativePetscMatrix::getValuesByGlobalID(
         if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
             continue;
         int numCols = 0;
-        MatGetRow( d_Mat, rows[i], &numCols, PETSC_NULL, PETSC_NULL );
+        MatGetRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
         if ( numCols == 0 )
             continue;
         const PetscInt *out_cols;
@@ -159,7 +159,7 @@ void NativePetscMatrix::getRowByGlobalID( size_t row,
                                           std::vector<double> &values ) const
 {
     int numCols;
-    MatGetRow( d_Mat, row, &numCols, PETSC_NULL, PETSC_NULL );
+    MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
     cols.resize( numCols );
     values.resize( numCols );
     if ( numCols ) {
@@ -174,7 +174,7 @@ void NativePetscMatrix::getRowByGlobalID( size_t row,
 std::vector<size_t> NativePetscMatrix::getColumnIDs( size_t row ) const
 {
     int numCols;
-    MatGetRow( d_Mat, row, &numCols, PETSC_NULL, PETSC_NULL );
+    MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
     std::vector<size_t> cols( numCols );
 
     if ( numCols ) {

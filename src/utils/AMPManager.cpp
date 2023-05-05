@@ -349,7 +349,7 @@ double AMPManager::start_PETSc()
         int nargsPetsc       = 1;
         const char *noMalloc = "-malloc no";
         char **petscArgs     = const_cast<char **>( &noMalloc );
-        PetscInitialize( &nargsPetsc, &petscArgs, PETSC_NULL, PETSC_NULL );
+        PetscInitialize( &nargsPetsc, &petscArgs, nullptr, nullptr );
         called_PetscInitialize = true;
     }
     #ifndef AMP_USE_MPI
@@ -395,7 +395,7 @@ double AMPManager::start_CUDA()
     }
 
     void *tmp;
-    checkCudaError( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
+    checkCudaErrors( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
     cudaFree( tmp );
 #endif
     return 0;

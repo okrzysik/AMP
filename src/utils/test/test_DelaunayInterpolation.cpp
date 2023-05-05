@@ -4,6 +4,7 @@
 #include "AMP/utils/DelaunayTessellation.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/UnitTest.h"
+#include "AMP/utils/typeid.h"
 
 #include "test_DelaunayInterpolation.h"
 
@@ -24,7 +25,11 @@
 
 #define printp printf
 
-#define NDIM_MAX 3 // The maximum number of dimensions supported (currently 3)
+
+constexpr int NDIM_MAX = 3; // The maximum number of dimensions supported (currently 3)
+constexpr int NTRI_MAX = NDIM_MAX + 1;
+constexpr int NVTX_MAX = NTRI_MAX * NDIM_MAX;
+
 
 // Helper function to check if two numbers are approximately equal
 inline bool approx_equal( double x, double y, double tol = 1e-8 )
@@ -35,16 +40,9 @@ inline bool approx_equal( double x, double y, double tol = 1e-8 )
 
 // Helper function to get the class name
 template<class TYPE>
-const char *getName();
-template<>
-const char *getName<int>()
+const char *getName()
 {
-    return "int";
-}
-template<>
-const char *getName<double>()
-{
-    return "double";
+    return AMP::getTypeID<TYPE>().name;
 }
 
 
@@ -237,10 +235,13 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
     // Check the behavior of get_circumsphere and test_in_circumsphere
     PROFILE_START( "Check circumsphere", 1 );
     {
-        pass     = true;
-        auto tri = data->get_tri();
-        TYPE x1[NDIM_MAX * ( NDIM_MAX + 1 )];
-        double R, c[NDIM_MAX], xi[NDIM_MAX], x2[NDIM_MAX * ( NDIM_MAX + 1 )];
+        pass                = true;
+        double R            = 0;
+        auto tri            = data->get_tri();
+        TYPE x1[NVTX_MAX]   = { 0 };
+        double c[NDIM_MAX]  = { 0 };
+        double xi[NDIM_MAX] = { 0 };
+        double x2[NVTX_MAX] = { 0 };
         for ( size_t i = 0; i < N_tri; i++ ) {
             for ( int d1 = 0; d1 < ndim + 1; d1++ ) {
                 int k = tri( d1, i );
@@ -291,8 +292,8 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
         double vol_max = 0.0;
         bool neg_vol   = false;
         for ( size_t i = 0; i < N_tri; i++ ) {
-            int tri2[NDIM_MAX + 1];
-            double x2[NDIM_MAX * ( NDIM_MAX + 1 )];
+            int tri2[NTRI_MAX]  = { 0 };
+            double x2[NVTX_MAX] = { 0 };
             for ( int d1 = 0; d1 < ndim + 1; d1++ ) {
                 tri2[d1] = tri( d1, i );
                 for ( int d2 = 0; d2 < ndim; d2++ )
@@ -321,8 +322,9 @@ createAndTestDelaunayInterpolation( AMP::UnitTest *ut, const AMP::Array<TYPE> &x
         auto tri               = data->get_tri();
         bool pass_circumsphere = true;
         for ( size_t i = 0; i < N_tri; i++ ) {
-            int tri2[NDIM_MAX + 1];
-            TYPE x2[NDIM_MAX * ( NDIM_MAX + 1 )], xi[NDIM_MAX];
+            int tri2[NTRI_MAX] = { 0 };
+            TYPE x2[NVTX_MAX]  = { 0 };
+            TYPE xi[NDIM_MAX]  = { 0 };
             for ( int d1 = 0; d1 < ndim + 1; d1++ ) {
                 tri2[d1] = tri( d1, i );
                 for ( int d2 = 0; d2 < ndim; d2++ )
@@ -373,7 +375,7 @@ std::string initialize_problem( int p,
     tol_cubic_extrap1 = 1e-10; // Tolerance for linear extrapolation with cubic interpolation
     tol_cubic_extrap2 = 1e-10; // Tolerance for quadratic extrapolation with cubic interpolation
     // Set f and g for each problem
-    double grad_max[10] = { 0 };
+    double grad_max[NDIM_MAX] = { 0 };
     if ( p == 0 ) {
         // Constant profile
         problem = "f(x) = 2.5";

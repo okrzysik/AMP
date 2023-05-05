@@ -28,6 +28,11 @@ namespace AMP::Solver {
 
 static_assert( PETSC_VERSION_GE( 3, 15, 0 ), "AMP only supports PETSc 3.15.0 or greater" );
 
+#if PETSC_VERSION_LT( 3, 17, 0 )
+    #define SETERRQ SETERRQ1
+    #define PetscInfo PetscInfo3
+#endif
+
 
 static inline void checkErr( PetscErrorCode ierr )
 {
@@ -291,7 +296,7 @@ void PetscSNESSolver::initializePetscObjects()
 
     if ( d_PetscMonitor ) {
         // Add the monitor
-        SNESMonitorSet( d_SNESSolver, PetscMonitor::monitorSNES, d_PetscMonitor.get(), PETSC_NULL );
+        SNESMonitorSet( d_SNESSolver, PetscMonitor::monitorSNES, d_PetscMonitor.get(), nullptr );
     }
 
     d_bPetscInterfaceInitialized = true;
@@ -388,7 +393,7 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         petscOptions += " -snes_type newtonls";
     }
 
-    PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
+    PetscOptionsInsertString( nullptr, petscOptions.c_str() );
 
     d_bUsesJacobian = db->getWithDefault<bool>( "usesJacobian", false );
 
@@ -429,8 +434,7 @@ void PetscSNESSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
         d_operatorComponentToEnableBoundsCheck =
             db->getScalar<int>( "operatorComponentToEnableBoundsCheck" );
 
-    d_sForcingTermStrategy =
-        db->getWithDefault<std::string>( "forcing_term_strategy", std::string{ "CONSTANT" } );
+    d_sForcingTermStrategy = db->getWithDefault<std::string>( "forcing_term_strategy", "CONSTANT" );
     if ( d_sForcingTermStrategy == "EWCHOICE1" ) {
         d_iForcingTermFlag = 1;
     } else if ( d_sForcingTermStrategy == "EWCHOICE2" ) {
@@ -542,7 +546,7 @@ void PetscSNESSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
                   << std::endl;
 
     Vec x = spSol->getVec();
-    Vec b = spRhs ? spRhs->getVec() : PETSC_NULL;
+    Vec b = spRhs ? spRhs->getVec() : nullptr;
 
     // Solve
     PROFILE_START( "petsc-SNESSolve" );
@@ -826,20 +830,20 @@ PetscErrorCode PetscSNESSolver::KSPPreSolve_SNESEW( KSP ksp, Vec b, Vec x, SNES 
             stol = PetscMax( rtol, stol );
             rtol = PetscMin( kctx->rtol_0, stol );
         } else
-            SETERRQ1( PETSC_COMM_SELF,
-                      PETSC_ERR_ARG_OUTOFRANGE,
-                      "Only versions 1, 2 or 3 are supported: %D",
-                      kctx->version );
+            SETERRQ( PETSC_COMM_SELF,
+                     PETSC_ERR_ARG_OUTOFRANGE,
+                     "Only versions 1, 2 or 3 are supported: %i",
+                     kctx->version );
     }
     /* safeguard: avoid rtol greater than one */
     rtol = PetscMin( rtol, kctx->rtol_max );
     ierr = KSPSetTolerances( ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT );
     CHKERRQ( ierr );
-    ierr = PetscInfo3( snes,
-                       "iter %D, Eisenstat-Walker (version %D) KSP rtol=%g\n",
-                       snes->iter,
-                       kctx->version,
-                       (double) rtol );
+    ierr = PetscInfo( snes,
+                      "iter %i, Eisenstat-Walker (version %i) KSP rtol=%g\n",
+                      snes->iter,
+                      kctx->version,
+                      (double) rtol );
     CHKERRQ( ierr );
     PetscFunctionReturn( 0 );
 }

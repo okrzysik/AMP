@@ -159,7 +159,7 @@ void PetscKrylovSolver::initialize( std::shared_ptr<const SolverStrategyParamete
     if ( d_PetscMonitor ) {
         // Add the monitor
         checkErr( KSPMonitorSet(
-            d_KrylovSolver, PetscMonitor::monitorKSP, d_PetscMonitor.get(), PETSC_NULL ) );
+            d_KrylovSolver, PetscMonitor::monitorKSP, d_PetscMonitor.get(), nullptr ) );
     }
     // in this case we make the assumption we can access a PetscMat for now
     if ( d_pOperator ) {
@@ -205,7 +205,7 @@ void PetscKrylovSolver::getFromInput( std::shared_ptr<AMP::Database> db )
         petscOptions = PetscMonitor::removeMonitor( petscOptions );
         d_PetscMonitor.reset( new PetscMonitor( d_comm ) );
     }
-    PetscOptionsInsertString( PETSC_NULL, petscOptions.c_str() );
+    PetscOptionsInsertString( nullptr, petscOptions.c_str() );
 
     d_sKspType             = db->getWithDefault<std::string>( "ksp_type", "fgmres" );
     d_dDivergenceTolerance = db->getWithDefault<double>( "divergence_tolerance", 1.0e+03 );

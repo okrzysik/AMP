@@ -29,7 +29,6 @@ public:
     std::shared_ptr<DiffusionNonlinearFEOperator> d_SoretOperator;
     std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_FickParameters;
     std::shared_ptr<DiffusionNonlinearFEOperatorParameters> d_SoretParameters;
-    std::string d_name; // the name of the FickSoretOperator
 };
 } // namespace AMP::Operator
 
