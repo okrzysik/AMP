@@ -3,6 +3,7 @@
 #include "AMP/IO/HDF5.hpp"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/Utilities.hpp"
+#include "AMP/utils/kdtree2.hpp"
 
 
 /********************************************************
@@ -127,5 +128,8 @@ INSTANTIATE_HDF5( AMP::Mesh::GeomType );
 INSTANTIATE_HDF5( AMP::Mesh::MeshID );
 instantiateArrayConstructors( AMP::Mesh::MeshID );
 instantiateArrayConstructors( AMP::Mesh::GeomType );
+template class AMP::kdtree2<1, AMP::Mesh::MeshElementID>;
+template class AMP::kdtree2<2, AMP::Mesh::MeshElementID>;
+template class AMP::kdtree2<3, AMP::Mesh::MeshElementID>;
 template void AMP::Utilities::quicksort<int, AMP::Mesh::MeshElementID>(
     size_t, int *, AMP::Mesh::MeshElementID * );

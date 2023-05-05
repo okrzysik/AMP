@@ -15,14 +15,6 @@
 namespace AMP {
 
 
-/********************************************************
- *  External instantiations                              *
- ********************************************************/
-extern template class kdtree2<1, int>;
-extern template class kdtree2<2, int>;
-extern template class kdtree2<3, int>;
-
-
 /****************************************************************
  * Compute the distance to a box                                 *
  ****************************************************************/
@@ -66,53 +58,23 @@ double kdtree2<NDIM, TYPE>::distanceToBox( const std::array<double, NDIM> &pos,
  * Constructor                                           *
  ********************************************************/
 template<uint8_t NDIM, class TYPE>
-kdtree2<NDIM, TYPE>::kdtree2()
-    : d_N( 0 ),
-      d_split_dim( 0 ),
-      d_split( 0 ),
-      d_left( nullptr ),
-      d_right( nullptr ),
-      d_data( nullptr )
-{
-}
-template<uint8_t NDIM, class TYPE>
 kdtree2<NDIM, TYPE>::kdtree2( size_t N, const std::array<double, NDIM> *x, const TYPE *data )
-    : d_N( 0 ),
-      d_split_dim( 0 ),
-      d_split( 0 ),
-      d_left( nullptr ),
-      d_right( nullptr ),
-      d_data( nullptr )
 {
-    initialize( N, x, data );
+    auto x2    = std::vector<Point>( x, x + N );
+    auto data2 = std::vector<TYPE>( data, data + N );
+    initialize( x2, data2 );
 }
 template<uint8_t NDIM, class TYPE>
 kdtree2<NDIM, TYPE>::kdtree2( const std::vector<std::array<double, NDIM>> &x,
                               const std::vector<TYPE> &data )
-    : d_N( 0 ),
-      d_split_dim( 0 ),
-      d_split( 0 ),
-      d_left( nullptr ),
-      d_right( nullptr ),
-      d_data( nullptr )
 {
     AMP_ASSERT( x.size() == data.size() );
-    if constexpr ( std::is_same_v<TYPE, bool> ) {
-        auto data2 = new bool[x.size()];
-        for ( size_t i = 0; i < x.size(); i++ )
-            data2[i] = data[i];
-        initialize( x.size(), x.data(), data2 );
-        delete[] data2;
-    } else {
-        initialize( x.size(), x.data(), data.data() );
-    }
+    initialize( x, data );
 }
 template<uint8_t NDIM, class TYPE>
-void kdtree2<NDIM, TYPE>::initialize( size_t N,
-                                      const std::array<double, NDIM> *x,
-                                      const TYPE *data )
+void kdtree2<NDIM, TYPE>::initialize( const std::vector<Point> &x, const std::vector<TYPE> &data )
 {
-    d_N = N;
+    size_t N = x.size();
     // Update the box
     d_lb.fill( 1e100 );
     d_ub.fill( -1e100 );
@@ -126,16 +88,16 @@ void kdtree2<NDIM, TYPE>::initialize( size_t N,
     constexpr uint64_t threshold = 40; // Optimize for performance
     if ( N > threshold ) {
         // Split the tree and recurse
-        splitData( N, x, data );
+        splitData( x, data );
     } else {
         // Store the data
         d_data       = new data_struct;
-        d_data->x    = std::vector<Point>( x, x + N );
-        d_data->data = std::vector<TYPE>( data, data + N );
+        d_data->x    = x;
+        d_data->data = data;
     }
 }
 template<uint8_t NDIM, class TYPE>
-void kdtree2<NDIM, TYPE>::splitData( size_t N, const Point *x, const TYPE *data )
+void kdtree2<NDIM, TYPE>::splitData( const std::vector<Point> &x, const std::vector<TYPE> &data )
 {
     // Choose the splitting direction (and tolerance)
     int dir    = 0;
@@ -147,7 +109,8 @@ void kdtree2<NDIM, TYPE>::splitData( size_t N, const Point *x, const TYPE *data 
         }
     }
     // Resort the data along the splitting direction
-    auto x2 = new double[N];
+    size_t N = x.size();
+    auto x2  = new double[N];
     for ( size_t i = 0; i < N; i++ )
         x2[i] = x[i][dir];
     auto index = new uint64_t[N];
@@ -240,7 +203,7 @@ void kdtree2<NDIM, TYPE>::add( const Point &p, const TYPE &data )
         // Split the leaf node if needed
         constexpr uint64_t threshold = 40; // Optimize for performance
         if ( d_N > threshold ) {
-            splitData( d_N, d_data->x.data(), d_data->data.data() );
+            splitData( d_data->x, d_data->data );
             delete d_data;
             d_data = nullptr;
         }
@@ -444,7 +407,7 @@ void kdtree2<NDIM, TYPE>::findNearest( const Point &x,
         for ( size_t i = 0; i < d_N; i++ ) {
             double d = norm( x - d_data->x[i] );
             if ( d <= dist2 )
-                nearest.push_back( std::tie( d_data->x[i], d_data->data[i] ) );
+                nearest.emplace_back( d_data->x[i], d_data->data[i] );
         }
     }
 }
@@ -457,7 +420,7 @@ template<uint8_t NDIM, class TYPE>
 std::vector<std::tuple<std::array<double, NDIM>, TYPE>>
 kdtree2<NDIM, TYPE>::findNearestRay( const Point &x, const Point &dir, double dist ) const
 {
-    auto v = normalize( dir );
+    auto v = AMP::normalize( dir );
     Point inv_v;
     for ( int d = 0; d < NDIM; d++ )
         inv_v[d] = 1.0 / v[d];

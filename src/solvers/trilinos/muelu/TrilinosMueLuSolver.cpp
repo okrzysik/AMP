@@ -9,7 +9,6 @@
 // Trilinos includes
 DISABLE_WARNINGS
 #include "MueLu.hpp"
-#include "MueLu_CreateEpetraPreconditioner.hpp"
 #include "MueLu_DirectSolver.hpp"
 #include "MueLu_Ifpack2Smoother.hpp"
 #include "MueLu_IfpackSmoother.hpp"
@@ -24,6 +23,9 @@ DISABLE_WARNINGS
 #include "Xpetra_EpetraVector.hpp"
 #include "Xpetra_Matrix.hpp"
 #include "Xpetra_Operator.hpp"
+#if TRILINOS_MAJOR_MINOR_VERSION >= 130400
+    #include "MueLu_CreateEpetraPreconditioner.hpp"
+#endif
 ENABLE_WARNINGS
 
 

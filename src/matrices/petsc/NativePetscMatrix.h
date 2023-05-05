@@ -19,7 +19,7 @@ protected:
      */
     NativePetscMatrix();
 
-    void multiply( shared_ptr other_op, shared_ptr &result ) override;
+    void multiply( std::shared_ptr<Matrix> other_op, std::shared_ptr<Matrix> &result ) override;
 
 public:
     /** \brief  Construct a matrix from a PETSc Mat.
@@ -27,7 +27,6 @@ public:
      * \param[in] dele  Let this class deallocate the Mat
      */
     explicit NativePetscMatrix( Mat m, bool dele = false );
-
 
     /** \brief Destructor
      */
@@ -51,39 +50,19 @@ public:
     void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     void multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
 
-    shared_ptr clone() const override;
-
+    std::shared_ptr<Matrix> clone() const override;
 
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
     std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 
-    size_t numGlobalRows() const override;
-    size_t numGlobalColumns() const override;
-
     void scale( double alpha ) override;
     void axpy( double alpha, const Matrix &x ) override;
-
-    void addValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    void getValuesByGlobalID( size_t num_rows,
-                              size_t num_cols,
-                              size_t *rows,
-                              size_t *cols,
-                              double *values ) const override;
-    void getRowByGlobalID( size_t row,
-                           std::vector<size_t> &cols,
-                           std::vector<double> &values ) const override;
-
-    std::vector<size_t> getColumnIDs( size_t row ) const override;
 
     void setScalar( double ) override;
     void setDiagonal( Vector::const_shared_ptr in ) override;
 
-    void makeConsistent() override;
     Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr p = Vector::shared_ptr() ) const override;
     double L1Norm() const override;
@@ -91,8 +70,6 @@ public:
     void zero() override;
 
 private:
-    Mat d_Mat;
-    bool d_MatCreatedInternally;
 };
 
 

@@ -99,9 +99,9 @@ protected:
     void getFromInput( std::shared_ptr<AMP::Database> db );
 
 private:
-    T d_dDivergenceTolerance;
+    T d_dDivergenceTolerance = 1e3;
 
-    bool d_bUsesPreconditioner;
+    bool d_bUsesPreconditioner = false;
 
     std::shared_ptr<AMP::Solver::SolverStrategy> d_pPreconditioner;
 };

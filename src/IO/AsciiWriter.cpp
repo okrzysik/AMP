@@ -1,7 +1,7 @@
 #include "AMP/IO/AsciiWriter.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/mesh/Mesh.h"
-#include "AMP/utils/AMP_MPI.I"
+#include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 

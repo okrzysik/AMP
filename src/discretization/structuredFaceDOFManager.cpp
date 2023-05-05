@@ -18,7 +18,6 @@ namespace AMP::Discretization {
 structuredFaceDOFManager::structuredFaceDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                                     int DOFsPerFace[3],
                                                     int gcw )
-    : d_DOFsPerFace{ 0, 0, 0 }, d_gcw( 0 )
 {
     AMP_ASSERT( mesh );
     AMP_INSIST( mesh->getDim() == 3, "The mesh must be a 3D mesh" );

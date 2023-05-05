@@ -4,7 +4,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixBuilder.h"
-#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -107,15 +107,16 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     std::shared_ptr<AMP::Database> dummy_db;
     auto dummyParams1 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
-    dummyParams1->d_Matrix = &( std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( BtMat )
-                                    ->getEpetra_CrsMatrix() );
-    auto bTOperator        = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams1 );
+    dummyParams1->d_Matrix =
+        &( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>( BtMat )
+               ->getEpetra_CrsMatrix() );
+    auto bTOperator = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams1 );
     bTOperator->setVariables( ConsMassOperator->getOutputVariable(),
                               ConsMassOperator->getInputVariable() );
 
     auto dummyParams2 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
     dummyParams2->d_Matrix =
-        &( std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( zeroMat )
+        &( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>( zeroMat )
                ->getEpetra_CrsMatrix() );
     auto zeroOperator = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams2 );
     zeroOperator->setVariables( ConsMassOperator->getOutputVariable(),
@@ -148,7 +149,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
 
     auto dummyParams3 = std::make_shared<AMP::Operator::EpetraMatrixOperatorParameters>( dummy_db );
     dummyParams3->d_Matrix =
-        &( std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( schurMat )
+        &( std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>( schurMat )
                ->getEpetra_CrsMatrix() );
     auto schurMatOperator = std::make_shared<AMP::Operator::EpetraMatrixOperator>( dummyParams3 );
     schurMatOperator->setVariables( ConsMassOperator->getOutputVariable(),

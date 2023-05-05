@@ -12,77 +12,14 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-Matrix::Matrix( const Matrix &rhs ) : d_comm( rhs.d_comm )
-{
-    AMPManager::incrementResource( "Matrix" );
-}
-Matrix::Matrix() { AMPManager::incrementResource( "Matrix" ); }
-Matrix::Matrix( std::shared_ptr<MatrixParameters> params ) : d_comm( params->getComm() )
-{
-    AMP_ASSERT( !d_comm.isNull() );
-    AMPManager::incrementResource( "Matrix" );
-}
-Matrix::~Matrix() { AMPManager::decrementResource( "Matrix" ); }
+Matrix::Matrix( const Matrix &rhs ) {}
+Matrix::Matrix() {}
 
+Matrix::Matrix( std::shared_ptr<MatrixParameters> params ) {}
 
-/********************************************************
- * Get the number of rows/columns in the matrix          *
- ********************************************************/
-size_t Matrix::numLocalRows() const
-{
-    auto DOF = getLeftDOFManager();
-    return DOF->numLocalDOF();
-}
-size_t Matrix::numGlobalRows() const
-{
-    auto DOF = getLeftDOFManager();
-    return DOF->numGlobalDOF();
-}
-size_t Matrix::numLocalColumns() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->numLocalDOF();
-}
-size_t Matrix::numGlobalColumns() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->numGlobalDOF();
-}
+Matrix::Matrix( std::shared_ptr<MatrixData> data ) : d_matrixData( data ) {}
 
-
-/********************************************************
- * Add/Get values                                        *
- ********************************************************/
-void Matrix::addValueByGlobalID( size_t row, size_t col, double value )
-{
-    addValuesByGlobalID( 1u, 1u, &row, &col, &value );
-}
-void Matrix::setValueByGlobalID( size_t row, size_t col, double value )
-{
-    setValuesByGlobalID( 1u, 1u, &row, &col, &value );
-}
-double Matrix::getValueByGlobalID( size_t row, size_t col ) const
-{
-    double rtn = 0.0;
-    getValuesByGlobalID( 1u, 1u, &row, &col, &rtn );
-    return rtn;
-}
-
-
-/********************************************************
- * Get iterators                                         *
- ********************************************************/
-size_t Matrix::beginRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->beginDOF();
-}
-size_t Matrix::endRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->endDOF();
-}
-
+Matrix::~Matrix() {}
 
 /********************************************************
  * multiply                                             *
@@ -108,16 +45,6 @@ void Matrix::axpy( double alpha, std::shared_ptr<const Matrix> x )
     if ( N1 != N2 )
         AMP_ERROR( "Matrix sizes are not compatible" );
     axpy( alpha, *x );
-}
-
-
-/********************************************************
- * transpose                                             *
- ********************************************************/
-std::shared_ptr<Matrix> Matrix::transpose() const
-{
-    AMP_ERROR( "not implemented" );
-    return std::shared_ptr<Matrix>();
 }
 
 
@@ -166,10 +93,5 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
-std::ostream &operator<<( std::ostream &out, const std::shared_ptr<Matrix> p )
-{
-    return operator<<( out, *p );
-}
-
 
 } // namespace AMP::LinearAlgebra

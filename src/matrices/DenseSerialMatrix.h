@@ -21,6 +21,12 @@ public:
      */
     explicit DenseSerialMatrix( std::shared_ptr<MatrixParameters> params );
 
+
+    /** \brief Constructor
+     * \param[in] params  MatrixData object associated with matrix
+     */
+    explicit DenseSerialMatrix( std::shared_ptr<MatrixData> data );
+
     DenseSerialMatrix( const DenseSerialMatrix & ) = delete;
 
     DenseSerialMatrix &operator=( const DenseSerialMatrix & ) = delete;
@@ -74,116 +80,27 @@ public:
     void axpy( double alpha, const Matrix &X ) override;
 
 
-    /** \brief  Add values to those in the matrix
-     * \param[in] num_rows The number of rows represented in values
-     * \param[in] num_cols The number of cols represented in values
-     * \param[in] rows  The row ids of values
-     * \param[in] cols  The column ids of values
-     * \param[in] values  The values to add to the matrix
-     * \details  This method may fail if the matrix has not
-     * allocated a particular(row,col) specified, depending
-     * on the actual subclass of matrix used.
-     */
-    virtual void addValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-
-    /** \brief  Set values in the matrix
-     * \param[in] num_rows The number of rows represented in values
-     * \param[in] num_cols The number of cols represented in values
-     * \param[in] rows  The row ids of values
-     * \param[in] cols  The column ids of values
-     * \param[in] values  The values to set to the matrix
-     * \details  This method may fail if the matrix has not
-     * allocated a particular(row,col) specified, depending
-     * on the actual subclass of matrix used.
-     */
-    virtual void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-
-    /** \brief  Get values in the matrix
-     * \param[in] num_rows The number of rows represented in values
-     * \param[in] num_cols The number of cols represented in values
-     * \param[in] rows  The row ids of values
-     * \param[in] cols  The column ids of values
-     * \param[in] values  The values to get from the matrix (row-major ordering)
-     * \details  This method will return zero for any entries that
-     *   have not been allocated or are not ghosts on the current processor.
-     */
-    virtual void getValuesByGlobalID( size_t num_rows,
-                                      size_t num_cols,
-                                      size_t *rows,
-                                      size_t *cols,
-                                      double *values ) const override;
-
-
-    /** \brief  Add values to those in the matrix
-     * \param[in] row  The row id of value
-     * \param[in] col  The column id of value
-     * \param[in] value  The value to add to the matrix
-     * \details  This method may fail if the matrix has not
-     * allocated a particular(row,col) specified, depending
-     * on the actual subclass of matrix used.
-     */
-    void addValueByGlobalID( size_t row, size_t col, double value ) override;
-
-    /** \brief  Set values in the matrix
-     * \param[in] row  The row id of value
-     * \param[in] col  The column id of value
-     * \param[in] value  The value to set to the matrix
-     * \details  This method may fail if the matrix has not
-     * allocated a particular(row,col) specified, depending
-     * on the actual subclass of matrix used.
-     */
-    void setValueByGlobalID( size_t row, size_t col, double value ) override;
-
-    /** \brief  Set values in the matrix
-     * \param[in] row  The row id of value
-     * \param[in] col  The column id of value
-     * \details  This method may fail if the matrix has not
-     * allocated a particular(row,col) specified, depending
-     * on the actual subclass of matrix used.
-     */
-    double getValueByGlobalID( size_t row, size_t col ) const override;
-
-
     /** \brief  Set the non-zeros of the matrix to a scalar
      * \param[in]  alpha  The value to set the non-zeros to
      */
     void setScalar( double alpha ) override;
 
 
-    /** \brief  Retrieve a row of the matrix in compressed format
-     * \param[in]  row Which row
-     * \param[out] cols  The column ids of the returned values
-     * \param[out] values  The values in the row
+    /** \brief  Set the non-zeros of the matrix to zero
+     * \details  May not deallocate space.
      */
-    void getRowByGlobalID( size_t row,
-                           std::vector<size_t> &cols,
-                           std::vector<double> &values ) const override;
+    void zero() override;
 
-    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
-     * \param[in]  row Which row
-     */
-    std::vector<size_t> getColumnIDs( size_t row ) const override;
 
     /** \brief  Set the diagonal to the values in a vector
      * \param[in] in The values to set the diagonal to
      */
     void setDiagonal( Vector::const_shared_ptr in ) override;
 
+
     /** \brief  Set the matrix to the identity matrix
      */
     void setIdentity() override;
-
-    /** \brief  Set the non-zeros of the matrix to zero
-     * \details  May not deallocate space.
-     */
-    void zero() override;
-
-    /** \brief  Perform communication to ensure values in the
-     * matrix are the same across cores.
-     */
-    void makeConsistent() override {}
 
     /** \brief  Extract the diagonal from a matrix
      * \param[in]  buf  An optional vector to use as a buffer
@@ -204,25 +121,10 @@ public:
      */
     Vector::shared_ptr getLeftVector() const override;
 
-    /** \brief Get the DOFManager associated with a right vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$\mathbf{x}\f$ is
-     * a right vector )
-     * \return  The DOFManager associated with a right vector
-     */
-    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
-
-    /** \brief Get the DOFManager associated with a left vector( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
-     * \f$\mathbf{y}\f$ is
-     * a left vector )
-     * \return  The DOFManager associated with a left vector
-     */
-    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
-
     /** \brief Compute the maximum column sum
      * \return  The L1 norm of the matrix
      */
     double L1Norm() const override;
-
 
 protected:
     //! Unimplemented constructor
@@ -233,17 +135,6 @@ protected:
      * \param[out] result  The matrix to store the result
      */
     void multiply( shared_ptr other_op, shared_ptr &result ) override;
-
-    // AMP variables and DOFManagers for the left and right vectors
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableLeft;
-    std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
-    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
-    std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
-
-    // Data for the matrix
-    size_t d_rows;
-    size_t d_cols;
-    double *d_M;
 };
 } // namespace AMP::LinearAlgebra
 

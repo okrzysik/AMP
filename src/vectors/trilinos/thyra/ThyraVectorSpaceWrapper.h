@@ -60,7 +60,7 @@ protected:
                                   const Teuchos::ArrayView<double> &scalarProds ) const override;
 
     // Local data
-    bool d_is_range;
+    bool d_is_range = false;
     std::shared_ptr<const ThyraVectorWrapper> d_thyra_vec;
 };
 

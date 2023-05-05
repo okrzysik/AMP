@@ -3,7 +3,7 @@
 #include "AMP/mesh/MeshPoint.h"
 #include "AMP/utils/NearestPairSearch.h"
 #include "AMP/utils/kdtree.h"
-#include "AMP/utils/kdtree2.hpp"
+
 
 namespace AMP::Mesh {
 

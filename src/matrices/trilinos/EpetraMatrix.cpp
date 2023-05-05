@@ -1,5 +1,4 @@
 #include "AMP/matrices/trilinos/EpetraMatrix.h"
-#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 DISABLE_WARNINGS
 #include "Epetra_CrsMatrix.h"
@@ -41,13 +40,6 @@ EpetraMatrix::~EpetraMatrix()
 Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() { return *d_epetraMatrix; }
 
 const Epetra_CrsMatrix &EpetraMatrix::getEpetra_CrsMatrix() const { return *d_epetraMatrix; }
-
-std::shared_ptr<Matrix> EpetraMatrix::transpose() const
-{
-    EpetraExt::RowMatrix_Transpose transposer;
-    return std::shared_ptr<Matrix>( new ManagedEpetraMatrix(
-        dynamic_cast<Epetra_CrsMatrix *>( &transposer( *d_epetraMatrix ) ), true ) );
-}
 
 
 EpetraMatrix::EpetraMatrix( Epetra_Map &map, Epetra_Map *, int *entities )

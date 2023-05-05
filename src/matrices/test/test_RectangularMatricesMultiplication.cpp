@@ -74,9 +74,14 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
         secondMat->setScalar( 2.0 );
         // do matrix multiplications
         try {
-            auto thirdMat  = AMP::LinearAlgebra::Matrix::matMultiply( secondMat, firstMat );
-            auto fourthMat = AMP::LinearAlgebra::Matrix::matMultiply( firstMat, secondMat );
+            auto thirdMat = AMP::LinearAlgebra::Matrix::matMultiply( secondMat, firstMat );
             AMP_ASSERT( thirdMat->numGlobalRows() == n && thirdMat->numGlobalColumns() == n );
+            ut->passes( tmp );
+        } catch ( ... ) {
+            ut->failure( tmp );
+        }
+        try {
+            auto fourthMat = AMP::LinearAlgebra::Matrix::matMultiply( firstMat, secondMat );
             AMP_ASSERT( fourthMat->numGlobalRows() == m && fourthMat->numGlobalColumns() == m );
             ut->passes( tmp );
         } catch ( ... ) {

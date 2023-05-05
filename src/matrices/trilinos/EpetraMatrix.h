@@ -10,9 +10,6 @@ class Epetra_CrsMatrix;
 
 namespace AMP::LinearAlgebra {
 
-
-class ManagedMatrixParameters;
-
 /** \class EpetraMatrix
   * \brief A Matrix with an Epetra_CrsMatrix interface
   * \details  An EpetraMatrix presents an Epetra_Matrix class.
@@ -22,14 +19,13 @@ class ManagedMatrixParameters;
   *  -# Provides an Epetra_CrsMatrix for derived classes to use, fill, manage, etc.
   *  -# Provides an interface for accessing this Epetra_CrsMatrix independent of base or derived
   classes
-  *  -# Provides a static method for creating an Epetra_CrsMatrix view of an AMP vector.
+  *  -# Provides a static method for creating an Epetra_CrsMatrix view of an AMP matrix.
   */
 
 class EpetraMatrix : public Matrix
 {
 private:
-    EpetraMatrix();
-    explicit EpetraMatrix( std::shared_ptr<MatrixParameters> );
+    EpetraMatrix() = delete;
 
 protected:
     /** \brief Bare pointer to an Epetra_CrsMatrix
@@ -56,7 +52,7 @@ protected:
      */
     void VerifyEpetraReturn( int err, const char *func ) const;
 
-    /** \brief Constrcutor
+    /** \brief Constructor
      * \param[in]  m1  Rowmap to create the Epetra matrix
      * \param m2  Unused
      * \param[in] entriesRow  The number of entries in the matrix per local row
@@ -107,9 +103,7 @@ public:
 
     /** \brief  A call-through to Epetra_CrsMatrix fillComplete
      */
-    virtual void fillComplete();
-
-    std::shared_ptr<Matrix> transpose() const override;
+    void fillComplete();
 };
 
 
