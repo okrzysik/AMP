@@ -28,7 +28,7 @@ public: // Convience typedef
 
 public:
     //! Empty constructor
-    kdtree2();
+    kdtree2() = default;
 
     /**
      * \brief   Constructor
@@ -130,18 +130,20 @@ private: // Internal data
     };
 
     // Internal data
-    size_t d_N;
-    uint8_t d_split_dim;
-    double d_split;
-    Point d_lb, d_ub;
-    kdtree2 *d_left, *d_right;
-    data_struct *d_data;
+    size_t d_N          = 0;
+    uint8_t d_split_dim = 0;
+    double d_split      = 0;
+    Point d_lb          = { 0 };
+    Point d_ub          = { 0 };
+    kdtree2 *d_left     = nullptr;
+    kdtree2 *d_right    = nullptr;
+    data_struct *d_data = nullptr;
 
 
 private: // Internal functions
-    void initialize( size_t N, const Point *x, const TYPE *data );
+    void initialize( const std::vector<Point> &x, const std::vector<TYPE> &data );
     static size_t find_split( size_t N, const double *x );
-    void splitData( size_t N, const Point *x, const TYPE *data );
+    void splitData( const std::vector<Point> &x, const std::vector<TYPE> &data );
     bool intersect( const Point &x, double dist2 ) const;
     void getPoints( std::vector<Point> &x ) const;
     void

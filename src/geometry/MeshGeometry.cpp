@@ -4,8 +4,8 @@
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshElement.h"
 #include "AMP/mesh/MeshUtilities.h"
+#include "AMP/utils/arrayHelpers.h"
 #include "AMP/utils/kdtree2.h"
-#include "AMP/utils/kdtree2.hpp"
 
 #include <mutex>
 #include <random>
@@ -14,7 +14,7 @@
 namespace AMP::Geometry {
 
 
-/********************************************************
+/********************************************************normalize
  * Constructors                                          *
  ********************************************************/
 MeshGeometry::MeshGeometry( std::shared_ptr<AMP::Mesh::Mesh> mesh )

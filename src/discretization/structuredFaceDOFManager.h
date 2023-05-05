@@ -106,8 +106,8 @@ private:
 
     // Data members
     std::shared_ptr<AMP::Mesh::Mesh> d_mesh;
-    int d_DOFsPerFace[3];
-    int d_gcw;
+    int d_DOFsPerFace[3] = { 0, 0, 0 };
+    int d_gcw            = 0;
 
     std::vector<AMP::Mesh::MeshElementID> d_local_ids[3];
     std::vector<AMP::Mesh::MeshElementID> d_remote_ids[3];

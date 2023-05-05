@@ -122,11 +122,11 @@ PetscErrorCode _AMP_GetDiagonal( Mat m, Vec d )
 PetscErrorCode _AMP_GetVecs( Mat m, Vec *right, Vec *left )
 {
     auto mat = PETSC::getAMP( m );
-    if ( right != PETSC_NULL ) {
+    if ( right != nullptr ) {
         auto pRight = AMP::LinearAlgebra::PetscVector::view( mat->getRightVector() );
         VecDuplicate( pRight->getVec(), right );
     }
-    if ( left != PETSC_NULL ) {
+    if ( left != nullptr ) {
         auto pLeft = AMP::LinearAlgebra::PetscVector::view( mat->getLeftVector() );
         VecDuplicate( pLeft->getVec(), left );
     }

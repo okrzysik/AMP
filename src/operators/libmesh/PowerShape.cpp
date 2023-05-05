@@ -655,9 +655,8 @@ void PowerShape::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
             r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
             if ( d_iDebugPrintInfoLevel > 3 )
                 AMP::pout << "Power Shape: Processed GP #: " << countGP << std::endl;
-        }
 
-        else if ( d_type == "zernikeRadial" ) {
+        } else if ( d_type == "zernikeRadial" ) {
 
             // Note: Dimensions are all in meter (m).
 

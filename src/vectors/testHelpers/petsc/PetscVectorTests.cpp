@@ -26,7 +26,7 @@ void checkPetscError( AMP::UnitTest *ut, PetscErrorCode i )
 {
     if ( i ) {
         char *ans;
-        PetscErrorMessage( i, PETSC_NULL, &ans );
+        PetscErrorMessage( i, nullptr, &ans );
         ut->failure( ans );
         delete[] ans;
     }
@@ -685,8 +685,8 @@ void PetscVectorTests::VerifySetRandomPetscVector( AMP::UnitTest *ut )
         vectora->setToScalar( 10.0 );
         vectorb->setToScalar( 10.0 );
 
-        checkPetscError( ut, VecSetRandom( *veca, PETSC_NULL ) );
-        checkPetscError( ut, VecSetRandom( *vecb, PETSC_NULL ) );
+        checkPetscError( ut, VecSetRandom( *veca, nullptr ) );
+        checkPetscError( ut, VecSetRandom( *vecb, nullptr ) );
 
         PASS_FAIL( vectora->maxNorm() < 1.0, "VecSetRandom for native petsc" );
         PASS_FAIL( vectorb->maxNorm() < 1.0, "VecSetRandom for managed petsc" );

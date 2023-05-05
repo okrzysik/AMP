@@ -212,7 +212,7 @@ void AMPManager::setHandlers()
 #ifdef AMP_USE_PETSC
     PetscPopSignalHandler();
     PetscPopErrorHandler();
-    PetscPushErrorHandler( &petsc_err_handler, PETSC_NULL );
+    PetscPushErrorHandler( &petsc_err_handler, nullptr );
 #endif
     // Set the error handlers for SAMRAI
 #ifdef AMP_USE_SAMRAI

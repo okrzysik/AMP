@@ -28,6 +28,8 @@ duplicateExpression:*/AMP/utils/Array.hpp
 duplicateExpression:*/AMP/utils/Database.hpp
 constParameter:*/AMP/matrices/Matrix.inline.h
 constParameter:*/AMP/vectors/Vector.inline.h
+containerOutOfBounds:*/AMP/utils/DelaunayHelpers.h
+containerOutOfBounds:*/AMP/utils/Units.hpp
 invalidLifetime:*/AMP/utils/kdtree2.hpp
 memsetClass:*/AMP/utils/Array.hpp
 multiCondition:*/AMP/vectors/Scalar.hpp
@@ -89,6 +91,7 @@ constParameter:*/src/operators/mechanics/GeneralCladThermalCreepPlasticModel.cpp
 constParameter:*/src/operators/trilinos/TrilinosMatrixShellOperator.cpp
 constParameter:*/src/vectors/petsc/PetscHelpers.cpp
 containerOutOfBounds:*/src/mesh/MeshElement.cpp
+containerOutOfBounds:*/src/mesh/structured/structuredMeshElement.cpp
 containerOutOfBounds:*/src/utils/DelaunayTessellation.cpp
 containerOutOfBounds:*/src/utils/test/test_AMP_MPI.cpp
 copyCtorPointerCopying:*/src/utils/AMP_MPI.cpp
@@ -107,6 +110,7 @@ knownConditionTrueFalse:*/src/time_integrators/oxide/OxideModel.cpp
 knownConditionTrueFalse:*/src/utils/threadpool/thread_pool.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayInterpolation.cpp
 knownConditionTrueFalse:*/src/utils/DelaunayTessellation.cpp
+legacyUninitvar:*/src/vectors/testHelpers/trilinos/epetra/EpetraVectorTests.cpp
 missingReturn:*/src/utils/AMPManager.cpp
 operatorEqVarError:*/src/utils/threadpool/ThreadPoolId.hpp
 negativeContainerIndex:*/src/utils/DelaunayTessellation.cpp
@@ -171,6 +175,7 @@ unassignedVariable:*/src/mesh/triangle/TriangleMesh.cpp
 constParameter:*/src/solvers/test/testMatrixFreeML.cpp
 constArgument:*/mesh/test/testDendroSearch.cpp
 constArgument:*/mesh/test/testHex8ElementMapping.cpp
+duplicateAssignExpression:*/src/operators/libmesh/PowerShape.cpp
 duplicateAssignExpression:*/src/operators/test/diffusion/testLinearOperatorFromMatrix-1.cpp
 duplicateAssignExpression:*/src/operators/test/mechanics/testLinearMechanics_reset.cpp
 duplicateAssignExpression:*/src/operators/test/mechanics/testNonlinearMechanics_reset.cpp

@@ -20,7 +20,7 @@ class ArrayVectorData : public VectorData
 private:
     AMP::Array<T, FUN, Allocator> d_array;
     AMP_MPI d_comm;
-    size_t d_offset;
+    size_t d_offset = 0;
     ArraySize d_blockIndex;
     ArraySize d_globalArraySize;
 

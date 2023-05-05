@@ -321,7 +321,7 @@ public:
     }
 
 private:
-    TYPE d_data;
+    TYPE d_data = TYPE();
 };
 template<class TYPE>
 class KeyDataArray final : public KeyData
@@ -596,7 +596,7 @@ TYPE Database::getScalar( std::string_view key, const Units &unit, source_locati
     DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
     size_t length = keyData->arraySize().length();
     DATABASE_INSIST( length == 1, src, "Variable %s is not a scalar", key.data() );
-    TYPE data;
+    TYPE data       = TYPE();
     double factor   = keyData->convertUnits( unit, key );
     auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
     auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );

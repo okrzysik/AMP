@@ -56,13 +56,13 @@ AMP_MPI NativePetscMatrixData::getComm() const
 Vector::shared_ptr NativePetscMatrixData::getRightVector() const
 {
     Vec a;
-    MatCreateVecs( d_Mat, &a, PETSC_NULL );
+    MatCreateVecs( d_Mat, &a, nullptr );
     return createVector( a, true );
 }
 Vector::shared_ptr NativePetscMatrixData::getLeftVector() const
 {
     Vec a;
-    MatCreateVecs( d_Mat, PETSC_NULL, &a );
+    MatCreateVecs( d_Mat, nullptr, &a );
     return createVector( a, true );
 }
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getRightDOFManager() const
@@ -105,7 +105,7 @@ void NativePetscMatrixData::getValuesByGlobalID(
         if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
             continue;
         int numCols = 0;
-        MatGetRow( d_Mat, rows[i], &numCols, PETSC_NULL, PETSC_NULL );
+        MatGetRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
         if ( numCols == 0 )
             continue;
         const PetscInt *out_cols;
@@ -124,7 +124,7 @@ void NativePetscMatrixData::getRowByGlobalID( size_t row,
                                               std::vector<double> &values ) const
 {
     int numCols;
-    MatGetRow( d_Mat, row, &numCols, PETSC_NULL, PETSC_NULL );
+    MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
     cols.resize( numCols );
     values.resize( numCols );
     if ( numCols ) {
@@ -139,7 +139,7 @@ void NativePetscMatrixData::getRowByGlobalID( size_t row,
 std::vector<size_t> NativePetscMatrixData::getColumnIDs( size_t row ) const
 {
     int numCols;
-    MatGetRow( d_Mat, row, &numCols, PETSC_NULL, PETSC_NULL );
+    MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
     std::vector<size_t> cols( numCols );
 
     if ( numCols ) {
