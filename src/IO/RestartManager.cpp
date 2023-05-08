@@ -57,7 +57,7 @@ void RestartManager::write( const std::string &name, Compression compress )
     }
     writeHDF5( fid, "RestartDataIDs", ids );
     writeHDF5( fid, "RestartDataNames", names );
-    for ( const auto [id, data] : d_data ) {
+    for ( const auto& [id, data] : d_data ) {
         auto name = hash2String( id );
         data->write( fid, name );
     }
