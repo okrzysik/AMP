@@ -74,11 +74,11 @@ kdtree2<NDIM, TYPE>::kdtree2( const std::vector<std::array<double, NDIM>> &x,
 template<uint8_t NDIM, class TYPE>
 void kdtree2<NDIM, TYPE>::initialize( const std::vector<Point> &x, const std::vector<TYPE> &data )
 {
-    size_t N = x.size();
+    d_N = x.size();
     // Update the box
     d_lb.fill( 1e100 );
     d_ub.fill( -1e100 );
-    for ( size_t i = 0; i < N; i++ ) {
+    for ( size_t i = 0; i < d_N; i++ ) {
         for ( int d = 0; d < NDIM; d++ ) {
             d_lb[d] = std::min( d_lb[d], x[i][d] );
             d_ub[d] = std::max( d_ub[d], x[i][d] );
@@ -86,7 +86,7 @@ void kdtree2<NDIM, TYPE>::initialize( const std::vector<Point> &x, const std::ve
     }
     // If we have more than the threshold split the tree
     constexpr uint64_t threshold = 40; // Optimize for performance
-    if ( N > threshold ) {
+    if ( d_N > threshold ) {
         // Split the tree and recurse
         splitData( x, data );
     } else {
