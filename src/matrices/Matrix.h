@@ -1,7 +1,6 @@
 #ifndef included_AMP_Matrix
 #define included_AMP_Matrix
 
-#include "AMP/matrices/ManagedMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/MatrixData.h"
 #include "AMP/utils/ParameterBase.h"
@@ -157,7 +156,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void addValuesByGlobalID(
+    void addValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
     {
         d_matrixData->addValuesByGlobalID( num_rows, num_cols, rows, cols, values );
@@ -173,7 +172,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void setValuesByGlobalID(
+    void setValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
     {
         d_matrixData->setValuesByGlobalID( num_rows, num_cols, rows, cols, values );
@@ -188,7 +187,7 @@ public:
      * \details  This method will return zero for any entries that
      *   have not been allocated or are not ghosts on the current processor.
      */
-    virtual void getValuesByGlobalID(
+    void getValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
     {
         d_matrixData->getValuesByGlobalID( num_rows, num_cols, rows, cols, values );
@@ -199,7 +198,7 @@ public:
      * \param[out] cols  The column ids of the returned values
      * \param[out] values  The values in the row
      */
-    virtual void
+    void
     getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const
     {
         d_matrixData->getRowByGlobalID( row, cols, values );
@@ -208,7 +207,7 @@ public:
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row
      */
-    virtual std::vector<size_t> getColumnIDs( size_t row ) const
+    std::vector<size_t> getColumnIDs( size_t row ) const
     {
         return d_matrixData->getColumnIDs( row );
     }
@@ -216,40 +215,40 @@ public:
     /** \brief  Perform communication to ensure values in the
      * matrix are the same across cores.
      */
-    virtual void makeConsistent() { return d_matrixData->makeConsistent(); }
+    void makeConsistent() { return d_matrixData->makeConsistent(); }
 
     /** \brief  Get the number of local rows in the matrix
      * \return  The number of local rows
      */
-    virtual size_t numLocalRows() const { return d_matrixData->numLocalRows(); }
+    size_t numLocalRows() const { return d_matrixData->numLocalRows(); }
 
     /** \brief  Get the number of global rows in the matrix
      * \return  The number of global rows
      */
-    virtual size_t numGlobalRows() const { return d_matrixData->numGlobalRows(); }
+    size_t numGlobalRows() const { return d_matrixData->numGlobalRows(); }
 
     /** \brief  Get the number of local columns in the matrix
      * \return  The number of local columns
      */
-    virtual size_t numLocalColumns() const { return d_matrixData->numLocalColumns(); }
+    size_t numLocalColumns() const { return d_matrixData->numLocalColumns(); }
 
     /** \brief  Get the number of global columns in the matrix
      * \return  The number of global columns
      */
-    virtual size_t numGlobalColumns() const { return d_matrixData->numGlobalColumns(); }
+    size_t numGlobalColumns() const { return d_matrixData->numGlobalColumns(); }
 
     /** \brief  Get the global id of the beginning row
      * \return  beginning global row id
      */
-    virtual size_t beginRow() const { return d_matrixData->beginRow(); }
+    size_t beginRow() const { return d_matrixData->beginRow(); }
 
     /** \brief  Get the global id of the ending row
      * \return  ending global row id
      */
-    virtual size_t endRow() const { return d_matrixData->endRow(); }
+    size_t endRow() const { return d_matrixData->endRow(); }
 
     //! Get the comm
-    virtual AMP_MPI getComm() const { return d_matrixData->getComm(); }
+    AMP_MPI getComm() const { return d_matrixData->getComm(); }
 
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
@@ -280,7 +279,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void addValueByGlobalID( size_t row, size_t col, double value )
+    void addValueByGlobalID( size_t row, size_t col, double value )
     {
         addValuesByGlobalID( 1, 1, &row, &col, &value );
     }
@@ -293,7 +292,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void setValueByGlobalID( size_t row, size_t col, double value )
+    void setValueByGlobalID( size_t row, size_t col, double value )
     {
         setValuesByGlobalID( 1, 1, &row, &col, &value );
     }
@@ -303,7 +302,7 @@ public:
      * \param[in] col  The column id of value
      * \details  This method will return zero for any values that have not been allocated.
      */
-    virtual double getValueByGlobalID( size_t row, size_t col ) const
+    double getValueByGlobalID( size_t row, size_t col ) const
     {
         double ans;
         getValuesByGlobalID( 1, 1, &row, &col, &ans );
