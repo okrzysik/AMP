@@ -46,6 +46,41 @@ public:
     //! Return the global number of columns
     size_t getGlobalNumberOfColumns() const;
 
+    /** \brief Return the number of entries in each row
+     * \return  An integer array of the number of entries in each
+     * local row
+     */
+    const int *entryList() const;
+
+    /** \brief Return the number of entries in each row
+     * \return  An integer array of the number of entries in each
+     * local row
+     */
+    int *entryList();
+
+    /** \brief Set the number of non-zeros in a particular row
+     * \param[in] row  The row number
+     * \param[in] entries  The number of non-zero entries
+     */
+    void setEntriesInRow( int row, int entries );
+
+    /** \brief Return the number of non-zero entries in a local row
+     * \param[in] i The local row id
+     * \return  The number of entries in the row
+     */
+    int &entriesInRow( int i );
+
+    /** \brief Return the number of non-zero entries in a local row
+     * \param[in] i The local row id
+     * \return  The number of entries in the row
+     */
+    int entriesInRow( int i ) const;
+
+    /** \brief  Add columns to a description
+     * \param[in] cols  The column ids
+     */
+    void addColumns( const std::set<size_t> &cols );
+
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
     std::shared_ptr<AMP::Discretization::DOFManager> getLeftDOFManager();
@@ -81,6 +116,12 @@ protected:
 
     // The DOFManager for the right vector ( may be null )
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerRight;
+
+    //!  The number of nonzeros per row of the matrix
+    std::vector<int> d_vEntriesPerRow;
+
+    //!  The set of columns this processor has
+    std::set<int> d_sColumns;
 
     // The comm of the matrix
     AMP_MPI d_comm;
