@@ -4,9 +4,15 @@
 #include <set>
 
 #include "AMP/discretization/DOF_Manager.h"
-#include "AMP/matrices/ManagedMatrixParameters.h"
-#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/MatrixParameters.h"
 
+
+DISABLE_WARNINGS
+#include "Epetra_CrsMatrix.h"
+#include "Epetra_FECrsMatrix.h"
+#include <EpetraExt_Transpose_RowMatrix.h>
+ENABLE_WARNINGS
 
 namespace AMP::LinearAlgebra {
 
@@ -16,7 +22,7 @@ namespace AMP::LinearAlgebra {
  * \details  This class stores an Epetra_FECrsMatrix and provides
  * the AMP interface to this matrix.
  */
-class ManagedEpetraMatrix : public EpetraMatrix
+class ManagedEpetraMatrix : public Matrix
 {
 protected:
     //!  Empty constructor
@@ -28,22 +34,18 @@ protected:
     //!  Assignment operator
     ManagedEpetraMatrix &operator=( const ManagedEpetraMatrix &rhs ) = delete;
 
-    //!  Parameters used to construct the matrix
-    std::shared_ptr<ManagedMatrixParameters> d_pParameters;
-
-    //!  \f$A_{i,j}\f$ storage of off-core data
-    std::map<int, std::map<int, double>> d_OtherData;
-
-    //!  Update data off-core
-    void setOtherData();
-
     void multiply( shared_ptr other_op, shared_ptr &result ) override;
+
+    //! Return the type of the matrix
+    std::string type() const override { return "ManagedEpetraMatrix"; }
 
 public:
     /** \brief Constructor
      * \param[in] p  The description of the matrix
      */
-    explicit ManagedEpetraMatrix( std::shared_ptr<ManagedMatrixParameters> p );
+    explicit ManagedEpetraMatrix( std::shared_ptr<MatrixParameters> p );
+
+    ManagedEpetraMatrix( std::shared_ptr<MatrixData> data );
 
     /** \brief Constructor from Epetra_CrsMatrix
      * \param[in]  m  Matrix to wrap
@@ -54,10 +56,14 @@ public:
     //! Destructor
     virtual ~ManagedEpetraMatrix() {}
 
+    Epetra_CrsMatrix &getEpetra_CrsMatrix();
+
+    /** \brief  Return an Epetra_CrsMatrix
+     * \return An Epetra_CrsMatrix view of this matrix
+     */
+    const Epetra_CrsMatrix &getEpetra_CrsMatrix() const;
+
     std::shared_ptr<Matrix> transpose() const override;
-
-    void createValuesByGlobalID( size_t, const std::vector<size_t> & );
-
 
     void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     void multTranspose( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
@@ -65,45 +71,13 @@ public:
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
     void scale( double alpha ) override;
     void axpy( double alpha, const Matrix &rhs ) override;
-
-    size_t numGlobalRows() const override;
-    size_t numGlobalColumns() const override;
-    size_t numLocalRows() const override;
-    size_t numLocalColumns() const override;
-    AMP::AMP_MPI getComm() const override;
-    size_t beginRow() const override;
-    size_t endRow() const override;
-
-    void addValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
-    void getRowByGlobalID( size_t row,
-                           std::vector<size_t> &cols,
-                           std::vector<double> &values ) const override;
-
-
-    /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
-     * \param[in]  row Which row
-     */
-    std::vector<size_t> getColumnIDs( size_t row ) const override;
-
-    void getValuesByGlobalID( size_t num_rows,
-                              size_t num_cols,
-                              size_t *rows,
-                              size_t *cols,
-                              double *values ) const override;
-
     void setScalar( double ) override;
     void setDiagonal( Vector::const_shared_ptr in ) override;
 
-    void makeConsistent() override;
     double L1Norm() const override;
     std::shared_ptr<Matrix> clone() const override;
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
-    std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
-    std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
     void setIdentity() override;
     void zero() override;
 };
