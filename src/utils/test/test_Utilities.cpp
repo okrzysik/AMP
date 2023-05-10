@@ -459,6 +459,7 @@ int main( int argc, char *argv[] )
         IO::recursiveMkdir( "testUtilitiesDir/a/b" );
         globalComm.barrier();
         pass = IO::fileExists( "testUtilitiesDir/a/b" );
+        globalComm.barrier();
         if ( globalComm.getRank() == 0 ) {
             IO::deleteFile( "testUtilitiesDir/a/b" );
             IO::deleteFile( "testUtilitiesDir/a" );

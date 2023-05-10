@@ -26,6 +26,22 @@ NativePetscMatrixData::NativePetscMatrixData( Mat m, bool internally_created )
     d_MatCreatedInternally = internally_created;
 }
 
+NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> params )
+    : MatrixData( params )
+{
+    AMP_ASSERT( d_pParameters );
+    const auto &comm = d_pParameters->getComm().getCommunicator();
+    MatCreate( comm, &d_Mat );
+    MatSetFromOptions( d_Mat );
+    MatSetSizes( d_Mat,
+                 d_pParameters->getLocalNumberOfRows(),
+                 d_pParameters->getLocalNumberOfColumns(),
+                 d_pParameters->getGlobalNumberOfRows(),
+                 d_pParameters->getGlobalNumberOfColumns() );
+
+    d_MatCreatedInternally = true;
+}
+
 NativePetscMatrixData::~NativePetscMatrixData()
 {
     if ( d_MatCreatedInternally )
@@ -35,6 +51,9 @@ NativePetscMatrixData::~NativePetscMatrixData()
 
 AMP_MPI NativePetscMatrixData::getComm() const
 {
+    if ( d_pParameters )
+        return d_pParameters->getComm();
+
     AMP_ASSERT( d_Mat );
     MPI_Comm comm;
     PetscObjectGetComm( reinterpret_cast<PetscObject>( d_Mat ), &comm );
@@ -56,12 +75,20 @@ Vector::shared_ptr NativePetscMatrixData::getLeftVector() const
     MatCreateVecs( d_Mat, nullptr, &a );
     return createVector( a, true );
 }
+
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getRightDOFManager() const
 {
+    if ( d_pParameters )
+        return d_pParameters->getRightDOFManager();
+
     return getRightVector()->getDOFManager();
 }
+
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getLeftDOFManager() const
 {
+    if ( d_pParameters )
+        return d_pParameters->getLeftDOFManager();
+
     return getLeftVector()->getDOFManager();
 }
 
