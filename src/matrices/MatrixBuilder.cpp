@@ -1,7 +1,7 @@
 #include "AMP/matrices/MatrixBuilder.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/DenseSerialMatrix.h"
-#include "AMP/matrices/ManagedMatrixParameters.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/DenseSerialMatrixData.h"
 #include "AMP/utils/Utilities.h"
 
@@ -10,6 +10,7 @@
     #include "AMP/vectors/petsc/PetscHelpers.h"
 #endif
 #ifdef AMP_USE_TRILINOS
+    #include "AMP/matrices/trilinos/EpetraMatrixData.h"
     #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
     #include <Epetra_CrsMatrix.h>
 #endif
@@ -51,8 +52,8 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
             comm = AMP_MPI( AMP_COMM_SELF );
 
         // Create the matrix parameters
-        auto params = std::make_shared<AMP::LinearAlgebra::ManagedMatrixParameters>(
-            leftDOF, rightDOF, comm );
+        auto params =
+            std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
         params->d_CommListLeft  = leftVec->getCommunicationList();
         params->d_CommListRight = rightVec->getCommunicationList();
         params->d_VariableLeft  = leftVec->getVariable();
@@ -71,14 +72,15 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         params->addColumns( columns );
 
         // Create the matrix
-        auto newMatrix = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( params );
-        newMatrix->setEpetraMaps( leftVec, rightVec );
+        auto newMatrixData = std::make_shared<AMP::LinearAlgebra::EpetraMatrixData>( params );
+        newMatrixData->setEpetraMaps( leftVec, rightVec );
         // Initialize the matrix
         for ( size_t row = row_start; row < row_end; row++ ) {
             auto col = getRow( row );
-            newMatrix->createValuesByGlobalID( row, col );
+            newMatrixData->createValuesByGlobalID( row, col );
         }
-        newMatrix->fillComplete();
+        newMatrixData->fillComplete();
+        auto newMatrix = std::make_shared<AMP::LinearAlgebra::ManagedEpetraMatrix>( newMatrixData );
         newMatrix->zero();
         newMatrix->makeConsistent();
         return newMatrix;
