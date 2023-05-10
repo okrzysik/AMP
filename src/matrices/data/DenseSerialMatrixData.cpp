@@ -46,6 +46,46 @@ std::shared_ptr<MatrixData> DenseSerialMatrixData::cloneMatrixData() const
     return newMatrixData;
 }
 
+std::shared_ptr<MatrixData> DenseSerialMatrixData::transpose() const
+{
+    // Create the matrix parameters
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
+        d_DOFManagerRight, d_DOFManagerLeft, getComm() );
+    params->d_VariableLeft  = d_VariableRight;
+    params->d_VariableRight = d_VariableLeft;
+    // Create the matrix
+    auto newMatrixData = std::make_shared<AMP::LinearAlgebra::DenseSerialMatrixData>( params );
+
+    auto *m2RawData = newMatrixData->d_M;
+
+    const auto *m1RawData = this->d_M;
+    const auto nrows      = this->d_rows;
+    const auto ncols      = this->d_cols;
+
+    for ( size_t i = 0; i < nrows; ++i ) {
+        for ( size_t j = 0; j < ncols; ++j ) {
+            m2RawData[j + i * ncols] = m1RawData[i + j * nrows];
+        }
+    }
+
+    return newMatrixData;
+}
+
+void DenseSerialMatrixData::extractDiagonal( std::shared_ptr<Vector> diag ) const
+{
+    AMP_ASSERT( diag );
+    AMP_ASSERT( diag->getGlobalSize() == d_cols );
+
+    std::vector<double> y( d_cols );
+    std::vector<size_t> cols( d_cols );
+
+    for ( size_t i = 0; i < d_cols; i++ )
+        y[i] = d_M[i + i * d_rows];
+
+    std::iota( cols.begin(), cols.end(), 0 );
+    diag->setValuesByGlobalID( d_cols, cols.data(), y.data() );
+}
+
 /********************************************************
  * Get/Set values                                        *
  ********************************************************/

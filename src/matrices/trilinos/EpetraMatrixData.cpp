@@ -76,6 +76,21 @@ std::shared_ptr<MatrixData> EpetraMatrixData::cloneMatrixData() const
     return std::shared_ptr<MatrixData>( r );
 }
 
+std::shared_ptr<MatrixData> EpetraMatrixData::transpose() const
+{
+    EpetraExt::RowMatrix_Transpose transposer;
+    Epetra_CrsMatrix &matrix = const_cast<Epetra_CrsMatrix &>( *d_epetraMatrix );
+    return std::shared_ptr<MatrixData>(
+        new EpetraMatrixData( dynamic_cast<Epetra_CrsMatrix *>( &transposer( matrix ) ), true ) );
+}
+
+void EpetraMatrixData::extractDiagonal( Vector::shared_ptr vec ) const
+{
+    auto view = EpetraVector::view( vec );
+    VerifyEpetraReturn( d_epetraMatrix->ExtractDiagonalCopy( view->getEpetra_Vector() ),
+                        "extractDiagonal" );
+}
+
 void EpetraMatrixData::VerifyEpetraReturn( int err, const char *func ) const
 {
     std::stringstream error;

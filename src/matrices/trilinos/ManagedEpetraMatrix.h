@@ -65,21 +65,11 @@ public:
 
     std::shared_ptr<Matrix> transpose() const override;
 
-    void mult( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
-    void multTranspose( const Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
     Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr buf = Vector::shared_ptr() ) const override;
-    void scale( double alpha ) override;
-    void axpy( double alpha, const Matrix &rhs ) override;
-    void setScalar( double ) override;
-    void setDiagonal( Vector::const_shared_ptr in ) override;
-
-    double L1Norm() const override;
     std::shared_ptr<Matrix> clone() const override;
     Vector::shared_ptr getRightVector() const override;
     Vector::shared_ptr getLeftVector() const override;
-    void setIdentity() override;
-    void zero() override;
 };
 
 
