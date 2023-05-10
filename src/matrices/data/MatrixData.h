@@ -26,6 +26,10 @@ public:
 
     virtual std::shared_ptr<MatrixData> cloneMatrixData() const = 0;
 
+    virtual std::shared_ptr<MatrixData> transpose() const = 0;
+
+    virtual void extractDiagonal( std::shared_ptr<Vector> buf ) const = 0;
+
     //! Return the type of the matrix
     virtual std::string type() const = 0;
 

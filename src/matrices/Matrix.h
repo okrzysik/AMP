@@ -3,6 +3,7 @@
 
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/MatrixData.h"
+#include "AMP/matrices/operations/MatrixOperations.h"
 #include "AMP/utils/ParameterBase.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
@@ -54,32 +55,51 @@ public:
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{Ain} = \mathbf{out}\f$.
      */
-    virtual void mult( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out ) = 0;
+    void mult( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out );
 
     /** \brief  Matrix transpose-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
      */
-    virtual void multTranspose( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out ) = 0;
-
-
-    /** \brief  Return a new matrix that is the transpose of this one
-     * \return  A copy of this matrix transposed.
-     */
-    virtual std::shared_ptr<Matrix> transpose() const;
-
-    /** \brief  Return a matrix with the same non-zero and distributed structure
-     * \return  The new matrix
-     */
-    virtual shared_ptr clone() const = 0;
+    void multTranspose( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out );
 
     /** \brief  Scale the matrix by a scalar
      * \param[in] alpha  The value to scale by
      * \details  Compute \f$\mathbf{A} = \alpha\mathbf{A}\f$
      */
-    virtual void scale( double alpha ) = 0;
+    void scale( AMP::Scalar alpha );
 
+    /** \brief  Compute the linear combination of two matrices
+     * \param[in] alpha  scalar
+     * \param[in] X matrix
+     * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
+     */
+    void axpy( AMP::Scalar alpha, const Matrix &X );
+
+    /** \brief  Set the non-zeros of the matrix to a scalar
+     * \param[in]  alpha  The value to set the non-zeros to
+     */
+    void setScalar( AMP::Scalar alpha );
+
+    /** \brief  Set the non-zeros of the matrix to zero
+     * \details  May not deallocate space.
+     */
+    void zero();
+
+    /** \brief  Set the diagonal to the values in a vector
+     * \param[in] in The values to set the diagonal to
+     */
+    void setDiagonal( Vector::const_shared_ptr in );
+
+    /** \brief  Set the matrix to the identity matrix
+     */
+    void setIdentity();
+
+    /** \brief Compute the maximum column sum
+     * \return  The L1 norm of the matrix
+     */
+    AMP::Scalar L1Norm() const;
 
     /** \brief  Compute the product of two matrices
      * \param[in] A  A multiplicand
@@ -93,33 +113,17 @@ public:
      * \param[in] X matrix
      * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
      */
-    virtual void axpy( double alpha, const Matrix &X ) = 0;
+    void axpy( AMP::Scalar alpha, std::shared_ptr<const Matrix> X );
 
-    /** \brief  Compute the linear combination of two matrices
-     * \param[in] alpha  scalar
-     * \param[in] X matrix
-     * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
+    /** \brief  Return a new matrix that is the transpose of this one
+     * \return  A copy of this matrix transposed.
      */
-    void axpy( double alpha, std::shared_ptr<const Matrix> X );
+    virtual std::shared_ptr<Matrix> transpose() const;
 
-    /** \brief  Set the non-zeros of the matrix to a scalar
-     * \param[in]  alpha  The value to set the non-zeros to
+    /** \brief  Return a matrix with the same non-zero and distributed structure
+     * \return  The new matrix
      */
-    virtual void setScalar( double alpha ) = 0;
-
-    /** \brief  Set the non-zeros of the matrix to zero
-     * \details  May not deallocate space.
-     */
-    virtual void zero() = 0;
-
-    /** \brief  Set the diagonal to the values in a vector
-     * \param[in] in The values to set the diagonal to
-     */
-    virtual void setDiagonal( Vector::const_shared_ptr in ) = 0;
-
-    /** \brief  Set the matrix to the identity matrix
-     */
-    virtual void setIdentity() = 0;
+    virtual shared_ptr clone() const = 0;
 
     /** \brief  Extract the diagonal from a matrix
      * \param[in]  buf  An optional vector to use as a buffer
@@ -139,11 +143,6 @@ public:
      * \return  A newly created left vector
      */
     virtual Vector::shared_ptr getLeftVector() const = 0;
-
-    /** \brief Compute the maximum column sum
-     * \return  The L1 norm of the matrix
-     */
-    virtual double L1Norm() const = 0;
 
 public:
     /** \brief  Add values to those in the matrix
@@ -336,6 +335,7 @@ protected:
 
     //! Pointer to data
     std::shared_ptr<MatrixData> d_matrixData;
+    std::shared_ptr<MatrixOperations> d_matrixOps;
 };
 
 inline std::shared_ptr<Matrix> Matrix::transpose() const

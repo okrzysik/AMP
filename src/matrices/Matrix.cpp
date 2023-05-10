@@ -37,7 +37,7 @@ std::shared_ptr<Matrix> Matrix::matMultiply( shared_ptr A, shared_ptr B )
 /********************************************************
  * axpy                                                  *
  ********************************************************/
-void Matrix::axpy( double alpha, std::shared_ptr<const Matrix> x )
+void Matrix::axpy( AMP::Scalar alpha, std::shared_ptr<const Matrix> x )
 {
     AMP_ASSERT( x );
     size_t N1 = x->numGlobalColumns();
@@ -93,5 +93,36 @@ std::ostream &operator<<( std::ostream &out, const Matrix &M_in )
     }
     return out;
 }
+
+void Matrix::mult( AMP::LinearAlgebra::Vector::const_shared_ptr in,
+                   AMP::LinearAlgebra::Vector::shared_ptr out )
+{
+    d_matrixOps->mult( in, *getMatrixData(), out );
+}
+
+void Matrix::multTranspose( AMP::LinearAlgebra::Vector::const_shared_ptr in,
+                            AMP::LinearAlgebra::Vector::shared_ptr out )
+{
+    d_matrixOps->multTranspose( in, *getMatrixData(), out );
+}
+
+void Matrix::scale( AMP::Scalar alpha ) { d_matrixOps->scale( alpha, *getMatrixData() ); }
+
+void Matrix::axpy( AMP::Scalar alpha, const Matrix &X )
+{
+    d_matrixOps->axpy( alpha, *( X.getMatrixData() ), *getMatrixData() );
+}
+
+void Matrix::setScalar( AMP::Scalar alpha ) { d_matrixOps->setScalar( alpha, *getMatrixData() ); }
+
+void Matrix::zero() { d_matrixOps->zero( *getMatrixData() ); }
+
+void Matrix::setDiagonal( Vector::const_shared_ptr in )
+{
+    d_matrixOps->setDiagonal( in, *getMatrixData() );
+}
+void Matrix::setIdentity() { d_matrixOps->setIdentity( *getMatrixData() ); }
+
+AMP::Scalar Matrix::L1Norm() const { return d_matrixOps->L1Norm( *getMatrixData() ); }
 
 } // namespace AMP::LinearAlgebra

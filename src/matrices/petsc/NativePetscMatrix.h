@@ -15,18 +15,18 @@ namespace AMP::LinearAlgebra {
 class NativePetscMatrix : public Matrix
 {
 protected:
-    /** \brief Unused default constructor
-     */
-    NativePetscMatrix();
-
     void multiply( std::shared_ptr<Matrix> other_op, std::shared_ptr<Matrix> &result ) override;
 
 public:
+    NativePetscMatrix();
+
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap
      * \param[in] dele  Let this class deallocate the Mat
      */
     explicit NativePetscMatrix( Mat m, bool dele = false );
+
+    explicit NativePetscMatrix( std::shared_ptr<MatrixData> data );
 
     /** \brief Destructor
      */
@@ -47,9 +47,6 @@ public:
      */
     void copyFromMat( Mat m );
 
-    void mult( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
-    void multTranspose( Vector::const_shared_ptr in, Vector::shared_ptr out ) override;
-
     std::shared_ptr<Matrix> clone() const override;
 
     Vector::shared_ptr getRightVector() const override;
@@ -57,17 +54,8 @@ public:
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
     std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 
-    void scale( double alpha ) override;
-    void axpy( double alpha, const Matrix &x ) override;
-
-    void setScalar( double ) override;
-    void setDiagonal( Vector::const_shared_ptr in ) override;
-
     Vector::shared_ptr
     extractDiagonal( Vector::shared_ptr p = Vector::shared_ptr() ) const override;
-    double L1Norm() const override;
-    void setIdentity() override;
-    void zero() override;
 
 private:
 };

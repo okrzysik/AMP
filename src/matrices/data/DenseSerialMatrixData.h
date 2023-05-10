@@ -8,6 +8,7 @@
 #include <memory>
 
 class DenseSerialMatrix;
+class DenseSerialMatrixOperations;
 
 namespace AMP::LinearAlgebra {
 
@@ -40,6 +41,10 @@ public:
      * \return  The new matrix
      */
     std::shared_ptr<MatrixData> cloneMatrixData() const override;
+
+    std::shared_ptr<MatrixData> transpose() const override;
+
+    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
 
     /** \brief  Add values to those in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -152,6 +157,7 @@ protected:
     double *d_M = nullptr;
 
     friend class DenseSerialMatrix;
+    friend class DenseSerialMatrixOperations;
 };
 } // namespace AMP::LinearAlgebra
 
