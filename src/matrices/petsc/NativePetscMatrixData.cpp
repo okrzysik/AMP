@@ -11,24 +11,15 @@
 
 namespace AMP::LinearAlgebra {
 
-
-// Get vector
-static std::shared_ptr<Vec> getVec( std::shared_ptr<Vector> v )
-{
-    auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
-    if ( data )
-        return std::shared_ptr<Vec>( new Vec( data->getVec() ), []( auto ) {} );
-    return std::shared_ptr<Vec>( new Vec( PETSC::getVec( v ) ), []( Vec *v ) { VecDestroy( v ); } );
-}
-static std::shared_ptr<Vec> getVec( std::shared_ptr<const Vector> v )
-{
-    return getVec( std::const_pointer_cast<Vector>( v ) );
-}
-
-
 /********************************************************
  * Constructors                                          *
  ********************************************************/
+NativePetscMatrixData::NativePetscMatrixData()
+{
+    d_Mat                  = nullptr;
+    d_MatCreatedInternally = false;
+}
+
 NativePetscMatrixData::NativePetscMatrixData( Mat m, bool internally_created )
 {
     d_Mat                  = m;
@@ -185,11 +176,21 @@ std::shared_ptr<MatrixData> NativePetscMatrixData::cloneMatrixData() const
     AMP_ERROR( "not quite implemented" );
     return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
+std::shared_ptr<MatrixData> NativePetscMatrixData::transpose() const
+{
+    AMP_ERROR( "Not implemented" );
+}
 std::shared_ptr<MatrixData> NativePetscMatrixData::duplicateMat( Mat m )
 {
     Mat newMat;
     MatDuplicate( m, MAT_DO_NOT_COPY_VALUES, &newMat );
     return std::make_shared<NativePetscMatrixData>( newMat, true );
+}
+
+void NativePetscMatrixData::extractDiagonal( std::shared_ptr<Vector> v ) const
+{
+    auto data = std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() );
+    MatGetDiagonal( d_Mat, data->getVec() );
 }
 
 
