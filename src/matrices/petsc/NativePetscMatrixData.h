@@ -16,6 +16,9 @@ class NativePetscMatrixData : public MatrixData
 {
 public:
     NativePetscMatrixData();
+
+    explicit NativePetscMatrixData( std::shared_ptr<MatrixParameters> params );
+
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap
      * \param[in] dele  Let this class deallocate the Mat
