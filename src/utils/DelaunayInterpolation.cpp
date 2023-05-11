@@ -760,9 +760,11 @@ void DelaunayInterpolation<TYPE>::interp_cubic_single( const double f[],
                                                        int extrap ) const
 {
     const bool check_collinear = true; // Do we want to perform checks that points are collinear
-    double x2[NDIM_MAX * ( NDIM_MAX + 1 )], f2[NDIM_MAX + 1];
-    double g2[NDIM_MAX * ( NDIM_MAX + 1 )], L[NDIM_MAX + 1];
-    const double nan = std::numeric_limits<double>::quiet_NaN();
+    double x2[NDIM_MAX * ( NDIM_MAX + 1 )] = { 0 };
+    double g2[NDIM_MAX * ( NDIM_MAX + 1 )] = { 0 };
+    double f2[NDIM_MAX + 1]                = { 0 };
+    double L[NDIM_MAX + 1]                 = { 0 };
+    const double nan                       = std::numeric_limits<double>::quiet_NaN();
     // Check if the triange index is valid
     int ndim = d_x.size( 0 );
     if ( index == -1 && extrap == 0 ) {
@@ -1422,7 +1424,7 @@ void DelaunayInterpolation<TYPE>::compute_Barycentric( const int ndim,
         }
     }
     // double r[ndim];
-    double r[NDIM_MAX];
+    double r[NDIM_MAX] = { 0 };
     for ( int i = 0; i < ndim; i++ )
         r[i] = xi[i] - x[i + ndim * ndim];
     DelaunayHelpers::solve( ndim, T, r, L );
