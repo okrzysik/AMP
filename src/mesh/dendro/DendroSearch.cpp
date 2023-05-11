@@ -92,7 +92,7 @@ void DendroSearch::projectOnBoundaryID(
         AMP::Mesh::MeshElement controlGeomType::CellElement = d_localElems[0];
         std::vector<AMP::Mesh::MeshElement> controlGeomType::CellElementVertices =
             controlGeomType::CellElement.getElements( AMP::Mesh::GeomType::Vertex );
-        AMP_CHECK_ASSERT( controlGeomType::CellElementVertices.size() == 8 );
+        AMP_DEBUG_ASSERT( controlGeomType::CellElementVertices.size() == 8 );
         AMP::Mesh::MeshElement hex8ElementGeomType::FaceVertices[24];
         for ( size_t f = 0; f < 6; ++f ) {
             for ( size_t v = 0; v < 4; ++v ) {
@@ -104,13 +104,13 @@ void DendroSearch::projectOnBoundaryID(
         } // end for f
         std::vector<AMP::Mesh::MeshElement> controlGeomType::CellElementGeomType::Faces =
             controlGeomType::CellElement.getElements( AMP::Mesh::GeomType::Face );
-        AMP_CHECK_ASSERT( controlGeomType::CellElementGeomType::Faces.size() == 6 );
+        AMP_DEBUG_ASSERT( controlGeomType::CellElementGeomType::Faces.size() == 6 );
         //        std::vector<size_t> mapGeomType::Faces(6, 6);
         for ( size_t f = 0; f < 6; ++f ) {
             std::vector<AMP::Mesh::MeshElement> faceVertices =
                 controlGeomType::CellElementGeomType::Faces[f].getElements(
                     AMP::Mesh::GeomType::Vertex );
-            AMP_CHECK_ASSERT( faceVertices.size() == 4 );
+            AMP_DEBUG_ASSERT( faceVertices.size() == 4 );
             std::sort( faceVertices.begin(), faceVertices.end() );
             for ( size_t g = 0; g < 6; ++g ) {
                 if ( std::equal( faceVertices.begin(),
@@ -135,7 +135,7 @@ void DendroSearch::projectOnBoundaryID(
                  boundaryID ) ) { // point was found and element is on boundary
             std::vector<AMP::Mesh::MeshElement> meshElementGeomType::Faces =
                 d_localElems[elementLocalID].getElements( AMP::Mesh::GeomType::Face );
-            AMP_CHECK_ASSERT( meshElementGeomType::Faces.size() == 6 );
+            AMP_DEBUG_ASSERT( meshElementGeomType::Faces.size() == 6 );
             for ( size_t f = 0; f < 6; ++f ) {
                 if ( meshElementGeomType::Faces[f].isOnBoundary( boundaryID ) ) {
                     tmpData.d_SearchStatus = FoundOnBoundary;
@@ -144,10 +144,10 @@ void DendroSearch::projectOnBoundaryID(
                     tmpData.d_GeomType::CellID         = d_localElems[elementLocalID].globalID();
                     //              std::vector<AMP::Mesh::MeshElement> faceVertices =
                     //              meshElementGeomType::Faces[f].getElements(AMP::Mesh::GeomType::Vertex);
-                    //              AMP_CHECK_ASSERT( faceVertices.size() == 4 );
+                    //              AMP_DEBUG_ASSERT( faceVertices.size() == 4 );
                     std::vector<AMP::Mesh::MeshElement> meshElementVertices =
                         d_localElems[elementLocalID].getElements( AMP::Mesh::GeomType::Vertex );
-                    AMP_CHECK_ASSERT( meshElementVertices.size() == 8 );
+                    AMP_DEBUG_ASSERT( meshElementVertices.size() == 8 );
                     for ( size_t v = 0; v < 4; ++v ) {
                         //                tmpData.d_GeomType::FaceVerticesIDs[v] =
                         //                faceVertices[v].globalID();
@@ -172,7 +172,7 @@ void DendroSearch::projectOnBoundaryID(
         sendData[d_sendDisps[pointOwnerRank] + tmpSendCnts[pointOwnerRank]] = tmpData;
         ++tmpSendCnts[pointOwnerRank];
     } // end i
-    AMP_CHECK_ASSERT( std::equal( tmpSendCnts.begin(), tmpSendCnts.end(), d_sendCnts.begin() ) );
+    AMP_DEBUG_ASSERT( std::equal( tmpSendCnts.begin(), tmpSendCnts.end(), d_sendCnts.begin() ) );
     tmpSendCnts.clear();
 
     if ( d_verbose ) {
@@ -292,12 +292,12 @@ void DendroSearch::setupDSforSearch()
     }
 
     double avgHboxInv = std::pow( globalNumElems, ( 1.0 / 3.0 ) );
-    AMP_CHECK_ASSERT( avgHboxInv > 1.0 );
+    AMP_DEBUG_ASSERT( avgHboxInv > 1.0 );
     d_boxLevel = binOp::fastLog2( static_cast<unsigned int>( std::ceil( avgHboxInv ) ) );
     if ( d_boxLevel > 5 ) {
         d_boxLevel = 5;
     }
-    AMP_CHECK_ASSERT( d_boxLevel < MaxDepth );
+    AMP_DEBUG_ASSERT( d_boxLevel < MaxDepth );
     const double hBox = 1.0 / ( static_cast<double>( 1u << d_boxLevel ) );
 
     if ( d_verbose ) {
@@ -310,7 +310,7 @@ void DendroSearch::setupDSforSearch()
     unsigned int twoPowFactor = ( 1u << ( MaxDepth - d_boxLevel ) );
 
     size_t localNumElems = d_meshAdapter->numLocalElements( AMP::Mesh::GeomType::Cell );
-    AMP_CHECK_ASSERT( localNumElems > 0 );
+    AMP_DEBUG_ASSERT( localNumElems > 0 );
 
     std::vector<ot::TreeNode> tmpNodeList;
     std::vector<std::vector<int>> tmpElemIdList;
@@ -403,7 +403,7 @@ void DendroSearch::setupDSforSearch()
 
         d_rankList.resize( d_elemIdList.size(), 0 );
 
-        AMP_CHECK_ASSERT( !( d_nodeList.empty() ) );
+        AMP_DEBUG_ASSERT( !( d_nodeList.empty() ) );
 
         ot::TreeNode firstNode = d_nodeList[0];
         firstNode.setWeight( rank );
@@ -411,7 +411,7 @@ void DendroSearch::setupDSforSearch()
     } else {
         int numInitialLocalOcts  = tmpNodeList.size();
         int numInitialGlobalOcts = meshComm.sumReduce<int>( numInitialLocalOcts );
-        AMP_CHECK_ASSERT( numInitialGlobalOcts > 0 );
+        AMP_DEBUG_ASSERT( numInitialGlobalOcts > 0 );
         if ( numInitialGlobalOcts <= npes ) {
             if ( d_verbose ) {
                 meshComm.barrier();
@@ -443,8 +443,8 @@ void DendroSearch::setupDSforSearch()
                 unsigned int retIdx = 0;
                 bool found          = seq::maxLowerBound<ot::TreeNode>(
                     globalNodeList, tmpNodeList[i], retIdx, NULL, NULL );
-                AMP_CHECK_ASSERT( found );
-                AMP_CHECK_ASSERT( globalNodeList[retIdx] == tmpNodeList[i] );
+                AMP_DEBUG_ASSERT( found );
+                AMP_DEBUG_ASSERT( globalNodeList[retIdx] == tmpNodeList[i] );
                 sendEidCnts[retIdx] = tmpElemIdList[i].size();
             } // end i
             tmpElemIdList.clear();
@@ -550,7 +550,7 @@ void DendroSearch::setupDSforSearch()
                 unsigned int retIdx = 0;
                 bool found =
                     seq::maxLowerBound<ot::TreeNode>( d_mins, tmpNodeList[i], retIdx, NULL, NULL );
-                AMP_CHECK_ASSERT( found );
+                AMP_DEBUG_ASSERT( found );
                 ++( sendOctCnts[d_mins[retIdx].getWeight()] );
             } // end i
 
@@ -648,8 +648,8 @@ void DendroSearch::setupDSforSearch()
                     unsigned int retIdx = 0;
                     bool found          = seq::maxLowerBound<ot::TreeNode>(
                         d_nodeList, recvOctList[recvOctDisps[i] + j], retIdx, NULL, NULL );
-                    AMP_CHECK_ASSERT( found );
-                    AMP_CHECK_ASSERT( d_nodeList[retIdx] == recvOctList[recvOctDisps[i] + j] );
+                    AMP_DEBUG_ASSERT( found );
+                    AMP_DEBUG_ASSERT( d_nodeList[retIdx] == recvOctList[recvOctDisps[i] + j] );
                     dummyElemIdList[retIdx].insert( dummyElemIdList[retIdx].end(),
                                                     tmpEidList[recvOctDisps[i] + j].begin(),
                                                     tmpEidList[recvOctDisps[i] + j].end() );
@@ -1087,7 +1087,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
     }
     interpolateBeginTime = MPI_Wtime();
 
-    AMP_CHECK_ASSERT( vectorField->getUpdateStatus() ==
+    AMP_DEBUG_ASSERT( vectorField->getUpdateStatus() ==
                       AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager = vectorField->getDOFManager();
 
@@ -1114,7 +1114,7 @@ void DendroSearch::interpolate( AMP::AMP_MPI comm,
         for ( unsigned int j = 0; j < 8; ++j ) {
             std::vector<size_t> globalID;
             dofManager->getDOFs( amp_vector_support_points[j].globalID(), globalID );
-            AMP_CHECK_ASSERT( globalID.size() == dofsPerNode );
+            AMP_DEBUG_ASSERT( globalID.size() == dofsPerNode );
             for ( size_t d = 0; d < dofsPerNode; ++d ) {
                 double vecVal = vectorField->getValueByGlobalID( globalID[d] );
                 value[d] += ( vecVal * basis_functions_values[j] );

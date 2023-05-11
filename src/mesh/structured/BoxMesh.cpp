@@ -431,7 +431,7 @@ MeshElement BoxMesh::getElement( const MeshElementID &id ) const
     MeshElementIndex index = convert( id );
     // Create the element
     structuredMeshElement elem( index, this );
-    AMP_CHECK_ASSERT( elem.globalID() == id );
+    AMP_DEBUG_ASSERT( elem.globalID() == id );
     return elem;
 }
 MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
