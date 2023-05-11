@@ -86,28 +86,19 @@ ENDIF()
 
 
 # Set the number of processors
-IF( NOT DEFINED N_PROCS )
-    SET( N_PROCS $ENV{N_PROCS} )
-ENDIF()
-IF( NOT DEFINED N_PROCS )
-    SET(N_PROCS 1)
-    # Linux:
-    SET(cpuinfo_file "/proc/cpuinfo")
-    IF(EXISTS "${cpuinfo_file}")
-        FILE(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
-        list(LENGTH procs N_PROCS)
-    ENDIF()
-    # Mac:
-    IF(APPLE)
-        find_program(cmd_sys_pro "sysctl")
-        if(cmd_sys_pro)
-            execute_process(COMMAND ${cmd_sys_pro} hw.physicalcpu OUTPUT_VARIABLE info)
-            STRING(REGEX REPLACE "^.*hw.physicalcpu: ([0-9]+).*$" "\\1" N_PROCS "${info}")
+SET( N_PROCS $ENV{N_PROCS} )
+IF ( NOT DEFINED N_PROCS )
+    SET( N_PROCS 4 ) # Default number of processor if all else fails
+    IF ( EXISTS "/proc/cpuinfo" )
+        # Linux
+        FILE( STRINGS "/proc/cpuinfo" procs REGEX "^processor.: [0-9]+$" )
+        LIST( LENGTH procs N_PROCS )
+    ELSEIF( APPLE )
+        FIND_PROGRAM( cmd_sys_pro "system_profiler" )
+        IF ( cmd_sys_pro )
+            EXECUTE_PROCESS( COMMAND ${cmd_sys_pro} OUTPUT_VARIABLE info )
+            STRING( REGEX REPLACE "^.*Total Number of Cores: ([0-9]+).*$" "\\1" N_PROCS "${info}" )
         ENDIF()
-    ENDIF()
-    # Windows:
-    IF(WIN32)
-        SET(N_PROCS "$ENV{NUMBER_OF_PROCESSORS}")
     ENDIF()
 ENDIF()
 

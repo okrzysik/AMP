@@ -14,12 +14,11 @@ namespace AMP::LinearAlgebra {
  */
 class NativePetscMatrixData : public MatrixData
 {
-protected:
-    /** \brief Unused default constructor
-     */
-    NativePetscMatrixData() = delete;
-
 public:
+    NativePetscMatrixData();
+
+    explicit NativePetscMatrixData( std::shared_ptr<MatrixParameters> params );
+
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap
      * \param[in] dele  Let this class deallocate the Mat
@@ -46,6 +45,10 @@ public:
     virtual std::string type() const override { return "NativePetscMatrixData"; }
 
     std::shared_ptr<MatrixData> cloneMatrixData() const override;
+
+    std::shared_ptr<MatrixData> transpose() const override;
+
+    void extractDiagonal( std::shared_ptr<Vector> buf ) const override;
 
     void addValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
@@ -74,10 +77,16 @@ public:
 
     Mat getMat() { return d_Mat; }
 
+    void setMat( Mat mat, bool manage = true )
+    {
+        d_Mat                  = mat;
+        d_MatCreatedInternally = manage;
+    }
+
     AMP_MPI getComm() const override;
 
 private:
-    Mat d_Mat;
+    Mat d_Mat = nullptr;
     bool d_MatCreatedInternally;
 };
 

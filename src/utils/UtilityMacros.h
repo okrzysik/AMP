@@ -117,28 +117,35 @@ inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
     } while ( 0 )
 
 
-/**
- * Macro for use when assertions are to be included
- * only when debugging.
- */
-/*! \def AMP_CHECK_ASSERT(EXP)
+// Macros for use when assertions are to be included only when debugging.
+/*! \def AMP_DEBUG_ASSERT(EXP)
  *  \brief Assert error (debug only)
  *  \details Throw an error exception from within any C++ source code if the
  *     given expression is not true.  This only runs if compiled with debug
  *     is enabled.  If enabled, this is the same as a call to AMP_ASSERT.
  *  \param EXP  Expression to evaluate
  */
+/*! \def AMP_DEBUG_INSIST(EXP,MSG)
+ *  \brief Insist error
+ *  \details Throw an error exception from within any C++ source code if the
+ *     given expression is not true.  This will also print the given message.
+ *     This is a parallel-friendly version of assert.
+ *     The file and line number of the abort are printed along with the stack trace (if available).
+ *     This only runs if compiled with debug is enabled.
+ *     If enabled, this is the same as a call to AMP_INSIST.
+ *  \param EXP  Expression to evaluate
+ *  \param MSG  Debug message to print
+ */
 #if ( defined( DEBUG ) || defined( _DEBUG ) ) && !defined( NDEBUG )
-    #define AMP_CHECK_ASSERT( EXP )                                                      \
-        do {                                                                             \
-            if ( !( EXP ) ) {                                                            \
-                std::ostringstream stream;                                               \
-                stream << "Failed assertion: " << #EXP;                                  \
-                StackTrace::Utilities::abort( stream.str(), SOURCE_LOCATION_CURRENT() ); \
-            }                                                                            \
-        } while ( 0 )
+    #define AMP_DEBUG_ASSERT( EXP ) AMP_ASSERT( EXP )
+    #define AMP_DEBUG_INSIST( EXP, MSG ) AMP_INSIST( EXP, MSG )
 #else
-    #define AMP_CHECK_ASSERT( EXP )
+    #define AMP_DEBUG_ASSERT( EXP ) \
+        do {                        \
+        } while ( 0 )
+    #define AMP_DEBUG_INSIST( EXP, MSG ) \
+        do {                             \
+        } while ( 0 )
 #endif
 
 

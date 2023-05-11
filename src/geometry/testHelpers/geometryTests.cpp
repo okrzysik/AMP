@@ -141,7 +141,7 @@ void testGeometry( const AMP::Geometry::Geometry &geom, AMP::UnitTest &ut )
 {
     auto multigeom = dynamic_cast<const MultiGeometry *>( &geom );
     if ( multigeom ) {
-        for ( const auto geom2 : multigeom->getGeometries() )
+        for ( const auto &geom2 : multigeom->getGeometries() )
             testGeometry( *geom2, ut );
     }
     // Get the physical dimension

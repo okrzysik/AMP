@@ -1,9 +1,9 @@
 #ifndef included_AMP_Matrix
 #define included_AMP_Matrix
 
-#include "AMP/matrices/ManagedMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/MatrixData.h"
+#include "AMP/matrices/operations/MatrixOperations.h"
 #include "AMP/utils/ParameterBase.h"
 #include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
@@ -55,32 +55,51 @@ public:
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{Ain} = \mathbf{out}\f$.
      */
-    virtual void mult( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out ) = 0;
+    void mult( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out );
 
     /** \brief  Matrix transpose-vector multiplication
      * \param[in]  in  The vector to multiply
      * \param[out] out The resulting vectory
      * \details  Compute \f$\mathbf{A}^T\mathbf{in} = \mathbf{out}\f$.
      */
-    virtual void multTranspose( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out ) = 0;
-
-
-    /** \brief  Return a new matrix that is the transpose of this one
-     * \return  A copy of this matrix transposed.
-     */
-    virtual std::shared_ptr<Matrix> transpose() const;
-
-    /** \brief  Return a matrix with the same non-zero and distributed structure
-     * \return  The new matrix
-     */
-    virtual shared_ptr clone() const = 0;
+    void multTranspose( std::shared_ptr<const Vector> in, std::shared_ptr<Vector> out );
 
     /** \brief  Scale the matrix by a scalar
      * \param[in] alpha  The value to scale by
      * \details  Compute \f$\mathbf{A} = \alpha\mathbf{A}\f$
      */
-    virtual void scale( double alpha ) = 0;
+    void scale( AMP::Scalar alpha );
 
+    /** \brief  Compute the linear combination of two matrices
+     * \param[in] alpha  scalar
+     * \param[in] X matrix
+     * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
+     */
+    void axpy( AMP::Scalar alpha, const Matrix &X );
+
+    /** \brief  Set the non-zeros of the matrix to a scalar
+     * \param[in]  alpha  The value to set the non-zeros to
+     */
+    void setScalar( AMP::Scalar alpha );
+
+    /** \brief  Set the non-zeros of the matrix to zero
+     * \details  May not deallocate space.
+     */
+    void zero();
+
+    /** \brief  Set the diagonal to the values in a vector
+     * \param[in] in The values to set the diagonal to
+     */
+    void setDiagonal( Vector::const_shared_ptr in );
+
+    /** \brief  Set the matrix to the identity matrix
+     */
+    void setIdentity();
+
+    /** \brief Compute the maximum column sum
+     * \return  The L1 norm of the matrix
+     */
+    AMP::Scalar L1Norm() const;
 
     /** \brief  Compute the product of two matrices
      * \param[in] A  A multiplicand
@@ -94,33 +113,17 @@ public:
      * \param[in] X matrix
      * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
      */
-    virtual void axpy( double alpha, const Matrix &X ) = 0;
+    void axpy( AMP::Scalar alpha, std::shared_ptr<const Matrix> X );
 
-    /** \brief  Compute the linear combination of two matrices
-     * \param[in] alpha  scalar
-     * \param[in] X matrix
-     * \details  Compute \f$\mathbf{THIS} = \alpha\mathbf{X} + \mathbf{THIS}\f$
+    /** \brief  Return a new matrix that is the transpose of this one
+     * \return  A copy of this matrix transposed.
      */
-    void axpy( double alpha, std::shared_ptr<const Matrix> X );
+    virtual std::shared_ptr<Matrix> transpose() const;
 
-    /** \brief  Set the non-zeros of the matrix to a scalar
-     * \param[in]  alpha  The value to set the non-zeros to
+    /** \brief  Return a matrix with the same non-zero and distributed structure
+     * \return  The new matrix
      */
-    virtual void setScalar( double alpha ) = 0;
-
-    /** \brief  Set the non-zeros of the matrix to zero
-     * \details  May not deallocate space.
-     */
-    virtual void zero() = 0;
-
-    /** \brief  Set the diagonal to the values in a vector
-     * \param[in] in The values to set the diagonal to
-     */
-    virtual void setDiagonal( Vector::const_shared_ptr in ) = 0;
-
-    /** \brief  Set the matrix to the identity matrix
-     */
-    virtual void setIdentity() = 0;
+    virtual shared_ptr clone() const = 0;
 
     /** \brief  Extract the diagonal from a matrix
      * \param[in]  buf  An optional vector to use as a buffer
@@ -141,11 +144,6 @@ public:
      */
     virtual Vector::shared_ptr getLeftVector() const = 0;
 
-    /** \brief Compute the maximum column sum
-     * \return  The L1 norm of the matrix
-     */
-    virtual double L1Norm() const = 0;
-
 public:
     /** \brief  Add values to those in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -157,7 +155,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void addValuesByGlobalID(
+    void addValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
     {
         d_matrixData->addValuesByGlobalID( num_rows, num_cols, rows, cols, values );
@@ -173,7 +171,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void setValuesByGlobalID(
+    void setValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
     {
         d_matrixData->setValuesByGlobalID( num_rows, num_cols, rows, cols, values );
@@ -188,7 +186,7 @@ public:
      * \details  This method will return zero for any entries that
      *   have not been allocated or are not ghosts on the current processor.
      */
-    virtual void getValuesByGlobalID(
+    void getValuesByGlobalID(
         size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
     {
         d_matrixData->getValuesByGlobalID( num_rows, num_cols, rows, cols, values );
@@ -199,7 +197,7 @@ public:
      * \param[out] cols  The column ids of the returned values
      * \param[out] values  The values in the row
      */
-    virtual void
+    void
     getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const
     {
         d_matrixData->getRowByGlobalID( row, cols, values );
@@ -208,7 +206,7 @@ public:
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row
      */
-    virtual std::vector<size_t> getColumnIDs( size_t row ) const
+    std::vector<size_t> getColumnIDs( size_t row ) const
     {
         return d_matrixData->getColumnIDs( row );
     }
@@ -216,40 +214,40 @@ public:
     /** \brief  Perform communication to ensure values in the
      * matrix are the same across cores.
      */
-    virtual void makeConsistent() { return d_matrixData->makeConsistent(); }
+    void makeConsistent() { return d_matrixData->makeConsistent(); }
 
     /** \brief  Get the number of local rows in the matrix
      * \return  The number of local rows
      */
-    virtual size_t numLocalRows() const { return d_matrixData->numLocalRows(); }
+    size_t numLocalRows() const { return d_matrixData->numLocalRows(); }
 
     /** \brief  Get the number of global rows in the matrix
      * \return  The number of global rows
      */
-    virtual size_t numGlobalRows() const { return d_matrixData->numGlobalRows(); }
+    size_t numGlobalRows() const { return d_matrixData->numGlobalRows(); }
 
     /** \brief  Get the number of local columns in the matrix
      * \return  The number of local columns
      */
-    virtual size_t numLocalColumns() const { return d_matrixData->numLocalColumns(); }
+    size_t numLocalColumns() const { return d_matrixData->numLocalColumns(); }
 
     /** \brief  Get the number of global columns in the matrix
      * \return  The number of global columns
      */
-    virtual size_t numGlobalColumns() const { return d_matrixData->numGlobalColumns(); }
+    size_t numGlobalColumns() const { return d_matrixData->numGlobalColumns(); }
 
     /** \brief  Get the global id of the beginning row
      * \return  beginning global row id
      */
-    virtual size_t beginRow() const { return d_matrixData->beginRow(); }
+    size_t beginRow() const { return d_matrixData->beginRow(); }
 
     /** \brief  Get the global id of the ending row
      * \return  ending global row id
      */
-    virtual size_t endRow() const { return d_matrixData->endRow(); }
+    size_t endRow() const { return d_matrixData->endRow(); }
 
     //! Get the comm
-    virtual AMP_MPI getComm() const { return d_matrixData->getComm(); }
+    AMP_MPI getComm() const { return d_matrixData->getComm(); }
 
     /** \brief Get the DOFManager associated with a right vector ( For
      * \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$\mathbf{x}\f$
@@ -280,7 +278,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void addValueByGlobalID( size_t row, size_t col, double value )
+    void addValueByGlobalID( size_t row, size_t col, double value )
     {
         addValuesByGlobalID( 1, 1, &row, &col, &value );
     }
@@ -293,7 +291,7 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void setValueByGlobalID( size_t row, size_t col, double value )
+    void setValueByGlobalID( size_t row, size_t col, double value )
     {
         setValuesByGlobalID( 1, 1, &row, &col, &value );
     }
@@ -303,7 +301,7 @@ public:
      * \param[in] col  The column id of value
      * \details  This method will return zero for any values that have not been allocated.
      */
-    virtual double getValueByGlobalID( size_t row, size_t col ) const
+    double getValueByGlobalID( size_t row, size_t col ) const
     {
         double ans;
         getValuesByGlobalID( 1, 1, &row, &col, &ans );
@@ -337,6 +335,7 @@ protected:
 
     //! Pointer to data
     std::shared_ptr<MatrixData> d_matrixData;
+    std::shared_ptr<MatrixOperations> d_matrixOps;
 };
 
 inline std::shared_ptr<Matrix> Matrix::transpose() const

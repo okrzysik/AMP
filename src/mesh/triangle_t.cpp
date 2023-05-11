@@ -27,7 +27,7 @@ void triangle_t::set_support_points( double const *A, double const *B, double co
 
 double const *triangle_t::get_support_point_ptr( unsigned int i ) const
 {
-    AMP_CHECK_ASSERT( i < 3 );
+    AMP_DEBUG_ASSERT( i < 3 );
     return support_points_ptr[i];
 }
 
@@ -49,7 +49,7 @@ double const *triangle_t::get_centroid()
 
 void triangle_t::compute_centroid()
 {
-    AMP_CHECK_ASSERT( !centroid_updated );
+    AMP_DEBUG_ASSERT( !centroid_updated );
     if ( centroid.size() == 0 ) {
         centroid.resize( 3 );
     }
@@ -65,7 +65,7 @@ void triangle_t::compute_centroid()
 
 void triangle_t::compute_normal()
 {
-    AMP_CHECK_ASSERT( !normal_updated );
+    AMP_DEBUG_ASSERT( !normal_updated );
     if ( normal.size() == 0 ) {
         normal.resize( 3 );
     }
@@ -105,7 +105,7 @@ bool triangle_t::above_point( double const *point, double tolerance )
 
 edge_t *triangle_t::get_edge( unsigned int i )
 {
-    AMP_CHECK_ASSERT( i < 3 );
+    AMP_DEBUG_ASSERT( i < 3 );
     if ( !edges_updated ) {
         build_edges();
     }
@@ -124,7 +124,7 @@ void triangle_t::clear_edges()
 
 void triangle_t::build_edges()
 {
-    AMP_CHECK_ASSERT( !edges_updated );
+    AMP_DEBUG_ASSERT( !edges_updated );
     clear_edges();
     if ( !normal_updated ) {
         compute_normal();
