@@ -30,7 +30,7 @@ void edge_t::set_containing_plane( double const *ABC )
 
 double const *edge_t::get_support_point_ptr( unsigned int i ) const
 {
-    AMP_CHECK_ASSERT( i < 2 );
+    AMP_DEBUG_ASSERT( i < 2 );
     return support_points_ptr[i];
 }
 
@@ -60,7 +60,7 @@ double const *edge_t::get_center()
 
 void edge_t::compute_normal()
 {
-    AMP_CHECK_ASSERT( !normal_updated );
+    AMP_DEBUG_ASSERT( !normal_updated );
     if ( normal.size() == 0 ) {
         normal.resize( 3 );
     }
@@ -75,7 +75,7 @@ void edge_t::compute_normal()
 
 void edge_t::compute_direction()
 {
-    AMP_CHECK_ASSERT( !direction_updated );
+    AMP_DEBUG_ASSERT( !direction_updated );
     if ( direction.size() == 0 ) {
         direction.resize( 3 );
     }
@@ -86,7 +86,7 @@ void edge_t::compute_direction()
 
 void edge_t::compute_center()
 {
-    AMP_CHECK_ASSERT( !center_updated );
+    AMP_DEBUG_ASSERT( !center_updated );
     if ( center.size() == 0 ) {
         center.resize( 3 );
     }

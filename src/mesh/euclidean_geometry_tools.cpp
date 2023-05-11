@@ -10,7 +10,7 @@ void scale_points( unsigned int direction,
                    unsigned int n_points,
                    double *points )
 {
-    AMP_CHECK_ASSERT( direction < 3 );
+    AMP_DEBUG_ASSERT( direction < 3 );
     for ( unsigned int i = 0; i < n_points; ++i ) {
         points[3 * i + direction] *= scaling_factor;
     } // end for i
@@ -28,7 +28,7 @@ void translate_points( unsigned int direction,
                        unsigned int n_points,
                        double *points )
 {
-    AMP_CHECK_ASSERT( direction < 3 );
+    AMP_DEBUG_ASSERT( direction < 3 );
     for ( unsigned int i = 0; i < n_points; ++i ) {
         points[3 * i + direction] += distance;
     } // end for i
@@ -46,7 +46,7 @@ void rotate_points( unsigned int rotation_axis,
                     unsigned int n_points,
                     double *points )
 {
-    AMP_CHECK_ASSERT( rotation_axis < 3 );
+    AMP_DEBUG_ASSERT( rotation_axis < 3 );
     unsigned int non_fixed_directions[2] = { 0 };
     unsigned int i                       = 0;
     for ( unsigned int j = 0; j < 3; ++j ) {
@@ -96,7 +96,7 @@ double compute_vector_norm( double const *vector )
 void normalize_vector( double *vector )
 {
     double vector_norm = compute_vector_norm( vector );
-    AMP_CHECK_ASSERT( vector_norm > 1.0e-14 );
+    AMP_DEBUG_ASSERT( vector_norm > 1.0e-14 );
     for ( unsigned int i = 0; i < 3; ++i ) {
         vector[i] /= vector_norm;
     }
@@ -106,7 +106,7 @@ void orthogonalize_vector_against_direction( double const *direction, double *ve
 {
     double scalar_product = compute_scalar_product( direction, vector );
     double norm_squared   = compute_scalar_product( direction, direction );
-    AMP_CHECK_ASSERT( norm_squared > 1.0e-28 );
+    AMP_DEBUG_ASSERT( norm_squared > 1.0e-28 );
     //  std::cout<<"orthogonalize  "<<norm_squared<<"  ";
     //  std::cout<<direction[0]<<"  "<<direction[1]<<"  "<<direction[2]<<"  ";
     //  std::cout<<vector[0]<<"  "<<vector[1]<<"  "<<vector[2]<<"  ";
@@ -120,7 +120,7 @@ void project_vector_onto_direction( double const *direction, double *vector )
 {
     double scalar_product = compute_scalar_product( direction, vector );
     double norm_squared   = compute_scalar_product( direction, direction );
-    AMP_CHECK_ASSERT( norm_squared > 1.0e-28 );
+    AMP_DEBUG_ASSERT( norm_squared > 1.0e-28 );
     //  std::cout<<"project  "<<norm_squared<<"  ";
     //  std::cout<<direction[0]<<"  "<<direction[1]<<"  "<<direction[2]<<"  ";
     //  std::cout<<vector[0]<<"  "<<vector[1]<<"  "<<vector[2]<<"  ";

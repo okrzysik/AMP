@@ -33,7 +33,7 @@ void hex8_element_t::set_support_points( double const *p )
 
 void hex8_element_t::scale_support_points()
 {
-    AMP_CHECK_ASSERT( !support_points_scaled );
+    AMP_DEBUG_ASSERT( !support_points_scaled );
     if ( !scaling_factors_updated ) {
         compute_scaling_factors();
     }
@@ -43,7 +43,7 @@ void hex8_element_t::scale_support_points()
 
 void hex8_element_t::unscale_support_points()
 {
-    AMP_CHECK_ASSERT( support_points_scaled );
+    AMP_DEBUG_ASSERT( support_points_scaled );
     for ( unsigned int i = 0; i < 3; ++i ) {
         scale_points( i, 1.0 / scaling_factors[i], 8, &( support_points[0] ) );
     } // end for i
@@ -52,7 +52,7 @@ void hex8_element_t::unscale_support_points()
 
 void hex8_element_t::compute_scaling_factors()
 {
-    AMP_CHECK_ASSERT( !scaling_factors_updated );
+    AMP_DEBUG_ASSERT( !scaling_factors_updated );
     if ( !bounding_box_updated ) {
         build_bounding_box();
     };
@@ -75,7 +75,7 @@ double const *hex8_element_t::get_scaling_factors()
 
 void hex8_element_t::compute_center_of_element_data()
 {
-    AMP_CHECK_ASSERT( !center_of_element_data_updated );
+    AMP_DEBUG_ASSERT( !center_of_element_data_updated );
     compute_jacobian_matrix( &( center_of_element_local_coordinates[0] ),
                              &( jacobian_matrix_at_center_of_element[0] ) );
     compute_inverse_3_by_3_matrix( &( jacobian_matrix_at_center_of_element[0] ),
@@ -87,7 +87,7 @@ void hex8_element_t::compute_center_of_element_data()
 
 double const *hex8_element_t::get_support_point( unsigned int i ) const
 {
-    AMP_CHECK_ASSERT( i < 8 );
+    AMP_DEBUG_ASSERT( i < 8 );
     return &( support_points[3 * i] );
 }
 
@@ -95,7 +95,7 @@ double const *hex8_element_t::get_support_points() const { return &( support_poi
 
 unsigned int const *hex8_element_t::get_face( unsigned int i )
 {
-    AMP_CHECK_ASSERT( i < 6 );
+    AMP_DEBUG_ASSERT( i < 6 );
     return &( faces[4 * i] );
 }
 unsigned int const *hex8_element_t::get_faces() { return &( faces[0] ); }
@@ -153,7 +153,7 @@ void hex8_element_t::build_bounding_polyhedron()
         bounding_polyhedron.reserve( 12 );
         tmp_triangles_ptr.reserve( 4 );
     }
-    AMP_CHECK_ASSERT( !bounding_polyhedron_updated );
+    AMP_DEBUG_ASSERT( !bounding_polyhedron_updated );
     clear_triangles_ptr( bounding_polyhedron );
     for ( unsigned int i = 0; i < 6; ++i ) {
         clear_triangles_ptr( tmp_triangles_ptr );
@@ -314,7 +314,7 @@ void hex8_element_t::build_bounding_box()
     if ( bounding_box.size() == 0 ) {
         bounding_box.resize( 6 );
     }
-    AMP_CHECK_ASSERT( !bounding_box_updated );
+    AMP_DEBUG_ASSERT( !bounding_box_updated );
     for ( unsigned int j = 0; j < 3; ++j ) {
         bounding_box[j + 0] = support_points[3 * 0 + j];
         bounding_box[j + 3] = support_points[3 * 0 + j];
@@ -540,7 +540,7 @@ void hex8_element_t::project_on_face( unsigned int f,
                                       double *local_coordinates_on_face,
                                       double *shift_global_coordinates )
 {
-    AMP_CHECK_ASSERT( f < 6 );
+    AMP_DEBUG_ASSERT( f < 6 );
     std::vector<double> projection_local_coordinates( local_coordinates, local_coordinates + 3 );
     /*  if (f == 0) {
         projection_local_coordinates[2] = -1.0;
@@ -577,7 +577,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
                                              double const *global_coordinates,
                                              double *normal_vector )
 {
-    AMP_CHECK_ASSERT( f < 6 );
+    AMP_DEBUG_ASSERT( f < 6 );
     double tangential_vectors[6];
     double const perturbation = 1.0e-6;
     double direction          = 1.0;
@@ -606,7 +606,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
                         normal_vector,
                         std::bind1st( std::multiplies<double>(), direction ) );
     } else {
-        AMP_CHECK_ASSERT( direction == 1.0 );
+        AMP_DEBUG_ASSERT( direction == 1.0 );
     }
 }
 
@@ -614,7 +614,7 @@ void hex8_element_t::map_face_to_local( unsigned int f,
                                         double const *local_coordinates_on_face,
                                         double *local_coordinates )
 {
-    AMP_CHECK_ASSERT( f < 6 );
+    AMP_DEBUG_ASSERT( f < 6 );
     if ( f == 0 ) {
         local_coordinates[0] = local_coordinates_on_face[1];
         local_coordinates[1] = local_coordinates_on_face[0];
@@ -659,7 +659,7 @@ void hex8_element_t::map_local_to_face( unsigned int f,
                                         double const *local_coordinates,
                                         double *local_coordinates_on_face )
 {
-    AMP_CHECK_ASSERT( f < 6 );
+    AMP_DEBUG_ASSERT( f < 6 );
     if ( f == 0 ) {
         local_coordinates_on_face[0] = local_coordinates[1];
         local_coordinates_on_face[1] = local_coordinates[0];
@@ -695,9 +695,9 @@ void hex8_element_t::get_basis_functions_values_on_face( double const *x, double
 void hex8_element_t::get_local_coordinates_on_face( double const *phi, double *x )
 {
     x[0] = 2.0 * ( phi[1] + phi[2] ) - 1.0;
-    AMP_CHECK_ASSERT( abs( 1.0 - 2.0 * ( phi[0] + phi[3] ) - x[0] ) < 1.0e-15 );
+    AMP_DEBUG_ASSERT( abs( 1.0 - 2.0 * ( phi[0] + phi[3] ) - x[0] ) < 1.0e-15 );
     x[1] = 1.0 - 2.0 * ( phi[0] + phi[1] );
-    AMP_CHECK_ASSERT( abs( 2.0 * ( phi[2] + phi[3] ) - 1.0 - x[2] ) < 1.0e-15 );
+    AMP_DEBUG_ASSERT( abs( 2.0 * ( phi[2] + phi[3] ) - 1.0 - x[2] ) < 1.0e-15 );
 }
 
 void hex8_element_t::get_normal_to_face( double const **support_points_ptr,
@@ -750,7 +750,7 @@ void hex8_element_t::compute_normal_to_face( unsigned int f,
                                              double const *local_coordinates_on_face,
                                              double *normal_vector )
 {
-    AMP_CHECK_ASSERT( f < 6 );
+    AMP_DEBUG_ASSERT( f < 6 );
     double tangential_vectors[6];
     double const perturbation = 1.0e-2;
     double direction          = 1.0;
