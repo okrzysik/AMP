@@ -41,7 +41,7 @@ void Matrix::axpy( AMP::Scalar alpha, std::shared_ptr<const Matrix> x )
 {
     AMP_ASSERT( x );
     size_t N1 = x->numGlobalColumns();
-    size_t N2 = this->numGlobalRows();
+    size_t N2 = this->numGlobalColumns();
     if ( N1 != N2 )
         AMP_ERROR( "Matrix sizes are not compatible" );
     axpy( alpha, *x );

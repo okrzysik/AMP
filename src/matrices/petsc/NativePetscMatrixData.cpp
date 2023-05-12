@@ -32,13 +32,18 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> 
     AMP_ASSERT( d_pParameters );
     const auto &comm = d_pParameters->getComm().getCommunicator();
     MatCreate( comm, &d_Mat );
+    MatSetType( d_Mat, MATMPIAIJ );
     MatSetFromOptions( d_Mat );
     MatSetSizes( d_Mat,
                  d_pParameters->getLocalNumberOfRows(),
                  d_pParameters->getLocalNumberOfColumns(),
                  d_pParameters->getGlobalNumberOfRows(),
                  d_pParameters->getGlobalNumberOfColumns() );
-
+    MatMPIAIJSetPreallocation(
+        d_Mat, PETSC_DEFAULT, d_pParameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
+    MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, d_pParameters->entryList() );
+    MatZeroEntries( d_Mat ); // to prevent PETSc compressing out if makeConsistent is called
+    MatSetUp( d_Mat );
     d_MatCreatedInternally = true;
 }
 
@@ -124,6 +129,7 @@ void NativePetscMatrixData::getValuesByGlobalID(
             continue;
         int numCols = 0;
         MatGetRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
+        MatRestoreRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
         if ( numCols == 0 )
             continue;
         const PetscInt *out_cols;
@@ -135,6 +141,7 @@ void NativePetscMatrixData::getValuesByGlobalID(
                     values[i * num_cols + j1] = out_vals[j2];
             }
         }
+        MatRestoreRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
     }
 }
 void NativePetscMatrixData::getRowByGlobalID( size_t row,
@@ -143,6 +150,7 @@ void NativePetscMatrixData::getRowByGlobalID( size_t row,
 {
     int numCols;
     MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
+    MatRestoreRow( d_Mat, row, &numCols, nullptr, nullptr );
     cols.resize( numCols );
     values.resize( numCols );
     if ( numCols ) {
@@ -152,12 +160,14 @@ void NativePetscMatrixData::getRowByGlobalID( size_t row,
         std::copy(
             (unsigned int *) out_cols, (unsigned int *) ( out_cols + numCols ), cols.begin() );
         std::copy( (double *) out_vals, (double *) ( out_vals + numCols ), values.begin() );
+        MatRestoreRow( d_Mat, row, &numCols, &out_cols, &out_vals );
     }
 }
 std::vector<size_t> NativePetscMatrixData::getColumnIDs( size_t row ) const
 {
     int numCols;
     MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
+    MatRestoreRow( d_Mat, row, &numCols, nullptr, nullptr );
     std::vector<size_t> cols( numCols );
 
     if ( numCols ) {
@@ -166,6 +176,7 @@ std::vector<size_t> NativePetscMatrixData::getColumnIDs( size_t row ) const
         MatGetRow( d_Mat, row, &numCols, &out_cols, &out_vals );
         std::copy(
             (unsigned int *) out_cols, (unsigned int *) ( out_cols + numCols ), cols.begin() );
+        MatRestoreRow( d_Mat, row, &numCols, &out_cols, &out_vals );
     }
 
     return cols;

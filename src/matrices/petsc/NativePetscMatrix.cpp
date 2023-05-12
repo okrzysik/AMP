@@ -23,6 +23,12 @@ NativePetscMatrix::NativePetscMatrix( Mat m, bool internally_created )
     d_matrixOps  = std::make_shared<NativePetscMatrixOperations>();
 }
 
+NativePetscMatrix::NativePetscMatrix( std::shared_ptr<MatrixParameters> params ) : Matrix( params )
+{
+    d_matrixData = std::make_shared<NativePetscMatrixData>( params );
+    d_matrixOps  = std::make_shared<NativePetscMatrixOperations>();
+}
+
 NativePetscMatrix::NativePetscMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
     d_matrixOps = std::make_shared<NativePetscMatrixOperations>();
@@ -43,12 +49,14 @@ void NativePetscMatrix::multiply( shared_ptr other_op, shared_ptr &result )
 
 Vector::shared_ptr NativePetscMatrix::extractDiagonal( Vector::shared_ptr v ) const
 {
-    Vector::shared_ptr retVal;
-    if ( std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() ) ) {
+    Vector::shared_ptr retVal = v;
+    if ( !retVal ) {
+        retVal = this->getRightVector();
+    } else if ( std::dynamic_pointer_cast<NativePetscVectorData>( v->getVectorData() ) ) {
         retVal = v;
     } else {
-        retVal = getRightVector();
-        retVal->setVariable( v->getVariable() );
+        AMP_ERROR( "NativePetscMatrix::extractDiagonal(): Not handled for vectors that are not "
+                   "NativePetscVector" );
     }
 
     d_matrixData->extractDiagonal( retVal );

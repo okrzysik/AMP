@@ -5,8 +5,8 @@ ADD_PACKAGE_SUBDIRECTORY( newFrozenVectorDesign )
 IF( USE_PETSC AND USE_TRILINOS )
     ADD_PACKAGE_SUBDIRECTORY( petsc )
 ELSEIF ( USE_PETSC )
-    # Note: currently petsc matricies require trilinos, this needs to be fixed
-    MESSAGE( STATUS "Disabling PETSc operators without support for PETSc matricies" )
+    # Note: currently petsc matrices require trilinos, this needs to be fixed
+    MESSAGE( STATUS "Disabling PETSc operators without support for PETSc matrices" )
 ENDIF()
 IF( USE_LIBMESH )
     ADD_PACKAGE_SUBDIRECTORY( libmesh )
