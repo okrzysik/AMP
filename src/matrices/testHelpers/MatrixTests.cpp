@@ -92,7 +92,7 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
     auto matrix = d_factory->getMatrix();
     auto dofmap = d_factory->getDOFMap();
 
-    matrix->makeConsistent();
+    //    matrix->makeConsistent();
     fillWithPseudoLaplacian( matrix, d_factory );
     for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
         std::vector<size_t> cols;
@@ -206,7 +206,7 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
 {
     PROFILE_START( "VerifyExtractDiagonal" );
     auto matrix = d_factory->getMatrix();
-    matrix->makeConsistent(); // required by PETSc
+//    matrix->makeConsistent(); // required by PETSc
     auto vector     = matrix->getRightVector();
     size_t firstRow = vector->getCommunicationList()->getStartGID();
     size_t maxCols  = matrix->numGlobalColumns();

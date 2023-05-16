@@ -42,8 +42,18 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> 
     MatMPIAIJSetPreallocation(
         d_Mat, PETSC_DEFAULT, d_pParameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
     MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, d_pParameters->entryList() );
-    MatZeroEntries( d_Mat ); // to prevent PETSc compressing out if makeConsistent is called
     MatSetUp( d_Mat );
+    ISLocalToGlobalMapping rmap, cmap;
+    MatSetLocalToGlobalMapping( d_Mat, rmap, cmap );
+#if 1
+    for ( size_t i = 0; i < d_pParameters->getLocalNumberOfRows(); ++i ) {
+        const auto nRowVals = d_pParameters->entriesInRow( i );
+        std::vector<double> vals( nRowVals );
+    }
+
+#else
+    MatZeroEntries( d_Mat ); // to prevent PETSc compressing out if makeConsistent is called
+#endif
     d_MatCreatedInternally = true;
 }
 
