@@ -64,12 +64,10 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         size_t row_start = leftDOF->beginDOF();
         size_t row_end   = leftDOF->endDOF();
         for ( size_t row = row_start; row < row_end; row++ ) {
-            auto col = getRow( row );
-            params->setEntriesInRow( row - row_start, col.size() );
-            for ( auto &tmp : col )
-                columns.insert( tmp );
+            auto cols = getRow( row );
+            params->setEntriesInRow( row - row_start, cols.size() );
+            params->addColumns( cols );
         }
-        params->addColumns( columns );
 
         // Create the matrix
         auto newMatrixData = std::make_shared<AMP::LinearAlgebra::EpetraMatrixData>( params );
