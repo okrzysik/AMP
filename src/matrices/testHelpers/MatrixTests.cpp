@@ -16,7 +16,6 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
     auto dofmap = factory->getDOFMap();
 
     if ( matrix->type() == "NativePetscMatrix" ) {
-        std::vector<size_t> allRows;
         std::map<size_t, std::vector<size_t>> allCols;
         std::map<size_t, std::vector<double>> allVals;
         for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
@@ -31,12 +30,11 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
             }
             allVals[i] = vals;
             allCols[i] = cols;
-            allRows.push_back( i );
         }
         for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
             auto &cols = allCols[i];
             auto &vals = allVals[i];
-            matrix->setValuesByGlobalID( 1, cols.size(), &allRows[i], cols.data(), vals.data() );
+            matrix->setValuesByGlobalID( 1, cols.size(), &i, cols.data(), vals.data() );
         }
     } else {
 
