@@ -58,7 +58,7 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> 
         petsc_cols[i] = cols[i];
 
     auto row_nnz     = d_pParameters->entryList();
-    auto current_loc = petsc_cols[0];
+    auto current_loc = 0;
 
     for ( size_t i = 0; i < nrows; ++i ) {
         PetscInt global_row = srow + i;
@@ -152,11 +152,11 @@ void NativePetscMatrixData::getValuesByGlobalID(
     for ( size_t i = 0; i < num_rows; i++ ) {
         if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
             continue;
-        int numCols = 0;
+        PetscInt numCols = 0;
         MatGetRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
-        MatRestoreRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
         if ( numCols == 0 )
             continue;
+        MatRestoreRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
         const PetscInt *out_cols;
         const PetscScalar *out_vals;
         MatGetRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
@@ -173,12 +173,12 @@ void NativePetscMatrixData::getRowByGlobalID( size_t row,
                                               std::vector<size_t> &cols,
                                               std::vector<double> &values ) const
 {
-    int numCols;
+    PetscInt numCols;
     MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
-    MatRestoreRow( d_Mat, row, &numCols, nullptr, nullptr );
     cols.resize( numCols );
     values.resize( numCols );
-    if ( numCols ) {
+    MatRestoreRow( d_Mat, row, &numCols, nullptr, nullptr );
+    if ( cols.size() ) { // the restore zeros out nCols
         const PetscInt *out_cols;
         const PetscScalar *out_vals;
         MatGetRow( d_Mat, row, &numCols, &out_cols, &out_vals );
@@ -190,18 +190,17 @@ void NativePetscMatrixData::getRowByGlobalID( size_t row,
 }
 std::vector<size_t> NativePetscMatrixData::getColumnIDs( size_t row ) const
 {
-    int numCols;
+    PetscInt numCols;
     MatGetRow( d_Mat, row, &numCols, nullptr, nullptr );
-    MatRestoreRow( d_Mat, row, &numCols, nullptr, nullptr );
     std::vector<size_t> cols( numCols );
+    MatRestoreRow( d_Mat, row, &numCols, nullptr, nullptr );
 
-    if ( numCols ) {
+    if ( cols.size() ) { // the restore zeros out nCols
         const PetscInt *out_cols;
-        const PetscScalar *out_vals;
-        MatGetRow( d_Mat, row, &numCols, &out_cols, &out_vals );
+        MatGetRow( d_Mat, row, &numCols, &out_cols, nullptr );
         std::copy(
             (unsigned int *) out_cols, (unsigned int *) ( out_cols + numCols ), cols.begin() );
-        MatRestoreRow( d_Mat, row, &numCols, &out_cols, &out_vals );
+        MatRestoreRow( d_Mat, row, &numCols, &out_cols, nullptr );
     }
 
     return cols;

@@ -13,41 +13,49 @@ namespace AMP::LinearAlgebra {
 static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
                                      std::shared_ptr<const MatrixFactory> factory )
 {
-    std::vector<size_t> allCols;
-    std::vector<size_t> nCols;
-    std::vector<double> allVals;
-
     auto dofmap = factory->getDOFMap();
 
-    // extract all vals to avoid makeConsistent calls for PETSc in the inner loop
-
-    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        std::vector<size_t> cols;
-        std::vector<double> vals;
-        matrix->getRowByGlobalID( i, cols, vals );
-        nCols.push_back( cols.size() );
-        for ( size_t j = 0; j != cols.size(); j++ ) {
-            if ( cols[j] == i )
-                vals[j] = 6;
-            else
-                vals[j] = -1;
+    if ( matrix->type() == "NativePetscMatrix" ) {
+        std::vector<size_t> allRows;
+        std::map<size_t, std::vector<size_t>> allCols;
+        std::map<size_t, std::vector<double>> allVals;
+        for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
+            const auto cols  = matrix->getColumnIDs( i );
+            const auto ncols = cols.size();
+            std::vector<double> vals( ncols );
+            for ( size_t j = 0; j != ncols; j++ ) {
+                if ( cols[j] == i )
+                    vals[j] = 6;
+                else
+                    vals[j] = -1;
+            }
+            allVals[i] = vals;
+            allCols[i] = cols;
+            allRows.push_back( i );
         }
-        allCols.insert( allCols.end(), cols.begin(), cols.end() );
-        allVals.insert( allVals.end(), vals.begin(), vals.end() );
-        cols.resize( 0 );
-        vals.resize( 0 );
+        for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
+            auto &cols = allCols[i];
+            auto &vals = allVals[i];
+            matrix->setValuesByGlobalID( 1, cols.size(), &allRows[i], cols.data(), vals.data() );
+        }
+    } else {
+
+        for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
+            std::vector<size_t> cols;
+            std::vector<double> vals;
+            matrix->getRowByGlobalID( i, cols, vals );
+            for ( size_t j = 0; j != cols.size(); j++ ) {
+                if ( cols[j] == i )
+                    vals[j] = 6;
+                else
+                    vals[j] = -1;
+            }
+            if ( cols.size() ) {
+                matrix->setValuesByGlobalID( 1, cols.size(), &i, cols.data(), vals.data() );
+            }
+        }
     }
 
-    matrix->makeConsistent();
-
-    size_t loc = 0;
-    for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-        if ( nCols[i] > 0 ) {
-            matrix->setValuesByGlobalID(
-                1, nCols[i], &i, &( allCols[loc] ), (double *) &( allVals[loc] ) );
-            loc += nCols[i];
-        }
-    }
     matrix->makeConsistent();
 }
 
@@ -57,9 +65,9 @@ void MatrixTests::InstantiateMatrix( AMP::UnitTest *utils )
     PROFILE_START( "InstantiateMatrix" );
     auto matrix = d_factory->getMatrix();
     if ( matrix )
-        utils->passes( "created" );
+        utils->passes( "created " + matrix->type() );
     else
-        utils->failure( "created" );
+        utils->failure( "created " );
     PROFILE_STOP( "InstantiateMatrix" );
 }
 
@@ -102,12 +110,12 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
             double ans   = ( i == cols[j] ) ? 6. : -1.;
             double value = matrix->getValueByGlobalID( i, cols[j] );
             if ( vals[j] != ans || value != vals[j] ) {
-                utils->failure( "bad value in matrix" );
+                utils->failure( "bad value in matrix " + matrix->type() );
                 return;
             }
         }
     }
-    utils->passes( "verify get and set" );
+    utils->passes( "verify get and set" + matrix->type() );
     PROFILE_STOP( "VerifyGetSetValuesMatrix" );
 }
 
@@ -135,13 +143,13 @@ void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
     matrix2->mult( vector2lhs, vector2rhs ); // vector2rhs = - vector1rhs
     vectorresult->add( *vector1rhs, *vector2rhs );
     if ( vectorresult->L1Norm() < 0.000001 )
-        utils->passes( "matrices are opposite" );
+        utils->passes( "matrices are opposite " + matrix1->type() );
     else
-        utils->failure( "matrices are not opposite" );
+        utils->failure( "matrices are not opposite " + matrix1->type() );
     if ( vector1rhs->L1Norm() > 0.00001 )
-        utils->passes( "non-trivial vector" );
+        utils->passes( "non-trivial vector " + matrix1->type() );
     else
-        utils->passes( "trivial vector" );
+        utils->passes( "trivial vector " + matrix1->type() );
 
         // currently can't seem to correctly catch signal that PETSc throws
 #if !defined( AMP_USE_PETSC )
@@ -154,11 +162,12 @@ void MatrixTests::VerifyAXPYMatrix( AMP::UnitTest *utils )
         smallVec, smallVec, d_factory->type(), [row]( size_t ) { return row; } );
     try {
         matrix2->axpy( -2., smallMat ); // matrix2 = -matrix1
-        utils->failure( "axpy did not crash with different sized matrices" );
+        utils->failure( "axpy did not crash with different sized matrices " + matrix1->type() );
     } catch ( std::exception &err ) {
-        utils->passes( "axpy correctly fails with different sized matrices" );
+        utils->passes( "axpy correctly fails with different sized matrices " + matrix1->type() );
     } catch ( ... ) {
-        utils->failure( "axpy fails with different sized matrices (unknown failure)" );
+        utils->failure( "axpy fails with different sized matrices (unknown failure) " +
+                        matrix1->type() );
     }
 #endif
     PROFILE_STOP( "VerifyAXPYMatrix" );
@@ -191,13 +200,13 @@ void MatrixTests::VerifyScaleMatrix( AMP::UnitTest *utils )
     vectorresult->subtract( *vector1rhs, *vector2rhs );
 
     if ( vectorresult->L1Norm() < 0.000001 )
-        utils->passes( "matrices are equally scaled" );
+        utils->passes( "matrices are equally scaled " + matrix1->type() );
     else
-        utils->failure( "matrices are equally scaled" );
+        utils->failure( "matrices are equally scaled " + matrix1->type() );
     if ( vector1rhs->L1Norm() > 0.00001 )
-        utils->passes( "non-trivial vector" );
+        utils->passes( "non-trivial vector " + matrix1->type() );
     else
-        utils->passes( "trivial vector" );
+        utils->passes( "trivial vector " + matrix1->type() );
     PROFILE_STOP( "VerifyScaleMatrix" );
 }
 
@@ -206,7 +215,7 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
 {
     PROFILE_START( "VerifyExtractDiagonal" );
     auto matrix = d_factory->getMatrix();
-//    matrix->makeConsistent(); // required by PETSc
+    //    matrix->makeConsistent(); // required by PETSc
     auto vector     = matrix->getRightVector();
     size_t firstRow = vector->getCommunicationList()->getStartGID();
     size_t maxCols  = matrix->numGlobalColumns();
@@ -224,9 +233,9 @@ void MatrixTests::VerifyExtractDiagonal( AMP::UnitTest *utils )
     double compareVal = std::min( numRows, numCols );
     compareVal        = compareVal * ( 1. + compareVal ) / 2.;
     if ( fabs( l1norm - compareVal ) < 0.000001 )
-        utils->passes( "Verify extractDiagonal" );
+        utils->passes( "Verify extractDiagonal " + matrix->type() );
     else
-        utils->failure( "Verify extractDiagonal" );
+        utils->failure( "Verify extractDiagonal " + matrix->type() );
     PROFILE_STOP( "VerifyExtractDiagonal" );
 }
 
@@ -241,9 +250,9 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
 
     // Verify 0 matrix from factory
     if ( matrix->L1Norm() == 0.0 )
-        utils->passes( "Factory returns 0 matrix" );
+        utils->passes( "Factory returns 0 matrix" + matrix->type() );
     else
-        utils->failure( "Factory returns 0 matrix" );
+        utils->failure( "Factory returns 0 matrix" + matrix->type() );
 
     // Verify mult with 0 matrix
     matrix->zero();
@@ -252,9 +261,9 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     normrhs = static_cast<double>( vectorrhs->L2Norm() );
     if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
-        utils->passes( "mult by 0 matrix" );
+        utils->passes( "mult by 0 matrix " + matrix->type() );
     else
-        utils->failure( "mult by 0 matrix" );
+        utils->failure( "mult by 0 matrix " + matrix->type() );
 
     // Verify mult with identity
     vectorlhs->setToScalar( 1.0 );
@@ -265,9 +274,9 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     vectorrhs->subtract( *vectorlhs, *vectorrhs );
     normrhs = static_cast<double>( vectorrhs->L2Norm() );
     if ( ( normlhs > 0 ) && ( normrhs < 0.0000001 ) )
-        utils->passes( "mult by I matrix" );
+        utils->passes( "mult by I matrix " + matrix->type() );
     else
-        utils->failure( "mult by I matrix" );
+        utils->failure( "mult by I matrix " + matrix->type() );
 
     // Try the non-trivial matrix
     fillWithPseudoLaplacian( matrix, d_factory );
@@ -276,9 +285,9 @@ void MatrixTests::VerifyMultMatrix( AMP::UnitTest *utils )
     normlhs = static_cast<double>( vectorlhs->L2Norm() );
     normrhs = static_cast<double>( vectorrhs->L2Norm() );
     if ( ( normlhs > 0 ) && ( normrhs > 0 ) )
-        utils->passes( "mult by other matrix" );
+        utils->passes( "mult by other matrix " + matrix->type() );
     else
-        utils->failure( "mult by other matrix" );
+        utils->failure( "mult by other matrix " + matrix->type() );
     PROFILE_STOP( "VerifyMultMatrix" );
 }
 
@@ -313,9 +322,9 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     // Verify matMultiply with 0 matrix
     auto matSol = AMP::LinearAlgebra::Matrix::matMultiply( matZero, matLaplac );
     if ( matSol->L1Norm() == 0.0 )
-        utils->passes( "matMultiply with 0 matrix" );
+        utils->passes( "matMultiply with 0 matrix " + matZero->type() );
     else
-        utils->failure( "matMultiply with 0 matrix" );
+        utils->failure( "matMultiply with 0 matrix " + matZero->type() );
 
     // Verify mult with identity
     matLaplac->mult( vector1, vector2 );
@@ -328,11 +337,11 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     ans3 = static_cast<double>( vector2->L2Norm() );
     if ( AMP::Utilities::approx_equal( ans1, ans2 ) && AMP::Utilities::approx_equal( ans1, ans3 ) &&
          ans1 != 0.0 )
-        utils->passes( "matMultiply with identity matrix" );
+        utils->passes( "matMultiply with identity matrix " + matSol->type() );
     else
-        utils->failure( "matMultiply with identity matrix" );
+        utils->failure( "matMultiply with identity matrix " + matSol->type() );
 
-    // Verify mult with two trival matrices
+    // Verify mult with two trivial matrices
     matLaplac->mult( vector1, vector2 );
     matLaplac->mult( vector2, vector3 );
     ans1   = static_cast<double>( vector3->L2Norm() );
@@ -340,9 +349,9 @@ void MatrixTests::VerifyMatMultMatrix( AMP::UnitTest *utils )
     matSol->mult( vector1, vector2 );
     ans2 = static_cast<double>( vector2->L2Norm() );
     if ( AMP::Utilities::approx_equal( ans1, ans2 ) && ans1 != 0.0 )
-        utils->passes( "matMultiply with trival matrix" );
+        utils->passes( "matMultiply with trivial matrix " + matSol->type() );
     else
-        utils->failure( "matMultiply with trival matrix" );
+        utils->failure( "matMultiply with trivial matrix " + matSol->type() );
 
     PROFILE_STOP( "VerifyMatMultMatrix" );
 }
@@ -412,9 +421,9 @@ void MatrixTests::VerifyAddElementNode( AMP::UnitTest *utils )
         ++it;
     }
     if ( pass )
-        utils->passes( "VerifySetElementNode" );
+        utils->passes( "VerifyAddElementNode " + matrix->type() );
     else
-        utils->failure( "VerifySetElementNode" );
+        utils->failure( "VerifyAddElementNode " + matrix->type() );
 
     PROFILE_STOP( "VerifySetElementNode" );
 }
