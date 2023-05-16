@@ -76,10 +76,15 @@ public:
      */
     int entriesInRow( int i ) const;
 
+    /** \brief Return a vector of all columns for this process
+     * \return a vector of global column ids
+     */
+    std::vector<size_t> &getColumns() { return d_vColumns; }
+
     /** \brief  Add columns to a description
      * \param[in] cols  The column ids
      */
-    void addColumns( const std::set<size_t> &cols );
+    void addColumns( const std::vector<size_t> &cols );
 
     //!  Get the DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
@@ -121,7 +126,7 @@ protected:
     std::vector<int> d_vEntriesPerRow;
 
     //!  The set of columns this processor has
-    std::set<int> d_sColumns;
+    std::vector<size_t> d_vColumns;
 
     // The comm of the matrix
     AMP_MPI d_comm;
