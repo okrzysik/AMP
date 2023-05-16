@@ -149,20 +149,18 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     size_t row_start = leftDOF->beginDOF();
     size_t row_end   = leftDOF->endDOF();
     for ( size_t row = row_start; row < row_end; row++ ) {
-        auto col = getRow( row );
-        params->setEntriesInRow( row - row_start, col.size() );
-        for ( auto &tmp : col )
-            columns.insert( tmp );
+        auto cols = getRow( row );
+        params->setEntriesInRow( row - row_start, cols.size() );
+        params->addColumns( cols );
     }
-    params->addColumns( columns );
     // Create the matrix
     auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );
     // Initialize the matrix
-    newMatrix->zero();
+    //    newMatrix->zero();
     newMatrix->makeConsistent();
     return newMatrix;
 #else
-    AMP_ERROR( "Unable to build ManagedEpetraMatrix without Trilinos" );
+    AMP_ERROR( "Unable to build NativePetscMatrix without Petsc" );
     return nullptr;
 #endif
 }

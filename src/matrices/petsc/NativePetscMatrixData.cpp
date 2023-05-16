@@ -31,29 +31,44 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> 
 {
     AMP_ASSERT( d_pParameters );
     const auto &comm = d_pParameters->getComm().getCommunicator();
+    const auto nrows = d_pParameters->getLocalNumberOfRows();
+    const auto ncols = d_pParameters->getLocalNumberOfColumns();
     MatCreate( comm, &d_Mat );
     MatSetType( d_Mat, MATMPIAIJ );
     MatSetFromOptions( d_Mat );
     MatSetSizes( d_Mat,
-                 d_pParameters->getLocalNumberOfRows(),
-                 d_pParameters->getLocalNumberOfColumns(),
+                 nrows,
+                 ncols,
                  d_pParameters->getGlobalNumberOfRows(),
                  d_pParameters->getGlobalNumberOfColumns() );
     MatMPIAIJSetPreallocation(
         d_Mat, PETSC_DEFAULT, d_pParameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
     MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, d_pParameters->entryList() );
     MatSetUp( d_Mat );
-    ISLocalToGlobalMapping rmap, cmap;
-    MatSetLocalToGlobalMapping( d_Mat, rmap, cmap );
-#if 1
-    for ( size_t i = 0; i < d_pParameters->getLocalNumberOfRows(); ++i ) {
-        const auto nRowVals = d_pParameters->entriesInRow( i );
-        std::vector<double> vals( nRowVals );
+
+    // zero out the rows explicitly
+
+    std::vector<PetscInt> petsc_rows( nrows );
+    auto rowDOFs = d_pParameters->getLeftDOFManager();
+    AMP_ASSERT( rowDOFs );
+    const auto srow  = rowDOFs->beginDOF();
+    const auto &cols = d_pParameters->getColumns();
+    std::vector<PetscInt> petsc_cols( cols.size() );
+    for ( size_t i = 0; i < petsc_cols.size(); ++i ) // type conversion happening
+        petsc_cols[i] = cols[i];
+
+    auto row_nnz     = d_pParameters->entryList();
+    auto current_loc = petsc_cols[0];
+
+    for ( size_t i = 0; i < nrows; ++i ) {
+        PetscInt global_row = srow + i;
+        const auto nvals    = row_nnz[i];
+        std::vector<double> vals( nvals, 0.0 );
+        MatSetValues(
+            d_Mat, 1, &global_row, nvals, &petsc_cols[current_loc], vals.data(), INSERT_VALUES );
+        current_loc += nvals;
     }
 
-#else
-    MatZeroEntries( d_Mat ); // to prevent PETSc compressing out if makeConsistent is called
-#endif
     d_MatCreatedInternally = true;
 }
 
