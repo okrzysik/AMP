@@ -41,11 +41,17 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> 
                  ncols,
                  d_pParameters->getGlobalNumberOfRows(),
                  d_pParameters->getGlobalNumberOfColumns() );
+    MatSetUp( d_Mat );
+#if 1
+    auto nnz_p     = d_pParameters->entryList();
+    const auto nnz = *( std::max_element( nnz_p, nnz_p + nrows ) );
+    MatMPIAIJSetPreallocation( d_Mat, nnz, nullptr, PETSC_DETERMINE, nullptr );
+    MatSeqAIJSetPreallocation( d_Mat, nnz, nullptr );
+#else
     MatMPIAIJSetPreallocation(
         d_Mat, PETSC_DEFAULT, d_pParameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
     MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, d_pParameters->entryList() );
-    MatSetUp( d_Mat );
-
+#endif
     // zero out the rows explicitly
 
     std::vector<PetscInt> petsc_rows( nrows );
