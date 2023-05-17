@@ -127,9 +127,12 @@ void RobinMatrixCorrection::reset( std::shared_ptr<const OperatorParameters> par
         auto inputMatrix = myparams->d_inputMatrix;
         AMP_INSIST( inputMatrix, "NULL matrix" );
 
+#if 1
+        d_dofManager = inputMatrix->getRightDOFManager();
+#else
         auto inVec   = inputMatrix->getRightVector();
         d_dofManager = inVec->getDOFManager();
-
+#endif
         unsigned int numIds  = d_boundaryIds.size();
         auto elementInputVec = myparams->d_elementInputVec;
 
