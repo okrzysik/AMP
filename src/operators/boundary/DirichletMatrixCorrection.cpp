@@ -111,8 +111,7 @@ void DirichletMatrixCorrection::applyMatrixCorrection()
     AMP_ASSERT( !d_applyMatrixCorrectionWasCalled );
     d_applyMatrixCorrectionWasCalled = true;
 
-    auto inVec   = d_inputMatrix->getRightVector();
-    auto dof_map = inVec->getDOFManager();
+    auto dof_map = d_inputMatrix->getRightDOFManager();
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getLeftDOFManager() ) );
     AMP_ASSERT( ( *dof_map ) == ( *d_inputMatrix->getRightDOFManager() ) );
 

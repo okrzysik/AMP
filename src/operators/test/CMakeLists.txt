@@ -4,7 +4,7 @@
 
 # Function to add a serial or 1,2,4 processor test dependent on the existence of a parallel matrix
 MACRO( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
-    IF ( USE_TRILINOS )
+    IF ( USE_TRILINOS OR USE_PETSC )
         # We have a parallel matrix
         ADD_AMP_TEST_1_2_4( ${EXEFILE} ${ARGN} )
     ELSE()
@@ -13,7 +13,7 @@ MACRO( ADD_AMP_TEST_124_MATRIX EXEFILE ${ARGN} )
     ENDIF()
 ENDMACRO()
 MACRO( ADD_TB_TEST_124_MATRIX EXEFILE ${ARGN} )
-    IF ( USE_TRILINOS )
+    IF ( USE_TRILINOS OR USE_PETSC )
         # We have a parallel matrix
         ADD_TB_TEST_1_2_4( ${EXEFILE} ${ARGN} )
     ELSE()
@@ -181,7 +181,7 @@ FINALIZE_TESTBUILDER()
 
 # Add subdirectories
 ADD_SUBDIRECTORY( maps )
-IF( USE_LIBMESH AND USE_TRILINOS AND USE_PETSC )
+IF( USE_LIBMESH AND ( USE_TRILINOS OR USE_PETSC ) )
     ADD_SUBDIRECTORY( diffusion )
     ADD_SUBDIRECTORY( flow )
     ADD_SUBDIRECTORY( subchannel )

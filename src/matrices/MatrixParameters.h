@@ -76,7 +76,7 @@ public:
      */
     int entriesInRow( int i ) const;
 
-    /** \brief Return a vector of all columns for this process
+    /** \brief Return a vector of all columns with non-zero entries for this process
      * \return a vector of global column ids
      */
     std::vector<size_t> &getColumns() { return d_vColumns; }
@@ -125,7 +125,7 @@ protected:
     //!  The number of nonzeros per row of the matrix
     std::vector<int> d_vEntriesPerRow;
 
-    //!  The set of columns this processor has
+    //!  The set of columns with non-zero entries this processor has
     std::vector<size_t> d_vColumns;
 
     // The comm of the matrix

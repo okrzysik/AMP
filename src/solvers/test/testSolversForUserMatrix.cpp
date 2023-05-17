@@ -9,7 +9,7 @@
 #include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/OperatorParameters.h"
 #include "AMP/solvers/SolverFactory.h"
-#include "AMP/solvers/hypre/BoomerAMGSolver.h"
+#include "AMP/solvers/SolverStrategy.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
@@ -144,14 +144,9 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &inputFi
     linearOp->setMatrix( ampMat );
     linearOp->setVariables( copyVariable, copyVariable );
 
-    // copy the user matrix into the amp matrix
-    std::vector<double> coefficients;
-    std::vector<size_t> cols;
-    const size_t numRows = 1;
-    for ( auto row = userMat->beginRow(); row < userMat->endRow(); ++row ) {
-        userMat->getRowByGlobalID( row, cols, coefficients );
-        ampMat->setValuesByGlobalID( numRows, cols.size(), &row, cols.data(), coefficients.data() );
-    }
+    ampMat->axpy( 1.0, userMat );
+    ampMat->makeConsistent();
+
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
@@ -206,7 +201,9 @@ int main( int argc, char *argv[] )
 
     } else {
 
+#ifdef AMP_USE_TRILINOS
         files.emplace_back( "input_testSolversForUserMatrix-ML" );
+#endif
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testSolversForUserMatrix-BoomerAMG" );
 #endif

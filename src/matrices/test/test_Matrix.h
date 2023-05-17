@@ -65,6 +65,8 @@ public:
             return "ManagedEpetraMatrix";
         } else if ( TYPE == 2 ) {
             return "DenseSerialMatrix";
+        } else if ( TYPE == 3 ) {
+            return "NativePetscMatrix";
         }
         return "unknown";
     }

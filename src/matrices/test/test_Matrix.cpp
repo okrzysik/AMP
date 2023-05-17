@@ -66,6 +66,9 @@ int main( int argc, char **argv )
 #ifdef AMP_USE_TRILINOS
     types.emplace_back( "ManagedEpetraMatrix" );
 #endif
+#ifdef AMP_USE_PETSC
+    types.emplace_back( "NativePetscMatrix" );
+#endif
     types.emplace_back( "auto" );
     for ( auto type : types )
         testBasics( ut, type );
@@ -85,6 +88,14 @@ int main( int argc, char **argv )
         test_matrix_loop<DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 2>>( ut );
         test_matrix_loop<DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 2>>( ut );
     }
+
+#if defined( AMP_USE_PETSC )
+    test_matrix_loop<DOFMatrixTestFactory<1, 1, AMPCubeGenerator<5>, 3>>( ut );
+    test_matrix_loop<DOFMatrixTestFactory<3, 3, AMPCubeGenerator<5>, 3>>( ut );
+    #if defined( AMP_USE_LIBMESH ) && defined( USE_AMP_DATA )
+    test_matrix_loop<DOFMatrixTestFactory<3, 3, ExodusReaderGenerator<>, 3>>( ut );
+    #endif
+#endif
 
     ut.report();
     PROFILE_SAVE( "test_Matrix" );
