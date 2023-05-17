@@ -48,6 +48,7 @@ NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> 
     MatMPIAIJSetPreallocation( d_Mat, nnz, nullptr, PETSC_DETERMINE, nullptr );
     MatSeqAIJSetPreallocation( d_Mat, nnz, nullptr );
 #else
+    // this is possibly more optimal, but at present gives an error
     MatMPIAIJSetPreallocation(
         d_Mat, PETSC_DEFAULT, d_pParameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
     MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, d_pParameters->entryList() );
@@ -241,12 +242,17 @@ std::shared_ptr<MatrixData> NativePetscMatrixData::cloneMatrixData() const
 {
     Mat new_mat;
     MatDuplicate( d_Mat, MAT_DO_NOT_COPY_VALUES, &new_mat );
-    AMP_ERROR( "not quite implemented" );
     return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
 std::shared_ptr<MatrixData> NativePetscMatrixData::transpose() const
 {
-    AMP_ERROR( "Not implemented" );
+    Mat new_mat;
+    // note that PETSc documentation states that the new Mat is
+    // not actually formed. Instead the transposed operations are
+    // done with the original matrix. This could cause memory leaks
+    /// for our wrappers potentially
+    MatCreateTranspose( d_Mat, &new_mat );
+    return std::make_shared<NativePetscMatrixData>( new_mat, true );
 }
 std::shared_ptr<MatrixData> NativePetscMatrixData::duplicateMat( Mat m )
 {
