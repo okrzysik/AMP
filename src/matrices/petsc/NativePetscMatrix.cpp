@@ -73,11 +73,13 @@ Vector::shared_ptr NativePetscMatrix::getLeftVector() const
 }
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrix::getRightDOFManager() const
 {
-    return getRightVector()->getDOFManager();
+    //    return getRightVector()->getDOFManager();
+    return d_matrixData->getRightDOFManager();
 }
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrix::getLeftDOFManager() const
 {
-    return getLeftVector()->getDOFManager();
+    return d_matrixData->getLeftDOFManager();
+    //    return getLeftVector()->getDOFManager();
 }
 
 std::shared_ptr<Matrix> NativePetscMatrix::clone() const
