@@ -70,8 +70,7 @@ public: // Virtual functions
     size_t getNumberOfComponents() const override;
     std::shared_ptr<VectorData> getComponent( size_t i = 0 ) override;
     std::shared_ptr<const VectorData> getComponent( size_t i = 0 ) const override;
-    //! the next routine could be refined to depend on number of components
-    bool hasContiguousData() const override { return false; }
+    bool hasContiguousData() const override { return ( numberOfDataBlocks() <= 1 ); }
 
 public: // Advanced virtual functions
     /**\brief  A unique id for the underlying data allocation
