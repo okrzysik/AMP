@@ -94,9 +94,9 @@ ENDIF()
 # Add the tests
 INITIALIZE_TESTBUILDER()
 
-ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin)
-ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 )
 IF ( USE_LIBMESH )
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin)
+    ADD_AMP_TEST( testLinearSolvers-LinearThermalRobin PROCS 2 )
     ADD_AMP_TEST_1_2_4( testSolversForUserMatrix )
 ENDIF()
 IF ( USE_LIBMESH AND USE_HYPRE )
