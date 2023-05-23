@@ -403,6 +403,29 @@ void EpetraMatrixData::getValuesByGlobalID( size_t num_rows,
         AMP_ERROR( "Conversion not supported yet" );
     }
 }
+void EpetraMatrixData::getRowByGlobalID( size_t row,
+                                         std::vector<size_t> &cols,
+                                         std::vector<double> &values ) const
+{
+    size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
+    size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
+    AMP_ASSERT( row >= firstRow );
+    AMP_ASSERT( row < firstRow + numRows );
+
+    size_t localRow = row - firstRow;
+    int numCols     = d_pParameters->entriesInRow( localRow );
+    cols.resize( numCols );
+    values.resize( numCols );
+
+    if ( numCols ) {
+        std::vector<int> epetra_cols( numCols );
+        VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
+                                row, numCols, numCols, &( values[0] ), &( epetra_cols[0] ) ),
+                            "getRowByGlobalID" );
+        std::copy( epetra_cols.begin(), epetra_cols.end(), cols.begin() );
+    }
+}
+
 
 std::vector<size_t> EpetraMatrixData::getColumnIDs( size_t row ) const
 {

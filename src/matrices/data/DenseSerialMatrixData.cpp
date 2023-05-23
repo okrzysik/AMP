@@ -181,6 +181,22 @@ void DenseSerialMatrixData::getValuesByGlobalID( size_t num_rows,
 }
 
 /********************************************************
+ * Get values/rows by global id                          *
+ ********************************************************/
+void DenseSerialMatrixData::getRowByGlobalID( size_t row,
+                                              std::vector<size_t> &cols,
+                                              std::vector<double> &values ) const
+{
+    AMP_ASSERT( row < d_rows );
+    cols.resize( d_cols );
+    values.resize( d_cols );
+    for ( size_t i = 0; i < d_cols; i++ ) {
+        cols[i]   = i;
+        values[i] = d_M[row + i * d_rows];
+    }
+}
+
+/********************************************************
  * Get column indices by global id                       *
  ********************************************************/
 std::vector<size_t> DenseSerialMatrixData::getColumnIDs( size_t row ) const

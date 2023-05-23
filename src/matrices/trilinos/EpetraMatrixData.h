@@ -141,6 +141,9 @@ public:
                               size_t *cols,
                               void *values,
                               const typeID &id ) const override;
+    void getRowByGlobalID( size_t row,
+                           std::vector<size_t> &cols,
+                           std::vector<double> &values ) const override;
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row
      */

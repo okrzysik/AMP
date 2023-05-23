@@ -68,6 +68,9 @@ public:
                               size_t *cols,
                               void *values,
                               const typeID &id ) const override;
+    void getRowByGlobalID( size_t row,
+                           std::vector<size_t> &cols,
+                           std::vector<double> &values ) const override;
 
     std::vector<size_t> getColumnIDs( size_t row ) const override;
 

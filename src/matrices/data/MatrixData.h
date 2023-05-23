@@ -79,8 +79,9 @@ public:
      * \param[out] cols  The column ids of the returned values
      * \param[out] values  The values in the row
      */
-    template<class TYPE>
-    void getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<TYPE> &values ) const;
+    virtual void getRowByGlobalID( size_t row,
+                                   std::vector<size_t> &cols,
+                                   std::vector<double> &values ) const = 0;
 
     /** \brief  Add values to those in the matrix
      * \param[in] num_rows The number of rows represented in values
