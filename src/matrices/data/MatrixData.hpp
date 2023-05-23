@@ -26,6 +26,14 @@ void MatrixData::getValuesByGlobalID(
     constexpr auto type = getTypeID<TYPE>();
     getValuesByGlobalID( num_rows, num_cols, rows, cols, values, type );
 }
+template<typename TYPE>
+void MatrixData::getRowByGlobalID( size_t row,
+                                   std::vector<size_t> &cols,
+                                   std::vector<TYPE> &values ) const
+{
+    constexpr auto type = getTypeID<TYPE>();
+    getValuesByGlobalID( 1, cols.size(), &row, cols.data(), values.data(), type );
+}
 
 } // namespace AMP::LinearAlgebra
 #endif

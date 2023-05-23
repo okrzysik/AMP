@@ -96,16 +96,6 @@ public:
                               void *values,
                               const typeID &id ) const override;
 
-
-    /** \brief  Retrieve a row of the matrix in compressed format
-     * \param[in]  row Which row
-     * \param[out] cols  The column ids of the returned values
-     * \param[out] values  The values in the row
-     */
-    void getRowByGlobalID( size_t row,
-                           std::vector<size_t> &cols,
-                           std::vector<double> &values ) const override;
-
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row
      */
