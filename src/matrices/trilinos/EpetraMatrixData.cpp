@@ -239,7 +239,8 @@ void EpetraMatrixData::setOtherData()
                                  1u,
                                  (size_t *) &aggregateRows[i],
                                  (size_t *) &aggregateCols[i],
-                                 &aggregateData[i] );
+                                 &aggregateData[i],
+                                 getTypeID<double>() );
         }
     }
 
@@ -317,33 +318,43 @@ size_t EpetraMatrixData::endRow() const
  * Set/Add values by global id                           *
  ********************************************************/
 void EpetraMatrixData::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
     std::vector<int> epetra_cols( num_cols );
     std::copy( cols, cols + num_cols, epetra_cols.begin() );
 
-    for ( size_t i = 0; i != num_rows; i++ )
-        VerifyEpetraReturn( d_epetraMatrix->SumIntoGlobalValues(
-                                rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
-                            "addValuesByGlobalId" );
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i != num_rows; i++ )
+            VerifyEpetraReturn( d_epetraMatrix->SumIntoGlobalValues(
+                                    rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
+                                "addValuesByGlobalId" );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
 }
 void EpetraMatrixData::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
     std::vector<int> epetra_cols( num_cols );
     std::copy( cols, cols + num_cols, epetra_cols.begin() );
 
     size_t MyFirstRow = d_pParameters->getLeftDOFManager()->beginDOF();
     size_t MyEndRow   = d_pParameters->getLeftDOFManager()->endDOF();
-    for ( size_t i = 0; i != num_rows; i++ ) {
-        VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(
-                                rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
-                            "setValuesByGlobalID" );
-        if ( rows[i] < MyFirstRow || rows[i] >= MyEndRow ) {
-            for ( size_t j = 0; j != num_cols; j++ ) {
-                d_OtherData[rows[i]][cols[j]] = values[num_cols * i + j];
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<const double *>( vals );
+        for ( size_t i = 0; i != num_rows; i++ ) {
+            VerifyEpetraReturn( d_epetraMatrix->ReplaceGlobalValues(
+                                    rows[i], num_cols, values + num_cols * i, epetra_cols.data() ),
+                                "setValuesByGlobalID" );
+            if ( rows[i] < MyFirstRow || rows[i] >= MyEndRow ) {
+                for ( size_t j = 0; j != num_cols; j++ ) {
+                    d_OtherData[rows[i]][cols[j]] = values[num_cols * i + j];
+                }
             }
         }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 
@@ -351,35 +362,45 @@ void EpetraMatrixData::setValuesByGlobalID(
 /********************************************************
  * Get values/row by global id                           *
  ********************************************************/
-void EpetraMatrixData::getValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
+void EpetraMatrixData::getValuesByGlobalID( size_t num_rows,
+                                            size_t num_cols,
+                                            size_t *rows,
+                                            size_t *cols,
+                                            void *vals,
+                                            const typeID &id ) const
 {
     // Zero out the data in values
-    for ( size_t i = 0; i < num_rows * num_cols; i++ )
-        values[i] = 0.0;
-    // Get the data for each row
-    size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
-    std::vector<int> row_cols;
-    std::vector<double> row_values;
-    for ( size_t i = 0; i < num_rows; i++ ) {
-        if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
-            continue;
-        size_t localRow = rows[i] - firstRow;
-        int numCols     = d_pParameters->entriesInRow( localRow );
-        if ( numCols == 0 )
-            continue;
-        row_cols.resize( numCols );
-        row_values.resize( numCols );
-        VerifyEpetraReturn( d_epetraMatrix->ExtractGlobalRowCopy(
-                                rows[i], numCols, numCols, &( row_values[0] ), &( row_cols[0] ) ),
-                            "getValuesByGlobalID" );
-        for ( size_t j1 = 0; j1 < num_cols; j1++ ) {
-            for ( size_t j2 = 0; j2 < (size_t) numCols; j2++ ) {
-                if ( cols[j1] == (size_t) row_cols[j2] )
-                    values[i * num_cols + j1] = row_values[j2];
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<double *>( vals );
+        for ( size_t i = 0; i < num_rows * num_cols; i++ )
+            values[i] = 0.0;
+        // Get the data for each row
+        size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
+        size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
+        std::vector<int> row_cols;
+        std::vector<double> row_values;
+        for ( size_t i = 0; i < num_rows; i++ ) {
+            if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
+                continue;
+            size_t localRow = rows[i] - firstRow;
+            int numCols     = d_pParameters->entriesInRow( localRow );
+            if ( numCols == 0 )
+                continue;
+            row_cols.resize( numCols );
+            row_values.resize( numCols );
+            VerifyEpetraReturn(
+                d_epetraMatrix->ExtractGlobalRowCopy(
+                    rows[i], numCols, numCols, &( row_values[0] ), &( row_cols[0] ) ),
+                "getValuesByGlobalID" );
+            for ( size_t j1 = 0; j1 < num_cols; j1++ ) {
+                for ( size_t j2 = 0; j2 < (size_t) numCols; j2++ ) {
+                    if ( cols[j1] == (size_t) row_cols[j2] )
+                        values[i * num_cols + j1] = row_values[j2];
+                }
             }
         }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 void EpetraMatrixData::getRowByGlobalID( size_t row,
