@@ -1,6 +1,6 @@
 #include "AMP/solvers/trilinos/muelu/TrilinosMueLuSolver.h"
 #include "AMP/matrices/Matrix.h"
-#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrixData.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
 
@@ -122,9 +122,9 @@ Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>>
 TrilinosMueLuSolver::getXpetraMatrix( std::shared_ptr<AMP::Operator::LinearOperator> &op )
 {
     // wrap in a Xpetra matrix
-    auto ampMatrix    = op->getMatrix();
-    auto epetraMatrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
-        AMP::LinearAlgebra::EpetraMatrix::createView( ampMatrix ) );
+    auto ampMatrix = op->getMatrix();
+    auto epetraMatrix =
+        AMP::LinearAlgebra::EpetraMatrixData::createView( ampMatrix->getMatrixData() );
     auto epA = Teuchos::rcpFromRef( epetraMatrix->getEpetra_CrsMatrix() );
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> exA =
         Teuchos::rcp( new Xpetra::EpetraCrsMatrix( epA ) );
@@ -444,7 +444,7 @@ void TrilinosMueLuSolver::registerOperator( std::shared_ptr<AMP::Operator::Opera
                 std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
             AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
-            d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>(
+            d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>(
                 linearOperator->getMatrix() );
             AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
@@ -642,8 +642,8 @@ void TrilinosMueLuSolver::reSolveWithLU( std::shared_ptr<const AMP::LinearAlgebr
     auto linearOperator = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
     AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
-    d_matrix =
-        std::dynamic_pointer_cast<AMP::LinearAlgebra::EpetraMatrix>( linearOperator->getMatrix() );
+    d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>(
+        linearOperator->getMatrix() );
     AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
     auto tmpMueLuParameterList = d_MueLuParameterList;

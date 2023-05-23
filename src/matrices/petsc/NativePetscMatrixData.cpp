@@ -145,37 +145,6 @@ size_t NativePetscMatrixData::numGlobalColumns() const
     MatGetSize( d_Mat, &rows, &cols );
     return (size_t) cols;
 }
-void NativePetscMatrixData::getValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
-{
-    // Zero out the data in values
-    for ( size_t i = 0; i < num_rows * num_cols; i++ )
-        values[i] = 0.0;
-    // Get the data for each row
-    auto leftDOFManager = getLeftDOFManager();
-    size_t firstRow     = leftDOFManager->beginDOF();
-    size_t numRows      = leftDOFManager->endDOF();
-
-    for ( size_t i = 0; i < num_rows; i++ ) {
-        if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
-            continue;
-        PetscInt numCols = 0;
-        MatGetRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
-        if ( numCols == 0 )
-            continue;
-        MatRestoreRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
-        const PetscInt *out_cols;
-        const PetscScalar *out_vals;
-        MatGetRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
-        for ( size_t j1 = 0; j1 < num_cols; j1++ ) {
-            for ( int j2 = 0; j2 < numCols; j2++ ) {
-                if ( (int) cols[j1] == out_cols[j2] )
-                    values[i * num_cols + j1] = out_vals[j2];
-            }
-        }
-        MatRestoreRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
-    }
-}
 void NativePetscMatrixData::getRowByGlobalID( size_t row,
                                               std::vector<size_t> &cols,
                                               std::vector<double> &values ) const
@@ -213,25 +182,76 @@ std::vector<size_t> NativePetscMatrixData::getColumnIDs( size_t row ) const
     return cols;
 }
 void NativePetscMatrixData::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
     std::vector<PetscInt> petsc_rows( num_rows );
     std::vector<PetscInt> petsc_cols( num_cols );
     std::copy( rows, rows + num_rows, petsc_rows.begin() );
     std::copy( cols, cols + num_cols, petsc_cols.begin() );
 
-    MatSetValues( d_Mat, num_rows, &petsc_rows[0], num_cols, &petsc_cols[0], values, ADD_VALUES );
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<const double *>( vals );
+        MatSetValues(
+            d_Mat, num_rows, &petsc_rows[0], num_cols, &petsc_cols[0], values, ADD_VALUES );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
 }
 void NativePetscMatrixData::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
     std::vector<PetscInt> petsc_rows( num_rows );
     std::vector<PetscInt> petsc_cols( num_cols );
     std::copy( rows, rows + num_rows, petsc_rows.begin() );
     std::copy( cols, cols + num_cols, petsc_cols.begin() );
 
-    MatSetValues(
-        d_Mat, num_rows, &petsc_rows[0], num_cols, &petsc_cols[0], values, INSERT_VALUES );
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<const double *>( vals );
+        MatSetValues(
+            d_Mat, num_rows, &petsc_rows[0], num_cols, &petsc_cols[0], values, INSERT_VALUES );
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
+}
+void NativePetscMatrixData::getValuesByGlobalID( size_t num_rows,
+                                                 size_t num_cols,
+                                                 size_t *rows,
+                                                 size_t *cols,
+                                                 void *vals,
+                                                 const typeID &id ) const
+{
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<double *>( vals );
+        // Zero out the data in values
+        for ( size_t i = 0; i < num_rows * num_cols; i++ )
+            values[i] = 0.0;
+        // Get the data for each row
+        auto leftDOFManager = getLeftDOFManager();
+        size_t firstRow     = leftDOFManager->beginDOF();
+        size_t numRows      = leftDOFManager->endDOF();
+
+        for ( size_t i = 0; i < num_rows; i++ ) {
+            if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
+                continue;
+            PetscInt numCols = 0;
+            MatGetRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
+            if ( numCols == 0 )
+                continue;
+            MatRestoreRow( d_Mat, rows[i], &numCols, nullptr, nullptr );
+            const PetscInt *out_cols;
+            const PetscScalar *out_vals;
+            MatGetRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
+            for ( size_t j1 = 0; j1 < num_cols; j1++ ) {
+                for ( int j2 = 0; j2 < numCols; j2++ ) {
+                    if ( (int) cols[j1] == out_cols[j2] )
+                        values[i * num_cols + j1] = out_vals[j2];
+                }
+            }
+            MatRestoreRow( d_Mat, rows[i], &numCols, &out_cols, &out_vals );
+        }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
+    }
 }
 
 

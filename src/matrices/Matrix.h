@@ -155,8 +155,9 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    void addValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    template<typename T>
+    void
+    addValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, T *values )
     {
         d_matrixData->addValuesByGlobalID( num_rows, num_cols, rows, cols, values );
     }
@@ -171,8 +172,9 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    template<typename T>
+    void
+    setValuesByGlobalID( size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, T *values )
     {
         d_matrixData->setValuesByGlobalID( num_rows, num_cols, rows, cols, values );
     }
@@ -186,8 +188,9 @@ public:
      * \details  This method will return zero for any entries that
      *   have not been allocated or are not ghosts on the current processor.
      */
+    template<typename T>
     void getValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, T *values ) const
     {
         d_matrixData->getValuesByGlobalID( num_rows, num_cols, rows, cols, values );
     }
@@ -197,8 +200,8 @@ public:
      * \param[out] cols  The column ids of the returned values
      * \param[out] values  The values in the row
      */
-    void
-    getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<double> &values ) const
+    template<typename T = double>
+    void getRowByGlobalID( size_t row, std::vector<size_t> &cols, std::vector<T> &values ) const
     {
         d_matrixData->getRowByGlobalID( row, cols, values );
     }
@@ -278,7 +281,8 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    void addValueByGlobalID( size_t row, size_t col, double value )
+    template<typename T = double>
+    void addValueByGlobalID( size_t row, size_t col, T value )
     {
         addValuesByGlobalID( 1, 1, &row, &col, &value );
     }
@@ -291,7 +295,8 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    void setValueByGlobalID( size_t row, size_t col, double value )
+    template<typename T = double>
+    void setValueByGlobalID( size_t row, size_t col, T value )
     {
         setValuesByGlobalID( 1, 1, &row, &col, &value );
     }
@@ -301,9 +306,10 @@ public:
      * \param[in] col  The column id of value
      * \details  This method will return zero for any values that have not been allocated.
      */
-    double getValueByGlobalID( size_t row, size_t col ) const
+    template<typename T = double>
+    T getValueByGlobalID( size_t row, size_t col ) const
     {
-        double ans;
+        T ans;
         getValuesByGlobalID( 1, 1, &row, &col, &ans );
         return ans;
     }

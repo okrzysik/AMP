@@ -56,8 +56,12 @@ public:
      * allocated a particular(row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    void addValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    void addValuesByGlobalID( size_t num_rows,
+                              size_t num_cols,
+                              size_t *rows,
+                              size_t *cols,
+                              void *values,
+                              const typeID &id ) override;
 
     /** \brief  Set values in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -69,8 +73,12 @@ public:
      * allocated a particular(row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) override;
+    void setValuesByGlobalID( size_t num_rows,
+                              size_t num_cols,
+                              size_t *rows,
+                              size_t *cols,
+                              void *values,
+                              const typeID &id ) override;
 
     /** \brief  Get values in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -85,7 +93,8 @@ public:
                               size_t num_cols,
                               size_t *rows,
                               size_t *cols,
-                              double *values ) const override;
+                              void *values,
+                              const typeID &id ) const override;
 
 
     /** \brief  Retrieve a row of the matrix in compressed format
