@@ -1,7 +1,7 @@
 #ifndef included_AMP_TrilinosMueLuSolver
 #define included_AMP_TrilinosMueLuSolver
 
-#include "AMP/matrices/trilinos/EpetraMatrix.h"
+#include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 #include "AMP/solvers/trilinos/ml/MLoptions.h"
@@ -191,7 +191,7 @@ private:
 
     std::shared_ptr<MueLu::EpetraOperator> d_mueluSolver;
 
-    std::shared_ptr<AMP::LinearAlgebra::EpetraMatrix> d_matrix;
+    std::shared_ptr<AMP::LinearAlgebra::ManagedEpetraMatrix> d_matrix;
     Teuchos::ParameterList d_MueLuParameterList;
 
     Teuchos::RCP<MueLu::HierarchyManager<SC, LO, GO, NO>>

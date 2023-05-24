@@ -90,40 +90,93 @@ void DenseSerialMatrixData::extractDiagonal( std::shared_ptr<Vector> diag ) cons
  * Get/Set values                                        *
  ********************************************************/
 void DenseSerialMatrixData::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    if ( num_rows == 1 && num_cols == 1 ) {
-        d_M[rows[0] + cols[0] * d_rows] += values[0];
-    } else {
-        for ( size_t i = 0; i < num_rows; i++ ) {
-            for ( size_t j = 0; j < num_cols; j++ ) {
-                d_M[rows[i] + cols[j] * d_rows] += values[num_cols * i + j];
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<const double *>( vals );
+        if ( num_rows == 1 && num_cols == 1 ) {
+            d_M[rows[0] + cols[0] * d_rows] += values[0];
+        } else {
+            for ( size_t i = 0; i < num_rows; i++ ) {
+                for ( size_t j = 0; j < num_cols; j++ ) {
+                    d_M[rows[i] + cols[j] * d_rows] += values[num_cols * i + j];
+                }
             }
         }
+    } else if ( id == getTypeID<float>() ) {
+        auto values = reinterpret_cast<const float *>( vals );
+        if ( num_rows == 1 && num_cols == 1 ) {
+            d_M[rows[0] + cols[0] * d_rows] += static_cast<double>( values[0] );
+        } else {
+            for ( size_t i = 0; i < num_rows; i++ ) {
+                for ( size_t j = 0; j < num_cols; j++ ) {
+                    d_M[rows[i] + cols[j] * d_rows] +=
+                        static_cast<double>( values[num_cols * i + j] );
+                }
+            }
+        }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 void DenseSerialMatrixData::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values )
+    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *vals, const typeID &id )
 {
-    if ( num_rows == 1 && num_cols == 1 ) {
-        d_M[rows[0] + cols[0] * d_rows] = values[0];
-    } else {
-        for ( size_t i = 0; i < num_rows; i++ ) {
-            for ( size_t j = 0; j < num_cols; j++ ) {
-                d_M[rows[i] + cols[j] * d_rows] = values[num_cols * i + j];
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<const double *>( vals );
+        if ( num_rows == 1 && num_cols == 1 ) {
+            d_M[rows[0] + cols[0] * d_rows] = values[0];
+        } else {
+            for ( size_t i = 0; i < num_rows; i++ ) {
+                for ( size_t j = 0; j < num_cols; j++ ) {
+                    d_M[rows[i] + cols[j] * d_rows] = values[num_cols * i + j];
+                }
             }
         }
+    } else if ( id == getTypeID<float>() ) {
+        auto values = reinterpret_cast<const float *>( vals );
+        if ( num_rows == 1 && num_cols == 1 ) {
+            d_M[rows[0] + cols[0] * d_rows] = static_cast<double>( values[0] );
+        } else {
+            for ( size_t i = 0; i < num_rows; i++ ) {
+                for ( size_t j = 0; j < num_cols; j++ ) {
+                    d_M[rows[i] + cols[j] * d_rows] =
+                        static_cast<double>( values[num_cols * i + j] );
+                }
+            }
+        }
+    } else {
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
-void DenseSerialMatrixData::getValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const
+void DenseSerialMatrixData::getValuesByGlobalID( size_t num_rows,
+                                                 size_t num_cols,
+                                                 size_t *rows,
+                                                 size_t *cols,
+                                                 void *vals,
+                                                 const typeID &id ) const
 {
-    if ( num_rows == 1 && num_cols == 1 ) {
-        values[0] = d_M[rows[0] + cols[0] * d_rows];
+    if ( id == getTypeID<double>() ) {
+        auto values = reinterpret_cast<double *>( vals );
+        if ( num_rows == 1 && num_cols == 1 ) {
+            values[0] = d_M[rows[0] + cols[0] * d_rows];
+        } else {
+            for ( size_t i = 0; i < num_rows; i++ )
+                for ( size_t j = 0; j < num_cols; j++ )
+                    values[i * num_cols + j] = d_M[rows[i] + cols[j] * d_rows];
+        }
+    } else if ( id == getTypeID<float>() ) {
+        auto values = reinterpret_cast<float *>( vals );
+        if ( num_rows == 1 && num_cols == 1 ) {
+            values[0] = static_cast<float>( d_M[rows[0] + cols[0] * d_rows] );
+        } else {
+            for ( size_t i = 0; i < num_rows; i++ )
+                for ( size_t j = 0; j < num_cols; j++ )
+                    values[i * num_cols + j] =
+                        static_cast<float>( d_M[rows[i] + cols[j] * d_rows] );
+        }
     } else {
-        for ( size_t i = 0; i < num_rows; i++ )
-            for ( size_t j = 0; j < num_cols; j++ )
-                values[i * num_cols + j] = d_M[rows[i] + cols[j] * d_rows];
+        AMP_ERROR( "Conversion not supported yet" );
     }
 }
 

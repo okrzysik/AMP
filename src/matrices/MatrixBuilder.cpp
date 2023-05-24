@@ -64,12 +64,10 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         size_t row_start = leftDOF->beginDOF();
         size_t row_end   = leftDOF->endDOF();
         for ( size_t row = row_start; row < row_end; row++ ) {
-            auto col = getRow( row );
-            params->setEntriesInRow( row - row_start, col.size() );
-            for ( auto &tmp : col )
-                columns.insert( tmp );
+            auto cols = getRow( row );
+            params->setEntriesInRow( row - row_start, cols.size() );
+            params->addColumns( cols );
         }
-        params->addColumns( columns );
 
         // Create the matrix
         auto newMatrixData = std::make_shared<AMP::LinearAlgebra::EpetraMatrixData>( params );
@@ -125,6 +123,48 @@ createDenseSerialMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     return newMatrix;
 }
 
+/********************************************************
+ * Build a NativePetscMatrix                             *
+ ********************************************************/
+std::shared_ptr<AMP::LinearAlgebra::Matrix>
+createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
+                         AMP::LinearAlgebra::Vector::shared_ptr rightVec,
+                         const std::function<std::vector<size_t>( size_t )> &getRow )
+{
+#if defined( AMP_USE_PETSC )
+    // Get the DOFs
+    auto leftDOF  = leftVec->getDOFManager();
+    auto rightDOF = rightVec->getDOFManager();
+    if ( leftDOF->getComm().compare( rightVec->getComm() ) == 0 )
+        AMP_ERROR( "leftDOF and rightDOF on different comm groups is NOT tested, and needs to "
+                   "be fixed" );
+    AMP_MPI comm = leftDOF->getComm();
+    // Create the matrix parameters
+    auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>( leftDOF, rightDOF, comm );
+    params->d_VariableLeft  = leftVec->getVariable();
+    params->d_VariableRight = rightVec->getVariable();
+
+    // Add the row sizes and local columns to the matrix parameters
+    std::set<size_t> columns;
+    size_t row_start = leftDOF->beginDOF();
+    size_t row_end   = leftDOF->endDOF();
+    for ( size_t row = row_start; row < row_end; row++ ) {
+        auto cols = getRow( row );
+        params->setEntriesInRow( row - row_start, cols.size() );
+        params->addColumns( cols );
+    }
+    // Create the matrix
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::NativePetscMatrix>( params );
+    // Initialize the matrix
+    //    newMatrix->zero();
+    newMatrix->makeConsistent();
+    return newMatrix;
+#else
+    AMP_ERROR( "Unable to build NativePetscMatrix without Petsc" );
+    return nullptr;
+#endif
+}
+
 
 /********************************************************
  * Test the matrix to ensure it is valid                 *
@@ -163,6 +203,8 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     if ( type == "auto" ) {
 #if defined( AMP_USE_TRILINOS )
         type2 = "ManagedEpetraMatrix";
+#elif defined( AMP_USE_PETSC )
+        type2 = "NativePetscMatrix";
 #else
         type2 = "DenseSerialMatrix";
 #endif
@@ -180,6 +222,9 @@ createMatrix( AMP::LinearAlgebra::Vector::shared_ptr rightVec,
     std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix;
     if ( type2 == "ManagedEpetraMatrix" ) {
         matrix = createManagedMatrix( leftVec, rightVec, getRow, type2 );
+        test( matrix );
+    } else if ( type2 == "NativePetscMatrix" ) {
+        matrix = createNativePetscMatrix( leftVec, rightVec, getRow );
         test( matrix );
     } else if ( type2 == "DenseSerialMatrix" ) {
         matrix = createDenseSerialMatrix( leftVec, rightVec );

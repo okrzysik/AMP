@@ -17,8 +17,9 @@
     #include "AMP/solvers/petsc/PetscKrylovSolver.h"
 #endif
 
-#include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
-
+#ifdef AMP_USE_TRILINOS
+    #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
+#endif
 
 void helperCreateStackOperatorForPelletMechanics(
     std::shared_ptr<AMP::Mesh::Mesh> manager,
@@ -250,14 +251,21 @@ void helperBuildColumnSolverForPelletMechanics(
         auto mlSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( mlSolver_db );
         mlSolverParams->d_pOperator = currOp;
+#ifdef AMP_USE_TRILINOS
         auto mlSolver = std::make_shared<AMP::Solver::TrilinosMLSolver>( mlSolverParams );
+#else
+        AMP_ERROR( "helperBuildColumnSolverForPelletMechanics: trilinos required" );
+#endif
 
 #ifdef AMP_USE_PETSC
         auto ikspSolverParams =
             std::make_shared<AMP::Solver::SolverStrategyParameters>( ikspSolver_db );
-        ikspSolverParams->d_pOperator     = currOp;
-        ikspSolverParams->d_comm          = ( currOp->getMesh() )->getComm();
+        ikspSolverParams->d_pOperator = currOp;
+        ikspSolverParams->d_comm      = ( currOp->getMesh() )->getComm();
+
+    #ifdef AMP_USE_TRILINOS
         ikspSolverParams->d_pNestedSolver = mlSolver;
+    #endif
         auto ikspSolver = std::make_shared<AMP::Solver::PetscKrylovSolver>( ikspSolverParams );
         columnSolver->append( ikspSolver );
 #else

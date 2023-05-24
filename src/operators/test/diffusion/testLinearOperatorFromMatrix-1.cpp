@@ -90,14 +90,9 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     linearOp->setMatrix( ampMat );
     linearOp->setVariables( copyVariable, copyVariable );
 
-    // copy the user matrix into the amp matrix
-    std::vector<double> coefficients;
-    std::vector<size_t> cols;
-    const size_t numRows = 1;
-    for ( auto row = userMat->beginRow(); row < userMat->endRow(); ++row ) {
-        userMat->getRowByGlobalID( row, cols, coefficients );
-        ampMat->setValuesByGlobalID( numRows, cols.size(), &row, cols.data(), coefficients.data() );
-    }
+    ampMat->axpy( 1.0, *userMat );
+    ampMat->makeConsistent();
+
     // concludes demonstrating how to initialize an AMP linear operator from a user matrix
     // ************************************************************************************************
 
@@ -110,15 +105,28 @@ void userLinearOperatorTest( AMP::UnitTest *const ut, const std::string &exeName
     // form the difference of the matrices
     // COMMENT: simple add, subtract routines would be nice for matrices
     ampMat->axpy( -1.0, userMat );
-
-    linearOp->apply( u, v );
-
-    auto passed = ( v->maxNorm() <= std::numeric_limits<double>::min() );
+    ampMat->makeConsistent();
+    const auto matL1Norm = static_cast<double>( ampMat->L1Norm() );
+    auto passed          = ( matL1Norm <= std::numeric_limits<double>::min() );
 
     if ( passed ) {
         ut->passes( exeName );
     } else {
-        ut->failure( "unable to create a copy of a linear operator" );
+        ut->failure( "difference of matrix and copy is not zero (L1Norm of difference): " +
+                     std::to_string( matL1Norm ) );
+    }
+
+    linearOp->apply( u, v );
+
+    const auto maxNorm = static_cast<double>( v->maxNorm() );
+
+    passed = ( maxNorm <= std::numeric_limits<double>::min() );
+
+    if ( passed ) {
+        ut->passes( exeName );
+    } else {
+        ut->failure( "unable to create a copy of a linear operator, difference" +
+                     std::to_string( maxNorm ) );
     }
 }
 

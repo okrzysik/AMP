@@ -49,12 +49,10 @@ std::shared_ptr<AMP::Discretization::DOFManager> MatrixParameters::getRightDOFMa
 }
 
 
-void MatrixParameters::addColumns( const std::set<size_t> &col )
+void MatrixParameters::addColumns( const std::vector<size_t> &col )
 {
-    for ( auto b : col )
-        d_sColumns.insert( b );
+    d_vColumns.insert( d_vColumns.end(), col.begin(), col.end() );
 }
-
 
 const int *MatrixParameters::entryList() const { return &*d_vEntriesPerRow.begin(); }
 

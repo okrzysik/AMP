@@ -1013,21 +1013,24 @@ void SubchannelFourEqLinearOperator::reset( std::shared_ptr<const OperatorParame
                                               dz * d_KG / ( gapWidth * pitch ) * vol_gap_avg *
                                                   std::abs( w_mid ) );
             }
-        } else {
-            // determine if face is an external gap face; in this case, a one must by set
-            // to the diagonal entry for this DOF since it is not used. The initial guess
-            // should be set to zero for these exterior gap lateral mass flow rates.
-            lateralFaceIterator = exteriorLateralFaceMap.find( faceCentroid );
-            if ( lateralFaceIterator != exteriorLateralFaceMap.end() ) {
-                // get lateral face
-                AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
-                std::vector<size_t> gapDofs;
-                dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
-                d_matrix->setValueByGlobalID( gapDofs[0], gapDofs[0], 1.0 );
-            }
         }
     } // end loop over lateral faces
 
+    d_matrix->makeConsistent();
+
+    // loop over lateral faces separately (PETSc matrices do not mix setValue and addValue)
+    face = d_Mesh->getIterator( AMP::Mesh::GeomType::Face, 0 ); // iterator for cells of mesh
+    for ( ; face != face.end(); ++face ) {
+        auto faceCentroid        = face->centroid();
+        auto lateralFaceIterator = exteriorLateralFaceMap.find( faceCentroid );
+        if ( lateralFaceIterator != exteriorLateralFaceMap.end() ) {
+            // get lateral face
+            AMP::Mesh::MeshElement lateralFace = lateralFaceIterator->second;
+            std::vector<size_t> gapDofs;
+            dof_manager->getDOFs( lateralFace.globalID(), gapDofs );
+            d_matrix->setValueByGlobalID( gapDofs[0], gapDofs[0], 1.0 );
+        }
+    }
     d_matrix->makeConsistent();
     PROFILE_STOP( "reset" );
 } // end of reset function

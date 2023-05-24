@@ -43,8 +43,9 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void addValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
+    template<class TYPE>
+    void addValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, TYPE *values );
 
     /** \brief  Set values in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -56,8 +57,9 @@ public:
      * allocated a particular (row,col) specified, depending
      * on the actual subclass of matrix used.
      */
-    virtual void setValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) = 0;
+    template<class TYPE>
+    void setValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, TYPE *values );
 
     /** \brief  Get values in the matrix
      * \param[in] num_rows The number of rows represented in values
@@ -68,8 +70,9 @@ public:
      * \details  This method will return zero for any entries that
      *   have not been allocated or are not ghosts on the current processor.
      */
-    virtual void getValuesByGlobalID(
-        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, double *values ) const = 0;
+    template<class TYPE>
+    void getValuesByGlobalID(
+        size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, TYPE *values ) const;
 
     /** \brief  Retrieve a row of the matrix in compressed format
      * \param[in]  row Which row
@@ -79,6 +82,56 @@ public:
     virtual void getRowByGlobalID( size_t row,
                                    std::vector<size_t> &cols,
                                    std::vector<double> &values ) const = 0;
+
+    /** \brief  Add values to those in the matrix
+     * \param[in] num_rows The number of rows represented in values
+     * \param[in] num_cols The number of cols represented in values
+     * \param[in] rows  The row ids of values
+     * \param[in] cols  The column ids of values
+     * \param[in] values  The values to add to the matrix (row-major ordering)
+     * \details  This method may fail if the matrix has not
+     * allocated a particular (row,col) specified, depending
+     * on the actual subclass of matrix used.
+     */
+    virtual void addValuesByGlobalID( size_t num_rows,
+                                      size_t num_cols,
+                                      size_t *rows,
+                                      size_t *cols,
+                                      void *values,
+                                      const typeID &id ) = 0;
+
+    /** \brief  Set values in the matrix
+     * \param[in] num_rows The number of rows represented in values
+     * \param[in] num_cols The number of cols represented in values
+     * \param[in] rows  The row ids of values
+     * \param[in] cols  The column ids of values
+     * \param[in] values  The values to set to the matrix (row-major ordering)
+     * \details  This method may fail if the matrix has not
+     * allocated a particular (row,col) specified, depending
+     * on the actual subclass of matrix used.
+     */
+    virtual void setValuesByGlobalID( size_t num_rows,
+                                      size_t num_cols,
+                                      size_t *rows,
+                                      size_t *cols,
+                                      void *values,
+                                      const typeID &id ) = 0;
+
+    /** \brief  Get values in the matrix
+     * \param[in] num_rows The number of rows represented in values
+     * \param[in] num_cols The number of cols represented in values
+     * \param[in] rows  The row ids of values
+     * \param[in] cols  The column ids of values
+     * \param[out] values  The values to get from the matrix (row-major ordering)
+     * \details  This method will return zero for any entries that
+     *   have not been allocated or are not ghosts on the current processor.
+     */
+    virtual void getValuesByGlobalID( size_t num_rows,
+                                      size_t num_cols,
+                                      size_t *rows,
+                                      size_t *cols,
+                                      void *values,
+                                      const typeID &id ) const = 0;
 
     /** \brief  Given a row, retrieve the non-zero column indices of the matrix in compressed format
      * \param[in]  row Which row
@@ -146,5 +199,7 @@ protected:
 };
 
 } // namespace AMP::LinearAlgebra
+
+#include "AMP/matrices/data/MatrixData.hpp"
 
 #endif
