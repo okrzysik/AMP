@@ -73,7 +73,7 @@ public:
      * Reset cached information that depends on the mesh configuration.
      *
      */
-    void reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters );
+    void reset( std::shared_ptr<const AMP::TimeIntegrator::TimeIntegratorParameters> parameters ) override;
 
     //! print the statistics on the implicit equations
     void printStatistics( std::ostream &os = AMP::pout ) override;

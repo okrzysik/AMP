@@ -763,7 +763,6 @@ createKeyData( std::string_view key,
         Array<std::string_view> data2( values.size() );
         Units unit;
         for ( size_t i = 0; i < values.size(); i++ ) {
-            Units unit2;
             size_t j   = values[i].find( ';' );
             data2( i ) = deblank( values[i].substr( 0, j + 1 ) );
             auto str   = deblank( values[i].substr( j + 1 ) );

@@ -154,7 +154,7 @@ TrilinosThyraModelEvaluator::get_W_factory() const
     ::Thyra::ModelEvaluatorBase::InArgsSetup<double> inArgs;
     inArgs.setModelEvalDescription( this->description() );
     inArgs.setSupports( ::Thyra::ModelEvaluatorBase::IN_ARG_x );
-    return inArgs;
+    return std::move(inArgs);
 }
 ::Thyra::ModelEvaluatorBase::OutArgs<double> TrilinosThyraModelEvaluator::createOutArgsImpl() const
 {
@@ -163,7 +163,7 @@ TrilinosThyraModelEvaluator::get_W_factory() const
     outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_f );
     outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_op );
     outArgs.setSupports( ::Thyra::ModelEvaluatorBase::OUT_ARG_W_prec );
-    return outArgs;
+    return std::move(outArgs);
 }
 
 
