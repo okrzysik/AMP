@@ -416,8 +416,8 @@ INSTANTIATE_HDF5( long double );
 INSTANTIATE_HDF5( std::byte );
 INSTANTIATE_HDF5( std::complex<float> );
 INSTANTIATE_HDF5( std::complex<double> );
-//INSTANTIATE_HDF5( std::string );
-//INSTANTIATE_HDF5( std::string_view );
+INSTANTIATE_HDF5( std::string );
+INSTANTIATE_HDF5( std::string_view );
 INSTANTIATE_HDF5( AMP::Mesh::Point );
 
 
