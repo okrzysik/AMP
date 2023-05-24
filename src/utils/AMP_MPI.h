@@ -743,9 +743,6 @@ public: // Member functions
 
 
     /**
-     *
-     */
-    /**
      * \brief   Perform a global barrier putting idle processors to sleep
      * \details  This function uses an MPI_Ibarrier to start the barrier then
      *    waits for completion using sleep.  Note: this version will sleep in
@@ -998,11 +995,11 @@ public: // Member functions
 
     /*!
      * Each processor sends every other processor an array
-     * @param[in] x_in   Input array for allGather
+     * @param[in] x      Input array for allGather
      * @return           Output array for allGather
      */
     template<class type>
-    std::vector<type> allGather( const std::vector<type> &x_in ) const;
+    std::vector<type> allGather( const std::vector<type> &x ) const;
 
 
     /*!
@@ -1234,8 +1231,7 @@ public: // Member functions
      * \details This function waits for all of the given communication requests to finish.
      *    Note: this does not require a communicator.
      * \param[in] count      Number of communications to check
-     * \param[in] request    Array of communication requests to wait for (returned for Isend or
-     * Irecv)
+     * \param[in] request    Array of communication requests to wait for
      */
     static void waitAll( int count, Request2 *request );
 
@@ -1246,8 +1242,7 @@ public: // Member functions
      *    It returns an array of the indicies that have finished.
      *    Note: this does not require a communicator.
      * \param[in] count      Number of communications to check
-     * \param[in] request    Array of communication requests to wait for (returned for Isend or
-     * Irecv)
+     * \param[in] request    Array of communication requests to wait for
      */
     static std::vector<int> waitSome( int count, const Request *request );
 

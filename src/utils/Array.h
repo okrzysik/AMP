@@ -823,51 +823,49 @@ inline std::ostream &operator<<( std::ostream &out, const AMP::ArraySize &s )
  *  Math operations                                      *
  ********************************************************/
 template<class TYPE, class FUN, class Allocator>
-inline AMP::Array<TYPE, FUN, Allocator> operator+( const AMP::Array<TYPE, FUN, Allocator> &a,
-                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
+inline Array<TYPE, FUN, Allocator> operator+( const Array<TYPE, FUN, Allocator> &a,
+                                              const Array<TYPE, FUN, Allocator> &b )
 {
-    AMP::Array<TYPE, FUN, Allocator> c;
+    Array<TYPE, FUN, Allocator> c;
     const auto &op = []( const TYPE &a, const TYPE &b ) { return a + b; };
     FUN::transform( op, a, b, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline AMP::Array<TYPE, FUN, Allocator> operator-( const AMP::Array<TYPE, FUN, Allocator> &a,
-                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
+inline Array<TYPE, FUN, Allocator> operator-( const Array<TYPE, FUN, Allocator> &a,
+                                              const Array<TYPE, FUN, Allocator> &b )
 {
-    AMP::Array<TYPE, FUN, Allocator> c;
+    Array<TYPE, FUN, Allocator> c;
     const auto &op = []( const TYPE &a, const TYPE &b ) { return a - b; };
     FUN::transform( op, a, b, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline AMP::Array<TYPE, FUN, Allocator> operator*( const AMP::Array<TYPE, FUN, Allocator> &a,
-                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
+inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a,
+                                              const Array<TYPE, FUN, Allocator> &b )
 {
-    AMP::Array<TYPE, FUN, Allocator> c;
+    Array<TYPE, FUN, Allocator> c;
     FUN::multiply( a, b, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline AMP::Array<TYPE, FUN, Allocator> operator*( const AMP::Array<TYPE, FUN, Allocator> &a,
-                                                   const std::vector<TYPE> &b )
+inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a,
+                                              const std::vector<TYPE> &b )
 {
-    AMP::Array<TYPE, FUN, Allocator> b2, c;
+    Array<TYPE, FUN, Allocator> b2, c;
     b2.viewRaw( { b.size() }, const_cast<TYPE *>( b.data() ) );
     FUN::multiply( a, b2, c );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline AMP::Array<TYPE, FUN, Allocator> operator*( const TYPE &a,
-                                                   const AMP::Array<TYPE, FUN, Allocator> &b )
+inline Array<TYPE, FUN, Allocator> operator*( const TYPE &a, const Array<TYPE, FUN, Allocator> &b )
 {
     auto c = b;
     c.scale( a );
     return c;
 }
 template<class TYPE, class FUN, class Allocator>
-inline AMP::Array<TYPE, FUN, Allocator> operator*( const AMP::Array<TYPE, FUN, Allocator> &a,
-                                                   const TYPE &b )
+inline Array<TYPE, FUN, Allocator> operator*( const Array<TYPE, FUN, Allocator> &a, const TYPE &b )
 {
     auto c = a;
     c.scale( b );
