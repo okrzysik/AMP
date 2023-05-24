@@ -343,20 +343,20 @@ void writeHDF5Array( hid_t fid, const std::string_view &name, const AMP::Array<T
  * MeshPoint                                                            *
  ***********************************************************************/
 template<>
-void AMP::readHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
+void readHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
 {
     std::array<double,4> y;
     readHDF5( fid, name, y );
     x = AMP::Mesh::Point( y[0], { y[1], y[2], y[3] } );
 }
 template<>
-void AMP::writeHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
+void writeHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
 {
     std::array<double,4> y = { (double) x.ndim(), x[0], x[1], x[2] };
     writeHDF5( fid, name, y );
 }
 template<>
-void AMP::readHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
+void readHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
 {
     AMP::Array<double> y;
     AMP::readHDF5Array( fid, name, y );
@@ -367,7 +367,7 @@ void AMP::readHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &na
         x( i ) = AMP::Mesh::Point( y(0,i), { y(1,i), y(2,i), y(3,i) } );
 }
 template<>
-void AMP::writeHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
+void writeHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
 {
     AMP::Array<double> y( AMP::cat( AMP::ArraySize( 4 ), x.size() ) );
     for ( size_t i = 0; i < x.length(); i++ ) {
@@ -379,12 +379,12 @@ void AMP::writeHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &n
     writeHDF5Array( fid, name, y );
 }
 template<>
-void AMP::readHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
+void readHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )
 {
     readHDF5Array( fid, name, x );
 }
 template<>
-void AMP::writeHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
+void writeHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::Point> &x )
 {
     writeHDF5Array( fid, name, x );
 }

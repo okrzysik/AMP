@@ -504,7 +504,7 @@ public:
      */
     inline std::shared_ptr<Database> createAddDatabase( std::string_view key )
     {
-        putDatabase( key, std::move( std::make_unique<Database>( std::string( key ) ) ) );
+        putDatabase( key, std::make_unique<Database>( std::string( key ) ) );
         return getDatabase( key );
     }
 

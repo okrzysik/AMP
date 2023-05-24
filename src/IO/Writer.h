@@ -13,9 +13,9 @@
 // Declare some classes
 namespace AMP::Mesh {
 class Mesh;
-class MeshID;
+struct MeshID;
 class MeshIterator;
-class MeshElementID;
+struct MeshElementID;
 enum class GeomType : uint8_t;
 } // namespace AMP::Mesh
 namespace AMP::LinearAlgebra {
