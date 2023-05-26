@@ -6,6 +6,22 @@
 namespace AMP::LinearAlgebra {
 
 template<typename ST, typename LO, typename GO, typename NT>
+static inline const Tpetra::Vector<ST, LO, GO, NT> &getTpetraVector( const VectorData &vec )
+{
+    auto tpetraData = dynamic_cast<const TpetraVectorData<ST, LO, GO, NT> *>( &vec );
+    AMP_INSIST( tpetraData, "Not TpetraVectorData" );
+    return *( tpetraData->getTpetraVector() );
+}
+
+template<typename ST, typename LO, typename GO, typename NT>
+static inline Tpetra::Vector<ST, LO, GO, NT> &getTpetraVector( VectorData &vec )
+{
+    auto data = dynamic_cast<TpetraVectorData<ST, LO, GO, NT> *>( &vec );
+    AMP_INSIST( data, "Not TpetraVectorData" );
+    return *( data->getTpetraVector() );
+}
+
+template<typename ST, typename LO, typename GO, typename NT>
 TpetraVectorData<ST, LO, GO, NT>::TpetraVectorData(
     std::shared_ptr<AMP::Discretization::DOFManager> dofManager )
     : d_pDOFManager( dofManager )
@@ -70,9 +86,11 @@ const void *TpetraVectorData<ST, LO, GO, NT>::getRawDataBlockAsVoid( size_t i ) 
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-void TpetraVectorData<ST, LO, GO, NT>::swapData( VectorData & )
+void TpetraVectorData<ST, LO, GO, NT>::swapData( VectorData &other )
 {
-    AMP_ERROR( "Not implemented" );
+    auto otherData = dynamic_cast<TpetraVectorData<ST, LO, GO, NT> *>( &other );
+    AMP_INSIST( otherData, "Not TpetraVectorData" );
+    this->getTpetraVector()->swap( *( otherData->getTpetraVector() ) );
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
