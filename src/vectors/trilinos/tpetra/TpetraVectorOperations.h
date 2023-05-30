@@ -29,8 +29,16 @@ class TpetraVectorOperations : public VectorOperations
 public:
     TpetraVectorOperations()          = default;
     virtual ~TpetraVectorOperations() = default;
+
+    std::string VectorOpName() const override { return "TpetraVectorOperations"; }
+    std::shared_ptr<VectorOperations> cloneOperations() const override
+    {
+        return std::make_shared<TpetraVectorOperations<ST, LO, GO, NT>>();
+    }
     //  function that operate on VectorData
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
+    void addScalar( const VectorData &, const Scalar &, VectorData & ) override;
+    void zero( VectorData &x ) override { setToScalar( static_cast<ST>( 0.0 ), x ); }
     void setRandomValues( VectorData &x ) override;
     void copy( const VectorData &x, VectorData &z ) override;
     void scale( const Scalar &alpha, const VectorData &x, VectorData &y ) override;
@@ -57,6 +65,25 @@ public:
     Scalar L2Norm( const VectorData &x ) const override;
     Scalar maxNorm( const VectorData &x ) const override;
     Scalar dot( const VectorData &x, const VectorData &y ) const override;
+
+    Scalar localL1Norm( const AMP::LinearAlgebra::VectorData &x ) const override;
+    Scalar localL2Norm( const AMP::LinearAlgebra::VectorData &x ) const override;
+    Scalar localMaxNorm( const AMP::LinearAlgebra::VectorData &x ) const override;
+    Scalar localDot( const AMP::LinearAlgebra::VectorData &x, const VectorData &y ) const override;
+
+    Scalar localMin( const AMP::LinearAlgebra::VectorData & ) const override;
+    Scalar localMax( const AMP::LinearAlgebra::VectorData & ) const override;
+    Scalar localSum( const AMP::LinearAlgebra::VectorData & ) const override;
+    Scalar localMinQuotient( const AMP::LinearAlgebra::VectorData &,
+                             const AMP::LinearAlgebra::VectorData & ) const override;
+    Scalar localWrmsNorm( const AMP::LinearAlgebra::VectorData &,
+                          const AMP::LinearAlgebra::VectorData & ) const override;
+    Scalar localWrmsNormMask( const AMP::LinearAlgebra::VectorData &,
+                              const AMP::LinearAlgebra::VectorData &,
+                              const AMP::LinearAlgebra::VectorData & ) const override;
+    bool localEquals( const AMP::LinearAlgebra::VectorData &,
+                      const AMP::LinearAlgebra::VectorData &,
+                      const AMP::Scalar & ) const override;
 };
 
 
