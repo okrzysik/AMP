@@ -1,6 +1,6 @@
 variables:
   PROJECT: AMP
-  GROUP: dr_hed_icf
+  GROUP: nerd-project
   
 include:
   - project: 'xcap/oss/solvers/dev-ops/ci'
