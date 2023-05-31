@@ -14,11 +14,7 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-NativePetscMatrixData::NativePetscMatrixData()
-{
-    d_Mat                  = nullptr;
-    d_MatCreatedInternally = false;
-}
+NativePetscMatrixData::NativePetscMatrixData() {}
 
 NativePetscMatrixData::NativePetscMatrixData( Mat m, bool internally_created )
 {
