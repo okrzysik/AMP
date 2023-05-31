@@ -17,6 +17,12 @@
 DISABLE_WARNINGS
     #include "Thyra_VectorDefaultBase_decl.hpp"
 ENABLE_WARNINGS
+
+    #ifdef AMP_USE_TRILINOS_EPETRA
+        #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.hpp"
+        #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.hpp"
+    #endif
+
 #else
 namespace Teuchos {
 template<class TYPE>
@@ -100,6 +106,25 @@ std::shared_ptr<Vector> createEpetraVector( std::shared_ptr<CommunicationList>,
                                             std::shared_ptr<VectorData> )
 {
     AMP_ERROR( "Epetra support not enabled" );
+    return nullptr;
+}
+#endif
+
+/********************************************************
+ * create Trilinos Tpetra vector                         *
+ ********************************************************/
+#if defined( AMP_USE_TRILINOS ) && defined( AMP_USE_TRILINOS_TPETRA )
+std::shared_ptr<Vector> createTpetraVector( std::shared_ptr<AMP::Discretization::DOFManager> DOFs )
+{
+    auto var  = std::make_shared<Variable>( "vec" );
+    auto ops  = std::make_shared<TpetraVectorOperations<>>();
+    auto data = std::make_shared<TpetraVectorData<>>( DOFs );
+    return std::make_shared<Vector>( data, ops, var, DOFs );
+}
+#else
+std::shared_ptr<Vector> createTpetraVector( std::shared_ptr<AMP::Discretization::DOFManager> )
+{
+    AMP_ERROR( "Tpetra support not enabled" );
     return nullptr;
 }
 #endif

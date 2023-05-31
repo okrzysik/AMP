@@ -104,7 +104,7 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 /********************************************************
  *  Explicit instantiations                              *
  ********************************************************/
-#define INSANTIATE_VECTOR( TYPE )                                                                  \
+#define INSTANTIATE_VECTOR( TYPE )                                                                 \
     template Vector::shared_ptr createSimpleVector<TYPE>( size_t, const std::string & );           \
     template Vector::shared_ptr createSimpleVector<TYPE>( size_t, std::shared_ptr<Variable> );     \
     template Vector::shared_ptr createSimpleVector<TYPE>(                                          \
@@ -118,8 +118,8 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
                                                          std::shared_ptr<Variable> );              \
     template Vector::shared_ptr createArrayVector<TYPE>(                                           \
         const ArraySize &, const ArraySize &, const AMP_MPI &, std::shared_ptr<Variable> );
-INSANTIATE_VECTOR( double )
-INSANTIATE_VECTOR( float )
+INSTANTIATE_VECTOR( double )
+INSTANTIATE_VECTOR( float )
 
 
 } // namespace AMP::LinearAlgebra
