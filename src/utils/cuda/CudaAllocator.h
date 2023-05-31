@@ -10,7 +10,6 @@
 
 namespace AMP {
 
-
 /**
  * \class  CudaDevAllocator
  * @brief  Allocator based on cudaMalloc
