@@ -425,30 +425,30 @@ constexpr ArraySize squeeze( const ArraySize &x )
 
 
 // Operator overloads
-CONSTEXPR AMP::ArraySize operator*( size_t v, const AMP::ArraySize &x )
+CONSTEXPR ArraySize operator*( size_t v, const ArraySize &x )
 {
     size_t N[5] = { v * x[0], v * x[1], v * x[2], v * x[3], v * x[4] };
-    return AMP::ArraySize( x.ndim(), N );
+    return ArraySize( x.ndim(), N );
 }
-CONSTEXPR AMP::ArraySize operator*( const AMP::ArraySize &x, size_t v )
+CONSTEXPR ArraySize operator*( const ArraySize &x, size_t v )
 {
     size_t N[5] = { v * x[0], v * x[1], v * x[2], v * x[3], v * x[4] };
-    return AMP::ArraySize( x.ndim(), N );
+    return ArraySize( x.ndim(), N );
 }
-CONSTEXPR AMP::ArraySize operator-( const AMP::ArraySize &x, size_t v )
+CONSTEXPR ArraySize operator-( const ArraySize &x, size_t v )
 {
     size_t N[5] = { x[0] - v, x[1] - v, x[2] - v, x[3] - v, x[4] - v };
-    return AMP::ArraySize( x.ndim(), N );
+    return ArraySize( x.ndim(), N );
 }
-CONSTEXPR AMP::ArraySize operator+( const AMP::ArraySize &x, size_t v )
+CONSTEXPR ArraySize operator+( const ArraySize &x, size_t v )
 {
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
-    return AMP::ArraySize( x.ndim(), N );
+    return ArraySize( x.ndim(), N );
 }
-CONSTEXPR AMP::ArraySize operator+( size_t v, const AMP::ArraySize &x )
+CONSTEXPR ArraySize operator+( size_t v, const ArraySize &x )
 {
     size_t N[5] = { x[0] + v, x[1] + v, x[2] + v, x[3] + v, x[4] + v };
-    return AMP::ArraySize( x.ndim(), N );
+    return ArraySize( x.ndim(), N );
 }
 
 

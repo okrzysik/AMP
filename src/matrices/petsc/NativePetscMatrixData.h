@@ -95,8 +95,8 @@ public:
     AMP_MPI getComm() const override;
 
 private:
-    Mat d_Mat = nullptr;
-    bool d_MatCreatedInternally;
+    Mat d_Mat                   = nullptr;
+    bool d_MatCreatedInternally = false;
 };
 
 

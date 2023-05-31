@@ -28,9 +28,6 @@ private:
     EpetraMatrixData() = delete;
 
 protected:
-    //!  Parameters used to construct the matrix
-    std::shared_ptr<MatrixParameters> d_pParameters;
-
     /** \brief Bare pointer to an Epetra_CrsMatrix
      */
     Epetra_CrsMatrix *d_epetraMatrix;

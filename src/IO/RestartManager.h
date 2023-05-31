@@ -18,6 +18,7 @@ public:
     class DataStore
     {
     public:
+        virtual ~DataStore() = default;
         inline uint64_t getHash() const { return d_hash; }
         inline const std::string &getName() const { return d_name; }
         virtual void write( hid_t fid, const std::string &name ) const = 0;
@@ -31,6 +32,7 @@ public:
     {
     public:
         DataStoreType( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
+        virtual ~DataStoreType() = default;
         void write( hid_t fid, const std::string &name ) const override;
 
     protected:
