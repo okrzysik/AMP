@@ -5,10 +5,6 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/operations/VectorOperations.h"
 
-#include <Teuchos_OrdinalTraits.hpp>
-#include <Tpetra_Core.hpp>
-#include <Tpetra_Vector.hpp>
-
 namespace AMP::LinearAlgebra {
 
 
@@ -22,7 +18,7 @@ namespace AMP::LinearAlgebra {
  */
 template<typename ST = double,
          typename LO = int32_t,
-         typename GO = int64_t,
+         typename GO = long long,
          typename NT = Tpetra::Vector<>::node_type>
 class TpetraVectorOperations : public VectorOperations
 {

@@ -4,6 +4,10 @@
 #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
 #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.h"
 
+#include <Teuchos_OrdinalTraits.hpp>
+#include <Tpetra_Core.hpp>
+#include <Tpetra_Vector.hpp>
+
 #include <Kokkos_Core.hpp>
 
 namespace AMP::LinearAlgebra {
