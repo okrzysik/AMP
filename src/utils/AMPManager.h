@@ -181,10 +181,8 @@ private:
     static double start_SAMRAI();
     static double start_PETSc();
     static double start_CUDA();
-    static double start_Kokkos( int argc, char **argv );
     static double stop_SAMRAI();
     static double stop_PETSc();
-    static double stop_Kokkos();
 };
 
 } // namespace AMP

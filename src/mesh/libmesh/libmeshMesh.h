@@ -53,7 +53,7 @@ public:
     explicit libmeshMesh( std::shared_ptr<const MeshParameters> params );
 
     /**
-     * \brief Contructor to create a libmeshMesh object from a libMesh mesh.
+     * \brief Constructor to create a libmeshMesh object from a libMesh mesh.
      * \details This constructor allows the user to construct a mesh directly in libmesh
      * and use it to create the new mesh object.  This function is intended for advanced
      * users only.  Note: the user is responsible for ensuring that libMesh is properly

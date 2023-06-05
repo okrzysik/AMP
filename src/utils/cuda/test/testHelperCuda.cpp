@@ -1,8 +1,26 @@
+#include "AMP/AMP_TPLs.h"
 #include "AMP/utils/cuda/CudaAllocator.h"
 #include "AMP/utils/cuda/helper_cuda.h"
 
 #include <iostream>
 #include <memory>
+
+#if defined( AMP_USE_KOKKOS ) || defined( AMP_USE_TRILINOS_KOKKOS )
+    #define USE_KOKKOS
+    #include <Kokkos_Core.hpp>
+    #include <Kokkos_Macros.hpp>
+#endif
+
+
+template<class KokkosSpace>
+void testKokkosMemorySpace( const char *str )
+{
+    size_t N = 100;
+    KokkosSpace space;
+    auto ptr = space.allocate( N * sizeof( double ) );
+    std::cout << "Kokkos " << str << ": " << getString( getMemoryType( ptr ) ) << std::endl;
+    space.deallocate( ptr, N * sizeof( double ) );
+}
 
 
 int main()
@@ -40,5 +58,19 @@ int main()
     managedAllocator.deallocate( managed, N );
     hostAllocator.deallocate( host, N );
     stdAllocator.deallocate( std, N );
+
+    // Check Kokkos memory pointers
+#ifdef USE_KOKKOS
+    std::cout << std::endl;
+    testKokkosMemorySpace<Kokkos::HostSpace>( "HostSpace" );
+    #ifdef KOKKOS_ENABLE_CUDA
+    testKokkosMemorySpace<Kokkos::CudaSpace>( "CudaSpace" );
+    #endif
+    #ifdef KOKKOS_ENABLE_OPENMPTARGET
+    testKokkosMemorySpace<Kokkos::OpenMPTargetSpace>( " OpenMPTargetSpace" );
+    #endif
+#endif
+
+
     return 0;
 }

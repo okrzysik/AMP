@@ -235,6 +235,10 @@ std::shared_ptr<BoundaryOperator>
 createPressureBoundaryOperator( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
                                 std::shared_ptr<AMP::Database> input_db,
                                 std::shared_ptr<AMP::Operator::ElementPhysicsModel> );
+
+std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
+                                             const std::string &key );
+
 } // namespace AMP::Operator::OperatorBuilder
 
 

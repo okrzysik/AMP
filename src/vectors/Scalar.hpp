@@ -40,7 +40,7 @@ ENABLE_WARNINGS
 
 
 /********************************************************************
- * Contructor                                                        *
+ * Constructor                                                       *
  ********************************************************************/
 template<class TYPE>
 Scalar::Scalar( const TYPE &x )

@@ -52,7 +52,7 @@ public:
     STKMesh( std::shared_ptr<const MeshParameters> params );
 
     /**
-     * \brief Contructor to create a STKMesh object from a STKMesh mesh.
+     * \brief Constructor to create a STKMesh object from a STKMesh mesh.
      * \details This constructor allows the user to construct a mesh directly in STKmesh
      * and use it to create the new mesh object.  This function is intended for advanced
      * users only.  Note: the user is responsible for ensuring that STKMesh is properly

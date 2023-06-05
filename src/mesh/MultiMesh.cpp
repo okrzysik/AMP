@@ -133,31 +133,8 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
         displaceMesh( displacement );
     // Create additional multi-mesh views
     for ( int i = 1; db->keyExists( "MeshView_" + std::to_string( i ) ); i++ ) {
-        auto db2  = db->getDatabase( "MeshView_" + std::to_string( i ) );
-        auto name = db2->getString( "MeshName" );
-        auto op   = db2->getWithDefault<std::string>( "Operation", "" );
-        auto list = db2->getVector<std::string>( "MeshList" );
-        std::vector<std::shared_ptr<Mesh>> meshes;
-        for ( const auto &tmp : list ) {
-            auto mesh = this->Subset( tmp );
-            if ( mesh )
-                meshes.push_back( mesh );
-        }
-        auto comm = d_comm.split( meshes.empty() ? 0 : 1 );
-        if ( meshes.empty() )
-            continue;
-        auto mesh = std::make_shared<MultiMesh>( name, comm, meshes );
-        if ( op == "" ) {
-            d_meshes.push_back( mesh );
-        } else if ( op == "SurfaceIterator" ) {
-            auto type =
-                static_cast<AMP::Mesh::GeomType>( static_cast<int>( mesh->getGeomType() ) - 1 );
-            auto mesh2 = mesh->Subset( mesh->getSurfaceIterator( type ) );
-            mesh2->setName( name );
-            d_meshes.push_back( mesh2 );
-        } else {
-            AMP_ERROR( "Unknown operation" );
-        }
+        auto db2 = db->getDatabase( "MeshView_" + std::to_string( i ) );
+        d_meshes.push_back( createView( *this, *db2 ) );
     }
     // Construct the geometry object for the multimesh
     std::vector<std::shared_ptr<AMP::Geometry::Geometry>> geom;
