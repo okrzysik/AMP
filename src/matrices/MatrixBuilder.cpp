@@ -84,9 +84,9 @@ createManagedMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
         return newMatrix;
 #else
         NULL_USE( leftVec );
-        NULL_USE( rightVec,
-        NULL_USE( getRow,
-        NULL_USE( type )
+        NULL_USE( rightVec );
+        NULL_USE( getRow );
+        NULL_USE( type );
         AMP_ERROR( "Unable to build ManagedEpetraMatrix without Trilinos" );
 #endif
     } else {
@@ -164,6 +164,9 @@ createNativePetscMatrix( AMP::LinearAlgebra::Vector::shared_ptr leftVec,
     newMatrix->makeConsistent();
     return newMatrix;
 #else
+    NULL_USE( leftVec );
+    NULL_USE( rightVec );
+    NULL_USE( getRow );
     AMP_ERROR( "Unable to build NativePetscMatrix without Petsc" );
     return nullptr;
 #endif
