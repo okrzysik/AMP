@@ -71,8 +71,6 @@ AsyncMapColumnOperator::build( std::shared_ptr<AMP::Mesh::Mesh> manager,
         // Subset the multmesh for the 2 meshes
         auto mesh1 = subsetMesh( meshName1 );
         auto mesh2 = subsetMesh( meshName2 );
-        AMP_INSIST( managerComm.anyReduce( bool( mesh1 ) ), meshName1 + " was not found" );
-        AMP_INSIST( managerComm.anyReduce( bool( mesh2 ) ), meshName2 + " was not found" );
         int inComm = -1;
         if ( mesh1 || mesh2 )
             inComm = 1;
@@ -84,6 +82,10 @@ AsyncMapColumnOperator::build( std::shared_ptr<AMP::Mesh::Mesh> manager,
         AMP_MPI mapComm = managerComm.split( inComm );
         if ( inComm == -1 )
             continue;
+
+        // Check that both meshes exist in the common communicator
+        AMP_INSIST( mapComm.anyReduce( bool( mesh1 ) ), meshName1 + " was not found" );
+        AMP_INSIST( mapComm.anyReduce( bool( mesh2 ) ), meshName2 + " was not found" );
 
         // Create the map parameters
         auto mapParams                   = std::make_shared<typename MAP_TYPE::Parameters>( db );
