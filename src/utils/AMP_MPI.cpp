@@ -69,14 +69,10 @@ namespace AMP {
 static_assert( sizeof( MPI_CLASS ) % 8 == 0 );
 
 
-// Initialized the static member variables
-volatile uint32_t MPI_CLASS::N_MPI_Comm_created   = 0;
-volatile uint32_t MPI_CLASS::N_MPI_Comm_destroyed = 0;
-short MPI_CLASS::profile_level                    = 127;
-
-
-// Default MPI max tag (will be overridden if MPI_TAG_UB attribute is valid)
-static const int mpi_max_tag = 0x3FFFFFFF;
+// Initialized static member variables
+short MPI_CLASS::profile_level                        = 255;
+MPI_CLASS::atomic_int MPI_CLASS::N_MPI_Comm_created   = 0;
+MPI_CLASS::atomic_int MPI_CLASS::N_MPI_Comm_destroyed = 0;
 
 
 // Static data for asyncronous communication without MPI
@@ -92,7 +88,7 @@ struct Isendrecv_struct {
 std::map<MPI_CLASS::Request2, Isendrecv_struct> global_isendrecv_list;
 static MPI_CLASS::Request2 getRequest( MPI_CLASS::Comm comm, int tag )
 {
-    MPI_CLASS_ASSERT( tag >= 0 && tag <= mpi_max_tag );
+    MPI_CLASS_ASSERT( tag >= 0 );
     // Use hashing function: 2^64*0.5*(sqrt(5)-1)
     uint64_t a    = static_cast<uint8_t>( comm ) * 0x9E3779B97F4A7C15;
     uint64_t b    = static_cast<uint8_t>( tag ) * 0x9E3779B97F4A7C15;
@@ -243,19 +239,7 @@ void MPI_CLASS::balanceProcesses( const MPI_CLASS &globalComm,
 /************************************************************************
  *  Empty constructor                                                    *
  ************************************************************************/
-MPI_CLASS::MPI_CLASS()
-    : d_comm( MPI_COMM_NULL ),
-      d_isNull( true ),
-      d_manage( false ),
-      d_call_abort( true ),
-      d_rank( 0 ),
-      d_size( 1 ),
-      d_maxTag( mpi_max_tag ),
-      d_currentTag( nullptr ),
-      d_ranks( nullptr ),
-      d_count( nullptr )
-{
-}
+MPI_CLASS::MPI_CLASS() : d_comm( MPI_COMM_NULL ), d_size( 0 ) {}
 
 
 /************************************************************************
@@ -392,19 +376,14 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 /************************************************************************
  *  Constructor from existing MPI communicator                           *
  ************************************************************************/
-int d_global_currentTag_world1[2] = { 1, 1 };
-int d_global_currentTag_world2[2] = { 1, 1 };
-int d_global_currentTag_self[2]   = { 1, 1 };
-#ifdef USE_MPI
+int d_global_currentTag_world1[2]     = { 1, 1 };
+int d_global_currentTag_world2[2]     = { 1, 1 };
+int d_global_currentTag_self[2]       = { 1, 1 };
 std::atomic_int d_global_count_world1 = { 1 };
 std::atomic_int d_global_count_world2 = { 1 };
 std::atomic_int d_global_count_self   = { 1 };
-#endif
 MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
 {
-    d_count  = nullptr;
-    d_ranks  = nullptr;
-    d_manage = false;
     // Check if we are using our version of comm_world
     if ( comm == MPI_CLASS_COMM_WORLD ) {
         d_comm = AMP::AMPManager::getCommWorld().d_comm;
@@ -415,17 +394,15 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     } else {
         d_comm = comm;
     }
-#ifdef USE_MPI
     // We are using MPI, use the MPI communicator to initialize the data
     if ( d_comm == MPI_COMM_NULL ) {
-        d_rank   = 0;
-        d_size   = 0;
-        d_maxTag = mpi_max_tag;
+        d_rank = 0;
+        d_size = 0;
     } else if ( d_comm == MPI_COMM_SELF && !MPI_Active() ) {
-        d_rank   = 0;
-        d_size   = 1;
-        d_maxTag = mpi_max_tag;
+        d_rank = 0;
+        d_size = 1;
     } else {
+#ifdef USE_MPI
         // Attach the error handler
         StackTrace::setMPIErrorHandler( d_comm );
         // Get the communicator properties
@@ -434,15 +411,14 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
         int flag, *val;
         int ierr = MPI_Comm_get_attr( d_comm, MPI_TAG_UB, &val, &flag );
         MPI_CLASS_ASSERT( ierr == MPI_SUCCESS );
-        if ( flag == 0 ) {
-            d_maxTag = mpi_max_tag; // The tag is not a valid attribute use default value
-        } else {
-            d_maxTag = *val;
-            if ( d_maxTag < 0 ) {
-                d_maxTag = 0x7FFFFFFF;
-            } // The maximum tag is > a signed int (set to 2^31-1)
+        if ( flag != 0 ) {
+            d_maxTag = std::min<int>( *val, 0x7FFFFFFF );
             MPI_CLASS_INSIST( d_maxTag >= 0x7FFF, "maximum tag size is < MPI standard" );
         }
+#else
+        d_rank = 0;
+        d_size = 1;
+#endif
     }
     d_isNull = d_comm == MPI_COMM_NULL;
     if ( manage && d_comm != MPI_COMM_NULL && d_comm != MPI_COMM_SELF && d_comm != MPI_COMM_WORLD )
@@ -463,25 +439,13 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
         d_count  = new std::atomic_int;
         *d_count = 1;
     }
-    if ( d_manage ) {
+    if ( d_manage )
         ++N_MPI_Comm_created;
-        // StackTrace::multi_stack_info( StackTrace::getCallStack() ).print( std::cout );
-    }
     // Create d_ranks
     if ( d_size > 1 ) {
         d_ranks    = new int[d_size];
         d_ranks[0] = -1;
     }
-#else
-    // We are not using MPI, intialize based on the communicator
-    NULL_USE( manage );
-    d_rank   = 0;
-    d_size   = 1;
-    d_maxTag = mpi_max_tag;
-    d_isNull = d_comm == MPI_COMM_NULL;
-    if ( d_isNull )
-        d_size       = 0;
-#endif
     if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_currentTag = d_global_currentTag_world1;
         ++( this->d_currentTag[1] );
@@ -510,12 +474,8 @@ std::vector<int> MPI_CLASS::globalRanks() const
     // Get my global rank if it has not been set
     static int myGlobalRank = -1;
     if ( myGlobalRank == -1 ) {
-#ifdef USE_MPI
         if ( MPI_Active() )
-            MPI_Comm_rank( AMP::AMPManager::getCommWorld().d_comm, &myGlobalRank );
-#else
-        myGlobalRank = 0;
-#endif
+            myGlobalRank = AMP::AMPManager::getCommWorld().getRank();
     }
     // Check if we are dealing with a serial or null communicator
     if ( d_size == 1 )
