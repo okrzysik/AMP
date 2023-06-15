@@ -75,7 +75,7 @@ Writer::WriterProperties SiloIO::getProperties() const
 #ifdef AMP_USE_SILO
 
 // Some internal functions
-static void createSiloDirectory( DBfile *FileHandle, const std::string &path );
+static void createSiloDirectory( DBfile *, const std::string & );
 
 
 /************************************************************
@@ -121,21 +121,23 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         for ( int i = 0; i < d_comm.getSize(); ++i ) {
             if ( d_comm.getRank() == i ) {
                 // Open the file
-                DBfile *FileHandle;
+                DBfile *fid = nullptr;
                 if ( d_comm.getRank() == 0 ) {
-                    FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
+                    fid = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
+                    AMP_INSIST( fid, "Unable to create " + fname );
                 } else {
-                    FileHandle = DBOpen( fname.c_str(), DB_HDF5, DB_APPEND );
+                    fid = DBOpen( fname.c_str(), DB_HDF5, DB_APPEND );
+                    AMP_INSIST( fid, "Unable to open " + fname );
                 }
                 // Write the base meshes
                 for ( auto &baseMesh : d_baseMeshes ) {
                     auto &data = baseMesh.second;
                     data.file  = fname.c_str();
                     AMP_ASSERT( data.id == baseMesh.first );
-                    writeMesh( FileHandle, baseMesh.second, cycle, time );
+                    writeMesh( fid, baseMesh.second, cycle, time );
                 }
                 // Close the file
-                DBClose( FileHandle );
+                DBClose( fid );
             }
             d_comm.barrier();
         }
@@ -146,24 +148,26 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
         d_comm.barrier();
         auto fname_rank = fname_in + "_silo/" + std::to_string( cycle ) + "." +
                           std::to_string( d_comm.getRank() + 1 ) + "." + getExtension();
-        DBfile *FileHandle = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
+        DBfile *fid = DBCreate( fname_rank.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
+        AMP_INSIST( fid, "Unable to create " + fname_rank );
         // Write the base meshes
         for ( auto &baseMesh : d_baseMeshes ) {
             auto &data = baseMesh.second;
             data.file  = fname_rank.c_str();
             AMP_ASSERT( data.id == baseMesh.first );
-            writeMesh( FileHandle, baseMesh.second, cycle, time );
+            writeMesh( fid, baseMesh.second, cycle, time );
         }
         // Close the file
-        DBClose( FileHandle );
+        DBClose( fid );
     } else {
         AMP_ERROR( "Unknown file decomposition" );
     }
     // Write the summary results (multimeshes, multivariables, etc.)
     if ( d_decomposition != 1 ) {
         if ( d_comm.getRank() == 0 ) {
-            DBfile *FileHandle = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
-            DBClose( FileHandle );
+            DBfile *fid = DBCreate( fname.c_str(), DB_CLOBBER, DB_LOCAL, nullptr, DB_HDF5 );
+            AMP_INSIST( fid, "Unable to create " + fname );
+            DBClose( fid );
         }
         d_comm.barrier();
     }
@@ -175,7 +179,7 @@ void SiloIO::writeFile( const std::string &fname_in, size_t cycle, double time )
 /************************************************************
  * Function to write a mesh                                  *
  ************************************************************/
-void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle, double time )
+void SiloIO::writeMesh( DBfile *fid, const baseMeshData &data, int cycle, double time )
 {
     NULL_USE( cycle );
     NULL_USE( time );
@@ -217,19 +221,19 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
             pos = tmp_path.size();
         }
         auto subdir       = tmp_path.substr( 0, pos );
-        DBtoc *toc        = DBGetToc( FileHandle );
+        DBtoc *toc        = DBGetToc( fid );
         bool subdir_found = false;
         for ( int i = 0; i < toc->ndir; ++i ) {
             if ( subdir.compare( toc->dir_names[i] ) == 0 )
                 subdir_found = true;
         }
         if ( !subdir_found )
-            DBMkDir( FileHandle, subdir.c_str() );
-        DBSetDir( FileHandle, subdir.c_str() );
+            DBMkDir( fid, subdir.c_str() );
+        DBSetDir( fid, subdir.c_str() );
         tmp_path.erase( 0, pos );
     }
-    DBSetDir( FileHandle, "/" );
-    DBSetDir( FileHandle, data.path.c_str() );
+    DBSetDir( fid, "/" );
+    DBSetDir( fid, data.path.c_str() );
     PROFILE_STOP( "writeMesh - directory", 2 );
     // Write the elements (connectivity)
     PROFILE_START( "writeMesh - elements", 2 );
@@ -237,7 +241,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     std::string zoneName  = "zone_" + std::to_string( data.rank );
     auto element_iterator = elements.begin();
     int num_elems         = elements.size();
-    DBPutZonelist2( FileHandle,
+    DBPutZonelist2( fid,
                     zoneName.c_str(),
                     num_elems,
                     d_dim,
@@ -255,7 +259,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     // Write the mesh
     PROFILE_START( "writeMesh - mesh", 2 );
     double *coord[3] = { x[0].data(), x[1].data(), x[2].data() };
-    DBPutUcdmesh( FileHandle,
+    DBPutUcdmesh( fid,
                   meshName.c_str(),
                   d_dim,
                   nullptr,
@@ -325,7 +329,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
         std::string varNameRank = vector.name + "P" + std::to_string( data.rank );
         if ( varSize == 1 || varSize == d_dim || varSize == d_dim * d_dim ) {
             // We are writing a scalar, vector, or tensor variable
-            DBPutUcdvar( FileHandle,
+            DBPutUcdvar( fid,
                          varNameRank.c_str(),
                          meshName.c_str(),
                          varSize,
@@ -341,7 +345,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
             // Write each component
             for ( int j = 0; j < varSize; ++j ) {
                 auto vname = varNameRank + "_" + std::to_string( j );
-                DBPutUcdvar( FileHandle,
+                DBPutUcdvar( fid,
                              vname.c_str(),
                              meshName.c_str(),
                              1,
@@ -364,7 +368,7 @@ void SiloIO::writeMesh( DBfile *FileHandle, const baseMeshData &data, int cycle,
     DBFreeOptlist( optlist );
     PROFILE_STOP( "writeMesh - variables", 2 );
     // Change the directory back to root
-    DBSetDir( FileHandle, "/" );
+    DBSetDir( fid, "/" );
     PROFILE_STOP( "writeMesh", 1 );
 }
 
@@ -391,7 +395,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
     if ( find_slash( filename ) != std::string::npos )
         base_path = filename.substr( 0, find_slash( filename ) + 1 );
     if ( d_comm.getRank() == 0 ) {
-        DBfile *FileHandle = DBOpen( filename.c_str(), DB_HDF5, DB_APPEND );
+        DBfile *fid = DBOpen( filename.c_str(), DB_HDF5, DB_APPEND );
         // Create the subdirectories
         PROFILE_START( "create directories", 2 );
         std::set<std::string> subdirs;
@@ -402,7 +406,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 subdirs.insert( file.substr( 0, pos ) );
         }
         for ( const auto &subdir : subdirs )
-            createSiloDirectory( FileHandle, subdir );
+            createSiloDirectory( fid, subdir );
         PROFILE_STOP( "create directories", 2 );
         // Create the multimeshes
         PROFILE_START( "write multimeshes", 2 );
@@ -427,7 +431,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
             DBoptlist *optList    = DBMakeOptlist( 10 );
             DBAddOption( optList, DBOPT_MRGTREE_NAME, (char *) tree_name.c_str() );
             DBPutMultimesh(
-                FileHandle, data.name.c_str(), meshNames.size(), meshnames, meshtypes, nullptr );
+                fid, data.name.c_str(), meshNames.size(), meshnames, meshtypes, nullptr );
             DBFreeOptlist( optList );
             delete[] meshnames;
             delete[] meshtypes;
@@ -473,12 +477,8 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                 // DBAddOption( opts, DBOPT_MMESH_NAME, (char*) multiMeshName.c_str() );
                 if ( varSize == 1 || varSize == d_dim || varSize == d_dim * d_dim ) {
                     // We are writing a scalar, vector, or tensor variable
-                    DBPutMultivar( FileHandle,
-                                   visitVarName.c_str(),
-                                   varNames.size(),
-                                   varnames,
-                                   vartypes,
-                                   opts );
+                    DBPutMultivar(
+                        fid, visitVarName.c_str(), varNames.size(), varnames, vartypes, opts );
                 } else {
                     // Write each component
                     for ( int j = 0; j < varSize; ++j ) {
@@ -488,7 +488,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
                             varNames2[k] = varNames[k] + postfix;
                             varnames[k]  = (char *) varNames2[k].c_str();
                         }
-                        DBPutMultivar( FileHandle,
+                        DBPutMultivar( fid,
                                        ( visitVarName + postfix ).c_str(),
                                        varNames.size(),
                                        varnames,
@@ -502,7 +502,7 @@ void SiloIO::writeSummary( std::string filename, int cycle, double time )
             }
         }
         PROFILE_STOP( "write multivariables", 2 );
-        DBClose( FileHandle );
+        DBClose( fid );
     }
     PROFILE_STOP( "writeSummary", 1 );
 }
@@ -548,11 +548,11 @@ static inline TYPE unpackData( const char *ptr, size_t &pos )
 /************************************************************
  * Some utility functions                                    *
  ************************************************************/
-void createSiloDirectory( DBfile *FileHandle, const std::string &path )
+void createSiloDirectory( DBfile *fid, const std::string &path )
 {
     // Create a subdirectory tree from the current working path if it does not exist
     char current_dir[256];
-    DBGetDir( FileHandle, current_dir );
+    DBGetDir( fid, current_dir );
     // Get the list of directories that may need to be created
     std::vector<std::string> subdirs;
     std::string path2 = path + "/";
@@ -565,18 +565,18 @@ void createSiloDirectory( DBfile *FileHandle, const std::string &path )
     }
     // Create the directories as necessary
     for ( auto &subdir : subdirs ) {
-        DBtoc *toc  = DBGetToc( FileHandle );
+        DBtoc *toc  = DBGetToc( fid );
         bool exists = false;
         for ( int j = 0; j < toc->ndir; ++j ) {
             if ( subdir == toc->dir_names[j] )
                 exists = true;
         }
         if ( !exists )
-            DBMkDir( FileHandle, subdir.c_str() );
-        DBSetDir( FileHandle, subdir.c_str() );
+            DBMkDir( fid, subdir.c_str() );
+        DBSetDir( fid, subdir.c_str() );
     }
     // Return back to the original working directory
-    DBSetDir( FileHandle, current_dir );
+    DBSetDir( fid, current_dir );
 }
 
 

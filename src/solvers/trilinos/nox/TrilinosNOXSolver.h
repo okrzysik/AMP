@@ -5,19 +5,28 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/trilinos/nox/TrilinosNOXSolverParameters.h"
-#include "AMP/solvers/trilinos/thyra/TrilinosThyraModelEvaluator.h"
 
 
 // Trilinos includes
 DISABLE_WARNINGS
-#include "NOX_Solver_Factory.H"
-#include "NOX_StatusTest_Combo.H"
-#include "NOX_Thyra.H"
-#include <NOX_Solver_Generic.H>
+#include "Teuchos_RCP.hpp"
 ENABLE_WARNINGS
 
 
+// Forward declare Trilinos classes (helps protect from nvcc_wrapper)
+// clang-format off
+namespace NOX::Solver { class Generic; }
+namespace NOX::StatusTest { class Combo; }
+namespace Teuchos { class ParameterList; }
+namespace Thyra { template<class> class PreconditionerBase; }
+namespace Thyra { template<class> class LinearOpWithSolveFactoryBase; }
+// clang-format on
+
+
 namespace AMP::Solver {
+
+
+class TrilinosThyraModelEvaluator;
 
 
 /**

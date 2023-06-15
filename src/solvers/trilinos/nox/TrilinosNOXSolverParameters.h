@@ -2,15 +2,17 @@
 #define included_AMP_TrilinosNOXSolverParameters
 
 #include "AMP/solvers/SolverStrategyParameters.h"
-DISABLE_WARNINGS
-#include "AMP/solvers/trilinos/nox/PrePostOperator.h"
-ENABLE_WARNINGS
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/Database.h"
+
 #include <memory>
 
 
 namespace AMP::Solver {
+
+
+class PrePostOperator;
+
 
 /**
  * Class TrilinosNOXSolverParameters provides a uniform mechanism to pass

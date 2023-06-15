@@ -32,5 +32,15 @@ ENDIF()
 ADD_PACKAGE_SUBDIRECTORY( newFrozenVectorDesign )
 INSTALL_AMP_TARGET( vectors )
 
+IF ( USE_TRILINOS )
+    SET_NVCC( VectorBuilderExternal.cpp trilinos testHelpers/trilinos )
+    IF ( USE_TRILINOS_THYRA )
+        SET_NVCC( trilinos/thyra testHelpers/trilinos/thyra )
+    ENDIF()
+    IF ( USE_TRILINOS_EPETRA )
+        SET_NVCC( trilinos/epetra testHelpers/trilinos/epetra )
+    ENDIF()
+ENDIF()
+
 ADD_SUBDIRECTORY ( test )
 
