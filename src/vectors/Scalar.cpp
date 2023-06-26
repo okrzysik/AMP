@@ -304,7 +304,9 @@ INSTANTIATE_SCALAR( long double );
 INSTANTIATE_SCALAR( std::complex<int> );
 INSTANTIATE_SCALAR( std::complex<float> );
 INSTANTIATE_SCALAR( std::complex<double> );
-INSTANTIATE_SCALAR( Scalar );
+
+template AMP::Scalar AMP::Scalar::create<AMP::Scalar>( const AMP::Scalar & ) const;
+// INSTANTIATE_SCALAR( Scalar );
 
 
 } // namespace AMP

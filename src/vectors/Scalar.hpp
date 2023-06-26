@@ -188,7 +188,7 @@ inline TYPE Scalar::get( double tol ) const
 
 
 #define INSTANTIATE_SCALAR( TYPE )                                        \
-    template AMP::Scalar::Scalar<TYPE>( const TYPE & );                   \
+    template AMP::Scalar::Scalar( const TYPE & );                         \
     template AMP::Scalar AMP::Scalar::create<TYPE>( const TYPE & ) const; \
     template TYPE AMP::Scalar::get<TYPE>( double tol ) const
 
