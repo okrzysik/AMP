@@ -1,8 +1,9 @@
-#include "AsyncMapOperator.h"
-
+#include "AMP/operators/map/AsyncMapOperator.h"
 #include "AMP/mesh/MultiMesh.h"
-#include "AsyncMapOperatorParameters.h"
+#include "AMP/operators/map/AsyncMapOperatorParameters.h"
+
 #include "ProfilerApp.h"
+
 
 namespace AMP::Operator {
 
@@ -16,8 +17,8 @@ AsyncMapOperator::AsyncMapOperator( std::shared_ptr<const OperatorParameters> p 
     d_mesh1     = params->d_Mesh1;
     d_mesh2     = params->d_Mesh2;
     AMP_INSIST( !d_MapComm.isNull(), "NULL communicator for map is invalid" );
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh1 ? 1 : 0 ) > 0, "Somebody must own mesh 1" );
-    AMP_INSIST( d_MapComm.sumReduce<int>( d_mesh2 ? 1 : 0 ) > 0, "Somebody must own mesh 2" );
+    AMP_INSIST( d_MapComm.anyReduce( bool( d_mesh1 ) ), "Somebody must own mesh 1" );
+    AMP_INSIST( d_MapComm.anyReduce( bool( d_mesh2 ) ), "Somebody must own mesh 2" );
     // Create a multimesh to use for the operator base class for subsetting
     std::vector<std::shared_ptr<AMP::Mesh::Mesh>> meshes;
     if ( d_mesh1 )

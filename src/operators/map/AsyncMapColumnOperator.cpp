@@ -95,7 +95,8 @@ static void copyKey( std::shared_ptr<AMP::Database> database1,
 {
     if ( database1->isDatabase( key ) ) {
         // Copy the database
-        AMP_ERROR( "Not programmed for databases yet" );
+        auto db = database1->getDatabase( key );
+        database2->putDatabase( key, db->cloneDatabase() );
     } else if ( database1->isType<bool>( key ) ) {
         // Copy a bool
         putEntry<bool>( database1, database2, key, N, i );

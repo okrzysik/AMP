@@ -12,7 +12,8 @@ namespace AMP::Discretization {
  ****************************************************************/
 multiDOFManager::multiDOFManager( const AMP_MPI &globalComm,
                                   std::vector<std::shared_ptr<DOFManager>> managers )
-    : d_managers( managers ),
+    : DOFManager(),
+      d_managers( managers ),
       d_ids( managers.size(), 0 ),
       d_localSize( managers.size(), 0 ),
       d_globalSize( managers.size(), 0 )

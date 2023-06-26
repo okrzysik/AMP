@@ -18,7 +18,7 @@ class MultiGeometry : public Geometry
 {
 public:
     /**
-     * \brief Contructor to create a MultiMesh from existing meshes
+     * \brief Constructor to create a MultiMesh from existing meshes
      * \details  This constructor takes a list of meshes and a communicator
      *    and generates the appropriate multimesh
      * \param geom      Sub-geometries

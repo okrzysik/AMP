@@ -8,7 +8,7 @@ namespace AMP::LinearAlgebra {
 
 
 /****************************************************************
- * Contructors                                                   *
+ * Constructors                                                  *
  ****************************************************************/
 template<typename TYPE>
 VectorDataIterator<TYPE>::VectorDataIterator()

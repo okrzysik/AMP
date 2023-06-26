@@ -472,6 +472,38 @@ MeshIterator Mesh::getIterator( SetOP OP, const MeshIterator &A, const MeshItera
 
 
 /********************************************************
+ * Create a view                                         *
+ ********************************************************/
+std::shared_ptr<Mesh> Mesh::createView( const Mesh &src, const AMP::Database &db )
+{
+    auto name = db.getString( "MeshName" );
+    auto op   = db.getWithDefault<std::string>( "Operation", "" );
+    auto list = db.getVector<std::string>( "MeshList" );
+    std::vector<std::shared_ptr<Mesh>> meshes;
+    for ( const auto &tmp : list ) {
+        auto mesh = src.Subset( tmp );
+        if ( mesh )
+            meshes.push_back( mesh );
+    }
+    auto comm = src.getComm().split( meshes.empty() ? 0 : 1 );
+    if ( meshes.empty() )
+        return nullptr;
+    auto mesh = std::make_shared<MultiMesh>( name, comm, meshes );
+    if ( op == "" ) {
+        return mesh;
+    } else if ( op == "SurfaceIterator" ) {
+        auto type = static_cast<AMP::Mesh::GeomType>( static_cast<int>( mesh->getGeomType() ) - 1 );
+        auto mesh2 = mesh->Subset( mesh->getSurfaceIterator( type ) );
+        mesh2->setName( name );
+        return mesh2;
+    } else {
+        AMP_ERROR( "Unknown operation" );
+    }
+    return nullptr;
+}
+
+
+/********************************************************
  * Stream operators                                      *
  ********************************************************/
 std::ostream &operator<<( std::ostream &out, AMP::Mesh::GeomType x )

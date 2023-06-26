@@ -60,8 +60,9 @@ namespace AMP::Operator {
 using IdentityOperatorParameters = OperatorParameters;
 
 
-static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
-                                                    const std::string &key )
+std::vector<std::string>
+OperatorBuilder::getActiveVariables( std::shared_ptr<const AMP::Database> db,
+                                     const std::string &key )
 {
     std::vector<std::string> vars;
     if ( db->isDatabase( key ) ) {

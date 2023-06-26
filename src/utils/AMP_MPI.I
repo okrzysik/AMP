@@ -578,21 +578,18 @@ void MPI_CLASS::bcast( TYPE *, int, int ) const
 template<class TYPE>
 TYPE MPI_CLASS::bcast( const TYPE &x, int root ) const
 {
-    TYPE y;
     if constexpr ( std::is_pointer_v<TYPE> || is_shared_ptr_v<TYPE> ) {
         using TYPE2 = typename AMP::remove_cvref_t<decltype( *( x.get() ) )>;
-        y.reset( new TYPE2() );
-        if ( d_rank == root )
-            *y = *x;
+        auto y      = std::make_shared<TYPE2>( *x );
         if ( d_size > 1 )
             bcast( y.get(), 1, root );
+        return y;
     } else {
-        if ( d_rank == root )
-            y = x;
+        auto y = x;
         if ( d_size > 1 )
             bcast( &y, 1, root );
+        return y;
     }
-    return y;
 }
 
 
@@ -612,20 +609,16 @@ void MPI_CLASS::send( const TYPE &buf, int recv_proc, int tag ) const
 {
     send( &buf, 1, recv_proc, tag );
 }
+inline void MPI_Send2(
+    const void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
+{
 #ifdef USE_MPI
-inline void MPI_Send2(
-    const void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
-{
     MPI_Send( buf, length, type, proc, tag, comm );
-}
 #else
-inline void MPI_Send2(
-    const void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
-{
     size_t bytes = length * MPI_getTypeSize( type );
     MPI_CLASS( comm ).sendBytes( buf, bytes, proc, tag );
-}
 #endif
+}
 template<class TYPE>
 void MPI_CLASS::send( const TYPE *buf, int length, int recv_proc, int tag ) const
 {
@@ -659,30 +652,21 @@ MPI_CLASS::Request MPI_CLASS::Isend( const TYPE &buf, int recv_proc, int tag ) c
 {
     return Isend( &buf, 1, recv_proc, tag );
 }
+inline void MPI_Isend2( const void *buf,
+                        int length,
+                        MPI_CLASS::Datatype type,
+                        int proc,
+                        int tag,
+                        MPI_CLASS::Comm comm,
+                        MPI_CLASS::Request2 *request )
+{
 #ifdef USE_MPI
-inline void MPI_Isend2( const void *buf,
-                        int length,
-                        MPI_CLASS::Datatype type,
-                        int proc,
-                        int tag,
-                        MPI_CLASS::Comm comm,
-                        MPI_CLASS::Request2 *request )
-{
     MPI_Isend( buf, length, type, proc, tag, comm, request );
-}
 #else
-inline void MPI_Isend2( const void *buf,
-                        int length,
-                        MPI_CLASS::Datatype type,
-                        int proc,
-                        int tag,
-                        MPI_CLASS::Comm comm,
-                        MPI_CLASS::Request2 *request )
-{
     size_t bytes = length * MPI_getTypeSize( type );
     *request = MPI_CLASS( comm ).IsendBytes( buf, bytes, proc, tag );
-}
 #endif
+}
 template<class TYPE>
 MPI_CLASS::Request MPI_CLASS::Isend( const TYPE *buf, int length, int recv_proc, int tag ) const
 {
@@ -722,20 +706,16 @@ TYPE MPI_CLASS::recv( int send_proc, int tag ) const
     recv<TYPE>( &data, length, send_proc, false, tag );
     return data;
 }
+inline void MPI_Recv2(
+    void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
+{
 #ifdef USE_MPI
-inline void MPI_Recv2(
-    void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
-{
     MPI_Recv( buf, length, type, proc, tag, comm, MPI_STATUS_IGNORE );
-}
 #else
-inline void MPI_Recv2(
-    void *buf, int length, MPI_CLASS::Datatype type, int proc, int tag, MPI_CLASS::Comm comm )
-{
     size_t bytes = length * MPI_getTypeSize( type );
     MPI_CLASS( comm ).recvBytes( buf, bytes, proc, tag );
-}
 #endif
+}
 template<class TYPE>
 void MPI_CLASS::recv( TYPE *buf, int &length, int send_proc, bool get_length, int tag ) const
 {
@@ -788,30 +768,21 @@ MPI_CLASS::Request MPI_CLASS::Irecv( TYPE &data, int send_proc, int tag ) const
 {
     return Irecv<TYPE>( &data, 1, send_proc, tag );
 }
+inline void MPI_Irecv2( void *buf,
+                        int length,
+                        MPI_CLASS::Datatype type,
+                        int proc,
+                        int tag,
+                        MPI_CLASS::Comm comm,
+                        MPI_CLASS::Request2 *request )
+{
 #ifdef USE_MPI
-inline void MPI_Irecv2( void *buf,
-                        int length,
-                        MPI_CLASS::Datatype type,
-                        int proc,
-                        int tag,
-                        MPI_CLASS::Comm comm,
-                        MPI_CLASS::Request2 *request )
-{
     MPI_Irecv( buf, length, type, proc, tag, comm, request );
-}
 #else
-inline void MPI_Irecv2( void *buf,
-                        int length,
-                        MPI_CLASS::Datatype type,
-                        int proc,
-                        int tag,
-                        MPI_CLASS::Comm comm,
-                        MPI_CLASS::Request2 *request )
-{
     size_t bytes = length * MPI_getTypeSize( type );
     *request = MPI_CLASS( comm ).IrecvBytes( buf, bytes, proc, tag );
-}
 #endif
+}
 template<class TYPE>
 MPI_CLASS::Request MPI_CLASS::Irecv( TYPE *buf, int length, int send_proc, int tag ) const
 {

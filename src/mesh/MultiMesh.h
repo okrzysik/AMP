@@ -29,7 +29,7 @@ public:
     /**
      * \brief Default constructor
      * \details  This constructor works with the input parameters to create the mesh.
-     * For trivial parallelsim, this method reads in the meshes on each processor.  Each
+     * For trivial parallelism, this method reads in the meshes on each processor.  Each
      * processor contains a piece of each mesh.  For massive parallelism, each mesh is on its own
      * communicator.  As such, some math libraries must be initialized accordingly.
      * \param params Parameters for constructing a mesh from an input database
@@ -38,7 +38,7 @@ public:
 
 
     /**
-     * \brief Contructor to create a MultiMesh from existing meshes
+     * \brief Constructor to create a MultiMesh from existing meshes
      * \details  This constructor takes a list of meshes and a communicator
      *    and generates the appropriate multimesh
      * \param name      Name of the new mesh

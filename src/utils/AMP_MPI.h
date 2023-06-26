@@ -55,10 +55,12 @@ public:
     typedef MPI_Comm Comm;
     typedef MPI_Datatype Datatype;
     typedef MPI_Request Request2;
+    constexpr static bool has_MPI = true;
 #else
     typedef uint32_t Comm;
     typedef uint32_t Datatype;
     typedef uint32_t Request2;
+    constexpr static bool has_MPI = false;
 #endif
 
     class Request final
@@ -1326,10 +1328,10 @@ public: // Member functions
 
 
     //! Return the total number of MPI_Comm objects that have been created
-    static inline size_t MPI_Comm_created() { return N_MPI_Comm_created; }
+    static inline size_t MPI_Comm_created() { return N_MPI_Comm_created.load(); }
 
     //! Return the total number of MPI_Comm objects that have been destroyed
-    static inline size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed; }
+    static inline size_t MPI_Comm_destroyed() { return N_MPI_Comm_destroyed.load(); }
 
     //! Return details about MPI
     static std::string info();
@@ -1348,48 +1350,23 @@ public: // Member functions
 
 
 private: // data members
-    // The internal MPI communicator
-    Comm d_comm;
+    using atomic_ptr = std::atomic_int *volatile;
+    using atomic_int = volatile std::atomic_int64_t;
+    using int_ptr    = int *volatile;
 
-    // Is the communicator NULL
-    bool d_isNull;
-
-    // Do we want to manage this communicator
-    bool d_manage;
-
-    // Do we want to call MPI_abort instead of exit
-    bool d_call_abort;
-
-    // The rank and size of the communicatorcommunicator
-    int d_rank, d_size;
-
-    // Some attributes
-    int d_maxTag;
-    int *volatile d_currentTag;
-
-    // The ranks of the comm in the global comm
-    mutable int *volatile d_ranks;
-
-    /* How many objects share the same underlying MPI communicator.
-     * When the count goes to 0, the MPI comm will be free'd (assuming it was created
-     * by an communicator).  This may not be perfect, but is likely to be good enough.
-     * Note that for thread safety, any access to this variable should be blocked for thread safety.
-     * The value of count MUST be volatile to ensure the correct value is always used.
-     */
-    std::atomic_int *volatile d_count;
-
-
-private: // static data members
-    // The level for the profiles of MPI
-    static short profile_level;
-
-    /* We want to keep track of how many MPI_Comm objects we have created over time.
-     * Like the count, for thread safety this should be blocked, however the most likely error
-     * caused by not blocking is a slight error in the MPI count.  Since this is just for reference
-     * we do not need to block (recognizing that the value may not be 100% accurate).
-     */
-    static volatile uint32_t N_MPI_Comm_created;
-    static volatile uint32_t N_MPI_Comm_destroyed;
+    Comm d_comm             = AMP_COMM_NULL; //!< The internal MPI communicator
+    bool d_isNull           = true;          //!< Is the communicator NULL
+    bool d_manage           = false;         //!< Do we want to manage this communicator
+    bool d_call_abort       = true;          //!< Do we want to call MPI_abort instead of exit
+    int d_rank              = 0;             //!< The rank of the communicator
+    int d_size              = 1;             //!< The size of the communicator
+    int d_maxTag            = 0x3FFFFFFF;    //!< The maximum valid tag
+    int_ptr d_currentTag    = nullptr;       //!< The current tag
+    mutable int_ptr d_ranks = nullptr;       //!< The ranks of the comm in the global comm
+    atomic_ptr d_count      = 0;             //!< How many objects share the communicator
+    static short profile_level;              //!< The level for the profiles of MPI
+    static atomic_int N_MPI_Comm_created;    //!< Number of MPI_Comm objects created over time
+    static atomic_int N_MPI_Comm_destroyed;  //!< Number of MPI_Comm objects destroyed over time
 };
 
 
