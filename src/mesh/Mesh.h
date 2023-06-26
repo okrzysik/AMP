@@ -471,6 +471,15 @@ public:
     virtual void writeRestart( int64_t fid ) const = 0;
 
 
+    /**
+     * \brief  Create a view of existing mesh(s)
+     * \details  This function creates a view of existing mesh(s)
+     * \param mesh      Existing mesh(s)
+     * \param db        Database to control the view
+     */
+    static std::shared_ptr<Mesh> createView( const Mesh &mesh, const AMP::Database &db );
+
+
 protected:
     //!  Empty constructor for a mesh
     Mesh() {}

@@ -85,7 +85,7 @@ StructuredGeometryMesh::StructuredGeometryMesh( int64_t fid, AMP::IO::RestartMan
 {
     // Set the data for Mesh
     readHDF5( fid, "MeshName", d_name );
-    uint64_t commHash;
+    uint64_t commHash = 0;
     readHDF5( fid, "comm", commHash );
     d_comm = manager->getComm( commHash );
     // Basic defaults

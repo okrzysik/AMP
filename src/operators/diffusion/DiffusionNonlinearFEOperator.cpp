@@ -2,6 +2,7 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/materials/Material.h"
 #include "AMP/operators/ElementOperationParameters.h"
+#include "AMP/operators/OperatorBuilder.h"
 #include "AMP/operators/diffusion/DiffusionLinearElement.h"
 #include "AMP/operators/diffusion/DiffusionLinearFEOperatorParameters.h"
 #include "AMP/utils/Database.h"
@@ -13,21 +14,6 @@
 
 
 namespace AMP::Operator {
-
-
-static std::vector<std::string> getActiveVariables( std::shared_ptr<const AMP::Database> db,
-                                                    const std::string &key )
-{
-    std::vector<std::string> vars;
-    if ( db->isDatabase( key ) ) {
-        auto activeDB = db->getDatabase( key );
-        for ( auto key2 : activeDB->getAllKeys() )
-            vars.push_back( activeDB->getString( key2 ) );
-    } else {
-        vars = db->getVector<std::string>( key );
-    }
-    return vars;
-}
 
 
 std::shared_ptr<AMP::LinearAlgebra::Variable>
@@ -109,7 +95,8 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
 
     d_transportModel = params->d_transportModel;
 
-    auto activeVariables = getActiveVariables( params->d_db, "ActiveInputVariables" );
+    auto activeVariables =
+        OperatorBuilder::getActiveVariables( params->d_db, "ActiveInputVariables" );
     for ( auto name : activeVariables ) {
         InputVectorStruct data;
         data.isFrozen  = params->d_db->getWithDefault<bool>( "Freeze" + name, false );

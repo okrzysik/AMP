@@ -900,6 +900,10 @@ int main( int argc, char *argv[] )
     ut.report();
     int N_errors = ut.NumFailGlobal();
     ut.reset();
+    int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
+    if ( rank == 0 )
+        std::cout << std::endl;
     AMP::AMPManager::shutdown();
+    printf( "%i: showdown complete\n", rank );
     return N_errors;
 }

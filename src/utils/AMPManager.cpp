@@ -7,6 +7,7 @@
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/FactoryStrategy.hpp"
+#include "AMP/utils/KokkosManager.h"
 #include "AMP/utils/Utilities.h"
 
 #include "ProfilerApp.h"
@@ -35,9 +36,6 @@
     #include "SAMRAI/tbox/SAMRAIManager.h"
     #include "SAMRAI/tbox/Schedule.h"
     #include "SAMRAI/tbox/StartupShutdownManager.h"
-#endif
-#ifdef AMP_USE_KOKKOS
-    #include "AMP/utils/KokkosManager.h"
 #endif
 // clang-format on
 
@@ -151,7 +149,7 @@ void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperti
     // Initialize cuda
     start_CUDA();
     // Initialize Kokkos
-    start_Kokkos( argc, argv );
+    AMP::Utilities::initializeKokkos( argc, argv );
     // Initialize PETSc
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
@@ -213,7 +211,7 @@ void AMPManager::shutdown()
     // Shudown PETSc
     double petsc_time = stop_PETSc();
     // shutdown Kokkos
-    stop_Kokkos();
+    AMP::Utilities::finalizeKokkos();
     // Shutdown MPI
     double MPI_start = Utilities::time();
     AMP_MPI::stop_MPI();
@@ -400,27 +398,6 @@ double AMPManager::start_CUDA()
 #endif
     return 0;
 }
-
-
-/****************************************************************************
- * Function to start/stop Kokkos                                             *
- ****************************************************************************/
-#ifdef AMP_USE_KOKKOS
-double AMPManager::start_Kokkos( int argc, char **argv )
-{
-    AMP::Utilities::initializeKokkos( argc, argv );
-    return 0;
-}
-
-double AMPManager::stop_Kokkos()
-{
-    AMP::Utilities::finalizeKokkos();
-    return 0;
-}
-#else
-double AMPManager::start_Kokkos( int, char ** ) { return 0; }
-double AMPManager::stop_Kokkos() { return 0; }
-#endif
 
 
 /****************************************************************************

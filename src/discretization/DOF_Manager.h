@@ -168,7 +168,7 @@ protected:
     std::shared_ptr<DOFManagerParameters> params;
 
     //! The begining DOF, ending DOF and number of local DOFs for this processor
-    size_t d_begin, d_end, d_global;
+    size_t d_begin = 0, d_end = 0, d_global = 0;
 
     //! The comm for this DOFManager
     AMP_MPI d_comm;
