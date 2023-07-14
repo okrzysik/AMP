@@ -17,7 +17,9 @@ constexpr double Units::d_pow10[22];
  ********************************************************************/
 std::string Units::str() const
 {
-    if ( d_unit[0] != 0 ) {
+    if ( isNull() ) {
+        return {};
+    } else if ( d_unit[0] != 0 ) {
         return printUnit();
     } else {
         return printSI();

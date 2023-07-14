@@ -4,11 +4,10 @@
 #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
 #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.h"
 
+#include <Kokkos_Core.hpp>
 #include <Teuchos_OrdinalTraits.hpp>
 #include <Tpetra_Core.hpp>
-#include <Tpetra_Vector.hpp>
 
-#include <Kokkos_Core.hpp>
 
 namespace AMP::LinearAlgebra {
 
@@ -167,14 +166,14 @@ void TpetraVectorOperations<ST, LO, GO, NT>::abs( const VectorData &x, VectorDat
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-Scalar TpetraVectorOperations<ST, LO, GO, NT>::min( const VectorData &x ) const
+Scalar TpetraVectorOperations<ST, LO, GO, NT>::min( const VectorData & ) const
 {
     AMP_ERROR( "Not implemented" );
     return 0;
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-Scalar TpetraVectorOperations<ST, LO, GO, NT>::max( const VectorData &x ) const
+Scalar TpetraVectorOperations<ST, LO, GO, NT>::max( const VectorData & ) const
 {
     AMP_ERROR( "Not implemented" );
     return 0;

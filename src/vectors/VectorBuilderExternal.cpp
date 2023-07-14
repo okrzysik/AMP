@@ -17,12 +17,10 @@
 DISABLE_WARNINGS
     #include "Thyra_VectorDefaultBase_decl.hpp"
 ENABLE_WARNINGS
-
     #ifdef AMP_USE_TRILINOS_EPETRA
-        #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.hpp"
-        #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.hpp"
+        #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
+        #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.h"
     #endif
-
 #else
 namespace Teuchos {
 template<class TYPE>
