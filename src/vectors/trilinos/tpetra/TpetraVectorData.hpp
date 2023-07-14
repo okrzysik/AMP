@@ -3,7 +3,9 @@
 
 #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
 
+
 namespace AMP::LinearAlgebra {
+
 
 template<typename ST, typename LO, typename GO, typename NT>
 TpetraVectorData<ST, LO, GO, NT>::TpetraVectorData(
@@ -46,25 +48,25 @@ void TpetraVectorData<ST, LO, GO, NT>::getValuesByLocalID( size_t,
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-void TpetraVectorData<ST, LO, GO, NT>::putRawData( const void *in, const typeID &id )
+void TpetraVectorData<ST, LO, GO, NT>::putRawData( const void *, const typeID & )
 {
     AMP_ERROR( "Not implemented" );
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-void TpetraVectorData<ST, LO, GO, NT>::getRawData( void *out, const typeID &id ) const
+void TpetraVectorData<ST, LO, GO, NT>::getRawData( void *, const typeID & ) const
 {
     AMP_ERROR( "Not implemented" );
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-void *TpetraVectorData<ST, LO, GO, NT>::getRawDataBlockAsVoid( size_t i )
+void *TpetraVectorData<ST, LO, GO, NT>::getRawDataBlockAsVoid( size_t )
 {
     AMP_ERROR( "Not implemented" );
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
-const void *TpetraVectorData<ST, LO, GO, NT>::getRawDataBlockAsVoid( size_t i ) const
+const void *TpetraVectorData<ST, LO, GO, NT>::getRawDataBlockAsVoid( size_t ) const
 {
     AMP_ERROR( "Not implemented" );
 }
@@ -82,6 +84,7 @@ std::shared_ptr<VectorData> TpetraVectorData<ST, LO, GO, NT>::cloneData() const
 {
     return std::make_shared<TpetraVectorData<ST, LO, GO, NT>>( d_pDOFManager );
 }
+
 
 } // namespace AMP::LinearAlgebra
 #endif

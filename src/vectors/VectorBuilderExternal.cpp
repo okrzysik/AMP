@@ -17,12 +17,10 @@
 DISABLE_WARNINGS
     #include "Thyra_VectorDefaultBase_decl.hpp"
 ENABLE_WARNINGS
-
     #ifdef AMP_USE_TRILINOS_EPETRA
-        #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.hpp"
-        #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.hpp"
+        #include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
+        #include "AMP/vectors/trilinos/tpetra/TpetraVectorOperations.h"
     #endif
-
 #else
 namespace Teuchos {
 template<class TYPE>
@@ -74,10 +72,8 @@ std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>> ve
     return std::make_shared<Vector>( data, ops, var, nullptr );
 }
 #else
-std::shared_ptr<Vector> createVector( Teuchos::RCP<Thyra::VectorBase<double>>,
-                                      size_t,
-                                      AMP_MPI,
-                                      std::shared_ptr<Variable> )
+std::shared_ptr<Vector>
+createVector( Teuchos::RCP<Thyra::VectorBase<double>>, size_t, AMP_MPI, std::shared_ptr<Variable> )
 {
     AMP_ERROR( "Thyra support not enabled" );
     return nullptr;
