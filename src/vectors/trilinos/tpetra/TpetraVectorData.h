@@ -10,12 +10,13 @@
 #include <Tpetra_Vector.hpp>
 #include <Tpetra_Version.hpp>
 
+
 namespace AMP::LinearAlgebra {
 
 
 template<typename ST = double,
          typename LO = int32_t,
-         typename GO = long long,
+         typename GO = int64_t,
          typename NT = Tpetra::Vector<>::node_type>
 class TpetraVectorData : public VectorData
 {
