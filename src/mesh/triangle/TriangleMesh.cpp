@@ -40,14 +40,6 @@ static constexpr std::array<TYPE, N> make_array( const TYPE &x )
 }
 
 
-// Helper function to wrap fread
-static inline void fread2( void *ptr, size_t size, size_t count, FILE *stream )
-{
-    size_t N = fread( ptr, size, count, stream );
-    AMP_ASSERT( N == count );
-}
-
-
 // Helper function to perform simple checks
 template<class TYPE, std::size_t N>
 static inline void check( const std::vector<std::array<TYPE, N>> &x )
