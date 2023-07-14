@@ -128,7 +128,7 @@ void InterpolatedProperty::eval( AMP::Array<double> &result, const AMP::Array<do
 /*******************************************************************
  *  EquationProperty                                                *
  *******************************************************************/
-static std::vector<std::array<double, 2>> getRanges( std::vector<std::array<double, 2>> ranges,
+std::vector<std::array<double, 2>> getDefaultRanges( std::vector<std::array<double, 2>> ranges,
                                                      const std::vector<std::string> &vars )
 {
     if ( ranges.empty() )
@@ -146,7 +146,7 @@ EquationProperty::EquationProperty( std::string name,
                 unit,
                 std::move( source ),
                 eq->getVars(),
-                getRanges( std::move( ranges ), eq->getVars() ),
+                getDefaultRanges( std::move( ranges ), eq->getVars() ),
                 std::move( argUnits ) ),
       d_eq( eq )
 {
@@ -164,7 +164,7 @@ EquationProperty::EquationProperty( std::string name,
                 unit,
                 std::move( source ),
                 std::move( args ),
-                getRanges( std::move( ranges ), args ),
+                getDefaultRanges( std::move( ranges ), args ),
                 std::move( argUnits ) ),
       d_eq( std::make_shared<MathExpr>( expression, args ) )
 {

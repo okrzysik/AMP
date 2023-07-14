@@ -74,11 +74,16 @@ public:
 
 public:
     //! Add a property
-    template<class PROPERTY, class... Args>
+    template<class PROPERTY>
+    void addProperty( const std::string &name, std::shared_ptr<PROPERTY> property )
+    {
+        d_propertyMap[name] = property;
+    }
+    template<class PROPERTY, typename... Args>
     void addProperty( const std::string &name, Args &&...args )
     {
         auto name2          = materialName() + "::" + name;
-        d_propertyMap[name] = std::make_shared<PROPERTY>( name2, args... );
+        d_propertyMap[name] = std::make_shared<PROPERTY>( name2, std::forward<Args>( args )... );
     }
 
     //! Add a constant-value fixed property

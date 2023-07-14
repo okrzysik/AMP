@@ -15,6 +15,10 @@ class MathExpr;
 namespace AMP::Materials {
 
 
+// Helper function
+std::vector<std::array<double, 2>> getDefaultRanges( std::vector<std::array<double, 2>> ranges,
+                                                     const std::vector<std::string> &vars );
+
 //! String property class
 class StringProperty final : public Property
 {
@@ -111,6 +115,59 @@ public:
 
 private:
     std::shared_ptr<const MathExpr> d_eq;
+};
+
+
+//! Function based property class
+template<class... Args>
+class FunctionProperty : public Property
+{
+public:
+    FunctionProperty( std::string name,
+                      std::function<double( Args... )> fun,
+                      const AMP::Units &unit                    = {},
+                      std::vector<std::string> args             = {},
+                      std::vector<std::array<double, 2>> ranges = {},
+                      std::vector<AMP::Units> argUnits          = {},
+                      std::vector<double> default_values        = {},
+                      std::string source                        = "" )
+        : Property( std::move( name ),
+                    { 1 },
+                    unit,
+                    std::move( source ),
+                    std::move( args ),
+                    getDefaultRanges( std::move( ranges ), args ),
+                    std::move( argUnits ) ),
+          d_fun( fun )
+    {
+        AMP_ASSERT( get_number_arguments() == sizeof...( Args ) );
+        set_defaults( default_values );
+    }
+    void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override
+    {
+        constexpr std::size_t N = sizeof...( Args );
+        static_assert( N <= 5, "More than 5 arguments is not supported yet" );
+        if constexpr ( N == 0 ) {
+            result.fill( d_fun() );
+            return;
+        }
+        for ( size_t i = 0; i < result.length(); i++ ) {
+            const double *x = &args( 0, i );
+            if constexpr ( N == 1 )
+                result( i ) = d_fun( x[0] );
+            else if constexpr ( N == 2 )
+                result( i ) = d_fun( x[0], x[1] );
+            else if constexpr ( N == 3 )
+                result( i ) = d_fun( x[0], x[1], x[2] );
+            else if constexpr ( N == 4 )
+                result( i ) = d_fun( x[0], x[1], x[2], x[3] );
+            else if constexpr ( N == 5 )
+                result( i ) = d_fun( x[0], x[1], x[2], x[3], x[4] );
+        }
+    }
+
+private:
+    std::function<double( Args... )> d_fun;
 };
 
 
