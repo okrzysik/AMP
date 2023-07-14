@@ -33,10 +33,6 @@ static inline double dot( const Point3D &x, const Point3D &y )
 {
     return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
 }
-static inline Point3D cross( const Point3D &x, const Point3D &y )
-{
-    return { x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0] };
-}
 static inline Point3D normalize( const Point3D &x )
 {
     double tmp = 1.0 / sqrt( dot( x, x ) );

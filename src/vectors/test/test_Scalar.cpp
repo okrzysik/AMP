@@ -54,10 +54,10 @@ bool testArithmetic()
     AMP::Scalar y( b );
     bool pass = true;
     // Test some different operations
-    pass = pass && fabs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
-    pass = pass && fabs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
-    pass = pass && fabs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
-    pass = pass && fabs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::fabs( ( a - b ) - ( x - y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::fabs( ( a + b ) - ( x + y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::fabs( ( a * b ) - ( x * y ).get<TYPE>() ) < 1e-8;
+    pass = pass && std::fabs( ( a / b ) - ( x / y ).get<TYPE>() ) < 1e-8;
     // Test NaNs/Inf
     if ( std::numeric_limits<TYPE>::has_infinity ) {
         x       = (TYPE) 1;
