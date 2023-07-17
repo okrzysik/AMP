@@ -129,7 +129,7 @@ public:
                       std::vector<std::string> args             = {},
                       std::vector<std::array<double, 2>> ranges = {},
                       std::vector<AMP::Units> argUnits          = {},
-                      std::vector<double> default_values        = {},
+                      const std::vector<double> &default_values = {},
                       std::string source                        = "" )
         : Property( std::move( name ),
                     { 1 },
