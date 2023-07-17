@@ -133,7 +133,7 @@ MeshIterator libmeshNodeIterator::operator++( int )
     // Postfix increment (increment and return temporary object)
     libmeshNodeIterator tmp( *this ); // Create a temporary variable
     this->operator++();               // apply operator
-    return tmp;                       // return temporary result
+    return std::move( tmp );          // return temporary result
 }
 MeshIterator &libmeshNodeIterator::operator--()
 {
@@ -146,7 +146,7 @@ MeshIterator libmeshNodeIterator::operator--( int )
     // Postfix decrement (increment and return temporary object)
     libmeshNodeIterator tmp( *this ); // Create a temporary variable
     --( *this );                      // apply operator
-    return tmp;                       // return temporary result
+    return std::move( tmp );          // return temporary result
 }
 
 
@@ -157,7 +157,7 @@ MeshIterator libmeshNodeIterator::operator+( int n ) const
 {
     libmeshNodeIterator tmp( *this ); // Create a temporary iterator
     tmp.operator+=( n );              // Increment temporary iterator
-    return tmp;                       // return temporary result
+    return std::move( tmp );          // return temporary result
 }
 MeshIterator &libmeshNodeIterator::operator+=( int n )
 {
