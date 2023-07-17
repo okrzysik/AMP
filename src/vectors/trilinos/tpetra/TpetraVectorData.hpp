@@ -1,8 +1,14 @@
 #ifndef included_TpetraVectorData_HPP_
 #define included_TpetraVectorData_HPP_
 
-#include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
+#include "AMP/AMP_TPLs.h"
+#ifdef AMP_USE_MPI
+    #include "Teuchos_DefaultMpiComm.hpp"
+#else
+    #include "Teuchos_DefaultSerialComm.hpp"
+#endif
 
+#include "AMP/vectors/trilinos/tpetra/TpetraVectorData.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -13,11 +19,16 @@ TpetraVectorData<ST, LO, GO, NT>::TpetraVectorData(
     : d_pDOFManager( dofManager )
 {
     AMP_DEBUG_ASSERT( dofManager );
+#ifdef AMP_USE_MPI
     const auto &mpiComm = dofManager->getComm().getCommunicator();
     auto comm           = Teuchos::rcp( new Teuchos::MpiComm<int>( mpiComm ) );
-    auto map            = Teuchos::rcp( new Tpetra::Map<LO, GO, NT>(
+#else
+    auto comm = Tpetra::getDefaultComm();
+#endif
+
+    auto map        = Teuchos::rcp( new Tpetra::Map<LO, GO, NT>(
         dofManager->numGlobalDOF(), dofManager->numLocalDOF(), comm ) );
-    d_pTpetraVector     = Teuchos::rcp( new Tpetra::Vector<ST, LO, GO, NT>( map, 1 ) );
+    d_pTpetraVector = Teuchos::rcp( new Tpetra::Vector<ST, LO, GO, NT>( map, 1 ) );
 }
 
 template<typename ST, typename LO, typename GO, typename NT>
