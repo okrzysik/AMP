@@ -29,8 +29,6 @@
 namespace AMP::LinearAlgebra {
 
 
-static inline int lround( double x ) { return x >= 0 ? floor( x ) : ceil( x ); }
-
 void VectorTests::InstantiateVector( AMP::UnitTest *ut )
 {
     auto vector = d_factory->getVector();
