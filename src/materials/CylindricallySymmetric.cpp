@@ -118,7 +118,7 @@ void CylindricallySymmetricTensor::eval( AMP::Array<double> &result,
 CylindricallySymmetric::CylindricallySymmetric()
 {
     addPolynomialProperty(
-        "ScalarRadialFick", "", {}, { 1.0, 0.0 }, { "radius" }, { { rMinVal, rMaxVal } } );
+        "ScalarRadialFick", {}, { 1.0, 0.0 }, { "radius" }, { { rMinVal, rMaxVal } } );
     addProperty<CylindricallySymmetricTensor>( "TensorFick" );
 }
 

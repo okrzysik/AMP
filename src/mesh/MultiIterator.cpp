@@ -137,13 +137,6 @@ MeshIterator &MultiIterator::operator++()
     d_element = cur_iterator.operator->();
     return *this;
 }
-MeshIterator MultiIterator::operator++( int )
-{
-    // Postfix increment (increment and return temporary object)
-    MultiIterator tmp( *this ); // Create a temporary variable
-    this->operator++();         // apply operator
-    return std::move( tmp );    // return temporary result
-}
 MeshIterator &MultiIterator::operator--()
 {
     // Prefix decrement (increment and return this)
@@ -172,24 +165,11 @@ MeshIterator &MultiIterator::operator--()
     d_element = cur_iterator.operator->();
     return *this;
 }
-MeshIterator MultiIterator::operator--( int )
-{
-    // Postfix decrement (increment and return temporary object)
-    MultiIterator tmp( *this ); // Create a temporary variable
-    --( *this );                // apply operator
-    return std::move( tmp );    // return temporary result
-}
 
 
 /********************************************************
- * Random access incrementors                            *
+ * Random access iterators                               *
  ********************************************************/
-MeshIterator MultiIterator::operator+( int n ) const
-{
-    MultiIterator tmp( *this ); // Create a temporary iterator
-    tmp.operator+=( n );        // Increment temporary iterator
-    return std::move( tmp );    // return temporary result
-}
 MeshIterator &MultiIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this

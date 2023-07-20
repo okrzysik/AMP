@@ -180,13 +180,6 @@ MeshIterator &structuredMeshIterator::operator++()
     d_cur_element.reset( getIndex( d_pos ) );
     return *this;
 }
-MeshIterator structuredMeshIterator::operator++( int )
-{
-    // Postfix increment (increment and return temporary object)
-    structuredMeshIterator tmp( *this ); // Create a temporary variable
-    this->operator++();                  // apply operator
-    return std::move( tmp );             // return temporary result
-}
 MeshIterator &structuredMeshIterator::operator--()
 {
     // Prefix decrement (increment and return this)
@@ -195,24 +188,11 @@ MeshIterator &structuredMeshIterator::operator--()
     d_cur_element.reset( getIndex( d_pos ) );
     return *this;
 }
-MeshIterator structuredMeshIterator::operator--( int )
-{
-    // Postfix decrement (increment and return temporary object)
-    structuredMeshIterator tmp( *this ); // Create a temporary variable
-    --( *this );                         // apply operator
-    return std::move( tmp );             // return temporary result
-}
 
 
 /********************************************************
- * Random access incrementors                            *
+ * Random access iterators                               *
  ********************************************************/
-MeshIterator structuredMeshIterator::operator+( int n ) const
-{
-    structuredMeshIterator tmp( *this ); // Create a temporary iterator
-    tmp.operator+=( n );                 // Increment temporary iterator
-    return std::move( tmp );             // return temporary result
-}
 MeshIterator &structuredMeshIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this

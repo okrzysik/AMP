@@ -128,37 +128,17 @@ MeshIterator &libmeshElemIterator::operator++()
     setCurrentElement();
     return *this;
 }
-MeshIterator libmeshElemIterator::operator++( int )
-{
-    // Postfix increment (increment and return temporary object)
-    libmeshElemIterator tmp( *this ); // Create a temporary variable
-    this->operator++();               // apply operator
-    return std::move( tmp );          // return temporary result
-}
 MeshIterator &libmeshElemIterator::operator--()
 {
     // Prefix decrement (decrement and return this)
     AMP_ERROR( "Decrementing libmeshMesh iterators is not supported" );
     return *this;
 }
-MeshIterator libmeshElemIterator::operator--( int )
-{
-    // Postfix decrement (increment and return temporary object)
-    libmeshElemIterator tmp( *this ); // Create a temporary variable
-    --( *this );                      // apply operator
-    return std::move( tmp );          // return temporary result
-}
 
 
 /********************************************************
  * Random access incrementors                            *
  ********************************************************/
-MeshIterator libmeshElemIterator::operator+( int n ) const
-{
-    libmeshElemIterator tmp( *this ); // Create a temporary iterator
-    tmp.operator+=( n );              // Increment temporary iterator
-    return std::move( tmp );          // return temporary result
-}
 MeshIterator &libmeshElemIterator::operator+=( int n )
 {
     // Check the input

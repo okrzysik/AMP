@@ -43,17 +43,8 @@ public:
     // Increment
     MeshIterator &operator++() override;
 
-    // Increment
-    MeshIterator operator++( int ) override;
-
     // Decrement
     MeshIterator &operator--() override;
-
-    // Decrement
-    MeshIterator operator--( int ) override;
-
-    // Arithmetic operator+
-    MeshIterator operator+( int ) const override;
 
     // Arithmetic operator+=
     MeshIterator &operator+=( int N ) override;
