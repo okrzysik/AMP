@@ -29,7 +29,7 @@ namespace AMP::TimeIntegrator {
   @see SolverStrategy
   @see TimeOperatorParameters
 */
-class TimeOperator : public AMP::Operator::Operator
+class TimeOperator : public virtual AMP::Operator::Operator
 {
 public:
     /**
