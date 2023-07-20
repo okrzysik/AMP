@@ -101,10 +101,26 @@ MeshIterator &MeshIterator::operator=( const MeshIterator &rhs )
     }
     return *this;
 }
+MeshIterator::MeshIterator( MeshIterator *rhs )
+    : d_iterator( nullptr ),
+      d_typeHash( MeshIteratorType ),
+      d_iteratorType( Type::RandomAccess ),
+      d_size( 0 ),
+      d_pos( 0 ),
+      d_element( nullptr )
+{
+    if ( rhs->d_iterator ) {
+        std::swap( d_iterator, rhs->d_iterator );
+        delete rhs;
+    } else {
+        d_iterator = rhs;
+    }
+    d_iteratorType = d_iterator->d_iteratorType;
+}
 
 
 /********************************************************
- * De-constructor                                        *
+ * Destructor                                            *
  ********************************************************/
 MeshIterator::~MeshIterator()
 {
@@ -115,15 +131,13 @@ MeshIterator::~MeshIterator()
 
 
 /********************************************************
- * Function to clone the d_iterator                      *
+ * Clone the iterator                                    *
  ********************************************************/
 MeshIterator *MeshIterator::clone() const
 {
-    if ( d_iterator == nullptr )
-        return new MeshIterator();
-    else
-        AMP_ERROR( "clone must be instantiated by the derived class" );
-    return nullptr;
+    if ( d_iterator )
+        return d_iterator->clone();
+    return new MeshIterator();
 }
 
 
@@ -139,7 +153,7 @@ MeshIterator::Type MeshIterator::type() const
 
 
 /********************************************************
- * Functions to return the begin or end d_iterator       *
+ * Return the begin or end d_iterator                    *
  ********************************************************/
 MeshIterator MeshIterator::begin() const
 {
@@ -156,16 +170,7 @@ MeshIterator MeshIterator::end() const
 
 
 /********************************************************
- * Functions for incrementing/decrementing               *
- ********************************************************/
-MeshIterator &MeshIterator::operator++() { return d_iterator->operator++(); }
-MeshIterator &MeshIterator::operator--() { return d_iterator->operator--(); }
-MeshIterator MeshIterator::operator++( int i ) { return d_iterator->operator++( i ); }
-MeshIterator MeshIterator::operator--( int i ) { return d_iterator->operator--( i ); }
-
-
-/********************************************************
- * Functions for incrementing/decrementing               *
+ * Iterator comparisons                                  *
  ********************************************************/
 bool MeshIterator::operator==( const MeshIterator &rhs ) const
 {
@@ -188,49 +193,38 @@ bool MeshIterator::operator!=( const MeshIterator &rhs ) const
     return d_iterator->operator!=( rhs );
 }
 
+/********************************************************
+ * Increment/Decrement the iterator                      *
+ ********************************************************/
+MeshIterator &MeshIterator::operator++()
+{
+    AMP_DEBUG_ASSERT( d_iterator );
+    return d_iterator->operator++();
+}
+MeshIterator &MeshIterator::operator--()
+{
+    AMP_DEBUG_ASSERT( d_iterator );
+    return d_iterator->operator--();
+}
+MeshIterator MeshIterator::operator++( int )
+{
+    // Postfix increment (increment and return temporary object)
+    auto tmp = clone(); // Create a temporary variable
+    this->operator++(); // apply operator
+    return tmp;         // return temporary result
+}
+MeshIterator MeshIterator::operator--( int )
+{
+    // Postfix decrement (increment and return temporary object)
+    auto tmp = clone(); // Create a temporary variable
+    --( *this );        // apply operator
+    return tmp;         // return temporary result
+}
+
 
 /********************************************************
- * Functions for dereferencing the d_iterator            *
+ * Random access iterators                               *
  ********************************************************/
-MeshElement &MeshIterator::operator[]( int i )
-{
-    if ( d_iterator != nullptr )
-        return d_iterator->operator[]( i );
-    AMP_ERROR( "Dereferencing d_iterator with offset is not supported by default" );
-    return this->operator*(); // This line never executes and would return the wrong object
-}
-
-
-/********************************************************
- *  arithmetic operators                                 *
- ********************************************************/
-MeshIterator MeshIterator::operator+( int n ) const
-{
-    if ( d_iterator != nullptr )
-        return d_iterator->operator+( n );
-    MeshIterator tmp( *this ); // Create a temporary d_iterator
-    tmp.operator+=( n );       // Increment temporary d_iterator
-    return tmp;                // return temporary d_iterator
-}
-MeshIterator MeshIterator::operator+( const MeshIterator &it ) const
-{
-    if ( d_iterator != nullptr )
-        return d_iterator->operator+( it );
-    return this->operator+( (int) it.position() );
-}
-MeshIterator MeshIterator::operator-( int n ) const
-{
-    if ( d_iterator != nullptr )
-        return d_iterator->operator-( n );
-    MeshIterator tmp( *this ); // Create a temporary d_iterator
-    return this->operator+( -n );
-}
-MeshIterator MeshIterator::operator-( const MeshIterator &it ) const
-{
-    if ( d_iterator != nullptr )
-        return d_iterator->operator+( it );
-    return this->operator+( -static_cast<int>( it.position() ) );
-}
 MeshIterator &MeshIterator::operator+=( int n )
 {
     if ( d_iterator != nullptr )
@@ -245,6 +239,26 @@ MeshIterator &MeshIterator::operator+=( int n )
         } // decrement d_iterator
     }
     return *this;
+}
+MeshIterator MeshIterator::operator+( int n ) const
+{
+    auto tmp = clone();   // Create a temporary iterator
+    tmp->operator+=( n ); // Increment temporary d_iterator
+    return tmp;           // return temporary d_iterator
+}
+MeshIterator MeshIterator::operator-( int n ) const
+{
+    auto tmp = clone();    // Create a temporary iterator
+    tmp->operator+=( -n ); // Increment temporary d_iterator
+    return tmp;            // return temporary d_iterator
+}
+MeshIterator MeshIterator::operator+( const MeshIterator &it ) const
+{
+    return operator+( (int) it.position() );
+}
+MeshIterator MeshIterator::operator-( const MeshIterator &it ) const
+{
+    return this->operator+( -static_cast<int>( it.position() ) );
 }
 MeshIterator &MeshIterator::operator+=( const MeshIterator &it )
 {
@@ -263,6 +277,18 @@ MeshIterator &MeshIterator::operator-=( const MeshIterator &it )
     if ( d_iterator != nullptr )
         return d_iterator->operator-=( (int) it.position() );
     return this->operator+=( -static_cast<int>( it.position() ) );
+}
+
+
+/********************************************************
+ * Functions for de-referencing the d_iterator           *
+ ********************************************************/
+MeshElement &MeshIterator::operator[]( int i )
+{
+    if ( d_iterator != nullptr )
+        return d_iterator->operator[]( i );
+    AMP_ERROR( "Dereferencing d_iterator with offset is not supported by default" );
+    return this->operator*(); // This line never executes and would return the wrong object
 }
 
 

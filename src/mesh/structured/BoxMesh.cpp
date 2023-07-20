@@ -430,9 +430,9 @@ MeshElement BoxMesh::getElement( const MeshElementID &id ) const
     // Get the index of the element
     MeshElementIndex index = convert( id );
     // Create the element
-    structuredMeshElement elem( index, this );
-    AMP_DEBUG_ASSERT( elem.globalID() == id );
-    return std::move( elem );
+    auto tmp = new structuredMeshElement( index, this );
+    AMP_DEBUG_ASSERT( tmp->globalID() == id );
+    return tmp;
 }
 MeshElement BoxMesh::getElement( const MeshElementIndex &index ) const
 {
