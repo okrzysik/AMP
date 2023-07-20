@@ -92,13 +92,6 @@ MeshIterator &MultiVectorIterator::operator++()
     d_element = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
     return *this;
 }
-MeshIterator MultiVectorIterator::operator++( int )
-{
-    // Postfix increment (increment and return temporary object)
-    MultiVectorIterator tmp( *this ); // Create a temporary variable
-    this->operator++();               // apply operator
-    return std::move( tmp );          // return temporary result
-}
 MeshIterator &MultiVectorIterator::operator--()
 {
     // Prefix decrement (increment and return this)
@@ -106,24 +99,11 @@ MeshIterator &MultiVectorIterator::operator--()
     d_element = d_pos < d_size ? &d_elements->operator[]( d_pos ) : nullptr;
     return *this;
 }
-MeshIterator MultiVectorIterator::operator--( int )
-{
-    // Postfix decrement (increment and return temporary object)
-    MultiVectorIterator tmp( *this ); // Create a temporary variable
-    --( *this );                      // apply operator
-    return std::move( tmp );          // return temporary result
-}
 
 
 /********************************************************
- * Random access incrementors                            *
+ * Random access iterators                               *
  ********************************************************/
-MeshIterator MultiVectorIterator::operator+( int n ) const
-{
-    MultiVectorIterator tmp( *this ); // Create a temporary iterator
-    tmp.operator+=( n );              // Increment temporary iterator
-    return std::move( tmp );
-}
 MeshIterator &MultiVectorIterator::operator+=( int n )
 {
     if ( n >= 0 ) { // increment *this

@@ -21,12 +21,12 @@ Steel316_MSRZC_09::Steel316_MSRZC_09()
     std::vector<double> PRparams             = { 0.290, 0 };
     std::vector<std::string> args            = { "temperature" };
     std::vector<std::array<double, 2>> range = { { 299.9, 1e6 } };
-    addPolynomialProperty( "ThermalConductivity", source, {}, TCparams, args, range );
-    addPolynomialProperty( "Density", source, {}, DEparams, args, range );
-    addPolynomialProperty( "HeatCapacityPressure", source, {}, HCparams, args, range );
-    addPolynomialProperty( "ThermalExpansion", source, {}, TEparams, args, range );
-    addPolynomialProperty( "YoungsModulus", source, {}, YMparams, args, range );
-    addPolynomialProperty( "PoissonRatio", source, {}, PRparams, args, range );
+    addPolynomialProperty( "ThermalConductivity", {}, TCparams, args, range, {}, source );
+    addPolynomialProperty( "Density", {}, DEparams, args, range, {}, source );
+    addPolynomialProperty( "HeatCapacityPressure", {}, HCparams, args, range, {}, source );
+    addPolynomialProperty( "ThermalExpansion", {}, TEparams, args, range, {}, source );
+    addPolynomialProperty( "YoungsModulus", {}, YMparams, args, range, {}, source );
+    addPolynomialProperty( "PoissonRatio", {}, PRparams, args, range, {}, source );
 }
 
 

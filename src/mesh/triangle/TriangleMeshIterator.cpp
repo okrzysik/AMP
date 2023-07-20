@@ -122,14 +122,6 @@ MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator++()
     return *this;
 }
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-MeshIterator TriangleMeshIterator<NG, NP, TYPE>::operator++( int )
-{
-    // Postfix increment (increment and return temporary object)
-    TriangleMeshIterator tmp( *this ); // Create a temporary variable
-    this->operator++();                // apply operator
-    return std::move( tmp );           // return temporary result
-}
-template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator--()
 {
     // Prefix decrement (increment and return this)
@@ -138,26 +130,11 @@ MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator--()
     d_cur_element.resetElemId( d_list->operator[]( d_pos ) );
     return *this;
 }
-template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-MeshIterator TriangleMeshIterator<NG, NP, TYPE>::operator--( int )
-{
-    // Postfix decrement (increment and return temporary object)
-    TriangleMeshIterator tmp( *this ); // Create a temporary variable
-    --( *this );                       // apply operator
-    return std::move( tmp );           // return temporary result
-}
 
 
 /********************************************************
- * Random access incrementors                            *
+ * Random access iterators                               *
  ********************************************************/
-template<uint8_t NG, uint8_t NP, uint8_t TYPE>
-MeshIterator TriangleMeshIterator<NG, NP, TYPE>::operator+( int n ) const
-{
-    TriangleMeshIterator tmp( *this ); // Create a temporary iterator
-    tmp.operator+=( n );               // Increment temporary iterator
-    return std::move( tmp );
-}
 template<uint8_t NG, uint8_t NP, uint8_t TYPE>
 MeshIterator &TriangleMeshIterator<NG, NP, TYPE>::operator+=( int n )
 {

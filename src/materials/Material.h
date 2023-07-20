@@ -103,12 +103,12 @@ public:
 
     //! Add a polynomial based property
     void addPolynomialProperty( std::string name,
-                                std::string source,
                                 const AMP::Units &unit                    = {},
                                 std::vector<double> params                = {},
                                 std::vector<std::string> args             = {},
                                 std::vector<std::array<double, 2>> ranges = {},
-                                std::vector<AMP::Units> argUnits          = {} );
+                                std::vector<AMP::Units> argUnits          = {},
+                                std::string source                        = "" );
 
     //! Add an equation based propoerty
     void addEquationProperty( std::string name,
