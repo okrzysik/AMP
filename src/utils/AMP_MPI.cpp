@@ -376,12 +376,12 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 /************************************************************************
  *  Constructor from existing MPI communicator                           *
  ************************************************************************/
-int d_global_currentTag_world1[2]     = { 1, 1 };
-int d_global_currentTag_world2[2]     = { 1, 1 };
-int d_global_currentTag_self[2]       = { 1, 1 };
-std::atomic_int d_global_count_world1 = { 1 };
-std::atomic_int d_global_count_world2 = { 1 };
-std::atomic_int d_global_count_self   = { 1 };
+static int d_global_currentTag_world1[2]     = { 1, 1 };
+static int d_global_currentTag_world2[2]     = { 1, 1 };
+static int d_global_currentTag_self[2]       = { 1, 1 };
+static std::atomic_int d_global_count_world1 = { 1 };
+static std::atomic_int d_global_count_world2 = { 1 };
+static std::atomic_int d_global_count_self   = { 1 };
 MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
 {
     // Check if we are using our version of comm_world
@@ -438,14 +438,13 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     } else {
         d_count  = new std::atomic_int;
         *d_count = 1;
+        if ( d_size > 1 ) {
+            d_ranks    = new int[d_size];
+            d_ranks[0] = -1;
+        }
     }
     if ( d_manage )
         ++N_MPI_Comm_created;
-    // Create d_ranks
-    if ( d_size > 1 ) {
-        d_ranks    = new int[d_size];
-        d_ranks[0] = -1;
-    }
     if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_currentTag = d_global_currentTag_world1;
         ++( this->d_currentTag[1] );
@@ -477,21 +476,22 @@ std::vector<int> MPI_CLASS::globalRanks() const
         if ( MPI_Active() )
             myGlobalRank = AMP::AMPManager::getCommWorld().getRank();
     }
-    // Check if we are dealing with a serial or null communicator
-    if ( d_size == 1 )
-        return std::vector<int>( 1, myGlobalRank );
-    if ( d_ranks == nullptr || d_comm == MPI_COMM_NULL )
+    // Check for special cases
+    if ( d_size == 0 || d_comm == MPI_COMM_NULL ) {
         return std::vector<int>();
+    } else if ( d_size == 1 ) {
+        return std::vector<int>( 1, myGlobalRank );
+    } else if ( d_comm == MPI_COMM_WORLD || AMP::AMPManager::getCommWorld().d_comm ) {
+        std::vector<int> ranks( d_size );
+        for ( int i = 0; i < d_size; i++ )
+            ranks[i] = i;
+        return ranks;
+    }
     // Fill d_ranks if necessary
+    AMP_ASSERT( d_ranks );
     if ( d_ranks[0] == -1 ) {
-        if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
-            for ( int i = 0; i < d_size; i++ )
-                d_ranks[i] = i;
-        } else {
-
-            MPI_CLASS_ASSERT( myGlobalRank != -1 );
-            this->allGather( myGlobalRank, d_ranks );
-        }
+        MPI_CLASS_ASSERT( myGlobalRank != -1 );
+        this->allGather( myGlobalRank, d_ranks );
     }
     // Return d_ranks
     return std::vector<int>( d_ranks, d_ranks + d_size );
