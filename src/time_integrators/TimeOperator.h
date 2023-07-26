@@ -174,6 +174,25 @@ public:
         d_pFunctionScaling = f;
     }
 
+    void makeConsistent( std::shared_ptr<AMP::LinearAlgebra::Vector> vec ) override
+    {
+        AMP_ASSERT( d_pRhsOperator );
+        d_pRhsOperator->makeConsistent( vec );
+    }
+
+    void reInitializeVector( std::shared_ptr<AMP::LinearAlgebra::Vector> v ) override
+    {
+        AMP_ASSERT( d_pRhsOperator );
+        d_pRhsOperator->reInitializeVector( v );
+    }
+
+    //! given a vector return whether it is valid or not
+    bool isValidVector( std::shared_ptr<AMP::LinearAlgebra::Vector> u ) override
+    {
+        AMP_ASSERT( d_pRhsOperator );
+        return d_pRhsOperator->isValidVector( u );
+    }
+
 protected:
     TimeOperator();
 
