@@ -283,7 +283,7 @@ Point libmeshMeshElement::centroid() const
     if ( d_globalID.type() == GeomType::Vertex )
         return coord();
     auto *elem            = (libMesh::Elem *) ptr_element;
-    libMesh::Point center = elem->centroid();
+    libMesh::Point center = elem->vertex_average();
     AMP::Mesh::Point x( (size_t) d_dim );
     for ( int i = 0; i < d_dim; i++ )
         x[i] = center( i );

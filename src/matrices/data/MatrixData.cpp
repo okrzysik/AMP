@@ -6,14 +6,15 @@ namespace AMP::LinearAlgebra {
 
 
 /********************************************************
- * Constructors                                          *
+ * Constructors/Destructor                               *
  ********************************************************/
+MatrixData::MatrixData() { AMPManager::incrementResource( "MatrixData" ); }
 MatrixData::MatrixData( std::shared_ptr<MatrixParameters> params ) : d_pParameters( params )
 {
     AMPManager::incrementResource( "MatrixData" );
 }
-
 MatrixData::~MatrixData() { AMPManager::decrementResource( "MatrixData" ); }
+
 
 /********************************************************
  * Get the number of rows/columns in the matrix          *
@@ -39,6 +40,7 @@ size_t MatrixData::numGlobalColumns() const
     return DOF->numGlobalDOF();
 }
 
+
 /********************************************************
  * Get iterators                                         *
  ********************************************************/
@@ -52,5 +54,6 @@ size_t MatrixData::endRow() const
     auto DOF = getRightDOFManager();
     return DOF->endDOF();
 }
+
 
 } // namespace AMP::LinearAlgebra

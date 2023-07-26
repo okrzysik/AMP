@@ -89,37 +89,35 @@ public:
                          const AMPManagerProperties &properties = AMPManagerProperties() );
 
     /*!
+     * Initialize the AMP package.  Depending on the architecture and
+     * compile flags, this routine sets up MPI, initializes IEEE exception
+     * handlers, and other architecture-specific details.
+     */
+    static void startup( const std::vector<char *> &args,
+                         const AMPManagerProperties &properties = AMPManagerProperties() );
+
+
+    /*!
      * Shutdown the AMP package.  Depending on the compile flags set at
      * compile-time, this routine shuts down MPI and calls registered shutdown
      * handlers.
      */
     static void shutdown();
 
-    /*!
-     * Restart as much of AMP as possible restoring it to a like new state
-     */
+    //! Restart as much of AMP as possible restoring it to a like new state
     static void restart();
 
-    /*!
-     * Function to check if AMP has been initialized
-     */
-    static bool isInitialized() { return initialized != 0; }
+    //! Function to check if AMP has been initialized
+    static bool isInitialized();
 
     /*!
-     * Function to return the number command line arguments that were used to initialize AMP.
+     * Return the command line arguments that were used to initialize AMP.
+     * Note: This returns the pointer address for the command line arguments.
+     * The user is responsible to ensure that the arguments are not modified.
      */
-    static int get_argc();
+    static std::vector<char *> get_argv();
 
-    /*!
-     * Function to return the command line arguments that were used to initialize AMP.
-     * Note: This returns the pointer address for the command line arguments.  The user
-     * is responsible to ensure that the arguments are not modified.
-     */
-    static char **get_argv();
-
-    /*!
-     * Function to return the AMPManagerProperties that was used to initialize AMP
-     */
+    //! Function to return the AMPManagerProperties that was used to initialize AMP
     static AMPManagerProperties getAMPManagerProperties();
 
     //! Static function to terminate AMP
@@ -131,8 +129,10 @@ public:
     //! Clearthe default signal/terminate handlers (called on shutdown)
     static void clearHandlers();
 
-    //! Functions to initialize/destroy the mpi error handler
+    //! Initialize the mpi error handler
     static void setMPIErrorHandler();
+
+    //! Destroy the mpi error handler
     static void clearMPIErrorHandler();
 
     /*!
@@ -166,13 +166,9 @@ private:
     AMPManager() = delete;
 
     // Static variables
-    static int initialized;
-    static bool use_MPI_Abort;
-    static int abort_stackType;
-    static bool print_times;
-    static int argc;
-    static char **argv;
-    static AMPManagerProperties properties;
+    static int d_initialized;
+    static std::vector<char *> d_args;
+    static AMPManagerProperties d_properties;
 
     // Function to control exit behavior
     static void exitFun();

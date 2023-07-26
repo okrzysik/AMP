@@ -66,13 +66,9 @@ namespace AMP {
 
 
 // Initialize static member variables
-int AMPManager::initialized                 = 0;
-int AMPManager::abort_stackType             = 3;
-bool AMPManager::use_MPI_Abort              = true;
-bool AMPManager::print_times                = false;
-int AMPManager::argc                        = 0;
-char **AMPManager::argv                     = nullptr;
-AMPManagerProperties AMPManager::properties = AMPManagerProperties();
+int AMPManager::d_initialized                 = 0;
+std::vector<char *> AMPManager::d_args        = std::vector<char *>();
+AMPManagerProperties AMPManager::d_properties = AMPManagerProperties();
 
 
 /****************************************************************************
@@ -119,58 +115,63 @@ static size_t getStartupMemoryAllocations()
 }
 
 static size_t N_memory_startup = getStartupMemoryAllocations();
-void AMPManager::startup( int argc_in, char *argv_in[], const AMPManagerProperties &properties_in )
+void AMPManager::startup( int argc, char *argv[], const AMPManagerProperties &properties )
+{
+    std::vector<char *> args( argc );
+    for ( int i = 0; i < argc; i++ )
+        args[i] = argv[i];
+    startup( args, properties );
+}
+void AMPManager::startup( const std::vector<char *> &args, const AMPManagerProperties &properties )
 {
     // Check if AMP was previously initialized
-    if ( initialized == 1 )
+    if ( d_initialized == 1 )
         AMP_ERROR( "AMP was previously initialized.  It cannot be reinitialized" );
-    if ( initialized == -1 )
+    if ( d_initialized == -1 )
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     // Begin startup procedure
-    double start    = Utilities::time();
-    argc            = argc_in;
-    argv            = argv_in;
-    properties      = properties_in;
-    print_times     = properties.print_times;
-    abort_stackType = properties.stack_trace_type;
+    double start = Utilities::time();
+    // Copy input arguments
+    d_args       = args;
+    d_properties = properties;
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
     // Set the abort method
-    AMPManager::use_MPI_Abort = properties.use_MPI_Abort;
-    StackTrace::Utilities::setAbortBehavior( !AMPManager::use_MPI_Abort, 3 );
+    StackTrace::Utilities::setAbortBehavior( !d_properties.use_MPI_Abort, 3 );
     // Initialize MPI
     double MPI_start = Utilities::time();
-    AMP_MPI::start_MPI( argc, argv, properties.profile_MPI_level );
+    AMP_MPI::start_MPI( args, d_properties.profile_MPI_level );
     double MPI_time = Utilities::time() - MPI_start;
     // Initialize AMP's MPI
     comm_world = AMP_MPI( AMP_COMM_WORLD );
-    if ( properties.COMM_WORLD != AMP_COMM_WORLD )
-        comm_world = AMP_MPI( properties.COMM_WORLD );
+    if ( d_properties.COMM_WORLD != AMP_COMM_WORLD )
+        comm_world = AMP_MPI( d_properties.COMM_WORLD );
     // Initialize cuda
     start_CUDA();
     // Initialize Kokkos
-    AMP::Utilities::initializeKokkos( argc, argv );
+    AMP::Utilities::initializeKokkos( args );
     // Initialize PETSc
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
     double SAMRAI_time = start_SAMRAI();
-    // Initialze call stack
+    // Initialize call stack
     if ( comm_world.getSize() == 1 )
-        abort_stackType = std::min( abort_stackType, 2 );
-    if ( abort_stackType == 3 )
+        d_properties.stack_trace_type = std::min( d_properties.stack_trace_type, 2 );
+    if ( d_properties.stack_trace_type == 3 )
         StackTrace::globalCallStackInitialize( comm_world.getCommunicator() );
-    StackTrace::setDefaultStackType( static_cast<StackTrace::printStackType>( abort_stackType ) );
+    StackTrace::setDefaultStackType(
+        static_cast<StackTrace::printStackType>( d_properties.stack_trace_type ) );
     // Set the signal/terminate handlers
     StackTrace::Utilities::setErrorHandlers();
     setHandlers();
     // Initialization finished
-    initialized = 1;
-    double time = Utilities::time() - start;
-    if ( properties.print_startup ) {
+    d_initialized = 1;
+    double time   = Utilities::time() - start;
+    if ( d_properties.print_startup ) {
         AMP::pout << "Version info:\n" << info() << std::endl;
         AMP::pout.flush();
     }
-    if ( print_times && comm_world.getRank() == 0 ) {
+    if ( d_properties.print_times && comm_world.getRank() == 0 ) {
         printf( "startup time = %0.3f s\n", time );
         if ( MPI_time != 0 )
             printf( "  MPI startup time = %0.3f s\n", MPI_time );
@@ -190,15 +191,15 @@ void AMPManager::shutdown()
 {
     double start_time = Utilities::time();
     int rank          = comm_world.getRank();
-    if ( initialized == 0 )
+    if ( d_initialized == 0 )
         AMP_ERROR( "AMP is not initialized, did you forget to call startup" );
-    if ( initialized == -1 )
+    if ( d_initialized == -1 )
         AMP_ERROR( "Calling shutdown more than once is invalid" );
-    initialized = -1;
+    d_initialized = -1;
     // Clear error handlers
     clearHandlers();
     // Disable MPI_Abort
-    AMPManager::use_MPI_Abort = false;
+    d_properties.use_MPI_Abort = false;
     StackTrace::Utilities::setAbortBehavior( true, 2 );
     // Shutdown the parallel IO
     stopLogging();
@@ -225,7 +226,7 @@ void AMPManager::shutdown()
     }
     // List shutdown times
     double shutdown_time = Utilities::time() - start_time;
-    if ( print_times && rank == 0 ) {
+    if ( d_properties.print_times && rank == 0 ) {
         printf( "shutdown time = %0.3f s\n", shutdown_time );
         if ( SAMRAI_time != 0 )
             printf( "  SAMRAI shutdown time = %0.3f s\n", SAMRAI_time );
@@ -244,6 +245,8 @@ void AMPManager::shutdown()
         }
     }
     resourceMap.clear();
+    // Clear input arguments
+    d_args = std::vector<char *>();
     // Clear the factories
     AMP::FactoryStrategy<AMP::KeyData>::clear();
     AMP::FactoryStrategy<AMP::Materials::Material>::clear();
@@ -269,7 +272,7 @@ void AMPManager::shutdown()
  ****************************************************************************/
 void AMPManager::restart()
 {
-    if ( initialized != 1 )
+    if ( d_initialized != 1 )
         AMP_ERROR( "AMP is not initialized or has been shutdown" );
 #ifdef AMP_USE_SAMRAI
     SAMRAI::tbox::SAMRAIManager::shutdown();
@@ -409,20 +412,16 @@ AMPManagerProperties::AMPManagerProperties() : COMM_WORLD( AMP_COMM_WORLD ) {}
 /****************************************************************************
  *  Some simple functions                                                    *
  ****************************************************************************/
-int AMPManager::get_argc()
+bool AMPManager::isInitialized() { return d_initialized != 0; }
+std::vector<char *> AMPManager::get_argv()
 {
-    AMP_INSIST( initialized, "AMP has not been initialized" );
-    return argc;
-}
-char **AMPManager::get_argv()
-{
-    AMP_INSIST( initialized, "AMP has not been initialized" );
-    return argv;
+    AMP_INSIST( d_initialized, "AMP has not been initialized" );
+    return d_args;
 }
 AMPManagerProperties AMPManager::getAMPManagerProperties()
 {
-    AMP_INSIST( initialized, "AMP has not been initialized" );
-    return properties;
+    AMP_INSIST( d_initialized, "AMP has not been initialized" );
+    return d_properties;
 }
 
 

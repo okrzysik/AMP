@@ -60,11 +60,11 @@ void AMPManager::terminate_AMP( std::string message )
         msg << message << std::endl;
         msg << "Bytes used = " << AMP::Utilities::getMemoryUsage() << std::endl;
         StackTrace::multi_stack_info stack;
-        if ( abort_stackType == 1 ) {
+        if ( d_properties.stack_trace_type == 1 ) {
             stack = StackTrace::getCallStack();
-        } else if ( abort_stackType == 2 ) {
+        } else if ( d_properties.stack_trace_type == 2 ) {
             stack = StackTrace::getAllCallStacks();
-        } else if ( abort_stackType == 3 ) {
+        } else if ( d_properties.stack_trace_type == 3 ) {
             stack = StackTrace::getGlobalCallStacks();
         }
         StackTrace::cleanupStackTrace( stack );
@@ -81,7 +81,7 @@ void AMPManager::terminate_AMP( std::string message )
     }
     if ( force_exit > 1 ) {
         exit( -1 );
-    } else if ( AMP::AMPManager::use_MPI_Abort == true ) {
+    } else if ( d_properties.use_MPI_Abort == true ) {
         // Use MPI_abort (will terminate all processes)
         force_exit = 2;
         comm.abort();
@@ -95,7 +95,7 @@ void AMPManager::terminate_AMP( std::string message )
 }
 void AMPManager::exitFun()
 {
-    if ( initialized != 1 || printed_stack )
+    if ( d_initialized != 1 || printed_stack )
         return;
     auto stack = StackTrace::getCallStack();
     for ( auto &elem : stack ) {
