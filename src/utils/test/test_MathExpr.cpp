@@ -58,9 +58,8 @@ void test_Performance( AMP::UnitTest &ut )
 }
 
 
-int main( int argc, char *argv[] )
+int main( int, char *[] )
 {
-    AMP::AMP_MPI::start_MPI( argc, argv );
     AMP::UnitTest ut;
 
     // Test some basic functions
@@ -90,6 +89,5 @@ int main( int argc, char *argv[] )
     // Finished
     ut.report();
     int N_errors = ut.NumFailGlobal();
-    AMP::AMP_MPI::stop_MPI();
     return N_errors;
 }

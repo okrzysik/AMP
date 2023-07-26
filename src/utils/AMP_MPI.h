@@ -27,6 +27,14 @@
 #define AMP_COMM_SELF ( (AMP::AMP_MPI::Comm) 0xF4000002 )
 
 
+// Define SAMRAI MPI object
+#ifdef AMP_USE_SAMRAI
+namespace SAMRAI::tbox {
+class SAMRAI_MPI;
+}
+#endif
+
+
 namespace AMP {
 
 
@@ -1347,6 +1355,16 @@ public: // Member functions
 
     //! Stop MPI
     static void stop_MPI();
+
+
+#ifdef AMP_USE_SAMRAI
+public: // SAMRAI interfaces
+    //! Construct from SAMRAI object
+    AMP_MPI( const SAMRAI::tbox::SAMRAI_MPI &comm );
+
+    //! Create SAMRAI object
+    operator SAMRAI::tbox::SAMRAI_MPI() const;
+#endif
 
 
 private: // data members

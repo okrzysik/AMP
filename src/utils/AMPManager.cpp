@@ -149,7 +149,7 @@ void AMPManager::startup( const std::vector<char *> &args, const AMPManagerPrope
     // Initialize cuda
     start_CUDA();
     // Initialize Kokkos
-    AMP::Utilities::initializeKokkos( args );
+    AMP::Utilities::initializeKokkos( d_args );
     // Initialize PETSc
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
