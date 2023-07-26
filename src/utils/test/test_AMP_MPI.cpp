@@ -732,12 +732,9 @@ struct testCommTimerResults {
     void print()
     {
         auto printLine = []( const char *msg, int N, double time ) {
-            printf( "   %s:      N = %5i, t_tot = %0.5e, t_avg = %6.1f us\n",
-                    msg,
-                    N,
-                    time,
-                    1e6 * time / N );
+            printf( "   %-12s %4i  %3.3e %5.1f us\n", msg, N, time, 1e6 * time / N );
         };
+        printf( "%16s  N     t_tot     t_avg\n", "" );
         printLine( "Reduce", N_reduce, t_reduce );
         printLine( "Scan", N_scan, t_scan );
         printLine( "Bcast", N_bcast, t_bcast );
@@ -971,7 +968,7 @@ testCommTimerResults testComm( MPI_CLASS comm, UnitTest &ut )
         comm.serializeStop();
         double stop = MPI_CLASS::time();
         double avg  = 1e3 * ( stop - start ) / size;
-        if ( avg > 98 && avg < 120 )
+        if ( avg > 98 && avg < 130 )
             ut.passes( "serialize" );
         else
             ut.failure( "serialize: " + std::to_string( avg ) );

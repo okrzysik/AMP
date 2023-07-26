@@ -24,38 +24,6 @@ AMP_MPI initializeLibMesh::d_comm        = AMP_MPI( AMP_COMM_NULL );
 
 
 /************************************************************
- * Class to wrap libmesh MPI types to properly free datatype *
- ************************************************************/
-/*template<class TYPE>
-class libMeshWrapperType: public libMesh::Parallel::StandardType<TYPE>
-{
-public:
-    libMeshWrapperType( ): libMesh::Parallel::StandardType<TYPE>() {}
-    ~libMeshWrapperType() { free(); }
-}
-std::shared_ptr<libMeshWrapperType<Hilbert::HilbertIndices> > type_hilbert;*/
-
-
-/************************************************************
- * Function to alter the command line arguments for libmesh  *
- ************************************************************/
-static int add_libmesh_cmdline( const int argc, const char **argv, char ***argv_new )
-{
-    const int N_add = 0; // Number of additional arguments we want to add
-    // Copy the existing command-line arguments (shifting by the number of additional arguments)
-    *argv_new = new char *[argc + N_add];
-    for ( int i = 0; i < argc; i++ ) {
-        ( *argv_new )[i] = new char[strlen( argv[i] ) + 1];
-        strcpy( ( *argv_new )[i], argv[i] );
-    }
-    /*// Add command to keep cout from all processors (not just rank 0)
-    (*argv_new)[argc] = new char [12];
-    strcpy ( (*argv_new)[argc] , "--keep-cout" );*/
-    return argc + N_add;
-}
-
-
-/************************************************************
  * Constructor initilize libmesh on the given comm           *
  ************************************************************/
 initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
@@ -80,25 +48,20 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
         d_comm   = comm.dup(); // Create a seperate duplicate comm for libmesh
         d_comm.barrier();
         // Reinitialize LibMesh with the new communicator
-        int argc_libmesh    = 0;
-        char **argv_libmesh = nullptr;
-        const int argc      = AMPManager::get_argc();
-        const auto **argv   = (const char **) AMPManager::get_argv();
-        argc_libmesh        = add_libmesh_cmdline( argc, argv, &argv_libmesh );
+        auto args              = AMPManager::get_argv();
+        char disableRefCount[] = "--disable-refcount-printing";
+        args.push_back( disableRefCount );
 #ifdef AMP_USE_MPI
     #ifdef AMP_USE_PETSC
         MPI_Comm petsc_comm = PETSC_COMM_WORLD;
     #endif
-        lminit = new libMesh::LibMeshInit( argc_libmesh, argv_libmesh, d_comm.getCommunicator() );
+        lminit = new libMesh::LibMeshInit( args.size(), args.data(), d_comm.getCommunicator() );
     #ifdef AMP_USE_PETSC
         PETSC_COMM_WORLD = petsc_comm;
     #endif
 #else
-        lminit = new libMesh::LibMeshInit( argc_libmesh, argv_libmesh );
+        lminit = new libMesh::LibMeshInit( args.size(), args.data() );
 #endif
-        for ( int i = 0; i < argc_libmesh; i++ )
-            delete[] argv_libmesh[i];
-        delete[] argv_libmesh;
         // Initialize libmesh MPI types so we can safely free them
         // type_hilbert.reset( new libMeshWrapperType<Hilbert::HilbertIndices>() );
         // Reset the error handlers
