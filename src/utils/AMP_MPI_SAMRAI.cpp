@@ -16,7 +16,7 @@ AMP::AMP_MPI::AMP_MPI( const SAMRAI::tbox::SAMRAI_MPI &comm )
 }
 AMP::AMP_MPI::operator SAMRAI::tbox::SAMRAI_MPI() const
 {
-    return AMP::tbox::SAMRAI_MPI( d_comm.getCommunicator() );
+    return SAMRAI::tbox::SAMRAI_MPI( d_comm );
 }
 
     #else
