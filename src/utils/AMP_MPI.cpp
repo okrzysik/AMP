@@ -376,12 +376,12 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
 /************************************************************************
  *  Constructor from existing MPI communicator                           *
  ************************************************************************/
-int d_global_currentTag_world1[2]     = { 1, 1 };
-int d_global_currentTag_world2[2]     = { 1, 1 };
-int d_global_currentTag_self[2]       = { 1, 1 };
-std::atomic_int d_global_count_world1 = { 1 };
-std::atomic_int d_global_count_world2 = { 1 };
-std::atomic_int d_global_count_self   = { 1 };
+static int d_global_currentTag_world1[2]     = { 1, 1 };
+static int d_global_currentTag_world2[2]     = { 1, 1 };
+static int d_global_currentTag_self[2]       = { 1, 1 };
+static std::atomic_int d_global_count_world1 = { 1 };
+static std::atomic_int d_global_count_world2 = { 1 };
+static std::atomic_int d_global_count_self   = { 1 };
 MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
 {
     // Check if we are using our version of comm_world
@@ -438,14 +438,13 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
     } else {
         d_count  = new std::atomic_int;
         *d_count = 1;
+        if ( d_size > 1 ) {
+            d_ranks    = new int[d_size];
+            d_ranks[0] = -1;
+        }
     }
     if ( d_manage )
         ++N_MPI_Comm_created;
-    // Create d_ranks
-    if ( d_size > 1 ) {
-        d_ranks    = new int[d_size];
-        d_ranks[0] = -1;
-    }
     if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
         d_currentTag = d_global_currentTag_world1;
         ++( this->d_currentTag[1] );
@@ -469,6 +468,7 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
 /************************************************************************
  *  Return the ranks of the communicator in the global comm              *
  ************************************************************************/
+static std::vector<int> MPI_COMM_WORLD_ranks = std::vector<int>();
 std::vector<int> MPI_CLASS::globalRanks() const
 {
     // Get my global rank if it has not been set
@@ -477,21 +477,28 @@ std::vector<int> MPI_CLASS::globalRanks() const
         if ( MPI_Active() )
             myGlobalRank = AMP::AMPManager::getCommWorld().getRank();
     }
-    // Check if we are dealing with a serial or null communicator
-    if ( d_size == 1 )
-        return std::vector<int>( 1, myGlobalRank );
-    if ( d_ranks == nullptr || d_comm == MPI_COMM_NULL )
+    // Check for special cases
+    if ( d_size == 0 || d_comm == MPI_COMM_NULL ) {
         return std::vector<int>();
-    // Fill d_ranks if necessary
-    if ( d_ranks[0] == -1 ) {
-        if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
-            for ( int i = 0; i < d_size; i++ )
-                d_ranks[i] = i;
-        } else {
-
-            MPI_CLASS_ASSERT( myGlobalRank != -1 );
-            this->allGather( myGlobalRank, d_ranks );
+    } else if ( d_size == 1 ) {
+        return std::vector<int>( 1, myGlobalRank );
+    } else if ( d_comm == MPI_COMM_WORLD ) {
+        if ( MPI_COMM_WORLD_ranks.empty() ) {
+            MPI_COMM_WORLD_ranks.resize( d_size, -1 );
+            this->allGather( myGlobalRank, MPI_COMM_WORLD_ranks.data() );
         }
+        return MPI_COMM_WORLD_ranks;
+    } else if ( d_comm == AMP::AMPManager::getCommWorld().d_comm ) {
+        std::vector<int> ranks( d_size );
+        for ( int i = 0; i < d_size; i++ )
+            ranks[i] = i;
+        return ranks;
+    }
+    // Fill d_ranks if necessary
+    AMP_ASSERT( d_ranks );
+    if ( d_ranks[0] == -1 ) {
+        MPI_CLASS_ASSERT( myGlobalRank != -1 );
+        this->allGather( myGlobalRank, d_ranks );
     }
     // Return d_ranks
     return std::vector<int>( d_ranks, d_ranks + d_size );
@@ -1518,11 +1525,9 @@ void MPI_CLASS::serializeStop()
 #ifdef USE_MPI
 static bool called_MPI_Init = false;
 #endif
-void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
+void MPI_CLASS::start_MPI( int &argc, char *argv[], int profile_level )
 {
     changeProfileLevel( profile_level );
-    NULL_USE( argc );
-    NULL_USE( argv );
 #ifdef USE_MPI
     if ( MPI_Active() ) {
         called_MPI_Init = false;
@@ -1537,11 +1542,14 @@ void MPI_CLASS::start_MPI( int argc, char *argv[], int profile_level )
         AMPManager::setCommWorld( MPI_COMM_WORLD );
     }
 #else
+    NULL_USE( argc );
+    NULL_USE( argv );
     AMPManager::setCommWorld( MPI_COMM_SELF );
 #endif
 }
 void MPI_CLASS::stop_MPI()
 {
+    MPI_COMM_WORLD_ranks = std::vector<int>();
     AMPManager::setCommWorld( AMP_COMM_NULL );
 #ifdef USE_MPI
     int finalized;

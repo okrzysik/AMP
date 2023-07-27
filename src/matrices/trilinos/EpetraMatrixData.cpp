@@ -102,7 +102,7 @@ void EpetraMatrixData::VerifyEpetraReturn( int err, const char *func ) const
 }
 
 EpetraMatrixData::EpetraMatrixData( Epetra_CrsMatrix *inMatrix, bool dele )
-    : d_epetraMatrix( inMatrix ), d_DeleteMatrix( dele )
+    : MatrixData(), d_epetraMatrix( inMatrix ), d_DeleteMatrix( dele )
 {
 }
 

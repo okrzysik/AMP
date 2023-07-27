@@ -35,14 +35,14 @@ void mytest( AMP::UnitTest *ut )
 
 int main( int argc, char *argv[] )
 {
-    AMP::AMP_MPI::start_MPI( argc, argv );
+    AMP::AMPManager::startup( argc, argv );
     AMP::UnitTest ut;
 
     mytest( &ut );
     ut.report();
 
     int num_failed = ut.NumFailGlobal();
-    AMP::AMP_MPI::stop_MPI();
+    AMP::AMPManager::shutdown();
     if ( num_failed != 0 ) {
         std::cout << "Exiting with errors\n";
         return 1;

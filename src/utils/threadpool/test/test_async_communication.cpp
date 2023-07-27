@@ -115,7 +115,7 @@ void run_test( size_t message_size, int N_messages, double sleep_duration, Threa
 
 int main( int argc, char *argv[] )
 {
-    AMP::AMP_MPI::start_MPI( argc, argv );
+    AMP::AMPManager::startup( argc, argv );
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     int rank = globalComm.getRank();
 
@@ -149,6 +149,6 @@ int main( int argc, char *argv[] )
 
     // Finished testing
     globalComm.reset();
-    AMP::AMP_MPI::stop_MPI();
+    AMP::AMPManager::shutdown();
     return 0;
 }
