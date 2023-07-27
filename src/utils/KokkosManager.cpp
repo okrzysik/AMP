@@ -32,7 +32,7 @@ void initializeKokkos( std::vector<char *> args )
 }
 void finalizeKokkos() { Kokkos::finalize(); }
 #else
-void initializeKokkos( const std::vector<std::string> & ) {}
+void initializeKokkos( std::vector<char *> ) {}
 void finalizeKokkos() {}
 #endif
 
