@@ -50,6 +50,7 @@
 #include <new>
 #include <sstream>
 #include <stdexcept>
+#include <string.h>
 #include <vector>
 
 
@@ -67,7 +68,8 @@ namespace AMP {
 
 // Initialize static member variables
 int AMPManager::d_initialized                 = 0;
-std::vector<char *> AMPManager::d_args        = std::vector<char *>();
+int AMPManager::d_argc                        = 0;
+const char *const *AMPManager::d_argv         = nullptr;
 AMPManagerProperties AMPManager::d_properties = AMPManagerProperties();
 
 
@@ -113,16 +115,19 @@ static size_t getStartupMemoryAllocations()
 #endif
     return 0;
 }
-
-static size_t N_memory_startup = getStartupMemoryAllocations();
-void AMPManager::startup( int argc, char *argv[], const AMPManagerProperties &properties )
+static char **copy_args( int argc, char **argv )
 {
-    std::vector<char *> args( argc );
-    for ( int i = 0; i < argc; i++ )
-        args[i] = argv[i];
-    startup( args, properties );
+    auto args = new char *[argc];
+    for ( int i = 0; i < argc; i++ ) {
+        int N   = strlen( argv[i] );
+        args[i] = new char[N + 2];
+        memset( args[i], 0, N + 2 );
+        memcpy( args[i], argv[i], N );
+    }
+    return args;
 }
-void AMPManager::startup( const std::vector<char *> &args, const AMPManagerProperties &properties )
+static size_t N_memory_startup = getStartupMemoryAllocations();
+void AMPManager::startup( int &argc, char *argv[], const AMPManagerProperties &properties )
 {
     // Check if AMP was previously initialized
     if ( d_initialized == 1 )
@@ -131,16 +136,17 @@ void AMPManager::startup( const std::vector<char *> &args, const AMPManagerPrope
         AMP_ERROR( "AMP was previously initialized and shutdown.  It cannot be reinitialized" );
     // Begin startup procedure
     double start = Utilities::time();
-    // Copy input arguments
-    d_args       = args;
+    // Copy full list of input arguments
     d_properties = properties;
+    d_argc       = argc;
+    d_argv       = copy_args( argc, argv );
     // Initialize the timers (default is disabled)
     PROFILE_DISABLE();
     // Set the abort method
     StackTrace::Utilities::setAbortBehavior( !d_properties.use_MPI_Abort, 3 );
     // Initialize MPI
     double MPI_start = Utilities::time();
-    AMP_MPI::start_MPI( args, d_properties.profile_MPI_level );
+    AMP_MPI::start_MPI( argc, argv, d_properties.profile_MPI_level );
     double MPI_time = Utilities::time() - MPI_start;
     // Initialize AMP's MPI
     comm_world = AMP_MPI( AMP_COMM_WORLD );
@@ -149,7 +155,7 @@ void AMPManager::startup( const std::vector<char *> &args, const AMPManagerPrope
     // Initialize cuda
     start_CUDA();
     // Initialize Kokkos
-    AMP::Utilities::initializeKokkos( d_args );
+    AMP::Utilities::initializeKokkos( argc, argv );
     // Initialize PETSc
     double petsc_time = start_PETSc();
     // Initialize SAMRAI
@@ -246,7 +252,11 @@ void AMPManager::shutdown()
     }
     resourceMap.clear();
     // Clear input arguments
-    d_args = std::vector<char *>();
+    for ( int i = 0; i < d_argc; i++ )
+        delete[] d_argv[i];
+    delete[] d_argv;
+    d_argc = 0;
+    d_argv = nullptr;
     // Clear the factories
     AMP::FactoryStrategy<AMP::KeyData>::clear();
     AMP::FactoryStrategy<AMP::Materials::Material>::clear();
@@ -342,7 +352,6 @@ double AMPManager::stop_SAMRAI() { return 0; }
 static bool called_PetscInitialize = false;
 double AMPManager::start_PETSc()
 {
-    double time  = 0;
     double start = Utilities::time();
     if ( PetscInitializeCalled ) {
         called_PetscInitialize = false;
@@ -357,8 +366,7 @@ double AMPManager::start_PETSc()
     // Fix minor bug in petsc where first call to dup returns MPI_COMM_WORLD instead of a new comm
     AMP::AMP_MPI( MPI_COMM_WORLD ).dup();
     #endif
-    time = Utilities::time() - start;
-    return time;
+    return Utilities::time() - start;
 }
 double AMPManager::stop_PETSc()
 {
@@ -383,10 +391,11 @@ double AMPManager::stop_PETSc() { return 0; }
  ****************************************************************************/
 double AMPManager::start_CUDA()
 {
-#ifdef USE_CUDA
-    if ( !properties.initialize_CUDA )
+    if ( !d_properties.initialize_CUDA )
         return 0;
-    if ( properties.bind_process_to_accelerator ) {
+    double start = Utilities::time();
+#ifdef USE_CUDA
+    if ( d_properties.bind_process_to_accelerator ) {
         auto nodeComm = comm_world.splitByNode();
         auto nodeRank = nodeComm.getRank();
         int deviceCount;
@@ -399,7 +408,7 @@ double AMPManager::start_CUDA()
     checkCudaErrors( cudaMallocManaged( &tmp, 10, cudaMemAttachGlobal ) );
     cudaFree( tmp );
 #endif
-    return 0;
+    return Utilities::time() - start;
 }
 
 
@@ -413,10 +422,9 @@ AMPManagerProperties::AMPManagerProperties() : COMM_WORLD( AMP_COMM_WORLD ) {}
  *  Some simple functions                                                    *
  ****************************************************************************/
 bool AMPManager::isInitialized() { return d_initialized != 0; }
-std::vector<char *> AMPManager::get_argv()
+std::tuple<int, const char *const *> AMPManager::get_args()
 {
-    AMP_INSIST( d_initialized, "AMP has not been initialized" );
-    return d_args;
+    return std::tuple<int, const char *const *>( d_argc, d_argv );
 }
 AMPManagerProperties AMPManager::getAMPManagerProperties()
 {

@@ -1351,7 +1351,7 @@ public: // Member functions
     static bool MPI_Active();
 
     //! Start MPI
-    static void start_MPI( const std::vector<char *> &args, int profile_level = 0 );
+    static void start_MPI( int &argc, char *argv[], int profile_level = 0 );
 
     //! Stop MPI
     static void stop_MPI();

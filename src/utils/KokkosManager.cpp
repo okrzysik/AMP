@@ -11,28 +11,37 @@
 namespace AMP::Utilities {
 
 #ifdef USE_KOKKOS
-void initializeKokkos( std::vector<char *> args )
+void initializeKokkos( int &argc_in, char *argv_in[] )
 {
+    // Copy the input arguments, swap the kokkos arguments to the end,
+    //    and remove them from the input argument list
+    int argc = argc_in;
+    for ( int i = argc_in - 1; i >= 0; i-- ) {
+        if ( strncmp( argv_in[i], "--kokkos-", 9 ) == 0 )
+            std::swap( argv_in[i], argv_in[--argc_in] );
+    }
+    char *argv[1024] = { nullptr };
+    for ( int i = 0; i < argc; i++ )
+        argv[i] = argv_in[i];
     // Set some basic environmental variables
     if ( getenv( "OMP_PROC_BIND" ).empty() )
         setenv( "OMP_PROC_BIND", "false" );
     // Check if we need to set the number of threads
     bool setThreads = !getenv( "OMP_NUM_THREADS" ).empty();
-    for ( size_t i = 0; i < args.size(); i++ ) {
-        setThreads = setThreads || strncmp( args[i], "--threads", 9 ) == 0;
-        setThreads = setThreads || strncmp( args[i], "--kokkos-threads", 16 ) == 0;
-        setThreads = setThreads || strncmp( args[i], "--kokkos-num-threads", 20 ) == 0;
+    for ( int i = 0; i < argc; i++ ) {
+        setThreads = setThreads || strncmp( argv[i], "--threads", 9 ) == 0;
+        setThreads = setThreads || strncmp( argv[i], "--kokkos-threads", 16 ) == 0;
+        setThreads = setThreads || strncmp( argv[i], "--kokkos-num-threads", 20 ) == 0;
     }
     char defaultThreads[] = "--kokkos-num-threads=3";
     if ( !setThreads )
-        args.push_back( defaultThreads );
+        argv[argc++] = defaultThreads;
     // Initialize kokkos
-    int argc = args.size();
-    Kokkos::initialize( argc, args.data() );
+    Kokkos::initialize( argc, argv );
 }
 void finalizeKokkos() { Kokkos::finalize(); }
 #else
-void initializeKokkos( std::vector<char *> ) {}
+void initializeKokkos( int, const char ** ) {}
 void finalizeKokkos() {}
 #endif
 

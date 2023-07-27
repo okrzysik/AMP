@@ -84,18 +84,9 @@ public:
      * compile flags, this routine sets up MPI, initializes IEEE exception
      * handlers, and other architecture-specific details.
      */
-    static void startup( int argc,
+    static void startup( int &argc,
                          char *argv[],
                          const AMPManagerProperties &properties = AMPManagerProperties() );
-
-    /*!
-     * Initialize the AMP package.  Depending on the architecture and
-     * compile flags, this routine sets up MPI, initializes IEEE exception
-     * handlers, and other architecture-specific details.
-     */
-    static void startup( const std::vector<char *> &args,
-                         const AMPManagerProperties &properties = AMPManagerProperties() );
-
 
     /*!
      * Shutdown the AMP package.  Depending on the compile flags set at
@@ -111,11 +102,9 @@ public:
     static bool isInitialized();
 
     /*!
-     * Return the command line arguments that were used to initialize AMP.
-     * Note: This returns the pointer address for the command line arguments.
-     * The user is responsible to ensure that the arguments are not modified.
+     * Return a reference to the original command line arguments that were used to initialize AMP.
      */
-    static std::vector<char *> get_argv();
+    static std::tuple<int, const char *const *> get_args();
 
     //! Function to return the AMPManagerProperties that was used to initialize AMP
     static AMPManagerProperties getAMPManagerProperties();
@@ -167,7 +156,8 @@ private:
 
     // Static variables
     static int d_initialized;
-    static std::vector<char *> d_args;
+    static int d_argc;
+    static const char *const *d_argv;
     static AMPManagerProperties d_properties;
 
     // Function to control exit behavior

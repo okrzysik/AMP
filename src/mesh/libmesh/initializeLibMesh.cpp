@@ -48,19 +48,21 @@ initializeLibMesh::initializeLibMesh( const AMP_MPI &comm )
         d_comm   = comm.dup(); // Create a seperate duplicate comm for libmesh
         d_comm.barrier();
         // Reinitialize LibMesh with the new communicator
-        auto args              = AMPManager::get_argv();
+        auto [argc, argv0] = AMPManager::get_args();
+        char *argv[1024]   = { nullptr };
+        memcpy( argv, argv0, argc * sizeof( char * ) );
         char disableRefCount[] = "--disable-refcount-printing";
-        args.push_back( disableRefCount );
+        argv[argc++]           = disableRefCount;
 #ifdef AMP_USE_MPI
     #ifdef AMP_USE_PETSC
         MPI_Comm petsc_comm = PETSC_COMM_WORLD;
     #endif
-        lminit = new libMesh::LibMeshInit( args.size(), args.data(), d_comm.getCommunicator() );
+        lminit = new libMesh::LibMeshInit( argc, argv, d_comm.getCommunicator() );
     #ifdef AMP_USE_PETSC
         PETSC_COMM_WORLD = petsc_comm;
     #endif
 #else
-        lminit = new libMesh::LibMeshInit( args.size(), args.data() );
+        lminit = new libMesh::LibMeshInit( argc, argv );
 #endif
         // Initialize libmesh MPI types so we can safely free them
         // type_hilbert.reset( new libMeshWrapperType<Hilbert::HilbertIndices>() );

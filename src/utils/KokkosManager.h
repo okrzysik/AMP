@@ -8,7 +8,7 @@
 namespace AMP::Utilities {
 
 
-void initializeKokkos( std::vector<char *> args );
+void initializeKokkos( int &argc, char *argv[] );
 void finalizeKokkos();
 
 

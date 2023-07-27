@@ -1525,7 +1525,7 @@ void MPI_CLASS::serializeStop()
 #ifdef USE_MPI
 static bool called_MPI_Init = false;
 #endif
-void MPI_CLASS::start_MPI( const std::vector<char *> &args, int profile_level )
+void MPI_CLASS::start_MPI( int &argc, char *argv[], int profile_level )
 {
     changeProfileLevel( profile_level );
 #ifdef USE_MPI
@@ -1533,9 +1533,7 @@ void MPI_CLASS::start_MPI( const std::vector<char *> &args, int profile_level )
         called_MPI_Init = false;
     } else {
         int provided;
-        int argc    = args.size();
-        char **argv = const_cast<char **>( args.data() );
-        int result  = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
+        int result = MPI_Init_thread( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
         if ( result != MPI_SUCCESS )
             MPI_CLASS_ERROR( "AMP was unable to initialize MPI" );
         if ( provided < MPI_THREAD_MULTIPLE )
@@ -1544,7 +1542,8 @@ void MPI_CLASS::start_MPI( const std::vector<char *> &args, int profile_level )
         AMPManager::setCommWorld( MPI_COMM_WORLD );
     }
 #else
-    NULL_USE( args );
+    NULL_USE( argc );
+    NULL_USE( argv );
     AMPManager::setCommWorld( MPI_COMM_SELF );
 #endif
 }
