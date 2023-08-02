@@ -163,8 +163,14 @@ void NonlinearKrylovAccelerator<T>::initialize(
 }
 
 template<typename T>
-void NonlinearKrylovAccelerator<T>::reset( std::shared_ptr<AMP::Solver::SolverStrategyParameters> )
+void NonlinearKrylovAccelerator<T>::reset(
+    std::shared_ptr<AMP::Solver::SolverStrategyParameters> params )
 {
+    // the preconditioner reset needs to be thought about more..
+    if ( d_uses_preconditioner ) {
+        AMP_ASSERT( d_preconditioner );
+        d_preconditioner->reset( {} );
+    }
     restart();
 }
 
