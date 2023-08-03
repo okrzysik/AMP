@@ -995,6 +995,10 @@ PetscErrorCode PetscSNESSolver::setupPreconditioner( PC pc )
     AMP_ASSERT( pcOperator );
     pcOperator->reset( operatorParameters );
 
+    // preconditioners like MG might need to rebuild their hierarchies
+    // once the preconditioning operator has been reset
+    preconditioner->reset( {} );
+
     PROFILE_STOP( "PetscSNESSolver::setupPreconditioner" );
 
     return ierr;
