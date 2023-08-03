@@ -991,12 +991,13 @@ PetscErrorCode PetscSNESSolver::setupPreconditioner( PC pc )
     auto preconditioner = krylovSolver->getNestedSolver();
     AMP_ASSERT( preconditioner );
 
-    // preconditioners like MG might need to rebuild their hierarchies
-    preconditioner->reset( {} );
-
     auto pcOperator = preconditioner->getOperator();
     AMP_ASSERT( pcOperator );
     pcOperator->reset( operatorParameters );
+
+    // preconditioners like MG might need to rebuild their hierarchies
+    // once the preconditioning operator has been reset
+    preconditioner->reset( {} );
 
     PROFILE_STOP( "PetscSNESSolver::setupPreconditioner" );
 
