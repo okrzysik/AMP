@@ -41,7 +41,7 @@ void initializeKokkos( int &argc_in, char *argv_in[] )
 }
 void finalizeKokkos() { Kokkos::finalize(); }
 #else
-void initializeKokkos( int, const char ** ) {}
+void initializeKokkos( int &argc_in, char *argv_in[] ) {}
 void finalizeKokkos() {}
 #endif
 

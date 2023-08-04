@@ -266,10 +266,13 @@ void AMPManager::shutdown()
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
 #ifdef AMP_USE_TIMER
-    auto memory = MemoryApp::getMemoryStats();
-    if ( rank == 0 && memory.N_new > ( memory.N_delete + N_memory_startup ) ) {
-        std::cout << std::endl << "N_memory_startup: " << N_memory_startup << std::endl;
-        MemoryApp::print( std::cout );
+    if ( d_properties.print_memory != 0 ) {
+        auto memory = MemoryApp::getMemoryStats();
+        bool leaks  = memory.N_new > ( memory.N_delete + N_memory_startup );
+        if ( ( rank == 0 && leaks ) || d_properties.print_memory == 1 ) {
+            std::cout << std::endl << "N_memory_startup: " << N_memory_startup << std::endl;
+            MemoryApp::print( std::cout );
+        }
     }
 #endif
     // Wait 50 milli-seconds for all processors to finish

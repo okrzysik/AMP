@@ -48,11 +48,11 @@ ENDIF()
 
 
 # test the load balancer
-ADD_AMP_TEST( test_LoadBalance 8 inputMultiPellet348 )
-ADD_AMP_TEST( test_LoadBalance 4 input_crystal_mesh 4.0 )
-ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 )
-ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 )
-ADD_AMP_TEST( test_LoadBalance 1000000 17x17_denovo_thermal_1x )
+ADD_AMP_TEST( test_LoadBalance 8 inputMultiPellet348 NO_RESOURCES )
+ADD_AMP_TEST( test_LoadBalance 4 input_crystal_mesh 4.0 NO_RESOURCES )
+ADD_AMP_TEST( test_LoadBalance 512 inputMultiPellet348 NO_RESOURCES )
+ADD_AMP_TEST( test_LoadBalance 64000 inputMultiPellet348 NO_RESOURCES )
+ADD_AMP_TEST( test_LoadBalance 1000000 17x17_denovo_thermal_1x NO_RESOURCES )
 IF ( USE_LIBMESH AND AMP_DATA )
     ADD_AMP_TEST( test_LoadBalance 4 input_Mesh )
 ENDIF()
