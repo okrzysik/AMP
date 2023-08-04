@@ -386,6 +386,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
                 AMP_ASSERT( pc_parameters );
 
                 pc_operator->reset( pc_parameters );
+                d_preconditioner->reset( {} ); // PC's like MG might regenerate matrices/coeffs
             }
 
             AMP_ASSERT( d_preconditioner->getOperator() );
