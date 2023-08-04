@@ -36,6 +36,9 @@ public:
     //! Print version information upon startup (default is false)
     bool print_startup = false;
 
+    //! Print memory statistics (default is only if leaks detected)
+    int print_memory = -1;
+
     //! Initialize CUDA (default is true)
     bool initialize_CUDA = true;
 

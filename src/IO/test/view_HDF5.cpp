@@ -18,7 +18,9 @@
 // Main
 int main( int argc, char *argv[] )
 {
-    AMP::AMPManager::startup( argc, argv );
+    AMP::AMPManagerProperties properties;
+    properties.print_memory = 0;
+    AMP::AMPManager::startup( argc, argv, properties );
 
     if ( argc == 1 ) {
         std::cerr << "view_HDF5 filename" << std::endl;
