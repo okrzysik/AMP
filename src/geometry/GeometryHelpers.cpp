@@ -659,6 +659,43 @@ double distanceToCone( const Point3D &V, double theta, const Point3D &pos, const
         d2 = std::numeric_limits<double>::infinity();
     return std::min( d1, d2 );
 }
+double
+distanceToCircularFrustum( double rb, double rt, double h, const Point3D &pos, const Point3D &ang )
+{
+    AMP_INSIST( rb > rt && rt, "Invalid values for radii" );
+    // Compute the apex of the underlying cone
+    double h2    = h * rb / ( rb - rt );
+    double theta = atan( rb / h2 );
+    Point3D C    = { 0, 0, h2 };
+    // Compute the intersection with the infinite cone
+    Point3D V = { 0, 0, -1 };
+    double d  = std::abs( distanceToCone( V, theta, pos - C, ang ) );
+    auto pc   = pos + d * ang;
+    if ( pc[2] < 0 || pc[2] > h )
+        d = std::numeric_limits<double>::infinity();
+    // Compute the intersection with the planes slicing the cone
+    double d1 = -pos[2] / ang[2];
+    double d2 = ( h - pos[2] ) / ang[2];
+    auto p1   = pos + d1 * ang;
+    auto p2   = pos + d2 * ang;
+    double r1 = p1[0] * p1[0] + p1[1] * p1[1];
+    double r2 = p2[0] * p2[0] + p2[1] * p2[1];
+    if ( ( d1 < 0 ) || ( r1 > rb * rb ) )
+        d1 = std::numeric_limits<double>::infinity();
+    if ( ( d2 < 0 ) || ( r2 > rt * rt ) )
+        d2 = std::numeric_limits<double>::infinity();
+    // Keep the closest intersection
+    d = std::min( { d, d1, d2 } );
+    // Check if the point is inside the volume
+    if ( d < 1e200 ) {
+        double r2   = pos[0] * pos[0] + pos[1] * pos[1];
+        double R    = rb * ( 1.0 - pos[2] ) + rt * pos[2];
+        bool inside = pos[2] >= 0 && pos[2] <= h && r2 <= R * R;
+        if ( inside )
+            d = -d;
+    }
+    return d;
+}
 
 
 /****************************************************************

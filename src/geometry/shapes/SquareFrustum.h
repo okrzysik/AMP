@@ -14,7 +14,7 @@ namespace AMP::Geometry {
  * \brief A geometry for a square frustum
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class SquareFrustum : public LogicalGeometry
+class SquareFrustum final : public LogicalGeometry
 {
 public:
     /**

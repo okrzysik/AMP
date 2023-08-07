@@ -11,11 +11,16 @@
 namespace AMP::Geometry {
 
 
+Point operator-( const Point &x, const std::array<double, 3> &y )
+{
+    return { x.x() - y[0], x.y() - y[1], x.z() - y[2] };
+}
+
+
 /********************************************************
  * Constructors                                          *
  ********************************************************/
-CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db )
-    : d_dir( 0 ), d_h( 0 ), d_r{ 0, 0 }, d_offset{ 0, 0, 0 }
+CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db ) : LogicalGeometry()
 {
     double r1 = db->getScalar<double>( "BaseRadius" );
     double r2 = db->getScalar<double>( "TopRadius" );
@@ -39,7 +44,6 @@ CircleFrustum::CircleFrustum( std::shared_ptr<const AMP::Database> db )
     initialize( dir2, { r1, r2 }, h );
 }
 CircleFrustum::CircleFrustum( const std::array<double, 2> &r, int dir, double height )
-    : LogicalGeometry(), d_dir( 0 ), d_h( 0 ), d_r{ 0, 0 }, d_offset{ 0, 0, 0 }
 {
     initialize( dir, r, height );
 }
@@ -48,21 +52,56 @@ void CircleFrustum::initialize( int dir, const std::array<double, 2> &r, double 
     d_ids         = { 2, 2, 2, 2, 0, 1 };
     d_isPeriodic  = { false, false, false };
     d_dir         = dir;
-    d_r[0]        = r[0];
-    d_r[1]        = r[1];
+    d_r           = r;
     d_h           = h;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    d_offset      = { 0, 0, 0 };
     d_physicalDim = 3;
     d_logicalDim  = 3;
     AMP_INSIST( d_r[0] > d_r[1] && d_r[1] > 0, "Invalid value for r" );
     AMP_INSIST( d_dir < 6, "Invalid value for dir" );
-    // Compute the apex of the underlying cone
-    double h2      = d_h * d_r[0] / ( d_r[0] - d_r[1] );
-    d_C            = { 0, 0, 0 };
-    d_C[d_dir / 2] = d_dir % 2 == 0 ? -h2 : h2;
-    d_theta        = atan( d_r[0] / h2 );
+}
+
+
+/********************************************************
+ * Convert coordinates to/from reference frame           *
+ ********************************************************/
+Point CircleFrustum::convertToReference( const Point &p0 ) const
+{
+    // Get the physical point in a non-rotated frame
+    Point p;
+    if ( d_dir == 0 ) {
+        p = { p0.y(), p0.z(), -p0.x() };
+    } else if ( d_dir == 1 ) {
+        p = { p0.y(), p0.z(), p0.x() };
+    } else if ( d_dir == 2 ) {
+        p = { p0.x(), p0.z(), -p0.y() };
+    } else if ( d_dir == 3 ) {
+        p = { p0.x(), p0.z(), p0.y() };
+    } else if ( d_dir == 4 ) {
+        p = { p0.x(), p0.y(), -p0.z() };
+    } else {
+        p = { p0.x(), p0.y(), p0.z() };
+    }
+    return p;
+}
+Point CircleFrustum::convertFromReference( const Point &p0 ) const
+{
+    // Rotate the coordinates
+    Point p;
+    if ( d_dir == 0 ) {
+        p = { -p0.z(), p0.x(), p0.y() };
+    } else if ( d_dir == 1 ) {
+        p = { -p0.z(), p0.x(), p0.y() };
+    } else if ( d_dir == 2 ) {
+        p = { p0.x(), -p0.z(), p0.y() };
+    } else if ( d_dir == 3 ) {
+        p = { p0.x(), p0.z(), p0.y() };
+    } else if ( d_dir == 4 ) {
+        p = { p0.x(), p0.y(), -p0.z() };
+    } else {
+        p = { p0.x(), p0.y(), p0.z() };
+    }
+    return p;
 }
 
 
@@ -119,60 +158,14 @@ Point CircleFrustum::nearest( const Point &pos ) const
  ********************************************************/
 double CircleFrustum::distance( const Point &pos, const Point &ang ) const
 {
-    auto dir2 = d_dir / 2;
     // Remove the offset
-    Point p0 = pos;
-    p0.x() -= d_offset[0];
-    p0.y() -= d_offset[1];
-    p0.z() -= d_offset[2];
-    // Compute the intersection with the infinite cone
-    Point V  = { 0, 0, 0 };
-    V[dir2]  = d_dir % 2 == 0 ? 1 : -1;
-    double d = std::abs( GeometryHelpers::distanceToCone( V, d_theta, p0 - d_C, ang ) );
-    auto p   = p0 + d * ang;
-    if ( d_dir == 0 && ( p.x() < -d_h || p.x() > 0 ) ) {
-        d = std::numeric_limits<double>::infinity();
-    } else if ( d_dir == 1 && ( p.x() < 0 || p.x() > d_h ) ) {
-        d = std::numeric_limits<double>::infinity();
-    } else if ( d_dir == 2 && ( p.y() < -d_h || p.y() > 0 ) ) {
-        d = std::numeric_limits<double>::infinity();
-    } else if ( d_dir == 3 && ( p.y() < 0 || p.y() > d_h ) ) {
-        d = std::numeric_limits<double>::infinity();
-    } else if ( d_dir == 4 && ( p.z() < -d_h || p.z() > 0 ) ) {
-        d = std::numeric_limits<double>::infinity();
-    } else if ( d_dir == 5 && ( p.z() < 0 || p.z() > d_h ) ) {
-        d = std::numeric_limits<double>::infinity();
-    }
-    // Compute the intersection with the planes slicing the cone
-    bool swap = d_dir == 0 || d_dir == 1 || d_dir == 3 || d_dir == 4;
-    double s  = swap ? -1 : 1;
-    double d1 = -p0[dir2] / ang[dir2];
-    double d2 = ( s * d_h - p0[dir2] ) / ang[dir2];
-    auto p1   = p0 + d1 * ang;
-    auto p2   = p0 + d2 * ang;
-    double r1, r2;
-    if ( dir2 == 0 ) {
-        r1 = p1.y() * p1.y() + p1.z() * p1.z();
-        r2 = p2.y() * p2.y() + p2.z() * p2.z();
-    } else if ( dir2 == 1 ) {
-        r1 = p1.x() * p1.x() + p1.z() * p1.z();
-        r2 = p2.x() * p2.x() + p2.z() * p2.z();
-    } else {
-        r1 = p1.x() * p1.x() + p1.y() * p1.y();
-        r2 = p2.x() * p2.x() + p2.y() * p2.y();
-    }
-    if ( ( d1 < 0 ) || ( r1 > d_r[0] * d_r[0] ) )
-        d1 = std::numeric_limits<double>::infinity();
-    if ( ( d2 < 0 ) || ( r2 > d_r[1] * d_r[1] ) )
-        d2 = std::numeric_limits<double>::infinity();
-    // Keep the closest intersection
-    d = std::min( { d, d1, d2 } );
-    // Check if the point is inside the volume
-    if ( d < 1e200 ) {
-        if ( inside( pos ) )
-            d = -d;
-    }
-    return d;
+    auto p0 = pos - d_offset;
+    // Compute the intersection with the frustum
+    using GeometryHelpers::distanceToCircularFrustum;
+    using GeometryHelpers::Point3D;
+    auto p = convertToReference( p0 );
+    auto a = convertToReference( ang );
+    return distanceToCircularFrustum( d_r[0], d_r[1], d_h, p, a );
 }
 
 
@@ -220,8 +213,10 @@ Point CircleFrustum::surfaceNorm( const Point &pos ) const
     } else if ( s == 1 ) {
         v[d_dir / 2] = d_dir % 2 == 0 ? -1 : 1;
     } else {
-        double sin_t = sin( d_theta );
-        double cos_t = cos( d_theta );
+        double h2    = d_h * d_r[0] / ( d_r[0] - d_r[1] );
+        double theta = atan( d_r[0] / h2 );
+        double sin_t = sin( theta );
+        double cos_t = cos( theta );
         if ( d_dir == 0 ) {
             double r = sqrt( y * y + z * z );
             v        = { -sin_t, cos_t * y / r, cos_t * z / r };
@@ -263,19 +258,7 @@ Point CircleFrustum::physical( const Point &pos ) const
     auto pl = GeometryHelpers::map_logical_circle( r, 2, p0.x(), p0.y() );
     Point p = { pl[0], pl[1], z };
     // Rotate the coordinates
-    if ( d_dir == 0 ) {
-        p = { -p.z(), p.x(), p.y() };
-    } else if ( d_dir == 1 ) {
-        p = { -p.z(), p.x(), p.y() };
-    } else if ( d_dir == 2 ) {
-        p = { p.x(), -p.z(), p.y() };
-    } else if ( d_dir == 3 ) {
-        p = { p.x(), p.z(), p.y() };
-    } else if ( d_dir == 4 ) {
-        p = { p.x(), p.y(), -p.z() };
-    } else {
-        p = { p.x(), p.y(), p.z() };
-    }
+    p = convertFromReference( p );
     // Add the offset
     p.x() += d_offset[0];
     p.y() += d_offset[1];
@@ -295,19 +278,7 @@ Point CircleFrustum::logical( const Point &pos ) const
     p0.y() -= d_offset[1];
     p0.z() -= d_offset[2];
     // Get the physical point in a non-rotated frame
-    if ( d_dir == 0 ) {
-        p0 = { p0.y(), p0.z(), -p0.x() };
-    } else if ( d_dir == 1 ) {
-        p0 = { p0.y(), p0.z(), p0.x() };
-    } else if ( d_dir == 2 ) {
-        p0 = { p0.x(), p0.z(), -p0.y() };
-    } else if ( d_dir == 3 ) {
-        p0 = { p0.x(), p0.z(), p0.y() };
-    } else if ( d_dir == 4 ) {
-        p0 = { p0.x(), p0.y(), -p0.z() };
-    } else {
-        p0 = { p0.x(), p0.y(), p0.z() };
-    }
+    p0 = convertToReference( p0 );
     // Get the logical height and current radius
     double z = p0.z() / d_h;
     double r = d_r[0] * ( 1.0 - z ) + d_r[1] * z;
@@ -412,7 +383,7 @@ bool CircleFrustum::operator==( const Geometry &rhs ) const
     if ( !geom )
         return false;
     return d_dir == geom->d_dir && d_r == geom->d_r && d_h == geom->d_h &&
-           d_offset == geom->d_offset && d_C == geom->d_C && d_theta == geom->d_theta;
+           d_offset == geom->d_offset;
 }
 
 
@@ -430,8 +401,6 @@ void CircleFrustum::writeRestart( int64_t fid ) const
     AMP::writeHDF5( fid, "dir", d_dir );
     AMP::writeHDF5( fid, "h", d_h );
     AMP::writeHDF5( fid, "r", d_r );
-    AMP::writeHDF5( fid, "C", d_C );
-    AMP::writeHDF5( fid, "theta", d_theta );
 }
 CircleFrustum::CircleFrustum( int64_t fid )
 {
@@ -443,8 +412,6 @@ CircleFrustum::CircleFrustum( int64_t fid )
     AMP::readHDF5( fid, "dir", d_dir );
     AMP::readHDF5( fid, "h", d_h );
     AMP::readHDF5( fid, "r", d_r );
-    AMP::readHDF5( fid, "C", d_C );
-    AMP::readHDF5( fid, "theta", d_theta );
 }
 
 
