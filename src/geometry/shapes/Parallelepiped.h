@@ -16,7 +16,7 @@ namespace AMP::Geometry {
  * \details  This class provides routines for reading, accessing and writing Parallelepiped.
  *     See https://en.wikipedia.org/wiki/Parallelepiped
  */
-class Parallelepiped : public LogicalGeometry
+class Parallelepiped final : public LogicalGeometry
 {
 public:
     /**
