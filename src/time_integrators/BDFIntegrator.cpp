@@ -251,6 +251,16 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             d_calculateTimeTruncError = true;
             d_use_predictor           = true;
         }
+        if ( d_timestep_strategy == "final constant" ) {
+
+            // these bounds are based on the paper by Emmrich, 2008 for nonlinear evolution
+            // equations //
+            //            d_DtCutLowerBound    = db->getWithDefault<double>( "dt_cut_lower_bound",
+            //            0.58754407 );
+            d_DtCutLowerBound =
+                db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
+            d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
+        }
 
         if ( !d_calculateTimeTruncError ) {
             // keep the next line above the choice of truncation error strategy so overriding
@@ -709,15 +719,15 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
         } else {
 
             if ( solver_retcode == 0 ) {
-                // solution method failure, decrease step by 0.9 *d_current_dt
+                // solution method failure, decrease step by d_DtCutLowerBound*d_current_dt
                 if ( d_iDebugPrintInfoLevel > 0 ) {
                     AMP::pout << std::setprecision( 16 )
                               << "The solution process failed. Timestep is being decreased by "
                                  "max allowable factor:: "
-                              << 0.9 << std::endl;
+                              << d_DtCutLowerBound << std::endl;
                 }
             }
-            d_current_dt = 0.9 * d_tmp_dt;
+            d_current_dt = d_DtCutLowerBound * d_tmp_dt;
         }
         PROFILE_STOP( "getNextDt-default", 1 );
     }
