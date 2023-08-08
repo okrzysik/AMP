@@ -36,12 +36,6 @@
 #endif
 
 
-// Convenience defines
-#define MPI_CLASS_COMM_NULL AMP_COMM_NULL
-#define MPI_CLASS_COMM_SELF AMP_COMM_SELF
-#define MPI_CLASS_COMM_WORLD AMP_COMM_WORLD
-
-
 // Set MPI_REQUEST_NULL
 #if defined( USE_SAMRAI ) && defined( USE_PETSC ) && !defined( USE_MPI )
 int MPI_REQUEST_NULL  = 3;
@@ -260,7 +254,7 @@ void MPI_CLASS::reset()
             int err = MPI_Comm_free( (MPI_Comm *) &d_comm );
             if ( err != MPI_SUCCESS )
                 MPI_CLASS_ERROR( "Problem free'ing MPI_Comm object" );
-            d_comm = MPI_CLASS_COMM_NULL;
+            d_comm = commNull;
             ++N_MPI_Comm_destroyed;
 #endif
         }
@@ -385,11 +379,11 @@ static std::atomic_int d_global_count_self   = { 1 };
 MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
 {
     // Check if we are using our version of comm_world
-    if ( comm == MPI_CLASS_COMM_WORLD ) {
+    if ( comm == commWorld ) {
         d_comm = AMP::AMPManager::getCommWorld().d_comm;
-    } else if ( comm == MPI_CLASS_COMM_SELF ) {
+    } else if ( comm == commSelf ) {
         d_comm = MPI_COMM_SELF;
-    } else if ( comm == MPI_CLASS_COMM_NULL ) {
+    } else if ( comm == commNull ) {
         d_comm = MPI_COMM_NULL;
     } else {
         d_comm = comm;
@@ -512,7 +506,7 @@ uint64_t MPI_CLASS::hashRanks() const
         return hash ^ 0x1;
     } else if ( d_comm == MPI_COMM_WORLD ) {
         return hash ^ 0x2;
-    } else if ( d_comm == MPI_CLASS_COMM_WORLD ) {
+    } else if ( d_comm == commWorld ) {
         return hash ^ 0x3;
     } else {
         auto ranks = globalRanks();
@@ -567,7 +561,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
     int compare1, compare2;
     MPI_Group_compare( group1, group12, &compare1 );
     MPI_Group_compare( group2, group12, &compare2 );
-    MPI_CLASS new_comm( MPI_CLASS_COMM_NULL );
+    MPI_CLASS new_comm( commNull );
     int size;
     MPI_Group_size( group12, &size );
     if ( compare1 != MPI_UNEQUAL && size != 0 ) {
@@ -585,7 +579,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
         MPI_Allreduce( &size, &max_size, 1, MPI_INT, MPI_MAX, comm1.d_comm );
         if ( max_size == 0 ) {
             // We are dealing with completely disjoint sets
-            new_comm = MPI_CLASS( MPI_CLASS_COMM_NULL, false );
+            new_comm = MPI_CLASS( commNull, false );
         } else {
             // Create the new comm
             // Note: OpenMPI crashes if the intersection group is EMPTY for any processors
@@ -601,7 +595,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
                 new_comm = MPI_CLASS( new_MPI_comm, true );
             } else {
                 // We actually want a null comm for this communicator
-                new_comm = MPI_CLASS( MPI_CLASS_COMM_NULL, false );
+                new_comm = MPI_CLASS( commNull, false );
                 MPI_Comm_free( &new_MPI_comm );
             }
         }
@@ -615,7 +609,7 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 {
     if ( comm1.isNull() || comm2.isNull() )
-        return MPI_CLASS( MPI_CLASS_COMM_NULL, false );
+        return MPI_CLASS( commNull, false );
     MPI_CLASS_ASSERT( comm1.d_size == 1 && comm2.d_size == 1 );
     return comm1;
 }
@@ -628,13 +622,13 @@ MPI_CLASS MPI_CLASS::intersect( const MPI_CLASS &comm1, const MPI_CLASS &comm2 )
 MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
 {
     if ( d_isNull ) {
-        return MPI_CLASS( MPI_CLASS_COMM_NULL );
+        return MPI_CLASS( commNull );
     } else if ( d_size == 1 ) {
         if ( color == -1 )
-            return MPI_CLASS( MPI_CLASS_COMM_NULL );
+            return MPI_CLASS( commNull );
         return dup();
     }
-    MPI_CLASS::Comm new_MPI_comm = MPI_CLASS_COMM_NULL;
+    MPI_CLASS::Comm new_MPI_comm = commNull;
 #ifdef USE_MPI
     // USE MPI to split the communicator
     int error = 0;
@@ -674,7 +668,7 @@ MPI_CLASS MPI_CLASS::splitByNode( int key, bool manage ) const
 MPI_CLASS MPI_CLASS::dup( bool manage ) const
 {
     if ( d_isNull )
-        return MPI_CLASS( MPI_CLASS_COMM_NULL );
+        return MPI_CLASS( commNull );
     MPI_CLASS::Comm new_MPI_comm = d_comm;
 #if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator

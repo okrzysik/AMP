@@ -22,9 +22,9 @@
 #endif
 
 // Define extra comm_world, comm_self, and comm_null ids
-#define AMP_COMM_NULL ( (AMP::AMP_MPI::Comm) 0xF4000000 )
-#define AMP_COMM_WORLD ( (AMP::AMP_MPI::Comm) 0xF4000001 )
-#define AMP_COMM_SELF ( (AMP::AMP_MPI::Comm) 0xF4000002 )
+#define AMP_COMM_NULL AMP::AMP_MPI::commNull
+#define AMP_COMM_SELF AMP::AMP_MPI::commSelf
+#define AMP_COMM_WORLD AMP::AMP_MPI::commWorld
 
 
 // Define SAMRAI MPI object
@@ -70,6 +70,9 @@ public:
     typedef uint32_t Request2;
     constexpr static bool has_MPI = false;
 #endif
+    constexpr static Comm commNull  = ( (AMP::AMP_MPI::Comm) 0xF400F001 );
+    constexpr static Comm commSelf  = ( (AMP::AMP_MPI::Comm) 0xF400F003 );
+    constexpr static Comm commWorld = ( (AMP::AMP_MPI::Comm) 0xF400F007 );
 
     class Request final
     {
@@ -1372,19 +1375,19 @@ private: // data members
     using atomic_int = volatile std::atomic_int64_t;
     using int_ptr    = int *volatile;
 
-    Comm d_comm             = AMP_COMM_NULL; //!< The internal MPI communicator
-    bool d_isNull           = true;          //!< Is the communicator NULL
-    bool d_manage           = false;         //!< Do we want to manage this communicator
-    bool d_call_abort       = true;          //!< Do we want to call MPI_abort instead of exit
-    int d_rank              = 0;             //!< The rank of the communicator
-    int d_size              = 1;             //!< The size of the communicator
-    int d_maxTag            = 0x3FFFFFFF;    //!< The maximum valid tag
-    int_ptr d_currentTag    = nullptr;       //!< The current tag
-    mutable int_ptr d_ranks = nullptr;       //!< The ranks of the comm in the global comm
-    atomic_ptr d_count      = 0;             //!< How many objects share the communicator
-    static short profile_level;              //!< The level for the profiles of MPI
-    static atomic_int N_MPI_Comm_created;    //!< Number of MPI_Comm objects created over time
-    static atomic_int N_MPI_Comm_destroyed;  //!< Number of MPI_Comm objects destroyed over time
+    Comm d_comm             = commNull;     //!< The internal MPI communicator
+    bool d_isNull           = true;         //!< Is the communicator NULL
+    bool d_manage           = false;        //!< Do we want to manage this communicator
+    bool d_call_abort       = true;         //!< Do we want to call MPI_abort instead of exit
+    int d_rank              = 0;            //!< The rank of the communicator
+    int d_size              = 1;            //!< The size of the communicator
+    int d_maxTag            = 0x3FFFFFFF;   //!< The maximum valid tag
+    int_ptr d_currentTag    = nullptr;      //!< The current tag
+    mutable int_ptr d_ranks = nullptr;      //!< The ranks of the comm in the global comm
+    atomic_ptr d_count      = 0;            //!< How many objects share the communicator
+    static short profile_level;             //!< The level for the profiles of MPI
+    static atomic_int N_MPI_Comm_created;   //!< Number of MPI_Comm objects created over time
+    static atomic_int N_MPI_Comm_destroyed; //!< Number of MPI_Comm objects destroyed over time
 };
 
 
