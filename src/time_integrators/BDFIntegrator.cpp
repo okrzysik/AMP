@@ -765,8 +765,7 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
 }
 
 
-double BDFIntegrator::getPredictorTimestepBound( void ) {
-    return 0; }
+double BDFIntegrator::getPredictorTimestepBound( void ) { return 0; }
 
 void BDFIntegrator::evaluatePredictor()
 {
@@ -1835,8 +1834,7 @@ void BDFIntegrator::printStatistics( std::ostream &os )
     }
 }
 
-void BDFIntegrator::setRegridStatus( bool is_after_regrid ) {
-    d_is_after_regrid = is_after_regrid; }
+void BDFIntegrator::setRegridStatus( bool is_after_regrid ) { d_is_after_regrid = is_after_regrid; }
 
 // functions for regrid
 void BDFIntegrator::registerVectorsForMemoryManagement( void )
