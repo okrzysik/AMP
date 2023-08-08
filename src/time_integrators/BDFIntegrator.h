@@ -113,6 +113,11 @@ protected:
     double integratorSpecificGetNextDt( const bool good_solution,
                                         const int solver_retcode ) override;
 
+    double getNextDtTruncationError( const bool good_solution, const int solver_retcode );
+    double getNextDtPredefined( const bool good_solution, const int solver_retcode );
+    double getNextDtConstant( const bool good_solution, const int solver_retcode );
+    double getNextDtFinalConstant( const bool good_solution, const int solver_retcode );
+
     void integratorSpecificInitialize( void ) override;
 
     //  int integratorSpecificAdvanceSolution( const double dt, const bool first_step ) override;
