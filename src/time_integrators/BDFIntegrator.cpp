@@ -251,6 +251,16 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
             d_calculateTimeTruncError = true;
             d_use_predictor           = true;
         }
+        if ( d_timestep_strategy == "final constant" ) {
+
+            // these bounds are based on the paper by Emmrich, 2008 for nonlinear evolution
+            // equations //
+            //            d_DtCutLowerBound    = db->getWithDefault<double>( "dt_cut_lower_bound",
+            //            0.58754407 );
+            d_DtCutLowerBound =
+                db->getWithDefault<double>( "dt_cut_lower_bound", 0.9 ); // to match old for now
+            d_DtGrowthUpperBound = db->getWithDefault<double>( "dt_growth_upper_bound", 1.702 );
+        }
 
         if ( !d_calculateTimeTruncError ) {
             // keep the next line above the choice of truncation error strategy so overriding
@@ -552,6 +562,129 @@ double BDFIntegrator::getInitialDt()
 *                                                                       *
 *************************************************************************
 */
+
+double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const int solver_retcode )
+{
+    PROFILE_START( "getNextDt-truncation", 1 );
+    if ( good_solution ) {
+        PROFILE_START( "getNextDt-truncation-good", 2 );
+
+        d_current_dt = estimateDtWithTruncationErrorEstimates( d_current_dt, good_solution );
+
+        if ( d_max_dt < d_current_dt ) {
+            d_current_dt = d_max_dt;
+        } else {
+            if ( d_iDebugPrintInfoLevel > 0 )
+                AMP::pout << "Truncation error limited timestep" << std::endl;
+        }
+
+#ifdef ENABLE_RESTART
+        if ( d_restart_data != nullptr ) {
+
+            if ( d_restart_data->getCurrentCheckPointTime() > 0.0 ) {
+                double currentCheckPointTime = d_restart_data->getCurrentCheckPointTime();
+
+                if ( ( d_current_dt + d_current_time > currentCheckPointTime ) &&
+                     ( currentCheckPointTime - d_current_time > 1.0e-10 ) ) {
+                    // make sure we hit the checkpoint
+                    d_current_dt = currentCheckPointTime - d_current_time;
+                }
+            }
+        }
+#endif
+        PROFILE_STOP( "getNextDt-truncation-good", 2 );
+    } else {
+        PROFILE_START( "getNextDt-truncation-bad", 2 );
+        // the rejection could be due to the truncation error being too large or
+        // a solution step failing
+
+        if ( solver_retcode == 0 ) {
+            // solution method failure, decrease step by max allowed
+            // both the cases of truncation error and efficiency are overridden here
+            if ( d_iDebugPrintInfoLevel > 0 ) {
+                AMP::pout << std::setprecision( 16 )
+                          << "The solution process failed. Timestep is being decreased by "
+                             "max allowable factor:: "
+                          << d_DtCutLowerBound << std::endl;
+            }
+            d_current_dt = d_DtCutLowerBound * d_current_dt;
+        } else {
+            // truncation error is too high
+            d_current_dt = estimateDtWithTruncationErrorEstimates( d_current_dt, good_solution );
+        }
+        PROFILE_STOP( "getNextDt-truncation-bad", 2 );
+    }
+
+    // check to make sure the predictor vector is a valid vector,
+    // if not scale back
+    //   AMP::pout << "Check in getNextDt to see if predictor is valid" << std::endl;
+    evaluatePredictor();
+    //   AMP::pout << "Finished call to predictor in getNextDt" << std::endl;
+
+    bool validVector = d_operator->isValidVector( d_predictor_vector );
+
+    if ( !validVector ) {
+        PROFILE_START( "getNextDt-truncation-not_valid", 2 );
+        AMP::pout << "The predictor is not valid" << std::endl;
+        int iNumberOfPredictorPreCheckAttempts = 10;
+
+        for ( int i = 0; i < iNumberOfPredictorPreCheckAttempts; i++ ) {
+            AMP::pout << "WARNING:: Attempting to scale predictor, attempt number " << i
+                      << std::endl;
+            // the vector is scaled to be 50% of the previous vector
+            // NOTE: that each time it is indeed 50% of the previous vector, scaled or unscaled
+            d_current_dt = 0.5 * d_current_dt;
+
+            evaluatePredictor();
+
+            validVector = d_operator->isValidVector( d_predictor_vector );
+
+            if ( validVector ) {
+                AMP::pout << "Predictor was successful in scaling back after " << i << " attempts"
+                          << std::endl;
+                break;
+            } else {
+                AMP::pout << "WARNING: predictor was not successful in scaling back after " << i
+                          << " attempts" << std::endl;
+            }
+        }
+        PROFILE_STOP( "getNextDt-truncation-not_valid", 2 );
+    }
+    PROFILE_STOP( "getNextDt-truncation", 1 );
+    return d_current_dt;
+}
+
+double BDFIntegrator::getNextDtConstant( const bool good_solution, const int solver_retcode )
+{
+    return d_initial_dt;
+}
+
+double BDFIntegrator::getNextDtPredefined( const bool good_solution, const int solver_retcode )
+{
+#ifdef ENABLE_RESTART
+    return d_restart_data->getNextDt();
+#else
+    return getNextDtConstant( good_solution, solver_retcode );
+#endif
+}
+
+double BDFIntegrator::getNextDtFinalConstant( const bool good_solution, const int solver_retcode )
+{
+    static int i = 1;
+    if ( i <= d_number_initial_fixed_steps ) {
+        d_current_dt = d_initial_dt;
+        ++i;
+    } else if ( i < d_number_of_time_intervals + d_number_initial_fixed_steps ) {
+        d_current_dt = d_initial_dt + ( (double) i - d_number_initial_fixed_steps ) /
+                                          ( (double) d_number_of_time_intervals ) *
+                                          ( d_max_dt - d_initial_dt );
+        ++i;
+    } else {
+        d_current_dt = d_max_dt;
+    }
+    return d_current_dt;
+}
+
 double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
                                                    const int solver_retcode )
 {
@@ -561,123 +694,21 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
     const double d_tmp_dt = d_current_dt;
 
     if ( d_timestep_strategy == "truncationErrorStrategy" ) {
-        PROFILE_START( "getNextDt-truncation", 1 );
-        if ( good_solution ) {
-            PROFILE_START( "getNextDt-truncation-good", 2 );
-
-            d_current_dt = estimateDtWithTruncationErrorEstimates( d_current_dt, good_solution );
-
-            if ( d_max_dt < d_current_dt ) {
-                d_current_dt = d_max_dt;
-            } else {
-                if ( d_iDebugPrintInfoLevel > 0 )
-                    AMP::pout << "Truncation error limited timestep" << std::endl;
-            }
-
-#ifdef ENABLE_RESTART
-            if ( d_restart_data != nullptr ) {
-
-                if ( d_restart_data->getCurrentCheckPointTime() > 0.0 ) {
-                    double currentCheckPointTime = d_restart_data->getCurrentCheckPointTime();
-
-                    if ( ( d_current_dt + d_current_time > currentCheckPointTime ) &&
-                         ( currentCheckPointTime - d_current_time > 1.0e-10 ) ) {
-                        // make sure we hit the checkpoint
-                        d_current_dt = currentCheckPointTime - d_current_time;
-                    }
-                }
-            }
-#endif
-            PROFILE_STOP( "getNextDt-truncation-good", 2 );
-        } else {
-            PROFILE_START( "getNextDt-truncation-bad", 2 );
-            // the rejection could be due to the truncation error being too large or
-            // a solution step failing
-
-            if ( solver_retcode == 0 ) {
-                // solution method failure, decrease step by max allowed
-                // both the cases of truncation error and efficiency are overridden here
-                if ( d_iDebugPrintInfoLevel > 0 ) {
-                    AMP::pout << std::setprecision( 16 )
-                              << "The solution process failed. Timestep is being decreased by "
-                                 "max allowable factor:: "
-                              << d_DtCutLowerBound << std::endl;
-                }
-                d_current_dt = d_DtCutLowerBound * d_current_dt;
-            } else {
-                // truncation error is too high
-                d_current_dt =
-                    estimateDtWithTruncationErrorEstimates( d_current_dt, good_solution );
-            }
-            PROFILE_STOP( "getNextDt-truncation-bad", 2 );
-        }
-
-        // check to make sure the predictor vector is a valid vector,
-        // if not scale back
-        //   AMP::pout << "Check in getNextDt to see if predictor is valid" << std::endl;
-        evaluatePredictor();
-        //   AMP::pout << "Finished call to predictor in getNextDt" << std::endl;
-
-        bool validVector = d_operator->isValidVector( d_predictor_vector );
-
-        if ( !validVector ) {
-            PROFILE_START( "getNextDt-truncation-not_valid", 2 );
-            AMP::pout << "The predictor is not valid" << std::endl;
-            int iNumberOfPredictorPreCheckAttempts = 10;
-
-            for ( int i = 0; i < iNumberOfPredictorPreCheckAttempts; i++ ) {
-                AMP::pout << "WARNING:: Attempting to scale predictor, attempt number " << i
-                          << std::endl;
-                // the vector is scaled to be 50% of the previous vector
-                // NOTE: that each time it is indeed 50% of the previous vector, scaled or unscaled
-                d_current_dt = 0.5 * d_current_dt;
-
-                evaluatePredictor();
-
-                validVector = d_operator->isValidVector( d_predictor_vector );
-
-                if ( validVector ) {
-                    AMP::pout << "Predictor was successful in scaling back after " << i
-                              << " attempts" << std::endl;
-                    break;
-                } else {
-                    AMP::pout << "WARNING: predictor was not successful in scaling back after " << i
-                              << " attempts" << std::endl;
-                }
-            }
-            PROFILE_STOP( "getNextDt-truncation-not_valid", 2 );
-        }
-        PROFILE_STOP( "getNextDt-truncation", 1 );
+        d_current_dt = getNextDtTruncationError( good_solution, solver_retcode );
     } else {
         PROFILE_START( "getNextDt-default", 1 );
         if ( good_solution ) {
             static bool dtLimitedForCheckPoint;
             static double dtBeforeCheckPoint;
             if ( d_timestep_strategy == "predefined" ) {
-#ifdef ENABLE_RESTART
-                d_current_dt = d_restart_data->getNextDt();
-#else
-                d_current_dt = d_initial_dt;
-#endif
+                d_current_dt = getNextDtPredefined( good_solution, solver_retcode );
             } else {
                 if ( dtLimitedForCheckPoint ) {
                     d_current_dt = dtBeforeCheckPoint;
                 } else if ( d_timestep_strategy == "constant" ) {
-                    d_current_dt = d_initial_dt;
+                    d_current_dt = getNextDtConstant( good_solution, solver_retcode );
                 } else if ( d_timestep_strategy == "final constant" ) {
-                    static int i = 1;
-                    if ( i <= d_number_initial_fixed_steps ) {
-                        d_current_dt = d_initial_dt;
-                        ++i;
-                    } else if ( i < d_number_of_time_intervals + d_number_initial_fixed_steps ) {
-                        d_current_dt =
-                            d_initial_dt + ( (double) i - d_number_initial_fixed_steps ) /
-                                               ( (double) d_number_of_time_intervals ) *
-                                               ( d_max_dt - d_initial_dt );
-                        ++i;
-                    } else {
-                        d_current_dt = d_max_dt;
-                    }
+                    d_current_dt = getNextDtFinalConstant( good_solution, solver_retcode );
                 } else if ( d_timestep_strategy == "limit relative change" ) {
                     d_current_dt = estimateDynamicalTimeScale( d_current_dt );
                 } else {
@@ -709,15 +740,15 @@ double BDFIntegrator::integratorSpecificGetNextDt( const bool good_solution,
         } else {
 
             if ( solver_retcode == 0 ) {
-                // solution method failure, decrease step by 0.9 *d_current_dt
+                // solution method failure, decrease step by d_DtCutLowerBound*d_current_dt
                 if ( d_iDebugPrintInfoLevel > 0 ) {
                     AMP::pout << std::setprecision( 16 )
                               << "The solution process failed. Timestep is being decreased by "
                                  "max allowable factor:: "
-                              << 0.9 << std::endl;
+                              << d_DtCutLowerBound << std::endl;
                 }
             }
-            d_current_dt = 0.9 * d_tmp_dt;
+            d_current_dt = d_DtCutLowerBound * d_tmp_dt;
         }
         PROFILE_STOP( "getNextDt-default", 1 );
     }
