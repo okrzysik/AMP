@@ -67,6 +67,9 @@ static_assert( sizeof( MPI_CLASS ) % 8 == 0 );
 short MPI_CLASS::profile_level                        = 255;
 MPI_CLASS::atomic_int MPI_CLASS::N_MPI_Comm_created   = 0;
 MPI_CLASS::atomic_int MPI_CLASS::N_MPI_Comm_destroyed = 0;
+MPI_CLASS::Comm MPI_CLASS::commNull                   = ( (MPI_CLASS::Comm) 0xF400F001 );
+MPI_CLASS::Comm MPI_CLASS::commSelf                   = ( (MPI_CLASS::Comm) 0xF400F003 );
+MPI_CLASS::Comm MPI_CLASS::commWorld                  = ( (MPI_CLASS::Comm) 0xF400F007 );
 
 
 // Static data for asyncronous communication without MPI

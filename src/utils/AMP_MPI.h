@@ -70,9 +70,9 @@ public:
     typedef uint32_t Request2;
     constexpr static bool has_MPI = false;
 #endif
-    constexpr static Comm commNull  = ( (AMP::AMP_MPI::Comm) 0xF400F001 );
-    constexpr static Comm commSelf  = ( (AMP::AMP_MPI::Comm) 0xF400F003 );
-    constexpr static Comm commWorld = ( (AMP::AMP_MPI::Comm) 0xF400F007 );
+    static Comm commNull;
+    static Comm commSelf;
+    static Comm commWorld;
 
     class Request final
     {
