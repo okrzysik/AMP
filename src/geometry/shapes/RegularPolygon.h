@@ -15,7 +15,7 @@ namespace AMP::Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides routines for reading, accessing and writing regular polygons.
  */
-class RegularPolygon : public LogicalGeometry
+class RegularPolygon final : public LogicalGeometry
 {
 public:
     /**

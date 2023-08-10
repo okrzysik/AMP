@@ -15,7 +15,7 @@ namespace AMP::Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class Sphere : public LogicalGeometry
+class Sphere final : public LogicalGeometry
 {
 public:
     /**

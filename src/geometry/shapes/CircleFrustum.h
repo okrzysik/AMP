@@ -12,10 +12,10 @@ namespace AMP::Geometry {
 
 /**
  * \class CircleFrustum
- * \brief A geometry for a square frustum
+ * \brief A geometry for a circular frustum
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class CircleFrustum : public LogicalGeometry
+class CircleFrustum final : public LogicalGeometry
 {
 public:
     /**
@@ -26,14 +26,17 @@ public:
 
     /**
      * \brief Construct a CircleFrustum geometry
-     * \param r         The the radii of the frustrum (base/top)
+     * \param r         The the radii of the frustum (base/top)
      * \param dir       The direction of the pyramid { -x, x, -y, y, -z, z }
-     * \param height    The height of the frustrum
+     * \param height    The height of the frustum
      */
     explicit CircleFrustum( const std::array<double, 2> &r, int dir, double height );
 
     //! Construct from restart
     CircleFrustum( int64_t );
+
+    //! Copy contructor
+    CircleFrustum( const CircleFrustum & ) = default;
 
 public: // Functions inherited from Geometry
     std::string getName() const override final { return "CircleFrustum"; }
@@ -57,19 +60,22 @@ public: // Functions inherited from Geometry
     bool operator==( const Geometry &rhs ) const override final;
     void writeRestart( int64_t ) const override;
 
-protected:                          // Internal data
-    uint8_t d_dir;                  // The direction of the center axis
-    double d_h;                     // The height of the frustrum
-    std::array<double, 2> d_r;      // The two radii
-    std::array<double, 3> d_offset; // The offset
-    Point d_C;                      // Apex of cone
-    double d_theta;                 // Apex angle
+protected:                                        // Internal data
+    uint8_t d_dir                  = 0;           // The direction of the center axis
+    double d_h                     = 0;           // The height of the frustrum
+    std::array<double, 2> d_r      = { 0, 0 };    // The two radii
+    std::array<double, 3> d_offset = { 0, 0, 0 }; // The offset
+    double d_theta                 = 0;           // Apex angle
 
 private:
     // Private constructor
-    CircleFrustum();
+    CircleFrustum() = delete;
     // Initialize the data
     void initialize( int dir, const std::array<double, 2> &r, double h );
+    // Convert a point/angle to the reference frame (does not subtract offset)
+    Point convertToReference( const Point & ) const;
+    // Convert a point/angle from the reference frame (does not add offset)
+    Point convertFromReference( const Point & ) const;
 };
 
 

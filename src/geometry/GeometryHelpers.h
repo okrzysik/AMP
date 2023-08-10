@@ -421,6 +421,24 @@ double distanceToQuadrilateral( const std::array<Point3D, 4> &quad,
 
 
 /**
+ * \brief   Compute the intersection of a ray and circular frustum
+ * \details  This function will compute the intersection of a ray with a circular frustum.
+ *    It assumes the circular frustum is located at the origin (base radius),
+ *    with the given height, oriented in the +z direction.
+ *    If the ray is inside the cone the distance is negative.
+ *    If the ray will never intersect the object, this distance is inf.
+ * \param[in] rb        Base radius
+ * \param[in] rt        Top radius
+ * \param[in] h         Object height
+ * \param[in] pos       Starting point of ray
+ * \param[in] ang       Direction of ray
+ * @return              Returns the distance
+ */
+double
+distanceToCircularFrustum( double rb, double rt, double h, const Point3D &pos, const Point3D &ang );
+
+
+/**
  * \brief   Compute the barycentric coordinates
  * \details  This function will compute the barycentric coordinates
  *    determine the normal.
