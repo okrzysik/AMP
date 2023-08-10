@@ -29,6 +29,14 @@
 #endif
 
 
+namespace AMP::Utilities {
+enum class MemoryType : uint8_t;
+}
+
+// Get the pointer type from cuda
+AMP::Utilities::MemoryType getCudaMemoryType( const void *ptr );
+
+
 // Get the name of a return code
 template<typename T>
 const char *cudaGetName( T result );
@@ -41,16 +49,6 @@ void checkCudaErrors( T result,
 // Get the last cuda error
 void getLastCudaError( const char *errorMessage,
                        const StackTrace::source_location &source = SOURCE_LOCATION_CURRENT() );
-
-//! Enum to store pointer type
-enum class MemoryType : uint8_t { unregistered, host, device, managed };
-
-//! Return the pointer type
-MemoryType getMemoryType( const void *ptr );
-
-//! Return a string for the memory type
-std::string getString( MemoryType );
-
 
 #ifndef MAX
     #define MAX( a, b ) ( a > b ? a : b )

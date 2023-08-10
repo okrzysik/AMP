@@ -399,6 +399,7 @@ double AMPManager::start_CUDA()
     double start = Utilities::time();
 #ifdef USE_CUDA
     if ( d_properties.bind_process_to_accelerator ) {
+        AMP::Utilities::setenv( "RDMAV_FORK_SAFE", "1" );
         auto nodeComm = comm_world.splitByNode();
         auto nodeRank = nodeComm.getRank();
         int deviceCount;

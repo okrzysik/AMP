@@ -1,8 +1,27 @@
 #include "AMP/utils/cuda/helper_cuda.h"
+#include "AMP/utils/Utilities.h"
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+
+AMP::Utilities::MemoryType getCudaMemoryType( const void *ptr )
+{
+    cudaPointerAttributes attributes;
+    auto err = cudaPointerGetAttributes( &attributes, ptr );
+    checkCudaErrors( err );
+    if ( attributes.type == cudaMemoryTypeUnregistered )
+        return AMP::Utilities::MemoryType::unregistered;
+    else if ( attributes.type == cudaMemoryTypeHost )
+        return AMP::Utilities::MemoryType::host;
+    else if ( attributes.type == cudaMemoryTypeDevice )
+        return AMP::Utilities::MemoryType::device;
+    else if ( attributes.type == cudaMemoryTypeManaged )
+        return AMP::Utilities::MemoryType::managed;
+    else
+        AMP_ERROR( "Unknown pointer type" );
+    return AMP::Utilities::MemoryType::unregistered;
+}
 
 // Check
 template<typename T>
@@ -37,42 +56,6 @@ void getLastCudaError( const char *errorMessage, const StackTrace::source_locati
         exit( EXIT_FAILURE );
     }
 #endif
-}
-
-
-// Get memory type
-MemoryType getMemoryType( const void *ptr )
-{
-    cudaPointerAttributes attributes;
-    auto err = cudaPointerGetAttributes( &attributes, ptr );
-    checkCudaErrors( err );
-    if ( attributes.type == cudaMemoryTypeUnregistered )
-        return MemoryType::unregistered;
-    else if ( attributes.type == cudaMemoryTypeHost )
-        return MemoryType::host;
-    else if ( attributes.type == cudaMemoryTypeDevice )
-        return MemoryType::device;
-    else if ( attributes.type == cudaMemoryTypeManaged )
-        return MemoryType::managed;
-    else
-        AMP_ERROR( "Unknown pointer type" );
-    return MemoryType::unregistered;
-}
-
-
-// Return a string for the memory type
-std::string getString( MemoryType type )
-{
-    if ( type == MemoryType::unregistered )
-        return "unregistered";
-    else if ( type == MemoryType::host )
-        return "host";
-    else if ( type == MemoryType::device )
-        return "device";
-    else if ( type == MemoryType::managed )
-        return "managed";
-    else
-        AMP_ERROR( "Unknown pointer type" );
 }
 
 
