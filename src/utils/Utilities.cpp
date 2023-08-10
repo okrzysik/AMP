@@ -28,6 +28,11 @@
     #include "MemoryApp.h"
 #endif
 
+#if defined( AMP_USE_CUDA ) || defined( USE_CUDA )
+    #include "AMP/utils/cuda/helper_cuda.h"
+#endif
+#if defined( AMP_USE_HIP ) || defined( USE_HIP )
+#endif
 
 // Include system dependent headers
 // clang-format off
@@ -85,6 +90,37 @@ std::string blockToString( int num ) { return intToString( num, 4 ); }
  *  Basic checks                                                             *
  ****************************************************************************/
 static_assert( getOS() != OS::Unknown );
+
+
+/****************************************************************************
+ *  Get pointer location                                                     *
+ ****************************************************************************/
+MemoryType getMemoryType( const void *ptr )
+{
+    auto type = MemoryType::unregistered;
+#if defined( AMP_USE_CUDA ) || defined( USE_CUDA )
+    type = getCudaMemoryType( ptr );
+    if ( type != MemoryType::unregistered )
+        return type;
+#endif
+#if defined( AMP_USE_HIP ) || defined( USE_HIP )
+    #error Not finished
+#endif
+    return type;
+}
+std::string getString( MemoryType type )
+{
+    if ( type == MemoryType::unregistered )
+        return "unregistered";
+    else if ( type == MemoryType::host )
+        return "host";
+    else if ( type == MemoryType::device )
+        return "device";
+    else if ( type == MemoryType::managed )
+        return "managed";
+    else
+        AMP_ERROR( "Unknown pointer type" );
+}
 
 
 /****************************************************************************

@@ -1,4 +1,6 @@
 #include "AMP/AMP_TPLs.h"
+#include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/cuda/CudaAllocator.h"
 #include "AMP/utils/cuda/helper_cuda.h"
 
@@ -12,19 +14,28 @@
 #endif
 
 
+static inline std::string getMemorySpace( void *ptr )
+{
+    return AMP::Utilities::getString( AMP::Utilities::getMemoryType( ptr ) );
+}
+
+
 template<class KokkosSpace>
 void testKokkosMemorySpace( const char *str )
 {
     size_t N = 100;
     KokkosSpace space;
     auto ptr = space.allocate( N * sizeof( double ) );
-    std::cout << "Kokkos " << str << ": " << getString( getMemoryType( ptr ) ) << std::endl;
+    std::cout << "Kokkos " << str << ": " << getMemorySpace( ptr ) << std::endl;
     space.deallocate( ptr, N * sizeof( double ) );
 }
 
 
-int main()
+int main( int argc, char *argv[] )
 {
+    // Start AMP (initializes Kokkos)
+    AMP::AMPManager::startup( argc, argv );
+
     // cudaError_t
     std::cout << "cudaSuccess: " << cudaGetName( cudaSuccess ) << std::endl;
     std::cout << "cudaErrorNoDevice: " << cudaGetName( cudaErrorNoDevice ) << std::endl;
@@ -50,10 +61,10 @@ int main()
     auto host    = hostAllocator.allocate( N );
     auto std     = stdAllocator.allocate( N );
     std::cout << std::endl;
-    std::cout << "Device: " << getString( getMemoryType( device ) ) << std::endl;
-    std::cout << "Managed: " << getString( getMemoryType( managed ) ) << std::endl;
-    std::cout << "Host: " << getString( getMemoryType( host ) ) << std::endl;
-    std::cout << "std: " << getString( getMemoryType( std ) ) << std::endl;
+    std::cout << "Device: " << getMemorySpace( device ) << std::endl;
+    std::cout << "Managed: " << getMemorySpace( managed ) << std::endl;
+    std::cout << "Host: " << getMemorySpace( host ) << std::endl;
+    std::cout << "std: " << getMemorySpace( std ) << std::endl;
     devAllocator.deallocate( device, N );
     managedAllocator.deallocate( managed, N );
     hostAllocator.deallocate( host, N );
@@ -71,6 +82,6 @@ int main()
     #endif
 #endif
 
-
+    AMP::AMPManager::shutdown();
     return 0;
 }
