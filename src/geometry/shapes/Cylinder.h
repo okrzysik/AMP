@@ -15,7 +15,7 @@ namespace AMP::Geometry {
  * \brief A class used to abstract away geometry information from an application or mesh.
  * \details  This class provides routines for reading, accessing and writing geometries.
  */
-class Cylinder : public LogicalGeometry
+class Cylinder final : public LogicalGeometry
 {
 public:
     /**
@@ -57,16 +57,16 @@ public: // Functions inherited from Geometry
     bool operator==( const Geometry &rhs ) const override final;
     void writeRestart( int64_t ) const override;
 
-protected:
-    // Internal data
-    double d_r;
-    double d_z_min;
-    double d_z_max;
-    std::array<double, 3> d_offset;
+protected: // Internal data
+    double d_r                      = 0;
+    double d_z_min                  = 0;
+    double d_z_max                  = 0;
+    std::array<double, 3> d_offset  = { 0, 0, 0 };
+    std::array<double, 2> d_chamfer = { 0, 0 };
 
-private:
-    // Private constructor
+private: // Private functions
     Cylinder();
+    double getR( double z ) const;
 };
 
 

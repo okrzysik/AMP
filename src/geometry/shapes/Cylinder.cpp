@@ -11,7 +11,7 @@ namespace AMP::Geometry {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
-Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db )
+Cylinder::Cylinder() : LogicalGeometry()
 {
     d_ids         = { 4, 4, 4, 4, 2, 1 };
     d_isPeriodic  = { false, false, false };
@@ -20,22 +20,41 @@ Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db )
     d_offset[0]   = 0;
     d_offset[1]   = 0;
     d_offset[2]   = 0;
-    auto range    = db->getVector<double>( "Range" );
-    AMP_INSIST( range.size() == 3u, "Range must be an array of length 3" );
-    d_r     = range[0];
-    d_z_min = range[1];
-    d_z_max = range[2];
 }
-Cylinder::Cylinder( double r, double z_min, double z_max )
-    : LogicalGeometry(), d_r( r ), d_z_min( z_min ), d_z_max( z_max )
+Cylinder::Cylinder( std::shared_ptr<const AMP::Database> db ) : Cylinder()
 {
-    d_ids         = { 4, 4, 4, 4, 2, 1 };
-    d_isPeriodic  = { false, false, false };
-    d_physicalDim = 3;
-    d_logicalDim  = 3;
-    d_offset[0]   = 0;
-    d_offset[1]   = 0;
-    d_offset[2]   = 0;
+    auto range = db->getVector<double>( "Range" );
+    if ( range.size() == 3u ) {
+        d_r     = range[0];
+        d_z_min = range[1];
+        d_z_max = range[2];
+    } else if ( range.size() == 5u ) {
+        d_r          = range[0];
+        d_z_min      = range[1];
+        d_z_max      = range[2];
+        d_chamfer[0] = range[3];
+        d_chamfer[1] = range[4];
+    } else {
+        AMP_INSIST( range.size() == 3u, "Range must be an array of length 3" );
+    }
+}
+Cylinder::Cylinder( double r, double z_min, double z_max ) : Cylinder()
+{
+    d_r     = r;
+    d_z_min = z_min;
+    d_z_max = z_max;
+}
+
+
+/********************************************************
+ * Get cylinder radius at current height                 *
+ ********************************************************/
+double Cylinder::getR( double z ) const
+{
+    double z2 = std::min( fabs( z - d_z_min ), fabs( z - d_z_max ) );
+    if ( z2 < d_chamfer[0] )
+        return d_r - d_chamfer[1] * ( 1 - z2 / d_chamfer[0] );
+    return d_r;
 }
 
 
@@ -52,9 +71,10 @@ Point Cylinder::nearest( const Point &pos ) const
     z        = std::min( z, d_z_max );
     z        = std::max( z, d_z_min );
     double r = sqrt( x * x + y * y );
-    if ( r > d_r ) {
-        x *= d_r / r;
-        y *= d_r / r;
+    double R = getR( z );
+    if ( r > R ) {
+        x *= R / r;
+        y *= R / r;
     }
     return { x + d_offset[0], y + d_offset[1], z + d_offset[2] };
 }
@@ -71,7 +91,20 @@ double Cylinder::distance( const Point &pos, const Point &ang ) const
     double y = pos.y() - d_offset[1];
     double z = pos.z() - d_offset[2] - 0.5 * ( d_z_min + d_z_max );
     // Compute the distance to the cylinder
-    double d = GeometryHelpers::distanceToCylinder( d_r, d_z_max - d_z_min, { x, y, z }, ang );
+    double h = d_z_max - d_z_min - 2 * d_chamfer[0];
+    double d = GeometryHelpers::distanceToCylinder( d_r, h, { x, y, z }, ang );
+    if ( d_chamfer[0] > 0 ) {
+        double ax = ang[0];
+        double ay = ang[1];
+        double az = ang[2];
+        double z1 = ( d_z_min + d_chamfer[0] ) - z;
+        double z2 = z - ( d_z_max - d_chamfer[0] );
+        double d1 = GeometryHelpers::distanceToCircularFrustum(
+            d_r, d_r - d_chamfer[1], d_chamfer[0], { x, y, z1 }, { ax, ay, -az } );
+        double d2 = GeometryHelpers::distanceToCircularFrustum(
+            d_r, d_r - d_chamfer[1], d_chamfer[0], { x, y, z2 }, { ax, ay, az } );
+        d = std::min( { d, d1, d2 } );
+    }
     return d;
 }
 
@@ -84,10 +117,11 @@ bool Cylinder::inside( const Point &pos ) const
     double x  = pos.x() - d_offset[0];
     double y  = pos.y() - d_offset[1];
     double z  = pos.z() - d_offset[2];
-    double t1 = 1e-12 * d_r * d_r;
+    double R  = getR( z );
+    double t1 = 1e-12 * R * R;
     double t2 = 1e-12 * std::max( fabs( d_z_min ), fabs( d_z_max ) );
     double r2 = x * x + y * y;
-    bool in_r = r2 <= d_r * d_r + t1;
+    bool in_r = r2 <= R * R + t1;
     bool in_z = z >= d_z_min - t2 && z <= d_z_max + t2;
     return in_r && in_z;
 }
@@ -102,7 +136,8 @@ int Cylinder::surface( const Point &pos ) const
     double y  = pos.y() - d_offset[1];
     double z  = pos.z() - d_offset[2];
     double r  = sqrt( x * x + y * y );
-    double d1 = std::abs( r - d_r );
+    double R  = getR( z );
+    double d1 = std::abs( r - R );
     double d2 = std::abs( z - d_z_min );
     double d3 = std::abs( z - d_z_max );
     if ( d1 <= std::min( d2, d3 ) )
@@ -138,10 +173,12 @@ Point Cylinder::surfaceNorm( const Point &pos ) const
  ********************************************************/
 Point Cylinder::physical( const Point &pos ) const
 {
-    auto tmp = GeometryHelpers::map_logical_circle( d_r, 2, pos[0], pos[1] );
-    double x = tmp[0] + d_offset[0];
-    double y = tmp[1] + d_offset[1];
-    double z = d_z_min + pos[2] * ( d_z_max - d_z_min ) + d_offset[2];
+    double z0 = d_z_min + pos[2] * ( d_z_max - d_z_min );
+    double R  = getR( z0 );
+    auto tmp  = GeometryHelpers::map_logical_circle( R, 2, pos[0], pos[1] );
+    double x  = tmp[0] + d_offset[0];
+    double y  = tmp[1] + d_offset[1];
+    double z  = z0 + d_offset[2];
     return { x, y, z };
 }
 
@@ -151,8 +188,9 @@ Point Cylinder::physical( const Point &pos ) const
  ********************************************************/
 Point Cylinder::logical( const Point &pos ) const
 {
+    double R = getR( pos[2] - d_offset[2] );
     auto tmp =
-        GeometryHelpers::map_circle_logical( d_r, 2, pos[0] - d_offset[0], pos[1] - d_offset[1] );
+        GeometryHelpers::map_circle_logical( R, 2, pos[0] - d_offset[0], pos[1] - d_offset[1] );
     double z = ( pos[2] - d_z_min - d_offset[2] ) / ( d_z_max - d_z_min );
     return Point( tmp[0], tmp[1], z );
 }
@@ -179,7 +217,9 @@ std::pair<Point, Point> Cylinder::box() const
 double Cylinder::volume() const
 {
     constexpr double pi = 3.141592653589793;
-    return ( d_z_max - d_z_min ) * pi * d_r * d_r;
+    double V            = ( d_z_max - d_z_min ) * pi * d_r * d_r;
+    V += d_chamfer[0] * ( d_r + d_r - d_chamfer[1] );
+    return V;
 }
 
 
@@ -227,7 +267,8 @@ bool Cylinder::operator==( const Geometry &rhs ) const
     if ( !geom )
         return false;
     return d_r == geom->d_r && d_z_min == geom->d_z_min && d_z_max == geom->d_z_max &&
-           d_offset == geom->d_offset;
+               d_offset == geom->d_offset,
+           d_chamfer == d_chamfer;
 }
 
 
@@ -245,6 +286,7 @@ void Cylinder::writeRestart( int64_t fid ) const
     AMP::writeHDF5( fid, "z_min", d_z_min );
     AMP::writeHDF5( fid, "z_max", d_z_max );
     AMP::writeHDF5( fid, "offset", d_offset );
+    AMP::writeHDF5( fid, "chamfer", d_chamfer );
 }
 Cylinder::Cylinder( int64_t fid )
 {
@@ -256,6 +298,7 @@ Cylinder::Cylinder( int64_t fid )
     AMP::readHDF5( fid, "z_min", d_z_min );
     AMP::readHDF5( fid, "z_max", d_z_max );
     AMP::readHDF5( fid, "offset", d_offset );
+    AMP::readHDF5( fid, "chamfer", d_chamfer );
 }
 
 
