@@ -163,6 +163,9 @@ protected:
     //! variables
     void evaluateLeapFrogPredictor( void );
 
+    //! evaluates a predictor based on an interpolating polynomial
+    void evaluateBDFInterpolantPredictor( void );
+
     //! evaluates the forward Euler predictor and stores in the predictor energy and temperature
     //! variables
     void evaluateForwardEulerPredictor( void );

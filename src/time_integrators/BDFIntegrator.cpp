@@ -72,11 +72,11 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
     AMP_ASSERT( d_max_integrator_index < d_integrator_names.size() );
 
-    std::vector<std::string> time_level_names = { "v(n)",   "v(n-1)", "v(n-2)",
-                                                  "v(n-3)", "v(n-4)", "v(n-5)" };
+    std::vector<std::string> time_level_names = { "v(n)",   "v(n-1)", "v(n-2)", "v(n-3)",
+                                                  "v(n-4)", "v(n-5)", "v(n-6)" };
     // setup the vectors for the time integrator that are important
     // to keep track of during regridding
-    for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
+    for ( auto i = 0u; i <= d_max_integrator_index + 1; ++i ) {
         d_vector_names.push_back( time_level_names[i] );
     }
 
@@ -105,14 +105,14 @@ void BDFIntegrator::integratorSpecificInitialize( void )
 
     AMP_ASSERT( vecs.size() == d_vector_names.size() );
 
-    d_prev_solutions.resize( d_max_integrator_index + 1 );
-    d_integrator_steps.resize( d_max_integrator_index + 1 );
+    d_prev_solutions.resize( d_max_integrator_index + 2 );
+    d_integrator_steps.resize( d_max_integrator_index + 2 );
 
-    for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
+    for ( auto i = 0u; i <= d_max_integrator_index + 1; ++i ) {
         d_prev_solutions[i] = vecs[i];
     }
 
-    size_t i = d_max_integrator_index + 1;
+    size_t i = d_max_integrator_index + 2;
 
     d_integrator_source_vector = vecs[i];
     i++;
@@ -140,7 +140,7 @@ void BDFIntegrator::integratorSpecificInitialize( void )
     // copy the initial conditions into the previous solution vector
     // NOTE: previously only copying one prev sol -- checkk!!!
     if ( d_ic_vector != nullptr ) {
-        for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
+        for ( auto i = 0u; i <= d_max_integrator_index + 1; ++i ) {
             d_prev_solutions[i]->copyVector( d_ic_vector );
         }
     }
@@ -654,10 +654,7 @@ double BDFIntegrator::getNextDtTruncationError( const bool good_solution, const 
     return d_current_dt;
 }
 
-double BDFIntegrator::getNextDtConstant( const bool good_solution, const int solver_retcode )
-{
-    return d_initial_dt;
-}
+double BDFIntegrator::getNextDtConstant( const bool, const int ) { return d_initial_dt; }
 
 double BDFIntegrator::getNextDtPredefined( const bool good_solution, const int solver_retcode )
 {
@@ -668,7 +665,7 @@ double BDFIntegrator::getNextDtPredefined( const bool good_solution, const int s
 #endif
 }
 
-double BDFIntegrator::getNextDtFinalConstant( const bool good_solution, const int solver_retcode )
+double BDFIntegrator::getNextDtFinalConstant( const bool, const int )
 {
     static int i = 1;
     if ( i <= d_number_initial_fixed_steps ) {
@@ -787,6 +784,8 @@ void BDFIntegrator::evaluatePredictor()
         } else {
             if ( d_predictor_type == "leapfrog" ) {
                 evaluateLeapFrogPredictor();
+            } else if ( d_predictor_type == "bdf_interpolant" ) {
+                evaluateBDFInterpolantPredictor();
             } else {
                 AMP_ERROR( "ERROR: Valid option for BDF2 predictor is only leapfrog currently" );
             }
@@ -858,6 +857,8 @@ void BDFIntegrator::evaluateLeapFrogPredictor()
 
     PROFILE_STOP( "evaluateLeapFrogPredictor" );
 }
+
+void BDFIntegrator::evaluateBDFInterpolantPredictor() { AMP_ERROR( "Not implemented" ); }
 
 // the leapfrog estimator is based on Gresho and Sani
 void BDFIntegrator::evaluateForwardEulerPredictor()
@@ -1192,7 +1193,7 @@ void BDFIntegrator::integratorSpecificUpdateSolution( const double new_time )
         }
 
         // update solutions at previous time levels by swapping
-        for ( auto i = d_integrator_index; i >= 1; --i ) {
+        for ( auto i = d_integrator_index + 1; i >= 1; --i ) {
             d_prev_solutions[i]->swapVectors( d_prev_solutions[i - 1] );
             d_integrator_steps[i] = d_integrator_steps[i - 1];
         }

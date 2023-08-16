@@ -99,7 +99,8 @@ void NodeToNodeMap::applyStart( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     // Subset the vector for the variable (we only need the local portion of the vector)
     PROFILE_START( "subset", 1 );
     auto var = getInputVariable();
-    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
+    //    AMP::LinearAlgebra::VS_Comm commSelector( AMP_MPI( AMP_COMM_SELF ) );
+    AMP::LinearAlgebra::VS_Comm commSelector( AMP_COMM_SELF );
     auto commSubsetVec = u->select( commSelector, u->getName() );
     auto curPhysics    = commSubsetVec->subsetVectorForVariable( var );
     PROFILE_STOP( "subset", 1 );
