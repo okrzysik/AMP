@@ -97,6 +97,7 @@ static_assert( getOS() != OS::Unknown );
  ****************************************************************************/
 MemoryType getMemoryType( const void *ptr )
 {
+    NULL_USE( ptr );
     auto type = MemoryType::unregistered;
 #if defined( AMP_USE_CUDA ) || defined( USE_CUDA )
     type = getCudaMemoryType( ptr );
