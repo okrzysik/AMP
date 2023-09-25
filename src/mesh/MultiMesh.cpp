@@ -74,6 +74,7 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
         auto params = std::make_shared<MeshParameters>( meshDatabases[i] );
         params->setComm( comms[i] );
         auto new_mesh = AMP::Mesh::MeshFactory::create( params );
+        AMP_ASSERT( new_mesh );
         d_meshes.push_back( new_mesh );
     }
     // Get the physical dimension
@@ -133,8 +134,10 @@ MultiMesh::MultiMesh( std::shared_ptr<const MeshParameters> params_in ) : Mesh( 
         displaceMesh( displacement );
     // Create additional multi-mesh views
     for ( int i = 1; db->keyExists( "MeshView_" + std::to_string( i ) ); i++ ) {
-        auto db2 = db->getDatabase( "MeshView_" + std::to_string( i ) );
-        d_meshes.push_back( createView( *this, *db2 ) );
+        auto db2  = db->getDatabase( "MeshView_" + std::to_string( i ) );
+        auto view = createView( *this, *db2 );
+        if ( view )
+            d_meshes.push_back( view );
     }
     // Construct the geometry object for the multimesh
     std::vector<std::shared_ptr<AMP::Geometry::Geometry>> geom;
@@ -209,8 +212,10 @@ MultiMesh::MultiMesh( const std::string &name,
 }
 MultiMesh::MultiMesh( const MultiMesh &rhs ) : Mesh( rhs )
 {
-    for ( const auto &mesh : rhs.d_meshes )
+    for ( const auto &mesh : rhs.d_meshes ) {
         d_meshes.push_back( mesh->clone() );
+        AMP_ASSERT( d_meshes.back() );
+    }
     std::vector<std::shared_ptr<AMP::Geometry::Geometry>> geom;
     for ( auto &mesh : d_meshes ) {
         auto tmp = mesh->getGeometry();
@@ -710,6 +715,7 @@ std::shared_ptr<Mesh> MultiMesh::Subset( std::string name ) const
     std::vector<std::shared_ptr<Mesh>> subset;
     std::set<MeshID> subsetID;
     for ( auto &mesh : d_meshes ) {
+        AMP_ASSERT( mesh );
         auto mesh2 = mesh->Subset( name );
         if ( mesh2 ) {
             subset.push_back( mesh2 );
@@ -864,6 +870,24 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
             for ( auto &subKey : subKeys )
                 copyKey( subDatabase1, subDatabase2, subKey, false, iterator, index2 );
         }
+    } else if ( database1->isType<std::string>( key ) ) {
+        // Copy a std::string (checking for the iterator)
+        const auto data = database1->getVector<std::string>( key );
+        AMP_ASSERT( !data.empty() );
+        for ( size_t i = 0; i < database2.size(); i++ ) {
+            if ( data.size() == 1 ) {
+                auto data2 = strrep( data[0], iterator, index[i] );
+                database2[i]->putScalar( key, data2 );
+            } else if ( data.size() == database2.size() && select ) {
+                auto data2 = strrep( data[i], iterator, index[i] );
+                database2[i]->putScalar( key, data2 );
+            } else {
+                auto data2 = data;
+                for ( auto &str : data2 )
+                    str = strrep( str, iterator, index[i] );
+                database2[i]->putVector( key, data2 );
+            }
+        }
     } else if ( !select ) {
         for ( auto &db : database2 )
             db->putData( key, database1->getData( key )->clone() );
@@ -882,22 +906,6 @@ static void copyKey( std::shared_ptr<const AMP::Database> database1,
     } else if ( database1->isType<std::complex<double>>( key ) ) {
         // Copy a std::complex<double>
         putEntry<std::complex<double>>( database1, database2, key );
-    } else if ( database1->isType<std::string>( key ) ) {
-        // Copy a std::string (checking for the index)
-        auto data = database1->getVector<std::string>( key );
-        AMP_ASSERT( !data.empty() );
-        if ( data.size() == 1 ) {
-            for ( size_t i = 0; i < database2.size(); i++ ) {
-                auto data2 = strrep( data[0], iterator, index[i] );
-                database2[i]->putScalar( key, data2 );
-            }
-        } else if ( data.size() == database2.size() ) {
-            for ( size_t i = 0; i < database2.size(); i++ )
-                database2[i]->putScalar( key, data[i] );
-        } else {
-            for ( auto &db : database2 )
-                db->putVector( key, data );
-        }
     } else {
         AMP_ERROR( "Unknown key type" );
     }

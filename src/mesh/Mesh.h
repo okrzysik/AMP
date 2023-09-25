@@ -7,6 +7,7 @@
 #include "AMP/utils/Database.h"
 #include "AMP/utils/enable_shared_from_this.h"
 
+#include <iostream>
 #include <memory>
 
 
@@ -479,6 +480,11 @@ public:
      */
     static std::shared_ptr<Mesh> createView( const Mesh &mesh, const AMP::Database &db );
 
+
+    //! Print the mesh hierarchy<iostream>
+    static void printMeshHierarchy( const Mesh &mesh,
+                                    std::ostream &out         = std::cout,
+                                    const std::string &prefix = "" );
 
 protected:
     //!  Empty constructor for a mesh

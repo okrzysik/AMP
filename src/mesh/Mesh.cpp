@@ -485,6 +485,8 @@ std::shared_ptr<Mesh> Mesh::createView( const Mesh &src, const AMP::Database &db
         if ( mesh )
             meshes.push_back( mesh );
     }
+    if ( src.getComm().allReduce( meshes.empty() ) )
+        AMP_ERROR( "Failed to create view" );
     auto comm = src.getComm().split( meshes.empty() ? 0 : 1 );
     if ( meshes.empty() )
         return nullptr;
@@ -529,6 +531,15 @@ std::ostream &operator<<( std::ostream &out, AMP::Mesh::MeshElementID x )
     out << "(" << is_local << "," << x.type() << "," << x.local_id() << "," << x.owner_rank() << ","
         << x.meshID() << ")";
     return out;
+}
+void Mesh::printMeshHierarchy( const Mesh &mesh, std::ostream &out, const std::string &prefix )
+{
+    out << prefix << mesh.getName() << std::endl;
+    auto multimesh = dynamic_cast<const MultiMesh *>( &mesh );
+    if ( multimesh ) {
+        for ( auto mesh2 : multimesh->getMeshes() )
+            printMeshHierarchy( *mesh2, out, prefix + "   " );
+    }
 }
 
 
