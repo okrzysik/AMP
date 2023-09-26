@@ -40,6 +40,8 @@ ImplicitIntegrator::ImplicitIntegrator(
     if ( !isTimeOperator ) {
         auto timeOperator_db = std::make_shared<AMP::Database>( "TimeOperatorDatabase" );
         timeOperator_db->putScalar( "name", "TimeOperator" );
+        timeOperator_db->putScalar( "print_info_level", d_iDebugPrintInfoLevel );
+
         auto timeOperatorParameters =
             std::make_shared<AMP::TimeIntegrator::TimeOperatorParameters>( timeOperator_db );
         timeOperatorParameters->d_pRhsOperator = d_operator;

@@ -175,7 +175,7 @@ Vector::const_shared_ptr Vector::subsetVectorForComponent( size_t index ) const
 /****************************************************************
  * clone, swap                                                   *
  ****************************************************************/
-std::shared_ptr<Vector> Vector::clone() const { return clone( getVariable() ); }
+std::shared_ptr<Vector> Vector::clone() const { return clone( getVariable()->clone() ); }
 std::shared_ptr<Vector> Vector::clone( const std::string &name ) const
 {
     std::unique_ptr<Vector> retVal;
@@ -293,7 +293,7 @@ bool Vector::equals( const Vector &a, const Scalar &tol ) const
 
 
 /****************************************************************
- * Misc                                                          *
+ * Get/set the name                                              *
  ****************************************************************/
 std::string Vector::getName() const
 {
@@ -301,6 +301,28 @@ std::string Vector::getName() const
         return d_Variable->getName();
     return "";
 }
+void Vector::setName( const std::string &name )
+{
+    if ( d_Variable )
+        d_Variable = d_Variable->clone( name );
+    else
+        d_Variable = std::make_shared<Variable>( name );
+}
+
+void Vector::rename( const std::string &src, const std::string &dst )
+{
+    if ( getName() == src )
+        setName( dst );
+    if ( dynamic_cast<MultiVector *>( this ) ) {
+        for ( auto vec : *dynamic_cast<MultiVector *>( this ) )
+            vec->rename( src, dst );
+    }
+}
+
+
+/****************************************************************
+ * Misc                                                          *
+ ****************************************************************/
 size_t Vector::getNumberOfComponents() const
 {
     return d_VectorData ? d_VectorData->getNumberOfComponents() : 0;

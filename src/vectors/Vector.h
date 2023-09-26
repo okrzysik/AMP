@@ -345,29 +345,28 @@ public: // the next set of functions defines the public math. interface for vect
 public: // Clone vectors
     /** \brief Allocate space in the same fashion as <i>this</i>
      * \details  This will allocate new space with identical layout as <i>this</i>.
+     *    It will have the same number of blocks, each with the same engines and same number
+     *    of entries.  The vector will be associated with the same Variable.
      * \return  A Vector shared pointer
-     * It will have the same number of blocks, each with the same engines and same number of
-     * entries.  The vector will
-     * be associated with the same Variable.
      */
     std::shared_ptr<Vector> clone() const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
-     * \param[in] name  Name to give the variable associated with this vector
      * \details  This will allocate new space with identical layout as <i>this</i>.
+     *    It will have the same number of blocks, each with the same engines and same
+     *    number of entries.  The vector will be associated with a clone of the same Variable
+     *    with the given name.
+     * \param[in] name  Name to give the variable associated with this vector
      * \return  A Vector shared pointer
-     * It will have the same number of blocks, each with the same engines and same
-     * number of entries.  The vector will be associated with a clone of the same Variable with the
-     * given name
      */
     std::shared_ptr<Vector> clone( const std::string &name ) const;
 
     /** \brief Allocate space in the same fashion as <i>this</i>
-     * \param[in] name  The variable to associate with the new vector
      * \details  This will allocate new space with identical layout as <i>this</i>.
+     *    It will have the same number of blocks, each with the same engines and same number
+     *    of entries.
+     * \param[in] name  The variable to associate with the new vector
      * \return  A Vector shared pointer
-     * It will have the same number of blocks, each with the same engines and same number of
-     * entries.
      */
     std::shared_ptr<Vector> clone( const std::shared_ptr<Variable> name ) const;
 
@@ -409,11 +408,21 @@ public: // Get/Set data/variables/operations
      */
     std::shared_ptr<Variable> getVariable();
 
+    //! Return integer number of patch data components in vector
+    size_t getNumberOfComponents() const;
+
     //! Return the vector name
     std::string getName() const;
 
-    //! Return integer number of patch data components in vector
-    size_t getNumberOfComponents() const;
+    //! Set the vector name
+    void setName( const std::string &name );
+
+    /** \brief Renames
+     * \details  Renames the vector and any components matching src to dst.
+     * \param[in] src  The original variable name
+     * \param[in] dst  The new variable name
+     */
+    virtual void rename( const std::string &src, const std::string &dst );
 
 public: // Subset/Select
     /** \brief  Selects a portion of this vector and creates a view.
