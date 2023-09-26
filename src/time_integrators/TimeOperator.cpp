@@ -1,5 +1,6 @@
 #include "TimeOperator.h"
 #include "AMP/utils/Database.h"
+#include "AMP/vectors/MultiVector.h"
 #include "TimeOperatorParameters.h"
 
 
@@ -130,6 +131,23 @@ void TimeOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u_in,
         r->axpy( d_dGamma, *d_pSourceTerm, *r );
     }
 
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "Unscaled residual component norms: ";
+        auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( r );
+        if ( mv ) {
+            const auto n = mv->getNumberOfSubvectors();
+            for ( size_t i = 0u; i < n; ++i ) {
+                const auto v    = mv->getVector( i );
+                const auto name = v->getVariable()->getName();
+                AMP::pout << name << " " << static_cast<double>( v->L2Norm() ) << " ";
+            }
+        } else {
+            const auto name = r->getVariable()->getName();
+            AMP::pout << name << " " << static_cast<double>( r->L2Norm() ) << " ";
+        }
+        AMP::pout << std::endl;
+    }
+
     if ( d_pFunctionScaling ) {
         r->divide( *r, *d_pFunctionScaling );
     }
@@ -150,6 +168,23 @@ void TimeOperator::residual( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
         r->axpy( -1.0, *r, *f );
     } else {
         r->scale( -1.0, *r );
+    }
+
+    if ( d_iDebugPrintInfoLevel > 2 ) {
+        AMP::pout << "Scaled residual component norms: ";
+        auto mv = std::dynamic_pointer_cast<AMP::LinearAlgebra::MultiVector>( r );
+        if ( mv ) {
+            const auto n = mv->getNumberOfSubvectors();
+            for ( size_t i = 0u; i < n; ++i ) {
+                const auto v    = mv->getVector( i );
+                const auto name = v->getVariable()->getName();
+                AMP::pout << name << " " << static_cast<double>( v->L2Norm() ) << " ";
+            }
+        } else {
+            const auto name = r->getVariable()->getName();
+            AMP::pout << name << " " << static_cast<double>( r->L2Norm() ) << " ";
+        }
+        AMP::pout << std::endl;
     }
 }
 
