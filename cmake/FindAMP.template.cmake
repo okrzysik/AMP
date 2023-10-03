@@ -43,7 +43,7 @@ SET( TPLS_REQUIRED @TPL_LIST_FOUND@ )
 SET( TPLS_OPTIONAL )
 
 
-# Add any addional TPLs needed
+# Add any additional TPLs needed
 FOREACH( tmp ${EXTRA_REQUIRED_TPLS} )
     IF ( NOT ( ${tmp} IN_LIST TPLS_REQUIRED ) )
         SET( TPLS_REQUIRED ${TPLS_REQUIRED} ${tmp} )
