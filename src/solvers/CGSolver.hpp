@@ -70,7 +70,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     if ( f_norm == static_cast<T>( 0.0 ) )
         return;
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const auto terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "CGSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
