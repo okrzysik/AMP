@@ -273,6 +273,11 @@ ThreadPool::ThreadPool( const int N,
     // Create the threads
     d_thread = new std::thread[MAX_THREADS];
     setNumThreads( N, affinity, procs );
+    // Create a list of retired wait pointers
+    d_wait_retired_idx = 0;
+    d_wait_retired     = new vwait_t[4 * MAX_WAIT];
+    for ( int i = 0; i < 4 * MAX_WAIT; i++ )
+        d_wait_retired[i].store( nullptr );
     // Verify that the threadpool is valid
     if ( !is_valid( this ) )
         throw std::logic_error( "Thread pool is not valid" );
@@ -290,6 +295,9 @@ ThreadPool::~ThreadPool()
     d_N_threads = ~0;
     d_NULL_HEAD = 0;
     d_NULL_TAIL = 0;
+    for ( int i = 0; i < 4 * MAX_WAIT; i++ )
+        delete d_wait_retired[i].load();
+    delete d_wait_retired;
 }
 
 
@@ -646,13 +654,14 @@ ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, in
     if ( N_finished >= N_wait )
         return finished;
     // Create the wait event struct
-    wait_ids_struct wait( N_work, ids, finished, N_wait, MAX_WAIT, d_wait, d_wait_finished );
+    auto wait =
+        new wait_ids_struct( N_work, ids, finished, N_wait, MAX_WAIT, d_wait, d_wait_finished );
     // Wait for the ids
     auto t1 = std::chrono::high_resolution_clock::now();
     auto t2 = t1;
     int dt1 = 0;
     while ( dt1 < max_wait ) {
-        bool test = wait.wait_for( std::min( max_wait, d_max_wait_time ), 0.01 );
+        bool test = wait->wait_for( std::min( max_wait, d_max_wait_time ), 0.01 );
         if ( test )
             break;
         auto t3 = std::chrono::high_resolution_clock::now();
@@ -663,15 +672,17 @@ ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, in
             t2 = t3;
         }
     }
-    wait.clear();
+    // "Delete" the wait event; retire it in case there are dangling references in memory
+    wait->clear();
+    int i = ( ++d_wait_retired_idx ) % ( 4 * MAX_WAIT );
+    delete d_wait_retired[i].load();
+    d_wait_retired[i].store( wait );
+    wait = nullptr;
     // Update any ids that have finished
     for ( size_t i = 0; i < N_work; i++ ) {
         if ( ids[i].finished() )
             finished.set( i );
     }
-    // Yield the time slice to allow any threads currently using the wait_id to try and finish
-    std::this_thread::yield();
-    // Delete the wait event struct
     return finished;
 }
 
@@ -729,12 +740,7 @@ ThreadPool::wait_ids_struct::wait_ids_struct( size_t N,
                                               int N_wait_list,
                                               wait_ptr *list,
                                               condition_variable &wait_event )
-    : d_wait( N_wait ),
-      d_N( N ),
-      d_lock( 0 ),
-      d_ids( ids ),
-      d_finished( finished ),
-      d_wait_event( wait_event )
+    : d_wait( N_wait ), d_N( N ), d_ids( ids ), d_finished( finished ), d_wait_event( wait_event )
 {
     if ( d_N.load() == 0 )
         return;
@@ -747,12 +753,7 @@ ThreadPool::wait_ids_struct::wait_ids_struct( size_t N,
     AMP_ASSERT( list[i].load() == this );
     d_ptr = &list[i];
 }
-ThreadPool::wait_ids_struct::~wait_ids_struct()
-{
-    clear();
-    while ( d_lock.load() != 0 )
-        std::this_thread::yield();
-}
+ThreadPool::wait_ids_struct::~wait_ids_struct() { clear(); }
 void ThreadPool::wait_ids_struct::clear() const
 {
     if ( d_N.load() == 0 )
@@ -777,7 +778,6 @@ void ThreadPool::wait_ids_struct::id_finished( const ThreadPoolID &id ) const
 {
     if ( d_N.load() == 0 )
         return;
-    ++d_lock;
     int N_finished = 0;
     for ( int i = 0; i < d_N.load(); i++ ) {
         if ( d_ids[i] == id ) {
@@ -790,7 +790,6 @@ void ThreadPool::wait_ids_struct::id_finished( const ThreadPoolID &id ) const
         clear();
         d_wait_event.notify_all();
     }
-    --d_lock;
 }
 bool ThreadPool::wait_ids_struct::wait_for( double total_time, double recheck_time )
 {

@@ -557,7 +557,6 @@ private:
       private:
         mutable vint32_t d_wait;                // The number items that must finish
         mutable vint32_t d_N;                   // The number of ids
-        mutable vint32_t d_lock;                // Internal lock
         const ThreadPoolID *d_ids;              // The ids we are waiting on
         bit_array &d_finished;                  // Has each id finished
         condition_variable &d_wait_event;       // Handle to a wait event
@@ -608,10 +607,10 @@ private:
     ///// Member data
 
     // Typedefs
-    typedef volatile std::atomic_uint32_t vint32_t;         // volatile atomic int
-    typedef volatile std::atomic_uint64_t vint64_t;         // volatile atomic int64
-    typedef volatile std::atomic<wait_ids_struct*> vwait_t; // volatile pointer to wait id
-    typedef condition_variable cond_t;                      // condition variable
+    typedef volatile std::atomic_uint32_t vint32_t; // volatile atomic int
+    typedef volatile std::atomic_uint64_t vint64_t; // volatile atomic int64
+    typedef volatile std::atomic<wait_ids_struct*> vwait_t;  // volatile atomic pointer to wait id
+    typedef condition_variable cond_t;              // condition variable
 
     // Internal data
     uint32_t d_NULL_HEAD;                 // Null data buffer to check memory bounds
@@ -632,6 +631,8 @@ private:
     ThreadPoolListQueue d_queue;          // The work queue
     std::function<void(const std::string&)> d_errorHandler; // Error handler
     std::thread *d_thread;                // Handles to the threads
+    mutable vwait_t *d_wait_retired;      // Retired wait events
+    mutable vint64_t d_wait_retired_idx;  // Index to next available pointer for wait events
     uint32_t d_NULL_TAIL;                 // Null data buffer to check memory bounds
 };
 
