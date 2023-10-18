@@ -15,7 +15,6 @@
 #include <typeinfo>
 #include <vector>
 
-#include "AMP/utils/threadpool/BitArray.h"
 #include "AMP/utils/threadpool/ThreadPoolId.h"
 #include "AMP/utils/threadpool/ThreadPoolQueue.h"
 #include "AMP/utils/threadpool/ThreadPoolWorkItem.h"
@@ -51,7 +50,6 @@ class alignas(16) ThreadPool final
 public:
     ///// Set some global properties
     constexpr static uint16_t MAX_THREADS = 128; // The maximum number of threads (must be a multiple of 64)
-    constexpr static uint16_t MAX_WAIT = 8;      // The maximum number of active waits at any given time
 
 public:
     ///// Member classes
@@ -369,7 +367,6 @@ public:
      *      Note: this is a global property and will affect all thread pools in an application.
      * @param behavior      The behavior of OS specific messages/errors
      *                      0: Print a warning message
-
      *                      1: Ignore the messages
      *                      2: Throw an error
      */
@@ -470,35 +467,6 @@ private:
     };
 
 
-    // Structure to wait on multiple ids
-    // Note: this is thread safe without blocking as long as it is added to the wait list
-    //    before calling wait
-    class wait_ids_struct final {
-      private:
-        typedef volatile std::atomic_int32_t vint32_t;
-        typedef volatile std::atomic<wait_ids_struct*> wait_ptr;
-      public:
-        wait_ids_struct() = delete;
-        wait_ids_struct( const wait_ids_struct& ) = delete;
-        wait_ids_struct& operator=( const wait_ids_struct & ) = delete;
-        wait_ids_struct( size_t N, const ThreadPoolID *ids, const BitArray& finished, size_t N_wait, 
-            int N_wait_list, wait_ptr *list, condition_variable &wait_event );
-        ~wait_ids_struct( );
-        void id_finished( const ThreadPoolID& id ) const;
-        bool wait_for( double total_time, double recheck_time );
-        void clear() const;
-      private:
-        mutable vint32_t d_wait;                // The number items that must finish
-        mutable vint32_t d_N;                   // The number of ids
-        const ThreadPoolID *d_ids;              // The ids we are waiting on
-        mutable BitArray d_finished;            // Has each id finished
-        condition_variable &d_wait_event;       // Handle to a wait event
-        mutable wait_ptr *d_ptr;
-      private:
-        inline bool check();
-    };
-
-
 private:
     ///// Member functions
 
@@ -530,7 +498,10 @@ private:
     inline bool isMemberThread() const { return getThreadNumber()>=0; }
 
     // Function to wait for some work items to finish
-    BitArray wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const;
+    std::vector<bool> wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const;
+    
+    // Function to wait for N work items to finish (may return early)
+    void wait_N( int N, double time ) const;
     
     // Check if we are waiting too long and pring debug info
     void print_wait_warning( ) const;
@@ -542,7 +513,6 @@ private:
     // Typedefs
     typedef volatile std::atomic_uint32_t vint32_t; // volatile atomic int
     typedef volatile std::atomic_uint64_t vint64_t; // volatile atomic int64
-    typedef volatile std::atomic<wait_ids_struct*> vwait_t;  // volatile atomic pointer to wait id
     typedef condition_variable cond_t;              // condition variable
 
     // Internal data
@@ -550,7 +520,7 @@ private:
     volatile mutable bool d_signal_empty; // Do we want to send a signal when the queue is empty
     uint16_t d_N_threads;                 // Number of threads
     int d_max_wait_time;                  // The maximum time waiting before printing a warning message
-    vint32_t d_signal_count;              // Signal count
+    mutable vint32_t d_signal_count;      // Signal count
     vint32_t d_num_active;                // Number of threads that are currently active
     vint64_t d_id_assign;                 // An internal variable used to store the current id to assign
     vint64_t d_active[MAX_THREADS/64];    // Which threads are currently active
@@ -558,14 +528,11 @@ private:
     vint64_t d_N_added;                   // Number of items added to the work queue
     vint64_t d_N_started;                 // Number of items started
     vint64_t d_N_finished;                // Number of items finished
-    mutable vwait_t d_wait[MAX_WAIT];     // The wait events to check
     mutable cond_t d_wait_finished;       // Condition variable to signal when work is finished
     mutable cond_t d_wait_work;           // Condition variable to signal when there is new work
     ThreadPoolListQueue d_queue;          // The work queue
     std::function<void(const std::string&)> d_errorHandler; // Error handler
     std::thread *d_thread;                // Handles to the threads
-    mutable vwait_t *d_wait_retired;      // Retired wait events
-    mutable vint64_t d_wait_retired_idx;  // Index to next available pointer for wait events
     uint32_t d_NULL_TAIL;                 // Null data buffer to check memory bounds
 };
 
