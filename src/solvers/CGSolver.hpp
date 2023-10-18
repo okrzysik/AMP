@@ -64,13 +64,13 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
-    const auto f_norm = static_cast<T>( f->L2Norm() );
+    const auto f_norm = f->L2Norm();
 
     // enhance with convergence reason, number of iterations etc
     if ( f_norm == static_cast<T>( 0.0 ) )
         return;
 
-    const T terminate_tol = d_dRelativeTolerance * f_norm;
+    const auto terminate_tol = d_dRelativeTolerance * f_norm;
 
     if ( d_iDebugPrintInfoLevel > 1 ) {
         std::cout << "CGSolver<T>::solve: initial L2Norm of solution vector: " << u->L2Norm()
@@ -97,7 +97,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         d_pOperator->residual( f, u, r );
     }
     // compute the current residual norm
-    auto current_res = static_cast<T>( r->L2Norm() );
+    auto current_res = r->L2Norm();
 
     // return if the residual is already low enough
     if ( current_res < terminate_tol ) {
@@ -115,9 +115,8 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         z->copyVector( r );
     }
 
-    std::vector<T> rho( 2, 0.0 );
-    rho[1] = static_cast<T>( z->dot( *r ) );
-    rho[0] = rho[1];
+    auto rho_1 = z->dot( *r );
+    auto rho_0 = rho_1;
 
     auto p = z->clone();
     auto w = r->clone();
@@ -125,27 +124,27 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     for ( auto iter = 0; iter < d_iMaxIterations; ++iter ) {
 
-        T beta = static_cast<T>( 1.0 );
+        AMP::Scalar beta{ static_cast<T>( 1.0 ) };
 
         // w = Ap
         d_pOperator->apply( p, w );
 
         // alpha = p'Ap
-        T alpha = static_cast<T>( w->dot( *p ) );
+        auto alpha = w->dot( *p );
 
         // sanity check, the curvature should be positive
-        if ( alpha <= static_cast<T>( 0.0 ) ) {
+        if ( alpha <= 0.0 ) {
             // set diverged reason
             AMP_ERROR( "Negative curvature encountered in CG!!" );
         }
 
-        alpha = rho[1] / alpha;
+        alpha = rho_1 / alpha;
 
         u->axpy( alpha, *p, *u );
         r->axpy( -alpha, *w, *r );
 
         // compute the current residual norm
-        current_res = static_cast<T>( r->L2Norm() );
+        current_res = r->L2Norm();
         if ( d_iDebugPrintInfoLevel > 0 ) {
             std::cout << "CG: iteration " << ( iter + 1 ) << ", residual " << current_res
                       << std::endl;
@@ -163,10 +162,10 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             z->copyVector( r );
         }
 
-        rho[0] = rho[1];
-        rho[1] = static_cast<T>( r->dot( *z ) );
+        rho_0 = rho_1;
+        rho_1 = r->dot( *z );
 
-        beta = rho[1] / rho[0];
+        beta = rho_1 / rho_0;
         p->axpy( beta, *p, *z );
     }
 
