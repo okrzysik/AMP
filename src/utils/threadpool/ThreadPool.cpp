@@ -634,10 +634,10 @@ void ThreadPool::add_work( size_t N,
 /******************************************************************
  * This function waits for a some of the work items to finish      *
  ******************************************************************/
-ThreadPool::bit_array
+BitArray
 ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const
 {
-    bit_array finished( N_work );
+    BitArray finished( N_work );
     // Check the inputs
     if ( N_wait > N_work )
         throw std::logic_error( "Invalid arguments in thread pool wait" );
@@ -673,7 +673,6 @@ ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, in
         }
     }
     // "Delete" the wait event; retire it in case there are dangling references in memory
-    wait->clear();
     int i = ( ++d_wait_retired_idx ) % ( 4 * MAX_WAIT );
     delete d_wait_retired[i].load();
     d_wait_retired[i].store( wait );
@@ -735,14 +734,14 @@ void ThreadPool::wait_pool_finished() const
  ******************************************************************/
 ThreadPool::wait_ids_struct::wait_ids_struct( size_t N,
                                               const ThreadPoolID *ids,
-                                              bit_array &finished,
+                                              const BitArray &finished,
                                               size_t N_wait,
                                               int N_wait_list,
                                               wait_ptr *list,
                                               condition_variable &wait_event )
     : d_wait( N_wait ), d_N( N ), d_ids( ids ), d_finished( finished ), d_wait_event( wait_event )
 {
-    if ( d_N.load() == 0 )
+    if ( N == 0 )
         return;
     int i                 = 0;
     wait_ids_struct *null = nullptr;
@@ -761,6 +760,7 @@ void ThreadPool::wait_ids_struct::clear() const
     d_ptr->store( nullptr );
     d_N.store( 0 );
     d_wait.store( 0 );
+    std::this_thread::yield();
 }
 inline bool ThreadPool::wait_ids_struct::check()
 {

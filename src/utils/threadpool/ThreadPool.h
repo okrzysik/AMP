@@ -15,6 +15,7 @@
 #include <typeinfo>
 #include <vector>
 
+#include "AMP/utils/threadpool/BitArray.h"
 #include "AMP/utils/threadpool/ThreadPoolId.h"
 #include "AMP/utils/threadpool/ThreadPoolQueue.h"
 #include "AMP/utils/threadpool/ThreadPoolWorkItem.h"
@@ -440,75 +441,7 @@ public: // Static interface
 
 
 private:
-    ///// Member data structures
-
-   
-    // Class to store a variable bit array (with atomic support for setting/unsetting bit)
-    class bit_array final
-    {
-      public:
-        bit_array() : d_N2( 0 ), d_data( nullptr ) {}
-        explicit bit_array( size_t N ) : d_N2( ( N + 63 ) / 64 ), d_data( nullptr )
-        {
-            d_data = new std::atomic_uint64_t[d_N2];
-            for ( size_t i = 0; i < d_N2; i++ )
-                d_data[i] = 0;
-        }
-        ~bit_array( ) { delete[] d_data; }
-        bit_array( const bit_array& ) = delete;
-        bit_array( bit_array&& rhs ): d_N2( rhs.d_N2 ), d_data( rhs.d_data ) { rhs.d_data = nullptr; }
-        bit_array& operator=( const bit_array& ) = delete;
-        bit_array& operator=( bit_array&& rhs ) = delete;
-        inline void set( uint64_t index )
-        {
-            uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            d_data[index >> 6].fetch_or( mask );
-        }
-        inline void unset( uint64_t index )
-        {
-            uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            d_data[index >> 6].fetch_and( ~mask );
-        }
-        inline bool get( uint64_t index ) const
-        {
-            uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            return ( d_data[index >> 6] & mask ) != 0;
-        }
-        inline size_t sum() const
-        {
-            size_t count = 0;
-            for ( size_t i=0; i<d_N2; i++)
-                count += popcount64( d_data[i] );
-            return count;
-        }
-        inline std::vector<int> getIndicies() const
-        {
-            std::vector<int> index( sum() );
-            for ( size_t i = 0, j = 0, k = 0; i < d_N2; i++ ) {
-                uint64_t mask = 0x01;
-                for ( size_t m=0; m<64; m++, k++, mask<<=1 ) {
-                    if ( ( d_data[i] & mask ) != 0 )
-                        index[j++] = k;
-                }
-            }
-            return index;
-        }
-      private:
-        static inline size_t popcount64( uint64_t x )
-        {
-             x = (x & 0x5555555555555555LU) + (x >> 1 & 0x5555555555555555LU);
-             x = (x & 0x3333333333333333LU) + (x >> 2 & 0x3333333333333333LU);
-             x = ( x + (x >> 4) ) & 0x0F0F0F0F0F0F0F0FLU;
-             x = ( x + (x >> 8) );
-             x = ( x + (x >> 16) );
-             x = ( x + (x >> 32) ) & 0x0000007F;
-            return x;
-        }
-      private:
-        size_t d_N2;
-        volatile std::atomic_uint64_t *d_data;
-    };
-    
+    ///// Member data structures    
 
     // Implimentation of condition_variable which does not require a lock
     class condition_variable final
@@ -548,7 +481,7 @@ private:
         wait_ids_struct() = delete;
         wait_ids_struct( const wait_ids_struct& ) = delete;
         wait_ids_struct& operator=( const wait_ids_struct & ) = delete;
-        wait_ids_struct( size_t N, const ThreadPoolID *ids, bit_array& finished, size_t N_wait, 
+        wait_ids_struct( size_t N, const ThreadPoolID *ids, const BitArray& finished, size_t N_wait, 
             int N_wait_list, wait_ptr *list, condition_variable &wait_event );
         ~wait_ids_struct( );
         void id_finished( const ThreadPoolID& id ) const;
@@ -558,7 +491,7 @@ private:
         mutable vint32_t d_wait;                // The number items that must finish
         mutable vint32_t d_N;                   // The number of ids
         const ThreadPoolID *d_ids;              // The ids we are waiting on
-        bit_array &d_finished;                  // Has each id finished
+        mutable BitArray d_finished;            // Has each id finished
         condition_variable &d_wait_event;       // Handle to a wait event
         mutable wait_ptr *d_ptr;
       private:
@@ -597,7 +530,7 @@ private:
     inline bool isMemberThread() const { return getThreadNumber()>=0; }
 
     // Function to wait for some work items to finish
-    bit_array wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const;
+    BitArray wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const;
     
     // Check if we are waiting too long and pring debug info
     void print_wait_warning( ) const;
