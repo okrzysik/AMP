@@ -1846,7 +1846,7 @@ void BDFIntegrator::registerVectorsForMemoryManagement( void )
 
             d_registerVectorForManagement( d_solution_vector );
 
-            for ( auto i = 0u; i <= d_max_integrator_index; ++i ) {
+            for ( auto i = 0u; i <= d_max_integrator_index + 1; ++i ) {
                 d_registerVectorForManagement( d_prev_solutions[i] );
             }
 
