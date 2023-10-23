@@ -904,6 +904,6 @@ int main( int argc, char *argv[] )
     if ( rank == 0 )
         std::cout << std::endl;
     AMP::AMPManager::shutdown();
-    printf( "%i: showdown complete\n", rank );
+    printf( "%i: shutdown complete\n", rank );
     return N_errors;
 }

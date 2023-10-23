@@ -110,9 +110,8 @@ AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
         if ( id == mesh->meshID() )
             continue;
         auto mesh2 = mesh->Subset( id );
-        auto data2 = std::make_shared<DataStoreType<AMP::Mesh::Mesh>>( "", mesh2, manager );
         manager->registerComm( mesh2->getComm() );
-        manager->registerData( data2 );
+        manager->registerData( mesh2 );
     }
 }
 template<>

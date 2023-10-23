@@ -55,6 +55,61 @@ void AMP::readHDF5Scalar<AMP::Mesh::MeshID>( hid_t fid,
 
 
 /********************************************************
+ * MeshElementID                                         *
+ ********************************************************/
+#ifdef AMP_USE_HDF5
+static_assert( sizeof( AMP::Mesh::MeshElementID ) == 2 * sizeof( uint64_t ) );
+template<>
+hid_t AMP::getHDF5datatype<AMP::Mesh::MeshElementID>()
+{
+    return getHDF5datatype<uint64_t>();
+}
+template<>
+void AMP::writeHDF5Array<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                    const std::string_view &name,
+                                                    const AMP::Array<AMP::Mesh::MeshElementID> &x )
+{
+    auto size2 = cat( ArraySize( 2 ), x.size() );
+    auto ptr   = const_cast<uint64_t *>( reinterpret_cast<const uint64_t *>( x.data() ) );
+    auto y     = AMP::Array<uint64_t>::staticView( size2, ptr );
+    writeHDF5Array( fid, name, y );
+}
+template<>
+void AMP::readHDF5Array<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                   const std::string_view &name,
+                                                   AMP::Array<AMP::Mesh::MeshElementID> &x )
+{
+    AMP::Array<uint64_t> y;
+    AMP::readHDF5Array( fid, name, y );
+    ArraySize size( { y.size( 1 ), y.size( 2 ), y.size( 3 ), y.size( 4 ) }, y.ndim() - 1 );
+    x.resize( size );
+    for ( size_t i = 0; i < x.length(); i++ )
+        x( i ) = AMP::Mesh::MeshElementID( AMP::Mesh::MeshID( y( 0, i ) ),
+                                           AMP::Mesh::ElementID( y( 1, i ) ) );
+}
+template<>
+void AMP::writeHDF5Scalar<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                     const std::string_view &name,
+                                                     const AMP::Mesh::MeshElementID &data )
+{
+    AMP::Array<AMP::Mesh::MeshElementID> x( { 1 }, &data );
+    writeHDF5Array( fid, name, x );
+}
+template<>
+void AMP::readHDF5Scalar<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                    const std::string_view &name,
+                                                    AMP::Mesh::MeshElementID &data )
+{
+    AMP::Array<AMP::Mesh::MeshElementID> x;
+    readHDF5Array( fid, name, x );
+    AMP_ASSERT( x.size() == 1u );
+    data = x( 0 );
+}
+INSTANTIATE_HDF5( AMP::Mesh::MeshElementID );
+#endif
+
+
+/********************************************************
  * GeomType                                              *
  ********************************************************/
 #ifdef AMP_USE_HDF5

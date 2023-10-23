@@ -157,6 +157,9 @@ public:
      */
     const AMP_MPI &getComm() const;
 
+    //! Get a unique id hash
+    uint64_t getID() const;
+
 
 protected:
     /**

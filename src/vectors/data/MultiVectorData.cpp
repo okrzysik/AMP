@@ -2,6 +2,7 @@
 #define included_AMP_MultiVectorData_hpp
 
 #include "AMP/vectors/data/MultiVectorData.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -508,6 +509,37 @@ void MultiVectorData::dumpGhostedData( std::ostream &out, size_t offset ) const
         size_t globalOffset = globalStartDOF[0] - subStartDOF[0];
         d_data[i]->dumpGhostedData( out, offset + globalOffset );
     }
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MultiVectorData::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    manager->registerComm( d_comm );
+    for ( auto data : d_data )
+        manager->registerData( data->shared_from_this() );
+    manager->registerData( d_globalDOFManager->shared_from_this() );
+    for ( auto dofs : d_subDOFManager )
+        manager->registerData( dofs->shared_from_this() );
+}
+void MultiVectorData::writeRestart( int64_t fid ) const
+{
+    std::vector<uint64_t> dataHash( d_data.size() );
+    std::vector<uint64_t> dofsHash( d_subDOFManager.size() );
+    for ( size_t i=0; i<d_data.size(); i++)
+        dataHash[i] = d_data[i]->getID();
+    for ( size_t i=0; i<d_subDOFManager.size(); i++)
+        dofsHash[i] = d_subDOFManager[i]->getID();
+    writeHDF5( fid, "CommHash", d_comm.hashRanks() );
+    writeHDF5( fid, "globalDOFsHash", d_globalDOFManager->getID() );
+    writeHDF5( fid, "VectorDataHash", dataHash );
+    writeHDF5( fid, "DOFManagerHash", dofsHash );
+}
+MultiVectorData::MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    AMP_ERROR( "stop" );
 }
 
 

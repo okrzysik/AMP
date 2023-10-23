@@ -1,4 +1,5 @@
 #include "AMP/discretization/simpleDOF_Manager.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/mesh/MultiMesh.h"
@@ -104,7 +105,7 @@ simpleDOFManager::simpleDOFManager( std::shared_ptr<AMP::Mesh::Mesh> mesh,
 
 
 /****************************************************************
- * Deconstructor                                                 *
+ * Destructor                                                    *
  ****************************************************************/
 simpleDOFManager::~simpleDOFManager() = default;
 
@@ -493,4 +494,59 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
         AMP_ASSERT( remote_ids[i] == remote_ids2[i] );
     return remote_dof;
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void simpleDOFManager::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    // Register the mesh
+    manager->registerData( d_mesh );
+}
+void simpleDOFManager::writeRestart( int64_t fid ) const
+{
+    // DOFManager variables
+    writeHDF5( fid, "begin", d_begin );
+    writeHDF5( fid, "end", d_end );
+    writeHDF5( fid, "global", d_global );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    // simpleDOFManager variables
+    writeHDF5( fid, "isBaseMesh", d_isBaseMesh );
+    writeHDF5( fid, "geomType", d_type );
+    writeHDF5( fid, "DOFsPerElement", d_DOFsPerElement );
+    writeHDF5( fid, "meshID", d_meshID );
+    writeHDF5( fid, "baseMeshIDs", d_baseMeshIDs );
+    AMP_ERROR( "Not finished (iterator)" );
+    // writeHDF5( fid, "localIterator", d_localIterator );
+    // writeHDF5( fid, "ghostIterator", d_ghostIterator );
+    writeHDF5( fid, "local_id", d_local_id );
+    writeHDF5( fid, "remote_id", d_remote_id );
+    writeHDF5( fid, "remote_dof", d_remote_dof );
+}
+simpleDOFManager::simpleDOFManager( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    // DOFManager variables
+    uint64_t commHash;
+    readHDF5( fid, "comm", commHash );
+    readHDF5( fid, "begin", d_begin );
+    readHDF5( fid, "end", d_end );
+    readHDF5( fid, "global", d_global );
+    auto comm = manager->getComm( commHash );
+    // simpleDOFManager variables
+    readHDF5( fid, "isBaseMesh", d_isBaseMesh );
+    readHDF5( fid, "geomType", d_type );
+    readHDF5( fid, "DOFsPerElement", d_DOFsPerElement );
+    readHDF5( fid, "meshID", d_meshID );
+    readHDF5( fid, "baseMeshIDs", d_baseMeshIDs );
+    AMP_ERROR( "Not finished (iterator)" );
+    // readHDF5( fid, "localIterator", d_localIterator );
+    // readHDF5( fid, "ghostIterator", d_ghostIterator );
+    readHDF5( fid, "local_id", d_local_id );
+    readHDF5( fid, "remote_id", d_remote_id );
+    readHDF5( fid, "remote_dof", d_remote_dof );
+    d_mesh = manager->getData<AMP::Mesh::Mesh>( d_meshID.getHash() );
+}
+
+
 } // namespace AMP::Discretization

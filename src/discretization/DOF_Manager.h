@@ -7,6 +7,11 @@
 #include "AMP/utils/AMP_MPI.h"
 
 
+namespace AMP::IO {
+class RestartManager;
+}
+
+
 namespace AMP::Discretization {
 
 
@@ -34,6 +39,10 @@ public:
 
     //! Deconstructor
     virtual ~DOFManager();
+
+
+    //! Return a string with the mesh class name
+    virtual std::string className() const;
 
 
     /** \brief  Compares two DOFManager for equality.
@@ -156,8 +165,32 @@ public:
                                                 const AMP_MPI &comm );
 
 
-    //! Get a unique id hash for the vector
+    //! Get a unique id hash
     uint64_t getID() const;
+
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid       File identifier to read
+     * \param manager   Restart manager
+     */
+    DOFManager( int64_t fid, AMP::IO::RestartManager *manager );
 
 
 protected:

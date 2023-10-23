@@ -12,6 +12,9 @@ class Geometry;
 namespace AMP::Mesh {
 class Mesh;
 }
+namespace AMP::Discretization {
+class DOFManager;
+}
 namespace AMP::LinearAlgebra {
 class Vector;
 class Matrix;
@@ -36,6 +39,7 @@ namespace AMP::IO {
 template<class TYPE>
 void RestartManager::registerData( const TYPE &data, const std::string &name )
 {
+    using AMP::Discretization::DOFManager;
     using AMP::LinearAlgebra::Matrix;
     using AMP::LinearAlgebra::Vector;
     using AMP::Mesh::Mesh;
@@ -54,6 +58,9 @@ void RestartManager::registerData( const TYPE &data, const std::string &name )
             obj = data;
         } else if constexpr ( std::is_base_of_v<Mesh, TYPE2> && !std::is_same_v<TYPE2, Mesh> ) {
             obj = create( name, std::dynamic_pointer_cast<const Mesh>( data ) );
+        } else if constexpr ( std::is_base_of_v<DOFManager, TYPE2> &&
+                              !std::is_same_v<TYPE2, DOFManager> ) {
+            obj = create( name, std::dynamic_pointer_cast<const DOFManager>( data ) );
         } else if constexpr ( std::is_base_of_v<Vector, TYPE2> && !std::is_same_v<TYPE2, Vector> ) {
             obj = create( name, std::dynamic_pointer_cast<const Vector>( data ) );
         } else if constexpr ( std::is_base_of_v<Matrix, TYPE2> && !std::is_same_v<TYPE2, Matrix> ) {

@@ -267,8 +267,20 @@ void VectorData::print( std::ostream &os, const std::string &name, const std::st
  ****************************************************************/
 uint64_t VectorData::getID() const
 {
-    AMP_ERROR( "Not finished" );
-    return 0;
+    return getComm().bcast( reinterpret_cast<uint64_t>( this ), 0 );
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void VectorData::registerChildObjects( AMP::IO::RestartManager * ) const
+{
+    AMP_ERROR( "Need to implement registerChildObjects for " + VectorDataName() );
+}
+void VectorData::writeRestart( int64_t ) const
+{
+    AMP_ERROR( "Need to implement writeRestart for " + VectorDataName() );
 }
 
 
@@ -282,19 +294,27 @@ template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::DataStoreType(
     const std::string &name,
     std::shared_ptr<const AMP::LinearAlgebra::VectorData> data,
-    RestartManager * )
+    RestartManager *manager )
     : d_data( data )
 {
     d_name = name;
     d_hash = data->getID();
-    AMP_ERROR( "Not finished" );
+    d_data->registerChildObjects( manager );
+    // Register the communication list
+    auto commList = data->getCommunicationList();
+    if ( commList )
+        manager->registerData( commList );
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::write(
     hid_t fid, const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
-    AMP_ERROR( "Not finished" );
+    d_data->writeRestart( gid );
+    writeHDF5( gid, "ClassType", d_data->VectorDataName() );
+    auto commList     = d_data->getCommunicationList();
+    auto commListHash = commList ? commList->getID() : 0;
+    writeHDF5( gid, "CommListHash", commListHash );
     closeGroup( gid );
 }
 template<>
@@ -302,6 +322,27 @@ std::shared_ptr<AMP::LinearAlgebra::VectorData>
 AMP::IO::RestartManager::getData<AMP::LinearAlgebra::VectorData>( const std::string &name )
 {
     hid_t gid = openGroup( d_fid, name );
+    std::string type;
+    readHDF5( gid, "ClassType", type );
+    std::shared_ptr<AMP::LinearAlgebra::VectorData> data;
+    // Load the object (we will need to replace the if/else with a factory
     AMP_ERROR( "Not finished" );
+    /*if ( type == "DOFManager" ) {
+        dofs = std::make_shared<AMP::Discretization::DOFManager>( gid, this );
+    } else if ( type == "StructuredGeometryMesh" ) {
+        // mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, this );
+    } else if ( type == "MovableBoxMesh" ) {
+        // mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, this );
+    } else {
+        AMP_ERROR( "Not finished: " + type );
+    }*/
+    // Load the communication data
+    uint64_t commListHash = 0;
+    readHDF5( gid, "CommListHash", commListHash );
+    if ( commListHash ) {
+        auto commList = getData<AMP::LinearAlgebra::CommunicationList>( commListHash );
+        data->setCommunicationList( commList );
+    }
     closeGroup( gid );
+    return data;
 }
