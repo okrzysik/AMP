@@ -528,9 +528,9 @@ void MultiVectorData::writeRestart( int64_t fid ) const
 {
     std::vector<uint64_t> dataHash( d_data.size() );
     std::vector<uint64_t> dofsHash( d_subDOFManager.size() );
-    for ( size_t i=0; i<d_data.size(); i++)
+    for ( size_t i = 0; i < d_data.size(); i++ )
         dataHash[i] = d_data[i]->getID();
-    for ( size_t i=0; i<d_subDOFManager.size(); i++)
+    for ( size_t i = 0; i < d_subDOFManager.size(); i++ )
         dofsHash[i] = d_subDOFManager[i]->getID();
     writeHDF5( fid, "CommHash", d_comm.hashRanks() );
     writeHDF5( fid, "globalDOFsHash", d_globalDOFManager->getID() );

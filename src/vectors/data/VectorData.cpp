@@ -309,12 +309,12 @@ template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::write(
     hid_t fid, const std::string &name ) const
 {
-    hid_t gid = createGroup( fid, name );
-    d_data->writeRestart( gid );
-    writeHDF5( gid, "ClassType", d_data->VectorDataName() );
+    hid_t gid         = createGroup( fid, name );
     auto commList     = d_data->getCommunicationList();
     auto commListHash = commList ? commList->getID() : 0;
+    writeHDF5( gid, "ClassType", d_data->VectorDataName() );
     writeHDF5( gid, "CommListHash", commListHash );
+    d_data->writeRestart( gid );
     closeGroup( gid );
 }
 template<>

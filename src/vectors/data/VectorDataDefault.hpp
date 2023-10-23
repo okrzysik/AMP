@@ -1,6 +1,7 @@
 #ifndef included_AMP_VectorDataDefault_hpp
 #define included_AMP_VectorDataDefault_hpp
 
+#include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
 
 #include <cstring>
@@ -241,6 +242,36 @@ void VectorDataDefault<TYPE, Allocator>::swapData( VectorData &rhs )
     std::swap( d_localSize, rhs2->d_localSize );
     std::swap( d_globalSize, rhs2->d_globalSize );
     std::swap( d_localStart, rhs2->d_localStart );
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+template<typename TYPE, class Allocator>
+void VectorDataDefault<TYPE, Allocator>::registerChildObjects(
+    AMP::IO::RestartManager *manager ) const
+{
+}
+template<typename TYPE, class Allocator>
+void VectorDataDefault<TYPE, Allocator>::writeRestart( int64_t fid ) const
+{
+    AMP::Array<TYPE> data( d_localSize );
+    getRawData( data.data(), getTypeID<TYPE>() );
+    writeHDF5( fid, "data", data );
+    writeHDF5( fid, "localSize", d_localSize );
+    writeHDF5( fid, "globalSize", d_globalSize );
+    writeHDF5( fid, "localStart", d_localStart );
+}
+template<typename TYPE, class Allocator>
+VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid, AMP::IO::RestartManager * )
+{
+    AMP::Array<TYPE> data;
+    readHDF5( fid, "data", data );
+    readHDF5( fid, "localSize", d_localSize );
+    readHDF5( fid, "globalSize", d_globalSize );
+    readHDF5( fid, "localStart", d_localStart );
+    putRawData( data.data(), getTypeID<TYPE>() );
 }
 
 

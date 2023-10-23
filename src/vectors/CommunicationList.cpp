@@ -285,7 +285,6 @@ const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
 } // namespace AMP::LinearAlgebra
 
 
-
 /********************************************************
  *  Restart operations                                   *
  ********************************************************/
@@ -325,4 +324,3 @@ AMP::IO::RestartManager::getData<AMP::LinearAlgebra::CommunicationList>( const s
     closeGroup( gid );
     return std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
 }
-
