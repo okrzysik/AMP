@@ -7,6 +7,11 @@
 #include <vector>
 
 
+namespace AMP::IO {
+class RestartManager;
+}
+
+
 namespace AMP::LinearAlgebra {
 
 
@@ -316,8 +321,27 @@ public:
     uint64_t getID() const;
 
 
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+
 protected:
     VectorOperations();
+
+protected:
+    uint64_t d_hash = 0;
 };
 
 

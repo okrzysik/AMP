@@ -1,4 +1,5 @@
 #include "AMP/vectors/operations/MultiVectorOperations.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/Scalar.h"
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
@@ -564,6 +565,31 @@ void MultiVectorOperations::resetVectorOperations(
     std::vector<std::shared_ptr<VectorOperations>> ops )
 {
     d_operations = std::move( ops );
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MultiVectorOperations::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    for ( auto ops : d_operations )
+        manager->registerData( ops );
+}
+void MultiVectorOperations::writeRestart( int64_t fid ) const
+{
+    std::vector<uint64_t> opsHash( d_operations.size() );
+    for ( size_t i = 0; i < d_operations.size(); i++ )
+        opsHash[i] = d_operations[i]->getID();
+    writeHDF5( fid, "VectorOperationsHash", opsHash );
+}
+MultiVectorOperations::MultiVectorOperations( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    std::vector<uint64_t> opsHash;
+    readHDF5( fid, "VectorOperationsHash", opsHash );
+    d_operations.resize( opsHash.size() );
+    for ( size_t i = 0; i < d_operations.size(); i++ )
+        d_operations[i] = manager->getData<VectorOperations>( opsHash[i] );
 }
 
 

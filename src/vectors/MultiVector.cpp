@@ -1,4 +1,5 @@
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
@@ -342,6 +343,33 @@ Vector::shared_ptr &MultiVector::getVector( Vector &rhs, size_t which ) const
     AMP_ASSERT( x != nullptr );
     AMP_ASSERT( which < x->d_vVectors.size() );
     return x->d_vVectors[which];
+}
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void MultiVector::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    Vector::registerChildObjects( manager );
+    for ( auto vec : d_vVectors )
+        manager->registerData( vec );
+}
+void MultiVector::writeRestart( int64_t fid ) const
+{
+    Vector::writeRestart( fid );
+    std::vector<uint64_t> vecs;
+    for ( auto vec2 : d_vVectors )
+        vecs.push_back( vec2->getID() );
+    writeHDF5( fid, "vecs", vecs );
+}
+MultiVector::MultiVector( int64_t fid, AMP::IO::RestartManager *manager ) : Vector( fid, manager )
+{
+    std::vector<uint64_t> vecs;
+    readHDF5( fid, "vecs", vecs );
+    d_vVectors.resize( vecs.size() );
+    for ( size_t i = 0; i < vecs.size(); i++ )
+        d_vVectors[i] = manager->getData<AMP::LinearAlgebra::Vector>( vecs[i] );
 }
 
 

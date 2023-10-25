@@ -363,6 +363,46 @@ std::ostream &operator<<( std::ostream &out, const Vector &v )
 }
 
 
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void Vector::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    manager->registerData( d_Variable );
+    manager->registerData( d_DOFManager );
+    manager->registerData( d_VectorData );
+    manager->registerData( d_VectorOps );
+}
+void Vector::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "units", d_units );
+    writeHDF5( fid, "var", d_Variable->getID() );
+    writeHDF5( fid, "dofs", d_DOFManager->getID() );
+    writeHDF5( fid, "data", d_VectorData->getID() );
+    writeHDF5( fid, "ops", d_VectorOps->getID() );
+    /*auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( d_data );
+    if ( multivec ) {
+        std::vector<uint64_t> vecs;
+        for ( auto vec2 : *multivec )
+            vecs.push_back( vec2->getID() );
+        writeHDF5( fid, "vecs", vecs );
+    }*/
+}
+Vector::Vector( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    uint64_t variableID, DOFManagerID, VectorDataID, VectorOpsID;
+    readHDF5( fid, "units", d_units );
+    readHDF5( fid, "var", variableID );
+    readHDF5( fid, "dofs", DOFManagerID );
+    readHDF5( fid, "data", VectorDataID );
+    readHDF5( fid, "ops", VectorOpsID );
+    d_Variable   = manager->getData<AMP::LinearAlgebra::Variable>( variableID );
+    d_DOFManager = manager->getData<AMP::Discretization::DOFManager>( DOFManagerID );
+    d_VectorData = manager->getData<AMP::LinearAlgebra::VectorData>( VectorDataID );
+    d_VectorOps  = manager->getData<AMP::LinearAlgebra::VectorOperations>( VectorOpsID );
+}
+
+
 } // namespace AMP::LinearAlgebra
 
 
@@ -378,10 +418,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::DataStoreTyp
 {
     d_name = name;
     d_hash = vec->getID();
-    manager->registerData( vec->getVariable() );
-    manager->registerData( vec->getDOFManager() );
-    manager->registerData( vec->getVectorData() );
-    manager->registerData( vec->getVectorOperations() );
+    d_data->registerChildObjects( manager );
     auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( vec );
     if ( multivec ) {
         for ( auto vec2 : *multivec )
@@ -393,25 +430,27 @@ void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::write(
     hid_t fid, const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
-    writeHDF5( gid, "units", d_data->getUnits() );
-    writeHDF5( gid, "var", d_data->getVariable()->getID() );
-    writeHDF5( gid, "dofs", d_data->getDOFManager()->getID() );
-    writeHDF5( gid, "data", d_data->getVectorData()->getID() );
-    writeHDF5( gid, "ops", d_data->getVectorOperations()->getID() );
-    auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( d_data );
-    if ( multivec ) {
-        std::vector<uint64_t> vecs;
-        for ( auto vec2 : *multivec )
-            vecs.push_back( vec2->getID() );
-        writeHDF5( gid, "vecs", vecs );
-    }
+    writeHDF5( gid, "type", d_data->type() );
+    d_data->writeRestart( gid );
     closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::Vector>
-AMP::IO::RestartManager::getData<AMP::LinearAlgebra::Vector>( uint64_t hash )
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, hash2String( hash ) );
-    AMP_ERROR( "Not finished" );
+    hid_t gid = openGroup( fid, name );
+    std::string type;
+    readHDF5( gid, "type", type );
+    // Will need to replace this with a factory
+    std::shared_ptr<AMP::LinearAlgebra::Vector> vec;
+    if ( type.substr( 0, 7 ) == "Vector<" ) {
+        vec = std::make_shared<AMP::LinearAlgebra::Vector>( gid, manager );
+    } else if ( type == "MultiVector" ) {
+        vec = std::make_shared<AMP::LinearAlgebra::MultiVector>( gid, manager );
+    } else {
+        AMP_ERROR( "Unknown vector type: " + type );
+    }
     closeGroup( gid );
+    return vec;
 }

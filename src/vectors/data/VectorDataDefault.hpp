@@ -249,8 +249,7 @@ void VectorDataDefault<TYPE, Allocator>::swapData( VectorData &rhs )
  * Write/Read restart data                                       *
  ****************************************************************/
 template<typename TYPE, class Allocator>
-void VectorDataDefault<TYPE, Allocator>::registerChildObjects(
-    AMP::IO::RestartManager *manager ) const
+void VectorDataDefault<TYPE, Allocator>::registerChildObjects( AMP::IO::RestartManager * ) const
 {
 }
 template<typename TYPE, class Allocator>
@@ -271,6 +270,7 @@ VectorDataDefault<TYPE, Allocator>::VectorDataDefault( int64_t fid, AMP::IO::Res
     readHDF5( fid, "localSize", d_localSize );
     readHDF5( fid, "globalSize", d_globalSize );
     readHDF5( fid, "localStart", d_localStart );
+    d_data = d_alloc.allocate( d_localSize );
     putRawData( data.data(), getTypeID<TYPE>() );
 }
 

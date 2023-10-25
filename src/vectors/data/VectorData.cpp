@@ -2,6 +2,8 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/utils/UtilityMacros.h"
 #include "AMP/vectors/data/DataChangeListener.h"
+#include "AMP/vectors/data/MultiVectorData.h"
+#include "AMP/vectors/data/VectorDataDefault.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -319,28 +321,28 @@ void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::wri
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::VectorData>
-AMP::IO::RestartManager::getData<AMP::LinearAlgebra::VectorData>( const std::string &name )
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, name );
+    hid_t gid = openGroup( fid, name );
     std::string type;
     readHDF5( gid, "ClassType", type );
-    std::shared_ptr<AMP::LinearAlgebra::VectorData> data;
     // Load the object (we will need to replace the if/else with a factory
-    AMP_ERROR( "Not finished" );
-    /*if ( type == "DOFManager" ) {
-        dofs = std::make_shared<AMP::Discretization::DOFManager>( gid, this );
-    } else if ( type == "StructuredGeometryMesh" ) {
-        // mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, this );
-    } else if ( type == "MovableBoxMesh" ) {
-        // mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, this );
+    std::shared_ptr<AMP::LinearAlgebra::VectorData> data;
+    if ( type == "MultiVectorData" ) {
+        data = std::make_shared<AMP::LinearAlgebra::MultiVectorData>( gid, manager );
+    } else if ( type == "VectorDataDefault<double>" ) {
+        data = std::make_shared<AMP::LinearAlgebra::VectorDataDefault<double>>( gid, manager );
+    } else if ( type == "VectorDataDefault<float>" ) {
+        data = std::make_shared<AMP::LinearAlgebra::VectorDataDefault<float>>( gid, manager );
     } else {
-        AMP_ERROR( "Not finished: " + type );
-    }*/
+        AMP_ERROR( "Unknown VectorData: " + type );
+    }
     // Load the communication data
     uint64_t commListHash = 0;
     readHDF5( gid, "CommListHash", commListHash );
     if ( commListHash ) {
-        auto commList = getData<AMP::LinearAlgebra::CommunicationList>( commListHash );
+        auto commList = manager->getData<AMP::LinearAlgebra::CommunicationList>( commListHash );
         data->setCommunicationList( commList );
     }
     closeGroup( gid );

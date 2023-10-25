@@ -539,7 +539,21 @@ void MultiVectorData::writeRestart( int64_t fid ) const
 }
 MultiVectorData::MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager )
 {
-    AMP_ERROR( "stop" );
+    uint64_t commHash, globalDOFsHash;
+    std::vector<uint64_t> vectorDataHash, DOFManagerHash;
+    readHDF5( fid, "CommHash", commHash );
+    readHDF5( fid, "globalDOFsHash", globalDOFsHash );
+    readHDF5( fid, "VectorDataHash", vectorDataHash );
+    readHDF5( fid, "DOFManagerHash", DOFManagerHash );
+    d_comm = manager->getComm( commHash );
+    d_data.resize( vectorDataHash.size() );
+    for ( size_t i = 0; i < d_data.size(); i++ )
+        d_data[i] = manager->getData<VectorData>( vectorDataHash[i] ).get();
+    d_globalDOFManager = manager->getData<AMP::Discretization::DOFManager>( globalDOFsHash ).get();
+    d_subDOFManager.resize( DOFManagerHash.size() );
+    for ( size_t i = 0; i < d_subDOFManager.size(); i++ )
+        d_subDOFManager[i] =
+            manager->getData<AMP::Discretization::DOFManager>( DOFManagerHash[i] ).get();
 }
 
 

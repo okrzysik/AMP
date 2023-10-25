@@ -1,5 +1,6 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/IO/RestartManager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/utils/Utilities.h"
@@ -293,20 +294,20 @@ void AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::wr
 }
 template<>
 std::shared_ptr<AMP::Discretization::DOFManager>
-AMP::IO::RestartManager::getData<AMP::Discretization::DOFManager>( const std::string &name )
+AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, name );
+    hid_t gid = openGroup( fid, name );
     std::string type;
     readHDF5( gid, "ClassType", type );
+    // Need to replace with a factory
     std::shared_ptr<AMP::Discretization::DOFManager> dofs;
     if ( type == "DOFManager" ) {
-        dofs = std::make_shared<AMP::Discretization::DOFManager>( gid, this );
-    } else if ( type == "StructuredGeometryMesh" ) {
-        // mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, this );
-    } else if ( type == "MovableBoxMesh" ) {
-        // mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, this );
+        dofs = std::make_shared<AMP::Discretization::DOFManager>( gid, manager );
+    } else if ( type == "simpleDOFManager" ) {
+        dofs = std::make_shared<AMP::Discretization::simpleDOFManager>( gid, manager );
     } else {
-        AMP_ERROR( "Not finished: " + type );
+        AMP_ERROR( "Unknown DOFManager: " + type );
     }
     closeGroup( gid );
     return dofs;

@@ -170,10 +170,15 @@ std::shared_ptr<VectorSelector> MultiVariable::createVectorSelector() const
 }
 
 
-/****************************************************************
- * Restart                                                       *
- ****************************************************************/
-MultiVariable::MultiVariable( int64_t fid ) : Variable( fid ) { AMP_ERROR( "Not finished" ); }
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void MultiVariable::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    Variable::registerChildObjects( manager );
+    for ( auto var : d_vVariables )
+        manager->registerData( var );
+}
 void MultiVariable::writeRestart( int64_t fid ) const
 {
     Variable::writeRestart( fid );
@@ -181,6 +186,14 @@ void MultiVariable::writeRestart( int64_t fid ) const
     for ( auto var : d_vVariables )
         var_ids.push_back( var->getID() );
     writeHDF5( fid, "vars", var_ids );
+}
+MultiVariable::MultiVariable( int64_t fid, AMP::IO::RestartManager *manager ) : Variable( fid )
+{
+    std::vector<uint64_t> var_ids;
+    readHDF5( fid, "vars", var_ids );
+    d_vVariables.resize( var_ids.size() );
+    for ( size_t i = 0; i < var_ids.size(); i++ )
+        d_vVariables[i] = manager->getData<Variable>( var_ids[i] );
 }
 
 

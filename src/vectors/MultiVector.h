@@ -150,6 +150,31 @@ public:
 
     void swapVectors( Vector &other ) override;
 
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    void writeRestart( int64_t fid ) const override;
+
+    /**
+     * \brief    Read restart data to file
+     * \details  This function will create a variable from the restart file
+     * \param fid    File identifier to write
+     * \param manager   Restart manager
+     */
+    MultiVector( int64_t fid, AMP::IO::RestartManager *manager );
+
+
 protected:
     Vector::shared_ptr selectInto( const VectorSelector & ) override;
     Vector::const_shared_ptr selectInto( const VectorSelector &criterion ) const override;
@@ -173,9 +198,11 @@ protected:
      */
     explicit MultiVector( const std::string &name, const AMP_MPI &comm );
 
+
 protected:
     //! The list of AMP Vectors that comprise this Vector
     std::vector<Vector::shared_ptr> d_vVectors;
+
 
 private:
     // Helper function to add a vector without updating the DOF manager

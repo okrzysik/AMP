@@ -28,7 +28,7 @@ public:
 
 public:
     //  function that operate on VectorData
-    std::string VectorOpName() const override { return "VectorOperationsDefault"; }
+    std::string VectorOpName() const override;
     void copy( const VectorData &x, VectorData &z ) override;
     void zero( VectorData &z ) override;
     void setToScalar( const Scalar &alpha, VectorData &z ) override;
@@ -94,6 +94,11 @@ public: // Pull VectorOperations into the current scope
     using VectorOperations::subtract;
     using VectorOperations::wrmsNorm;
     using VectorOperations::wrmsNormMask;
+
+public: // Write/read restart data
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+    void writeRestart( int64_t fid ) const override;
+    VectorOperationsDefault( int64_t fid, AMP::IO::RestartManager *manager );
 };
 
 

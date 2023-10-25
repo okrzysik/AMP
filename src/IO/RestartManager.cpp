@@ -169,11 +169,12 @@ void RestartManager::DataStoreType<TYPE>::write( hid_t fid, const std::string &n
     writeHDF5( fid, name, *d_data );
 }
 template<class TYPE>
-std::shared_ptr<TYPE> RestartManager::getData( uint64_t hash )
+std::shared_ptr<TYPE> RestartManager::DataStoreType<TYPE>::read( hid_t fid,
+                                                                 const std::string &name,
+                                                                 RestartManager * ) const
 {
-    AMP_INSIST( d_fid != hid_t( -1 ), "User must open file before reading data" );
     auto data = std::make_shared<TYPE>();
-    readHDF5( d_fid, hash2String( hash ), *data );
+    readHDF5( fid, name, *data );
     return data;
 }
 #define INSTANTIATE( TYPE )                                                          \

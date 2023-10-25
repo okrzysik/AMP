@@ -311,16 +311,17 @@ void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationLis
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::CommunicationList>
-AMP::IO::RestartManager::getData<AMP::LinearAlgebra::CommunicationList>( const std::string &name )
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationList>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, name );
+    hid_t gid = openGroup( fid, name );
     std::string type;
     uint64_t commHash;
     auto params = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
     readHDF5( gid, "commHash", commHash );
     readHDF5( gid, "localsize", params->d_localsize );
     readHDF5( gid, "remote_DOFs", params->d_remote_DOFs );
-    params->d_comm = getComm( commHash );
+    params->d_comm = manager->getComm( commHash );
     closeGroup( gid );
     return std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
 }

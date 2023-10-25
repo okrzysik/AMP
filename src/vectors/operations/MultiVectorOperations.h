@@ -72,6 +72,11 @@ public:
 
     void resetVectorOperations( std::vector<std::shared_ptr<VectorOperations>> ops );
 
+public: // Write/read restart data
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+    void writeRestart( int64_t fid ) const override;
+    MultiVectorOperations( int64_t fid, AMP::IO::RestartManager *manager );
+
 protected:
     // Internal data
     std::vector<std::shared_ptr<VectorOperations>> d_operations;
