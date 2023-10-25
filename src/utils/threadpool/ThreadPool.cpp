@@ -609,7 +609,7 @@ static inline int elapsed( const std::chrono::time_point<std::chrono::high_resol
     return std::chrono::duration_cast<std::chrono::seconds>( t1 - t0 ).count();
 }
 std::vector<bool>
-ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait )  const
+ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const
 {
     // Check the inputs
     if ( N_wait > N_work )

@@ -91,9 +91,9 @@ protected:
     }
 
     // Delete copy constructors
-    LogicalGeometry( LogicalGeometry && )                 = delete;
-    LogicalGeometry( const LogicalGeometry & )            = default;
-    LogicalGeometry &operator=( LogicalGeometry && )      = delete;
+    LogicalGeometry( LogicalGeometry && )      = delete;
+    LogicalGeometry( const LogicalGeometry & ) = default;
+    LogicalGeometry &operator=( LogicalGeometry && ) = delete;
     LogicalGeometry &operator=( const LogicalGeometry & ) = delete;
 
 
