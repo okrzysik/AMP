@@ -327,7 +327,7 @@ public: // Default constructors
     MultiMesh()                           = delete;
     explicit MultiMesh( MultiMesh &&rhs ) = default;
     explicit MultiMesh( const MultiMesh &rhs );
-    MultiMesh &operator=( MultiMesh &&rhs ) = delete;
+    MultiMesh &operator=( MultiMesh &&rhs )      = delete;
     MultiMesh &operator=( const MultiMesh &rhs ) = delete;
 
 public: // Functions to help with load balancing
@@ -348,6 +348,7 @@ public:
 
 
 public: // Write/read restart data
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
     void writeRestart( int64_t ) const override;
     MultiMesh( int64_t, AMP::IO::RestartManager * );
 

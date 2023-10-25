@@ -195,7 +195,7 @@ inline TYPE ThreadPool::getFunctionRet( const ThreadPoolID &id )
 inline void ThreadPool::wait( ThreadPoolID id ) const
 {
     auto finished = wait_some( 1, &id, 1, 10000000 );
-    if ( !finished.get( 0 ) )
+    if ( !finished[0] )
         throw std::logic_error( "Failed to wait for id" );
 }
 inline size_t ThreadPool::wait_any( const std::vector<ThreadPoolID> &ids ) const
@@ -204,7 +204,7 @@ inline size_t ThreadPool::wait_any( const std::vector<ThreadPoolID> &ids ) const
         return 0;
     auto finished = wait_some( ids.size(), &ids[0], 1, 10000000 );
     for ( size_t i = 0; i < ids.size(); i++ ) {
-        if ( finished.get( i ) )
+        if ( finished[i] )
             return i;
     }
     throw std::logic_error( "wait_any failed" );
@@ -214,7 +214,11 @@ inline void ThreadPool::wait_all( const std::vector<ThreadPoolID> &ids ) const
     if ( ids.empty() )
         return;
     auto finished = wait_some( ids.size(), ids.data(), ids.size(), 10000000 );
-    size_t N      = finished.sum();
+    size_t N      = 0;
+    for ( bool test : finished ) {
+        if ( test )
+            N++;
+    }
     if ( N != ids.size() )
         throw std::logic_error( "Failed to wait for all ids" );
 }
@@ -227,7 +231,12 @@ inline std::vector<int>
 ThreadPool::wait_some( int N_wait, const std::vector<ThreadPoolID> &ids, int max_wait ) const
 {
     auto finished = wait_some( ids.size(), ids.data(), N_wait, max_wait );
-    return finished.getIndicies();
+    std::vector<int> index;
+    for ( size_t i = 0; i < ids.size(); i++ ) {
+        if ( finished[i] )
+            index.push_back( i );
+    }
+    return index;
 }
 
 

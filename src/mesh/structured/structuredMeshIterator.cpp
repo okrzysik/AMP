@@ -1,4 +1,6 @@
 #include "AMP/mesh/structured/structuredMeshIterator.h"
+#include "AMP/IO/HDF5.hpp"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/mesh/structured/structuredMeshElement.h"
 
 #include <utility>
@@ -293,6 +295,50 @@ structuredMeshIterator::getElements() const
     for ( size_t pos = 0; pos < d_size; pos++ )
         elements->emplace_back( getIndex( pos ) );
     return elements;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void structuredMeshIterator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    manager->registerData( d_mesh->shared_from_this() );
+}
+void structuredMeshIterator::writeRestart( int64_t fid ) const
+{
+    MeshIterator::writeRestart( fid );
+    auto elements = d_elements;
+    if ( !elements )
+        elements = std::make_shared<std::vector<BoxMesh::MeshElementIndex>>();
+    writeHDF5( fid, "checkBoundary", d_checkBoundary );
+    writeHDF5( fid, "isPeriodic", d_isPeriodic );
+    writeHDF5( fid, "globalSize", d_globalSize );
+    writeHDF5( fid, "first", d_first );
+    writeHDF5( fid, "last", d_last );
+    writeHDF5( fid, "elements", *elements );
+    writeHDF5( fid, "meshID", d_mesh->meshID() );
+}
+structuredMeshIterator::structuredMeshIterator( int64_t fid, AMP::IO::RestartManager *manager )
+    : MeshIterator( fid )
+{
+    MeshID meshID;
+    std::vector<BoxMesh::MeshElementIndex> elements;
+    readHDF5( fid, "checkBoundary", d_checkBoundary );
+    readHDF5( fid, "isPeriodic", d_isPeriodic );
+    readHDF5( fid, "globalSize", d_globalSize );
+    readHDF5( fid, "first", d_first );
+    readHDF5( fid, "last", d_last );
+    readHDF5( fid, "elements", elements );
+    readHDF5( fid, "meshID", meshID );
+    d_elements.reset();
+    if ( !elements.empty() )
+        d_elements = std::make_shared<decltype( elements )>( std::move( elements ) );
+    auto mesh = manager->getData<AMP::Mesh::Mesh>( meshID.getHash() ).get();
+    d_mesh    = dynamic_cast<BoxMesh *>( mesh );
+    AMP_ASSERT( d_mesh );
+    d_element     = &d_cur_element;
+    d_cur_element = structuredMeshElement( getIndex( d_pos ), d_mesh );
 }
 
 

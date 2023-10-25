@@ -15,6 +15,9 @@
 namespace AMP::Discretization {
 class DOFManager;
 }
+namespace AMP::IO {
+class RestartManager;
+}
 
 
 namespace AMP::LinearAlgebra {
@@ -810,6 +813,7 @@ public: // Get values
     template<typename TYPE = double>
     TYPE getValueByLocalID( size_t i ) const;
 
+
 public: // Set values
     /**
      * \brief Set a value in the vector.
@@ -819,9 +823,35 @@ public: // Set values
     template<typename TYPE>
     void setValueByGlobalID( size_t i, TYPE v );
 
+
 public:
     //! Get a unique id hash for the vector
     uint64_t getID() const;
+
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+    /**
+     * \brief    Read restart data to file
+     * \details  This function will create a variable from the restart file
+     * \param fid    File identifier to write
+     * \param manager   Restart manager
+     */
+    Vector( int64_t fid, AMP::IO::RestartManager *manager );
+
 
 protected:                                                         // Internal data
     AMP::Units d_units;                                            // Optional units for the data

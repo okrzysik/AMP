@@ -36,6 +36,10 @@ inline const MeshIterator *MeshIterator::rawIterator() const
 {
     return d_iterator == nullptr ? this : d_iterator;
 }
+inline bool MeshIterator::empty() const
+{
+    return d_iterator == nullptr ? true : d_iterator->d_size == 0;
+}
 inline size_t MeshIterator::size() const
 {
     return d_iterator == nullptr ? d_size : d_iterator->d_size;

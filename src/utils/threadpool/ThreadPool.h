@@ -50,7 +50,6 @@ class alignas(16) ThreadPool final
 public:
     ///// Set some global properties
     constexpr static uint16_t MAX_THREADS = 128; // The maximum number of threads (must be a multiple of 64)
-    constexpr static uint16_t MAX_WAIT = 8;      // The maximum number of active waits at any given time
 
 public:
     ///// Member classes
@@ -368,7 +367,6 @@ public:
      *      Note: this is a global property and will affect all thread pools in an application.
      * @param behavior      The behavior of OS specific messages/errors
      *                      0: Print a warning message
-
      *                      1: Ignore the messages
      *                      2: Throw an error
      */
@@ -440,75 +438,7 @@ public: // Static interface
 
 
 private:
-    ///// Member data structures
-
-   
-    // Class to store a variable bit array (with atomic support for setting/unsetting bit)
-    class bit_array final
-    {
-      public:
-        bit_array() : d_N2( 0 ), d_data( nullptr ) {}
-        explicit bit_array( size_t N ) : d_N2( ( N + 63 ) / 64 ), d_data( nullptr )
-        {
-            d_data = new std::atomic_uint64_t[d_N2];
-            for ( size_t i = 0; i < d_N2; i++ )
-                d_data[i] = 0;
-        }
-        ~bit_array( ) { delete[] d_data; }
-        bit_array( const bit_array& ) = delete;
-        bit_array( bit_array&& rhs ): d_N2( rhs.d_N2 ), d_data( rhs.d_data ) { rhs.d_data = nullptr; }
-        bit_array& operator=( const bit_array& ) = delete;
-        bit_array& operator=( bit_array&& rhs ) = delete;
-        inline void set( uint64_t index )
-        {
-            uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            d_data[index >> 6].fetch_or( mask );
-        }
-        inline void unset( uint64_t index )
-        {
-            uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            d_data[index >> 6].fetch_and( ~mask );
-        }
-        inline bool get( uint64_t index ) const
-        {
-            uint64_t mask = ( (uint64_t) 0x01 ) << ( index & 0x3F );
-            return ( d_data[index >> 6] & mask ) != 0;
-        }
-        inline size_t sum() const
-        {
-            size_t count = 0;
-            for ( size_t i=0; i<d_N2; i++)
-                count += popcount64( d_data[i] );
-            return count;
-        }
-        inline std::vector<int> getIndicies() const
-        {
-            std::vector<int> index( sum() );
-            for ( size_t i = 0, j = 0, k = 0; i < d_N2; i++ ) {
-                uint64_t mask = 0x01;
-                for ( size_t m=0; m<64; m++, k++, mask<<=1 ) {
-                    if ( ( d_data[i] & mask ) != 0 )
-                        index[j++] = k;
-                }
-            }
-            return index;
-        }
-      private:
-        static inline size_t popcount64( uint64_t x )
-        {
-             x = (x & 0x5555555555555555LU) + (x >> 1 & 0x5555555555555555LU);
-             x = (x & 0x3333333333333333LU) + (x >> 2 & 0x3333333333333333LU);
-             x = ( x + (x >> 4) ) & 0x0F0F0F0F0F0F0F0FLU;
-             x = ( x + (x >> 8) );
-             x = ( x + (x >> 16) );
-             x = ( x + (x >> 32) ) & 0x0000007F;
-            return x;
-        }
-      private:
-        size_t d_N2;
-        volatile std::atomic_uint64_t *d_data;
-    };
-    
+    ///// Member data structures    
 
     // Implimentation of condition_variable which does not require a lock
     class condition_variable final
@@ -534,36 +464,6 @@ private:
       private:
         mutable std::condition_variable d_cv;
         mutable std::mutex d_mutex;
-    };
-
-
-    // Structure to wait on multiple ids
-    // Note: this is thread safe without blocking as long as it is added to the wait list
-    //    before calling wait
-    class wait_ids_struct final {
-      private:
-        typedef volatile std::atomic_int32_t vint32_t;
-        typedef volatile std::atomic<wait_ids_struct*> wait_ptr;
-      public:
-        wait_ids_struct() = delete;
-        wait_ids_struct( const wait_ids_struct& ) = delete;
-        wait_ids_struct& operator=( const wait_ids_struct & ) = delete;
-        wait_ids_struct( size_t N, const ThreadPoolID *ids, bit_array& finished, size_t N_wait, 
-            int N_wait_list, wait_ptr *list, condition_variable &wait_event );
-        ~wait_ids_struct( );
-        void id_finished( const ThreadPoolID& id ) const;
-        bool wait_for( double total_time, double recheck_time );
-        void clear() const;
-      private:
-        mutable vint32_t d_wait;                // The number items that must finish
-        mutable vint32_t d_N;                   // The number of ids
-        mutable vint32_t d_lock;                // Internal lock
-        const ThreadPoolID *d_ids;              // The ids we are waiting on
-        bit_array &d_finished;                  // Has each id finished
-        condition_variable &d_wait_event;       // Handle to a wait event
-        mutable wait_ptr *d_ptr;
-      private:
-        inline bool check();
     };
 
 
@@ -598,7 +498,10 @@ private:
     inline bool isMemberThread() const { return getThreadNumber()>=0; }
 
     // Function to wait for some work items to finish
-    bit_array wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const;
+    std::vector<bool> wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const;
+    
+    // Function to wait for N work items to finish (may return early)
+    void wait_N( int N, double time ) const;
     
     // Check if we are waiting too long and pring debug info
     void print_wait_warning( ) const;
@@ -608,17 +511,16 @@ private:
     ///// Member data
 
     // Typedefs
-    typedef volatile std::atomic_uint32_t vint32_t;         // volatile atomic int
-    typedef volatile std::atomic_uint64_t vint64_t;         // volatile atomic int64
-    typedef volatile std::atomic<wait_ids_struct*> vwait_t; // volatile pointer to wait id
-    typedef condition_variable cond_t;                      // condition variable
+    typedef volatile std::atomic_uint32_t vint32_t; // volatile atomic int
+    typedef volatile std::atomic_uint64_t vint64_t; // volatile atomic int64
+    typedef condition_variable cond_t;              // condition variable
 
     // Internal data
     uint32_t d_NULL_HEAD;                 // Null data buffer to check memory bounds
     volatile mutable bool d_signal_empty; // Do we want to send a signal when the queue is empty
     uint16_t d_N_threads;                 // Number of threads
     int d_max_wait_time;                  // The maximum time waiting before printing a warning message
-    vint32_t d_signal_count;              // Signal count
+    mutable vint32_t d_signal_count;      // Signal count
     vint32_t d_num_active;                // Number of threads that are currently active
     vint64_t d_id_assign;                 // An internal variable used to store the current id to assign
     vint64_t d_active[MAX_THREADS/64];    // Which threads are currently active
@@ -626,7 +528,6 @@ private:
     vint64_t d_N_added;                   // Number of items added to the work queue
     vint64_t d_N_started;                 // Number of items started
     vint64_t d_N_finished;                // Number of items finished
-    mutable vwait_t d_wait[MAX_WAIT];     // The wait events to check
     mutable cond_t d_wait_finished;       // Condition variable to signal when work is finished
     mutable cond_t d_wait_work;           // Condition variable to signal when there is new work
     ThreadPoolListQueue d_queue;          // The work queue

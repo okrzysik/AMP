@@ -343,14 +343,14 @@ void writeHDF5Array( hid_t fid, const std::string_view &name, const AMP::Array<T
  * MeshPoint                                                            *
  ***********************************************************************/
 template<>
-void readHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
+void readHDF5Scalar<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
 {
     std::array<double,4> y;
     readHDF5( fid, name, y );
     x = AMP::Mesh::Point( y[0], { y[1], y[2], y[3] } );
 }
 template<>
-void writeHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
+void writeHDF5Scalar<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
 {
     std::array<double,4> y = { (double) x.ndim(), x[0], x[1], x[2] };
     writeHDF5( fid, name, y );
@@ -377,6 +377,16 @@ void writeHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, 
         y( 3, i ) = x( i )[2];
     }
     writeHDF5Array( fid, name, y );
+}
+template<>
+void readHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, AMP::Mesh::Point &x )
+{
+    readHDF5Scalar( fid, name, x );
+}
+template<>
+void writeHDF5<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, const AMP::Mesh::Point &x )
+{
+    writeHDF5Scalar( fid, name, x );
 }
 template<>
 void readHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::Point> &x )

@@ -31,14 +31,21 @@ public:
     class DataStoreType : public DataStore
     {
     public:
+        DataStoreType( hid_t fid, uint64_t hash, RestartManager *manager )
+        {
+            d_hash = hash;
+            d_data = read( fid, hash2String( hash ), manager );
+        }
         DataStoreType( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
         virtual ~DataStoreType() = default;
         void write( hid_t fid, const std::string &name ) const override;
+        std::shared_ptr<TYPE> read( hid_t fid, const std::string &name, RestartManager * ) const;
+        auto getData() { return std::const_pointer_cast<TYPE>( d_data ); }
 
     protected:
         std::shared_ptr<const TYPE> d_data;
     };
-    using DataStorePtr = std::shared_ptr<const DataStore>;
+    using DataStorePtr = std::shared_ptr<DataStore>;
 
 public:
     //! Create a writer for restart data
@@ -65,13 +72,6 @@ public:
      * @param[in] filename  Filename to use
      */
     void write( const std::string &filename, Compression compress = Compression::None );
-
-    /**
-     * \brief  Close the restart file
-     * \details  Close the restart file
-     * @param[in] filename  Filename to use
-     */
-    void close( const std::string &filename );
 
     /**
      * \brief  Register data with the restart manager
@@ -120,7 +120,7 @@ private:
 
     void writeCommData( const std::string &file, Compression compress );
     void readCommData( const std::string &file );
-    std::string hash2String( uint64_t );
+    static std::string hash2String( uint64_t );
 
 private:
     bool d_writer;

@@ -18,7 +18,7 @@ class VectorDataIterator;
  * the local values as a single block of data on the CPU.
  */
 template<typename TYPE = double, class Allocator = std::allocator<TYPE>>
-class VectorDataDefault : public VectorData
+class VectorDataDefault final : public VectorData
 {
 public: // Member types
     using value_type     = TYPE;
@@ -163,6 +163,13 @@ public: // Non-virtual functions
 
     //! Return the allocator associated with the container
     Allocator get_allocator() const noexcept;
+
+
+public: // Write/read restart data
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+    void writeRestart( int64_t ) const override;
+    VectorDataDefault( int64_t, AMP::IO::RestartManager * );
+
 
 protected:
     VectorDataDefault( const Allocator &alloc = Allocator() ) : d_alloc( alloc ) {}

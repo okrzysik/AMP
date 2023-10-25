@@ -1,5 +1,6 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/IO/RestartManager.h"
+#include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/discretization/subsetDOFManager.h"
 #include "AMP/mesh/MeshElementVectorIterator.h"
 #include "AMP/utils/Utilities.h"
@@ -23,9 +24,15 @@ DOFManager::DOFManager( size_t N_local, const AMP_MPI &comm ) : d_comm( comm )
 
 
 /****************************************************************
- * Deconstructor                                                 *
+ * Destructor                                                    *
  ****************************************************************/
 DOFManager::~DOFManager() = default;
+
+
+/****************************************************************
+ * Default class name                                            *
+ ****************************************************************/
+std::string DOFManager::className() const { return "DOFManager"; }
 
 
 /****************************************************************
@@ -230,9 +237,30 @@ std::shared_ptr<DOFManager> DOFManager::subset( const AMP::Mesh::MeshIterator &i
  ****************************************************************/
 uint64_t DOFManager::getID() const
 {
-    AMP_ERROR( "Not finished" );
-    return 0;
+    return getComm().bcast( reinterpret_cast<uint64_t>( this ), 0 );
 }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void DOFManager::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "begin", d_begin );
+    writeHDF5( fid, "end", d_end );
+    writeHDF5( fid, "global", d_global );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+}
+DOFManager::DOFManager( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    uint64_t commHash;
+    readHDF5( fid, "comm", commHash );
+    readHDF5( fid, "begin", d_begin );
+    readHDF5( fid, "end", d_end );
+    readHDF5( fid, "global", d_global );
+    auto comm = manager->getComm( commHash );
+}
+void DOFManager::registerChildObjects( AMP::IO::RestartManager * ) const {}
 
 
 } // namespace AMP::Discretization
@@ -245,26 +273,42 @@ template<>
 AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::DataStoreType(
     const std::string &name,
     std::shared_ptr<const AMP::Discretization::DOFManager> data,
-    RestartManager * )
+    RestartManager *manager )
     : d_data( data )
 {
     d_name = name;
     d_hash = data->getID();
-    AMP_ERROR( "Not finished" );
+    // Register the comm
+    manager->registerComm( data->getComm() );
+    // Register child objects
+    d_data->registerChildObjects( manager );
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::write(
     hid_t fid, const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
-    AMP_ERROR( "Not finished" );
+    d_data->writeRestart( gid );
+    writeHDF5( gid, "ClassType", d_data->className() );
     closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::Discretization::DOFManager>
-AMP::IO::RestartManager::getData<AMP::Discretization::DOFManager>( const std::string &name )
+AMP::IO::RestartManager::DataStoreType<AMP::Discretization::DOFManager>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, name );
-    AMP_ERROR( "Not finished" );
+    hid_t gid = openGroup( fid, name );
+    std::string type;
+    readHDF5( gid, "ClassType", type );
+    // Need to replace with a factory
+    std::shared_ptr<AMP::Discretization::DOFManager> dofs;
+    if ( type == "DOFManager" ) {
+        dofs = std::make_shared<AMP::Discretization::DOFManager>( gid, manager );
+    } else if ( type == "simpleDOFManager" ) {
+        dofs = std::make_shared<AMP::Discretization::simpleDOFManager>( gid, manager );
+    } else {
+        AMP_ERROR( "Unknown DOFManager: " + type );
+    }
     closeGroup( gid );
+    return dofs;
 }

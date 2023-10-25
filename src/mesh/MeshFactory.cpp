@@ -106,37 +106,31 @@ AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
     // Register the comm
     manager->registerComm( mesh->getComm() );
     // Register child meshes
-    for ( auto id : mesh->getBaseMeshIDs() ) {
-        if ( id == mesh->meshID() )
-            continue;
-        auto mesh2 = mesh->Subset( id );
-        auto data2 = std::make_shared<DataStoreType<AMP::Mesh::Mesh>>( "", mesh2, manager );
-        manager->registerComm( mesh2->getComm() );
-        manager->registerData( data2 );
-    }
+    mesh->registerChildObjects( manager );
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::write( hid_t fid,
                                                                      const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
+    writeHDF5( gid, "MeshType", d_data->meshClass() );
     d_data->writeRestart( gid );
     closeGroup( gid );
 }
-
 template<>
-std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::getData<AMP::Mesh::Mesh>( uint64_t hash )
+std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, hash2String( hash ) );
+    hid_t gid = openGroup( fid, name );
     std::string type;
     readHDF5( gid, "MeshType", type );
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
-    if ( type == "MultiMesh" ) {
-        mesh = std::make_shared<AMP::Mesh::MultiMesh>( gid, this );
+    if ( type == "MultiMesh" || type.substr( 0, 10 ) == "MultiMesh<" ) {
+        mesh = std::make_shared<AMP::Mesh::MultiMesh>( gid, manager );
     } else if ( type == "StructuredGeometryMesh" ) {
-        mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, this );
+        mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, manager );
     } else if ( type == "MovableBoxMesh" ) {
-        mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, this );
+        mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, manager );
     } else {
         AMP_ERROR( "Not finished: " + type );
     }

@@ -818,7 +818,12 @@ bool MultiMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     // Perform comparison on sub-meshes
-    return d_meshes == mesh->d_meshes;
+    if ( d_meshes.size() != mesh->d_meshes.size() )
+        return false;
+    bool equal = true;
+    for ( size_t i = 0; i < d_meshes.size(); i++ )
+        equal = equal && *d_meshes[i] == *mesh->d_meshes[i];
+    return equal;
 }
 
 
@@ -937,35 +942,27 @@ std::vector<AMP_MPI> MultiMesh::createComms( const AMP_MPI &comm,
 /****************************************************************
  * Write/Read restart data                                       *
  ****************************************************************/
+void MultiMesh::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    Mesh::registerChildObjects( manager );
+    for ( auto mesh : d_meshes )
+        manager->registerData( mesh );
+}
 void MultiMesh::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "MeshType", std::string( "MultiMesh" ) );
-    writeHDF5( fid, "MeshName", d_name );
-    writeHDF5( fid, "MeshID", d_meshID );
-    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    Mesh::writeRestart( fid );
     std::vector<MeshID> meshIDs;
     for ( auto &mesh : d_meshes )
         meshIDs.push_back( mesh->meshID() );
     writeHDF5( fid, "meshIDs", meshIDs );
 }
-static std::unique_ptr<MultiMesh> loadHDF5( int64_t fid, AMP::IO::RestartManager *manager )
+MultiMesh::MultiMesh( int64_t fid, AMP::IO::RestartManager *manager ) : Mesh( fid, manager )
 {
-    AMP_MPI comm;
-    std::string name;
-    uint64_t commHash;
     std::vector<MeshID> meshIDs;
-    readHDF5( fid, "MeshName", name );
-    readHDF5( fid, "comm", commHash );
     readHDF5( fid, "meshIDs", meshIDs );
-    std::vector<std::shared_ptr<Mesh>> meshes;
-    for ( auto id : meshIDs )
-        meshes.push_back( manager->getData<Mesh>( id.getHash() ) );
-    return std::make_unique<MultiMesh>( name, manager->getComm( commHash ), meshes );
-}
-MultiMesh::MultiMesh( int64_t fid, AMP::IO::RestartManager *manager )
-    : MultiMesh( *loadHDF5( fid, manager ) )
-{
-    readHDF5( fid, "MeshID", d_meshID );
+    d_meshes.resize( meshIDs.size() );
+    for ( size_t i = 0; i < meshIDs.size(); i++ )
+        d_meshes[i] = manager->getData<Mesh>( meshIDs[i].getHash() );
 }
 
 

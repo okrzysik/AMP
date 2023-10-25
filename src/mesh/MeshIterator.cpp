@@ -1,4 +1,8 @@
 #include "AMP/mesh/MeshIterator.h"
+#include "AMP/IO/HDF5.h"
+#include "AMP/IO/RestartManager.h"
+#include "AMP/mesh/structured/structuredMeshIterator.h"
+
 
 namespace AMP::Mesh {
 
@@ -131,6 +135,19 @@ MeshIterator::~MeshIterator()
 
 
 /********************************************************
+ * Get the underlying class name                         *
+ ********************************************************/
+std::string MeshIterator::className() const
+{
+    if ( d_iterator == nullptr )
+        return "MeshIterator";
+    auto name = d_iterator->className();
+    AMP_DEBUG_ASSERT( name != "MeshIterator" );
+    return name;
+}
+
+
+/********************************************************
  * Clone the iterator                                    *
  ********************************************************/
 MeshIterator *MeshIterator::clone() const
@@ -191,6 +208,44 @@ bool MeshIterator::operator!=( const MeshIterator &rhs ) const
     if ( d_iterator == nullptr )
         return rhs.d_iterator != nullptr;
     return d_iterator->operator!=( rhs );
+}
+
+/****************************************************************
+ *Get a unique hash id for the iterator                          *
+ ****************************************************************/
+uint64_t MeshIterator::getID() const
+{
+    if ( empty() )
+        return AMP::Mesh::MeshIteratorType;
+    return reinterpret_cast<uint64_t>( rawIterator() );
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void MeshIterator::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    if ( d_iterator != nullptr )
+        d_iterator->registerChildObjects( manager );
+}
+void MeshIterator::writeRestart( int64_t fid ) const
+{
+    if ( d_iterator != nullptr ) {
+        d_iterator->writeRestart( fid );
+    } else {
+        writeHDF5( fid, "typeHash", d_typeHash );
+        writeHDF5( fid, "iteratorType", d_iteratorType );
+        writeHDF5( fid, "size", d_size );
+        writeHDF5( fid, "pos", d_pos );
+    }
+}
+MeshIterator::MeshIterator( int64_t fid ) : MeshIterator()
+{
+    readHDF5( fid, "typeHash", d_typeHash );
+    readHDF5( fid, "iteratorType", d_iteratorType );
+    readHDF5( fid, "size", d_size );
+    readHDF5( fid, "pos", d_pos );
 }
 
 /********************************************************
@@ -293,3 +348,51 @@ MeshElement &MeshIterator::operator[]( int i )
 
 
 } // namespace AMP::Mesh
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::Mesh::MeshIterator>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::Mesh::MeshIterator> data,
+    RestartManager *manager )
+{
+    d_name = name;
+    d_hash = data->getID();
+    if ( d_hash == AMP::Mesh::MeshIteratorType )
+        d_data = std::make_shared<AMP::Mesh::MeshIterator>();
+    else
+        d_data = data;
+    d_data->registerChildObjects( manager );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::Mesh::MeshIterator>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    writeHDF5( gid, "ClassType", d_data->className() );
+    d_data->writeRestart( gid );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::Mesh::MeshIterator>
+AMP::IO::RestartManager::DataStoreType<AMP::Mesh::MeshIterator>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
+{
+    if ( d_hash == AMP::Mesh::MeshIteratorType )
+        return std::make_shared<AMP::Mesh::MeshIterator>();
+    hid_t gid = openGroup( fid, name );
+    std::string type;
+    readHDF5( gid, "ClassType", type );
+    // Load the object (we will need to replace the if/else with a factory)
+    std::shared_ptr<AMP::Mesh::MeshIterator> it;
+    if ( type == "structuredMeshIterator" ) {
+        it = std::make_shared<AMP::Mesh::structuredMeshIterator>( gid, manager );
+    } else {
+        AMP_ERROR( "Unknown MeshIterator: " + type );
+    }
+    closeGroup( gid );
+    return it;
+}

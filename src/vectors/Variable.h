@@ -100,6 +100,14 @@ public:
     virtual uint64_t getID() const;
 
 
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
     /**
      * \brief    Write restart data to file
      * \details  This function will the variable to an HDF5 file

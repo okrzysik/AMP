@@ -1,4 +1,5 @@
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/IO/HDF5.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/mesh/MeshParameters.h"
 #include "AMP/mesh/MultiIterator.h"
@@ -117,9 +118,40 @@ BoxMesh::BoxMesh( const BoxMesh &mesh ) : Mesh( mesh )
 /****************************************************************
  * Write/Read restart data                                       *
  ****************************************************************/
-void BoxMesh::writeRestart( int64_t ) const
+void BoxMesh::writeRestart( int64_t fid ) const
 {
-    // AMP_ERROR( "writeRestart is not implemented for BoxMesh" );
+    Mesh::writeRestart( fid );
+    writeHDF5( fid, "rank", d_rank );
+    writeHDF5( fid, "size", d_size );
+    writeHDF5( fid, "isPeriodic", d_isPeriodic );
+    writeHDF5( fid, "globalSize", d_globalSize );
+    writeHDF5( fid, "numBlocks", d_numBlocks );
+    writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    writeHDF5( fid, "localIndex", d_localIndex );
+    writeHDF5( fid, "indexSize", d_indexSize );
+    writeHDF5( fid, "surfaceId", d_surfaceId );
+}
+BoxMesh::BoxMesh( int64_t fid, AMP::IO::RestartManager *manager ) : Mesh( fid, manager )
+{
+    readHDF5( fid, "rank", d_rank );
+    readHDF5( fid, "size", d_size );
+    readHDF5( fid, "isPeriodic", d_isPeriodic );
+    readHDF5( fid, "globalSize", d_globalSize );
+    readHDF5( fid, "numBlocks", d_numBlocks );
+    readHDF5( fid, "startIndex[0]", d_startIndex[0] );
+    readHDF5( fid, "startIndex[1]", d_startIndex[1] );
+    readHDF5( fid, "startIndex[2]", d_startIndex[2] );
+    readHDF5( fid, "endIndex[0]", d_endIndex[0] );
+    readHDF5( fid, "endIndex[1]", d_endIndex[1] );
+    readHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    readHDF5( fid, "localIndex", d_localIndex );
+    readHDF5( fid, "indexSize", d_indexSize );
+    readHDF5( fid, "surfaceId", d_surfaceId );
 }
 
 
@@ -927,7 +959,9 @@ bool BoxMesh::operator==( const Mesh &rhs ) const
     if ( d_numBlocks != mesh->d_numBlocks || d_indexSize != mesh->d_indexSize ||
          d_localIndex != mesh->d_localIndex )
         return false;
-    if ( d_surfaceId != mesh->d_surfaceId || *d_geometry != *mesh->d_geometry )
+    if ( d_surfaceId != mesh->d_surfaceId )
+        return false;
+    if ( *d_geometry != *mesh->d_geometry )
         return false;
     for ( int d = 0; d < 3; d++ ) {
         if ( d_startIndex[d] != mesh->d_startIndex[d] || d_endIndex[d] != mesh->d_endIndex[d] )

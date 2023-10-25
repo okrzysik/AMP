@@ -31,7 +31,7 @@ void Property::evalArg( AMP::Array<double> &args,
         double scale = 1.0;
         if ( !unit.isNull() )
             scale = unit.convert( d_argUnits[i] );
-        auto it = v.begin();
+        auto it = v.constBegin();
         for ( size_t j = 0; j < N; j++, ++it )
             args( i, j ) = scale * *it;
     }

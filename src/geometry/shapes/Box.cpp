@@ -383,6 +383,8 @@ std::unique_ptr<AMP::Geometry::Geometry> Grid<NDIM>::clone() const
 template<std::size_t NDIM>
 bool Box<NDIM>::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const Box<NDIM> *>( &rhs );
     if ( !geom )
         return false;
@@ -391,6 +393,8 @@ bool Box<NDIM>::operator==( const Geometry &rhs ) const
 template<std::size_t NDIM>
 bool Grid<NDIM>::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const Grid<NDIM> *>( &rhs );
     if ( !geom )
         return false;
@@ -407,22 +411,13 @@ bool Grid<NDIM>::operator==( const Geometry &rhs ) const
 template<std::size_t NDIM>
 void Box<NDIM>::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", getName() );
-    AMP::writeHDF5( fid, "physical", Geometry::d_physicalDim );
-    AMP::writeHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
-    AMP::writeHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
-    AMP::writeHDF5( fid, "ids", LogicalGeometry::d_ids );
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "range", d_range );
 }
 template<std::size_t NDIM>
 void Grid<NDIM>::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", getName() );
-    AMP::writeHDF5( fid, "physical", Geometry::d_physicalDim );
-    AMP::writeHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
-    AMP::writeHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
-    AMP::writeHDF5( fid, "ids", LogicalGeometry::d_ids );
-    AMP::writeHDF5( fid, "range", Box<NDIM>::d_range );
+    Box<NDIM>::writeRestart( fid );
     AMP::writeHDF5( fid, "coord_x", d_coord[0] );
     if ( NDIM >= 2 )
         AMP::writeHDF5( fid, "coord_y", d_coord[1] );
@@ -430,22 +425,13 @@ void Grid<NDIM>::writeRestart( int64_t fid ) const
         AMP::writeHDF5( fid, "coord_z", d_coord[2] );
 }
 template<std::size_t NDIM>
-Box<NDIM>::Box( int64_t fid )
+Box<NDIM>::Box( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", Geometry::d_physicalDim );
-    AMP::readHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
-    AMP::readHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
-    AMP::readHDF5( fid, "ids", LogicalGeometry::d_ids );
     AMP::readHDF5( fid, "range", d_range );
 }
 template<std::size_t NDIM>
-Grid<NDIM>::Grid( int64_t fid )
+Grid<NDIM>::Grid( int64_t fid ) : Box<NDIM>( fid )
 {
-    AMP::readHDF5( fid, "physical", Geometry::d_physicalDim );
-    AMP::readHDF5( fid, "logical", LogicalGeometry::d_logicalDim );
-    AMP::readHDF5( fid, "periodic", LogicalGeometry::d_isPeriodic );
-    AMP::readHDF5( fid, "ids", LogicalGeometry::d_ids );
-    AMP::readHDF5( fid, "range", Box<NDIM>::d_range );
     AMP::readHDF5( fid, "coord_x", d_coord[0] );
     if ( NDIM >= 2 )
         AMP::readHDF5( fid, "coord_y", d_coord[1] );
