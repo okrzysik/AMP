@@ -188,6 +188,8 @@ std::unique_ptr<AMP::Geometry::Geometry> SphereSurface::clone() const
  ********************************************************/
 bool SphereSurface::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const SphereSurface *>( &rhs );
     if ( !geom )
         return false;
@@ -200,20 +202,12 @@ bool SphereSurface::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void SphereSurface::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "sphere_surface" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "r", d_r );
 }
-SphereSurface::SphereSurface( int64_t fid )
+SphereSurface::SphereSurface( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "offset", d_offset );
     AMP::readHDF5( fid, "r", d_r );
 }

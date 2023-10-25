@@ -49,65 +49,15 @@ MovableBoxMesh::MovableBoxMesh( const AMP::Mesh::BoxMesh &mesh ) : BoxMesh( mesh
  ****************************************************************/
 void MovableBoxMesh::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "MeshType", std::string( "MovableBoxMesh" ) );
-    // Write BoxMesh data
-    writeHDF5( fid, "MeshName", d_name );
-    writeHDF5( fid, "MeshID", d_meshID );
-    writeHDF5( fid, "comm", d_comm.hashRanks() );
-    writeHDF5( fid, "PhysicalDim", PhysicalDim );
-    writeHDF5( fid, "GeomDim", GeomDim );
-    writeHDF5( fid, "gcw", d_max_gcw );
-    writeHDF5( fid, "size", d_globalSize );
-    writeHDF5( fid, "periodic", d_isPeriodic );
-    writeHDF5( fid, "surfaceId", d_surfaceId );
-    writeHDF5( fid, "numBlocks", d_numBlocks );
-    writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
-    writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
-    writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
-    writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
-    writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
-    writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
-    // Write MovableBoxMesh data
+    BoxMesh::writeRestart( fid );
     writeHDF5( fid, "pos_hash", d_pos_hash );
     writeHDF5( fid, "index", d_index );
     writeHDF5( fid, "coord", d_coord );
     writeHDF5( fid, "ids", d_ids );
 }
-MovableBoxMesh::MovableBoxMesh( int64_t fid, AMP::IO::RestartManager *manager ) : BoxMesh()
+MovableBoxMesh::MovableBoxMesh( int64_t fid, AMP::IO::RestartManager *manager )
+    : BoxMesh( fid, manager )
 {
-    // Set the data for Mesh
-    readHDF5( fid, "MeshName", d_name );
-    uint64_t commHash;
-    readHDF5( fid, "comm", commHash );
-    d_comm = manager->getComm( commHash );
-    // Basic defaults
-    d_globalSize.fill( 1 );
-    d_isPeriodic.fill( false );
-    d_numBlocks.fill( 1 );
-    // Fill basic mesh information
-    // Note: we do not call initialize to avoid any changes to the parallel decomposition
-    readHDF5( fid, "PhysicalDim", PhysicalDim );
-    readHDF5( fid, "GeomDim", GeomDim );
-    readHDF5( fid, "gcw", d_max_gcw );
-    readHDF5( fid, "size", d_globalSize );
-    readHDF5( fid, "periodic", d_isPeriodic );
-    readHDF5( fid, "surfaceId", d_surfaceId );
-    readHDF5( fid, "numBlocks", d_numBlocks );
-    readHDF5( fid, "startIndex[0]", d_startIndex[0] );
-    readHDF5( fid, "startIndex[1]", d_startIndex[1] );
-    readHDF5( fid, "startIndex[2]", d_startIndex[2] );
-    readHDF5( fid, "endIndex[0]", d_endIndex[0] );
-    readHDF5( fid, "endIndex[1]", d_endIndex[1] );
-    readHDF5( fid, "endIndex[2]", d_endIndex[2] );
-    auto block   = getLocalBlock( d_rank );
-    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
-    d_localIndex = block;
-    for ( int d = 0; d < 3; d++ ) {
-        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
-            d_localIndex[2 * d + 1] = d_globalSize[d];
-        d_localIndex[2 * d + 1]++;
-    }
-    // Read MovableBoxMesh data
     readHDF5( fid, "pos_hash", d_pos_hash );
     readHDF5( fid, "index", d_index );
     readHDF5( fid, "coord", d_coord );

@@ -465,14 +465,6 @@ public:
 
 
     /**
-     * \brief    Write restart data to file
-     * \details  This function will write the mesh to an HDF5 file
-     * \param fid    File identifier to write
-     */
-    virtual void writeRestart( int64_t fid ) const = 0;
-
-
-    /**
      * \brief  Create a view of existing mesh(s)
      * \details  This function creates a view of existing mesh(s)
      * \param mesh      Existing mesh(s)
@@ -485,6 +477,27 @@ public:
     static void printMeshHierarchy( const Mesh &mesh,
                                     std::ostream &out         = std::cout,
                                     const std::string &prefix = "" );
+
+
+public: // Write/read restart data
+    /**
+     * \brief    Register child objects
+     * \details  This function register child objects if necessary
+     * \param manager    Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+protected:
+    //! Initialize the base class from file
+    Mesh( int64_t fid, AMP::IO::RestartManager *manager );
+
 
 protected:
     //!  Empty constructor for a mesh

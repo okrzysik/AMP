@@ -1,6 +1,7 @@
 #include "AMP/mesh/MeshID.h"
 #include "AMP/IO/HDF5.h"
 #include "AMP/IO/HDF5.hpp"
+#include "AMP/mesh/MeshIterator.h"
 #include "AMP/utils/Array.hpp"
 #include "AMP/utils/Utilities.hpp"
 #include "AMP/utils/kdtree2.hpp"
@@ -55,6 +56,61 @@ void AMP::readHDF5Scalar<AMP::Mesh::MeshID>( hid_t fid,
 
 
 /********************************************************
+ * MeshElementID                                         *
+ ********************************************************/
+#ifdef AMP_USE_HDF5
+static_assert( sizeof( AMP::Mesh::MeshElementID ) == 2 * sizeof( uint64_t ) );
+template<>
+hid_t AMP::getHDF5datatype<AMP::Mesh::MeshElementID>()
+{
+    return getHDF5datatype<uint64_t>();
+}
+template<>
+void AMP::writeHDF5Array<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                    const std::string_view &name,
+                                                    const AMP::Array<AMP::Mesh::MeshElementID> &x )
+{
+    auto size2 = cat( ArraySize( 2 ), x.size() );
+    auto ptr   = const_cast<uint64_t *>( reinterpret_cast<const uint64_t *>( x.data() ) );
+    auto y     = AMP::Array<uint64_t>::staticView( size2, ptr );
+    writeHDF5Array( fid, name, y );
+}
+template<>
+void AMP::readHDF5Array<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                   const std::string_view &name,
+                                                   AMP::Array<AMP::Mesh::MeshElementID> &x )
+{
+    AMP::Array<uint64_t> y;
+    AMP::readHDF5Array( fid, name, y );
+    ArraySize size( { y.size( 1 ), y.size( 2 ), y.size( 3 ), y.size( 4 ) }, y.ndim() - 1 );
+    x.resize( size );
+    for ( size_t i = 0; i < x.length(); i++ )
+        x( i ) = AMP::Mesh::MeshElementID( AMP::Mesh::MeshID( y( 0, i ) ),
+                                           AMP::Mesh::ElementID( y( 1, i ) ) );
+}
+template<>
+void AMP::writeHDF5Scalar<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                     const std::string_view &name,
+                                                     const AMP::Mesh::MeshElementID &data )
+{
+    AMP::Array<AMP::Mesh::MeshElementID> x( { 1 }, &data );
+    writeHDF5Array( fid, name, x );
+}
+template<>
+void AMP::readHDF5Scalar<AMP::Mesh::MeshElementID>( hid_t fid,
+                                                    const std::string_view &name,
+                                                    AMP::Mesh::MeshElementID &data )
+{
+    AMP::Array<AMP::Mesh::MeshElementID> x;
+    readHDF5Array( fid, name, x );
+    AMP_ASSERT( x.size() == 1u );
+    data = x( 0 );
+}
+INSTANTIATE_HDF5( AMP::Mesh::MeshElementID );
+#endif
+
+
+/********************************************************
  * GeomType                                              *
  ********************************************************/
 #ifdef AMP_USE_HDF5
@@ -100,6 +156,52 @@ void AMP::readHDF5Scalar<AMP::Mesh::GeomType>( hid_t fid,
     data = static_cast<AMP::Mesh::GeomType>( data2 );
 }
 #endif
+
+
+/********************************************************
+ * AMP::Mesh::MeshIterator::Type                         *
+ ********************************************************/
+#ifdef AMP_USE_HDF5
+static_assert( sizeof( AMP::Mesh::MeshIterator::Type ) == sizeof( uint8_t ) );
+template<>
+hid_t AMP::getHDF5datatype<AMP::Mesh::MeshIterator::Type>()
+{
+    return getHDF5datatype<uint16_t>();
+}
+template<>
+void AMP::writeHDF5Array<AMP::Mesh::MeshIterator::Type>(
+    hid_t fid, const std::string_view &name, const AMP::Array<AMP::Mesh::MeshIterator::Type> &data )
+{
+    AMP::Array<uint16_t> data2( data.size(), reinterpret_cast<const uint16_t *>( data.data() ) );
+    writeHDF5Array<uint16_t>( fid, name, data2 );
+}
+template<>
+void AMP::readHDF5Array<AMP::Mesh::MeshIterator::Type>(
+    hid_t fid, const std::string_view &name, AMP::Array<AMP::Mesh::MeshIterator::Type> &data )
+{
+    AMP::Array<uint16_t> data2;
+    AMP::readHDF5Array<uint16_t>( fid, name, data2 );
+    data.resize( data2.size() );
+    for ( size_t i = 0; i < data.length(); i++ )
+        data( i ) = static_cast<AMP::Mesh::MeshIterator::Type>( data2( i ) );
+}
+template<>
+void AMP::writeHDF5Scalar<AMP::Mesh::MeshIterator::Type>(
+    hid_t fid, const std::string_view &name, const AMP::Mesh::MeshIterator::Type &data )
+{
+    writeHDF5Scalar<uint16_t>( fid, name, static_cast<uint16_t>( data ) );
+}
+template<>
+void AMP::readHDF5Scalar<AMP::Mesh::MeshIterator::Type>( hid_t fid,
+                                                         const std::string_view &name,
+                                                         AMP::Mesh::MeshIterator::Type &data )
+{
+    uint16_t data2;
+    readHDF5Scalar<uint16_t>( fid, name, data2 );
+    data = static_cast<AMP::Mesh::MeshIterator::Type>( data2 );
+}
+#endif
+INSTANTIATE_HDF5( AMP::Mesh::MeshIterator::Type );
 
 
 /********************************************************

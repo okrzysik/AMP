@@ -101,11 +101,10 @@ public: // BoxMesh specific functionality
      */
     AMP::Geometry::Point physicalToLogical( const AMP::Geometry::Point &x ) const override;
 
-    MovableBoxMesh( int64_t, AMP::IO::RestartManager * );
 
-
-protected: // Write/read restart data
+public: // Restart functions
     void writeRestart( int64_t ) const override;
+    MovableBoxMesh( int64_t, AMP::IO::RestartManager * );
 
 
 private:

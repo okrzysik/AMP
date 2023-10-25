@@ -86,6 +86,10 @@ public:
     virtual ~simpleDOFManager();
 
 
+    //! Return a string with the mesh class name
+    std::string className() const { return "simpleDOFManager"; }
+
+
     /** \brief Get the mesh element for a DOF
      * \details  This will return the mesh element associated with a given DOF.
      * \param[in] dof       The entry in the vector associated with DOF
@@ -147,6 +151,11 @@ public:
     std::shared_ptr<DOFManager> subset( const std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                         bool useMeshComm = true ) override;
 
+
+public: // Write/read restart data
+    void registerChildObjects( AMP::IO::RestartManager *manager ) const override;
+    void writeRestart( int64_t ) const override;
+    simpleDOFManager( int64_t, AMP::IO::RestartManager * );
 
 protected:
     // Private constructor

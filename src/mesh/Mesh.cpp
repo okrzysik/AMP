@@ -1,4 +1,5 @@
 #include "AMP/mesh/Mesh.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/discretization/simpleDOF_Manager.h"
 #include "AMP/geometry/Geometry.h"
 #include "AMP/geometry/MeshGeometry.h"
@@ -502,6 +503,43 @@ std::shared_ptr<Mesh> Mesh::createView( const Mesh &src, const AMP::Database &db
         AMP_ERROR( "Unknown operation" );
     }
     return nullptr;
+}
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+void Mesh::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    manager->registerComm( d_comm );
+    manager->registerData( d_geometry );
+}
+void Mesh::writeRestart( int64_t fid ) const
+{
+    writeHDF5( fid, "Geometry", d_geometry->getID() );
+    writeHDF5( fid, "GeomDim", GeomDim );
+    writeHDF5( fid, "PhysicalDim", PhysicalDim );
+    writeHDF5( fid, "max_gcw", d_max_gcw );
+    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    writeHDF5( fid, "meshID", d_meshID );
+    writeHDF5( fid, "name", d_name );
+    writeHDF5( fid, "box", d_box );
+    writeHDF5( fid, "box_local", d_box_local );
+}
+Mesh::Mesh( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    uint64_t commHash, geomID;
+    readHDF5( fid, "Geometry", geomID );
+    readHDF5( fid, "GeomDim", GeomDim );
+    readHDF5( fid, "PhysicalDim", PhysicalDim );
+    readHDF5( fid, "max_gcw", d_max_gcw );
+    readHDF5( fid, "comm", commHash );
+    readHDF5( fid, "meshID", d_meshID );
+    readHDF5( fid, "name", d_name );
+    readHDF5( fid, "box", d_box );
+    readHDF5( fid, "box_local", d_box_local );
+    d_comm     = manager->getComm( commHash );
+    d_geometry = manager->getData<AMP::Geometry::Geometry>( geomID );
 }
 
 

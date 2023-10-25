@@ -9,6 +9,11 @@
 #include <vector>
 
 
+namespace AMP::IO {
+class RestartManager;
+}
+
+
 namespace AMP::Geometry {
 
 
@@ -145,12 +150,28 @@ public:
     //! Check if two geometries are not equal
     inline bool operator!=( const Geometry &rhs ) const { return !operator==( rhs ); }
 
+
+public: // Write/read restart data
+    //! Return a unique hash id
+    virtual uint64_t getID() const;
+
+    /**
+     * \brief    Register child objects
+     * \details  This function register child objects if necessary
+     * \param manager    Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
     /**
      * \brief    Write restart data to file
      * \details  This function will write the mesh to an HDF5 file
      * \param fid    File identifier to write
      */
-    virtual void writeRestart( int64_t fid ) const = 0;
+    virtual void writeRestart( int64_t fid ) const;
+
+protected:
+    //! Initialize the base class from file
+    Geometry( int64_t fid );
 
 
 public:

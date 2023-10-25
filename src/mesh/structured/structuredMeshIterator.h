@@ -44,6 +44,9 @@ public:
     //! Assignment operator
     structuredMeshIterator &operator=( const structuredMeshIterator & );
 
+    //! Return the class name
+    std::string className() const override { return "structuredMeshIterator"; }
+
     //! Increment
     MeshIterator &operator++() override;
 
@@ -67,6 +70,11 @@ public:
 
     using MeshIterator::operator+;
     using MeshIterator::operator+=;
+
+public: // Write/read restart data
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+    virtual void writeRestart( int64_t fid ) const;
+    structuredMeshIterator( int64_t fid, AMP::IO::RestartManager *manager );
 
 protected:
     //! Clone the iterator

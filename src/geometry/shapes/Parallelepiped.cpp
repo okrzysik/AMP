@@ -280,6 +280,8 @@ std::unique_ptr<AMP::Geometry::Geometry> Parallelepiped::clone() const
  ********************************************************/
 bool Parallelepiped::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const Parallelepiped *>( &rhs );
     if ( !geom )
         return false;
@@ -294,11 +296,7 @@ bool Parallelepiped::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void Parallelepiped::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "parallelepiped" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "a", d_a );
     AMP::writeHDF5( fid, "b", d_b );
     AMP::writeHDF5( fid, "c", d_c );
@@ -309,12 +307,8 @@ void Parallelepiped::writeRestart( int64_t fid ) const
     AMP::writeHDF5( fid, "n_ac", d_n_ac );
     AMP::writeHDF5( fid, "n_bc", d_n_bc );
 }
-Parallelepiped::Parallelepiped( int64_t fid )
+Parallelepiped::Parallelepiped( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "a", d_a );
     AMP::readHDF5( fid, "b", d_b );
     AMP::readHDF5( fid, "c", d_c );

@@ -77,6 +77,11 @@ public:
     std::vector<int> getLogicalSurfaceIds() const;
 
 
+public: // Restart functions
+    void writeRestart( int64_t fid ) const override;
+    LogicalGeometry( int64_t fid );
+
+
 protected:
     //!  Empty constructor for the base class
     LogicalGeometry()

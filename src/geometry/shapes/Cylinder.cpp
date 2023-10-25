@@ -263,6 +263,8 @@ std::unique_ptr<AMP::Geometry::Geometry> Cylinder::clone() const
  ********************************************************/
 bool Cylinder::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const Cylinder *>( &rhs );
     if ( !geom )
         return false;
@@ -277,23 +279,15 @@ bool Cylinder::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void Cylinder::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "cylinder" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "r", d_r );
     AMP::writeHDF5( fid, "z_min", d_z_min );
     AMP::writeHDF5( fid, "z_max", d_z_max );
     AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "chamfer", d_chamfer );
 }
-Cylinder::Cylinder( int64_t fid )
+Cylinder::Cylinder( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "r", d_r );
     AMP::readHDF5( fid, "z_min", d_z_min );
     AMP::readHDF5( fid, "z_max", d_z_max );

@@ -458,6 +458,7 @@ protected:
 
 protected: // Write/read restart data
     void writeRestart( int64_t ) const override;
+    BoxMesh( int64_t, AMP::IO::RestartManager * );
 
 protected:                            // Internal data
     int d_rank, d_size;               // Cached values for the rank and size

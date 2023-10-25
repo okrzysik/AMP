@@ -230,6 +230,18 @@ void AMPManager::shutdown()
                 static_cast<int>( AMP_MPI::MPI_Comm_created() ),
                 static_cast<int>( AMP_MPI::MPI_Comm_destroyed() ) );
     }
+    // Clear input arguments
+    for ( int i = 0; i < d_argc; i++ )
+        delete[] d_argv[i];
+    delete[] d_argv;
+    d_argc = 0;
+    d_argv = nullptr;
+    // Clear the factories
+    AMP::FactoryStrategy<AMP::KeyData>::clear();
+    AMP::FactoryStrategy<AMP::Materials::Material>::clear();
+    AMP::Operator::OperatorFactory::clear();
+    AMP::Solver::SolverFactory::clear();
+    AMP::TimeIntegrator::TimeIntegratorFactory::clear();
     // List shutdown times
     double shutdown_time = Utilities::time() - start_time;
     if ( d_properties.print_times && rank == 0 ) {
@@ -251,18 +263,6 @@ void AMPManager::shutdown()
         }
     }
     resourceMap.clear();
-    // Clear input arguments
-    for ( int i = 0; i < d_argc; i++ )
-        delete[] d_argv[i];
-    delete[] d_argv;
-    d_argc = 0;
-    d_argv = nullptr;
-    // Clear the factories
-    AMP::FactoryStrategy<AMP::KeyData>::clear();
-    AMP::FactoryStrategy<AMP::Materials::Material>::clear();
-    AMP::Operator::OperatorFactory::clear();
-    AMP::Solver::SolverFactory::clear();
-    AMP::TimeIntegrator::TimeIntegratorFactory::clear();
     // Shutdown timer and print memory leaks on rank 0
     PROFILE_DISABLE();
 #ifdef AMP_USE_TIMER

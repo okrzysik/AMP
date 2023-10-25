@@ -4,7 +4,6 @@
 #include "AMP/utils/Utilities.h"
 #include "AMP/utils/threadpool/ThreadHelpers.h"
 
-#include "ProfilerApp.h"
 #include "StackTrace/StackTrace.h"
 #include "StackTrace/Utilities.h"
 
@@ -21,30 +20,8 @@
 #include <typeinfo>
 
 
-// Add profile timers or performance counters to the threadpool
-#define PROFILE_THREADPOOL_PERFORMANCE 0
-
-
-#define ASSERT AMP_ASSERT
+using AMP::perr;
 using AMP::pout;
-
-
-// Set some macros
-// clang-format off
-#if PROFILE_THREADPOOL_PERFORMANCE == 1
-#define PROFILE_THREADPOOL_START(X)  PROFILE_START(X,3)
-#define PROFILE_THREADPOOL_START2(X) PROFILE_START2(X,3)
-#define PROFILE_THREADPOOL_STOP(X)   PROFILE_STOP(X,3)
-#define PROFILE_THREADPOOL_STOP2(X)  PROFILE_STOP2(X,3)
-#define PROFILE_THREADPOOL_SCOPED(T,X) PROFILE_SCOPED(T,X) 
-#else
-#define PROFILE_THREADPOOL_START(X)  do {} while ( 0 )
-#define PROFILE_THREADPOOL_START2(X) do {} while ( 0 )
-#define PROFILE_THREADPOOL_STOP(X)   do {} while ( 0 )
-#define PROFILE_THREADPOOL_STOP2(X)  do {} while ( 0 )
-#define PROFILE_THREADPOOL_SCOPED(T,X)  do {} while ( 0 )
-#endif
-// clang-format on
 
 
 namespace AMP {
@@ -126,7 +103,6 @@ static inline int count_bits( int_type x )
  * Set the global constants                                        *
  ******************************************************************/
 constexpr uint16_t ThreadPool::MAX_THREADS;
-constexpr uint16_t ThreadPool::MAX_WAIT;
 
 
 /******************************************************************
@@ -136,7 +112,8 @@ static int global_OS_behavior = 0;
 static std::mutex OS_warning_mutex;
 void ThreadPool::set_OS_warnings( int behavior )
 {
-    ASSERT( behavior >= 0 && behavior <= 2 );
+    if ( behavior < 0 || behavior > 2 )
+        throw std::logic_error( "Unknown OS warning flag" );
     global_OS_behavior = behavior;
 }
 static void OS_warning( const std::string &message )
@@ -266,8 +243,6 @@ ThreadPool::ThreadPool( const int N,
     d_max_wait_time = 600;
     memset( (void *) d_active, 0, MAX_THREADS / 8 );
     memset( (void *) d_cancel, 0, MAX_THREADS / 8 );
-    for ( auto &tmp : d_wait )
-        tmp.store( nullptr );
     // Initialize the id
     d_id_assign = ThreadPoolID::maxThreadID;
     // Create the threads
@@ -455,7 +430,6 @@ void ThreadPool::tpool_thread( int thread_id )
     AMP::Utilities::setenv( "OMP_NUM_THREADS", "1" );
     AMP::Utilities::setenv( "MKL_NUM_THREADS", "1" );
     // Check for shutdown
-    PROFILE_THREADPOOL_START( "thread active" );
     bool shutdown = false;
     using Utilities::stringf;
     while ( !shutdown ) {
@@ -470,7 +444,6 @@ void ThreadPool::tpool_thread( int thread_id )
             WorkItem *work = work_id.getWork();
             ++d_N_started;
             // Start work here
-            PROFILE_THREADPOOL_START( "thread working" );
             work->d_state = ThreadPoolID::Status::started;
             try {
                 work->run();
@@ -490,30 +463,23 @@ void ThreadPool::tpool_thread( int thread_id )
                 if ( d_errorHandler )
                     d_errorHandler( msg );
                 else
-                    AMP_ERROR( msg );
+                    throw std::logic_error( msg );
             } catch ( ... ) {
                 auto msg = stringf( "Error, caught unknown exception in thread %i:\n", thread_id );
                 if ( d_errorHandler )
                     d_errorHandler( msg );
                 else
-                    AMP_ERROR( msg );
+                    throw std::logic_error( msg );
             }
             work->d_state = ThreadPoolID::Status::finished;
-            PROFILE_THREADPOOL_STOP( "thread working" );
             ++d_N_finished;
-            // Check if any threads are waiting on the current work item
-            // This can be done without blocking
-            for ( auto &i : d_wait ) {
-                auto wait = i.load();
-                if ( wait != nullptr )
-                    wait->id_finished( work_id );
-            }
             // Check the signal count and signal if desired
-            // This can be done without blocking
             if ( d_signal_count > 0 ) {
                 int count = --d_signal_count;
-                if ( count == 0 )
+                if ( count <= 0 ) {
                     d_wait_finished.notify_all();
+                    d_signal_count.store( 0 );
+                }
             }
             shutdown = get_bit( d_cancel, thread_id );
         } else {
@@ -525,18 +491,15 @@ void ThreadPool::tpool_thread( int thread_id )
                 d_signal_empty = false;
             }
             // Wait for work
-            PROFILE_THREADPOOL_STOP2( "thread active" );
             double wait_time = thread_id <= 2 ? 0.01 : 0.1;
             while ( d_queue.empty() && !shutdown ) {
                 d_wait_work.wait_for( wait_time );
                 shutdown = get_bit( d_cancel, thread_id );
             }
-            PROFILE_THREADPOOL_START2( "thread active" );
             ++d_num_active;
             set_bit( d_active, thread_id );
         }
     }
-    PROFILE_THREADPOOL_STOP( "thread active" );
     --d_num_active;
     unset_bit( d_active, thread_id );
     return;
@@ -564,7 +527,6 @@ void ThreadPool::add_work( size_t N,
         add_work( N - 256, &work[256], &priority[256], &ids[256] );
         return;
     }
-    PROFILE_THREADPOOL_SCOPED( timer, "add_work" );
     // Create the thread ids (can be done without blocking)
     for ( size_t i = 0; i < N; i++ )
         ids[i].reset( priority[i], --d_id_assign, work[i] );
@@ -601,8 +563,7 @@ void ThreadPool::add_work( size_t N,
     // Wait for enough room in the queue (doesn't need blocking since it isn't that precise)
     int N_wait = (int) N - (int) ( d_queue.capacity() - d_queue.size() );
     while ( N_wait > 0 ) {
-        d_signal_count = std::min( N_wait, 255 );
-        d_wait_finished.wait_for( 1e-4 );
+        wait_N( std::min( N_wait, 255 ), 1e-4 );
         N_wait = (int) N - (int) ( d_queue.capacity() - d_queue.size() );
     }
     // Add the work items to the queue
@@ -626,52 +587,64 @@ void ThreadPool::add_work( size_t N,
 /******************************************************************
  * This function waits for a some of the work items to finish      *
  ******************************************************************/
-ThreadPool::bit_array
+void ThreadPool::wait_N( int N, double time ) const
+{
+    // Store the number of items to wait for
+    uint32_t zero = 0;
+    bool test     = d_signal_count.compare_exchange_strong( zero, N );
+    if ( !test ) {
+        uint32_t N0, N2;
+        do {
+            N0 = d_signal_count.load();
+            N2 = std::min<uint32_t>( N, N0 );
+        } while ( !d_signal_count.compare_exchange_weak( N0, N2 ) );
+    }
+    // Wait
+    d_wait_finished.wait_for( time );
+    d_signal_count.store( 0 );
+}
+static inline int elapsed( const std::chrono::time_point<std::chrono::high_resolution_clock> &t0 )
+{
+    auto t1 = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::seconds>( t1 - t0 ).count();
+}
+std::vector<bool>
 ThreadPool::wait_some( size_t N_work, const ThreadPoolID *ids, size_t N_wait, int max_wait ) const
 {
-    bit_array finished( N_work );
     // Check the inputs
     if ( N_wait > N_work )
         throw std::logic_error( "Invalid arguments in thread pool wait" );
-    // Check which ids have finished
     for ( size_t i = 0; i < N_work; i++ ) {
-        auto status = ids[i].status();
-        if ( status == AMP::ThreadPoolID::Status::finished )
-            finished.set( i );
-        else if ( status == AMP::ThreadPoolID::Status::none )
+        if ( ids[i].status() == AMP::ThreadPoolID::Status::none )
             throw std::logic_error( "Waiting on invalid id" );
     }
-    size_t N_finished = finished.sum();
-    // If enough ids have finished return
-    if ( N_finished >= N_wait )
-        return finished;
-    // Create the wait event struct
-    wait_ids_struct wait( N_work, ids, finished, N_wait, MAX_WAIT, d_wait, d_wait_finished );
     // Wait for the ids
+    size_t N_finished = 0;
+    std::vector<bool> finished( N_work, false );
     auto t1 = std::chrono::high_resolution_clock::now();
     auto t2 = t1;
-    int dt1 = 0;
-    while ( dt1 < max_wait ) {
-        bool test = wait.wait_for( std::min( max_wait, d_max_wait_time ), 0.01 );
-        if ( test )
-            break;
-        auto t3 = std::chrono::high_resolution_clock::now();
-        dt1     = std::chrono::duration_cast<std::chrono::seconds>( t3 - t1 ).count();
-        int dt2 = std::chrono::duration_cast<std::chrono::seconds>( t3 - t2 ).count();
-        if ( dt2 >= d_max_wait_time ) {
-            print_wait_warning();
-            t2 = t3;
+    do {
+        for ( size_t i = 0; i < N_work; i++ ) {
+            if ( !finished[i] ) {
+                if ( ids[i].finished() ) {
+                    finished[i] = true;
+                    N_finished++;
+                }
+            }
         }
-    }
-    wait.clear();
+        if ( N_finished >= N_work )
+            return finished;
+        wait_N( N_work - N_finished, 0.01 );
+        if ( elapsed( t2 ) >= d_max_wait_time ) {
+            print_wait_warning();
+            t2 = std::chrono::high_resolution_clock::now();
+        }
+    } while ( elapsed( t1 ) < max_wait );
     // Update any ids that have finished
     for ( size_t i = 0; i < N_work; i++ ) {
         if ( ids[i].finished() )
-            finished.set( i );
+            finished[i] = true;
     }
-    // Yield the time slice to allow any threads currently using the wait_id to try and finish
-    std::this_thread::yield();
-    // Delete the wait event struct
     return finished;
 }
 
@@ -716,110 +689,6 @@ void ThreadPool::wait_pool_finished() const
         }
     }
     d_signal_empty = false;
-}
-
-
-/******************************************************************
- * Member functions of wait_ids_struct                             *
- ******************************************************************/
-ThreadPool::wait_ids_struct::wait_ids_struct( size_t N,
-                                              const ThreadPoolID *ids,
-                                              bit_array &finished,
-                                              size_t N_wait,
-                                              int N_wait_list,
-                                              wait_ptr *list,
-                                              condition_variable &wait_event )
-    : d_wait( N_wait ),
-      d_N( N ),
-      d_lock( 0 ),
-      d_ids( ids ),
-      d_finished( finished ),
-      d_wait_event( wait_event )
-{
-    if ( d_N.load() == 0 )
-        return;
-    int i                 = 0;
-    wait_ids_struct *null = nullptr;
-    while ( !list[i].compare_exchange_weak( null, this ) ) {
-        null = nullptr;
-        i    = ( i + 1 ) % N_wait_list;
-    }
-    AMP_ASSERT( list[i].load() == this );
-    d_ptr = &list[i];
-}
-ThreadPool::wait_ids_struct::~wait_ids_struct()
-{
-    clear();
-    while ( d_lock.load() != 0 )
-        std::this_thread::yield();
-}
-void ThreadPool::wait_ids_struct::clear() const
-{
-    if ( d_N.load() == 0 )
-        return;
-    d_ptr->store( nullptr );
-    d_N.store( 0 );
-    d_wait.store( 0 );
-}
-inline bool ThreadPool::wait_ids_struct::check()
-{
-    bool finished = d_N.load() == 0;
-    if ( !finished ) {
-        int N_finished = d_finished.sum();
-        if ( N_finished >= d_wait ) {
-            clear();
-            finished = true;
-        }
-    }
-    return finished;
-}
-void ThreadPool::wait_ids_struct::id_finished( const ThreadPoolID &id ) const
-{
-    if ( d_N.load() == 0 )
-        return;
-    ++d_lock;
-    int N_finished = 0;
-    for ( int i = 0; i < d_N.load(); i++ ) {
-        if ( d_ids[i] == id ) {
-            d_finished.set( i );
-            N_finished = d_finished.sum();
-            break;
-        }
-    }
-    if ( N_finished >= d_wait ) {
-        clear();
-        d_wait_event.notify_all();
-    }
-    --d_lock;
-}
-bool ThreadPool::wait_ids_struct::wait_for( double total_time, double recheck_time )
-{
-    int total   = 1e6 * total_time;
-    int recheck = 1e6 * recheck_time;
-    auto t1     = std::chrono::high_resolution_clock::now();
-    auto t2     = t1;
-    int us1     = 0;
-    int N       = d_N.load();
-    while ( us1 < total ) {
-        for ( int i = 0; i < N; i++ ) {
-            if ( d_ids[i].finished() )
-                d_finished.set( i );
-        }
-        if ( check() )
-            return true;
-        int us2 = 0;
-        while ( us2 < recheck ) {
-            double dt = 1e-6 * std::max( 10, recheck - us2 );
-            d_wait_event.wait_for( dt );
-            if ( check() )
-                return true;
-            auto t3 = std::chrono::high_resolution_clock::now();
-            us2     = std::chrono::duration_cast<std::chrono::microseconds>( t3 - t2 ).count();
-            t2      = t3;
-        }
-        us1 = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    }
-    return false;
 }
 
 

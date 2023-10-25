@@ -25,6 +25,18 @@ std::shared_ptr<VectorOperations> VectorOperationsDefault<TYPE>::cloneOperations
     return ptr;
 }
 
+
+/****************************************************************
+ * Get the class type                                            *
+ ****************************************************************/
+template<typename TYPE>
+std::string VectorOperationsDefault<TYPE>::VectorOpName() const
+{
+    constexpr typeID id = getTypeID<TYPE>();
+    return "VectorOperationsDefault<" + std::string( id.name ) + ">";
+}
+
+
 //**********************************************************************
 // Static functions that operate on VectorData objects
 
@@ -503,6 +515,23 @@ bool VectorOperationsDefault<TYPE>::localEquals( const VectorData &x,
         ++cur2;
     }
     return equal;
+}
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::registerChildObjects( AMP::IO::RestartManager * ) const
+{
+}
+template<typename TYPE>
+void VectorOperationsDefault<TYPE>::writeRestart( int64_t ) const
+{
+}
+template<typename TYPE>
+VectorOperationsDefault<TYPE>::VectorOperationsDefault( int64_t, AMP::IO::RestartManager * )
+{
 }
 
 

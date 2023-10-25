@@ -72,6 +72,7 @@ public: // Virtual functions
     std::shared_ptr<const VectorData> getComponent( size_t i = 0 ) const override;
     bool hasContiguousData() const override { return ( numberOfDataBlocks() <= 1 ); }
 
+
 public: // Advanced virtual functions
     /**\brief  A unique id for the underlying data allocation
      *\details This is a unique id that is associated with the data
@@ -126,6 +127,7 @@ public: // Advanced virtual functions
 
     void assemble() override;
 
+
 public:
     void receiveDataChanged() override { fireDataChange(); }
 
@@ -139,11 +141,36 @@ public:
 
     void reset() override;
 
+
+public: // Write/read restart data
+    /**
+     * \brief    Register any child objects
+     * \details  This function will register child objects with the manager
+     * \param manager   Restart manager
+     */
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid    File identifier to write
+     */
+    virtual void writeRestart( int64_t fid ) const;
+
+    /**
+     * \brief    Write restart data to file
+     * \details  This function will write the mesh to an HDF5 file
+     * \param fid       File identifier to read
+     * \param manager   Restart manager
+     */
+    MultiVectorData( int64_t fid, AMP::IO::RestartManager *manager );
+
+
 protected:
     // Internal data
     AMP::AMP_MPI d_comm;
     std::vector<VectorData *> d_data;
-    AMP::Discretization::DOFManager *d_globalDOFManager;
+    AMP::Discretization::DOFManager *d_globalDOFManager = nullptr;
     std::vector<AMP::Discretization::DOFManager *> d_subDOFManager;
 
 

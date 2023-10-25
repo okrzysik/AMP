@@ -2,6 +2,8 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/data/VectorData.h"
+#include "AMP/vectors/operations/MultiVectorOperations.h"
+#include "AMP/vectors/operations/VectorOperationsDefault.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -10,7 +12,7 @@ namespace AMP::LinearAlgebra {
 /****************************************************************
  * Constructors                                                  *
  ****************************************************************/
-VectorOperations::VectorOperations() = default;
+VectorOperations::VectorOperations() : d_hash( reinterpret_cast<uint64_t>( this ) ) {}
 
 
 /****************************************************************
@@ -118,10 +120,19 @@ Scalar VectorOperations::wrmsNormMask( const VectorData &x,
 /****************************************************************
  * Get an id                                                     *
  ****************************************************************/
-uint64_t VectorOperations::getID() const
+uint64_t VectorOperations::getID() const { return d_hash; }
+
+
+/****************************************************************
+ * Write/Read restart data                                       *
+ ****************************************************************/
+void VectorOperations::registerChildObjects( AMP::IO::RestartManager * ) const
 {
-    AMP_ERROR( "Not finished" );
-    return 0;
+    AMP_ERROR( "Need to implement registerChildObjects for " + VectorOpName() );
+}
+void VectorOperations::writeRestart( int64_t ) const
+{
+    AMP_ERROR( "Need to implement writeRestart for " + VectorOpName() );
 }
 
 
@@ -135,26 +146,41 @@ template<>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::DataStoreType(
     const std::string &name,
     std::shared_ptr<const AMP::LinearAlgebra::VectorOperations> data,
-    RestartManager * )
+    RestartManager *manager )
     : d_data( data )
 {
     d_name = name;
     d_hash = data->getID();
-    AMP_ERROR( "Not finished" );
+    d_data->registerChildObjects( manager );
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::write(
     hid_t fid, const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
-    AMP_ERROR( "Not finished" );
+    writeHDF5( gid, "ClassType", d_data->VectorOpName() );
+    d_data->writeRestart( gid );
     closeGroup( gid );
 }
 template<>
 std::shared_ptr<AMP::LinearAlgebra::VectorOperations>
-AMP::IO::RestartManager::getData<AMP::LinearAlgebra::VectorOperations>( const std::string &name )
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( d_fid, name );
-    AMP_ERROR( "Not finished" );
+    hid_t gid = openGroup( fid, name );
+    std::string type;
+    readHDF5( gid, "ClassType", type );
+    std::shared_ptr<AMP::LinearAlgebra::VectorOperations> ops;
+    // Load the object (we will need to replace the if/else with a factory
+    if ( type == "MultiVectorOperations" ) {
+        ops = std::make_shared<AMP::LinearAlgebra::MultiVectorOperations>( gid, manager );
+    } else if ( type == "VectorOperationsDefault<double>" ) {
+        ops = std::make_shared<AMP::LinearAlgebra::VectorOperationsDefault<double>>();
+    } else if ( type == "VectorOperationsDefault<float>" ) {
+        ops = std::make_shared<AMP::LinearAlgebra::VectorOperationsDefault<float>>();
+    } else {
+        AMP_ERROR( "Unknown VectorOperations: " + type );
+    }
     closeGroup( gid );
+    return ops;
 }

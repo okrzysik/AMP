@@ -2,10 +2,16 @@
 #define included_AMP_MeshIterators
 
 #include "AMP/mesh/MeshElement.h"
+#include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
 
 #include <iterator>
 #include <memory>
+
+
+namespace AMP::IO {
+class RestartManager;
+}
 
 
 namespace AMP::Mesh {
@@ -20,7 +26,9 @@ namespace AMP::Mesh {
  *   the random access iterators, but does so using the increment/decrement routines.
  *   Derived classes may (or may not) override these routines for performance optimizations.
  */
-class MeshIterator : public std::iterator<std::random_access_iterator_tag, AMP::Mesh::MeshElement>
+class MeshIterator :
+    public std::iterator<std::random_access_iterator_tag, AMP::Mesh::MeshElement>,
+    public AMP::enable_shared_from_this<AMP::Mesh::MeshIterator>
 {
 public:
     /**
@@ -58,6 +66,9 @@ public:
 
 
 public: // Virtual functions
+    //! Return the class name
+    virtual std::string className() const;
+
     //! Return an iterator to the begining
     virtual MeshIterator begin() const;
 
@@ -114,8 +125,14 @@ public: // non-virtual functions
     //! Return the iterator type
     Type type() const;
 
+    //! Return a unique hash id
+    uint64_t getID() const;
+
     //! Return the raw iterator (may be this)
     inline const MeshIterator *rawIterator() const;
+
+    //! Check if the iterator is empty
+    inline bool empty() const;
 
     //! Return the number of elements in the iterator
     inline size_t size() const;
@@ -217,6 +234,12 @@ public: // non-virtual functions
      * \param it  Iterator to subtract
      */
     MeshIterator &operator-=( const MeshIterator &it );
+
+
+public: // Write/read restart data
+    virtual void registerChildObjects( AMP::IO::RestartManager *manager ) const;
+    virtual void writeRestart( int64_t fid ) const;
+    MeshIterator( int64_t fid );
 
 
 protected:

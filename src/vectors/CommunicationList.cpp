@@ -1,3 +1,4 @@
+#include "AMP/IO/RestartManager.h"
 #include "AMP/utils/Utilities.h"
 #include "AMP/vectors/VectorIndexer.h"
 #include "AMP/vectors/data/VectorData.h"
@@ -259,6 +260,15 @@ void CommunicationList::scatter_add( VectorData &vec ) const
 }
 
 
+/****************************************************************
+ * Get an id                                                     *
+ ****************************************************************/
+uint64_t CommunicationList::getID() const
+{
+    return getComm().bcast( reinterpret_cast<uint64_t>( this ), 0 );
+}
+
+
 /************************************************************************
  * Misc. functions                                                       *
  ************************************************************************/
@@ -273,3 +283,45 @@ const AMP_MPI &CommunicationList::getComm() const { return d_comm; }
 
 
 } // namespace AMP::LinearAlgebra
+
+
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+template<>
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationList>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::LinearAlgebra::CommunicationList> data,
+    RestartManager *manager )
+    : d_data( data )
+{
+    d_name = name;
+    d_hash = data->getID();
+    manager->registerComm( data->getComm() );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationList>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    writeHDF5( gid, "commHash", d_data->getComm().hashRanks() );
+    writeHDF5( gid, "localsize", d_data->numLocalRows() );
+    writeHDF5( gid, "remote_DOFs", d_data->getGhostIDList() );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::LinearAlgebra::CommunicationList>
+AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationList>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
+{
+    hid_t gid = openGroup( fid, name );
+    std::string type;
+    uint64_t commHash;
+    auto params = std::make_shared<AMP::LinearAlgebra::CommunicationListParameters>();
+    readHDF5( gid, "commHash", commHash );
+    readHDF5( gid, "localsize", params->d_localsize );
+    readHDF5( gid, "remote_DOFs", params->d_remote_DOFs );
+    params->d_comm = manager->getComm( commHash );
+    closeGroup( gid );
+    return std::make_shared<AMP::LinearAlgebra::CommunicationList>( params );
+}

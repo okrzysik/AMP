@@ -1,5 +1,6 @@
 #include "AMP/geometry/Geometry.h"
 #include "AMP/IO/HDF5.hpp"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/geometry/MeshGeometry.h"
 #include "AMP/geometry/MultiGeometry.h"
 #include "AMP/geometry/shapes/Box.h"
@@ -112,6 +113,15 @@ AMP::Mesh::GeomType Geometry::getGeomType() const
 }
 
 
+/********************************************************
+ *  Restart operations                                   *
+ ********************************************************/
+uint64_t Geometry::getID() const { return reinterpret_cast<uint64_t>( this ); }
+void Geometry::registerChildObjects( AMP::IO::RestartManager * ) const {}
+void Geometry::writeRestart( int64_t fid ) const { writeHDF5( fid, "physicalDim", d_physicalDim ); }
+Geometry::Geometry( int64_t fid ) { readHDF5( fid, "physicalDim", d_physicalDim ); }
+
+
 } // namespace AMP::Geometry
 
 
@@ -119,14 +129,39 @@ AMP::Mesh::GeomType Geometry::getGeomType() const
  * Write/read geometry class                             *
  ********************************************************/
 template<>
-void AMP::readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
-    hid_t fid, const std::string_view &name, std::shared_ptr<AMP::Geometry::Geometry> &geom )
+AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::DataStoreType(
+    const std::string &name,
+    std::shared_ptr<const AMP::Geometry::Geometry> geom,
+    RestartManager *manager )
+    : d_data( geom )
+{
+    d_name = name;
+    d_hash = d_data->getID();
+    // Register child objects
+    geom->registerChildObjects( manager );
+}
+template<>
+void AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::write(
+    hid_t fid, const std::string &name ) const
+{
+    hid_t gid = createGroup( fid, name );
+    writeHDF5( gid, "GeomType", d_data->getName() );
+    d_data->writeRestart( gid );
+    closeGroup( gid );
+}
+template<>
+std::shared_ptr<AMP::Geometry::Geometry>
+AMP::IO::RestartManager::DataStoreType<AMP::Geometry::Geometry>::read(
+    hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     using namespace AMP::Geometry;
-    int64_t gid = openGroup( fid, name );
+    hid_t gid = openGroup( fid, name );
     std::string type;
     readHDF5( gid, "GeomType", type );
-    if ( type == "Box<1>" ) {
+    std::shared_ptr<AMP::Geometry::Geometry> geom;
+    if ( type == "MultiGeometry" ) {
+        geom = std::make_shared<MultiGeometry>( gid, manager );
+    } else if ( type == "Box<1>" ) {
         geom = std::make_shared<Box<1>>( gid );
     } else if ( type == "Box<2>" ) {
         geom = std::make_shared<Box<2>>( gid );
@@ -138,25 +173,25 @@ void AMP::readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
         geom = std::make_shared<Grid<2>>( gid );
     } else if ( type == "Grid<3>" ) {
         geom = std::make_shared<Grid<3>>( gid );
-    } else if ( type == "tube" ) {
+    } else if ( type == "Tube" ) {
         geom = std::make_shared<Tube>( gid );
-    } else if ( type == "circle" ) {
+    } else if ( type == "Circle" ) {
         geom = std::make_shared<Circle>( gid );
-    } else if ( type == "cylinder" ) {
+    } else if ( type == "Cylinder" ) {
         geom = std::make_shared<Cylinder>( gid );
-    } else if ( type == "shell" ) {
+    } else if ( type == "Shell" ) {
         geom = std::make_shared<Shell>( gid );
-    } else if ( type == "sphere" ) {
+    } else if ( type == "Sphere" ) {
         geom = std::make_shared<Sphere>( gid );
-    } else if ( type == "sphere_surface" ) {
+    } else if ( type == "SphereSurface" ) {
         geom = std::make_shared<SphereSurface>( gid );
-    } else if ( type == "square_frustum" ) {
+    } else if ( type == "SquareFrustum" ) {
         geom = std::make_shared<SquareFrustum>( gid );
-    } else if ( type == "circle_frustum" ) {
+    } else if ( type == "CircleFrustum" ) {
         geom = std::make_shared<CircleFrustum>( gid );
-    } else if ( type == "parallelepiped" ) {
+    } else if ( type == "Parallelepiped" ) {
         geom = std::make_shared<Parallelepiped>( gid );
-    } else if ( type == "regular_polygon" ) {
+    } else if ( type == "RegularPolygon" ) {
         geom = std::make_shared<RegularPolygon>( gid );
     } else if ( type == "mesh" ) {
         geom = std::make_shared<MeshGeometry>( gid );
@@ -164,20 +199,5 @@ void AMP::readHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
         AMP_ERROR( "Unknown geometry " + type );
     }
     closeGroup( gid );
-}
-template<>
-void AMP::writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>(
-    hid_t fid,
-    const std::string_view &name,
-    const std::shared_ptr<const AMP::Geometry::Geometry> &geom )
-{
-    hid_t gid = createGroup( fid, name );
-    geom->writeRestart( gid );
-    closeGroup( gid );
-}
-template<>
-void AMP::writeHDF5<std::shared_ptr<AMP::Geometry::Geometry>>(
-    hid_t fid, const std::string_view &name, const std::shared_ptr<AMP::Geometry::Geometry> &geom )
-{
-    writeHDF5<std::shared_ptr<const AMP::Geometry::Geometry>>( fid, name, geom );
+    return geom;
 }

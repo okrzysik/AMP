@@ -18,6 +18,15 @@ namespace AMP::Operator {
 /********************************************************
  * Constructor                                           *
  ********************************************************/
+static AMP::Mesh::MeshIterator getBoundaryIterator( std::shared_ptr<AMP::Mesh::Mesh> mesh,
+                                                    AMP::Mesh::GeomType type,
+                                                    int boundaryID )
+{
+    if ( boundaryID == -1 )
+        return mesh->getSurfaceIterator( type, 0 );
+    else
+        return mesh->getBoundaryIDIterator( type, boundaryID, 0 );
+}
 NodeToNodeMap::NodeToNodeMap( std::shared_ptr<const AMP::Operator::OperatorParameters> params )
     : AMP::Operator::AsyncMapOperator( params )
 {
@@ -42,12 +51,14 @@ NodeToNodeMap::NodeToNodeMap( std::shared_ptr<const AMP::Operator::OperatorParam
     d_iterator1 = AMP::Mesh::MeshIterator();
     d_iterator2 = AMP::Mesh::MeshIterator();
     if ( d_mesh1 )
-        d_iterator1 = d_mesh1->getBoundaryIDIterator( geomType, Params.d_BoundaryID1, 0 );
+        d_iterator1 = getBoundaryIterator( d_mesh1, geomType, Params.d_BoundaryID1 );
     if ( d_mesh2 )
-        d_iterator2 = d_mesh2->getBoundaryIDIterator( geomType, Params.d_BoundaryID2, 0 );
+        d_iterator2 = getBoundaryIterator( d_mesh2, geomType, Params.d_BoundaryID2 );
 
     // Create the pairs of points that are aligned
-    createPairs();
+    bool usingAuto    = Params.d_BoundaryID1 == -1 || Params.d_BoundaryID2 == -1;
+    bool requireMatch = Params.d_db->getWithDefault<bool>( "RequireMatch", true );
+    createPairs( !usingAuto && requireMatch );
 
     // Now we need to create the DOF lists and setup the communication
     buildSendRecvList();
