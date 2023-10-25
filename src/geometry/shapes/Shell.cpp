@@ -207,6 +207,8 @@ std::unique_ptr<AMP::Geometry::Geometry> Shell::clone() const
  ********************************************************/
 bool Shell::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const Shell *>( &rhs );
     if ( !geom )
         return false;
@@ -219,21 +221,13 @@ bool Shell::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void Shell::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "shell" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "r_min", d_r_min );
     AMP::writeHDF5( fid, "r_max", d_r_max );
 }
-Shell::Shell( int64_t fid )
+Shell::Shell( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "offset", d_offset );
     AMP::readHDF5( fid, "r_min", d_r_min );
     AMP::readHDF5( fid, "r_max", d_r_max );

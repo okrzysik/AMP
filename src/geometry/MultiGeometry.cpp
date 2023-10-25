@@ -1,4 +1,5 @@
 #include "AMP/geometry/MultiGeometry.h"
+#include "AMP/IO/RestartManager.h"
 #include "AMP/geometry/Geometry.h"
 #include "AMP/utils/UtilityMacros.h"
 
@@ -131,6 +132,8 @@ std::unique_ptr<AMP::Geometry::Geometry> MultiGeometry::clone() const
  ********************************************************/
 bool MultiGeometry::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const MultiGeometry *>( &rhs );
     if ( !geom )
         return false;
@@ -138,10 +141,30 @@ bool MultiGeometry::operator==( const Geometry &rhs ) const
 }
 
 
-/****************************************************************
- * Write/Read restart data                                       *
- ****************************************************************/
-void MultiGeometry::writeRestart( int64_t ) const { AMP_ERROR( "Not finished" ); }
+/********************************************************
+ * Write/Read restart data                               *
+ ********************************************************/
+void MultiGeometry::registerChildObjects( AMP::IO::RestartManager *manager ) const
+{
+    for ( auto geom : d_geom )
+        manager->registerData( geom );
+}
+void MultiGeometry::writeRestart( int64_t fid ) const
+{
+    Geometry::writeRestart( fid );
+    std::vector<uint64_t> geomID( d_geom.size() );
+    for ( size_t i = 0; i < d_geom.size(); i++ )
+        geomID[i] = d_geom[i]->getID();
+    writeHDF5( fid, "geomID", geomID );
+}
+MultiGeometry::MultiGeometry( int64_t fid, AMP::IO::RestartManager *manager ) : Geometry( fid )
+{
+    std::vector<uint64_t> geomID;
+    readHDF5( fid, "geomID", geomID );
+    d_geom.resize( geomID.size() );
+    for ( size_t i = 0; i < d_geom.size(); i++ )
+        d_geom[i] = manager->getData<Geometry>( geomID[i] );
+}
 
 
 } // namespace AMP::Geometry

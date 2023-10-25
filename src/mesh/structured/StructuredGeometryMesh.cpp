@@ -62,65 +62,14 @@ StructuredGeometryMesh::StructuredGeometryMesh( const StructuredGeometryMesh &me
  ****************************************************************/
 void StructuredGeometryMesh::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "MeshType", std::string( "StructuredGeometryMesh" ) );
-    writeHDF5( fid, "MeshName", d_name );
-    writeHDF5( fid, "MeshID", d_meshID );
-    writeHDF5( fid, "comm", d_comm.hashRanks() );
-    writeHDF5( fid, "geometry", d_geometry );
-    writeHDF5( fid, "gcw", d_max_gcw );
-    writeHDF5( fid, "size", d_globalSize );
-    writeHDF5( fid, "periodic", d_isPeriodic );
-    writeHDF5( fid, "surfaceId", d_surfaceId );
-    writeHDF5( fid, "numBlocks", d_numBlocks );
-    writeHDF5( fid, "startIndex[0]", d_startIndex[0] );
-    writeHDF5( fid, "startIndex[1]", d_startIndex[1] );
-    writeHDF5( fid, "startIndex[2]", d_startIndex[2] );
-    writeHDF5( fid, "endIndex[0]", d_endIndex[0] );
-    writeHDF5( fid, "endIndex[1]", d_endIndex[1] );
-    writeHDF5( fid, "endIndex[2]", d_endIndex[2] );
+    BoxMesh::writeRestart( fid );
     writeHDF5( fid, "d_pos_hash", d_pos_hash );
 }
 StructuredGeometryMesh::StructuredGeometryMesh( int64_t fid, AMP::IO::RestartManager *manager )
-    : BoxMesh()
+    : BoxMesh( fid, manager )
 {
-    // Set the data for Mesh
-    readHDF5( fid, "MeshName", d_name );
-    uint64_t commHash = 0;
-    readHDF5( fid, "comm", commHash );
-    d_comm = manager->getComm( commHash );
-    // Basic defaults
-    d_globalSize.fill( 1 );
-    d_isPeriodic.fill( false );
-    d_numBlocks.fill( 1 );
-    // Load the geometry
-    readHDF5( fid, "geometry", d_geometry );
-    d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
-    AMP_ASSERT( d_geometry2 );
-    // Fill basic mesh information
-    // Note: we do not call initialize to avoid any changes to the parallel decomposition
-    PhysicalDim = d_geometry2->getDim();
-    GeomDim     = static_cast<AMP::Mesh::GeomType>( d_geometry2->getLogicalDim() );
-    readHDF5( fid, "gcw", d_max_gcw );
-    readHDF5( fid, "size", d_globalSize );
-    readHDF5( fid, "periodic", d_isPeriodic );
-    readHDF5( fid, "surfaceId", d_surfaceId );
-    readHDF5( fid, "numBlocks", d_numBlocks );
-    readHDF5( fid, "startIndex[0]", d_startIndex[0] );
-    readHDF5( fid, "startIndex[1]", d_startIndex[1] );
-    readHDF5( fid, "startIndex[2]", d_startIndex[2] );
-    readHDF5( fid, "endIndex[0]", d_endIndex[0] );
-    readHDF5( fid, "endIndex[1]", d_endIndex[1] );
-    readHDF5( fid, "endIndex[2]", d_endIndex[2] );
     readHDF5( fid, "d_pos_hash", d_pos_hash );
-    auto block   = getLocalBlock( d_rank );
-    d_indexSize  = { block[1] - block[0] + 3, block[3] - block[2] + 3, block[5] - block[4] + 3 };
-    d_localIndex = block;
-    for ( int d = 0; d < 3; d++ ) {
-        if ( d_localIndex[2 * d + 1] == d_globalSize[d] - 1 )
-            d_localIndex[2 * d + 1] = d_globalSize[d];
-        d_localIndex[2 * d + 1]++;
-    }
-    BoxMesh::finalize( d_name, {} );
+    d_geometry2 = std::dynamic_pointer_cast<AMP::Geometry::LogicalGeometry>( d_geometry );
 }
 
 
@@ -184,7 +133,8 @@ bool StructuredGeometryMesh::operator==( const Mesh &rhs ) const
     if ( !mesh )
         return false;
     // Perform basic comparison
-    return d_geometry2 == mesh->d_geometry2;
+    bool equal = *d_geometry2 == *mesh->d_geometry2;
+    return equal;
 }
 
 

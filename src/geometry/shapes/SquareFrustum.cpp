@@ -363,12 +363,18 @@ std::unique_ptr<AMP::Geometry::Geometry> SquareFrustum::clone() const
  ********************************************************/
 bool SquareFrustum::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const SquareFrustum *>( &rhs );
     if ( !geom )
         return false;
-    return d_dir == geom->d_dir && d_range == geom->d_range &&
-           d_pyramid_size == geom->d_pyramid_size && d_scale_height == geom->d_scale_height &&
-           d_volume == geom->d_volume && d_face == geom->d_face && d_normal[0] == geom->d_normal[0];
+    bool equal = d_dir == geom->d_dir && d_range == geom->d_range;
+    equal      = equal && d_pyramid_size == geom->d_pyramid_size;
+    equal      = equal && d_scale_height == geom->d_scale_height;
+    equal      = equal && d_volume == geom->d_volume;
+    equal      = equal && d_face == geom->d_face;
+    equal      = equal && d_normal[0] == geom->d_normal[0];
+    return equal;
 }
 
 
@@ -377,11 +383,7 @@ bool SquareFrustum::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void SquareFrustum::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "square_frustum" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "dir", d_dir );
     AMP::writeHDF5( fid, "range", d_range );
     AMP::writeHDF5( fid, "pyramid_size", d_pyramid_size );
@@ -396,12 +398,8 @@ void SquareFrustum::writeRestart( int64_t fid ) const
     AMP::writeHDF5( fid, "face_6", d_face[5] );
     AMP::writeHDF5( fid, "normal", d_normal );
 }
-SquareFrustum::SquareFrustum( int64_t fid )
+SquareFrustum::SquareFrustum( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "dir", d_dir );
     AMP::readHDF5( fid, "range", d_range );
     AMP::readHDF5( fid, "pyramid_size", d_pyramid_size );

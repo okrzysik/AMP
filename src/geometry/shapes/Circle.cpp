@@ -178,6 +178,8 @@ std::unique_ptr<AMP::Geometry::Geometry> Circle::clone() const
  ********************************************************/
 bool Circle::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const Circle *>( &rhs );
     if ( !geom )
         return false;
@@ -190,20 +192,12 @@ bool Circle::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void Circle::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "circle" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "R", d_R );
 }
-Circle::Circle( int64_t fid )
+Circle::Circle( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "offset", d_offset );
     AMP::readHDF5( fid, "R", d_R );
 }

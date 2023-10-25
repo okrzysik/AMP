@@ -77,6 +77,11 @@ public:
     std::vector<int> getLogicalSurfaceIds() const;
 
 
+public: // Restart functions
+    void writeRestart( int64_t fid ) const override;
+    LogicalGeometry( int64_t fid );
+
+
 protected:
     //!  Empty constructor for the base class
     LogicalGeometry()
@@ -86,9 +91,9 @@ protected:
     }
 
     // Delete copy constructors
-    LogicalGeometry( LogicalGeometry && )      = delete;
-    LogicalGeometry( const LogicalGeometry & ) = default;
-    LogicalGeometry &operator=( LogicalGeometry && ) = delete;
+    LogicalGeometry( LogicalGeometry && )                 = delete;
+    LogicalGeometry( const LogicalGeometry & )            = default;
+    LogicalGeometry &operator=( LogicalGeometry && )      = delete;
     LogicalGeometry &operator=( const LogicalGeometry & ) = delete;
 
 

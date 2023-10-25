@@ -380,16 +380,10 @@ void Vector::writeRestart( int64_t fid ) const
     writeHDF5( fid, "dofs", d_DOFManager->getID() );
     writeHDF5( fid, "data", d_VectorData->getID() );
     writeHDF5( fid, "ops", d_VectorOps->getID() );
-    /*auto multivec = std::dynamic_pointer_cast<const AMP::LinearAlgebra::MultiVector>( d_data );
-    if ( multivec ) {
-        std::vector<uint64_t> vecs;
-        for ( auto vec2 : *multivec )
-            vecs.push_back( vec2->getID() );
-        writeHDF5( fid, "vecs", vecs );
-    }*/
 }
 Vector::Vector( int64_t fid, AMP::IO::RestartManager *manager )
 {
+    AMPManager::incrementResource( "Vector" );
     uint64_t variableID, DOFManagerID, VectorDataID, VectorOpsID;
     readHDF5( fid, "units", d_units );
     readHDF5( fid, "var", variableID );

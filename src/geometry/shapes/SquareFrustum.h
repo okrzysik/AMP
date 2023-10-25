@@ -58,14 +58,16 @@ public: // Functions inherited from Geometry
 
 protected:
     // Internal data
+    using FaceNormal = std::array<Point, 6>;
+    using FacePoints = std::array<std::array<Point, 4>, 6>;
     uint8_t d_dir;
-    double d_range[6];        // The bounding box size
-    double d_pyramid_size[3]; // The underlying rotated pyramid size
-    double d_scale_height;    // Ratio of frustum to pyramid height
-    double d_volume;          // Volume
-    Point d_centroid;         // Centroid
-    Point d_face[6][4];       // Points forming each face
-    Point d_normal[6];        // Normal to each face
+    std::array<double, 6> d_range;        // The bounding box size
+    std::array<double, 3> d_pyramid_size; // The underlying rotated pyramid size
+    double d_scale_height;                // Ratio of frustum to pyramid height
+    double d_volume;                      // Volume
+    Point d_centroid;                     // Centroid
+    FacePoints d_face;                    // Points forming each face
+    FaceNormal d_normal;                  // Normal to each face
 
 private:
     // Private constructor

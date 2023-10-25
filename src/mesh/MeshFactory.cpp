@@ -106,19 +106,14 @@ AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::DataStoreType(
     // Register the comm
     manager->registerComm( mesh->getComm() );
     // Register child meshes
-    for ( auto id : mesh->getBaseMeshIDs() ) {
-        if ( id == mesh->meshID() )
-            continue;
-        auto mesh2 = mesh->Subset( id );
-        manager->registerComm( mesh2->getComm() );
-        manager->registerData( mesh2 );
-    }
+    mesh->registerChildObjects( manager );
 }
 template<>
 void AMP::IO::RestartManager::DataStoreType<AMP::Mesh::Mesh>::write( hid_t fid,
                                                                      const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
+    writeHDF5( gid, "MeshType", d_data->meshClass() );
     d_data->writeRestart( gid );
     closeGroup( gid );
 }
@@ -130,7 +125,7 @@ std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::DataStoreType<AMP::Mes
     std::string type;
     readHDF5( gid, "MeshType", type );
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
-    if ( type == "MultiMesh" ) {
+    if ( type == "MultiMesh" || type.substr( 0, 10 ) == "MultiMesh<" ) {
         mesh = std::make_shared<AMP::Mesh::MultiMesh>( gid, manager );
     } else if ( type == "StructuredGeometryMesh" ) {
         mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, manager );

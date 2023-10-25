@@ -379,6 +379,8 @@ std::unique_ptr<AMP::Geometry::Geometry> CircleFrustum::clone() const
  ********************************************************/
 bool CircleFrustum::operator==( const Geometry &rhs ) const
 {
+    if ( &rhs == this )
+        return true;
     auto geom = dynamic_cast<const CircleFrustum *>( &rhs );
     if ( !geom )
         return false;
@@ -392,22 +394,14 @@ bool CircleFrustum::operator==( const Geometry &rhs ) const
  ****************************************************************/
 void CircleFrustum::writeRestart( int64_t fid ) const
 {
-    AMP::writeHDF5( fid, "GeomType", std::string( "circle_frustum" ) );
-    AMP::writeHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::writeHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::writeHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::writeHDF5( fid, "ids", d_ids );              // LogicalGeometry
+    LogicalGeometry::writeRestart( fid );
     AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "dir", d_dir );
     AMP::writeHDF5( fid, "h", d_h );
     AMP::writeHDF5( fid, "r", d_r );
 }
-CircleFrustum::CircleFrustum( int64_t fid )
+CircleFrustum::CircleFrustum( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "physical", d_physicalDim ); // Geometry
-    AMP::readHDF5( fid, "logical", d_logicalDim );   // LogicalGeometry
-    AMP::readHDF5( fid, "periodic", d_isPeriodic );  // LogicalGeometry
-    AMP::readHDF5( fid, "ids", d_ids );              // LogicalGeometry
     AMP::readHDF5( fid, "offset", d_offset );
     AMP::readHDF5( fid, "dir", d_dir );
     AMP::readHDF5( fid, "h", d_h );
