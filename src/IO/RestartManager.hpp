@@ -29,6 +29,9 @@ class SolverStrategy;
 namespace AMP::TimeIntegrator {
 class TimeIntegrator;
 }
+namespace SAMRAI::tbox {
+class Serializable;
+}
 
 
 namespace AMP::IO {
@@ -53,6 +56,8 @@ void RestartManager::registerData( const TYPE &data, const std::string &name )
         registerData( std::make_shared<const TYPE>( data ), name );
     } else if constexpr ( !std::is_const_v<typename TYPE::element_type> ) {
         registerData( std::const_pointer_cast<const typename TYPE::element_type>( data ), name );
+    } else if constexpr ( std::is_base_of_v<SAMRAI::tbox::Serializable, TYPE> ) {
+        registerSAMRAIData<TYPE>( data, name );
     } else {
         std::shared_ptr<DataStore> obj;
         using TYPE2 = remove_cvref_t<typename TYPE::element_type>;
@@ -140,6 +145,8 @@ std::shared_ptr<TYPE> RestartManager::getData( uint64_t hash )
                           !std::is_same_v<TYPE, TimeIntegrator> ) {
         auto data = getData<TimeIntegrator>( hash );
         return std::dynamic_pointer_cast<TYPE>( data );
+    } else if constexpr ( std::is_base_of_v<SAMRAI::tbox::Serializable, TYPE> ) {
+        return getSAMRAIData<TYPE>( hash );
     } else {
         auto it = d_data.find( hash );
         if ( it == d_data.end() ) {
