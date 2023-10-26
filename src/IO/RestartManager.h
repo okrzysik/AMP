@@ -114,6 +114,24 @@ public:
     AMP_MPI getComm( uint64_t hash );
 
 
+    /**
+     * \brief  Register SAMRAI data with the restart manager
+     * \details This function registers a SAMRAI object with the restart manager
+     * @param[in] name      Name to use for object
+     * @param[in] data      Data to register
+     */
+    template<class TYPE>
+    void registerSAMRAIData( const TYPE &data, const std::string &name = "" );
+
+    /**
+     * \brief  Get SAMRAI data from the restart manager
+     * \details This function will get a registered/loaded SAMRAI object from the restart manager
+     * @param[in] hash      Object ID
+     */
+    template<class TYPE>
+    std::shared_ptr<TYPE> getSAMRAIData( uint64_t hash );
+
+
 private:
     template<class TYPE>
     RestartManager::DataStorePtr create( const std::string &, std::shared_ptr<const TYPE> );

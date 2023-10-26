@@ -2,6 +2,7 @@
 #include "AMP/IO/HDF5.h"
 #include "AMP/geometry/GeometryHelpers.h"
 #include "AMP/utils/Database.h"
+#include "AMP/utils/Utilities.h"
 #include "AMP/utils/UtilityMacros.h"
 
 
@@ -217,6 +218,11 @@ std::unique_ptr<AMP::Geometry::Geometry> RegularPolygon::clone() const
 /********************************************************
  * Compare the geometry                                  *
  ********************************************************/
+static bool approx_equal( const std::array<double, 2> &x, const std::array<double, 2> &y )
+{
+    double d2 = ( x[0] - y[0] ) * ( x[0] - y[0] ) + ( x[1] - y[1] ) * ( x[1] - y[1] );
+    return d2 < ( 1e-12 * 1e-12 );
+}
 bool RegularPolygon::operator==( const Geometry &rhs ) const
 {
     if ( &rhs == this )
@@ -224,8 +230,14 @@ bool RegularPolygon::operator==( const Geometry &rhs ) const
     auto geom = dynamic_cast<const RegularPolygon *>( &rhs );
     if ( !geom )
         return false;
-    return d_N == geom->d_N && d_R == geom->d_R && d_offset == geom->d_offset &&
-           d_vertices == geom->d_vertices && d_norm == geom->d_norm;
+    if ( d_N != geom->d_N || d_R != geom->d_R || d_offset != geom->d_offset )
+        return false;
+    bool equal = true;
+    for ( size_t i = 0; i < d_vertices.size(); i++ )
+        equal = equal && approx_equal( d_vertices[i], geom->d_vertices[i] );
+    for ( size_t i = 0; i < d_norm.size(); i++ )
+        equal = equal && approx_equal( d_norm[i], geom->d_norm[i] );
+    return equal;
 }
 
 
@@ -235,15 +247,15 @@ bool RegularPolygon::operator==( const Geometry &rhs ) const
 void RegularPolygon::writeRestart( int64_t fid ) const
 {
     LogicalGeometry::writeRestart( fid );
-    AMP::writeHDF5( fid, "offset", d_offset );
     AMP::writeHDF5( fid, "N", d_N );
     AMP::writeHDF5( fid, "R", d_R );
+    AMP::writeHDF5( fid, "offset", d_offset );
 }
 RegularPolygon::RegularPolygon( int64_t fid ) : LogicalGeometry( fid )
 {
-    AMP::readHDF5( fid, "offset", d_offset );
     AMP::readHDF5( fid, "N", d_N );
     AMP::readHDF5( fid, "R", d_R );
+    AMP::readHDF5( fid, "offset", d_offset );
     computeNorms();
 }
 
