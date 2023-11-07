@@ -360,9 +360,7 @@ void readHDF5Array<AMP::Mesh::Point>( hid_t fid, const std::string_view &name, A
 {
     AMP::Array<double> y;
     AMP::readHDF5Array( fid, name, y );
-    int ndim      = std::max( y.ndim() - 1, 1 );
-    size_t dims[] = { y.size( 1 ), y.size( 2 ), y.size( 3 ), y.size( 4 ) };
-    x.resize( AMP::ArraySize( ndim, dims ) );
+    x.resize( pop( y.size() ) );
     for ( size_t i = 0; i < x.length(); i++ )
         x( i ) = AMP::Mesh::Point( y(0,i), { y(1,i), y(2,i), y(3,i) } );
 }

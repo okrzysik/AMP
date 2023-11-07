@@ -3,6 +3,7 @@
 #define included_AMP_UtilityMacros
 
 #include <sstream>
+#include <string_view>
 
 #include "StackTrace/source_location.h"
 
@@ -23,6 +24,25 @@ extern std::ostream plog;
 
 template<class T>
 inline constexpr bool failed_assert_v = !std::is_same<T, T>::value;
+
+
+// Overload some operators for string_view for convience
+namespace AMP {
+template<std::size_t N>
+static inline std::string operator+( char x[N], std::string_view y )
+{
+    return std::string( x ) + std::string( y );
+}
+template<std::size_t N>
+static inline std::string operator+( std::string_view y, char x[N] )
+{
+    return std::string( x ) + std::string( y );
+}
+static inline std::string operator+( std::string_view x, std::string_view y )
+{
+    return std::string( x ) + std::string( y );
+}
+} // namespace AMP
 
 
 /*! \defgroup Macros Set of utility macro functions used in AMP

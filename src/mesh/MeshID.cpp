@@ -82,8 +82,7 @@ void AMP::readHDF5Array<AMP::Mesh::MeshElementID>( hid_t fid,
 {
     AMP::Array<uint64_t> y;
     AMP::readHDF5Array( fid, name, y );
-    ArraySize size( { y.size( 1 ), y.size( 2 ), y.size( 3 ), y.size( 4 ) }, y.ndim() - 1 );
-    x.resize( size );
+    x.resize( pop( y.size() ) );
     for ( size_t i = 0; i < x.length(); i++ )
         x( i ) = AMP::Mesh::MeshElementID( AMP::Mesh::MeshID( y( 0, i ) ),
                                            AMP::Mesh::ElementID( y( 1, i ) ) );

@@ -172,7 +172,7 @@ Scalar Scalar::abs() const
  * Reductions                                                        *
  ********************************************************************/
 template<>
-Scalar AMP_MPI::minReduce( const Scalar x ) const
+Scalar AMP_MPI::minReduce( const Scalar &x ) const
 {
     if ( d_size <= 1 )
         return x;
@@ -188,7 +188,7 @@ Scalar AMP_MPI::minReduce( const Scalar x ) const
     return Scalar();
 }
 template<>
-Scalar AMP_MPI::maxReduce( const Scalar x ) const
+Scalar AMP_MPI::maxReduce( const Scalar &x ) const
 {
     if ( d_size <= 1 )
         return x;
@@ -204,7 +204,7 @@ Scalar AMP_MPI::maxReduce( const Scalar x ) const
     return Scalar();
 }
 template<>
-Scalar AMP_MPI::sumReduce( const Scalar x ) const
+Scalar AMP_MPI::sumReduce( const Scalar &x ) const
 {
     if ( d_size <= 1 )
         return x;
@@ -269,7 +269,7 @@ Scalar Scalar::zero() const { return create( 0 ); }
  ********************************************************/
 template<>
 std::enable_if_t<std::is_same_v<AMP::Scalar, AMP::Scalar>, std::ostream &>
-operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
+operator<< <AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
 {
     if ( !x.has_value() )
         return out;
