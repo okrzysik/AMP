@@ -269,7 +269,7 @@ Scalar Scalar::zero() const { return create( 0 ); }
  ********************************************************/
 template<>
 std::enable_if_t<std::is_same_v<AMP::Scalar, AMP::Scalar>, std::ostream &>
-operator<< <AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
+operator<<<AMP::Scalar>( std::ostream &out, const AMP::Scalar &x )
 {
     if ( !x.has_value() )
         return out;
