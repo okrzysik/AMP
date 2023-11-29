@@ -12,17 +12,17 @@ namespace AMP::Materials {
 /************************************************************************
  *  Constructor                                                          *
  ************************************************************************/
-Property::Property( std::string name,
+Property::Property( std::string_view name,
                     const ArraySize &size,
                     const Units &unit,
-                    std::string source,
+                    std::string_view source,
                     std::vector<std::string> args,
                     std::vector<std::array<double, 2>> ranges,
                     std::vector<Units> units )
-    : d_name( std::move( name ) ),
+    : d_name( name ),
       d_dim( size ),
       d_units( unit ),
-      d_source( std::move( source ) ),
+      d_source( source ),
       d_arguments( std::move( args ) ),
       d_argUnits( std::move( units ) ),
       d_defaults( {} ),
@@ -45,7 +45,7 @@ Property::Property( std::string name,
  *  Evaluate the input arguments                                         *
  ************************************************************************/
 void Property::evalArg( AMP::Array<double> &args,
-                        const std::string &name,
+                        std::string_view name,
                         const Units &unit,
                         const std::vector<double> &v ) const
 {
@@ -110,13 +110,13 @@ AMP::Array<double> Property::defaultArgs( size_t N ) const
 /************************************************************************
  *  Misc functions                                                       *
  ************************************************************************/
-std::array<double, 2> Property::get_arg_range( const std::string &name ) const
+std::array<double, 2> Property::get_arg_range( std::string_view name ) const
 {
     int index = get_arg_index( name );
     AMP_ASSERT( index >= 0 );
     return d_ranges[index];
 }
-bool Property::is_argument( const std::string &name ) const { return get_arg_index( name ) >= 0; }
+bool Property::is_argument( std::string_view name ) const { return get_arg_index( name ) >= 0; }
 void Property::checkArgs( const AMP::Array<double> &args ) const
 {
     AMP_ASSERT( args.ndim() <= 2 );
@@ -143,7 +143,7 @@ void Property::checkArgs( const AMP::Array<double> &args ) const
 /************************************************************************
  *  Create a property from a database key data object                    *
  ************************************************************************/
-std::unique_ptr<Property> createProperty( const std::string &key, const Database &db )
+std::unique_ptr<Property> createProperty( std::string_view key, const Database &db )
 {
     auto keyData = db.getData( key );
     auto unit    = keyData->unit();
@@ -167,7 +167,7 @@ std::unique_ptr<Property> createProperty( const std::string &key, const Database
 /************************************************************************
  *  Get default value                                                    *
  ************************************************************************/
-double Property::get_default( const std::string &name ) const
+double Property::get_default( std::string_view name ) const
 {
     for ( size_t i = 0; i < d_arguments.size(); i++ ) {
         if ( name == d_arguments[i] )

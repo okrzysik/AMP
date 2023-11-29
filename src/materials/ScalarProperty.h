@@ -23,7 +23,7 @@ std::vector<std::array<double, 2>> getDefaultRanges( std::vector<std::array<doub
 class StringProperty final : public Property
 {
 public:
-    StringProperty( std::string name, std::string value, std::string source = "" );
+    StringProperty( std::string_view name, std::string value, std::string_view source = "" );
     bool isString() const override { return true; }
     std::string evalString() const override { return d_value; }
     void eval( AMP::Array<double> &, const AMP::Array<double> & ) const override;
@@ -37,14 +37,14 @@ private:
 class ScalarProperty final : public Property
 {
 public:
-    ScalarProperty( std::string name,
+    ScalarProperty( std::string_view name,
                     double value,
-                    const AMP::Units &unit = AMP::Units(),
-                    std::string source     = "" );
-    ScalarProperty( std::string name,
+                    const AMP::Units &unit  = AMP::Units(),
+                    std::string_view source = "" );
+    ScalarProperty( std::string_view name,
                     AMP::Array<double> value,
-                    const AMP::Units &unit = AMP::Units(),
-                    std::string source     = "" );
+                    const AMP::Units &unit  = AMP::Units(),
+                    std::string_view source = "" );
     void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override;
     inline const AMP::Array<double> &getValue() const { return d_value; }
 
@@ -58,8 +58,8 @@ class PolynomialProperty : public Property
 {
 public:
     PolynomialProperty() {}
-    PolynomialProperty( std::string name,
-                        std::string source,
+    PolynomialProperty( std::string_view name,
+                        std::string_view source,
                         const AMP::Units &unit                    = {},
                         std::vector<double> params                = {},
                         std::vector<std::string> args             = {},
@@ -76,7 +76,7 @@ private:
 class InterpolatedProperty final : public Property
 {
 public:
-    InterpolatedProperty( std::string name,
+    InterpolatedProperty( std::string_view name,
                           const AMP::Units &unit,
                           const std::string &var_name,
                           std::vector<double> x,
@@ -84,7 +84,7 @@ public:
                           const std::array<double, 2> range,
                           const AMP::Units &argUnit,
                           double default_value,
-                          std::string source = "" );
+                          std::string_view source = "" );
     void eval( AMP::Array<double> &result, const AMP::Array<double> & ) const override;
 
 private:
@@ -98,19 +98,19 @@ class EquationProperty : public Property
 {
 public:
     EquationProperty() {}
-    EquationProperty( std::string name,
+    EquationProperty( std::string_view name,
                       std::shared_ptr<const MathExpr> eq,
                       const AMP::Units &unit                    = {},
                       std::vector<std::array<double, 2>> ranges = {},
                       std::vector<AMP::Units> argUnits          = {},
-                      std::string source                        = "" );
-    EquationProperty( std::string name,
+                      std::string_view source                   = "" );
+    EquationProperty( std::string_view name,
                       const std::string &expression,
                       const AMP::Units &unit                    = {},
                       std::vector<std::string> args             = {},
                       std::vector<std::array<double, 2>> ranges = {},
                       std::vector<AMP::Units> argUnits          = {},
-                      std::string source                        = "" );
+                      std::string_view source                   = "" );
     void eval( AMP::Array<double> &result, const AMP::Array<double> &args ) const override;
 
 private:
@@ -123,14 +123,14 @@ template<class... Args>
 class FunctionProperty : public Property
 {
 public:
-    FunctionProperty( std::string name,
+    FunctionProperty( std::string_view name,
                       std::function<double( Args... )> fun,
                       const AMP::Units &unit                    = {},
                       std::vector<std::string> args             = {},
                       std::vector<std::array<double, 2>> ranges = {},
                       std::vector<AMP::Units> argUnits          = {},
                       const std::vector<double> &default_values = {},
-                      std::string source                        = "" )
+                      std::string_view source                   = "" )
         : Property( std::move( name ),
                     { 1 },
                     unit,

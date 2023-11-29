@@ -9,8 +9,8 @@ namespace AMP::Materials {
 /*******************************************************************
  *  StringProperty                                                  *
  *******************************************************************/
-StringProperty::StringProperty( std::string name, std::string value, std::string source )
-    : Property( std::move( name ), { 1 }, {}, std::move( source ) ), d_value( std::move( value ) )
+StringProperty::StringProperty( std::string_view name, std::string value, std::string_view source )
+    : Property( name, { 1 }, {}, source ), d_value( std::move( value ) )
 {
 }
 void StringProperty::eval( AMP::Array<double> &, const AMP::Array<double> & ) const
@@ -22,19 +22,19 @@ void StringProperty::eval( AMP::Array<double> &, const AMP::Array<double> & ) co
 /*******************************************************************
  *  ScalarProperty                                                  *
  *******************************************************************/
-ScalarProperty::ScalarProperty( std::string name,
+ScalarProperty::ScalarProperty( std::string_view name,
                                 double value,
                                 const AMP::Units &unit,
-                                std::string source )
+                                std::string_view source )
     : Property( std::move( name ), { 1 }, unit, std::move( source ) )
 {
     d_value.resize( 1 );
     d_value( 0 ) = value;
 }
-ScalarProperty::ScalarProperty( std::string name,
+ScalarProperty::ScalarProperty( std::string_view name,
                                 AMP::Array<double> value,
                                 const AMP::Units &unit,
-                                std::string source )
+                                std::string_view source )
     : Property( std::move( name ), value.size(), unit, std::move( source ) ),
       d_value( std::move( value ) )
 {
@@ -52,8 +52,8 @@ void ScalarProperty::eval( AMP::Array<double> &result, const AMP::Array<double> 
 /*******************************************************************
  *  PolynomialProperty                                              *
  *******************************************************************/
-PolynomialProperty::PolynomialProperty( std::string name,
-                                        std::string source,
+PolynomialProperty::PolynomialProperty( std::string_view name,
+                                        std::string_view source,
                                         const AMP::Units &unit,
                                         std::vector<double> params,
                                         std::vector<std::string> args,
@@ -93,7 +93,7 @@ void PolynomialProperty::eval( AMP::Array<double> &result, const AMP::Array<doub
 /*******************************************************************
  *  ScalarPropInterpolatedPropertyerty                              *
  *******************************************************************/
-InterpolatedProperty::InterpolatedProperty( std::string name,
+InterpolatedProperty::InterpolatedProperty( std::string_view name,
                                             const AMP::Units &unit,
                                             const std::string &var_name,
                                             std::vector<double> x,
@@ -101,7 +101,7 @@ InterpolatedProperty::InterpolatedProperty( std::string name,
                                             const std::array<double, 2> range,
                                             const AMP::Units &argUnit,
                                             double default_value,
-                                            std::string source )
+                                            std::string_view source )
     : Property( std::move( name ),
                 { 1 },
                 unit,
@@ -135,12 +135,12 @@ std::vector<std::array<double, 2>> getDefaultRanges( std::vector<std::array<doub
         ranges.resize( vars.size(), { { -1e100, 1e100 } } );
     return ranges;
 }
-EquationProperty::EquationProperty( std::string name,
+EquationProperty::EquationProperty( std::string_view name,
                                     std::shared_ptr<const MathExpr> eq,
                                     const AMP::Units &unit,
                                     std::vector<std::array<double, 2>> ranges,
                                     std::vector<AMP::Units> argUnits,
-                                    std::string source )
+                                    std::string_view source )
     : Property( std::move( name ),
                 { 1 },
                 unit,
@@ -152,13 +152,13 @@ EquationProperty::EquationProperty( std::string name,
 {
     AMP_ASSERT( d_eq );
 }
-EquationProperty::EquationProperty( std::string name,
+EquationProperty::EquationProperty( std::string_view name,
                                     const std::string &expression,
                                     const AMP::Units &unit,
                                     std::vector<std::string> args,
                                     std::vector<std::array<double, 2>> ranges,
                                     std::vector<AMP::Units> argUnits,
-                                    std::string source )
+                                    std::string_view source )
     : Property( std::move( name ),
                 { 1 },
                 unit,

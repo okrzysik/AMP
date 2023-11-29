@@ -512,11 +512,13 @@ std::shared_ptr<Mesh> Mesh::createView( const Mesh &src, const AMP::Database &db
 void Mesh::registerChildObjects( AMP::IO::RestartManager *manager ) const
 {
     manager->registerComm( d_comm );
-    manager->registerData( d_geometry );
+    if ( d_geometry )
+        manager->registerData( d_geometry );
 }
 void Mesh::writeRestart( int64_t fid ) const
 {
-    writeHDF5( fid, "Geometry", d_geometry->getID() );
+    uint64_t geomID = d_geometry ? d_geometry->getID() : 0;
+    writeHDF5( fid, "Geometry", geomID );
     writeHDF5( fid, "GeomDim", GeomDim );
     writeHDF5( fid, "PhysicalDim", PhysicalDim );
     writeHDF5( fid, "max_gcw", d_max_gcw );
@@ -538,8 +540,9 @@ Mesh::Mesh( int64_t fid, AMP::IO::RestartManager *manager )
     readHDF5( fid, "name", d_name );
     readHDF5( fid, "box", d_box );
     readHDF5( fid, "box_local", d_box_local );
-    d_comm     = manager->getComm( commHash );
-    d_geometry = manager->getData<AMP::Geometry::Geometry>( geomID );
+    d_comm = manager->getComm( commHash );
+    if ( geomID != 0 )
+        d_geometry = manager->getData<AMP::Geometry::Geometry>( geomID );
 }
 
 

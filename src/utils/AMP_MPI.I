@@ -6,13 +6,16 @@
 #include "AMP/AMP_TPLs.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/AMP_MPI_pack.hpp"
+#include "AMP/utils/Array.h"
 #include "AMP/utils/TypeTraits.h"
 #include "AMP/utils/UtilityMacros.h"
 
 #include "ProfilerApp.h"
 
+#include <array>
 #include <complex>
 #include <typeinfo>
+#include <vector>
 
 
 #define MPI_CLASS AMP_MPI
@@ -85,23 +88,29 @@
 /************************************************************************
  *  Instantiate common MPI functions for the given type                  *
  ************************************************************************/
-#define INSTANTIATE_MPI_REDUCE( TYPE )                                                   \
-    template TYPE MPI_CLASS2::sumReduce<TYPE>( const TYPE ) const;                       \
-    template TYPE MPI_CLASS2::minReduce<TYPE>( const TYPE ) const;                       \
-    template TYPE MPI_CLASS2::maxReduce<TYPE>( const TYPE ) const;                       \
-    template void MPI_CLASS2::sumReduce<TYPE>( TYPE *, int ) const;                      \
-    template void MPI_CLASS2::minReduce<TYPE>( TYPE *, int ) const;                      \
-    template void MPI_CLASS2::maxReduce<TYPE>( TYPE *, int ) const;                      \
-    template void MPI_CLASS2::minReduce<TYPE>( TYPE *, int, int * ) const;               \
-    template void MPI_CLASS2::maxReduce<TYPE>( TYPE *, int, int * ) const;               \
-    template void MPI_CLASS2::sumReduce<TYPE>( const TYPE *, TYPE *, int ) const;        \
-    template void MPI_CLASS2::minReduce<TYPE>( const TYPE *, TYPE *, int, int * ) const; \
-    template void MPI_CLASS2::maxReduce<TYPE>( const TYPE *, TYPE *, int, int * ) const; \
-    template TYPE MPI_CLASS2::sumScan<TYPE>( const TYPE & ) const;                       \
-    template TYPE MPI_CLASS2::minScan<TYPE>( const TYPE & ) const;                       \
-    template TYPE MPI_CLASS2::maxScan<TYPE>( const TYPE & ) const;                       \
-    template void MPI_CLASS2::sumScan<TYPE>( const TYPE *, TYPE *, int ) const;          \
-    template void MPI_CLASS2::minScan<TYPE>( const TYPE *, TYPE *, int ) const;          \
+#define INSTANTIATE_MPI_REDUCE( TYPE )                                                            \
+    template TYPE MPI_CLASS2::sumReduce<TYPE>( const TYPE & ) const;                              \
+    template TYPE MPI_CLASS2::minReduce<TYPE>( const TYPE & ) const;                              \
+    template TYPE MPI_CLASS2::maxReduce<TYPE>( const TYPE & ) const;                              \
+    template void MPI_CLASS2::sumReduce<TYPE>( TYPE *, int ) const;                               \
+    template void MPI_CLASS2::minReduce<TYPE>( TYPE *, int ) const;                               \
+    template void MPI_CLASS2::maxReduce<TYPE>( TYPE *, int ) const;                               \
+    template void MPI_CLASS2::minReduce<TYPE>( TYPE *, int, int * ) const;                        \
+    template void MPI_CLASS2::maxReduce<TYPE>( TYPE *, int, int * ) const;                        \
+    template void MPI_CLASS2::sumReduce<TYPE>( const TYPE *, TYPE *, int ) const;                 \
+    template void MPI_CLASS2::minReduce<TYPE>( const TYPE *, TYPE *, int, int * ) const;          \
+    template void MPI_CLASS2::maxReduce<TYPE>( const TYPE *, TYPE *, int, int * ) const;          \
+    template AMP::Array<TYPE> MPI_CLASS2::sumReduce<AMP::Array<TYPE>>( const AMP::Array<TYPE> & ) \
+        const;                                                                                    \
+    template AMP::Array<TYPE> MPI_CLASS2::minReduce<AMP::Array<TYPE>>( const AMP::Array<TYPE> & ) \
+        const;                                                                                    \
+    template AMP::Array<TYPE> MPI_CLASS2::maxReduce<AMP::Array<TYPE>>( const AMP::Array<TYPE> & ) \
+        const;                                                                                    \
+    template TYPE MPI_CLASS2::sumScan<TYPE>( const TYPE & ) const;                                \
+    template TYPE MPI_CLASS2::minScan<TYPE>( const TYPE & ) const;                                \
+    template TYPE MPI_CLASS2::maxScan<TYPE>( const TYPE & ) const;                                \
+    template void MPI_CLASS2::sumScan<TYPE>( const TYPE *, TYPE *, int ) const;                   \
+    template void MPI_CLASS2::minScan<TYPE>( const TYPE *, TYPE *, int ) const;                   \
     template void MPI_CLASS2::maxScan<TYPE>( const TYPE *, TYPE *, int ) const
 #define INSTANTIATE_MPI_BCAST( TYPE )                                 \
     template TYPE MPI_CLASS2::bcast<TYPE>( const TYPE &, int ) const; \
@@ -316,14 +325,24 @@ void MPI_CLASS::sumReduce( const TYPE *send, TYPE *recv, int n ) const
 #endif
 }
 template<class TYPE>
-TYPE MPI_CLASS::sumReduce( const TYPE value ) const
+TYPE MPI_CLASS::sumReduce( const TYPE &value ) const
 {
-    if ( d_size > 1 ) {
-        TYPE tmp = value;
-        sumReduce( &value, &tmp, 1 );
-        return tmp;
+    if constexpr ( AMP::is_vector_v<TYPE> || std::is_array_v<TYPE> || AMP::is_array_v<TYPE> ) {
+        auto recv = value;
+        sumReduce( value.data(), recv.data(), value.size() );
+        return recv;
+    } else if constexpr ( AMP::is_Array_v<TYPE> ) {
+        auto recv = value;
+        sumReduce( value.data(), recv.data(), value.length() );
+        return recv;
     } else {
-        return value;
+        if ( d_size > 1 ) {
+            TYPE tmp = value;
+            sumReduce( &value, &tmp, 1 );
+            return tmp;
+        } else {
+            return value;
+        }
     }
 }
 template<class TYPE>
@@ -396,14 +415,24 @@ void MPI_CLASS::minReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
 #endif
 }
 template<class TYPE>
-TYPE MPI_CLASS::minReduce( const TYPE value ) const
+TYPE MPI_CLASS::minReduce( const TYPE &value ) const
 {
-    if ( d_size > 1 ) {
-        TYPE tmp = value;
-        minReduce( &value, &tmp, 1 );
-        return tmp;
+    if constexpr ( AMP::is_vector_v<TYPE> || std::is_array_v<TYPE> || AMP::is_array_v<TYPE> ) {
+        auto recv = value;
+        minReduce( value.data(), recv.data(), value.size() );
+        return recv;
+    } else if constexpr ( AMP::is_Array_v<TYPE> ) {
+        auto recv = value;
+        minReduce( value.data(), recv.data(), value.length() );
+        return recv;
     } else {
-        return value;
+        if ( d_size > 1 ) {
+            TYPE tmp = value;
+            minReduce( &value, &tmp, 1 );
+            return tmp;
+        } else {
+            return value;
+        }
     }
 }
 template<class TYPE>
@@ -491,14 +520,24 @@ void MPI_CLASS::maxReduce( const TYPE *send, TYPE *recv, int n, int *rank ) cons
 #endif
 }
 template<class TYPE>
-TYPE MPI_CLASS::maxReduce( const TYPE value ) const
+TYPE MPI_CLASS::maxReduce( const TYPE &value ) const
 {
-    if ( d_size > 1 ) {
-        TYPE tmp = value;
-        maxReduce( &value, &tmp, 1 );
-        return tmp;
+    if constexpr ( AMP::is_vector_v<TYPE> || std::is_array_v<TYPE> || AMP::is_array_v<TYPE> ) {
+        auto recv = value;
+        maxReduce( value.data(), recv.data(), value.size() );
+        return recv;
+    } else if constexpr ( AMP::is_Array_v<TYPE> ) {
+        auto recv = value;
+        maxReduce( value.data(), recv.data(), value.length() );
+        return recv;
     } else {
-        return value;
+        if ( d_size > 1 ) {
+            TYPE tmp = value;
+            maxReduce( &value, &tmp, 1 );
+            return tmp;
+        } else {
+            return value;
+        }
     }
 }
 template<class TYPE>

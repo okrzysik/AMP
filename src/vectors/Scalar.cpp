@@ -172,7 +172,7 @@ Scalar Scalar::abs() const
  * Reductions                                                        *
  ********************************************************************/
 template<>
-Scalar AMP_MPI::minReduce( const Scalar x ) const
+Scalar AMP_MPI::minReduce( const Scalar &x ) const
 {
     if ( d_size <= 1 )
         return x;
@@ -188,7 +188,7 @@ Scalar AMP_MPI::minReduce( const Scalar x ) const
     return Scalar();
 }
 template<>
-Scalar AMP_MPI::maxReduce( const Scalar x ) const
+Scalar AMP_MPI::maxReduce( const Scalar &x ) const
 {
     if ( d_size <= 1 )
         return x;
@@ -204,7 +204,7 @@ Scalar AMP_MPI::maxReduce( const Scalar x ) const
     return Scalar();
 }
 template<>
-Scalar AMP_MPI::sumReduce( const Scalar x ) const
+Scalar AMP_MPI::sumReduce( const Scalar &x ) const
 {
     if ( d_size <= 1 )
         return x;

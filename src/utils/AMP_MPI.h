@@ -492,7 +492,7 @@ public: // Member functions
      * \param[in] value     The input value for the all reduce
      */
     template<class type>
-    type sumReduce( const type value ) const;
+    type sumReduce( const type &value ) const;
 
 
     /**
@@ -527,7 +527,7 @@ public: // Member functions
      * \param[in] value     The input value for the all reduce
      */
     template<class type>
-    type minReduce( const type value ) const;
+    type minReduce( const type &value ) const;
 
 
     /**
@@ -590,7 +590,7 @@ public: // Member functions
      * \param[in] value     The input value for the all reduce
      */
     template<class type>
-    type maxReduce( const type value ) const;
+    type maxReduce( const type &value ) const;
 
 
     /**

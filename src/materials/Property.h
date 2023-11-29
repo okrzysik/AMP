@@ -52,10 +52,10 @@ public:
      * \param args      names of arguments
      * \param units     Optional units for each argument
      */
-    Property( std::string name,
+    Property( std::string_view name,
               const ArraySize &size                     = { 1 },
               const Units &unit                         = Units(),
-              std::string source                        = "None",
+              std::string_view source                   = "",
               std::vector<std::string> args             = {},
               std::vector<std::array<double, 2>> ranges = {},
               std::vector<Units> argUnits               = {} );
@@ -82,7 +82,7 @@ public:
     inline size_t get_number_arguments() const { return d_arguments.size(); }
 
     //! Return the argument index
-    inline int get_argument_index( const std::string &name ) const
+    inline int get_argument_index( std::string_view name ) const
     {
         int index = -1;
         for ( size_t i = 0; i < d_arguments.size(); i++ ) {
@@ -93,14 +93,14 @@ public:
     }
 
     //! Get the default for the given argument (NaN if it is an invalid argument)
-    double get_default( const std::string &name ) const;
+    double get_default( std::string_view name ) const;
 
     //! Get the defaults
     inline const std::vector<double> &get_defaults() const { return d_defaults; }
 
     //! Set the default
     inline void
-    set_default( const std::string &name, double value, const AMP::Units &unit = AMP::Units() )
+    set_default( std::string_view name, double value, const AMP::Units &unit = AMP::Units() )
     {
         int i = get_argument_index( name );
         if ( i != -1 ) {
@@ -119,7 +119,7 @@ public:
     }
 
     //! Determine if a string is an argument
-    bool is_argument( const std::string &argname ) const;
+    bool is_argument( std::string_view argname ) const;
 
     //! Indicator for scalar evaluator
     virtual bool isString() const { return false; }
@@ -147,17 +147,17 @@ public: // Functions dealing with the ranges of the arguments
     std::vector<std::array<double, 2>> get_arg_ranges() const { return d_ranges; }
 
     //! Get range for a specific argument
-    std::array<double, 2> get_arg_range( const std::string &argname ) const;
+    std::array<double, 2> get_arg_range( std::string_view argname ) const;
 
     //! Determine if a value is within range or not
-    inline bool in_range( const std::string &argname,
+    inline bool in_range( std::string_view argname,
                           double value,
                           const Units &unit = Units(),
                           bool throwError   = false ) const;
 
     //! Determine if a set of values are all within range or not
     template<class INPUT_VTYPE>
-    inline bool in_range( const std::string &argname,
+    inline bool in_range( std::string_view argname,
                           const INPUT_VTYPE &values,
                           const Units &unit = Units(),
                           bool throwError   = false ) const;
@@ -319,8 +319,8 @@ protected: // Internal eval/evalv/evalArg
     static Units getUnits( const AMP::LinearAlgebra::Vector& );
     void evalv( const AMP::Array<double>&, AMP::Array<std::vector<double> *> &, const Units & ) const;
     void evalv( const AMP::Array<double>&, AMP::Array<AMP::LinearAlgebra::Vector *> & ) const;
-    void evalArg( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>& ) const;
-    void evalArg( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector& ) const;
+    void evalArg( AMP::Array<double>&, std::string_view, const Units&, const std::vector<double>& ) const;
+    void evalArg( AMP::Array<double>&, std::string_view, const Units&, const AMP::LinearAlgebra::Vector& ) const;
     // clang-format on
 
 
@@ -331,21 +331,21 @@ protected: // Functions to load the arguments
     template<class VEC>
     void evalArgs( AMP::Array<double>&, const std::map<std::string, VEC>& ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, double, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, double, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, double, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const Units&, double, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const std::vector<double>&, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const std::vector<double>&, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const AMP::LinearAlgebra::Vector&, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const AMP::LinearAlgebra::Vector&, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::vector<double>&, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const Units&, const std::vector<double>&, const Args&... ) const;
     template<class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const AMP::LinearAlgebra::Vector&, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const Units&, const AMP::LinearAlgebra::Vector&, const Args&... ) const;
     template<class VEC, class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const std::shared_ptr<VEC>&, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const std::shared_ptr<VEC>&, const Args&... ) const;
     template<class VEC, class... Args>
-    void evalArgs( AMP::Array<double>&, const std::string&, const Units&, const std::shared_ptr<VEC>&, const Args&... ) const;
+    void evalArgs( AMP::Array<double>&, std::string_view, const Units&, const std::shared_ptr<VEC>&, const Args&... ) const;
     template<class... Args>
     void evalArgs( AMP::Array<double>&, const std::vector<double> &args, const std::vector<std::string> &names, const std::vector<Units> &argUnits = {} ) const;
     // clang-format on
@@ -374,7 +374,7 @@ protected:
     void checkArgs( const AMP::Array<double> &args ) const;
 
     // Get the index for the desired argument
-    inline int get_arg_index( const std::string &name ) const
+    inline int get_arg_index( std::string_view name ) const
     {
         auto it = d_argToIndexMap.find( name );
         if ( it == d_argToIndexMap.end() )
@@ -385,7 +385,7 @@ protected:
 
 
 //! Create a property from a database data
-std::unique_ptr<Property> createProperty( const std::string &key, const Database &db );
+std::unique_ptr<Property> createProperty( std::string_view key, const Database &db );
 
 
 } // namespace AMP::Materials

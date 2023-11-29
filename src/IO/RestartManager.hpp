@@ -1,6 +1,7 @@
 #ifndef included_AMP_RestartManager_hpp
 #define included_AMP_RestartManager_hpp
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/IO/RestartManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/utils/UtilityMacros.h"
@@ -56,8 +57,6 @@ void RestartManager::registerData( const TYPE &data, const std::string &name )
         registerData( std::make_shared<const TYPE>( data ), name );
     } else if constexpr ( !std::is_const_v<typename TYPE::element_type> ) {
         registerData( std::const_pointer_cast<const typename TYPE::element_type>( data ), name );
-    } else if constexpr ( std::is_base_of_v<SAMRAI::tbox::Serializable, TYPE> ) {
-        registerSAMRAIData<TYPE>( data, name );
     } else {
         std::shared_ptr<DataStore> obj;
         using TYPE2 = remove_cvref_t<typename TYPE::element_type>;
@@ -81,6 +80,8 @@ void RestartManager::registerData( const TYPE &data, const std::string &name )
         } else if constexpr ( std::is_base_of_v<TimeIntegrator, TYPE2> &&
                               !std::is_same_v<TYPE2, TimeIntegrator> ) {
             obj = create( name, std::dynamic_pointer_cast<const TimeIntegrator>( data ) );
+        } else if constexpr ( std::is_base_of_v<SAMRAI::tbox::Serializable, TYPE> ) {
+            obj = std::make_shared<SAMRAIDataStore<TYPE2>>( name, data, this );
         } else {
             obj = create<TYPE2>( name, data );
         }
@@ -158,6 +159,39 @@ std::shared_ptr<TYPE> RestartManager::getData( uint64_t hash )
         return data->getData();
     }
 }
+
+
+/********************************************************
+ *  Register SAMRAI data                                 *
+ ********************************************************/
+#ifdef AMP_USE_SAMRAI
+/*template<class TYPE>
+RestartManager::SAMRAIDataStore<TYPE>::SAMRAIDataStore( const std::string &name,
+std::shared_ptr<const TYPE> data, RestartManager *manager )
+{
+    d_hash = reinterpret_cast<uint64_t>( data.get() );
+    d_name = name;
+    d_data = data;
+}
+template<class TYPE>
+void RestartManager::SAMRAIDataStore<TYPE>::write( hid_t fid, const std::string &name ) const
+{
+    auto restart_db = std::make_shared<SAMRAI::tbox::Database>();
+    data.putToRestart( restart_db );
+    AMP::Database db( restart_db );
+    AMP::writeHDF5( fid, name, db );
+}
+template<class TYPE>
+std::shared_ptr<TYPE>
+RestartManager::SAMRAIDataStore<TYPE>::read( hid_t fid, const std::string &name, RestartManager * )
+const
+{
+    AMP::Database db;
+    AMP::readHDF5( fid, name, db );
+    auto restart_db = db.cloneToSAMRAI();
+
+}*/
+#endif
 
 
 } // namespace AMP::IO

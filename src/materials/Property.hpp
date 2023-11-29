@@ -120,7 +120,7 @@ void Property::evalArgs( AMP::Array<double> &args2, const std::map<std::string, 
 }
 template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          double v,
                          const Args &...args ) const
 {
@@ -134,7 +134,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const Units &unit,
                          double v,
                          const Args &...args ) const
@@ -151,7 +151,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const Units &unit,
                          const std::vector<double> &v,
                          const Args &...args ) const
@@ -161,7 +161,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const Units &unit,
                          const AMP::LinearAlgebra::Vector &v,
                          const Args &...args ) const
@@ -171,7 +171,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const std::vector<double> &v,
                          const Args &...args ) const
 {
@@ -179,7 +179,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const AMP::LinearAlgebra::Vector &v,
                          const Args &...args ) const
 {
@@ -187,7 +187,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class VEC, class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const Units &unit,
                          const std::shared_ptr<VEC> &v,
                          const Args &...args ) const
@@ -196,7 +196,7 @@ void Property::evalArgs( AMP::Array<double> &args2,
 }
 template<class VEC, class... Args>
 void Property::evalArgs( AMP::Array<double> &args2,
-                         const std::string &name,
+                         std::string_view name,
                          const std::shared_ptr<VEC> &v,
                          const Args &...args ) const
 {
@@ -229,10 +229,8 @@ void Property::evalArgs( AMP::Array<double> &args2,
 /************************************************************************
  *  Determine if a set of values are all within range or not             *
  ************************************************************************/
-inline bool Property::in_range( const std::string &name,
-                                double value,
-                                const Units &unit,
-                                bool throwError ) const
+inline bool
+Property::in_range( std::string_view name, double value, const Units &unit, bool throwError ) const
 {
     auto index = get_arg_index( name );
     if ( index == -1 )
@@ -252,7 +250,7 @@ inline bool Property::in_range( const std::string &name,
     return pass;
 }
 template<class INPUT_VTYPE>
-inline bool Property::in_range( const std::string &name,
+inline bool Property::in_range( std::string_view name,
                                 const INPUT_VTYPE &values,
                                 const Units &unit,
                                 bool throwError ) const
