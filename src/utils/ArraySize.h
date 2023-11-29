@@ -411,6 +411,15 @@ CONSTEXPR ArraySize cat( const ArraySize &x, const ArraySize &y )
 }
 
 
+// Function to pop the first dimension and return the resulting array size
+CONSTEXPR ArraySize pop( const ArraySize &x )
+{
+    int ndim      = x.ndim() == 1 ? 1 : x.ndim() - 1;
+    size_t dims[] = { x[1], x[2], x[3], x[4] };
+    return AMP::ArraySize( ndim, dims );
+}
+
+
 // Remove singleton dimensions
 constexpr ArraySize squeeze( const ArraySize &x )
 {

@@ -37,13 +37,26 @@ public:
             d_data = read( fid, hash2String( hash ), manager );
         }
         DataStoreType( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
-        virtual ~DataStoreType() = default;
         void write( hid_t fid, const std::string &name ) const override;
-        std::shared_ptr<TYPE> read( hid_t fid, const std::string &name, RestartManager * ) const;
+        virtual std::shared_ptr<TYPE>
+        read( hid_t fid, const std::string &name, RestartManager * ) const;
         auto getData() { return std::const_pointer_cast<TYPE>( d_data ); }
 
     protected:
         std::shared_ptr<const TYPE> d_data;
+    };
+    template<class TYPE>
+    class SAMRAIDataStore : public DataStoreType<TYPE>
+    {
+    public:
+        SAMRAIDataStore( hid_t fid, uint64_t hash, RestartManager *manager )
+            : DataStoreType<TYPE>( fid, hash, manager )
+        {
+        }
+        SAMRAIDataStore( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
+        void write( hid_t fid, const std::string &name ) const override;
+        std::shared_ptr<TYPE>
+        read( hid_t fid, const std::string &name, RestartManager * ) const override;
     };
     using DataStorePtr = std::shared_ptr<DataStore>;
 
@@ -121,7 +134,7 @@ public:
      * @param[in] data      Data to register
      */
     template<class TYPE>
-    void registerSAMRAIData( const TYPE &data, const std::string &name = "" );
+    void registerSAMRAIData( std::shared_ptr<const TYPE &> data, const std::string &name = "" );
 
     /**
      * \brief  Get SAMRAI data from the restart manager

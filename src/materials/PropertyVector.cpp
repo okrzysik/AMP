@@ -20,12 +20,13 @@ void Property::evalArgs( AMP::Array<double> &args2,
         evalArgs( args2, arg.first, *arg.second );
 }
 void Property::evalArg( AMP::Array<double> &args,
-                        const std::string &name,
+                        std::string_view name,
                         const Units &unit,
                         const AMP::LinearAlgebra::Vector &v ) const
 {
     size_t N = args.size( 1 );
-    AMP_INSIST( v.getLocalSize() == N, "Argument " + name + " size does not match input" );
+    AMP_INSIST( v.getLocalSize() == N,
+                "Argument " + std::string( name ) + " size does not match input" );
     int i = get_arg_index( name );
     if ( i >= 0 ) {
         double scale = 1.0;

@@ -39,61 +39,63 @@ std::vector<std::string> Material::list() const
 /********************************************************************
  * Add a property                                                    *
  ********************************************************************/
-void Material::addStringProperty( std::string name, std::string value, std::string source )
+void Material::addStringProperty( std::string_view name,
+                                  std::string value,
+                                  std::string_view source )
 {
-    addProperty<StringProperty>( std::move( name ), std::move( value ), std::move( source ) );
+    addProperty<StringProperty>( name, std::move( value ), source );
 }
-void Material::addScalarProperty( std::string name,
+void Material::addScalarProperty( std::string_view name,
                                   double value,
                                   const AMP::Units &unit,
-                                  std::string source )
+                                  std::string_view source )
 {
-    addProperty<ScalarProperty>( std::move( name ), value, unit, std::move( source ) );
+    addProperty<ScalarProperty>( name, value, unit, source );
 }
-void Material::addScalarProperty( std::string name,
+void Material::addScalarProperty( std::string_view name,
                                   AMP::Array<double> value,
                                   const AMP::Units &unit,
-                                  std::string source )
+                                  std::string_view source )
 {
-    addProperty<ScalarProperty>( std::move( name ), std::move( value ), unit, std::move( source ) );
+    addProperty<ScalarProperty>( name, std::move( value ), unit, source );
 }
-void Material::addPolynomialProperty( std::string name,
+void Material::addPolynomialProperty( std::string_view name,
                                       const AMP::Units &unit,
                                       std::vector<double> params,
                                       std::vector<std::string> args,
                                       std::vector<std::array<double, 2>> ranges,
                                       std::vector<AMP::Units> argUnits,
-                                      std::string source )
+                                      std::string_view source )
 {
-    addProperty<PolynomialProperty>( std::move( name ),
-                                     std::move( source ),
+    addProperty<PolynomialProperty>( name,
+                                     source,
                                      unit,
                                      std::move( params ),
                                      std::move( args ),
                                      std::move( ranges ),
                                      std::move( argUnits ) );
 }
-void Material::addEquationProperty( std::string name,
+void Material::addEquationProperty( std::string_view name,
                                     const AMP::Units &unit,
                                     std::string expression,
                                     std::vector<std::string> args,
                                     std::vector<std::array<double, 2>> ranges,
                                     std::vector<AMP::Units> argUnits,
-                                    std::string source )
+                                    std::string_view source )
 {
-    addProperty<EquationProperty>( std::move( name ),
+    addProperty<EquationProperty>( name,
                                    std::move( expression ),
                                    unit,
                                    std::move( args ),
                                    std::move( ranges ),
                                    std::move( argUnits ),
-                                   std::move( source ) );
+                                   source );
 }
 
 /********************************************************************
  * Construct a material from a database                              *
  ********************************************************************/
-DatabaseMaterial::DatabaseMaterial( const std::string &name, std::shared_ptr<Database> db )
+DatabaseMaterial::DatabaseMaterial( std::string_view name, std::shared_ptr<Database> db )
     : d_name( name )
 {
     if ( !db )

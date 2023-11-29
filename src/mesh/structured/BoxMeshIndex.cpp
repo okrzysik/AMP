@@ -49,9 +49,7 @@ void AMP::readHDF5Array<MeshElementIndex>( hid_t fid,
 {
     AMP::Array<int> data2;
     AMP::readHDF5Array<int>( fid, name, data2 );
-    int ndim      = std::max( data.ndim() - 1, 1 );
-    size_t dims[] = { data2.size( 1 ), data2.size( 2 ), data2.size( 3 ), data2.size( 4 ) };
-    data.resize( AMP::ArraySize( ndim, dims ) );
+    data.resize( pop( data2.size() ) );
     for ( size_t i = 0; i < data.length(); i++ ) {
         data( i ) = convert( { data2( 0, i ), data2( 1, i ), data2( 2, i ), data2( 3, i ) } );
     }

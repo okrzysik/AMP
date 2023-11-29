@@ -1,3 +1,4 @@
+#include "AMP/IO/HDF5.h"
 #include "AMP/IO/HDF5.hpp"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/FactoryStrategy.hpp"
@@ -137,34 +138,62 @@ void AMP::readHDF5Scalar<AMP::Database::Check>( hid_t fid,
  ***********************************************************************/
 #ifdef AMP_USE_HDF5
 template<>
-hid_t AMP::getHDF5datatype<AMP::DatabaseBox>()
+void AMP::writeHDF5Array<AMP::DatabaseBox>( hid_t fid,
+                                            const std::string_view &name,
+                                            const AMP::Array<DatabaseBox> &x )
 {
-    AMP_ERROR( "Not finished" );
+    AMP::Array<int> y( cat( AMP::ArraySize( 11 ), x.size() ) );
+    y.fill( 0 );
+    for ( size_t i = 0; i < x.length(); i++ ) {
+        int ndim  = x( i ).dim();
+        y( 0, i ) = ndim;
+        for ( int j = 0; j < ndim; j++ )
+            y( 1 + j, i ) = x( i ).lower( j );
+        for ( int j = 0; j < ndim; j++ )
+            y( 6 + j, i ) = x( i ).upper( j );
+    }
+    writeHDF5( fid, name, y );
 }
 template<>
-void AMP::writeHDF5Array<AMP::DatabaseBox>( hid_t,
-                                            const std::string_view &,
-                                            const AMP::Array<DatabaseBox> & )
+void AMP::readHDF5Array<AMP::DatabaseBox>( hid_t fid,
+                                           const std::string_view &name,
+                                           AMP::Array<DatabaseBox> &x )
 {
-    AMP_ERROR( "Not finished" );
+    AMP::Array<int> y;
+    readHDF5( fid, name, y );
+    x.resize( pop( y.size() ) );
+    for ( size_t i = 0; i < x.length(); i++ )
+        x( i ) = DatabaseBox( y( 0, i ), &y( 1, i ), &y( 6, i ) );
 }
 template<>
-void AMP::readHDF5Array<AMP::DatabaseBox>( hid_t,
-                                           const std::string_view &,
-                                           AMP::Array<DatabaseBox> & )
+void AMP::writeHDF5Scalar<AMP::DatabaseBox>( hid_t fid,
+                                             const std::string_view &name,
+                                             const DatabaseBox &x )
 {
-    AMP_ERROR( "Not finished" );
+    auto y = AMP::Array<AMP::DatabaseBox>::staticView( { 1 }, const_cast<DatabaseBox *>( &x ) );
+    writeHDF5Array<AMP::DatabaseBox>( fid, name, y );
 }
 template<>
-void AMP::writeHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, const DatabaseBox & )
+void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t fid,
+                                            const std::string_view &name,
+                                            DatabaseBox &x )
 {
-    AMP_ERROR( "Not finished" );
+    AMP::Array<AMP::DatabaseBox> y;
+    readHDF5Array<AMP::DatabaseBox>( fid, name, y );
+    AMP_ASSERT( y.size() == AMP::ArraySize( 1 ) );
+    x = y( 0 );
 }
-template<>
-void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, DatabaseBox & )
-{
-    AMP_ERROR( "Not finished" );
-}
+template void
+AMP::readHDF5<AMP::DatabaseBox>( hid_t, const std::string_view &, AMP::DatabaseBox & );
+template void
+AMP::writeHDF5<AMP::DatabaseBox>( hid_t, const std::string_view &, const AMP::DatabaseBox & );
+template void AMP::readHDF5<AMP::Array<AMP::DatabaseBox>>( hid_t,
+                                                           const std::string_view &,
+                                                           AMP::Array<AMP::DatabaseBox> & );
+template void AMP::writeHDF5<AMP::Array<AMP::DatabaseBox>>( hid_t,
+                                                            const std::string_view &,
+                                                            const AMP::Array<AMP::DatabaseBox> & );
+
 #endif
 
 
@@ -172,5 +201,4 @@ void AMP::readHDF5Scalar<AMP::DatabaseBox>( hid_t, const std::string_view &, Dat
  * Explicit instantiations                                              *
  ***********************************************************************/
 INSTANTIATE_HDF5( AMP::Database );
-INSTANTIATE_HDF5( AMP::DatabaseBox );
 INSTANTIATE_HDF5( AMP::Database::Check );
