@@ -52,19 +52,18 @@ FUNCTION ( CONFIGURE_TPL_BUILDER )
             SET( TPL_CMAKE ${TPL_CMAKE} "-D${var2}=${${var}}" )
         ENDIF()
     ENDFOREACH()
+    FIND_PACKAGE(Git)
     # Download the TPL builder
     MESSAGE( STATUS "Downloading TPL builder" )
     IF ( NOT EXISTS tpl-builder )
         EXECUTE_PROCESS(
-            COMMAND hg clone "${TPL_URL}"
+            COMMAND ${GIT_EXECUTABLE} clone "${TPL_URL}"
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            OUTPUT_QUIET
         )
     ENDIF()
     EXECUTE_PROCESS(
-        COMMAND hg pull -u
+        COMMAND ${GIT_EXECUTABLE} pull -u
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/tpl_directory"
-        OUTPUT_QUIET
     )
     # Configure the TPL builder
     FILE( MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tpl-build" )
