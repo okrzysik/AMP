@@ -24,7 +24,7 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
             std::vector<double> vals( ncols );
             for ( size_t j = 0; j != ncols; j++ ) {
                 if ( cols[j] == i )
-                    vals[j] = static_cast<double>( ncols - 1 );
+                    vals[j] = static_cast<double>( ncols );
                 else
                     vals[j] = -1;
             }
@@ -44,7 +44,7 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
             matrix->getRowByGlobalID( i, cols, vals );
             for ( size_t j = 0; j != cols.size(); j++ ) {
                 if ( cols[j] == i )
-                    vals[j] = static_cast<double>( cols.size() - 1 );
+                    vals[j] = static_cast<double>( cols.size() );
                 else
                     vals[j] = -1;
             }
@@ -105,7 +105,7 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
         std::vector<double> vals;
         matrix->getRowByGlobalID( i, cols, vals );
         for ( size_t j = 0; j != cols.size(); j++ ) {
-            double ans   = ( i == cols[j] ) ? 6. : -1.;
+            double ans   = ( i == cols[j] ) ? cols.size() : -1.;
             double value = matrix->getValueByGlobalID( i, cols[j] );
             if ( vals[j] != ans || value != vals[j] ) {
                 utils->failure( "bad value in matrix " + matrix->type() );
