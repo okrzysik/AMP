@@ -24,7 +24,7 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
             std::vector<double> vals( ncols );
             for ( size_t j = 0; j != ncols; j++ ) {
                 if ( cols[j] == i )
-                    vals[j] = 6;
+                    vals[j] = static_cast<double>( ncols - 1 );
                 else
                     vals[j] = -1;
             }
@@ -44,7 +44,7 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
             matrix->getRowByGlobalID( i, cols, vals );
             for ( size_t j = 0; j != cols.size(); j++ ) {
                 if ( cols[j] == i )
-                    vals[j] = 6;
+                    vals[j] = static_cast<double>( cols.size() - 1 );
                 else
                     vals[j] = -1;
             }
