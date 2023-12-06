@@ -224,7 +224,7 @@ void NativePetscMatrixData::getValuesByGlobalID( size_t num_rows,
         // Get the data for each row
         auto leftDOFManager = getLeftDOFManager();
         size_t firstRow     = leftDOFManager->beginDOF();
-        size_t numRows      = leftDOFManager->endDOF();
+        size_t numRows      = leftDOFManager->numLocalDOF();
 
         for ( size_t i = 0; i < num_rows; i++ ) {
             if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
