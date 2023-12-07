@@ -24,24 +24,27 @@ int main( int argc, char **argv )
         AMP::pout << "Mesh created on multiple ranks" << std::endl;
 
     // Create a simple DOF manager
-    auto DOF = AMP::Discretization::simpleDOFManager::create(
+    auto vDOF = AMP::Discretization::simpleDOFManager::create(
         mesh, AMP::Mesh::GeomType::Vertex, 1, 1, false );
 
-    std::map<size_t, size_t> neighbors;
+    std::map<size_t, size_t> vneighbors;
 
     auto it = mesh->getIterator( AMP::Mesh::GeomType::Vertex, 0 );
     for ( ; it != it.end(); ++it ) {
-        const auto row = DOF->getRowDOFs( *it );
-        neighbors[row.size()]++;
+        const auto row = vDOF->getRowDOFs( *it );
+        vneighbors[row.size()]++;
     }
 
-    auto neighbor_types_size = comm.sumReduce( neighbors.size() );
-    if ( neighbor_types_size == 4u )
-        ut.passes( "Number of types of neighbors passes" );
-    else
-        ut.failure( "Number of types of neighbors fails" );
+    const auto neighborhood_sizes = ( vneighbors.size() == 4 );
+    if ( comm.allReduce( neighborhood_sizes ) )
+        ut.passes( "Number of types of neighbors for vertex DOFs passes" );
+    else {
+        ut.failure( "Number of types of neighbors for vertex DOFs fails" );
+    }
+
     // Print the results and return
     ut.report();
+
     int num_failed = ut.NumFailGlobal();
     AMP::AMPManager::shutdown();
     return num_failed;
