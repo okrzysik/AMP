@@ -89,13 +89,13 @@ int main( int argc, char **argv )
     comm.sumReduce( ncells.data(), ncells.size() );
     i = 0u;
     for ( auto &[key, value] : cneighbors ) {
-        AMP::pout << ncells[i] << " vertices have " << key << " neighbors across all ranks"
+        AMP::pout << ncells[i] << " cells have " << key << " neighbors across all ranks"
                   << std::endl;
         i++;
     }
 
-    if ( ( ncells.size() == 4 ) && ( ncells[0] == 8 ) && ( ncells[1] == 108 ) &&
-         ( ncells[2] == 486 ) && ( ncells[3] == 729 ) ) {
+    if ( ( ncells.size() == 4 ) && ( ncells[0] == 8 ) && ( ncells[1] == 96 ) &&
+         ( ncells[2] == 384 ) && ( ncells[3] == 512 ) ) {
         ut.passes( "Number of vertices with different neighbors for cell DOFs passes" );
     } else {
         ut.failure( "Number of vertices with different neighbors for cell DOFs fails" );
