@@ -17,8 +17,8 @@ class ParameterBase
 public:
     typedef std::shared_ptr<ParameterBase> shared_ptr;
 
-    ParameterBase();
-    virtual ~ParameterBase();
+    ParameterBase() : d_name( "ParameterBase" ) {}
+    virtual ~ParameterBase() = default;
 
     explicit ParameterBase( std::shared_ptr<AMP::Database> db ) : d_db( db ) {}
 
