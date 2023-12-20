@@ -34,7 +34,7 @@ public:
      * \param[in]  N_local  The local number of DOFs
      * \param[in]  comm     The comm over which the DOFManager exists
      */
-    DOFManager( size_t N_local, const AMP_MPI &comm );
+    DOFManager( size_t N_local, const AMP_MPI &comm, std::vector<size_t> remoteDOFs = {} );
 
 
     //! Deconstructor
@@ -202,6 +202,9 @@ protected:
 
     //! The begining DOF, ending DOF and number of local DOFs for this processor
     size_t d_begin = 0, d_end = 0, d_global = 0;
+
+    //! The remote dofs (if cached)
+    std::vector<size_t> d_remoteDOFs;
 
     //! The comm for this DOFManager
     AMP_MPI d_comm;

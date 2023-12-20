@@ -1121,7 +1121,6 @@ public: // Member functions
                  const int *recv_disp,
                  int root ) const;
 
-
     /*!
      * Each processor sends an array of n values to each processor.
      * Each processor sends an array of n values to each processor.
@@ -1173,6 +1172,41 @@ public: // Member functions
                   int *recv_cnt   = nullptr,
                   int *recv_disp  = nullptr,
                   bool known_recv = false ) const;
+
+
+    /*!
+     * Compute the number of values to recieve and the appropriate send/recv offests for AllToAll
+     * @param[in] send_cnt      The number of values to send to each processor
+     * @param[out] send_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i
+     * @param[out] recv_cnt      The number of values to receive from each processor.
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the number of
+     *                          received values from each processor.
+     * @param[out] recv_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i.
+     */
+    int
+    calcAllToAllDisp( const int *send_cnt, int *send_disp, int *recv_cnt, int *recv_disp ) const;
+
+
+    /*!
+     * Compute the number of values to recieve and the appropriate send/recv offests for AllToAll
+     * @param[in] send_cnt      The number of values to send to each processor
+     * @param[out] send_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i
+     * @param[out] recv_cnt      The number of values to receive from each processor.
+     *                          If known, this should be provided as an input.  Otherwise
+     *                          it is an optional output that will return the number of
+     *                          received values from each processor.
+     * @param[out] recv_disp     The displacement (relative to the start of the array)
+     *                          from which to send to processor i.
+     */
+    int calcAllToAllDisp( const std::vector<int> &send_cnt,
+                          std::vector<int> &send_disp,
+                          std::vector<int> &recv_cnt,
+                          std::vector<int> &recv_disp ) const;
+
 
     /*!
      * \brief   Send a list of proccesor ids to communicate

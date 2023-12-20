@@ -3,7 +3,9 @@
 #include "AMP/mesh/MultiIterator.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/StructuredMeshHelper.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
+
 #include <algorithm>
 #include <set>
 #include <vector>
@@ -275,45 +277,26 @@ std::vector<size_t> structuredFaceDOFManager::getRowDOFs( const AMP::Mesh::MeshE
 std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     const std::vector<AMP::Mesh::MeshElementID> &remote_ids ) const
 {
-    if ( d_comm.sumReduce<size_t>( remote_ids.size() ) == 0 )
+    if ( d_comm.getSize() == 1 )
         return std::vector<size_t>(); // There are no remote DOFs
-    // Get the set of mesh ids (must match on all processors)
-    auto meshIDs = d_mesh->getBaseMeshIDs();
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank( remote_ids.size(), -1 );
-    for ( auto meshID : meshIDs ) {
+    auto globalComm = AMP::AMPManager::getCommWorld();
+    std::vector<int> rankMap( globalComm.getSize(), -1 );
+    auto globalRanks = d_comm.globalRanks();
+    for ( size_t i = 0; i < globalRanks.size(); i++ )
+        rankMap[globalRanks[i]] = i;
+    for ( auto meshID : d_mesh->getLocalBaseMeshIDs() ) {
         // Get the mesh with the given meshID
-        auto submesh = d_mesh->Subset( meshID );
-        // Create a map from the rank of the submesh to the current mesh
-        int rank_submesh = -1;
-        int root_submesh = d_comm.getSize();
-        int subcommSize  = -1;
-        int myRank       = -1;
-        if ( submesh ) {
-            AMP_MPI subcomm = submesh->getComm();
-            rank_submesh    = subcomm.getRank();
-            root_submesh    = d_comm.getRank();
-            subcommSize     = subcomm.getSize();
-            myRank          = subcomm.getRank();
-        }
-        root_submesh = d_comm.minReduce( root_submesh );
-        if ( root_submesh == d_comm.getSize() )
-            AMP_ERROR( "Not processors on the current comm exist on the submesh comm" );
-        subcommSize = d_comm.bcast( subcommSize, root_submesh );
-        std::vector<int> subrank( d_comm.getSize() );
-        d_comm.allGather( rank_submesh, &subrank[0] );
-        std::vector<int> rank_map( subcommSize, -1 );
-        for ( size_t i = 0; i < subrank.size(); i++ ) {
-            if ( subrank[i] != -1 )
-                rank_map[subrank[i]] = i;
-        }
+        auto submesh      = d_mesh->Subset( meshID );
+        auto submeshComm  = submesh->getComm();
+        auto submeshRanks = submeshComm.globalRanks();
         // Get the rank of the proccessor that will own each meshElement
         for ( size_t i = 0; i < remote_ids.size(); i++ ) {
             if ( remote_ids[i].meshID() == meshID ) {
-                int subowner_rank = remote_ids[i].owner_rank();
-                AMP_ASSERT( subowner_rank != myRank );
-                AMP_ASSERT( rank_map[subowner_rank] != -1 );
-                owner_rank[i] = rank_map[subowner_rank];
+                int rank      = remote_ids[i].owner_rank();
+                owner_rank[i] = rankMap[submeshRanks[rank]];
+                AMP_ASSERT( owner_rank[i] != -1 );
             }
         }
     }
@@ -324,38 +307,13 @@ std::vector<size_t> structuredFaceDOFManager::getRemoteDOF(
     // Resort the remote ids according the the owner rank
     auto remote_ids2 = remote_ids;
     AMP::Utilities::quicksort( owner_rank, remote_ids2 );
-    // Determine the send count and displacements for each processor
+    // Determine the send/recv count and displacements for each processor
     std::vector<int> send_cnt( d_comm.getSize(), 0 );
-    std::vector<int> send_disp( d_comm.getSize(), 0 );
-    int rank     = 0;
-    size_t start = 0;
-    size_t index = 0;
-    while ( index < owner_rank.size() ) {
-        if ( owner_rank[index] < rank ) {
-            AMP_ERROR( "This should not occur" );
-        } else if ( owner_rank[index] == rank ) {
-            // Move to the next element
-            index++;
-        } else {
-            // Store the number of elements with the given rank, and move to the next rank
-            send_disp[rank] = start;
-            send_cnt[rank]  = index - start;
-            start           = index;
-            rank++;
-        }
-    }
-    send_disp[rank] = start;
-    send_cnt[rank]  = index - start;
+    for ( int rank : owner_rank )
+        send_cnt[rank]++;
+    std::vector<int> send_disp, recv_disp, recv_cnt;
+    size_t tot_size = d_comm.calcAllToAllDisp( send_cnt, send_disp, recv_cnt, recv_disp );
     // Perform an allToAll to send the remote ids for DOF identification
-    std::vector<int> recv_cnt( d_comm.getSize() );
-    d_comm.allToAll<int>( 1, &send_cnt[0], &recv_cnt[0] );
-    std::vector<int> recv_disp( d_comm.getSize() );
-    size_t tot_size = recv_cnt[0];
-    recv_disp[0]    = 0;
-    for ( int i = 1; i < d_comm.getSize(); i++ ) {
-        tot_size += recv_cnt[i];
-        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    }
     std::vector<AMP::Mesh::MeshElementID> recv_id( tot_size + 1 );
     AMP::Mesh::MeshElementID *send_buffer = nullptr;
     if ( !remote_ids2.empty() )

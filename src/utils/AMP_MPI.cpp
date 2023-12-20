@@ -1069,6 +1069,47 @@ void MPI_CLASS::anyReduce( std::vector<bool> &x ) const
 
 
 /************************************************************************
+ *  AllToAll                                                             *
+ ************************************************************************/
+int MPI_CLASS::calcAllToAllDisp( const int *send_cnt,
+                                 int *send_disp,
+                                 int *recv_cnt,
+                                 int *recv_disp ) const
+{
+    size_t N = 0;
+    for ( int i = 0; i < d_size; i++ )
+        N += send_cnt[i];
+    AMP_ASSERT( N < 0x7FFFFFFF );
+    if ( send_disp ) {
+        send_disp[0] = 0;
+        for ( int i = 1; i < d_size; i++ )
+            send_disp[i] = send_disp[i - 1] + send_cnt[i - 1];
+    }
+    AMP_ASSERT( recv_cnt && recv_disp );
+    allToAll<int>( 1, &send_cnt[0], &recv_cnt[0] );
+    N = 0;
+    for ( int i = 0; i < d_size; i++ )
+        N += recv_cnt[i];
+    AMP_ASSERT( N < 0x7FFFFFFF );
+    recv_disp[0] = 0;
+    for ( int i = 1; i < d_size; i++ )
+        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
+    return N;
+}
+int MPI_CLASS::calcAllToAllDisp( const std::vector<int> &send_cnt,
+                                 std::vector<int> &send_disp,
+                                 std::vector<int> &recv_cnt,
+                                 std::vector<int> &recv_disp ) const
+{
+    AMP_ASSERT( (int) send_cnt.size() == d_size );
+    send_disp.resize( d_size );
+    recv_cnt.resize( d_size );
+    recv_disp.resize( d_size );
+    return calcAllToAllDisp( send_cnt.data(), send_disp.data(), recv_cnt.data(), recv_disp.data() );
+}
+
+
+/************************************************************************
  *  Perform a global barrier across all processors.                      *
  ************************************************************************/
 void MPI_CLASS::barrier() const
