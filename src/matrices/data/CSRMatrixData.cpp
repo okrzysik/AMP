@@ -26,7 +26,6 @@ CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : M
         d_last_col    = csrParams->d_last_col;
         d_cols        = csrParams->d_cols;
         d_nnz_per_row = csrParams->d_nnz_per_row;
-        d_cols        = csrParams->d_cols;
         d_coeffs      = csrParams->d_coeffs;
 
     } else {
