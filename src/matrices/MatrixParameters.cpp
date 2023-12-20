@@ -11,12 +11,10 @@ namespace AMP::LinearAlgebra {
 MatrixParameters::MatrixParameters( std::shared_ptr<AMP::Discretization::DOFManager> left,
                                     std::shared_ptr<AMP::Discretization::DOFManager> right,
                                     const AMP_MPI &comm )
-    : d_comm( comm )
-
+    : MatrixParametersBase( comm )
 {
     AMP_ASSERT( left );
     AMP_ASSERT( right );
-    AMP_ASSERT( !d_comm.isNull() );
     d_DOFManagerLeft  = left;
     d_DOFManagerRight = right;
     d_vEntriesPerRow.resize( getLocalNumberOfRows() );
@@ -63,7 +61,5 @@ void MatrixParameters::setEntriesInRow( int row, int entries ) { d_vEntriesPerRo
 int &MatrixParameters::entriesInRow( int i ) { return d_vEntriesPerRow[i]; }
 
 int MatrixParameters::entriesInRow( int i ) const { return d_vEntriesPerRow[i]; }
-
-AMP::AMP_MPI &MatrixParameters::getComm() { return d_comm; }
 
 } // namespace AMP::LinearAlgebra
