@@ -17,7 +17,7 @@ class NativePetscMatrixData : public MatrixData
 public:
     NativePetscMatrixData();
 
-    explicit NativePetscMatrixData( std::shared_ptr<MatrixParameters> params );
+    explicit NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params );
 
     /** \brief  Construct a matrix from a PETSc Mat.
      * \param[in] m  The Mat to wrap
@@ -76,8 +76,8 @@ public:
 
     void makeConsistent() override;
 
-    Vector::shared_ptr getRightVector() const;
-    Vector::shared_ptr getLeftVector() const;
+    std::shared_ptr<Vector> getRightVector() const;
+    std::shared_ptr<Vector> getLeftVector() const;
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
     std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
 

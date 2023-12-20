@@ -3,11 +3,18 @@
 
 #include <memory>
 
-#include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/MatrixParametersBase.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/enable_shared_from_this.h"
 #include "AMP/utils/typeid.h"
 
+namespace AMP::Discretization {
+class DOFManager;
+}
+
 namespace AMP::LinearAlgebra {
+
+class Vector;
 
 class MatrixData : public AMP::enable_shared_from_this<MatrixData>
 {
@@ -15,7 +22,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit MatrixData( std::shared_ptr<MatrixParameters> params );
+    explicit MatrixData( std::shared_ptr<MatrixParametersBase> params );
 
     //! Destructor
     virtual ~MatrixData();
@@ -200,7 +207,7 @@ public:
     }
 
 protected:
-    std::shared_ptr<MatrixParameters> d_pParameters;
+    std::shared_ptr<MatrixParametersBase> d_pParameters;
 };
 
 } // namespace AMP::LinearAlgebra

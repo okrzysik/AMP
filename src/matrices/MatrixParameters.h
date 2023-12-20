@@ -1,6 +1,7 @@
 #ifndef included_AMP_MatrixParameters
 #define included_AMP_MatrixParameters
 
+#include "AMP/matrices/MatrixParametersBase.h"
 #include "AMP/vectors/Vector.h"
 
 
@@ -15,9 +16,11 @@ namespace AMP::LinearAlgebra {
 /** \class MatrixParameters
  * \brief  A class used to hold basic parameters for a matrix
  */
-class MatrixParameters
+class MatrixParameters : public MatrixParametersBase
 {
 public:
+    MatrixParameters() = delete;
+
     /** \brief Constructor
      * \param[in] left     The DOFManager for the left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$,
      * \f$y\f$ is a left
@@ -32,7 +35,7 @@ public:
                                const AMP_MPI &comm );
 
     //! Deconstructor
-    virtual ~MatrixParameters(){};
+    virtual ~MatrixParameters() = default;
 
     //! Return the local number of rows
     size_t getLocalNumberOfRows() const;
@@ -94,9 +97,6 @@ public:
     //!  right vector )
     std::shared_ptr<AMP::Discretization::DOFManager> getRightDOFManager();
 
-    //!  Get the communicator for the matrix
-    AMP::AMP_MPI &getComm();
-
     //!  The communication list of a left vector ( For \f$\mathbf{y}^T\mathbf{Ax}\f$, \f$y\f$ is a
     //!  left vector )
     std::shared_ptr<CommunicationList> d_CommListLeft;
@@ -114,8 +114,6 @@ public:
     std::shared_ptr<AMP::LinearAlgebra::Variable> d_VariableRight;
 
 protected:
-    MatrixParameters(){};
-
     // The DOFManager for the left vector ( may be null )
     std::shared_ptr<AMP::Discretization::DOFManager> d_DOFManagerLeft;
 
@@ -127,9 +125,6 @@ protected:
 
     //!  The set of columns with non-zero entries this processor has
     std::vector<size_t> d_vColumns;
-
-    // The comm of the matrix
-    AMP_MPI d_comm;
 };
 } // namespace AMP::LinearAlgebra
 

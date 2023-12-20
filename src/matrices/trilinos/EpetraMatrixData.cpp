@@ -1,4 +1,5 @@
 #include "AMP/matrices/trilinos/EpetraMatrixData.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
 #include "AMP/vectors/trilinos/epetra/EpetraVector.h"
@@ -36,10 +37,13 @@ static inline auto createEpetraMap( std::shared_ptr<AMP::Discretization::DOFMana
     return std::make_shared<Epetra_Map>( N_global, N_local, 0, comm2 );
 }
 
-EpetraMatrixData::EpetraMatrixData( std::shared_ptr<MatrixParameters> params )
-    : EpetraMatrixData( *createEpetraMap( params->getLeftDOFManager(), params->getComm() ),
-                        nullptr,
-                        params->entryList() )
+EpetraMatrixData::EpetraMatrixData( std::shared_ptr<MatrixParametersBase> params )
+    : EpetraMatrixData(
+          *createEpetraMap(
+              std::dynamic_pointer_cast<MatrixParameters>( params )->getLeftDOFManager(),
+              params->getComm() ),
+          nullptr,
+          std::dynamic_pointer_cast<MatrixParameters>( params )->entryList() )
 
 {
     d_pParameters = params;
@@ -47,14 +51,19 @@ EpetraMatrixData::EpetraMatrixData( std::shared_ptr<MatrixParameters> params )
 
 EpetraMatrixData::EpetraMatrixData( const EpetraMatrixData &rhs )
     : EpetraMatrixData(
-          *createEpetraMap( rhs.d_pParameters->getLeftDOFManager(), rhs.d_pParameters->getComm() ),
+          *createEpetraMap(
+              std::dynamic_pointer_cast<MatrixParameters>( rhs.d_pParameters )->getLeftDOFManager(),
+              rhs.d_pParameters->getComm() ),
           nullptr,
-          rhs.d_pParameters->entryList() )
+          std::dynamic_pointer_cast<MatrixParameters>( rhs.d_pParameters )->entryList() )
 {
     d_pParameters = rhs.d_pParameters;
 
-    for ( size_t i = d_pParameters->getLeftDOFManager()->beginDOF();
-          i != d_pParameters->getLeftDOFManager()->endDOF();
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
+
+    for ( size_t i = params->getLeftDOFManager()->beginDOF();
+          i != params->getLeftDOFManager()->endDOF();
           i++ ) {
         std::vector<size_t> cols;
         std::vector<double> vals;
@@ -84,7 +93,7 @@ std::shared_ptr<MatrixData> EpetraMatrixData::transpose() const
         new EpetraMatrixData( dynamic_cast<Epetra_CrsMatrix *>( &transposer( matrix ) ), true ) );
 }
 
-void EpetraMatrixData::extractDiagonal( Vector::shared_ptr vec ) const
+void EpetraMatrixData::extractDiagonal( std::shared_ptr<Vector> vec ) const
 {
     auto view = EpetraVector::view( vec );
     VerifyEpetraReturn( d_epetraMatrix->ExtractDiagonalCopy( view->getEpetra_Vector() ),
@@ -137,7 +146,8 @@ EpetraMatrixData::createView( std::shared_ptr<MatrixData> in_matrix )
 }
 
 
-void EpetraMatrixData::setEpetraMaps( Vector::shared_ptr range, Vector::shared_ptr domain )
+void EpetraMatrixData::setEpetraMaps( std::shared_ptr<Vector> range,
+                                      std::shared_ptr<Vector> domain )
 {
     if ( range ) {
 #ifdef AMP_USE_MPI
@@ -231,8 +241,10 @@ void EpetraMatrixData::setOtherData()
     myComm.allGather( cols, dataLen, aggregateCols );
     myComm.allGather( data, dataLen, aggregateData );
 
-    int MyFirstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    int MyEndRow   = d_pParameters->getLeftDOFManager()->endDOF();
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
+    int MyFirstRow = params->getLeftDOFManager()->beginDOF();
+    int MyEndRow   = params->getLeftDOFManager()->endDOF();
     for ( int i = 0; i != totDataLen; i++ ) {
         if ( ( aggregateRows[i] >= MyFirstRow ) && ( aggregateRows[i] < MyEndRow ) ) {
             setValuesByGlobalID( 1u,
@@ -255,11 +267,11 @@ void EpetraMatrixData::setOtherData()
 
 std::shared_ptr<Discretization::DOFManager> EpetraMatrixData::getRightDOFManager() const
 {
-    return d_pParameters->getRightDOFManager();
+    return std::dynamic_pointer_cast<MatrixParameters>( d_pParameters )->getRightDOFManager();
 }
 std::shared_ptr<Discretization::DOFManager> EpetraMatrixData::getLeftDOFManager() const
 {
-    return d_pParameters->getLeftDOFManager();
+    return std::dynamic_pointer_cast<MatrixParameters>( d_pParameters )->getLeftDOFManager();
 }
 
 /********************************************************
@@ -267,34 +279,41 @@ std::shared_ptr<Discretization::DOFManager> EpetraMatrixData::getLeftDOFManager(
  ********************************************************/
 std::shared_ptr<Vector> EpetraMatrixData::getRightVector() const
 {
-    int localSize  = d_pParameters->getLocalNumberOfColumns();
-    int globalSize = d_pParameters->getGlobalNumberOfColumns();
-    int localStart = d_pParameters->getRightDOFManager()->beginDOF();
+
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
+
+    int localSize  = params->getLocalNumberOfColumns();
+    int globalSize = params->getGlobalNumberOfColumns();
+    int localStart = params->getRightDOFManager()->beginDOF();
     auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
-    auto vec    = createEpetraVector(
-        d_pParameters->d_CommListRight, d_pParameters->getRightDOFManager(), buffer );
-    vec->setVariable( d_pParameters->d_VariableRight );
+    auto vec = createEpetraVector( params->d_CommListRight, params->getRightDOFManager(), buffer );
+    vec->setVariable( params->d_VariableRight );
     return vec;
 }
 std::shared_ptr<Vector> EpetraMatrixData::getLeftVector() const
 {
-    int localSize  = d_pParameters->getLocalNumberOfRows();
-    int globalSize = d_pParameters->getGlobalNumberOfRows();
-    int localStart = d_pParameters->getRightDOFManager()->beginDOF();
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
+    int localSize  = params->getLocalNumberOfRows();
+    int globalSize = params->getGlobalNumberOfRows();
+    int localStart = params->getRightDOFManager()->beginDOF();
     auto buffer = std::make_shared<VectorDataDefault<double>>( localStart, localSize, globalSize );
-    auto vec    = createEpetraVector(
-        d_pParameters->d_CommListLeft, d_pParameters->getLeftDOFManager(), buffer );
-    vec->setVariable( d_pParameters->d_VariableLeft );
+    auto vec    = createEpetraVector( params->d_CommListLeft, params->getLeftDOFManager(), buffer );
+    vec->setVariable( params->d_VariableLeft );
     return vec;
 }
 
 size_t EpetraMatrixData::numGlobalRows() const { return d_epetraMatrix->NumGlobalRows(); }
 size_t EpetraMatrixData::numGlobalColumns() const { return d_epetraMatrix->NumGlobalCols(); }
 
-size_t EpetraMatrixData::numLocalRows() const { return d_pParameters->getLocalNumberOfRows(); }
+size_t EpetraMatrixData::numLocalRows() const
+{
+    return std::dynamic_pointer_cast<MatrixParameters>( d_pParameters )->getLocalNumberOfRows();
+}
 size_t EpetraMatrixData::numLocalColumns() const
 {
-    return d_pParameters->getLocalNumberOfColumns();
+    return std::dynamic_pointer_cast<MatrixParameters>( d_pParameters )->getLocalNumberOfColumns();
 }
 
 AMP::AMP_MPI EpetraMatrixData::getComm() const { return d_pParameters->getComm(); }
@@ -324,9 +343,11 @@ void EpetraMatrixData::setValuesByGlobalID(
 {
     std::vector<int> epetra_cols( num_cols );
     std::copy( cols, cols + num_cols, epetra_cols.begin() );
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
 
-    size_t MyFirstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    size_t MyEndRow   = d_pParameters->getLeftDOFManager()->endDOF();
+    size_t MyFirstRow = params->getLeftDOFManager()->beginDOF();
+    size_t MyEndRow   = params->getLeftDOFManager()->endDOF();
     if ( id == getTypeID<double>() ) {
         auto values = reinterpret_cast<const double *>( vals );
         for ( size_t i = 0; i != num_rows; i++ ) {
@@ -355,21 +376,23 @@ void EpetraMatrixData::getValuesByGlobalID( size_t num_rows,
                                             void *vals,
                                             const typeID &id ) const
 {
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
     // Zero out the data in values
     if ( id == getTypeID<double>() ) {
         auto values = reinterpret_cast<double *>( vals );
         for ( size_t i = 0; i < num_rows * num_cols; i++ )
             values[i] = 0.0;
         // Get the data for each row
-        size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-        size_t numRows  = d_pParameters->getLeftDOFManager()->numLocalDOF();
+        size_t firstRow = params->getLeftDOFManager()->beginDOF();
+        size_t numRows  = params->getLeftDOFManager()->numLocalDOF();
         std::vector<int> row_cols;
         std::vector<double> row_values;
         for ( size_t i = 0; i < num_rows; i++ ) {
             if ( rows[i] < firstRow || rows[i] >= firstRow + numRows )
                 continue;
             size_t localRow = rows[i] - firstRow;
-            int numCols     = d_pParameters->entriesInRow( localRow );
+            int numCols     = params->entriesInRow( localRow );
             if ( numCols == 0 )
                 continue;
             row_cols.resize( numCols );
@@ -393,13 +416,15 @@ void EpetraMatrixData::getRowByGlobalID( size_t row,
                                          std::vector<size_t> &cols,
                                          std::vector<double> &values ) const
 {
-    size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    size_t numRows  = d_pParameters->getLeftDOFManager()->numLocalDOF();
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
+    size_t firstRow = params->getLeftDOFManager()->beginDOF();
+    size_t numRows  = params->getLeftDOFManager()->numLocalDOF();
     AMP_ASSERT( row >= firstRow );
     AMP_ASSERT( row < firstRow + numRows );
 
     size_t localRow = row - firstRow;
-    int numCols     = d_pParameters->entriesInRow( localRow );
+    int numCols     = params->entriesInRow( localRow );
     cols.resize( numCols );
     values.resize( numCols );
 
@@ -415,13 +440,15 @@ void EpetraMatrixData::getRowByGlobalID( size_t row,
 
 std::vector<size_t> EpetraMatrixData::getColumnIDs( size_t row ) const
 {
-    size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    size_t numRows  = d_pParameters->getLeftDOFManager()->numLocalDOF();
+    auto params = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( params );
+    size_t firstRow = params->getLeftDOFManager()->beginDOF();
+    size_t numRows  = params->getLeftDOFManager()->numLocalDOF();
     AMP_ASSERT( row >= firstRow );
     AMP_ASSERT( row < firstRow + numRows );
 
     size_t localRow = row - firstRow;
-    int numCols     = d_pParameters->entriesInRow( localRow );
+    int numCols     = params->entriesInRow( localRow );
     std::vector<size_t> cols( numCols );
 
     if ( numCols ) {
