@@ -9,7 +9,7 @@ namespace AMP::LinearAlgebra {
  * Constructors/Destructor                               *
  ********************************************************/
 MatrixData::MatrixData() { AMPManager::incrementResource( "MatrixData" ); }
-MatrixData::MatrixData( std::shared_ptr<MatrixParameters> params ) : d_pParameters( params )
+MatrixData::MatrixData( std::shared_ptr<MatrixParametersBase> params ) : d_pParameters( params )
 {
     AMPManager::incrementResource( "MatrixData" );
 }

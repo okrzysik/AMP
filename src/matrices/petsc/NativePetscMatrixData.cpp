@@ -1,5 +1,6 @@
 #include "AMP/matrices/petsc/NativePetscMatrixData.h"
 #include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 #include "AMP/vectors/petsc/NativePetscVectorData.h"
@@ -22,45 +23,46 @@ NativePetscMatrixData::NativePetscMatrixData( Mat m, bool internally_created )
     d_MatCreatedInternally = internally_created;
 }
 
-NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParameters> params )
+NativePetscMatrixData::NativePetscMatrixData( std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params )
 {
-    AMP_ASSERT( d_pParameters );
-    const auto &comm = d_pParameters->getComm().getCommunicator();
-    const auto nrows = d_pParameters->getLocalNumberOfRows();
-    const auto ncols = d_pParameters->getLocalNumberOfColumns();
+    auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( parameters );
+    const auto &comm = parameters->getComm().getCommunicator();
+    const auto nrows = parameters->getLocalNumberOfRows();
+    const auto ncols = parameters->getLocalNumberOfColumns();
     MatCreate( comm, &d_Mat );
     MatSetType( d_Mat, MATMPIAIJ );
     MatSetFromOptions( d_Mat );
     MatSetSizes( d_Mat,
                  nrows,
                  ncols,
-                 d_pParameters->getGlobalNumberOfRows(),
-                 d_pParameters->getGlobalNumberOfColumns() );
+                 parameters->getGlobalNumberOfRows(),
+                 parameters->getGlobalNumberOfColumns() );
     MatSetUp( d_Mat );
 #if 1
-    auto nnz_p     = d_pParameters->entryList();
+    auto nnz_p     = parameters->entryList();
     const auto nnz = *( std::max_element( nnz_p, nnz_p + nrows ) );
     MatMPIAIJSetPreallocation( d_Mat, nnz, nullptr, PETSC_DETERMINE, nullptr );
     MatSeqAIJSetPreallocation( d_Mat, nnz, nullptr );
 #else
     // this is possibly more optimal, but at present gives an error
     MatMPIAIJSetPreallocation(
-        d_Mat, PETSC_DEFAULT, d_pParameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
-    MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, d_pParameters->entryList() );
+        d_Mat, PETSC_DEFAULT, parameters->entryList(), PETSC_DEFAULT, PETSC_NULL );
+    MatSeqAIJSetPreallocation( d_Mat, PETSC_DEFAULT, parameters->entryList() );
 #endif
     // zero out the rows explicitly
 
     std::vector<PetscInt> petsc_rows( nrows );
-    auto rowDOFs = d_pParameters->getLeftDOFManager();
+    auto rowDOFs = parameters->getLeftDOFManager();
     AMP_ASSERT( rowDOFs );
     const auto srow  = rowDOFs->beginDOF();
-    const auto &cols = d_pParameters->getColumns();
+    const auto &cols = parameters->getColumns();
     std::vector<PetscInt> petsc_cols( cols.size() );
     for ( size_t i = 0; i < petsc_cols.size(); ++i ) // type conversion happening
         petsc_cols[i] = cols[i];
 
-    auto row_nnz     = d_pParameters->entryList();
+    auto row_nnz     = parameters->entryList();
     auto current_loc = 0;
 
     for ( size_t i = 0; i < nrows; ++i ) {
@@ -111,16 +113,20 @@ Vector::shared_ptr NativePetscMatrixData::getLeftVector() const
 
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getRightDOFManager() const
 {
-    if ( d_pParameters )
-        return d_pParameters->getRightDOFManager();
+    auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( parameters );
+    if ( parameters )
+        return parameters->getRightDOFManager();
 
     return getRightVector()->getDOFManager();
 }
 
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getLeftDOFManager() const
 {
-    if ( d_pParameters )
-        return d_pParameters->getLeftDOFManager();
+    auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+    AMP_ASSERT( parameters );
+    if ( parameters )
+        return parameters->getLeftDOFManager();
 
     return getLeftVector()->getDOFManager();
 }
