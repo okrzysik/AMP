@@ -299,6 +299,7 @@ size_t EpetraMatrixData::numLocalColumns() const
 
 AMP::AMP_MPI EpetraMatrixData::getComm() const { return d_pParameters->getComm(); }
 
+
 /********************************************************
  * Set/Add values by global id                           *
  ********************************************************/
