@@ -46,12 +46,12 @@ size_t MatrixData::numGlobalColumns() const
  ********************************************************/
 size_t MatrixData::beginRow() const
 {
-    auto DOF = getRightDOFManager();
+    auto DOF = getLeftDOFManager();
     return DOF->beginDOF();
 }
 size_t MatrixData::endRow() const
 {
-    auto DOF = getRightDOFManager();
+    auto DOF = getLeftDOFManager();
     return DOF->endDOF();
 }
 
