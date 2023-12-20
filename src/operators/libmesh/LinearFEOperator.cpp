@@ -33,8 +33,8 @@ LinearFEOperator::LinearFEOperator( std::shared_ptr<const OperatorParameters> in
 void LinearFEOperator::reset( std::shared_ptr<const OperatorParameters> params )
 {
     PROFILE_START( "reset" );
-    AMP_INSIST( ( params != nullptr ), "NULL parameter" );
-    AMP_INSIST( ( ( params->d_db ) != nullptr ), "NULL database" );
+    AMP_INSIST( params, "NULL parameter" );
+    AMP_INSIST( params->d_db, "NULL database" );
 
     const bool reuse_matrix = params->d_db->getWithDefault<bool>( "reset_reuses_matrix", true );
 

@@ -1398,10 +1398,7 @@ int MPI_CLASS::allToAll( const TYPE *send_data,
             recv_cnt2 = new int[d_size];
         if ( !recv_disp )
             recv_disp2 = new int[d_size];
-        allToAll<int>( 1, send_cnt, recv_cnt2 );
-        recv_disp2[0] = 0;
-        for ( int i = 1; i < d_size; i++ )
-            recv_disp2[i] = recv_disp2[i - 1] + recv_cnt2[i - 1];
+        calcAllToAllDisp( send_cnt, nullptr, recv_cnt2, recv_disp2 );
     }
     // Perform the communication
     MPI_CLASS_ASSERT( recv_cnt2 && recv_disp2 );
