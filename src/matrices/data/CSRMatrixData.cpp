@@ -19,9 +19,11 @@ CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : M
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters>( d_pParameters );
     if ( csrParams ) {
-
+        d_is_square   = csrParams->d_is_square;
         d_first_row   = csrParams->d_first_row;
         d_last_row    = csrParams->d_last_row;
+        d_first_col   = csrParams->d_first_col;
+        d_last_col    = csrParams->d_last_col;
         d_cols        = csrParams->d_cols;
         d_nnz_per_row = csrParams->d_nnz_per_row;
         d_cols        = csrParams->d_cols;
@@ -36,7 +38,7 @@ CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : M
         const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
         std::vector<size_t> remote_dofs;
         for ( auto i = 0u; i < nnz; ++i ) {
-            if ( ( d_cols[i] < d_first_row ) || ( d_cols[i] > d_last_row ) ) {
+            if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] > d_last_col ) ) {
                 remote_dofs.push_back( d_cols[i] );
             }
         }
@@ -44,6 +46,12 @@ CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : M
         const auto &comm = getComm();
         d_rightDOFManager =
             std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
+
+        if ( d_is_square ) {
+            d_leftDOFManager = d_rightDOFManager;
+        } else {
+            AMP_ERROR( "Non-square matrices not handled at present" );
+        }
 
     } else {
         AMP_ERROR( "device memory handling has not been implemented as yet" );

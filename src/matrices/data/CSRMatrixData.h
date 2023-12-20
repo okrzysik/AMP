@@ -152,8 +152,11 @@ public:
     size_t endRow() const override;
 
 protected:
+    bool d_is_square;
     size_t d_first_row;
     size_t d_last_row;
+    size_t d_first_col;
+    size_t d_last_col;
     size_t const *d_nnz_per_row;
     size_t const *d_cols;
     double const *d_coeffs;
