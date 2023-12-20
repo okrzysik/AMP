@@ -10,6 +10,8 @@ class Epetra_CrsMatrix;
 
 namespace AMP::LinearAlgebra {
 
+class Vector;
+
 /** \class EpetraMatrixData
   * \brief A Matrix with an Epetra_CrsMatrix interface
   * \details  An EpetraMatrixData presents an Epetra_Matrix class.
@@ -66,7 +68,7 @@ protected:
     EpetraMatrixData( Epetra_Map &m1, Epetra_Map *m2, int *entriesRow );
 
 public:
-    explicit EpetraMatrixData( std::shared_ptr<MatrixParameters> params );
+    explicit EpetraMatrixData( std::shared_ptr<MatrixParametersBase> params );
 
     EpetraMatrixData( const EpetraMatrixData &rhs );
 
@@ -88,7 +90,7 @@ public:
      * \details  This does not change the matrix, just the maps stored above
      *
      */
-    void setEpetraMaps( Vector::shared_ptr range, Vector::shared_ptr domain );
+    void setEpetraMaps( std::shared_ptr<Vector> range, std::shared_ptr<Vector> domain );
 
     EpetraMatrixData &operator=( const EpetraMatrixData & ) = delete;
 
@@ -153,8 +155,8 @@ public:
     AMP::AMP_MPI getComm() const override;
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
     std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;
-    Vector::shared_ptr getRightVector() const;
-    Vector::shared_ptr getLeftVector() const;
+    std::shared_ptr<Vector> getRightVector() const;
+    std::shared_ptr<Vector> getLeftVector() const;
 };
 
 
