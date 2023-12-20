@@ -125,9 +125,6 @@ protected:
 
     //!  The set of columns with non-zero entries this processor has
     std::vector<size_t> d_vColumns;
-
-    // The comm of the matrix
-    AMP_MPI d_comm;
 };
 } // namespace AMP::LinearAlgebra
 
