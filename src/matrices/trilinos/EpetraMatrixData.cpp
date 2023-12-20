@@ -299,20 +299,6 @@ size_t EpetraMatrixData::numLocalColumns() const
 
 AMP::AMP_MPI EpetraMatrixData::getComm() const { return d_pParameters->getComm(); }
 
-/********************************************************
- * Get iterators                                         *
- ********************************************************/
-size_t EpetraMatrixData::beginRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->beginDOF();
-}
-size_t EpetraMatrixData::endRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->endDOF();
-}
-
 
 /********************************************************
  * Set/Add values by global id                           *
