@@ -150,8 +150,6 @@ public:
     size_t numGlobalRows() const override;
     size_t numLocalColumns() const override;
     size_t numGlobalColumns() const override;
-    size_t beginRow() const override;
-    size_t endRow() const override;
     AMP::AMP_MPI getComm() const override;
     std::shared_ptr<Discretization::DOFManager> getRightDOFManager() const override;
     std::shared_ptr<Discretization::DOFManager> getLeftDOFManager() const override;

@@ -24,7 +24,7 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
             std::vector<double> vals( ncols );
             for ( size_t j = 0; j != ncols; j++ ) {
                 if ( cols[j] == i )
-                    vals[j] = 6;
+                    vals[j] = static_cast<double>( ncols );
                 else
                     vals[j] = -1;
             }
@@ -39,17 +39,17 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
     } else {
 
         for ( size_t i = dofmap->beginDOF(); i != dofmap->endDOF(); i++ ) {
-            std::vector<size_t> cols;
-            std::vector<double> vals;
-            matrix->getRowByGlobalID( i, cols, vals );
-            for ( size_t j = 0; j != cols.size(); j++ ) {
+            auto cols        = matrix->getColumnIDs( i );
+            const auto ncols = cols.size();
+            std::vector<double> vals( ncols );
+            for ( size_t j = 0; j != ncols; j++ ) {
                 if ( cols[j] == i )
-                    vals[j] = 6;
+                    vals[j] = static_cast<double>( ncols );
                 else
                     vals[j] = -1;
             }
-            if ( cols.size() ) {
-                matrix->setValuesByGlobalID( 1, cols.size(), &i, cols.data(), vals.data() );
+            if ( ncols ) {
+                matrix->setValuesByGlobalID<double>( 1, ncols, &i, cols.data(), vals.data() );
             }
         }
     }
@@ -105,7 +105,7 @@ void MatrixTests::VerifyGetSetValuesMatrix( AMP::UnitTest *utils )
         std::vector<double> vals;
         matrix->getRowByGlobalID( i, cols, vals );
         for ( size_t j = 0; j != cols.size(); j++ ) {
-            double ans   = ( i == cols[j] ) ? 6. : -1.;
+            double ans   = ( i == cols[j] ) ? cols.size() : -1.;
             double value = matrix->getValueByGlobalID( i, cols[j] );
             if ( vals[j] != ans || value != vals[j] ) {
                 utils->failure( "bad value in matrix " + matrix->type() );

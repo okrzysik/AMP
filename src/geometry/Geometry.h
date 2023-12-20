@@ -190,9 +190,9 @@ protected:
     Geometry() : d_physicalDim( 0 ) {}
 
     // Delete copy constructors
-    Geometry( Geometry && )                 = delete;
-    Geometry( const Geometry & )            = default;
-    Geometry &operator=( Geometry && )      = delete;
+    Geometry( Geometry && )      = delete;
+    Geometry( const Geometry & ) = default;
+    Geometry &operator=( Geometry && ) = delete;
     Geometry &operator=( const Geometry & ) = delete;
 
 

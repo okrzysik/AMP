@@ -299,20 +299,6 @@ size_t EpetraMatrixData::numLocalColumns() const
 
 AMP::AMP_MPI EpetraMatrixData::getComm() const { return d_pParameters->getComm(); }
 
-/********************************************************
- * Get iterators                                         *
- ********************************************************/
-size_t EpetraMatrixData::beginRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->beginDOF();
-}
-size_t EpetraMatrixData::endRow() const
-{
-    auto DOF = getRightDOFManager();
-    return DOF->endDOF();
-}
-
 
 /********************************************************
  * Set/Add values by global id                           *
@@ -376,7 +362,7 @@ void EpetraMatrixData::getValuesByGlobalID( size_t num_rows,
             values[i] = 0.0;
         // Get the data for each row
         size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-        size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
+        size_t numRows  = d_pParameters->getLeftDOFManager()->numLocalDOF();
         std::vector<int> row_cols;
         std::vector<double> row_values;
         for ( size_t i = 0; i < num_rows; i++ ) {
@@ -408,7 +394,7 @@ void EpetraMatrixData::getRowByGlobalID( size_t row,
                                          std::vector<double> &values ) const
 {
     size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
+    size_t numRows  = d_pParameters->getLeftDOFManager()->numLocalDOF();
     AMP_ASSERT( row >= firstRow );
     AMP_ASSERT( row < firstRow + numRows );
 
@@ -430,7 +416,7 @@ void EpetraMatrixData::getRowByGlobalID( size_t row,
 std::vector<size_t> EpetraMatrixData::getColumnIDs( size_t row ) const
 {
     size_t firstRow = d_pParameters->getLeftDOFManager()->beginDOF();
-    size_t numRows  = d_pParameters->getLeftDOFManager()->endDOF();
+    size_t numRows  = d_pParameters->getLeftDOFManager()->numLocalDOF();
     AMP_ASSERT( row >= firstRow );
     AMP_ASSERT( row < firstRow + numRows );
 
