@@ -19,8 +19,8 @@ public:
      */
     explicit CSRMatrixParameters( size_t first_row,
                                   size_t last_row,
-                                  int32_t const *const nnz_per_row,
-                                  int64_t const *const cols,
+                                  size_t const *const nnz_per_row,
+                                  size_t const *const cols,
                                   double const *const coeffs,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
@@ -37,8 +37,8 @@ public:
 
     size_t d_first_row;
     size_t d_last_row;
-    int32_t const *d_nnz_per_row;
-    int64_t const *d_cols;
+    size_t const *d_nnz_per_row;
+    size_t const *d_cols;
     double const *d_coeffs;
 };
 } // namespace AMP::LinearAlgebra

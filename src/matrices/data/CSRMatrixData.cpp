@@ -2,6 +2,10 @@
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
 #include "AMP/utils/AMPManager.h"
+#include "AMP/utils/Utilities.h"
+
+#include <memory>
+#include <numeric>
 
 namespace AMP::LinearAlgebra {
 
@@ -26,7 +30,26 @@ CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : M
     } else {
         AMP_ERROR( "Requires CSRParameter object at present" );
     }
+
+    if ( AMP::Utilities::getMemoryType( d_cols ) == AMP::Utilities::MemoryType::host ) {
+        size_t N         = d_last_row - d_first_row + 1;
+        const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
+        std::vector<size_t> remote_dofs;
+        for ( auto i = 0u; i < nnz; ++i ) {
+            if ( ( d_cols[i] < d_first_row ) || ( d_cols[i] > d_last_row ) ) {
+                remote_dofs.push_back( d_cols[i] );
+            }
+        }
+        AMP::Utilities::unique( remote_dofs );
+        const auto &comm = getComm();
+        d_rightDOFManager =
+            std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
+
+    } else {
+        AMP_ERROR( "device memory handling has not been implemented as yet" );
+    }
 }
+
 CSRMatrixData::~CSRMatrixData() { AMPManager::decrementResource( "CSRMatrixData" ); }
 
 std::shared_ptr<MatrixData> CSRMatrixData::cloneMatrixData() const
@@ -79,12 +102,12 @@ void CSRMatrixData::makeConsistent() { AMP_ERROR( "Not implemented" ); }
 
 std::shared_ptr<Discretization::DOFManager> CSRMatrixData::getRightDOFManager() const
 {
-    return nullptr;
+    return d_rightDOFManager;
 }
 
 std::shared_ptr<Discretization::DOFManager> CSRMatrixData::getLeftDOFManager() const
 {
-    return nullptr;
+    return d_leftDOFManager;
 }
 
 /********************************************************

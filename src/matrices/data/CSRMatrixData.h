@@ -3,6 +3,10 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
+namespace AMP::Discretization {
+class DOFManager;
+}
+
 namespace AMP::LinearAlgebra {
 
 class CSRMatrixData : public MatrixData
@@ -150,9 +154,12 @@ public:
 protected:
     size_t d_first_row;
     size_t d_last_row;
-    int32_t const *d_nnz_per_row;
-    int64_t const *d_cols;
+    size_t const *d_nnz_per_row;
+    size_t const *d_cols;
     double const *d_coeffs;
+
+    std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
+    std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
 };
 
 } // namespace AMP::LinearAlgebra
