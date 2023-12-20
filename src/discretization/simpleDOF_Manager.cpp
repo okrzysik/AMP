@@ -4,6 +4,7 @@
 #include "AMP/discretization/boxMeshDOFManager.h"
 #include "AMP/mesh/MultiMesh.h"
 #include "AMP/mesh/structured/BoxMesh.h"
+#include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Utilities.h"
 
@@ -364,107 +365,48 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
 {
     if ( d_comm.getSize() == 1 )
         return std::vector<size_t>(); // There are no remote DOFs
-    // Get the set of mesh ids (must match on all processors)
-    AMP_MPI comm = d_mesh->getComm();
-    std::set<AMP::Mesh::MeshID> meshIDs;
-    for ( auto &remote_id : remote_ids )
-        meshIDs.insert( remote_id.meshID() );
-    std::vector<AMP::Mesh::MeshID> tmpLocalIDs( meshIDs.begin(), meshIDs.end() );
-    auto N = (int) comm.sumReduce<size_t>( tmpLocalIDs.size() );
-    if ( N == 0 ) {
-        // Nobody has any remote ids to identify
-        return std::vector<size_t>();
-    }
-    AMP::Mesh::MeshID *send_ptr = nullptr;
-    if ( !tmpLocalIDs.empty() )
-        send_ptr = &tmpLocalIDs[0];
-    std::vector<AMP::Mesh::MeshID> tmpGlobalIDs( N );
-    int N_recv =
-        comm.allGather<AMP::Mesh::MeshID>( send_ptr, tmpLocalIDs.size(), &tmpGlobalIDs[0] );
-    AMP_ASSERT( N_recv == N );
-    for ( auto &tmpGlobalID : tmpGlobalIDs )
-        meshIDs.insert( tmpGlobalID );
     // Get the rank that will own each MeshElement on the current communicator
     std::vector<int> owner_rank( remote_ids.size(), -1 );
-    for ( auto meshID : meshIDs ) {
+    auto globalComm = AMP::AMPManager::getCommWorld();
+    std::vector<int> rankMap( globalComm.getSize(), -1 );
+    auto globalRanks = d_comm.globalRanks();
+    for ( size_t i = 0; i < globalRanks.size(); i++ )
+        rankMap[globalRanks[i]] = i;
+    for ( auto meshID : d_mesh->getLocalBaseMeshIDs() ) {
         // Get the mesh with the given meshID
-        auto submesh = d_mesh->Subset( meshID );
-        // Create a map from the rank of the submesh to the current mesh
-        int rank_submesh = -1;
-        int root_submesh = comm.getSize();
-        int subcommSize  = -1;
-        if ( submesh ) {
-            AMP_MPI subcomm = submesh->getComm();
-            rank_submesh    = subcomm.getRank();
-            root_submesh    = comm.getRank();
-            subcommSize     = subcomm.getSize();
-        }
-        root_submesh = comm.minReduce( root_submesh );
-        if ( root_submesh == comm.getSize() )
-            AMP_ERROR( "Not processors on the current comm exist on the submesh comm" );
-        subcommSize = comm.bcast( subcommSize, root_submesh );
-        std::vector<int> subrank( comm.getSize() );
-        comm.allGather( rank_submesh, &subrank[0] );
-        std::vector<int> rank_map( subcommSize, -1 );
-        for ( size_t i = 0; i < subrank.size(); i++ ) {
-            if ( subrank[i] != -1 )
-                rank_map[subrank[i]] = i;
-        }
+        auto submesh      = d_mesh->Subset( meshID );
+        auto submeshComm  = submesh->getComm();
+        auto submeshRanks = submeshComm.globalRanks();
         // Get the rank of the proccessor that will own each meshElement
         for ( size_t i = 0; i < remote_ids.size(); i++ ) {
             if ( remote_ids[i].meshID() == meshID ) {
-                int subowner_rank = remote_ids[i].owner_rank();
-                AMP_ASSERT( rank_map[subowner_rank] != -1 );
-                owner_rank[i] = rank_map[subowner_rank];
+                int rank      = remote_ids[i].owner_rank();
+                owner_rank[i] = rankMap[submeshRanks[rank]];
+                AMP_ASSERT( owner_rank[i] != -1 );
             }
         }
     }
-    // Check that each element has a vaild owner rank
-    int commSize = comm.getSize();
+    // Check that each element has a valid owner rank
+    int commSize = d_comm.getSize();
     for ( size_t i = 0; i < remote_ids.size(); i++ )
         AMP_ASSERT( owner_rank[i] >= 0 && owner_rank[i] < commSize );
     // Resort the remote ids according the the owner rank
     auto remote_ids2 = remote_ids;
     AMP::Utilities::quicksort( owner_rank, remote_ids2 );
-    // Determine the send count and displacements for each processor
-    std::vector<int> send_cnt( comm.getSize(), 0 );
-    std::vector<int> send_disp( comm.getSize(), 0 );
-    int rank     = 0;
-    size_t start = 0;
-    size_t index = 0;
-    while ( index < owner_rank.size() ) {
-        if ( owner_rank[index] < rank ) {
-            AMP_ERROR( "This should not occur" );
-        } else if ( owner_rank[index] == rank ) {
-            // Move to the next element
-            index++;
-        } else {
-            // Store the number of elements with the given rank, and move to the next rank
-            send_disp[rank] = start;
-            send_cnt[rank]  = index - start;
-            start           = index;
-            rank++;
-        }
-    }
-    send_disp[rank] = start;
-    send_cnt[rank]  = index - start;
-    // Preform an allToAll to send the remote ids for DOF identification
-    std::vector<int> recv_cnt( comm.getSize() );
-    comm.allToAll<int>( 1, &send_cnt[0], &recv_cnt[0] );
-    std::vector<int> recv_disp( comm.getSize() );
-    size_t tot_size = recv_cnt[0];
-    recv_disp[0]    = 0;
-    for ( int i = 1; i < comm.getSize(); i++ ) {
-        tot_size += recv_cnt[i];
-        recv_disp[i] = recv_disp[i - 1] + recv_cnt[i - 1];
-    }
+    // Determine the send/recv count and displacements for each processor
+    std::vector<int> send_cnt( d_comm.getSize(), 0 );
+    for ( int rank : owner_rank )
+        send_cnt[rank]++;
+    std::vector<int> send_disp, recv_disp, recv_cnt;
+    size_t tot_size = d_comm.calcAllToAllDisp( send_cnt, send_disp, recv_cnt, recv_disp );
+    // Perform an allToAll to send the remote ids for DOF identification
     std::vector<AMP::Mesh::MeshElementID> recv_id( tot_size + 1 );
     AMP::Mesh::MeshElementID *send_buffer = nullptr;
     if ( !remote_ids2.empty() )
         send_buffer = &remote_ids2[0];
-    N = comm.allToAll<AMP::Mesh::MeshElementID>(
+    size_t N = d_comm.allToAll<AMP::Mesh::MeshElementID>(
         send_buffer, &send_cnt[0], &send_disp[0], &recv_id[0], &recv_cnt[0], &recv_disp[0], true );
-    AMP_INSIST( N == (int) tot_size, "Unexpected receive size" );
+    AMP_INSIST( N == tot_size, "Unexpected receive size" );
     recv_id.resize( tot_size );
     // Determine the DOF for each received id
     std::vector<size_t> received_DOF( tot_size );
@@ -479,14 +421,14 @@ simpleDOFManager::getRemoteDOF( std::vector<AMP::Mesh::MeshElementID> remote_ids
     size_t *send_buffer_DOFs = nullptr;
     if ( tot_size > 0 )
         send_buffer_DOFs = &received_DOF[0];
-    N = comm.allToAll<size_t>( send_buffer_DOFs,
-                               &recv_cnt[0],
-                               &recv_disp[0],
-                               &remote_dof[0],
-                               &send_cnt[0],
-                               &send_disp[0],
-                               true );
-    AMP_INSIST( N == (int) remote_ids2.size(), "Unexpected receive size" );
+    N = d_comm.allToAll<size_t>( send_buffer_DOFs,
+                                 &recv_cnt[0],
+                                 &recv_disp[0],
+                                 &remote_dof[0],
+                                 &send_cnt[0],
+                                 &send_disp[0],
+                                 true );
+    AMP_INSIST( N == remote_ids2.size(), "Unexpected receive size" );
     remote_dof.resize( remote_ids2.size() );
     // Sort the dofs back to the original order for the remote_ids
     AMP::Utilities::quicksort( remote_ids2, remote_dof );

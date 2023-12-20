@@ -36,4 +36,5 @@ IF( NOT USING_ICC )
     ADD_AMP_TEST( testArray )
 ENDIF()
 ADD_AMP_PROVISIONAL_TEST( test_crash )
+#ADD_AMP_PROVISIONAL_TEST( test_crash_log )
 
