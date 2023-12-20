@@ -114,7 +114,6 @@ Vector::shared_ptr NativePetscMatrixData::getLeftVector() const
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getRightDOFManager() const
 {
     auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
-    AMP_ASSERT( parameters );
     if ( parameters )
         return parameters->getRightDOFManager();
 
@@ -124,7 +123,6 @@ std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getRightDOFMa
 std::shared_ptr<Discretization::DOFManager> NativePetscMatrixData::getLeftDOFManager() const
 {
     auto parameters = std::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
-    AMP_ASSERT( parameters );
     if ( parameters )
         return parameters->getLeftDOFManager();
 
