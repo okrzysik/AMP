@@ -122,15 +122,19 @@ std::shared_ptr<Discretization::DOFManager> CSRMatrixData::getLeftDOFManager() c
  ********************************************************/
 size_t CSRMatrixData::numLocalRows() const { return d_last_row - d_first_row + 1; }
 
-size_t CSRMatrixData::numGlobalRows() const { AMP_ERROR( "Not implemented" ); }
-
-size_t CSRMatrixData::numLocalColumns() const
+size_t CSRMatrixData::numGlobalRows() const
 {
-    AMP_ERROR( "Not implemented" );
-    return 0;
+    AMP_ASSERT( d_leftDOFManager );
+    return d_leftDOFManager->numGlobalDOF();
 }
 
-size_t CSRMatrixData::numGlobalColumns() const { AMP_ERROR( "Not implemented" ); }
+size_t CSRMatrixData::numLocalColumns() const { return d_last_col - d_first_col + 1; }
+
+size_t CSRMatrixData::numGlobalColumns() const
+{
+    AMP_ASSERT( d_rightDOFManager );
+    return d_rightDOFManager->numGlobalDOF();
+}
 
 
 /********************************************************
