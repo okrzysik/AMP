@@ -3,6 +3,8 @@
 
 #include "AMP/matrices/data/MatrixData.h"
 
+#include <tuple>
+
 namespace AMP::Discretization {
 class DOFManager;
 }
@@ -150,6 +152,11 @@ public:
      * \return  ending global row id
      */
     size_t endRow() const override;
+
+    std::tuple<size_t const *, size_t const *, double const *> getCSRData()
+    {
+        return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
+    }
 
 protected:
     bool d_is_square;

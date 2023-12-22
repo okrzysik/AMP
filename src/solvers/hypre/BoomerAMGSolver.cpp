@@ -1,6 +1,7 @@
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/data/hypre/HypreMatrixAdaptor.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
 
@@ -38,7 +39,7 @@ BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> para
 BoomerAMGSolver::~BoomerAMGSolver()
 {
     HYPRE_BoomerAMGDestroy( d_solver );
-    HYPRE_IJMatrixDestroy( d_ijMatrix );
+    //    HYPRE_IJMatrixDestroy( d_ijMatrix );
     HYPRE_IJVectorDestroy( d_hypre_rhs );
     HYPRE_IJVectorDestroy( d_hypre_sol );
 }
@@ -356,46 +357,10 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 
 void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
 {
-    int ierr;
-    char hypre_mesg[100];
-
-    const auto myFirstRow = matrix->getLeftDOFManager()->beginDOF();
-    const auto myEndRow =
-        matrix->getLeftDOFManager()->endDOF(); // check whether endDOF is truly the last -1
-
-    ierr = HYPRE_IJMatrixCreate(
-        d_comm.getCommunicator(), myFirstRow, myEndRow - 1, myFirstRow, myEndRow - 1, &d_ijMatrix );
-    HYPRE_DescribeError( ierr, hypre_mesg );
-
-    ierr = HYPRE_IJMatrixSetObjectType( d_ijMatrix, HYPRE_PARCSR );
-    HYPRE_DescribeError( ierr, hypre_mesg );
-
-    ierr = HYPRE_IJMatrixInitialize( d_ijMatrix );
-    HYPRE_DescribeError( ierr, hypre_mesg );
-
-    std::vector<size_t> cols;
-    std::vector<double> values;
-
-    // iterate over all rows
-    for ( auto i = myFirstRow; i != myEndRow; ++i ) {
-        matrix->getRowByGlobalID( i, cols, values );
-        std::vector<HYPRE_Int> hypre_cols( cols.size() );
-        std::copy( cols.begin(), cols.end(), hypre_cols.begin() );
-
-        const int nrows  = 1;
-        const auto irow  = i;
-        const auto ncols = cols.size();
-        ierr             = HYPRE_IJMatrixSetValues( d_ijMatrix,
-                                        nrows,
-                                        (HYPRE_Int *) &ncols,
-                                        (HYPRE_Int *) &irow,
-                                        hypre_cols.data(),
-                                        (const double *) &values[0] );
-        HYPRE_DescribeError( ierr, hypre_mesg );
-    }
-
-    ierr = HYPRE_IJMatrixAssemble( d_ijMatrix );
-    HYPRE_DescribeError( ierr, hypre_mesg );
+    d_HypreMatrixAdaptor =
+        std::make_shared<AMP::LinearAlgebra::HypreMatrixAdaptor>( matrix->getMatrixData() );
+    AMP_ASSERT( d_HypreMatrixAdaptor );
+    d_ijMatrix = d_HypreMatrixAdaptor->getHypreMatrix();
 }
 
 void BoomerAMGSolver::createHYPREVectors()
@@ -574,7 +539,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
-
 
     // add in code for solve here
     HYPRE_BoomerAMGSetup( d_solver, parcsr_A, par_b, par_x );

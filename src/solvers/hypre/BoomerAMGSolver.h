@@ -16,6 +16,10 @@ typedef struct hypre_IJMatrix_struct *HYPRE_IJMatrix;
 typedef struct hypre_IJVector_struct *HYPRE_IJVector;
 
 
+namespace AMP::LinearAlgebra {
+class HypreMatrixAdaptor;
+}
+
 namespace AMP::Solver {
 
 
@@ -130,6 +134,8 @@ private:
     void setParameters( void ); //! set BoomerAMG parameters based on internally set variables
 
     AMP_MPI d_comm;
+
+    std::shared_ptr<AMP::LinearAlgebra::HypreMatrixAdaptor> d_HypreMatrixAdaptor;
 
     HYPRE_IJMatrix d_ijMatrix  = nullptr; //! pointer to HYPRE matrix struct
     HYPRE_IJVector d_hypre_rhs = nullptr; //! pointer to HYPRE representation of rhs
