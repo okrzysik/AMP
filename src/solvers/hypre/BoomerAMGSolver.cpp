@@ -575,7 +575,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 
-
     // add in code for solve here
     HYPRE_BoomerAMGSetup( d_solver, parcsr_A, par_b, par_x );
     HYPRE_BoomerAMGSolve( d_solver, parcsr_A, par_b, par_x );

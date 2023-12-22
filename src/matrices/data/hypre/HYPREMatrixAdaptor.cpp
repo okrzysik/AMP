@@ -6,26 +6,61 @@ namespace AMP::LinearAlgebra {
 
 HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 {
-    HYPRE_BigInt first_row = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
-    HYPRE_BigInt last_row  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
-    auto comm              = matrixData->getComm().getCommunicator();
+    int ierr;
+    char hypre_mesg[100];
 
-    HYPRE_IJMatrixCreate( comm, first_row, last_row, first_row, last_row, &d_matrix );
+    HYPRE_BigInt firstRow = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
+    HYPRE_BigInt lastRow  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
+    auto comm             = matrixData->getComm().getCommunicator();
+
+    HYPRE_IJMatrixCreate( comm, firstRow, lastRow, firstRow, lastRow, &d_matrix );
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
 
-    HYPRE_Int *nnz_per_row = nullptr;
-    HYPRE_BigInt *csr_ja   = nullptr;
-    HYPRE_Real *csr_aa     = nullptr;
+    HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
 
     auto csrData = std::dynamic_pointer_cast<CSRMatrixData>( matrixData );
     if ( csrData ) {
-        AMP_ERROR( "Not implemented" );
-    } else {
-        AMP_ERROR( "Not implemented" );
-    }
 
-    AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
-    initializeHypreMatrix( first_row, last_row, nnz_per_row, csr_ja, csr_aa );
+        HYPRE_Int *nnz_per_row = nullptr;
+        HYPRE_BigInt *csr_ja   = nullptr;
+        HYPRE_Real *csr_aa     = nullptr;
+
+        AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
+        initializeHypreMatrix( firstRow, lastRow, nnz_per_row, csr_ja, csr_aa );
+        AMP_ERROR( "Not implemented" );
+
+    } else {
+
+        // figure out how to incorporate this
+        // HYPRE_IJMatrixSetRowSizes( d_matrix, nnz_per_row );
+
+        HYPRE_IJMatrixInitialize( d_matrix );
+
+        // iterate over all rows
+        for ( auto i = firstRow; i <= lastRow; ++i ) {
+
+            std::vector<size_t> cols;
+            std::vector<double> values;
+
+            matrixData->getRowByGlobalID( i, cols, values );
+            std::vector<HYPRE_BigInt> hypre_cols( cols.size() );
+            std::copy( cols.begin(), cols.end(), hypre_cols.begin() );
+
+            const int nrows  = 1;
+            const auto irow  = i;
+            const auto ncols = cols.size();
+
+            ierr = HYPRE_IJMatrixSetValues( d_matrix,
+                                            nrows,
+                                            (HYPRE_Int *) &ncols,
+                                            (HYPRE_BigInt *) &irow,
+                                            hypre_cols.data(),
+                                            (const HYPRE_Real *) values.data() );
+            HYPRE_DescribeError( ierr, hypre_mesg );
+        }
+
+        HYPRE_IJMatrixAssemble( d_matrix );
+    }
 }
 
 HypreMatrixAdaptor::~HypreMatrixAdaptor() { HYPRE_IJMatrixDestroy( d_matrix ); }
@@ -45,7 +80,6 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
     const auto nrows = last_row - first_row + 1;
 
     HYPRE_IJMatrixSetRowSizes( d_matrix, nnz_per_row );
-    HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
 
     // The next 2 lines affect efficiency and should be resurrected at some point
     //  set_row_location_(d_first_row, d_last_row, nrows, nnz_per_row, csr_ia, csr_ja,
