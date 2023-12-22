@@ -1,5 +1,5 @@
-#include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
+#include "AMP/matrices/data/CSRMatrixData.h"
 
 namespace AMP::LinearAlgebra {
 
