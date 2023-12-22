@@ -21,9 +21,11 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
     auto csrData = std::dynamic_pointer_cast<CSRMatrixData>( matrixData );
     if ( csrData ) {
 
-        HYPRE_Int *nnz_per_row = nullptr;
-        HYPRE_BigInt *csr_ja   = nullptr;
-        HYPRE_Real *csr_aa     = nullptr;
+        auto [nnz, cols, vals] = csrData->getCSRData();
+
+        auto nnz_per_row = static_cast<HYPRE_Int const *>( nnz );
+        auto csr_ja      = static_cast<HYPRE_BigInt const *>( cols );
+        auto csr_aa      = static_cast<HYPRE_Real const *>( vals );
 
         AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
         initializeHypreMatrix( firstRow, lastRow, nnz_per_row, csr_ja, csr_aa );
