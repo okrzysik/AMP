@@ -15,7 +15,8 @@ namespace AMP::LinearAlgebra {
  ********************************************************/
 CSRMatrix::CSRMatrix( std::shared_ptr<MatrixParameters> params ) : Matrix( params )
 {
-    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault>();
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault>();
+    d_matrixData = std::make_shared<CSRMatrixData>( params );
 }
 
 CSRMatrix::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
