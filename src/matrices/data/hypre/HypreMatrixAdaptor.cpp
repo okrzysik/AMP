@@ -1,4 +1,4 @@
-#include "AMP/matrices/data/hypre/HYPREMatrixAdaptor.h"
+#include "AMP/matrices/data/hypre/HypreMatrixAdaptor.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMP_MPI.h"
 

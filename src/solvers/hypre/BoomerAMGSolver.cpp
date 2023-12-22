@@ -1,6 +1,7 @@
 #include "AMP/solvers/hypre/BoomerAMGSolver.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/data/hypre/HypreMatrixAdaptor.h"
 #include "AMP/operators/LinearOperator.h"
 #include "AMP/utils/Utilities.h"
 
@@ -38,7 +39,7 @@ BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> para
 BoomerAMGSolver::~BoomerAMGSolver()
 {
     HYPRE_BoomerAMGDestroy( d_solver );
-    HYPRE_IJMatrixDestroy( d_ijMatrix );
+    //    HYPRE_IJMatrixDestroy( d_ijMatrix );
     HYPRE_IJVectorDestroy( d_hypre_rhs );
     HYPRE_IJVectorDestroy( d_hypre_sol );
 }
@@ -358,7 +359,12 @@ void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Mat
 {
     int ierr;
     char hypre_mesg[100];
-
+#if 1
+    d_HypreMatrixAdaptor =
+        std::make_shared<AMP::LinearAlgebra::HypreMatrixAdaptor>( matrix->getMatrixData() );
+    AMP_ASSERT( d_HypreMatrixAdaptor );
+    d_ijMatrix = d_HypreMatrixAdaptor->getHypreMatrix();
+#else
     const auto myFirstRow = matrix->getLeftDOFManager()->beginDOF();
     const auto myEndRow =
         matrix->getLeftDOFManager()->endDOF(); // check whether endDOF is truly the last -1
@@ -396,6 +402,7 @@ void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Mat
 
     ierr = HYPRE_IJMatrixAssemble( d_ijMatrix );
     HYPRE_DescribeError( ierr, hypre_mesg );
+#endif
 }
 
 void BoomerAMGSolver::createHYPREVectors()
