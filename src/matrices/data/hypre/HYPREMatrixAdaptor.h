@@ -23,7 +23,7 @@ public:
     ~HypreMatrixAdaptor();
 
     //!! Main constructor using a MatrixData object
-    HypreMatrixAdaptor( MatrixData & );
+    HypreMatrixAdaptor( std::shared_ptr<MatrixData> );
 
     //! Returns the handle to the HYPRE IJMatrix
     HYPRE_IJMatrix getHypreMatrix( void ) { return d_matrix; }

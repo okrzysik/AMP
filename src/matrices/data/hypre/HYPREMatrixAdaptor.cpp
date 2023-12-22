@@ -4,11 +4,11 @@
 
 namespace AMP::LinearAlgebra {
 
-HypreMatrixAdaptor::HypreMatrixAdaptor( MatrixData &matrixData )
+HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 {
-    HYPRE_BigInt first_row = static_cast<HYPRE_BigInt>( matrixData.beginRow() );
-    HYPRE_BigInt last_row  = static_cast<HYPRE_BigInt>( matrixData.endRow() - 1 );
-    auto comm              = matrixData.getComm().getCommunicator();
+    HYPRE_BigInt first_row = static_cast<HYPRE_BigInt>( matrixData->beginRow() );
+    HYPRE_BigInt last_row  = static_cast<HYPRE_BigInt>( matrixData->endRow() - 1 );
+    auto comm              = matrixData->getComm().getCommunicator();
 
     HYPRE_IJMatrixCreate( comm, first_row, last_row, first_row, last_row, &d_matrix );
     HYPRE_IJMatrixSetObjectType( d_matrix, HYPRE_PARCSR );
@@ -16,6 +16,13 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( MatrixData &matrixData )
     HYPRE_Int *nnz_per_row = nullptr;
     HYPRE_BigInt *csr_ja   = nullptr;
     HYPRE_Real *csr_aa     = nullptr;
+
+    auto csrData = std::dynamic_pointer_cast<CSRMatrixData>( matrixData );
+    if ( csrData ) {
+        AMP_ERROR( "Not implemented" );
+    } else {
+        AMP_ERROR( "Not implemented" );
+    }
 
     AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
     initializeHypreMatrix( first_row, last_row, nnz_per_row, csr_ja, csr_aa );
