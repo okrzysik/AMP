@@ -2,7 +2,7 @@
 #include "AMP/matrices/data/CSRMatrixData.h"
 
 namespace AMP::LinearAlgebra {
-
+#if 0
 static CSRMatrixData const *getCSRMatrixData( MatrixData const &A )
 {
     auto ptr = dynamic_cast<CSRMatrixData const *>( &A );
@@ -16,6 +16,7 @@ static CSRMatrixData *getCSRMatrixData( MatrixData &A )
     AMP_INSIST( ptr, "dynamic cast from const MatrixData to const CSRMatrixData failed" );
     return ptr;
 }
+#endif
 
 void CSRMatrixOperationsDefault::mult( std::shared_ptr<const Vector> in,
                                        MatrixData const &A,

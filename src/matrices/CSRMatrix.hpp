@@ -1,3 +1,6 @@
+#ifndef included_AMP_CSRMatrix_hpp
+#define included_AMP_CSRMatrix_hpp
+
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/operations/CSRMatrixOperationsDefault.h"
@@ -13,31 +16,38 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructor/Destructor                                *
  ********************************************************/
-CSRMatrix::CSRMatrix( std::shared_ptr<MatrixParameters> params ) : Matrix( params )
+template<typename Policy>
+CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParameters> params ) : Matrix( params )
 {
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault>();
-    d_matrixData = std::make_shared<CSRMatrixData>( params );
+    d_matrixData = std::make_shared<CSRMatrixData<Policy>>( params );
 }
 
-CSRMatrix::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
+template<typename Policy>
+CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
     d_matrixOps = std::make_shared<CSRMatrixOperationsDefault>();
 }
 
-CSRMatrix::~CSRMatrix() {}
+template<typename Policy>
+CSRMatrix<Policy>::~CSRMatrix()
+{
+}
 
 /********************************************************
  * Copy/transpose the matrix                             *
  ********************************************************/
-std::shared_ptr<Matrix> CSRMatrix::clone() const
+template<typename Policy>
+std::shared_ptr<Matrix> CSRMatrix<Policy>::clone() const
 {
-    return std::make_shared<CSRMatrix>( d_matrixData->cloneMatrixData() );
+    return std::make_shared<CSRMatrix<Policy>>( d_matrixData->cloneMatrixData() );
 }
 
-std::shared_ptr<Matrix> CSRMatrix::transpose() const
+template<typename Policy>
+std::shared_ptr<Matrix> CSRMatrix<Policy>::transpose() const
 {
     auto data = d_matrixData->transpose();
-    return std::make_shared<CSRMatrix>( data );
+    return std::make_shared<CSRMatrix<Policy>>( data );
 }
 
 /********************************************************
@@ -45,15 +55,17 @@ std::shared_ptr<Matrix> CSRMatrix::transpose() const
  * result = this * other_op                              *
  * C(N,M) = A(N,K)*B(K,M)
  ********************************************************/
-void CSRMatrix::multiply( std::shared_ptr<Matrix> other_op, std::shared_ptr<Matrix> &result )
+template<typename Policy>
+void CSRMatrix<Policy>::multiply( std::shared_ptr<Matrix> other_op,
+                                  std::shared_ptr<Matrix> &result )
 {
     // Create the matrix
     auto params = std::make_shared<AMP::LinearAlgebra::MatrixParameters>(
         getLeftDOFManager(), other_op->getRightDOFManager(), getComm() );
 
     // Create the matrix
-    auto newData   = std::make_shared<AMP::LinearAlgebra::CSRMatrixData>( params );
-    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix>( newData );
+    auto newData   = std::make_shared<AMP::LinearAlgebra::CSRMatrixData<Policy>>( params );
+    auto newMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( newData );
     AMP_ASSERT( newMatrix );
     result = newMatrix;
 
@@ -63,7 +75,8 @@ void CSRMatrix::multiply( std::shared_ptr<Matrix> other_op, std::shared_ptr<Matr
 /********************************************************
  * Get/Set the diagonal                                  *
  ********************************************************/
-Vector::shared_ptr CSRMatrix::extractDiagonal( Vector::shared_ptr buf ) const
+template<typename Policy>
+Vector::shared_ptr CSRMatrix<Policy>::extractDiagonal( Vector::shared_ptr buf ) const
 {
     Vector::shared_ptr out = buf;
     if ( !buf )
@@ -77,8 +90,18 @@ Vector::shared_ptr CSRMatrix::extractDiagonal( Vector::shared_ptr buf ) const
 /********************************************************
  * Get the left/right vectors and DOFManagers            *
  ********************************************************/
-Vector::shared_ptr CSRMatrix::getRightVector() const { AMP_ERROR( "Not implemented" ); }
-Vector::shared_ptr CSRMatrix::getLeftVector() const { AMP_ERROR( "Not implemented" ); }
+template<typename Policy>
+Vector::shared_ptr CSRMatrix<Policy>::getRightVector() const
+{
+    AMP_ERROR( "Not implemented" );
+}
+template<typename Policy>
+Vector::shared_ptr CSRMatrix<Policy>::getLeftVector() const
+{
+    AMP_ERROR( "Not implemented" );
+}
 
 
 } // namespace AMP::LinearAlgebra
+
+#endif

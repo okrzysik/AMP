@@ -1,5 +1,6 @@
 #include "AMP/matrices/data/hypre/HypreMatrixAdaptor.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
+#include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #include "AMP/utils/AMP_MPI.h"
 
 namespace AMP::LinearAlgebra {
@@ -18,12 +19,14 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 
     HYPRE_IJMatrixSetMaxOffProcElmts( d_matrix, 0 );
 
-    auto csrData = std::dynamic_pointer_cast<CSRMatrixData>( matrixData );
+    auto csrData = std::dynamic_pointer_cast<CSRMatrixData<HypreCSRPolicy>>( matrixData );
     if ( csrData ) {
 
-        HYPRE_Int *nnz_per_row = nullptr;
-        HYPRE_BigInt *csr_ja   = nullptr;
-        HYPRE_Real *csr_aa     = nullptr;
+        auto [nnz, cols, vals] = csrData->getCSRData();
+
+        auto nnz_per_row  = static_cast<HYPRE_Int *>( nnz );
+        const auto csr_ja = static_cast<HYPRE_BigInt const *>( cols );
+        const auto csr_aa = static_cast<HYPRE_Real const *>( vals );
 
         AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
         initializeHypreMatrix( firstRow, lastRow, nnz_per_row, csr_ja, csr_aa );
@@ -74,8 +77,8 @@ set_row_ids_( HYPRE_BigInt const first_row, HYPRE_BigInt const nrows, HYPRE_BigI
 void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
                                                 HYPRE_BigInt last_row,
                                                 HYPRE_Int *const nnz_per_row,
-                                                HYPRE_BigInt *const csr_ja,
-                                                HYPRE_Real *const csr_aa )
+                                                HYPRE_BigInt const *const csr_ja,
+                                                HYPRE_Real const *const csr_aa )
 {
     const auto nrows = last_row - first_row + 1;
 

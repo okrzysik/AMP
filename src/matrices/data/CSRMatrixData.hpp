@@ -1,6 +1,9 @@
-#include "AMP/matrices/data/CSRMatrixData.h"
+#ifndef included_AMP_CSRMatrixData_hpp
+#define included_AMP_CSRMatrixData_hpp
+
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
@@ -13,11 +16,18 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Constructors/Destructor                               *
  ********************************************************/
-CSRMatrixData::CSRMatrixData() { AMPManager::incrementResource( "CSRMatrixData" ); }
-CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : MatrixData( params )
+template<typename Policy>
+CSRMatrixData<Policy>::CSRMatrixData()
 {
     AMPManager::incrementResource( "CSRMatrixData" );
-    auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters>( d_pParameters );
+}
+
+template<typename Policy>
+CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params )
+    : MatrixData( params )
+{
+    AMPManager::incrementResource( "CSRMatrixData" );
+    auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
     if ( csrParams ) {
         d_is_square   = csrParams->d_is_square;
         d_first_row   = csrParams->d_first_row;
@@ -57,62 +67,83 @@ CSRMatrixData::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params ) : M
     }
 }
 
-CSRMatrixData::~CSRMatrixData() { AMPManager::decrementResource( "CSRMatrixData" ); }
+template<typename Policy>
+CSRMatrixData<Policy>::~CSRMatrixData()
+{
+    AMPManager::decrementResource( "CSRMatrixData" );
+}
 
-std::shared_ptr<MatrixData> CSRMatrixData::cloneMatrixData() const
+template<typename Policy>
+std::shared_ptr<MatrixData> CSRMatrixData<Policy>::cloneMatrixData() const
 {
     AMP_ERROR( "Not implemented" );
 }
 
-std::shared_ptr<MatrixData> CSRMatrixData::transpose() const { AMP_ERROR( "Not implemented" ); }
-
-void CSRMatrixData::extractDiagonal( std::shared_ptr<Vector> buf ) const
+template<typename Policy>
+std::shared_ptr<MatrixData> CSRMatrixData<Policy>::transpose() const
 {
     AMP_ERROR( "Not implemented" );
 }
 
-void CSRMatrixData::getRowByGlobalID( size_t row,
-                                      std::vector<size_t> &cols,
-                                      std::vector<double> &values ) const
+template<typename Policy>
+void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
 {
     AMP_ERROR( "Not implemented" );
 }
 
-void CSRMatrixData::addValuesByGlobalID(
+template<typename Policy>
+void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
+                                              std::vector<size_t> &cols,
+                                              std::vector<double> &values ) const
+{
+    AMP_ERROR( "Not implemented" );
+}
+
+template<typename Policy>
+void CSRMatrixData<Policy>::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
 {
     AMP_ERROR( "Not implemented" );
 }
 
-void CSRMatrixData::setValuesByGlobalID(
+template<typename Policy>
+void CSRMatrixData<Policy>::setValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
 {
     AMP_ERROR( "Not implemented" );
 }
 
-void CSRMatrixData::getValuesByGlobalID( size_t num_rows,
-                                         size_t num_cols,
-                                         size_t *rows,
-                                         size_t *cols,
-                                         void *values,
-                                         const typeID &id ) const
+template<typename Policy>
+void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
+                                                 size_t num_cols,
+                                                 size_t *rows,
+                                                 size_t *cols,
+                                                 void *values,
+                                                 const typeID &id ) const
 {
     AMP_ERROR( "Not implemented" );
 }
 
-std::vector<size_t> CSRMatrixData::getColumnIDs( size_t row ) const
+template<typename Policy>
+std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
 {
     AMP_ERROR( "Not implemented" );
 }
 
-void CSRMatrixData::makeConsistent() { AMP_ERROR( "Not implemented" ); }
+template<typename Policy>
+void CSRMatrixData<Policy>::makeConsistent()
+{
+    AMP_ERROR( "Not implemented" );
+}
 
-std::shared_ptr<Discretization::DOFManager> CSRMatrixData::getRightDOFManager() const
+template<typename Policy>
+std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getRightDOFManager() const
 {
     return d_rightDOFManager;
 }
 
-std::shared_ptr<Discretization::DOFManager> CSRMatrixData::getLeftDOFManager() const
+template<typename Policy>
+std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getLeftDOFManager() const
 {
     return d_leftDOFManager;
 }
@@ -120,17 +151,27 @@ std::shared_ptr<Discretization::DOFManager> CSRMatrixData::getLeftDOFManager() c
 /********************************************************
  * Get the number of rows/columns in the matrix          *
  ********************************************************/
-size_t CSRMatrixData::numLocalRows() const { return d_last_row - d_first_row + 1; }
+template<typename Policy>
+size_t CSRMatrixData<Policy>::numLocalRows() const
+{
+    return static_cast<size_t>( d_last_row - d_first_row + 1 );
+}
 
-size_t CSRMatrixData::numGlobalRows() const
+template<typename Policy>
+size_t CSRMatrixData<Policy>::numGlobalRows() const
 {
     AMP_ASSERT( d_leftDOFManager );
     return d_leftDOFManager->numGlobalDOF();
 }
 
-size_t CSRMatrixData::numLocalColumns() const { return d_last_col - d_first_col + 1; }
+template<typename Policy>
+size_t CSRMatrixData<Policy>::numLocalColumns() const
+{
+    return static_cast<size_t>( d_last_col - d_first_col + 1 );
+}
 
-size_t CSRMatrixData::numGlobalColumns() const
+template<typename Policy>
+size_t CSRMatrixData<Policy>::numGlobalColumns() const
 {
     AMP_ASSERT( d_rightDOFManager );
     return d_rightDOFManager->numGlobalDOF();
@@ -140,8 +181,18 @@ size_t CSRMatrixData::numGlobalColumns() const
 /********************************************************
  * Get iterators                                         *
  ********************************************************/
-size_t CSRMatrixData::beginRow() const { return d_first_row; }
-size_t CSRMatrixData::endRow() const { return d_last_row + 1; }
+template<typename Policy>
+size_t CSRMatrixData<Policy>::beginRow() const
+{
+    return static_cast<size_t>( d_first_row );
+}
+template<typename Policy>
+size_t CSRMatrixData<Policy>::endRow() const
+{
+    return static_cast<size_t>( d_last_row + 1 );
+}
 
 
 } // namespace AMP::LinearAlgebra
+
+#endif

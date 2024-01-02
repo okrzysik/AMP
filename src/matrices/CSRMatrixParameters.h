@@ -9,19 +9,24 @@ namespace AMP::LinearAlgebra {
 /** \class CSRMatrixParameters
  * \brief  A class used to hold basic parameters for a matrix
  */
+template<typename CSRPolicy>
 class CSRMatrixParameters : public MatrixParametersBase
 {
 public:
+    using gidx_t   = typename CSRPolicy::gidx_t;
+    using lidx_t   = typename CSRPolicy::lidx_t;
+    using scalar_t = typename CSRPolicy::scalar_t;
+
     CSRMatrixParameters() = delete;
 
     /** \brief Constructor
      * \param[in] comm     Communicator for the matrix
      */
-    explicit CSRMatrixParameters( size_t first_row,
-                                  size_t last_row,
-                                  size_t const *const nnz_per_row,
-                                  size_t const *const cols,
-                                  double const *const coeffs,
+    explicit CSRMatrixParameters( gidx_t first_row,
+                                  gidx_t last_row,
+                                  lidx_t const *const nnz_per_row,
+                                  gidx_t const *const cols,
+                                  scalar_t const *const coeffs,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_is_square( true ),
@@ -36,13 +41,13 @@ public:
     }
 
     explicit CSRMatrixParameters( bool is_square,
-                                  size_t first_row,
-                                  size_t last_row,
-                                  size_t first_col,
-                                  size_t last_col,
-                                  size_t const *const nnz_per_row,
-                                  size_t const *const cols,
-                                  double const *const coeffs,
+                                  gidx_t first_row,
+                                  gidx_t last_row,
+                                  gidx_t first_col,
+                                  gidx_t last_col,
+                                  lidx_t *const nnz_per_row,
+                                  gidx_t const *const cols,
+                                  scalar_t const *const coeffs,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_is_square( is_square ),
@@ -60,13 +65,13 @@ public:
     virtual ~CSRMatrixParameters() = default;
 
     bool d_is_square;
-    size_t d_first_row;
-    size_t d_last_row;
-    size_t d_first_col;
-    size_t d_last_col;
-    size_t const *d_nnz_per_row;
-    size_t const *d_cols;
-    double const *d_coeffs;
+    gidx_t d_first_row;
+    gidx_t d_last_row;
+    gidx_t d_first_col;
+    gidx_t d_last_col;
+    lidx_t *d_nnz_per_row;
+    gidx_t const *d_cols;
+    scalar_t const *d_coeffs;
 };
 } // namespace AMP::LinearAlgebra
 

@@ -11,9 +11,14 @@ class DOFManager;
 
 namespace AMP::LinearAlgebra {
 
+template<typename Policy>
 class CSRMatrixData : public MatrixData
 {
 public:
+    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
@@ -153,20 +158,20 @@ public:
      */
     size_t endRow() const override;
 
-    std::tuple<size_t const *, size_t const *, double const *> getCSRData()
+    std::tuple<lidx_t *, gidx_t const *, scalar_t const *> getCSRData()
     {
         return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
     }
 
 protected:
     bool d_is_square;
-    size_t d_first_row;
-    size_t d_last_row;
-    size_t d_first_col;
-    size_t d_last_col;
-    size_t const *d_nnz_per_row;
-    size_t const *d_cols;
-    double const *d_coeffs;
+    gidx_t d_first_row;
+    gidx_t d_last_row;
+    gidx_t d_first_col;
+    gidx_t d_last_col;
+    lidx_t *d_nnz_per_row;
+    gidx_t const *d_cols;
+    scalar_t const *d_coeffs;
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
