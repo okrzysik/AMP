@@ -33,8 +33,8 @@ private:
     void initializeHypreMatrix( HYPRE_BigInt first_row,
                                 HYPRE_BigInt last_row,
                                 HYPRE_Int *const csr_ia,
-                                HYPRE_BigInt *const csr_ja,
-                                HYPRE_Real *const csr_aa );
+                                HYPRE_BigInt const *const csr_ja,
+                                HYPRE_Real const *const csr_aa );
 
     //! hypre IJ matrix that this class wraps
     HYPRE_IJMatrix d_matrix;
