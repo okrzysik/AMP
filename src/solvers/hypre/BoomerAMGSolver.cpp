@@ -59,189 +59,156 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
 {
     d_bComputeResidual = db->getWithDefault<bool>( "compute_residual", false );
 
-    // 6.2.10 in hypre 11.2 manual
     d_num_functions = db->getWithDefault<int>( "num_functions", 1 );
     HYPRE_BoomerAMGSetNumFunctions( d_solver, d_num_functions );
 
-    // 6.2.14 in hypre 11.2 manual
     d_min_iterations = db->getWithDefault<int>( "min_iterations", 0 );
     HYPRE_BoomerAMGSetMinIter( d_solver, d_min_iterations );
 
-    // 6.2.15 in hypre 11.2 manual
     d_max_coarse_size = db->getWithDefault<int>( "max_coarse_size", 32 );
     HYPRE_BoomerAMGSetMaxCoarseSize( d_solver, d_max_coarse_size );
 
-    // 6.2.16 in hypre 11.2 manual
     d_min_coarse_size = db->getWithDefault<int>( "min_coarse_size", 10 );
     HYPRE_BoomerAMGSetMinCoarseSize( d_solver, d_min_coarse_size );
 
-    // 6.2.17 in hypre 11.2 manual
     d_max_levels = db->getWithDefault<int>( "max_levels", 10 );
     HYPRE_BoomerAMGSetMaxLevels( d_solver, d_max_levels );
 
-    // 6.2.18 in hypre 11.2 manual
     if ( db->keyExists( "strong_threshold" ) ) {
         d_strong_threshold = db->getScalar<double>( "strong_threshold" );
         HYPRE_BoomerAMGSetStrongThreshold( d_solver, d_strong_threshold );
     }
 
-    // 6.2.20 in hypre 11.2 manual
     if ( db->keyExists( "max_row_sum" ) ) {
         d_max_row_sum = db->getScalar<double>( "max_row_sum" );
         HYPRE_BoomerAMGSetMaxRowSum( d_solver, d_max_row_sum );
     }
 
-    // 6.2.21 in hypre 11.2 manual
     if ( db->keyExists( "coarsen_type" ) ) {
         d_coarsen_type = db->getScalar<int>( "coarsen_type" );
         HYPRE_BoomerAMGSetCoarsenType( d_solver, d_coarsen_type );
     }
 
-    // 6.2.23 in hypre 11.2 manual
     if ( db->keyExists( "non_galerkin_tol" ) ) {
         d_non_galerkin_tol = db->getScalar<double>( "non_galerkin_tol" );
         HYPRE_BoomerAMGSetNonGalerkinTol( d_solver, d_non_galerkin_tol );
     }
 
-    // 6.2.24 in hypre 11.2 manual
     if ( db->keyExists( "measure_type" ) ) {
         d_measure_type = db->getScalar<int>( "measure_type" );
         HYPRE_BoomerAMGSetMeasureType( d_solver, d_measure_type );
     }
 
-    // 6.2.25 in hypre 11.2 manual
     if ( db->keyExists( "agg_num_levels" ) ) {
         d_agg_num_levels = db->getScalar<int>( "agg_num_levels" );
         HYPRE_BoomerAMGSetAggNumLevels( d_solver, d_agg_num_levels );
     }
 
-    // 6.2.26 in hypre 11.2 manual
     if ( db->keyExists( "num_paths" ) ) {
         d_num_paths = db->getScalar<int>( "num_paths" );
         HYPRE_BoomerAMGSetNumPaths( d_solver, d_num_paths );
     }
 
-    // 6.2.27 in hypre 11.2 manual
     if ( db->keyExists( "cgc_iterations" ) ) {
         d_cgc_iterations = db->getScalar<int>( "cgc_iterations" );
         HYPRE_BoomerAMGSetCGCIts( d_solver, d_cgc_iterations );
     }
 
-    // 6.2.28 in hypre 11.2 manual
     if ( db->keyExists( "nodal" ) ) {
         d_nodal = db->getScalar<int>( "nodal" );
         HYPRE_BoomerAMGSetNodal( d_solver, d_nodal );
     }
 
-    // 6.2.29 in hypre 11.2 manual
     if ( db->keyExists( "nodal_diag" ) ) {
         d_nodal_diag = db->getScalar<int>( "nodal_diag" );
         HYPRE_BoomerAMGSetNodalDiag( d_solver, d_nodal_diag );
     }
 
-    // 6.2.30 in hypre 11.2 manual
     if ( db->keyExists( "interp_type" ) ) {
         d_interp_type = db->getScalar<int>( "interp_type" );
         HYPRE_BoomerAMGSetInterpType( d_solver, d_interp_type );
     }
 
-    // 6.2.31 in hypre 11.2 manual
     if ( db->keyExists( "trunc_factor" ) ) {
         d_trunc_factor = db->getScalar<double>( "trunc_factor" );
         HYPRE_BoomerAMGSetTruncFactor( d_solver, d_trunc_factor );
     }
 
-    // 6.2.32 in hypre 11.2 manual
     if ( db->keyExists( "P_max_elements" ) ) {
         d_P_max_elements = db->getScalar<int>( "P_max_elements" );
         HYPRE_BoomerAMGSetPMaxElmts( d_solver, d_P_max_elements );
     }
 
-    // 6.2.33 in hypre 11.2 manual
     if ( db->keyExists( "separate_weights" ) ) {
         d_separate_weights = db->getScalar<int>( "separate_weights" );
         HYPRE_BoomerAMGSetSepWeight( d_solver, d_separate_weights );
     }
 
-    // 6.2.34 in hypre 11.2 manual
     if ( db->keyExists( "agg_interp_type" ) ) {
         d_agg_interp_type = db->getScalar<int>( "agg_interp_type" );
         HYPRE_BoomerAMGSetAggInterpType( d_solver, d_agg_interp_type );
     }
 
-    // 6.2.35 in hypre 11.2 manual
     if ( db->keyExists( "agg_trunc_factor" ) ) {
         d_agg_trunc_factor = db->getScalar<double>( "agg_trunc_factor" );
         HYPRE_BoomerAMGSetAggTruncFactor( d_solver, d_agg_trunc_factor );
     }
 
-    // 6.2.36 in hypre 11.2 manual
     if ( db->keyExists( "agg_P12_trunc_factor" ) ) {
         d_agg_P12_trunc_factor = db->getScalar<double>( "agg_P12_trunc_factor" );
         HYPRE_BoomerAMGSetAggP12TruncFactor( d_solver, d_agg_P12_trunc_factor );
     }
 
-    // 6.2.37 in hypre 11.2 manual
     if ( db->keyExists( "agg_P_max_elements" ) ) {
         d_agg_P_max_elements = db->getScalar<int>( "agg_P_max_elements" );
         HYPRE_BoomerAMGSetAggPMaxElmts( d_solver, d_agg_P_max_elements );
     }
 
-    // 6.2.38 in hypre 11.2 manual
     if ( db->keyExists( "agg_P12_max_elements" ) ) {
         d_agg_P12_max_elements = db->getScalar<int>( "agg_P12_max_elements" );
         HYPRE_BoomerAMGSetAggP12MaxElmts( d_solver, d_agg_P12_max_elements );
     }
 
-    // 6.2.44 in hypre 11.2 manual
     if ( db->keyExists( "number_samples" ) ) {
         d_number_samples = db->getScalar<int>( "number_samples" );
         HYPRE_BoomerAMGSetNumSamples( d_solver, d_number_samples );
     }
 
-    // 6.2.45 in hypre 11.2 manual
     if ( db->keyExists( "cycle_type" ) ) {
         d_cycle_type = db->getScalar<int>( "cycle_type" );
         HYPRE_BoomerAMGSetCycleType( d_solver, d_cycle_type );
     }
 
-    // 6.2.46 in hypre 11.2 manual
     if ( db->keyExists( "additive_level" ) ) {
         d_additive_level = db->getScalar<int>( "additive_level" );
         HYPRE_BoomerAMGSetAdditive( d_solver, d_additive_level );
     }
 
-    // 6.2.47 in hypre 11.2 manual
     if ( db->keyExists( "mult_additive_level" ) ) {
         d_mult_additive_level = db->getScalar<int>( "mult_additive_level" );
         HYPRE_BoomerAMGSetMultAdditive( d_solver, d_mult_additive_level );
     }
 
-    // 6.2.48 in hypre 11.2 manual
     if ( db->keyExists( "simple_level" ) ) {
         d_simple_level = db->getScalar<int>( "simple_level" );
         HYPRE_BoomerAMGSetSimple( d_solver, d_simple_level );
     }
 
-    // 6.2.49 in hypre 11.2 manual
     if ( db->keyExists( "additive_trunc_factor" ) ) {
         d_additive_trunc_factor = db->getScalar<double>( "additive_trunc_factor" );
         HYPRE_BoomerAMGSetMultAddTruncFactor( d_solver, d_additive_trunc_factor );
     }
 
-    // 6.2.50 in hypre 11.2 manual
     if ( db->keyExists( "add_P_max_elmts" ) ) {
         d_add_P_max_elmts = db->getScalar<int>( "add_P_max_elmts" );
         HYPRE_BoomerAMGSetMultAddPMaxElmts( d_solver, d_add_P_max_elmts );
     }
 
-    // 6.2.55 in hypre 11.2 manual
     if ( db->keyExists( "number_sweeps" ) ) {
         d_number_sweeps = db->getScalar<int>( "number_sweeps" );
         HYPRE_BoomerAMGSetNumSweeps( d_solver, d_number_sweeps );
     }
 
-    // 6.2.58 in hypre 11.2 manual
     if ( db->keyExists( "relax_type" ) ) {
         d_relax_type = db->getScalar<int>( "relax_type" );
         HYPRE_BoomerAMGSetRelaxType( d_solver, d_relax_type );
@@ -250,101 +217,84 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     // specify Gaussian elimination on the coarsest level
     HYPRE_BoomerAMGSetCycleRelaxType( d_solver, 9, 3 );
 
-    // 6.2.60 in hypre 11.2 manual
     if ( db->keyExists( "relax_order" ) ) {
         d_relax_order = db->getScalar<int>( "relax_order" );
         HYPRE_BoomerAMGSetRelaxOrder( d_solver, d_relax_order );
     }
 
-    // 6.2.61 in hypre 11.2 manual
     if ( db->keyExists( "relax_weight" ) ) {
         d_relax_weight = db->getScalar<double>( "relax_weight" );
         HYPRE_BoomerAMGSetRelaxWt( d_solver, d_relax_weight );
     }
 
-    // 6.2.64 in hypre 11.2 manual
     if ( db->keyExists( "outer_weight" ) ) {
         d_outer_weight = db->getScalar<double>( "outer_weight" );
         HYPRE_BoomerAMGSetOuterWt( d_solver, d_outer_weight );
     }
 
-    // 6.2.66 in hypre 11.2 manual
     if ( db->keyExists( "chebyshev_order" ) ) {
         d_chebyshev_order = db->getScalar<int>( "chebyshev_order" );
         HYPRE_BoomerAMGSetChebyOrder( d_solver, d_chebyshev_order );
     }
 
-    // 6.2.67 in hypre 11.2 manual
     if ( db->keyExists( "chebyshev_fraction" ) ) {
         d_chebyshev_fraction = db->getScalar<double>( "chebyshev_fraction" );
         HYPRE_BoomerAMGSetChebyFraction( d_solver, d_chebyshev_fraction );
     }
 
-    // 6.2.68 in hypre 11.2 manual
     if ( db->keyExists( "smooth_type" ) ) {
         d_smooth_type = db->getScalar<int>( "smooth_type" );
         HYPRE_BoomerAMGSetSmoothType( d_solver, d_smooth_type );
     }
 
-    // 6.2.69 in hypre 11.2 manual
     if ( db->keyExists( "smooth_number_levels" ) ) {
         d_smooth_number_levels = db->getScalar<int>( "smooth_number_levels" );
         HYPRE_BoomerAMGSetSmoothNumLevels( d_solver, d_smooth_number_levels );
     }
 
-    // 6.2.70 in hypre 11.2 manual
     if ( db->keyExists( "smooth_number_sweeps" ) ) {
         d_smooth_number_sweeps = db->getScalar<int>( "smooth_number_sweeps" );
         HYPRE_BoomerAMGSetSmoothNumSweeps( d_solver, d_smooth_number_sweeps );
     }
 
-    // 6.2.71 in hypre 11.2 manual
     if ( db->keyExists( "schwarz_variant" ) ) {
         d_schwarz_variant = db->getScalar<int>( "schwarz_variant" );
         HYPRE_BoomerAMGSetVariant( d_solver, d_schwarz_variant );
     }
 
-    // 6.2.72 in hypre 11.2 manual
     if ( db->keyExists( "schwarz_overlap" ) ) {
         d_schwarz_overlap = db->getScalar<int>( "schwarz_overlap" );
         HYPRE_BoomerAMGSetOverlap( d_solver, d_schwarz_overlap );
     }
 
-    // 6.2.73 in hypre 11.2 manual
     if ( db->keyExists( "schwarz_domain_type" ) ) {
         d_schwarz_domain_type = db->getScalar<int>( "schwarz_domain_type" );
         HYPRE_BoomerAMGSetDomainType( d_solver, d_schwarz_domain_type );
     }
 
-    // 6.2.74 in hypre 11.2 manual
     if ( db->keyExists( "schwarz_weight" ) ) {
         d_schwarz_weight = db->getScalar<int>( "schwarz_weight" );
         HYPRE_BoomerAMGSetSchwarzRlxWeight( d_solver, d_schwarz_weight );
     }
 
-    // 6.2.75 in hypre 11.2 manual
     if ( db->keyExists( "schwarz_nonsymmetric" ) ) {
         d_schwarz_nonsymmetric = db->getScalar<int>( "schwarz_nonsymmetric" );
         HYPRE_BoomerAMGSetSchwarzUseNonSymm( d_solver, d_schwarz_nonsymmetric );
     }
 
-    // 6.2.87 in hypre 11.2 manual
     if ( db->keyExists( "logging" ) ) {
         d_logging = db->getScalar<int>( "logging" );
         HYPRE_BoomerAMGSetLogging( d_solver, d_logging );
     }
 
-    // 6.2.88 in hypre 11.2 manual
     if ( db->keyExists( "debug_flag" ) ) {
         d_debug_flag = db->getScalar<int>( "debug_flag" );
         HYPRE_BoomerAMGSetDebugFlag( d_solver, d_debug_flag );
     }
 
-    // 6.2.90 in hypre 11.2 manual
     d_rap2 = db->getWithDefault<int>( "rap2", 0 );
     HYPRE_BoomerAMGSetRAP2( d_solver, d_rap2 );
 
-    // 6.2.91 in hypre 11.2 manual
     if ( db->keyExists( "keep_transpose" ) ) {
         d_keep_transpose = db->getScalar<int>( "keep_transpose" );
         HYPRE_BoomerAMGSetKeepTranspose( d_solver, d_keep_transpose );
@@ -361,6 +311,10 @@ void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Mat
         std::make_shared<AMP::LinearAlgebra::HypreMatrixAdaptor>( matrix->getMatrixData() );
     AMP_ASSERT( d_HypreMatrixAdaptor );
     d_ijMatrix = d_HypreMatrixAdaptor->getHypreMatrix();
+
+    if ( d_iDebugPrintInfoLevel > 3 ) {
+        HYPRE_IJMatrixPrint( d_ijMatrix, "HypreMatrix" );
+    }
 }
 
 void BoomerAMGSolver::createHYPREVectors()
@@ -411,11 +365,11 @@ void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vec
 
     std::vector<double> values( nDOFS, 0.0 );
 
-    amp_v->getValuesByGlobalID( nDOFS, &indices[0], &values[0] );
+    amp_v->getValuesByGlobalID( nDOFS, indices.data(), values.data() );
 
     ierr = HYPRE_IJVectorInitialize( hypre_v );
     HYPRE_DescribeError( ierr, hypre_mesg );
-    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS, &hypre_indices[0], &values[0] );
+    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS, hypre_indices.data(), values.data() );
     HYPRE_DescribeError( ierr, hypre_mesg );
     ierr = HYPRE_IJVectorAssemble( hypre_v );
     HYPRE_DescribeError( ierr, hypre_mesg );
@@ -444,9 +398,9 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     std::vector<double> values( nDOFS, 0.0 );
 
     ierr = HYPRE_IJVectorGetValues(
-        hypre_v, static_cast<HYPRE_Int>( nDOFS ), &hypre_indices[0], &values[0] );
+        hypre_v, static_cast<HYPRE_Int>( nDOFS ), hypre_indices.data(), values.data() );
     HYPRE_DescribeError( ierr, hypre_mesg );
-    amp_v->setLocalValuesByGlobalID( nDOFS, &indices[0], &values[0] );
+    amp_v->setLocalValuesByGlobalID( nDOFS, indices.data(), values.data() );
 }
 
 void BoomerAMGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
