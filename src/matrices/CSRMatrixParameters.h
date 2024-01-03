@@ -24,7 +24,7 @@ public:
      */
     explicit CSRMatrixParameters( gidx_t first_row,
                                   gidx_t last_row,
-                                  lidx_t const *const nnz_per_row,
+                                  lidx_t *nnz_per_row,
                                   gidx_t const *const cols,
                                   scalar_t const *const coeffs,
                                   const AMP_MPI &comm )
@@ -45,7 +45,7 @@ public:
                                   gidx_t last_row,
                                   gidx_t first_col,
                                   gidx_t last_col,
-                                  lidx_t *const nnz_per_row,
+                                  lidx_t *nnz_per_row,
                                   gidx_t const *const cols,
                                   scalar_t const *const coeffs,
                                   const AMP_MPI &comm )

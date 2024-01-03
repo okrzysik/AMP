@@ -2,6 +2,9 @@
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
+
+#include <numeric>
 
 namespace AMP::LinearAlgebra {
 
@@ -30,7 +33,6 @@ HypreMatrixAdaptor::HypreMatrixAdaptor( std::shared_ptr<MatrixData> matrixData )
 
         AMP_INSIST( nnz_per_row && csr_ja && csr_aa, "nnz_per_row, csr_ja, csr_aa cannot be NULL" );
         initializeHypreMatrix( firstRow, lastRow, nnz_per_row, csr_ja, csr_aa );
-        AMP_ERROR( "Not implemented" );
 
     } else {
 
@@ -71,7 +73,8 @@ HypreMatrixAdaptor::~HypreMatrixAdaptor() { HYPRE_IJMatrixDestroy( d_matrix ); }
 static void
 set_row_ids_( HYPRE_BigInt const first_row, HYPRE_BigInt const nrows, HYPRE_BigInt *row_ids )
 {
-    AMP_ERROR( "Not implemented" );
+    AMP_ASSERT( row_ids );
+    std::iota( row_ids, row_ids + nrows, first_row );
 }
 
 void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
@@ -91,10 +94,14 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
 
     HYPRE_IJMatrixInitialize( d_matrix );
 
-    HYPRE_BigInt *row_ids = nullptr;
-    AMP_INSIST( row_ids, "row_ids cannot be NULL" );
-    set_row_ids_( first_row, nrows, row_ids );
-    HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row, row_ids, csr_ja, csr_aa );
+    auto memType = AMP::Utilities::getMemoryType( csr_ja );
+    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
+                    memType == AMP::Utilities::MemoryType::unregistered,
+                "Currently only implemented for host memory" );
+
+    std::vector<HYPRE_BigInt> row_ids( nrows );
+    set_row_ids_( first_row, nrows, row_ids.data() );
+    HYPRE_IJMatrixSetValues( d_matrix, nrows, nnz_per_row, row_ids.data(), csr_ja, csr_aa );
     HYPRE_IJMatrixAssemble( d_matrix );
 }
 

@@ -36,7 +36,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit Matrix( std::shared_ptr<MatrixParameters> params );
+    explicit Matrix( std::shared_ptr<MatrixParametersBase> params );
 
 
     /** \brief Constructor

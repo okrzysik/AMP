@@ -22,7 +22,7 @@ public:
     /** \brief Constructor
      * \param[in] params  Description of the matrix
      */
-    explicit CSRMatrix( std::shared_ptr<MatrixParameters> params );
+    explicit CSRMatrix( std::shared_ptr<MatrixParametersBase> params );
 
 
     /** \brief Constructor

@@ -17,7 +17,7 @@ namespace AMP::LinearAlgebra {
  * Constructor/Destructor                                *
  ********************************************************/
 template<typename Policy>
-CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParameters> params ) : Matrix( params )
+CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : Matrix( params )
 {
     d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault>();
     d_matrixData = std::make_shared<CSRMatrixData<Policy>>( params );
