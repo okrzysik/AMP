@@ -14,7 +14,7 @@ namespace AMP::LinearAlgebra {
  ********************************************************/
 Matrix::Matrix( const Matrix & ) {}
 Matrix::Matrix() {}
-Matrix::Matrix( std::shared_ptr<MatrixParameters> ) {}
+Matrix::Matrix( std::shared_ptr<MatrixParametersBase> ) {}
 Matrix::Matrix( std::shared_ptr<MatrixData> data ) : d_matrixData( data ) {}
 Matrix::~Matrix() {}
 

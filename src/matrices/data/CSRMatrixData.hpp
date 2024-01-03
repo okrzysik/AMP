@@ -42,8 +42,11 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         AMP_ERROR( "Requires CSRParameter object at present" );
     }
 
-    if ( AMP::Utilities::getMemoryType( d_cols ) == AMP::Utilities::MemoryType::host ) {
-        size_t N         = d_last_row - d_first_row + 1;
+    auto memType = AMP::Utilities::getMemoryType( d_cols );
+    // the next line should probably not allow for unregistered
+    if ( memType == AMP::Utilities::MemoryType::host ||
+         memType == AMP::Utilities::MemoryType::unregistered ) {
+        size_t N         = d_last_row - d_first_row;
         const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
         std::vector<size_t> remote_dofs;
         for ( auto i = 0u; i < nnz; ++i ) {
@@ -154,7 +157,7 @@ std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getLeftDOFMan
 template<typename Policy>
 size_t CSRMatrixData<Policy>::numLocalRows() const
 {
-    return static_cast<size_t>( d_last_row - d_first_row + 1 );
+    return static_cast<size_t>( d_last_row - d_first_row );
 }
 
 template<typename Policy>
@@ -167,7 +170,7 @@ size_t CSRMatrixData<Policy>::numGlobalRows() const
 template<typename Policy>
 size_t CSRMatrixData<Policy>::numLocalColumns() const
 {
-    return static_cast<size_t>( d_last_col - d_first_col + 1 );
+    return static_cast<size_t>( d_last_col - d_first_col );
 }
 
 template<typename Policy>
@@ -189,7 +192,7 @@ size_t CSRMatrixData<Policy>::beginRow() const
 template<typename Policy>
 size_t CSRMatrixData<Policy>::endRow() const
 {
-    return static_cast<size_t>( d_last_row + 1 );
+    return static_cast<size_t>( d_last_row );
 }
 
 
