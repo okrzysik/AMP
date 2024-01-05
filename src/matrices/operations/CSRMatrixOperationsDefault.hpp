@@ -86,7 +86,26 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::scale( AMP::Scalar alpha_in, MatrixData &A )
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz_per_row, cols, coeffs] = csrData->getCSRData();
+
+    auto memType = AMP::Utilities::getMemoryType( cols );
+    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
+                    memType == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto nRows = csrData->numLocalRows();
+    const auto nnz = std::accumulate( nnz_per_row, nnz_per_row + nRows, static_cast<lidx_t>( 0 ) );
+
+    auto alpha = static_cast<scalar_t>( alpha_in );
+    std::transform( const_cast<scalar_t *>( coeffs ),
+                    const_cast<scalar_t *>( coeffs ) + nnz,
+                    const_cast<scalar_t *>( coeffs ),
+                    [=]( scalar_t val ) { return alpha * val; } );
 }
 
 template<typename Policy>
@@ -102,32 +121,139 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
                                                const MatrixData &X,
                                                MatrixData &Y )
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    const auto csrDataX = getCSRMatrixData<Policy>( const_cast<MatrixData &>( X ) );
+    const auto [nnz_x, cols_x, coeffs_x] = csrDataX->getCSRData();
+
+    auto csrDataY                  = getCSRMatrixData<Policy>( Y );
+    auto [nnz_y, cols_y, coeffs_y] = csrDataY->getCSRData();
+
+    auto memType_x = AMP::Utilities::getMemoryType( cols_x );
+    AMP_INSIST( memType_x == AMP::Utilities::MemoryType::host ||
+                    memType_x == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    auto memType_y = AMP::Utilities::getMemoryType( cols_y );
+    AMP_INSIST( memType_y == AMP::Utilities::MemoryType::host ||
+                    memType_y == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto nRows = csrDataX->numLocalRows();
+    const auto nnz   = std::accumulate( nnz_x, nnz_x + nRows, static_cast<lidx_t>( 0 ) );
+
+    auto alpha = static_cast<scalar_t>( alpha_in );
+    auto y_p   = const_cast<scalar_t *>( coeffs_y );
+    for ( lidx_t i = 0; i < nnz; ++i )
+        y_p[i] += alpha * coeffs_x[i];
 }
 
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::setScalar( AMP::Scalar alpha_in, MatrixData &A )
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz_per_row, cols, coeffs] = csrData->getCSRData();
+
+    auto memType = AMP::Utilities::getMemoryType( cols );
+    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
+                    memType == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto nRows = csrData->numLocalRows();
+    const auto nnz = std::accumulate( nnz_per_row, nnz_per_row + nRows, static_cast<lidx_t>( 0 ) );
+
+    auto alpha = static_cast<scalar_t>( alpha_in );
+    std::fill( const_cast<scalar_t *>( coeffs ), const_cast<scalar_t *>( coeffs ) + nnz, alpha );
 }
 
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::zero( MatrixData &A )
 {
-    AMP_ERROR( "Not implemented" );
+    using scalar_t = typename Policy::scalar_t;
+    setScalar( static_cast<scalar_t>( 0.0 ), A );
 }
 
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::setDiagonal( std::shared_ptr<const Vector> in,
                                                       MatrixData &A )
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    // constrain to one data block for now
+    AMP_ASSERT( in && in->numberOfDataBlocks() == 1 && in->isType<scalar_t>( 0 ) );
+
+    const scalar_t *vvals_p = in->getRawDataBlock<scalar_t>();
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz, cols, coeffs] = csrData->getCSRData();
+
+    auto memType = AMP::Utilities::getMemoryType( cols );
+    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
+                    memType == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto nRows = csrData->numLocalRows();
+
+    auto beginRow = csrData->beginRow();
+
+    auto vals_p = const_cast<scalar_t *>( coeffs );
+
+    lidx_t offset = 0;
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto ncols = nnz[row];
+        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
+            if ( cols[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
+                vals_p[offset + icol] = vvals_p[row];
+                break;
+            }
+        }
+        offset += nnz[row];
+    }
 }
 
 template<typename Policy>
 void CSRMatrixOperationsDefault<Policy>::setIdentity( MatrixData &A )
 {
-    AMP_ERROR( "Not implemented" );
+    using lidx_t   = typename Policy::lidx_t;
+    using gidx_t   = typename Policy::gidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    zero( A );
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz, cols, coeffs] = csrData->getCSRData();
+
+    auto memType = AMP::Utilities::getMemoryType( cols );
+    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
+                    memType == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto nRows = csrData->numLocalRows();
+
+    auto beginRow = csrData->beginRow();
+
+    auto vals_p = const_cast<scalar_t *>( coeffs );
+
+    lidx_t offset = 0;
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+        const auto ncols = nnz[row];
+        for ( lidx_t icol = 0; icol < ncols; ++icol ) {
+            if ( cols[offset + icol] == static_cast<gidx_t>( beginRow + row ) ) {
+                vals_p[offset + icol] = static_cast<scalar_t>( 1.0 );
+                break;
+            }
+        }
+        offset += nnz[row];
+    }
 }
 
 template<typename Policy>

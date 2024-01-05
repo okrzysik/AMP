@@ -40,8 +40,8 @@ protected:
 
 
 /**
- * \class vectorTests
- * \brief A helper class to store/run tests for a vector
+ * \class MatrixTests
+ * \brief A helper class to store/run tests for a matrix
  */
 class MatrixTests
 {
@@ -65,10 +65,5 @@ private:
 
 
 } // namespace AMP::LinearAlgebra
-
-
-// Extra includes
-#include "AMP/vectors/testHelpers/VectorTests.inline.h"
-
 
 #endif
