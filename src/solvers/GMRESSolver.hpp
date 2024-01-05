@@ -203,6 +203,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 }
             } else {
                 z = d_vBasis[k];
+                z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
                 d_pOperator->apply( z, v );
             }
         }
@@ -365,7 +366,6 @@ void GMRESSolver<T>::computeGivensRotation( const int k )
     d_dcos[k] = c;
     d_dsin[k] = s;
 }
-
 template<typename T>
 void GMRESSolver<T>::backwardSolve( const int nr )
 {

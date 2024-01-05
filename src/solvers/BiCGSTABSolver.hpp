@@ -156,6 +156,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         if ( angle < eps * r_tilde_norm ) {
             // the method breaks down as the vectors are orthogonal to r0
             // attempt to restart with a new r0
+            u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
             d_pOperator->residual( f, u, res );
             r_tilde->copyVector( res );
             p->copyVector( res );
@@ -188,6 +189,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             p_hat->copyVector( p );
         }
 
+        p_hat->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( p_hat, v );
 
         alpha = static_cast<T>( r_tilde->dot( *v ) );
@@ -224,6 +226,8 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         if ( !t ) {
             t = res->clone();
         }
+
+        s_hat->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( s_hat, t );
 
         auto t_sqnorm = static_cast<T>( t->dot( *t ) );

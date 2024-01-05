@@ -166,6 +166,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         z = y[0];
     }
 
+    z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+
     d_pOperator->apply( z, v );
 
     u[0]->copyVector( v );
@@ -200,6 +202,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 } else {
                     z = y[1];
                 }
+
+                z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
                 d_pOperator->apply( z, u[1] );
             }
@@ -261,6 +265,8 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
             z = y[0];
         }
+
+        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
         d_pOperator->apply( z, u[0] );
 
