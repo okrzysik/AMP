@@ -6,6 +6,7 @@
 #include "AMP/matrices/CSRMatrix.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
 #include "AMP/matrices/data/hypre/HypreCSRPolicy.h"
+#include "AMP/matrices/testHelpers/MatrixDataTransforms.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/mesh/MeshFactory.h"
 #include "AMP/mesh/MeshParameters.h"
@@ -32,6 +33,7 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#include <iomanip>
 #include <memory>
 #include <string>
 
@@ -89,41 +91,6 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
     solver = AMP::Solver::SolverFactory::create( parameters );
 
     return solver;
-}
-
-template<typename Policy>
-void extractCSRRepresentation( std::shared_ptr<AMP::Operator::Operator> op,
-                               typename Policy::gidx_t &firstRow,
-                               typename Policy::gidx_t &endRow,
-                               std::vector<typename Policy::lidx_t> &nnz,
-                               std::vector<typename Policy::gidx_t> &cols,
-                               std::vector<typename Policy::scalar_t> &coeffs )
-{
-    AMP_ASSERT( op );
-    auto mat = std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( op )->getMatrix();
-    AMP_ASSERT( mat );
-
-    firstRow = static_cast<typename Policy::gidx_t>( mat->beginRow() );
-    endRow   = static_cast<typename Policy::gidx_t>( mat->endRow() );
-
-    for ( auto row = firstRow; row < endRow; ++row ) {
-
-        std::vector<size_t> rcols;
-        std::vector<typename Policy::scalar_t> rvals;
-
-        mat->getRowByGlobalID( row, rcols, rvals );
-        nnz.push_back( static_cast<typename Policy::lidx_t>( rcols.size() ) );
-
-        std::transform( rcols.cbegin(),
-                        rcols.cend(),
-                        std::back_inserter( cols ),
-                        []( size_t col ) -> typename Policy::gidx_t { return col; } );
-
-        coeffs.insert( coeffs.end(), rvals.cbegin(), rvals.cend() );
-
-        rcols.resize( 0 );
-        rvals.resize( 0 );
-    }
 }
 
 
@@ -230,8 +197,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     std::vector<gidx_t> cols;
     std::vector<scalar_t> coeffs;
 
-    extractCSRRepresentation<AMP::LinearAlgebra::HypreCSRPolicy>(
-        linearOperator, firstRow, endRow, nnz, cols, coeffs );
+    AMP::LinearAlgebra::transformDofToCSR<AMP::LinearAlgebra::HypreCSRPolicy>(
+        diffusionOperator->getMatrix(), firstRow, endRow, nnz, cols, coeffs );
 
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
         firstRow, endRow, nnz.data(), cols.data(), coeffs.data(), meshAdapter->getComm() );
@@ -253,6 +220,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
+    TemperatureInKelvinVec->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
@@ -265,12 +234,37 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Solve the problem.
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
+    TemperatureInKelvinVec->makeConsistent(
+        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+
+    // Compute the apply
+    csrOperator->apply( TemperatureInKelvinVec, ResidualVec );
+
+    // Check the L2 norm of the final apply.
+    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    std::cout << "Final Apply Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
+              << std::endl;
+
+    diffusionOperator->apply( TemperatureInKelvinVec, ResidualVec );
+
+    // Check the L2 norm of the final apply.
+    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    std::cout << "Final Apply Norm: " << std::setprecision( 15 ) << finalResidualNorm << std::endl;
+
     // Compute the residual
+    csrOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
+
+    // Check the L2 norm of the final residual.
+    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    std::cout << "Final Residual Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
+              << std::endl;
+
     diffusionOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
+    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    std::cout << "Final Residual Norm: " << std::setprecision( 15 ) << finalResidualNorm
+              << std::endl;
 
     if ( finalResidualNorm > 10.0 ) {
         auto solver_db           = input_db->getDatabase( "LinearSolver" );
@@ -319,10 +313,10 @@ int main( int argc, char *argv[] )
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML

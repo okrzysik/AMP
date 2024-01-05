@@ -19,14 +19,14 @@ namespace AMP::LinearAlgebra {
 template<typename Policy>
 CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixParametersBase> params ) : Matrix( params )
 {
-    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault>();
+    d_matrixOps  = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
     d_matrixData = std::make_shared<CSRMatrixData<Policy>>( params );
 }
 
 template<typename Policy>
 CSRMatrix<Policy>::CSRMatrix( std::shared_ptr<MatrixData> data ) : Matrix( data )
 {
-    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault>();
+    d_matrixOps = std::make_shared<CSRMatrixOperationsDefault<Policy>>();
 }
 
 template<typename Policy>

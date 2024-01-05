@@ -504,6 +504,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<double>();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
+    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     // we are forced to update the state of u here
     // as Hypre is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
