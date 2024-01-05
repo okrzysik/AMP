@@ -10,11 +10,9 @@
 namespace AMP::LinearAlgebra {
 
 
-static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
-                                     std::shared_ptr<const MatrixFactory> factory )
+void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
+                              std::shared_ptr<AMP::Discretization::DOFManager> dofmap )
 {
-    auto dofmap = factory->getDOFMap();
-
     if ( matrix->type() == "NativePetscMatrix" ) {
         std::map<size_t, std::vector<size_t>> allCols;
         std::map<size_t, std::vector<double>> allVals;
@@ -57,6 +55,12 @@ static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix>
     matrix->makeConsistent();
 }
 
+static void fillWithPseudoLaplacian( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix,
+                                     std::shared_ptr<const MatrixFactory> factory )
+{
+    auto dofmap = factory->getDOFMap();
+    fillWithPseudoLaplacian( matrix, dofmap );
+}
 
 void MatrixTests::InstantiateMatrix( AMP::UnitTest *utils )
 {

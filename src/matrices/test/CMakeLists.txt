@@ -31,7 +31,10 @@ ADD_AMP_TEST_1_2_4( test_RectangularMatricesMultiplication )
 
 IF( USE_LIBMESH AND AMP_DATA )
   ADD_AMP_TEST_124_MATRIX( testMatCreate )
+  ADD_AMP_TEST_124_MATRIX( testMatVec )
   COPY_TEST_FILE( input_testMatCreate-1 )
+  COPY_TEST_FILE( input_testMatVec-1 )
+  COPY_TEST_FILE( input_testMatVec-2 )
   ADD_AMP_TEST_1_2_4( testMatMultiply )
 ENDIF()
 

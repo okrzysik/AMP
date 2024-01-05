@@ -163,6 +163,8 @@ public:
         return std::make_tuple( d_nnz_per_row, d_cols, d_coeffs );
     }
 
+    bool isSquare() const noexcept { return d_is_square; }
+
 protected:
     bool d_is_square;
     gidx_t d_first_row;
