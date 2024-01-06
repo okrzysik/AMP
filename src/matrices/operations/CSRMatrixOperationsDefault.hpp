@@ -43,7 +43,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
                     memType == AMP::Utilities::MemoryType::unregistered,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = csrData->numLocalRows();
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     auto maxColLen   = *std::max_element( nnz, nnz + nRows );
 
     std::vector<size_t> rcols( maxColLen );
@@ -80,7 +80,54 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
                                                         MatrixData const &A,
                                                         std::shared_ptr<Vector> out )
 {
-    AMP_ERROR( "Not implemented" );
+    // this is not meant to be an optimized version. It is provided for completeness
+    AMP_ASSERT( in && out );
+
+    out->zero();
+
+    using gidx_t   = typename Policy::gidx_t;
+    using lidx_t   = typename Policy::lidx_t;
+    using scalar_t = typename Policy::scalar_t;
+
+    auto csrData = getCSRMatrixData<Policy>( const_cast<MatrixData &>( A ) );
+
+    auto [nnz, cols, coeffs] = csrData->getCSRData();
+
+    auto memType = AMP::Utilities::getMemoryType( cols );
+    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
+                    memType == AMP::Utilities::MemoryType::unregistered,
+                "CSRMatrixOperationsDefault is implemented only for host memory" );
+
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
+    auto maxColLen   = *std::max_element( nnz, nnz + nRows );
+
+    std::vector<size_t> rcols( maxColLen );
+    std::vector<scalar_t> vvals( maxColLen );
+
+    lidx_t offset = 0;
+    for ( lidx_t row = 0; row < nRows; ++row ) {
+
+        const auto nCols = nnz[row];
+
+        const auto cloc = &cols[offset];
+        const auto vloc = &coeffs[offset];
+
+        std::transform(
+            cloc, cloc + nCols, rcols.begin(), []( gidx_t col ) -> size_t { return col; } );
+
+        const auto val = in->getValueByGlobalID( row );
+
+        for ( lidx_t icol = 0; icol < nCols; ++icol ) {
+            vvals[icol] = vloc[icol] * val;
+        }
+
+        out->addValuesByGlobalID( nCols, rcols.data(), vvals.data() );
+
+        offset += nCols;
+    }
+
+    // consistent add because some values might be remote
+    out->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
 }
 
 template<typename Policy>
@@ -98,7 +145,7 @@ void CSRMatrixOperationsDefault<Policy>::scale( AMP::Scalar alpha_in, MatrixData
                     memType == AMP::Utilities::MemoryType::unregistered,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = csrData->numLocalRows();
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     const auto nnz = std::accumulate( nnz_per_row, nnz_per_row + nRows, static_cast<lidx_t>( 0 ) );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
@@ -113,7 +160,7 @@ void CSRMatrixOperationsDefault<Policy>::matMultiply( MatrixData const &Am,
                                                       MatrixData const &Bm,
                                                       MatrixData &Cm )
 {
-    AMP_ERROR( "Not implemented" );
+    AMP_ERROR( "SpGEMM for CSRMatrixOperationsDefault not implemented" );
 }
 
 template<typename Policy>
@@ -164,7 +211,7 @@ void CSRMatrixOperationsDefault<Policy>::setScalar( AMP::Scalar alpha_in, Matrix
                     memType == AMP::Utilities::MemoryType::unregistered,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = csrData->numLocalRows();
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
     const auto nnz = std::accumulate( nnz_per_row, nnz_per_row + nRows, static_cast<lidx_t>( 0 ) );
 
     auto alpha = static_cast<scalar_t>( alpha_in );
@@ -200,7 +247,7 @@ void CSRMatrixOperationsDefault<Policy>::setDiagonal( std::shared_ptr<const Vect
                     memType == AMP::Utilities::MemoryType::unregistered,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = csrData->numLocalRows();
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
 
     auto beginRow = csrData->beginRow();
 
@@ -237,7 +284,7 @@ void CSRMatrixOperationsDefault<Policy>::setIdentity( MatrixData &A )
                     memType == AMP::Utilities::MemoryType::unregistered,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
-    const auto nRows = csrData->numLocalRows();
+    const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
 
     auto beginRow = csrData->beginRow();
 
