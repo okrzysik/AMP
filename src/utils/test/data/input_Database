@@ -1,3 +1,6 @@
+dir = "test/"
+
+
 db1 {
 number = 5
 
@@ -17,6 +20,8 @@ number = 5
 
     eq1 = @() 3^2;
     eq2 = @(x) 4*x;
+
+    filename := dir + "file"                // Add paths
 }
 
 
@@ -26,4 +31,9 @@ db2 {
    int = global_int
    db = db1
 }
+
+RepRate = 1000 Hz
+N_repeat = 4
+DutyCycle = 0.25
+ThermalRepRate := DutyCycle*RepRate/N_repeat    // Perform a simple calculation
 

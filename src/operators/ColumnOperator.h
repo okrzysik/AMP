@@ -77,9 +77,11 @@ public:
 
     bool isValidInput( std::shared_ptr<const AMP::LinearAlgebra::Vector> u ) override;
 
+    size_t getNumberOfOperators() { return d_operators.size(); }
+
     std::shared_ptr<Operator> getOperator( size_t i ) { return d_operators[i]; }
 
-    size_t getNumberOfOperators() { return d_operators.size(); }
+    inline auto getOperators() { return d_operators; }
 
     //! Return an iterator to the beginning of the operators
     inline auto begin() { return d_operators.begin(); }

@@ -590,30 +590,28 @@ void scaleData( Array<TYPE> &data, double factor );
 template<class TYPE>
 void scaleData( TYPE &data, double factor );
 template<class TYPE>
-TYPE Database::getScalar( std::string_view key, const Units &unit, source_location src ) const
+TYPE KeyData::getScalar( const Units &unit, std::string_view name, source_location src ) const
 {
-    auto keyData = getData( key );
-    DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
-    size_t length = keyData->arraySize().length();
-    DATABASE_INSIST( length == 1, src, "Variable %s is not a scalar", key.data() );
+    size_t length = arraySize().length();
+    DATABASE_INSIST( length == 1, src, "Variable %s is not a scalar", name.data() );
     TYPE data       = TYPE();
-    double factor   = keyData->convertUnits( unit, key );
-    auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
-    auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
+    double factor   = convertUnits( unit, name );
+    auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( this );
+    auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( this );
     if constexpr ( std::is_arithmetic_v<TYPE> ) {
         if ( scalarData ) {
             data = scalarData->get();
         } else if ( arrayData ) {
             const auto &data2 = arrayData->get();
             data              = data2( 0 );
-        } else if ( keyData->is_integral() ) {
-            auto data2 = convert<int64_t, TYPE>( keyData->convertToInt64() );
+        } else if ( is_integral() ) {
+            auto data2 = convert<int64_t, TYPE>( convertToInt64() );
             data       = data2( 0 );
-        } else if ( keyData->is_floating_point() ) {
-            auto data2 = convert<double, TYPE>( keyData->convertToDouble() );
+        } else if ( is_floating_point() ) {
+            auto data2 = convert<double, TYPE>( convertToDouble() );
             data       = data2( 0 );
         } else {
-            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", name.data() );
         }
         if ( factor != 1.0 )
             scaleData( data, factor );
@@ -625,51 +623,63 @@ TYPE Database::getScalar( std::string_view key, const Units &unit, source_locati
             const auto &data2 = arrayData->get();
             data              = data2( 0 );
         } else {
-            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
+            DATABASE_ERROR( src, "Unable to convert data for key %s", name.data() );
         }
     }
     return data;
+}
+template<class TYPE>
+Array<TYPE> KeyData::getArray( const Units &unit, std::string_view name, source_location src ) const
+{
+    Array<TYPE> data;
+    if ( arraySize().length() == 0 )
+        return data;
+    double factor   = convertUnits( unit, name );
+    auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( this );
+    auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( this );
+    if constexpr ( std::is_arithmetic_v<TYPE> ) {
+        if ( scalarData ) {
+            const auto &data2 = scalarData->get();
+            data.resize( 1 );
+            data( 0 ) = data2;
+        } else if ( arrayData ) {
+            data = arrayData->get();
+        } else if ( is_integral() ) {
+            data = std::move( convert<int64_t, TYPE>( convertToInt64() ) );
+        } else if ( is_floating_point() ) {
+            data = std::move( convert<double, TYPE>( convertToDouble() ) );
+        } else {
+            DATABASE_ERROR( src, "Unable to convert data for key %s", name.data() );
+        }
+        if ( factor != 1.0 )
+            scaleData( data, factor );
+    } else {
+        DATABASE_INSIST( factor == 1.0, src, "Only arithmetic types can convert units" );
+        if ( scalarData ) {
+            const auto &data2 = scalarData->get();
+            data.resize( 1 );
+            data( 0 ) = data2;
+        } else if ( arrayData ) {
+            data = arrayData->get();
+        } else {
+            DATABASE_ERROR( src, "Unable to convert data for key %s", name.data() );
+        }
+    }
+    return data;
+}
+template<class TYPE>
+TYPE Database::getScalar( std::string_view key, const Units &unit, source_location src ) const
+{
+    auto keyData = getData( key );
+    DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
+    return keyData->getScalar<TYPE>( unit, key, src );
 }
 template<class TYPE>
 Array<TYPE> Database::getArray( std::string_view key, const Units &unit, source_location src ) const
 {
     auto keyData = getData( key );
     DATABASE_INSIST( keyData, src, "Variable %s was not found in database", key.data() );
-    Array<TYPE> data;
-    if ( keyData->arraySize().length() == 0 )
-        return data;
-    double factor   = keyData->convertUnits( unit, key );
-    auto scalarData = dynamic_cast<const KeyDataScalar<TYPE> *>( keyData );
-    auto arrayData  = dynamic_cast<const KeyDataArray<TYPE> *>( keyData );
-    if constexpr ( std::is_arithmetic_v<TYPE> ) {
-        if ( scalarData ) {
-            const auto &data2 = scalarData->get();
-            data.resize( 1 );
-            data( 0 ) = data2;
-        } else if ( arrayData ) {
-            data = arrayData->get();
-        } else if ( keyData->is_integral() ) {
-            data = std::move( convert<int64_t, TYPE>( keyData->convertToInt64() ) );
-        } else if ( keyData->is_floating_point() ) {
-            data = std::move( convert<double, TYPE>( keyData->convertToDouble() ) );
-        } else {
-            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
-        }
-        if ( factor != 1.0 )
-            scaleData( data, factor );
-    } else {
-        DATABASE_INSIST( factor == 1.0, src, "Only arithmetic types can convert units" );
-        if ( scalarData ) {
-            const auto &data2 = scalarData->get();
-            data.resize( 1 );
-            data( 0 ) = data2;
-        } else if ( arrayData ) {
-            data = arrayData->get();
-        } else {
-            DATABASE_ERROR( src, "Unable to convert data for key %s", key.data() );
-        }
-    }
-    return data;
+    return keyData->getArray<TYPE>( unit, key, src );
 }
 template<class TYPE>
 std::vector<TYPE>
