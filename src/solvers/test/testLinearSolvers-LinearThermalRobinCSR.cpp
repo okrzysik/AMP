@@ -57,8 +57,12 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
         auto name = db->getString( "name" );
 
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
-             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ) {
-
+             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" )
+#if defined( AMP_USE_PETSC )
+             || ( name == "PetscKrylovSolver" ) ) {
+#else
+        ) {
+#endif
             // check if we need to construct a preconditioner
             auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
             std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
@@ -307,9 +311,13 @@ int main( int argc, char *argv[] )
 
     } else {
 
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+
+#ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
+#endif
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
@@ -317,6 +325,9 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
+    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML
