@@ -35,6 +35,7 @@ class MathExpr;
 class KeyData
 {
 public:
+    using source_location = StackTrace::source_location;
     //! Destructor
     virtual ~KeyData() {}
     //! Return class type
@@ -79,6 +80,16 @@ public:
     virtual void writeHDF5( int64_t fid, std::string_view name ) const = 0;
     //! Read the data from HDF5
     virtual void readHDF5( int64_t fid, std::string_view name ) = 0;
+    //! Convert the data to a scalar of the given type
+    template<class TYPE>
+    TYPE getScalar( const Units &unit     = {},
+                    std::string_view name = "",
+                    source_location src   = source_location::current() ) const;
+    //! Convert the data to a scalar of the given type
+    template<class TYPE>
+    Array<TYPE> getArray( const Units &unit     = {},
+                          std::string_view name = "",
+                          source_location src   = source_location::current() ) const;
 
 protected:
     KeyData() {}
@@ -117,8 +128,6 @@ public:
     };
     template<typename T>
     using IdentityType = typename IdentityTypeStruct<const T &>::type;
-
-    using source_location = StackTrace::source_location;
 
 public:
     //! Empty constructor

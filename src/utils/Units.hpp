@@ -629,18 +629,35 @@ constexpr bool Units::operator==( const Units &rhs ) const noexcept
  ********************************************************************/
 constexpr void Units::operator*=( const Units &rhs ) noexcept
 {
-    d_unit = { 0 };
-    d_SI   = combine( d_SI, rhs.d_SI );
-    d_scale *= rhs.d_scale;
+    if ( rhs.d_scale == 0 ) {
+        return;
+    } else if ( d_scale == 0 ) {
+        d_unit  = rhs.d_unit;
+        d_SI    = rhs.d_SI;
+        d_scale = rhs.d_scale;
+    } else {
+        d_unit = { 0 };
+        d_SI   = combine( d_SI, rhs.d_SI );
+        d_scale *= rhs.d_scale;
+    }
 }
 constexpr void Units::operator/=( const Units &rhs ) noexcept
 {
-    SI_type tmp = { 0 };
-    for ( size_t i = 0; i < tmp.size(); i++ )
-        tmp[i] = -rhs.d_SI[i];
-    d_unit = { 0 };
-    d_SI   = combine( d_SI, tmp );
-    d_scale /= rhs.d_scale;
+    if ( rhs.d_scale == 0 ) {
+        return;
+    } else if ( d_scale == 0 ) {
+        d_unit = { 0 };
+        for ( size_t i = 0; i < d_SI.size(); i++ )
+            d_SI[i] = -rhs.d_SI[i];
+        d_scale = 1.0 / rhs.d_scale;
+    } else {
+        d_unit      = { 0 };
+        SI_type tmp = { 0 };
+        for ( size_t i = 0; i < d_SI.size(); i++ )
+            tmp[i] = -rhs.d_SI[i];
+        d_SI = combine( d_SI, tmp );
+        d_scale /= rhs.d_scale;
+    }
 }
 constexpr Units operator*( const Units &a, const Units &b )
 {
