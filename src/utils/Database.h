@@ -94,9 +94,9 @@ public:
 protected:
     KeyData() {}
     KeyData( const Units &unit ) : d_unit( unit ) {}
-    KeyData( KeyData && )                 = delete;
-    KeyData( const KeyData & )            = delete;
-    KeyData &operator=( KeyData && )      = delete;
+    KeyData( KeyData && )      = delete;
+    KeyData( const KeyData & ) = delete;
+    KeyData &operator=( KeyData && ) = delete;
     KeyData &operator=( const KeyData & ) = delete;
 
 protected:
