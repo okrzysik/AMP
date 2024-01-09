@@ -241,25 +241,11 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     TemperatureInKelvinVec->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
-    // Compute the apply
-    csrOperator->apply( TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final apply.
-    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Apply Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
-              << std::endl;
-
-    diffusionOperator->apply( TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final apply.
-    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Apply Norm: " << std::setprecision( 15 ) << finalResidualNorm << std::endl;
-
     // Compute the residual
     csrOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    auto finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
               << std::endl;
 
@@ -311,6 +297,7 @@ int main( int argc, char *argv[] )
 
     } else {
 
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
@@ -321,6 +308,7 @@ int main( int argc, char *argv[] )
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
