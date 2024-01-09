@@ -70,6 +70,8 @@ COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-GMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-PetscFGMRES )
 
 
 # Copy test data

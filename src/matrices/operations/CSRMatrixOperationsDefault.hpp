@@ -30,6 +30,10 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
 {
     AMP_ASSERT( in && out );
 
+    if ( in->getUpdateStatus() != AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED )
+        std::const_pointer_cast<Vector>( in )->makeConsistent(
+            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+
     using gidx_t   = typename Policy::gidx_t;
     using lidx_t   = typename Policy::lidx_t;
     using scalar_t = typename Policy::scalar_t;
