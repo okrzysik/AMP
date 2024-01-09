@@ -205,6 +205,8 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
             z = s;
         }
 
+        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+
         d_pOperator->apply( z, t );
 
         const auto uu = static_cast<T>( s->dot( *t ) );
@@ -262,6 +264,7 @@ void QMRCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector
             z = p;
         }
 
+        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( z, v );
         rho1 = rho2;
 
