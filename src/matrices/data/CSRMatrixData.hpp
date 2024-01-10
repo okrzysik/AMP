@@ -44,8 +44,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
     auto memType = AMP::Utilities::getMemoryType( d_cols );
     // the next line should probably not allow for unregistered
-    if ( memType == AMP::Utilities::MemoryType::host ||
-         memType == AMP::Utilities::MemoryType::unregistered ) {
+    if ( memType < AMP::Utilities::MemoryType::device ) {
         size_t N         = d_last_row - d_first_row;
         const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
         std::vector<size_t> remote_dofs;
@@ -164,8 +163,7 @@ std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
                 "row must be owned by rank" );
     auto memType = AMP::Utilities::getMemoryType( d_cols );
     // the next line should probably not allow for unregistered
-    if ( memType == AMP::Utilities::MemoryType::host ||
-         memType == AMP::Utilities::MemoryType::unregistered ) {
+    if ( memType < AMP::Utilities::MemoryType::device ) {
 
         std::vector<size_t> cols;
         const auto row_offset = static_cast<size_t>( row - d_first_row );
