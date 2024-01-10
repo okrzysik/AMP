@@ -104,8 +104,7 @@ void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
                 "row must be owned by rank" );
     auto memType = AMP::Utilities::getMemoryType( d_cols );
     // the next line should probably not allow for unregistered
-    if ( memType == AMP::Utilities::MemoryType::host ||
-         memType == AMP::Utilities::MemoryType::unregistered ) {
+    if ( memType < AMP::Utilities::MemoryType::device ) {
         const auto row_offset = static_cast<size_t>( row - d_first_row );
         const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
         const auto n          = d_nnz_per_row[row_offset];

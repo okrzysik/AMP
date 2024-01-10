@@ -1,6 +1,7 @@
 #include "AMP/matrices/trilinos/EpetraMatrixHelpers.h"
 #include "AMP/matrices/Matrix.h"
 #include "AMP/matrices/MatrixParameters.h"
+#include "AMP/matrices/trilinos/EpetraMatrixData.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 
 
@@ -29,10 +30,14 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
 
         auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
 
+        auto data = std::dynamic_pointer_cast<EpetraMatrixData>( epetraMat->getMatrixData() );
+        AMP_ASSERT( data );
+
         for ( size_t row = mat->beginRow(); row != mat->endRow(); ++row ) {
             std::vector<size_t> cols;
             std::vector<double> vals;
             mat->getRowByGlobalID( row, cols, vals );
+            data->createValuesByGlobalID( row, cols );
             epetraMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), vals.data() );
         }
         epetraMat->makeConsistent();
