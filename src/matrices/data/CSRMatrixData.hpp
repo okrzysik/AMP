@@ -172,7 +172,7 @@ std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
         const auto row_offset = static_cast<size_t>( row - d_first_row );
         const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
         const auto n          = d_nnz_per_row[row_offset];
-        
+
         if constexpr ( std::is_same_v<size_t, gidx_t> ) {
             std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
         } else {

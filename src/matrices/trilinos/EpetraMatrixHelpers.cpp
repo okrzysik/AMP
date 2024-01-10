@@ -22,7 +22,7 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
 
         for ( size_t i = mat->beginRow(); i != mat->endRow(); ++i ) {
             const int row = i - mat->beginRow();
-            auto cols     = mat->getColumnIDs( row );
+            auto cols     = mat->getColumnIDs( i );
             matParams->setEntriesInRow( row, static_cast<int>( cols.size() ) );
             matParams->addColumns( cols );
         }
