@@ -20,10 +20,10 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
         auto matParams = std::make_shared<MatrixParameters>(
             mat->getLeftDOFManager(), mat->getRightDOFManager(), mat->getComm() );
 
-        for ( size_t i = mat->beginRow(); i != mat->endRow(); ++i ) {
-            const int row = i - mat->beginRow();
-            auto cols     = mat->getColumnIDs( i );
-            matParams->setEntriesInRow( row, static_cast<int>( cols.size() ) );
+        for ( size_t row = mat->beginRow(); row != mat->endRow(); ++row ) {
+            const int i = row - mat->beginRow();
+            auto cols   = mat->getColumnIDs( row );
+            matParams->setEntriesInRow( i, static_cast<int>( cols.size() ) );
             matParams->addColumns( cols );
         }
 
