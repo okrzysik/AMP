@@ -11,16 +11,6 @@
 namespace AMP {
 
 
-// Forward declarations
-static size_t
-loadDatabase( const std::string &,
-              std::string_view,
-              size_t,
-              Database &,
-              std::map<std::string, const KeyData *> = std::map<std::string, const KeyData *>(),
-              int line                               = 0 );
-
-
 /********************************************************************
  * Helper functions                                                  *
  ********************************************************************/
@@ -282,13 +272,14 @@ static bool isType( const std::vector<std::unique_ptr<AMP::KeyData>> &data )
     return test;
 }
 // Convert the string value to the database value
-static std::unique_ptr<KeyData>
+static std::tuple<std::unique_ptr<KeyData>, std::set<std::string>>
 createKeyData( std::string_view key,
                class_type data_type,
                std::vector<std::string_view> &values,
                const std::map<std::string, const KeyData *> &databaseKeys )
 {
     std::unique_ptr<KeyData> data;
+    std::set<std::string> usedKeys;
     if ( values.empty() ) {
         data = std::make_unique<EmptyKeyData>();
     } else if ( values.size() == 1 && values[0].empty() ) {
@@ -483,8 +474,10 @@ createKeyData( std::string_view key,
         }
     } else if ( data_type == class_type::DATABASE_ENTRY ) {
         std::vector<const KeyData *> data2( values.size(), nullptr );
-        for ( size_t i = 0; i < values.size(); i++ )
+        for ( size_t i = 0; i < values.size(); i++ ) {
             data2[i] = databaseKeys.find( std::string( values[i] ) )->second;
+            usedKeys.insert( std::string( values[i] ) );
+        }
         if ( values.size() == 1 ) {
             data = data2[0]->clone();
         } else {
@@ -537,9 +530,9 @@ createKeyData( std::string_view key,
     } else {
         throw std::logic_error( "Internal error" );
     }
-    return data;
+    return std::make_tuple( std::move( data ), std::move( usedKeys ) );
 }
-static std::tuple<size_t, std::unique_ptr<KeyData>>
+static std::tuple<size_t, std::unique_ptr<KeyData>, std::set<std::string>>
 read_value( std::string_view buffer,
             std::string_view key,
             const std::map<std::string, const KeyData *> &databaseKeys =
@@ -556,6 +549,7 @@ read_value( std::string_view buffer,
             c++;
         return *c;
     };
+    std::set<std::string> usedKeys;
     while ( type != token_type::newline ) {
         AMP_ASSERT( pos < buffer.size() );
         while ( buffer[pos] == ' ' || buffer[pos] == '\t' )
@@ -664,8 +658,9 @@ read_value( std::string_view buffer,
     }
     // Convert the string value to the database value
     auto data = createKeyData( key, data_type, values, databaseKeys );
-    AMP_ASSERT( data );
-    return std::make_tuple( pos, std::move( data ) );
+    AMP_ASSERT( std::get<0>( data ) );
+    return std::make_tuple(
+        pos, std::move( std::get<0>( data ) ), std::move( std::get<1>( data ) ) );
 }
 template<class TYPE>
 static std::unique_ptr<KeyData> applyOperator( const std::vector<std::unique_ptr<KeyData>> &data,
@@ -696,11 +691,10 @@ static std::unique_ptr<KeyData> applyOperator( const std::vector<std::unique_ptr
     }
     return std::make_unique<KeyDataArray<TYPE>>( std::move( y ), u );
 }
-static std::tuple<size_t, std::unique_ptr<KeyData>>
+static std::tuple<size_t, std::unique_ptr<KeyData>, std::set<std::string>>
 read_operator_value( std::string_view buffer,
                      std::string_view key,
-                     const std::map<std::string, const KeyData *> &databaseKeys =
-                         std::map<std::string, const KeyData *>() )
+                     const std::map<std::string, const KeyData *> &databaseKeys )
 {
     size_t i        = 0;
     size_t pos      = 0;
@@ -729,11 +723,14 @@ read_operator_value( std::string_view buffer,
     ops.push_back( '\0' );
     AMP_ASSERT( ops.size() >= 3 );
     std::vector<std::unique_ptr<KeyData>> objs;
+    std::set<std::string> usedKeys;
     for ( size_t i = 0; i < index.size() - 1; i++ ) {
         auto valBuf =
             std::string( buffer2.substr( index[i] + 1, index[i + 1] - index[i] - 1 ) ) + '\n';
         auto tmp = read_value( valBuf.data(), key, databaseKeys );
         objs.push_back( std::move( std::get<1>( tmp ) ) );
+        for ( auto &key : std::get<2>( tmp ) )
+            usedKeys.insert( key );
     }
     std::unique_ptr<KeyData> data;
     if ( isType<std::string>( objs ) ) {
@@ -752,7 +749,7 @@ read_operator_value( std::string_view buffer,
     } else {
         AMP_ERROR( "Not finished" );
     }
-    return std::make_tuple( pos, std::move( data ) );
+    return std::make_tuple( pos, std::move( data ), std::move( usedKeys ) );
 }
 static std::string generateMsg( const std::string &errMsgPrefix,
                                 const char *msg,
@@ -764,14 +761,22 @@ static std::string generateMsg( const std::string &errMsgPrefix,
         out += ": '" + std::string( key ) + "'";
     return out + " in input at line " + std::to_string( line );
 }
-static size_t loadDatabase( const std::string &errMsgPrefix,
-                            std::string_view buffer,
-                            size_t N,
-                            Database &db,
-                            std::map<std::string, const KeyData *> databaseKeys,
-                            int line0 )
+static std::tuple<size_t, std::set<std::string>>
+loadDatabase( const std::string &errMsgPrefix,
+              std::string_view buffer,
+              size_t N,
+              Database &db,
+              std::map<std::string, const KeyData *> databaseKeys = {},
+              int line0                                           = 0 )
 {
     size_t pos = 0;
+    std::set<std::string> usedKeys;
+    auto updateUsedKeys = [&db, &usedKeys]( const std::set<std::string> &keys ) {
+        for ( auto &key : keys ) {
+            if ( !db.getData( key ) )
+                usedKeys.insert( key );
+        }
+    };
     while ( pos < N ) {
         size_t i;
         token_type type;
@@ -797,7 +802,10 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
             pos += i;
             std::unique_ptr<KeyData> data;
             try {
-                std::tie( i, data ) = read_value( &buffer[pos], key, databaseKeys );
+                auto tmp = read_value( &buffer[pos], key, databaseKeys );
+                i        = std::get<0>( tmp );
+                data     = std::move( std::get<1>( tmp ) );
+                updateUsedKeys( std::get<2>( tmp ) );
             } catch ( StackTrace::abort_error &err ) {
                 auto msg = generateMsg( errMsgPrefix, "Error loading key", line, key );
                 msg += "\nCaught error in file " + std::string( err.source.file_name() ) +
@@ -818,18 +826,20 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
         } else if ( type == token_type::define ) {
             // We are defining a token in terms of others
             pos += i + 1;
-            std::unique_ptr<KeyData> data;
-            std::tie( i, data ) = read_operator_value( &buffer[pos], key, databaseKeys );
+            auto [j, data, keys] = read_operator_value( &buffer[pos], key, databaseKeys );
+            updateUsedKeys( keys );
             databaseKeys[std::string( key )] = data.get();
             db.putData( key, std::move( data ) );
-            pos += i;
+            pos += j;
         } else if ( type == token_type::bracket ) {
             // Read database
             AMP_INSIST( !key.empty(), generateMsg( errMsgPrefix, "Empty key", line ) );
             pos += i;
             auto database = std::make_unique<Database>();
-            pos +=
+            auto tmp =
                 loadDatabase( errMsgPrefix, &buffer[pos], N - pos, *database, databaseKeys, line );
+            pos += std::get<0>( tmp );
+            updateUsedKeys( std::get<1>( tmp ) );
             database->setName( std::string( key ) );
             databaseKeys[std::string( key )] = database.get();
             db.putData( key, std::move( database ) );
@@ -841,7 +851,7 @@ static size_t loadDatabase( const std::string &errMsgPrefix,
             throw std::logic_error( "Error loading data" );
         }
     }
-    return pos;
+    return std::tie( pos, usedKeys );
 }
 
 
@@ -932,9 +942,8 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
                 strrep( line3, "  ", " " );
                 strrep( line3, " ", "," );
                 line3 += '\n';
-                auto [pos4, read_entry] = read_value( line3.data(), key );
-                NULL_USE( pos4 );
-                auto y   = read_entry->convertToDouble();
+                auto tmp = read_value( line3.data(), key );
+                auto y   = std::get<1>( tmp )->convertToDouble();
                 size_t i = x.size( 0 );
                 x.resize( i + 1, y.length() );
                 for ( size_t j = 0; j < y.length(); j++ )
@@ -945,7 +954,8 @@ size_t loadYAMLDatabase( const char *buffer, Database &db, size_t pos = 0, size_
         } else if ( !value.empty() ) {
             std::unique_ptr<KeyData> entry;
             try {
-                std::tie( std::ignore, entry ) = read_value( value.data(), key );
+                auto tmp = read_value( value.data(), key );
+                entry    = std::move( std::get<1>( tmp ) );
             } catch ( ... ) {
                 entry = std::make_unique<KeyDataScalar<std::string>>( std::string( value ) );
             }
