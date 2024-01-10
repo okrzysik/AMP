@@ -66,7 +66,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         }
 
     } else {
-        AMP_ERROR( "device memory handling has not been implemented as yet" );
+        AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented as yet" );
     }
 }
 
@@ -99,7 +99,37 @@ void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
                                               std::vector<size_t> &cols,
                                               std::vector<double> &values ) const
 {
-    AMP_ERROR( "Not implemented" );
+    AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
+                    row < static_cast<size_t>( d_last_row ),
+                "row must be owned by rank" );
+    auto memType = AMP::Utilities::getMemoryType( d_cols );
+    // the next line should probably not allow for unregistered
+    if ( memType == AMP::Utilities::MemoryType::host ||
+         memType == AMP::Utilities::MemoryType::unregistered ) {
+        const auto row_offset = static_cast<size_t>( row - d_first_row );
+        const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
+        const auto n          = d_nnz_per_row[offset + 1];
+
+        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+            std::copy( &d_cols[offset], &d_cols[offset] + n, cols.begin() );
+        } else {
+            std::transform( &d_cols[offset],
+                            &d_cols[offset] + n,
+                            cols.begin(),
+                            []( size_t col ) -> gidx_t { return col; } );
+        }
+
+        if constexpr ( std::is_same_v<double, scalar_t> ) {
+            std::copy( &d_coeffs[offset], &d_coeffs[offset] + n, values.begin() );
+        } else {
+            std::transform( &d_coeffs[offset],
+                            &d_coeffs[offset] + n,
+                            values.begin(),
+                            []( size_t val ) -> scalar_t { return val; } );
+        }
+    } else {
+        AMP_ERROR( "CSRMatrixData:getRowByGlobalID not implemented for device memory" );
+    }
 }
 
 template<typename Policy>
@@ -130,7 +160,31 @@ void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
 template<typename Policy>
 std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
 {
-    AMP_ERROR( "Not implemented" );
+    AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
+                    row < static_cast<size_t>( d_last_row ),
+                "row must be owned by rank" );
+    auto memType = AMP::Utilities::getMemoryType( d_cols );
+    // the next line should probably not allow for unregistered
+    if ( memType == AMP::Utilities::MemoryType::host ||
+         memType == AMP::Utilities::MemoryType::unregistered ) {
+
+        std::vector<size_t> cols;
+        const auto row_offset = static_cast<size_t>( row - d_first_row );
+        const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
+        const auto n          = d_nnz_per_row[offset + 1];
+
+        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+            std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
+        } else {
+            std::transform( &d_cols[offset],
+                            &d_cols[offset] + n,
+                            std::back_inserter( cols ),
+                            []( size_t col ) -> gidx_t { return col; } );
+        }
+        return cols;
+    } else {
+        AMP_ERROR( "CSRMatrixData:getRowByGlobalID not implemented for device memory" );
+    }
 }
 
 template<typename Policy>

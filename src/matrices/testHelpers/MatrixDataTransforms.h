@@ -28,7 +28,7 @@ void transformDofToCSR( std::shared_ptr<Matrix> matrix,
         matrix->getRowByGlobalID( row, rcols, rvals );
         nnz.push_back( static_cast<typename Policy::lidx_t>( rcols.size() ) );
 
-        if ( std::is_same_v<size_t, typename Policy::gidx_t> ) {
+        if constexpr ( std::is_same_v<size_t, typename Policy::gidx_t> ) {
             cols.insert( cols.end(), rcols.begin(), rcols.end() );
         } else {
             std::transform( rcols.cbegin(),

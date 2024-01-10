@@ -57,8 +57,12 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
         auto name = db->getString( "name" );
 
         if ( ( name == "GMRESSolver" ) || ( name == "CGSolver" ) || ( name == "BiCGSTABSolver" ) ||
-             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" ) ) {
-
+             ( name == "TFQMRSolver" ) || ( name == "QMRCGSTABSolver" )
+#if defined( AMP_USE_PETSC )
+             || ( name == "PetscKrylovSolver" ) ) {
+#else
+        ) {
+#endif
             // check if we need to construct a preconditioner
             auto uses_preconditioner = db->getWithDefault<bool>( "uses_preconditioner", false );
             std::shared_ptr<AMP::Solver::SolverStrategy> pcSolver;
@@ -237,25 +241,11 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     TemperatureInKelvinVec->makeConsistent(
         AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
-    // Compute the apply
-    csrOperator->apply( TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final apply.
-    double finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Apply Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
-              << std::endl;
-
-    diffusionOperator->apply( TemperatureInKelvinVec, ResidualVec );
-
-    // Check the L2 norm of the final apply.
-    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
-    std::cout << "Final Apply Norm: " << std::setprecision( 15 ) << finalResidualNorm << std::endl;
-
     // Compute the residual
     csrOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );
 
     // Check the L2 norm of the final residual.
-    finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
+    auto finalResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
     std::cout << "Final Residual Norm using CSR: " << std::setprecision( 15 ) << finalResidualNorm
               << std::endl;
 
@@ -307,16 +297,25 @@ int main( int argc, char *argv[] )
 
     } else {
 
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
-        // files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-CG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-GMRES" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BiCGSTAB" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-TFQMR" );
+
+#ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-PetscFGMRES" );
+#endif
 
 #ifdef AMP_USE_HYPRE
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG" );
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR" );
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES" );
+    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_ML

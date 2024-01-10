@@ -63,13 +63,17 @@ COPY_TEST_FILE( input_testBoomerAMGSolver-LinearFickOperator-bar )
 COPY_TEST_FILE( input_testBoomerAMGSolver-LinearElasticityOperator-1 )
 COPY_TEST_FILE( input_testSolversForUserMatrix-BoomerAMG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-CG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-GMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-FGMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-CG )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-GMRES )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BiCGSTAB )
 COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-TFQMR )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-BoomerAMG-PetscFGMRES )
+COPY_TEST_FILE( input_testLinearSolvers-LinearThermalRobin-PetscFGMRES )
 
 
 # Copy test data
