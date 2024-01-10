@@ -50,7 +50,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
         std::vector<size_t> remote_dofs;
         for ( auto i = 0u; i < nnz; ++i ) {
-            if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] > d_last_col ) ) {
+            if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] >= d_last_col ) ) {
                 remote_dofs.push_back( d_cols[i] );
             }
         }
