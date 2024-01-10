@@ -126,6 +126,7 @@ void CGSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         AMP::Scalar beta{ static_cast<T>( 1.0 ) };
 
+        p->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
         // w = Ap
         d_pOperator->apply( p, w );
 
