@@ -1,5 +1,6 @@
 #include "AMP/solvers/trilinos/ml/TrilinosMLSolver.h"
 #include "AMP/matrices/Matrix.h"
+#include "AMP/matrices/trilinos/EpetraMatrixHelpers.h"
 #include "AMP/matrices/trilinos/ManagedEpetraMatrix.h"
 #include "AMP/mesh/Mesh.h"
 #include "AMP/operators/LinearOperator.h"
@@ -149,8 +150,7 @@ void TrilinosMLSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator
             std::dynamic_pointer_cast<AMP::Operator::LinearOperator>( d_pOperator );
         AMP_INSIST( linearOperator, "linearOperator cannot be NULL" );
 
-        d_matrix = std::dynamic_pointer_cast<AMP::LinearAlgebra::ManagedEpetraMatrix>(
-            linearOperator->getMatrix() );
+        d_matrix = AMP::LinearAlgebra::getEpetraMatrix( linearOperator->getMatrix() );
         AMP_INSIST( d_matrix, "d_matrix cannot be NULL" );
 
         d_mlSolver.reset( new ML_Epetra::MultiLevelPreconditioner(
