@@ -43,7 +43,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
     }
 
     auto memType = AMP::Utilities::getMemoryType( d_cols );
-    // the next line should probably not allow for unregistered
+
     if ( memType < AMP::Utilities::MemoryType::device ) {
         size_t N         = d_last_row - d_first_row;
         const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
@@ -102,27 +102,30 @@ void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
                     row < static_cast<size_t>( d_last_row ),
                 "row must be owned by rank" );
     auto memType = AMP::Utilities::getMemoryType( d_cols );
-    // the next line should probably not allow for unregistered
+
     if ( memType < AMP::Utilities::MemoryType::device ) {
         const auto row_offset = static_cast<size_t>( row - d_first_row );
         const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
         const auto n          = d_nnz_per_row[row_offset];
 
+        cols.resize( n );
+        values.resize( n );
+
         if constexpr ( std::is_same_v<size_t, gidx_t> ) {
-            std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
+            std::copy( &d_cols[offset], &d_cols[offset] + n, cols.begin() );
         } else {
             std::transform( &d_cols[offset],
                             &d_cols[offset] + n,
-                            std::back_inserter( cols ),
+                            cols.begin(),
                             []( size_t col ) -> gidx_t { return col; } );
         }
 
         if constexpr ( std::is_same_v<double, scalar_t> ) {
-            std::copy( &d_coeffs[offset], &d_coeffs[offset] + n, std::back_inserter( values ) );
+            std::copy( &d_coeffs[offset], &d_coeffs[offset] + n, values.begin() );
         } else {
             std::transform( &d_coeffs[offset],
                             &d_coeffs[offset] + n,
-                            std::back_inserter( values ),
+                            values.begin(),
                             []( size_t val ) -> scalar_t { return val; } );
         }
     } else {
@@ -162,7 +165,7 @@ std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
                     row < static_cast<size_t>( d_last_row ),
                 "row must be owned by rank" );
     auto memType = AMP::Utilities::getMemoryType( d_cols );
-    // the next line should probably not allow for unregistered
+
     if ( memType < AMP::Utilities::MemoryType::device ) {
 
         std::vector<size_t> cols;
