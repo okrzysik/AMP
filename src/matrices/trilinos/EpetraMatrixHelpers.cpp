@@ -15,10 +15,28 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
     if ( mat->type() == "ManagedEpetraMatrix" ) {
         return std::dynamic_pointer_cast<ManagedEpetraMatrix>( mat );
     } else {
+        // the next piece of code is VERY inefficient and should be optimized in future
+        // if we don't deprecate Epetra
         auto matParams = std::make_shared<MatrixParameters>(
             mat->getLeftDOFManager(), mat->getRightDOFManager(), mat->getComm() );
-        AMP_ERROR( "Not implemented" );
-        return std::make_shared<ManagedEpetraMatrix>( matParams );
+
+        for ( size_t i = mat->beginRow(); i != mat->endRow(); ++i ) {
+            const int row = i - mat->beginRow();
+            auto cols     = mat->getColumnIDs( row );
+            matParams->setEntriesInRow( row, static_cast<int>( cols.size() ) );
+            matParams->addColumns( cols );
+        }
+
+        auto epetraMat = std::make_shared<ManagedEpetraMatrix>( matParams );
+
+        for ( size_t row = mat->beginRow(); row != mat->endRow(); ++row ) {
+            std::vector<size_t> cols;
+            std::vector<double> vals;
+            mat->getRowByGlobalID( row, cols, vals );
+            epetraMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), vals.data() );
+        }
+        epetraMat->makeConsistent();
+        return epetraMat;
     }
 }
 
