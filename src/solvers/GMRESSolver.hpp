@@ -189,6 +189,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->apply( d_vBasis[k], z );
+            z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
             // construct the Krylov vector
             d_pPreconditioner->apply( z, v );
         } else {
