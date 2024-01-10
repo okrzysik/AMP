@@ -193,12 +193,22 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             d_pPreconditioner->apply( z, v );
         } else {
             if ( d_bUsesPreconditioner && ( d_preconditioner_side == "right" ) ) {
+                // the makeConsistent calls below are there because the commented condition
+                // on status appears not to be working. They are required or we have to change
+                // policy on what the status of a vector is coming out of a solver.
                 if ( !d_bFlexibleGMRES ) {
                     d_pPreconditioner->apply( d_vBasis[k], z );
+                    //                    if ( z->getUpdateStatus() !=
+                    //                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED
+                    //                         )
+                    z->makeConsistent(
+                        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
                     d_zBasis.push_back( zb );
+                    zb->makeConsistent(
+                        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {
