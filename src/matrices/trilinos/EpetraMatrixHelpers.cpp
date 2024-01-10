@@ -33,9 +33,9 @@ std::shared_ptr<ManagedEpetraMatrix> getEpetraMatrix( std::shared_ptr<Matrix> ma
         auto data = std::dynamic_pointer_cast<EpetraMatrixData>( epetraMat->getMatrixData() );
         AMP_ASSERT( data );
 
+        std::vector<size_t> cols;
+        std::vector<double> vals;
         for ( size_t row = mat->beginRow(); row != mat->endRow(); ++row ) {
-            std::vector<size_t> cols;
-            std::vector<double> vals;
             mat->getRowByGlobalID( row, cols, vals );
             data->createValuesByGlobalID( row, cols );
             epetraMat->setValuesByGlobalID( 1, cols.size(), &row, cols.data(), vals.data() );
