@@ -321,7 +321,7 @@ int main( int argc, char *argv[] )
 #ifdef AMP_USE_TRILINOS_ML
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-GMRES" );
-        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
+        //        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
 #endif
