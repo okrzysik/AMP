@@ -288,7 +288,8 @@ void TrilinosMLSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> 
     // as Epetra is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    u->getVectorData()->fireDataChange();
+    //    u->getVectorData()->fireDataChange();
+    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "TrilinosMLSolver : after solve solution norm: " << std::setprecision( 15 )

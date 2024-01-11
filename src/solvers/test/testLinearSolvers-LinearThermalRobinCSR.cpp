@@ -326,6 +326,10 @@ int main( int argc, char *argv[] )
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-FGMRES" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-BiCGSTAB" );
         files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-TFQMR" );
+
+    #ifdef AMP_USE_PETSC
+        files.emplace_back( "input_testLinearSolvers-LinearThermalRobin-ML-PetscFGMRES" );
+    #endif
 #endif
 
 #ifdef AMP_USE_TRILINOS_MUELU
