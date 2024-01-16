@@ -433,6 +433,16 @@ void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vec
     hypre_ParVectorMigrate( par_v, d_memory_location );
 }
 
+template<typename T>
+static void copy_to_amp( std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v, HYPRE_Real *values )
+{
+    AMP_ASSERT( amp_v && values );
+    size_t i = 0;
+    for ( auto it = amp_v->begin<T>(); it != amp_v->end<T>(); ++it ) {
+        *it = values[i];
+        ++i;
+    }
+}
 
 void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
                                      std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
@@ -447,8 +457,7 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
 
     const auto nDOFS = dofManager->numLocalDOF();
 
-    auto block0 =
-        std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )->getRawDataBlock<HYPRE_Real>();
+    auto block0  = amp_v->getRawDataBlock<HYPRE_Real>();
     auto memType = AMP::Utilities::getMemoryType( block0 );
 
     if ( memType < AMP::Utilities::MemoryType::device ) {
@@ -471,10 +480,12 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
 
         } else {
 
-            size_t i = 0;
-            for ( auto it = amp_v->begin<HYPRE_Real>(); it != amp_v->end<HYPRE_Real>(); ++it ) {
-                *it = values[i];
-                ++i;
+            if ( amp_v->isType<double>( 0 ) ) {
+                copy_to_amp<double>( amp_v, values_p );
+            } else if ( amp_v->isType<float>( 0 ) ) {
+                copy_to_amp<float>( amp_v, values_p );
+            } else {
+                AMP_ERROR( "Implemented only for double and float" );
             }
         }
 
