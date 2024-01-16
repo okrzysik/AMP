@@ -6,6 +6,9 @@
 #include "AMP/solvers/SolverStrategy.h"
 #include "AMP/solvers/SolverStrategyParameters.h"
 
+extern "C" {
+#include "HYPRE_utilities.h"
+}
 
 // Forward declares
 struct hypre_Solver_struct;
@@ -108,6 +111,16 @@ public:
 
     void getFromInput( std::shared_ptr<const AMP::Database> db );
 
+    /**
+     * Set the desired HYPRE memory location for HYPRE objects
+     */
+    void setMemoryLocation( HYPRE_MemoryLocation location ) { d_memory_location = location; }
+
+    /**
+     * Set the desired HYPRE execution policy for the solver
+     */
+    void setExecutionPolicy( HYPRE_ExecutionPolicy policy ) { d_exec_policy = policy; }
+
 private:
     /**
      * create the internal HYPRE_IJMatrix based on the AMP matrix
@@ -183,6 +196,9 @@ private:
     int d_debug_flag           = 0;
     int d_rap2                 = 0;
     int d_keep_transpose       = 1;
+
+    HYPRE_MemoryLocation d_memory_location;
+    HYPRE_ExecutionPolicy d_exec_policy;
 
     double d_strong_threshold      = 0.25;
     double d_max_row_sum           = 0.9;

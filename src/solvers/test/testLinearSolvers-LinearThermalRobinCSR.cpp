@@ -211,8 +211,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP_ASSERT( csrMatrix );
 
     auto csrOpParams = std::make_shared<AMP::Operator::OperatorParameters>( input_db );
-    std::shared_ptr<AMP::Operator::LinearOperator> csrOperator =
-        std::make_shared<AMP::Operator::LinearOperator>( csrOpParams );
+    auto csrOperator = std::make_shared<AMP::Operator::LinearOperator>( csrOpParams );
     csrOperator->setMatrix( csrMatrix );
     csrOperator->setVariables( linearOperator->getInputVariable(),
                                linearOperator->getOutputVariable() );

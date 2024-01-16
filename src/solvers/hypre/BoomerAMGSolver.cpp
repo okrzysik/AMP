@@ -15,6 +15,8 @@ extern "C" {
 #include "HYPRE.h"
 #include "HYPRE_IJ_mv.h"
 #include "HYPRE_parcsr_ls.h"
+#include "HYPRE_parcsr_mv.h"
+#include "_hypre_parcsr_mv.h"
 }
 ENABLE_WARNINGS
 
@@ -29,8 +31,15 @@ BoomerAMGSolver::BoomerAMGSolver() : SolverStrategy() { d_bCreationPhase = true;
 BoomerAMGSolver::BoomerAMGSolver( std::shared_ptr<SolverStrategyParameters> parameters )
     : SolverStrategy( parameters )
 {
-
     HYPRE_BoomerAMGCreate( &d_solver );
+
+#ifdef USE_CUDA
+    d_memory_location = HYPRE_MEMORY_DEVICE;
+    d_exec_policy     = HYPRE_EXEC_DEVICE;
+#else
+    d_memory_location = HYPRE_MEMORY_HOST;
+    d_exec_policy     = HYPRE_EXEC_HOST;
+#endif
 
     AMP_ASSERT( parameters );
     initialize( parameters );
@@ -303,6 +312,19 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     HYPRE_BoomerAMGSetTol( d_solver, d_dRelativeTolerance );
     HYPRE_BoomerAMGSetMaxIter( d_solver, d_iMaxIterations );
     HYPRE_BoomerAMGSetPrintLevel( d_solver, d_iDebugPrintInfoLevel );
+
+    if ( db->keyExists( "memory_location" ) ) {
+        auto memory_location = db->getString( "memory_location" );
+        AMP_INSIST( memory_location == "host" || memory_location == "device",
+                    "memory_location must be either device or host" );
+        d_memory_location = ( memory_location == "host" ) ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE;
+    }
+    if ( db->keyExists( "exec_policy" ) ) {
+        auto exec_policy = db->getString( "exec_policy" );
+        AMP_INSIST( exec_policy == "host" || exec_policy == "device",
+                    "exec_policy must be either device or host" );
+        d_exec_policy = ( exec_policy == "host" ) ? HYPRE_EXEC_HOST : HYPRE_EXEC_DEVICE;
+    }
 }
 
 void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Matrix> matrix )
@@ -311,7 +333,6 @@ void BoomerAMGSolver::createHYPREMatrix( std::shared_ptr<AMP::LinearAlgebra::Mat
         std::make_shared<AMP::LinearAlgebra::HypreMatrixAdaptor>( matrix->getMatrixData() );
     AMP_ASSERT( d_HypreMatrixAdaptor );
     d_ijMatrix = d_HypreMatrixAdaptor->getHypreMatrix();
-
     if ( d_iDebugPrintInfoLevel > 3 ) {
         HYPRE_IJMatrixPrint( d_ijMatrix, "HypreMatrix" );
     }
@@ -355,13 +376,11 @@ void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vec
     const auto &dofManager = amp_v->getDOFManager();
     AMP_INSIST( dofManager, "DOF_Manager cannot be NULL" );
 
-    const auto startingIndex = dofManager->beginDOF();
     const auto nDOFS         = dofManager->numLocalDOF();
+    const auto startingIndex = dofManager->beginDOF();
 
     std::vector<size_t> indices( nDOFS, 0 );
-    std::vector<HYPRE_Int> hypre_indices( nDOFS, 0 );
-    std::iota( indices.begin(), indices.end(), (HYPRE_Int) startingIndex );
-    std::copy( indices.begin(), indices.end(), hypre_indices.begin() );
+    std::iota( indices.begin(), indices.end(), startingIndex );
 
     std::vector<double> values( nDOFS, 0.0 );
 
@@ -369,7 +388,7 @@ void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vec
 
     ierr = HYPRE_IJVectorInitialize( hypre_v );
     HYPRE_DescribeError( ierr, hypre_mesg );
-    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS, hypre_indices.data(), values.data() );
+    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS, nullptr, values.data() );
     HYPRE_DescribeError( ierr, hypre_mesg );
     ierr = HYPRE_IJVectorAssemble( hypre_v );
     HYPRE_DescribeError( ierr, hypre_mesg );
@@ -391,14 +410,12 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     const auto nDOFS         = dofManager->numLocalDOF();
 
     std::vector<size_t> indices( nDOFS, 0 );
-    std::vector<HYPRE_Int> hypre_indices( nDOFS, 0 );
     std::iota( indices.begin(), indices.end(), startingIndex );
-    std::copy( indices.begin(), indices.end(), hypre_indices.begin() );
 
     std::vector<double> values( nDOFS, 0.0 );
 
-    ierr = HYPRE_IJVectorGetValues(
-        hypre_v, static_cast<HYPRE_Int>( nDOFS ), hypre_indices.data(), values.data() );
+    ierr =
+        HYPRE_IJVectorGetValues( hypre_v, static_cast<HYPRE_Int>( nDOFS ), nullptr, values.data() );
     HYPRE_DescribeError( ierr, hypre_mesg );
     amp_v->setLocalValuesByGlobalID( nDOFS, indices.data(), values.data() );
 }
@@ -456,6 +473,9 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     // in this case we make the assumption we can access a EpetraMat for now
     AMP_INSIST( d_pOperator, "ERROR: BoomerAMGSolver::apply() operator cannot be NULL" );
 
+    HYPRE_SetMemoryLocation( d_memory_location );
+    HYPRE_SetExecutionPolicy( d_exec_policy );
+
     if ( d_bUseZeroInitialGuess ) {
         u->zero();
     }
@@ -491,8 +511,14 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     HYPRE_ParVector par_x;
 
     HYPRE_IJMatrixGetObject( d_ijMatrix, (void **) &parcsr_A );
+    hypre_ParCSRMatrixMigrate( parcsr_A, d_memory_location );
+
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
+
+    // this can be optimized in future so that memory is allocated based on the location
+    hypre_ParVectorMigrate( par_b, d_memory_location );
+    hypre_ParVectorMigrate( par_x, d_memory_location );
 
     // add in code for solve here
     HYPRE_BoomerAMGSetup( d_solver, parcsr_A, par_b, par_x );
