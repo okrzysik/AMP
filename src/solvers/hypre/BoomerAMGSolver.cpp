@@ -463,10 +463,20 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
             HYPRE_IJVectorGetValues( hypre_v, static_cast<HYPRE_Int>( nDOFS ), nullptr, values_p );
         HYPRE_DescribeError( ierr, hypre_mesg );
 
-        const auto startingIndex = dofManager->beginDOF();
-        std::vector<size_t> indices( nDOFS, 0 );
-        std::iota( indices.begin(), indices.end(), startingIndex );
-        amp_v->setLocalValuesByGlobalID( nDOFS, indices.data(), values_p );
+        if ( amp_v->numberOfDataBlocks() == 1 ) {
+            const auto startingIndex = dofManager->beginDOF();
+            std::vector<size_t> indices( nDOFS, 0 );
+            std::iota( indices.begin(), indices.end(), startingIndex );
+            amp_v->setLocalValuesByGlobalID( nDOFS, indices.data(), values_p );
+
+        } else {
+
+            size_t i = 0;
+            for ( auto it = amp_v->begin<HYPRE_Real>(); it != amp_v->end<HYPRE_Real>(); ++it ) {
+                *it = values[i];
+                ++i;
+            }
+        }
 
     } else {
         AMP_ERROR( "Not implemented for AMP vector with device memory" );
