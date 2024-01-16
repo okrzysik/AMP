@@ -84,12 +84,12 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     HYPRE_BoomerAMGSetMaxLevels( d_solver, d_max_levels );
 
     if ( db->keyExists( "strong_threshold" ) ) {
-        d_strong_threshold = db->getScalar<double>( "strong_threshold" );
+        d_strong_threshold = db->getScalar<HYPRE_Real>( "strong_threshold" );
         HYPRE_BoomerAMGSetStrongThreshold( d_solver, d_strong_threshold );
     }
 
     if ( db->keyExists( "max_row_sum" ) ) {
-        d_max_row_sum = db->getScalar<double>( "max_row_sum" );
+        d_max_row_sum = db->getScalar<HYPRE_Real>( "max_row_sum" );
         HYPRE_BoomerAMGSetMaxRowSum( d_solver, d_max_row_sum );
     }
 
@@ -99,7 +99,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     if ( db->keyExists( "non_galerkin_tol" ) ) {
-        d_non_galerkin_tol = db->getScalar<double>( "non_galerkin_tol" );
+        d_non_galerkin_tol = db->getScalar<HYPRE_Real>( "non_galerkin_tol" );
         HYPRE_BoomerAMGSetNonGalerkinTol( d_solver, d_non_galerkin_tol );
     }
 
@@ -139,7 +139,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     if ( db->keyExists( "trunc_factor" ) ) {
-        d_trunc_factor = db->getScalar<double>( "trunc_factor" );
+        d_trunc_factor = db->getScalar<HYPRE_Real>( "trunc_factor" );
         HYPRE_BoomerAMGSetTruncFactor( d_solver, d_trunc_factor );
     }
 
@@ -159,12 +159,12 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     if ( db->keyExists( "agg_trunc_factor" ) ) {
-        d_agg_trunc_factor = db->getScalar<double>( "agg_trunc_factor" );
+        d_agg_trunc_factor = db->getScalar<HYPRE_Real>( "agg_trunc_factor" );
         HYPRE_BoomerAMGSetAggTruncFactor( d_solver, d_agg_trunc_factor );
     }
 
     if ( db->keyExists( "agg_P12_trunc_factor" ) ) {
-        d_agg_P12_trunc_factor = db->getScalar<double>( "agg_P12_trunc_factor" );
+        d_agg_P12_trunc_factor = db->getScalar<HYPRE_Real>( "agg_P12_trunc_factor" );
         HYPRE_BoomerAMGSetAggP12TruncFactor( d_solver, d_agg_P12_trunc_factor );
     }
 
@@ -204,7 +204,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     if ( db->keyExists( "additive_trunc_factor" ) ) {
-        d_additive_trunc_factor = db->getScalar<double>( "additive_trunc_factor" );
+        d_additive_trunc_factor = db->getScalar<HYPRE_Real>( "additive_trunc_factor" );
         HYPRE_BoomerAMGSetMultAddTruncFactor( d_solver, d_additive_trunc_factor );
     }
 
@@ -232,12 +232,12 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     if ( db->keyExists( "relax_weight" ) ) {
-        d_relax_weight = db->getScalar<double>( "relax_weight" );
+        d_relax_weight = db->getScalar<HYPRE_Real>( "relax_weight" );
         HYPRE_BoomerAMGSetRelaxWt( d_solver, d_relax_weight );
     }
 
     if ( db->keyExists( "outer_weight" ) ) {
-        d_outer_weight = db->getScalar<double>( "outer_weight" );
+        d_outer_weight = db->getScalar<HYPRE_Real>( "outer_weight" );
         HYPRE_BoomerAMGSetOuterWt( d_solver, d_outer_weight );
     }
 
@@ -247,7 +247,7 @@ void BoomerAMGSolver::getFromInput( std::shared_ptr<const AMP::Database> db )
     }
 
     if ( db->keyExists( "chebyshev_fraction" ) ) {
-        d_chebyshev_fraction = db->getScalar<double>( "chebyshev_fraction" );
+        d_chebyshev_fraction = db->getScalar<HYPRE_Real>( "chebyshev_fraction" );
         HYPRE_BoomerAMGSetChebyFraction( d_solver, d_chebyshev_fraction );
     }
 
@@ -379,21 +379,70 @@ void BoomerAMGSolver::copyToHypre( std::shared_ptr<const AMP::LinearAlgebra::Vec
     const auto nDOFS         = dofManager->numLocalDOF();
     const auto startingIndex = dofManager->beginDOF();
 
-    std::vector<size_t> indices( nDOFS, 0 );
-    std::iota( indices.begin(), indices.end(), startingIndex );
+    HYPRE_Real *vals = nullptr;
 
-    std::vector<double> values( nDOFS, 0.0 );
+    if ( amp_v->numberOfDataBlocks() == 1 ) {
 
-    amp_v->getValuesByGlobalID( nDOFS, indices.data(), values.data() );
+        if ( amp_v->isType<HYPRE_Real>( 0 ) ) {
+            vals = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
+                       ->getRawDataBlock<HYPRE_Real>();
+        } else {
 
+            auto block0 = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
+                              ->getRawDataBlock<HYPRE_Real>();
+            auto memType = AMP::Utilities::getMemoryType( block0 );
+            AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+                        "Implemented only for AMP vector memory on host" );
+            std::vector<size_t> indices( nDOFS, 0 );
+            std::iota( indices.begin(), indices.end(), startingIndex );
+            std::vector<HYPRE_Real> values( nDOFS, 0.0 );
+
+            amp_v->getValuesByGlobalID( nDOFS, indices.data(), values.data() );
+
+            vals = values.data();
+        }
+
+
+    } else {
+
+        auto block0 = std::const_pointer_cast<AMP::LinearAlgebra::Vector>( amp_v )
+                          ->getRawDataBlock<HYPRE_Real>();
+        auto memType = AMP::Utilities::getMemoryType( block0 );
+        AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+                    "Implemented only for AMP vector memory on host" );
+
+        std::vector<HYPRE_Real> values;
+        for ( auto it = amp_v->begin<HYPRE_Real>(); it != amp_v->end<HYPRE_Real>(); ++it ) {
+            values.push_back( *it );
+        }
+
+        vals = values.data();
+    }
+
+    AMP_ASSERT( vals );
     ierr = HYPRE_IJVectorInitialize( hypre_v );
     HYPRE_DescribeError( ierr, hypre_mesg );
-    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS, nullptr, values.data() );
+    ierr = HYPRE_IJVectorSetValues( hypre_v, nDOFS, nullptr, vals );
     HYPRE_DescribeError( ierr, hypre_mesg );
     ierr = HYPRE_IJVectorAssemble( hypre_v );
     HYPRE_DescribeError( ierr, hypre_mesg );
+
+    // this can be optimized in future so that memory is allocated based on the location
+    HYPRE_ParVector par_v;
+    HYPRE_IJVectorGetObject( hypre_v, (void **) &par_v );
+    hypre_ParVectorMigrate( par_v, d_memory_location );
 }
 
+template<typename T>
+static void copy_to_amp( std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v, HYPRE_Real *values )
+{
+    AMP_ASSERT( amp_v && values );
+    size_t i = 0;
+    for ( auto it = amp_v->begin<T>(); it != amp_v->end<T>(); ++it ) {
+        *it = values[i];
+        ++i;
+    }
+}
 
 void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
                                      std::shared_ptr<AMP::LinearAlgebra::Vector> amp_v )
@@ -406,18 +455,43 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     const auto &dofManager = amp_v->getDOFManager();
     AMP_INSIST( dofManager, "DOF_Manager cannot be NULL" );
 
-    const auto startingIndex = dofManager->beginDOF();
-    const auto nDOFS         = dofManager->numLocalDOF();
+    const auto nDOFS = dofManager->numLocalDOF();
 
-    std::vector<size_t> indices( nDOFS, 0 );
-    std::iota( indices.begin(), indices.end(), startingIndex );
+    auto block0  = amp_v->getRawDataBlock<HYPRE_Real>();
+    auto memType = AMP::Utilities::getMemoryType( block0 );
 
-    std::vector<double> values( nDOFS, 0.0 );
+    if ( memType < AMP::Utilities::MemoryType::device ) {
 
-    ierr =
-        HYPRE_IJVectorGetValues( hypre_v, static_cast<HYPRE_Int>( nDOFS ), nullptr, values.data() );
-    HYPRE_DescribeError( ierr, hypre_mesg );
-    amp_v->setLocalValuesByGlobalID( nDOFS, indices.data(), values.data() );
+        // this can be optimized in future so that there's less memory movement
+        HYPRE_ParVector par_v;
+        HYPRE_IJVectorGetObject( hypre_v, (void **) &par_v );
+        hypre_ParVectorMigrate( par_v, HYPRE_MEMORY_HOST );
+        std::vector<HYPRE_Real> values( nDOFS, 0.0 );
+        auto values_p = values.data();
+        ierr =
+            HYPRE_IJVectorGetValues( hypre_v, static_cast<HYPRE_Int>( nDOFS ), nullptr, values_p );
+        HYPRE_DescribeError( ierr, hypre_mesg );
+
+        if ( amp_v->numberOfDataBlocks() == 1 ) {
+            const auto startingIndex = dofManager->beginDOF();
+            std::vector<size_t> indices( nDOFS, 0 );
+            std::iota( indices.begin(), indices.end(), startingIndex );
+            amp_v->setLocalValuesByGlobalID( nDOFS, indices.data(), values_p );
+
+        } else {
+
+            if ( amp_v->isType<double>( 0 ) ) {
+                copy_to_amp<double>( amp_v, values_p );
+            } else if ( amp_v->isType<float>( 0 ) ) {
+                copy_to_amp<float>( amp_v, values_p );
+            } else {
+                AMP_ERROR( "Implemented only for double and float" );
+            }
+        }
+
+    } else {
+        AMP_ERROR( "Not implemented for AMP vector with device memory" );
+    }
 }
 
 void BoomerAMGSolver::registerOperator( std::shared_ptr<AMP::Operator::Operator> op )
@@ -501,7 +575,7 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     }
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
-        double solution_norm( u->L2Norm() );
+        HYPRE_Real solution_norm( u->L2Norm() );
         AMP::pout << "BoomerAMGSolver : before solve solution norm: " << std::setprecision( 15 )
                   << solution_norm << std::endl;
     }
@@ -516,10 +590,6 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     HYPRE_IJVectorGetObject( d_hypre_rhs, (void **) &par_b );
     HYPRE_IJVectorGetObject( d_hypre_sol, (void **) &par_x );
 
-    // this can be optimized in future so that memory is allocated based on the location
-    hypre_ParVectorMigrate( par_b, d_memory_location );
-    hypre_ParVectorMigrate( par_x, d_memory_location );
-
     // add in code for solve here
     HYPRE_BoomerAMGSetup( d_solver, parcsr_A, par_b, par_x );
     HYPRE_BoomerAMGSolve( d_solver, parcsr_A, par_b, par_x );
@@ -527,15 +597,14 @@ void BoomerAMGSolver::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f
     copyFromHypre( d_hypre_sol, u );
 
     // Check for NaNs in the solution (no communication necessary)
-    auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<double>();
+    auto localNorm = u->getVectorOperations()->localL2Norm( *u->getVectorData() ).get<HYPRE_Real>();
     AMP_INSIST( localNorm == localNorm, "NaNs detected in solution" );
 
-    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
     // we are forced to update the state of u here
     // as Hypre is not going to change the state of a managed vector
     // an example where this will and has caused problems is when the
     // vector is a petsc managed vector being passed back to PETSc
-    u->getVectorData()->fireDataChange();
+    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 ) {
         AMP::pout << "BoomerAMGSolver : after solve solution norm: " << std::setprecision( 15 )
