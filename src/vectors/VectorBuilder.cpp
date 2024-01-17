@@ -2,7 +2,8 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/VectorBuilder.hpp
+#include "AMP/vectors/VectorBuilder.hpp"
+
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
 #endif
