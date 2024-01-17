@@ -204,8 +204,26 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     AMP::LinearAlgebra::transformDofToCSR<AMP::LinearAlgebra::HypreCSRPolicy>(
         diffusionOperator->getMatrix(), firstRow, endRow, nnz, cols, coeffs );
 
+    lidx_t *nnz_p      = nullptr;
+    gidx_t *cols_p     = nullptr;
+    scalar_t *coeffs_p = nullptr;
+
+#ifdef USE_CUDA
+    cudaMallocManaged( &nnz_p, sizeof( lidx_t ) * nnz.size() );
+    cudaMallocManaged( &cols_p, sizeof( gidx_t ) * cols.size() );
+    cudaMallocManaged( &coeffs_p, sizeof( scalar_t ) * coeffs.size() );
+
+    std::memcpy( nnz_p, nnz.data(), sizeof( lidx_t ) * nnz.size() );
+    std::memcpy( cols_p, cols.data(), sizeof( gidx_t ) * cols.size() );
+    std::memcpy( coeffs_p, coeffs.data(), sizeof( scalar_t ) * coeffs.size() );
+#else
+    nnz_p = nnz.data();
+    cols_p = cols.data();
+    coeffs_p = coeffs.data();
+#endif
+
     auto csrParams = std::make_shared<AMP::LinearAlgebra::CSRMatrixParameters<Policy>>(
-        firstRow, endRow, nnz.data(), cols.data(), coeffs.data(), meshAdapter->getComm() );
+        firstRow, endRow, nnz_p, cols_p, coeffs_p, meshAdapter->getComm() );
 
     auto csrMatrix = std::make_shared<AMP::LinearAlgebra::CSRMatrix<Policy>>( csrParams );
     AMP_ASSERT( csrMatrix );
