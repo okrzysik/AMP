@@ -460,9 +460,10 @@ void BoomerAMGSolver::copyFromHypre( HYPRE_IJVector hypre_v,
     auto block0  = amp_v->getRawDataBlock<HYPRE_Real>();
     auto memType = AMP::Utilities::getMemoryType( block0 );
 
-    if ( memType < AMP::Utilities::MemoryType::device ) {
+    if ( memType != AMP::Utilities::MemoryType::device ) {
 
         // this can be optimized in future so that there's less memory movement
+        // likewise we should distinguish between managed and host options
         HYPRE_ParVector par_v;
         HYPRE_IJVectorGetObject( hypre_v, (void **) &par_v );
         hypre_ParVectorMigrate( par_v, HYPRE_MEMORY_HOST );
