@@ -95,9 +95,8 @@ void HypreMatrixAdaptor::initializeHypreMatrix( HYPRE_BigInt first_row,
     HYPRE_IJMatrixInitialize( d_matrix );
 
     auto memType = AMP::Utilities::getMemoryType( csr_ja );
-    AMP_INSIST( memType == AMP::Utilities::MemoryType::host ||
-                    memType == AMP::Utilities::MemoryType::unregistered,
-                "Currently only implemented for host memory" );
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
+                "Currently only implemented for host accessible memory" );
 
     std::vector<HYPRE_BigInt> row_ids( nrows );
     set_row_ids_( first_row, nrows, row_ids.data() );
