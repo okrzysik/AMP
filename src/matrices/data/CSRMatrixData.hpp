@@ -44,7 +44,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
     auto memType = AMP::Utilities::getMemoryType( d_cols );
 
-    if ( memType < AMP::Utilities::MemoryType::device ) {
+    if ( memType != AMP::Utilities::MemoryType::device ) {
         size_t N         = d_last_row - d_first_row;
         const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
         std::vector<size_t> remote_dofs;
