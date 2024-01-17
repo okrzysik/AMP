@@ -121,5 +121,11 @@ Vector::shared_ptr createVector( std::shared_ptr<AMP::Discretization::DOFManager
 INSTANTIATE_VECTOR( double )
 INSTANTIATE_VECTOR( float )
 
+template Vector::shared_ptr createSimpleVector<
+    AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
+    std::shared_ptr<Variable>,
+    std::shared_ptr<AMP::Discretization::DOFManager>,
+    std::shared_ptr<CommunicationList> );
+
 
 } // namespace AMP::LinearAlgebra
