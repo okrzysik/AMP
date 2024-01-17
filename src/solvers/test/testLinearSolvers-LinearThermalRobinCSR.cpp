@@ -212,9 +212,9 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     scalar_t *coeffs_p = nullptr;
 
 #ifdef USE_CUDA
-    cudaMallocManaged( &nnz_p, sizeof( lidx_t ) * nnz.size() );
-    cudaMallocManaged( &cols_p, sizeof( gidx_t ) * cols.size() );
-    cudaMallocManaged( &coeffs_p, sizeof( scalar_t ) * coeffs.size() );
+    cudaMallocManaged( (void **) &nnz_p, sizeof( lidx_t ) * nnz.size() );
+    cudaMallocManaged( (void **) &cols_p, sizeof( gidx_t ) * cols.size() );
+    cudaMallocManaged( (void **) &coeffs_p, sizeof( scalar_t ) * coeffs.size() );
 
     std::memcpy( nnz_p, nnz.data(), sizeof( lidx_t ) * nnz.size() );
     std::memcpy( cols_p, cols.data(), sizeof( gidx_t ) * cols.size() );
