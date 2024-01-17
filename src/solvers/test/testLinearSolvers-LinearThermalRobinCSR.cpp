@@ -33,6 +33,10 @@
 #include "AMP/vectors/Vector.h"
 #include "AMP/vectors/VectorBuilder.h"
 
+#ifdef USE_CUDA
+    #include "AMP/utils/cuda/CudaAllocator.h"
+#endif
+
 #include <iomanip>
 #include <memory>
 #include <string>
@@ -100,6 +104,41 @@ buildSolver( std::shared_ptr<AMP::Database> input_db,
     return solver;
 }
 
+namespace AMP::LinearAlgebra {
+std::shared_ptr<AMP::LinearAlgebra::Vector>
+createVectorInSpace( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
+                     std::shared_ptr<AMP::LinearAlgebra::Variable> var )
+{
+#ifdef USE_CUDA
+    // We are ready to create a single vector
+    // Create the communication list
+    AMP_MPI comm = DOFs->getComm();
+    AMP_ASSERT( !comm.isNull() );
+    comm.barrier();
+    std::shared_ptr<CommunicationList> comm_list;
+    auto remote_DOFs = DOFs->getRemoteDOFs();
+    bool ghosts      = comm.anyReduce( !remote_DOFs.empty() );
+    if ( !ghosts ) {
+        // No need for a communication list
+        comm_list = std::make_shared<CommunicationList>( DOFs->numLocalDOF(), DOFs->getComm() );
+    } else {
+        // Construct the communication list
+        auto params           = std::make_shared<CommunicationListParameters>();
+        params->d_comm        = comm;
+        params->d_localsize   = DOFs->numLocalDOF();
+        params->d_remote_DOFs = remote_DOFs;
+        comm_list             = std::make_shared<CommunicationList>( params );
+    }
+    comm.barrier();
+
+    return AMP::LinearAlgebra::createSimpleVector<
+               AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>> >
+           ( var, DOFs, commlist );
+#else
+    return AMP::LinearAlgebra::createVector( DOFs, var );
+#endif
+}
+} // namespace AMP::LinearAlgebra
 
 void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 {
@@ -143,7 +182,8 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto neutronicsOperator = std::make_shared<AMP::Operator::NeutronicsRhs>( neutronicsParams );
 
     auto SpecificPowerVar = neutronicsOperator->getOutputVariable();
-    auto SpecificPowerVec = AMP::LinearAlgebra::createVector( gaussPointDofMap, SpecificPowerVar );
+    auto SpecificPowerVec =
+        AMP::LinearAlgebra::createVectorInSpace( gaussPointDofMap, SpecificPowerVar );
 
     AMP::LinearAlgebra::Vector::shared_ptr nullVec;
     neutronicsOperator->apply( nullVec, SpecificPowerVec );
@@ -157,7 +197,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
 
     // Create the power (heat source) vector.
     auto PowerInWattsVar = sourceOperator->getOutputVariable();
-    auto PowerInWattsVec = AMP::LinearAlgebra::createVector( nodalDofMap, PowerInWattsVar );
+    auto PowerInWattsVec = AMP::LinearAlgebra::createVectorInSpace( nodalDofMap, PowerInWattsVar );
     PowerInWattsVec->zero();
 
     // convert the vector of specific power to power for a given basis.
@@ -171,18 +211,18 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     auto diffusionOperator =
         std::dynamic_pointer_cast<AMP::Operator::LinearBVPOperator>( linearOperator );
 
-    auto TemperatureInKelvinVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getInputVariable() );
-    auto RightHandSideVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
-    auto ResidualVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+    auto TemperatureInKelvinVec = AMP::LinearAlgebra::createVectorInSpace(
+        nodalDofMap, diffusionOperator->getInputVariable() );
+    auto RightHandSideVec = AMP::LinearAlgebra::createVectorInSpace(
+        nodalDofMap, diffusionOperator->getOutputVariable() );
+    auto ResidualVec = AMP::LinearAlgebra::createVectorInSpace(
+        nodalDofMap, diffusionOperator->getOutputVariable() );
 
     RightHandSideVec->setToScalar( 0.0 );
 
     // Add the boundary conditions corrections
-    auto boundaryOpCorrectionVec =
-        AMP::LinearAlgebra::createVector( nodalDofMap, diffusionOperator->getOutputVariable() );
+    auto boundaryOpCorrectionVec = AMP::LinearAlgebra::createVectorInSpace(
+        nodalDofMap, diffusionOperator->getOutputVariable() );
 
     auto boundaryOp = diffusionOperator->getBoundaryOperator();
     boundaryOp->addRHScorrection( boundaryOpCorrectionVec );
