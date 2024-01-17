@@ -2,14 +2,13 @@
 #include "AMP/discretization/MultiDOF_Manager.h"
 #include "AMP/vectors/MultiVariable.h"
 #include "AMP/vectors/MultiVector.h"
-#include "AMP/vectors/VectorBuilder.hpp"
-
-#include <iostream>
-
-
+#include "AMP/vectors/VectorBuilder.hpp
 #ifdef USE_CUDA
     #include "AMP/utils/cuda/CudaAllocator.h"
 #endif
+
+#include <iostream>
+
 
 namespace AMP::LinearAlgebra {
 
@@ -127,6 +126,8 @@ INSTANTIATE_VECTOR( float )
 
 #ifdef USE_CUDA
 template Vector::shared_ptr createSimpleVector<
+    double,
+    VectorOperationsDefault<double>,
     AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
     std::shared_ptr<Variable>,
     std::shared_ptr<AMP::Discretization::DOFManager>,
