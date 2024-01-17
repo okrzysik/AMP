@@ -342,6 +342,10 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     siloWriter->writeFile( input_file, 0 );
 
     input_db.reset();
+#ifdef USE_CUDA
+    cudaFree( nnz_p );
+    cudaFree( cols_p );
+    cudaFree( coeffs_p );
 }
 
 
