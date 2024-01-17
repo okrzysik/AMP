@@ -132,8 +132,8 @@ createVectorInSpace( std::shared_ptr<AMP::Discretization::DOFManager> DOFs,
     comm.barrier();
 
     return AMP::LinearAlgebra::createSimpleVector<
-               AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>> >
-           ( var, DOFs, comm_list );
+        AMP::LinearAlgebra::VectorDataDefault<double, AMP::CudaManagedAllocator<double>>>(
+        var, DOFs, comm_list );
 #else
     return AMP::LinearAlgebra::createVector( DOFs, var );
 #endif
