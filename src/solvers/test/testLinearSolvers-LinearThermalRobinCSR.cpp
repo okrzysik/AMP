@@ -37,6 +37,9 @@
 #include <memory>
 #include <string>
 
+#ifdef USE_CUDA
+    #include <cuda_runtime_api.h>
+#endif
 
 std::shared_ptr<AMP::Solver::SolverStrategy>
 buildSolver( std::shared_ptr<AMP::Database> input_db,
