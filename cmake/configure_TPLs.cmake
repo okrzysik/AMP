@@ -43,7 +43,7 @@ FUNCTION ( CONFIGURE_TPL_BUILDER )
     GET_CMAKE_PROPERTY( variableNames VARIABLES )
     FOREACH ( var ${variableNames} )
         STRING( REGEX REPLACE "^TPL_" "" var2 "${var}" )
-        IF ( ${var} STREQUAL TPL_URL )
+        IF ( ${var} STREQUAL TPL_URL OR ${var} STREQUAL TPL_SOURCE_DIR)
             # Special variable
         ELSEIF ( ${var} STREQUAL TPL_LIST )
             STRING( REPLACE ";" "," TPL_LIST2 "${TPL_LIST}" )
@@ -52,27 +52,35 @@ FUNCTION ( CONFIGURE_TPL_BUILDER )
             SET( TPL_CMAKE ${TPL_CMAKE} "-D${var2}=${${var}}" )
         ENDIF()
     ENDFOREACH()
-    FIND_PACKAGE(Git)
-    # Download the TPL builder
-    MESSAGE( STATUS "Downloading TPL builder" )
-    IF ( NOT EXISTS tpl-builder )
-        EXECUTE_PROCESS(
-            COMMAND ${GIT_EXECUTABLE} clone "${TPL_URL}"
-            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        )
+    IF(NOT DEFINED TPL_SOURCE_DIR)
+        IF(EXISTS "${CMAKE_SOURCE_DIR}/tpl-builder")
+            set(TPL_SOURCE_DIR "${CMAKE_SOURCE_DIR}/tpl-builder")
+        ELSE()
+            FIND_PACKAGE(Git)
+            # Download the TPL builder
+            set(TPL_SOURCE_DIR ${CMAKE_BINARY_DIR}/tpl-builder)
+            MESSAGE( STATUS "Downloading TPL builder" )
+            IF(NOT EXISTS "${TPL_SOURCE_DIR}")
+                EXECUTE_PROCESS(
+                    COMMAND ${GIT_EXECUTABLE} clone "${TPL_URL}"
+                    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+                )
+            ELSEIF(EXISTS "${TPL_SOURCE_DIR}/.git")
+                EXECUTE_PROCESS(
+                    COMMAND ${GIT_EXECUTABLE} pull
+                    WORKING_DIRECTORY "${TPL_SOURCE_DIR}"
+                )
+            ENDIF()
+      ENDIF()
     ENDIF()
-    EXECUTE_PROCESS(
-        COMMAND ${GIT_EXECUTABLE} pull -u
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/tpl_directory"
-    )
     # Configure the TPL builder
     FILE( MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tpl-build" )
-    SET( TPL_COMMAND "${CMAKE_COMMAND} ${TPL_CMAKE} ${CMAKE_BINARY_DIR}/tpl-builder" )
+    SET( TPL_COMMAND "${CMAKE_COMMAND} ${TPL_CMAKE} ${TPL_SOURCE_DIR}" )
     STRING( REPLACE ";" " " TPL_COMMAND "${TPL_COMMAND}" )
     MESSAGE( STATUS "Configuring TPL builder" )
     MESSAGE( "   ${TPL_COMMAND}" )
     EXECUTE_PROCESS(
-        COMMAND ${CMAKE_COMMAND} ${TPL_CMAKE} "${CMAKE_BINARY_DIR}/tpl-builder"
+        COMMAND ${CMAKE_COMMAND} ${TPL_CMAKE} "${TPL_SOURCE_DIR}"
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/tpl-build"
     )
     # Build the TPLs
