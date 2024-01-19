@@ -28,3 +28,6 @@ void opDataW(T* d_A, size_t n)
 
 template void opDataW<double>(double* d_A, size_t n);
 template void setDataW<double>(double* d_A, double v, size_t n);
+
+template void opDataW<float>(float* d_A, size_t n);
+template void setDataW<float>(float* d_A, float v, size_t n);
