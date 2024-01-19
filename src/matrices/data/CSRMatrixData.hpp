@@ -3,6 +3,7 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
@@ -28,7 +29,12 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 {
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
+    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+
+    d_memory_location = d_pParameters->d_memory_location;
+
     if ( csrParams ) {
+        // add check for memory location etc and migrate if necessary
         d_is_square   = csrParams->d_is_square;
         d_first_row   = csrParams->d_first_row;
         d_last_row    = csrParams->d_last_row;
@@ -38,34 +44,60 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         d_nnz_per_row = csrParams->d_nnz_per_row;
         d_coeffs      = csrParams->d_coeffs;
 
-    } else {
-        AMP_ERROR( "Requires CSRParameter object at present" );
-    }
+        auto memType = AMP::Utilities::getMemoryType( d_cols );
 
-    auto memType = AMP::Utilities::getMemoryType( d_cols );
-
-    if ( memType != AMP::Utilities::MemoryType::device ) {
-        size_t N         = d_last_row - d_first_row;
-        const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
-        std::vector<size_t> remote_dofs;
-        for ( auto i = 0u; i < nnz; ++i ) {
-            if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] >= d_last_col ) ) {
-                remote_dofs.push_back( d_cols[i] );
+        if ( memType != AMP::Utilities::MemoryType::device ) {
+            size_t N         = d_last_row - d_first_row;
+            const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
+            std::vector<size_t> remote_dofs;
+            for ( auto i = 0u; i < nnz; ++i ) {
+                if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] >= d_last_col ) ) {
+                    remote_dofs.push_back( d_cols[i] );
+                }
             }
-        }
-        AMP::Utilities::unique( remote_dofs );
-        const auto &comm = getComm();
-        d_rightDOFManager =
-            std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
+            AMP::Utilities::unique( remote_dofs );
+            const auto &comm = getComm();
+            d_rightDOFManager =
+                std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
 
-        if ( d_is_square ) {
-            d_leftDOFManager = d_rightDOFManager;
+            if ( d_is_square ) {
+                d_leftDOFManager = d_rightDOFManager;
+            } else {
+                AMP_ERROR( "Non-square matrices not handled at present" );
+            }
+
         } else {
-            AMP_ERROR( "Non-square matrices not handled at present" );
+            AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented as yet" );
         }
+
+    } else if ( matParams ) {
+
+        d_leftDOFManager  = matParams->getLeftDOFManager();
+        d_rightDOFManager = matParams->getRightDOFManager();
+        AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
+        d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
+        d_first_row = d_leftDOFManager->beginDOF();
+        d_last_row  = d_leftDOFManager->endDOF();
+
+        auto *nnzPerRow  = matParams->entryList();
+        auto &cols       = matParams->getColumns();
+        const auto nRows = matParams->getLocalNumberOfRows();
+
+        if ( AMP::Utilities::getMemoryType( nnzPerRow ) != d_memory_location ) {
+            // assume all variables are in different memory space
+
+        } else {
+            // we assume all variables are in correct memory space
+            AMP_INSIST( AMP::Utilities::getMemoryType( cols.data() ) == d_memory_location,
+                        "All variables need to be initialized in correct memory space" );
+            d_nnz_per_row = nnzPerRow;
+            //            d_cols        = cols.data();
+        }
+
+        AMP_ERROR( "Not complete" );
 
     } else {
-        AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented as yet" );
+        AMP_ERROR( "Check supplied MatrixParameter object" );
     }
 }
 

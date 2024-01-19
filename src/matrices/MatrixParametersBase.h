@@ -2,6 +2,7 @@
 #define included_AMP_MatrixParametersBase
 
 #include "AMP/utils/AMP_MPI.h"
+#include "AMP/utils/Utilities.h"
 
 namespace AMP::LinearAlgebra {
 
@@ -24,6 +25,9 @@ public:
 
     //!  Get the communicator for the matrix
     AMP::AMP_MPI &getComm() { return d_comm; }
+
+    //! memory space where the matrix should live
+    AMP::Utilities::MemoryType d_memory_location;
 
 protected:
     // The comm of the matrix
