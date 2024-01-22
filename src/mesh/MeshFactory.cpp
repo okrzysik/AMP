@@ -83,7 +83,7 @@ std::shared_ptr<Mesh> MeshFactory::create( std::shared_ptr<MeshParameters> param
 #endif
     } else {
         // Search for a mesh generator
-        FactoryStrategy<Mesh, std::shared_ptr<MeshParameters>>::create( MeshType, params );
+        mesh = FactoryStrategy<Mesh, std::shared_ptr<MeshParameters>>::create( MeshType, params );
     }
     mesh->setName( MeshName );
     return mesh;
@@ -122,18 +122,26 @@ std::shared_ptr<AMP::Mesh::Mesh> AMP::IO::RestartManager::DataStoreType<AMP::Mes
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     hid_t gid = openGroup( fid, name );
+    auto mesh = AMP::Mesh::MeshFactory::create( gid, manager );
+    closeGroup( gid );
+    return mesh;
+}
+std::shared_ptr<AMP::Mesh::Mesh> AMP::Mesh::MeshFactory::create( int64_t fid,
+                                                                 AMP::IO::RestartManager *manager )
+{
     std::string type;
-    readHDF5( gid, "MeshType", type );
+    readHDF5( fid, "MeshType", type );
     std::shared_ptr<AMP::Mesh::Mesh> mesh;
     if ( type == "MultiMesh" || type.substr( 0, 10 ) == "MultiMesh<" ) {
-        mesh = std::make_shared<AMP::Mesh::MultiMesh>( gid, manager );
+        mesh = std::make_shared<AMP::Mesh::MultiMesh>( fid, manager );
     } else if ( type == "StructuredGeometryMesh" ) {
-        mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( gid, manager );
+        mesh = std::make_shared<AMP::Mesh::StructuredGeometryMesh>( fid, manager );
     } else if ( type == "MovableBoxMesh" ) {
-        mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( gid, manager );
+        mesh = std::make_shared<AMP::Mesh::MovableBoxMesh>( fid, manager );
     } else {
-        AMP_ERROR( "Not finished: " + type );
+        // Search for a mesh generator
+        mesh =
+            FactoryStrategy<Mesh, int64_t, AMP::IO::RestartManager *>::create( type, fid, manager );
     }
-    closeGroup( gid );
     return mesh;
 }
