@@ -46,7 +46,7 @@ SET( DISABLE_LTO TRUE)
 ADD_CUSTOM_TARGET( build-test )     # Deprecated, remove
 ADD_CUSTOM_TARGET( build-examples ) # Deprecated, remove
 ADD_CUSTOM_TARGET( check COMMAND make test  )
-IF ( TPL_URL )
+IF ( TPL_URL OR TPL_SOURCE_DIR )
     INCLUDE( cmake/configure_TPLs.cmake )
     CONFIGURE_TPL_BUILDER()
 ENDIF()
