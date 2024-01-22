@@ -83,6 +83,14 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         auto &cols       = matParams->getColumns();
         const auto nRows = matParams->getLocalNumberOfRows();
 
+        if ( d_memory_location <= AMP::Utilities::host ) {
+            d_cols        = cols.data();
+            d_nnz_per_row = nnzPerRow;
+            //            d_coeffs =
+        } else if ( d_memory_location == AMP::Utilities::managed ) {
+        } else {
+            AMP_ERROR( "CSRMatrixData: device memory handling has not been implemented as yet" );
+        }
         if ( AMP::Utilities::getMemoryType( nnzPerRow ) != d_memory_location ) {
             // assume all variables are in different memory space
 
@@ -90,8 +98,6 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
             // we assume all variables are in correct memory space
             AMP_INSIST( AMP::Utilities::getMemoryType( cols.data() ) == d_memory_location,
                         "All variables need to be initialized in correct memory space" );
-            d_nnz_per_row = nnzPerRow;
-            //            d_cols        = cols.data();
         }
 
         AMP_ERROR( "Not complete" );
