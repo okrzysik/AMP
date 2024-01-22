@@ -308,7 +308,7 @@ std::ostream &operator<<( std::ostream &out, const DatabaseBox &box )
     out << "),(" << box.upper( 0 );
     for ( int d = 1; d < box.dim(); d++ )
         out << "," << box.upper( d );
-    out << ")";
+    out << ")]";
     return out;
 }
 
