@@ -43,7 +43,7 @@ void CSRMatrixOperationsDefault<Policy>::mult( std::shared_ptr<const Vector> in,
     auto [nnz, cols, coeffs] = csrData->getCSRData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
-    AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
@@ -101,7 +101,7 @@ void CSRMatrixOperationsDefault<Policy>::multTranspose( std::shared_ptr<const Ve
     auto [nnz, cols, coeffs] = csrData->getCSRData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
-    AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
@@ -147,7 +147,7 @@ void CSRMatrixOperationsDefault<Policy>::scale( AMP::Scalar alpha_in, MatrixData
     auto [nnz_per_row, cols, coeffs] = csrData->getCSRData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
-    AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
@@ -183,11 +183,11 @@ void CSRMatrixOperationsDefault<Policy>::axpy( AMP::Scalar alpha_in,
     auto [nnz_y, cols_y, coeffs_y] = csrDataY->getCSRData();
 
     auto memType_x = AMP::Utilities::getMemoryType( cols_x );
-    AMP_INSIST( memType_x < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType_x != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     auto memType_y = AMP::Utilities::getMemoryType( cols_y );
-    AMP_INSIST( memType_y < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType_y != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = csrDataX->numLocalRows();
@@ -210,7 +210,7 @@ void CSRMatrixOperationsDefault<Policy>::setScalar( AMP::Scalar alpha_in, Matrix
     auto [nnz_per_row, cols, coeffs] = csrData->getCSRData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
-    AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
@@ -245,7 +245,7 @@ void CSRMatrixOperationsDefault<Policy>::setDiagonal( std::shared_ptr<const Vect
     auto [nnz, cols, coeffs] = csrData->getCSRData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
-    AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
@@ -281,7 +281,7 @@ void CSRMatrixOperationsDefault<Policy>::setIdentity( MatrixData &A )
     auto [nnz, cols, coeffs] = csrData->getCSRData();
 
     auto memType = AMP::Utilities::getMemoryType( cols );
-    AMP_INSIST( memType < AMP::Utilities::MemoryType::device,
+    AMP_INSIST( memType != AMP::Utilities::MemoryType::device,
                 "CSRMatrixOperationsDefault is implemented only for host memory" );
 
     const auto nRows = static_cast<lidx_t>( csrData->numLocalRows() );
