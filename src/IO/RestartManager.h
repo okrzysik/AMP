@@ -31,11 +31,7 @@ public:
     class DataStoreType : public DataStore
     {
     public:
-        DataStoreType( hid_t fid, uint64_t hash, RestartManager *manager )
-        {
-            d_hash = hash;
-            d_data = read( fid, hash2String( hash ), manager );
-        }
+        DataStoreType( hid_t fid, uint64_t hash, RestartManager *manager );
         DataStoreType( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
         void write( hid_t fid, const std::string &name ) const override;
         virtual std::shared_ptr<TYPE>
@@ -43,16 +39,14 @@ public:
         auto getData() { return std::const_pointer_cast<TYPE>( d_data ); }
 
     protected:
+        DataStoreType() = default;
         std::shared_ptr<const TYPE> d_data;
     };
     template<class TYPE>
     class SAMRAIDataStore : public DataStoreType<TYPE>
     {
     public:
-        SAMRAIDataStore( hid_t fid, uint64_t hash, RestartManager *manager )
-            : DataStoreType<TYPE>( fid, hash, manager )
-        {
-        }
+        SAMRAIDataStore( hid_t fid, uint64_t hash, RestartManager *manager );
         SAMRAIDataStore( const std::string &, std::shared_ptr<const TYPE>, RestartManager * );
         void write( hid_t fid, const std::string &name ) const override;
         std::shared_ptr<TYPE>
