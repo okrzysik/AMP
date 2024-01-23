@@ -24,7 +24,7 @@ namespace AMP::LinearAlgebra {
 /********************************************************
  * Check if we have a spare matrix available             *
  ********************************************************/
-#if defined( AMP_USE_TRILINOS )
+#if defined( AMP_USE_TRILINOS ) || defined( AMP_USE_PETSC )
 bool haveSparseMatrix() { return true; }
 #else
 bool haveSparseMatrix() { return false; }
