@@ -139,6 +139,14 @@ public:
     std::shared_ptr<TYPE> getSAMRAIData( uint64_t hash );
 
 
+    /**
+     * \brief  Check if an object is registered
+     * \details This function will check if data with the give id has already been registered
+     * @param[in] hash      Object ID
+     */
+    bool isRegistered( uint64_t hash );
+
+
 private:
     template<class TYPE>
     RestartManager::DataStorePtr create( const std::string &, std::shared_ptr<const TYPE> );

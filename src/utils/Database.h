@@ -589,9 +589,6 @@ public: // SAMRAI interfaces
     //! Construct a database from a SAMRAI database
     Database( SAMRAI::tbox::Database & );
 
-    //! Construct a database from a SAMRAI database
-    inline Database( std::shared_ptr<SAMRAI::tbox::Database> ptr ) : Database( *ptr ) {}
-
     //! Create a SAMRAI database from this
     std::shared_ptr<SAMRAI::tbox::Database> cloneToSAMRAI() const;
 
