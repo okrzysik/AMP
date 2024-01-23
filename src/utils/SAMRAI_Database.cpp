@@ -21,7 +21,7 @@ AMP::Database::Database( SAMRAI::tbox::Database &db ) : d_name( db.getName() )
         auto type = db.getArrayType( key );
         if ( type == SAMRAI::tbox::Database::SAMRAI_DATABASE ) {
             auto db2 = db.getDatabase( key );
-            putDatabase( key, std::make_unique<AMP::Database>( db2 ) );
+            putDatabase( key, std::make_unique<AMP::Database>( *db2 ) );
         } else if ( type == SAMRAI::tbox::Database::SAMRAI_BOOL ) {
             auto data = db.getBoolVector( key );
             putVector( key, data );
@@ -156,7 +156,7 @@ std::shared_ptr<AMP::Database> AMP::Database::readThroughSAMRAI( const std::stri
 {
     auto db = std::make_shared<SAMRAI::tbox::MemoryDatabase>( filename );
     SAMRAI::tbox::InputManager::getManager()->parseInputFile( filename, db );
-    return std::make_shared<AMP::Database>( db );
+    return std::make_shared<AMP::Database>( *db );
 }
 
 
