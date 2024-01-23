@@ -149,6 +149,12 @@ std::string AMP::IO::RestartManager::hash2String( uint64_t id )
     }
     return name;
 }
+bool AMP::IO::RestartManager::isRegistered( uint64_t hash )
+{
+    bool test1 = d_data.find( hash ) != d_data.end();
+    auto test2 = d_comms.find( hash ) != d_comms.end();
+    return test1 || test2;
+}
 
 
 /********************************************************

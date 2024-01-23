@@ -195,7 +195,7 @@ void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
     auto AMP_db = AMP::Database::parseInputFile( inputFile );
 
     // Convert AMP to SAMRAI to AMP and compare
-    AMP::Database db1( AMP_db->cloneToSAMRAI() );
+    AMP::Database db1( *AMP_db->cloneToSAMRAI() );
     if ( db1 != *AMP_db ) {
         pass = false;
         ut.failure( "Read AMP database, convert to SAMRAI then back to AMP" );
@@ -209,7 +209,7 @@ void testSAMRAI( AMP::UnitTest &ut, const std::string &inputFile )
     }
 
     // Convert SAMRAI's database to AMP and compare to AMP's reader
-    AMP::Database db3( SAMRAI_db );
+    AMP::Database db3( *SAMRAI_db );
     if ( db3 != *AMP_db ) {
         pass = false;
         ut.failure( "Read AMP and SAMRAI databases, compare in AMP" );
