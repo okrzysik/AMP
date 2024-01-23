@@ -28,7 +28,7 @@ template<typename Policy>
 static auto NNZ( typename Policy::lidx_t N, typename Policy::lidx_t *nnz_per_row ) ->
     typename Policy::lidx_t
 {
-    AMP_ASSERT( AMP::Utilities::getMemoryType( nnz_per_row ) == AMP::Utilities::MemoryType::host );
+    AMP_ASSERT( AMP::Utilities::getMemoryType( nnz_per_row ) <= AMP::Utilities::MemoryType::host );
     return std::accumulate( nnz_per_row, nnz_per_row + N, 0 );
 }
 
@@ -136,7 +136,7 @@ CSRMatrixData<Policy>::~CSRMatrixData()
     AMPManager::decrementResource( "CSRMatrixData" );
 
     // tackle this case for now
-    if ( d_memory_location == AMP::Utilities::MemoryType::host ) {
+    if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
 
         if ( d_manage_cols ) {
             std::allocator<gidx_t> allocator_g;
