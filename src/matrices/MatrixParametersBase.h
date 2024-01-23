@@ -27,7 +27,7 @@ public:
     AMP::AMP_MPI &getComm() { return d_comm; }
 
     //! memory space where the matrix should live
-    AMP::Utilities::MemoryType d_memory_location;
+    AMP::Utilities::MemoryType d_memory_location = AMP::Utilities::MemoryType::host;
 
 protected:
     // The comm of the matrix
