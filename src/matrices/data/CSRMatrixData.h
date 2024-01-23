@@ -175,7 +175,13 @@ protected:
     gidx_t *d_cols;
     scalar_t *d_coeffs;
 
+    lidx_t d_nnz;
+
     AMP::Utilities::MemoryType d_memory_location;
+
+    bool d_manage_cols;
+    bool d_manage_nnz;
+    bool d_manage_coeffs;
 
     std::shared_ptr<Discretization::DOFManager> d_leftDOFManager;
     std::shared_ptr<Discretization::DOFManager> d_rightDOFManager;
