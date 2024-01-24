@@ -32,8 +32,10 @@ AMP::AMP_MPI::AMP_MPI( const SAMRAI::tbox::SAMRAI_MPI &comm ) : AMP_MPI()
         *this = AMP_MPI( AMP_COMM_WORLD );
     } else if ( comm == comm.getSAMRAIWorld() ) {
         *this = AMP_MPI( AMP_COMM_WORLD );
-    } else {
+    } else if ( comm.getCommunicator() == MPI_COMM_SELF ) {
         *this = AMP_MPI( AMP_COMM_SELF );
+    } else {
+        *this = AMP_MPI( comm.getCommunicator() );
     }
 }
 AMP::AMP_MPI::operator SAMRAI::tbox::SAMRAI_MPI() const
