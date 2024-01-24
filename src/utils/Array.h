@@ -817,6 +817,12 @@ inline std::ostream &operator<<( std::ostream &out, const AMP::ArraySize &s )
     out << "]";
     return out;
 }
+template<class TYPE>
+inline std::ostream &operator<<( std::ostream &out, const AMP::Range<TYPE> &r )
+{
+    out << r.i << ':' << r.k << ':' << r.j;
+    return out;
+}
 
 
 /********************************************************
