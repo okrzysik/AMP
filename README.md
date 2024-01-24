@@ -23,6 +23,11 @@ The websites associated with the AMP package includes:
 * Bobby Philip (LANL)
 * Mark Berrill (ORNL)
 
+# Contributors #
+* Andrew Reisner (LANL)
+* Giacomo Capodaglio (LANL)
+* Richard Berger (LANL)
+
 # Alumni #
 * Kevin Clarno (ORNL)
 * Damien Lebrun-Grandie (ORNL)
