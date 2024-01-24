@@ -3,12 +3,14 @@
 
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
+#include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
 
 #include <memory>
 #include <numeric>
+#include <type_traits>
 
 namespace AMP::LinearAlgebra {
 
@@ -23,49 +25,108 @@ CSRMatrixData<Policy>::CSRMatrixData()
 }
 
 template<typename Policy>
+static auto NNZ( typename Policy::lidx_t N, typename Policy::lidx_t *nnz_per_row ) ->
+    typename Policy::lidx_t
+{
+    AMP_ASSERT( AMP::Utilities::getMemoryType( nnz_per_row ) <= AMP::Utilities::MemoryType::host );
+    return std::accumulate( nnz_per_row, nnz_per_row + N, 0 );
+}
+
+template<typename Policy>
 CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params )
 {
     AMPManager::incrementResource( "CSRMatrixData" );
     auto csrParams = std::dynamic_pointer_cast<CSRMatrixParameters<Policy>>( d_pParameters );
+    auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
+
+    d_memory_location = d_pParameters->d_memory_location;
+
     if ( csrParams ) {
-        d_is_square   = csrParams->d_is_square;
-        d_first_row   = csrParams->d_first_row;
-        d_last_row    = csrParams->d_last_row;
-        d_first_col   = csrParams->d_first_col;
-        d_last_col    = csrParams->d_last_col;
-        d_cols        = csrParams->d_cols;
-        d_nnz_per_row = csrParams->d_nnz_per_row;
-        d_coeffs      = csrParams->d_coeffs;
+        // add check for memory location etc and migrate if necessary
+        d_is_square     = csrParams->d_is_square;
+        d_first_row     = csrParams->d_first_row;
+        d_last_row      = csrParams->d_last_row;
+        d_first_col     = csrParams->d_first_col;
+        d_last_col      = csrParams->d_last_col;
+        d_cols          = csrParams->d_cols;
+        d_nnz_per_row   = csrParams->d_nnz_per_row;
+        d_coeffs        = csrParams->d_coeffs;
+        size_t N        = d_last_row - d_first_row;
+        d_manage_cols   = false;
+        d_manage_nnz    = false;
+        d_manage_coeffs = false;
 
-    } else {
-        AMP_ERROR( "Requires CSRParameter object at present" );
-    }
+        auto memType = AMP::Utilities::getMemoryType( d_cols );
 
-    auto memType = AMP::Utilities::getMemoryType( d_cols );
-
-    if ( memType != AMP::Utilities::MemoryType::device ) {
-        size_t N         = d_last_row - d_first_row;
-        const size_t nnz = std::accumulate( d_nnz_per_row, d_nnz_per_row + N, 0 );
-        std::vector<size_t> remote_dofs;
-        for ( auto i = 0u; i < nnz; ++i ) {
-            if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] >= d_last_col ) ) {
-                remote_dofs.push_back( d_cols[i] );
+        if ( memType != AMP::Utilities::MemoryType::device ) {
+            d_nnz = NNZ<Policy>( N, d_nnz_per_row );
+            std::vector<size_t> remote_dofs;
+            for ( lidx_t i = 0; i < d_nnz; ++i ) {
+                if ( ( d_cols[i] < d_first_col ) || ( d_cols[i] >= d_last_col ) ) {
+                    remote_dofs.push_back( d_cols[i] );
+                }
             }
-        }
-        AMP::Utilities::unique( remote_dofs );
-        const auto &comm = getComm();
-        d_rightDOFManager =
-            std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
+            AMP::Utilities::unique( remote_dofs );
+            const auto &comm = getComm();
+            d_rightDOFManager =
+                std::make_shared<AMP::Discretization::DOFManager>( N, comm, remote_dofs );
 
-        if ( d_is_square ) {
-            d_leftDOFManager = d_rightDOFManager;
+            if ( d_is_square ) {
+                d_leftDOFManager = d_rightDOFManager;
+            } else {
+                AMP_ERROR( "Non-square matrices not handled at present" );
+            }
+
         } else {
-            AMP_ERROR( "Non-square matrices not handled at present" );
+            AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented as yet" );
+        }
+
+    } else if ( matParams ) {
+
+        d_leftDOFManager  = matParams->getLeftDOFManager();
+        d_rightDOFManager = matParams->getRightDOFManager();
+        AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
+
+        d_is_square = ( d_leftDOFManager->numGlobalDOF() == d_rightDOFManager->numGlobalDOF() );
+        d_first_row = d_leftDOFManager->beginDOF();
+        d_last_row  = d_leftDOFManager->endDOF();
+        d_first_col = d_rightDOFManager->beginDOF();
+        d_last_col  = d_rightDOFManager->endDOF();
+
+        auto *nnzPerRow = matParams->entryList();
+        auto &cols      = matParams->getColumns();
+
+        if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
+
+            d_manage_nnz    = false;
+            d_manage_coeffs = true;
+            d_nnz_per_row   = nnzPerRow;
+            d_nnz           = cols.size();
+
+            if constexpr ( std::is_same_v<decltype( d_cols ), decltype( cols.data() )> ) {
+                d_manage_cols = false;
+                d_cols        = cols.data();
+            } else {
+                d_manage_cols = true;
+                std::allocator<gidx_t> allocator_g;
+                d_cols = allocator_g.allocate( d_nnz );
+                std::transform(
+                    cols.begin(), cols.end(), d_cols, []( size_t col ) -> gidx_t { return col; } );
+            }
+
+            d_manage_coeffs = true;
+            std::allocator<scalar_t> allocator_s;
+            d_coeffs = allocator_s.allocate( d_nnz );
+
+        } else if ( d_memory_location == AMP::Utilities::MemoryType::managed ) {
+            AMP_ERROR( "CSRMatrixData: managed memory handling has not been implemented as yet" );
+        } else {
+            AMP_ERROR( "CSRMatrixData: device memory handling has not been implemented as yet" );
         }
 
     } else {
-        AMP_WARNING( "CSRMatrixData: device memory handling has not been implemented as yet" );
+        AMP_ERROR( "Check supplied MatrixParameter object" );
     }
 }
 
@@ -73,6 +134,28 @@ template<typename Policy>
 CSRMatrixData<Policy>::~CSRMatrixData()
 {
     AMPManager::decrementResource( "CSRMatrixData" );
+
+    // tackle this case for now
+    if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
+
+        if ( d_manage_cols ) {
+            std::allocator<gidx_t> allocator_g;
+            allocator_g.deallocate( d_cols, d_nnz );
+        }
+
+        if ( d_manage_nnz ) {
+            std::allocator<lidx_t> allocator_l;
+            allocator_l.deallocate( d_nnz_per_row, d_last_row - d_first_row );
+        }
+
+        if ( d_manage_coeffs ) {
+            std::allocator<scalar_t> allocator_s;
+            allocator_s.deallocate( d_coeffs, d_nnz );
+        }
+
+    } else {
+        AMP_ERROR( "Only host memory deallocation handled at present" );
+    }
 }
 
 template<typename Policy>
