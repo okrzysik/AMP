@@ -3,6 +3,7 @@
 #include "AMP/utils/Database.hpp"
 #include "AMP/utils/Utilities.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
@@ -57,6 +58,33 @@ int readValue<int>( std::string_view str )
     if ( static_cast<size_t>( pos - str.data() ) == str.size() + 1 )
         AMP_ERROR( "Error reading value (int): " + std::string( str ) );
     return data;
+}
+template<class TYPE>
+static AMP::Range<TYPE> readRange( std::string_view str )
+{
+    AMP::Range<TYPE> z;
+    auto i1 = str.find_first_of( ':' );
+    auto i2 = str.find_first_of( ':', i1 + 1 );
+    auto v1 = readValue<TYPE>( str.substr( 0, i1 ) );
+    if ( i2 == std::string::npos ) {
+        auto v2 = readValue<TYPE>( str.substr( i1 + 1 ) );
+        z       = AMP::Range<TYPE>( v1, v2 );
+    } else {
+        auto v2 = readValue<TYPE>( str.substr( i2 + 1 ) );
+        auto dx = readValue<TYPE>( str.substr( i1 + 1, i2 - i1 - 1 ) );
+        z       = AMP::Range<TYPE>( v1, v2, dx );
+    }
+    return z;
+}
+template<>
+AMP::Range<int> readValue<AMP::Range<int>>( std::string_view str )
+{
+    return readRange<int>( str );
+}
+template<>
+AMP::Range<double> readValue<AMP::Range<double>>( std::string_view str )
+{
+    return readRange<double>( str );
 }
 template<class TYPE>
 static std::tuple<TYPE, Units> readPair( std::string_view str )
@@ -217,10 +245,22 @@ enum class class_type {
     ARRAY,
     EQUATION,
     DATABASE_ENTRY,
+    RANGE,
     UNKNOWN
 };
+class_type operator+( class_type x, class_type y )
+{
+    if ( x == y )
+        return x;
+    auto INT   = class_type::INT;
+    auto FLOAT = class_type::FLOAT;
+    if ( ( x == INT || x == FLOAT ) && ( y == INT || y == FLOAT ) )
+        return FLOAT;
+    return class_type::UNKNOWN;
+}
+static class_type getRangeType( std::string_view value );
 static class_type getType( std::string_view value0,
-                           const std::map<std::string, const KeyData *> &databaseKeys )
+                           const std::map<std::string, const KeyData *> &databaseKeys = {} )
 {
     // Check for empty string
     if ( value0.empty() )
@@ -252,8 +292,24 @@ static class_type getType( std::string_view value0,
     // Check if we are a database entry
     if ( databaseKeys.find( std::string( value0 ) ) != databaseKeys.end() )
         return class_type::DATABASE_ENTRY;
+    // Check if we are dealing with a range
+    size_t N = std::count( value.begin(), value.end(), ':' );
+    if ( N == 1 || N == 2 ) {
+        auto type = getRangeType( value );
+        if ( type == class_type::INT || type == class_type::FLOAT )
+            return class_type::RANGE;
+    }
     // Return unknown
     return class_type::UNKNOWN;
+}
+static class_type getRangeType( std::string_view value )
+{
+    auto i1   = value.find_first_of( ':' );
+    auto i2   = std::min<size_t>( value.find_first_of( ':', i1 + 1 ), value.size() );
+    auto type = getType( value.substr( 0, i1 ) ) + getType( value.substr( i1 + 1, i2 - i1 - 1 ) );
+    if ( i2 < value.size() )
+        type = type + getType( value.substr( i2 + 1 ) );
+    return type;
 }
 template<class T>
 static bool isType( const std::vector<const KeyData *> &data )
@@ -515,6 +571,19 @@ createKeyData( std::string_view key,
                     "Using multiple values from database - unable to convert data: " +
                     std::string( key ) );
             }
+        }
+    } else if ( data_type == class_type::RANGE ) {
+        // We are dealing with a range
+        AMP_INSIST( values.size() == 1, "Arrays of Ranges are not supported" );
+        auto type = getRangeType( values[0] );
+        if ( type == class_type::INT ) {
+            auto [range, unit] = readPair<AMP::Range<int>>( values[0] );
+            data = std::make_unique<KeyDataArray<int>>( AMP::Array<int>( range ), unit );
+        } else if ( type == class_type::FLOAT ) {
+            auto [range, unit] = readPair<AMP::Range<double>>( values[0] );
+            data = std::make_unique<KeyDataArray<double>>( AMP::Array<double>( range ), unit );
+        } else {
+            throw std::logic_error( "Unknown type for range" );
         }
     } else if ( data_type == class_type::UNKNOWN ) {
         // Treat unknown data as a string
