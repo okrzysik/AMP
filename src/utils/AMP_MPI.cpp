@@ -477,9 +477,9 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
         uint64_t r = AMP::AMPManager::getCommWorld().getRank();
         uint64_t h = 0x6dac47f99495c90e + ( r << 32 ) + r;
         uint64_t x;
-        if constexpr ( sizeof( d_comm == 4 ) ) {
+        if constexpr ( sizeof( d_comm ) == 4 ) {
             x = *reinterpret_cast<const uint32_t *>( &d_comm );
-        } else if constexpr ( sizeof( d_comm == 8 ) ) {
+        } else if constexpr ( sizeof( d_comm ) == 8 ) {
             x = *reinterpret_cast<const uint64_t *>( &d_comm );
         } else {
             throw std::logic_error( "Not finished" );
