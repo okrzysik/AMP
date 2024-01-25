@@ -25,8 +25,8 @@ public:
     explicit CSRMatrixParameters( gidx_t first_row,
                                   gidx_t last_row,
                                   lidx_t *nnz_per_row,
-                                  gidx_t const *const cols,
-                                  scalar_t const *const coeffs,
+                                  gidx_t *cols,
+                                  scalar_t *coeffs,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_is_square( true ),
@@ -46,8 +46,8 @@ public:
                                   gidx_t first_col,
                                   gidx_t last_col,
                                   lidx_t *nnz_per_row,
-                                  gidx_t const *const cols,
-                                  scalar_t const *const coeffs,
+                                  gidx_t *cols,
+                                  scalar_t *coeffs,
                                   const AMP_MPI &comm )
         : MatrixParametersBase( comm ),
           d_is_square( is_square ),
@@ -70,8 +70,8 @@ public:
     gidx_t d_first_col;
     gidx_t d_last_col;
     lidx_t *d_nnz_per_row;
-    gidx_t const *d_cols;
-    scalar_t const *d_coeffs;
+    gidx_t *d_cols;
+    scalar_t *d_coeffs;
 };
 } // namespace AMP::LinearAlgebra
 
