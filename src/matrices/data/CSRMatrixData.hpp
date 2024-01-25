@@ -32,6 +32,13 @@ static auto NNZ( typename Policy::lidx_t N, typename Policy::lidx_t *nnz_per_row
     return std::accumulate( nnz_per_row, nnz_per_row + N, 0 );
 }
 
+template<typename T, template<typename> typename Allocator>
+static T *allocate( size_t N )
+{
+    Allocator<T> alloc;
+    return alloc.allocate( N );
+}
+
 template<typename Policy>
 CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> params )
     : MatrixData( params )
@@ -109,15 +116,13 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
                 d_cols        = cols.data();
             } else {
                 d_manage_cols = true;
-                std::allocator<gidx_t> allocator_g;
-                d_cols = allocator_g.allocate( d_nnz );
+                d_cols        = allocate<gidx_t, std::allocator>( d_nnz );
                 std::transform(
                     cols.begin(), cols.end(), d_cols, []( size_t col ) -> gidx_t { return col; } );
             }
 
             d_manage_coeffs = true;
-            std::allocator<scalar_t> allocator_s;
-            d_coeffs = allocator_s.allocate( d_nnz );
+            d_coeffs        = allocate<scalar_t, std::allocator>( d_nnz );
 
         } else if ( d_memory_location == AMP::Utilities::MemoryType::managed ) {
             AMP_ERROR( "CSRMatrixData: managed memory handling has not been implemented as yet" );
