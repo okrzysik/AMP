@@ -74,6 +74,11 @@ public:
     static Comm commSelf;
     static Comm commWorld;
 
+    constexpr static uint64_t hashNull  = 0xcc6bc5507c132516;
+    constexpr static uint64_t hashSelf  = 0x070b9699a107fe57;
+    constexpr static uint64_t hashWorld = 0x3d5fdf58e4df5a94;
+    constexpr static uint64_t hashMPI   = 0x641118b35a0d87cd;
+
     class Request final
     {
     public:
@@ -108,8 +113,8 @@ public: // Constructors
      *      for free'ing the MPI_Comm when it is no longer used.  This behavior is controlled by the
      *      optional manage argument.
      * \param[in] comm      Existing MPI communicator
-     * \param[in] manage    Do we want to manage the comm (free the MPI_Comm when this object leaves
-     * scope)
+     * \param[in] manage    Do we want to manage the comm
+     *                      (free the MPI_Comm when this object leaves scope)
      */
     AMP_MPI( Comm comm, bool manage = false );
 
@@ -296,6 +301,17 @@ public: // Member functions
      *   member of the communicator.  The global ranks are defined according to WORLD comm.
      */
     std::vector<int> globalRanks() const;
+
+
+    /**
+     * \brief Return a unique hash id for the comm
+     * \details  This returns a hash which is unique for the comm.
+     *           Two AMP_MPI objects that share the same underlying MPI_Comm object will
+     *              have the same hash.
+     *           Two objects that have the same ranks but different MPI_Comm objects
+     *              will have different hash values.
+     */
+    inline uint64_t hash() const { return d_hash; }
 
 
     /**
@@ -1409,13 +1425,14 @@ private: // data members
     using atomic_int = volatile std::atomic_int64_t;
     using int_ptr    = int *volatile;
 
-    Comm d_comm             = commNull;     //!< The internal MPI communicator
-    bool d_isNull           = true;         //!< Is the communicator NULL
-    bool d_manage           = false;        //!< Do we want to manage this communicator
-    bool d_call_abort       = true;         //!< Do we want to call MPI_abort instead of exit
-    int d_rank              = 0;            //!< The rank of the communicator
-    int d_size              = 1;            //!< The size of the communicator
-    int d_maxTag            = 0x3FFFFFFF;   //!< The maximum valid tag
+    Comm d_comm       = commNull;   //!< The internal MPI communicator
+    bool d_isNull     = true;       //!< Is the communicator NULL
+    bool d_manage     = false;      //!< Do we want to manage this communicator
+    bool d_call_abort = true;       //!< Do we want to call MPI_abort instead of exit
+    int d_rank        = 0;          //!< The rank of the communicator
+    int d_size        = 1;          //!< The size of the communicator
+    int d_maxTag      = 0x3FFFFFFF; //!< The maximum valid tag
+    uint64_t d_hash = hashNull; //!< A unique hash for the comm that is consistent across all ranks
     int_ptr d_currentTag    = nullptr;      //!< The current tag
     mutable int_ptr d_ranks = nullptr;      //!< The ranks of the comm in the global comm
     atomic_ptr d_count      = 0;            //!< How many objects share the communicator
