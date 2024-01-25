@@ -304,7 +304,7 @@ void AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::CommunicationLis
     hid_t fid, const std::string &name ) const
 {
     hid_t gid = createGroup( fid, name );
-    writeHDF5( gid, "commHash", d_data->getComm().hashRanks() );
+    writeHDF5( gid, "commHash", d_data->getComm().hash() );
     writeHDF5( gid, "localsize", d_data->numLocalRows() );
     writeHDF5( gid, "remote_DOFs", d_data->getGhostIDList() );
     closeGroup( gid );

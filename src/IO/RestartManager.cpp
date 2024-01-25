@@ -1,8 +1,11 @@
 #include "AMP/IO/RestartManager.h"
 #include "AMP/IO/RestartManager.hpp"
+#include "AMP/utils/AMP_MPI.I"
 #include "AMP/utils/Array.h"
 #include "AMP/utils/Database.h"
 #include "AMP/utils/Utilities.h"
+
+#include "ProfilerApp.h"
 
 #include <complex>
 #include <set>
@@ -19,6 +22,7 @@ namespace AMP::IO {
 RestartManager::RestartManager() : d_writer( true ), d_fid( -1 ) {}
 RestartManager::RestartManager( const std::string &name ) : d_writer( false ), d_fid( -1 )
 {
+    PROFILE_START( "load" );
     int rank = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     AMP_INSIST( d_fid == hid_t( -1 ), "User must close file before opening a new one" );
     d_data.clear();
@@ -32,6 +36,7 @@ RestartManager::RestartManager( const std::string &name ) : d_writer( false ), d
     for ( size_t i = 0; i < names.size(); i++ )
         d_names[names[i]] = ids[i];
     readCommData( name );
+    PROFILE_STOP( "load" );
 }
 RestartManager::~RestartManager()
 {
@@ -46,6 +51,7 @@ RestartManager::~RestartManager()
  ********************************************************/
 void RestartManager::write( const std::string &name, Compression compress )
 {
+    PROFILE_START( "write" );
     int rank  = AMP::AMP_MPI( AMP_COMM_WORLD ).getRank();
     auto file = name + "." + AMP::Utilities::nodeToString( rank ) + ".h5";
     auto fid  = openHDF5( file, "w", compress );
@@ -63,6 +69,7 @@ void RestartManager::write( const std::string &name, Compression compress )
     }
     closeHDF5( fid );
     writeCommData( name, compress );
+    PROFILE_STOP( "write" );
 }
 
 
@@ -71,68 +78,129 @@ void RestartManager::write( const std::string &name, Compression compress )
  ********************************************************/
 void RestartManager::registerComm( const AMP::AMP_MPI &comm )
 {
-    auto hash = comm.hashRanks();
+    auto hash = comm.hash();
+    // No need to register known comms
+    if ( hash == AMP_MPI::hashNull || hash == AMP_MPI::hashSelf || hash == AMP_MPI::hashWorld ||
+         hash == AMP_MPI::hashMPI )
+        return;
+    // Check if we have previously registered the comm and do so
     if ( d_comms.find( hash ) != d_comms.end() )
         return;
     d_comms[hash] = comm;
 }
 AMP_MPI RestartManager::getComm( uint64_t hash )
 {
+    // Check if it is a known comm
+    if ( hash == AMP_MPI::hashNull )
+        return AMP::AMP_MPI( AMP_COMM_NULL );
+    if ( hash == AMP_MPI::hashSelf )
+        return AMP::AMP_MPI( AMP_COMM_SELF );
+    if ( hash == AMP_MPI::hashWorld )
+        return AMP::AMP_MPI( AMP_COMM_WORLD );
+#ifdef AMP_USE_MPI
+    if ( hash == AMP_MPI::hashMPI )
+        return AMP::AMP_MPI( MPI_COMM_WORLD );
+#else
+    if ( hash == AMP_MPI::hashMPI )
+        return AMP::AMP_MPI( AMP_COMM_WORLD );
+#endif
+    // Find the appropriate comm
     auto it = d_comms.find( hash );
-    if ( it == d_comms.end() ) {
+    if ( it == d_comms.end() )
         AMP_ERROR( "Unable to find comm: " + std::to_string( hash ) );
-    }
-    return it->second.dup();
+    return it->second;
 }
 void RestartManager::writeCommData( const std::string &name, Compression compress )
 {
+    PROFILE_START( "writeCommData" );
     // Collect the comm data
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
     int rank = globalComm.getRank();
     int size = globalComm.getSize();
-    std::set<uint64_t> comm_ids;
+    // Get the list of comm ids and their hash ranks
+    std::map<uint64_t, uint64_t> hashMap;
     for ( auto &[id, comm] : d_comms )
-        comm_ids.insert( id );
-    globalComm.setGather( comm_ids );
-    std::vector<uint64_t> comm_list( comm_ids.begin(), comm_ids.end() );
-    std::vector<bool> comm_data( size * comm_ids.size(), false );
-    for ( size_t i = 0; i < comm_ids.size(); i++ ) {
-        std::vector<bool> tmp( size, false );
-        if ( d_comms.find( comm_list[i] ) != d_comms.end() )
-            tmp[rank] = true;
-        globalComm.anyReduce( tmp );
-        for ( int j = 0; j < size; j++ ) {
-            if ( tmp[j] )
-                comm_data[i * size + j] = true;
-        }
+        hashMap[id] = comm.hashRanks();
+    globalComm.mapGather( hashMap );
+    // Get the list of hashRanks values
+    std::set<uint64_t> tmp;
+    for ( auto [id, value] : hashMap )
+        tmp.insert( value );
+    std::vector<uint64_t> hashRanks( tmp.begin(), tmp.end() );
+    // Create the id list and index to the appropriate hashRanks entry
+    std::vector<uint64_t> ids;
+    std::vector<int> index;
+    for ( auto [id, key] : hashMap ) {
+        ids.push_back( id );
+        index.push_back( AMP::Utilities::findfirst( hashRanks, key ) );
     }
+    size_t N = hashRanks.size();
+    // Create the global rank map
+    AMP::Array<int> data( size, N );
+    data.fill( -1 );
+    for ( auto &[id, comm] : d_comms ) {
+        size_t i   = AMP::Utilities::findfirst( ids, id );
+        size_t j   = index[i];
+        auto ranks = comm.globalRanks();
+        for ( size_t k = 0; k < ranks.size(); k++ )
+            data( ranks[k], j ) = k;
+    }
+    globalComm.maxReduce( data.data(), data.length() );
+    // Write the comm data
     if ( rank == 0 ) {
         auto file = name + ".comms.h5";
         auto fid  = openHDF5( file, "w", compress );
-        writeHDF5( fid, "ids", comm_list );
-        writeHDF5( fid, "data", comm_data );
+        writeHDF5( fid, "ids", ids );
+        writeHDF5( fid, "index", index );
+        writeHDF5( fid, "data", data );
         closeHDF5( fid );
     }
+    PROFILE_STOP( "writeCommData" );
 }
 void RestartManager::readCommData( const std::string &name )
 {
+    PROFILE_START( "readCommData" );
+    // Load the comm data
     auto file = name + ".comms.h5";
-    auto fid  = openHDF5( file, "r" );
-    std::vector<uint64_t> comm_list;
-    std::vector<bool> comm_data;
-    readHDF5( fid, "ids", comm_list );
-    readHDF5( fid, "data", comm_data );
-    closeHDF5( fid );
-    d_comms.clear();
+    std::vector<uint64_t> ids;
+    std::vector<int> index;
+    AMP::Array<int> data;
     AMP::AMP_MPI globalComm( AMP_COMM_WORLD );
-    int rank = globalComm.getRank();
-    int size = globalComm.getSize();
-    for ( size_t i = 0; i < comm_list.size(); i++ ) {
-        bool test = comm_data[i * size + rank];
-        auto comm = globalComm.split( test ? 1 : 0 );
-        if ( test )
-            d_comms[comm_list[i]] = comm;
+    auto rank = globalComm.getRank();
+    if ( rank == 0 ) {
+        auto fid = openHDF5( file, "r" );
+        readHDF5( fid, "ids", ids );
+        readHDF5( fid, "index", index );
+        readHDF5( fid, "data", data );
+        closeHDF5( fid );
     }
+    ids   = globalComm.bcast( ids, 0 );
+    index = globalComm.bcast( index, 0 );
+    data  = globalComm.bcast( data, 0 );
+    // Check that the global size did not change
+    AMP_INSIST( (int) data.size( 0 ) == globalComm.getSize(),
+                "The global communicator size changed" );
+    // Create the comms
+    d_comms.clear();
+    std::vector<int> size( data.size( 1 ), 0 );
+    for ( size_t i = 0; i < data.size( 1 ); i++ ) {
+        for ( size_t j = 0; j < data.size( 0 ); j++ )
+            if ( data( j, i ) != -1 )
+                size[i]++;
+        AMP_ASSERT( size[i] > 0 );
+    }
+    for ( size_t i = 0; i < ids.size(); i++ ) {
+        int idx = index[i];
+        int key = data( rank, idx );
+        if ( size[idx] > 1 ) {
+            auto comm = globalComm.split( key == -1 ? -1 : 0, key );
+            if ( key != -1 )
+                d_comms[ids[i]] = comm;
+        } else if ( size[idx] == 1 && key != -1 ) {
+            d_comms[ids[i]] = AMP::AMP_MPI( AMP_COMM_SELF ).dup();
+        }
+    }
+    PROFILE_STOP( "readCommData" );
 }
 
 
