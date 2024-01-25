@@ -48,6 +48,7 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
     auto matParams = std ::dynamic_pointer_cast<MatrixParameters>( d_pParameters );
 
     d_memory_location = d_pParameters->d_memory_location;
+    size_t N          = d_last_row - d_first_row;
 
     if ( csrParams ) {
         // add check for memory location etc and migrate if necessary
@@ -59,7 +60,6 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
         d_cols          = csrParams->d_cols;
         d_nnz_per_row   = csrParams->d_nnz_per_row;
         d_coeffs        = csrParams->d_coeffs;
-        size_t N        = d_last_row - d_first_row;
         d_manage_cols   = false;
         d_manage_nnz    = false;
         d_manage_coeffs = false;
@@ -125,7 +125,14 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
             d_coeffs        = allocate<scalar_t, std::allocator>( d_nnz );
 
         } else if ( d_memory_location == AMP::Utilities::MemoryType::managed ) {
-            AMP_ERROR( "CSRMatrixData: managed memory handling has not been implemented as yet" );
+
+            d_manage_cols   = true;
+            d_manage_nnz    = true;
+            d_manage_coeffs = true;
+
+            d_nnz = cols.size();
+
+            AMP_ERROR( "CSRMatrixData: device memory handling has not been implemented as yet" );
         } else {
             AMP_ERROR( "CSRMatrixData: device memory handling has not been implemented as yet" );
         }
