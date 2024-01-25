@@ -43,6 +43,8 @@ void testRestartManagerComms( AMP::UnitTest &ut )
     auto tmp = globalComm.split( rank < 2 ? 0 : 1 );
     if ( rank < 2 )
         comms.push_back( tmp );
+    AMP::AMP_MPI tmp2( tmp.getCommunicator(), false );
+    record( ut, tmp.hash() == tmp2.hash(), "hash is tied to MPI" );
 
     // Create some random comms
     std::mt19937 gen( globalComm.rand() );
