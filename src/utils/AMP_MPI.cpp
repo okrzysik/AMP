@@ -277,6 +277,7 @@ void MPI_CLASS::reset()
     d_ranks      = nullptr;
     d_rank       = 0;
     d_size       = 1;
+    d_hash       = hashNull;
     d_maxTag     = 0;
     d_isNull     = true;
     d_currentTag = nullptr;
@@ -295,6 +296,7 @@ MPI_CLASS::MPI_CLASS( const MPI_CLASS &comm )
       d_rank( comm.d_rank ),
       d_size( comm.d_size ),
       d_maxTag( comm.d_maxTag ),
+      d_hash( comm.d_hash ),
       d_currentTag( comm.d_currentTag ),
       d_ranks( comm.d_ranks ),
       d_count( nullptr )
@@ -319,6 +321,7 @@ MPI_CLASS::MPI_CLASS( MPI_CLASS &&rhs ) : MPI_CLASS()
     std::swap( d_size, rhs.d_size );
     std::swap( d_ranks, rhs.d_ranks );
     std::swap( d_maxTag, rhs.d_maxTag );
+    std::swap( d_hash, rhs.d_hash );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
 }
@@ -341,6 +344,7 @@ MPI_CLASS &MPI_CLASS::operator=( const MPI_CLASS &comm )
     this->d_isNull     = comm.d_isNull;
     this->d_manage     = comm.d_manage;
     this->d_maxTag     = comm.d_maxTag;
+    this->d_hash       = comm.d_hash;
     this->d_call_abort = comm.d_call_abort;
     this->d_currentTag = comm.d_currentTag;
     if ( this->d_currentTag != nullptr )
@@ -364,6 +368,7 @@ MPI_CLASS &MPI_CLASS::operator=( MPI_CLASS &&rhs )
     std::swap( d_size, rhs.d_size );
     std::swap( d_ranks, rhs.d_ranks );
     std::swap( d_maxTag, rhs.d_maxTag );
+    std::swap( d_hash, rhs.d_hash );
     std::swap( d_currentTag, rhs.d_currentTag );
     std::swap( d_count, rhs.d_count );
     return *this;
@@ -459,6 +464,28 @@ MPI_CLASS::MPI_CLASS( Comm comm, bool manage )
         d_currentTag[1] = 1;
     }
     d_call_abort = true;
+    // Create the hash
+    if ( d_comm == MPI_COMM_NULL ) {
+        d_hash = hashNull;
+    } else if ( d_comm == MPI_COMM_SELF ) {
+        d_hash = hashSelf;
+    } else if ( d_comm == MPI_COMM_WORLD ) {
+        d_hash = hashMPI;
+    } else if ( d_comm == commWorld ) {
+        d_hash = hashWorld;
+    } else {
+        uint64_t r = AMP::AMPManager::getCommWorld().getRank();
+        uint64_t h = 0x6dac47f99495c90e + ( r << 32 ) + r;
+        uint64_t x;
+        if constexpr ( sizeof( d_comm ) == 4 ) {
+            x = *reinterpret_cast<const uint32_t *>( &d_comm );
+        } else if constexpr ( sizeof( d_comm ) == 8 ) {
+            x = *reinterpret_cast<const uint64_t *>( &d_comm );
+        } else {
+            throw std::logic_error( "Not finished" );
+        }
+        d_hash = bcast( h ^ x, 0 );
+    }
 }
 
 
@@ -502,21 +529,11 @@ std::vector<int> MPI_CLASS::globalRanks() const
 }
 uint64_t MPI_CLASS::hashRanks() const
 {
-    uint64_t hash = 0x6BCDEEF696DCF9FF;
-    if ( d_comm == MPI_COMM_NULL ) {
-        return hash ^ 0x0;
-    } else if ( d_comm == MPI_COMM_SELF ) {
-        return hash ^ 0x1;
-    } else if ( d_comm == MPI_COMM_WORLD ) {
-        return hash ^ 0x2;
-    } else if ( d_comm == commWorld ) {
-        return hash ^ 0x3;
-    } else {
-        auto ranks = globalRanks();
-        for ( auto rank : ranks )
-            hash = hash ^ std::hash<int>{}( rank );
-        return hash;
-    }
+    PROFILE_SCOPED( timer, "hashRanks", profile_level );
+    std::string str;
+    for ( auto rank : globalRanks() )
+        str += std::to_string( rank ) + '.';
+    return std::hash<std::string>{}( str );
 }
 
 
@@ -631,6 +648,7 @@ MPI_CLASS MPI_CLASS::split( int color, int key, bool manage ) const
             return MPI_CLASS( commNull );
         return dup();
     }
+    PROFILE_SCOPED( timer, "split", profile_level );
     MPI_CLASS::Comm new_MPI_comm = commNull;
 #ifdef USE_MPI
     // USE MPI to split the communicator
@@ -653,6 +671,7 @@ MPI_CLASS MPI_CLASS::splitByNode( int key, bool manage ) const
     // Check if we are dealing with a single processor (trivial case)
     if ( d_size == 1 )
         return this->split( 0, 0, manage );
+    PROFILE_SCOPED( timer, "splitByNode", profile_level );
     // Get the node name
     std::string name = MPI_CLASS::getNodeName();
     unsigned int id  = AMP::Utilities::hash_char( name.data() );
@@ -672,6 +691,7 @@ MPI_CLASS MPI_CLASS::dup( bool manage ) const
 {
     if ( d_isNull )
         return MPI_CLASS( commNull );
+    PROFILE_SCOPED( timer, "dup", profile_level );
     MPI_CLASS::Comm new_MPI_comm = d_comm;
 #if defined( USE_MPI ) || defined( USE_PETSC )
     // USE MPI to duplicate the communicator

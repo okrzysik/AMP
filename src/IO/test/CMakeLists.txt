@@ -39,7 +39,11 @@ IF ( USE_HDF5 )
     ADD_AMP_TEST( view_HDF5 test_HDF5.hdf5 DEPENDS test_HDF5 )
     ADD_AMP_TEST( test_XDMF )
     ADD_AMP_TEST( test_XDMF PROCS 2 )
-    ADD_AMP_PROVISIONAL_TEST( test_RestartManager )
+    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_1D )
+    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_2D )
+    ADD_AMP_TEST( test_RestartManager input_AMP_mesh_zoo_3D )
+    ADD_AMP_TEST( test_RestartManagerComms )
+    ADD_AMP_TEST( test_RestartManagerComms PROCS 4 )
 ENDIF()
 
 

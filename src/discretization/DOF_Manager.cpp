@@ -251,7 +251,7 @@ void DOFManager::writeRestart( int64_t fid ) const
     writeHDF5( fid, "begin", d_begin );
     writeHDF5( fid, "end", d_end );
     writeHDF5( fid, "global", d_global );
-    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    writeHDF5( fid, "comm", d_comm.hash() );
 }
 DOFManager::DOFManager( int64_t fid, AMP::IO::RestartManager *manager )
 {
