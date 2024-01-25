@@ -522,7 +522,7 @@ void Mesh::writeRestart( int64_t fid ) const
     writeHDF5( fid, "GeomDim", GeomDim );
     writeHDF5( fid, "PhysicalDim", PhysicalDim );
     writeHDF5( fid, "max_gcw", d_max_gcw );
-    writeHDF5( fid, "comm", d_comm.hashRanks() );
+    writeHDF5( fid, "comm", d_comm.hash() );
     writeHDF5( fid, "meshID", d_meshID );
     writeHDF5( fid, "name", d_name );
     writeHDF5( fid, "box", d_box );

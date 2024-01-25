@@ -532,7 +532,7 @@ void MultiVectorData::writeRestart( int64_t fid ) const
         dataHash[i] = d_data[i]->getID();
     for ( size_t i = 0; i < d_subDOFManager.size(); i++ )
         dofsHash[i] = d_subDOFManager[i]->getID();
-    writeHDF5( fid, "CommHash", d_comm.hashRanks() );
+    writeHDF5( fid, "CommHash", d_comm.hash() );
     writeHDF5( fid, "globalDOFsHash", d_globalDOFManager->getID() );
     writeHDF5( fid, "VectorDataHash", dataHash );
     writeHDF5( fid, "DOFManagerHash", dofsHash );
