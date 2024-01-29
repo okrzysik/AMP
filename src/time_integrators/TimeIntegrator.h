@@ -265,6 +265,11 @@ public:
         return std::vector<double>( 1, 1.0 );
     }
 
+    /*
+     * Returns the number of previous solutions that are stored
+     */
+    virtual double sizeOfTimeHistory() const { return 1.0; }
+
 protected:
     /*
      * Read input data from specified database and initialize class members.

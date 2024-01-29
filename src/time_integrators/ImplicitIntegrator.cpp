@@ -117,6 +117,10 @@ int ImplicitIntegrator::advanceSolution( const double dt,
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
 
+    // this call must be before the call to setInitialGuess as the computed
+    // coefficients are used there
+    setTimeHistoryScalings();
+
     return integratorSpecificAdvanceSolution( dt, first_step, in, out );
 }
 
@@ -132,10 +136,6 @@ int ImplicitIntegrator::integratorSpecificAdvanceSolution(
 
     d_solution_vector = in;
     d_current_dt      = dt;
-
-    // this call must be before the call to setInitialGuess as the computed
-    // coefficients are used there
-    setTimeHistoryScalings();
 
     if ( first_step ) {
         d_solution_vector->getVectorData()->reset();

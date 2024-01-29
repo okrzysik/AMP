@@ -330,7 +330,7 @@ void BDFIntegrator::setTimeHistoryScalings( void )
         AMP_ASSERT( d_integrator_index == 0 );
         const double eps   = 0.0;
         const double alpha = 0.5 * d_current_dt + eps;
-        const double beta  = 0.5 * d_current_dt - eps;
+        //        const double beta  = 0.5 * d_current_dt - eps;
 
         d_a.resize( 1 );
         d_gamma = alpha;
@@ -519,9 +519,9 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
     if ( current_integrator == "CN" ) {
 
         AMP_ASSERT( d_integrator_index == 0 );
-        const double eps   = 0.0;
-        const double alpha = 0.5 * d_current_dt + eps;
-        const double beta  = 0.5 * d_current_dt - eps;
+        const double eps = 0.0;
+        //        const double alpha = 0.5 * d_current_dt + eps;
+        const double beta = 0.5 * d_current_dt - eps;
 
         // set the source term to -( u^{n}+(dt/2-\eps)f(u^n) )
         f->axpy( -beta, *d_prev_function_vector, *f );

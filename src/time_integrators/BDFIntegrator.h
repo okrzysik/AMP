@@ -92,7 +92,9 @@ public:
 
     void registerVectorsForMemoryManagement( void );
 
-    std::vector<double> getTimeHistoryScalings( void ) const { return d_a; };
+    std::vector<double> getTimeHistoryScalings( void ) const override { return d_a; };
+
+    double sizeOfTimeHistory() const override { return d_max_integrator_index + 1; }
 
 protected:
     /*
