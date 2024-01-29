@@ -223,7 +223,7 @@ protected:
      */
     double getPredictorTimestepBound( void );
 
-    void setTimeHistoryScalings();
+    void setTimeHistoryScalings() override;
 
     DataManagerCallBack d_registerVectorForManagement;
 
