@@ -268,7 +268,7 @@ public:
     /*
      * Returns the number of previous solutions that are stored
      */
-    virtual double sizeOfTimeHistory() const { return 1.0; }
+    virtual size_t sizeOfTimeHistory() const { return 1; }
 
 protected:
     /*

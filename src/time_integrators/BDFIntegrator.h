@@ -94,7 +94,12 @@ public:
 
     std::vector<double> getTimeHistoryScalings( void ) const override { return d_a; };
 
-    double sizeOfTimeHistory() const override { return d_max_integrator_index + 1; }
+    size_t sizeOfTimeHistory() const override { return d_max_integrator_index + 1; }
+
+    std::vector<std::shared_ptr<AMP::LinearAlgebra::Vector>> getTimeHistoryVectors()
+    {
+        return d_prev_solutions;
+    }
 
 protected:
     /*
