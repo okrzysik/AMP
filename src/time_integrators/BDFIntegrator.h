@@ -92,6 +92,10 @@ public:
 
     void registerVectorsForMemoryManagement( void );
 
+    std::vector<double> getTimeHistoryScalings( void ) const override { return d_a; };
+
+    double sizeOfTimeHistory() const override { return d_max_integrator_index + 1; }
+
 protected:
     /*
      * Helper functions.
@@ -214,6 +218,8 @@ protected:
      */
     double getPredictorTimestepBound( void );
 
+    void setTimeHistoryScalings();
+
     DataManagerCallBack d_registerVectorForManagement;
 
 #ifdef ENABLE_RESTART
@@ -281,6 +287,9 @@ protected:
 
     //! names of variables to associate with different components of a vector
     std::vector<std::string> d_var_names;
+
+    //! time history scalings
+    std::vector<double> d_a;
 
     //! norm type used for truncation error calculation
     std::string d_timeTruncationErrorNormType = "l2Norm";

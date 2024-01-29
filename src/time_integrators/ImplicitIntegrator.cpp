@@ -117,6 +117,10 @@ int ImplicitIntegrator::advanceSolution( const double dt,
         AMP::pout << "++++++++++++++++++++++++++++++++++++++++++++++++\n" << std::endl;
     }
 
+    // this call must be before the call to setInitialGuess as the computed
+    // coefficients are used there
+    setTimeHistoryScalings();
+
     return integratorSpecificAdvanceSolution( dt, first_step, in, out );
 }
 
@@ -295,4 +299,20 @@ void ImplicitIntegrator::printStatistics( std::ostream &os )
     os << std::endl << "Printing integrator statistics" << std::endl;
     d_solver->printStatistics( os );
 }
+
+/*
+ *************************************************************************
+ *
+ * Expose some time operator parameters
+ *
+ *************************************************************************
+ */
+
+double ImplicitIntegrator::getGamma( void ) const
+{
+    auto op = std::dynamic_pointer_cast<TimeOperator>( d_operator );
+    AMP_ASSERT( op );
+    return op->getGamma();
+}
+
 } // namespace AMP::TimeIntegrator
