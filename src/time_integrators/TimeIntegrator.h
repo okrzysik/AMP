@@ -252,6 +252,19 @@ public:
     }
     virtual AMP::LinearAlgebra::Vector::shared_ptr getSourceTerm( void ) { return d_pSourceTerm; }
 
+    virtual double getGamma( void ) const { return d_current_dt; }
+
+    /**
+     * \brief  Scaling factors for previous time history vectors
+     * \details For RK methods the previous time vector is always scaled by 1. For
+     * multistep methods this vector can consist of multiple scalings with the first
+     * entry being the scaling for $y^{n-1}$, the next being for $y^{n-2}$ etc
+     */
+    virtual std::vector<double> getTimeHistoryScalings( void ) const
+    {
+        return std::vector<double>( 1, 1.0 );
+    }
+
 protected:
     /*
      * Read input data from specified database and initialize class members.
