@@ -245,6 +245,8 @@ public:
         d_fTimeScalingFnPtr = fnPtr;
     }
 
+    double getGamma( void ) const override;
+
 protected:
     /**
      * Set the initial guess for the time advanced solution at the start
@@ -260,6 +262,8 @@ protected:
                                   const double current_time,
                                   const double current_dt,
                                   const double old_dt );
+
+    virtual void setTimeHistoryScalings() {}
 
     /*
      * Pointers to implicit equation and solver strategy objects and patch

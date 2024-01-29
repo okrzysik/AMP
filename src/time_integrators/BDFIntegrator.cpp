@@ -304,10 +304,8 @@ void BDFIntegrator::getFromInput( std::shared_ptr<AMP::Database> db, bool is_fro
     }
 }
 
-void BDFIntegrator::computeIntegratorSourceTerm( void )
+void BDFIntegrator::setTimeHistoryScalings( void )
 {
-    auto f = d_integrator_source_vector;
-
     const auto &current_integrator = d_integrator_names[d_integrator_index];
 
     std::vector<double> h( d_integrator_index + 1 );
@@ -323,21 +321,20 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
     if ( current_integrator == "BE" ) {
 
         AMP_ASSERT( d_integrator_index == 0 );
-        f->scale( -1.0, *d_prev_solutions[0] );
+        d_a.resize( 1 );
         d_gamma = d_current_dt;
+        d_a[0]  = 1.0;
 
     } else if ( current_integrator == "CN" ) {
 
         AMP_ASSERT( d_integrator_index == 0 );
         const double eps   = 0.0;
         const double alpha = 0.5 * d_current_dt + eps;
-        const double beta  = 0.5 * d_current_dt - eps;
+        //        const double beta  = 0.5 * d_current_dt - eps;
 
-        // set the source term to -( u^{n}+(dt/2-\eps)f(u^n) )
-        f->axpy( beta, *d_prev_function_vector, *d_prev_solutions[0] );
-        f->scale( -1.0, *f );
-
+        d_a.resize( 1 );
         d_gamma = alpha;
+        d_a[0]  = 1.0;
 
     } else if ( current_integrator == "BDF2" ) {
 
@@ -347,13 +344,14 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
         const double h2    = h[1];
         const double alpha = h1 + h2;
         const double a0    = ( h1 * h2 ) / alpha;
-        const double a1    = -( h2 * h2 ) / ( alpha * ( h2 - h1 ) );
-        const double a2    = -( h1 * h1 ) / ( alpha * ( h1 - h2 ) );
+        const double a1    = ( h2 * h2 ) / ( alpha * ( h2 - h1 ) );
+        const double a2    = ( h1 * h1 ) / ( alpha * ( h1 - h2 ) );
 
-        f->scale( a1, *d_prev_solutions[0] );
-        f->axpy( a2, *d_prev_solutions[1], *f );
+        d_a.resize( 2 );
 
         d_gamma = a0;
+        d_a[0]  = a1;
+        d_a[1]  = a2;
 
     } else if ( current_integrator == "BDF3" ) {
 
@@ -367,15 +365,16 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
         const double n3    = h1 * h2;
         const double alpha = n1 + n2 + n3;
         const double a0    = ( h1 * h2 * h3 ) / alpha;
-        const double a1    = -( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) );
-        const double a2    = -( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) );
-        const double a3    = -( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) );
+        const double a1    = ( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) );
+        const double a2    = ( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) );
+        const double a3    = ( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) );
 
-        f->scale( a1, *d_prev_solutions[0] );
-        f->axpy( a2, *d_prev_solutions[1], *f );
-        f->axpy( a3, *d_prev_solutions[2], *f );
+        d_a.resize( 3 );
 
         d_gamma = a0;
+        d_a[0]  = a1;
+        d_a[1]  = a2;
+        d_a[2]  = a3;
 
     } else if ( current_integrator == "BDF4" ) {
 
@@ -392,17 +391,18 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
         const double alpha = n1 + n2 + n3 + n4;
 
         const double a0 = ( h1 * h2 * h3 * h4 ) / alpha;
-        const double a1 = -( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) * ( h4 - h1 ) );
-        const double a2 = -( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) * ( h4 - h2 ) );
-        const double a3 = -( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) * ( h4 - h3 ) );
-        const double a4 = -( n4 * n4 ) / ( alpha * ( h1 - h4 ) * ( h2 - h4 ) * ( h3 - h4 ) );
+        const double a1 = ( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) * ( h4 - h1 ) );
+        const double a2 = ( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) * ( h4 - h2 ) );
+        const double a3 = ( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) * ( h4 - h3 ) );
+        const double a4 = ( n4 * n4 ) / ( alpha * ( h1 - h4 ) * ( h2 - h4 ) * ( h3 - h4 ) );
 
-        f->scale( a1, *d_prev_solutions[0] );
-        f->axpy( a2, *d_prev_solutions[1], *f );
-        f->axpy( a3, *d_prev_solutions[2], *f );
-        f->axpy( a4, *d_prev_solutions[3], *f );
+        d_a.resize( 4 );
 
         d_gamma = a0;
+        d_a[0]  = a1;
+        d_a[1]  = a2;
+        d_a[2]  = a3;
+        d_a[3]  = a4;
 
     } else if ( current_integrator == "BDF5" ) {
 
@@ -422,23 +422,24 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
 
         const double a0 = ( h1 * h2 * h3 * h4 * h5 ) / alpha;
         const double a1 =
-            -( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) * ( h4 - h1 ) * ( h5 - h1 ) );
+            ( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) * ( h4 - h1 ) * ( h5 - h1 ) );
         const double a2 =
-            -( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) * ( h4 - h2 ) * ( h5 - h2 ) );
+            ( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) * ( h4 - h2 ) * ( h5 - h2 ) );
         const double a3 =
-            -( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) * ( h4 - h3 ) * ( h5 - h3 ) );
+            ( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) * ( h4 - h3 ) * ( h5 - h3 ) );
         const double a4 =
-            -( n4 * n4 ) / ( alpha * ( h1 - h4 ) * ( h2 - h4 ) * ( h3 - h4 ) * ( h5 - h4 ) );
+            ( n4 * n4 ) / ( alpha * ( h1 - h4 ) * ( h2 - h4 ) * ( h3 - h4 ) * ( h5 - h4 ) );
         const double a5 =
-            -( n5 * n5 ) / ( alpha * ( h1 - h5 ) * ( h2 - h5 ) * ( h3 - h5 ) * ( h4 - h5 ) );
+            ( n5 * n5 ) / ( alpha * ( h1 - h5 ) * ( h2 - h5 ) * ( h3 - h5 ) * ( h4 - h5 ) );
 
-        f->scale( a1, *d_prev_solutions[0] );
-        f->axpy( a2, *d_prev_solutions[1], *f );
-        f->axpy( a3, *d_prev_solutions[2], *f );
-        f->axpy( a4, *d_prev_solutions[3], *f );
-        f->axpy( a5, *d_prev_solutions[4], *f );
+        d_a.resize( 5 );
 
         d_gamma = a0;
+        d_a[0]  = a1;
+        d_a[1]  = a2;
+        d_a[2]  = a3;
+        d_a[3]  = a4;
+        d_a[4]  = a5;
 
     } else if ( current_integrator == "BDF6" ) {
 
@@ -460,36 +461,31 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
         const double alpha = n1 + n2 + n3 + n4 + n5 + n6;
 
         const double a0 = ( h1 * h2 * h3 * h4 * h5 * h6 ) / alpha;
-        const double a1 = -( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) * ( h4 - h1 ) *
-                                           ( h5 - h1 ) * ( h6 - h1 ) );
-        const double a2 = -( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) * ( h4 - h2 ) *
-                                           ( h5 - h2 ) * ( h6 - h2 ) );
-        const double a3 = -( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) * ( h4 - h3 ) *
-                                           ( h5 - h3 ) * ( h6 - h3 ) );
-        const double a4 = -( n4 * n4 ) / ( alpha * ( h1 - h4 ) * ( h2 - h4 ) * ( h3 - h4 ) *
-                                           ( h5 - h4 ) * ( h6 - h4 ) );
-        const double a5 = -( n5 * n5 ) / ( alpha * ( h1 - h5 ) * ( h2 - h5 ) * ( h3 - h5 ) *
-                                           ( h4 - h5 ) * ( h6 - h5 ) );
-        const double a6 = -( n6 * n6 ) / ( alpha * ( h1 - h5 ) * ( h2 - h6 ) * ( h3 - h6 ) *
-                                           ( h4 - h6 ) * ( h5 - h6 ) );
+        const double a1 = ( n1 * n1 ) / ( alpha * ( h2 - h1 ) * ( h3 - h1 ) * ( h4 - h1 ) *
+                                          ( h5 - h1 ) * ( h6 - h1 ) );
+        const double a2 = ( n2 * n2 ) / ( alpha * ( h1 - h2 ) * ( h3 - h2 ) * ( h4 - h2 ) *
+                                          ( h5 - h2 ) * ( h6 - h2 ) );
+        const double a3 = ( n3 * n3 ) / ( alpha * ( h1 - h3 ) * ( h2 - h3 ) * ( h4 - h3 ) *
+                                          ( h5 - h3 ) * ( h6 - h3 ) );
+        const double a4 = ( n4 * n4 ) / ( alpha * ( h1 - h4 ) * ( h2 - h4 ) * ( h3 - h4 ) *
+                                          ( h5 - h4 ) * ( h6 - h4 ) );
+        const double a5 = ( n5 * n5 ) / ( alpha * ( h1 - h5 ) * ( h2 - h5 ) * ( h3 - h5 ) *
+                                          ( h4 - h5 ) * ( h6 - h5 ) );
+        const double a6 = ( n6 * n6 ) / ( alpha * ( h1 - h5 ) * ( h2 - h6 ) * ( h3 - h6 ) *
+                                          ( h4 - h6 ) * ( h5 - h6 ) );
 
-        f->scale( a1, *d_prev_solutions[0] );
-        f->axpy( a2, *d_prev_solutions[1], *f );
-        f->axpy( a3, *d_prev_solutions[2], *f );
-        f->axpy( a4, *d_prev_solutions[3], *f );
-        f->axpy( a5, *d_prev_solutions[4], *f );
-        f->axpy( a6, *d_prev_solutions[5], *f );
+        d_a.resize( 6 );
 
         d_gamma = a0;
+        d_a[0]  = a1;
+        d_a[1]  = a2;
+        d_a[2]  = a3;
+        d_a[3]  = a4;
+        d_a[4]  = a5;
+        d_a[5]  = a6;
 
     } else {
         AMP_ERROR( "Only BE, BDF2-6, and CN integrators implemented" );
-    }
-
-    // add in a time dependent source, g, for problems of the form u_t = f(u)+g
-    // or for MGRIT it adds in the FAS correction
-    if ( d_pSourceTerm ) {
-        f->axpy( -d_gamma, *d_pSourceTerm, *f );
     }
 
     auto timeOperator = std::dynamic_pointer_cast<AMP::TimeIntegrator::TimeOperator>( d_operator );
@@ -500,6 +496,35 @@ void BDFIntegrator::computeIntegratorSourceTerm( void )
                     "Error: BDFIntegrator -- a function pointer must be set to enable scaling of "
                     "the operator by gamma" );
         d_fTimeScalingFnPtr( d_gamma );
+    }
+}
+
+void BDFIntegrator::computeIntegratorSourceTerm( void )
+{
+    auto f = d_integrator_source_vector;
+
+    f->zero();
+
+    for ( size_t i = 0; i <= d_integrator_index; ++i ) {
+        f->axpy( -d_a[i], *d_prev_solutions[i], *f );
+    }
+
+    // add in a time dependent source, g, for problems of the form u_t = f(u)+g
+    // or for MGRIT it adds in the FAS correction
+    if ( d_pSourceTerm ) {
+        f->axpy( -d_gamma, *d_pSourceTerm, *f );
+    }
+
+    const auto &current_integrator = d_integrator_names[d_integrator_index];
+    if ( current_integrator == "CN" ) {
+
+        AMP_ASSERT( d_integrator_index == 0 );
+        const double eps = 0.0;
+        //        const double alpha = 0.5 * d_current_dt + eps;
+        const double beta = 0.5 * d_current_dt - eps;
+
+        // set the source term to -( u^{n}+(dt/2-\eps)f(u^n) )
+        f->axpy( -beta, *d_prev_function_vector, *f );
     }
 }
 
