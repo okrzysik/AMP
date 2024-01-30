@@ -31,10 +31,10 @@ public:
         return singletonInstance;
     }
 
-    //! Create the mesh from the restart file
+    //! Create the vector from the restart file
     static std::shared_ptr<Vector> create( int64_t fid, AMP::IO::RestartManager *manager );
 
-    //! Register a mesh with the factory
+    //! Register a vector with the factory
     template<class VECTOR>
     static void registerVector( const std::string &name )
     {
