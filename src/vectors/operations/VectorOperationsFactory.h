@@ -38,7 +38,7 @@ public:
 
     //! Register a vector with the factory
     template<class VECTOROPERATIONS>
-    static void registerVector( const std::string &name )
+    static void registerVectorOperations( const std::string &name )
     {
         FactoryStrategy<VectorOperations, int64_t, AMP::IO::RestartManager *>::registerFactory(
             name, createVectorOperationsFromRestart<VECTOROPERATIONS> );
