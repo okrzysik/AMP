@@ -5,6 +5,7 @@
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/AMP_MPI.h"
 #include "AMP/vectors/MultiVector.h"
+#include "AMP/vectors/VectorFactory.h"
 #include "AMP/vectors/VectorSelector.h"
 #include "AMP/vectors/data/VectorDataNull.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
@@ -434,17 +435,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     hid_t gid = openGroup( fid, name );
-    std::string type;
-    readHDF5( gid, "type", type );
-    // Will need to replace this with a factory
-    std::shared_ptr<AMP::LinearAlgebra::Vector> vec;
-    if ( type.substr( 0, 7 ) == "Vector<" ) {
-        vec = std::make_shared<AMP::LinearAlgebra::Vector>( gid, manager );
-    } else if ( type == "MultiVector" ) {
-        vec = std::make_shared<AMP::LinearAlgebra::MultiVector>( gid, manager );
-    } else {
-        AMP_ERROR( "Unknown vector type: " + type );
-    }
+    auto vec  = AMP::LinearAlgebra::VectorFactory::create( fid, manager );
     closeGroup( gid );
     return vec;
 }
