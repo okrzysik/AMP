@@ -8,7 +8,7 @@ namespace AMP::LinearAlgebra {
 std::shared_ptr<Vector> VectorFactory::create( int64_t fid, AMP::IO::RestartManager *manager )
 {
     std::string type;
-    readHDF5( fid, "VectorType", type );
+    readHDF5( fid, "type", type );
     std::shared_ptr<Vector> vec;
     if ( type.substr( 0, 7 ) == "Vector<" ) {
         vec = std::make_shared<AMP::LinearAlgebra::Vector>( fid, manager );

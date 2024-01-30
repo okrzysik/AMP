@@ -435,7 +435,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::Vector>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     hid_t gid = openGroup( fid, name );
-    auto vec  = AMP::LinearAlgebra::VectorFactory::create( fid, manager );
+    auto vec  = AMP::LinearAlgebra::VectorFactory::create( gid, manager );
     closeGroup( gid );
     return vec;
 }
