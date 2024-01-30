@@ -4,6 +4,7 @@
 #include "AMP/vectors/data/VectorData.h"
 #include "AMP/vectors/operations/MultiVectorOperations.h"
 #include "AMP/vectors/operations/VectorOperationsDefault.h"
+#include "AMP/vectors/operations/VectorOperationsFactory.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -168,19 +169,7 @@ AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorOperations>::re
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
     hid_t gid = openGroup( fid, name );
-    std::string type;
-    readHDF5( gid, "ClassType", type );
-    std::shared_ptr<AMP::LinearAlgebra::VectorOperations> ops;
-    // Load the object (we will need to replace the if/else with a factory
-    if ( type == "MultiVectorOperations" ) {
-        ops = std::make_shared<AMP::LinearAlgebra::MultiVectorOperations>( gid, manager );
-    } else if ( type == "VectorOperationsDefault<double>" ) {
-        ops = std::make_shared<AMP::LinearAlgebra::VectorOperationsDefault<double>>();
-    } else if ( type == "VectorOperationsDefault<float>" ) {
-        ops = std::make_shared<AMP::LinearAlgebra::VectorOperationsDefault<float>>();
-    } else {
-        AMP_ERROR( "Unknown VectorOperations: " + type );
-    }
+    auto ops  = AMP::LinearAlgebra::VectorOperationsFactory::create( gid, manager );
     closeGroup( gid );
     return ops;
 }
