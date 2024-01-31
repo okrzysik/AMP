@@ -645,6 +645,7 @@ public: // Write/read restart data
      */
     virtual void writeRestart( int64_t fid ) const;
 
+    VectorData( int64_t fid, AMP::IO::RestartManager *manager );
 
 protected:                   // Internal data
     size_t d_localSize  = 0; //! Number of local values
