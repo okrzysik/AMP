@@ -203,6 +203,12 @@ void RestartManager::readCommData( const std::string &name )
     PROFILE_STOP( "readCommData" );
 }
 
+void RestartManager::close( void )
+{
+    if ( d_fid != hid_t( -1 ) )
+        closeHDF5( d_fid );
+    d_fid = hid_t( -1 );
+}
 
 /********************************************************
  *  Register data with the manager                       *
