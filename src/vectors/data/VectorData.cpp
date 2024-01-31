@@ -281,11 +281,20 @@ void VectorData::registerChildObjects( AMP::IO::RestartManager * ) const
 {
     AMP_ERROR( "Need to implement registerChildObjects for " + VectorDataName() );
 }
-void VectorData::writeRestart( int64_t ) const
+void VectorData::writeRestart( int64_t fid ) const
 {
-    AMP_ERROR( "Need to implement writeRestart for " + VectorDataName() );
+    writeHDF5( fid, "d_localSize", d_localSize );
+    writeHDF5( fid, "d_globalSize", d_globalSize );
+    writeHDF5( fid, "d_localStart", d_localStart );
 }
 
+VectorData::VectorData( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    readHDF5( fid, "d_localSize", d_localSize );
+    readHDF5( fid, "d_globalSize", d_globalSize );
+    readHDF5( fid, "d_localStart", d_localStart );
+    // incomplete at this point
+}
 
 } // namespace AMP::LinearAlgebra
 
