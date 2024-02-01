@@ -2,6 +2,7 @@
 #define included_AMP_PIO
 
 #include <cstdarg>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 

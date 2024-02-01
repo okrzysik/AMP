@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <stdexcept>
 #include <thread>
 
 #include "ProfilerApp.h"
