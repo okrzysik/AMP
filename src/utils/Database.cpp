@@ -239,7 +239,7 @@ void Database::erase( std::string_view key, bool check )
             AMP_ERROR( std::string( key ) + " does not exist in database" );
         return;
     }
-    std::swap( d_used[index], d_used.back() );
+    std::vector<bool>::swap( d_used[index], d_used.back() );
     std::swap( d_hash[index], d_hash.back() );
     std::swap( d_keys[index], d_keys.back() );
     std::swap( d_data[index], d_data.back() );

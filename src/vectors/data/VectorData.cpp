@@ -4,6 +4,7 @@
 #include "AMP/vectors/data/DataChangeListener.h"
 #include "AMP/vectors/data/MultiVectorData.h"
 #include "AMP/vectors/data/VectorDataDefault.h"
+#include "AMP/vectors/data/VectorDataFactory.h"
 
 
 namespace AMP::LinearAlgebra {
@@ -280,11 +281,20 @@ void VectorData::registerChildObjects( AMP::IO::RestartManager * ) const
 {
     AMP_ERROR( "Need to implement registerChildObjects for " + VectorDataName() );
 }
-void VectorData::writeRestart( int64_t ) const
+void VectorData::writeRestart( int64_t fid ) const
 {
-    AMP_ERROR( "Need to implement writeRestart for " + VectorDataName() );
+    writeHDF5( fid, "d_localSize", d_localSize );
+    writeHDF5( fid, "d_globalSize", d_globalSize );
+    writeHDF5( fid, "d_localStart", d_localStart );
 }
 
+VectorData::VectorData( int64_t fid, AMP::IO::RestartManager *manager )
+{
+    readHDF5( fid, "d_localSize", d_localSize );
+    readHDF5( fid, "d_globalSize", d_globalSize );
+    readHDF5( fid, "d_localStart", d_localStart );
+    // incomplete at this point
+}
 
 } // namespace AMP::LinearAlgebra
 
@@ -324,27 +334,8 @@ std::shared_ptr<AMP::LinearAlgebra::VectorData>
 AMP::IO::RestartManager::DataStoreType<AMP::LinearAlgebra::VectorData>::read(
     hid_t fid, const std::string &name, RestartManager *manager ) const
 {
-    hid_t gid = openGroup( fid, name );
-    std::string type;
-    readHDF5( gid, "ClassType", type );
-    // Load the object (we will need to replace the if/else with a factory
-    std::shared_ptr<AMP::LinearAlgebra::VectorData> data;
-    if ( type == "MultiVectorData" ) {
-        data = std::make_shared<AMP::LinearAlgebra::MultiVectorData>( gid, manager );
-    } else if ( type == "VectorDataDefault<double>" ) {
-        data = std::make_shared<AMP::LinearAlgebra::VectorDataDefault<double>>( gid, manager );
-    } else if ( type == "VectorDataDefault<float>" ) {
-        data = std::make_shared<AMP::LinearAlgebra::VectorDataDefault<float>>( gid, manager );
-    } else {
-        AMP_ERROR( "Unknown VectorData: " + type );
-    }
-    // Load the communication data
-    uint64_t commListHash = 0;
-    readHDF5( gid, "CommListHash", commListHash );
-    if ( commListHash ) {
-        auto commList = manager->getData<AMP::LinearAlgebra::CommunicationList>( commListHash );
-        data->setCommunicationList( commList );
-    }
+    hid_t gid    = openGroup( fid, name );
+    auto vecData = AMP::LinearAlgebra::VectorDataFactory::create( gid, manager );
     closeGroup( gid );
-    return data;
+    return vecData;
 }

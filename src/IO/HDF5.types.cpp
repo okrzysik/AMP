@@ -398,6 +398,47 @@ void writeHDF5<AMP::Array<AMP::Mesh::Point>>( hid_t fid, const std::string_view 
 }
 instantiateArrayConstructors( AMP::Mesh::Point );
 
+/************************************************************************
+ * TypeID                                                               *
+ ***********************************************************************/
+template<>
+hid_t getHDF5datatype<AMP::typeID>()
+{
+  hid_t datatype = H5Tcreate( H5T_COMPOUND, sizeof( typeID ) );
+  H5Tinsert( datatype, "bytes", HOFFSET( typeID, bytes ), H5T_NATIVE_UINT32 );
+  H5Tinsert( datatype, "hash", HOFFSET( typeID, hash ), H5T_NATIVE_UINT32 );
+  const hsize_t rank = 120;
+  hid_t array_id = H5Tarray_create(H5T_NATIVE_CHAR, 1, &rank);
+  H5Tinsert( datatype, "name", HOFFSET( typeID, name ), array_id );
+  return datatype;
+}
+
+template<>
+void readHDF5Scalar<AMP::typeID>( hid_t fid, const std::string_view &name, AMP::typeID &x )
+{
+  auto datatype = getHDF5datatype<AMP::typeID>();
+  hid_t dataset   = H5Dopen2( fid, name.data(), H5P_DEFAULT );
+  H5Dread(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, &x);
+  H5Dclose( dataset );
+  H5Tclose( datatype );
+}
+
+template<>
+void writeHDF5Scalar<AMP::typeID>( hid_t fid, const std::string_view &name, const AMP::typeID &data )
+{
+  auto datatype = getHDF5datatype<AMP::typeID>();
+  hid_t dataset   = H5Dopen2( fid, name.data(), H5P_DEFAULT );
+  H5Dwrite( dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, H5Ptr( &data ) );     
+  H5Dclose( dataset );
+  H5Tclose( datatype );
+}
+
+template<>
+void writeHDF5<AMP::Array<AMP::typeID>>( hid_t fid, const std::string_view &name, const AMP::Array<AMP::typeID> &x )
+{
+    writeHDF5Array( fid, name, x );
+}
+
 
 } // namespace AMP
 
@@ -427,25 +468,26 @@ INSTANTIATE_HDF5( std::complex<double> );
 INSTANTIATE_HDF5( std::string );
 INSTANTIATE_HDF5( std::string_view );
 INSTANTIATE_HDF5( AMP::Mesh::Point );
+INSTANTIATE_HDF5( AMP::typeID );
 
 
 /************************************************************************
  * std::array                                                           *
  ***********************************************************************/
-#define INSANTIATE_HDF5_ARRAY( TYPE, N ) \
+#define INSTANTIATE_HDF5_ARRAY( TYPE, N ) \
     template void AMP::readHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, std::array<TYPE,N> & ); \
     template void AMP::writeHDF5<std::array<TYPE,N>>( hid_t, const std::string_view &, const std::array<TYPE,N> & )
-INSANTIATE_HDF5_ARRAY( bool, 1 );
-INSANTIATE_HDF5_ARRAY( bool, 2 );
-INSANTIATE_HDF5_ARRAY( bool, 3 );
-INSANTIATE_HDF5_ARRAY( int, 1 );
-INSANTIATE_HDF5_ARRAY( int, 2 );
-INSANTIATE_HDF5_ARRAY( int, 3 );
-INSANTIATE_HDF5_ARRAY( int, 6 );
-INSANTIATE_HDF5_ARRAY( double, 1 );
-INSANTIATE_HDF5_ARRAY( double, 2 );
-INSANTIATE_HDF5_ARRAY( double, 3 );
-INSANTIATE_HDF5_ARRAY( double, 4 );
-INSANTIATE_HDF5_ARRAY( double, 6 );
-INSANTIATE_HDF5_ARRAY( double, 9 );
+INSTANTIATE_HDF5_ARRAY( bool, 1 );
+INSTANTIATE_HDF5_ARRAY( bool, 2 );
+INSTANTIATE_HDF5_ARRAY( bool, 3 );
+INSTANTIATE_HDF5_ARRAY( int, 1 );
+INSTANTIATE_HDF5_ARRAY( int, 2 );
+INSTANTIATE_HDF5_ARRAY( int, 3 );
+INSTANTIATE_HDF5_ARRAY( int, 6 );
+INSTANTIATE_HDF5_ARRAY( double, 1 );
+INSTANTIATE_HDF5_ARRAY( double, 2 );
+INSTANTIATE_HDF5_ARRAY( double, 3 );
+INSTANTIATE_HDF5_ARRAY( double, 4 );
+INSTANTIATE_HDF5_ARRAY( double, 6 );
+INSTANTIATE_HDF5_ARRAY( double, 9 );
 
