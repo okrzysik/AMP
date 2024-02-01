@@ -193,7 +193,8 @@ template void AMP::readHDF5<AMP::Array<AMP::DatabaseBox>>( hid_t,
 template void AMP::writeHDF5<AMP::Array<AMP::DatabaseBox>>( hid_t,
                                                             const std::string_view &,
                                                             const AMP::Array<AMP::DatabaseBox> & );
-
+#else
+INSTANTIATE_HDF5( AMP::DatabaseBox );
 #endif
 
 
