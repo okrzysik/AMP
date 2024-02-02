@@ -172,6 +172,7 @@ protected:
     gidx_t d_first_col;
     gidx_t d_last_col;
     lidx_t *d_nnz_per_row;
+    lidx_t *d_row_starts;
     gidx_t *d_cols;
     scalar_t *d_coeffs;
 

@@ -1,12 +1,18 @@
 #ifndef included_AMP_CSRMatrixData_hpp
 #define included_AMP_CSRMatrixData_hpp
 
+#include "AMP/AMP_TPLs.h"
 #include "AMP/discretization/DOF_Manager.h"
 #include "AMP/matrices/CSRMatrixParameters.h"
 #include "AMP/matrices/MatrixParameters.h"
 #include "AMP/matrices/data/CSRMatrixData.h"
 #include "AMP/utils/AMPManager.h"
 #include "AMP/utils/Utilities.h"
+
+#ifdef AMP_USE_UMPIRE
+    #include "umpire/Allocator.hpp"
+    #include "umpire/ResourceManager.hpp"
+#endif
 
 #include <memory>
 #include <numeric>
@@ -91,6 +97,8 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
     } else if ( matParams ) {
 
+        // for now all matrix parameter data is assumed to be on host
+
         d_leftDOFManager  = matParams->getLeftDOFManager();
         d_rightDOFManager = matParams->getRightDOFManager();
         AMP_ASSERT( d_leftDOFManager && d_rightDOFManager );
@@ -124,7 +132,10 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
             d_manage_coeffs = true;
             d_coeffs        = allocate<scalar_t, std::allocator>( d_nnz );
 
-        } else if ( d_memory_location == AMP::Utilities::MemoryType::managed ) {
+            d_row_starts = allocate<lidx_t, std::allocator>( N + 1 );
+
+        } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
+                    ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
 
             d_manage_cols   = true;
             d_manage_nnz    = true;
@@ -132,9 +143,48 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
             d_nnz = cols.size();
 
-            AMP_ERROR( "CSRMatrixData: device memory handling has not been implemented as yet" );
+#ifdef AMP_USE_UMPIRE
+            auto &resourceManager = umpire::ResourceManager::getInstance();
+            auto allocator        = ( d_memory_location == AMP::Utilities::MemoryType::managed ) ?
+                                        resourceManager.getAllocator( "UM" ) :
+                                        resourceManager.getAllocator( "DEVICE" );
+
+            d_nnz_per_row = static_cast<lidx_t *>( allocator.allocate( N * sizeof( lidx_t ) ) );
+            d_row_starts =
+                static_cast<lidx_t *>( allocator.allocate( ( N + 1 ) * sizeof( lidx_t ) ) );
+
+            d_cols   = static_cast<gidx_t *>( allocator.allocate( d_nnz * sizeof( gidx_t ) ) );
+            d_coeffs = static_cast<scalar_t *>( allocator.allocate( d_nnz * sizeof( scalar_t ) ) );
+
+            AMP_ASSERT( d_nnz_per_row && d_cols && d_coeffs );
+
+            static_assert( std::is_same_v<decltype( d_nnz_per_row ), decltype( nnzPerRow )> );
+            resourceManager.copy( d_nnz_per_row, nnzPerRow );
+
+            if constexpr ( std::is_same_v<decltype( d_cols ), decltype( cols.data() )> ) {
+                resourceManager.copy( d_cols, cols.data() );
+            } else {
+                if ( d_memory_location == AMP::Utilities::MemoryType::managed ) {
+                    std::transform( cols.begin(), cols.end(), d_cols, []( size_t col ) -> gidx_t {
+                        return col;
+                    } );
+                } else {
+                    AMP_ERROR( "Not implemented" );
+                }
+            }
+#else
+            AMP_ERROR(
+                "CSRMatrixData: managed and device memory handling without Umpire has not been "
+                "implemented as yet" );
+#endif
         } else {
-            AMP_ERROR( "CSRMatrixData: device memory handling has not been implemented as yet" );
+            AMP_ERROR( "CSRMatrixData: memory space undefined" );
+        }
+
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            std::exclusive_scan( d_nnz_per_row, d_nnz_per_row + N, d_row_starts, 0 );
+        } else {
+            AMP_ERROR( "CSRMatrixData: not implemented" );
         }
 
     } else {
@@ -150,6 +200,10 @@ CSRMatrixData<Policy>::~CSRMatrixData()
     // tackle this case for now
     if ( d_memory_location <= AMP::Utilities::MemoryType::host ) {
 
+        if ( d_row_starts ) {
+            std::allocator<lidx_t> allocator_l;
+            allocator_l.deallocate( d_row_starts, d_last_row - d_first_row + 1 );
+        }
         if ( d_manage_cols ) {
             std::allocator<gidx_t> allocator_g;
             allocator_g.deallocate( d_cols, d_nnz );
@@ -164,9 +218,32 @@ CSRMatrixData<Policy>::~CSRMatrixData()
             std::allocator<scalar_t> allocator_s;
             allocator_s.deallocate( d_coeffs, d_nnz );
         }
+    } else if ( ( d_memory_location == AMP::Utilities::MemoryType::managed ) ||
+                ( d_memory_location == AMP::Utilities::MemoryType::device ) ) {
+
+#ifdef AMP_USE_UMPIRE
+        auto &resourceManager = umpire::ResourceManager::getInstance();
+        auto allocator        = ( d_memory_location == AMP::Utilities::MemoryType::managed ) ?
+                                    resourceManager.getAllocator( "UM" ) :
+                                    resourceManager.getAllocator( "DEVICE" );
+
+        allocator.deallocate( d_row_starts );
+
+        if ( d_manage_cols )
+            allocator.deallocate( d_cols );
+
+        if ( d_manage_nnz )
+            allocator.deallocate( d_nnz_per_row );
+
+        if ( d_manage_coeffs )
+            allocator.deallocate( d_coeffs );
+#else
+        AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
+                   "implemented as yet" );
+#endif
 
     } else {
-        AMP_ERROR( "Only host memory deallocation handled at present" );
+        AMP_ERROR( "CSRMatrixData: memory space undefined" );
     }
 }
 
@@ -224,7 +301,7 @@ void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
                             []( size_t val ) -> scalar_t { return val; } );
         }
     } else {
-        AMP_ERROR( "CSRMatrixData:getRowByGlobalID not implemented for device memory" );
+        AMP_ERROR( "CSRMatrixData::getRowByGlobalID not implemented for device memory" );
     }
 }
 
@@ -232,14 +309,45 @@ template<typename Policy>
 void CSRMatrixData<Policy>::addValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
 {
-    AMP_ERROR( "Not implemented" );
+    if ( getTypeID<scalar_t>() == id ) {
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+
+            if ( num_rows == 1 && num_cols == 1 ) {
+                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows==1 && "
+                           "num_cols == 1" );
+
+            } else {
+                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 || "
+                           "num_cols > 1" );
+            }
+
+        } else {
+            AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
+        }
+    } else {
+        AMP_ERROR( "Not implemented" );
+    }
 }
 
 template<typename Policy>
 void CSRMatrixData<Policy>::setValuesByGlobalID(
     size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
 {
-    AMP_ERROR( "Not implemented" );
+    if ( getTypeID<scalar_t>() == id ) {
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+            if ( num_rows == 1 && num_cols == 1 ) {
+                AMP_ERROR( "CSRMatrixData::setValuesByGlobalID not implemented for num_rows==1 && "
+                           "num_cols == 1" );
+            } else {
+                AMP_ERROR( "CSRMatrixData::setValuesByGlobalID not implemented for num_rows>1 || "
+                           "num_cols > 1" );
+            }
+        } else {
+            AMP_ERROR( "CSRMatrixData::setValuesByGlobalID not implemented for device memory" );
+        }
+    } else {
+        AMP_ERROR( "Not implemented" );
+    }
 }
 
 template<typename Policy>
@@ -328,7 +436,6 @@ size_t CSRMatrixData<Policy>::numGlobalColumns() const
     AMP_ASSERT( d_rightDOFManager );
     return d_rightDOFManager->numGlobalDOF();
 }
-
 
 /********************************************************
  * Get iterators                                         *
