@@ -103,8 +103,7 @@ static void testMap( AMP::UnitTest *ut, const std::string &exeName )
         AMP_ASSERT( ids.size() == 1 );
         mapSolutionMaster->setValuesByGlobalID( 1, &ids[0], &x[2] );
     }
-    mapSolutionMaster->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    mapSolutionMaster->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     //-------------------------------------
 

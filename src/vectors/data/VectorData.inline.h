@@ -104,10 +104,7 @@ inline void VectorData::setUpdateStatusPtr( std::shared_ptr<UpdateState> rhs )
 {
     d_UpdateState = rhs;
 }
-inline std::shared_ptr<UpdateState> VectorData::getUpdateStatusPtr() const
-{
-    return d_UpdateState;
-}
+inline std::shared_ptr<UpdateState> VectorData::getUpdateStatusPtr() const { return d_UpdateState; }
 
 
 /****************************************************************

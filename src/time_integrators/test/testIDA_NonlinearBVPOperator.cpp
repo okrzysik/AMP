@@ -149,8 +149,7 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
         }
     }
     initialCondition->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    initialConditionPrime->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    initialConditionPrime->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     std::cout << "With Counter " << counter << " Max initial temp " << initialCondition->max()
               << " Min initial temp " << initialCondition->min() << std::endl;

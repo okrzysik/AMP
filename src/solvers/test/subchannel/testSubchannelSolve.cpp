@@ -622,8 +622,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             auto cladPower = specificPowerGpVec->select( meshSelector, "cladPower" );
             cladPower->zero();
         }
-        specificPowerGpVec->makeConsistent(
-            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        specificPowerGpVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         volumeIntegralColumnOperator->apply( specificPowerGpVec, globalThermalRhsVec );
     }
 
@@ -679,8 +678,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator->modifyInitialSolutionVector( globalThermalSolVec );
         nonlinearThermalOperator->modifyRHSvector( globalThermalRhsVec );
     }
-    globalThermalRhsVec->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    globalThermalRhsVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     PROFILE_STOP( "Initialize" );
 
 

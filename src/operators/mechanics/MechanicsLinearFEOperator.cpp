@@ -98,8 +98,7 @@ void MechanicsLinearFEOperator::preAssembly( std::shared_ptr<const OperatorParam
         if ( d_dispVec ) {
             if ( params->d_dispVec ) {
                 d_dispVec->copyVector( params->d_dispVec );
-                d_dispVec->makeConsistent(
-                    AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                d_dispVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             } else {
                 d_dispVec.reset();
             }

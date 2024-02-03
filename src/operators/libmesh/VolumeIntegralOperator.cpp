@@ -87,8 +87,7 @@ void VolumeIntegralOperator::preAssembly( AMP::LinearAlgebra::Vector::const_shar
         auto primaryVariable = d_inpVariables->getVariable( var );
         d_inVec[var]         = meshSubsetPrimary->subsetVectorForVariable( primaryVariable );
         AMP_ASSERT( d_inVec[var] != nullptr );
-        AMP_ASSERT( d_inVec[var]->getUpdateStatus() ==
-                    AMP::LinearAlgebra::UpdateState::UNCHANGED );
+        AMP_ASSERT( d_inVec[var]->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     }
 
     if ( d_auxVariables->numVariables() > 0 )

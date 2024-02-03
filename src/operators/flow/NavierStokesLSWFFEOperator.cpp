@@ -212,8 +212,7 @@ std::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator::getJacobianParam
     // create the linear operator params
     auto outParams         = std::make_shared<NavierStokesLinearFEOperatorParameters>( tmp_db );
     outParams->d_frozenVec = mySubsetVector( u, d_inpVariables );
-    outParams->d_frozenVec->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    outParams->d_frozenVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     d_outVec.reset();
 
     return outParams;

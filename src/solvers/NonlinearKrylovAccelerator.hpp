@@ -133,8 +133,7 @@ void NonlinearKrylovAccelerator<T>::initialize(
     d_solution_vector = params->d_vectors[0]->clone();
     d_solution_vector->setToScalar( static_cast<T>( 0.0 ) );
 
-    d_solution_vector->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     int n = d_mvec + 1;
 
@@ -403,8 +402,7 @@ void NonlinearKrylovAccelerator<T>::apply( std::shared_ptr<const AMP::LinearAlge
 
         // correct current solution
         d_solution_vector->axpy( static_cast<T>( -1.0 ), *d_correction_vector, *d_solution_vector );
-        d_solution_vector->makeConsistent(
-            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+        d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         // compute the residual
         d_pOperator->residual( f, d_solution_vector, d_residual_vector );

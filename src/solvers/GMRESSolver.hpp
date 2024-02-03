@@ -91,12 +91,10 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
     PROFILE_START( "solve" );
 
     // Check input vector states
-    AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
-    AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -202,14 +200,12 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                     //                    if ( z->getUpdateStatus() !=
                     //                         AMP::LinearAlgebra::UpdateState::UNCHANGED
                     //                         )
-                    z->makeConsistent(
-                        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                    z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
                     d_zBasis.push_back( zb );
-                    zb->makeConsistent(
-                        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+                    zb->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {

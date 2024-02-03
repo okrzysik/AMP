@@ -96,8 +96,7 @@ void calculateManufacturedSolution(
         }
     }
 
-    manufacturedSolution->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    manufacturedSolution->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 

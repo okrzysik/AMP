@@ -119,8 +119,7 @@ DiffusionNonlinearFEOperator::DiffusionNonlinearFEOperator(
             data.vec = data.frozen;
         }
         if ( data.vec )
-            AMP_ASSERT( data.vec->getUpdateStatus() ==
-                        AMP::LinearAlgebra::UpdateState::UNCHANGED );
+            AMP_ASSERT( data.vec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     }
 
     d_outVariable.reset(
@@ -150,8 +149,7 @@ void DiffusionNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
         }
 
         AMP_ASSERT( data.vec );
-        AMP_ASSERT( data.vec->getUpdateStatus() ==
-                    AMP::LinearAlgebra::UpdateState::UNCHANGED );
+        AMP_ASSERT( data.vec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         if ( d_iDebugPrintInfoLevel > 5 )
             std::cout << "Max Value inside preAssembly: " << data.vec->max() << std::endl;
     }
@@ -266,8 +264,7 @@ void DiffusionNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
         auto it = d_active.find( name );
         if ( it != d_active.end() ) {
             it->second.vec = vec;
-            AMP_ASSERT( vec->getUpdateStatus() ==
-                        AMP::LinearAlgebra::UpdateState::UNCHANGED );
+            AMP_ASSERT( vec->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
         }
     }
 

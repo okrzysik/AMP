@@ -188,8 +188,7 @@ static void myTest( AMP::UnitTest *ut )
             // conditions
             mechNlSolVec->setRandomValues();
             dirichletDispInVecOp->apply( nullVec, mechNlSolVec );
-            mechNlSolVec->makeConsistent(
-                AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+            mechNlSolVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             nonlinBvpOperator->residual( mechNlRhsVec, mechNlSolVec, mechNlResVec );
         } // end for i
 

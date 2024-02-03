@@ -68,8 +68,7 @@ void TrilinosThyraModelEvaluator::evalModelImpl(
             ->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
     AMP_ASSERT( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
-    AMP_ASSERT( d_rhs->getUpdateStatus() ==
-                AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    AMP_ASSERT( d_rhs->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     const Teuchos::RCP<Thyra::PreconditionerBase<double>> W_prec_out = outArgs.get_W_prec();
     if ( nonnull( W_prec_out ) ) {

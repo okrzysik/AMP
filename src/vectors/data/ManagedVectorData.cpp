@@ -113,7 +113,7 @@ bool ManagedVectorData::isAnAliasOf( const VectorData &rhs ) const
 
 UpdateState ManagedVectorData::getUpdateStatus() const
 {
-    UpdateState state     = *d_UpdateState;
+    UpdateState state                 = *d_UpdateState;
     std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec ) {
         UpdateState sub_state = vec->getUpdateStatus();

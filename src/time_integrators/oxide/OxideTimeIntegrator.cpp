@@ -125,8 +125,7 @@ void OxideTimeIntegrator::initialize( std::shared_ptr<TimeIntegratorParameters> 
         d_alpha->setLocalValuesByGlobalID( 1, &dofs[0], &val ); // Convert from cm to m
         ++iterator;
     }
-    d_solution_vector->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Free the temporary memory
     delete[] C0[0];
@@ -220,8 +219,7 @@ int OxideTimeIntegrator::advanceSolution( const double dt,
         ++iterator;
     }
     // Update ghost values for the solution
-    d_solution_vector->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    d_solution_vector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     out->copyVector( d_solution_vector );
     // Free the temporary memory
     delete[] C0[0];

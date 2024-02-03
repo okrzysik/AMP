@@ -458,10 +458,8 @@ void ThyraVectorWrapper::applyOpImpl(
     // Change the vector state targ_vecs
     for ( auto &i : targ_vecs_ptr ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
-            if ( i->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::UpdateState::UNCHANGED )
-                i->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED );
+            if ( i->d_vecs[j]->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED )
+                i->d_vecs[j]->setUpdateStatus( AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED );
         }
     }
 }
@@ -539,10 +537,8 @@ void ThyraVectorWrapper::mvMultiReductApplyOpImpl(
     // Change the vector state targ_vecs
     for ( auto &i : targ_vecs_ptr ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
-            if ( i->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::UpdateState::UNCHANGED )
-                i->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED );
+            if ( i->d_vecs[j]->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED )
+                i->d_vecs[j]->setUpdateStatus( AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED );
         }
     }
 }
@@ -603,10 +599,8 @@ void ThyraVectorWrapper::mvSingleReductApplyOpImpl(
     // Change the vector state targ_vecs
     for ( auto &i : targ_vecs_ptr ) {
         for ( size_t j = 0; j < d_vecs.size(); j++ ) {
-            if ( i->d_vecs[j]->getUpdateStatus() ==
-                 AMP::LinearAlgebra::UpdateState::UNCHANGED )
-                i->d_vecs[j]->setUpdateStatus(
-                    AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED );
+            if ( i->d_vecs[j]->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED )
+                i->d_vecs[j]->setUpdateStatus( AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED );
         }
     }
 }

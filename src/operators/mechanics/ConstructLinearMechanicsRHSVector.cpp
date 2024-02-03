@@ -27,10 +27,8 @@ void computeTemperatureRhsVector( std::shared_ptr<AMP::Mesh::Mesh> mesh,
                                   std::shared_ptr<AMP::LinearAlgebra::Vector> prevTemperatureVec,
                                   AMP::LinearAlgebra::Vector::shared_ptr rhsVec )
 {
-    currTemperatureVec->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
-    prevTemperatureVec->makeConsistent(
-        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    currTemperatureVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    prevTemperatureVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     AMP::LinearAlgebra::Vector::shared_ptr rInternal =
         rhsVec->subsetVectorForVariable( displacementVar );

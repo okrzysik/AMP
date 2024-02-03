@@ -66,8 +66,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     auto rInternal = this->subsetInputVector( r );
     auto uInternal = this->subsetInputVector( u );
 
-    AMP_ASSERT( uInternal->getUpdateStatus() ==
-                AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    AMP_ASSERT( uInternal->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED );
     // rInternal->makeConsistent ( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     std::vector<std::string> variableNames;
