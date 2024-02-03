@@ -183,8 +183,9 @@ CSRMatrixData<Policy>::CSRMatrixData( std::shared_ptr<MatrixParametersBase> para
 
         if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
             std::exclusive_scan( d_nnz_per_row, d_nnz_per_row + N, d_row_starts, 0 );
+            d_row_starts[N] = d_row_starts[N - 1] + d_nnz_per_row[N - 1];
         } else {
-            AMP_ERROR( "CSRMatrixData: not implemented" );
+            AMP_ERROR( "CSRMatrixData: row starts not implemented" );
         }
 
     } else {
@@ -250,7 +251,51 @@ CSRMatrixData<Policy>::~CSRMatrixData()
 template<typename Policy>
 std::shared_ptr<MatrixData> CSRMatrixData<Policy>::cloneMatrixData() const
 {
-    AMP_ERROR( "Not implemented" );
+    std::shared_ptr<CSRMatrixData> cloneData;
+#ifdef AMP_USE_UMPIRE
+    auto &resourceManager = umpire::ResourceManager::getInstance();
+
+    umpire::Allocator allocator;
+    if ( d_memory_location <= AMP::Utilities::MemoryType::host )
+        allocator = resourceManager.getAllocator( "HOST" );
+    else if ( d_memory_location == AMP::Utilities::MemoryType::managed )
+        allocator = resourceManager.getAllocator( "UM" );
+    else if ( d_memory_location == AMP::Utilities::MemoryType::device )
+        allocator = resourceManager.getAllocator( "DEVICE" );
+    else
+        AMP_ERROR( "Unsupported memory location" );
+
+    cloneData = std::make_shared<CSRMatrixData<Policy>>();
+
+    cloneData->d_memory_location = d_memory_location;
+
+    cloneData->d_is_square = d_is_square;
+    cloneData->d_first_row = d_first_row;
+    cloneData->d_last_row  = d_last_row;
+    cloneData->d_first_col = d_first_col;
+    cloneData->d_last_col  = d_last_col;
+    cloneData->d_nnz       = d_nnz;
+
+    cloneData->d_manage_nnz    = true;
+    cloneData->d_manage_coeffs = true;
+    cloneData->d_manage_cols   = true;
+
+    size_t N = d_last_row - d_first_row;
+
+    cloneData->d_nnz_per_row = static_cast<lidx_t *>( allocator.allocate( N * sizeof( lidx_t ) ) );
+    cloneData->d_row_starts =
+        static_cast<lidx_t *>( allocator.allocate( ( N + 1 ) * sizeof( lidx_t ) ) );
+
+    cloneData->d_cols = static_cast<gidx_t *>( allocator.allocate( d_nnz * sizeof( gidx_t ) ) );
+    cloneData->d_coeffs =
+        static_cast<scalar_t *>( allocator.allocate( d_nnz * sizeof( scalar_t ) ) );
+
+    AMP_ERROR( "Incomplete -- add in DOF manager and base members" );
+#else
+    AMP_ERROR( "CSRMatrixData: managed and device memory handling without Umpire has not been "
+               "implemented as yet" );
+#endif
+    return cloneData;
 }
 
 template<typename Policy>
@@ -262,9 +307,26 @@ std::shared_ptr<MatrixData> CSRMatrixData<Policy>::transpose() const
 template<typename Policy>
 void CSRMatrixData<Policy>::extractDiagonal( std::shared_ptr<Vector> buf ) const
 {
-    AMP_ERROR( "Not implemented" );
-}
+    AMP_ASSERT( buf && buf->numberOfDataBlocks() == 1 ); // temporary constraint
+    AMP_ASSERT( buf->isType<scalar_t>( 0 ) );
 
+    auto *rawVecData  = buf->getRawDataBlock<scalar_t>();
+    auto vDataMemType = AMP::Utilities::getMemoryType( rawVecData );
+    if ( vDataMemType == d_memory_location ) {
+        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+
+            const size_t N = d_last_row - d_first_row;
+            for ( size_t i = 0; i < N; ++i ) {
+                rawVecData[i] = d_coeffs[d_row_starts[i]];
+            }
+
+        } else {
+            AMP_ERROR(
+                "CSRMatrixData<Policy>::extractDiagonal not implemented for vec and matrix in "
+                "different memory spaces" );
+        }
+    }
+}
 template<typename Policy>
 void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
                                               std::vector<size_t> &cols,
@@ -303,153 +365,209 @@ void CSRMatrixData<Policy>::getRowByGlobalID( size_t row,
     } else {
         AMP_ERROR( "CSRMatrixData::getRowByGlobalID not implemented for device memory" );
     }
-}
+    }
 
-template<typename Policy>
-void CSRMatrixData<Policy>::addValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
-{
-    if ( getTypeID<scalar_t>() == id ) {
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+    template<typename Policy>
+    void CSRMatrixData<Policy>::addValuesByGlobalID( size_t num_rows,
+                                                     size_t num_cols,
+                                                     size_t * rows,
+                                                     size_t * cols,
+                                                     void *values,
+                                                     const typeID &id )
+    {
+        if ( getTypeID<scalar_t>() == id ) {
+            if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
 
-            if ( num_rows == 1 && num_cols == 1 ) {
-                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows==1 && "
-                           "num_cols == 1" );
+                if ( num_rows == 1 && num_cols == 1 ) {
+
+                    const auto local_row = ( *rows ) - d_first_row;
+                    const auto start     = d_row_starts[local_row];
+                    const auto end       = d_row_starts[local_row + 1];
+
+                    for ( lidx_t i = start; i < end; ++i ) {
+                        if ( d_cols[i] == static_cast<lidx_t>( *cols ) ) {
+                            d_coeffs[i] += *( reinterpret_cast<scalar_t *>( values ) );
+                        }
+                    }
+                } else {
+                    AMP_ERROR(
+                        "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 || "
+                        "num_cols > 1" );
+                }
 
             } else {
-                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 || "
-                           "num_cols > 1" );
+                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
             }
-
         } else {
-            AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
+            AMP_ERROR( "Not implemented" );
         }
-    } else {
-        AMP_ERROR( "Not implemented" );
     }
-}
 
-template<typename Policy>
-void CSRMatrixData<Policy>::setValuesByGlobalID(
-    size_t num_rows, size_t num_cols, size_t *rows, size_t *cols, void *values, const typeID &id )
-{
-    if ( getTypeID<scalar_t>() == id ) {
-        if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
-            if ( num_rows == 1 && num_cols == 1 ) {
-                AMP_ERROR( "CSRMatrixData::setValuesByGlobalID not implemented for num_rows==1 && "
-                           "num_cols == 1" );
+    template<typename Policy>
+    void CSRMatrixData<Policy>::setValuesByGlobalID( size_t num_rows,
+                                                     size_t num_cols,
+                                                     size_t * rows,
+                                                     size_t * cols,
+                                                     void *values,
+                                                     const typeID &id )
+    {
+        if ( getTypeID<scalar_t>() == id ) {
+            if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+
+                if ( num_rows == 1 && num_cols == 1 ) {
+
+                    const auto local_row = ( *rows ) - d_first_row;
+                    const auto start     = d_row_starts[local_row];
+                    const auto end       = d_row_starts[local_row + 1];
+
+                    for ( lidx_t i = start; i < end; ++i ) {
+                        if ( d_cols[i] == static_cast<lidx_t>( *cols ) ) {
+                            d_coeffs[i] = *( reinterpret_cast<scalar_t *>( values ) );
+                        }
+                    }
+                } else {
+                    AMP_ERROR(
+                        "CSRMatrixData::addValuesByGlobalID not implemented for num_rows>1 || "
+                        "num_cols > 1" );
+                }
+
             } else {
-                AMP_ERROR( "CSRMatrixData::setValuesByGlobalID not implemented for num_rows>1 || "
-                           "num_cols > 1" );
+                AMP_ERROR( "CSRMatrixData::addValuesByGlobalID not implemented for device memory" );
             }
         } else {
-            AMP_ERROR( "CSRMatrixData::setValuesByGlobalID not implemented for device memory" );
+            AMP_ERROR( "Not implemented" );
         }
-    } else {
+    }
+
+
+    template<typename Policy>
+    void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
+                                                     size_t num_cols,
+                                                     size_t * rows,
+                                                     size_t * cols,
+                                                     void *values,
+                                                     const typeID &id ) const
+    {
+        if ( getTypeID<scalar_t>() == id ) {
+            if ( d_memory_location < AMP::Utilities::MemoryType::device ) {
+
+                if ( num_rows == 1 && num_cols == 1 ) {
+
+                    const auto local_row = ( *rows ) - d_first_row;
+                    const auto start     = d_row_starts[local_row];
+                    const auto end       = d_row_starts[local_row + 1];
+
+                    for ( lidx_t i = start; i < end; ++i ) {
+                        if ( d_cols[i] == static_cast<lidx_t>( *cols ) ) {
+                            *( reinterpret_cast<scalar_t *>( values ) ) = d_coeffs[i];
+                        }
+                    }
+                } else {
+                    AMP_ERROR(
+                        "CSRMatrixData::getValuesByGlobalID not implemented for num_rows>1 || "
+                        "num_cols > 1" );
+                }
+
+            } else {
+                AMP_ERROR( "CSRMatrixData::getValuesByGlobalID not implemented for device memory" );
+            }
+        } else {
+            AMP_ERROR( "Not implemented" );
+        }
         AMP_ERROR( "Not implemented" );
     }
-}
 
-template<typename Policy>
-void CSRMatrixData<Policy>::getValuesByGlobalID( size_t num_rows,
-                                                 size_t num_cols,
-                                                 size_t *rows,
-                                                 size_t *cols,
-                                                 void *values,
-                                                 const typeID &id ) const
-{
-    AMP_ERROR( "Not implemented" );
-}
 
-template<typename Policy>
-std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
-{
-    AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
-                    row < static_cast<size_t>( d_last_row ),
-                "row must be owned by rank" );
-    auto memType = AMP::Utilities::getMemoryType( d_cols );
+    template<typename Policy>
+    std::vector<size_t> CSRMatrixData<Policy>::getColumnIDs( size_t row ) const
+    {
+        AMP_INSIST( row >= static_cast<size_t>( d_first_row ) &&
+                        row < static_cast<size_t>( d_last_row ),
+                    "row must be owned by rank" );
+        auto memType = AMP::Utilities::getMemoryType( d_cols );
 
-    if ( memType < AMP::Utilities::MemoryType::device ) {
+        if ( memType < AMP::Utilities::MemoryType::device ) {
 
-        std::vector<size_t> cols;
-        const auto row_offset = static_cast<size_t>( row - d_first_row );
-        const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
-        const auto n          = d_nnz_per_row[row_offset];
+            std::vector<size_t> cols;
+            const auto row_offset = static_cast<size_t>( row - d_first_row );
+            const auto offset     = std::accumulate( d_nnz_per_row, d_nnz_per_row + row_offset, 0 );
+            const auto n          = d_nnz_per_row[row_offset];
 
-        if constexpr ( std::is_same_v<size_t, gidx_t> ) {
-            std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
+            if constexpr ( std::is_same_v<size_t, gidx_t> ) {
+                std::copy( &d_cols[offset], &d_cols[offset] + n, std::back_inserter( cols ) );
+            } else {
+                std::transform( &d_cols[offset],
+                                &d_cols[offset] + n,
+                                std::back_inserter( cols ),
+                                []( size_t col ) -> gidx_t { return col; } );
+            }
+            return cols;
         } else {
-            std::transform( &d_cols[offset],
-                            &d_cols[offset] + n,
-                            std::back_inserter( cols ),
-                            []( size_t col ) -> gidx_t { return col; } );
+            AMP_ERROR( "CSRMatrixData:getColumnIDs not implemented for device memory" );
         }
-        return cols;
-    } else {
-        AMP_ERROR( "CSRMatrixData:getRowByGlobalID not implemented for device memory" );
     }
-}
 
-template<typename Policy>
-void CSRMatrixData<Policy>::makeConsistent()
-{
-    AMP_ERROR( "Not implemented" );
-}
+    template<typename Policy>
+    void CSRMatrixData<Policy>::makeConsistent()
+    {
+        AMP_ERROR( "Not implemented" );
+    }
 
-template<typename Policy>
-std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getRightDOFManager() const
-{
-    return d_rightDOFManager;
-}
 
-template<typename Policy>
-std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getLeftDOFManager() const
-{
-    return d_leftDOFManager;
-}
+    template<typename Policy>
+    std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getRightDOFManager() const
+    {
+        return d_rightDOFManager;
+    }
 
-/********************************************************
- * Get the number of rows/columns in the matrix          *
- ********************************************************/
-template<typename Policy>
-size_t CSRMatrixData<Policy>::numLocalRows() const
-{
-    return static_cast<size_t>( d_last_row - d_first_row );
-}
+    template<typename Policy>
+    std::shared_ptr<Discretization::DOFManager> CSRMatrixData<Policy>::getLeftDOFManager() const
+    {
+        return d_leftDOFManager;
+    }
 
-template<typename Policy>
-size_t CSRMatrixData<Policy>::numGlobalRows() const
-{
-    AMP_ASSERT( d_leftDOFManager );
-    return d_leftDOFManager->numGlobalDOF();
-}
+    /********************************************************
+     * Get the number of rows/columns in the matrix          *
+     ********************************************************/
+    template<typename Policy>
+    size_t CSRMatrixData<Policy>::numLocalRows() const
+    {
+        return static_cast<size_t>( d_last_row - d_first_row );
+    }
 
-template<typename Policy>
-size_t CSRMatrixData<Policy>::numLocalColumns() const
-{
-    return static_cast<size_t>( d_last_col - d_first_col );
-}
+    template<typename Policy>
+    size_t CSRMatrixData<Policy>::numGlobalRows() const
+    {
+        AMP_ASSERT( d_leftDOFManager );
+        return d_leftDOFManager->numGlobalDOF();
+    }
 
-template<typename Policy>
-size_t CSRMatrixData<Policy>::numGlobalColumns() const
-{
-    AMP_ASSERT( d_rightDOFManager );
-    return d_rightDOFManager->numGlobalDOF();
-}
+    template<typename Policy>
+    size_t CSRMatrixData<Policy>::numLocalColumns() const
+    {
+        return static_cast<size_t>( d_last_col - d_first_col );
+    }
 
-/********************************************************
- * Get iterators                                         *
- ********************************************************/
-template<typename Policy>
-size_t CSRMatrixData<Policy>::beginRow() const
-{
-    return static_cast<size_t>( d_first_row );
-}
-template<typename Policy>
-size_t CSRMatrixData<Policy>::endRow() const
-{
-    return static_cast<size_t>( d_last_row );
-}
+    template<typename Policy>
+    size_t CSRMatrixData<Policy>::numGlobalColumns() const
+    {
+        AMP_ASSERT( d_rightDOFManager );
+        return d_rightDOFManager->numGlobalDOF();
+    }
+
+    /********************************************************
+     * Get iterators                                         *
+     ********************************************************/
+    template<typename Policy>
+    size_t CSRMatrixData<Policy>::beginRow() const
+    {
+        return static_cast<size_t>( d_first_row );
+    }
+    template<typename Policy>
+    size_t CSRMatrixData<Policy>::endRow() const
+    {
+        return static_cast<size_t>( d_last_row );
+    }
 
 
 } // namespace AMP::LinearAlgebra
