@@ -148,9 +148,9 @@ static void IDATimeIntegratorTest( AMP::UnitTest *ut )
             initialConditionPrime->setValuesByGlobalID( 1, &bndGlobalId, &zero );
         }
     }
-    initialCondition->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    initialCondition->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     initialConditionPrime->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     std::cout << "With Counter " << counter << " Max initial temp " << initialCondition->max()
               << " Min initial temp " << initialCondition->min() << std::endl;

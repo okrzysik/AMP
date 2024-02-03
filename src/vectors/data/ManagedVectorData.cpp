@@ -111,12 +111,12 @@ bool ManagedVectorData::isAnAliasOf( const VectorData &rhs ) const
     return false;
 }
 
-VectorData::UpdateState ManagedVectorData::getUpdateStatus() const
+UpdateState ManagedVectorData::getUpdateStatus() const
 {
-    VectorData::UpdateState state     = *d_UpdateState;
+    UpdateState state     = *d_UpdateState;
     std::shared_ptr<const Vector> vec = getVectorEngine();
     if ( vec ) {
-        VectorData::UpdateState sub_state = vec->getUpdateStatus();
+        UpdateState sub_state = vec->getUpdateStatus();
         if ( sub_state == UpdateState::UNCHANGED ) {
             // No change in state
         } else if ( sub_state == UpdateState::LOCAL_CHANGED && state == UpdateState::UNCHANGED ) {

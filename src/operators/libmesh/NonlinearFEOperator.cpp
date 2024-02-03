@@ -30,7 +30,7 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     if ( u )
         AMP_ASSERT( u->getUpdateStatus() ==
-                    AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+                    AMP::LinearAlgebra::UpdateState::UNCHANGED );
 
     d_currElemIdx = static_cast<unsigned int>( -1 );
     this->preAssembly( u, rInternal );
@@ -47,7 +47,7 @@ void NonlinearFEOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
     d_currElemIdx = static_cast<unsigned int>( -1 );
     this->postAssembly();
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 2 )
         AMP::pout << "L2 norm of result of NonlinearFEOperator::apply is: " << rInternal->L2Norm()

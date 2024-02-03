@@ -287,7 +287,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     // Set initial guess
     TemperatureInKelvinVec->setToScalar( 1.0 );
     TemperatureInKelvinVec->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Check the initial L2 norm of the solution
     double initSolNorm = static_cast<double>( TemperatureInKelvinVec->L2Norm() );
@@ -301,7 +301,7 @@ void linearThermalTest( AMP::UnitTest *ut, const std::string &inputFileName )
     linearSolver->apply( RightHandSideVec, TemperatureInKelvinVec );
 
     TemperatureInKelvinVec->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Compute the residual
     csrOperator->residual( RightHandSideVec, TemperatureInKelvinVec, ResidualVec );

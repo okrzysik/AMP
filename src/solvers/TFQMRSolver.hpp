@@ -64,11 +64,11 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // Check input vector states
     AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
-        ( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( x->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+        ( x->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -166,7 +166,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         z = y[0];
     }
 
-    z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     d_pOperator->apply( z, v );
 
@@ -203,7 +203,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                     z = y[1];
                 }
 
-                z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
                 d_pOperator->apply( z, u[1] );
             }
@@ -266,7 +266,7 @@ void TFQMRSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
             z = y[0];
         }
 
-        z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
         d_pOperator->apply( z, u[0] );
 

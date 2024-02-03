@@ -104,7 +104,7 @@ void VectorOperationsCuda<TYPE>::setToScalar( const Scalar &alpha_in, VectorData
             ghosts[i] = alpha;
     }
     // Override the status state since we set the ghost values
-    *( x.getUpdateStatusPtr() ) = VectorData::UpdateState::UNCHANGED;
+    *( x.getUpdateStatusPtr() ) = UpdateState::UNCHANGED;
     // Wait for cuda data to complete
     if ( useGPU )
         cudaDeviceSynchronize();

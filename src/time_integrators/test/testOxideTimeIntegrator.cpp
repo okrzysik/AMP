@@ -52,7 +52,7 @@ static void OxideTest( AMP::UnitTest *ut, std::string input_file )
         temp_vec->setValuesByGlobalID( 1, &dofs[0], &val );
         ++iterator;
     }
-    temp_vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    temp_vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     AMP_ASSERT( fabs( double( temp_vec->min() ) - T0 ) / T0 < 1e-9 );
 
     // Create the oxide time integrator

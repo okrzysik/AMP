@@ -33,7 +33,7 @@ static void adjust( const AMP::LinearAlgebra::Vector::shared_ptr vec,
     AMP::LinearAlgebra::Vector &x = *vec;
     AMP::LinearAlgebra::Vector &y = *work;
     vec->add( x, y );
-    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 static void applyTest( AMP::UnitTest *ut,

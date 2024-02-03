@@ -82,7 +82,7 @@ void myTest( AMP::UnitTest *ut, const std::string &exeName )
             dummyVector->setLocalValueByGlobalID( globalID[d], dummyFunction( node->coord(), d ) );
         } // end d
     }
-    dummyVector->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    dummyVector->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     double minCoords[3];
     double maxCoords[3];

@@ -168,8 +168,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     double finalResidualNorm = static_cast<double>( resVec->L2Norm() );
     std::cout << "Final Residual Norm: " << finalResidualNorm << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // evaluate and register material coefficients for graphical output
     auto fickCoeffVar  = std::make_shared<AMP::LinearAlgebra::Variable>( "FickCoefficient" );

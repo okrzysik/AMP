@@ -39,6 +39,6 @@ void LinearOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
 
     d_matrix->mult( uInternal, fInternal );
 
-    fInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    fInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 } // namespace AMP::Operator

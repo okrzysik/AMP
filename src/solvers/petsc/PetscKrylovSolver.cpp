@@ -49,8 +49,8 @@ static inline PCSide getPCSide( const std::string &pc_side )
 static inline void checkUpdateStatus( std::shared_ptr<const AMP::LinearAlgebra::Vector> x )
 {
     auto status = x->getUpdateStatus();
-    AMP_ASSERT( ( status == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-                ( status == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+    AMP_ASSERT( ( status == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+                ( status == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 }
 
 
@@ -453,8 +453,8 @@ PetscErrorCode PetscKrylovSolver::applyPreconditioner( PC pc, Vec r, Vec z )
     auto sp_z = PETSC::getAMP( z );
 
     // Make sure the vectors are in a consistent state
-    sp_r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    sp_z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    sp_r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    sp_z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // these tests were helpful in finding a bug
     if ( solver->getDebugPrintInfoLevel() > 5 ) {

@@ -154,7 +154,7 @@ static void myTest( AMP::UnitTest *ut, const std::string &exeName )
     else
         ut->failure( "GeomType::Cell passes" );
 
-    vec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    vec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     double l2Norm = static_cast<double>( vec->L2Norm() );
     std::cout << "size = " << vec->getGlobalSize() << std::endl;

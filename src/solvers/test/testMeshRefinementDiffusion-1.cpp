@@ -97,7 +97,7 @@ void calculateManufacturedSolution(
     }
 
     manufacturedSolution->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 
@@ -136,7 +136,7 @@ void calculateSources( std::shared_ptr<AMP::Mesh::Mesh> meshAdapter,
         }
     }
 
-    manufacturedRHS->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    manufacturedRHS->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 
@@ -428,7 +428,7 @@ void myTest( AMP::UnitTest *ut,
 
     volumeIntegralColumnOperator->apply( manufacturedRHS, integratedRHSVec );
 
-    integratedRHSVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    integratedRHSVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     siloWriter->registerVector( integratedRHSVec, manager, AMP::Mesh::GeomType::Vertex, "Source" );
 
@@ -448,7 +448,7 @@ void myTest( AMP::UnitTest *ut,
             ->modifyRHSvector( integratedRHSVec );
     }
     nonlinearThermalColumnOperator->residual( integratedRHSVec, TemperatureVec, ResidualVec );
-    ResidualVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    ResidualVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     double initialResidualNorm = static_cast<double>( ResidualVec->L2Norm() );
 
     AMP::pout << "Initial Residual Norm: " << initialResidualNorm << std::endl;
@@ -479,7 +479,7 @@ void myTest( AMP::UnitTest *ut,
     std::cout << "Max of ||U-Uh|| : " << solutionError->max()
               << " Min of ||U-Uh|| : " << solutionError->min() << std::endl;
 
-    TemperatureVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    TemperatureVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     double discretizationErrorNorm2;
     double TotalNorm2 = 0;

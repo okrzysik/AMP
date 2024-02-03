@@ -179,6 +179,6 @@ void MultiDofDTKMapOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     d_Map21->apply( d_SourceVectorMap21, d_TargetVectorMap21 );
 
     d_multiDofDTKMapOpParams->d_TargetVector->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 } // namespace AMP::Operator

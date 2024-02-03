@@ -153,7 +153,7 @@ void MechanicsNonlinearFEOperator::preAssembly( AMP::LinearAlgebra::Vector::cons
 void MechanicsNonlinearFEOperator::postAssembly()
 {
     d_materialModel->postNonlinearAssembly();
-    d_outVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    d_outVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 void MechanicsNonlinearFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
@@ -336,7 +336,7 @@ void MechanicsNonlinearFEOperator::init()
     d_currElemIdx = static_cast<unsigned int>( -1 );
 
     if ( d_useUpdatedLagrangian ) {
-        d_refXYZ->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        d_refXYZ->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 
     d_materialModel->postNonlinearInit();
@@ -414,7 +414,7 @@ void MechanicsNonlinearFEOperator::reset( std::shared_ptr<const OperatorParamete
             if ( d_isActive[i] ) {
                 d_inVec_pre[i]->copyVector( d_inVec[i] );
                 d_inVec_pre[i]->makeConsistent(
-                    AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                    AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             }
         }
     }
@@ -456,7 +456,7 @@ std::shared_ptr<OperatorParameters> MechanicsNonlinearFEOperator::getJacobianPar
             mySubsetVector( u, ( d_inpVariables->getVariable( Mechanics::DISPLACEMENT ) ) );
         outParams->d_dispVec = displacementVector;
         outParams->d_dispVec->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 
     if ( d_jacobianReusesRadialReturn == false ) {
@@ -732,7 +732,7 @@ void MechanicsNonlinearFEOperator::setVector(
     std::shared_ptr<AMP::LinearAlgebra::Variable> var = d_inpVariables->getVariable( id );
     d_inVec[id]                                       = mySubsetVector( frozenVec, var );
     AMP_ASSERT( d_inVec[id]->getUpdateStatus() ==
-                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+                AMP::LinearAlgebra::UpdateState::UNCHANGED );
 }
 
 void MechanicsNonlinearFEOperator::setReferenceTemperature(
@@ -742,11 +742,11 @@ void MechanicsNonlinearFEOperator::setReferenceTemperature(
         d_inpVariables->getVariable( Mechanics::TEMPERATURE );
     d_referenceTemperature = mySubsetVector( refTemp, var );
     AMP_ASSERT( d_referenceTemperature->getUpdateStatus() ==
-                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+                AMP::LinearAlgebra::UpdateState::UNCHANGED );
     if ( d_useUpdatedLagrangian ) {
         d_inVec_pre[Mechanics::TEMPERATURE]->copyVector( d_referenceTemperature );
         d_inVec_pre[Mechanics::TEMPERATURE]->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
 }
 

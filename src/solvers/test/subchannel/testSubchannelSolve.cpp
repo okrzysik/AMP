@@ -623,7 +623,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             cladPower->zero();
         }
         specificPowerGpVec->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         volumeIntegralColumnOperator->apply( specificPowerGpVec, globalThermalRhsVec );
     }
 
@@ -680,7 +680,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
         nonlinearThermalOperator->modifyRHSvector( globalThermalRhsVec );
     }
     globalThermalRhsVec->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     PROFILE_STOP( "Initialize" );
 
 
@@ -755,7 +755,7 @@ static void SubchannelSolve( AMP::UnitTest *ut, const std::string &exeName )
             flowDensityVec->setValueByGlobalID( scalarDofs[0], 1.0 / specificVolume[0] );
             ++face;
         }
-        flowTempVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        flowTempVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         double Tin = global_input_db->getDatabase( "SubchannelTwoEqNonlinearOperator" )
                          ->getScalar<double>( "Inlet_Temperature" );
         deltaFlowTempVec = flowTempVec->clone();

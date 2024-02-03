@@ -186,7 +186,7 @@ void NodeToNodeMap::applyFinish( AMP::LinearAlgebra::Vector::const_shared_ptr,
     // Update ghost cells (this should be done on the full output vector)
     if ( d_callMakeConsistentSet )
         d_OutputVector->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     PROFILE_STOP( "applyFinish" );
 }

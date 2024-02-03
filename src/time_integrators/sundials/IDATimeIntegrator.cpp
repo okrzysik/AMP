@@ -370,8 +370,8 @@ int IDATimeIntegrator::IDAResTrial(
 
     auto amp_yy = getAMP( yy );
     auto amp_yp = getAMP( yp );
-    amp_yy->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    amp_yp->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    amp_yy->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    amp_yp->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     user_data->getIDATimeOperator()->registerIDATimeDerivative( amp_yp );
 

@@ -92,11 +92,11 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
     // Check input vector states
     AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -189,7 +189,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
 
         if ( d_bUsesPreconditioner && ( d_preconditioner_side == "left" ) ) {
             d_pOperator->apply( d_vBasis[k], z );
-            z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             // construct the Krylov vector
             d_pPreconditioner->apply( z, v );
         } else {
@@ -200,21 +200,21 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
                 if ( !d_bFlexibleGMRES ) {
                     d_pPreconditioner->apply( d_vBasis[k], z );
                     //                    if ( z->getUpdateStatus() !=
-                    //                         AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED
+                    //                         AMP::LinearAlgebra::UpdateState::UNCHANGED
                     //                         )
                     z->makeConsistent(
-                        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( z, v );
                 } else {
                     d_pPreconditioner->apply( d_vBasis[k], zb );
                     d_zBasis.push_back( zb );
                     zb->makeConsistent(
-                        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                     d_pOperator->apply( zb, v );
                 }
             } else {
                 z = d_vBasis[k];
-                z->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                z->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
                 d_pOperator->apply( z, v );
             }
         }
@@ -228,7 +228,7 @@ void GMRESSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector> f,
         // check for happy breakdown
         if ( v_norm != static_cast<T>( 0.0 ) ) {
             v->scale( static_cast<T>( 1.0 ) / v_norm );
-            v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         }
 
         // apply all previous Givens rotations to
@@ -324,7 +324,7 @@ void GMRESSolver<T>::orthogonalize( const int k, std::shared_ptr<AMP::LinearAlge
         AMP_ERROR( "Unknown orthogonalization method in GMRES" );
     }
 
-    v->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    v->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // h_{k+1, k}
     const auto v_norm         = static_cast<T>( v->L2Norm() );
@@ -481,6 +481,6 @@ void GMRESSolver<T>::addCorrection( const int nr,
             u->axpy( d_dy[i], *d_vBasis[i], *u );
         }
     }
-    u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 } // namespace AMP::Solver

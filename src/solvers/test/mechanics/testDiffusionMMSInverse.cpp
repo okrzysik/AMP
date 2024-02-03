@@ -220,8 +220,8 @@ static void inverseTest1( AMP::UnitTest *ut, const std::string &exeName )
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
     // Final communication
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // Output Mathematica form (requires serial execution)
     for ( int i = 0; i < globalComm.getSize(); i++ ) {

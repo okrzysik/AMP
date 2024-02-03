@@ -54,7 +54,7 @@ void AsyncMapColumnOperator::apply( AMP::LinearAlgebra::Vector::const_shared_ptr
     if ( requiresMakeConsistentSet() ) {
         AMP_ASSERT( d_OutputVector );
         d_OutputVector->makeConsistent(
-            AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     }
     PROFILE_STOP( "apply" );
 }

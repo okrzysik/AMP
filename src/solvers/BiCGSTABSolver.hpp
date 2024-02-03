@@ -69,11 +69,11 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
 
     // Check input vector states
     AMP_ASSERT(
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( f->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+        ( f->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
     AMP_ASSERT(
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED ) ||
-        ( u->getUpdateStatus() == AMP::LinearAlgebra::VectorData::UpdateState::LOCAL_CHANGED ) );
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::UNCHANGED ) ||
+        ( u->getUpdateStatus() == AMP::LinearAlgebra::UpdateState::LOCAL_CHANGED ) );
 
     // compute the norm of the rhs in order to compute
     // the termination criterion
@@ -156,7 +156,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
         if ( angle < eps * r_tilde_norm ) {
             // the method breaks down as the vectors are orthogonal to r0
             // attempt to restart with a new r0
-            u->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+            u->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
             d_pOperator->residual( f, u, res );
             r_tilde->copyVector( res );
             p->copyVector( res );
@@ -189,7 +189,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             p_hat->copyVector( p );
         }
 
-        p_hat->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        p_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( p_hat, v );
 
         alpha = static_cast<T>( r_tilde->dot( *v ) );
@@ -227,7 +227,7 @@ void BiCGSTABSolver<T>::apply( std::shared_ptr<const AMP::LinearAlgebra::Vector>
             t = res->clone();
         }
 
-        s_hat->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        s_hat->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
         d_pOperator->apply( s_hat, t );
 
         auto t_sqnorm = static_cast<T>( t->dot( *t ) );

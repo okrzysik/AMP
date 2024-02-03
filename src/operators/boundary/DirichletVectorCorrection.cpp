@@ -93,7 +93,7 @@ void DirichletVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_
         this->applyNonZeroValues( rInternal );
     }
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     if ( d_iDebugPrintInfoLevel > 3 ) {
         AMP::pout << "L2 Norm of rInternal leaving DirichletVectorCorrection::apply is : "
@@ -120,7 +120,7 @@ void DirichletVectorCorrection::applyZeroValues( AMP::LinearAlgebra::Vector::sha
             }
         }
     }
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::shared_ptr r )
@@ -147,7 +147,7 @@ void DirichletVectorCorrection::applyNonZeroValues( AMP::LinearAlgebra::Vector::
             }
         }
     }
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const_shared_ptr u,
@@ -175,7 +175,7 @@ void DirichletVectorCorrection::applyResidual( AMP::LinearAlgebra::Vector::const
             }
         }
     }
-    r->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    r->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 std::shared_ptr<OperatorParameters>

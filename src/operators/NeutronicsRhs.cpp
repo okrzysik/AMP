@@ -210,7 +210,7 @@ void NeutronicsRhs::apply( AMP::LinearAlgebra::Vector::const_shared_ptr u,
         AMP_MPI(AMP_COMM_WORLD).barrier();
         AMP_ERROR("stop");*/
     }
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 }
 
 

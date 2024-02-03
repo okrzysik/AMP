@@ -67,8 +67,8 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     auto uInternal = this->subsetInputVector( u );
 
     AMP_ASSERT( uInternal->getUpdateStatus() ==
-                AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
-    // rInternal->makeConsistent ( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+                AMP::LinearAlgebra::UpdateState::UNCHANGED );
+    // rInternal->makeConsistent ( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     std::vector<std::string> variableNames;
     size_t numVar = 0;
@@ -99,7 +99,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
             AMP_INSIST( d_elementInputVec[i + 1],
                         "Did not find vector '" + variableNames[i] + "'" );
             AMP_ASSERT( d_elementInputVec[i + 1]->getUpdateStatus() ==
-                        AMP::LinearAlgebra::VectorData::UpdateState::UNCHANGED );
+                        AMP::LinearAlgebra::UpdateState::UNCHANGED );
         }
 
         if ( d_iDebugPrintInfoLevel == 100 ) {
@@ -243,7 +243,7 @@ void RobinVectorCorrection::apply( AMP::LinearAlgebra::Vector::const_shared_ptr 
     }         // end for nid
     PROFILE_STOP( "integration loop" );
 
-    rInternal->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    rInternal->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 
     PROFILE_STOP( "apply" );
 }

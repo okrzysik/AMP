@@ -92,7 +92,7 @@ void NavierStokesLSWFFEOperator::preAssembly( AMP::LinearAlgebra::Vector::const_
 
 void NavierStokesLSWFFEOperator::postAssembly()
 {
-    d_outVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_ADD );
+    d_outVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_ADD );
 }
 
 void NavierStokesLSWFFEOperator::preElementOperation( const AMP::Mesh::MeshElement &elem )
@@ -213,7 +213,7 @@ std::shared_ptr<OperatorParameters> NavierStokesLSWFFEOperator::getJacobianParam
     auto outParams         = std::make_shared<NavierStokesLinearFEOperatorParameters>( tmp_db );
     outParams->d_frozenVec = mySubsetVector( u, d_inpVariables );
     outParams->d_frozenVec->makeConsistent(
-        AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+        AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
     d_outVec.reset();
 
     return outParams;

@@ -126,8 +126,8 @@ static void fickTest( AMP::UnitTest *ut, std::string exeName, std::vector<double
     nonlinearFickOperator->residual( rhsVec, solVec, resVec );
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // register some variables for plotting
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
@@ -258,8 +258,8 @@ static void fickSoretTest( AMP::UnitTest *ut, std::string exeName, std::vector<d
     nlinBVPOp->residual( rhsVec, solVec, resVec );
     std::cout << "Final Residual Norm: " << resVec->L2Norm() << std::endl;
 
-    solVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
-    resVec->makeConsistent( AMP::LinearAlgebra::VectorData::ScatterType::CONSISTENT_SET );
+    solVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
+    resVec->makeConsistent( AMP::LinearAlgebra::ScatterType::CONSISTENT_SET );
 
     // register some variables for plotting
     auto siloWriter = AMP::IO::Writer::buildWriter( "Silo" );
